@@ -13,32 +13,23 @@ module SimpleClifford
 
 # TODO the traceout and reset functions can be significantly optimized (they require a ridiculous repetition of canonicalizations and projections right now).
 
-export @P_str, PauliOperator, ⊗, I, X, Y, Z,
+# TODO do not mix up getindex and view (currently getindex is sometimes a view and there is no official view)
+
+export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     @S_str, Stabilizer, prodphase, comm, ⊕, isfullstabilizer, canonicalize!,
     generate!, project!, reset_qubits!, traceout_qubits!,
     apply!,
     CliffordOperator, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId
 
-# Predefined constants representing the single qubit Pauli operators encoded
-# as elements of ``F(2,2)`` in the low bits of UInt8.
-const _I = 0b00
-const _X = 0b10
-const _Y = 0b11
-const _Z = 0b01
-
 # Predefined constants representing the permitted phases encoded
-# as elements of ``F(2)`` in the low bits of UInt8.
+# in the low bits of UInt8.
 const _p  = 0x00
 const _pi = 0x01
 const _m  = 0x02
 const _mi = 0x03
 
-# Dictionaries used for parsing and printing.
-const l2F = Dict('I'=>_I,'X'=>_X,'Z'=>_Z,'Y'=>_Y)
-const F2l = Dict(v=>k for (k,v) in l2F)
-F2l[_I] = '_'
-l2F['_'] = _I
 const phasedict = Dict(""=>_p,"+"=>_p,"i"=>_pi,"+i"=>_pi,"-"=>_m,"-i"=>_mi)
+const toletter = Dict((false,false)=>"_",(true,false)=>"X",(false,true)=>"Z",(true,true)=>"Y")
 
 ##############################
 # Pauli Operators
@@ -63,81 +54,79 @@ julia> Z*X
 +iY
 ```
 
-Internally, each single-qubit operator is an element of `F(2,2)` encoded
-in the low bits of a `UInt8`. The phase is encoded as element of `F(4)`, also
-in a `UInt8`. The implementation uses a single array with properties that
-provide views into the array. The current implementation wastes quite a bit of
-space.
+We use a typical F(2,2) encoding internally. The X and Z bits are stored
+in a single concatenated padded array of UInt64 chunks of a bit array.
 
 ```jldoctest
 julia> p = P"-IZXY";
 
-julia> p.phase, p.F22array, p.phaseF22array
-(0x02, UInt8[0x00, 0x01, 0x02, 0x03], UInt8[0x02, 0x00, 0x01, 0x02, 0x03])
+julia> p.phase, p.xbit, p.zbit
+(0x02, Bool[0, 0, 1, 1], Bool[0, 1, 0, 1])
+
+julia> p.xz
+2-element Array{UInt64,1}:
+ 0x000000000000000c
+ 0x000000000000000a
 ```
 """
-struct PauliOperator{T<:AbstractArray{UInt8,1}} <: AbstractCliffordOperator
-    phaseF22array::T # the first element is the phase (0,1,2,3 for +,+i,-,-i)
+struct PauliOperator{Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}} <: AbstractCliffordOperator
+    phase::Tz
+    nqbits::Int
+    xz::Tv
 end
+
+PauliOperator(phase::UInt8, nqbits::Int, xz::Tv) where Tv<:AbstractVector{UInt64} = PauliOperator(fill(phase,()), nqbits, xz)
+PauliOperator(phase::UInt8, x::T, z::T) where T<:AbstractVector{Bool} = PauliOperator(fill(phase,()), length(x), vcat(BitVector(x).chunks,BitVector(z).chunks))
+
+function Base.getproperty(p::PauliOperator, name::Symbol)
+    if name==:xview
+        @view p.xz[1:end÷2]
+    elseif name==:zview
+        @view p.xz[end÷2+1:end]
+    elseif name==:xbit
+        b = BitArray(UndefInitializer(),(p.nqbits,))
+        b.chunks = p.xview
+        b
+    elseif name==:zbit
+        b = BitArray(UndefInitializer(),(p.nqbits,))
+        b.chunks = p.zview
+        b
+    else
+        getfield(p, name)
+    end
+end
+
+Base.propertynames(p::PauliOperator, private=false) = (:phases,:nqbits,:xz,:xbit,:zbit,:xview,:zview)
 
 macro P_str(a)
-    f22array = collect(l2F[l] for l in filter(x->occursin(x,"IZXY"),a))
-    phase = phasedict[strip(filter(x->!occursin(x,"IZXY"),a))]
-    PauliOperator(vcat([phase],f22array))
+    letters = filter(x->occursin(x,"_IZXY"),a)
+    phase = phasedict[strip(filter(x->!occursin(x,"_IZXY"),a))]
+    PauliOperator(phase, [l=='X'||l=='Y' for l in letters], [l=='Z'||l=='Y' for l in letters])
 end
 
-function Base.getproperty(pauli::PauliOperator, name::Symbol)
-    if name==:phase
-        pauli.phaseF22array[1]
-    elseif name==:F22array
-        @view pauli.phaseF22array[2:end]
-    else
-        getfield(pauli, name)
-    end
-end
+Base.size(pauli::PauliOperator) = pauli.nqbits
 
-function Base.setproperty!(pauli::PauliOperator, name::Symbol, x)
-    if name==:phase
-        pauli.phaseF22array[1] = x
-    elseif name==:F22array
-        pauli.phaseF22array[2:end] = x
-    else
-        setfield!(pauli, name, x)
-    end
-end
+xz2str(x,z) = join(toletter[e] for e in zip(x,z))
 
-Base.propertynames(pauli::PauliOperator, private=false) = (:phase,:F22array,:phaseF22array)
+Base.show(io::IO, p::PauliOperator) = print(io, ["+ ","+i","- ","-i"][p.phase[]+1]*xz2str(p.xbit,p.zbit))
 
-Base.size(pauli::PauliOperator) = size(pauli.F22array)[1]
+Base.:(==)(l::PauliOperator, r::PauliOperator) = r.phase==l.phase && r.nqbits==l.nqbits && r.xz==l.xz
 
-array2str(a) = join(F2l[l] for l in a)
+Base.hash(p::PauliOperator, h::UInt) = hash((p.phase,p.nqbits,p.xz), h)
 
-Base.show(io::IO, p::PauliOperator) = print(io, ["+ ","+i","- ","-i"][p.phase+1]*array2str(p.F22array))
+Base.copy(p::PauliOperator) = PauliOperator(p.phase,p.nqbits,p.xz)
 
-Base.:(==)(l::PauliOperator, r::PauliOperator) = r.phaseF22array==l.phaseF22array
-
-Base.hash(p::PauliOperator, h::UInt) = hash(p.phaseF22array, h)
-
-Base.copy(p::PauliOperator) = PauliOperator(copy(p.phaseF22array))
-
-Base.one(p::PauliOperator) = PauliOperator(zeros(UInt8,size(p)+1))
+Base.one(p::PauliOperator) = PauliOperator(zeros(UInt8),p.nqbits,zero(p.xz))
 
 ##############################
 # Pauli Operator Helpers
 ##############################
 
-function prodphase_(l::UInt8, r::UInt8)::UInt8 # TODO this really needs a neater non-lookup representation
-    multiplication_table_s = Array{UInt8,2}(   # related TODO - frequently we care only about +/- phases, where a non-lookup is easier
-    # I Z X Y  <-- second argument
-    [[0 0 0 0]; # I  <-- first argument
-     [0 0 1 3]; # Z
-     [0 3 0 1]; # X
-     [0 1 3 0]] # Y
-    )
-    multiplication_table_s[l+1,r+1]
+function prodphase_(x1::AbstractVector{UInt64},z1::AbstractVector{UInt64},x2::AbstractVector{UInt64},z2::AbstractVector{UInt64})::UInt64
+    pos = (.~z2 .& x2 .& .~x1 .& z1) .| (z2 .& .~x2 .& x1 .& z1) .| (z2 .&   x2 .& x1 .& .~z1)
+    neg = (  z2 .& x2 .& .~x1 .& z1) .| (.~z2 .& x2 .& x1 .& z1) .| (z2 .& .~x2 .& x1 .& .~z1)
+    unsigned(sum(count_ones,pos) - sum(count_ones,neg))
 end
-
-prodphase_(l::AbstractArray{UInt8,1}, r::AbstractArray{UInt8,1})::UInt8 = sum(prodphase_.(l,r))
 
 """
 Get the phase of the product of two Pauli operators.
@@ -155,13 +144,25 @@ julia> prodphase(P"XXX", P"ZZZ")
 0x01
 ```
 """
-prodphase(l::PauliOperator, r::PauliOperator)::UInt8 = (l.phase+r.phase+prodphase_(l.F22array,r.F22array))%4
+prodphase(l::PauliOperator, r::PauliOperator)::UInt8 = (l.phase+r.phase+prodphase_(l.xview,l.zview,r.xview,r.zview))&0x3
 
-function comm_(l::UInt8, r::UInt8)::UInt8 # based on the twisted product from arxiv 0304161
-    (l&_Z)&((r&_X)>>1) + (r&_Z)&((l&_X)>>1)
+@inline function xor_bits_(v::UInt64)
+    v ⊻= v >> 32
+    v ⊻= v >> 16
+    v ⊻= v >> 8
+    v ⊻= v >> 4
+    v ⊻= v >> 2
+    v ⊻= v >> 1
+    return v&1
 end
 
-comm_(l::PauliOperator, r::PauliOperator)::UInt8 = sum(comm_.(l.F22array,r.F22array))
+@inline function comm_(
+        x1::AbstractVector{UInt64},
+        z1::AbstractVector{UInt64},
+        x2::AbstractVector{UInt64},
+        z2::AbstractVector{UInt64})::UInt8 # based on the twisted product from arxiv 0304161 or arxiv 9608006
+    xor_bits_(reduce(⊻,((z1 .& x2) .⊻ (z2 .& x1))))
+end
 
 """
 Check whether two operators commute.
@@ -179,28 +180,25 @@ julia> comm(P"IZ", P"XX")
 0x01
 ```
 """
-comm(l, r)::UInt8 = comm_(l,r)%2
+comm(l::PauliOperator, r::PauliOperator)::UInt8 = comm_(l.xview,l.zview,r.xview,r.zview)
 
 
 function Base.:(*)(l::PauliOperator, r::PauliOperator)
-    p = copy(l)
-    p.F22array .⊻= r.F22array
-    p.phase = prodphase(l,r)
-    p
+    PauliOperator(prodphase(l,r), l.nqbits, l.xz .⊻ r.xz)
 end
 
-(⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator(vcat([(l.phase+r.phase)%0x4], l.F22array, r.F22array))
+(⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator((l.phase+r.phase)&0x3, vcat(l.xbit,r.xbit) , vcat(l.zbit,r.zbit))
 
 function Base.:(*)(l, r::PauliOperator)
     p = copy(r)
     if l==1
         nothing
     elseif l==1im
-        p.phase = (p.phase + 1)%4
+        p.phase[] = (p.phase[] + 1)&0x3
     elseif l==-1
-        p.phase = (p.phase + 1)%4
+        p.phase[] = (p.phase[] + 2)&0x3
     elseif l==-1im
-        p.phase = (p.phase + 1)%4
+        p.phase[] = (p.phase[] + 3)&0x3
     else
         throw(DomainError(l,"Only {±1,±i} are permitted as phases."))
     end
@@ -211,8 +209,13 @@ Base.:(+)(p::PauliOperator) = p
 
 function Base.:(-)(p::PauliOperator)
     p = copy(p)
-    p.phase = (p.phase+2)%4
+    p.phase[] = (p.phase[]+2)&0x3
     p
+end
+
+# TODO create Base.permute! and getindex(..., permutation_array)
+function permute(p::PauliOperator,perm::AbstractArray{T,1} where T)
+    PauliOperator(p.phase[],p.xbit[perm],p.zbit[perm])
 end
 
 const I = P"I"
@@ -262,84 +265,80 @@ julia> P"YYY" * s
 + ZZ_
 + _ZZ
 ```
-It encodes the stabilizer in a 2D array of single-qubit operators encoded
-as elements of ``F(2,2)``. Rows correspond to multi-qubit Pauli operators and
-columns correspond to qubits. Instances can be created with the `S""` literal.
 
 There are no automatic checks for correctness (i.e. independence of all rows,
 commutativity of all rows, hermiticity of all rows).
 
 See also: [`PauliOperator`](@ref), [`canonicalize!`](@ref)
 """
-struct Stabilizer{T<:AbstractArray{UInt8,2}}
-    phasesF22array::T
+struct Stabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}}
+    phases::Tv
+    nqbits::Int
+    xzs::Tm
 end
 
-function parse_listofpaulis(a)::Array{UInt8,2}
-    f22array = hcat((collect(l2F[l] for l in filter(x->occursin(x,"_IZXY"),s)) for s in split(a,'\n'))...)'
-    phases = collect(phasedict[strip(filter(x->!occursin(x,"_IZXY"),l))] for l in split(a,'\n'))
-    hcat(phases,f22array)
-end
+Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}} = Stabilizer(vcat((p.phase for p in paulis)...), paulis[1].nqbits, vcat((p.xz' for p in paulis)...))
 
 macro S_str(a)
-    Stabilizer(parse_listofpaulis(a))
+    paulis = [eval(quote @P_str($(strip(s))) end) for s in split(a,'\n')] #TODO seriously!?
+    Stabilizer(paulis)
 end
 
-function Base.getproperty(stab::Stabilizer, name::Symbol)
-    if name==:phases
-        @view stab.phasesF22array[:,1]
-    elseif name==:F22array
-        @view stab.phasesF22array[:,2:end]
-    else
-        getfield(stab, name)
-    end
-end
-
-function Base.setproperty!(stab::Stabilizer, name::Symbol, x)
-    if name==:phases
-        stab.phasesF22array[:,1] = x
-    elseif name==:F22array
-        stab.phasesF22array[:,2:end] = x
-    else
-        setfield!(stab, name, x)
-    end
-end
-
-Base.propertynames(stab::Stabilizer, private=false) = (:phases,:F22array,:phasesF22array)
-
-Base.getindex(stab::Stabilizer, i::Int) = PauliOperator(@view stab.phasesF22array[i,:])
-Base.getindex(stab::Stabilizer, r::UnitRange) = Stabilizer(@view stab.phasesF22array[r,:])
+Base.getindex(stab::Stabilizer, i::Int) = PauliOperator((@view stab.phases[i]), stab.nqbits, (@view stab.xzs[i,:]))
+Base.getindex(stab::Stabilizer, r::UnitRange) = Stabilizer((@view stab.phases[r]), stab.nqbits, (@view stab.xzs[r,:]))
 
 function Base.setindex!(stab::Stabilizer, pauli::PauliOperator, i)
-    stab.phasesF22array[i,:] = pauli.phaseF22array
+    stab.phases[i] = pauli.phase[]
+    stab.xzs[i,:] = pauli.xz
     pauli
 end
 
 Base.firstindex(stab::Stabilizer) = 1
 
-Base.lastindex(stab::Stabilizer) = size(stab.phasesF22array,1)
-
-Base.size(stabilizer::Stabilizer, args...) = size(stabilizer.F22array, args...)
+Base.lastindex(stab::Stabilizer) = length(stab.phases)
 
 Base.show(io::IO, s::Stabilizer) = print(io,
-                                         join(map(t->t[1]*t[2],
-                                                  zip(map(b->["+ ","+i","- ","-i"][b+1], s.phases),
-                                                      mapslices(array2str, s.F22array, dims=2))),
+                                         join([["+ ","+i","- ","-i"][s[i].phase[]+1]*xz2str(s[i].xbit,s[i].zbit)
+                                               for i in firstindex(s):lastindex(s)],
                                               '\n'))
 
-Base.:(==)(l::Stabilizer, r::Stabilizer) = r.phasesF22array==l.phasesF22array
+Base.:(==)(l::Stabilizer, r::Stabilizer) = r.nqbits==l.nqbits && r.phases==l.phases && r.xzs==l.xzs
 
-Base.hash(s::Stabilizer, h::UInt) = hash(s.phasesF22array, h)
+Base.hash(s::Stabilizer, h::UInt) = hash(s.nqbits, s.phases, s.xzs, h)
 
-Base.copy(s::Stabilizer) = Stabilizer(copy(s.phasesF22array))
+Base.copy(s::Stabilizer) = Stabilizer(copy(s.phases), s.nqbits, s.xzs)
 
 function rowswap!(s::Stabilizer, i, j) # Written only so we can avoid copying in `canonicalize!`
     if i == j
         return
     end
-    for k in 1:size(s.phasesF22array,2)
-        s.phasesF22array[i,k], s.phasesF22array[j,k] = s.phasesF22array[j,k], s.phasesF22array[i,k]
+    s.phases[i], s.phases[j] = s.phases[j], s.phases[i]
+    @simd for k in 1:size(s.xzs,2)
+        s.xzs[i,k], s.xzs[j,k] = s.xzs[j,k], s.xzs[i,k]
     end
+end
+
+# Copied from base/bitarray.jl
+const _msk64 = ~UInt64(0)
+@inline _div64(l) = l >> 6
+@inline _mod64(l) = l & 63
+function unsafe_bitfindnext_(chunks::AbstractVector{UInt64}, start::Integer)
+    chunk_start = _div64(start-1)+1
+    within_chunk_start = _mod64(start-1)
+    mask = _msk64 << within_chunk_start
+
+    @inbounds begin
+        if chunks[chunk_start] & mask != 0
+            return (chunk_start-1) << 6 + trailing_zeros(chunks[chunk_start] & mask) + 1
+        end
+
+        for i = chunk_start+1:length(chunks)
+            if Bc[i] != 0
+                return (i-1) << 6 + trailing_zeros(chunks[i]) + 1
+            end
+        end
+    end
+    return nothing
 end
 
 """
@@ -386,30 +385,43 @@ julia> canonicalize!(S\"""XXXX
 See arxiv:0505036 for other types of canonicalization.
 """
 function canonicalize!(stabilizer::Stabilizer) # TODO simplify by using the new Pauli like interface instead of f22array
-    f22array = stabilizer.F22array  
-    rows, columns = size(stabilizer)
+    xzs = stabilizer.xzs
+    xs = @view xzs[:,1:end÷2]
+    zs = @view xzs[:,end÷2+1:end]
+    lowbit = UInt64(0x1)
+    zero64 = UInt64(0x0)
+    rows = length(stabilizer.phases)
+    columns = stabilizer.nqbits
     i = 1
     for j in 1:columns
-        k = findfirst(e->e&_X!=0, f22array[i:end,j]) # if X or Y
+        # find first row with X or Y in col `j`
+        jbig = j÷64+1  # TODO use _div and _mod
+        jsmall = lowbit<<(j-1)%64  # TODO use _div and _mod
+        k = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
+                      xs[i:end,jbig])
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i)
             for m in 1:rows
-                if f22array[m,j]&_X!=0 && m!=i # if X or Y
-                    stabilizer[m] = stabilizer[m] * stabilizer[i] # TODO this should be in-place
+                if xs[m,jbig]&jsmall!=zero64 && m!=i # if X or Y
+                    stabilizer[m] = stabilizer[m] * stabilizer[i] # TODO this should be in-place, maybe broadcast magic
                 end
             end
             i += 1
         end
     end
     for j in 1:columns
-        k = findfirst(e->e==_Z, f22array[i:end,j]) # if Z
+        # find first row with Z in col `j`
+        jbig = j÷64+1  # TODO use _div and _mod
+        jsmall = lowbit<<(j-1)%64  # TODO use _div and _mod
+        k = findfirst(e->e&(jsmall)!=zero64,
+                      zs[i:end,jbig])
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i)
             for m in 1:rows
-                if f22array[m,j]&_Z!=0 && m!=i # if Z or Y
-                    stabilizer[m] = stabilizer[m] * stabilizer[i] # TODO this should be in-place
+                if zs[m,jbig]&jsmall!=zero64 && m!=i # if Z or Y
+                    stabilizer[m] = stabilizer[m] * stabilizer[i] # TODO this should be in-place, maybe broadcast magic
                 end
             end
             i += 1
@@ -418,11 +430,11 @@ function canonicalize!(stabilizer::Stabilizer) # TODO simplify by using the new 
     stabilizer
 end
 
-function ishermitian() # TODO write it both for paulis and stabilizers
+function ishermitian() # TODO write it both for paulis and stabilizers (ugh... stabilizers are always so)
 end
 
-function isfullstabilizer(stabilizer::Stabilizer)
-    s = stabilizer.F22array
+function isfullstabilizer(stabilizer::Stabilizer) # TODO update
+#=    s = stabilizer.F22array
     n,m = size(s)
     if n!=m
         return false
@@ -434,13 +446,16 @@ function isfullstabilizer(stabilizer::Stabilizer)
             end
         end
     end
-    return true
+    return true=#
 end
 
 function ⊕(l::Stabilizer, r::Stabilizer)
-    stabs = cat(l.F22array,r.F22array,dims=(1,2))
-    phases = vcat(l.phases,r.phases)
-    Stabilizer(hcat(phases,stabs))
+    lone = one(l[1])
+    rone = one(r[1])
+    paulis = vcat([l[i]⊗rone for i in firstindex(l):lastindex(l)],
+                  [lone⊗r[i] for i in firstindex(r):lastindex(r)]
+                 )
+    Stabilizer(paulis)
 end
 
 ##############################
@@ -472,21 +487,37 @@ julia> generate!(P"-ZIZI", ghz)
 (- ____, [2, 4])
 ```
 """
-function generate!(pauli::PauliOperator, stabilizer::Stabilizer)
-    rows, columns = size(stabilizer)
-    p = pauli.F22array
-    s = stabilizer.F22array
+function generate!(pauli::PauliOperator, stabilizer::Stabilizer) # TODO there is stuff that can be abstracted away here and in canonicalize!
+    rows = length(stabilizer.phases)
+    columns = stabilizer.nqbits
+    xzs = stabilizer.xzs
+    xs = @view xzs[:,1:end÷2]
+    zs = @view xzs[:,end÷2+1:end]
+    lowbit = UInt64(0x1)
+    zero64 = UInt64(0x0)
+    px,pz = pauli.xview, pauli.zview
     used_indices = Int[]
     used = 0
     # remove Xs
-    while (i=findfirst(e->(e&_X)!=0,p)) !== nothing
-        used += findfirst(e->(e&_X)!=0,s[used+1:end,i])
-        pauli.phaseF22array .= (pauli*stabilizer[used]).phaseF22array # TODO, this is just a silly way to write it... learn more about broadcast
+    while (i=unsafe_bitfindnext_(px,1)) !== nothing
+        jbig = i÷64+1  # TODO use _div and _mod
+        jsmall = lowbit<<(i-1)%64  # TODO use _div and _mod
+        used += findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
+                          xs[used+1:end,jbig])
+        # TODO, this is just a long explicit way to write it... learn more about broadcast
+        pauli.phase[] = prodphase(pauli,stabilizer[used])
+        pauli.xz .⊻= xzs[used,:]
         push!(used_indices, used)
     end
-    while (i=findfirst(e->e==_Z,p)) !== nothing
-        used += findfirst(e->e==_Z,s[used+1:end,i])
-        pauli.phaseF22array .= (pauli*stabilizer[used]).phaseF22array # TODO, this is just a silly way to write it... learn more about broadcast
+    # remove Zs
+    while (i=unsafe_bitfindnext_(pz,1)) !== nothing
+        jbig = i÷64+1  # TODO use _div and _mod
+        jsmall = lowbit<<(i-1)%64  # TODO use _div and _mod
+        used += findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
+                          zs[used+1:end,jbig])
+        # TODO, this is just a long explicit way to write it... learn more about broadcast
+        pauli.phase[] = prodphase(pauli,stabilizer[used])
+        pauli.xz .⊻= xzs[used,:]
         push!(used_indices, used)
     end
     pauli, used_indices
@@ -569,7 +600,7 @@ function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result=true)
     # @assert !all(pauli.F22array .== I)
     # @assert pauli.phase ∈ [0x0, 0x2]
     anticommutes = 0                                           
-    n = size(stabilizer)[1]
+    n = length(stabilizer.phases)
     for i in 1:n
         if comm(pauli,stabilizer[i])!=0
             anticommutes = i
@@ -587,8 +618,9 @@ function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result=true)
     else
         for i in anticommutes+1:n
             if comm(pauli,stabilizer[i])!=0
-                stabilizer[i] = stabilizer[i] * stabilizer[anticommutes] # TODO this should be in-place
-                # @assert comm(pauli,stabilizer[i])==0 # this assert is always true in the absence of bugs
+                # TODO, this is just a long explicit way to write it... learn more about broadcast
+                stabilizer.phases[i] = prodphase(stabilizer[i], stabilizer[anticommutes])
+                stabilizer.xzs[i,:] .⊻= stabilizer.xzs[anticommutes,:]
             end
         end
         stabilizer[anticommutes] = pauli
@@ -624,7 +656,7 @@ julia> reset_qubits!(s_entangled, newstab, [1,3])
 ERROR: AssertionError: the qubits to be reset are entangled
 [...]
 ```
-"""=# #TODO
+"""=# # TODO fix/update this
 function reset_qubits!(stabilizer::Stabilizer, newsubstabilizer::Stabilizer, qubits) # TODO type the qubits as an index
 #=    s = stabilizer.F22array
     origrows, origcols = size(stabilizer)
@@ -638,7 +670,7 @@ function reset_qubits!(stabilizer::Stabilizer, newsubstabilizer::Stabilizer, qub
     stabilizer =#
 end
 
-"""
+#="""
 Trace out qubits.
 
 The qubits are assumed to be unentangled
@@ -660,9 +692,9 @@ julia> traceout_qubits!(s_entangled, [1,3])
 ERROR: AssertionError: the qubits to be reset are entangled
 [...]
 ```
-""" # TODO it is not exactly mutable, rather it mutates and then returns a view...
+"""=# # TODO fix/update this # TODO it is not exactly mutable, rather it mutates and then returns a view...
 function traceout_qubits!(stabilizer::Stabilizer, qubits) # TODO: do we really nead to reset each qubit separately... this is inefficient... can't we just project on all of them at the same time?
-    s = stabilizer.F22array
+#=    s = stabilizer.F22array
     origrows, origcols = size(stabilizer)
     rows = zeros(Bool, origrows)
     for q in qubits
@@ -674,6 +706,7 @@ function traceout_qubits!(stabilizer::Stabilizer, qubits) # TODO: do we really n
             .~rows,
             [1,[q+1 for q in 1:origcols if q∉qubits]...]
             ]) # TODO the [qubits...] notation is silly and maybe inefficient
+    =#
 end
 
 
@@ -687,8 +720,8 @@ function Base.:(*)(p::AbstractCliffordOperator, s::Stabilizer)
 end
 
 function apply!(s::Stabilizer, p::PauliOperator)
-    for i in 1:size(s)[1]
-        s.phases[i] = (s.phases[i] + 2*p.phase + 2*sum((s.F22array[i,:] .!= p.F22array) .& (_I .!= p.F22array) .& (s.F22array[i,:] .!= _I)))%4
+    for i in 1:length(s.phases)
+        s.phases[i] = (s.phases[i]+comm(s[i],p)<<1+p.phase[]<<1)&0x3
     end
     s
 end
@@ -714,77 +747,108 @@ julia> stab = S\"""XI
 julia> entangled = CNOT*stab
 + XX
 + ZZ
-
-julia> apply!(stab,phase_gate,(1,)) # if the gate is smaller than the stabilizer, specify the qubits to act on
-+ Y_
-+ _Z
 ```
 """
-struct CliffordOperator{T<:AbstractArray{UInt8,2}} <: AbstractCliffordOperator
-    phasesF22array::T
+struct CliffordOperator{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractCliffordOperator
+    phases::Tv
+    nqbits::Int
+    xztox::Tm
+    xztoz::Tm
+end
+
+function CliffordOperator(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}}
+    xztox = vcat((p.xbit' for p in paulis)...)'
+    xztoz = vcat((p.zbit' for p in paulis)...)'
+    xztox = vcat((vcat(BitArray(xztox[i,1:end÷2]).chunks,BitArray(xztox[i,end÷2+1:end]).chunks)'
+                 for i in 1:size(xztox,1))...)
+    xztoz = vcat((vcat(BitArray(xztoz[i,1:end÷2]).chunks,BitArray(xztoz[i,end÷2+1:end]).chunks)'
+                 for i in 1:size(xztoz,1))...)
+    CliffordOperator(vcat((p.phase for p in paulis)...), paulis[1].nqbits, xztox, xztoz)
 end
 
 macro C_str(a)
-    CliffordOperator(parse_listofpaulis(a))
+    paulis = [eval(quote @P_str($(strip(s))) end) for s in split(a,'\n')] #TODO seriously!?
+    CliffordOperator(paulis)
+end
+
+function clifford_transpose(c::CliffordOperator)
+    n = c.nqbits
+    xtoxs = []
+    ztozs = []
+    ztoxs = []
+    xtozs = []
+    for r in 1:n
+        xtox = BitArray(UndefInitializer(),(n,))
+        ztoz = BitArray(UndefInitializer(),(n,))
+        xtoz = BitArray(UndefInitializer(),(n,))
+        ztox = BitArray(UndefInitializer(),(n,))
+        xtox.chunks = c.xztox[r,1:end÷2]
+        ztoz.chunks = c.xztoz[r,end÷2+1:end]
+        xtoz.chunks = c.xztoz[r,1:end÷2]
+        ztox.chunks = c.xztox[r,end÷2+1:end]
+        push!(xtoxs,xtox')
+        push!(ztozs,ztoz')
+        push!(xtozs,xtoz')
+        push!(ztoxs,ztox')
+    end
+    xtoxs = vcat(xtoxs...)
+    ztozs = vcat(ztozs...)
+    xtozs = vcat(xtozs...)
+    ztoxs = vcat(ztoxs...)
+    xtoxs, ztozs, xtozs, ztoxs
+end
+
+function Base.getindex(c::CliffordOperator, i::Int)
+    xtoxs, ztozs, xtozs, ztoxs = clifford_transpose(c)
+    if i>c.nqbits
+        PauliOperator(c.phases[i], ztoxs[:,i-c.nqbits], ztozs[:,i-c.nqbits])
+    else
+        PauliOperator(c.phases[i], xtoxs[:,i], xtozs[:,i])
+    end
 end
 
 function Base.show(io::IO, c::CliffordOperator)
-    a = c.phasesF22array
-    n = size(a,2)-1
+    xtoxs, ztozs, xtozs, ztoxs = clifford_transpose(c)
+    n = c.nqbits
     for i in 1:n
         print(io, repeat("_",i-1),"X",repeat("_",n-i), " ⟼ ")
-        print(io, ["+ ","+i","- ","-i"][a[i,1]+1])
-        print(io, array2str(a[i,2:end]))
+        print(io, ["+ ","+i","- ","-i"][c.phases[i]+1])
+        print(io, xz2str(xtoxs[:,i],xtozs[:,i]))
         println(io)
     end
     for i in 1:n
         print(io, repeat("_",i-1),"Z",repeat("_",n-i), " ⟼ ")
-        print(io, ["+ ","+i","- ","-i"][a[i+n,1]+1])
-        print(io, array2str(a[i+n,2:end]))
+        print(io, ["+ ","+i","- ","-i"][c.phases[i+n]+1])
+        print(io, xz2str(ztoxs[:,i],ztozs[:,i]))
         println(io)
     end
 end
 
 function Base.copy(c::CliffordOperator)
-    CliffordOperator(copy(c.phasesF22array))
+    CliffordOperator(copy(c.phases),c.nqbits,copy(c.xztox),copy(c.xztoz))
 end
 
-function Base.permute!(c::CliffordOperator,p::AbstractArray{T,1} where T)
-    nbops = size(c.phasesF22array,1)÷2
-    c.phasesF22array .= c.phasesF22array[[p...,(p .+ nbops)...],[1,(1 .+ p)...]]
-    c
+# TODO create Base.permute! and getindex(..., permutation_array)
+function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this is extremely slow stupid implementation
+    CliffordOperator([permute(c[i],p) for i in 1:2*c.nqbits][vcat(p,p.+c.nqbits)])
 end
-
-Base.getindex(stab::CliffordOperator, i::Int) = PauliOperator(@view stab.phasesF22array[i,:])                        
-                        
-function apply!(s::Stabilizer, c::CliffordOperator) # TODO Is this writen in an incredibly inefficient manner? Why is it not just a matrix multiplicaiton?
-    rows,cols = size(s)
-    for row in 1:rows
-        tmp = one(s[1])
-        orig_phase = s.phases[row]
-        for col in 1:cols
-            if s.F22array[row,col] == _X
-                tmp.phaseF22array .= (tmp*c[col]).phaseF22array
-                # TODO, this above is just a silly way to write it... learn broadcasting
-            elseif s.F22array[row,col] == _Z
-                tmp.phaseF22array .= (tmp*c[col+cols]).phaseF22array
-                # TODO, this above is just a silly way to write it... learn broadcasting
-            elseif s.F22array[row,col] == _Y
-                tmp.phaseF22array .= (1im*tmp*c[col]*c[col+cols]).phaseF22array
-                # TODO, this above is just a silly way to write it... learn broadcasting
-            end
+                  
+function apply!(s::Stabilizer, c::CliffordOperator)
+    for row_stab in 1:length(s.phases)
+        new_stabrowx = zeros(UInt64, length(s.xzs[1,1:end÷2]))
+        new_stabrowz = zeros(UInt64, length(s.xzs[1,1:end÷2]))
+        for row_clif in 1:s.nqbits
+            bigrow = row_clif÷64+1  # TODO use _div and _mod
+            smallrow = (row_clif-1)%64  # TODO use _div and _mod
+            xztox = c.xztox[row_clif,:] .& s.xzs[row_stab,:]
+            xztoz = c.xztoz[row_clif,:] .& s.xzs[row_stab,:]
+            new_stabrowx[bigrow] |= xor_bits_(reduce(⊻, xztox)) << smallrow
+            new_stabrowz[bigrow] |= xor_bits_(reduce(⊻, xztoz)) << smallrow
+            s.phases[row_stab] = (s.phases[row_stab]+sum(count_zeros, xztoz[1:end÷2] .& xztox[end÷2+1:end])<<1)&0x3
         end
-        s[row] = tmp
-        s.phases[row] = (s.phases[row]+orig_phase)%0x4 # TODO is this the cleanest API
+        s.xzs[row_stab,1:end÷2] .= new_stabrowx
+        s.xzs[row_stab,end÷2+1:end] .= new_stabrowz
     end
-    s
-end
-
-function apply!(s::Stabilizer, c::AbstractCliffordOperator, qubits) # TODO qubits should be typed into whatever abstract indexing type exits
-    indices = [1, (qubits .+ 1)...]
-    view_s = Stabilizer(@view s.phasesF22array[:,indices])
-    # TODO overload s[row_indexer,col_indexer] and @view s[row_indexer,col_indexer] so that the above line is simpler
-    apply!(view_s, c)
     s
 end
 
@@ -811,40 +875,28 @@ const CliffordId = C"""X
 # Helpers for Clifford Operators
 ##############################
 
-function (⊗)(l::CliffordOperator, r::CliffordOperator)
-    l,r = l.phasesF22array,r.phasesF22array
-    phases = vcat(l[1:end÷2,1], r[1:end÷2,1], l[end÷2+1:end,1], r[end÷2+1:end,1])
-    lx,lz = l[1:end÷2,2:end], l[end÷2+1:end,2:end]
-    rx,rz = r[1:end÷2,2:end], r[end÷2+1:end,2:end]
-    ops = vcat(cat(lx,rx,dims=(1,2)),cat(lz,rz,dims=(1,2)))
-    CliffordOperator(hcat(phases,ops))
+struct CliffordOperator{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractCliffordOperator
+    phases::Tv
+    nqbits::Int
+    xztox::Tm
+    xztoz::Tm
 end
 
-function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
+
+function (⊗)(l::CliffordOperator, r::CliffordOperator) # TODO this is extremely slow stupid implementation
+    opsl = [l[i] for i in 1:2*l.nqbits]
+    opsr = [r[i] for i in 1:2*r.nqbits]
+    onel = one(opsl[1])
+    oner = one(opsr[1])
+    opsl = [l⊗oner for l in opsl]
+    opsr = [onel⊗r for r in opsr]
+    CliffordOperator(vcat(opsl[1:end÷2],opsr[1:end÷2],opsl[end÷2+1:end],opsr[end÷2+1:end]))
+end
+
+#=function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
     r = Stabilizer(copy(r.phasesF22array)) # TODO this is a bit awkward... and fragile... turning a CliffordOp into a Stabilizer
     apply!(r,l)
     CliffordOperator(r.phasesF22array)
-end
+end=# # TODO
 
 end #module
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
