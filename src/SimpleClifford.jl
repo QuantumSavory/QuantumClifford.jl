@@ -852,6 +852,26 @@ function apply!(s::Stabilizer, c::CliffordOperator)
     s
 end
 
+function apply!(s::Stabilizer, c::CliffordOperator, single_qbit_offset::Int)
+    bigs = single_qbit_offset÷64+1  # TODO use _div and _mod
+    smalls = (single_qbit_offset-1)%64  # TODO use _div and _mod
+    for row_stab in 1:length(s.phases)
+        new_stabrowx = zeros(UInt64, length(s.xzs[1,1:end÷2]))
+        new_stabrowz = zeros(UInt64, length(s.xzs[1,1:end÷2]))
+
+        xztox = (c.xztox[1,1] & (s.xzs[row_stab,bigs]>>smalls)) ⊻ (c.xztox[1,2] & (s.xzs[row_stab,bigs+end÷2]>>smalls))
+        xztoz = (c.xztoz[1,1] & (s.xzs[row_stab,bigs]>>smalls)) ⊻ (c.xztoz[1,2] & (s.xzs[row_stab,bigs+end÷2]>>smalls))
+        s.phases[row_stab] = (s.phases[row_stab]+count_zeros(xztoz & xztox)<<1)&0x3
+
+        s.xzs[row_stab,bigs] &= ~(0x1<<smalls)
+        s.xzs[row_stab,bigs] |= (xztox<<smalls)
+        s.xzs[row_stab,end÷2+bigs] &= ~(0x1<<smalls)
+        s.xzs[row_stab,end÷2+bigs] |= (xztoz<<smalls)
+    end
+    s
+end
+
+
 const CNOT = C"""XX
                  IX
                  ZI
