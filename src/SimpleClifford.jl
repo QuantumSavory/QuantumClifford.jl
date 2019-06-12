@@ -180,7 +180,8 @@ julia> comm(P"IZ", P"XX")
 0x01
 ```
 """
-comm(l::PauliOperator, r::PauliOperator)::UInt8 = comm_(l.xview,l.zview,r.xview,r.zview)
+@inline comm(l::PauliOperator, r::PauliOperator)::UInt8 = comm_(l.xz[1:end÷2],l.xz[end÷2+1:end],r.xz[1:end÷2],r.xz[end÷2+1:end])
+#comm(l::PauliOperator, r::PauliOperator)::UInt8 = comm_(l.xview,l.zview,r.xview,r.zview)
 
 
 function Base.:(*)(l::PauliOperator, r::PauliOperator)
@@ -396,7 +397,7 @@ function canonicalize!(stabilizer::Stabilizer) # TODO simplify by using the new 
     for j in 1:columns
         # find first row with X or Y in col `j`
         jbig = j÷64+1  # TODO use _div and _mod
-        jsmall = lowbit<<(j-1)%64  # TODO use _div and _mod
+        jsmall = lowbit<<((j-1)%64)  # TODO use _div and _mod
         k = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                       xs[i:end,jbig])
         if k !== nothing
@@ -413,7 +414,7 @@ function canonicalize!(stabilizer::Stabilizer) # TODO simplify by using the new 
     for j in 1:columns
         # find first row with Z in col `j`
         jbig = j÷64+1  # TODO use _div and _mod
-        jsmall = lowbit<<(j-1)%64  # TODO use _div and _mod
+        jsmall = lowbit<<((j-1)%64)  # TODO use _div and _mod
         k = findfirst(e->e&(jsmall)!=zero64,
                       zs[i:end,jbig])
         if k !== nothing
@@ -501,7 +502,7 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer) # TODO there is
     # remove Xs
     while (i=unsafe_bitfindnext_(px,1)) !== nothing
         jbig = i÷64+1  # TODO use _div and _mod
-        jsmall = lowbit<<(i-1)%64  # TODO use _div and _mod
+        jsmall = lowbit<<((i-1)%64)  # TODO use _div and _mod
         used += findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                           xs[used+1:end,jbig])
         # TODO, this is just a long explicit way to write it... learn more about broadcast
@@ -512,7 +513,7 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer) # TODO there is
     # remove Zs
     while (i=unsafe_bitfindnext_(pz,1)) !== nothing
         jbig = i÷64+1  # TODO use _div and _mod
-        jsmall = lowbit<<(i-1)%64  # TODO use _div and _mod
+        jsmall = lowbit<<((i-1)%64)  # TODO use _div and _mod
         used += findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                           zs[used+1:end,jbig])
         # TODO, this is just a long explicit way to write it... learn more about broadcast
@@ -798,6 +799,19 @@ function clifford_transpose(c::CliffordOperator)
     xtoxs, ztozs, xtozs, ztoxs
 end
 
+function getallpaulis_(c::CliffordOperator)
+    xtoxs, ztozs, xtozs, ztoxs = clifford_transpose(c)
+    ops = []
+    for i in 1:2*c.nqbits
+        if i>c.nqbits
+            push!(ops,PauliOperator(c.phases[i], ztoxs[:,i-c.nqbits], ztozs[:,i-c.nqbits]))
+        else
+            push!(ops,PauliOperator(c.phases[i], xtoxs[:,i], xtozs[:,i]))
+        end
+    end
+    ops
+end
+
 function Base.getindex(c::CliffordOperator, i::Int)
     xtoxs, ztozs, xtozs, ztoxs = clifford_transpose(c)
     if i>c.nqbits
@@ -830,7 +844,8 @@ end
 
 # TODO create Base.permute! and getindex(..., permutation_array)
 function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this is extremely slow stupid implementation
-    CliffordOperator([permute(c[i],p) for i in 1:2*c.nqbits][vcat(p,p.+c.nqbits)])
+    ops = getallpaulis_(c)
+    CliffordOperator([permute(ops[i],p) for i in 1:2*c.nqbits][vcat(p,p.+c.nqbits)])
 end
                   
 function apply!(s::Stabilizer, c::CliffordOperator)
@@ -895,17 +910,9 @@ const CliffordId = C"""X
 # Helpers for Clifford Operators
 ##############################
 
-struct CliffordOperator{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractCliffordOperator
-    phases::Tv
-    nqbits::Int
-    xztox::Tm
-    xztoz::Tm
-end
-
-
 function (⊗)(l::CliffordOperator, r::CliffordOperator) # TODO this is extremely slow stupid implementation
-    opsl = [l[i] for i in 1:2*l.nqbits]
-    opsr = [r[i] for i in 1:2*r.nqbits]
+    opsl = getallpaulis_(l)
+    opsr = getallpaulis_(r)
     onel = one(opsl[1])
     oner = one(opsr[1])
     opsl = [l⊗oner for l in opsl]
