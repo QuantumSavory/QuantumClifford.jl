@@ -405,7 +405,7 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true) # TODO simplif
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
                 if xs[m,jbig]&jsmall!=zero64 && m!=i # if X or Y
-                    xzs[m,:] .⊻= xzs[i,:]
+                    @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
                     phases && (stabilizer.phases[m] = (stabilizer.phases[m]+stabilizer.phases[i]+prodphase_(xs[m,:],zs[m,:],xs[i,:],zs[i,:]))&0x3)
                 end
             end
@@ -423,7 +423,7 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true) # TODO simplif
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
                 if zs[m,jbig]&jsmall!=zero64 && m!=i # if Z or Y
-                    xzs[m,:] .⊻= xzs[i,:]
+                    @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
                     phases && (stabilizer.phases[m] = (stabilizer.phases[m]+stabilizer.phases[i]+prodphase_(xs[m,:],zs[m,:],xs[i,:],zs[i,:]))&0x3)
                 end
             end
@@ -852,20 +852,28 @@ function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this 
 end
                   
 function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
+    new_stabrowx = zero(s.xzs[1,1:end÷2])
+    new_stabrowz = zero(s.xzs[1,1:end÷2])
+    xztox = zero(c.xztox[1,:])
+    xztoz = zero(c.xztox[1,:])
+    phase_flips = zero(xztoz[1:end÷2])
     for row_stab in 1:length(s.phases)
-        new_stabrowx = zeros(UInt64, length(s.xzs[1,1:end÷2]))
-        new_stabrowz = zeros(UInt64, length(s.xzs[1,1:end÷2]))
+        fill!(new_stabrowx, zero(eltype(new_stabrowx)))
+        fill!(new_stabrowz, zero(eltype(new_stabrowz)))
         for row_clif in 1:s.nqbits
             bigrow = row_clif÷64+1  # TODO use _div and _mod
             smallrow = (row_clif-1)%64  # TODO use _div and _mod
-            xztox = c.xztox[row_clif,:] .& s.xzs[row_stab,:]
-            xztoz = c.xztoz[row_clif,:] .& s.xzs[row_stab,:]
-            new_stabrowx[bigrow] |= xor_bits_(reduce(⊻, xztox)) << smallrow
-            new_stabrowz[bigrow] |= xor_bits_(reduce(⊻, xztoz)) << smallrow
-            phases && (s.phases[row_stab] = (s.phases[row_stab]+sum(count_zeros, xztoz[1:end÷2] .& xztox[end÷2+1:end])<<1)&0x3)
+            @inbounds @simd for i in 1:length(xztox)
+                xztox[i] = c.xztox[row_clif,i] & s.xzs[row_stab,i]
+                xztoz[i] = c.xztoz[row_clif,i] & s.xzs[row_stab,i]
+            end
+            new_stabrowx[bigrow] |= xor_bits_(reduce(⊻,xztox)) << smallrow
+            new_stabrowz[bigrow] |= xor_bits_(reduce(⊻,xztoz)) << smallrow
+            phases && (phase_flips .= (@view xztoz[1:end÷2]) .& (@view xztox[end÷2+1:end]))
+            phases && (s.phases[row_stab] = (s.phases[row_stab]+sum(count_zeros, phase_flips)<<1)&0x3)
         end
-        s.xzs[row_stab,1:end÷2] .= new_stabrowx
-        s.xzs[row_stab,end÷2+1:end] .= new_stabrowz
+        s.xzs[row_stab,1:end÷2] = new_stabrowx
+        s.xzs[row_stab,end÷2+1:end] = new_stabrowz
     end
     s
 end
