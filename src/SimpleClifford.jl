@@ -396,7 +396,7 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true) # TODO simplif
     i = 1
     for j in 1:columns
         # find first row with X or Y in col `j`
-        jbig = j÷64+1  # TODO use _div and _mod
+        jbig = (j-1)÷64+1  # TODO use _div and _mod
         jsmall = lowbit<<((j-1)%64)  # TODO use _div and _mod
         k = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                       xs[i:end,jbig])
@@ -414,7 +414,7 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true) # TODO simplif
     end
     for j in 1:columns
         # find first row with Z in col `j`
-        jbig = j÷64+1  # TODO use _div and _mod
+        jbig = (j-1)÷64+1  # TODO use _div and _mod
         jsmall = lowbit<<((j-1)%64)  # TODO use _div and _mod
         k = findfirst(e->e&(jsmall)!=zero64,
                       zs[i:end,jbig])
@@ -861,7 +861,7 @@ function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
         fill!(new_stabrowx, zero(eltype(new_stabrowx)))
         fill!(new_stabrowz, zero(eltype(new_stabrowz)))
         for row_clif in 1:s.nqbits
-            bigrow = row_clif÷64+1  # TODO use _div and _mod
+            bigrow = (row_clif-1)÷64+1  # TODO use _div and _mod
             smallrow = (row_clif-1)%64  # TODO use _div and _mod
             @inbounds @simd for i in 1:length(xztox)
                 xztox[i] = c.xztox[row_clif,i] & s.xzs[row_stab,i]
@@ -879,7 +879,7 @@ function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
 end
 
 function apply!(s::Stabilizer, c::CliffordOperator, single_qbit_offset::Int)
-    bigs = single_qbit_offset÷64+1  # TODO use _div and _mod
+    bigs = (single_qbit_offset-1)÷64+1  # TODO use _div and _mod
     smalls = (single_qbit_offset-1)%64  # TODO use _div and _mod
     lowbit = UInt64(0x1)
     for row_stab in 1:length(s.phases)
