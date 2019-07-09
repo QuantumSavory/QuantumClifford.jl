@@ -491,7 +491,7 @@ julia> generate!(P"-ZIZI", ghz)
 (- ____, [2, 4])
 ```
 """
-function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=true) # TODO there is stuff that can be abstracted away here and in canonicalize!
+function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=true, saveindices::Bool=true) # TODO there is stuff that can be abstracted away here and in canonicalize!
     rows = length(stabilizer.phases)
     columns = stabilizer.nqbits
     xzs = stabilizer.xzs
@@ -506,23 +506,33 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=tr
     while (i=unsafe_bitfindnext_(px,1)) !== nothing
         jbig = i÷64+1  # TODO use _div and _mod
         jsmall = lowbit<<((i-1)%64)  # TODO use _div and _mod
-        used += findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
-                          xs[used+1:end,jbig])
+        candidate = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
+                              xs[used+1:end,jbig])
+        if isnothing(candidate)
+            return nothing
+        else
+            used += candidate
+        end
         # TODO, this is just a long explicit way to write it... learn more about broadcast
         phases && (pauli.phase[] = prodphase(pauli,stabilizer[used]))
         pauli.xz .⊻= xzs[used,:]
-        push!(used_indices, used)
+        saveindices && push!(used_indices, used)
     end
     # remove Zs
     while (i=unsafe_bitfindnext_(pz,1)) !== nothing
         jbig = i÷64+1  # TODO use _div and _mod
         jsmall = lowbit<<((i-1)%64)  # TODO use _div and _mod
-        used += findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
-                          zs[used+1:end,jbig])
+        candidate = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
+                              zs[used+1:end,jbig])
+        if isnothing(candidate)
+            return nothing
+        else
+            used += candidate
+        end
         # TODO, this is just a long explicit way to write it... learn more about broadcast
         phases && (pauli.phase[] = prodphase(pauli,stabilizer[used]))
         pauli.xz .⊻= xzs[used,:]
-        push!(used_indices, used)
+        saveindices && push!(used_indices, used)
     end
     pauli, used_indices
 end
