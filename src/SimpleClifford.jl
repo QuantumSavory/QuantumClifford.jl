@@ -300,6 +300,7 @@ Base.firstindex(stab::Stabilizer) = 1
 
 Base.lastindex(stab::Stabilizer) = length(stab.phases)
 
+# TODO this `firstindex:lastindex` notations is silly. Fix it here and in the other places where it is used.
 Base.show(io::IO, s::Stabilizer) = print(io,
                                          join([["+ ","+i","- ","-i"][s[i].phase[]+1]*xz2str(s[i].xbit,s[i].zbit)
                                                for i in firstindex(s):lastindex(s)],
