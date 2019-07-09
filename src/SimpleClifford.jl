@@ -98,7 +98,7 @@ function Base.getproperty(p::PauliOperator, name::Symbol)
     end
 end
 
-Base.propertynames(p::PauliOperator, private=false) = (:phases,:nqbits,:xz,:xbit,:zbit,:xview,:zview)
+Base.propertynames(p::PauliOperator, private=false) = (:phase,:nqbits,:xz,:xbit,:zbit,:xview,:zview)
 
 macro P_str(a)
     letters = filter(x->occursin(x,"_IZXY"),a)
