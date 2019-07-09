@@ -282,6 +282,12 @@ end
 
 Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}} = Stabilizer(vcat((p.phase for p in paulis)...), paulis[1].nqbits, vcat((p.xz' for p in paulis)...))
 
+Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(
+    phases, length(phases),
+    hcat(vcat((BitArray(xs[i,:]).chunks' for i in 1:size(xs,1))...),
+         vcat((BitArray(zs[i,:]).chunks' for i in 1:size(zs,1))...))
+)
+
 macro S_str(a)
     paulis = [eval(quote @P_str($(strip(s))) end) for s in split(a,'\n')] #TODO seriously!?
     Stabilizer(paulis)
