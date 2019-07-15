@@ -510,7 +510,7 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=tr
     used = 0
     # remove Xs
     while (i=unsafe_bitfindnext_(px,1)) !== nothing
-        jbig = i÷64+1  # TODO use _div and _mod
+        jbig = (i-1)÷64+1  # TODO use _div and _mod
         jsmall = lowbit<<((i-1)%64)  # TODO use _div and _mod
         candidate = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                               xs[used+1:end,jbig])
@@ -526,7 +526,7 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=tr
     end
     # remove Zs
     while (i=unsafe_bitfindnext_(pz,1)) !== nothing
-        jbig = i÷64+1  # TODO use _div and _mod
+        jbig = (i-1)÷64+1  # TODO use _div and _mod
         jsmall = lowbit<<((i-1)%64)  # TODO use _div and _mod
         candidate = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                               zs[used+1:end,jbig])
