@@ -18,10 +18,13 @@ module SimpleClifford
 # Operations between Clifford operators are very slow
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
-    @S_str, Stabilizer, prodphase, comm, ⊕, isfullstabilizer, canonicalize!,
+    @S_str, Stabilizer, prodphase, comm, ⊕, check_allrowscommute, canonicalize!,
     generate!, project!, reset_qubits!, traceout_qubits!,
     apply!,
-    CliffordOperator, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId
+    CliffordOperator, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
+    gf2_gausselim!, gf2_isinvertible, gf2_invert,
+    single_z, single_x,
+    random_pauli, random_stabilizer, random_invertible_gf2
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -293,8 +296,9 @@ macro S_str(a)
     Stabilizer(paulis)
 end
 
-Base.getindex(stab::Stabilizer, i::Int) = PauliOperator((@view stab.phases[i]), stab.nqbits, (@view stab.xzs[i,:]))
-Base.getindex(stab::Stabilizer, r::UnitRange) = Stabilizer((@view stab.phases[r]), stab.nqbits, (@view stab.xzs[r,:]))
+# TODO in a lot of places you should use Number instead of Int
+Base.getindex(stab::Stabilizer, i::Number) = PauliOperator((@view stab.phases[i]), stab.nqbits, (@view stab.xzs[i,:]))
+Base.getindex(stab::Stabilizer, r) = Stabilizer((@view stab.phases[r]), stab.nqbits, (@view stab.xzs[r,:]))
 
 function Base.setindex!(stab::Stabilizer, pauli::PauliOperator, i)
     stab.phases[i] = pauli.phase[]
@@ -443,20 +447,13 @@ end
 function ishermitian() # TODO write it both for paulis and stabilizers (ugh... stabilizers are always so)
 end
 
-function isfullstabilizer(stabilizer::Stabilizer) # TODO update
-#=    s = stabilizer.F22array
-    n,m = size(s)
-    if n!=m
-        return false
-    end
-    for i in 1:n
-        for j in i+1:n
-            if comm(s[i,:],s[j,:])!=0x0
-                return false
-            end
+function check_allrowscommute(stabilizer::Stabilizer)
+    for i in 1:stabilizer.nqbits
+        for j in i+1:stabilizer.nqbits
+            comm(stabilizer[i],stabilizer[j])==0x0 || return false
         end
     end
-    return true=#
+    return true
 end
 
 function ⊕(l::Stabilizer, r::Stabilizer)
@@ -950,6 +947,92 @@ function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
     rstab = Stabilizer(getallpaulis_(r)) # TODO this is a bit awkward... and fragile... turning a CliffordOp into a Stabilizer
     apply!(rstab,l)
     CliffordOperator([rstab[i] for i in 1:length(rstab.phases)])
+end
+
+##############################
+# Helpers for binary codes
+##############################
+
+function gf2_gausselim!(H) # equivalent to just taking the canonicalized stabilizer
+    rows, cols = size(H)
+    j = 1
+    for c in 1:cols
+        j>rows && break
+        goodrow = findfirst(H[j:end,c])
+        goodrow===nothing && continue
+        goodrow += j-1
+        @inbounds for d in 1:cols
+            H[goodrow,d], H[j,d] = H[j,d], H[goodrow,d]
+        end
+        for r in 1:rows
+            r==j && continue
+            if H[r,c]
+                H[r,:] .⊻= H[j,:]
+            end
+        end
+        j += 1
+    end
+    H
+end
+
+function gf2_isinvertible(H) # TODO can be smarter and exit earlier. And should check for squareness.
+    ut = gf2_gausselim!(copy(H))
+    all((ut[i, i] for i in 1:size(ut,1)))
+end
+
+function gf2_invert(H)
+    id = zero(H)
+    s = size(H,1)
+    for i in 1:s id[i,i]=true end
+    M = hcat(H,id)
+    gf2_gausselim!(M)
+    M[:,s+1:end]
+end
+
+##############################
+# Common objects
+##############################
+
+function single_z(n,i)
+    xs = falses(n)
+    zs = falses(n)
+    zs[i] = true
+    PauliOperator(0x0,xs,zs)
+end
+
+function single_x(n,i)
+    xs = falses(n)
+    zs = falses(n)
+    xs[i] = true
+    PauliOperator(0x0,xs,zs)
+end
+
+##############################
+# Random objects
+##############################
+
+random_pauli(n) = PauliOperator(rand([0x0,0x1]), rand(Bool,n), rand(Bool,n))
+
+function random_invertible_gf2(n)
+    while true
+        mat = rand(Bool,n,n)
+        gf2_isinvertible(mat) && return mat
+    end
+end
+
+# function random_cnot_clifford(n) = ... #TODO
+
+function random_stabilizer(n) # TODO this is vaguelly based on an unsupported slide deck off the internet. Probably incorrectly implemented too.
+    cx = falses(n,n)
+    cz = falses(n,n)
+    for i in 1:n
+        cx[i,i], cz[i,i] = rand([(true,true),(true,false),(false,true)])
+    end
+    C = random_invertible_gf2(n)
+    CinvT = gf2_invert(C)'
+    cx = Bool.((cx * C) .% 2)
+    cz = Bool.((cz * CinvT) .% 2)
+    Stabilizer(rand([0x0,0x2],n), cx, cz)
 end
 
 end #module
