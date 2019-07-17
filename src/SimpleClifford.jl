@@ -14,6 +14,7 @@ module SimpleClifford
 # TODO the traceout and reset functions can be significantly optimized (they require a ridiculous repetition of canonicalizations and projections right now).
 
 # TODO do not mix up getindex and view (currently getindex is sometimes a view and there is no official view)
+# TODO document phases=false
 
 # Operations between Clifford operators are very slow
 
@@ -22,7 +23,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     generate!, project!, reset_qubits!, traceout_qubits!,
     apply!,
     CliffordOperator, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
-    gf2_gausselim!, gf2_isinvertible, gf2_invert,
+    stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert,
     single_z, single_x,
     random_pauli, random_stabilizer, random_invertible_gf2
 
@@ -356,18 +357,14 @@ end
 """
 Canonicalize a stabilizer (in place).
 
-Assumes all operators do commute, but it permits redundant generators or
-incomplete list of generators in the input.
-
-It permits non-Hermitian generators, even though it is physically meaningless.
-
-Based on arxiv:1210.6646.
+Assumes the input is a valid stabilizer (all operators commute and have
+real phases). It permits redundant generators and identity generators.
 
 ```jldoctest
-julia> ghz = S\"""XXXX
-                 ZZII
-                 IZZI
-                 IIZZ\""";
+julia> ghz = S"XXXX
+               ZZII
+               IZZI
+               IIZZ";
 
 julia> canonicalize!(ghz)
 + XXXX
@@ -375,18 +372,18 @@ julia> canonicalize!(ghz)
 + _Z_Z
 + __ZZ
 
-julia> canonicalize!(S\"""XXXX
-                         IZZI
-                         IIZZ\""")
+julia> canonicalize!(S"XXXX
+                       IZZI
+                       IIZZ")
 + XXXX
 + _Z_Z
 + __ZZ
 
-julia> canonicalize!(S\"""XXXX
-                         ZZII
-                         IZZI
-                         IZIZ
-                         IIZZ\""")
+julia> canonicalize!(S"XXXX
+                       ZZII
+                       IZZI
+                       IZIZ
+                       IIZZ")
 + XXXX
 + Z__Z
 + _Z_Z
@@ -394,6 +391,7 @@ julia> canonicalize!(S\"""XXXX
 + ____
 ```
 
+Based on arxiv:1210.6646.
 See arxiv:0505036 for other types of canonicalization.
 """
 function canonicalize!(stabilizer::Stabilizer; phases::Bool=true) # TODO simplify by using the new Pauli like interface instead of f22array
@@ -479,10 +477,10 @@ Returns the new operator and the list of indices denoting the elements of
 `stabilizer` that were used for the generation.
 
 ```jldoctest
-julia> ghz = S\"""XXXX
-                 ZZII
-                 IZZI
-                 IIZZ\""";
+julia> ghz = S"XXXX
+               ZZII
+               IZZI
+               IIZZ";
 
 julia> canonicalize!(ghz)
 + XXXX
@@ -543,25 +541,26 @@ end
 """
 Project the state of a Stabilizer on the two eigenspaces of a Pauli operator.
 
-Assumes non-identity operators with phase ±1 (they need to be Hermitian).
-The projection is done inplace.
+Assumes the input is a valid stabilizer.
+The projection is done inplace on that stabilizer and it does not modify the
+projection operator.
 
-It returns a 
+It returns
 
- - non-canonicalized stabilizer
- - the index of the row where the non-commuting operator was (that row is now equal to `pauli` and has an uncertain phase)
- - and the result of the projection if there was no non-cummuting operator
+ - a stabilizer that might not be in canonical form
+ - the index of the row where the non-commuting operator was (that row is now equal to `pauli`; its phase is not updated and for a faithful measurement simulation it needs to be randomized by the user)
+ - and the result of the projection if there was no non-cummuting operator (`nothing` otherwise)
 
-If `keep_result==false` that result of the projection is not computed,
-sparing a canonicalization operation.
+If `keep_result==false` that result of the projection in case of anticommutation
+is not computed, sparing a canonicalization operation.
 
 Here is an example of a projection destroing entanglement:
 
 ```jldoctest
-julia> ghz = S\"""XXXX
-                 ZZII
-                 IZZI
-                 IIZZ\""";
+julia> ghz = S"XXXX
+               ZZII
+               IZZI
+               IIZZ";
 
 julia> canonicalize!(ghz)
 + XXXX
@@ -590,9 +589,9 @@ julia> anticom_index, result
 And an example of projection consistent with the stabilizer state.
 
 ```jldoctest
-julia> s = S\"""ZII
-               IXI
-               IIY\""";
+julia> s = S"ZII
+             IXI
+             IIY";
 
 julia> canonicalize!(s)
 + _X_
@@ -609,10 +608,7 @@ julia> state
 julia> anticom_index, result
 (0, 0x02)
 ```
-
-The measurement result can be `nothing` or the `anticom_index` can be `0`.
-This will turn into a neater interface at some point.
-"""# TODO make a neater interface as suggested just above.
+"""
 function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     # @assert !all(pauli.F22array .== I)
     # @assert pauli.phase ∈ [0x0, 0x2]
@@ -953,6 +949,12 @@ end
 # Helpers for binary codes
 ##############################
 
+function stab_to_gf2(s::Stabilizer)
+    xbits = vcat((s[i].xbit' for i in firstindex(s):lastindex(s))...)
+    zbits = vcat((s[i].zbit' for i in firstindex(s):lastindex(s))...)
+    H = hcat(xbits,zbits)
+end
+
 function gf2_gausselim!(H) # equivalent to just taking the canonicalized stabilizer
     rows, cols = size(H)
     j = 1
@@ -1007,11 +1009,13 @@ function single_x(n,i)
     PauliOperator(0x0,xs,zs)
 end
 
+Base.zero(::Type{PauliOperator}, n) = PauliOperator(0x0,falses(n),falses(n))
+
 ##############################
 # Random objects
 ##############################
 
-random_pauli(n) = PauliOperator(rand([0x0,0x1]), rand(Bool,n), rand(Bool,n))
+random_pauli(n; nophase=false) = PauliOperator(nophase ? 0x0 : rand(0x0:0x3), rand(Bool,n), rand(Bool,n))
 
 function random_invertible_gf2(n)
     while true
