@@ -12,6 +12,20 @@ function stab_looks_good(s)
     return phasesok && rowsok && colsok && check_allrowscommute(c)
 end
 
+function destab_looks_good(destabilizer)
+    s = destabilizer.stabilizer
+    d = destabilizer.destabilizer
+    good = true
+    for i in eachindex(s)
+        good &= comm(s[i],d[i])==0x1
+        for j in 1:lastindex(s)
+            j==i && continue
+            good &= comm(s[i],d[j])==0x0
+        end
+    end
+    good
+end
+
 function tests()
 
 Random.seed!(42)
@@ -24,7 +38,7 @@ Random.seed!(42)
         @test P"-iXYZ".xz == UInt64[0x03, 0x06]
         @test P"-iXYZ".phase[] == 0x03 # TODO why is this failing?
         @test P"-iXYZ".nqbits == 3
-        @test size(P"-iXYZ") == 3
+        @test size(P"-iXYZ") == (3,)
     end
     
     @testset "Elementary operations" begin
@@ -98,9 +112,44 @@ end
     for n in [10,63,64,65,127,128,129]
         s = random_stabilizer(n)
         m = random_pauli(n;nophase=true)
-        ps, anticom, res = project!(s,m)
+        ps, anticom, res = project!(copy(s),m)
         @test anticom==0x0 || ps[anticom]==m
         @test stab_looks_good(ps)
+        m = single_z(n,1)
+        ps, anticom, res = project!(copy(s),m)
+        @test anticom==0x0 || ps[anticom]==m
+        @test stab_looks_good(ps)
+        m = single_x(n,1)
+        ps, anticom, res = project!(copy(s),m)
+        @test anticom==0x0 || ps[anticom]==m
+        @test stab_looks_good(ps)
+    end
+end
+
+@testset "Destabilizer initialization" begin
+    for n in [10,63,64,65,127,128,129]
+        @test destab_looks_good(calculate_destabilizer(random_stabilizer(n)))
+    end
+end
+
+@testset "Projective measurements with destabilizers" begin
+    for n in [10,63,64,65,127,128,129]
+        s = canonicalize!(random_stabilizer(n))
+        m = random_pauli(n;nophase=true)
+        ps, anticom, res = project!(copy(s),m)
+        dps, danticom, dres = project!(calculate_destabilizer(copy(s)),m)
+        @test destab_looks_good(dps)
+        @test anticom==danticom && res==dres && canonicalize!(ps)==canonicalize!(dps.stabilizer)
+        m = single_z(n,1)
+        ps, anticom, res = project!(copy(s),m)
+        dps, danticom, dres = project!(calculate_destabilizer(copy(s)),m)
+        @test destab_looks_good(dps)
+        @test anticom==danticom && res==dres && canonicalize!(ps)==canonicalize!(dps.stabilizer)
+        m = single_x(n,1)
+        ps, anticom, res = project!(copy(s),m)
+        dps, danticom, dres = project!(calculate_destabilizer(copy(s)),m)
+        @test destab_looks_good(dps)
+        @test anticom==danticom && res==dres && canonicalize!(ps)==canonicalize!(dps.stabilizer)
     end
 end
 

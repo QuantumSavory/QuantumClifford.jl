@@ -25,7 +25,8 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     CliffordOperator, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert,
     single_z, single_x,
-    random_pauli, random_stabilizer, random_invertible_gf2
+    random_pauli, random_stabilizer, random_invertible_gf2,
+    Destabilizer, calculate_destabilizer
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -110,7 +111,31 @@ macro P_str(a)
     PauliOperator(phase, [l=='X'||l=='Y' for l in letters], [l=='Z'||l=='Y' for l in letters])
 end
 
-Base.size(pauli::PauliOperator) = pauli.nqbits
+Base.getindex(p::PauliOperator, i::Number) = (p.xz[_div64(i-1)+1] & UInt64(0x1)<<_mod64(i-1))!=0x0, (p.xz[end>>1+_div64(i-1)+1] & UInt64(0x1)<<_mod64(i-1))!=0x0
+
+function Base.setindex!(p::PauliOperator, (x,z)::Tuple{Bool,Bool}, i)
+    if x
+        p.xz[_div64(i-1)+1] |= UInt64(0x1)<<_mod64(i-1)
+    else
+        p.xz[_div64(i-1)+1] &= ~(UInt64(0x1)<<_mod64(i-1))
+    end
+    if z
+        p.xz[end>>1+_div64(i-1)+1] |= UInt64(0x1)<<_mod64(i-1)
+    else
+        p.xz[end>>1+_div64(i-1)+1] &= ~(UInt64(0x1)<<_mod64(i-1))
+    end
+    p
+end
+
+Base.firstindex(p::PauliOperator) = 1
+
+Base.lastindex(p::PauliOperator) = length(p.nqbits)
+
+Base.eachindex(p::PauliOperator) = 1:length(p.nqbits)
+
+Base.size(pauli::PauliOperator) = (pauli.nqbits,)
+
+Base.length(pauli::PauliOperator) = pauli.nqbits
 
 xz2str(x,z) = join(toletter[e] for e in zip(x,z))
 
@@ -121,114 +146,6 @@ Base.:(==)(l::PauliOperator, r::PauliOperator) = r.phase==l.phase && r.nqbits==l
 Base.hash(p::PauliOperator, h::UInt) = hash((p.phase,p.nqbits,p.xz), h)
 
 Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqbits,copy(p.xz))
-
-Base.one(p::PauliOperator) = PauliOperator(zeros(UInt8),p.nqbits,zero(p.xz))
-
-##############################
-# Pauli Operator Helpers
-##############################
-
-@inline function prodphase_(x1::AbstractVector{UInt64},z1::AbstractVector{UInt64},x2::AbstractVector{UInt64},z2::AbstractVector{UInt64})::UInt64
-    pos = (.~z2 .& x2 .& .~x1 .& z1) .| (z2 .& .~x2 .& x1 .& z1) .| (z2 .&   x2 .& x1 .& .~z1)
-    neg = (  z2 .& x2 .& .~x1 .& z1) .| (.~z2 .& x2 .& x1 .& z1) .| (z2 .& .~x2 .& x1 .& .~z1)
-    unsigned(sum(count_ones,pos) - sum(count_ones,neg))#<<1
-end
-
-"""
-Get the phase of the product of two Pauli operators.
-
-Phase is encoded as F(4) in the low qubits of an UInt8.
-
-```jldoctest
-julia> P"ZZZ"*P"XXX"
--iYYY
-
-julia> prodphase(P"ZZZ", P"XXX")
-0x03
-
-julia> prodphase(P"XXX", P"ZZZ")
-0x01
-```
-"""
-@inline prodphase(l::PauliOperator, r::PauliOperator)::UInt8 = (l.phase+r.phase+prodphase_(l.xview,l.zview,r.xview,r.zview))&0x3
-
-@inline function xor_bits_(v::UInt64)
-    v ⊻= v >> 32
-    v ⊻= v >> 16
-    v ⊻= v >> 8
-    v ⊻= v >> 4
-    v ⊻= v >> 2
-    v ⊻= v >> 1
-    return v&1
-end
-
-@inline function comm_(
-        x1::AbstractVector{UInt64},
-        z1::AbstractVector{UInt64},
-        x2::AbstractVector{UInt64},
-        z2::AbstractVector{UInt64})::UInt8 # based on the twisted product from arxiv 0304161 or arxiv 9608006
-    xor_bits_(reduce(⊻,((z1 .& x2) .⊻ (z2 .& x1))))
-end
-
-"""
-Check whether two operators commute.
-
-`0x0` if they commute, `0x1` if they anticommute.
-
-```jldoctest
-julia> P"XX"*P"ZZ", P"ZZ"*P"XX"
-(- YY, - YY)
-
-julia> comm(P"ZZ", P"XX")
-0x00
-
-julia> comm(P"IZ", P"XX")
-0x01
-```
-"""
-@inline comm(l::PauliOperator, r::PauliOperator)::UInt8 = comm_(l.xz[1:end÷2],l.xz[end÷2+1:end],r.xz[1:end÷2],r.xz[end÷2+1:end])
-#comm(l::PauliOperator, r::PauliOperator)::UInt8 = comm_(l.xview,l.zview,r.xview,r.zview)
-
-
-function Base.:(*)(l::PauliOperator, r::PauliOperator)
-    PauliOperator(prodphase(l,r), l.nqbits, l.xz .⊻ r.xz)
-end
-
-(⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator((l.phase+r.phase)&0x3, vcat(l.xbit,r.xbit) , vcat(l.zbit,r.zbit))
-
-function Base.:(*)(l, r::PauliOperator)
-    p = copy(r)
-    if l==1
-        nothing
-    elseif l==1im
-        p.phase[] = (p.phase[] + 1)&0x3
-    elseif l==-1
-        p.phase[] = (p.phase[] + 2)&0x3
-    elseif l==-1im
-        p.phase[] = (p.phase[] + 3)&0x3
-    else
-        throw(DomainError(l,"Only {±1,±i} are permitted as phases."))
-    end
-    p
-end
-
-Base.:(+)(p::PauliOperator) = p
-
-function Base.:(-)(p::PauliOperator)
-    p = copy(p)
-    p.phase[] = (p.phase[]+2)&0x3
-    p
-end
-
-# TODO create Base.permute! and getindex(..., permutation_array)
-function permute(p::PauliOperator,perm::AbstractArray{T,1} where T)
-    PauliOperator(p.phase[],p.xbit[perm],p.zbit[perm])
-end
-
-const I = P"I"
-const Z = P"Z"
-const X = P"X"
-const Y = P"Y"
 
 ##############################
 # Stabilizers
@@ -287,7 +204,7 @@ end
 Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}} = Stabilizer(vcat((p.phase for p in paulis)...), paulis[1].nqbits, vcat((p.xz' for p in paulis)...))
 
 Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(
-    phases, length(phases),
+    phases, size(xs,2),
     hcat(vcat((BitArray(xs[i,:]).chunks' for i in 1:size(xs,1))...),
          vcat((BitArray(zs[i,:]).chunks' for i in 1:size(zs,1))...))
 )
@@ -304,17 +221,35 @@ Base.getindex(stab::Stabilizer, r) = Stabilizer((@view stab.phases[r]), stab.nqb
 function Base.setindex!(stab::Stabilizer, pauli::PauliOperator, i)
     stab.phases[i] = pauli.phase[]
     stab.xzs[i,:] = pauli.xz
-    pauli
+    stab
+end
+
+function Base.setindex!(stab::Stabilizer, (x,z)::Tuple{Bool,Bool}, i, j)
+    if x
+        stab.xzs[i,_div64(j-1)+1] |= UInt64(0x1)<<_mod64(j-1)
+    else
+        stab.xzs[i,_div64(j-1)+1] &= ~(UInt64(0x1)<<_mod64(j-1))
+    end
+    if z
+        stab.xzs[i,end>>1+_div64(j-1)+1] |= UInt64(0x1)<<_mod64(j-1)
+    else
+        stab.xzs[i,end>>1+_div64(j-1)+1] &= ~(UInt64(0x1)<<_mod64(j-1))
+    end
+    stab
 end
 
 Base.firstindex(stab::Stabilizer) = 1
 
 Base.lastindex(stab::Stabilizer) = length(stab.phases)
 
-# TODO this `firstindex:lastindex` notations is silly. Fix it here and in the other places where it is used.
+Base.eachindex(stab::Stabilizer) = 1:length(stab.phases)
+
+Base.size(stab::Stabilizer) = (length(stab.phases),stab.nqbits)
+Base.size(stab::Stabilizer,i) = size(stab)[i]
+
 Base.show(io::IO, s::Stabilizer) = print(io,
                                          join([["+ ","+i","- ","-i"][s[i].phase[]+1]*xz2str(s[i].xbit,s[i].zbit)
-                                               for i in firstindex(s):lastindex(s)],
+                                               for i in eachindex(s)],
                                               '\n'))
 
 Base.:(==)(l::Stabilizer, r::Stabilizer) = r.nqbits==l.nqbits && r.phases==l.phases && r.xzs==l.xzs
@@ -322,6 +257,133 @@ Base.:(==)(l::Stabilizer, r::Stabilizer) = r.nqbits==l.nqbits && r.phases==l.pha
 Base.hash(s::Stabilizer, h::UInt) = hash(s.nqbits, s.phases, s.xzs, h)
 
 Base.copy(s::Stabilizer) = Stabilizer(copy(s.phases), s.nqbits, copy(s.xzs))
+
+##############################
+# Pauli Operator Helpers
+##############################
+
+"""
+Get the phase of the product of two Pauli operators.
+
+Phase is encoded as F(4) in the low qubits of an UInt8.
+
+```jldoctest
+julia> P"ZZZ"*P"XXX"
+-iYYY
+
+julia> prodphase(P"ZZZ", P"XXX")
+0x03
+
+julia> prodphase(P"XXX", P"ZZZ")
+0x01
+```
+"""
+@inline function prodphase(l::AbstractVector{UInt64}, r::AbstractVector{UInt64})::UInt64
+    res = 0
+    len = length(l)>>1
+    @inbounds @simd for i in 1:len
+        x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
+        res += count_ones((~z2 & x2 & ~x1 & z1) | ( z2 & ~x2 & x1 & z1) | (z2 &  x2 & x1 & ~z1))
+        res -= count_ones(( z2 & x2 & ~x1 & z1) | (~z2 &  x2 & x1 & z1) | (z2 & ~x2 & x1 & ~z1))
+    end
+    unsigned(res)
+end
+
+@inline function prodphase(l::PauliOperator, r::PauliOperator)::UInt8
+    (l.phase[]+r.phase[]+prodphase(l.xz,r.xz))&0x3
+end
+
+@inline function prodphase(l::PauliOperator, r::Stabilizer, i)::UInt8 # TODO rewrite it in a way that does not use views in order to have fewer allocations
+    (l.phase[]+r.phases[i]+prodphase(l.xz, (@view r.xzs[i,:])))&0x3
+end
+
+@inline function prodphase(l::Stabilizer, r::PauliOperator, i)::UInt8
+    (l.phases[i]+r.phase[]+prodphase((@view l.xzs[i,:]), r.xz))&0x3
+end
+
+@inline function prodphase(l::Stabilizer, r::Stabilizer, i, j)::UInt8
+    (l.phases[i]+r.phases[j]+prodphase((@view l.xzs[i,:]), (@view r.xzs[j,:])))&0x3
+end
+
+@inline function xor_bits_(v::UInt64)
+    v ⊻= v >> 32
+    v ⊻= v >> 16
+    v ⊻= v >> 8
+    v ⊻= v >> 4
+    v ⊻= v >> 2
+    v ⊻= v >> 1
+    return v&1
+end
+
+"""
+Check whether two operators commute.
+
+`0x0` if they commute, `0x1` if they anticommute.
+
+```jldoctest
+julia> P"XX"*P"ZZ", P"ZZ"*P"XX"
+(- YY, - YY)
+
+julia> comm(P"ZZ", P"XX")
+0x00
+
+julia> comm(P"IZ", P"XX")
+0x01
+```
+"""
+@inline function comm(l::PauliOperator, r::PauliOperator)::UInt8  # TODO update it to look more like prodphase (so that it can index into Stabilizers without having to create Pauli operators)
+    res = UInt64(0)
+    len = length(l.xz)>>1
+    @inbounds @simd for i in 1:len
+        res ⊻= (l.xz[i+len] & r.xz[i]) ⊻ (l.xz[i] & r.xz[i+len])
+    end
+    xor_bits_(res)
+end
+
+
+function Base.:(*)(l::PauliOperator, r::PauliOperator)
+    PauliOperator(prodphase(l,r), l.nqbits, l.xz .⊻ r.xz)
+end
+
+(⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator((l.phase+r.phase)&0x3, vcat(l.xbit,r.xbit) , vcat(l.zbit,r.zbit))
+
+function Base.:(*)(l, r::PauliOperator)
+    p = copy(r)
+    if l==1
+        nothing
+    elseif l==1im
+        p.phase[] = (p.phase[] + 1)&0x3
+    elseif l==-1
+        p.phase[] = (p.phase[] + 2)&0x3
+    elseif l==-1im
+        p.phase[] = (p.phase[] + 3)&0x3
+    else
+        throw(DomainError(l,"Only {±1,±i} are permitted as phases."))
+    end
+    p
+end
+
+Base.:(+)(p::PauliOperator) = p
+
+function Base.:(-)(p::PauliOperator)
+    p = copy(p)
+    p.phase[] = (p.phase[]+2)&0x3
+    p
+end
+
+# TODO create Base.permute! and getindex(..., permutation_array)
+function permute(p::PauliOperator,perm::AbstractArray{T,1} where T)
+    PauliOperator(p.phase[],p.xbit[perm],p.zbit[perm])
+end
+
+const I = P"I"
+const Z = P"Z"
+const X = P"X"
+const Y = P"Y"
+
+##############################
+# Stabilizer helpers
+##############################
 
 @inline function rowswap!(s::Stabilizer, i, j; phases::Bool=true) # Written only so we can avoid copying in `canonicalize!`
     (i == j) && return
@@ -400,13 +462,12 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true) # TODO simplif
     zs = @view xzs[:,end÷2+1:end]
     lowbit = UInt64(0x1)
     zero64 = UInt64(0x0)
-    rows = length(stabilizer.phases)
-    columns = stabilizer.nqbits
+    rows, columns = size(stabilizer)
     i = 1
     for j in 1:columns
         # find first row with X or Y in col `j`
-        jbig = (j-1)÷64+1  # TODO use _div and _mod
-        jsmall = lowbit<<((j-1)%64)  # TODO use _div and _mod
+        jbig = _div64(j-1)+1
+        jsmall = lowbit<<_mod64(j-1)
         k = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                       xs[i:end,jbig])
         if k !== nothing
@@ -415,7 +476,7 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true) # TODO simplif
             for m in 1:rows
                 if xs[m,jbig]&jsmall!=zero64 && m!=i # if X or Y
                     @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
-                    phases && (stabilizer.phases[m] = (stabilizer.phases[m]+stabilizer.phases[i]+prodphase_(xs[m,:],zs[m,:],xs[i,:],zs[i,:]))&0x3)
+                    phases && (stabilizer.phases[m] = prodphase(stabilizer,stabilizer,m,i))
                 end
             end
             i += 1
@@ -423,8 +484,8 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true) # TODO simplif
     end
     for j in 1:columns
         # find first row with Z in col `j`
-        jbig = (j-1)÷64+1  # TODO use _div and _mod
-        jsmall = lowbit<<((j-1)%64)  # TODO use _div and _mod
+        jbig = _div64(j-1)+1
+        jsmall = lowbit<<_mod64(j-1)
         k = findfirst(e->e&(jsmall)!=zero64,
                       zs[i:end,jbig])
         if k !== nothing
@@ -433,7 +494,7 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true) # TODO simplif
             for m in 1:rows
                 if zs[m,jbig]&jsmall!=zero64 && m!=i # if Z or Y
                     @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
-                    phases && (stabilizer.phases[m] = (stabilizer.phases[m]+stabilizer.phases[i]+prodphase_(xs[m,:],zs[m,:],xs[i,:],zs[i,:]))&0x3)
+                    phases && (stabilizer.phases[m] = prodphase(stabilizer,stabilizer,m,i))
                 end
             end
             i += 1
@@ -455,12 +516,18 @@ function check_allrowscommute(stabilizer::Stabilizer)
 end
 
 function ⊕(l::Stabilizer, r::Stabilizer)
-    lone = one(l[1])
-    rone = one(r[1])
-    paulis = vcat([l[i]⊗rone for i in firstindex(l):lastindex(l)],
-                  [lone⊗r[i] for i in firstindex(r):lastindex(r)]
+    lone = zero(l[1])
+    rone = zero(r[1])
+    paulis = vcat([l[i]⊗rone for i in eachindex(l)],
+                  [lone⊗r[i] for i in eachindex(r)]
                  )
     Stabilizer(paulis)
+end
+
+function Base.vcat(stabs::Stabilizer...)
+    Stabilizer(vcat((s.phases for s in stabs)...),
+               stabs[1].nqbits,
+               vcat((s.xzs for s in stabs)...))
 end
 
 ##############################
@@ -493,8 +560,7 @@ julia> generate!(P"-ZIZI", ghz)
 ```
 """
 function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=true, saveindices::Bool=true) # TODO there is stuff that can be abstracted away here and in canonicalize!
-    rows = length(stabilizer.phases)
-    columns = stabilizer.nqbits
+    rows, columns = size(stabilizer)
     xzs = stabilizer.xzs
     xs = @view xzs[:,1:end÷2]
     zs = @view xzs[:,end÷2+1:end]
@@ -505,8 +571,8 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=tr
     used = 0
     # remove Xs
     while (i=unsafe_bitfindnext_(px,1)) !== nothing
-        jbig = (i-1)÷64+1  # TODO use _div and _mod
-        jsmall = lowbit<<((i-1)%64)  # TODO use _div and _mod
+        jbig = _div64(i-1)+1
+        jsmall = lowbit<<_mod64(i-1)
         candidate = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                               xs[used+1:end,jbig])
         if isnothing(candidate)
@@ -515,14 +581,14 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=tr
             used += candidate
         end
         # TODO, this is just a long explicit way to write it... learn more about broadcast
-        phases && (pauli.phase[] = prodphase(pauli,stabilizer[used]))
-        pauli.xz .⊻= xzs[used,:]
+        phases && (pauli.phase[] = prodphase(pauli,stabilizer,used))
+        pauli.xz .⊻= @view xzs[used,:]
         saveindices && push!(used_indices, used)
     end
     # remove Zs
     while (i=unsafe_bitfindnext_(pz,1)) !== nothing
-        jbig = (i-1)÷64+1  # TODO use _div and _mod
-        jsmall = lowbit<<((i-1)%64)  # TODO use _div and _mod
+        jbig = _div64(i-1)+1
+        jsmall = lowbit<<_mod64(i-1)
         candidate = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                               zs[used+1:end,jbig])
         if isnothing(candidate)
@@ -531,8 +597,8 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=tr
             used += candidate
         end
         # TODO, this is just a long explicit way to write it... learn more about broadcast
-        phases && (pauli.phase[] = prodphase(pauli,stabilizer[used]))
-        pauli.xz .⊻= xzs[used,:]
+        phases && (pauli.phase[] = prodphase(pauli,stabilizer,used))
+        pauli.xz .⊻= @view xzs[used,:]
         saveindices && push!(used_indices, used)
     end
     pauli, used_indices
@@ -610,10 +676,8 @@ julia> anticom_index, result
 ```
 """
 function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
-    # @assert !all(pauli.F22array .== I)
-    # @assert pauli.phase ∈ [0x0, 0x2]
     anticommutes = 0                                           
-    n = length(stabilizer.phases)
+    n = size(stabilizer,1)
     for i in 1:n
         if comm(pauli,stabilizer[i])!=0x0
             anticommutes = i
@@ -632,8 +696,8 @@ function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=
         for i in anticommutes+1:n
             if comm(pauli,stabilizer[i])!=0
                 # TODO, this is just a long explicit way to write it... learn more about broadcast
-                phases && (stabilizer.phases[i] = prodphase(stabilizer[i], stabilizer[anticommutes]))
-                stabilizer.xzs[i,:] .⊻= stabilizer.xzs[anticommutes,:]
+                phases && (stabilizer.phases[i] = prodphase(stabilizer, stabilizer, i, anticommutes))
+                stabilizer.xzs[i,:] .⊻= @view stabilizer.xzs[anticommutes,:]
             end
         end
         stabilizer[anticommutes] = pauli
@@ -734,7 +798,7 @@ end
 
 function apply!(s::Stabilizer, p::PauliOperator; phases::Bool=true)
     phases || return s
-    for i in 1:length(s.phases)
+    for i in eachindex(s)
         s.phases[i] = (s.phases[i]+comm(s[i],p)<<1+p.phase[]<<1)&0x3
     end
     s
@@ -867,12 +931,12 @@ function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
     xztox = zero(c.xztox[1,:])
     xztoz = zero(c.xztox[1,:])
     phase_flips = zero(xztoz[1:end÷2])
-    for row_stab in 1:length(s.phases)
+    for row_stab in eachindex(s)
         fill!(new_stabrowx, zero(eltype(new_stabrowx)))
         fill!(new_stabrowz, zero(eltype(new_stabrowz)))
         for row_clif in 1:s.nqbits
-            bigrow = (row_clif-1)÷64+1  # TODO use _div and _mod
-            smallrow = (row_clif-1)%64  # TODO use _div and _mod
+            bigrow = _div64(row_clif-1)+1
+            smallrow = _mod64(row_clif-1)
             @inbounds @simd for i in 1:length(xztox)
                 xztox[i] = c.xztox[row_clif,i] & s.xzs[row_stab,i]
                 xztoz[i] = c.xztoz[row_clif,i] & s.xzs[row_stab,i]
@@ -889,10 +953,10 @@ function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
 end
 
 function apply!(s::Stabilizer, c::CliffordOperator, single_qbit_offset::Int)
-    bigs = (single_qbit_offset-1)÷64+1  # TODO use _div and _mod
-    smalls = (single_qbit_offset-1)%64  # TODO use _div and _mod
+    bigs = _div64(single_qbit_offset-1)+1
+    smalls = _mod64(single_qbit_offset-1)
     lowbit = UInt64(0x1)
-    for row_stab in 1:length(s.phases)
+    for row_stab in eachindex(s)
         xztox = (c.xztox[1,1] & (s.xzs[row_stab,bigs]>>smalls)) ⊻ (c.xztox[1,2] & (s.xzs[row_stab,bigs+end÷2]>>smalls))
         xztoz = (c.xztoz[1,1] & (s.xzs[row_stab,bigs]>>smalls)) ⊻ (c.xztoz[1,2] & (s.xzs[row_stab,bigs+end÷2]>>smalls))
         s.phases[row_stab] = (s.phases[row_stab]+count_zeros(xztoz & xztox)<<1)&0x3
@@ -942,7 +1006,7 @@ end
 function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
     rstab = Stabilizer(getallpaulis_(r)) # TODO this is a bit awkward... and fragile... turning a CliffordOp into a Stabilizer
     apply!(rstab,l)
-    CliffordOperator([rstab[i] for i in 1:length(rstab.phases)])
+    CliffordOperator([rstab[i] for i in eachindex(rstab)])
 end
 
 ##############################
@@ -950,8 +1014,8 @@ end
 ##############################
 
 function stab_to_gf2(s::Stabilizer)
-    xbits = vcat((s[i].xbit' for i in firstindex(s):lastindex(s))...)
-    zbits = vcat((s[i].zbit' for i in firstindex(s):lastindex(s))...)
+    xbits = vcat((s[i].xbit' for i in eachindex(s))...)
+    zbits = vcat((s[i].zbit' for i in eachindex(s))...)
     H = hcat(xbits,zbits)
 end
 
@@ -1010,6 +1074,10 @@ function single_x(n,i)
 end
 
 Base.zero(::Type{PauliOperator}, n) = PauliOperator(0x0,falses(n),falses(n))
+Base.zero(p::PauliOperator) = PauliOperator(0x0,falses(p.nqbits),falses(p.nqbits))
+Base.zero(::Type{Stabilizer}, m, n) = Stabilizer(zeros(UInt8,m),falses(n,m),falses(n,m))
+Base.zero(::Type{Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(n,n))
+Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
 
 ##############################
 # Random objects
@@ -1037,6 +1105,96 @@ function random_stabilizer(n) # TODO this is vaguelly based on an unsupported sl
     cx = Bool.((cx * C) .% 2)
     cz = Bool.((cz * CinvT) .% 2)
     Stabilizer(rand([0x0,0x2],n), cx, cz)
+end
+
+##############################
+# Destabilizer formalism
+##############################
+
+function destabilizer_generators(stab::Stabilizer)
+    stab = canonicalize!(copy(stab))
+    dest = zero(stab)
+    s = 1
+    e = size(stab.xzs,2)>>1
+    op = (false, true)
+    for i in eachindex(stab)
+        j = unsafe_bitfindnext_(stab.xzs[i,s:e],1)
+        if isnothing(j)
+            s = e+1
+            e = 2*e
+            op = (true, false)
+            j = unsafe_bitfindnext_(stab.xzs[i,s:e],1)
+        end
+        dest[i,j] = op
+    end
+    dest, stab
+end
+
+struct Destabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}}
+    s::Stabilizer{Tv,Tm}
+end
+
+function calculate_destabilizer(stab)
+    dest,stab = destabilizer_generators(stab)
+    s = invoke(vcat, Tuple{Stabilizer,Stabilizer}, dest,stab) # TODO why is this invoke necessary!?
+    Destabilizer(s)
+end
+
+Base.copy(d::Destabilizer) = Destabilizer(copy(d.s))
+
+function Base.getproperty(d::Destabilizer, name::Symbol)
+    if name==:stabilizer
+        d.s[end÷2+1:end]
+    elseif name==:destabilizer
+        d.s[1:end÷2]
+    else
+        getfield(d, name)
+    end
+end
+
+function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
+    anticommutes = 0
+    stabilizer = d.stabilizer
+    destabilizer = d.destabilizer
+    n = size(stabilizer,1)
+    for i in 1:n
+        if comm(pauli,stabilizer[i])!=0x0
+            anticommutes = i
+            break
+        end
+    end
+    if anticommutes == 0
+        if keep_result
+            new_pauli = zero(pauli)
+            for i in 1:n
+                if comm(pauli,destabilizer[i])!=0
+                    # TODO, this is just a long explicit way to write it... learn more about broadcast
+                    phases && (new_pauli.phase[] = prodphase(stabilizer, new_pauli, i))
+                    new_pauli.xz .⊻= @view stabilizer.xzs[i,:]
+                end
+            end
+            result = new_pauli.phase
+        else
+            result = nothing
+        end
+    else
+        for i in anticommutes+1:n
+            if comm(pauli,stabilizer[i])!=0
+                # TODO, this is just a long explicit way to write it... learn more about broadcast
+                phases && (stabilizer.phases[i] = prodphase(stabilizer, stabilizer, i, anticommutes))
+                stabilizer.xzs[i,:] .⊻= @view stabilizer.xzs[anticommutes,:]
+            end
+        end
+        for i in 1:n
+            if i!=anticommutes && comm(pauli,destabilizer[i])!=0
+                destabilizer.xzs[i,:] .⊻= @view stabilizer.xzs[anticommutes,:]
+            end
+        end
+        destabilizer[anticommutes] = stabilizer[anticommutes]
+        stabilizer[anticommutes] = pauli
+        result = nothing
+    end
+    d, anticommutes, result
 end
 
 end #module
