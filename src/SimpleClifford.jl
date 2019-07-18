@@ -25,7 +25,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     CliffordOperator, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert,
     single_z, single_x,
-    random_pauli, random_stabilizer, random_invertible_gf2,
+    random_pauli, random_stabilizer, random_invertible_gf2, random_singlequbitop,
     Destabilizer, calculate_destabilizer
 
 # Predefined constants representing the permitted phases encoded
@@ -996,8 +996,8 @@ const CliffordId = C"""X
 function (⊗)(l::CliffordOperator, r::CliffordOperator) # TODO this is extremely slow stupid implementation
     opsl = getallpaulis_(l)
     opsr = getallpaulis_(r)
-    onel = one(opsl[1])
-    oner = one(opsr[1])
+    onel = zero(opsl[1])
+    oner = zero(opsr[1])
     opsl = [l⊗oner for l in opsl]
     opsr = [onel⊗r for r in opsr]
     CliffordOperator(vcat(opsl[1:end÷2],opsr[1:end÷2],opsl[end÷2+1:end],opsr[end÷2+1:end]))
@@ -1107,6 +1107,33 @@ function random_stabilizer(n) # TODO this is vaguelly based on an unsupported sl
     Stabilizer(rand([0x0,0x2],n), cx, cz)
 end
 
+function random_singlequbitop(n)
+    xtox = [falses(n) for i in 1:n]
+    ztox = [falses(n) for i in 1:n]
+    xtoz = [falses(n) for i in 1:n]
+    ztoz = [falses(n) for i in 1:n]
+    for i in 1:n
+        gate = rand(1:6)
+        if gate<5
+            xtox[i][i] = true
+            xtoz[i][i] = true
+            ztox[i][i] = true
+            ztoz[i][i] = true
+            [xtox,ztox,xtoz,ztoz][gate][i][i] = false
+        elseif gate==5
+            xtox[i][i] = true
+            ztoz[i][i] = true
+        else
+            xtoz[i][i] = true
+            ztox[i][i] = true
+        end
+    end
+    c = CliffordOperator(zeros(UInt8,n*2), n,
+                         vcat((vcat(x2x.chunks,z2x.chunks)' for (x2x,z2x) in zip(xtox,ztox))...),
+                         vcat((vcat(x2z.chunks,z2z.chunks)' for (x2z,z2z) in zip(xtoz,ztoz))...)
+        )
+end
+
 ##############################
 # Destabilizer formalism
 ##############################
@@ -1138,6 +1165,12 @@ function calculate_destabilizer(stab)
     dest,stab = destabilizer_generators(stab)
     s = invoke(vcat, Tuple{Stabilizer,Stabilizer}, dest,stab) # TODO why is this invoke necessary!?
     Destabilizer(s)
+end
+
+function Base.show(io::IO, d::Destabilizer)
+    show(io, d.destabilizer)
+    print(io, "\n━━" * "━"^size(d.s,2) * "\n")
+    show(io, d.stabilizer)
 end
 
 Base.copy(d::Destabilizer) = Destabilizer(copy(d.s))
@@ -1195,6 +1228,17 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
         result = nothing
     end
     d, anticommutes, result
+end
+
+function Base.:(*)(p::AbstractCliffordOperator, d::Destabilizer; phases::Bool=true)
+    d = copy(d)
+    apply!(s,p; phases=phases)
+end
+
+function apply!(d::Destabilizer, p::AbstractCliffordOperator; phases::Bool=true)
+    apply!(d.stabilizer,p; phases=phases)
+    apply!(d.destabilizer,p; phases=false)
+    d
 end
 
 end #module
