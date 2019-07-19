@@ -2,3 +2,4 @@ language: julia
 julia:
   - nightly
   - 1.1
+codecov: true
