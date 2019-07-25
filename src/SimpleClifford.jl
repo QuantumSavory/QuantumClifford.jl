@@ -77,9 +77,6 @@ in a single concatenated padded array of UInt64 chunks of a bit array.
 ```jldoctest
 julia> p = P"-IZXY";
 
-julia> p.phase, p.xbit, p.zbit
-(0x02, Bool[0, 0, 1, 1], Bool[0, 1, 0, 1])
-
 julia> p.xz
 2-element Array{UInt64,1}:
  0x000000000000000c
