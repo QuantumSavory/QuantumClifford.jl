@@ -365,7 +365,7 @@ function Base.:(*)(l::PauliOperator, r::PauliOperator)
     PauliOperator(prodphase(l,r), l.nqbits, l.xz .⊻ r.xz)
 end
 
-(⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator((l.phase+r.phase)&0x3, vcat(l.xbit,r.xbit) , vcat(l.zbit,r.zbit))
+(⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator((l.phase[]+r.phase[])&0x3, vcat(l.xbit,r.xbit), vcat(l.zbit,r.zbit))
 
 function Base.:(*)(l, r::PauliOperator)
     p = copy(r)
