@@ -1218,87 +1218,6 @@ function gf2_H_to_G(H)
 end
 
 ##############################
-# Common objects
-##############################
-
-function single_z(n,i)
-    xs = falses(n)
-    zs = falses(n)
-    zs[i] = true
-    PauliOperator(0x0,xs,zs)
-end
-
-function single_x(n,i)
-    xs = falses(n)
-    zs = falses(n)
-    xs[i] = true
-    PauliOperator(0x0,xs,zs)
-end
-
-Base.zero(::Type{PauliOperator}, n) = PauliOperator(0x0,falses(n),falses(n))
-Base.zero(p::PauliOperator) = PauliOperator(0x0,falses(p.nqbits),falses(p.nqbits))
-Base.zero(::Type{Stabilizer}, n, m) = Stabilizer(zeros(UInt8,n),falses(n,m),falses(n,m))
-Base.zero(::Type{Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(n,n))
-Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
-
-##############################
-# Random objects
-##############################
-
-random_pauli(n; nophase=false) = PauliOperator(nophase ? 0x0 : rand(0x0:0x3), rand(Bool,n), rand(Bool,n))
-
-function random_invertible_gf2(n)
-    while true
-        mat = rand(Bool,n,n)
-        gf2_isinvertible(mat) && return mat
-    end
-end
-
-# function random_cnot_clifford(n) = ... #TODO
-
-function random_stabilizer(n) # TODO this is vaguelly based on an unsupported slide deck off the internet. Probably incorrectly implemented too.
-    cx = falses(n,n)
-    cz = falses(n,n)
-    for i in 1:n
-        cx[i,i], cz[i,i] = rand([(true,true),(true,false),(false,true)])
-    end
-    C = random_invertible_gf2(n)
-    CinvT = gf2_invert(C)'
-    cx = Bool.((cx * C) .% 2)
-    cz = Bool.((cz * CinvT) .% 2)
-    Stabilizer(rand([0x0,0x2],n), cx, cz)
-end
-
-random_stabilizer(r,n) = random_stabilizer(n)[randperm(n)[1:r]]
-
-function random_singlequbitop(n)
-    xtox = [falses(n) for i in 1:n]
-    ztox = [falses(n) for i in 1:n]
-    xtoz = [falses(n) for i in 1:n]
-    ztoz = [falses(n) for i in 1:n]
-    for i in 1:n
-        gate = rand(1:6)
-        if gate<5
-            xtox[i][i] = true
-            xtoz[i][i] = true
-            ztox[i][i] = true
-            ztoz[i][i] = true
-            [xtox,ztox,xtoz,ztoz][gate][i][i] = false
-        elseif gate==5
-            xtox[i][i] = true
-            ztoz[i][i] = true
-        else
-            xtoz[i][i] = true
-            ztox[i][i] = true
-        end
-    end
-    c = CliffordOperator(zeros(UInt8,n*2), n,
-                         vcat((vcat(x2x.chunks,z2x.chunks)' for (x2x,z2x) in zip(xtox,ztox))...),
-                         vcat((vcat(x2z.chunks,z2z.chunks)' for (x2z,z2z) in zip(xtoz,ztoz))...)
-        )
-end
-
-##############################
 # Error classes
 ##############################
 struct BadDataStructure <: Exception
@@ -1526,7 +1445,7 @@ end
 function Base.getproperty(ms::MixedDestabilizer, name::Symbol)
     if name==:stabilizer
         ms.s[end÷2+1:end÷2+ms.rank]
-    elseif name==:destablizer
+    elseif name==:destabilizer
         ms.s[1:ms.rank]
     elseif name==:logicalx
         ms.s[ms.rank+1:end÷2]
@@ -1540,5 +1459,188 @@ function Base.getproperty(ms::MixedDestabilizer, name::Symbol)
 end
 
 Base.propertynames(d::MixedDestabilizer, private=false) = (:s, :stabilizer, :destabilizer, :logicalx, :logicalz, :nqbits)
+
+function Base.show(io::IO, d::MixedDestabilizer)
+    println(io, "Rank $(d.rank) stabilizer")
+    show(io, d.destabilizer)
+    print(io, "\n━━" * "━"^size(d.s,2) * "\n")
+    show(io, d.logicalx)
+    print(io, "\n━━" * "━"^size(d.s,2) * "\n")
+    show(io, d.stabilizer)
+    print(io, "\n━━" * "━"^size(d.s,2) * "\n")
+    show(io, d.logicalz)
+end
+
+Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.s),d.rank)
+
+
+function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases)
+    for i in r+1:n # TODO When phases=true, do I still need to track the phases of the logical operstors (does it have a physical meaning)?
+        if comm(pauli,tab[i])!=0
+            # TODO, this is just a long explicit way to write it... learn more about broadcast
+            phases && (tab.phases[i] = prodphase(tab, tab, i, n+anticommutes))
+            tab.xzs[i,:] .⊻= @view tab.xzs[n+anticommutes,:]
+        end
+    end
+    for i in n+anticommutes+1:2n # TODO When phases=true, do I still need to track the phases of the logical operstors (does it have a physical meaning)?
+        if comm(pauli,tab[i])!=0
+            # TODO, this is just a long explicit way to write it... learn more about broadcast
+            phases && (tab.phases[i] = prodphase(tab, tab, i, n+anticommutes))
+            tab.xzs[i,:] .⊻= @view tab.xzs[n+anticommutes,:]
+        end
+    end
+    for i in 1:r
+        if i!=anticommutes && comm(pauli,tab[i])!=0
+            tab.xzs[i,:] .⊻= @view tab.xzs[n+anticommutes,:]
+        end
+    end
+end
+
+function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
+    anticommutes = 0
+    tab = d.s
+    stabilizer = d.stabilizer
+    destabilizer = d.destabilizer
+    r = d.rank
+    n = d.nqbits
+    for i in 1:r # TODO use something like findfirst
+        if comm(pauli,stabilizer[i])!=0x0
+            anticommutes = i
+            break
+        end
+    end
+    if anticommutes == 0
+        anticomlog = 0
+        logx = false
+        for i in r+1:n # TODO use something like findfirst
+            if comm(pauli,tab[i])!=0x0
+                anticomlog = i
+                logx = true
+                break
+            end
+        end
+        if anticomlog!=0
+            for i in n+r+1:2*n # TODO use something like findfirst
+                if comm(pauli,tab[i])!=0x0
+                    anticomlog = i#-n
+                    break
+                end
+            end
+        end
+        if anticomlog!=0
+            if logx
+                rowswap!(tab, r+1+n, anticomlog)
+                rowswap!(tab, r+1, anticomlog+n)
+            else
+                rowswap!(tab, r+1, anticomlog-n)
+                rowswap!(tab, r+1+n, anticomlog)
+            end
+            anticomm_update_rows(tab,pauli,r+1,n,r+1,phases)
+            d.rank += 1
+            result = nothing
+        else
+            if keep_result
+                new_pauli = zero(pauli)
+                for i in 1:r
+                    if comm(pauli,destabilizer[i])!=0
+                        # TODO, this is just a long explicit way to write it... learn more about broadcast
+                        phases && (new_pauli.phase[] = prodphase(stabilizer, new_pauli, i))
+                        new_pauli.xz .⊻= @view stabilizer.xzs[i,:]
+                    end
+                end
+                result = new_pauli.phase[]
+            else
+                result = nothing
+            end
+        end
+    else
+        anticomm_update_rows(tab,pauli,r,n,anticommutes,phases)
+        destabilizer[anticommutes] = stabilizer[anticommutes]
+        stabilizer[anticommutes] = pauli
+        result = nothing
+    end
+    d, anticommutes, result
+end
+
+##############################
+# Common objects
+##############################
+
+function single_z(n,i)
+    xs = falses(n)
+    zs = falses(n)
+    zs[i] = true
+    PauliOperator(0x0,xs,zs)
+end
+
+function single_x(n,i)
+    xs = falses(n)
+    zs = falses(n)
+    xs[i] = true
+    PauliOperator(0x0,xs,zs)
+end
+
+Base.zero(::Type{PauliOperator}, n) = PauliOperator(0x0,falses(n),falses(n))
+Base.zero(p::PauliOperator) = PauliOperator(0x0,falses(p.nqbits),falses(p.nqbits))
+Base.zero(::Type{Stabilizer}, n, m) = Stabilizer(zeros(UInt8,n),falses(n,m),falses(n,m))
+Base.zero(::Type{Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(n,n))
+Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
+
+##############################
+# Random objects
+##############################
+
+random_pauli(n; nophase=false) = PauliOperator(nophase ? 0x0 : rand(0x0:0x3), rand(Bool,n), rand(Bool,n))
+
+function random_invertible_gf2(n)
+    while true
+        mat = rand(Bool,n,n)
+        gf2_isinvertible(mat) && return mat
+    end
+end
+
+# function random_cnot_clifford(n) = ... #TODO
+
+function random_stabilizer(n) # TODO this is vaguelly based on an unsupported slide deck off the internet. Probably incorrectly implemented too.
+    cx = falses(n,n)
+    cz = falses(n,n)
+    for i in 1:n
+        cx[i,i], cz[i,i] = rand([(true,true),(true,false),(false,true)])
+    end
+    C = random_invertible_gf2(n)
+    CinvT = gf2_invert(C)'
+    cx = Bool.((cx * C) .% 2)
+    cz = Bool.((cz * CinvT) .% 2)
+    Stabilizer(rand([0x0,0x2],n), cx, cz)
+end
+
+random_stabilizer(r,n) = random_stabilizer(n)[randperm(n)[1:r]]
+
+function random_singlequbitop(n)
+    xtox = [falses(n) for i in 1:n]
+    ztox = [falses(n) for i in 1:n]
+    xtoz = [falses(n) for i in 1:n]
+    ztoz = [falses(n) for i in 1:n]
+    for i in 1:n
+        gate = rand(1:6)
+        if gate<5
+            xtox[i][i] = true
+            xtoz[i][i] = true
+            ztox[i][i] = true
+            ztoz[i][i] = true
+            [xtox,ztox,xtoz,ztoz][gate][i][i] = false
+        elseif gate==5
+            xtox[i][i] = true
+            ztoz[i][i] = true
+        else
+            xtoz[i][i] = true
+            ztox[i][i] = true
+        end
+    end
+    c = CliffordOperator(zeros(UInt8,n*2), n,
+                         vcat((vcat(x2x.chunks,z2x.chunks)' for (x2x,z2x) in zip(xtox,ztox))...),
+                         vcat((vcat(x2z.chunks,z2z.chunks)' for (x2z,z2z) in zip(xtoz,ztoz))...)
+        )
+end
 
 end #module

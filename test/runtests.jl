@@ -27,7 +27,6 @@ function destab_looks_good(destabilizer)
 end
 
 function mixed_destab_looks_good(destabilizer)
-    return true
     s = destabilizer.stabilizer
     d = destabilizer.destabilizer
     x = destabilizer.logicalx
@@ -40,8 +39,8 @@ function mixed_destab_looks_good(destabilizer)
             good &= comm(s[i],d[j])==0x0
         end
         for j in eachindex(x)
-            good &= comm(s[i],x[j])==0x1
-            good &= comm(s[i],z[j])==0x1
+            good &= comm(s[i],x[j])==0x0
+            good &= comm(s[i],z[j])==0x0
         end
     end
     for i in eachindex(x)
@@ -220,7 +219,10 @@ end
         @test stab_looks_good(pms)
         @test pms.rank==3
         @test a==0 && isnothing(r)
-        # TODO mixed stab
+        pmds, a, r = project!(copy(mds),p)
+        @test mixed_destab_looks_good(pmds)
+        @test pmds.rank==3
+        @test a==0 && isnothing(r)
 
         p = P"ZZI"
         ps, a, r = project!(copy(s),p)
@@ -231,7 +233,11 @@ end
         @test stab_looks_good(pms)
         @test pms.rank==2
         @test a==0 && r==0x2
-        # TODO mixed stab
+        pmds, a, r = project!(copy(mds),p)
+        @test mixed_destab_looks_good(pmds)
+        @test pmds.rank==2
+        @test a==0 && r==0x2
+        @test canonicalize!(ps)==canonicalize!(pms.stabilizer)==canonicalize!(pmds.stabilizer)
 
         p = P"XZZ"
         ps, a, r = project!(copy(s),p)
@@ -244,7 +250,11 @@ end
         @test stab_looks_good(pms)
         @test pms.rank==2
         @test a==2 && isnothing(r)
-        # TODO mixed stab
+        pmds, a, r = project!(copy(mds),p)
+        @test mixed_destab_looks_good(pmds)
+        @test pmds.rank==2
+        @test a==2 && isnothing(r)
+        @test canonicalize!(ps)==canonicalize!(pms.stabilizer)==canonicalize!(pds.stabilizer)==canonicalize!(pmds.stabilizer)
     end
 end
 
