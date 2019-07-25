@@ -58,7 +58,7 @@ function mixed_destab_looks_good(destabilizer)
     good
 end
 
-test_sizes = [10,63,64,65,127,128,129]
+test_sizes = [10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
 function tests()
 
@@ -143,6 +143,7 @@ end
             c = canonicalize!(colpermute!(colpermute!(copy(rs),perm1),perm2))
             cg = canonicalize!(copy(g))
             @test cg == c
+            @test stab_looks_good(g)
         end
     end
 end
@@ -202,6 +203,48 @@ end
             @test destab_looks_good(dps)
             @test anticom==danticom && res==dres && canonicalize!(ps)==canonicalize!(dps.stabilizer)
         end
+    end
+    @testset "Anticommutation indices and NA results" begin
+        s = S" XXX
+              -ZZI"
+        ds = calculate_destabilizer(copy(s))
+        ms = MixedStabilizer(copy(s))
+        mds = calculate_mixed_destabilizer(copy(s))
+
+        p = P"IZZ"
+        ps, a, r = project!(copy(s),p)
+        @test stab_looks_good(ps)
+        @test a==0 && isnothing(r)
+        @test_throws BadDataStructure pds, a, r = project!(copy(ds),p)
+        pms, a, r = project!(copy(ms),p)
+        @test stab_looks_good(pms)
+        @test pms.rank==3
+        @test a==0 && isnothing(r)
+        # TODO mixed stab
+
+        p = P"ZZI"
+        ps, a, r = project!(copy(s),p)
+        @test stab_looks_good(ps)
+        @test a==0 && r==0x2
+        @test_throws BadDataStructure pds, a, r = project!(copy(ds),p)
+        pms, a, r = project!(copy(ms),p)
+        @test stab_looks_good(pms)
+        @test pms.rank==2
+        @test a==0 && r==0x2
+        # TODO mixed stab
+
+        p = P"XZZ"
+        ps, a, r = project!(copy(s),p)
+        @test stab_looks_good(ps)
+        @test a==2 && isnothing(r)
+        pds, a, r = project!(copy(ds),p)
+        @test destab_looks_good(pds)
+        @test a==2 && isnothing(r)
+        pms, a, r = project!(copy(ms),p)
+        @test stab_looks_good(pms)
+        @test pms.rank==2
+        @test a==2 && isnothing(r)
+        # TODO mixed stab
     end
 end
 

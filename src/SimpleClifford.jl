@@ -35,7 +35,8 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     random_pauli, random_stabilizer, random_singlequbitop,
     Destabilizer, calculate_destabilizer,
     MixedStabilizer,
-    MixedDestabilizer, calculate_mixed_destabilizer
+    MixedDestabilizer, calculate_mixed_destabilizer,
+    BadDataStructure
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -637,8 +638,9 @@ function ishermitian() # TODO write it both for paulis and stabilizers (ugh... s
 end
 
 function check_allrowscommute(stabilizer::Stabilizer)
-    for i in 1:stabilizer.nqbits
-        for j in i+1:stabilizer.nqbits
+    for i in eachindex(stabilizer)
+        for j in eachindex(stabilizer)
+            i==j && continue
             comm(stabilizer[i],stabilizer[j])==0x0 || return false
         end
     end
@@ -818,7 +820,7 @@ function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=
         if keep_result
             canonicalize!(stabilizer; phases=phases)
             gen = generate!(copy(pauli), stabilizer, phases=phases)
-            result = isnothing(gen) ? nothing : gen[1].phase
+            result = isnothing(gen) ? nothing : gen[1].phase[]
         else
             result = nothing
         end
@@ -1373,7 +1375,7 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
     end
     if anticommutes == 0
         if n != stabilizer.nqbits
-            throw(BadDataStructure("`Destabilizer` can not efficiently (faster than n^3) detect whether you are projecting on a stabilized, destabilized, or logical operator. Either use `keep_result=false` or switched to one of the `Mixed*` data structures.",
+            throw(BadDataStructure("`Destabilizer` can not efficiently (faster than n^3) detect whether you are projecting on a stabilized or a logical operator. Switch to one of the `Mixed*` data structures.",
                                    :project!,
                                    :Destabilizer))
         end
@@ -1386,7 +1388,7 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
                     new_pauli.xz .⊻= @view stabilizer.xzs[i,:]
                 end
             end
-            result = new_pauli.phase
+            result = new_pauli.phase[]
         else
             result = nothing
         end
