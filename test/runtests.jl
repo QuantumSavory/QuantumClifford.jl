@@ -1,4 +1,4 @@
-using SimpleClifford, Test, Random
+using SimpleClifford, Test, Random, Documenter
 
 function stab_looks_good(s)
     c = canonicalize!(copy(s))
@@ -62,6 +62,11 @@ test_sizes = [10,63,64,65,127,128,129] # Including sizes that would test off-by-
 function tests()
 
 Random.seed!(42)
+
+@testset "Doctests" begin
+    DocMeta.setdocmeta!(SimpleClifford, :DocTestSetup, :(using SimpleClifford); recursive=true)
+    doctest(SimpleClifford; manual = false)
+end
 
 @testset "Pauli Operators" begin
     @testset "Parsing, constructors, and properties" begin

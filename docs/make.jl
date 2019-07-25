@@ -3,6 +3,8 @@ push!(LOAD_PATH,"../src/")
 using Documenter
 using SimpleClifford
 
+DocMeta.setdocmeta!(SimpleClifford, :DocTestSetup, :(using SimpleClifford); recursive=true)
+
 makedocs(
     sitename = "SimpleClifford",
     format = Documenter.HTML(),
