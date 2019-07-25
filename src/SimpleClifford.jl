@@ -16,17 +16,26 @@ module SimpleClifford
 # TODO do not mix up getindex and view (currently getindex is sometimes a view and there is no official view)
 # TODO document phases=false
 
+# TODO should PauliOperator be mutable?
+
 # Operations between Clifford operators are very slow
 
+using LinearAlgebra
+using Random
+
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
-    @S_str, Stabilizer, prodphase, comm, ⊕, check_allrowscommute, canonicalize!,
+    @S_str, Stabilizer, prodphase, comm, ⊕, check_allrowscommute,
+    canonicalize!, canonicalize_gott!, colpermute!,
     generate!, project!, reset_qubits!, traceout_qubits!,
     apply!,
     CliffordOperator, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
-    stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert,
+    stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     single_z, single_x,
-    random_pauli, random_stabilizer, random_invertible_gf2, random_singlequbitop,
-    Destabilizer, calculate_destabilizer
+    random_invertible_gf2,
+    random_pauli, random_stabilizer, random_singlequbitop,
+    Destabilizer, calculate_destabilizer,
+    MixedStabilizer,
+    MixedDestabilizer, calculate_mixed_destabilizer
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -111,7 +120,7 @@ macro P_str(a)
     PauliOperator(phase, [l=='X'||l=='Y' for l in letters], [l=='Z'||l=='Y' for l in letters])
 end
 
-Base.getindex(p::PauliOperator, i::Number) = (p.xz[_div64(i-1)+1] & UInt64(0x1)<<_mod64(i-1))!=0x0, (p.xz[end>>1+_div64(i-1)+1] & UInt64(0x1)<<_mod64(i-1))!=0x0
+Base.getindex(p::PauliOperator, i::Int) = (p.xz[_div64(i-1)+1] & UInt64(0x1)<<_mod64(i-1))!=0x0, (p.xz[end>>1+_div64(i-1)+1] & UInt64(0x1)<<_mod64(i-1))!=0x0
 
 function Base.setindex!(p::PauliOperator, (x,z)::Tuple{Bool,Bool}, i)
     if x
@@ -191,7 +200,9 @@ julia> P"YYY" * s
 ```
 
 There are no automatic checks for correctness (i.e. independence of all rows,
-commutativity of all rows, hermiticity of all rows).
+commutativity of all rows, hermiticity of all rows). The rank (number of rows)
+is permitted to be less than the number of qubits (number of columns):
+canonilization, projection, etc. continue working in that case.
 
 See also: [`PauliOperator`](@ref), [`canonicalize!`](@ref)
 """
@@ -209,18 +220,29 @@ Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::Abstract
          vcat((BitArray(zs[i,:]).chunks' for i in 1:size(zs,1))...))
 )
 
+Stabilizer(phases::AbstractVector{UInt8}, xzs::AbstractMatrix{Bool}) = Stabilizer(phases, xzs[:,1:end÷2], xzs[:,end÷2+1:end])
+
+Stabilizer(xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(zeros(UInt8, size(xs,1)), xs, zs)
+
+Stabilizer(xzs::AbstractMatrix{Bool}) = Stabilizer(zeros(UInt8, size(xzs,1)), xzs[:,1:end÷2], xzs[:,end÷2+1:end])
+
 macro S_str(a)
     paulis = [eval(quote @P_str($(strip(s))) end) for s in split(a,'\n')] #TODO seriously!?
     Stabilizer(paulis)
 end
 
-# TODO in a lot of places you should use Number instead of Int
-Base.getindex(stab::Stabilizer, i::Number) = PauliOperator((@view stab.phases[i]), stab.nqbits, (@view stab.xzs[i,:]))
+Base.getindex(stab::Stabilizer, i::Int) = PauliOperator((@view stab.phases[i]), stab.nqbits, (@view stab.xzs[i,:]))
 Base.getindex(stab::Stabilizer, r) = Stabilizer((@view stab.phases[r]), stab.nqbits, (@view stab.xzs[r,:]))
 
 function Base.setindex!(stab::Stabilizer, pauli::PauliOperator, i)
     stab.phases[i] = pauli.phase[]
     stab.xzs[i,:] = pauli.xz
+    stab
+end
+
+function Base.setindex!(stab::Stabilizer, s::Stabilizer, i)
+    stab.phases[i] = s.phases
+    stab.xzs[i,:] = s.xzs
     stab
 end
 
@@ -388,8 +410,38 @@ const Y = P"Y"
 @inline function rowswap!(s::Stabilizer, i, j; phases::Bool=true) # Written only so we can avoid copying in `canonicalize!`
     (i == j) && return
     phases && begin s.phases[i], s.phases[j] = s.phases[j], s.phases[i] end
-    @simd for k in 1:size(s.xzs,2)
+    @inbounds @simd for k in 1:size(s.xzs,2)
         s.xzs[i,k], s.xzs[j,k] = s.xzs[j,k], s.xzs[i,k]
+    end
+end
+
+@inline function colswap!(s::Stabilizer, i, j)
+    lowbit = UInt64(1)
+    ibig = _div64(i-1)+1
+    ismall = _mod64(i-1)
+    ismallm = lowbit<<(ismall)
+    jbig = _div64(j-1)+1
+    jsmall = _mod64(j-1)
+    jsmallm = lowbit<<(jsmall)
+    for off in [0,size(s.xzs,2)÷2]
+        ibig += off
+        jbig += off
+        @inbounds for k in 1:size(s.xzs,1)
+            ival = s.xzs[k,ibig] & ismallm
+            jval = s.xzs[k,jbig] & jsmallm
+            s.xzs[k,ibig] &= ~ismallm
+            s.xzs[k,jbig] &= ~jsmallm
+            if ismall>jsmall
+                s.xzs[k,ibig] |= jval<<(ismall-jsmall)
+                s.xzs[k,jbig] |= ival>>(ismall-jsmall)
+            elseif ismall<jsmall
+                s.xzs[k,ibig] |= jval>>(jsmall-ismall)
+                s.xzs[k,jbig] |= ival<<(jsmall-ismall)
+            else
+                s.xzs[k,ibig] |= jval
+                s.xzs[k,jbig] |= ival
+            end
+        end
     end
 end
 
@@ -456,7 +508,7 @@ julia> canonicalize!(S"XXXX
 Based on arxiv:1210.6646.
 See arxiv:0505036 for other types of canonicalization.
 """
-function canonicalize!(stabilizer::Stabilizer; phases::Bool=true) # TODO simplify by using the new Pauli like interface instead of f22array
+function canonicalize!(stabilizer::Stabilizer; phases::Bool=true)
     xzs = stabilizer.xzs
     xs = @view xzs[:,1:end÷2]
     zs = @view xzs[:,end÷2+1:end]
@@ -501,6 +553,84 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true) # TODO simplif
         end
     end
     stabilizer
+end
+
+function gott_standard_form_indices(chunks2D, rows, cols; skip=0)
+    goodindices = Int[]
+    j = 1
+    r = 1
+    for r in skip+1:rows
+        i = unsafe_bitfindnext_(chunks2D[r,:],skip+1)
+        isnothing(i) && break
+        i ∈ goodindices && continue
+        push!(goodindices, i)
+    end
+    rank = length(goodindices)
+    if rank>0
+        badindices = [r for r in 1+skip:goodindices[end] if !(r ∈ goodindices)]
+        return vcat(1:skip, goodindices, badindices, goodindices[end]+1:cols), rank
+    else
+        return 1:cols, rank
+    end
+end
+
+function colpermute!(s::Stabilizer, perm) # TODO rename and make public, same as permute and maybe Base.permute!
+    for r in 1:size(s,1)
+        s[r] = permute(s[r], perm)
+    end
+    s
+end
+
+function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true)
+    xzs = stabilizer.xzs
+    xs = @view xzs[:,1:end÷2]
+    zs = @view xzs[:,end÷2+1:end]
+    lowbit = UInt64(0x1)
+    zero64 = UInt64(0x0)
+    rows, columns = size(stabilizer)
+    i = 1
+    for j in 1:columns
+        # find first row with X or Y in col `j`
+        jbig = _div64(j-1)+1
+        jsmall = lowbit<<_mod64(j-1)
+        k = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
+                      xs[i:end,jbig])
+        if k !== nothing
+            k += i-1
+            rowswap!(stabilizer, k, i; phases=phases)
+            for m in 1:rows
+                if xs[m,jbig]&jsmall!=zero64 && m!=i # if X or Y
+                    @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
+                    phases && (stabilizer.phases[m] = prodphase(stabilizer,stabilizer,m,i))
+                end
+            end
+            i += 1
+        end
+    end
+    xperm, r = gott_standard_form_indices((@view xzs[:,1:end÷2]),rows,columns)
+    colpermute!(stabilizer,xperm)
+    i = r+1
+    for j in r+1:columns
+        # find first row with Z in col `j`
+        jbig = _div64(j-1)+1
+        jsmall = lowbit<<_mod64(j-1)
+        k = findfirst(e->e&(jsmall)!=zero64,
+                      zs[i:end,jbig])
+        if k !== nothing
+            k += i-1
+            rowswap!(stabilizer, k, i; phases=phases)
+            for m in 1:rows
+                if zs[m,jbig]&jsmall!=zero64 && m!=i # if Z or Y
+                    @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
+                    phases && (stabilizer.phases[m] = prodphase(stabilizer,stabilizer,m,i))
+                end
+            end
+            i += 1
+        end
+    end
+    zperm, s = gott_standard_form_indices((@view xzs[:,end÷2+1:end]),rows,columns,skip=r)
+    colpermute!(stabilizer,zperm)
+    stabilizer, r, s, xperm, zperm
 end
 
 function ishermitian() # TODO write it both for paulis and stabilizers (ugh... stabilizers are always so)
@@ -676,7 +806,7 @@ julia> anticom_index, result
 ```
 """
 function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
-    anticommutes = 0                                           
+    anticommutes = 0
     n = size(stabilizer,1)
     for i in 1:n
         if comm(pauli,stabilizer[i])!=0x0
@@ -687,8 +817,8 @@ function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=
     if anticommutes == 0
         if keep_result
             canonicalize!(stabilizer; phases=phases)
-            new_pauli, _ = generate!(copy(pauli), stabilizer, phases=phases)
-            result = new_pauli.phase
+            gen = generate!(copy(pauli), stabilizer, phases=phases)
+            result = isnothing(gen) ? nothing : gen[1].phase
         else
             result = nothing
         end
@@ -924,7 +1054,7 @@ function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this 
     ops = getallpaulis_(c)
     CliffordOperator([permute(ops[i],p) for i in 1:2*c.nqbits][vcat(p,p.+c.nqbits)])
 end
-                  
+
 function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
     new_stabrowx = zero(s.xzs[1,1:end÷2])
     new_stabrowz = zero(s.xzs[1,1:end÷2])
@@ -1055,6 +1185,36 @@ function gf2_invert(H)
     M[:,s+1:end]
 end
 
+function gf2_H_standard_form_indices(H)
+    rows, cols = size(H)
+    goodindices = Int[]
+    j = 1
+    r = 1
+    for r in 1:rows
+        i = findfirst(H[r,:])
+        i ∈ goodindices && continue
+        push!(goodindices, i)
+    end
+    badindices = [r for r in 1:goodindices[end] if !(r ∈ goodindices)]
+    return vcat(goodindices, badindices, goodindices[end]+1:cols)
+end
+
+function gf2_H_to_G(H)
+    # XXX it assumes that H is upper triangular (Gauss elimination, canonicalized, etc)
+    # XXX careful, this is the binary code matrix - for the F(2,2) code you need to swap the x and z parts
+    rows, cols = size(H)
+    sindx = gf2_H_standard_form_indices(H)
+    H = H[:,sindx]
+    P = H[:,rows+1:end]'
+    I = falses(cols-rows,cols-rows)
+    for i in 1:size(I,1)
+        I[i,i]=true
+    end
+    G = hcat(P,I)
+    inverse_perm = [findfirst(a->l==a,sindx) for l in 1:length(sindx)]
+    G[:,inverse_perm]
+end
+
 ##############################
 # Common objects
 ##############################
@@ -1075,7 +1235,7 @@ end
 
 Base.zero(::Type{PauliOperator}, n) = PauliOperator(0x0,falses(n),falses(n))
 Base.zero(p::PauliOperator) = PauliOperator(0x0,falses(p.nqbits),falses(p.nqbits))
-Base.zero(::Type{Stabilizer}, m, n) = Stabilizer(zeros(UInt8,m),falses(n,m),falses(n,m))
+Base.zero(::Type{Stabilizer}, n, m) = Stabilizer(zeros(UInt8,n),falses(n,m),falses(n,m))
 Base.zero(::Type{Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(n,n))
 Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
 
@@ -1107,6 +1267,8 @@ function random_stabilizer(n) # TODO this is vaguelly based on an unsupported sl
     Stabilizer(rand([0x0,0x2],n), cx, cz)
 end
 
+random_stabilizer(r,n) = random_stabilizer(n)[randperm(n)[1:r]]
+
 function random_singlequbitop(n)
     xtox = [falses(n) for i in 1:n]
     ztox = [falses(n) for i in 1:n]
@@ -1132,6 +1294,15 @@ function random_singlequbitop(n)
                          vcat((vcat(x2x.chunks,z2x.chunks)' for (x2x,z2x) in zip(xtox,ztox))...),
                          vcat((vcat(x2z.chunks,z2z.chunks)' for (x2z,z2z) in zip(xtoz,ztoz))...)
         )
+end
+
+##############################
+# Error classes
+##############################
+struct BadDataStructure <: Exception
+    message::String
+    whichop::Symbol
+    whichstructure::Symbol
 end
 
 ##############################
@@ -1180,10 +1351,14 @@ function Base.getproperty(d::Destabilizer, name::Symbol)
         d.s[end÷2+1:end]
     elseif name==:destabilizer
         d.s[1:end÷2]
+    elseif name==:nqubits
+        d.s.nqubits
     else
         getfield(d, name)
     end
 end
+
+Base.propertynames(d::Destabilizer, private=false) = (:s, :stabilizer, :destabilizer, :nqbits)
 
 function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
@@ -1197,6 +1372,11 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
         end
     end
     if anticommutes == 0
+        if n != stabilizer.nqbits
+            throw(BadDataStructure("`Destabilizer` can not efficiently (faster than n^3) detect whether you are projecting on a stabilized, destabilized, or logical operator. Either use `keep_result=false` or switched to one of the `Mixed*` data structures.",
+                                   :project!,
+                                   :Destabilizer))
+        end
         if keep_result
             new_pauli = zero(pauli)
             for i in 1:n
@@ -1240,5 +1420,123 @@ function apply!(d::Destabilizer, p::AbstractCliffordOperator; phases::Bool=true)
     apply!(d.destabilizer,p; phases=false)
     d
 end
+
+##############################
+# Mixed Stabilizer states
+##############################
+
+mutable struct MixedStabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}}
+    s::Stabilizer{Tv,Tm} # TODO assert size on construction
+    rank::Int
+end
+
+function MixedStabilizer(s::Stabilizer)
+    s = canonicalize!(s)
+    rp1 = findfirst(mapslices(row->all(==(UInt64(0)),row),s.xzs; dims=(2,)))
+    r = isnothing(rp1) ? size(s, 1) : rp1-1
+    spadded = zero(Stabilizer, s.nqbits)
+    spadded[1:r] = s
+    MixedStabilizer(spadded,r)
+end
+
+function Base.getproperty(ms::MixedStabilizer, name::Symbol)
+    if name==:stabilizer
+        ms.s[1:ms.rank]
+    elseif name==:nqbits
+        ms.s.nqbits
+    else
+        getfield(ms, name)
+    end
+end
+
+Base.propertynames(d::MixedStabilizer, private=false) = (:s, :rank, :stabilizer, :nqbits)
+
+function Base.show(io::IO, ms::MixedStabilizer)
+    println(io, "Rank $(ms.rank) stabilizer")
+    show(io, ms.stabilizer)
+end
+
+Base.copy(ms::MixedStabilizer) = MixedStabilizer(copy(ms.s),ms.rank)
+
+function apply!(ms::MixedStabilizer, p::AbstractCliffordOperator; phases::Bool=true)
+    apply!(ms.s,p; phases=phases)
+    ms
+end
+
+function canonicalize!(ms::MixedStabilizer; phases::Bool=true)
+    canonicalize!(ms.stabilizer; phases=phases)
+end
+
+function project!(ms::MixedStabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
+    _, anticom_index, res = project!(ms.stabilizer, pauli; keep_result=keep_result, phases=phases)
+    if anticom_index==0 && isnothing(res)
+        ms.s[ms.rank+1] = pauli
+        if keep_result
+            ms.rank += 1
+        else
+            canonicalize!(ms.s[1:ms.rank+1]; phases=phases)
+            if ~all(==(UInt64(0)), @view ms.s.xzs[ms.rank+1,:])
+                ms.rank += 1
+            end
+        end
+    end
+    ms, anticom_index, res # CHECK THIS res
+end
+
+##############################
+# Mixed Destabilizer states
+##############################
+
+mutable struct MixedDestabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}}
+    s::Stabilizer{Tv,Tm} # TODO assert size on construction
+    rank::Int
+end
+
+function calculate_mixed_destabilizer(stab)
+    stab, r, s = canonicalize_gott!(stab)
+    n = stab.nqbits
+    tab = zero(Stabilizer, n*2, n)
+    tab[n+1:n+r+s] = stab
+    for i in 1:r
+        tab[i,i] = (false,true)
+    end
+    for i in r+1:r+s
+        tab[i,i] = (true,false)
+    end
+    H = stab_to_gf2(stab)
+    k = n - r - s
+    E = H[r+1:end,end÷2+r+s+1:end]
+    C1 = H[1:r,end÷2+r+1:end÷2+r+s]
+    C2 = H[1:r,end÷2+r+s+1:end]
+    i = LinearAlgebra.I
+    U2 = E'
+    V1 = (E' * C1' + C2').%2 .!= 0x0
+    X = hcat(zeros(Bool,k,r),U2,i,V1,zeros(Bool,k,s+k))
+    sX = Stabilizer(X)
+    tab[r+s+1:n] = sX
+    A2 = H[1:r,r+s+1:end÷2]
+    Z = hcat(zeros(Bool,k,n),A2',zeros(Bool,k,s),i)
+    sZ = Stabilizer(Z)
+    tab[n+r+s+1:end] = sZ
+    MixedDestabilizer(tab, r+s)
+end
+
+function Base.getproperty(ms::MixedDestabilizer, name::Symbol)
+    if name==:stabilizer
+        ms.s[end÷2+1:end÷2+ms.rank]
+    elseif name==:destablizer
+        ms.s[1:ms.rank]
+    elseif name==:logicalx
+        ms.s[ms.rank+1:end÷2]
+    elseif name==:logicalz
+        ms.s[end÷2+ms.rank+1:end]
+    elseif name==:nqbits
+        ms.s.nqbits
+    else
+        getfield(ms, name)
+    end
+end
+
+Base.propertynames(d::MixedDestabilizer, private=false) = (:s, :stabilizer, :destabilizer, :logicalx, :logicalz, :nqbits)
 
 end #module
