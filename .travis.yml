@@ -3,6 +3,7 @@ julia:
   - nightly
   - 1.1
   - 1.2
+  - 1.3
 codecov: true
 after_script:
   - bash ./docs/travis.sh
