@@ -1,24 +1,14 @@
 """
 A module for simulation of Clifford circuits.
-It does not yet use the "destabilizer" tableau formalism, hence many algorithms are
-cubic instead of quadratic.
-
-Single-qubit Paulis will be encoded as elements of F(2,2) in the low two bits of an `UInt8`.
 """
 module SimpleClifford
-
-# TODO remove the triple quotes
-
-# TODO is this https://www.cs.umd.edu/~amchilds/teaching/w10/project-sample.pdf useful?
-
-# TODO the traceout and reset functions can be significantly optimized (they require a ridiculous repetition of canonicalizations and projections right now).
 
 # TODO do not mix up getindex and view (currently getindex is sometimes a view and there is no official view)
 # TODO document phases=false
 
 # TODO should PauliOperator be mutable?
 
-# Operations between Clifford operators are very slow
+# TODO Operations between Clifford operators are very slow
 
 using LinearAlgebra
 using Random
@@ -165,9 +155,9 @@ Instances can be created with the `S` custom string macro or
 as direct sum of other stabilizers.
 
 ```jldoctest stabilizer
-julia> s = S\"""XXX
-               ZZI
-               IZZ\"""
+julia> s = S"XXX
+             ZZI
+             IZZ"
 + XXX
 + ZZ_
 + _ZZ
@@ -943,13 +933,13 @@ _X ⟼ + _X
 Z_ ⟼ + Z_
 _Z ⟼ + ZZ
 
-julia> phase_gate = C\"""Y
-                        Z\"""
+julia> phase_gate = C"Y
+                      Z"
 X ⟼ + Y
 Z ⟼ + Z
 
-julia> stab = S\"""XI
-                  IZ\""";
+julia> stab = S"XI
+                IZ";
 
 julia> entangled = CNOT*stab
 + XX
@@ -1099,24 +1089,24 @@ function apply!(s::Stabilizer, c::CliffordOperator, single_qbit_offset::Int)
 end
 
 
-const CNOT = C"""XX
-                 IX
-                 ZI
-                 ZZ"""
+const CNOT = C"XX
+               IX
+               ZI
+               ZZ"
 
-const SWAP = C"""IX
-                 XI
-                 IZ
-                 ZI"""
+const SWAP = C"IX
+               XI
+               IZ
+               ZI"
 
-const Hadamard = C"""Z
-                     X"""
+const Hadamard = C"Z
+                   X"
 
-const Phase = C"""Y
-                  Z"""
+const Phase = C"Y
+                Z"
 
-const CliffordId = C"""X
-                       Z"""
+const CliffordId = C"X
+                     Z"
 
 ##############################
 # Helpers for Clifford Operators
