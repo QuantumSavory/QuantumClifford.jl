@@ -6,14 +6,14 @@ using SimpleClifford
 DocMeta.setdocmeta!(SimpleClifford, :DocTestSetup, :(using SimpleClifford); recursive=true)
 
 makedocs(
-    sitename = "SimpleClifford",
-    format = Documenter.HTML(),
-    modules = [SimpleClifford]
+doctest = false,
+clean = true,
+sitename = "SimpleClifford.jl",
+format = Documenter.HTML(),
+modules = [SimpleClifford],
+authors = "Stefan Krastanov",
 )
 
-# Documenter can also automatically deploy documentation to gh-pages.
-# See "Hosting Documentation" and deploydocs() in the Documenter manual
-# for more information.
-#=deploydocs(
-    repo = "<repository url>"
-)=#
+deploydocs(
+    repo = "https://github.com/Krastanov/SimpleClifford.git"
+)

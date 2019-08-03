@@ -4,3 +4,5 @@ julia:
   - 1.1
   - 1.2
 codecov: true
+after_script:
+  - bash ./docs/travis.sh
