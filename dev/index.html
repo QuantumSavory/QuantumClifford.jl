@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>SimpleClifford.jl · SimpleClifford.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>SimpleClifford.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li class="current"><a class="toctext" href>SimpleClifford.jl</a><ul class="internal"></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href>SimpleClifford.jl</a></li></ul><a class="edit-page" href="https://github.com/Krastanov/SimpleClifford/blob/master/docs/src/index.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>SimpleClifford.jl</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="SimpleClifford.jl-1" href="#SimpleClifford.jl-1">SimpleClifford.jl</a></h1><p>Documentation for SimpleClifford.jl</p><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="SimpleClifford.SimpleClifford" href="#SimpleClifford.SimpleClifford"><code>SimpleClifford.SimpleClifford</code></a> — <span class="docstring-category">Module</span>.</div><div><div><p>A module for simulation of Clifford circuits.</p></div></div><a class="source-link" target="_blank" href="https://github.com/Krastanov/SimpleClifford/blob/59523df16d264f41cbefbfabf43715f7da6fbda5/src/SimpleClifford.jl#L1-L3">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="SimpleClifford.CliffordOperator" href="#SimpleClifford.CliffordOperator"><code>SimpleClifford.CliffordOperator</code></a> — <span class="docstring-category">Type</span>.</div><div><div><p>Clifford Operator specified by the mapping of the basis generators.</p><pre><code class="language-julia-repl">julia&gt; CNOT
+X_ ⟼ + XX
+_X ⟼ + _X
+Z_ ⟼ + Z_
+_Z ⟼ + ZZ
+
+julia&gt; phase_gate = C&quot;Y
+                      Z&quot;
+X ⟼ + Y
+Z ⟼ + Z
+
+julia&gt; stab = S&quot;XI
+                IZ&quot;;
+
+julia&gt; entangled = CNOT*stab
++ XX
++ ZZ</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/Krastanov/SimpleClifford/blob/59523df16d264f41cbefbfabf43715f7da6fbda5/src/SimpleClifford.jl#L926-L948">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="SimpleClifford.PauliOperator" href="#SimpleClifford.PauliOperator"><code>SimpleClifford.PauliOperator</code></a> — <span class="docstring-category">Type</span>.</div><div><div><p>A multi-qubit Pauli operator (<span>$±\{1,i\}\{I,Z,X,Y\}^{\otimes n}$</span>).</p><p>A Pauli can be constructed with the <code>P</code> custom string macro or by building up one through products and tensor products of smaller operators.</p><pre><code class="language-julia-repl">julia&gt; pauli3 = P&quot;-iXYZ&quot;
+-iXYZ
+
+julia&gt; pauli4 = 1im * pauli3 ⊗ X
++ XYZX
+
+julia&gt; Z*X
++iY</code></pre><p>We use a typical F(2,2) encoding internally. The X and Z bits are stored in a single concatenated padded array of UInt64 chunks of a bit array.</p><pre><code class="language-julia-repl">julia&gt; p = P&quot;-IZXY&quot;;
+
+julia&gt; p.xz
+2-element Array{UInt64,1}:
+ 0x000000000000000c
+ 0x000000000000000a</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/Krastanov/SimpleClifford/blob/59523df16d264f41cbefbfabf43715f7da6fbda5/src/SimpleClifford.jl#L47-L75">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="SimpleClifford.Stabilizer" href="#SimpleClifford.Stabilizer"><code>SimpleClifford.Stabilizer</code></a> — <span class="docstring-category">Type</span>.</div><div><div><p>Stabilizer, i.e. a list of commuting multi-qubit Hermitian Pauli operators.</p><p>Instances can be created with the <code>S</code> custom string macro or as direct sum of other stabilizers.</p><pre><code class="language-julia-repl">julia&gt; s = S&quot;XXX
+             ZZI
+             IZZ&quot;
++ XXX
++ ZZ_
++ _ZZ
+
+julia&gt; s⊕s
++ XXX___
++ ZZ____
++ _ZZ___
++ ___XXX
++ ___ZZ_
++ ____ZZ</code></pre><p>It has an indexing API, looking like a list of <code>PauliOperator</code>s.</p><pre><code class="language-julia-repl">julia&gt; s[2]
++ ZZ_</code></pre><p>Pauli operators can act directly on the a stabilizer.</p><pre><code class="language-julia-repl">julia&gt; P&quot;YYY&quot; * s
+- XXX
++ ZZ_
++ _ZZ</code></pre><p>There are no automatic checks for correctness (i.e. independence of all rows, commutativity of all rows, hermiticity of all rows). The rank (number of rows) is permitted to be less than the number of qubits (number of columns): canonilization, projection, etc. continue working in that case.</p><p>See also: <a href="#SimpleClifford.PauliOperator"><code>PauliOperator</code></a>, <a href="#SimpleClifford.canonicalize!-Tuple{Stabilizer}"><code>canonicalize!</code></a></p></div></div><a class="source-link" target="_blank" href="https://github.com/Krastanov/SimpleClifford/blob/59523df16d264f41cbefbfabf43715f7da6fbda5/src/SimpleClifford.jl#L151-L196">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="SimpleClifford.canonicalize!-Tuple{Stabilizer}" href="#SimpleClifford.canonicalize!-Tuple{Stabilizer}"><code>SimpleClifford.canonicalize!</code></a> — <span class="docstring-category">Method</span>.</div><div><div><p>Canonicalize a stabilizer (in place).</p><p>Assumes the input is a valid stabilizer (all operators commute and have real phases). It permits redundant generators and identity generators.</p><pre><code class="language-julia-repl">julia&gt; ghz = S&quot;XXXX
+               ZZII
+               IZZI
+               IIZZ&quot;;
+
+julia&gt; canonicalize!(ghz)
++ XXXX
++ Z__Z
++ _Z_Z
++ __ZZ
+
+julia&gt; canonicalize!(S&quot;XXXX
+                       IZZI
+                       IIZZ&quot;)
++ XXXX
++ _Z_Z
++ __ZZ
+
+julia&gt; canonicalize!(S&quot;XXXX
+                       ZZII
+                       IZZI
+                       IZIZ
+                       IIZZ&quot;)
++ XXXX
++ Z__Z
++ _Z_Z
++ __ZZ
++ ____</code></pre><p>Based on arxiv:1210.6646. See arxiv:0505036 for other types of canonicalization.</p></div></div><a class="source-link" target="_blank" href="https://github.com/Krastanov/SimpleClifford/blob/59523df16d264f41cbefbfabf43715f7da6fbda5/src/SimpleClifford.jl#L459-L498">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="SimpleClifford.comm-Tuple{PauliOperator,PauliOperator}" href="#SimpleClifford.comm-Tuple{PauliOperator,PauliOperator}"><code>SimpleClifford.comm</code></a> — <span class="docstring-category">Method</span>.</div><div><div><p>Check whether two operators commute.</p><p><code>0x0</code> if they commute, <code>0x1</code> if they anticommute.</p><pre><code class="language-julia-repl">julia&gt; P&quot;XX&quot;*P&quot;ZZ&quot;, P&quot;ZZ&quot;*P&quot;XX&quot;
+(- YY, - YY)
+
+julia&gt; comm(P&quot;ZZ&quot;, P&quot;XX&quot;)
+0x00
+
+julia&gt; comm(P&quot;IZ&quot;, P&quot;XX&quot;)
+0x01</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/Krastanov/SimpleClifford/blob/59523df16d264f41cbefbfabf43715f7da6fbda5/src/SimpleClifford.jl#L328-L343">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="SimpleClifford.generate!-Tuple{PauliOperator,Stabilizer}" href="#SimpleClifford.generate!-Tuple{PauliOperator,Stabilizer}"><code>SimpleClifford.generate!</code></a> — <span class="docstring-category">Method</span>.</div><div><div><p>Generate a Pauli operator by using operators from a given the Stabilizer.</p><p><strong>It assumes the stabilizer is already canonicalized.</strong> It modifies the Pauli operator in place. It assumes the operator can be generated up to a phase. That phase is left in the modified operator, which should be the identity up to a phase. Returns the new operator and the list of indices denoting the elements of <code>stabilizer</code> that were used for the generation.</p><pre><code class="language-julia-repl">julia&gt; ghz = S&quot;XXXX
+               ZZII
+               IZZI
+               IIZZ&quot;;
+
+julia&gt; canonicalize!(ghz)
++ XXXX
++ Z__Z
++ _Z_Z
++ __ZZ
+
+julia&gt; generate!(P&quot;-ZIZI&quot;, ghz)
+(- ____, [2, 4])</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/Krastanov/SimpleClifford/blob/59523df16d264f41cbefbfabf43715f7da6fbda5/src/SimpleClifford.jl#L656-L680">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="SimpleClifford.prodphase-Tuple{AbstractArray{UInt64,1},AbstractArray{UInt64,1}}" href="#SimpleClifford.prodphase-Tuple{AbstractArray{UInt64,1},AbstractArray{UInt64,1}}"><code>SimpleClifford.prodphase</code></a> — <span class="docstring-category">Method</span>.</div><div><div><p>Get the phase of the product of two Pauli operators.</p><p>Phase is encoded as F(4) in the low qubits of an UInt8.</p><pre><code class="language-julia-repl">julia&gt; P&quot;ZZZ&quot;*P&quot;XXX&quot;
+-iYYY
+
+julia&gt; prodphase(P&quot;ZZZ&quot;, P&quot;XXX&quot;)
+0x03
+
+julia&gt; prodphase(P&quot;XXX&quot;, P&quot;ZZZ&quot;)
+0x01</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/Krastanov/SimpleClifford/blob/59523df16d264f41cbefbfabf43715f7da6fbda5/src/SimpleClifford.jl#L275-L290">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="SimpleClifford.project!-Tuple{Stabilizer,PauliOperator}" href="#SimpleClifford.project!-Tuple{Stabilizer,PauliOperator}"><code>SimpleClifford.project!</code></a> — <span class="docstring-category">Method</span>.</div><div><div><p>Project the state of a Stabilizer on the two eigenspaces of a Pauli operator.</p><p>Assumes the input is a valid stabilizer. The projection is done inplace on that stabilizer and it does not modify the projection operator.</p><p>It returns</p><ul><li>a stabilizer that might not be in canonical form</li><li>the index of the row where the non-commuting operator was (that row is now equal to <code>pauli</code>; its phase is not updated and for a faithful measurement simulation it needs to be randomized by the user)</li><li>and the result of the projection if there was no non-cummuting operator (<code>nothing</code> otherwise)</li></ul><p>If <code>keep_result==false</code> that result of the projection in case of anticommutation is not computed, sparing a canonicalization operation.</p><p>Here is an example of a projection destroing entanglement:</p><pre><code class="language-julia-repl">julia&gt; ghz = S&quot;XXXX
+               ZZII
+               IZZI
+               IIZZ&quot;;
+
+julia&gt; canonicalize!(ghz)
++ XXXX
++ Z__Z
++ _Z_Z
++ __ZZ
+
+julia&gt; state, anticom_index, result = project!(ghz, P&quot;ZIII&quot;);
+
+julia&gt; state
++ Z___
++ Z__Z
++ _Z_Z
++ __ZZ
+
+julia&gt; canonicalize!(state)
++ Z___
++ _Z__
++ __Z_
++ ___Z
+
+julia&gt; anticom_index, result
+(1, nothing)</code></pre><p>And an example of projection consistent with the stabilizer state.</p><pre><code class="language-julia-repl">julia&gt; s = S&quot;ZII
+             IXI
+             IIY&quot;;
+
+julia&gt; canonicalize!(s)
++ _X_
++ __Y
++ Z__
+
+julia&gt; state, anticom_index, result = project!(s, P&quot;-ZII&quot;);
+
+julia&gt; state
++ _X_
++ __Y
++ Z__
+
+julia&gt; anticom_index, result
+(0, 0x02)</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/Krastanov/SimpleClifford/blob/59523df16d264f41cbefbfabf43715f7da6fbda5/src/SimpleClifford.jl#L726-L796">source</a></section><footer><hr/></footer></article></body></html>
