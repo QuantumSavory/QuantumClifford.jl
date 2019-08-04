@@ -15,5 +15,5 @@ authors = "Stefan Krastanov",
 )
 
 deploydocs(
-    repo = "https://github.com/Krastanov/SimpleClifford.git"
+    repo = "github.com/Krastanov/SimpleClifford.git"
 )
