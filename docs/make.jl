@@ -12,6 +12,11 @@ sitename = "SimpleClifford.jl",
 format = Documenter.HTML(),
 modules = [SimpleClifford],
 authors = "Stefan Krastanov",
+pages = [
+"SimpleClifford.jl" => "index.md",
+"Manual" => "manual.md",
+"API" => "API.md"
+]
 )
 
 deploydocs(

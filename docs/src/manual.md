@@ -8,7 +8,10 @@ end
 
 # Pauli Operators
 
-They are stored in memory as a phase (a single byte where `0x0,0x1,0x2,0x3` corresponds to $1,i,-1,-i$) and two bit-arrays, for X and for Z components.
+The [`PauliOperator`](@ref) object representes multi-qubit Pauli operator
+(``±\{1,i\}\{I,Z,X,Y\}^{\otimes n}``). It is stored in memory as a phase (a
+single byte where `0x0,0x1,0x2,0x3` corresponds to $1,i,-1,-i$) and two
+bit-arrays, for X and for Z components.
 
 You can create them with a `P` string.
 
@@ -31,8 +34,8 @@ julia> P"I_XYZ"
 + __XYZ
 ```
 
-Multiplication with scalars or other Pauli operators works as expected,
-as well as tensor products of Pauli operators.
+Multiplication with scalars or other Pauli operators works as expected, as well
+as tensor products of Pauli operators.
 
 ```jldoctest
 julia> -1im*P"X"
@@ -45,7 +48,7 @@ julia> P"X" ⊗ P"Z"
 + XZ
 ```
 
-One can check for commutativity with `comm`.
+One can check for commutativity with [`comm`](@ref).
 
 ```jldoctest
 julia> comm(P"X",P"Z")
@@ -55,7 +58,7 @@ julia> comm(P"XX",P"ZZ")
 0x00
 ```
 
-And check the phase of a product with `prodphase`.
+And check the phase of a product with [`prodphase`](@ref).
 
 ```jldoctest
 julia> prodphase(P"X", P"Z")
@@ -83,13 +86,14 @@ julia> p[2] = (true, true);
 julia> p
 + _Y_
 ```
-Including various permutation methods and fancy indexing:
+
+Including fancy indexing:
 
 ```jldoctest
-julia> permute(P"XYZ", [3,1,2])
-+ ZXY
-
 julia> P"IXYZ"[[2,3]]
++ XY
+
+julia> P"IXYZ"[[false,true,true,false]]
 + XY
 ```
 
@@ -117,9 +121,12 @@ julia> P"XYZI".xbit
 
 # Stabilizers
 
-They are stored in memory as a phase list and a bit-matrix for X and Z
-components. They can be created by an `S` string, or with a number of different
-constructors.
+A [`Stabilizer`](@ref) object is a tableau of Pauli operators. When the tableau is
+meant to represent a (pure or mixed) stabilizer state, all of these operators
+should commute (but that is not enforced, rather `Stabilizer` is a generic
+tableau data structure). It is stored in memory as a phase list and a bit-matrix
+for X and Z components. It can be instantiated by an `S` string, or with a
+number of different constructors.
 
 ```jldoctest
 julia> S"-XX
@@ -140,7 +147,6 @@ julia> Stabilizer([0x2, 0x0],
 + ZZ
 ```
 
-
 Direct sums can be performed,
 
 ```jldoctest
@@ -149,12 +155,8 @@ julia> S"-XX" ⊕ S"ZZ"
 + __ZZ
 ```
 
-Indexing operations are available, including fancy indexing. 2D indexing,
+Indexing operations are available, including fancy indexing, but 2D indexing,
 into the Pauli operators is not implemented (TODO).
-
-```jldoctest
-julia> #TODO
-```
 
 Consistency at creation is not verified so nonsensical stabilizers can be
 created, both in terms of content and shape.
@@ -193,7 +195,8 @@ julia> stab_to_gf2(s)
 
 # Canonicalization of Stabilizers
 
-Canonicalization (akin to Gaussian elimination over F(2,2)) is implemented.
+Canonicalization (akin to Gaussian elimination over F(2,2)) is implemented in
+the [`canonicalize!`](@ref) function.
 
 ```jldoctest
 julia> s = S"-XXX
@@ -206,7 +209,8 @@ julia> canonicalize!(s)
 + ___
 ```
 
-If phases are inconsequential, the operations can be faster by not tracking and updating them.
+If phases are inconsequential, the operations can be faster by not tracking and
+updating them.
 
 ```jldoctest
 julia> s = S"-XXX
@@ -244,9 +248,10 @@ julia> s = S"-XXX
              -IZZ";
 ```
 
-The `project!` function returns the new stabilizer, the index where the anticommutation was detected,
-and the result of the projection (`nothing` being an undetermined result). For instance
-here we project on an operator that does not commute with all stabilizer generators.
+The [`project!`](@ref) function returns the new stabilizer, the index where the
+anticommutation was detected, and the result of the projection (`nothing` being
+an undetermined result). For instance here we project on an operator that does
+not commute with all stabilizer generators.
 
 ```jldoctest proj
 julia> project!(copy(s), P"ZII")
@@ -265,12 +270,13 @@ julia> project!(copy(s), P"-ZZI")
 - _ZZ, 0, 0x02)
 ```
 
-When the projection is consistent with the stabilizer (i.e. the mesurement result is not `nothing`),
-this would trigger an expensive canonicalization procedure in order to calculate the measurement
-result (unless we are using more advanced data structure to represent the state).
-If all you want to know is whether the projection is consistent with the stabilizer, but
-you do not care about the measurement result, you can skip the canonicalization and calculation of
-the result.
+When the projection is consistent with the stabilizer (i.e. the measurement
+result is not `nothing`), this would trigger an expensive canonicalization
+procedure in order to calculate the measurement result (unless we are using more
+advanced data structures to represent the state, which are discussed later). If
+all you want to know is whether the projection is consistent with the
+stabilizer, but you do not care about the measurement result, you can skip the
+canonicalization and calculation of the result.
 
 ```jldoctest proj
 julia> project!(copy(s), P"-ZZI", keep_result=false)
@@ -279,7 +285,8 @@ julia> project!(copy(s), P"-ZZI", keep_result=false)
 - _ZZ, 0, nothing)
 ```
 
-Lastly, in either case, you can skip the calculation of the phases as well, if they are unimportant.
+Lastly, in either case, you can skip the calculation of the phases as well, if
+they are unimportant.
 
 ```jldoctest proj
 julia> project!(copy(s), P"ZZI", phases=false)
@@ -290,7 +297,10 @@ julia> project!(copy(s), P"ZZI", phases=false)
 
 # Generating a Pauli operator with Stabilizer generators
 
-i.e. checking for independence. This particular function requires the stabilizer to be already canonicalized.
+The [`generate!`](@ref) function attempts to generate a Pauli operator by
+multiplying together the operators belonging to a given stabilizer (or reports
+their independence). This particular function requires the stabilizer to be
+already canonicalized.
 
 ```jldoctest gen
 julia> s = S"-XXX
@@ -304,10 +314,9 @@ julia> s = canonicalize!(s)
 ```
 
 It modifies the Pauli operator in place, reducing it to identity if possible.
-The leftover phase is present to indicate if the phase itself could not have been canceled.
-The list of indices specifies which rows of the stabilizer were used to generated the
-desired Pauli operator.
-
+The leftover phase is present to indicate if the phase itself could not have
+been canceled. The list of indices specifies which rows of the stabilizer were
+used to generated the desired Pauli operator.
 
 ```jldoctest gen
 julia> generate!(P"XYY", s)
@@ -321,7 +330,8 @@ julia> generate!(P"XYY", s, phases=false)
 (+ ___, [1, 3])
 ```
 
-If the Pauli operator can not be generated by the stabilizer, `nothing` value is returned.
+If the Pauli operator can not be generated by the stabilizer, `nothing` value is
+returned.
 
 ```jldoctest gen
 julia> generate!(P"ZZZ", s)
@@ -333,7 +343,10 @@ julia> generate!(P"YYY", s)
 
 # Clifford Operators
 
-A number of predefined Clifford operators are available.
+The [`CliffordOperator`](@ref) structure represents a linear mapping between
+stabilizers (which should also preserve commutation relationships, but that is
+not checked at instantiation). A number of predefined Clifford operators are
+available.
 
 ```jldoctest
 julia> Hadamard
@@ -355,7 +368,8 @@ X ⟼ + X
 Z ⟼ + Z
 ```
 
-Chaining and tensor products are possible (but slow (TODO)). Same for qubit permutations.
+Chaining and tensor products are possible (but slow, improving which is on the
+TODO list). Same for qubit permutations.
 
 ```jldoctest
 julia> Hadamard ⊗ Phase
@@ -367,10 +381,7 @@ _Z ⟼ + _Z
 julia> Hadamard * Phase
 X ⟼ - Y
 Z ⟼ + X
-```
 
-
-```jldoctest
 julia> permute(CNOT, [2,1])
 X_ ⟼ + X_
 _X ⟼ + XX
@@ -379,8 +390,8 @@ _Z ⟼ + _Z
 ```
 
 You can create custom Clifford operators with C-strings or with a list of Pauli
-operators. TODO: creating them by using a Stabilizer or by using boolean matrices.
-
+operators. It is on the TODO list to be able to create them by using a
+Stabilizer or by using boolean matrices.
 
 ```jldoctest
 julia> C"-ZZ
@@ -399,8 +410,8 @@ Z_ ⟼ - X_
 _Z ⟼ + XX
 ```
 
-Naturally, the operators can be applied to stabilizer states. This includes
-high performance in-place operations (and the phase can be neglected with
+Naturally, the operators can be applied to stabilizer states. This includes high
+performance in-place operations (and the phase can be neglected with
 `phases=false` for faster computation).
 
 ```jldoctest
@@ -413,9 +424,11 @@ julia> apply!(s,CNOT)
 + XX
 ```
 
-TODO: Small Clifford operators can be applied to large stabilizers by specifying the qubit indices.
+It is on the TODO list to permit small Clifford operators can be applied to
+large stabilizers by specifying the qubit indices.
 
-Pauli operators act as Clifford operators too (but they are rather boring, as they only change signs).
+Pauli operators act as Clifford operators too (but they are rather boring, as
+they only change signs).
 
 ```jldoctest
 julia> P"XII" * S"ZXX"
@@ -425,9 +438,8 @@ julia> P"XII" * S"ZXX"
 # Destabilizers
 
 Slightly abusing the name: What we call "destabilizers" here is a stabilizer and
-its destabilizing operators saved together. They are initialized from a
-stabilizer.
-
+its destabilizing operators saved together. They are implmented with the
+[`Destabilizer`](@ref) object and are initialized from a stabilizer.
 
 ```jldoctest destab
 julia> s=S"-XXX
@@ -444,7 +456,7 @@ julia> d = calculate_destabilizer(s)
 + _ZZ
 ```
 
-With convenience properties to extract only the stabilizer and destabilizer
+They have convenience properties to extract only the stabilizer and destabilizer
 pieces:
 
 ```jldoctest destab
@@ -460,7 +472,8 @@ julia> d.destabilizer
 ```
 
 Importantly commuting projections are much faster when tracking the destabilizer
-as canonicalization is not necessary.
+as canonicalization is not necessary (an ``\mathcal{O}(n^2)`` because it avoids
+the expensive ``\mathcal{O}(n^3)`` canonicalization operation.
 
 ```jldoctest destab
 julia> project!(d,P"ZZI")
@@ -499,6 +512,8 @@ julia> apply!(d,CNOT⊗Hadamard)
 + ZZX
 ```
 
-# TODO: Mixed Stabilizer States
+# Mixed Stabilizer States
 
-Currently we deal manually with mixed states, as they are not implemented inside the library.
+Mixed stabilizer states are implemented with [`MixedStabilizer`](@ref) and
+[`MixedDestabilizer`](@ref), the latter of which is the preferred data structure
+for most tasks. Their documentation is on the TODO list.

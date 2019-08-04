@@ -386,11 +386,6 @@ function Base.:(-)(p::PauliOperator)
     p
 end
 
-# TODO create Base.permute! and getindex(..., permutation_array)
-function permute(p::PauliOperator,perm::AbstractArray{T,1} where T)
-    PauliOperator(p.phase[],p.xbit[perm],p.zbit[perm])
-end
-
 const I = P"I"
 const Z = P"Z"
 const X = P"X"
@@ -569,7 +564,7 @@ end
 
 function colpermute!(s::Stabilizer, perm) # TODO rename and make public, same as permute and maybe Base.permute!
     for r in 1:size(s,1)
-        s[r] = permute(s[r], perm)
+        s[r] = s[r][perm]
     end
     s
 end
@@ -1241,6 +1236,13 @@ function destabilizer_generators(stab::Stabilizer)
     dest, stab
 end
 
+"""
+A tableau representation of a pure stabilizer state. The tableau tracks the
+destabilizers as well, for efficient projections. On initialization there are
+no checks that the provided state is indeed pure. This enables the use of this
+data structure for mixed stabilizer state, but a better choice would be to use
+[`MixedDestabilizer`](@ref).
+"""
 struct Destabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}}
     s::Stabilizer{Tv,Tm}
 end
@@ -1338,6 +1340,11 @@ end
 # Mixed Stabilizer states
 ##############################
 
+"""
+A slight improvement of the [`Stabilizer`](@ref) data structure that enables
+more naturally and completely the treatment of mixed states, in particular when
+the [`project!`](@ref) function is used.
+"""
 mutable struct MixedStabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}}
     s::Stabilizer{Tv,Tm} # TODO assert size on construction
     rank::Int
@@ -1400,6 +1407,10 @@ end
 # Mixed Destabilizer states
 ##############################
 
+"""
+A tableau representation for mixed stabilizer states that keeps track of the
+destabilizers in order to provide efficient projection operations.
+"""
 mutable struct MixedDestabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}}
     s::Stabilizer{Tv,Tm} # TODO assert size on construction
     rank::Int
