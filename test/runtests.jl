@@ -78,6 +78,14 @@ end
         @test P"-iXYZ".nqbits == 3
         @test size(P"-iXYZ") == (3,)
     end
+    @testset "Indexing" begin
+        @test eachindex(P"IXYZ") == 1:4
+        @test P"IXYZ"[3] == (true, true)
+        p = P"IXYZ"
+        @test p[[3,2]] == P"YX"
+        p[4] = (true,false)
+        @test p == P"IXYX"
+    end
     @testset "Elementary operations" begin
         @test P"X"*P"Z" == P"-iY"
         @test comm(P"XX",P"YY") == 0x0

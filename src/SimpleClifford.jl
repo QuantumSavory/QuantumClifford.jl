@@ -131,9 +131,9 @@ end
 
 Base.firstindex(p::PauliOperator) = 1
 
-Base.lastindex(p::PauliOperator) = length(p.nqbits)
+Base.lastindex(p::PauliOperator) = p.nqbits
 
-Base.eachindex(p::PauliOperator) = 1:length(p.nqbits)
+Base.eachindex(p::PauliOperator) = 1:p.nqbits
 
 Base.size(pauli::PauliOperator) = (pauli.nqbits,)
 
@@ -403,6 +403,7 @@ const Y = P"Y"
     end
 end
 
+# TODO document as a more efficient way of swaping only two columns (instead of using permutation indexing)
 @inline function colswap!(s::Stabilizer, i, j)
     lowbit = UInt64(1)
     ibig = _div64(i-1)+1
