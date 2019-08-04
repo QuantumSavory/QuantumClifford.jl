@@ -3,10 +3,14 @@ A module for simulation of Clifford circuits.
 """
 module SimpleClifford
 
-# TODO do not mix up getindex and view (currently getindex is sometimes a view and there is no official view)
 # TODO document phases=false
 
-# TODO should PauliOperator be mutable?
+# TODO PauliOperator should be mutable so that the phase is not a zero-dim
+# array, but to do that without sacrificing functionality we need to implement
+# views. That would also fix the current issue of getindex returning a view,
+# instead of us having a dedicated view type.
+
+# TODO remove most of the convenience properties and make helper functions.
 
 # TODO Operations between Clifford operators are very slow
 
@@ -109,6 +113,7 @@ macro P_str(a)
 end
 
 Base.getindex(p::PauliOperator, i::Int) = (p.xz[_div64(i-1)+1] & UInt64(0x1)<<_mod64(i-1))!=0x0, (p.xz[end>>1+_div64(i-1)+1] & UInt64(0x1)<<_mod64(i-1))!=0x0
+Base.getindex(p::PauliOperator, r) = PauliOperator(p.phase[], p.xbit[r], p.zbit[r])
 
 function Base.setindex!(p::PauliOperator, (x,z)::Tuple{Bool,Bool}, i)
     if x
