@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Mixed Stabilizer States · SimpleClifford.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>SimpleClifford.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">SimpleClifford.jl</a></li><li><a class="toctext" href="../manual/">Manual</a></li><li><a class="toctext" href="../datastructures/">Datastructure Choice</a></li><li><a class="toctext" href="../API/">API</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Mixed Stabilizer States</a></li></ul><a class="edit-page" href="https://github.com/Krastanov/SimpleClifford/blob/master/docs/src/mixed.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Mixed Stabilizer States</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Mixed-Stabilizer-States-1" href="#Mixed-Stabilizer-States-1">Mixed Stabilizer States</a></h1><p>The <a href="../API/#SimpleClifford.Stabilizer"><code>Stabilizer</code></a> and <a href="../API/#SimpleClifford.Destabilizer"><code>Destabilizer</code></a> have some support for mixed states (by being initialized with an incomplete list of stabilizer generators), but for most purposes one would use the <code>Mixed*</code> data structures.</p><p>Mixed stabilizer states are implemented with <a href="../API/#SimpleClifford.MixedStabilizer"><code>MixedStabilizer</code></a> and <a href="../API/#SimpleClifford.MixedDestabilizer"><code>MixedDestabilizer</code></a>, the latter of which is the preferred data structure for most tasks as it is much faster by virtue of tracking the destabilizer generators.</p><pre><code class="language-julia-repl">julia&gt; s = S&quot;XXX
+             IZZ&quot;;
+
+julia&gt; Destabilizer(s)
++ Z__
++ _X_
+━━━━━
++ XXX
++ _ZZ</code></pre><p>Unlike <code>Destabilizer</code>, <code>MixedDestabilizer</code> also tracks the logical operation generators.</p><pre><code class="language-none">julia&gt; m = MixedDestabilizer(s)
+Rank 2 stabilizer
++ Z__
++ _X_
+━━━━━
++ _XX
+━━━━━
++ XXX
++ _ZZ
+━━━━━
++ Z_Z
+
+julia&gt; m.stabilizer
++ XXX
++ _ZZ
+
+julia&gt; m.destabilizer
++ Z__
++ _X_
+
+julia&gt; m.logicalx
++ _XX
+
+julia&gt; m.logicalz
++ Z_Z</code></pre><h1><a class="nav-anchor" id="Gottesman-canonicalization-1" href="#Gottesman-canonicalization-1">Gottesman canonicalization</a></h1><p>To obtain the logical operators we perform a different type of canonicalization, described in Gottesman&#39;s thesis and implemented in <a href="@ref"><code>canonicalize_gott!</code></a>. Unlike <a href="../API/#SimpleClifford.canonicalize!-Tuple{Stabilizer}"><code>canonicalize!</code></a> which uses only row operations, <code>canonicalize_gott!</code> performs column swaps as well. <code>MixedDestabilizer</code> undoes those swaps by default when instantiated, but that behavior can be turned off, if you prefer to work with the canonicalized tableau.</p><pre><code class="language-none">julia&gt; s = S&quot;XXX
+             ZIZ&quot;;
+
+julia&gt; MixedDestabilizer(s)
+Rank 2 stabilizer
++ Z__
++ __X
+━━━━━
++ _X_
+━━━━━
++ XXX
++ Z_Z
+━━━━━
++ ZZ_
+
+julia&gt; MixedDestabilizer(s; undoperm=false)
+Rank 2 stabilizer
++ Z__
++ _X_
+━━━━━
++ __X
+━━━━━
++ XXX
++ ZZ_
+━━━━━
++ Z_Z</code></pre><p><code>Destabilizer</code> and <code>MixedStabilizer</code> do not use and column swaps on instantiation as they do not track the logical operators.</p><footer><hr/></footer></article></body></html>
