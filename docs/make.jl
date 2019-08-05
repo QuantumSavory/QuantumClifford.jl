@@ -15,6 +15,7 @@ authors = "Stefan Krastanov",
 pages = [
 "SimpleClifford.jl" => "index.md",
 "Manual" => "manual.md",
+"Datastructure Choice" => "datastructures.md",
 "API" => "API.md"
 ]
 )
