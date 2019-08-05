@@ -16,6 +16,7 @@ module SimpleClifford
 
 import LinearAlgebra
 import Random
+import RecipesBase
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     @S_str, Stabilizer, prodphase, comm, ⊕, check_allrowscommute,
@@ -1655,6 +1656,27 @@ function random_singlequbitop(n)
                          vcat((vcat(x2x.chunks,z2x.chunks)' for (x2x,z2x) in zip(xtox,ztox))...),
                          vcat((vcat(x2z.chunks,z2z.chunks)' for (x2z,z2z) in zip(xtoz,ztoz))...)
         )
+end
+
+##############################
+# Plotting
+##############################
+
+RecipesBase.@recipe function f(s::Stabilizer; xzcomponents=:split)
+    seriestype  := :heatmap
+    aspectratio := :equal
+    yflip := true
+    colorbar := false
+    grid := false
+    framestyle := :none
+    if xzcomponents==:split
+        stab_to_gf2(s)
+    elseif xzcomponents==:together
+        h = stab_to_gf2(s)
+        h[:,1:end÷2]*2 + h[:,end÷2+1:end]
+    else
+        throw(ErrorException("`xzcomponents` should be `:split` or `:together`"))
+    end
 end
 
 end #module
