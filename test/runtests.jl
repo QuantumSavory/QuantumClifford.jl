@@ -65,7 +65,7 @@ Random.seed!(42)
 
 @testset "Doctests" begin
     DocMeta.setdocmeta!(SimpleClifford, :DocTestSetup, :(using SimpleClifford); recursive=true)
-    doctest(SimpleClifford; manual = false)
+    doctest(SimpleClifford)
 end
 
 @testset "Pauli Operators" begin

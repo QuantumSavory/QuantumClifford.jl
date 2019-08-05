@@ -1042,7 +1042,7 @@ end
 # TODO create Base.permute! and getindex(..., permutation_array)
 function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this is extremely slow stupid implementation
     ops = getallpaulis_(c)
-    CliffordOperator([permute(ops[i],p) for i in 1:2*c.nqbits][vcat(p,p.+c.nqbits)])
+    CliffordOperator([ops[i][p] for i in 1:2*c.nqbits][vcat(p,p.+c.nqbits)])
 end
 
 function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
