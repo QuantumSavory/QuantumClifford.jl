@@ -24,13 +24,11 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     apply!,
     CliffordOperator, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
+    perm_inverse, perm_product,
     single_z, single_x,
     random_invertible_gf2,
     random_pauli, random_stabilizer, random_singlequbitop,
-    Destabilizer, calculate_destabilizer,
-    MixedStabilizer,
-    MixedDestabilizer, calculate_mixed_destabilizer,
-    BadDataStructure
+    Destabilizer, MixedStabilizer, MixedDestabilizer, BadDataStructure
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -226,6 +224,9 @@ end
 
 Base.getindex(stab::Stabilizer, i::Int) = PauliOperator((@view stab.phases[i]), stab.nqbits, (@view stab.xzs[i,:]))
 Base.getindex(stab::Stabilizer, r) = Stabilizer((@view stab.phases[r]), stab.nqbits, (@view stab.xzs[r,:]))
+Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
+
+Base.iterate(stab::Stabilizer, state=1) = state>length(stab) ? nothing : (stab[state], state+1)
 
 function Base.setindex!(stab::Stabilizer, pauli::PauliOperator, i)
     stab.phases[i] = pauli.phase[]
@@ -261,6 +262,8 @@ Base.eachindex(stab::Stabilizer) = 1:length(stab.phases)
 
 Base.size(stab::Stabilizer) = (length(stab.phases),stab.nqbits)
 Base.size(stab::Stabilizer,i) = size(stab)[i]
+
+Base.length(stab::Stabilizer) = length(stab.phases)
 
 Base.show(io::IO, s::Stabilizer) = print(io,
                                          join([["+ ","+i","- ","-i"][s[i].phase[]+1]*xz2str(s[i].xbit,s[i].zbit)
@@ -1201,10 +1204,12 @@ function gf2_H_to_G(H)
         I[i,i]=true
     end
     G = hcat(P,I)
-    inverse_perm = [findfirst(a->l==a,sindx) for l in 1:length(sindx)]
-    G[:,inverse_perm]
+    G[:,perm_inverse(sindx)]
 end
 
+function perm_inverse(perm)
+    [findfirst(a->l==a,perm) for l in 1:length(perm)]
+end
 ##############################
 # Error classes
 ##############################
@@ -1218,7 +1223,7 @@ end
 # Destabilizer formalism
 ##############################
 
-function destabilizer_generators(stab::Stabilizer)
+function destabilizer_generators(stab::Stabilizer)::Tuple{Stabilizer,Stabilizer}
     stab = canonicalize!(copy(stab))
     dest = zero(stab)
     s = 1
@@ -1246,12 +1251,14 @@ data structure for mixed stabilizer state, but a better choice would be to use
 """
 struct Destabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}}
     s::Stabilizer{Tv,Tm}
-end
-
-function calculate_destabilizer(stab)
-    dest,stab = destabilizer_generators(stab)
-    s = invoke(vcat, Tuple{Stabilizer,Stabilizer}, dest,stab) # TODO why is this invoke necessary!?
-    Destabilizer(s)
+    function Destabilizer(s;noprocessing=false)
+        if noprocessing
+            new{typeof(s.phases),typeof(s.xzs)}(s)
+        else
+            s = vcat(destabilizer_generators(s)...)
+            new{typeof(s.phases),typeof(s.xzs)}(s)
+        end
+    end
 end
 
 function Base.show(io::IO, d::Destabilizer)
@@ -1260,7 +1267,7 @@ function Base.show(io::IO, d::Destabilizer)
     show(io, d.stabilizer)
 end
 
-Base.copy(d::Destabilizer) = Destabilizer(copy(d.s))
+Base.copy(d::Destabilizer) = Destabilizer(copy(d.s);noprocessing=true)
 
 function Base.getproperty(d::Destabilizer, name::Symbol)
     if name==:stabilizer
@@ -1417,8 +1424,8 @@ mutable struct MixedDestabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UI
     rank::Int
 end
 
-function calculate_mixed_destabilizer(stab)
-    stab, r, s = canonicalize_gott!(stab)
+function MixedDestabilizer(stab::Stabilizer; undoperm=true)
+    stab, r, s, permx, permz = canonicalize_gott!(stab)
     n = stab.nqbits
     tab = zero(Stabilizer, n*2, n)
     tab[n+1:n+r+s] = stab
@@ -1443,6 +1450,9 @@ function calculate_mixed_destabilizer(stab)
     Z = hcat(zeros(Bool,k,n),A2',zeros(Bool,k,s),i)
     sZ = Stabilizer(Z)
     tab[n+r+s+1:end] = sZ
+    if undoperm
+        tab = tab[:,perm_inverse(permx[permz])]
+    end
     MixedDestabilizer(tab, r+s)
 end
 

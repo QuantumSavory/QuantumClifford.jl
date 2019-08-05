@@ -109,12 +109,12 @@ end
 @testset "Pure and Mixed state initialization" begin
     @testset "Destabilizer initialization" begin
         for n in test_sizes
-            @test destab_looks_good(calculate_destabilizer(random_stabilizer(n)))
+            @test destab_looks_good(Destabilizer(random_stabilizer(n)))
         end
     end
     @testset "Mixed destabilizer initialization" begin
         for n in test_sizes[2:end]
-            @test mixed_destab_looks_good(calculate_mixed_destabilizer(random_stabilizer(rand(n÷2+1:n-4),n)))
+            @test mixed_destab_looks_good(MixedDestabilizer(random_stabilizer(rand(n÷2+1:n-4),n)))
         end
     end
 end
@@ -201,17 +201,17 @@ end
             s = canonicalize!(random_stabilizer(n))
             m = random_pauli(n;nophase=true)
             ps, anticom, res = project!(copy(s),m)
-            dps, danticom, dres = project!(calculate_destabilizer(copy(s)),m)
+            dps, danticom, dres = project!(Destabilizer(copy(s)),m)
             @test destab_looks_good(dps)
             @test anticom==danticom && res==dres && canonicalize!(ps)==canonicalize!(dps.stabilizer)
             m = single_z(n,1)
             ps, anticom, res = project!(copy(s),m)
-            dps, danticom, dres = project!(calculate_destabilizer(copy(s)),m)
+            dps, danticom, dres = project!(Destabilizer(copy(s)),m)
             @test destab_looks_good(dps)
             @test anticom==danticom && res==dres && canonicalize!(ps)==canonicalize!(dps.stabilizer)
             m = single_x(n,1)
             ps, anticom, res = project!(copy(s),m)
-            dps, danticom, dres = project!(calculate_destabilizer(copy(s)),m)
+            dps, danticom, dres = project!(Destabilizer(copy(s)),m)
             @test destab_looks_good(dps)
             @test anticom==danticom && res==dres && canonicalize!(ps)==canonicalize!(dps.stabilizer)
         end
@@ -219,9 +219,9 @@ end
     @testset "Anticommutation indices and NA results" begin
         s = S" XXX
               -ZZI"
-        ds = calculate_destabilizer(copy(s))
+        ds = Destabilizer(copy(s))
         ms = MixedStabilizer(copy(s))
-        mds = calculate_mixed_destabilizer(copy(s))
+        mds = MixedDestabilizer(copy(s))
 
         p = P"IZZ"
         ps, a, r = project!(copy(s),p)

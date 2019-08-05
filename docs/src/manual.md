@@ -446,7 +446,7 @@ julia> s=S"-XXX
            -ZZI
            +IZZ";
 
-julia> d = calculate_destabilizer(s)
+julia> d = Destabilizer(s)
 + Z__
 + X__
 + _X_
@@ -511,9 +511,3 @@ julia> apply!(d,CNOT⊗Hadamard)
 - Z_X
 + ZZX
 ```
-
-# Mixed Stabilizer States
-
-Mixed stabilizer states are implemented with [`MixedStabilizer`](@ref) and
-[`MixedDestabilizer`](@ref), the latter of which is the preferred data structure
-for most tasks. Their documentation is on the TODO list.
