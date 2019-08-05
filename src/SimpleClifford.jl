@@ -14,8 +14,8 @@ module SimpleClifford
 
 # TODO Operations between Clifford operators are very slow
 
-using LinearAlgebra
-using Random
+import LinearAlgebra
+import Random
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     @S_str, Stabilizer, prodphase, comm, ⊕, check_allrowscommute,
@@ -1628,7 +1628,7 @@ function random_stabilizer(n) # TODO this is vaguelly based on an unsupported sl
     Stabilizer(rand([0x0,0x2],n), cx, cz)
 end
 
-random_stabilizer(r,n) = random_stabilizer(n)[randperm(n)[1:r]]
+random_stabilizer(r,n) = random_stabilizer(n)[Random.randperm(n)[1:r]]
 
 function random_singlequbitop(n)
     xtox = [falses(n) for i in 1:n]
