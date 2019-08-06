@@ -24,6 +24,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     generate!, project!, reset_qubits!, traceout_qubits!,
     apply!,
     CliffordOperator, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
+    tensor_pow,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     perm_inverse, perm_product,
     single_z, single_x,
@@ -973,6 +974,8 @@ macro C_str(a)
     CliffordOperator(paulis)
 end
 
+Base.:(==)(l::CliffordOperator, r::CliffordOperator) = r.nqbits==l.nqbits && r.phases==l.phases && r.xztox==l.xztox && r.xztoz==l.xztoz
+
 function clifford_transpose(c::CliffordOperator)
     n = c.nqbits
     xtoxs = []
@@ -1093,6 +1096,29 @@ function apply!(s::Stabilizer, c::CliffordOperator, single_qbit_offset::Int)
     s
 end
 
+function tensor_pow(op::CliffordOperator,power::Integer,mem::Dict{Integer,CliffordOperator})
+    if power==1
+        return op
+    elseif haskey(mem,power)
+        return mem[power]
+    end
+    half,rest = divrem(power,2)
+    phalf = get!(mem,half) do
+        tensor_pow(op,half,mem)
+    end
+    res = phalf⊗phalf
+    if rest!=0
+        prest = get!(mem,rest) do
+            tensor_pow(op,half,mem)
+        end
+        res = res⊗prest
+    end
+    res
+end
+
+function tensor_pow(op::CliffordOperator,power::Integer)
+    tensor_pow(op,power,Dict{Integer,CliffordOperator}())
+end
 
 const CNOT = C"XX
                IX
