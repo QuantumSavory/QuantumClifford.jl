@@ -1339,6 +1339,7 @@ function Base.:(*)(p::AbstractCliffordOperator, d::Destabilizer; phases::Bool=tr
     apply!(s,p; phases=phases)
 end
 
+# TODO abstract class for states would be useful for simplere way of writing `apply` and `*`
 function apply!(d::Destabilizer, p::AbstractCliffordOperator; phases::Bool=true)
     apply!(d.stabilizer,p; phases=phases)
     apply!(d.destabilizer,p; phases=false)
@@ -1478,16 +1479,29 @@ Base.propertynames(d::MixedDestabilizer, private=false) = (:s, :stabilizer, :des
 function Base.show(io::IO, d::MixedDestabilizer)
     println(io, "Rank $(d.rank) stabilizer")
     show(io, d.destabilizer)
-    print(io, "\n━━" * "━"^size(d.s,2) * "\n")
-    show(io, d.logicalx)
-    print(io, "\n━━" * "━"^size(d.s,2) * "\n")
+    if d.rank != d.nqbits
+        print(io, "\n━━" * "━"^size(d.s,2) * "\n")
+        show(io, d.logicalx)
+        print(io, "\n━━" * "━"^size(d.s,2) * "\n")
+    else
+        print(io, "\n══" * "═"^size(d.s,2) * "\n")
+    end
     show(io, d.stabilizer)
-    print(io, "\n━━" * "━"^size(d.s,2) * "\n")
-    show(io, d.logicalz)
+    if d.rank != d.nqbits
+        print(io, "\n━━" * "━"^size(d.s,2) * "\n")
+        show(io, d.logicalz)
+    else
+        print(io, "\n══" * "═"^size(d.s,2) * "\n")
+    end
 end
 
 Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.s),d.rank)
 
+# TODO abstract class for states would be useful for simplere way of writing `apply` and `*`
+function apply!(d::MixedDestabilizer, p::AbstractCliffordOperator; phases::Bool=true)
+    apply!(d.s,p; phases=phases)
+    d
+end
 
 function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases)
     for i in r+1:n # TODO When phases=true, do I still need to track the phases of the logical operstors (does it have a physical meaning)?
