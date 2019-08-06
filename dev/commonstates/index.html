@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Useful States and Operators · SimpleClifford.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>SimpleClifford.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">SimpleClifford.jl</a></li><li><a class="toctext" href="../manual/">Manual</a></li><li><a class="toctext" href="../mixed/">Mixed States</a></li><li><a class="toctext" href="../datastructures/">Datastructure Choice</a></li><li class="current"><a class="toctext" href>Useful States and Operators</a><ul class="internal"><li class="toplevel"><a class="toctext" href="#Pauli-Operators-1">Pauli Operators</a></li><li class="toplevel"><a class="toctext" href="#Stabilizer-States-1">Stabilizer States</a></li><li><a class="toctext" href="#Mixed-states-1">Mixed states</a></li></ul></li><li><a class="toctext" href="../plotting/">Plotting</a></li><li><a class="toctext" href="../API/">API</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Useful States and Operators</a></li></ul><a class="edit-page" href="https://github.com/Krastanov/SimpleClifford/blob/master/docs/src/commonstates.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Useful States and Operators</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Useful-States-and-Operators-1" href="#Useful-States-and-Operators-1">Useful States and Operators</a></h1><p>There are numerous frequently used stabilizer states already implemented in this library.</p><h1><a class="nav-anchor" id="Pauli-Operators-1" href="#Pauli-Operators-1">Pauli Operators</a></h1><p>Single qubit <code>PauliOperator</code> is implemented in [<code>single_z</code>] and [<code>single_x</code>].</p><pre><code class="language-julia-repl">julia&gt; single_z(4,2)
++ _Z__
+
+julia&gt; single_x(4,3)
++ __X_</code></pre><p>All identity operators use <code>zero</code>.</p><pre><code class="language-julia-repl">julia&gt; zero(PauliOperator, 3)
++ ___
+
+julia&gt; zero(P&quot;XYZXYZ&quot;)
++ ______</code></pre><p>Random Pauli operators are implemented as well (with or without a random phase).</p><pre><code class="language-julia-repl">julia&gt; using Random; Random.seed!(2);
+
+julia&gt; random_pauli(4)
+- XYXX
+
+julia&gt; random_pauli(4; nophase=true)
++ _YYX</code></pre><h1><a class="nav-anchor" id="Stabilizer-States-1" href="#Stabilizer-States-1">Stabilizer States</a></h1><p>An all-identity stabilizer can be created with <code>zero</code>.</p><pre><code class="language-julia-repl">julia&gt; zero(Stabilizer, 3)
++ ___
++ ___
++ ___
+
+julia&gt; zero(Stabilizer, 2, 3)
++ ___
++ ___
+
+julia&gt; zero(S&quot;XIZ
+              YZX&quot;)
++ ___
++ ___</code></pre><p>Diagonal stabilizers in different bases are available as well, through <code>one</code>.</p><pre><code class="language-julia-repl">julia&gt; one(Stabilizer, 3)
++ Z__
++ _Z_
++ __Z
+
+julia&gt; one(Stabilizer, 3; basis=:Y)
++ Y__
++ _Y_
++ __Y
+
+julia&gt; one(S&quot;XX
+             ZZ&quot;)
++ Z_
++ _Z</code></pre><p>A random stabilizer can be created as well (consult the source code for exact ensemble, as there are caveats to the choice of distribution).</p><pre><code class="language-julia-repl">julia&gt; random_stabilizer(2,5)
+- Z_YXZ
++ YX_XX</code></pre><h2><a class="nav-anchor" id="Mixed-states-1" href="#Mixed-states-1">Mixed states</a></h2><p>Similarly, one can create a diagonal mixed state.</p><pre><code class="language-julia-repl">julia&gt; one(MixedDestabilizer, 2, 3)
+Rank 2 stabilizer
++ X__
++ _X_
+━━━━━
++ __X
+━━━━━
++ Z__
++ _Z_
+━━━━━
++ __Z</code></pre><footer><hr/><a class="previous" href="../datastructures/"><span class="direction">Previous</span><span class="title">Datastructure Choice</span></a><a class="next" href="../plotting/"><span class="direction">Next</span><span class="title">Plotting</span></a></footer></article></body></html>
