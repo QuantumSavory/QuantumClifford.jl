@@ -90,7 +90,7 @@ julia> random_stabilizer(2,5)
 - Z_YXZ
 + YX_XX
 ```
-## Mixed states
+## Mixed States
 
 Similarly, one can create a diagonal mixed state.
 

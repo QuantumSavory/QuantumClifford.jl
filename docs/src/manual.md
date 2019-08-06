@@ -238,7 +238,7 @@ julia> s
 + ___
 ```
 
-# Projective measurements
+# Projective Measurements
 
 To observe the effect of different projections, we will start with a GHZ state.
 
@@ -295,7 +295,7 @@ julia> project!(copy(s), P"ZZI", phases=false)
 - _ZZ, 0, 0x00)
 ```
 
-# Generating a Pauli operator with Stabilizer generators
+# Generating a Pauli Operator with Stabilizer Generators
 
 The [`generate!`](@ref) function attempts to generate a Pauli operator by
 multiplying together the operators belonging to a given stabilizer (or reports

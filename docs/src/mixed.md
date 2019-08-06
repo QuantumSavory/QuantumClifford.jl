@@ -58,7 +58,7 @@ julia> m.logicalz
 + Z_Z
 ```
 
-# Gottesman canonicalization
+# Gottesman Canonicalization
 
 To obtain the logical operators we perform a different type of canonicalization,
 described in Gottesman's thesis and implemented in [`canonicalize_gott!`](@ref).
@@ -96,5 +96,5 @@ Rank 2 stabilizer
 + Z_Z
 ```
 
-`Destabilizer` and `MixedStabilizer` do not use and column swaps on
+`Destabilizer` and `MixedStabilizer` do not use any column swaps on
 instantiation as they do not track the logical operators.
