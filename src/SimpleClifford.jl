@@ -1601,6 +1601,24 @@ Base.zero(::Type{Stabilizer}, n, m) = Stabilizer(zeros(UInt8,n),falses(n,m),fals
 Base.zero(::Type{Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(n,n))
 Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
 
+function Base.one(::Type{Stabilizer}, n; basis=:Z)
+    if basis==:X
+        Stabilizer(LinearAlgebra.I(n),falses(n,n))
+    elseif basis==:Y
+        Stabilizer(LinearAlgebra.I(n),LinearAlgebra.I(n))
+    elseif basis==:Z
+        Stabilizer(falses(n,n),LinearAlgebra.I(n))
+    else
+        throw(ErrorException("`basis` should be one of :X, :Y, or :Z"))
+    end
+end
+Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, s.nqbits; basis=basis)
+function Base.one(::Type{MixedDestabilizer}, r, n)
+    d = one(Stabilizer, n; basis=:X)
+    s = one(Stabilizer, n; basis=:Z)
+    MixedDestabilizer(vcat(d,s),r)
+end
+
 ##############################
 # Random objects
 ##############################
