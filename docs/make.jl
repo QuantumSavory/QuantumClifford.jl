@@ -17,6 +17,8 @@ pages = [
 "Manual" => "manual.md",
 "Mixed States" => "mixed.md",
 "Datastructure Choice" => "datastructures.md",
+"Useful States and Operators" => "commonstates.md",
+"Plotting" => "plotting.md",
 "API" => "API.md"
 ]
 )
