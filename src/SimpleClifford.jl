@@ -1526,32 +1526,32 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
     end
     if anticommutes == 0
         anticomlog = 0
-        logx = false
         for i in r+1:n # TODO use something like findfirst
             if comm(pauli,tab[i])!=0x0
                 anticomlog = i
-                logx = true
                 break
             end
         end
-        if anticomlog!=0
+        if anticomlog==0
             for i in n+r+1:2*n # TODO use something like findfirst
                 if comm(pauli,tab[i])!=0x0
-                    anticomlog = i#-n
+                    anticomlog = i
                     break
                 end
             end
         end
         if anticomlog!=0
-            if logx
+            if anticomlog<=n
                 rowswap!(tab, r+1+n, anticomlog)
-                rowswap!(tab, r+1, anticomlog+n)
+                n!=r+1 && rowswap!(tab, r+1, anticomlog+n)
             else
                 rowswap!(tab, r+1, anticomlog-n)
                 rowswap!(tab, r+1+n, anticomlog)
             end
             anticomm_update_rows(tab,pauli,r+1,n,r+1,phases)
             d.rank += 1
+            tab[r+1] = tab[n+r+1]
+            tab[n+r+1] = pauli
             result = nothing
         else
             if keep_result

@@ -31,7 +31,7 @@ function mixed_destab_looks_good(destabilizer)
     d = destabilizer.destabilizer
     x = destabilizer.logicalx
     z = destabilizer.logicalz
-    good = stab_looks_good(s)
+    good = check_allrowscommute(s)
     for i in eachindex(s)
         good &= comm(s[i],d[i])==0x1
         for j in eachindex(s)
@@ -268,6 +268,31 @@ end
         @test pmds.rank==2
         @test a==2 && isnothing(r)
         @test canonicalize!(ps)==canonicalize!(pms.stabilizer)==canonicalize!(pds.stabilizer)==canonicalize!(pmds.stabilizer)
+    end
+    @testset "Mixed Destabilizer projection on logical operator" begin
+        stab = one(MixedDestabilizer, 2,4)
+        projzl = single_z(4,1)
+        projzr = single_z(4,4)
+        projxl = single_x(4,1)
+        projxr = single_x(4,4)
+        s, a, r = project!(copy(stab), projzl)
+        @test mixed_destab_looks_good(s)
+        @test a==0 && r==0x0       && s.stabilizer==S"Z___
+                                                      _Z__"
+        s, a, r = project!(copy(stab), projxl)
+        @test mixed_destab_looks_good(s)
+        @test a==1 && isnothing(r) && s.stabilizer==S"X___
+                                                      _Z__"
+        s, a, r = project!(copy(stab), projzr)
+        @test mixed_destab_looks_good(s)
+        @test a==0 && isnothing(r) && s.stabilizer==S"Z___
+                                                      _Z__
+                                                      ___Z"
+        s, a, r = project!(copy(stab), projxr)
+        @test mixed_destab_looks_good(s)
+        @test a==0 && isnothing(r) && s.stabilizer==S"Z___
+                                                      _Z__
+                                                      ___X"
     end
 end
 
