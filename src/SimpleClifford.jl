@@ -153,6 +153,8 @@ Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqbits,copy(p.xz))
 # Stabilizers
 ##############################
 
+abstract type AbstractStabilizer end
+
 """
 Stabilizer, i.e. a list of commuting multi-qubit Hermitian Pauli operators.
 
@@ -195,11 +197,13 @@ julia> P"YYY" * s
 There are no automatic checks for correctness (i.e. independence of all rows,
 commutativity of all rows, hermiticity of all rows). The rank (number of rows)
 is permitted to be less than the number of qubits (number of columns):
-canonilization, projection, etc. continue working in that case.
+canonilization, projection, etc. continue working in that case. To great extent
+this library uses the `Stabilizer` data structure simply as a tableau. This
+might be properly abstracted away in future versions.
 
 See also: [`PauliOperator`](@ref), [`canonicalize!`](@ref)
 """
-struct Stabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}}
+struct Stabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractStabilizer
     phases::Tv
     nqbits::Int
     xzs::Tm
@@ -882,7 +886,7 @@ end
 # Unitary Clifford Operations
 ##############################
 
-function Base.:(*)(p::AbstractCliffordOperator, s::Stabilizer; phases::Bool=true)
+function Base.:(*)(p::AbstractCliffordOperator, s::AbstractStabilizer; phases::Bool=true)
     s = copy(s)
     apply!(s,p; phases=phases)
 end
@@ -1203,6 +1207,7 @@ end
 function perm_inverse(perm)
     [findfirst(a->l==a,perm) for l in 1:length(perm)]
 end
+
 ##############################
 # Error classes
 ##############################
@@ -1210,6 +1215,19 @@ struct BadDataStructure <: Exception
     message::String
     whichop::Symbol
     whichstructure::Symbol
+end
+
+##############################
+# Helpers for sublcasses of AbstractStabilizer that use Stabilizer as a tableau internally.
+##############################
+
+Base.:(==)(l::T, r::S) where {T<:AbstractStabilizer, S<:AbstractStabilizer} = T==S && r.tab.nqbits==l.tab.nqbits && r.tab.phases==l.tab.phases && r.tab.xzs==l.tab.xzs
+
+Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, s.nqbits, s.phases, s.xzs, h)
+
+function apply!(s::AbstractStabilizer, p::AbstractCliffordOperator; phases::Bool=true)
+    apply!(s.tab,p; phases=phases)
+    s
 end
 
 ##############################
@@ -1242,39 +1260,39 @@ no checks that the provided state is indeed pure. This enables the use of this
 data structure for mixed stabilizer state, but a better choice would be to use
 [`MixedDestabilizer`](@ref).
 """
-struct Destabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}}
-    s::Stabilizer{Tv,Tm}
+struct Destabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractStabilizer
+    tab::Stabilizer{Tv,Tm}
     function Destabilizer(s;noprocessing=false)
         if noprocessing
             new{typeof(s.phases),typeof(s.xzs)}(s)
         else
-            s = vcat(destabilizer_generators(s)...)
-            new{typeof(s.phases),typeof(s.xzs)}(s)
+            tab = vcat(destabilizer_generators(s)...)
+            new{typeof(s.phases),typeof(s.xzs)}(tab)
         end
     end
 end
 
 function Base.show(io::IO, d::Destabilizer)
     show(io, d.destabilizer)
-    print(io, "\n━━" * "━"^size(d.s,2) * "\n")
+    print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
     show(io, d.stabilizer)
 end
 
-Base.copy(d::Destabilizer) = Destabilizer(copy(d.s);noprocessing=true)
+Base.copy(d::Destabilizer) = Destabilizer(copy(d.tab);noprocessing=true)
 
 function Base.getproperty(d::Destabilizer, name::Symbol)
     if name==:stabilizer
-        d.s[end÷2+1:end]
+        d.tab[end÷2+1:end]
     elseif name==:destabilizer
-        d.s[1:end÷2]
+        d.tab[1:end÷2]
     elseif name==:nqubits
-        d.s.nqubits
+        d.tab.nqubits
     else
         getfield(d, name)
     end
 end
 
-Base.propertynames(d::Destabilizer, private=false) = (:s, :stabilizer, :destabilizer, :nqbits)
+Base.propertynames(d::Destabilizer, private=false) = (:tab, :stabilizer, :destabilizer, :nqbits)
 
 function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
@@ -1326,18 +1344,6 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
     d, anticommutes, result
 end
 
-function Base.:(*)(p::AbstractCliffordOperator, d::Destabilizer; phases::Bool=true)
-    d = copy(d)
-    apply!(s,p; phases=phases)
-end
-
-# TODO abstract class for states would be useful for simplere way of writing `apply` and `*`
-function apply!(d::Destabilizer, p::AbstractCliffordOperator; phases::Bool=true)
-    apply!(d.stabilizer,p; phases=phases)
-    apply!(d.destabilizer,p; phases=false)
-    d
-end
-
 ##############################
 # Mixed Stabilizer states
 ##############################
@@ -1347,8 +1353,8 @@ A slight improvement of the [`Stabilizer`](@ref) data structure that enables
 more naturally and completely the treatment of mixed states, in particular when
 the [`project!`](@ref) function is used.
 """
-mutable struct MixedStabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}}
-    s::Stabilizer{Tv,Tm} # TODO assert size on construction
+mutable struct MixedStabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractStabilizer
+    tab::Stabilizer{Tv,Tm} # TODO assert size on construction
     rank::Int
 end
 
@@ -1363,27 +1369,22 @@ end
 
 function Base.getproperty(ms::MixedStabilizer, name::Symbol)
     if name==:stabilizer
-        ms.s[1:ms.rank]
+        ms.tab[1:ms.rank]
     elseif name==:nqbits
-        ms.s.nqbits
+        ms.tab.nqbits
     else
         getfield(ms, name)
     end
 end
 
-Base.propertynames(d::MixedStabilizer, private=false) = (:s, :rank, :stabilizer, :nqbits)
+Base.propertynames(d::MixedStabilizer, private=false) = (:tab, :rank, :stabilizer, :nqbits)
 
 function Base.show(io::IO, ms::MixedStabilizer)
     println(io, "Rank $(ms.rank) stabilizer")
     show(io, ms.stabilizer)
 end
 
-Base.copy(ms::MixedStabilizer) = MixedStabilizer(copy(ms.s),ms.rank)
-
-function apply!(ms::MixedStabilizer, p::AbstractCliffordOperator; phases::Bool=true)
-    apply!(ms.s,p; phases=phases)
-    ms
-end
+Base.copy(ms::MixedStabilizer) = MixedStabilizer(copy(ms.tab),ms.rank)
 
 function canonicalize!(ms::MixedStabilizer; phases::Bool=true)
     canonicalize!(ms.stabilizer; phases=phases)
@@ -1392,12 +1393,12 @@ end
 function project!(ms::MixedStabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     _, anticom_index, res = project!(ms.stabilizer, pauli; keep_result=keep_result, phases=phases)
     if anticom_index==0 && isnothing(res)
-        ms.s[ms.rank+1] = pauli
+        ms.tab[ms.rank+1] = pauli
         if keep_result
             ms.rank += 1
         else
-            canonicalize!(ms.s[1:ms.rank+1]; phases=phases)
-            if ~all(==(UInt64(0)), @view ms.s.xzs[ms.rank+1,:])
+            canonicalize!(ms.tab[1:ms.rank+1]; phases=phases)
+            if ~all(==(UInt64(0)), @view ms.tab.xzs[ms.rank+1,:])
                 ms.rank += 1
             end
         end
@@ -1413,8 +1414,8 @@ end
 A tableau representation for mixed stabilizer states that keeps track of the
 destabilizers in order to provide efficient projection operations.
 """
-mutable struct MixedDestabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}}
-    s::Stabilizer{Tv,Tm} # TODO assert size on construction
+mutable struct MixedDestabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractStabilizer
+    tab::Stabilizer{Tv,Tm} # TODO assert size on construction
     rank::Int
 end
 
@@ -1452,48 +1453,42 @@ end
 
 function Base.getproperty(ms::MixedDestabilizer, name::Symbol)
     if name==:stabilizer
-        ms.s[end÷2+1:end÷2+ms.rank]
+        ms.tab[end÷2+1:end÷2+ms.rank]
     elseif name==:destabilizer
-        ms.s[1:ms.rank]
+        ms.tab[1:ms.rank]
     elseif name==:logicalx
-        ms.s[ms.rank+1:end÷2]
+        ms.tab[ms.rank+1:end÷2]
     elseif name==:logicalz
-        ms.s[end÷2+ms.rank+1:end]
+        ms.tab[end÷2+ms.rank+1:end]
     elseif name==:nqbits
-        ms.s.nqbits
+        ms.tab.nqbits
     else
         getfield(ms, name)
     end
 end
 
-Base.propertynames(d::MixedDestabilizer, private=false) = (:s, :stabilizer, :destabilizer, :logicalx, :logicalz, :nqbits)
+Base.propertynames(d::MixedDestabilizer, private=false) = (:tab, :stabilizer, :destabilizer, :logicalx, :logicalz, :nqbits)
 
 function Base.show(io::IO, d::MixedDestabilizer)
     println(io, "Rank $(d.rank) stabilizer")
     show(io, d.destabilizer)
     if d.rank != d.nqbits
-        print(io, "\n━━" * "━"^size(d.s,2) * "\n")
+        print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
         show(io, d.logicalx)
-        print(io, "\n━━" * "━"^size(d.s,2) * "\n")
+        print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
     else
-        print(io, "\n══" * "═"^size(d.s,2) * "\n")
+        print(io, "\n══" * "═"^size(d.tab,2) * "\n")
     end
     show(io, d.stabilizer)
     if d.rank != d.nqbits
-        print(io, "\n━━" * "━"^size(d.s,2) * "\n")
+        print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
         show(io, d.logicalz)
     else
-        print(io, "\n══" * "═"^size(d.s,2) * "\n")
+        print(io, "\n══" * "═"^size(d.tab,2) * "\n")
     end
 end
 
-Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.s),d.rank)
-
-# TODO abstract class for states would be useful for simplere way of writing `apply` and `*`
-function apply!(d::MixedDestabilizer, p::AbstractCliffordOperator; phases::Bool=true)
-    apply!(d.s,p; phases=phases)
-    d
-end
+Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 
 function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases)
     for i in r+1:n # TODO When phases=true, do I still need to track the phases of the logical operstors (does it have a physical meaning)?
@@ -1519,7 +1514,7 @@ end
 
 function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
-    tab = d.s
+    tab = d.tab
     stabilizer = d.stabilizer
     destabilizer = d.destabilizer
     r = d.rank
@@ -1596,8 +1591,8 @@ function traceout!(s::MixedDestabilizer, qubit::Integer) # TODO implement it on 
         a = findfirst(e->e&jsmallm!=zero64, # TODO some form of reinterpret might be faster than equality check
                       (@view s.stabilizer.xzs[:,jbig]))
     end
-    rowswap!(s.s, a, s.rank)
-    rowswap!(s.s, a+s.nqbits, s.rank+s.nqbits)
+    rowswap!(s.tab, a, s.rank)
+    rowswap!(s.tab, a+s.nqbits, s.rank+s.nqbits)
     s.rank -= 1
     s
 end
