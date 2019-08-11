@@ -815,7 +815,7 @@ function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=
     anticommutes = 0
     n = size(stabilizer,1)
     for i in 1:n
-        if comm(pauli,stabilizer[i])!=0x0
+        if comm(pauli,stabilizer,i)!=0x0
             anticommutes = i
             break
         end
@@ -830,7 +830,7 @@ function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=
         end
     else
         for i in anticommutes+1:n
-            if comm(pauli,stabilizer[i])!=0
+            if comm(pauli,stabilizer,i)!=0
                 # TODO, this is just a long explicit way to write it... learn more about broadcast
                 phases && (stabilizer.phases[i] = prodphase(stabilizer, stabilizer, i, anticommutes))
                 stabilizer.xzs[i,:] .⊻= @view stabilizer.xzs[anticommutes,:]
@@ -901,7 +901,7 @@ end
 function apply!(s::Stabilizer, p::PauliOperator; phases::Bool=true)
     phases || return s
     for i in eachindex(s)
-        s.phases[i] = (s.phases[i]+comm(s[i],p)<<1+p.phase[]<<1)&0x3
+        s.phases[i] = (s.phases[i]+comm(p,s,i)<<1+p.phase[]<<1)&0x3
     end
     s
 end
@@ -1307,7 +1307,7 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
     destabilizer = d.destabilizer
     n = size(stabilizer,1)
     for i in 1:n
-        if comm(pauli,stabilizer[i])!=0x0
+        if comm(pauli,stabilizer,i)!=0x0
             anticommutes = i
             break
         end
@@ -1321,7 +1321,7 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
         if keep_result
             new_pauli = zero(pauli)
             for i in 1:n
-                if comm(pauli,destabilizer[i])!=0
+                if comm(pauli,destabilizer,i)!=0
                     # TODO, this is just a long explicit way to write it... learn more about broadcast
                     phases && (new_pauli.phase[] = prodphase(stabilizer, new_pauli, i))
                     new_pauli.xz .⊻= @view stabilizer.xzs[i,:]
@@ -1333,14 +1333,14 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
         end
     else
         for i in anticommutes+1:n
-            if comm(pauli,stabilizer[i])!=0
+            if comm(pauli,stabilizer,i)!=0
                 # TODO, this is just a long explicit way to write it... learn more about broadcast
                 phases && (stabilizer.phases[i] = prodphase(stabilizer, stabilizer, i, anticommutes))
                 stabilizer.xzs[i,:] .⊻= @view stabilizer.xzs[anticommutes,:]
             end
         end
         for i in 1:n
-            if i!=anticommutes && comm(pauli,destabilizer[i])!=0
+            if i!=anticommutes && comm(pauli,destabilizer,i)!=0
                 destabilizer.xzs[i,:] .⊻= @view stabilizer.xzs[anticommutes,:]
             end
         end
@@ -1528,7 +1528,7 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
     r = d.rank
     n = d.nqbits
     for i in 1:r # TODO use something like findfirst
-        if comm(pauli,stabilizer[i])!=0x0
+        if comm(pauli,stabilizer,i)!=0x0
             anticommutes = i
             break
         end
@@ -1536,14 +1536,14 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
     if anticommutes == 0
         anticomlog = 0
         for i in r+1:n # TODO use something like findfirst
-            if comm(pauli,tab[i])!=0x0
+            if comm(pauli,tab,i)!=0x0
                 anticomlog = i
                 break
             end
         end
         if anticomlog==0
             for i in n+r+1:2*n # TODO use something like findfirst
-                if comm(pauli,tab[i])!=0x0
+                if comm(pauli,tab,i)!=0x0
                     anticomlog = i
                     break
                 end
@@ -1566,7 +1566,7 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
             if keep_result
                 new_pauli = zero(pauli)
                 for i in 1:r
-                    if comm(pauli,destabilizer[i])!=0
+                    if comm(pauli,destabilizer,i)!=0
                         # TODO, this is just a long explicit way to write it... learn more about broadcast
                         phases && (new_pauli.phase[] = prodphase(stabilizer, new_pauli, i))
                         new_pauli.xz .⊻= @view stabilizer.xzs[i,:]
