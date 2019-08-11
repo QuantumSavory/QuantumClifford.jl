@@ -9,7 +9,7 @@ julia&gt; P&quot;X&quot; * P&quot;Z&quot;
 -iY
 
 julia&gt; P&quot;X&quot; ⊗ P&quot;Z&quot;
-+ XZ</code></pre><p>One can check for commutativity with <a href="../API/#SimpleClifford.comm-Tuple{PauliOperator,PauliOperator}"><code>comm</code></a>.</p><pre><code class="language-julia-repl">julia&gt; comm(P&quot;X&quot;,P&quot;Z&quot;)
++ XZ</code></pre><p>One can check for commutativity with <a href="../API/#SimpleClifford.comm-Tuple{AbstractArray{UInt64,1},AbstractArray{UInt64,1}}"><code>comm</code></a>.</p><pre><code class="language-julia-repl">julia&gt; comm(P&quot;X&quot;,P&quot;Z&quot;)
 0x01
 
 julia&gt; comm(P&quot;XX&quot;,P&quot;ZZ&quot;)
@@ -102,7 +102,10 @@ julia&gt; s
              -IZZ&quot;;</code></pre><p>The <a href="../API/#SimpleClifford.project!-Tuple{Stabilizer,PauliOperator}"><code>project!</code></a> function returns the new stabilizer, the index where the anticommutation was detected, and the result of the projection (<code>nothing</code> being an undetermined result). For instance here we project on an operator that does not commute with all stabilizer generators.</p><pre><code class="language-julia-repl">julia&gt; project!(copy(s), P&quot;ZII&quot;)
 (+ Z__
 + ZZ_
-- _ZZ, 1, nothing)</code></pre><p>Or we can project on a commuting operator, hence no anticommuting terms (the index is zero), and the result is perfectly determined (-1, or in our convention to represent the phase, 0x2).</p><pre><code class="language-julia-repl">julia&gt; project!(copy(s), P&quot;-ZZI&quot;)
+- _ZZ, 1, nothing)</code></pre><p>Importantly, when there is an undetermined result, we return <code>nothing</code> <strong>and leave the phase of the new stabilizer the same as the phase of the projection operator</strong>. If you want to perform a Monte Carlo simulation, you need to randomize the phase of the stabilizer at the anticommuting index yourself. For instance, one can do:</p><pre><code class="language-julia">newstate, anticomindex, result = project!(state, projector)
+if isnothing(result)
+    newstate.phases[anticomindex] = rand([0x0,0x2])
+end</code></pre><p>Or we can project on a commuting operator, hence no anticommuting terms (the index is zero), and the result is perfectly determined (-1, or in our convention to represent the phase, 0x2).</p><pre><code class="language-julia-repl">julia&gt; project!(copy(s), P&quot;-ZZI&quot;)
 (- XXX
 - Z_Z
 - _ZZ, 0, 0x02)</code></pre><p>When the projection is consistent with the stabilizer (i.e. the measurement result is not <code>nothing</code>), this would trigger an expensive canonicalization procedure in order to calculate the measurement result (unless we are using more advanced data structures to represent the state, which are discussed later). If all you want to know is whether the projection is consistent with the stabilizer, but you do not care about the measurement result, you can skip the canonicalization and calculation of the result.</p><pre><code class="language-julia-repl">julia&gt; project!(copy(s), P&quot;-ZZI&quot;, keep_result=false)
