@@ -21,7 +21,7 @@ import RecipesBase
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     @S_str, Stabilizer, prodphase, comm, ⊕, check_allrowscommute,
     canonicalize!, canonicalize_gott!, colpermute!,
-    generate!, project!, reset_qubits!, traceout_qubits!,
+    generate!, project!, reset_qubits!, traceout!,
     apply!,
     CliffordOperator, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
     tensor_pow,
@@ -872,45 +872,11 @@ function reset_qubits!(stabilizer::Stabilizer, newsubstabilizer::Stabilizer, qub
     stabilizer =#
 end
 
-#="""
-Trace out qubits.
-
-The qubits are assumed to be unentangled
-and the stabilizer is assumed canonicalized.
-
-```jldoctest
-julia> s_entangled = S"XXI
-                       ZZI
-                       IIZ";
-
-julia> s_product = S"ZII
-                     IXI
-                     IIY";
-
-julia> traceout_qubits!(s_product, [1,3])
-+ X
-
-julia> traceout_qubits!(s_entangled, [1,3])
-ERROR: AssertionError: the qubits to be reset are entangled
-[...]
-```
-"""=# # TODO fix/update this # TODO it is not exactly mutable, rather it mutates and then returns a view...
-function traceout_qubits!(stabilizer::Stabilizer, qubits) # TODO: do we really nead to reset each qubit separately... this is inefficient... can't we just project on all of them at the same time?
-#=    s = stabilizer.F22array
-    origrows, origcols = size(stabilizer)
-    rows = zeros(Bool, origrows)
-    for q in qubits
-        rows .|= _I.!=s[:,q]
-    end
-    @assert sum(rows) == length(qubits) "the qubits to be reset are entangled"
-    # TODO the check above is not enough
-    Stabilizer(stabilizer.phasesF22array[
-            .~rows,
-            [1,[q+1 for q in 1:origcols if q∉qubits]...]
-            ]) # TODO the [qubits...] notation is silly and maybe inefficient
-    =#
+"""
+Trace out a qubit.
+"""
+function traceout!(s::Stabilizer, qubit::Integer) # TODO implement it on the other state data structures.
 end
-
 
 ##############################
 # Unitary Clifford Operations
@@ -1615,6 +1581,25 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
         result = nothing
     end
     d, anticommutes, result
+end
+
+"""
+Trace out a qubit.
+"""
+function traceout!(s::MixedDestabilizer, qubit::Integer) # TODO implement it on the other state data structures.
+    s, a, r = project!(s,single_z(s.nqbits,qubit))
+    isnothing(r) && return s
+    if a==0
+        jbig = _div64(qubit-1)+1
+        jsmall = _mod64(qubit-1)
+        jsmallm = lowbit<<(jsmall)          # TODO this `findfirst` occurs way too often, find a more pleasant way to write it
+        a = findfirst(e->e&jsmallm!=zero64, # TODO some form of reinterpret might be faster than equality check
+                      (@view s.stabilizer.xzs[:,jbig]))
+    end
+    rowswap!(s.s, a, s.rank)
+    rowswap!(s.s, a+s.nqbits, s.rank+s.nqbits)
+    s.rank -= 1
+    s
 end
 
 ##############################
