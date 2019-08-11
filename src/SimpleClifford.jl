@@ -1403,7 +1403,7 @@ function project!(ms::MixedStabilizer,pauli::PauliOperator;keep_result::Bool=tru
             end
         end
     end
-    ms, anticom_index, res # CHECK THIS res
+    ms, anticom_index, res # TODO CHECK THIS res
 end
 
 ##############################
