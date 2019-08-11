@@ -260,8 +260,22 @@ julia> project!(copy(s), P"ZII")
 - _ZZ, 1, nothing)
 ```
 
-Or we can project on a commuting operator, hence no anticommuting terms (the index is zero),
-and the result is perfectly determined (-1, or in our convention to represent the phase, 0x2).
+Importantly, when there is an undetermined result, we return `nothing` **and
+leave the phase of the new stabilizer the same as the phase of the projection
+operator**. If you want to perform a Monte Carlo simulation, you need to
+randomize the phase of the stabilizer at the anticommuting index yourself. For
+instance, one can do:
+
+```julia
+newstate, anticomindex, result = project!(state, projector)
+if isnothing(result)
+    newstate.phases[anticomindex] = rand([0x0,0x2])
+end
+```
+
+Or we can project on a commuting operator, hence no anticommuting terms (the
+index is zero), and the result is perfectly determined (-1, or in our convention
+to represent the phase, 0x2).
 
 ```jldoctest proj
 julia> project!(copy(s), P"-ZZI")
