@@ -355,15 +355,22 @@ julia> comm(P"IZ", P"XX")
 0x01
 ```
 """
-@inline function comm(l::PauliOperator, r::PauliOperator)::UInt8  # TODO update it to look more like prodphase (so that it can index into Stabilizers without having to create Pauli operators)
+@inline function comm(l::AbstractVector{UInt64}, r::AbstractVector{UInt64})::UInt8
     res = UInt64(0)
-    len = length(l.xz)>>1
+    len = length(l)>>1
     @inbounds @simd for i in 1:len
-        res ⊻= (l.xz[i+len] & r.xz[i]) ⊻ (l.xz[i] & r.xz[i+len])
+        res ⊻= (l[i+len] & r[i]) ⊻ (l[i] & r[i+len])
     end
     xor_bits_(res)
 end
 
+@inline function comm(l::PauliOperator, r::PauliOperator)::UInt8
+    comm(l.xz,r.xz)
+end
+
+@inline function comm(l::PauliOperator, r::Stabilizer, i::Int)::UInt8
+    comm(l.xz,(@view r.xzs[i,:]))
+end
 
 function Base.:(*)(l::PauliOperator, r::PauliOperator)
     PauliOperator(prodphase(l,r), l.nqbits, l.xz .⊻ r.xz)
@@ -1490,24 +1497,24 @@ end
 
 Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 
-function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases)
+function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases) # TODO Ensure there are no redundant `comm` checks that can be skipped
     chunks = size(tab.xzs,2)
-    for i in r+1:n # TODO When phases=true, do I still need to track the phases of the logical operstors (does it have a physical meaning)?
-        if comm(pauli,tab[i])!=0
+    for i in r+1:n
+        if comm(pauli,tab,i)!=0
             # TODO, this is just a long explicit way to write it... learn more about broadcast
             phases && (tab.phases[i] = prodphase(tab, tab, i, n+anticommutes))
             @inbounds @simd for c in 1:chunks tab.xzs[i,c] ⊻= tab.xzs[n+anticommutes,c] end
         end
     end
-    for i in n+anticommutes+1:2n # TODO When phases=true, do I still need to track the phases of the logical operstors (does it have a physical meaning)?
-        if comm(pauli,tab[i])!=0
+    for i in n+anticommutes+1:2n
+        if comm(pauli,tab,i)!=0
             # TODO, this is just a long explicit way to write it... learn more about broadcast
             phases && (tab.phases[i] = prodphase(tab, tab, i, n+anticommutes))
             @inbounds @simd for c in 1:chunks tab.xzs[i,c] ⊻= tab.xzs[n+anticommutes,c] end
         end
     end
     for i in 1:r
-        if i!=anticommutes && comm(pauli,tab[i])!=0
+        if i!=anticommutes && comm(pauli,tab,i)!=0
             @inbounds @simd for c in 1:chunks tab.xzs[i,c] ⊻= tab.xzs[n+anticommutes,c] end
         end
     end
