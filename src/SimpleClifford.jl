@@ -1491,23 +1491,24 @@ end
 Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 
 function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases)
+    chunks = size(tab.xzs,2)
     for i in r+1:n # TODO When phases=true, do I still need to track the phases of the logical operstors (does it have a physical meaning)?
         if comm(pauli,tab[i])!=0
             # TODO, this is just a long explicit way to write it... learn more about broadcast
             phases && (tab.phases[i] = prodphase(tab, tab, i, n+anticommutes))
-            tab.xzs[i,:] .⊻= @view tab.xzs[n+anticommutes,:]
+            @inbounds @simd for c in 1:chunks tab.xzs[i,c] ⊻= tab.xzs[n+anticommutes,c] end
         end
     end
     for i in n+anticommutes+1:2n # TODO When phases=true, do I still need to track the phases of the logical operstors (does it have a physical meaning)?
         if comm(pauli,tab[i])!=0
             # TODO, this is just a long explicit way to write it... learn more about broadcast
             phases && (tab.phases[i] = prodphase(tab, tab, i, n+anticommutes))
-            tab.xzs[i,:] .⊻= @view tab.xzs[n+anticommutes,:]
+            @inbounds @simd for c in 1:chunks tab.xzs[i,c] ⊻= tab.xzs[n+anticommutes,c] end
         end
     end
     for i in 1:r
         if i!=anticommutes && comm(pauli,tab[i])!=0
-            tab.xzs[i,:] .⊻= @view tab.xzs[n+anticommutes,:]
+            @inbounds @simd for c in 1:chunks tab.xzs[i,c] ⊻= tab.xzs[n+anticommutes,c] end
         end
     end
 end
