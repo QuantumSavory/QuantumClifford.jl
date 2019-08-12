@@ -1641,6 +1641,7 @@ function Base.one(::Type{Stabilizer}, n; basis=:Z)
     end
 end
 Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, s.nqbits; basis=basis)
+Base.one(::Type{Destabilizer}, n) = Destabilizer(vcat(one(Stabilizer, n, basis=:X),one(Stabilizer, n, basis=:Z)),noprocessing=true)
 function Base.one(::Type{MixedDestabilizer}, r, n)
     d = one(Stabilizer, n; basis=:X)
     s = one(Stabilizer, n; basis=:Z)
