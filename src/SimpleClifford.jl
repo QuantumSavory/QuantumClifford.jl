@@ -79,11 +79,11 @@ julia> p.xz
 """
 struct PauliOperator{Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}} <: AbstractCliffordOperator
     phase::Tz
-    nqbits::Int
+    nqubits::Int
     xz::Tv
 end
 
-PauliOperator(phase::UInt8, nqbits::Int, xz::Tv) where Tv<:AbstractVector{UInt64} = PauliOperator(fill(phase,()), nqbits, xz)
+PauliOperator(phase::UInt8, nqubits::Int, xz::Tv) where Tv<:AbstractVector{UInt64} = PauliOperator(fill(phase,()), nqubits, xz)
 PauliOperator(phase::UInt8, x::T, z::T) where T<:AbstractVector{Bool} = PauliOperator(fill(phase,()), length(x), vcat(BitVector(x).chunks,BitVector(z).chunks))
 
 function Base.getproperty(p::PauliOperator, name::Symbol)
@@ -92,11 +92,11 @@ function Base.getproperty(p::PauliOperator, name::Symbol)
     elseif name==:zview
         @view p.xz[end÷2+1:end]
     elseif name==:xbit
-        b = BitArray(UndefInitializer(),(p.nqbits,))
+        b = BitArray(UndefInitializer(),(p.nqubits,))
         b.chunks = p.xview
         b
     elseif name==:zbit
-        b = BitArray(UndefInitializer(),(p.nqbits,))
+        b = BitArray(UndefInitializer(),(p.nqubits,))
         b.chunks = p.zview
         b
     else
@@ -104,7 +104,7 @@ function Base.getproperty(p::PauliOperator, name::Symbol)
     end
 end
 
-Base.propertynames(p::PauliOperator, private=false) = (:phase,:nqbits,:xz,:xbit,:zbit,:xview,:zview)
+Base.propertynames(p::PauliOperator, private=false) = (:phase,:nqubits,:xz,:xbit,:zbit,:xview,:zview)
 
 macro P_str(a)
     letters = filter(x->occursin(x,"_IZXY"),a)
@@ -131,23 +131,23 @@ end
 
 Base.firstindex(p::PauliOperator) = 1
 
-Base.lastindex(p::PauliOperator) = p.nqbits
+Base.lastindex(p::PauliOperator) = p.nqubits
 
-Base.eachindex(p::PauliOperator) = 1:p.nqbits
+Base.eachindex(p::PauliOperator) = 1:p.nqubits
 
-Base.size(pauli::PauliOperator) = (pauli.nqbits,)
+Base.size(pauli::PauliOperator) = (pauli.nqubits,)
 
-Base.length(pauli::PauliOperator) = pauli.nqbits
+Base.length(pauli::PauliOperator) = pauli.nqubits
 
 xz2str(x,z) = join(toletter[e] for e in zip(x,z))
 
 Base.show(io::IO, p::PauliOperator) = print(io, ["+ ","+i","- ","-i"][p.phase[]+1]*xz2str(p.xbit,p.zbit))
 
-Base.:(==)(l::PauliOperator, r::PauliOperator) = r.phase==l.phase && r.nqbits==l.nqbits && r.xz==l.xz
+Base.:(==)(l::PauliOperator, r::PauliOperator) = r.phase==l.phase && r.nqubits==l.nqubits && r.xz==l.xz
 
-Base.hash(p::PauliOperator, h::UInt) = hash((p.phase,p.nqbits,p.xz), h)
+Base.hash(p::PauliOperator, h::UInt) = hash((p.phase,p.nqubits,p.xz), h)
 
-Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqbits,copy(p.xz))
+Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
 
 ##############################
 # Stabilizers
@@ -205,11 +205,11 @@ See also: [`PauliOperator`](@ref), [`canonicalize!`](@ref)
 """
 struct Stabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractStabilizer
     phases::Tv
-    nqbits::Int
+    nqubits::Int
     xzs::Tm
 end
 
-Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}} = Stabilizer(vcat((p.phase for p in paulis)...), paulis[1].nqbits, vcat((p.xz' for p in paulis)...))
+Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}} = Stabilizer(vcat((p.phase for p in paulis)...), paulis[1].nqubits, vcat((p.xz' for p in paulis)...))
 
 Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(
     phases, size(xs,2),
@@ -228,8 +228,8 @@ macro S_str(a)
     Stabilizer(paulis)
 end
 
-Base.getindex(stab::Stabilizer, i::Int) = PauliOperator((@view stab.phases[i]), stab.nqbits, (@view stab.xzs[i,:]))
-Base.getindex(stab::Stabilizer, r) = Stabilizer((@view stab.phases[r]), stab.nqbits, (@view stab.xzs[r,:]))
+Base.getindex(stab::Stabilizer, i::Int) = PauliOperator((@view stab.phases[i]), stab.nqubits, (@view stab.xzs[i,:]))
+Base.getindex(stab::Stabilizer, r) = Stabilizer((@view stab.phases[r]), stab.nqubits, (@view stab.xzs[r,:]))
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
 
 Base.iterate(stab::Stabilizer, state=1) = state>length(stab) ? nothing : (stab[state], state+1)
@@ -266,7 +266,7 @@ Base.lastindex(stab::Stabilizer) = length(stab.phases)
 
 Base.eachindex(stab::Stabilizer) = 1:length(stab.phases)
 
-Base.size(stab::Stabilizer) = (length(stab.phases),stab.nqbits)
+Base.size(stab::Stabilizer) = (length(stab.phases),stab.nqubits)
 Base.size(stab::Stabilizer,i) = size(stab)[i]
 
 Base.length(stab::Stabilizer) = length(stab.phases)
@@ -276,11 +276,11 @@ Base.show(io::IO, s::Stabilizer) = print(io,
                                                for i in eachindex(s)],
                                               '\n'))
 
-Base.:(==)(l::Stabilizer, r::Stabilizer) = r.nqbits==l.nqbits && r.phases==l.phases && r.xzs==l.xzs
+Base.:(==)(l::Stabilizer, r::Stabilizer) = r.nqubits==l.nqubits && r.phases==l.phases && r.xzs==l.xzs
 
-Base.hash(s::Stabilizer, h::UInt) = hash(s.nqbits, s.phases, s.xzs, h)
+Base.hash(s::Stabilizer, h::UInt) = hash(s.nqubits, s.phases, s.xzs, h)
 
-Base.copy(s::Stabilizer) = Stabilizer(copy(s.phases), s.nqbits, copy(s.xzs))
+Base.copy(s::Stabilizer) = Stabilizer(copy(s.phases), s.nqubits, copy(s.xzs))
 
 ##############################
 # Pauli Operator Helpers
@@ -373,7 +373,7 @@ end
 end
 
 function Base.:(*)(l::PauliOperator, r::PauliOperator)
-    PauliOperator(prodphase(l,r), l.nqbits, l.xz .⊻ r.xz)
+    PauliOperator(prodphase(l,r), l.nqubits, l.xz .⊻ r.xz)
 end
 
 (⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator((l.phase[]+r.phase[])&0x3, vcat(l.xbit,r.xbit), vcat(l.zbit,r.zbit))
@@ -662,7 +662,7 @@ end
 
 function Base.vcat(stabs::Stabilizer...)
     Stabilizer(vcat((s.phases for s in stabs)...),
-               stabs[1].nqbits,
+               stabs[1].nqubits,
                vcat((s.xzs for s in stabs)...))
 end
 
@@ -931,7 +931,7 @@ julia> entangled = CNOT*stab
 """
 struct CliffordOperator{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractCliffordOperator
     phases::Tv
-    nqbits::Int
+    nqubits::Int
     xztox::Tm
     xztoz::Tm
 end
@@ -943,7 +943,7 @@ function CliffordOperator(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {T
                  for i in 1:size(xztox,1))...)
     xztoz = vcat((vcat(BitArray(xztoz[i,1:end÷2]).chunks,BitArray(xztoz[i,end÷2+1:end]).chunks)'
                  for i in 1:size(xztoz,1))...)
-    CliffordOperator(vcat((p.phase for p in paulis)...), paulis[1].nqbits, xztox, xztoz)
+    CliffordOperator(vcat((p.phase for p in paulis)...), paulis[1].nqubits, xztox, xztoz)
 end
 
 macro C_str(a)
@@ -951,10 +951,10 @@ macro C_str(a)
     CliffordOperator(paulis)
 end
 
-Base.:(==)(l::CliffordOperator, r::CliffordOperator) = r.nqbits==l.nqbits && r.phases==l.phases && r.xztox==l.xztox && r.xztoz==l.xztoz
+Base.:(==)(l::CliffordOperator, r::CliffordOperator) = r.nqubits==l.nqubits && r.phases==l.phases && r.xztox==l.xztox && r.xztoz==l.xztoz
 
 function clifford_transpose(c::CliffordOperator)
-    n = c.nqbits
+    n = c.nqubits
     xtoxs = []
     ztozs = []
     ztoxs = []
@@ -983,9 +983,9 @@ end
 function getallpaulis_(c::CliffordOperator)
     xtoxs, ztozs, xtozs, ztoxs = clifford_transpose(c)
     ops = PauliOperator{Array{UInt8,0},Vector{UInt64}}[] # TODO is it really necessary to specify the type this precisely!?
-    for i in 1:2*c.nqbits
-        if i>c.nqbits
-            push!(ops,PauliOperator(c.phases[i], ztoxs[:,i-c.nqbits], ztozs[:,i-c.nqbits]))
+    for i in 1:2*c.nqubits
+        if i>c.nqubits
+            push!(ops,PauliOperator(c.phases[i], ztoxs[:,i-c.nqubits], ztozs[:,i-c.nqubits]))
         else
             push!(ops,PauliOperator(c.phases[i], xtoxs[:,i], xtozs[:,i]))
         end
@@ -995,8 +995,8 @@ end
 
 function Base.getindex(c::CliffordOperator, i::Int)
     xtoxs, ztozs, xtozs, ztoxs = clifford_transpose(c)
-    if i>c.nqbits
-        PauliOperator(c.phases[i], ztoxs[:,i-c.nqbits], ztozs[:,i-c.nqbits])
+    if i>c.nqubits
+        PauliOperator(c.phases[i], ztoxs[:,i-c.nqubits], ztozs[:,i-c.nqubits])
     else
         PauliOperator(c.phases[i], xtoxs[:,i], xtozs[:,i])
     end
@@ -1004,7 +1004,7 @@ end
 
 function Base.show(io::IO, c::CliffordOperator)
     xtoxs, ztozs, xtozs, ztoxs = clifford_transpose(c)
-    n = c.nqbits
+    n = c.nqubits
     for i in 1:n
         print(io, repeat("_",i-1),"X",repeat("_",n-i), " ⟼ ")
         print(io, ["+ ","+i","- ","-i"][c.phases[i]+1])
@@ -1020,13 +1020,13 @@ function Base.show(io::IO, c::CliffordOperator)
 end
 
 function Base.copy(c::CliffordOperator)
-    CliffordOperator(copy(c.phases),c.nqbits,copy(c.xztox),copy(c.xztoz))
+    CliffordOperator(copy(c.phases),c.nqubits,copy(c.xztox),copy(c.xztoz))
 end
 
 # TODO create Base.permute! and getindex(..., permutation_array)
 function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this is extremely slow stupid implementation
     ops = getallpaulis_(c)
-    CliffordOperator([ops[i][p] for i in 1:2*c.nqbits][vcat(p,p.+c.nqbits)])
+    CliffordOperator([ops[i][p] for i in 1:2*c.nqubits][vcat(p,p.+c.nqubits)])
 end
 
 function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
@@ -1038,7 +1038,7 @@ function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
     for row_stab in eachindex(s)
         fill!(new_stabrowx, zero(eltype(new_stabrowx)))
         fill!(new_stabrowz, zero(eltype(new_stabrowz)))
-        for row_clif in 1:s.nqbits
+        for row_clif in 1:s.nqubits
             bigrow = _div64(row_clif-1)+1
             smallrow = _mod64(row_clif-1)
             @inbounds @simd for i in 1:length(xztox)
@@ -1228,9 +1228,9 @@ end
 # Helpers for sublcasses of AbstractStabilizer that use Stabilizer as a tableau internally.
 ##############################
 
-Base.:(==)(l::T, r::S) where {T<:AbstractStabilizer, S<:AbstractStabilizer} = T==S && r.tab.nqbits==l.tab.nqbits && r.tab.phases==l.tab.phases && r.tab.xzs==l.tab.xzs
+Base.:(==)(l::T, r::S) where {T<:AbstractStabilizer, S<:AbstractStabilizer} = T==S && r.tab.nqubits==l.tab.nqubits && r.tab.phases==l.tab.phases && r.tab.xzs==l.tab.xzs
 
-Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, s.nqbits, s.phases, s.xzs, h)
+Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, s.nqubits, s.phases, s.xzs, h)
 
 function apply!(s::AbstractStabilizer, p::AbstractCliffordOperator; phases::Bool=true)
     apply!(s.tab,p; phases=phases)
@@ -1299,7 +1299,7 @@ function Base.getproperty(d::Destabilizer, name::Symbol)
     end
 end
 
-Base.propertynames(d::Destabilizer, private=false) = (:tab, :stabilizer, :destabilizer, :nqbits)
+Base.propertynames(d::Destabilizer, private=false) = (:tab, :stabilizer, :destabilizer, :nqubits)
 
 function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
@@ -1313,7 +1313,7 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
         end
     end
     if anticommutes == 0
-        if n != stabilizer.nqbits
+        if n != stabilizer.nqubits
             throw(BadDataStructure("`Destabilizer` can not efficiently (faster than n^3) detect whether you are projecting on a stabilized or a logical operator. Switch to one of the `Mixed*` data structures.",
                                    :project!,
                                    :Destabilizer))
@@ -1369,7 +1369,7 @@ function MixedStabilizer(s::Stabilizer)
     s = canonicalize!(s)
     rp1 = findfirst(mapslices(row->all(==(UInt64(0)),row),s.xzs; dims=(2,)))
     r = isnothing(rp1) ? size(s, 1) : rp1-1
-    spadded = zero(Stabilizer, s.nqbits)
+    spadded = zero(Stabilizer, s.nqubits)
     spadded[1:r] = s
     MixedStabilizer(spadded,r)
 end
@@ -1377,14 +1377,14 @@ end
 function Base.getproperty(ms::MixedStabilizer, name::Symbol)
     if name==:stabilizer
         ms.tab[1:ms.rank]
-    elseif name==:nqbits
-        ms.tab.nqbits
+    elseif name==:nqubits
+        ms.tab.nqubits
     else
         getfield(ms, name)
     end
 end
 
-Base.propertynames(d::MixedStabilizer, private=false) = (:tab, :rank, :stabilizer, :nqbits)
+Base.propertynames(d::MixedStabilizer, private=false) = (:tab, :rank, :stabilizer, :nqubits)
 
 function Base.show(io::IO, ms::MixedStabilizer)
     println(io, "Rank $(ms.rank) stabilizer")
@@ -1428,7 +1428,7 @@ end
 
 function MixedDestabilizer(stab::Stabilizer; undoperm=true)
     stab, r, s, permx, permz = canonicalize_gott!(stab)
-    n = stab.nqbits
+    n = stab.nqubits
     tab = zero(Stabilizer, n*2, n)
     tab[n+1:n+r+s] = stab
     for i in 1:r
@@ -1467,19 +1467,19 @@ function Base.getproperty(ms::MixedDestabilizer, name::Symbol)
         ms.tab[ms.rank+1:end÷2]
     elseif name==:logicalz
         ms.tab[end÷2+ms.rank+1:end]
-    elseif name==:nqbits
-        ms.tab.nqbits
+    elseif name==:nqubits
+        ms.tab.nqubits
     else
         getfield(ms, name)
     end
 end
 
-Base.propertynames(d::MixedDestabilizer, private=false) = (:tab, :stabilizer, :destabilizer, :logicalx, :logicalz, :nqbits)
+Base.propertynames(d::MixedDestabilizer, private=false) = (:tab, :stabilizer, :destabilizer, :logicalx, :logicalz, :nqubits)
 
 function Base.show(io::IO, d::MixedDestabilizer)
     println(io, "Rank $(d.rank) stabilizer")
     show(io, d.destabilizer)
-    if d.rank != d.nqbits
+    if d.rank != d.nqubits
         print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
         show(io, d.logicalx)
         print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
@@ -1487,7 +1487,7 @@ function Base.show(io::IO, d::MixedDestabilizer)
         print(io, "\n══" * "═"^size(d.tab,2) * "\n")
     end
     show(io, d.stabilizer)
-    if d.rank != d.nqbits
+    if d.rank != d.nqubits
         print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
         show(io, d.logicalz)
     else
@@ -1526,7 +1526,7 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
     stabilizer = d.stabilizer
     destabilizer = d.destabilizer
     r = d.rank
-    n = d.nqbits
+    n = d.nqubits
     for i in 1:r # TODO use something like findfirst
         if comm(pauli,stabilizer,i)!=0x0
             anticommutes = i
@@ -1590,7 +1590,7 @@ end
 Trace out a qubit.
 """
 function traceout!(s::MixedDestabilizer, qubit::Integer) # TODO implement it on the other state data structures.
-    s, a, r = project!(s,single_z(s.nqbits,qubit))
+    s, a, r = project!(s,single_z(s.nqubits,qubit))
     isnothing(r) && return s
     if a==0
         jbig = _div64(qubit-1)+1
@@ -1600,7 +1600,7 @@ function traceout!(s::MixedDestabilizer, qubit::Integer) # TODO implement it on 
                       (@view s.stabilizer.xzs[:,jbig]))
     end
     rowswap!(s.tab, a, s.rank)
-    rowswap!(s.tab, a+s.nqbits, s.rank+s.nqbits)
+    rowswap!(s.tab, a+s.nqubits, s.rank+s.nqubits)
     s.rank -= 1
     s
 end
@@ -1624,7 +1624,7 @@ function single_x(n,i)
 end
 
 Base.zero(::Type{PauliOperator}, n) = PauliOperator(0x0,falses(n),falses(n))
-Base.zero(p::PauliOperator) = PauliOperator(0x0,falses(p.nqbits),falses(p.nqbits))
+Base.zero(p::PauliOperator) = PauliOperator(0x0,falses(p.nqubits),falses(p.nqubits))
 Base.zero(::Type{Stabilizer}, n, m) = Stabilizer(zeros(UInt8,n),falses(n,m),falses(n,m))
 Base.zero(::Type{Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(n,n))
 Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
@@ -1640,7 +1640,7 @@ function Base.one(::Type{Stabilizer}, n; basis=:Z)
         throw(ErrorException("`basis` should be one of :X, :Y, or :Z"))
     end
 end
-Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, s.nqbits; basis=basis)
+Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, s.nqubits; basis=basis)
 Base.one(::Type{Destabilizer}, n) = Destabilizer(vcat(one(Stabilizer, n, basis=:X),one(Stabilizer, n, basis=:Z)),noprocessing=true)
 function Base.one(::Type{MixedDestabilizer}, r, n)
     d = one(Stabilizer, n; basis=:X)

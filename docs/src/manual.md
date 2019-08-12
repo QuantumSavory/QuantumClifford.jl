@@ -103,7 +103,7 @@ arrays).
 ```jldoctest
 julia> p = P"-IXYZ";
 
-julia> p.nqbits, p.phase, p.xz
+julia> p.nqubits, p.phase, p.xz
 (4, 0x02, UInt64[0x0000000000000006, 0x000000000000000c])
 ```
 
@@ -178,7 +178,7 @@ julia> s = S"-XXX
 + ZZ_
 - _ZZ
 
-julia> s.phases, s.nqbits, s.xzs
+julia> s.phases, s.nqubits, s.xzs
 (UInt8[0x02, 0x00, 0x02], 3, UInt64[0x0000000000000007 0x0000000000000000; 0x0000000000000000 0x0000000000000003; 0x0000000000000000 0x0000000000000006])
 ```
 

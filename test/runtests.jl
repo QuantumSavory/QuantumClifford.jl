@@ -75,7 +75,7 @@ end
         @test P"-iXYZ".xbit == Bool[1,1,0]
         @test P"-iXYZ".xz == UInt64[0x03, 0x06]
         @test P"-iXYZ".phase[] == 0x03 # TODO why is this failing?
-        @test P"-iXYZ".nqbits == 3
+        @test P"-iXYZ".nqubits == 3
         @test size(P"-iXYZ") == (3,)
     end
     @testset "Indexing" begin
