@@ -372,6 +372,10 @@ end
     comm(l.xz,(@view r.xzs[i,:]))
 end
 
+function comm(l::PauliOperator, r::Stabilizer)::Vector{UInt8}
+    [comm(l,r,i) for i in 1:size(r,1)]
+end
+
 function Base.:(*)(l::PauliOperator, r::PauliOperator)
     PauliOperator(prodphase(l,r), l.nqubits, l.xz .⊻ r.xz)
 end
@@ -1653,6 +1657,16 @@ end
 ##############################
 
 random_pauli(n; nophase=false) = PauliOperator(nophase ? 0x0 : rand(0x0:0x3), rand(Bool,n), rand(Bool,n))
+function random_pauli(n,p; nophase=false)
+    x = falses(n)
+    z = falses(n)
+    for i in 1:n
+        r = rand()
+        if (r<=2p) x[i]=true end
+        if (p<r<=3p) z[i]=true end
+    end
+    PauliOperator(nophase ? 0x0 : rand(0x0:0x3), x, z)
+end
 
 function random_invertible_gf2(n)
     while true
