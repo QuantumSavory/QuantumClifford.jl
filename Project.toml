@@ -3,12 +3,17 @@ uuid = "0525e862-1e90-11e9-3e4d-1b39d7109de1"
 authors = ["Stefan Krastanov <stefan@krastanov.org>"]
 version = "0.1.0"
 
+[compat]
+julia = "≥ 1.1"
+
 [deps]
-Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+
+[extras]
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
-[compat]
-julia = "≥ 1.1"
+[targets]
+test = ["Documenter","Test"]
