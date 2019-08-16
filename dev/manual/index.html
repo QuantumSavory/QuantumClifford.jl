@@ -36,7 +36,7 @@ julia&gt; p
 julia&gt; P&quot;IXYZ&quot;[[false,true,true,false]]
 + XY</code></pre><p>The operator is represented in memory by bit arrays (much denser than using byte arrays).</p><pre><code class="language-julia-repl">julia&gt; p = P&quot;-IXYZ&quot;;
 
-julia&gt; p.nqbits, p.phase, p.xz
+julia&gt; p.nqubits, p.phase, p.xz
 (4, 0x02, UInt64[0x0000000000000006, 0x000000000000000c])</code></pre><p>The convenience properties <code>xbit</code> and <code>zbit</code> give you Bool (GF2) vectors. TODO: this should be a separate function.</p><pre><code class="language-julia-repl">julia&gt; P&quot;XYZI&quot;.xbit
 4-element BitArray{1}:
  1
@@ -69,7 +69,7 @@ julia&gt; Stabilizer([0x2, 0x0],
 + ZZ_
 - _ZZ
 
-julia&gt; s.phases, s.nqbits, s.xzs
+julia&gt; s.phases, s.nqubits, s.xzs
 (UInt8[0x02, 0x00, 0x02], 3, UInt64[0x0000000000000007 0x0000000000000000; 0x0000000000000000 0x0000000000000003; 0x0000000000000000 0x0000000000000006])</code></pre><p>And there are convenience functions that can extract the corresponding binary check matrix.</p><pre><code class="language-julia-repl">julia&gt; stab_to_gf2(s)
 3×6 BitArray{2}:
  1  1  1  0  0  0
