@@ -530,7 +530,7 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true)
         jbig = _div64(j-1)+1
         jsmall = lowbit<<_mod64(j-1)
         k = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
-                      xs[i:end,jbig])
+                      (@view xs[i:end,jbig]))
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases=phases)
@@ -548,7 +548,7 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true)
         jbig = _div64(j-1)+1
         jsmall = lowbit<<_mod64(j-1)
         k = findfirst(e->e&(jsmall)!=zero64,
-                      zs[i:end,jbig])
+                      (@view zs[i:end,jbig]))
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases=phases)
@@ -890,7 +890,9 @@ end
 """
 Trace out a qubit.
 """
-function traceout!(s::Stabilizer, qubit::Integer) # TODO implement it on the other state data structures.
+function traceout!(s::Stabilizer, qubit::AbstractVector{T}) where {T<:Integer} # TODO implement it on the other state data structures.
+    # It uses a particular type of canonicalization that we should abstract away arXiv:quant-ph/0505036
+
 end
 
 ##############################
@@ -1590,25 +1592,6 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
         result = nothing
     end
     d, anticommutes, result
-end
-
-"""
-Trace out a qubit.
-"""
-function traceout!(s::MixedDestabilizer, qubit::Integer) # TODO implement it on the other state data structures.
-    s, a, r = project!(s,single_z(s.nqubits,qubit))
-    isnothing(r) && return s
-    if a==0
-        jbig = _div64(qubit-1)+1
-        jsmall = _mod64(qubit-1)
-        jsmallm = lowbit<<(jsmall)          # TODO this `findfirst` occurs way too often, find a more pleasant way to write it
-        a = findfirst(e->e&jsmallm!=zero64, # TODO some form of reinterpret might be faster than equality check
-                      (@view s.stabilizer.xzs[:,jbig]))
-    end
-    rowswap!(s.tab, a, s.rank)
-    rowswap!(s.tab, a+s.nqubits, s.rank+s.nqubits)
-    s.rank -= 1
-    s
 end
 
 ##############################
