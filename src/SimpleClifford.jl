@@ -20,6 +20,8 @@ import RecipesBase
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     @S_str, Stabilizer, prodphase, comm, ⊕, check_allrowscommute,
+    Destabilizer, MixedStabilizer, MixedDestabilizer,
+    nqubits, stabilizerview, destabilizerview, logicalxview, logicalzview,
     canonicalize!, canonicalize_rref!, canonicalize_gott!, colpermute!,
     generate!, project!, reset_qubits!, traceout!,
     apply!,
@@ -30,7 +32,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     single_z, single_x,
     random_invertible_gf2,
     random_pauli, random_stabilizer, random_singlequbitop,
-    Destabilizer, MixedStabilizer, MixedDestabilizer, BadDataStructure
+    BadDataStructure
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -228,8 +230,8 @@ macro S_str(a)
     Stabilizer(paulis)
 end
 
-Base.getindex(stab::Stabilizer, i::Int) = PauliOperator((@view stab.phases[i]), stab.nqubits, (@view stab.xzs[i,:]))
-Base.getindex(stab::Stabilizer, r) = Stabilizer((@view stab.phases[r]), stab.nqubits, (@view stab.xzs[r,:]))
+Base.getindex(stab::Stabilizer, i::Int) = PauliOperator((@view stab.phases[i]), nqubits(stab), (@view stab.xzs[i,:]))
+Base.getindex(stab::Stabilizer, r) = Stabilizer((@view stab.phases[r]), nqubits(stab), (@view stab.xzs[r,:]))
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
 
 Base.iterate(stab::Stabilizer, state=1) = state>length(stab) ? nothing : (stab[state], state+1)
@@ -266,7 +268,7 @@ Base.lastindex(stab::Stabilizer) = length(stab.phases)
 
 Base.eachindex(stab::Stabilizer) = 1:length(stab.phases)
 
-Base.size(stab::Stabilizer) = (length(stab.phases),stab.nqubits)
+Base.size(stab::Stabilizer) = (length(stab.phases),nqubits(stab))
 Base.size(stab::Stabilizer,i) = size(stab)[i]
 
 Base.length(stab::Stabilizer) = length(stab.phases)
@@ -286,9 +288,9 @@ Base.copy(s::Stabilizer) = Stabilizer(copy(s.phases), s.nqubits, copy(s.xzs))
 # Helpers for sublcasses of AbstractStabilizer that use Stabilizer as a tableau internally.
 ##############################
 
-Base.:(==)(l::T, r::S) where {T<:AbstractStabilizer, S<:AbstractStabilizer} = T==S && r.tab.nqubits==l.tab.nqubits && r.tab.phases==l.tab.phases && r.tab.xzs==l.tab.xzs
+Base.:(==)(l::T, r::S) where {T<:AbstractStabilizer, S<:AbstractStabilizer} = T==S && r.tab==l.tab
 
-Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, s.nqubits, s.phases, s.xzs, h)
+Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, s.tab, h)
 
 function apply!(s::AbstractStabilizer, p::AbstractCliffordOperator; phases::Bool=true)
     apply!(s.tab,p; phases=phases)
@@ -338,26 +340,12 @@ struct Destabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: Abs
 end
 
 function Base.show(io::IO, d::Destabilizer)
-    show(io, d.destabilizer)
+    show(io, destabilizerview(d))
     print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
-    show(io, d.stabilizer)
+    show(io, stabilizerview(d))
 end
 
 Base.copy(d::Destabilizer) = Destabilizer(copy(d.tab);noprocessing=true)
-
-function Base.getproperty(d::Destabilizer, name::Symbol)
-    if name==:stabilizer
-        d.tab[end÷2+1:end]
-    elseif name==:destabilizer
-        d.tab[1:end÷2]
-    elseif name==:nqubits
-        d.tab.nqubits
-    else
-        getfield(d, name)
-    end
-end
-
-Base.propertynames(d::Destabilizer, private=false) = (:tab, :stabilizer, :destabilizer, :nqubits)
 
 ##############################
 # Mixed Stabilizer states
@@ -377,26 +365,14 @@ function MixedStabilizer(s::Stabilizer)
     s = canonicalize!(s)
     rp1 = findfirst(mapslices(row->all(==(UInt64(0)),row),s.xzs; dims=(2,)))
     r = isnothing(rp1) ? size(s, 1) : rp1-1
-    spadded = zero(Stabilizer, s.nqubits)
+    spadded = zero(Stabilizer, nqubits(s))
     spadded[1:r] = s
     MixedStabilizer(spadded,r)
 end
 
-function Base.getproperty(ms::MixedStabilizer, name::Symbol)
-    if name==:stabilizer
-        ms.tab[1:ms.rank]
-    elseif name==:nqubits
-        ms.tab.nqubits
-    else
-        getfield(ms, name)
-    end
-end
-
-Base.propertynames(d::MixedStabilizer, private=false) = (:tab, :rank, :stabilizer, :nqubits)
-
 function Base.show(io::IO, ms::MixedStabilizer)
     println(io, "Rank $(ms.rank) stabilizer")
-    show(io, ms.stabilizer)
+    show(io, stabilizerview(ms))
 end
 
 Base.copy(ms::MixedStabilizer) = MixedStabilizer(copy(ms.tab),ms.rank)
@@ -418,7 +394,7 @@ function MixedDestabilizer(stab::Stabilizer; undoperm=true)
     r,n = size(stab)
     r==n && return MixedDestabilizer(Destabilizer(stab).tab, r)
     stab, r, s, permx, permz = canonicalize_gott!(stab)
-    n = stab.nqubits
+    n = nqubits(stab)
     tab = zero(Stabilizer, n*2, n)
     tab[n+1:n+r+s] = stab
     for i in 1:r
@@ -448,44 +424,44 @@ function MixedDestabilizer(stab::Stabilizer; undoperm=true)
     MixedDestabilizer(tab, r+s)
 end
 
-function Base.getproperty(ms::MixedDestabilizer, name::Symbol)
-    if name==:stabilizer
-        ms.tab[end÷2+1:end÷2+ms.rank]
-    elseif name==:destabilizer
-        ms.tab[1:ms.rank]
-    elseif name==:logicalx
-        ms.tab[ms.rank+1:end÷2]
-    elseif name==:logicalz
-        ms.tab[end÷2+ms.rank+1:end]
-    elseif name==:nqubits
-        ms.tab.nqubits
-    else
-        getfield(ms, name)
-    end
-end
-
-Base.propertynames(d::MixedDestabilizer, private=false) = (:tab, :stabilizer, :destabilizer, :logicalx, :logicalz, :nqubits)
-
 function Base.show(io::IO, d::MixedDestabilizer)
     println(io, "Rank $(d.rank) stabilizer")
-    show(io, d.destabilizer)
-    if d.rank != d.nqubits
+    show(io, destabilizerview(d))
+    if d.rank != nqubits(d)
         print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
-        show(io, d.logicalx)
+        show(io, logicalxview(d))
         print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
     else
         print(io, "\n══" * "═"^size(d.tab,2) * "\n")
     end
-    show(io, d.stabilizer)
-    if d.rank != d.nqubits
+    show(io, stabilizerview(d))
+    if d.rank != nqubits(d)
         print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
-        show(io, d.logicalz)
+        show(io, logicalzview(d))
     else
         print(io, "\n══" * "═"^size(d.tab,2) * "\n")
     end
 end
 
 Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
+
+##############################
+# Subtableau views
+##############################
+
+@inline stabilizerview(s::Stabilizer) = s
+@inline stabilizerview(s::Destabilizer) = s.tab[end÷2+1:end]
+@inline stabilizerview(s::MixedStabilizer) = s.tab[1:s.rank]
+@inline stabilizerview(s::MixedDestabilizer) = s.tab[end÷2+1:end÷2+s.rank]
+
+@inline destabilizerview(s::Destabilizer) = s.tab[1:end÷2]
+@inline destabilizerview(s::MixedDestabilizer) = s.tab[1:s.rank]
+
+@inline logicalxview(s::MixedDestabilizer) = s.tab[s.rank+1:end÷2]
+@inline logicalzview(s::MixedDestabilizer) = s.tab[end÷2+s.rank+1:end]
+
+@inline nqubits(s::Stabilizer) = s.nqubits
+@inline nqubits(s::AbstractStabilizer) = s.tab.nqubits
 
 ##############################
 # Pauli Operator Helpers
@@ -630,7 +606,7 @@ end
 
 @inline function rowswap!(s::MixedDestabilizer, i, j; phases::Bool=true)
     rowswap!(s.tab, i, j; phases=phases)
-    n = s.nqubits
+    n = nqubits(s)
     rowswap!(s.tab, i+n, j+n; phases=phases)
 end
 
@@ -643,7 +619,7 @@ end
 
 @inline function rowmul!(s::MixedDestabilizer, i, j; phases::Bool=true)
     rowmul!(s.tab, i, j; phases=phases)
-    n = s.nqubits
+    n = nqubits(s)
     rowmul!(s.tab, i+n, j+n; phases=phases)
 end
 
@@ -787,7 +763,7 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true)
 end
 
 function canonicalize!(ms::MixedStabilizer; phases::Bool=true)
-    canonicalize!(ms.stabilizer; phases=phases)
+    canonicalize!(stabilizerview(ms); phases=phases)
 end
 
 """
@@ -799,12 +775,12 @@ reverse in order to make its use in `traceout!` more efficient.
 Based on arxiv:0505036.
 """
 function canonicalize_rref!(state::AbstractStabilizer, colindices::AbstractVector{T}; phases::Bool=true) where {T<:Integer}
-    xzs = state.stabilizer.xzs
+    xzs = stabilizerview(state).xzs
     xs = @view xzs[:,1:end÷2]
     zs = @view xzs[:,end÷2+1:end]
     lowbit = UInt64(0x1)
     zero64 = UInt64(0x0)
-    rows, columns = size(state.stabilizer)
+    rows, columns = size(stabilizerview(state))
     i = rows
     for j in colindices
         jbig = _div64(j-1)+1
@@ -1115,8 +1091,8 @@ end
 
 function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
-    stabilizer = d.stabilizer
-    destabilizer = d.destabilizer
+    stabilizer = stabilizerview(d)
+    destabilizer = destabilizerview(d)
     n = size(stabilizer,1)
     for i in 1:n
         if comm(pauli,stabilizer,i)!=0x0
@@ -1125,7 +1101,7 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
         end
     end
     if anticommutes == 0
-        if n != stabilizer.nqubits
+        if n != nqubits(stabilizer)
             throw(BadDataStructure("`Destabilizer` can not efficiently (faster than n^3) detect whether you are projecting on a stabilized or a logical operator. Switch to one of the `Mixed*` data structures.",
                                    :project!,
                                    :Destabilizer))
@@ -1162,7 +1138,7 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
 end
 
 function project!(ms::MixedStabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
-    _, anticom_index, res = project!(ms.stabilizer, pauli; keep_result=keep_result, phases=phases)
+    _, anticom_index, res = project!(stabilizerview(ms), pauli; keep_result=keep_result, phases=phases)
     if anticom_index==0 && isnothing(res)
         ms.tab[ms.rank+1] = pauli
         if keep_result
@@ -1199,10 +1175,10 @@ end
 function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
     tab = d.tab
-    stabilizer = d.stabilizer
-    destabilizer = d.destabilizer
+    stabilizer = stabilizerview(d)
+    destabilizer = destabilizerview(d)
     r = d.rank
-    n = d.nqubits
+    n = nqubits(d)
     for i in 1:r # TODO use something like findfirst
         if comm(pauli,stabilizer,i)!=0x0
             anticommutes = i
@@ -1266,7 +1242,7 @@ end
 Trace out a qubit.
 """
 function traceout!(s::MixedStabilizer, qubits::AbstractVector{T}; phases=true) where {T<:Integer} # TODO implement it on the other state data structures.
-    _,i = canonicalize_rref!(s.stabilizer,qubits;phases=phases)
+    _,i = canonicalize_rref!(stabilizerview(s),qubits;phases=phases)
     s.rank = i
 end
 
@@ -1419,7 +1395,7 @@ function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
     for row_stab in eachindex(s)
         fill!(new_stabrowx, zero(eltype(new_stabrowx)))
         fill!(new_stabrowz, zero(eltype(new_stabrowz)))
-        for row_clif in 1:s.nqubits
+        for row_clif in 1:nqubits(s)
             bigrow = _div64(row_clif-1)+1
             smallrow = _mod64(row_clif-1)
             @inbounds @simd for i in 1:length(xztox)
@@ -1640,7 +1616,7 @@ function Base.one(::Type{Stabilizer}, n; basis=:Z)
         throw(ErrorException("`basis` should be one of :X, :Y, or :Z"))
     end
 end
-Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, s.nqubits; basis=basis)
+Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, nqubits(s); basis=basis)
 Base.one(::Type{Destabilizer}, n) = Destabilizer(vcat(one(Stabilizer, n, basis=:X),one(Stabilizer, n, basis=:Z)),noprocessing=true)
 function Base.one(::Type{MixedDestabilizer}, r, n)
     d = one(Stabilizer, n; basis=:X)

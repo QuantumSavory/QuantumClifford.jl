@@ -13,8 +13,8 @@ function stab_looks_good(s)
 end
 
 function destab_looks_good(destabilizer)
-    s = destabilizer.stabilizer
-    d = destabilizer.destabilizer
+    s = stabilizerview(destabilizer)
+    d = destabilizerview(destabilizer)
     good = stab_looks_good(s)
     for i in eachindex(s)
         good &= comm(s[i],d[i])==0x1
@@ -27,10 +27,10 @@ function destab_looks_good(destabilizer)
 end
 
 function mixed_destab_looks_good(destabilizer)
-    s = destabilizer.stabilizer
-    d = destabilizer.destabilizer
-    x = destabilizer.logicalx
-    z = destabilizer.logicalz
+    s = stabilizerview(destabilizer)
+    d = destabilizerview(destabilizer)
+    x = logicalxview(destabilizer)
+    z = logicalzview(destabilizer)
     good = check_allrowscommute(s)
     for i in eachindex(s)
         good &= comm(s[i],d[i])==0x1
@@ -203,17 +203,17 @@ end
             ps, anticom, res = project!(copy(s),m)
             dps, danticom, dres = project!(Destabilizer(copy(s)),m)
             @test destab_looks_good(dps)
-            @test anticom==danticom && res==dres && canonicalize!(ps)==canonicalize!(dps.stabilizer)
+            @test anticom==danticom && res==dres && canonicalize!(ps)==canonicalize!(stabilizerview(dps))
             m = single_z(n,1)
             ps, anticom, res = project!(copy(s),m)
             dps, danticom, dres = project!(Destabilizer(copy(s)),m)
             @test destab_looks_good(dps)
-            @test anticom==danticom && res==dres && canonicalize!(ps)==canonicalize!(dps.stabilizer)
+            @test anticom==danticom && res==dres && canonicalize!(ps)==canonicalize!(stabilizerview(dps))
             m = single_x(n,1)
             ps, anticom, res = project!(copy(s),m)
             dps, danticom, dres = project!(Destabilizer(copy(s)),m)
             @test destab_looks_good(dps)
-            @test anticom==danticom && res==dres && canonicalize!(ps)==canonicalize!(dps.stabilizer)
+            @test anticom==danticom && res==dres && canonicalize!(ps)==canonicalize!(stabilizerview(dps))
         end
     end
     @testset "Anticommutation indices and NA results" begin
@@ -250,7 +250,7 @@ end
         @test mixed_destab_looks_good(pmds)
         @test pmds.rank==2
         @test a==0 && r==0x2
-        @test canonicalize!(ps)==canonicalize!(pms.stabilizer)==canonicalize!(pmds.stabilizer)
+        @test canonicalize!(ps)==canonicalize!(stabilizerview(pms))==canonicalize!(stabilizerview(pmds))
 
         p = P"XZZ"
         ps, a, r = project!(copy(s),p)
@@ -267,7 +267,7 @@ end
         @test mixed_destab_looks_good(pmds)
         @test pmds.rank==2
         @test a==2 && isnothing(r)
-        @test canonicalize!(ps)==canonicalize!(pms.stabilizer)==canonicalize!(pds.stabilizer)==canonicalize!(pmds.stabilizer)
+        @test canonicalize!(ps)==canonicalize!(stabilizerview(pms))==canonicalize!(stabilizerview(pds))==canonicalize!(stabilizerview(pmds))
     end
     @testset "Mixed Destabilizer projection on logical operator" begin
         stab = one(MixedDestabilizer, 2,4)
@@ -277,22 +277,22 @@ end
         projxr = single_x(4,4)
         s, a, r = project!(copy(stab), projzl)
         @test mixed_destab_looks_good(s)
-        @test a==0 && r==0x0       && s.stabilizer==S"Z___
-                                                      _Z__"
+        @test a==0 && r==0x0       && stabilizerview(s)==S"Z___
+                                                           _Z__"
         s, a, r = project!(copy(stab), projxl)
         @test mixed_destab_looks_good(s)
-        @test a==1 && isnothing(r) && s.stabilizer==S"X___
-                                                      _Z__"
+        @test a==1 && isnothing(r) && stabilizerview(s)==S"X___
+                                                           _Z__"
         s, a, r = project!(copy(stab), projzr)
         @test mixed_destab_looks_good(s)
-        @test a==0 && isnothing(r) && s.stabilizer==S"Z___
-                                                      _Z__
-                                                      ___Z"
+        @test a==0 && isnothing(r) && stabilizerview(s)==S"Z___
+                                                           _Z__
+                                                           ___Z"
         s, a, r = project!(copy(stab), projxr)
         @test mixed_destab_looks_good(s)
-        @test a==0 && isnothing(r) && s.stabilizer==S"Z___
-                                                      _Z__
-                                                      ___X"
+        @test a==0 && isnothing(r) && stabilizerview(s)==S"Z___
+                                                           _Z__
+                                                           ___X"
     end
 end
 

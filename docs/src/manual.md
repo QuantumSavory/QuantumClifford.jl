@@ -474,12 +474,12 @@ They have convenience properties to extract only the stabilizer and destabilizer
 pieces:
 
 ```jldoctest destab
-julia> d.stabilizer
+julia> stabilizerview(d)
 - XXX
 - Z_Z
 + _ZZ
 
-julia> d.destabilizer
+julia> destabilizerview(d)
 + Z__
 + X__
 + _X_
