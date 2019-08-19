@@ -1657,11 +1657,18 @@ end
 ##############################
 
 random_pauli(n; nophase=false) = PauliOperator(nophase ? 0x0 : rand(0x0:0x3), rand(Bool,n), rand(Bool,n))
-function random_pauli(n,p; nophase=false)
+function random_pauli(n,p; nophase=false,nonidbranch=false)
     x = falses(n)
     z = falses(n)
+    if nonidbranch
+        definite = rand(1:n)
+        p=(p/(1-(1-2p)^n) - 1/n/3)*n/(n-1)
+    end
     for i in 1:n
         r = rand()
+        if nonidbranch && definite==i
+            r *= 3p
+        end
         if (r<=2p) x[i]=true end
         if (p<r<=3p) z[i]=true end
     end
