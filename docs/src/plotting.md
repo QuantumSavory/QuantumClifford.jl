@@ -50,3 +50,15 @@ julia> plot(canonicalize_gott!(random_stabilizer(40,50))[1]; xzcomponents=:toget
 ```
 
 ![](plot-gottstab-together.png)
+
+```@eval
+using Random; Random.seed!(1); using Plots; using SimpleClifford
+plot(canonicalize_rref!(random_stabilizer(40,50),1:50)[1]; xzcomponents=:together);
+savefig("plot-rref-together.png"); nothing
+```
+
+```julia
+julia> plot(canonicalize_rref!(random_stabilizer(40,50),1:50)[1]; xzcomponents=:together);
+```
+
+![](plot-rref-together.png)

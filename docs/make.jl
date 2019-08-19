@@ -15,6 +15,7 @@ authors = "Stefan Krastanov",
 pages = [
 "SimpleClifford.jl" => "index.md",
 "Manual" => "manual.md",
+"Canonicalization" => "canonicalization.md",
 "Mixed States" => "mixed.md",
 "Datastructure Choice" => "datastructures.md",
 "Useful States and Operators" => "commonstates.md",

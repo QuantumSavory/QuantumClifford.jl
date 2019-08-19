@@ -20,7 +20,7 @@ import RecipesBase
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     @S_str, Stabilizer, prodphase, comm, ⊕, check_allrowscommute,
-    canonicalize!, canonicalize_gott!, colpermute!,
+    canonicalize!, canonicalize_rref!, canonicalize_gott!, colpermute!,
     generate!, project!, reset_qubits!, traceout!,
     apply!,
     CliffordOperator, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
@@ -562,6 +562,53 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true)
         end
     end
     stabilizer
+end
+
+"""
+Canonicalize a stabilizer (in place) along only some columns.
+
+This uses different canonical form from `canonicalize!`. It also indexes in
+reverse in order to make its use in `traceout!` more efficient.
+
+Based on arxiv:0505036.
+"""
+function canonicalize_rref!(stabilizer::Stabilizer, colindices::AbstractVector{T}; phases::Bool=true) where {T<:Integer}
+    xzs = stabilizer.xzs
+    xs = @view xzs[:,1:end÷2]
+    zs = @view xzs[:,end÷2+1:end]
+    lowbit = UInt64(0x1)
+    zero64 = UInt64(0x0)
+    rows, columns = size(stabilizer)
+    i = rows
+    for j in colindices
+        jbig = _div64(j-1)+1
+        jsmall = lowbit<<_mod64(j-1)
+        k = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
+                      (@view xs[1:i,jbig]))
+        if k !== nothing
+            rowswap!(stabilizer, k, i; phases=phases)
+            for m in 1:rows
+                if xs[m,jbig]&jsmall!=zero64 && m!=i # if X or Y
+                    @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
+                    phases && (stabilizer.phases[m] = prodphase(stabilizer,stabilizer,m,i))
+                end
+            end
+            i -= 1
+        end
+        k = findfirst(e->e&(jsmall)!=zero64,
+                      (@view zs[1:i,jbig]))
+        if k !== nothing
+            rowswap!(stabilizer, k, i; phases=phases)
+            for m in 1:rows
+                if zs[m,jbig]&jsmall!=zero64 && m!=i # if Z or Y
+                    @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
+                    phases && (stabilizer.phases[m] = prodphase(stabilizer,stabilizer,m,i))
+                end
+            end
+            i -= 1
+        end
+    end
+    stabilizer, i
 end
 
 function gott_standard_form_indices(chunks2D, rows, cols; skip=0)
