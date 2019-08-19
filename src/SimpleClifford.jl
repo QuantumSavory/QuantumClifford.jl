@@ -1431,6 +1431,8 @@ mutable struct MixedDestabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UI
 end
 
 function MixedDestabilizer(stab::Stabilizer; undoperm=true)
+    r,n = size(stab)
+    r==n && return MixedDestabilizer(Destabilizer(stab).tab, r)
     stab, r, s, permx, permz = canonicalize_gott!(stab)
     n = stab.nqubits
     tab = zero(Stabilizer, n*2, n)
