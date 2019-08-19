@@ -423,6 +423,13 @@ const Y = P"Y"
     end
 end
 
+@inline function rowmul!(s::Stabilizer, m, i; phases::Bool=true)
+    @inbounds @simd for d in 1:size(s.xzs,2)
+        s.xzs[m,d] ⊻= s.xzs[i,d]
+    end
+    phases && (s.phases[m] = prodphase(s,s,m,i))
+end
+
 # TODO document as a more efficient way of swaping only two columns (instead of using permutation indexing)
 @inline function colswap!(s::Stabilizer, i, j)
     lowbit = UInt64(1)
@@ -536,8 +543,7 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true)
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
                 if xs[m,jbig]&jsmall!=zero64 && m!=i # if X or Y
-                    @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
-                    phases && (stabilizer.phases[m] = prodphase(stabilizer,stabilizer,m,i))
+                    rowmul!(stabilizer, m, i; phases=phases)
                 end
             end
             i += 1
@@ -554,8 +560,7 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true)
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
                 if zs[m,jbig]&jsmall!=zero64 && m!=i # if Z or Y
-                    @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
-                    phases && (stabilizer.phases[m] = prodphase(stabilizer,stabilizer,m,i))
+                    rowmul!(stabilizer, m, i; phases=phases)
                 end
             end
             i += 1
@@ -589,8 +594,7 @@ function canonicalize_rref!(stabilizer::Stabilizer, colindices::AbstractVector{T
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
                 if xs[m,jbig]&jsmall!=zero64 && m!=i # if X or Y
-                    @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
-                    phases && (stabilizer.phases[m] = prodphase(stabilizer,stabilizer,m,i))
+                    rowmul!(stabilizer, m, i; phases=phases)
                 end
             end
             i -= 1
@@ -601,8 +605,7 @@ function canonicalize_rref!(stabilizer::Stabilizer, colindices::AbstractVector{T
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
                 if zs[m,jbig]&jsmall!=zero64 && m!=i # if Z or Y
-                    @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
-                    phases && (stabilizer.phases[m] = prodphase(stabilizer,stabilizer,m,i))
+                    rowmul!(stabilizer, m, i; phases=phases)
                 end
             end
             i -= 1
@@ -656,8 +659,7 @@ function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true)
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
                 if xs[m,jbig]&jsmall!=zero64 && m!=i # if X or Y
-                    @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
-                    phases && (stabilizer.phases[m] = prodphase(stabilizer,stabilizer,m,i))
+                    rowmul!(stabilizer, m, i; phases=phases)
                 end
             end
             i += 1
@@ -677,8 +679,7 @@ function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true)
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
                 if zs[m,jbig]&jsmall!=zero64 && m!=i # if Z or Y
-                    @inbounds @simd for d in 1:size(xzs,2) xzs[m,d] ⊻= xzs[i,d] end
-                    phases && (stabilizer.phases[m] = prodphase(stabilizer,stabilizer,m,i))
+                    rowmul!(stabilizer, m, i; phases=phases)
                 end
             end
             i += 1
@@ -882,9 +883,7 @@ function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=
     else
         for i in anticommutes+1:n
             if comm(pauli,stabilizer,i)!=0
-                # TODO, this is just a long explicit way to write it... learn more about broadcast
-                phases && (stabilizer.phases[i] = prodphase(stabilizer, stabilizer, i, anticommutes))
-                stabilizer.xzs[i,:] .⊻= @view stabilizer.xzs[anticommutes,:]
+                rowmul!(stabilizer, i, anticommutes; phases=phases)
             end
         end
         stabilizer[anticommutes] = pauli
@@ -932,14 +931,6 @@ function reset_qubits!(stabilizer::Stabilizer, newsubstabilizer::Stabilizer, qub
     # TODO the check above is not enough
     stabilizer.phasesF22array[rows,[1,[q+1 for q in qubits]...]] = newsubstabilizer.phasesF22array # TODO nicer api
     stabilizer =#
-end
-
-"""
-Trace out a qubit.
-"""
-function traceout!(s::Stabilizer, qubit::AbstractVector{T}) where {T<:Integer} # TODO implement it on the other state data structures.
-    # It uses a particular type of canonicalization that we should abstract away arXiv:quant-ph/0505036
-
 end
 
 ##############################
@@ -1387,14 +1378,12 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
     else
         for i in anticommutes+1:n
             if comm(pauli,stabilizer,i)!=0
-                # TODO, this is just a long explicit way to write it... learn more about broadcast
-                phases && (stabilizer.phases[i] = prodphase(stabilizer, stabilizer, i, anticommutes))
-                stabilizer.xzs[i,:] .⊻= @view stabilizer.xzs[anticommutes,:]
+                rowmul!(stabilizer, i, anticommutes; phases=phases)
             end
         end
         for i in 1:n
             if i!=anticommutes && comm(pauli,destabilizer,i)!=0
-                destabilizer.xzs[i,:] .⊻= @view stabilizer.xzs[anticommutes,:]
+                rowmul!(d.tab, i, n+anticommutes; phases=false)
             end
         end
         destabilizer[anticommutes] = stabilizer[anticommutes]
@@ -1556,21 +1545,17 @@ function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases) # TODO Ensure t
     chunks = size(tab.xzs,2)
     for i in r+1:n
         if comm(pauli,tab,i)!=0
-            # TODO, this is just a long explicit way to write it... learn more about broadcast
-            phases && (tab.phases[i] = prodphase(tab, tab, i, n+anticommutes))
-            @inbounds @simd for c in 1:chunks tab.xzs[i,c] ⊻= tab.xzs[n+anticommutes,c] end
+            rowmul!(tab, i, n+anticommutes; phases=phases)
         end
     end
     for i in n+anticommutes+1:2n
         if comm(pauli,tab,i)!=0
-            # TODO, this is just a long explicit way to write it... learn more about broadcast
-            phases && (tab.phases[i] = prodphase(tab, tab, i, n+anticommutes))
-            @inbounds @simd for c in 1:chunks tab.xzs[i,c] ⊻= tab.xzs[n+anticommutes,c] end
+            rowmul!(tab, i, n+anticommutes; phases=phases)
         end
     end
     for i in 1:r
         if i!=anticommutes && comm(pauli,tab,i)!=0
-            @inbounds @simd for c in 1:chunks tab.xzs[i,c] ⊻= tab.xzs[n+anticommutes,c] end
+            rowmul!(tab, i, n+anticommutes; phases=false)
         end
     end
 end
@@ -1639,6 +1624,14 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
         result = nothing
     end
     d, anticommutes, result
+end
+
+"""
+Trace out a qubit.
+"""
+function traceout!(s::MixedStabilizer, qubits::AbstractVector{T}; phases=true) where {T<:Integer} # TODO implement it on the other state data structures.
+    _,i = canonicalize_rref!(s.stabilizer,qubits;phases=phases)
+    s.rank = i
 end
 
 ##############################
