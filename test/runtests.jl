@@ -158,6 +158,18 @@ end
             @test stab_looks_good(g)
         end
     end
+    @testset "Canonicalization of complex tableaus" begin
+        for n in test_sizes
+            rs = random_stabilizer(rand(n÷3:n*2÷3),n)
+            c  = canonicalize_rref!(copy(rs),1:n)[1]
+            dc = canonicalize_rref!(Destabilizer(copy(rs)),1:n)[1]
+            mc = canonicalize_rref!(MixedDestabilizer(copy(rs)),1:n)[1]
+            @test stabilizerview(mc) == stabilizerview(dc) == c
+            @test stab_looks_good(c)
+            @test destab_looks_good(dc)
+            @test mixed_destab_looks_good(mc)
+        end
+    end
 end
 
 @testset "Projective measurements" begin

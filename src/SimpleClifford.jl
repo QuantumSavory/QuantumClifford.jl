@@ -604,6 +604,12 @@ const Y = P"Y"
     end
 end
 
+@inline function rowswap!(s::Destabilizer, i, j; phases::Bool=true)
+    rowswap!(s.tab, i, j; phases=phases)
+    n = size(s.tab,1)÷2
+    rowswap!(s.tab, i+n, j+n; phases=phases)
+end
+
 @inline function rowswap!(s::MixedDestabilizer, i, j; phases::Bool=true)
     rowswap!(s.tab, i, j; phases=phases)
     n = nqubits(s)
@@ -617,8 +623,14 @@ end
     phases && (s.phases[m] = prodphase(s,s,m,i))
 end
 
+@inline function rowmul!(s::Destabilizer, i, j; phases::Bool=true)
+    rowmul!(s.tab, j, i; phases=phases)
+    n = size(s.tab,1)÷2
+    rowmul!(s.tab, i+n, j+n; phases=phases)
+end
+
 @inline function rowmul!(s::MixedDestabilizer, i, j; phases::Bool=true)
-    rowmul!(s.tab, i, j; phases=phases)
+    rowmul!(s.tab, j, i; phases=phases)
     n = nqubits(s)
     rowmul!(s.tab, i+n, j+n; phases=phases)
 end
@@ -808,7 +820,7 @@ function canonicalize_rref!(state::AbstractStabilizer, colindices::AbstractVecto
             i -= 1
         end
     end
-    stabilizer, i
+    state, i
 end
 
 function gott_standard_form_indices(chunks2D, rows, cols; skip=0)
