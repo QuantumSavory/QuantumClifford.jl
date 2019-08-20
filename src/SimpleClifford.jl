@@ -610,6 +610,10 @@ end
     rowswap!(s.tab, i+n, j+n; phases=phases)
 end
 
+@inline function rowswap!(s::MixedStabilizer, i, j; phases::Bool=true)
+    rowswap!(s.tab, i, j; phases=phases)
+end
+
 @inline function rowswap!(s::MixedDestabilizer, i, j; phases::Bool=true)
     rowswap!(s.tab, i, j; phases=phases)
     n = nqubits(s)
@@ -624,13 +628,17 @@ end
 end
 
 @inline function rowmul!(s::Destabilizer, i, j; phases::Bool=true)
-    rowmul!(s.tab, j, i; phases=phases)
+    rowmul!(s.tab, j, i; phases=false)
     n = size(s.tab,1)÷2
     rowmul!(s.tab, i+n, j+n; phases=phases)
 end
 
+@inline function rowmul!(s::MixedStabilizer, i, j; phases::Bool=true)
+    rowmul!(s.tab, i, j; phases=phases)
+end
+
 @inline function rowmul!(s::MixedDestabilizer, i, j; phases::Bool=true)
-    rowmul!(s.tab, j, i; phases=phases)
+    rowmul!(s.tab, j, i; phases=false)
     n = nqubits(s)
     rowmul!(s.tab, i+n, j+n; phases=phases)
 end
@@ -1252,9 +1260,14 @@ end
 
 """
 Trace out a qubit.
-"""
+""" # TODO all of these should raise an error if length(qubits)>rank
 function traceout!(s::MixedStabilizer, qubits::AbstractVector{T}; phases=true) where {T<:Integer} # TODO implement it on the other state data structures.
-    _,i = canonicalize_rref!(stabilizerview(s),qubits;phases=phases)
+    _,i = canonicalize_rref!(s,qubits;phases=phases)
+    s.rank = i
+end
+
+function traceout!(s::MixedDestabilizer, qubits::AbstractVector{T}; phases=true) where {T<:Integer} # TODO implement it on the other state data structures.
+    _,i = canonicalize_rref!(s,qubits;phases=phases)
     s.rank = i
 end
 
