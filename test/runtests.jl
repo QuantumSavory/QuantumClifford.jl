@@ -332,6 +332,37 @@ end
     end
 end
 
+@testset "Bug fixes - regression tests" begin
+    @testset "Redundant row permutations in `project!(::MixedDestabilizer)`" begin
+        # Fixed in 41ed1d3c
+        destab =  S"+ ZX_Y_YXZ
+                    + XY_Y____
+                    + _Z_XXY__
+                    + _ZYXXY__
+                    + X__Y_ZXZ
+                    + X__YXZXZ
+                    + ___YXXZZ
+                    + _______Z"
+        stab =    S"+ X_______
+                    + _X_Y____
+                    + __ZY____
+                    + __Z_____
+                    + ___YZY__
+                    + X__YZYZZ
+                    + X____YZZ
+                    + ______YX"
+        t = MixedDestabilizer(vcat(destab,stab), 8)
+        @test mixed_destab_looks_good(t)
+        c = copy(stabilizerview(t)[[1,3,5,7]])
+        traceout!(t,[1,4,3,6])
+        @test mixed_destab_looks_good(t)
+        project!(t,c[1])
+        @test mixed_destab_looks_good(t)
+        project!(t,c[2])
+        @test mixed_destab_looks_good(t) # This used to fail because anticomlog==rank+1 leading to a repeated row permutation
+    end
+end
+
 end
 
 tests()
