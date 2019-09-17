@@ -1649,6 +1649,11 @@ function Base.one(::Type{MixedDestabilizer}, r, n)
     MixedDestabilizer(vcat(d,s),r)
 end
 
+function Base.one(::Type{CliffordOperator}, n)
+    phases = zeros(UInt8,n)
+    zx
+end
+
 ##############################
 # Random objects
 ##############################
