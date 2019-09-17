@@ -1224,7 +1224,7 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
         if anticomlog!=0
             if anticomlog<=n
                 rowswap!(tab, r+1+n, anticomlog)
-                n!=r+1 && rowswap!(tab, r+1, anticomlog+n)
+                n!=r+1 && anticomlog!=r+1 && rowswap!(tab, r+1, anticomlog+n)
             else
                 rowswap!(tab, r+1, anticomlog-n)
                 rowswap!(tab, r+1+n, anticomlog)
