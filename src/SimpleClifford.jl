@@ -659,8 +659,8 @@ end
             ival = s.xzs[k,ibig] & ismallm
             jval = s.xzs[k,jbig] & jsmallm
             s.xzs[k,ibig] &= ~ismallm
-            s.xzs[k,jbig] &= ~jsmallm
-            if ismall>jsmall
+            s.xzs[k,jbig] &= ~jsmallm  # TODO do we really need to check the sign? Is there a better built-in shift op?
+            if ismall>jsmall # TODO this is also present in permute(CliffordOp,...), maybe abstract away
                 s.xzs[k,ibig] |= jval<<(ismall-jsmall)
                 s.xzs[k,jbig] |= ival>>(ismall-jsmall)
             elseif ismall<jsmall
@@ -1406,9 +1406,35 @@ function Base.copy(c::CliffordOperator)
 end
 
 # TODO create Base.permute! and getindex(..., permutation_array)
-function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this is extremely slow stupid implementation
-    ops = getallpaulis_(c)
-    CliffordOperator([ops[i][p] for i in 1:2*c.nqubits][vcat(p,p.+c.nqubits)])
+function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO why T and not Int?
+    nc = zero(c)
+    for (ii, i) in enumerate(p) nc.phases[ii] = c.phases[i] end
+    for (ii, i) in enumerate(p)
+        for (jj, j) in enumerate(p)
+            bigjj = _div64(jj-1)+1
+            bigj  = _div64(j -1)+1
+            smalljj = _mod64(jj-1)
+            smallj  = _mod64(j -1)
+            mask = UInt64(0x1)<<smallj # TODO do we really need to check the sign? Is there a better built-in shift op?
+            if smalljj>smallj # TODO this is also present in colswap!, maybe abstract away
+                nc.xztox[ii,       bigjj] |= (c.xztox[i,       bigj] & mask)<<(smalljj-smallj)
+                nc.xztox[ii,end>>1+bigjj] |= (c.xztox[i,end>>1+bigj] & mask)<<(smalljj-smallj)
+                nc.xztoz[ii,       bigjj] |= (c.xztoz[i,       bigj] & mask)<<(smalljj-smallj)
+                nc.xztoz[ii,end>>1+bigjj] |= (c.xztoz[i,end>>1+bigj] & mask)<<(smalljj-smallj)
+            elseif smalljj<smallj
+                nc.xztox[ii,       bigjj] |= (c.xztox[i,       bigj] & mask)>>(smallj-smalljj)
+                nc.xztox[ii,end>>1+bigjj] |= (c.xztox[i,end>>1+bigj] & mask)>>(smallj-smalljj)
+                nc.xztoz[ii,       bigjj] |= (c.xztoz[i,       bigj] & mask)>>(smallj-smalljj)
+                nc.xztoz[ii,end>>1+bigjj] |= (c.xztoz[i,end>>1+bigj] & mask)>>(smallj-smalljj)
+            else
+                nc.xztox[ii,       bigjj] |= (c.xztox[i,       bigj] & mask)
+                nc.xztox[ii,end>>1+bigjj] |= (c.xztox[i,end>>1+bigj] & mask)
+                nc.xztoz[ii,       bigjj] |= (c.xztoz[i,       bigj] & mask)
+                nc.xztoz[ii,end>>1+bigjj] |= (c.xztoz[i,end>>1+bigj] & mask)
+            end
+        end
+    end
+    nc
 end
 
 function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
@@ -1511,6 +1537,8 @@ function (⊗)(l::CliffordOperator, r::CliffordOperator) # TODO this is extremel
     opsr = [onel⊗r for r in opsr]
     CliffordOperator(vcat(opsl[1:end÷2],opsr[1:end÷2],opsl[end÷2+1:end],opsr[end÷2+1:end]))
 end
+
+@inline nqubits(c::CliffordOperator) = c.nqubits
 
 function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
     rstab = Stabilizer(getallpaulis_(r)) # TODO this is a bit awkward... and fragile... turning a CliffordOp into a Stabilizer
@@ -1629,6 +1657,7 @@ Base.zero(p::PauliOperator) = PauliOperator(0x0,falses(p.nqubits),falses(p.nqubi
 Base.zero(::Type{Stabilizer}, n, m) = Stabilizer(zeros(UInt8,n),falses(n,m),falses(n,m))
 Base.zero(::Type{Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(n,n))
 Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
+Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.phases),c.nqubits,zero(c.xztox),zero(c.xztoz))
 
 function Base.one(::Type{Stabilizer}, n; basis=:Z)
     if basis==:X

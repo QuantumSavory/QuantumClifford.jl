@@ -332,6 +332,21 @@ end
     end
 end
 
+@testset "Cliffor Operators" begin
+    @testset "Permutations of qubits" begin
+        function naive_permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this is extremely slow stupid implementation
+            ops = SimpleClifford.getallpaulis_(c)
+            CliffordOperator([ops[i][p] for i in 1:2*c.nqubits][vcat(p,p.+c.nqubits)])
+        end
+        for c in [CNOT, CliffordId⊗Hadamard, CNOT⊗CNOT, tensor_pow(CNOT,6), tensor_pow(CNOT,7), tensor_pow(CNOT,6)⊗Phase, tensor_pow(CNOT,7)⊗Phase]
+            for rep in 1:5
+                p = randperm(nqubits(c))
+               @test permute(c,p) == naive_permute(c,p)
+            end
+        end
+    end
+end
+
 @testset "Bug fixes - regression tests" begin
     @testset "Redundant row permutations in `project!(::MixedDestabilizer)`" begin
         # Fixed in 41ed1d3c
