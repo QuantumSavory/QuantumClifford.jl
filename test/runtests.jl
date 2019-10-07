@@ -387,6 +387,13 @@ end
                 @test naive_mul(g1,g2)==g1⊗g2
             end
         end
+        c1 = tensor_pow(CNOT,32)
+        @test naive_mul(c1,c1) == c1⊗c1
+        c1 = naive_tensor_pow(Hadamard,33)
+        @test naive_mul(c1,c1) == c1⊗c1
+        c2 = naive_tensor_pow(Hadamard,32)
+        @test naive_mul(c1,c2) == c1⊗c2
+        @test naive_mul(c2,c1) == c2⊗c1
     end
 end
 

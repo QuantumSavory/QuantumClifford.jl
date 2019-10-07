@@ -1468,8 +1468,7 @@ function ⊗(ops::CliffordOperator...)
                 newop.xztoz[s+row-1,j+bigs-1] |= op.xztoz[row,j] << smalls
                 newop.xztox[s+row-1,j+bigs-1+end>>1] |= op.xztox[row,j+end>>1] << smalls
                 newop.xztoz[s+row-1,j+bigs-1+end>>1] |= op.xztoz[row,j+end>>1] << smalls
-                #if j==bign && smalln+smalls<64
-                if j+bigs>_div64(totaln-1)+1 # TODO make this conditional more obvious (maybe the one above, commented out)
+                if j==bign && smalln+smalls<64
                     break
                 end
                 newop.xztox[s+row-1,j+bigs] |= op.xztox[row,j] >> (64-smalls)
