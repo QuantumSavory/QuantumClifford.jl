@@ -345,6 +345,49 @@ end
             end
         end
     end
+    @testset "Tensor products" begin
+        function naive_mul(l::CliffordOperator, r::CliffordOperator) # TODO this is extremely slow stupid implementation
+            opsl = SimpleClifford.getallpaulis_(l)
+            opsr = SimpleClifford.getallpaulis_(r)
+            onel = zero(opsl[1])
+            oner = zero(opsr[1])
+            opsl = [l⊗oner for l in opsl]
+            opsr = [onel⊗r for r in opsr]
+            CliffordOperator(vcat(opsl[1:end÷2],opsr[1:end÷2],opsl[end÷2+1:end],opsr[end÷2+1:end]))
+        end
+        function naive_tensor_pow(op::CliffordOperator,power::Integer,mem::Dict{Integer,CliffordOperator})
+            if power==1
+                return op
+            elseif haskey(mem,power)
+                return mem[power]
+            end
+            half,rest = divrem(power,2)
+            phalf = get!(mem,half) do
+                naive_tensor_pow(op,half,mem)
+            end
+            res = naive_mul(phalf,phalf)
+            if rest!=0
+                prest = get!(mem,rest) do
+                    naive_tensor_pow(op,half,mem)
+                end
+                res = naive_mul(res,prest)
+            end
+            res
+        end
+        function naive_tensor_pow(op::CliffordOperator,power::Integer)
+            naive_tensor_pow(op,power,Dict{Integer,CliffordOperator}())
+        end
+        for s in [2,3,4,31,32,33,63,64,65]
+            for g in [CNOT,Hadamard,CNOT⊗Phase]
+                @test naive_tensor_pow(g,s)==tensor_pow(g,s)
+            end
+        end
+        for g1 in [CNOT,Hadamard,CNOT⊗Phase,CliffordId]
+            for g2 in [CNOT,Hadamard,CNOT⊗Phase,CliffordId]
+                @test naive_mul(g1,g2)==g1⊗g2
+            end
+        end
+    end
 end
 
 @testset "Bug fixes - regression tests" begin

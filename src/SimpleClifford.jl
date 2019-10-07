@@ -1405,6 +1405,14 @@ function Base.copy(c::CliffordOperator)
     CliffordOperator(copy(c.phases),c.nqubits,copy(c.xztox),copy(c.xztoz))
 end
 
+@inline nqubits(c::CliffordOperator) = c.nqubits
+
+function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
+    rstab = Stabilizer(getallpaulis_(r)) # TODO this is a bit awkward... and fragile... turning a CliffordOp into a Stabilizer
+    apply!(rstab,l)
+    CliffordOperator([rstab[i] for i in eachindex(rstab)])
+end
+
 # TODO create Base.permute! and getindex(..., permutation_array)
 function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO why T and not Int?
     nc = zero(c)
@@ -1435,6 +1443,44 @@ function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO why T
         end
     end
     nc
+end
+
+function tensor_pow(op::CliffordOperator,power::Integer)
+    ⊗(repeat([op],power)...)
+end
+
+function ⊗(ops::CliffordOperator...)
+    ns = [nqubits(op) for op in ops]
+    totaln = sum(ns)
+    s = 1
+    newop = zero(CliffordOperator,totaln)
+    for i in eachindex(ops)
+        n = ns[i]
+        op = ops[i]
+        bigs = _div64(s-1)+1
+        smalls = _mod64(s-1)
+        bign = _div64(n-1)+1
+        smalln = _mod64(n-1)
+        for row in 1:n
+            newop.phases[s+row-1] = op.phases[row]
+            for j in 1:bign
+                newop.xztox[s+row-1,j+bigs-1] |= op.xztox[row,j] << smalls
+                newop.xztoz[s+row-1,j+bigs-1] |= op.xztoz[row,j] << smalls
+                newop.xztox[s+row-1,j+bigs-1+end>>1] |= op.xztox[row,j+end>>1] << smalls
+                newop.xztoz[s+row-1,j+bigs-1+end>>1] |= op.xztoz[row,j+end>>1] << smalls
+                #if j==bign && smalln+smalls<64
+                if j+bigs>_div64(totaln-1)+1 # TODO make this conditional more obvious (maybe the one above, commented out)
+                    break
+                end
+                newop.xztox[s+row-1,j+bigs] |= op.xztox[row,j] >> (64-smalls)
+                newop.xztoz[s+row-1,j+bigs] |= op.xztoz[row,j] >> (64-smalls)
+                newop.xztox[s+row-1,j+bigs+end>>1] |= op.xztox[row,j+end>>1] >> (64-smalls)
+                newop.xztoz[s+row-1,j+bigs+end>>1] |= op.xztoz[row,j+end>>1] >> (64-smalls)
+            end
+        end
+        s += n
+    end
+    newop
 end
 
 function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
@@ -1481,30 +1527,6 @@ function apply!(s::Stabilizer, c::CliffordOperator, single_qbit_offset::Int)
     s
 end
 
-function tensor_pow(op::CliffordOperator,power::Integer,mem::Dict{Integer,CliffordOperator})
-    if power==1
-        return op
-    elseif haskey(mem,power)
-        return mem[power]
-    end
-    half,rest = divrem(power,2)
-    phalf = get!(mem,half) do
-        tensor_pow(op,half,mem)
-    end
-    res = phalf⊗phalf
-    if rest!=0
-        prest = get!(mem,rest) do
-            tensor_pow(op,half,mem)
-        end
-        res = res⊗prest
-    end
-    res
-end
-
-function tensor_pow(op::CliffordOperator,power::Integer)
-    tensor_pow(op,power,Dict{Integer,CliffordOperator}())
-end
-
 const CNOT = C"XX
                IX
                ZI
@@ -1523,28 +1545,6 @@ const Phase = C"Y
 
 const CliffordId = C"X
                      Z"
-
-##############################
-# Helpers for Clifford Operators
-##############################
-
-function (⊗)(l::CliffordOperator, r::CliffordOperator) # TODO this is extremely slow stupid implementation
-    opsl = getallpaulis_(l)
-    opsr = getallpaulis_(r)
-    onel = zero(opsl[1])
-    oner = zero(opsr[1])
-    opsl = [l⊗oner for l in opsl]
-    opsr = [onel⊗r for r in opsr]
-    CliffordOperator(vcat(opsl[1:end÷2],opsr[1:end÷2],opsl[end÷2+1:end],opsr[end÷2+1:end]))
-end
-
-@inline nqubits(c::CliffordOperator) = c.nqubits
-
-function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
-    rstab = Stabilizer(getallpaulis_(r)) # TODO this is a bit awkward... and fragile... turning a CliffordOp into a Stabilizer
-    apply!(rstab,l)
-    CliffordOperator([rstab[i] for i in eachindex(rstab)])
-end
 
 ##############################
 # Helpers for binary codes
@@ -1657,6 +1657,7 @@ Base.zero(p::PauliOperator) = PauliOperator(0x0,falses(p.nqubits),falses(p.nqubi
 Base.zero(::Type{Stabilizer}, n, m) = Stabilizer(zeros(UInt8,n),falses(n,m),falses(n,m))
 Base.zero(::Type{Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(n,n))
 Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
+Base.zero(::Type{CliffordOperator}, n) = CliffordOperator(zeros(UInt8,2n),n,repeat(falses(n).chunks',n,2),repeat(falses(n).chunks',n,2))
 Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.phases),c.nqubits,zero(c.xztox),zero(c.xztoz))
 
 function Base.one(::Type{Stabilizer}, n; basis=:Z)
