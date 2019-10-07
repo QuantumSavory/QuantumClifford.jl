@@ -103,8 +103,8 @@ arrays).
 ```jldoctest
 julia> p = P"-IXYZ";
 
-julia> p.nqubits, p.phase, p.xz
-(4, 0x02, UInt64[0x0000000000000006, 0x000000000000000c])
+julia> p.nqubits, p.xz
+(4, UInt64[0x0000000000000006, 0x000000000000000c])
 ```
 
 The convenience properties `xbit` and `zbit` give you Bool (GF2) vectors.
