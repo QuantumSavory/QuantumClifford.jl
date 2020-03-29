@@ -344,6 +344,11 @@ end
                @test permute(c,p) == naive_permute(c,p)
             end
         end
+        for i in 1:5
+            p = randperm(125)
+            c = rand([CliffordId, Hadamard, Phase, Phase*Hadamard], 125)
+            @test ⊗(c[p]...) == naive_permute(⊗(c...), p) == permute(⊗(c...), p)
+        end
     end
     @testset "Tensor products" begin
         function naive_mul(l::CliffordOperator, r::CliffordOperator) # TODO this is extremely slow stupid implementation
