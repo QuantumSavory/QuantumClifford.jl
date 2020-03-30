@@ -400,6 +400,26 @@ end
         @test naive_mul(c1,c2) == c1⊗c2
         @test naive_mul(c2,c1) == c2⊗c1
     end
+    @testset "Clifford acting on Stabilizer" begin
+        for size in [10,63,64,65,130]
+            s = random_stabilizer(size)
+            gates = vcat([CNOT, Hadamard, Phase], repeat([CliffordId],size-4))
+            gates_perm = randperm(size-1)
+            gates = gates[gates_perm]
+            big_gate = reduce(⊗,gates)
+
+            s1 = apply!(copy(s),big_gate)
+            @test stab_looks_good(s1)
+
+            igates_perm = perm_inverse(gates_perm)
+            s2 = copy(s)
+            s2 = apply!(s2, CNOT, [igates_perm[1],igates_perm[1]+1])
+            s2 = apply!(s2, Hadamard, [igates_perm[2]+(igates_perm[1]<igates_perm[2])])
+            s2 = apply!(s2, Phase, [igates_perm[3]+(igates_perm[1]<igates_perm[3])])
+
+            @test s1 == s2
+        end
+    end
 end
 
 @testset "Bug fixes - regression tests" begin

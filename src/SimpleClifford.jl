@@ -1509,6 +1509,49 @@ function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
     s
 end
 
+@inline get_bit(i::UInt64,bit) = (i & (UInt64(0x1)<<bit))>>bit
+
+function apply!(s::Stabilizer, c::CliffordOperator, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
+    new_stabrowx = zeros(Bool,length(indices_of_application))
+    new_stabrowz = zeros(Bool,length(indices_of_application))
+    lowbit = UInt64(0x1)
+    for row_stab in eachindex(s)
+        fill!(new_stabrowx, zero(eltype(new_stabrowx)))
+        fill!(new_stabrowz, zero(eltype(new_stabrowz)))
+        phase_flip = 0x0
+        for row_clif in 1:nqubits(c)
+            xtox = false
+            ztox = false
+            xtoz = false
+            ztoz = false
+            for (i,i_redirect) in enumerate(indices_of_application)
+                bigi = _div64(i-1)+1
+                smalli = _mod64(i-1)
+                bigi_redirect = _div64(i_redirect-1)+1
+                smalli_redirect = _mod64(i_redirect-1)
+                # TODO find a better way than ~iszero
+                xtox ⊻= ~iszero(get_bit(c.xztox[row_clif,bigi],smalli) & get_bit(s.xzs[row_stab,bigi_redirect],smalli_redirect))
+                ztox ⊻= ~iszero(get_bit(c.xztox[row_clif,end÷2+bigi],smalli) & get_bit(s.xzs[row_stab,end÷2+bigi_redirect],smalli_redirect))
+                xtoz ⊻= ~iszero(get_bit(c.xztoz[row_clif,bigi],smalli) & get_bit(s.xzs[row_stab,bigi_redirect],smalli_redirect))
+                ztoz ⊻= ~iszero(get_bit(c.xztoz[row_clif,end÷2+bigi],smalli) & get_bit(s.xzs[row_stab,end÷2+bigi_redirect],smalli_redirect))
+            end
+            new_stabrowx[row_clif] |= xtox ⊻ ztox
+            new_stabrowz[row_clif] |= xtoz ⊻ ztoz
+            phases && (phase_flip += xtoz & ztox)
+        end
+        for (i,i_redirect) in enumerate(indices_of_application)
+            bigi_redirect = _div64(i_redirect-1)+1
+            smalli_redirect = _mod64(i_redirect-1)
+            s.xzs[row_stab,bigi_redirect] &= ~(lowbit<<smalli_redirect)
+            s.xzs[row_stab,bigi_redirect] |= new_stabrowx[i]<<smalli_redirect
+            s.xzs[row_stab,end÷2+bigi_redirect] &= ~(lowbit<<smalli_redirect)
+            s.xzs[row_stab,end÷2+bigi_redirect] |= new_stabrowz[i]<<smalli_redirect
+        end
+        phases && (s.phases[row_stab] = (s.phases[row_stab]+phase_flip<<1)&0x3)
+    end
+    s
+end
+
 function apply!(s::Stabilizer, c::CliffordOperator, single_qbit_offset::Int)
     bigs = _div64(single_qbit_offset-1)+1
     smalls = _mod64(single_qbit_offset-1)
