@@ -8,5 +8,5 @@ The package is still in an alpha state and it is not in the Julia registry. To
 install it use:
 
 ```julia
-] add https://travis-ci.com/Krastanov/SimpleClifford#master
+] add https://github.com/Krastanov/SimpleClifford#master
 ```
