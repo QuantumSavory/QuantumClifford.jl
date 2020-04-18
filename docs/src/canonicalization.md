@@ -22,7 +22,7 @@ Cycle between elimination on X and Z for each qubit. Particularly useful for
 tracing out qubits. Based on arxiv:0505036.
 
 ```julia
-julia> plot(canonicalize_rref!(random_stabilizer(40,50))[1]; xzcomponents=:together);
+julia> plot(canonicalize_rref!(random_stabilizer(40,50),1:50)[1]; xzcomponents=:together);
 ```
 
 ![](plot-rref-together.png)
@@ -36,7 +36,7 @@ related to logical operations of the corresponding code. Based on Gottesman's
 thesis.
 
 ```julia
-julia> plot(canonicalize_gott!(random_stabilizer(40,50),1:50)[1]; xzcomponents=:together);
+julia> plot(canonicalize_gott!(random_stabilizer(40,50))[1]; xzcomponents=:together);
 ```
 
 ![](plot-gottstab-together.png)
