@@ -1261,14 +1261,25 @@ end
 """
 Trace out a qubit.
 """ # TODO all of these should raise an error if length(qubits)>rank
-function traceout!(s::MixedStabilizer, qubits::AbstractVector{T}; phases=true) where {T<:Integer} # TODO implement it on the other state data structures.
+function traceout!(s::Stabilizer, qubits::AbstractVector{T}; phases=true) where {T<:Integer}
     _,i = canonicalize_rref!(s,qubits;phases=phases)
-    s.rank = i
+    idpaulis = zero(PauliOperator,nqubits(s))
+    for j in i+1:nqubits(s)
+        s[j] = idpaulis # TODO - this can be done without creating/allocating an idpaulis object
+    end
+    s
 end
 
-function traceout!(s::MixedDestabilizer, qubits::AbstractVector{T}; phases=true) where {T<:Integer} # TODO implement it on the other state data structures.
+function traceout!(s::MixedStabilizer, qubits::AbstractVector{T}; phases=true) where {T<:Integer}
     _,i = canonicalize_rref!(s,qubits;phases=phases)
     s.rank = i
+    s
+end
+
+function traceout!(s::MixedDestabilizer, qubits::AbstractVector{T}; phases=true) where {T<:Integer}
+    _,i = canonicalize_rref!(s,qubits;phases=phases)
+    s.rank = i
+    s
 end
 
 ##############################
@@ -1798,6 +1809,93 @@ function random_singlequbitop(n)
                          vcat((vcat(x2x.chunks,z2x.chunks)' for (x2x,z2x) in zip(xtox,ztox))...),
                          vcat((vcat(x2z.chunks,z2z.chunks)' for (x2z,z2z) in zip(xtoz,ztoz))...)
         )
+end
+
+##############################
+# Consistency checks
+##############################
+
+"""
+Check basic consistency requirements of a stabilizer. Used in tests.
+"""
+function stab_looks_good(s)
+    c = canonicalize!(copy(s))
+    phasesok = all((c.phases .== 0x0) .| (c.phases .== 0x2))
+    H = stab_to_gf2(c)
+    good_indices = reduce(|,H,dims=(1,))
+    good_indices = good_indices[1:end÷2] .| good_indices[end÷2+1:end]
+    colsok = all(good_indices)
+    good_indices = reduce(|,H,dims=(2,))
+    rowsok = all(good_indices)
+    return phasesok && rowsok && colsok && check_allrowscommute(c)
+end
+
+"""
+Check basic consistency requirements of a mixed stabilizer. Used in tests.
+"""
+function mixed_stab_looks_good(s)
+    s = stabilizerview(s)
+    c = canonicalize!(copy(s))
+    phasesok = all((c.phases .== 0x0) .| (c.phases .== 0x2))
+    H = stab_to_gf2(c)
+    # Unlike for stabilizers, we do not expect all columns to have non-identity ops
+    #good_indices = reduce(|,H,dims=(1,))
+    #good_indices = good_indices[1:end÷2] .| good_indices[end÷2+1:end]
+    #colsok = all(good_indices)
+    good_indices = reduce(|,H,dims=(2,))
+    rowsok = all(good_indices)
+    return phasesok && rowsok && check_allrowscommute(c)
+end
+
+"""
+Check basic consistency requirements of a destabilizer. Used in tests.
+"""
+function destab_looks_good(destabilizer)
+    s = stabilizerview(destabilizer)
+    d = destabilizerview(destabilizer)
+    good = stab_looks_good(s)
+    for i in eachindex(s)
+        good &= comm(s[i],d[i])==0x1
+        for j in eachindex(s)
+            j==i && continue
+            good &= comm(s[i],d[j])==0x0
+        end
+    end
+    good
+end
+
+"""
+Check basic consistency requirements of a mixed destabilizer. Used in tests.
+"""
+function mixed_destab_looks_good(destabilizer)
+    s = stabilizerview(destabilizer)
+    d = destabilizerview(destabilizer)
+    x = logicalxview(destabilizer)
+    z = logicalzview(destabilizer)
+    good = check_allrowscommute(s)
+    for i in eachindex(s)
+        good &= comm(s[i],d[i])==0x1
+        for j in eachindex(s)
+            j==i && continue
+            good &= comm(s[i],d[j])==0x0
+        end
+        for j in eachindex(x)
+            good &= comm(s[i],x[j])==0x0
+            good &= comm(s[i],z[j])==0x0
+        end
+    end
+    for i in eachindex(x)
+        for j in eachindex(x)
+            good &= comm(x[i],x[j])==0x0
+            good &= comm(z[i],z[j])==0x0
+            if i==j
+                good &= comm(x[i],z[j])==0x1
+            else
+                good &= comm(x[i],z[j])==0x0
+            end
+        end
+    end
+    good
 end
 
 ##############################
