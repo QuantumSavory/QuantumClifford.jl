@@ -309,6 +309,10 @@ julia> project!(copy(s), P"ZZI", phases=false)
 - _ZZ, 0, 0x00)
 ```
 
+# Partial Traces
+
+TODO (use `traceout!`)
+
 # Generating a Pauli Operator with Stabilizer Generators
 
 The [`generate!`](@ref) function attempts to generate a Pauli operator by
