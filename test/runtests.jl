@@ -380,7 +380,7 @@ end
         function naive_tensor_pow(op::CliffordOperator,power::Integer)
             naive_tensor_pow(op,power,Dict{Integer,CliffordOperator}())
         end
-        for s in [2,3,4,31,32,33,63,64,65]
+        for s in test_sizes
             for g in [CNOT,Hadamard,CNOT⊗Phase]
                 @test naive_tensor_pow(g,s)==tensor_pow(g,s)
             end
@@ -399,7 +399,7 @@ end
         @test naive_mul(c2,c1) == c2⊗c1
     end
     @testset "Clifford acting on Stabilizer" begin
-        for size in [10,63,64,65,130]
+        for size in test_sizes
             s = random_stabilizer(size)
             gates = vcat([CNOT, Hadamard, Phase], repeat([CliffordId],size-4))
             gates_perm = randperm(size-1)
