@@ -486,8 +486,8 @@ julia> destabilizerview(d)
 ```
 
 Importantly commuting projections are much faster when tracking the destabilizer
-as canonicalization is not necessary (an ``\mathcal{O}(n^2)`` because it avoids
-the expensive ``\mathcal{O}(n^3)`` canonicalization operation.
+as canonicalization is not necessary (an ``\mathcal{O}(n^2)`` complexity because it avoids
+the expensive ``\mathcal{O}(n^3)`` canonicalization operation).
 
 ```jldoctest destab
 julia> project!(d,P"ZZI")
