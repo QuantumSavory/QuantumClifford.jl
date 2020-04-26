@@ -25,7 +25,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     canonicalize!, canonicalize_rref!, canonicalize_gott!, colpermute!,
     generate!, project!, reset_qubits!, traceout!,
     apply!,
-    CliffordColumnForm, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
+    CliffordColumnForm, @Ccol_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
     tensor_pow,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     perm_inverse, perm_product,
@@ -1299,6 +1299,10 @@ function apply!(s::Stabilizer, p::PauliOperator; phases::Bool=true)
     s
 end
 
+function tensor_pow(op::AbstractCliffordOperator,power::Integer)
+    ⊗(repeat([op],power)...)
+end
+
 """
 Clifford Operator specified by the mapping of the basis generators.
 
@@ -1322,6 +1326,14 @@ julia> entangled = CNOT*stab
 + ZZ
 ```
 """
+#TODO
+
+"""
+An alternative representation of CliffordOperators.
+
+It stores the columns of the operator in bitarrays (instead of the rows),
+permitting faster application, but complicating the tracking of phases.
+"""
 struct CliffordColumnForm{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractCliffordOperator
     phases::Tv
     nqubits::Int
@@ -1339,7 +1351,7 @@ function CliffordColumnForm(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where 
     CliffordColumnForm(vcat((p.phase for p in paulis)...), paulis[1].nqubits, xztox, xztoz)
 end
 
-macro C_str(a)
+macro Ccol_str(a)
     paulis = [eval(quote @P_str($(strip(s))) end) for s in split(a,'\n')] #TODO seriously!?
     CliffordColumnForm(paulis)
 end
@@ -1373,7 +1385,7 @@ function clifford_transpose(c::CliffordColumnForm)
     xtoxs, ztozs, xtozs, ztoxs
 end
 
-function getallpaulis_(c::CliffordColumnForm)
+function getallpaulis(c::CliffordColumnForm)
     xtoxs, ztozs, xtozs, ztoxs = clifford_transpose(c)
     ops = PauliOperator{Array{UInt8,0},Vector{UInt64}}[] # TODO is it really necessary to specify the type this precisely!?
     for i in 1:2*c.nqubits
@@ -1383,7 +1395,7 @@ function getallpaulis_(c::CliffordColumnForm)
             push!(ops,PauliOperator(c.phases[i], xtoxs[:,i], xtozs[:,i]))
         end
     end
-    ops
+    Stabilizer(ops)
 end
 
 function Base.getindex(c::CliffordColumnForm, i::Int)
@@ -1419,7 +1431,7 @@ end
 @inline nqubits(c::CliffordColumnForm) = c.nqubits
 
 function Base.:(*)(l::AbstractCliffordOperator, r::CliffordColumnForm)
-    rstab = Stabilizer(getallpaulis_(r)) # TODO this is a bit awkward... and fragile... turning a CliffordOp into a Stabilizer
+    rstab = getallpaulis(r) # TODO this is a bit awkward... and fragile... turning a CliffordOp into a Stabilizer
     apply!(rstab,l)
     CliffordColumnForm([rstab[i] for i in eachindex(rstab)])
 end
@@ -1456,10 +1468,6 @@ function permute(c::CliffordColumnForm,p::AbstractArray{T,1} where T) # TODO why
     nc
 end
 
-function tensor_pow(op::CliffordColumnForm,power::Integer)
-    ⊗(repeat([op],power)...)
-end
-
 function ⊗(ops::CliffordColumnForm...)
     ns = [nqubits(op) for op in ops]
     totaln = sum(ns)
@@ -1493,12 +1501,12 @@ function ⊗(ops::CliffordColumnForm...)
     newop
 end
 
-function apply!(s::Stabilizer, c::CliffordColumnForm; phases::Bool=true)
+function apply!(s::Stabilizer, c::CliffordColumnForm; phases::Bool=false) #TODO phases=true so that it raises an assertion error so that everyone knows it can not computed phases (use a good error type)
+    @assert phases==false # NOT IMPLEMENTED
     new_stabrowx = zero(s.xzs[1,1:end÷2])
     new_stabrowz = zero(s.xzs[1,1:end÷2])
     xztox = zero(c.xztox[1,:])
     xztoz = zero(c.xztox[1,:])
-    phase_flips = zero(xztoz[1:end÷2])
     for row_stab in eachindex(s)
         fill!(new_stabrowx, zero(eltype(new_stabrowx)))
         fill!(new_stabrowz, zero(eltype(new_stabrowz)))
@@ -1511,8 +1519,6 @@ function apply!(s::Stabilizer, c::CliffordColumnForm; phases::Bool=true)
             end
             new_stabrowx[bigrow] |= xor_bits_(reduce(⊻,xztox)) << smallrow
             new_stabrowz[bigrow] |= xor_bits_(reduce(⊻,xztoz)) << smallrow
-            phases && (phase_flips .= (@view xztoz[1:end÷2]) .& (@view xztox[end÷2+1:end]))
-            phases && (s.phases[row_stab] = (s.phases[row_stab]+sum(count_zeros, phase_flips)<<1)&0x3)
         end
         s.xzs[row_stab,1:end÷2] = new_stabrowx
         s.xzs[row_stab,end÷2+1:end] = new_stabrowz
@@ -1522,14 +1528,14 @@ end
 
 @inline get_bit(i::UInt64,bit) = (i & (UInt64(0x1)<<bit))>>bit
 
-function apply!(s::Stabilizer, c::CliffordColumnForm, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
+function apply!(s::Stabilizer, c::CliffordColumnForm, indices_of_application::AbstractArray{T,1} where T; phases::Bool=false) # TODO why T and not Int?  #TODO phases=true so that it raises an assertion error so that everyone knows it can not computed phases (use a good error type)
+    @assert phases==false # NOT IMPLEMENTED
     new_stabrowx = zeros(Bool,length(indices_of_application))
     new_stabrowz = zeros(Bool,length(indices_of_application))
     lowbit = UInt64(0x1)
     for row_stab in eachindex(s)
         fill!(new_stabrowx, zero(eltype(new_stabrowx)))
         fill!(new_stabrowz, zero(eltype(new_stabrowz)))
-        phase_flip = 0x0
         for row_clif in 1:nqubits(c)
             xtox = false
             ztox = false
@@ -1548,7 +1554,6 @@ function apply!(s::Stabilizer, c::CliffordColumnForm, indices_of_application::Ab
             end
             new_stabrowx[row_clif] |= xtox ⊻ ztox
             new_stabrowz[row_clif] |= xtoz ⊻ ztoz
-            phases && (phase_flip += xtoz & ztox)
         end
         for (i,i_redirect) in enumerate(indices_of_application)
             bigi_redirect = _div64(i_redirect-1)+1
@@ -1558,46 +1563,34 @@ function apply!(s::Stabilizer, c::CliffordColumnForm, indices_of_application::Ab
             s.xzs[row_stab,end÷2+bigi_redirect] &= ~(lowbit<<smalli_redirect)
             s.xzs[row_stab,end÷2+bigi_redirect] |= new_stabrowz[i]<<smalli_redirect
         end
-        phases && (s.phases[row_stab] = (s.phases[row_stab]+phase_flip<<1)&0x3)
     end
     s
 end
 
-function apply!(s::Stabilizer, c::CliffordColumnForm, single_qbit_offset::Int)
-    bigs = _div64(single_qbit_offset-1)+1
-    smalls = _mod64(single_qbit_offset-1)
-    lowbit = UInt64(0x1)
-    for row_stab in eachindex(s)
-        xztox = (c.xztox[1,1] & (s.xzs[row_stab,bigs]>>smalls)) ⊻ (c.xztox[1,2] & (s.xzs[row_stab,bigs+end÷2]>>smalls))
-        xztoz = (c.xztoz[1,1] & (s.xzs[row_stab,bigs]>>smalls)) ⊻ (c.xztoz[1,2] & (s.xzs[row_stab,bigs+end÷2]>>smalls))
-        s.phases[row_stab] = (s.phases[row_stab]+count_zeros(xztoz & xztox)<<1)&0x3
+const CNOTcol = Ccol"XX
+                  IX
+                  ZI
+                  ZZ"
 
-        s.xzs[row_stab,bigs] &= ~(lowbit<<smalls)
-        s.xzs[row_stab,bigs] |= (xztox<<smalls)
-        s.xzs[row_stab,end÷2+bigs] &= ~(lowbit<<smalls)
-        s.xzs[row_stab,end÷2+bigs] |= (xztoz<<smalls)
-    end
-    s
-end
+const SWAPcol = Ccol"IX
+                     XI
+                     IZ
+                     ZI"
 
-const CNOT = C"XX
-               IX
-               ZI
-               ZZ"
+const Hadamardcol = Ccol"Z
+                         X"
 
-const SWAP = C"IX
-               XI
-               IZ
-               ZI"
+const Phasecol = Ccol"Y
+                      Z"
 
-const Hadamard = C"Z
-                   X"
+const CliffordIdcol = Ccol"X
+                           Z"
 
-const Phase = C"Y
-                Z"
-
-const CliffordId = C"X
-                     Z"
+const CNOT = CNOTcol # TODO delete these and use the other datastructure
+const SWAP = SWAPcol
+const Hadamard = Hadamardcol
+const Phase = Phasecol
+const CliffordId = CliffordIdcol
 
 ##############################
 # Helpers for binary codes
