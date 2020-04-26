@@ -361,7 +361,7 @@ julia> generate!(P"YYY", s)
 
 # Clifford Operators
 
-The [`CliffordOperator`](@ref) structure represents a linear mapping between
+The [`CliffordColumnForm`](@ref) structure represents a linear mapping between
 stabilizers (which should also preserve commutation relationships, but that is
 not checked at instantiation). A number of predefined Clifford operators are
 available.
@@ -421,7 +421,7 @@ _X ⟼ + _Z
 Z_ ⟼ - X_
 _Z ⟼ + XX
 
-julia> CliffordOperator([P"-ZZ", P"_Z", P"-X_", P"XX"])
+julia> CliffordColumnForm([P"-ZZ", P"_Z", P"-X_", P"XX"])
 X_ ⟼ - ZZ
 _X ⟼ + _Z
 Z_ ⟼ - X_

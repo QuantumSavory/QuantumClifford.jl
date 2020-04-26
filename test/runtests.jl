@@ -332,9 +332,9 @@ end
 
 @testset "Cliffor Operators" begin
     @testset "Permutations of qubits" begin
-        function naive_permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this is extremely slow stupid implementation
+        function naive_permute(c::CliffordColumnForm,p::AbstractArray{T,1} where T) # TODO this is extremely slow stupid implementation
             ops = SimpleClifford.getallpaulis_(c)
-            CliffordOperator([ops[i][p] for i in 1:2*c.nqubits][vcat(p,p.+c.nqubits)])
+            CliffordColumnForm([ops[i][p] for i in 1:2*c.nqubits][vcat(p,p.+c.nqubits)])
         end
         for c in [CNOT, CliffordId⊗Hadamard, CNOT⊗CNOT, tensor_pow(CNOT,6), tensor_pow(CNOT,7), tensor_pow(CNOT,6)⊗Phase, tensor_pow(CNOT,7)⊗Phase]
             for rep in 1:5
@@ -349,16 +349,16 @@ end
         end
     end
     @testset "Tensor products" begin
-        function naive_mul(l::CliffordOperator, r::CliffordOperator) # TODO this is extremely slow stupid implementation
+        function naive_mul(l::CliffordColumnForm, r::CliffordColumnForm) # TODO this is extremely slow stupid implementation
             opsl = SimpleClifford.getallpaulis_(l)
             opsr = SimpleClifford.getallpaulis_(r)
             onel = zero(opsl[1])
             oner = zero(opsr[1])
             opsl = [l⊗oner for l in opsl]
             opsr = [onel⊗r for r in opsr]
-            CliffordOperator(vcat(opsl[1:end÷2],opsr[1:end÷2],opsl[end÷2+1:end],opsr[end÷2+1:end]))
+            CliffordColumnForm(vcat(opsl[1:end÷2],opsr[1:end÷2],opsl[end÷2+1:end],opsr[end÷2+1:end]))
         end
-        function naive_tensor_pow(op::CliffordOperator,power::Integer,mem::Dict{Integer,CliffordOperator})
+        function naive_tensor_pow(op::CliffordColumnForm,power::Integer,mem::Dict{Integer,CliffordColumnForm})
             if power==1
                 return op
             elseif haskey(mem,power)
@@ -377,8 +377,8 @@ end
             end
             res
         end
-        function naive_tensor_pow(op::CliffordOperator,power::Integer)
-            naive_tensor_pow(op,power,Dict{Integer,CliffordOperator}())
+        function naive_tensor_pow(op::CliffordColumnForm,power::Integer)
+            naive_tensor_pow(op,power,Dict{Integer,CliffordColumnForm}())
         end
         for s in test_sizes
             for g in [CNOT,Hadamard,CNOT⊗Phase]

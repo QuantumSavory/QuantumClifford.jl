@@ -25,7 +25,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     canonicalize!, canonicalize_rref!, canonicalize_gott!, colpermute!,
     generate!, project!, reset_qubits!, traceout!,
     apply!,
-    CliffordOperator, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
+    CliffordColumnForm, @C_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
     tensor_pow,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     perm_inverse, perm_product,
@@ -1322,31 +1322,31 @@ julia> entangled = CNOT*stab
 + ZZ
 ```
 """
-struct CliffordOperator{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractCliffordOperator
+struct CliffordColumnForm{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractCliffordOperator
     phases::Tv
     nqubits::Int
     xztox::Tm
     xztoz::Tm
 end
 
-function CliffordOperator(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}}
+function CliffordColumnForm(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}}
     xztox = vcat((p.xbit' for p in paulis)...)'
     xztoz = vcat((p.zbit' for p in paulis)...)'
     xztox = vcat((vcat(BitArray(xztox[i,1:end÷2]).chunks,BitArray(xztox[i,end÷2+1:end]).chunks)'
                  for i in 1:size(xztox,1))...)
     xztoz = vcat((vcat(BitArray(xztoz[i,1:end÷2]).chunks,BitArray(xztoz[i,end÷2+1:end]).chunks)'
                  for i in 1:size(xztoz,1))...)
-    CliffordOperator(vcat((p.phase for p in paulis)...), paulis[1].nqubits, xztox, xztoz)
+    CliffordColumnForm(vcat((p.phase for p in paulis)...), paulis[1].nqubits, xztox, xztoz)
 end
 
 macro C_str(a)
     paulis = [eval(quote @P_str($(strip(s))) end) for s in split(a,'\n')] #TODO seriously!?
-    CliffordOperator(paulis)
+    CliffordColumnForm(paulis)
 end
 
-Base.:(==)(l::CliffordOperator, r::CliffordOperator) = r.nqubits==l.nqubits && r.phases==l.phases && r.xztox==l.xztox && r.xztoz==l.xztoz
+Base.:(==)(l::CliffordColumnForm, r::CliffordColumnForm) = r.nqubits==l.nqubits && r.phases==l.phases && r.xztox==l.xztox && r.xztoz==l.xztoz
 
-function clifford_transpose(c::CliffordOperator)
+function clifford_transpose(c::CliffordColumnForm)
     n = c.nqubits
     xtoxs = []
     ztozs = []
@@ -1373,7 +1373,7 @@ function clifford_transpose(c::CliffordOperator)
     xtoxs, ztozs, xtozs, ztoxs
 end
 
-function getallpaulis_(c::CliffordOperator)
+function getallpaulis_(c::CliffordColumnForm)
     xtoxs, ztozs, xtozs, ztoxs = clifford_transpose(c)
     ops = PauliOperator{Array{UInt8,0},Vector{UInt64}}[] # TODO is it really necessary to specify the type this precisely!?
     for i in 1:2*c.nqubits
@@ -1386,7 +1386,7 @@ function getallpaulis_(c::CliffordOperator)
     ops
 end
 
-function Base.getindex(c::CliffordOperator, i::Int)
+function Base.getindex(c::CliffordColumnForm, i::Int)
     xtoxs, ztozs, xtozs, ztoxs = clifford_transpose(c)
     if i>c.nqubits
         PauliOperator(c.phases[i], ztoxs[:,i-c.nqubits], ztozs[:,i-c.nqubits])
@@ -1395,7 +1395,7 @@ function Base.getindex(c::CliffordOperator, i::Int)
     end
 end
 
-function Base.show(io::IO, c::CliffordOperator)
+function Base.show(io::IO, c::CliffordColumnForm)
     xtoxs, ztozs, xtozs, ztoxs = clifford_transpose(c)
     n = c.nqubits
     for i in 1:n
@@ -1412,20 +1412,20 @@ function Base.show(io::IO, c::CliffordOperator)
     end
 end
 
-function Base.copy(c::CliffordOperator)
-    CliffordOperator(copy(c.phases),c.nqubits,copy(c.xztox),copy(c.xztoz))
+function Base.copy(c::CliffordColumnForm)
+    CliffordColumnForm(copy(c.phases),c.nqubits,copy(c.xztox),copy(c.xztoz))
 end
 
-@inline nqubits(c::CliffordOperator) = c.nqubits
+@inline nqubits(c::CliffordColumnForm) = c.nqubits
 
-function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
+function Base.:(*)(l::AbstractCliffordOperator, r::CliffordColumnForm)
     rstab = Stabilizer(getallpaulis_(r)) # TODO this is a bit awkward... and fragile... turning a CliffordOp into a Stabilizer
     apply!(rstab,l)
-    CliffordOperator([rstab[i] for i in eachindex(rstab)])
+    CliffordColumnForm([rstab[i] for i in eachindex(rstab)])
 end
 
 # TODO create Base.permute! and getindex(..., permutation_array)
-function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO why T and not Int?
+function permute(c::CliffordColumnForm,p::AbstractArray{T,1} where T) # TODO why T and not Int?
     nc = zero(c)
     for (ii, i) in enumerate(p) nc.phases[ii] = c.phases[i] end
     for (ii, i) in enumerate(p)
@@ -1456,15 +1456,15 @@ function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO why T
     nc
 end
 
-function tensor_pow(op::CliffordOperator,power::Integer)
+function tensor_pow(op::CliffordColumnForm,power::Integer)
     ⊗(repeat([op],power)...)
 end
 
-function ⊗(ops::CliffordOperator...)
+function ⊗(ops::CliffordColumnForm...)
     ns = [nqubits(op) for op in ops]
     totaln = sum(ns)
     s = 1
-    newop = zero(CliffordOperator,totaln)
+    newop = zero(CliffordColumnForm,totaln)
     for i in eachindex(ops)
         n = ns[i]
         op = ops[i]
@@ -1493,7 +1493,7 @@ function ⊗(ops::CliffordOperator...)
     newop
 end
 
-function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
+function apply!(s::Stabilizer, c::CliffordColumnForm; phases::Bool=true)
     new_stabrowx = zero(s.xzs[1,1:end÷2])
     new_stabrowz = zero(s.xzs[1,1:end÷2])
     xztox = zero(c.xztox[1,:])
@@ -1522,7 +1522,7 @@ end
 
 @inline get_bit(i::UInt64,bit) = (i & (UInt64(0x1)<<bit))>>bit
 
-function apply!(s::Stabilizer, c::CliffordOperator, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
+function apply!(s::Stabilizer, c::CliffordColumnForm, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
     new_stabrowx = zeros(Bool,length(indices_of_application))
     new_stabrowz = zeros(Bool,length(indices_of_application))
     lowbit = UInt64(0x1)
@@ -1563,7 +1563,7 @@ function apply!(s::Stabilizer, c::CliffordOperator, indices_of_application::Abst
     s
 end
 
-function apply!(s::Stabilizer, c::CliffordOperator, single_qbit_offset::Int)
+function apply!(s::Stabilizer, c::CliffordColumnForm, single_qbit_offset::Int)
     bigs = _div64(single_qbit_offset-1)+1
     smalls = _mod64(single_qbit_offset-1)
     lowbit = UInt64(0x1)
@@ -1710,8 +1710,8 @@ Base.zero(p::PauliOperator) = PauliOperator(0x0,falses(p.nqubits),falses(p.nqubi
 Base.zero(::Type{Stabilizer}, n, m) = Stabilizer(zeros(UInt8,n),falses(n,m),falses(n,m))
 Base.zero(::Type{Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(n,n))
 Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
-Base.zero(::Type{CliffordOperator}, n) = CliffordOperator(zeros(UInt8,2n),n,repeat(falses(n).chunks',n,2),repeat(falses(n).chunks',n,2))
-Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.phases),c.nqubits,zero(c.xztox),zero(c.xztoz))
+Base.zero(::Type{CliffordColumnForm}, n) = CliffordColumnForm(zeros(UInt8,2n),n,repeat(falses(n).chunks',n,2),repeat(falses(n).chunks',n,2))
+Base.zero(c::CliffordColumnForm) = CliffordColumnForm(zero(c.phases),c.nqubits,zero(c.xztox),zero(c.xztoz))
 
 function Base.one(::Type{Stabilizer}, n; basis=:Z)
     if basis==:X
@@ -1732,7 +1732,7 @@ function Base.one(::Type{MixedDestabilizer}, r, n)
     MixedDestabilizer(vcat(d,s),r)
 end
 
-function Base.one(::Type{CliffordOperator}, n)
+function Base.one(::Type{CliffordColumnForm}, n)
     phases = zeros(UInt8,n)
     zx
 end
@@ -1805,7 +1805,7 @@ function random_singlequbitop(n)
             ztox[i][i] = true
         end
     end
-    c = CliffordOperator(zeros(UInt8,n*2), n,
+    c = CliffordColumnForm(zeros(UInt8,n*2), n,
                          vcat((vcat(x2x.chunks,z2x.chunks)' for (x2x,z2x) in zip(xtox,ztox))...),
                          vcat((vcat(x2z.chunks,z2z.chunks)' for (x2z,z2z) in zip(xtoz,ztoz))...)
         )
