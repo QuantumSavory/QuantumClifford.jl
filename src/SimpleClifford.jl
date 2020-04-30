@@ -1378,7 +1378,7 @@ end
 @inline nqubits(c::CliffordOperator) = nqubits(c.tab)
 
 function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
-    tab = copy(r.tab) # TODO this is a bit awkward... and fragile... turning a CliffordOp into a Stabilizer
+    tab = copy(r.tab)
     apply!(tab,l)
     CliffordOperator(tab)
 end
