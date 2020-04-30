@@ -331,6 +331,38 @@ end
     end
 end
 
+@testset "Clifford Operators" begin
+    @testset "Permutations of qubits" begin
+        # TODO (see the column version)
+    end
+    @testset "Tensor products" begin
+        # TODO (see the column version)
+    end
+    @testset "Clifford acting on Stabilizer" begin
+        for size in test_sizes
+            s = random_stabilizer(size)
+            gates = vcat([CNOT, Hadamard, Phase], repeat([CliffordId],size-4))
+            gates_perm = randperm(size-1)
+            gates = gates[gates_perm]
+            big_gate = reduce(⊗,gates)
+
+            s1 = apply!(copy(s),big_gate)
+            @test stab_looks_good(s1)
+
+            igates_perm = perm_inverse(gates_perm)
+            s2 = copy(s)
+            canonicalize!(s2)
+            s2 = apply!(s2, CNOT, [igates_perm[1],igates_perm[1]+1])
+            canonicalize!(s2)
+            s2 = apply!(s2, Hadamard, [igates_perm[2]+(igates_perm[1]<igates_perm[2])])
+            canonicalize!(s2)
+            s2 = apply!(s2, Phase, [igates_perm[3]+(igates_perm[1]<igates_perm[3])])
+
+            @test canonicalize!(s1) == canonicalize!(s2)
+        end
+    end
+end
+
 @testset "Clifford Operators (column representation)" begin
     @testset "Permutations of qubits" begin
         function naive_permute(c::CliffordColumnForm,p::AbstractArray{T,1} where T) # TODO this is extremely slow stupid implementation
