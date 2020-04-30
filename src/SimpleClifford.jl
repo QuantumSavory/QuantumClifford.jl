@@ -25,7 +25,9 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     canonicalize!, canonicalize_rref!, canonicalize_gott!, colpermute!,
     generate!, project!, reset_qubits!, traceout!,
     apply!,
-    CliffordColumnForm, @Ccol_str, CNOT, SWAP, Hadamard, Phase, CliffordId,
+    CliffordOperator, @C_str,
+    CliffordColumnForm, @Ccol_str,
+    CNOT, SWAP, Hadamard, Phase, CliffordId,
     tensor_pow,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     perm_inverse, perm_product,
@@ -559,6 +561,18 @@ end
 
 function Base.:(*)(l::PauliOperator, r::PauliOperator)
     PauliOperator(prodphase(l,r), l.nqubits, l.xz .⊻ r.xz)
+end
+
+function mul_left!(r::PauliOperator, l::PauliOperator; phases::Bool=true)
+    phases && (r.phase[] = prodphase(l,r))
+    r.xz .⊻= l.xz
+    r
+end
+
+function mul_right!(l::PauliOperator, r::PauliOperator; phases::Bool=true)
+    phases && (l.phase[] = prodphase(l,r))
+    l.xz .⊻= r.xz
+    l
 end
 
 (⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator((l.phase[]+r.phase[])&0x3, vcat(l.xbit,r.xbit), vcat(l.zbit,r.zbit))
@@ -1326,7 +1340,76 @@ julia> entangled = CNOT*stab
 + ZZ
 ```
 """
-#TODO
+struct CliffordOperator <: AbstractCliffordOperator
+    tab::Stabilizer
+end
+
+macro C_str(a)
+    tab = eval(quote @S_str($(a)) end) #TODO this looks silly
+    CliffordOperator(tab)
+end
+
+function CliffordOperator(paulis::AbstractVector{PauliOperator})
+    CliffordOperator(Stabilizer(paulis))
+end
+
+Base.:(==)(l::CliffordOperator, r::CliffordOperator) = l.tab == r.tab
+
+Base.getindex(c::CliffordOperator, i::Int) = c.tab[i]
+
+function Base.show(io::IO, c::CliffordOperator)
+    n = nqubits(c)
+    for i in 1:n
+        print(io, repeat("_",i-1),"X",repeat("_",n-i), " ⟼ ")
+        print(io, c.tab[i])
+        println(io)
+    end
+    for i in 1:n
+        print(io, repeat("_",i-1),"Z",repeat("_",n-i), " ⟼ ")
+        print(io, c.tab[i+n])
+        println(io)
+    end
+end
+
+function Base.copy(c::CliffordOperator)
+    CliffordOperator(copy(c.tab))
+end
+
+@inline nqubits(c::CliffordOperator) = nqubits(c.tab)
+
+function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
+    tab = copy(r.tab) # TODO this is a bit awkward... and fragile... turning a CliffordOp into a Stabilizer
+    apply!(tab,l)
+    CliffordOperator(tab)
+end
+
+function ⊗(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here # TODO stop using \oplus and use only \otimes notation
+    CliffordOperator(vcat(
+      foldl((l,r)->l⊕r.tab[1:end÷2    ],ops[2:end],init=ops[1].tab[1:end÷2]),
+      foldl((l,r)->l⊕r.tab[end÷2+1:end],ops[2:end],init=ops[1].tab[end÷2+1:end])))
+end
+
+function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
+    new_stabrow = zero(s[1])
+    for row_stab in eachindex(s)
+        fill!(new_stabrow.xz, zero(eltype(new_stabrow.xz))) # TODO there should be a prettier way to do this
+        new_stabrow.phase[] = s.phases[row_stab]
+        for qubit in 1:nqubits(s)
+            x,z = s[row_stab][qubit] # TODO it should be [row_stab,qubit], not [row_stab][qubit] # TODO would this be faster with a more direct access?
+            if x&&z
+                new_stabrow.phase[] -= 0x1
+            end
+            if x
+                mul_left!(new_stabrow, c.tab[qubit])
+            end
+            if z
+                mul_left!(new_stabrow, c.tab[qubit+end÷2])
+            end
+        end
+        s[row_stab] = new_stabrow
+    end
+    s
+end
 
 """
 An alternative representation of CliffordOperators.
@@ -1568,9 +1651,9 @@ function apply!(s::Stabilizer, c::CliffordColumnForm, indices_of_application::Ab
 end
 
 const CNOTcol = Ccol"XX
-                  IX
-                  ZI
-                  ZZ"
+                     IX
+                     ZI
+                     ZZ"
 
 const SWAPcol = Ccol"IX
                      XI
@@ -1586,11 +1669,26 @@ const Phasecol = Ccol"Y
 const CliffordIdcol = Ccol"X
                            Z"
 
-const CNOT = CNOTcol # TODO delete these and use the other datastructure
-const SWAP = SWAPcol
-const Hadamard = Hadamardcol
-const Phase = Phasecol
-const CliffordId = CliffordIdcol
+
+const CNOT = C"XX
+               IX
+               ZI
+               ZZ"
+
+const SWAP = C"IX
+               XI
+               IZ
+               ZI"
+
+const Hadamard = C"Z
+                   X"
+
+const Phase = C"Y
+                Z"
+
+const CliffordId = C"X
+                     Z"
+
 
 ##############################
 # Helpers for binary codes
