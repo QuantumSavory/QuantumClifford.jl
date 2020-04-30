@@ -150,7 +150,7 @@ julia> Stabilizer([0x2, 0x0],
 Direct sums can be performed,
 
 ```jldoctest
-julia> S"-XX" ⊕ S"ZZ"
+julia> S"-XX" ⊗ S"ZZ"
 - XX__
 + __ZZ
 ```

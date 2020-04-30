@@ -19,7 +19,7 @@ import Random
 import RecipesBase
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
-    @S_str, Stabilizer, prodphase, comm, ⊕, check_allrowscommute,
+    @S_str, Stabilizer, prodphase, comm, check_allrowscommute,
     Destabilizer, MixedStabilizer, MixedDestabilizer,
     nqubits, stabilizerview, destabilizerview, logicalxview, logicalzview,
     canonicalize!, canonicalize_rref!, canonicalize_gott!, colpermute!,
@@ -173,7 +173,7 @@ julia> s = S"XXX
 + ZZ_
 + _ZZ
 
-julia> s⊕s
+julia> s⊗s
 + XXX___
 + ZZ____
 + _ZZ___
@@ -934,7 +934,7 @@ function check_allrowscommute(stabilizer::Stabilizer)
     return true
 end
 
-function ⊕(l::Stabilizer, r::Stabilizer)
+function ⊗(l::Stabilizer, r::Stabilizer)
     lone = zero(l[1])
     rone = zero(r[1])
     paulis = vcat([l[i]⊗rone for i in eachindex(l)],
@@ -1385,8 +1385,8 @@ end
 
 function ⊗(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here # TODO stop using \oplus and use only \otimes notation
     CliffordOperator(vcat(
-      foldl((l,r)->l⊕r.tab[1:end÷2    ],ops[2:end],init=ops[1].tab[1:end÷2]),
-      foldl((l,r)->l⊕r.tab[end÷2+1:end],ops[2:end],init=ops[1].tab[end÷2+1:end])))
+      foldl((l,r)->l⊗r.tab[1:end÷2    ],ops[2:end],init=ops[1].tab[1:end÷2]),
+      foldl((l,r)->l⊗r.tab[end÷2+1:end],ops[2:end],init=ops[1].tab[end÷2+1:end])))
 end
 
 function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
