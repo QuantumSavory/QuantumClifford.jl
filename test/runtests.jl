@@ -1,5 +1,6 @@
 using SimpleClifford, Test, Random, Documenter
 using SimpleClifford: stab_looks_good, mixed_stab_looks_good, destab_looks_good, mixed_destab_looks_good
+using SimpleClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol
 
 test_sizes = [10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
@@ -330,13 +331,13 @@ end
     end
 end
 
-@testset "Cliffor Operators" begin
+@testset "Clifford Operators (column representation)" begin
     @testset "Permutations of qubits" begin
         function naive_permute(c::CliffordColumnForm,p::AbstractArray{T,1} where T) # TODO this is extremely slow stupid implementation
             ops = SimpleClifford.getallpaulis(c)
             CliffordColumnForm([ops[i][p] for i in 1:2*c.nqubits][vcat(p,p.+c.nqubits)])
         end
-        for c in [CNOT, CliffordId⊗Hadamard, CNOT⊗CNOT, tensor_pow(CNOT,6), tensor_pow(CNOT,7), tensor_pow(CNOT,6)⊗Phase, tensor_pow(CNOT,7)⊗Phase]
+        for c in [CNOTcol, CliffordIdcol⊗Hadamardcol, CNOTcol⊗CNOTcol, tensor_pow(CNOTcol,6), tensor_pow(CNOTcol,7), tensor_pow(CNOTcol,6)⊗Phasecol, tensor_pow(CNOTcol,7)⊗Phasecol]
             for rep in 1:5
                 p = randperm(nqubits(c))
                @test permute(c,p) == naive_permute(c,p)
@@ -344,7 +345,7 @@ end
         end
         for i in 1:5
             p = randperm(125)
-            c = rand([CliffordId, Hadamard, Phase, Phase*Hadamard], 125)
+            c = rand([CliffordIdcol, Hadamardcol, Phasecol], 125)
             @test ⊗(c[p]...) == naive_permute(⊗(c...), p) == permute(⊗(c...), p)
         end
     end
@@ -381,39 +382,39 @@ end
             naive_tensor_pow(op,power,Dict{Integer,CliffordColumnForm}())
         end
         for s in test_sizes
-            for g in [CNOT,Hadamard,CNOT⊗Phase]
+            for g in [CNOTcol,Hadamardcol,CNOTcol⊗Phasecol]
                 @test naive_tensor_pow(g,s)==tensor_pow(g,s)
             end
         end
-        for g1 in [CNOT,Hadamard,CNOT⊗Phase,CliffordId]
-            for g2 in [CNOT,Hadamard,CNOT⊗Phase,CliffordId]
+        for g1 in [CNOTcol,Hadamardcol,CNOTcol⊗Phasecol,CliffordIdcol]
+            for g2 in [CNOTcol,Hadamardcol,CNOTcol⊗Phasecol,CliffordIdcol]
                 @test naive_mul(g1,g2)==g1⊗g2
             end
         end
-        c1 = tensor_pow(CNOT,32)
+        c1 = tensor_pow(CNOTcol,32)
         @test naive_mul(c1,c1) == c1⊗c1
-        c1 = naive_tensor_pow(Hadamard,33)
+        c1 = naive_tensor_pow(Hadamardcol,33)
         @test naive_mul(c1,c1) == c1⊗c1
-        c2 = naive_tensor_pow(Hadamard,32)
+        c2 = naive_tensor_pow(Hadamardcol,32)
         @test naive_mul(c1,c2) == c1⊗c2
         @test naive_mul(c2,c1) == c2⊗c1
     end
     @testset "Clifford acting on Stabilizer" begin
         for size in test_sizes
             s = random_stabilizer(size)
-            gates = vcat([CNOT, Hadamard, Phase], repeat([CliffordId],size-4))
+            gates = vcat([CNOTcol, Hadamardcol, Phasecol], repeat([CliffordIdcol],size-4))
             gates_perm = randperm(size-1)
             gates = gates[gates_perm]
             big_gate = reduce(⊗,gates)
 
-            s1 = apply!(copy(s),big_gate)
+            s1 = apply!(copy(s),big_gate; phases=false)
             @test stab_looks_good(s1)
 
             igates_perm = perm_inverse(gates_perm)
             s2 = copy(s)
-            s2 = apply!(s2, CNOT, [igates_perm[1],igates_perm[1]+1])
-            s2 = apply!(s2, Hadamard, [igates_perm[2]+(igates_perm[1]<igates_perm[2])])
-            s2 = apply!(s2, Phase, [igates_perm[3]+(igates_perm[1]<igates_perm[3])])
+            s2 = apply!(s2, CNOTcol, [igates_perm[1],igates_perm[1]+1]; phases=false)
+            s2 = apply!(s2, Hadamardcol, [igates_perm[2]+(igates_perm[1]<igates_perm[2])]; phases=false)
+            s2 = apply!(s2, Phasecol, [igates_perm[3]+(igates_perm[1]<igates_perm[3])]; phases=false)
 
             @test s1 == s2
         end

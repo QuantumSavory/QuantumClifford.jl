@@ -1501,8 +1501,8 @@ function ⊗(ops::CliffordColumnForm...)
     newop
 end
 
-function apply!(s::Stabilizer, c::CliffordColumnForm; phases::Bool=false) #TODO phases=true so that it raises an assertion error so that everyone knows it can not computed phases (use a good error type)
-    @assert phases==false # NOT IMPLEMENTED
+function apply!(s::Stabilizer, c::CliffordColumnForm; phases::Bool=true)
+    phases && error("calculation of phases is not implemented for `CliffordColumnForm`: try running with `phases=false`")
     new_stabrowx = zero(s.xzs[1,1:end÷2])
     new_stabrowz = zero(s.xzs[1,1:end÷2])
     xztox = zero(c.xztox[1,:])
@@ -1528,8 +1528,8 @@ end
 
 @inline get_bit(i::UInt64,bit) = (i & (UInt64(0x1)<<bit))>>bit
 
-function apply!(s::Stabilizer, c::CliffordColumnForm, indices_of_application::AbstractArray{T,1} where T; phases::Bool=false) # TODO why T and not Int?  #TODO phases=true so that it raises an assertion error so that everyone knows it can not computed phases (use a good error type)
-    @assert phases==false # NOT IMPLEMENTED
+function apply!(s::Stabilizer, c::CliffordColumnForm, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
+    phases && error("calculation of phases is not implemented for `CliffordColumnForm`: try running with `phases=false`")
     new_stabrowx = zeros(Bool,length(indices_of_application))
     new_stabrowz = zeros(Bool,length(indices_of_application))
     lowbit = UInt64(0x1)
