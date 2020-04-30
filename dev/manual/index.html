@@ -127,7 +127,7 @@ julia&gt; s = canonicalize!(s)
 
 julia&gt; generate!(P&quot;XZX&quot;, s)
 
-julia&gt; generate!(P&quot;YYY&quot;, s)</code></pre><h1 id="Clifford-Operators-1"><a class="docs-heading-anchor" href="#Clifford-Operators-1">Clifford Operators</a><a class="docs-heading-anchor-permalink" href="#Clifford-Operators-1" title="Permalink"></a></h1><p>The <a href="../API/#SimpleClifford.CliffordOperator"><code>CliffordOperator</code></a> structure represents a linear mapping between stabilizers (which should also preserve commutation relationships, but that is not checked at instantiation). A number of predefined Clifford operators are available.</p><pre><code class="language-julia-repl">julia&gt; Hadamard
+julia&gt; generate!(P&quot;YYY&quot;, s)</code></pre><h1 id="Clifford-Operators-1"><a class="docs-heading-anchor" href="#Clifford-Operators-1">Clifford Operators</a><a class="docs-heading-anchor-permalink" href="#Clifford-Operators-1" title="Permalink"></a></h1><p>The <a href="../API/#SimpleClifford.CliffordColumnForm"><code>CliffordColumnForm</code></a> structure represents a linear mapping between stabilizers (which should also preserve commutation relationships, but that is not checked at instantiation). A number of predefined Clifford operators are available.</p><pre><code class="language-julia-repl">julia&gt; Hadamard
 X ⟼ + Z
 Z ⟼ + X
 
@@ -166,7 +166,7 @@ _X ⟼ + _Z
 Z_ ⟼ - X_
 _Z ⟼ + XX
 
-julia&gt; CliffordOperator([P&quot;-ZZ&quot;, P&quot;_Z&quot;, P&quot;-X_&quot;, P&quot;XX&quot;])
+julia&gt; CliffordColumnForm([P&quot;-ZZ&quot;, P&quot;_Z&quot;, P&quot;-X_&quot;, P&quot;XX&quot;])
 X_ ⟼ - ZZ
 _X ⟼ + _Z
 Z_ ⟼ - X_
@@ -217,4 +217,4 @@ julia&gt; destabilizerview(d)
 ━━━━━
 + _ZX
 - Z_X
-+ ZZX</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« SimpleClifford.jl</a><a class="docs-footer-nextpage" href="../canonicalization/">Canonicalization »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 18 April 2020 02:05">Saturday 18 April 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
++ ZZX</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« SimpleClifford.jl</a><a class="docs-footer-nextpage" href="../canonicalization/">Canonicalization »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 30 April 2020 05:15">Thursday 30 April 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
