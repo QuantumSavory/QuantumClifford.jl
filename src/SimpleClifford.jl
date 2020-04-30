@@ -1393,20 +1393,45 @@ function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
     new_stabrow = zero(s[1])
     for row_stab in eachindex(s)
         fill!(new_stabrow.xz, zero(eltype(new_stabrow.xz))) # TODO there should be a prettier way to do this
-        new_stabrow.phase[] = s.phases[row_stab]
+        phases && (new_stabrow.phase[] = s.phases[row_stab])
         for qubit in 1:nqubits(s)
             x,z = s[row_stab][qubit] # TODO it should be [row_stab,qubit], not [row_stab][qubit] # TODO would this be faster with a more direct access?
-            if x&&z
+            if phases&&x&&z
                 new_stabrow.phase[] -= 0x1
             end
             if x
-                mul_left!(new_stabrow, c.tab[qubit])
+                mul_left!(new_stabrow, c.tab[qubit], phases=phases)
             end
             if z
-                mul_left!(new_stabrow, c.tab[qubit+end÷2])
+                mul_left!(new_stabrow, c.tab[qubit+end÷2], phases=phases)
             end
         end
         s[row_stab] = new_stabrow
+    end
+    s
+end
+
+function apply!(s::Stabilizer, c::CliffordOperator, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
+    new_stabrow = zero(c.tab[1])
+    for row_stab in eachindex(s)
+        fill!(new_stabrow.xz, zero(eltype(new_stabrow.xz))) # TODO there should be a prettier way to do this
+        phases && (new_stabrow.phase[] = s.phases[row_stab])
+        for (qubit_i, qubit) in enumerate(indices_of_application)
+            x,z = s[row_stab][qubit] # TODO it should be [row_stab,qubit], not [row_stab][qubit] # TODO would this be faster with a more direct access?
+            if phases&&x&&z
+                new_stabrow.phase[] -= 0x1
+            end
+            if x
+                mul_left!(new_stabrow, c.tab[qubit_i], phases=phases)
+            end
+            if z
+                mul_left!(new_stabrow, c.tab[qubit_i+end÷2], phases=phases)
+            end
+        end
+        for (qubit_i, qubit) in enumerate(indices_of_application)
+            s[row_stab][qubit] = new_stabrow[qubit_i] # TODO it should be [row_stab,qubit], not [row_stab][qubit]
+        end
+        phases && (s.phases[row_stab] = new_stabrow.phase[])
     end
     s
 end
