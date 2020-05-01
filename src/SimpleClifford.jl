@@ -233,6 +233,7 @@ macro S_str(a)
 end
 
 Base.getindex(stab::Stabilizer, i::Int) = PauliOperator((@view stab.phases[i]), nqubits(stab), (@view stab.xzs[i,:]))
+Base.getindex(stab::Stabilizer, r::Int, c::Int) = (stab.xzs[r,_div64(c-1)+1] & UInt64(0x1)<<_mod64(c-1))!=0x0, (stab.xzs[r,end>>1+_div64(c-1)+1] & UInt64(0x1)<<_mod64(c-1))!=0x0 # TODO this has code repetition with the Pauli getindex
 Base.getindex(stab::Stabilizer, r) = Stabilizer((@view stab.phases[r]), nqubits(stab), (@view stab.xzs[r,:]))
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
 
@@ -250,7 +251,7 @@ function Base.setindex!(stab::Stabilizer, s::Stabilizer, i)
     stab
 end
 
-function Base.setindex!(stab::Stabilizer, (x,z)::Tuple{Bool,Bool}, i, j)
+function Base.setindex!(stab::Stabilizer, (x,z)::Tuple{Bool,Bool}, i, j) # TODO this has code repetitions with the Pauli setindex
     if x
         stab.xzs[i,_div64(j-1)+1] |= UInt64(0x1)<<_mod64(j-1)
     else
@@ -469,6 +470,8 @@ Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 # Pauli Operator Helpers
 ##############################
 
+#TODO LOWHANGING all of the @views in comm/prod/mul seem to be necessary, but they still allocate a bit... do I need to write all of this with manual simd loops?
+
 """
 Get the phase of the product of two Pauli operators.
 
@@ -563,15 +566,32 @@ function Base.:(*)(l::PauliOperator, r::PauliOperator)
     PauliOperator(prodphase(l,r), l.nqubits, l.xz .⊻ r.xz)
 end
 
-function mul_left!(r::PauliOperator, l::PauliOperator; phases::Bool=true)
+@inline function mul_left!(r::PauliOperator, l::PauliOperator; phases::Bool=true)
     phases && (r.phase[] = prodphase(l,r))
     r.xz .⊻= l.xz
     r
 end
 
-function mul_right!(l::PauliOperator, r::PauliOperator; phases::Bool=true)
+@inline function mul_left!(r::PauliOperator, l::Stabilizer, i::Int; phases::Bool=true)
+    phases && (r.phase[] = prodphase(l,r,i))
+    #r.xz .⊻= @view l.xzs[i,:] # TODO why is this not as good as the loop?
+    @inbounds @simd for k in 1:length(r.xz)
+        r.xz[k] ⊻= l.xzs[i,k]
+    end
+    r
+end
+
+@inline function mul_right!(l::PauliOperator, r::PauliOperator; phases::Bool=true)
     phases && (l.phase[] = prodphase(l,r))
     l.xz .⊻= r.xz
+    l
+end
+
+@inline function mul_right!(l::PauliOperator, r::Stabilizer, i::Int; phases::Bool=true)
+    phases && (l.phase[] = prodphase(l,r,i))
+    @inbounds @simd for k in 1:length(r.xz)
+        l.xz[k] ⊻= r.xzs[i,k]
+    end
     l
 end
 
@@ -1391,19 +1411,20 @@ end
 
 function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
     new_stabrow = zero(s[1])
+    n = nqubits(c)
     for row_stab in eachindex(s)
         fill!(new_stabrow.xz, zero(eltype(new_stabrow.xz))) # TODO there should be a prettier way to do this
         phases && (new_stabrow.phase[] = s.phases[row_stab])
         for qubit in 1:nqubits(s)
-            x,z = s[row_stab][qubit] # TODO it should be [row_stab,qubit], not [row_stab][qubit] # TODO would this be faster with a more direct access?
+            x,z = s[row_stab,qubit]
             if phases&&x&&z
                 new_stabrow.phase[] -= 0x1
             end
-            if x
-                mul_left!(new_stabrow, c.tab[qubit], phases=phases)
+            if x # TODO something in these if statements is allocating while it should not
+                mul_left!(new_stabrow, c.tab, qubit, phases=phases)
             end
             if z
-                mul_left!(new_stabrow, c.tab[qubit+end÷2], phases=phases)
+                mul_left!(new_stabrow, c.tab, qubit+n, phases=phases)
             end
         end
         s[row_stab] = new_stabrow
@@ -1411,25 +1432,26 @@ function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
     s
 end
 
-function apply!(s::Stabilizer, c::CliffordOperator, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
+function apply!(s::Stabilizer, c::CliffordOperator, indices_of_appweightlication::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
     new_stabrow = zero(c.tab[1])
+    n = nqubits(c)
     for row_stab in eachindex(s)
         fill!(new_stabrow.xz, zero(eltype(new_stabrow.xz))) # TODO there should be a prettier way to do this
         phases && (new_stabrow.phase[] = s.phases[row_stab])
         for (qubit_i, qubit) in enumerate(indices_of_application)
-            x,z = s[row_stab][qubit] # TODO it should be [row_stab,qubit], not [row_stab][qubit] # TODO would this be faster with a more direct access?
+            x,z = s[row_stab,qubit]
             if phases&&x&&z
                 new_stabrow.phase[] -= 0x1
             end
             if x
-                mul_left!(new_stabrow, c.tab[qubit_i], phases=phases)
+                mul_left!(new_stabrow, c.tab, qubit, phases=phases)
             end
             if z
-                mul_left!(new_stabrow, c.tab[qubit_i+end÷2], phases=phases)
+                mul_left!(new_stabrow, c.tab, qubit+n, phases=phases)
             end
         end
         for (qubit_i, qubit) in enumerate(indices_of_application)
-            s[row_stab][qubit] = new_stabrow[qubit_i] # TODO it should be [row_stab,qubit], not [row_stab][qubit]
+            s[row_stab,qubit] = new_stabrow[qubit_i]
         end
         phases && (s.phases[row_stab] = new_stabrow.phase[])
     end
@@ -1457,6 +1479,16 @@ function CliffordColumnForm(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where 
     xztoz = vcat((vcat(BitArray(xztoz[i,1:end÷2]).chunks,BitArray(xztoz[i,end÷2+1:end]).chunks)'
                  for i in 1:size(xztoz,1))...)
     CliffordColumnForm(vcat((p.phase for p in paulis)...), paulis[1].nqubits, xztox, xztoz)
+end
+
+function CliffordColumnForm(s::Stabilizer)
+    xztox = vcat((p.xbit' for p in s)...)'
+    xztoz = vcat((p.zbit' for p in s)...)'
+    xztox = vcat((vcat(BitArray(xztox[i,1:end÷2]).chunks,BitArray(xztox[i,end÷2+1:end]).chunks)'
+                 for i in 1:size(xztox,1))...)
+    xztoz = vcat((vcat(BitArray(xztoz[i,1:end÷2]).chunks,BitArray(xztoz[i,end÷2+1:end]).chunks)'
+                 for i in 1:size(xztoz,1))...)
+    CliffordColumnForm(s.phases, s.nqubits, xztox, xztoz)
 end
 
 macro Ccol_str(a)
