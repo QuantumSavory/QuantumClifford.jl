@@ -27,7 +27,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     apply!,
     CliffordOperator, @C_str,
     CliffordColumnForm, @Ccol_str,
-    CNOT, SWAP, Hadamard, Phase, CliffordId,
+    CNOT, CPhase, SWAP, Hadamard, Phase, CliffordId,
     tensor_pow,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     perm_inverse, perm_product,
@@ -1712,6 +1712,11 @@ const CNOTcol = Ccol"XX
                      ZI
                      ZZ"
 
+const CPhasecol = C"XZ
+                    ZX
+                    ZI
+                    IZ"
+
 const SWAPcol = Ccol"IX
                      XI
                      IZ
@@ -1731,6 +1736,11 @@ const CNOT = C"XX
                IX
                ZI
                ZZ"
+
+const CPhase = C"XZ
+                 ZX
+                 ZI
+                 IZ"
 
 const SWAP = C"IX
                XI
