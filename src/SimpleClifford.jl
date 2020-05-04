@@ -1432,7 +1432,7 @@ function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
     s
 end
 
-function apply!(s::Stabilizer, c::CliffordOperator, indices_of_appweightlication::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
+function apply!(s::Stabilizer, c::CliffordOperator, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
     new_stabrow = zero(c.tab[1])
     n = nqubits(c)
     for row_stab in eachindex(s)
