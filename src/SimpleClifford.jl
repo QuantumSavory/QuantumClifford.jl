@@ -1444,10 +1444,10 @@ function apply!(s::Stabilizer, c::CliffordOperator, indices_of_application::Abst
                 new_stabrow.phase[] -= 0x1
             end
             if x
-                mul_left!(new_stabrow, c.tab, qubit, phases=phases)
+                mul_left!(new_stabrow, c.tab, qubit_i, phases=phases)
             end
             if z
-                mul_left!(new_stabrow, c.tab, qubit+n, phases=phases)
+                mul_left!(new_stabrow, c.tab, qubit_i+n, phases=phases)
             end
         end
         for (qubit_i, qubit) in enumerate(indices_of_application)
