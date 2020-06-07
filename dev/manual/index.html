@@ -37,7 +37,7 @@ julia&gt; P&quot;IXYZ&quot;[[false,true,true,false]]
 + XY</code></pre><p>The operator is represented in memory by bit arrays (much denser than using byte arrays).</p><pre><code class="language-julia-repl">julia&gt; p = P&quot;-IXYZ&quot;;
 
 julia&gt; p.nqubits, p.xz
-(4, UInt64[0x0000000000000006, 0x000000000000000c])</code></pre><p>The convenience properties <code>xbit</code> and <code>zbit</code> give you Bool (GF2) vectors. TODO: this should be a separate function.</p><pre><code class="language-julia-repl">julia&gt; P&quot;XYZI&quot;.xbit
+(4, UInt64[0x0000000000000006, 0x000000000000000c])</code></pre><p>The convenience methods <code>xbit</code> and <code>zbit</code> give you Bool (GF2) vectors.</p><pre><code class="language-julia-repl">julia&gt; xbit(P&quot;XYZI&quot;)
 4-element BitArray{1}:
  1
  1
@@ -59,7 +59,23 @@ julia&gt; Stabilizer([0x2, 0x0],
 - XX
 + ZZ</code></pre><p>Direct sums can be performed,</p><pre><code class="language-julia-repl">julia&gt; S&quot;-XX&quot; ⊗ S&quot;ZZ&quot;
 - XX__
-+ __ZZ</code></pre><p>Indexing operations are available, including fancy indexing, but 2D indexing, into the Pauli operators is not implemented (TODO).</p><p>Consistency at creation is not verified so nonsensical stabilizers can be created, both in terms of content and shape.</p><pre><code class="language-julia-repl">julia&gt; S&quot;iX
++ __ZZ</code></pre><p>Indexing operations are available, including fancy indexing. Be careful about how phase information gets transferred during sub-indexing.</p><pre><code class="language-julia-repl">julia&gt; s = S&quot;-XYZ
+             -ZIX
+             +XIZ&quot;;
+
+julia&gt; s[1]
+- XYZ
+
+julia&gt; s[1,2]
+(true, true)
+
+julia&gt; s[[3,1]]
++ X_Z
+- XYZ
+
+julia&gt; s[[3,1],[2]]
++ _
+- Y</code></pre><p>Consistency at creation is not verified so nonsensical stabilizers can be created, both in terms of content and shape.</p><pre><code class="language-julia-repl">julia&gt; S&quot;iX
          +Z&quot;
 +iX
 + Z</code></pre><p>Similarly to the Pauli operators, a bit array representation is used.</p><pre><code class="language-julia-repl">julia&gt; s = S&quot;-XXX
@@ -114,7 +130,20 @@ end</code></pre><p>Or we can project on a commuting operator, hence no anticommu
 - _ZZ, 0, nothing)</code></pre><p>Lastly, in either case, you can skip the calculation of the phases as well, if they are unimportant.</p><pre><code class="language-julia-repl">julia&gt; project!(copy(s), P&quot;ZZI&quot;, phases=false)
 (- XXX
 + Z_Z
-- _ZZ, 0, 0x00)</code></pre><h1 id="Partial-Traces-1"><a class="docs-heading-anchor" href="#Partial-Traces-1">Partial Traces</a><a class="docs-heading-anchor-permalink" href="#Partial-Traces-1" title="Permalink"></a></h1><p>TODO (use <code>traceout!</code>)</p><h1 id="Generating-a-Pauli-Operator-with-Stabilizer-Generators-1"><a class="docs-heading-anchor" href="#Generating-a-Pauli-Operator-with-Stabilizer-Generators-1">Generating a Pauli Operator with Stabilizer Generators</a><a class="docs-heading-anchor-permalink" href="#Generating-a-Pauli-Operator-with-Stabilizer-Generators-1" title="Permalink"></a></h1><p>The <a href="../API/#SimpleClifford.generate!-Tuple{PauliOperator,Stabilizer}"><code>generate!</code></a> function attempts to generate a Pauli operator by multiplying together the operators belonging to a given stabilizer (or reports their independence). This particular function requires the stabilizer to be already canonicalized.</p><pre><code class="language-julia-repl">julia&gt; s = S&quot;-XXX
+- _ZZ, 0, 0x00)</code></pre><h1 id="Partial-Traces-1"><a class="docs-heading-anchor" href="#Partial-Traces-1">Partial Traces</a><a class="docs-heading-anchor-permalink" href="#Partial-Traces-1" title="Permalink"></a></h1><p>Partial trace (using <a href="../API/#SimpleClifford.traceout!-Union{Tuple{T}, Tuple{Stabilizer,AbstractArray{T,1}}} where T&lt;:Integer"><code>traceout!</code></a>) over even a single qubit might cause many of them to decohere due to entanglement.</p><pre><code class="language-julia-repl">julia&gt; ghz = S&quot;XXX
+               ZZ_
+               _ZZ&quot;;
+
+julia&gt; traceout!(ghz, [1])
++ _ZZ
++ ___
++ ___</code></pre><p>This is somewhat more elegant when the datastructure being used explicitly supports mixed states.</p><pre><code class="language-julia-repl">julia&gt; ghz = MixedStabilizer(S&quot;XXX
+                               ZZ_
+                               _ZZ&quot;);
+
+julia&gt; traceout!(ghz, [1])
+Rank 1 stabilizer
++ _ZZ</code></pre><h1 id="Generating-a-Pauli-Operator-with-Stabilizer-Generators-1"><a class="docs-heading-anchor" href="#Generating-a-Pauli-Operator-with-Stabilizer-Generators-1">Generating a Pauli Operator with Stabilizer Generators</a><a class="docs-heading-anchor-permalink" href="#Generating-a-Pauli-Operator-with-Stabilizer-Generators-1" title="Permalink"></a></h1><p>The <a href="../API/#SimpleClifford.generate!-Tuple{PauliOperator,Stabilizer}"><code>generate!</code></a> function attempts to generate a Pauli operator by multiplying together the operators belonging to a given stabilizer (or reports their independence). This particular function requires the stabilizer to be already canonicalized.</p><pre><code class="language-julia-repl">julia&gt; s = S&quot;-XXX
              +ZZI
              -IZZ&quot;;
 
@@ -127,7 +156,7 @@ julia&gt; s = canonicalize!(s)
 
 julia&gt; generate!(P&quot;XZX&quot;, s)
 
-julia&gt; generate!(P&quot;YYY&quot;, s)</code></pre><h1 id="Clifford-Operators-1"><a class="docs-heading-anchor" href="#Clifford-Operators-1">Clifford Operators</a><a class="docs-heading-anchor-permalink" href="#Clifford-Operators-1" title="Permalink"></a></h1><p>The <a href="../API/#SimpleClifford.CliffordColumnForm"><code>CliffordColumnForm</code></a> structure represents a linear mapping between stabilizers (which should also preserve commutation relationships, but that is not checked at instantiation). A number of predefined Clifford operators are available.</p><pre><code class="language-julia-repl">julia&gt; Hadamard
+julia&gt; generate!(P&quot;YYY&quot;, s)</code></pre><h1 id="Clifford-Operators-1"><a class="docs-heading-anchor" href="#Clifford-Operators-1">Clifford Operators</a><a class="docs-heading-anchor-permalink" href="#Clifford-Operators-1" title="Permalink"></a></h1><p>The <a href="../API/#SimpleClifford.CliffordOperator"><code>CliffordOperator</code></a> structure represents a linear mapping between stabilizers (which should also preserve commutation relationships, but that is not checked at instantiation). A number of predefined Clifford operators are available.</p><pre><code class="language-julia-repl">julia&gt; Hadamard
 X ⟼ + Z
 Z ⟼ + X
 
@@ -143,7 +172,7 @@ _Z ⟼ + ZZ
 
 julia&gt; CliffordId
 X ⟼ + X
-Z ⟼ + Z</code></pre><p>Chaining and tensor products are possible (but slow, improving which is on the TODO list). Same for qubit permutations.</p><pre><code class="language-julia-repl">julia&gt; Hadamard ⊗ Phase
+Z ⟼ + Z</code></pre><p>Chaining and tensor products are possible. Same for qubit permutations.</p><pre><code class="language-julia-repl">julia&gt; Hadamard ⊗ Phase
 X_ ⟼ + Z_
 _X ⟼ + _Y
 Z_ ⟼ + X_
@@ -157,7 +186,7 @@ julia&gt; permute(CNOT, [2,1])
 X_ ⟼ + X_
 _X ⟼ + XX
 Z_ ⟼ + ZZ
-_Z ⟼ + _Z</code></pre><p>You can create custom Clifford operators with C-strings or with a list of Pauli operators. It is on the TODO list to be able to create them by using a Stabilizer or by using boolean matrices.</p><pre><code class="language-julia-repl">julia&gt; C&quot;-ZZ
+_Z ⟼ + _Z</code></pre><p>You can create custom Clifford operators with C-strings or with a list of Pauli operators.</p><pre><code class="language-julia-repl">julia&gt; C&quot;-ZZ
          +_Z
          -X_
          +XX&quot;
@@ -170,13 +199,16 @@ julia&gt; CliffordColumnForm([P&quot;-ZZ&quot;, P&quot;_Z&quot;, P&quot;-X_&quot
 X_ ⟼ - ZZ
 _X ⟼ + _Z
 Z_ ⟼ - X_
-_Z ⟼ + XX</code></pre><p>Naturally, the operators can be applied to stabilizer states. This includes high performance in-place operations (and the phase can be neglected with <code>phases=false</code> for faster computation).</p><pre><code class="language-julia-repl">julia&gt; CNOT * S&quot;X_&quot;
+_Z ⟼ + XX</code></pre><p>Naturally, the operators can be applied to stabilizer states. This includes high performance in-place operations (and the phase can be neglected with <code>phases=false</code> for faster computation). For some uses, the alternative datastructure <a href="../API/#SimpleClifford.CliffordColumnForm"><code>CliffordColumnForm</code></a> might be more performant.</p><pre><code class="language-julia-repl">julia&gt; CNOT * S&quot;X_&quot;
 + XX
 
 julia&gt; s = S&quot;X_&quot;;
 
 julia&gt; apply!(s,CNOT)
-+ XX</code></pre><p>It is on the TODO list to permit small Clifford operators can be applied to large stabilizers by specifying the qubit indices.</p><p>Pauli operators act as Clifford operators too (but they are rather boring, as they only change signs).</p><pre><code class="language-julia-repl">julia&gt; P&quot;XII&quot; * S&quot;ZXX&quot;
++ XX</code></pre><p>Sparse applications where a small Clifford operator is applied only on a particular subset of a larger stabilizer is also possible.</p><pre><code class="language-julia-repl">julia&gt; s = S&quot;Z_YX&quot;;
+
+julia&gt; apply!(s, CNOT, [4,2]) # Apply the CNOT on qubits 4 and 2
++ ZXYX</code></pre><p>Pauli operators act as Clifford operators too (but they are rather boring, as they only change signs).</p><pre><code class="language-julia-repl">julia&gt; P&quot;XII&quot; * S&quot;ZXX&quot;
 - ZXX</code></pre><h1 id="Destabilizers-1"><a class="docs-heading-anchor" href="#Destabilizers-1">Destabilizers</a><a class="docs-heading-anchor-permalink" href="#Destabilizers-1" title="Permalink"></a></h1><p>Slightly abusing the name: What we call &quot;destabilizers&quot; here is a stabilizer and its destabilizing operators saved together. They are implmented with the <a href="../API/#SimpleClifford.Destabilizer"><code>Destabilizer</code></a> object and are initialized from a stabilizer.</p><pre><code class="language-julia-repl">julia&gt; s=S&quot;-XXX
            -ZZI
            +IZZ&quot;;
@@ -217,4 +249,4 @@ julia&gt; destabilizerview(d)
 ━━━━━
 + _ZX
 - Z_X
-+ ZZX</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« SimpleClifford.jl</a><a class="docs-footer-nextpage" href="../canonicalization/">Canonicalization »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 31 May 2020 02:25">Sunday 31 May 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
++ ZZX</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« SimpleClifford.jl</a><a class="docs-footer-nextpage" href="../canonicalization/">Canonicalization »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 7 June 2020 21:02">Sunday 7 June 2020</span>. Using Julia version 1.2.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
