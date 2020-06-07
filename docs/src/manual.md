@@ -107,7 +107,15 @@ julia> p.nqubits, p.xz
 (4, UInt64[0x0000000000000006, 0x000000000000000c])
 ```
 
-The convenience methods `xbit` and `zbit` give you Bool (GF2) vectors.
+Views that give just the X or Z components of the `xz` bitarray are available through [`xview`](@ref) and [`zview`](@ref).
+
+```jldoctest
+julia> xview(P"XYZI")
+1-element view(::Array{UInt64,1}, 1:1) with eltype UInt64:
+ 0x0000000000000003
+```
+
+The convenience methods [`xbit`](@ref) and [`zbit`](@ref) give you Bool (GF2) vectors.
 
 ```jldoctest
 julia> xbit(P"XYZI")
@@ -126,6 +134,13 @@ should commute (but that is not enforced, rather `Stabilizer` is a generic
 tableau data structure). It is stored in memory as a phase list and a bit-matrix
 for X and Z components. It can be instantiated by an `S` string, or with a
 number of different constructors.
+
+For data structures that build upon this tableau representation
+to track other useful information, consider
+[`Destabilizer`](@ref),
+[`MixedStabilizer`](@ref),
+and [`MixedDestabilizer`](@ref).
+See also the [data structures discussion page](../datastructures).
 
 ```jldoctest
 julia> S"-XX
@@ -215,6 +230,9 @@ julia> stab_to_gf2(s)
 
 Canonicalization (akin to Gaussian elimination over F(2,2)) is implemented in
 the [`canonicalize!`](@ref) function.
+Besides the default canonicalization prescription,
+alternative ones are available as described in the
+[canonicalization page](../canonicalization).
 
 ```jldoctest
 julia> s = S"-XXX
@@ -470,7 +488,8 @@ _Z ⟼ + XX
 
 Naturally, the operators can be applied to stabilizer states. This includes high
 performance in-place operations (and the phase can be neglected with
-`phases=false` for faster computation). For some uses, the alternative datastructure [`CliffordColumnForm`](@ref) might be more performant.
+`phases=false` for faster computation).
+For some uses, the alternative datastructure [`CliffordColumnForm`](@ref) might be more performant.
 
 ```jldoctest
 julia> CNOT * S"X_"
@@ -502,7 +521,7 @@ julia> P"XII" * S"ZXX"
 # Destabilizers
 
 Slightly abusing the name: What we call "destabilizers" here is a stabilizer and
-its destabilizing operators saved together. They are implmented with the
+its destabilizing operators saved together. They are implemented with the
 [`Destabilizer`](@ref) object and are initialized from a stabilizer.
 
 ```jldoctest destab
@@ -520,7 +539,7 @@ julia> d = Destabilizer(s)
 + _ZZ
 ```
 
-They have convenience properties to extract only the stabilizer and destabilizer
+They have convenience methods to extract only the stabilizer and destabilizer
 pieces:
 
 ```jldoctest destab
@@ -575,3 +594,12 @@ julia> apply!(d,CNOT⊗Hadamard)
 - Z_X
 + ZZX
 ```
+
+# Mixed States
+
+Both the `Stabilizer` and `Destabilizer` structures have more general forms
+that enable work with mixed stabilizer states.
+They are the [`MixedStabilizer`](@ref) and [`MixedDestabilizer`](@ref) structures,
+described in [Mixed States](../mixed).
+More information that can be seen in the [data structures page](../datasctrures),
+which expands upon the algorithms available for each structure.

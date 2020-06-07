@@ -30,7 +30,7 @@ julia> Destabilizer(s)
 Unlike `Destabilizer`, `MixedDestabilizer` also tracks the logical
 operation generators.
 
-```
+```jldoctest mix
 julia> m = MixedDestabilizer(s)
 Rank 2 stabilizer
 + Z__
@@ -43,18 +43,18 @@ Rank 2 stabilizer
 ━━━━━
 + Z_Z
 
-julia> m.stabilizer
+julia> stabilizerview(m)
 + XXX
 + _ZZ
 
-julia> m.destabilizer
+julia> destabilizerview(m)
 + Z__
 + _X_
 
-julia> m.logicalx
+julia> logicalxview(m)
 + _XX
 
-julia> m.logicalz
+julia> logicalzview(m)
 + Z_Z
 ```
 
@@ -67,7 +67,7 @@ Unlike [`canonicalize!`](@ref) which uses only row operations,
 those swaps by default when instantiated, but that behavior can be turned off,
 if you prefer to work with the canonicalized tableau.
 
-```
+```jldoctest mix
 julia> s = S"XXX
              ZIZ";
 
