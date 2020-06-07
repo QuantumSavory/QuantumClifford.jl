@@ -8,9 +8,9 @@ function tests()
 
 Random.seed!(42)
 
-@testset "Doctests" begin # TODO reinstate after implementing new CliffordOperator
-    #DocMeta.setdocmeta!(SimpleClifford, :DocTestSetup, :(using SimpleClifford); recursive=true)
-    #doctest(SimpleClifford)
+@testset "Doctests" begin
+    DocMeta.setdocmeta!(SimpleClifford, :DocTestSetup, :(using SimpleClifford); recursive=true)
+    doctest(SimpleClifford)
 end
 
 @testset "Pauli Operators" begin
