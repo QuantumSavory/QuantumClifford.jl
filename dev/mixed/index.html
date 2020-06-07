@@ -7,7 +7,7 @@ julia&gt; Destabilizer(s)
 + _X_
 ━━━━━
 + XXX
-+ _ZZ</code></pre><p>Unlike <code>Destabilizer</code>, <code>MixedDestabilizer</code> also tracks the logical operation generators.</p><pre><code class="language-none">julia&gt; m = MixedDestabilizer(s)
++ _ZZ</code></pre><p>Unlike <code>Destabilizer</code>, <code>MixedDestabilizer</code> also tracks the logical operation generators.</p><pre><code class="language-julia-repl">julia&gt; m = MixedDestabilizer(s)
 Rank 2 stabilizer
 + Z__
 + _X_
@@ -19,19 +19,19 @@ Rank 2 stabilizer
 ━━━━━
 + Z_Z
 
-julia&gt; m.stabilizer
+julia&gt; stabilizerview(m)
 + XXX
 + _ZZ
 
-julia&gt; m.destabilizer
+julia&gt; destabilizerview(m)
 + Z__
 + _X_
 
-julia&gt; m.logicalx
+julia&gt; logicalxview(m)
 + _XX
 
-julia&gt; m.logicalz
-+ Z_Z</code></pre><h1 id="Gottesman-Canonicalization-1"><a class="docs-heading-anchor" href="#Gottesman-Canonicalization-1">Gottesman Canonicalization</a><a class="docs-heading-anchor-permalink" href="#Gottesman-Canonicalization-1" title="Permalink"></a></h1><p>To obtain the logical operators we perform a different type of canonicalization, described in Gottesman&#39;s thesis and implemented in <a href="@ref"><code>canonicalize_gott!</code></a>. Unlike <a href="../API/#SimpleClifford.canonicalize!-Tuple{Stabilizer}"><code>canonicalize!</code></a> which uses only row operations, <code>canonicalize_gott!</code> performs column swaps as well. <code>MixedDestabilizer</code> undoes those swaps by default when instantiated, but that behavior can be turned off, if you prefer to work with the canonicalized tableau.</p><pre><code class="language-none">julia&gt; s = S&quot;XXX
+julia&gt; logicalzview(m)
++ Z_Z</code></pre><h1 id="Gottesman-Canonicalization-1"><a class="docs-heading-anchor" href="#Gottesman-Canonicalization-1">Gottesman Canonicalization</a><a class="docs-heading-anchor-permalink" href="#Gottesman-Canonicalization-1" title="Permalink"></a></h1><p>To obtain the logical operators we perform a different type of canonicalization, described in Gottesman&#39;s thesis and implemented in <a href="@ref"><code>canonicalize_gott!</code></a>. Unlike <a href="../API/#SimpleClifford.canonicalize!-Tuple{Stabilizer}"><code>canonicalize!</code></a> which uses only row operations, <code>canonicalize_gott!</code> performs column swaps as well. <code>MixedDestabilizer</code> undoes those swaps by default when instantiated, but that behavior can be turned off, if you prefer to work with the canonicalized tableau.</p><pre><code class="language-julia-repl">julia&gt; s = S&quot;XXX
              ZIZ&quot;;
 
 julia&gt; MixedDestabilizer(s)
@@ -56,4 +56,4 @@ Rank 2 stabilizer
 + XXX
 + ZZ_
 ━━━━━
-+ Z_Z</code></pre><p><code>Destabilizer</code> and <code>MixedStabilizer</code> do not use any column swaps on instantiation as they do not track the logical operators.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../canonicalization/">« Canonicalization</a><a class="docs-footer-nextpage" href="../datastructures/">Datastructure Choice »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 7 June 2020 21:02">Sunday 7 June 2020</span>. Using Julia version 1.2.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
++ Z_Z</code></pre><p><code>Destabilizer</code> and <code>MixedStabilizer</code> do not use any column swaps on instantiation as they do not track the logical operators.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../canonicalization/">« Canonicalization</a><a class="docs-footer-nextpage" href="../datastructures/">Datastructure Choice »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 7 June 2020 21:43">Sunday 7 June 2020</span>. Using Julia version 1.2.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
