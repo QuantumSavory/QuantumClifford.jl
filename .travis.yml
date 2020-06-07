@@ -23,8 +23,8 @@ after_success:
 jobs:
 # # Uncomment the following lines to allow failures on nightly julia
 # # (tests will run but not make your overall status red)
-# allow_failures:
-#   - julia: nightly
+  allow_failures:
+    - julia: nightly
   include:
     - stage: "Documentation"
       julia: 1.2
