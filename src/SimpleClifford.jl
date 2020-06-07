@@ -1403,6 +1403,11 @@ function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
     CliffordOperator(tab)
 end
 
+# TODO create Base.permute! and getindex(..., permutation_array)
+function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this is a slow stupid implementation
+    CliffordOperator(Stabilizer([c.tab[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
+end
+
 function ⊗(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here # TODO stop using \oplus and use only \otimes notation
     CliffordOperator(vcat(
       foldl((l,r)->l⊗r.tab[1:end÷2    ],ops[2:end],init=ops[1].tab[1:end÷2]),
