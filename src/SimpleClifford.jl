@@ -364,7 +364,7 @@ end
 
 function MixedStabilizer(s::Stabilizer)
     s = canonicalize!(s)
-    rp1 = findfirst(mapslices(row->all(==(UInt64(0)),row),s.xzs; dims=(2,)))
+    rp1 = findfirst(mapslices(row->all(==(UInt64(0)),row),s.xzs; dims=(2,))[:,1])
     r = isnothing(rp1) ? size(s, 1) : rp1-1
     spadded = zero(Stabilizer, nqubits(s))
     spadded[1:r] = s

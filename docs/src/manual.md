@@ -154,8 +154,27 @@ julia> S"-XX" ⊗ S"ZZ"
 + __ZZ
 ```
 
-Indexing operations are available, including fancy indexing, but 2D indexing,
-into the Pauli operators is not implemented (TODO).
+Indexing operations are available, including fancy indexing. Be careful about how phase information gets transferred during sub-indexing.
+
+```jldoctest
+julia> s = S"-XYZ
+             -ZIX
+             +XIZ";
+
+julia> s[1]
+- XYZ
+
+julia> s[1,2]
+(true, true)
+
+julia> s[[3,1]]
++ X_Z
+- XYZ
+
+julia> s[[3,1],[2]]
++ _
+- Y
+```
 
 Consistency at creation is not verified so nonsensical stabilizers can be
 created, both in terms of content and shape.
@@ -310,7 +329,31 @@ julia> project!(copy(s), P"ZZI", phases=false)
 
 # Partial Traces
 
-TODO (use `traceout!`)
+Partial trace (using [`traceout!`](@ref)) over even a single qubit might cause many of them to decohere due to entanglement.
+
+```jldoctest
+julia> ghz = S"XXX
+               ZZ_
+               _ZZ";
+
+julia> traceout!(ghz, [1])
++ _ZZ
++ ___
++ ___
+```
+
+This is somewhat more elegant when the datastructure being used explicitly supports mixed states.
+
+```jldoctest
+julia> ghz = MixedStabilizer(S"XXX
+                               ZZ_
+                               _ZZ");
+
+julia> traceout!(ghz, [1])
+Rank 1 stabilizer
++ _ZZ
+```
+
 
 # Generating a Pauli Operator with Stabilizer Generators
 
@@ -360,7 +403,7 @@ julia> generate!(P"YYY", s)
 
 # Clifford Operators
 
-The [`CliffordColumnForm`](@ref) structure represents a linear mapping between
+The [`CliffordOperator`](@ref) structure represents a linear mapping between
 stabilizers (which should also preserve commutation relationships, but that is
 not checked at instantiation). A number of predefined Clifford operators are
 available.
@@ -385,8 +428,7 @@ X ⟼ + X
 Z ⟼ + Z
 ```
 
-Chaining and tensor products are possible (but slow, improving which is on the
-TODO list). Same for qubit permutations.
+Chaining and tensor products are possible. Same for qubit permutations.
 
 ```jldoctest
 julia> Hadamard ⊗ Phase
@@ -407,8 +449,7 @@ _Z ⟼ + _Z
 ```
 
 You can create custom Clifford operators with C-strings or with a list of Pauli
-operators. It is on the TODO list to be able to create them by using a
-Stabilizer or by using boolean matrices.
+operators.
 
 ```jldoctest
 julia> C"-ZZ
@@ -429,7 +470,7 @@ _Z ⟼ + XX
 
 Naturally, the operators can be applied to stabilizer states. This includes high
 performance in-place operations (and the phase can be neglected with
-`phases=false` for faster computation).
+`phases=false` for faster computation). For some uses, the alternative datastructure [`CliffordColumnForm`](@ref) might be more performant.
 
 ```jldoctest
 julia> CNOT * S"X_"
@@ -441,8 +482,14 @@ julia> apply!(s,CNOT)
 + XX
 ```
 
-It is on the TODO list to permit small Clifford operators can be applied to
-large stabilizers by specifying the qubit indices.
+Sparse applications where a small Clifford operator is applied only on a particular subset of a larger stabilizer is also possible.
+
+```jldoctest
+julia> s = S"Z_YX";
+
+julia> apply!(s, CNOT, [4,2]) # Apply the CNOT on qubits 4 and 2
++ ZXYX
+```
 
 Pauli operators act as Clifford operators too (but they are rather boring, as
 they only change signs).
