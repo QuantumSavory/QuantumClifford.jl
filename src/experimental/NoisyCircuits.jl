@@ -49,7 +49,7 @@ struct NoisyGate <: AbstractGate
 end
 
 struct Measurement <: AbstractMeasurement
-    pauli::PauliOperator
+    pauli::AbstractVector{PauliOperator}
     indices::AbstractVector{Int}
 end
 
@@ -74,6 +74,7 @@ affectedqubits(m::Measurement) = m.indices
 affectedqubits(m::MeasurementAndReset) = affectedqubits(m.meas)
 affectedqubits(m::MeasurementAndNoisyReset) = affectedqubits(m.meas)
 affectedqubits(m::NoisyMeasurement) = affectedqubits(m.meas)
+affectedqubits(m::NoiseOp) = m.indices
 
 function applyop!(s::Stabilizer, g::NoisyGate)
     s = applynoise!(
@@ -93,36 +94,24 @@ applyop!(s::Stabilizer, m::NoisyMeasurement) =  applyop!(
 function applyop!(s::Stabilizer, m::Measurement) # TODO is it ok to just measure XX instead of measuring XI and IX separately? That would be much faster
     n = nqubits(s)
     indices = affectedqubits(m)
-    if m.pauli==X # TODO this is not an elegant way to choose between X and Z coincidence measurements
-        op1 = single_x(n,indices[1]) # TODO this is pretty terribly inefficient... use some sparse check
-        op2 = single_x(n,indices[2]) # TODO also, are we only considering pairwise measurements? the expectation that indices is of length 2 is hardcoded
-    else
-        op1 = single_z(n,indices[1])
-        op2 = single_z(n,indices[2])
-    end
-    #println(op1,op2)
-    s,anticom1,res1 = project!(s,op1)
-    #println(s)
-    #println(1,res1)
-    if isnothing(res1)
-        if rand()>0.5 # TODO this seems stupid, float not necessary
-            res1 = s.phases[anticom1] = 0x00
+    res = 0x00
+    for (pauli, index) in zip(m.pauli,affectedqubits(m))
+        if pauli==X # TODO this is not an elegant way to choose between X and Z coincidence measurements
+            op = single_x(n,index) # TODO this is pretty terribly inefficient... use some sparse check
         else
-            res1 = s.phases[anticom1] = 0x02
+            op = single_z(n,index)
+        end # TODO permit Y operators and permit negative operators
+        s,anticom,r = project!(s,op)
+        if isnothing(r)
+            if rand()>0.5 # TODO this seems stupid, float not necessary
+                r = s.phases[anticom] = 0x00
+            else
+                r = s.phases[anticom] = 0x02
+            end
         end
+        res ⊻= r
     end
-    #println("-",res1)
-    s,anticom2,res2 = project!(s,op2)
-    #println(2,res2)
-    if isnothing(res2)
-        if rand()>0.5 # TODO this seems stupid, float not necessary
-            res2 = s.phases[anticom2] = 0x00
-        else
-            res2 = s.phases[anticom2] = 0x02
-        end
-    end
-    #println("-",res2)
-    if res1==res2
+    if res==0x0
         return s, true
     else
         return s, false
