@@ -17,7 +17,8 @@ end
     @testset "Parsing, constructors, and properties" begin
         @test P"-iXYZ" == PauliOperator(0x3, 3, vcat(BitArray([1,1,0]).chunks, BitArray([0,1,1]).chunks))
         @test P"-iXYZ" == PauliOperator(0x3, Bool[1,1,0], Bool[0,1,1])
-        @test P"-iXYZ".xbit == Bool[1,1,0]
+        @test xbit(P"-iXYZ") == Bool[1,1,0]
+        @test zbit(P"-iXYZ") == Bool[0,1,1]
         @test P"-iXYZ".xz == UInt64[0x03, 0x06]
         @test P"-iXYZ".phase[] == 0x03 # TODO why is this failing?
         @test P"-iXYZ".nqubits == 3

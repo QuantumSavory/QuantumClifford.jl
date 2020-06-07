@@ -19,6 +19,7 @@ import Random
 import RecipesBase
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
+    xbit, zbit, xview, zview,
     @S_str, Stabilizer, prodphase, comm, check_allrowscommute,
     Destabilizer, MixedStabilizer, MixedDestabilizer,
     nqubits, stabilizerview, destabilizerview, logicalxview, logicalzview,
@@ -90,25 +91,22 @@ end
 PauliOperator(phase::UInt8, nqubits::Int, xz::Tv) where Tv<:AbstractVector{UInt64} = PauliOperator(fill(phase,()), nqubits, xz)
 PauliOperator(phase::UInt8, x::T, z::T) where T<:AbstractVector{Bool} = PauliOperator(fill(phase,()), length(x), vcat(BitVector(x).chunks,BitVector(z).chunks))
 
-function Base.getproperty(p::PauliOperator, name::Symbol)
-    if name==:xview
-        @view p.xz[1:end÷2]
-    elseif name==:zview
-        @view p.xz[end÷2+1:end]
-    elseif name==:xbit
-        b = BitArray(UndefInitializer(),(p.nqubits,))
-        b.chunks = p.xview
-        b
-    elseif name==:zbit
-        b = BitArray(UndefInitializer(),(p.nqubits,))
-        b.chunks = p.zview
-        b
-    else
-        getfield(p, name)
-    end
+function xview(p::PauliOperator)
+    @view p.xz[1:end÷2]
 end
-
-Base.propertynames(p::PauliOperator, private=false) = (:phase,:nqubits,:xz,:xbit,:zbit,:xview,:zview)
+function zview(p::PauliOperator)
+    @view p.xz[end÷2+1:end]
+end
+function xbit(p::PauliOperator)
+    b = BitArray(UndefInitializer(),(p.nqubits,))
+    b.chunks = xview(p)
+    b
+end
+function zbit(p::PauliOperator)
+    b = BitArray(UndefInitializer(),(p.nqubits,))
+    b.chunks = zview(p)
+    b
+end
 
 macro P_str(a)
     letters = filter(x->occursin(x,"_IZXY"),a)
@@ -117,7 +115,7 @@ macro P_str(a)
 end
 
 Base.getindex(p::PauliOperator, i::Int) = (p.xz[_div64(i-1)+1] & UInt64(0x1)<<_mod64(i-1))!=0x0, (p.xz[end>>1+_div64(i-1)+1] & UInt64(0x1)<<_mod64(i-1))!=0x0
-Base.getindex(p::PauliOperator, r) = PauliOperator(p.phase[], p.xbit[r], p.zbit[r])
+Base.getindex(p::PauliOperator, r) = PauliOperator(p.phase[], xbit(p)[r], zbit(p)[r])
 
 function Base.setindex!(p::PauliOperator, (x,z)::Tuple{Bool,Bool}, i)
     if x
@@ -145,7 +143,7 @@ Base.length(pauli::PauliOperator) = pauli.nqubits
 
 xz2str(x,z) = join(toletter[e] for e in zip(x,z))
 
-Base.show(io::IO, p::PauliOperator) = print(io, ["+ ","+i","- ","-i"][p.phase[]+1]*xz2str(p.xbit,p.zbit))
+Base.show(io::IO, p::PauliOperator) = print(io, ["+ ","+i","- ","-i"][p.phase[]+1]*xz2str(xbit(p),zbit(p)))
 
 Base.:(==)(l::PauliOperator, r::PauliOperator) = r.phase==l.phase && r.nqubits==l.nqubits && r.xz==l.xz
 
@@ -277,7 +275,7 @@ Base.size(stab::Stabilizer,i) = size(stab)[i]
 Base.length(stab::Stabilizer) = length(stab.phases)
 
 Base.show(io::IO, s::Stabilizer) = print(io,
-                                         join([["+ ","+i","- ","-i"][s[i].phase[]+1]*xz2str(s[i].xbit,s[i].zbit)
+                                         join([["+ ","+i","- ","-i"][s[i].phase[]+1]*xz2str(xbit(s[i]),zbit(s[i]))
                                                for i in eachindex(s)],
                                               '\n'))
 
@@ -595,7 +593,7 @@ end
     l
 end
 
-(⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator((l.phase[]+r.phase[])&0x3, vcat(l.xbit,r.xbit), vcat(l.zbit,r.zbit))
+(⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator((l.phase[]+r.phase[])&0x3, vcat(xbit(l),xbit(r)), vcat(zbit(l),zbit(r)))
 
 function Base.:(*)(l, r::PauliOperator)
     p = copy(r)
@@ -1005,7 +1003,7 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=tr
     zs = @view xzs[:,end÷2+1:end]
     lowbit = UInt64(0x1)
     zero64 = UInt64(0x0)
-    px,pz = pauli.xview, pauli.zview
+    px,pz = xview(pauli), zview(pauli)
     used_indices = Int[]
     used = 0
     # remove Xs
@@ -1477,8 +1475,8 @@ struct CliffordColumnForm{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} 
 end
 
 function CliffordColumnForm(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}}
-    xztox = vcat((p.xbit' for p in paulis)...)'
-    xztoz = vcat((p.zbit' for p in paulis)...)'
+    xztox = vcat((xbit(p)' for p in paulis)...)'
+    xztoz = vcat((zbit(p)' for p in paulis)...)'
     xztox = vcat((vcat(BitArray(xztox[i,1:end÷2]).chunks,BitArray(xztox[i,end÷2+1:end]).chunks)'
                  for i in 1:size(xztox,1))...)
     xztoz = vcat((vcat(BitArray(xztoz[i,1:end÷2]).chunks,BitArray(xztoz[i,end÷2+1:end]).chunks)'
@@ -1487,8 +1485,8 @@ function CliffordColumnForm(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where 
 end
 
 function CliffordColumnForm(s::Stabilizer)
-    xztox = vcat((p.xbit' for p in s)...)'
-    xztoz = vcat((p.zbit' for p in s)...)'
+    xztox = vcat((xbit(p)' for p in s)...)'
+    xztoz = vcat((zbit(p)' for p in s)...)'
     xztox = vcat((vcat(BitArray(xztox[i,1:end÷2]).chunks,BitArray(xztox[i,end÷2+1:end]).chunks)'
                  for i in 1:size(xztox,1))...)
     xztoz = vcat((vcat(BitArray(xztoz[i,1:end÷2]).chunks,BitArray(xztoz[i,end÷2+1:end]).chunks)'
@@ -1767,8 +1765,8 @@ const CliffordId = C"X
 ##############################
 
 function stab_to_gf2(s::Stabilizer)
-    xbits = vcat((s[i].xbit' for i in eachindex(s))...)
-    zbits = vcat((s[i].zbit' for i in eachindex(s))...)
+    xbits = vcat((xbit(s[i])' for i in eachindex(s))...)
+    zbits = vcat((zbit(s[i])' for i in eachindex(s))...)
     H = hcat(xbits,zbits)
 end
 

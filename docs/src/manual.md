@@ -107,11 +107,10 @@ julia> p.nqubits, p.xz
 (4, UInt64[0x0000000000000006, 0x000000000000000c])
 ```
 
-The convenience properties `xbit` and `zbit` give you Bool (GF2) vectors.
-TODO: this should be a separate function.
+The convenience methods `xbit` and `zbit` give you Bool (GF2) vectors.
 
 ```jldoctest
-julia> P"XYZI".xbit
+julia> xbit(P"XYZI")
 4-element BitArray{1}:
  1
  1
