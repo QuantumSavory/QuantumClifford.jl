@@ -25,5 +25,5 @@ pages = [
 )
 
 deploydocs(
-    repo = "github.com/Krastanov/QuantumClifford.git"
+    repo = "github.com/Krastanov/QuantumClifford.jl.git"
 )
