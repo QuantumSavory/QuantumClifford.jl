@@ -1,19 +1,19 @@
 push!(LOAD_PATH,"../src/")
 
 using Documenter
-using SimpleClifford
+using QuantumClifford
 
-DocMeta.setdocmeta!(SimpleClifford, :DocTestSetup, :(using SimpleClifford); recursive=true)
+DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
 
 makedocs(
 doctest = false,
 clean = true,
-sitename = "SimpleClifford.jl",
+sitename = "QuantumClifford.jl",
 format = Documenter.HTML(),
-modules = [SimpleClifford],
+modules = [QuantumClifford],
 authors = "Stefan Krastanov",
 pages = [
-"SimpleClifford.jl" => "index.md",
+"QuantumClifford.jl" => "index.md",
 "Manual" => "manual.md",
 "Canonicalization" => "canonicalization.md",
 "Mixed States" => "mixed.md",
@@ -25,5 +25,5 @@ pages = [
 )
 
 deploydocs(
-    repo = "github.com/Krastanov/SimpleClifford.git"
+    repo = "github.com/Krastanov/QuantumClifford.git"
 )

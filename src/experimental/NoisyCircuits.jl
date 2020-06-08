@@ -10,7 +10,7 @@ module NoisyCircuits
 #
 # TODO how important it is to distinguish measuring X₁ and then X₂ from measuring X₁X₂ when doing coincidence measurements
 
-using SimpleClifford
+using QuantumClifford
 
 export Operation, AbstractGate, AbstractMeasurement, AbstractNoise,
        UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll,

@@ -2,7 +2,7 @@
 
 ```@meta
 DocTestSetup = quote
-    using SimpleClifford
+    using QuantumClifford
 end
 ```
 

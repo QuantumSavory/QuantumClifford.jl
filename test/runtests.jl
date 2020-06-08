@@ -1,6 +1,6 @@
-using SimpleClifford, Test, Random, Documenter
-using SimpleClifford: stab_looks_good, mixed_stab_looks_good, destab_looks_good, mixed_destab_looks_good
-using SimpleClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol
+using QuantumClifford, Test, Random, Documenter
+using QuantumClifford: stab_looks_good, mixed_stab_looks_good, destab_looks_good, mixed_destab_looks_good
+using QuantumClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol
 
 test_sizes = [10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
@@ -9,8 +9,8 @@ function tests()
 Random.seed!(42)
 
 @testset "Doctests" begin
-    DocMeta.setdocmeta!(SimpleClifford, :DocTestSetup, :(using SimpleClifford); recursive=true)
-    doctest(SimpleClifford)
+    DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
+    doctest(QuantumClifford)
 end
 
 @testset "Pauli Operators" begin
@@ -367,7 +367,7 @@ end
 @testset "Clifford Operators (column representation)" begin
     @testset "Permutations of qubits" begin
         function naive_permute(c::CliffordColumnForm,p::AbstractArray{T,1} where T) # TODO this is extremely slow stupid implementation
-            ops = SimpleClifford.getallpaulis(c)
+            ops = QuantumClifford.getallpaulis(c)
             CliffordColumnForm([ops[i][p] for i in 1:2*c.nqubits][vcat(p,p.+c.nqubits)])
         end
         for c in [CNOTcol, CliffordIdcol⊗Hadamardcol, CNOTcol⊗CNOTcol, tensor_pow(CNOTcol,6), tensor_pow(CNOTcol,7), tensor_pow(CNOTcol,6)⊗Phasecol, tensor_pow(CNOTcol,7)⊗Phasecol]
@@ -384,8 +384,8 @@ end
     end
     @testset "Tensor products" begin
         function naive_mul(l::CliffordColumnForm, r::CliffordColumnForm) # TODO this is extremely slow stupid implementation
-            opsl = SimpleClifford.getallpaulis(l)
-            opsr = SimpleClifford.getallpaulis(r)
+            opsl = QuantumClifford.getallpaulis(l)
+            opsr = QuantumClifford.getallpaulis(r)
             onel = zero(opsl[1])
             oner = zero(opsr[1])
             opsl = [l⊗oner for l in opsl]

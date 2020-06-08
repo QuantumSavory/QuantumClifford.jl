@@ -1,8 +1,8 @@
-# SimpleClifford.jl
+# QuantumClifford.jl
 
-[![Documentation of dev version](https://img.shields.io/badge/docs-dev-blue.svg)](https://krastanov.github.io/SimpleClifford/dev)
-[![Build status](https://api.travis-ci.com/Krastanov/SimpleClifford.svg?branch=master)](https://travis-ci.com/Krastanov/SimpleClifford)
-[![Test coverage](https://codecov.io/gh/Krastanov/SimpleClifford/branch/master/graph/badge.svg)](https://codecov.io/gh/Krastanov/SimpleClifford)
+[![Documentation of dev version](https://img.shields.io/badge/docs-dev-blue.svg)](https://krastanov.github.io/QuantumClifford/dev)
+[![Build status](https://api.travis-ci.com/Krastanov/QuantumClifford.svg?branch=master)](https://travis-ci.com/Krastanov/QuantumClifford)
+[![Test coverage](https://codecov.io/gh/Krastanov/QuantumClifford/branch/master/graph/badge.svg)](https://codecov.io/gh/Krastanov/QuantumClifford)
 
 A Julia package for working with quantum stabilizer states and Clifford circuits
 that act on them.
@@ -12,23 +12,23 @@ The package is still in an alpha state. It is already very fast for the majority
 To install it use:
 
 ```julia
-] add https://github.com/Krastanov/SimpleClifford#master
+] add https://github.com/Krastanov/QuantumClifford#master
 ```
 
 Works efficiently with
-[pure](https://krastanov.github.io/SimpleClifford/dev/manual/#Stabilizers-1) and
-[mixed stabilizer](https://krastanov.github.io/SimpleClifford/dev/mixed/#Mixed-Stabilizer-States-1)
+[pure](https://krastanov.github.io/QuantumClifford/dev/manual/#Stabilizers-1) and
+[mixed stabilizer](https://krastanov.github.io/QuantumClifford/dev/mixed/#Mixed-Stabilizer-States-1)
 states of thousands of qubits
 as well as
-[sparse or dense Clifford operations](https://krastanov.github.io/SimpleClifford/dev/manual/#Clifford-Operators-1)
+[sparse or dense Clifford operations](https://krastanov.github.io/QuantumClifford/dev/manual/#Clifford-Operators-1)
 acting upon them.
 
 Provides
-[canonicalization](https://krastanov.github.io/SimpleClifford/dev/manual/#Canonicalization-of-Stabilizers-1),
-[projection](https://krastanov.github.io/SimpleClifford/dev/manual/#Projective-Measurements-1), and
-[generation](https://krastanov.github.io/SimpleClifford/dev/manual/#Generating-a-Pauli-Operator-with-Stabilizer-Generators-1) operations,
+[canonicalization](https://krastanov.github.io/QuantumClifford/dev/manual/#Canonicalization-of-Stabilizers-1),
+[projection](https://krastanov.github.io/QuantumClifford/dev/manual/#Projective-Measurements-1), and
+[generation](https://krastanov.github.io/QuantumClifford/dev/manual/#Generating-a-Pauli-Operator-with-Stabilizer-Generators-1) operations,
 as well as
-[partial traces](https://krastanov.github.io/SimpleClifford/dev/manual/#Partial-Traces-1).
+[partial traces](https://krastanov.github.io/QuantumClifford/dev/manual/#Partial-Traces-1).
 
 ```jldoctest
 julia> P"X" * P"Z"

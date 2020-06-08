@@ -1,8 +1,8 @@
-# SimpleClifford.jl
+# QuantumClifford.jl
 
 ```@meta
 DocTestSetup = quote
-    using SimpleClifford
+    using QuantumClifford
 end
 ```
 
