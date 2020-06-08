@@ -1,8 +1,8 @@
 # QuantumClifford.jl
 
 [![Documentation of dev version](https://img.shields.io/badge/docs-dev-blue.svg)](https://krastanov.github.io/QuantumClifford/dev)
-[![Build status](https://api.travis-ci.com/Krastanov/QuantumClifford.svg?branch=master)](https://travis-ci.com/Krastanov/QuantumClifford)
-[![Test coverage](https://codecov.io/gh/Krastanov/QuantumClifford/branch/master/graph/badge.svg)](https://codecov.io/gh/Krastanov/QuantumClifford)
+[![Build status](https://api.travis-ci.com/Krastanov/QuantumClifford.jl.svg?branch=master)](https://travis-ci.com/Krastanov/QuantumClifford.jl)
+[![Test coverage](https://codecov.io/gh/Krastanov/QuantumClifford.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/Krastanov/QuantumClifford.jl)
 
 A Julia package for working with quantum stabilizer states and Clifford circuits
 that act on them.
