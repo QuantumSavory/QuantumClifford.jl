@@ -126,7 +126,7 @@ julia> xbit(P"XYZI")
  0
 ```
 
-# Stabilizers
+# [Stabilizers](@id Stabilizers)
 
 A [`Stabilizer`](@ref) object is a tableau of Pauli operators. When the tableau is
 meant to represent a (pure or mixed) stabilizer state, all of these operators
@@ -140,7 +140,7 @@ to track other useful information, consider
 [`Destabilizer`](@ref),
 [`MixedStabilizer`](@ref),
 and [`MixedDestabilizer`](@ref).
-See also the [data structures discussion page](../datastructures).
+See also the [data structures discussion page](@ref Choosing-Appropriate-Data-Structure).
 
 ```jldoctest
 julia> S"-XX
@@ -226,13 +226,13 @@ julia> stab_to_gf2(s)
  0  0  0  0  1  1
 ```
 
-# Canonicalization of Stabilizers
+# [Canonicalization of Stabilizers](@id Canonicalization-of-Stabilizers)
 
 Canonicalization (akin to Gaussian elimination over F(2,2)) is implemented in
 the [`canonicalize!`](@ref) function.
 Besides the default canonicalization prescription,
 alternative ones are available as described in the
-[canonicalization page](../canonicalization).
+[canonicalization page](@ref Canonicalization-operations).
 
 ```jldoctest
 julia> s = S"-XXX
@@ -274,7 +274,7 @@ julia> s
 + ___
 ```
 
-# Projective Measurements
+# [Projective Measurements](@id Projective-Measurements)
 
 To observe the effect of different projections, we will start with a GHZ state.
 
@@ -345,7 +345,7 @@ julia> project!(copy(s), P"ZZI", phases=false)
 - _ZZ, 0, 0x00)
 ```
 
-# Partial Traces
+# [Partial Traces](@id Partial-Traces)
 
 Partial trace (using [`traceout!`](@ref)) over even a single qubit might cause many of them to decohere due to entanglement.
 
@@ -373,7 +373,7 @@ Rank 1 stabilizer
 ```
 
 
-# Generating a Pauli Operator with Stabilizer Generators
+# [Generating a Pauli Operator with Stabilizer Generators](@id Generating-a-Pauli-Operator-with-Stabilizer-Generators)
 
 The [`generate!`](@ref) function attempts to generate a Pauli operator by
 multiplying together the operators belonging to a given stabilizer (or reports
@@ -419,7 +419,7 @@ julia> generate!(P"XZX", s)
 julia> generate!(P"YYY", s)
 ```
 
-# Clifford Operators
+# [Clifford Operators](@id Clifford-Operators)
 
 The [`CliffordOperator`](@ref) structure represents a linear mapping between
 stabilizers (which should also preserve commutation relationships, but that is
@@ -600,6 +600,6 @@ julia> apply!(d,CNOT⊗Hadamard)
 Both the `Stabilizer` and `Destabilizer` structures have more general forms
 that enable work with mixed stabilizer states.
 They are the [`MixedStabilizer`](@ref) and [`MixedDestabilizer`](@ref) structures,
-described in [Mixed States](../mixed).
-More information that can be seen in the [data structures page](../datasctrures),
+described in [Mixed States](@ref Mixed-Stabilizer-States).
+More information that can be seen in the [data structures page](@ref Choosing-Appropriate-Data-Structure),
 which expands upon the algorithms available for each structure.

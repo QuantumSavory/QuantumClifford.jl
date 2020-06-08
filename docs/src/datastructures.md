@@ -1,4 +1,4 @@
-# Choosing Appropriate Data Structure
+# [Choosing Appropriate Data Structure](@id Choosing-Appropriate-Data-Structure)
 
 There are four different data structures used to represent stabilizer states. If
 you will never need projective measurements you probably would want to use

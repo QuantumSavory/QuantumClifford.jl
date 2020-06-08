@@ -1,4 +1,4 @@
-# Mixed Stabilizer States
+# [Mixed Stabilizer States](@id Mixed-Stabilizer-States)
 
 ```@meta
 DocTestSetup = quote
