@@ -1,7 +1,7 @@
 """
 A module for simulation of Clifford circuits.
 """
-module SimpleClifford
+module QuantumClifford
 
 # TODO document phases=false
 
