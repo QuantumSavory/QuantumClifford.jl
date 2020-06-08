@@ -1,7 +1,7 @@
 # QuantumClifford.jl
 
-[![Documentation of latest stable version](https://img.shields.io/badge/docs-stable-blue.svg)](https://krastanov.github.io/QuantumClifford/stable)
-[![Documentation of dev version](https://img.shields.io/badge/docs-dev-blue.svg)](https://krastanov.github.io/QuantumClifford/dev)
+[![Documentation of latest stable version](https://img.shields.io/badge/docs-stable-blue.svg)](https://krastanov.github.io/QuantumClifford.jl/stable)
+[![Documentation of dev version](https://img.shields.io/badge/docs-dev-blue.svg)](https://krastanov.github.io/QuantumClifford.jl/dev)
 [![Build status](https://api.travis-ci.com/Krastanov/QuantumClifford.jl.svg?branch=master)](https://travis-ci.com/Krastanov/QuantumClifford.jl)
 [![Test coverage from codecov](https://codecov.io/gh/Krastanov/QuantumClifford.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/Krastanov/QuantumClifford.jl)
 [![Test coverage from coveralls](https://coveralls.io/repos/Krastanov/QuantumClifford.jl/badge.svg?branch=master)](https://coveralls.io/r/Krastanov/QuantumClifford.jl?branch=master)
@@ -14,7 +14,7 @@ The package is still in an alpha state. It is already very fast for the majority
 To install it use:
 
 ```julia
-] add https://github.com/Krastanov/QuantumClifford#master
+] add QuantumClifford
 ```
 
 Works efficiently with
