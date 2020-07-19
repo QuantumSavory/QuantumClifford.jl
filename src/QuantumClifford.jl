@@ -2065,7 +2065,7 @@ end
 
 RecipesBase.@recipe function f(s::Stabilizer; xzcomponents=:split)
     seriestype  := :heatmap
-    aspectratio := :equal
+    aspect_ratio := :equal
     yflip := true
     colorbar := false
     grid := false
