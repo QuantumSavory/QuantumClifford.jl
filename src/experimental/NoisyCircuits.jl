@@ -191,4 +191,132 @@ function mctrajectory!(initialstate::Stabilizer,circuit::AbstractVector{Operatio
     end
 end
 
+applyop_branches(s::Stabilizer, g::SparseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)]
+
+function applynoise_branches(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int}; max_order=1)
+    n = nqubits(s)
+    l = length(indices)
+    infid = noise.errprobthird
+    if l==0
+        return [s,one(infid)]
+    end
+    no_error1 = 1-3*infid
+    no_error = no_error1^l
+    single_error = no_error1^(l-1)*infid
+    results = [(copy(s),no_error,0)] # state, prob, order
+    if max_order==0
+        return results
+    end
+    for i in indices
+        push!((apply!(copy(s),single_x(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
+        push!((apply!(copy(s),single_z(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
+        push!((apply!(apply!(copy(s),single_x(n,i)),single_z(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
+    end
+    results
+end
+
+function applyop_branches(s::Stabilizer, nop::NoiseOpAll; max_order=1)
+    n = nqubits(s)
+    return [(state, true, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
+end
+
+function applyop_branches(s::Stabilizer, nop::NoiseOp; max_order=1)
+    return [(state, true, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, affectedqubits(nop), max_order=max_order)]
+end
+
+function applyop_branches(s::Stabilizer, g::NoisyGate; max_order=1)
+    news, _,_,_ = applyop_branches(s,g.gate,max_order=max_order)[1] # TODO this assumes only one always successful branch for the gate
+    return [(state, true, prob, order) for (state, prob, order) in applynoise_branches(s, g.noise, affectedqubits(g), max_order=max_order)]
+end
+
+function applyop_branches(s::Stabilizer, m::NoisyMeasurement; max_order=1)
+    return [(state, success, nprob*mprob, order)
+            for (mstate, success, mprob, morder) in applyop_branches(s, g.meas, max_order=max_order)
+            for (state, nprob, order) in applynoise_branches(mstate, g.noise, affectedqubits(g), max_order=max_order-morder)]
+end
+
+# TODO a lot of repetition with applyop!
+# TODO XXX THIS IS COMPLETELY UNFINISHED - it performs only the first necessary measurement
+function applyop_branches(s::Stabilizer, m::Measurement; max_order=1) # TODO is it ok to just measure XX instead of measuring XI and IX separately? That would be much faster
+    n = nqubits(s)
+    indices = affectedqubits(m)
+    for (pauli, index) in zip(m.pauli,affectedqubits(m))
+        if pauli==X # TODO this is not an elegant way to choose between X and Z coincidence measurements
+            op = single_x(n,index) # TODO this is pretty terribly inefficient... use some sparse check
+        else
+            op = single_z(n,index)
+        end # TODO permit Y operators and permit negative operators
+        s,anticom,r = project!(copy(s),op)
+        if isnothing(r)
+            s1 = s
+            s2 = copy(s)
+            r1 = s1.phases[anticom] = 0x00
+            r2 = s2.phases[anticom] = 0x02
+            return [(s1,true,0.5,0), (s2,false,0.5,0)]
+        else
+            return [(s,r==0x0,1,0)]
+        end
+    end
+end
+
+# TODO a lot of repetition with applyop!
+function applyop_branches(s::Stabilizer, mr::MeasurementAndReset; max_order=1)
+    branches = applyop_branches(s,mr.meas, max_order=max_order)
+    s = branches[1][1] # relies on the order of the branches, does not reset the branch with success==false, assumes order=0
+    # TODO is the traceout necessary given that we just performed measurements?
+    traceout!(s,mr.meas.indices)# TODO it seems like a bad idea not to keep track of the rank here
+    n = nqubits(s) # TODO implement lastindex so we can just use end
+    for (ii,i) in enumerate(affectedqubits(mr))
+        for j in [1,2]
+            s[n-j+1,i] = mr.resetto[j,ii]
+        end
+    end
+    return branches
+end
+
+# TODO a lot of repetition with applyop!
+function applyop_branches(s::Stabilizer, mr::MeasurementAndNoisyReset; max_order=1)
+    branches = applyop_branches(s,mr.meas)
+    ms, _, mprob, _ =  branches[1]# relies on the order of the branches, does not reset the branch with success==false, assumes order=0
+    noise_branches = [(state, true, prob*mprob, order) for (state, prob, order) in applynoise_branches(ms, mr.noise, affectedqubits(ms), max_order=max_order)]
+    return vcat(noise_branches,branches[2:end])
+end
+
+function petrajectory(state, circuit, is_good; branch_weight=1.0, current_order=0, max_order=1)
+    if length(circuit)==0 # end case of the recursion
+        if is_good(state)
+            return (undetected_failure=zero(branch_weight),
+                    detected_failure=zero(branch_weight),
+                    true_success=branch_weight)
+        else
+            return (undetected_failure=branch_weight,
+                    detected_failure=zero(branch_weight),
+                    true_success=zero(branch_weight))
+        end
+    end
+
+    next_op = circuit[1]
+    rest_of_circuit = circuit[2:end]
+
+    P_undetected_failure, P_detected_failure, P_true_success = zero(branch_weight), zero(branch_weight), zero(branch_weight)
+
+    # applyop_all returns all branches of the noise model
+    for (newstate, success, prob, order) in applyop_branches(state, next_op, max_order=max_order-current_order)
+        println("-"^order," ", prob)
+        if success
+            uf,df,ts = petrajectory(newstate, rest_of_circuit, is_good,
+                branch_weight=branch_weight*prob, current_order=current_order+order, max_order=max_order)
+            P_undetected_failure += uf
+            P_detected_failure += df
+            P_true_success += ts
+        else
+            P_detected_failure += prob
+        end
+    end
+
+    return (undetected_failure=P_undetected_failure,
+            detected_failure=P_detected_failure,
+            true_success=P_true_success)
+end
+
 end
