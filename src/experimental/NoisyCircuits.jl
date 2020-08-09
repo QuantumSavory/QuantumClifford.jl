@@ -208,9 +208,9 @@ function applynoise_branches(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indi
         return results
     end
     for i in indices
-        push!((apply!(copy(s),single_x(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
-        push!((apply!(copy(s),single_z(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
-        push!((apply!(apply!(copy(s),single_x(n,i)),single_z(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
+        push!(results,(apply!(copy(s),single_x(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
+        push!(results,(apply!(copy(s),single_z(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
+        push!(results,(apply!(apply!(copy(s),single_x(n,i)),single_z(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
     end
     results
 end
@@ -226,9 +226,10 @@ end
 
 function applyop_branches(s::Stabilizer, g::NoisyGate; max_order=1)
     news, _,_,_ = applyop_branches(s,g.gate,max_order=max_order)[1] # TODO this assumes only one always successful branch for the gate
-    return [(state, true, prob, order) for (state, prob, order) in applynoise_branches(s, g.noise, affectedqubits(g), max_order=max_order)]
+    return [(state, true, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
 end
 
+# TODO this can be much faster if we perform the flip on the classical bit after measurement, when possible
 function applyop_branches(s::Stabilizer, m::NoisyMeasurement; max_order=1)
     return [(state, success, nprob*mprob, order)
             for (mstate, success, mprob, morder) in applyop_branches(s, g.meas, max_order=max_order)
@@ -236,27 +237,43 @@ function applyop_branches(s::Stabilizer, m::NoisyMeasurement; max_order=1)
 end
 
 # TODO a lot of repetition with applyop!
-# TODO XXX THIS IS COMPLETELY UNFINISHED - it performs only the first necessary measurement
 function applyop_branches(s::Stabilizer, m::Measurement; max_order=1) # TODO is it ok to just measure XX instead of measuring XI and IX separately? That would be much faster
     n = nqubits(s)
-    indices = affectedqubits(m)
-    for (pauli, index) in zip(m.pauli,affectedqubits(m))
-        if pauli==X # TODO this is not an elegant way to choose between X and Z coincidence measurements
-            op = single_x(n,index) # TODO this is pretty terribly inefficient... use some sparse check
-        else
-            op = single_z(n,index)
-        end # TODO permit Y operators and permit negative operators
-        s,anticom,r = project!(copy(s),op)
+    [(s,iseven(r>>1),p,0) for (s,r,p) in _applyop_branches_measurement([(s,0x0,1.0)],m.pauli,affectedqubits(m),n)]
+end
+
+# TODO XXX THIS IS PARTICULARLY INEFFICIENT recurrent implementation
+function _applyop_branches_measurement(branches, paulis, qubits, n)
+    if length(paulis) == 0
+        return branches
+    end
+
+    new_branches = []
+    pauli = paulis[1]
+    otherpaulis = paulis[2:end]
+    index = qubits[1]
+    otherqubits = qubits[2:end]
+    if pauli==X # TODO this is not an elegant way to choose between X and Z coincidence measurements
+        op = single_x(n,index) # TODO this is pretty terribly inefficient... use some sparse check
+    else
+        op = single_z(n,index)
+    end # TODO permit Y operators and permit negative operators
+
+    for (s,r0,p) in branches
+        s,anticom,r = project!(s,op)
         if isnothing(r)
             s1 = s
             s2 = copy(s)
             r1 = s1.phases[anticom] = 0x00
             r2 = s2.phases[anticom] = 0x02
-            return [(s1,true,0.5,0), (s2,false,0.5,0)]
+            push!(new_branches, (s1,r0+r1,p/2))
+            push!(new_branches, (s2,r0+r2,p/2))
         else
-            return [(s,r==0x0,1,0)]
+            push!(new_branches, (s,r0+r,p))
         end
     end
+
+    return _applyop_branches_measurement(new_branches, otherpaulis, otherqubits, n)
 end
 
 # TODO a lot of repetition with applyop!
@@ -301,16 +318,17 @@ function petrajectory(state, circuit, is_good; branch_weight=1.0, current_order=
     P_undetected_failure, P_detected_failure, P_true_success = zero(branch_weight), zero(branch_weight), zero(branch_weight)
 
     # applyop_all returns all branches of the noise model
-    for (newstate, success, prob, order) in applyop_branches(state, next_op, max_order=max_order-current_order)
-        println("-"^order," ", prob)
-        if success
-            uf,df,ts = petrajectory(newstate, rest_of_circuit, is_good,
+    p = 0
+    for (i,(newstate, success, prob, order)) in enumerate(applyop_branches(state, next_op, max_order=max_order-current_order))
+        p+=prob
+        if success # TODO is the copy below necessary?
+            uf,df,ts = petrajectory(copy(newstate), rest_of_circuit, is_good,
                 branch_weight=branch_weight*prob, current_order=current_order+order, max_order=max_order)
             P_undetected_failure += uf
             P_detected_failure += df
             P_true_success += ts
         else
-            P_detected_failure += prob
+            P_detected_failure += prob*branch_weight
         end
     end
 
