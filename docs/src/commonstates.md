@@ -3,6 +3,8 @@
 ```@meta
 DocTestSetup = quote
     using QuantumClifford
+    using StableRNGs
+    rng = StableRNG(42)
 end
 ```
 
@@ -34,13 +36,13 @@ julia> zero(P"XYZXYZ")
 Random Pauli operators are implemented as well (with or without a random phase).
 
 ```jldoctest rand
-julia> using Random; Random.seed!(2);
+julia> using StableRNGs; rng = StableRNG(42);
 
-julia> random_pauli(4)
-- XYXX
+julia> random_pauli(rng, 4)
++i_ZZ_
 
-julia> random_pauli(4; nophase=true)
-+ _YYX
+julia> random_pauli(rng, 4; nophase=true)
++ ZXZY
 ```
 
 # Stabilizer States
@@ -86,9 +88,9 @@ A random stabilizer can be created as well (consult the source code for exact
 ensemble, as there are caveats to the choice of distribution).
 
 ```jldoctest rand
-julia> random_stabilizer(2,5)
-- Z_YXZ
-+ YX_XX
+julia> random_stabilizer(rng, 2,5)
+- _ZY__
++ ___X_
 ```
 ## Mixed States
 

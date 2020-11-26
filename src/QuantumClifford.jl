@@ -16,6 +16,7 @@ module QuantumClifford
 
 import LinearAlgebra
 import Random
+using Random: AbstractRNG, GLOBAL_RNG
 import RecipesBase
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
@@ -1910,8 +1911,9 @@ end
 # Random objects
 ##############################
 
-random_pauli(n; nophase=false) = PauliOperator(nophase ? 0x0 : rand(0x0:0x3), rand(Bool,n), rand(Bool,n))
-function random_pauli(n,p; nophase=false,nonidbranch=false)
+random_pauli(rnd::AbstractRNG, n::Integer; nophase=false) = PauliOperator(nophase ? 0x0 : rand(rnd,0x0:0x3), rand(rnd,Bool,n), rand(rnd,Bool,n))
+random_pauli(n::Integer; nophase=false) = random_pauli(GLOBAL_RNG, n, nophase=nophase)
+function random_pauli(rng::AbstractRNG,n::Integer,p; nophase=false,nonidbranch=false)
     x = falses(n)
     z = falses(n)
     if nonidbranch
@@ -1919,47 +1921,52 @@ function random_pauli(n,p; nophase=false,nonidbranch=false)
         p=(p/(1-(1-2p)^n) - 1/n/3)*n/(n-1)
     end
     for i in 1:n
-        r = rand()
+        r = rand(rng)
         if nonidbranch && definite==i
             r *= 3p
         end
         if (r<=2p) x[i]=true end
         if (p<r<=3p) z[i]=true end
     end
-    PauliOperator(nophase ? 0x0 : rand(0x0:0x3), x, z)
+    PauliOperator(nophase ? 0x0 : rand(rng,0x0:0x3), x, z)
 end
+random_pauli(n::Integer, p; nophase=false, nonidbranch=false) = random_pauli(GLOBAL_RNG,n,p; nophase=nophase,nonidbranch=nonidbranch)
 
-function random_invertible_gf2(n)
+
+function random_invertible_gf2(rng::AbstractRNG, n::Integer)
     while true
-        mat = rand(Bool,n,n)
+        mat = rand(rng,Bool,n,n)
         gf2_isinvertible(mat) && return mat
     end
 end
+random_invertible_gf2(n::Integer) = random_invertible_gf2(GLOBAL_RNG, n)
 
 # function random_cnot_clifford(n) = ... #TODO
 
-function random_stabilizer(n) # TODO this is vaguelly based on an unsupported slide deck off the internet. Probably incorrectly implemented too.
+function random_stabilizer(rng::AbstractRNG, n::Integer) # TODO this is vaguelly based on an unsupported slide deck off the internet. Probably incorrectly implemented too.
     cx = falses(n,n)
     cz = falses(n,n)
     for i in 1:n
-        cx[i,i], cz[i,i] = rand([(true,true),(true,false),(false,true)])
+        cx[i,i], cz[i,i] = rand(rng,[(true,true),(true,false),(false,true)])
     end
     C = random_invertible_gf2(n)
     CinvT = gf2_invert(C)'
     cx = Bool.((cx * C) .% 2)
     cz = Bool.((cz * CinvT) .% 2)
-    Stabilizer(rand([0x0,0x2],n), cx, cz)
+    Stabilizer(rand(rng,[0x0,0x2],n), cx, cz)
 end
+random_stabilizer(n::Integer) =  random_stabilizer(GLOBAL_RNG, n)
 
-random_stabilizer(r,n) = random_stabilizer(n)[Random.randperm(n)[1:r]]
+random_stabilizer(rng::AbstractRNG,r::Integer,n::Integer) = random_stabilizer(rng,n)[Random.randperm(rng,n)[1:r]]
+random_stabilizer(r::Integer,n::Integer) = random_stabilizer(GLOBAL_RNG,n)[Random.randperm(GLOBAL_RNG,n)[1:r]]
 
-function random_singlequbitop(n)
+function random_singlequbitop(rng::AbstractRNG,n::Integer)
     xtox = [falses(n) for i in 1:n]
     ztox = [falses(n) for i in 1:n]
     xtoz = [falses(n) for i in 1:n]
     ztoz = [falses(n) for i in 1:n]
     for i in 1:n
-        gate = rand(1:6)
+        gate = rand(rng,1:6)
         if gate<5
             xtox[i][i] = true
             xtoz[i][i] = true
@@ -1979,6 +1986,7 @@ function random_singlequbitop(n)
                          vcat((vcat(x2z.chunks,z2z.chunks)' for (x2z,z2z) in zip(xtoz,ztoz))...)
         )
 end
+random_singlequbitop(n::Integer) = random_singlequbitop(GLOBAL_RNG,n)
 
 ##############################
 # Consistency checks
