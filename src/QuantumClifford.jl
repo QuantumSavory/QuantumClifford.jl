@@ -1987,15 +1987,19 @@ end
 """
 Check basic consistency requirements of a stabilizer. Used in tests.
 """
-function stab_looks_good(s)
+function stab_looks_good(s; verbose=false)
     c = canonicalize!(copy(s))
+    nrows, ncols = size(c)
     phasesok = all((c.phases .== 0x0) .| (c.phases .== 0x2))
     H = stab_to_gf2(c)
     good_indices = reduce(|,H,dims=(1,))
     good_indices = good_indices[1:end÷2] .| good_indices[end÷2+1:end]
-    colsok = all(good_indices)
+    colsok = ncols>nrows || all(good_indices) # TODO, this can be stricter
     good_indices = reduce(|,H,dims=(2,))
-    rowsok = all(good_indices)
+    rowsok = nrows>ncols || all(good_indices) # TODO, this can be stricter
+    if verbose
+        return (phases=phasesok, rows=rowsok, cols=colsok, commute=check_allrowscommute(c))
+    end
     return phasesok && rowsok && colsok && check_allrowscommute(c)
 end
 

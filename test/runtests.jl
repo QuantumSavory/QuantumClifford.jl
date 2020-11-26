@@ -95,18 +95,21 @@ end
     end
     @testset "Gottesman canonicalization" begin
         for n in test_sizes
-            rs = random_stabilizer(rand(n÷3:n*2÷3),n)
+            for nrows in [n, rand(n÷3:n*2÷3)]
+                rs = random_stabilizer(nrows,n)
             c = canonicalize!(copy(rs))
             g, _, _, perm1, perm2 = canonicalize_gott!(copy(rs))
-            c = canonicalize!(colpermute!(colpermute!(copy(rs),perm1),perm2))
+                c1 = canonicalize!(colpermute!(colpermute!(copy(rs),perm1),perm2))
             cg = canonicalize!(copy(g))
-            @test cg == c
+                @test cg == c1
             @test stab_looks_good(g)
         end
     end
+    end
     @testset "Canonicalization of complex tableaus" begin
         for n in test_sizes
-            rs = random_stabilizer(rand(n÷3:n*2÷3),n)
+            for nrows in [n, rand(n÷3:n*2÷3)]
+                rs = random_stabilizer(nrows,n)
             c  = canonicalize_rref!(copy(rs),1:n)[1]
             dc = canonicalize_rref!(Destabilizer(copy(rs)),1:n)[1]
             mc = canonicalize_rref!(MixedDestabilizer(copy(rs)),1:n)[1]
