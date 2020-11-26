@@ -1,4 +1,5 @@
-*/*.ipynb_checkpoints
+*.ipynb_checkpoints
 Manifest.toml
 */.*swp
 scratch/
+*.cov
