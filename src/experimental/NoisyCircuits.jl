@@ -17,7 +17,8 @@ export Operation, AbstractGate, AbstractMeasurement, AbstractNoise,
        SparseGate, NoisyGate,
        Measurement, NoisyMeasurement, MeasurementAndReset, MeasurementAndNoisyReset,
        affectedqubits, applyop!, applynoise!,
-       NoisyCircuitResult, undetected_failure, detected_failure, true_success, mctrajectory!
+       NoisyCircuitResult, undetected_failure, detected_failure, true_success, mctrajectory!,
+       petrajectory
 
 abstract type Operation end
 abstract type AbstractGate <: Operation end
@@ -65,6 +66,7 @@ end
 
 struct MeasurementAndNoisyReset <: AbstractMeasurement # TODO Do we need a new type or should all non-terminal measurements implicitly have a reset?
     meas::AbstractMeasurement # TODO is this the cleanest way to specify the type
+    resetto::Stabilizer
     noise::AbstractNoise # TODO should the type be more specific
 end
 
@@ -140,7 +142,15 @@ function applyop!(s::Stabilizer, mr::MeasurementAndNoisyReset)
     if !res
         return s,res
     else
-        return applynoise!(s,mr.noise,affectedqubits(mr)), true # TODO indices should be a multimethod, not a property
+        # TODO is the traceout necessary given that we just performed measurements?
+        traceout!(s,affectedqubits(mr))# TODO it seems like a bad idea not to keep track of the rank here
+        n = nqubits(s) # TODO implement lastindex so we can just use end
+        for (ii,i) in enumerate(affectedqubits(mr))
+            for j in [1,2]
+                s[n-j+1,i] = mr.resetto[j,ii]
+            end
+        end
+        return applynoise!(s,mr.noise,affectedqubits(mr)), true
     end
 end
 
@@ -207,7 +217,7 @@ function applynoise_branches(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indi
     if max_order==0
         return results
     end
-    for i in indices
+    for i in indices # TODO max_order>1 is not currently implemented
         push!(results,(apply!(copy(s),single_x(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
         push!(results,(apply!(copy(s),single_z(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
         push!(results,(apply!(apply!(copy(s),single_x(n,i)),single_z(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
@@ -232,14 +242,14 @@ end
 # TODO this can be much faster if we perform the flip on the classical bit after measurement, when possible
 function applyop_branches(s::Stabilizer, m::NoisyMeasurement; max_order=1)
     return [(state, success, nprob*mprob, order)
-            for (mstate, success, mprob, morder) in applyop_branches(s, g.meas, max_order=max_order)
-            for (state, nprob, order) in applynoise_branches(mstate, g.noise, affectedqubits(g), max_order=max_order-morder)]
+            for (mstate, success, mprob, morder) in applyop_branches(s, m.meas, max_order=max_order)
+            for (state, nprob, order) in applynoise_branches(mstate, m.noise, affectedqubits(m), max_order=max_order-morder)]
 end
 
 # TODO a lot of repetition with applyop!
 function applyop_branches(s::Stabilizer, m::Measurement; max_order=1) # TODO is it ok to just measure XX instead of measuring XI and IX separately? That would be much faster
     n = nqubits(s)
-    [(s,iseven(r>>1),p,0) for (s,r,p) in _applyop_branches_measurement([(s,0x0,1.0)],m.pauli,affectedqubits(m),n)]
+    [(ns,iseven(r>>1),p,0) for (ns,r,p) in _applyop_branches_measurement([(s,0x0,1.0)],m.pauli,affectedqubits(m),n)]
 end
 
 # TODO XXX THIS IS PARTICULARLY INEFFICIENT recurrent implementation
@@ -280,31 +290,38 @@ end
 function applyop_branches(s::Stabilizer, mr::MeasurementAndReset; max_order=1)
     branches = applyop_branches(s,mr.meas, max_order=max_order)
     s = branches[1][1] # relies on the order of the branches, does not reset the branch with success==false, assumes order=0
-    # TODO is the traceout necessary given that we just performed measurements?
-    traceout!(s,mr.meas.indices)# TODO it seems like a bad idea not to keep track of the rank here
-    n = nqubits(s) # TODO implement lastindex so we can just use end
-    for (ii,i) in enumerate(affectedqubits(mr))
-        for j in [1,2]
-            s[n-j+1,i] = mr.resetto[j,ii]
-        end
-    end
-    return branches
+    branches = [(_reset!(s,affectedqubits(mr).mr.resetto),succ,prob,order) for (s,succ,prob,order) in branches]
+    branches
 end
 
 # TODO a lot of repetition with applyop!
 function applyop_branches(s::Stabilizer, mr::MeasurementAndNoisyReset; max_order=1)
     branches = applyop_branches(s,mr.meas)
-    ms, _, mprob, _ =  branches[1]# relies on the order of the branches, does not reset the branch with success==false, assumes order=0
-    noise_branches = [(state, true, prob*mprob, order) for (state, prob, order) in applynoise_branches(ms, mr.noise, affectedqubits(ms), max_order=max_order)]
-    return vcat(noise_branches,branches[2:end])
+    # TODO can skip the inner loop if succ=false
+    noise_branches = [(state, succ, prob*mprob, order) 
+                      for (ms, succ, mprob, prime_order) in branches
+                      for (state, prob, order) in applynoise_branches(_reset!(ms,affectedqubits(mr),mr.resetto), mr.noise, affectedqubits(mr), max_order=max_order-prime_order)
+                     ]
+end
+
+function _reset!(s, qubits, resetto)
+    # TODO is the traceout necessary given that we just performed measurements?
+    traceout!(s,qubits)# TODO it seems like a bad idea not to keep track of the rank here
+    n = nqubits(s) # TODO implement lastindex so we can just use end
+    for (ii,i) in enumerate(qubits)
+        for j in [1,2]
+            s[n-j+1,i] = resetto[j,ii]
+        end
+    end
+    return s
 end
 
 function petrajectory(state, circuit, is_good; branch_weight=1.0, current_order=0, max_order=1)
     if length(circuit)==0 # end case of the recursion
         if is_good(state)
             return (undetected_failure=zero(branch_weight),
-                    detected_failure=zero(branch_weight),
-                    true_success=branch_weight)
+            detected_failure=zero(branch_weight),
+            true_success=branch_weight)
         else
             return (undetected_failure=branch_weight,
                     detected_failure=zero(branch_weight),
@@ -333,8 +350,8 @@ function petrajectory(state, circuit, is_good; branch_weight=1.0, current_order=
     end
 
     return (undetected_failure=P_undetected_failure,
-            detected_failure=P_detected_failure,
-            true_success=P_true_success)
+    detected_failure=P_detected_failure,
+    true_success=P_true_success)
 end
 
 end
