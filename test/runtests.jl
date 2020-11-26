@@ -4,15 +4,30 @@ using QuantumClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol
 
 test_sizes = [10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
+function doset(descr)
+    if length(ARGS) == 0
+        return true
+    end
+    for a in ARGS
+        if occursin(lowercase(a), lowercase(descr))
+            return true
+        end
+    end
+    return false
+end
+
 function tests()
 
 Random.seed!(42)
 
+if doset("Doctests")
 @testset "Doctests" begin
     DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
     doctest(QuantumClifford)
 end
+end
 
+if doset("Pauli Operators")
 @testset "Pauli Operators" begin
     @testset "Parsing, constructors, and properties" begin
         @test P"-iXYZ" == PauliOperator(0x3, 3, vcat(BitArray([1,1,0]).chunks, BitArray([0,1,1]).chunks))
@@ -51,7 +66,9 @@ end
         end
     end
 end
+end
 
+if doset("Pure and Mixed state initialization")
 @testset "Pure and Mixed state initialization" begin
     @testset "Destabilizer initialization" begin
         for n in test_sizes
@@ -64,7 +81,9 @@ end
         end
     end
 end
+end
 
+if doset("Stabilizer canonicalization")
 @testset "Stabilizer canonicalization" begin
     @testset "Default canonicalization" begin
         s = S"- XZZZZ_____
@@ -97,30 +116,33 @@ end
         for n in test_sizes
             for nrows in [n, rand(n÷3:n*2÷3)]
                 rs = random_stabilizer(nrows,n)
-            c = canonicalize!(copy(rs))
-            g, _, _, perm1, perm2 = canonicalize_gott!(copy(rs))
+                c = canonicalize!(copy(rs))
+                g, _, _, perm1, perm2 = canonicalize_gott!(copy(rs))
                 c1 = canonicalize!(colpermute!(colpermute!(copy(rs),perm1),perm2))
-            cg = canonicalize!(copy(g))
+                cg = canonicalize!(copy(g))
                 @test cg == c1
-            @test stab_looks_good(g)
+                @test stab_looks_good(g)
+            end
         end
-    end
     end
     @testset "Canonicalization of complex tableaus" begin
         for n in test_sizes
             for nrows in [n, rand(n÷3:n*2÷3)]
                 rs = random_stabilizer(nrows,n)
-            c  = canonicalize_rref!(copy(rs),1:n)[1]
-            dc = canonicalize_rref!(Destabilizer(copy(rs)),1:n)[1]
-            mc = canonicalize_rref!(MixedDestabilizer(copy(rs)),1:n)[1]
-            @test stabilizerview(mc) == stabilizerview(dc) == c
-            @test stab_looks_good(c)
-            @test destab_looks_good(dc)
-            @test mixed_destab_looks_good(mc)
+                c  = canonicalize_rref!(copy(rs),1:n)[1]
+                dc = canonicalize_rref!(Destabilizer(copy(rs)),1:n)[1]
+                mc = canonicalize_rref!(MixedDestabilizer(copy(rs)),1:n)[1]
+                @test stabilizerview(mc) == stabilizerview(dc) == c
+                @test stab_looks_good(c)
+                @test destab_looks_good(dc)
+                @test mixed_destab_looks_good(mc)
+            end
         end
     end
 end
+end
 
+if doset("Projective measurements")
 @testset "Projective measurements" begin
     @testset "Stabilizer representation" begin
         s = S"XXX
@@ -256,7 +278,9 @@ end
                                                            ___X"
     end
 end
+end
 
+if doset("Partial traces")
 @testset "Partial traces" begin
     @testset "RREF canonicalization vs manual traceout" begin
         for N in test_sizes
@@ -310,7 +334,9 @@ end
         end
     end
 end
+end
 
+if doset("GF(2) representations")
 @testset "GF(2) representations" begin
     @testset "Equivalence of GF(2) Gaussian elimination and Stabilizer canonicalization" begin
         for n in test_sizes
@@ -334,7 +360,9 @@ end
         end
     end
 end
+end
 
+if doset("Clifford Operators")
 @testset "Clifford Operators" begin
     @testset "Permutations of qubits" begin
         # TODO (see the column version)
@@ -366,7 +394,9 @@ end
         end
     end
 end
+end
 
+if doset("Clifford Operators (column representation)")
 @testset "Clifford Operators (column representation)" begin
     @testset "Permutations of qubits" begin
         function naive_permute(c::CliffordColumnForm,p::AbstractArray{T,1} where T) # TODO this is extremely slow stupid implementation
@@ -456,7 +486,9 @@ end
         end
     end
 end
+end
 
+if doset("Bug fixes - regression tests")
 @testset "Bug fixes - regression tests" begin
     @testset "Redundant row permutations in `project!(::MixedDestabilizer)`" begin
         # Fixed in 41ed1d3c
@@ -486,6 +518,7 @@ end
         project!(t,c[2])
         @test mixed_destab_looks_good(t) # This used to fail because anticomlog==rank+1 leading to a repeated row permutation
     end
+end
 end
 
 end
