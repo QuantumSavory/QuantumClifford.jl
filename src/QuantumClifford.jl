@@ -32,7 +32,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     tensor_pow,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     perm_inverse, perm_product,
-    single_z, single_x,
+    single_z, single_x, single_y,
     random_invertible_gf2,
     random_pauli, random_stabilizer, random_singlequbitop,
     BadDataStructure
@@ -1863,6 +1863,14 @@ function single_x(n,i)
     xs = falses(n)
     zs = falses(n)
     xs[i] = true
+    PauliOperator(0x0,xs,zs)
+end
+
+function single_y(n,i)
+    xs = falses(n)
+    zs = falses(n)
+    xs[i] = true
+    zs[i] = true
     PauliOperator(0x0,xs,zs)
 end
 
