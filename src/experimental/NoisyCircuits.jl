@@ -12,12 +12,14 @@ module NoisyCircuits
 
 using QuantumClifford
 
+using StatsBase: countmap
+
 export Operation, AbstractGate, AbstractMeasurement, AbstractNoise,
-       UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll,
+       UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, VerifyOp,
        SparseGate, NoisyGate,
        Measurement, NoisyMeasurement, MeasurementAndReset, MeasurementAndNoisyReset,
        affectedqubits, applyop!, applynoise!,
-       NoisyCircuitResult, undetected_failure, detected_failure, true_success, mctrajectory!,
+       mctrajectory!, mctrajectories,
        petrajectory
 
 abstract type Operation end
@@ -70,23 +72,35 @@ struct MeasurementAndNoisyReset <: AbstractMeasurement # TODO Do we need a new t
     noise::AbstractNoise # TODO should the type be more specific
 end
 
+struct VerifyOp <: Operation
+    good_state::Stabilizer
+    indices::AbstractVector{Int}
+end
+
+const statuses = Dict(0=>:continue, 1=>:detected_failure, 2=>:undetected_failure, 3=>:true_success)
+const s_continue = 0
+const s_detected_failure = 1
+const s_undetected_failure = 2
+const s_true_success = 3
+
 affectedqubits(g::NoisyGate) = affectedqubits(g.gate)
 affectedqubits(g::SparseGate) = g.indices
 affectedqubits(m::Measurement) = m.indices
 affectedqubits(m::MeasurementAndReset) = affectedqubits(m.meas)
 affectedqubits(m::MeasurementAndNoisyReset) = affectedqubits(m.meas)
 affectedqubits(m::NoisyMeasurement) = affectedqubits(m.meas)
-affectedqubits(m::NoiseOp) = m.indices
+affectedqubits(n::NoiseOp) = n.indices
+affectedqubits(v::VerifyOp) = v.indices
 
 function applyop!(s::Stabilizer, g::NoisyGate)
     s = applynoise!(
             applyop!(s,g.gate)[1],
             g.noise,
             affectedqubits(g.gate)),
-    return s, true
+    return s, s_continue
 end
 
-applyop!(s::Stabilizer, g::SparseGate) = (apply!(s,g.cliff,affectedqubits(g)), true)
+applyop!(s::Stabilizer, g::SparseGate) = (apply!(s,g.cliff,affectedqubits(g)), s_continue)
 
 applyop!(s::Stabilizer, m::NoisyMeasurement) =  applyop!(
     applynoise!(s,m.noise,affectedqubits(m)),
@@ -114,9 +128,9 @@ function applyop!(s::Stabilizer, m::Measurement) # TODO is it ok to just measure
         res ⊻= r
     end
     if res==0x0
-        return s, true
+        return s, s_continue
     else
-        return s, false
+        return s, s_detected_failure
     end
 end
 
@@ -133,7 +147,7 @@ function applyop!(s::Stabilizer, mr::MeasurementAndReset)
                 s[n-j+1,i] = mr.resetto[j,ii]
             end
         end
-        return s,true
+        return s,s_continue
     end
 end
 
@@ -150,7 +164,7 @@ function applyop!(s::Stabilizer, mr::MeasurementAndNoisyReset)
                 s[n-j+1,i] = mr.resetto[j,ii]
             end
         end
-        return applynoise!(s,mr.noise,affectedqubits(mr)), true
+        return applynoise!(s,mr.noise,affectedqubits(mr)), s_continue
     end
 end
 
@@ -175,30 +189,45 @@ end
 
 function applyop!(s::Stabilizer, mr::NoiseOpAll)
     n = nqubits(s)
-    return applynoise!(s, mr.noise, 1:n), true
+    return applynoise!(s, mr.noise, 1:n), s_continue
 end
 
 function applyop!(s::Stabilizer, mr::NoiseOp)
-    return applynoise!(s, mr.noise, affectedqubits(mr)), true
+    return applynoise!(s, mr.noise, affectedqubits(mr)), s_continue
 end
 
-@enum NoisyCircuitResult undetected_failure detected_failure true_success
+# TODO this one needs more testing
+function applyop!(s::Stabilizer, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
+    # TODO QuantumClifford should implement some submatrix comparison
+    n = nqubits(s) #  TODO QuantumClifford: implement lastindex(s)
+    m = nqubits(v.good_state)
+    s, _ = canonicalize_rref!(s,v.indices)
+    for i in 1:m
+        (s.phases[n-i+1]==v.good_state.phases[m-i+1]) || return s, s_undetected_failure
+        for (j,q) in zip(1:m,v.indices)
+            (s[n-i+1,q]==v.good_state[m-i+1,j]) || return s, s_undetected_failure
+        end
+    end
+    return s, s_true_success
+end
 
-function mctrajectory!(initialstate::Stabilizer,circuit::AbstractVector{Operation},is_good)
+function mctrajectory!(initialstate::Stabilizer,circuit::AbstractVector{Operation})
     state = initialstate
     for op in circuit
         #println(typeof(op))
-        state, success = applyop!(state, op)
+        state, cont = applyop!(state, op)
         #println("#",typeof(state))
-        if !success
-            return state, detected_failure
+        if cont!=s_continue
+            return state, cont
         end
     end
-    if is_good(state)
-        return state, true_success
-    else
-        return state, undetected_failure
-    end
+    return state, s_continue
+end
+
+function mctrajectories(initialstate::Stabilizer,circuit::AbstractVector{Operation};trajectories=500)
+    counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator
+    return merge(Dict([(v=>0) for v in values(statuses)]),
+                 Dict([statuses[k]=>v for (k,v) in counts]))
 end
 
 applyop_branches(s::Stabilizer, g::SparseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)]

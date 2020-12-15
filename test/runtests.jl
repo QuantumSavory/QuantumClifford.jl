@@ -1,6 +1,7 @@
 using QuantumClifford, Test, Random, Documenter
 using QuantumClifford: stab_looks_good, mixed_stab_looks_good, destab_looks_good, mixed_destab_looks_good
 using QuantumClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol
+using QuantumClifford.Experimental.NoisyCircuits
 
 test_sizes = [10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
@@ -523,4 +524,38 @@ end
 
 end
 
+function noisycircuits_tests()
+if doset("Noisy Circuits")
+
+if doset("")
+@testset "" begin
+    @testset "" begin
+        g1 = SparseGate(CNOT, [1,3])
+        g2 = SparseGate(CNOT, [2,4])
+        m = Measurement([X,X],[3,4])
+        good_bell_state = S"XX
+                            ZZ"
+        canonicalize_rref!(good_bell_state)
+        v = VerifyOp(good_bell_state,[1,2])
+        n = NoiseOpAll(UnbiasedUncorrelatedNoise(0.01))
+        with_purification = mctrajectories(good_bell_state⊗good_bell_state, [n,g1,g2,m,v], trajectories=500)
+        @test with_purification[:detected_failure] > 5
+        @test with_purification[:undetected_failure] > 10
+        @test with_purification[:true_success] > 430
+        without_purification = mctrajectories(good_bell_state⊗good_bell_state, [n,v], trajectories=500)
+        @test without_purification[:detected_failure] == 0
+        @test without_purification[:undetected_failure] > 10
+        @test without_purification[:true_success] > 450
+        nonoise = mctrajectories(good_bell_state⊗good_bell_state, [g1,g2,m,v], trajectories=10)
+        @test nonoise[:detected_failure] == 0
+        @test nonoise[:undetected_failure] == 0
+        @test nonoise[:true_success] == 10
+    end
+end
+end
+
+end
+end
+
 tests()
+noisycircuits_tests()

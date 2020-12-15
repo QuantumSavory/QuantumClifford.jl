@@ -20,7 +20,12 @@ pages = [
 "Datastructure Choice" => "datastructures.md",
 "Useful States and Operators" => "commonstates.md",
 "Plotting" => "plotting.md",
-"API" => "API.md"
+"API" => "API.md",
+"NoisyCircuits" => [
+    "Monte Carlo" => "noisycircuits_mc.md"
+    "Leading-order Expansions" => "noisycircuits_perturb.md"
+    "API" => "noisycircuits_API.md"
+]
 ]
 )
 
