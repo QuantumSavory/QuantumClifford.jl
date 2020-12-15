@@ -864,6 +864,8 @@ function canonicalize_rref!(state::AbstractStabilizer, colindices::AbstractVecto
     state, i
 end
 
+canonicalize_rref!(state::AbstractStabilizer; phases::Bool=true) = canonicalize_rref!(state, 1:nqubits(state); phases=phases)
+
 function gott_standard_form_indices(chunks2D, rows, cols; skip=0)
     goodindices = Int[]
     j = 1
