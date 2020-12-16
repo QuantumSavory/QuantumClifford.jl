@@ -526,13 +526,14 @@ end
 
 function noisycircuits_tests()
 if doset("Noisy Circuits")
+@testset "Noisy Circuits" begin
 
-if doset("")
-@testset "" begin
-    @testset "" begin
+if doset("Monte Carlo sims")
+@testset "Monte Carlo sims" begin
+    @testset "Purification examples" begin
         g1 = SparseGate(CNOT, [1,3])
         g2 = SparseGate(CNOT, [2,4])
-        m = Measurement([X,X],[3,4])
+        m = BellMeasurement([X,X],[3,4])
         good_bell_state = S"XX
                             ZZ"
         canonicalize_rref!(good_bell_state)
@@ -554,6 +555,38 @@ if doset("")
 end
 end
 
+if doset("Perturbative expansion sims")
+@testset "Perturbative expansion sims" begin
+    @testset "Purification examples comparison to MC" begin
+        compare(a,b, symbol) = abs(a[symbol]/500-b[symbol]) / (a[symbol]/500+b[symbol]+1e-5) < 0.3
+        g1 = SparseGate(CNOT, [1,3])
+        g2 = SparseGate(CNOT, [2,4])
+        m = BellMeasurement([X,X],[3,4])
+        good_bell_state = S"XX
+                            ZZ"
+        canonicalize_rref!(good_bell_state)
+        v = VerifyOp(good_bell_state,[1,2])
+        n = NoiseOpAll(UnbiasedUncorrelatedNoise(0.01))
+        mc = mctrajectories(good_bell_state⊗good_bell_state, [n,g1,g2,m,v], trajectories=500)
+        pe = petrajectories(good_bell_state⊗good_bell_state, [n,g1,g2,m,v])
+        @test compare(mc,pe,:detected_failure)
+        @test compare(mc,pe,:undetected_failure)
+        @test compare(mc,pe,:true_success)
+        mc = mctrajectories(good_bell_state⊗good_bell_state, [n,v], trajectories=500)
+        pe = petrajectories(good_bell_state⊗good_bell_state, [n,v])
+        @test compare(mc,pe,:detected_failure)
+        @test compare(mc,pe,:undetected_failure)
+        @test compare(mc,pe,:true_success)
+        mc = mctrajectories(good_bell_state⊗good_bell_state, [g1,g2,m,v], trajectories=500)
+        pe = petrajectories(good_bell_state⊗good_bell_state, [g1,g2,m,v])
+        @test compare(mc,pe,:detected_failure)
+        @test compare(mc,pe,:undetected_failure)
+        @test compare(mc,pe,:true_success)
+    end
+end
+end
+
+end
 end
 end
 
