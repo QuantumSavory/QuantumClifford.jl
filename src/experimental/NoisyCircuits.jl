@@ -14,17 +14,17 @@ using QuantumClifford
 
 using StatsBase: countmap
 
-export Operation, AbstractGate, AbstractMeasurement, AbstractNoise,
+export Operation, AbstractGate, AbstractBellMeasurement, AbstractNoise,
        UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, VerifyOp,
        SparseGate, NoisyGate,
-       Measurement, NoisyMeasurement, MeasurementAndReset, MeasurementAndNoisyReset,
+       BellMeasurement, NoisyBellMeasurement, BellMeasurementAndReset, BellMeasurementAndNoisyReset,
        affectedqubits, applyop!, applynoise!,
        mctrajectory!, mctrajectories,
        petrajectory, petrajectories
 
 abstract type Operation end
 abstract type AbstractGate <: Operation end
-abstract type AbstractMeasurement <: Operation end
+abstract type AbstractBellMeasurement <: Operation end
 
 abstract type AbstractNoise end
 
@@ -51,23 +51,23 @@ struct NoisyGate <: AbstractGate
     noise::AbstractNoise # TODO should the type be more specific
 end
 
-struct Measurement <: AbstractMeasurement
+struct BellMeasurement <: AbstractBellMeasurement
     pauli::AbstractVector{PauliOperator}
     indices::AbstractVector{Int}
 end
 
-struct NoisyMeasurement <: AbstractMeasurement
-    meas::AbstractMeasurement # TODO should the type be more specific
+struct NoisyBellMeasurement <: AbstractBellMeasurement
+    meas::AbstractBellMeasurement # TODO should the type be more specific
     noise::AbstractNoise # TODO should the type be more specific
 end
 
-struct MeasurementAndReset <: AbstractMeasurement # TODO Do we need a new type or should all non-terminal measurements implicitly have a reset?
-    meas::AbstractMeasurement # TODO is this the cleanest way to specify the type
+struct BellMeasurementAndReset <: AbstractBellMeasurement # TODO Do we need a new type or should all non-terminal measurements implicitly have a reset?
+    meas::AbstractBellMeasurement # TODO is this the cleanest way to specify the type
     resetto::Stabilizer
 end
 
-struct MeasurementAndNoisyReset <: AbstractMeasurement # TODO Do we need a new type or should all non-terminal measurements implicitly have a reset?
-    meas::AbstractMeasurement # TODO is this the cleanest way to specify the type
+struct BellMeasurementAndNoisyReset <: AbstractBellMeasurement # TODO Do we need a new type or should all non-terminal measurements implicitly have a reset?
+    meas::AbstractBellMeasurement # TODO is this the cleanest way to specify the type
     resetto::Stabilizer
     noise::AbstractNoise # TODO should the type be more specific
 end
@@ -85,10 +85,10 @@ const s_true_success = 3
 
 affectedqubits(g::NoisyGate) = affectedqubits(g.gate)
 affectedqubits(g::SparseGate) = g.indices
-affectedqubits(m::Measurement) = m.indices
-affectedqubits(m::MeasurementAndReset) = affectedqubits(m.meas)
-affectedqubits(m::MeasurementAndNoisyReset) = affectedqubits(m.meas)
-affectedqubits(m::NoisyMeasurement) = affectedqubits(m.meas)
+affectedqubits(m::BellMeasurement) = m.indices
+affectedqubits(m::BellMeasurementAndReset) = affectedqubits(m.meas)
+affectedqubits(m::BellMeasurementAndNoisyReset) = affectedqubits(m.meas)
+affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
 affectedqubits(n::NoiseOp) = n.indices
 affectedqubits(v::VerifyOp) = v.indices
 
@@ -102,12 +102,12 @@ end
 
 applyop!(s::Stabilizer, g::SparseGate) = (apply!(s,g.cliff,affectedqubits(g)), s_continue)
 
-applyop!(s::Stabilizer, m::NoisyMeasurement) =  applyop!(
+applyop!(s::Stabilizer, m::NoisyBellMeasurement) =  applyop!(
     applynoise!(s,m.noise,affectedqubits(m)),
     m.meas)
 
 # TODO this seems unnecessarily complicated
-function applyop!(s::Stabilizer, m::Measurement) # TODO is it ok to just measure XX instead of measuring XI and IX separately? That would be much faster
+function applyop!(s::Stabilizer, m::BellMeasurement) # TODO is it ok to just measure XX instead of measuring XI and IX separately? That would be much faster
     n = nqubits(s)
     indices = affectedqubits(m)
     res = 0x00
@@ -134,7 +134,7 @@ function applyop!(s::Stabilizer, m::Measurement) # TODO is it ok to just measure
     end
 end
 
-function applyop!(s::Stabilizer, mr::MeasurementAndReset)
+function applyop!(s::Stabilizer, mr::BellMeasurementAndReset)
     s,res = applyop!(s,mr.meas)
     if !res
         return s,res
@@ -151,7 +151,7 @@ function applyop!(s::Stabilizer, mr::MeasurementAndReset)
     end
 end
 
-function applyop!(s::Stabilizer, mr::MeasurementAndNoisyReset)
+function applyop!(s::Stabilizer, mr::BellMeasurementAndNoisyReset)
     s,res = applyop!(s,mr.meas)
     if !res
         return s,res
@@ -270,14 +270,14 @@ function applyop_branches(s::Stabilizer, g::NoisyGate; max_order=1)
 end
 
 # TODO this can be much faster if we perform the flip on the classical bit after measurement, when possible
-function applyop_branches(s::Stabilizer, m::NoisyMeasurement; max_order=1)
+function applyop_branches(s::Stabilizer, m::NoisyBellMeasurement; max_order=1)
     return [(state, success, nprob*mprob, order)
             for (mstate, success, mprob, morder) in applyop_branches(s, m.meas, max_order=max_order)
             for (state, nprob, order) in applynoise_branches(mstate, m.noise, affectedqubits(m), max_order=max_order-morder)]
 end
 
 # TODO a lot of repetition with applyop!
-function applyop_branches(s::Stabilizer, m::Measurement; max_order=1) # TODO is it ok to just measure XX instead of measuring XI and IX separately? That would be much faster
+function applyop_branches(s::Stabilizer, m::BellMeasurement; max_order=1) # TODO is it ok to just measure XX instead of measuring XI and IX separately? That would be much faster
     n = nqubits(s)
     [(ns,iseven(r>>1) ? s_continue : s_detected_failure, p,0)
      for (ns,r,p) in _applyop_branches_measurement([(s,0x0,1.0)],m.pauli,affectedqubits(m),n)]
@@ -318,7 +318,7 @@ function _applyop_branches_measurement(branches, paulis, qubits, n)
 end
 
 # TODO a lot of repetition with applyop!
-function applyop_branches(s::Stabilizer, mr::MeasurementAndReset; max_order=1)
+function applyop_branches(s::Stabilizer, mr::BellMeasurementAndReset; max_order=1)
     branches = applyop_branches(s,mr.meas, max_order=max_order)
     s = branches[1][1] # relies on the order of the branches, does not reset the branch with success==false, assumes order=0
     branches = [(_reset!(s,affectedqubits(mr).mr.resetto),succ,prob,order) for (s,succ,prob,order) in branches]
@@ -326,7 +326,7 @@ function applyop_branches(s::Stabilizer, mr::MeasurementAndReset; max_order=1)
 end
 
 # TODO a lot of repetition with applyop!
-function applyop_branches(s::Stabilizer, mr::MeasurementAndNoisyReset; max_order=1)
+function applyop_branches(s::Stabilizer, mr::BellMeasurementAndNoisyReset; max_order=1)
     branches = applyop_branches(s,mr.meas)
     # TODO can skip the inner loop if succ=false
     noise_branches = [(state, succ, prob*mprob, order) 
