@@ -20,7 +20,7 @@ export Operation, AbstractGate, AbstractMeasurement, AbstractNoise,
        Measurement, NoisyMeasurement, MeasurementAndReset, MeasurementAndNoisyReset,
        affectedqubits, applyop!, applynoise!,
        mctrajectory!, mctrajectories,
-       petrajectory
+       petrajectory, petrajectories
 
 abstract type Operation end
 abstract type AbstractGate <: Operation end
@@ -230,7 +230,8 @@ function mctrajectories(initialstate::Stabilizer,circuit::AbstractVector{Operati
                  Dict([statuses[k]=>v for (k,v) in counts]))
 end
 
-applyop_branches(s::Stabilizer, g::SparseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)]
+applyop_branches(s::Stabilizer, g::SparseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)] # there are no fall backs on purpose, otherwise it is easy to mistakenly make a non-deterministic version of this method
+applyop_branches(s::Stabilizer, v::VerifyOp; max_order=1) = [(applyop!(copy(s),v)...,1,0)] 
 
 function applynoise_branches(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int}; max_order=1)
     n = nqubits(s)
@@ -256,16 +257,16 @@ end
 
 function applyop_branches(s::Stabilizer, nop::NoiseOpAll; max_order=1)
     n = nqubits(s)
-    return [(state, true, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
+    return [(state, s_continue, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
 end
 
 function applyop_branches(s::Stabilizer, nop::NoiseOp; max_order=1)
-    return [(state, true, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, affectedqubits(nop), max_order=max_order)]
+    return [(state, s_continue, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, affectedqubits(nop), max_order=max_order)]
 end
 
 function applyop_branches(s::Stabilizer, g::NoisyGate; max_order=1)
     news, _,_,_ = applyop_branches(s,g.gate,max_order=max_order)[1] # TODO this assumes only one always successful branch for the gate
-    return [(state, true, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
+    return [(state, s_continue, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
 end
 
 # TODO this can be much faster if we perform the flip on the classical bit after measurement, when possible
@@ -278,7 +279,8 @@ end
 # TODO a lot of repetition with applyop!
 function applyop_branches(s::Stabilizer, m::Measurement; max_order=1) # TODO is it ok to just measure XX instead of measuring XI and IX separately? That would be much faster
     n = nqubits(s)
-    [(ns,iseven(r>>1),p,0) for (ns,r,p) in _applyop_branches_measurement([(s,0x0,1.0)],m.pauli,affectedqubits(m),n)]
+    [(ns,iseven(r>>1) ? s_continue : s_detected_failure, p,0)
+     for (ns,r,p) in _applyop_branches_measurement([(s,0x0,1.0)],m.pauli,affectedqubits(m),n)]
 end
 
 # TODO XXX THIS IS PARTICULARLY INEFFICIENT recurrent implementation
@@ -345,42 +347,31 @@ function _reset!(s, qubits, resetto)
     return s
 end
 
-function petrajectory(state, circuit, is_good; branch_weight=1.0, current_order=0, max_order=1)
-    if length(circuit)==0 # end case of the recursion
-        if is_good(state)
-            return (undetected_failure=zero(branch_weight),
-            detected_failure=zero(branch_weight),
-            true_success=branch_weight)
-        else
-            return (undetected_failure=branch_weight,
-                    detected_failure=zero(branch_weight),
-                    true_success=zero(branch_weight))
-        end
-    end
-
+function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_order=1)
     next_op = circuit[1]
     rest_of_circuit = circuit[2:end]
 
-    P_undetected_failure, P_detected_failure, P_true_success = zero(branch_weight), zero(branch_weight), zero(branch_weight)
+    status_probs = zeros(typeof(branch_weight), length(statuses)-1)
 
     # applyop_all returns all branches of the noise model
     p = 0
-    for (i,(newstate, success, prob, order)) in enumerate(applyop_branches(state, next_op, max_order=max_order-current_order))
+    for (i,(newstate, status, prob, order)) in enumerate(applyop_branches(state, next_op, max_order=max_order-current_order))
         p+=prob
-        if success # TODO is the copy below necessary?
-            uf,df,ts = petrajectory(copy(newstate), rest_of_circuit, is_good,
+        if status==s_continue # TODO is the copy below necessary?
+            out_probs = petrajectory(copy(newstate), rest_of_circuit,
                 branch_weight=branch_weight*prob, current_order=current_order+order, max_order=max_order)
-            P_undetected_failure += uf
-            P_detected_failure += df
-            P_true_success += ts
+            status_probs .+= out_probs
         else
-            P_detected_failure += prob*branch_weight
+            status_probs[status] += prob*branch_weight
         end
     end
 
-    return (undetected_failure=P_undetected_failure,
-    detected_failure=P_detected_failure,
-    true_success=P_true_success)
+    return status_probs
+end
+
+function petrajectories(state, circuit; branch_weight=1.0, max_order=1)
+    status_probs = petrajectory(state, circuit; branch_weight=branch_weight, current_order=0, max_order=max_order)
+    Dict([statuses[i]=>status_probs[i] for i in eachindex(status_probs)])
 end
 
 end

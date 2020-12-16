@@ -22,6 +22,12 @@ good_bell_state = S"XX
 canonicalize_rref!(good_bell_state);
 v = VerifyOp(good_bell_state,[1,2]);
 n = NoiseOpAll(UnbiasedUncorrelatedNoise(0.01));
-# TODO
+petrajectories(good_bell_state⊗good_bell_state, [n,g1,g2,m,v])
 ```
 
+## Interface
+
+`applyop_branches!(s::Stabilizer, g::Operation; max_order=1)::Vector{Tuple{Stabilizer,Int,Real,Int}}`
+where the first `Int` is the status of the operation, the `Real` is the probability for that branch, and the second `Int` is the order of that branch.
+
+There is also `applynoise_branches!` which is convenient for the `NoisyGate` and `NoisyMeasurement` and so on, but you can also just make up your own noise operator simply by implementing `applyop_branches!` for it.
