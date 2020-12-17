@@ -28,8 +28,8 @@ abstract type AbstractBellMeasurement <: Operation end
 
 abstract type AbstractNoise end
 
-struct UnbiasedUncorrelatedNoise <: AbstractNoise
-    errprobthird::Float64 # TODO should a float be hardcoded?
+struct UnbiasedUncorrelatedNoise{T<:Real} <: AbstractNoise
+    errprobthird::T
 end
 
 struct NoiseOp <: Operation
