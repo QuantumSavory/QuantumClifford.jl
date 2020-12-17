@@ -1,4 +1,4 @@
-# Monte Carlo simulations of noisy circuits
+# Monte Carlo simulations of noisy Clifford circuits
 
 ```@meta
 DocTestSetup = quote

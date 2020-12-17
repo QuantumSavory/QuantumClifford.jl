@@ -1,4 +1,4 @@
-# Manual
+# Perturbative expansions for simulating noisy Clifford circuits
 
 ```@meta
 DocTestSetup = quote
