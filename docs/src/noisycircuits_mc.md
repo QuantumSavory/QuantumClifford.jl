@@ -9,20 +9,32 @@ end
 
 Import with `using QuantumClifford.Experimental.NoisyCircuits`.
 
+This module enables the simulation of noisy Clifford circuits through a Monte Carlo method where the same circuit is evaluated multiple times with random errors interspersed through it as prescribed by a given error model.
+
 Here is an example of a purification circuit:
 
 ```@example
 using QuantumClifford # hide
 using QuantumClifford.Experimental.NoisyCircuits # hide
-g1 = SparseGate(CNOT, [1,3]);
-g2 = SparseGate(CNOT, [2,4]);
-m = Measurement([X,X],[3,4]);
 good_bell_state = S"XX
-                           ZZ";
-canonicalize_rref!(good_bell_state);
-v = VerifyOp(good_bell_state,[1,2]);
-n = NoiseOpAll(UnbiasedUncorrelatedNoise(0.01));
-mctrajectories(good_bell_state⊗good_bell_state, [n,g1,g2,m,v], trajectories=500)
+                    ZZ"
+canonicalize_rref!(good_bell_state)
+initial_state = good_bell_state⊗good_bell_state
+
+g1 = SparseGate(CNOT, [1,3]) # CNOT between qubit 1 and qubit 3 (both with Alice)
+g2 = SparseGate(CNOT, [2,4]) # CNOT between qubit 2 and qubit 4 (both with Bob)
+m = BellMeasurement([X,X],[3,4]) # Bell measurement on qubit 3 and 4
+v = VerifyOp(good_bell_state,[1,2]) # Verify that qubit 1 and 2 indeed form a good Bell pair
+epsilon = 0.01 # The error rate
+n = NoiseOpAll(UnbiasedUncorrelatedNoise(epsilon))
+
+# This circuit performs a depolarization at rate `epsilon` to all qubits,
+# then bilater CNOT operations
+# then a Bell measurement
+# followed by checking whether the final result indeed corresponds to the correct Bell pair.
+circuit = [n,g1,g2,m,v]
+
+mctrajectories(initial_state, circuit, trajectories=500)
 ```
 
 ## Interface
