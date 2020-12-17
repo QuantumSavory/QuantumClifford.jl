@@ -32,7 +32,7 @@ abstract type AbstractBellMeasurement <: Operation end
 abstract type AbstractNoise end
 
 """Depolarization noise model with total probability of error `3*errprobthird`."""
-struct UnbiasedUncorrelatedNoise{T<:Real} <: AbstractNoise
+struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
     errprobthird::T
 end
 
