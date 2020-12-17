@@ -1,3 +1,6 @@
+"""
+A module for simulating noisy Clifford circuits.
+"""
 module NoisyCircuits
 
 # TODO the current interfaces of this module are a bit clunky when it comes to random events
@@ -28,61 +31,74 @@ abstract type AbstractBellMeasurement <: Operation end
 
 abstract type AbstractNoise end
 
+"""Depolarization noise model with total probability of error `3*errprobthird`."""
 struct UnbiasedUncorrelatedNoise{T<:Real} <: AbstractNoise
     errprobthird::T
 end
 
+"""An operator that applies the given `noise` model to the qubits at the selected `indices`."""
 struct NoiseOp <: Operation
     noise::AbstractNoise
     indices::AbstractVector{Int}
 end
 
+"""An operator that applies the given `noise` model to all qubits."""
 struct NoiseOpAll <: Operation
     noise::AbstractNoise
 end
 
+"""A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`."""
 struct SparseGate <: AbstractGate
     cliff::CliffordOperator # TODO do not hardcode this type of clifford op
     indices::AbstractVector{Int}
 end
 
+"""A gate consisting of the given `noise` applied after the given perfect Clifford `gate`."""
 struct NoisyGate <: AbstractGate
     gate::AbstractGate # TODO should the type be more specific
     noise::AbstractNoise # TODO should the type be more specific
 end
 
+"""A Bell measurement performing the correlation measurement corresponding to the given `paulis` projections on the qubits at the selected indices."""
 struct BellMeasurement <: AbstractBellMeasurement
     pauli::AbstractVector{PauliOperator}
     indices::AbstractVector{Int}
 end
 
+"""A perfect Bell measurement performed after the application of the given `noise` on the measured qubits."""
 struct NoisyBellMeasurement <: AbstractBellMeasurement
     meas::AbstractBellMeasurement # TODO should the type be more specific
     noise::AbstractNoise # TODO should the type be more specific
 end
 
+"""Performing a Bell measurement followed by resetting the measured qubits to the given state `resetto`."""
 struct BellMeasurementAndReset <: AbstractBellMeasurement # TODO Do we need a new type or should all non-terminal measurements implicitly have a reset?
     meas::AbstractBellMeasurement # TODO is this the cleanest way to specify the type
     resetto::Stabilizer
 end
 
+"""Performing a Bell measurement followed by resetting the measured qubits to the given state `resetto` followed by the same qubits being affected by the given `noise`."""
 struct BellMeasurementAndNoisyReset <: AbstractBellMeasurement # TODO Do we need a new type or should all non-terminal measurements implicitly have a reset?
     meas::AbstractBellMeasurement # TODO is this the cleanest way to specify the type
     resetto::Stabilizer
     noise::AbstractNoise # TODO should the type be more specific
 end
 
+"""A "probe" to verify that the state of the qubits corresponds to a desired `good_state`, e.g. at the end of the execution of a circuit."""
 struct VerifyOp <: Operation
     good_state::Stabilizer
     indices::AbstractVector{Int}
 end
 
+"""A dictionary of possible statuses returned by `applyop!`."""
 const statuses = Dict(0=>:continue, 1=>:detected_failure, 2=>:undetected_failure, 3=>:true_success)
 const s_continue = 0
 const s_detected_failure = 1
 const s_undetected_failure = 2
 const s_true_success = 3
 
+"""A method giving the qubits acted upon by a given operation. Part of the Noise interface."""
+function affectedqubits end
 affectedqubits(g::NoisyGate) = affectedqubits(g.gate)
 affectedqubits(g::SparseGate) = g.indices
 affectedqubits(m::BellMeasurement) = m.indices
@@ -91,6 +107,9 @@ affectedqubits(m::BellMeasurementAndNoisyReset) = affectedqubits(m.meas)
 affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
 affectedqubits(n::NoiseOp) = n.indices
 affectedqubits(v::VerifyOp) = v.indices
+
+"""A method modifying a given state by applying the given operation. Non-deterministic, part of the Monte Carlo interface."""
+function applyop! end
 
 function applyop!(s::Stabilizer, g::NoisyGate)
     s = applynoise!(
@@ -168,6 +187,9 @@ function applyop!(s::Stabilizer, mr::BellMeasurementAndNoisyReset)
     end
 end
 
+"""A method modifying a given state by applying the corresponding noise model. Non-deterministic, part of the Noise interface."""
+function applynoise! end
+
 function applynoise!(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int})
     n = nqubits(s)
     infid = noise.errprobthird
@@ -211,6 +233,7 @@ function applyop!(s::Stabilizer, v::VerifyOp) # XXX It assumes the other qubits 
     return s, s_true_success
 end
 
+"""Run a single Monte Carlo sample, starting with (and modifying) `initialstate` by applying the given `circuit`. Uses `applyop!` under the hood."""
 function mctrajectory!(initialstate::Stabilizer,circuit::AbstractVector{Operation})
     state = initialstate
     for op in circuit
@@ -224,14 +247,21 @@ function mctrajectory!(initialstate::Stabilizer,circuit::AbstractVector{Operatio
     return state, s_continue
 end
 
+"""Run multiple Monte Carlo trajectories and report the aggregate final statuses of each."""
 function mctrajectories(initialstate::Stabilizer,circuit::AbstractVector{Operation};trajectories=500)
     counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator
     return merge(Dict([(v=>0) for v in values(statuses)]),
                  Dict([statuses[k]=>v for (k,v) in counts]))
 end
 
+"""Compute all possible new states after the application of the given operator. Reports the probability of each one of them. Deterministic, part of the Perturbative Expansion interface."""
+function applyop_branches end
+
 applyop_branches(s::Stabilizer, g::SparseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)] # there are no fall backs on purpose, otherwise it is easy to mistakenly make a non-deterministic version of this method
 applyop_branches(s::Stabilizer, v::VerifyOp; max_order=1) = [(applyop!(copy(s),v)...,1,0)] 
+
+"""Compute all possible new states after the application of the given noise model. Reports the probability of each one of them. Deterministic, part of the Noise interface."""
+function applynoise_branches end
 
 function applynoise_branches(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int}; max_order=1)
     n = nqubits(s)
@@ -347,6 +377,7 @@ function _reset!(s, qubits, resetto)
     return s
 end
 
+"""Run a perturbative expansion to a given order. Uses applyop_branches under the hood."""
 function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_order=1)
     next_op = circuit[1]
     rest_of_circuit = circuit[2:end]
@@ -369,6 +400,7 @@ function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_or
     return status_probs
 end
 
+"""Run a perturbative expansion to a given order. This is the main public fuction for the perturbative expansion approach."""
 function petrajectories(state, circuit; branch_weight=1.0, max_order=1)
     status_probs = petrajectory(state, circuit; branch_weight=branch_weight, current_order=0, max_order=max_order)
     Dict([statuses[i]=>status_probs[i] for i in eachindex(status_probs)])
