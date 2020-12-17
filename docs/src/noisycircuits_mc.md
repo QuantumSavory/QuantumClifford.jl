@@ -37,6 +37,8 @@ circuit = [n,g1,g2,m,v]
 mctrajectories(initial_state, circuit, trajectories=500)
 ```
 
+For more examples, see the [notebook comparing the Monte Carlo and Perturbative method](https://nbviewer.jupyter.org/github/Krastanov/QuantumClifford.jl/blob/master/docs/src/notebooks/Perturbative_Expansions_vs_Monte_Carlo_Simulations.ipynb).
+
 ## Interface
 
 `applyop!(s::Stabilizer, g::Operation)::Tuple{Stabilizer,Int}`

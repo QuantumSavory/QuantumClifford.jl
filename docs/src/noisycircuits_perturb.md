@@ -37,6 +37,12 @@ circuit = [n,g1,g2,m,v]
 petrajectories(initial_state, circuit)
 ```
 
+For more examples, see the [notebook comparing the Monte Carlo and Perturbative method](https://nbviewer.jupyter.org/github/Krastanov/QuantumClifford.jl/blob/master/docs/src/notebooks/Perturbative_Expansions_vs_Monte_Carlo_Simulations.ipynb).
+
+## Symbolic expansions
+
+The perturbative expansion method works with symbolic variables as well. One can use any of the symbolic libraries available in Julia and simply plug symbolic parameters in lieu of numeric parameters. A detailed example is available as a [jupyter notebook](https://nbviewer.jupyter.org/github/Krastanov/QuantumClifford.jl/blob/master/docs/src/notebooks/Symbolic_Perturbative_Expansions.ipynb).
+
 ## Interface
 
 `applyop_branches!(s::Stabilizer, g::Operation; max_order=1)::Vector{Tuple{Stabilizer,Int,Real,Int}}`

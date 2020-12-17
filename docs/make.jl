@@ -21,6 +21,7 @@ pages = [
 "Useful States and Operators" => "commonstates.md",
 "Plotting" => "plotting.md",
 "API" => "API.md",
+"Tutorials and Publications" => "tutandpub.md",
 "NoisyCircuits" => [
     "Monte Carlo" => "noisycircuits_mc.md"
     "Leading-order Expansions" => "noisycircuits_perturb.md"
