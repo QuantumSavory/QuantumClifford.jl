@@ -10,9 +10,9 @@ module QuantumClifford
 # views. That would also fix the current issue of getindex returning a view,
 # instead of us having a dedicated view type.
 
-# TODO remove most of the convenience properties and make helper functions.
-
 # TODO Operations between Clifford operators are very slow
+
+# TODO document phases=false
 
 import LinearAlgebra
 import Random
@@ -470,8 +470,6 @@ Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 # Pauli Operator Helpers
 ##############################
 
-#TODO LOWHANGING all of the @views in comm/prod/mul seem to be necessary, but they still allocate a bit... do I need to write all of this with manual simd loops?
-
 """
 Get the phase of the product of two Pauli operators.
 
@@ -663,7 +661,8 @@ end
     rowmul!(s.tab, i+n, j+n; phases=phases)
 end
 
-# TODO document as a more efficient way of swaping only two columns (instead of using permutation indexing)
+# TODO is this used anywhere?
+"""Swap two columns of a stabilizer in place."""
 @inline function colswap!(s::Stabilizer, i, j)
     lowbit = UInt64(1)
     ibig = _div64(i-1)+1

@@ -3,15 +3,7 @@ A module for simulating noisy Clifford circuits.
 """
 module NoisyCircuits
 
-# TODO the current interfaces of this module are a bit clunky when it comes to random events
-# - applyop! returns (new_state, confirmation_of_no_detected_errors)
-# - two sources of randomness are not tracked well currently
-#   - which noise operator is applied (applied in a purely MC fashion)
-#   - when a measurement is not commuting, which branch is taken (purely MC for now as well)
-#
-# TODO should we call things `apply!` instead of applyop and applynoise?
-#
-# TODO how important it is to distinguish measuring X₁ and then X₂ from measuring X₁X₂ when doing coincidence measurements
+#TODO permit the use of alternative RNGs
 
 using QuantumClifford
 
@@ -32,6 +24,8 @@ abstract type AbstractBellMeasurement <: Operation end
 
 abstract type AbstractNoise end
 
+#TODO all these structs should use specified types
+
 """Depolarization noise model with total probability of error `3*errprobthird`."""
 struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
     errprobthird::T
@@ -50,14 +44,14 @@ end
 
 """A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`."""
 struct SparseGate <: AbstractGate
-    cliff::CliffordOperator # TODO do not hardcode this type of clifford op
+    cliff::CliffordOperator
     indices::AbstractVector{Int}
 end
 
 """A gate consisting of the given `noise` applied after the given perfect Clifford `gate`."""
 struct NoisyGate <: AbstractGate
-    gate::AbstractGate # TODO should the type be more specific
-    noise::AbstractNoise # TODO should the type be more specific
+    gate::AbstractGate
+    noise::AbstractNoise
 end
 
 """A Bell measurement performing the correlation measurement corresponding to the given `paulis` projections on the qubits at the selected indices."""
@@ -68,21 +62,21 @@ end
 
 """A Bell measurement in which each of the measured qubits has a chance to have flipped."""
 struct NoisyBellMeasurement{T} <: AbstractBellMeasurement
-    meas::AbstractBellMeasurement # TODO should the type be more specific
+    meas::AbstractBellMeasurement
     flipprob::T
 end
 
 """Performing a Bell measurement followed by resetting the measured qubits to the given state `resetto`."""
-struct BellMeasurementAndReset <: AbstractBellMeasurement # TODO Do we need a new type or should all non-terminal measurements implicitly have a reset?
-    meas::AbstractBellMeasurement # TODO is this the cleanest way to specify the type
+struct BellMeasurementAndReset <: AbstractBellMeasurement
+    meas::AbstractBellMeasurement
     resetto::Stabilizer
 end
 
 """Performing a Bell measurement followed by resetting the measured qubits to the given state `resetto` followed by the same qubits being affected by the given `noise`."""
-struct BellMeasurementAndNoisyReset <: AbstractBellMeasurement # TODO Do we need a new type or should all non-terminal measurements implicitly have a reset?
-    meas::AbstractBellMeasurement # TODO is this the cleanest way to specify the type
+struct BellMeasurementAndNoisyReset <: AbstractBellMeasurement
+    meas::AbstractBellMeasurement
     resetto::Stabilizer
-    noise::AbstractNoise # TODO should the type be more specific
+    noise::AbstractNoise
 end
 
 """A "probe" to verify that the state of the qubits corresponds to a desired `good_state`, e.g. at the end of the execution of a circuit."""
@@ -134,7 +128,7 @@ function applyop!(s::Stabilizer, m::NoisyBellMeasurement)
 end
 
 # TODO this seems unnecessarily complicated
-function applyop!(s::Stabilizer, m::BellMeasurement) # TODO is it ok to just measure XX instead of measuring XI and IX separately? That would be much faster
+function applyop!(s::Stabilizer, m::BellMeasurement)
     n = nqubits(s)
     indices = affectedqubits(m)
     res = 0x00
@@ -244,9 +238,7 @@ end
 function mctrajectory!(initialstate::Stabilizer,circuit::AbstractVector{Operation})
     state = initialstate
     for op in circuit
-        #println(typeof(op))
         state, cont = applyop!(state, op)
-        #println("#",typeof(state))
         if cont!=s_continue
             return state, cont
         end
@@ -325,7 +317,7 @@ function applyop_branches(s::Stabilizer, m::NoisyBellMeasurement; max_order=1)
 end
 
 # TODO a lot of repetition with applyop!
-function applyop_branches(s::Stabilizer, m::BellMeasurement; max_order=1) # TODO is it ok to just measure XX instead of measuring XI and IX separately? That would be much faster
+function applyop_branches(s::Stabilizer, m::BellMeasurement; max_order=1)
     n = nqubits(s)
     [(ns,iseven(r>>1) ? s_continue : s_detected_failure, p,0)
      for (ns,r,p) in _applyop_branches_measurement([(s,0x0,1.0)],m.pauli,affectedqubits(m),n)]
@@ -402,7 +394,6 @@ function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_or
 
     status_probs = zeros(typeof(branch_weight), length(statuses)-1)
 
-    # applyop_all returns all branches of the noise model
     p = 0
     for (i,(newstate, status, prob, order)) in enumerate(applyop_branches(state, next_op, max_order=max_order-current_order))
         p+=prob
