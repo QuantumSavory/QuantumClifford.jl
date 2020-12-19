@@ -65,10 +65,10 @@ struct BellMeasurement <: AbstractBellMeasurement
     indices::AbstractVector{Int}
 end
 
-"""A perfect Bell measurement performed after the application of the given `noise` on the measured qubits."""
-struct NoisyBellMeasurement <: AbstractBellMeasurement
+"""A Bell measurement in which each of the measured qubits has a chance to have flipped."""
+struct NoisyBellMeasurement{T} <: AbstractBellMeasurement
     meas::AbstractBellMeasurement # TODO should the type be more specific
-    noise::AbstractNoise # TODO should the type be more specific
+    flipprob::T
 end
 
 """Performing a Bell measurement followed by resetting the measured qubits to the given state `resetto`."""
@@ -121,9 +121,16 @@ end
 
 applyop!(s::Stabilizer, g::SparseGate) = (apply!(s,g.cliff,affectedqubits(g)), s_continue)
 
-applyop!(s::Stabilizer, m::NoisyBellMeasurement) =  applyop!(
-    applynoise!(s,m.noise,affectedqubits(m)),
-    m.meas)
+function applyop!(s::Stabilizer, m::NoisyBellMeasurement)
+    state, status = applyop!(s,m.meas)
+    nqubits = length(affectedqubits(m))
+    errprob = (1-(1-2m.flipprob)^nqubits)/2
+    if rand()<errprob
+        return state, status==s_continue ? s_detected_failure : s_continue
+    else
+        return state, status
+    end
+end
 
 # TODO this seems unnecessarily complicated
 function applyop!(s::Stabilizer, m::BellMeasurement) # TODO is it ok to just measure XX instead of measuring XI and IX separately? That would be much faster
@@ -299,11 +306,22 @@ function applyop_branches(s::Stabilizer, g::NoisyGate; max_order=1)
     return [(state, s_continue, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
 end
 
-# TODO this can be much faster if we perform the flip on the classical bit after measurement, when possible
 function applyop_branches(s::Stabilizer, m::NoisyBellMeasurement; max_order=1)
-    return [(state, success, nprob*mprob, order)
-            for (mstate, success, mprob, morder) in applyop_branches(s, m.meas, max_order=max_order)
-            for (state, nprob, order) in applynoise_branches(mstate, m.noise, affectedqubits(m), max_order=max_order-morder)]
+    measurement_branches = applyop_branches(s, m.meas, max_order=max_order)
+    if max_order==0
+        return measurement_branches
+    else
+        new_branches = []
+        nqubits = length(affectedqubits(m))
+        p = (1-2m.flipprob)^nqubits
+        errprob = (1-p)/2
+        sucprob = (1+p)/2
+        for (mstate, success, mprob, morder) in measurement_branches
+            push!(new_branches, (mstate, success, mprob*sucprob, morder))
+            push!(new_branches, (mstate, success==s_continue ? s_detected_failure : s_continue, mprob*errprob, morder+1))
+        end
+        return new_branches
+    end
 end
 
 # TODO a lot of repetition with applyop!
