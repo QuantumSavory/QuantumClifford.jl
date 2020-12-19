@@ -111,7 +111,7 @@ Views that give just the X or Z components of the `xz` bitarray are available th
 
 ```jldoctest
 julia> xview(P"XYZI")
-1-element view(::Array{UInt64,1}, 1:1) with eltype UInt64:
+1-element view(::Vector{UInt64}, 1:1) with eltype UInt64:
  0x0000000000000003
 ```
 
@@ -119,7 +119,7 @@ The convenience methods [`xbit`](@ref) and [`zbit`](@ref) give you Bool (GF2) ve
 
 ```jldoctest
 julia> xbit(P"XYZI")
-4-element BitArray{1}:
+4-element BitVector:
  1
  1
  0
@@ -220,7 +220,7 @@ check matrix.
 
 ```jldoctest stab
 julia> stab_to_gf2(s)
-3×6 BitArray{2}:
+3×6 BitMatrix:
  1  1  1  0  0  0
  0  0  0  1  1  0
  0  0  0  0  1  1

@@ -78,7 +78,7 @@ in a single concatenated padded array of UInt64 chunks of a bit array.
 julia> p = P"-IZXY";
 
 julia> p.xz
-2-element Array{UInt64,1}:
+2-element Vector{UInt64}:
  0x000000000000000c
  0x000000000000000a
 ```

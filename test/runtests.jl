@@ -21,7 +21,7 @@ function tests()
 
 Random.seed!(42)
 
-if doset("Doctests")
+if doset("Doctests") || VERSION >= v"1.6"
 @testset "Doctests" begin
     DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
     doctest(QuantumClifford)
