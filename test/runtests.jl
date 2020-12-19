@@ -66,6 +66,27 @@ if doset("Pauli Operators")
             end
         end
     end
+    @testset "Single qubit Paulis and their action" begin
+        for i in 10
+            for n in test_sizes
+                ix, iy, iz = rand(1:n), rand(1:n), rand(1:n)
+                px = single_x(n,ix)
+                py = single_y(n,iy)
+                pz = single_z(n,iz)
+                s1 = random_stabilizer(n)
+                s2 = copy(s1)
+                apply!(s1,px)
+                apply_single_x!(s2,ix)
+                @test s1==s2
+                apply!(s1,py)
+                apply_single_y!(s2,iy)
+                @test s1==s2
+                apply!(s1,pz)
+                apply_single_z!(s2,iz)
+                @test s1==s2
+            end
+        end
+    end
 end
 end
 

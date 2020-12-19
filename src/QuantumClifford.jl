@@ -34,6 +34,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     perm_inverse, perm_product,
     single_z, single_x, single_y,
+    apply_single_z!, apply_single_x!, apply_single_y!,
     random_invertible_gf2,
     random_pauli, random_stabilizer, random_singlequbitop,
     BadDataStructure
@@ -1838,9 +1839,68 @@ struct BadDataStructure <: Exception
 end
 
 ##############################
+# Functions that perform direct application of common operators without needing an operator instance
+##############################
+
+"""Apply a Pauli Z to the `i`-th qubit of state `s`."""
+function apply_single_z!(s::Stabilizer, i)
+    bigi = _div64(i-1)+1
+    smalli = _mod64(i-1)
+    mask = UInt64(0x1)<<smalli
+    @inbounds @simd for row in 1:size(s.xzs,1)
+        if !iszero(s.xzs[row,bigi] & mask)
+            s.phases[row] = (s.phases[row]+0x2)&0x3
+        end
+    end
+    s
+end
+
+"""Apply a Pauli X to the `i`-th qubit of state `s`."""
+function apply_single_x!(s::Stabilizer, i)
+    bigi = _div64(i-1)+1
+    smalli = _mod64(i-1)
+    mask = UInt64(0x1)<<smalli
+    @inbounds @simd for row in 1:size(s.xzs,1)
+        if !iszero(s.xzs[row,end÷2+bigi] & mask)
+            s.phases[row] = (s.phases[row]+0x2)&0x3
+        end
+    end
+    s
+end
+
+"""Apply a Pauli Y to the `i`-th qubit of state `s`."""
+function apply_single_y!(s::Stabilizer, i)
+    bigi = _div64(i-1)+1
+    smalli = _mod64(i-1)
+    mask = UInt64(0x1)<<smalli
+    @inbounds @simd for row in 1:size(s.xzs,1)
+        if !iszero((s.xzs[row,bigi] & mask) ⊻ (s.xzs[row,end÷2+bigi] & mask))
+            s.phases[row] = (s.phases[row]+0x2)&0x3
+        end
+    end
+    s
+end
+
+function apply_single_z!(s::AbstractStabilizer, i)
+    apply_single_y!(s.tab, i)
+    s
+end
+function apply_single_x!(s::AbstractStabilizer, i)
+    apply_single_y!(s.tab, i)
+    s
+end
+function apply_single_y!(s::AbstractStabilizer, i)
+    apply_single_y!(s.tab, i)
+    s
+end
+
+##############################
 # Common objects
 ##############################
 
+# TODO the single_* ops deserve a special type for faster implementations.
+
+"""A multiqubit operator corresponding to all identities except for Pauli Z at `i`."""
 function single_z(n,i)
     xs = falses(n)
     zs = falses(n)
@@ -1848,6 +1908,7 @@ function single_z(n,i)
     PauliOperator(0x0,xs,zs)
 end
 
+"""A multiqubit operator corresponding to all identities except for Pauli Z at `i`."""
 function single_x(n,i)
     xs = falses(n)
     zs = falses(n)
@@ -1855,6 +1916,7 @@ function single_x(n,i)
     PauliOperator(0x0,xs,zs)
 end
 
+"""A multiqubit operator corresponding to all identities except for Pauli Z at `i`."""
 function single_y(n,i)
     xs = falses(n)
     zs = falses(n)

@@ -22,6 +22,7 @@ export Operation, AbstractGate, AbstractBellMeasurement, AbstractNoise,
        SparseGate, NoisyGate,
        BellMeasurement, NoisyBellMeasurement, BellMeasurementAndReset, BellMeasurementAndNoisyReset,
        affectedqubits, applyop!, applynoise!,
+       applyop_branches, applynoise_branches,
        mctrajectory!, mctrajectories,
        petrajectory, petrajectories
 
@@ -203,14 +204,13 @@ function applynoise!(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indices::Abs
     for i in indices
         r = rand()
         if r<infid
-            apply!(s,single_x(n,i)) # TODO stupidly inefficient, do it sparsely
+            apply_single_x!(s,i)
         end
         if infid<=r<2infid
-            apply!(s,single_z(n,i)) # TODO stupidly inefficient, do it sparsely
+            apply_single_z!(s,i)
         end
         if 2infid<=r<3infid
-            apply!(s,single_x(n,i)) # TODO stupidly inefficient, do it sparsely
-            apply!(s,single_z(n,i)) # TODO stupidly inefficient, do it sparsely
+            apply_single_y!(s,i)
         end
     end
     s
@@ -285,9 +285,9 @@ function applynoise_branches(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indi
         return results
     end
     for i in indices # TODO max_order>1 is not currently implemented
-        push!(results,(apply!(copy(s),single_x(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
-        push!(results,(apply!(copy(s),single_z(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
-        push!(results,(apply!(apply!(copy(s),single_x(n,i)),single_z(n,i)), single_error, 1)) # TODO stupidly inefficient, do it sparsely
+        push!(results,(apply_single_x!(copy(s),i), single_error, 1))
+        push!(results,(apply_single_y!(copy(s),i), single_error, 1))
+        push!(results,(apply_single_z!(copy(s),i), single_error, 1))
     end
     results
 end
