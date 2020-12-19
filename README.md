@@ -77,16 +77,16 @@ BenchmarkTools.Trial:
 
 ```jldoctest
 julia> @benchmark apply!(s, gate) setup=(s=random_stabilizer(100); gate=tensor_pow(CNOT,50))
-BenchmarkTools.Trial:
-  memory estimate:  95.09 KiB
-  allocs estimate:  6045
+BenchmarkTools.Trial: 
+  memory estimate:  752 bytes
+  allocs estimate:  11
   --------------
-  minimum time:     416.188 μs (0.00% GC)
-  median time:      482.586 μs (0.00% GC)
-  mean time:        492.410 μs (0.00% GC)
-  maximum time:     687.202 μs (0.00% GC)
+  minimum time:     248.900 μs (0.00% GC)
+  median time:      277.454 μs (0.00% GC)
+  mean time:        277.948 μs (0.00% GC)
+  maximum time:     338.304 μs (0.00% GC)
   --------------
-  samples:          101
+  samples:          236
   evals/sample:     1
 ```
 
@@ -94,15 +94,15 @@ BenchmarkTools.Trial:
 
 ```jldoctest
 julia> @benchmark apply!(s, CNOT, [32,54]) setup=(s=random_stabilizer(100))
-BenchmarkTools.Trial:
-  memory estimate:  2.67 KiB
-  allocs estimate:  126
+BenchmarkTools.Trial: 
+  memory estimate:  832 bytes
+  allocs estimate:  12
   --------------
-  minimum time:     12.425 μs (0.00% GC)
-  median time:      15.268 μs (0.00% GC)
-  mean time:        15.713 μs (0.00% GC)
-  maximum time:     32.185 μs (0.00% GC)
+  minimum time:     6.480 μs (0.00% GC)
+  median time:      7.350 μs (0.00% GC)
+  mean time:        7.435 μs (0.00% GC)
+  maximum time:     15.171 μs (0.00% GC)
   --------------
-  samples:          407
-  evals/sample:     1
+  samples:          490
+  evals/sample:     6
 ```

@@ -580,20 +580,6 @@ end
     r
 end
 
-@inline function mul_right!(l::PauliOperator, r::PauliOperator; phases::Bool=true)
-    phases && (l.phase[] = prodphase(l,r))
-    l.xz .⊻= r.xz
-    l
-end
-
-@inline function mul_right!(l::PauliOperator, r::Stabilizer, i::Int; phases::Bool=true)
-    phases && (l.phase[] = prodphase(l,r,i))
-    @inbounds @simd for k in 1:length(r.xz)
-        l.xz[k] ⊻= r.xzs[i,k]
-    end
-    l
-end
-
 (⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator((l.phase[]+r.phase[])&0x3, vcat(xbit(l),xbit(r)), vcat(zbit(l),zbit(r)))
 
 function Base.:(*)(l, r::PauliOperator)
@@ -1361,8 +1347,8 @@ julia> entangled = CNOT*stab
 + ZZ
 ```
 """
-struct CliffordOperator <: AbstractCliffordOperator
-    tab::Stabilizer
+struct CliffordOperator{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractCliffordOperator
+    tab::Stabilizer{Tv,Tm}
 end
 
 macro C_str(a)
@@ -1426,7 +1412,7 @@ function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
             if phases&&x&&z
                 new_stabrow.phase[] -= 0x1
             end
-            if x # TODO something in these if statements is allocating while it should not
+            if x
                 mul_left!(new_stabrow, c.tab, qubit, phases=phases)
             end
             if z
