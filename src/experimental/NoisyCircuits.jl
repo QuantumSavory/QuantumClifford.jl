@@ -392,7 +392,7 @@ function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_or
     next_op = circuit[1]
     rest_of_circuit = circuit[2:end]
 
-    status_probs = zeros(typeof(branch_weight), length(statuses)-1)
+    status_probs = fill(zero(branch_weight), length(statuses)-1)
 
     p = 0
     for (i,(newstate, status, prob, order)) in enumerate(applyop_branches(state, next_op, max_order=max_order-current_order))
