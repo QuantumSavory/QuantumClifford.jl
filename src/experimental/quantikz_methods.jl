@@ -5,7 +5,7 @@ function Quantikz.QuantikzOp(op::SparseGate)
     if g==CNOT
         return Quantikz.CNOT(op.indices...)
     elseif g==SWAP*CNOT*SWAP
-        return Quantikz.CNOT(op.indices[end:-1:begin]...)
+        return Quantikz.CNOT(op.indices[end:-1:1]...) # TODO1.3 change to end:-1:begin when you drop julia1.3
     elseif g==CPHASE
         return Quantikz.CPHASE(op.indices...)
     elseif g==SWAP
