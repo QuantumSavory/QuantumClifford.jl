@@ -415,4 +415,6 @@ function petrajectories(state, circuit; branch_weight=1.0, max_order=1)
     Dict([statuses[i]=>status_probs[i] for i in eachindex(status_probs)])
 end
 
+include("./quantikz_methods.jl")
+
 end

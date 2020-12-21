@@ -1,4 +1,6 @@
-using QuantumClifford, Test, Random, Documenter, AbstractAlgebra
+using QuantumClifford, Test, Random, Documenter
+using AbstractAlgebra
+using Quantikz: circuit2string
 using QuantumClifford: stab_looks_good, mixed_stab_looks_good, destab_looks_good, mixed_destab_looks_good
 using QuantumClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol
 using QuantumClifford.Experimental.NoisyCircuits
@@ -645,8 +647,26 @@ if doset("Perturbative expansion sims")
 end
 end
 
+if doset("Quantikz diagrams")
+@testset "Quantikz diagrams" begin
+    noise = UnbiasedUncorrelatedNoise(0.1)
+    @test circuit2string([
+            SparseGate(CNOT, [1,4]),
+            SparseGate(CNOT, [3,2]),
+            SparseGate(CPHASE, [1,2]),
+            SparseGate(SWAP, [2,4]),
+            SparseGate(CNOT*CNOT, [1,3]),
+            NoiseOp(noise,[1,3]),
+            NoiseOpAll(noise),
+            NoisyGate(SparseGate(CNOT*CNOT, [2,4]),noise),
+            
+            ]) == "\\begin{quantikz}[transparent]\n\\qw & \\ctrl{0} & \\qw & \\ctrl{0} & \\qw & \\gate[3,label style={yshift=0.2cm}]{} & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\qw & \\qw\\\\\n\\qw & \\qw & \\targ{}\\vqw{0} & \\ctrl{-1} & \\swap{0} & \\linethrough & \\qw & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\gate[3,label style={yshift=0.2cm}]{} & \\qw\\\\\n\\qw & \\qw & \\ctrl{-1} & \\qw & \\qw &  & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} & \\linethrough & \\qw\\\\\n\\qw & \\targ{}\\vqw{-3} & \\qw & \\qw & \\swap{-2} & \\qw & \\qw & \\gate[1,style={starburst,starburst points=7,inner xsep=-2pt,inner ysep=-2pt,scale=0.5}]{} &  & \\qw\n\\end{quantikz}"
 end
 end
+
+end
+end
+
 end
 
 tests()
