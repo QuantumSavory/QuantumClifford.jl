@@ -2,7 +2,16 @@ using QuantumClifford, Test, Random, Documenter, AbstractAlgebra
 using QuantumClifford: stab_looks_good, mixed_stab_looks_good, destab_looks_good, mixed_destab_looks_good
 using QuantumClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol
 using QuantumClifford.Experimental.NoisyCircuits
-using Base.Threads: @threads
+using Base.Threads: @threads, nthreads
+
+macro mythreads(arg)
+    return arg # TODO bypass this as multithreaded tests do not work yet
+    if nthreads()==1
+        return arg
+    else
+        return esc(:( @threads $arg ))
+    end
+end
 
 test_sizes = [10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
@@ -57,8 +66,8 @@ if doset("Pauli Operators")
         @test prodphase(P"ZZZ",P"XXX") == 0x3
     end
     @testset "Commutation implies real phase" begin
-        @threads for i in 1:10
-            @threads for n in test_sizes
+        @mythreads for i in 1:10
+            @mythreads for n in test_sizes
                 p1,p2 = random_pauli(n; nophase=true), random_pauli(n; nophase=true)
                 com = comm(p1,p2)==0x0
                 p = prodphase(p1,p2)
@@ -68,8 +77,8 @@ if doset("Pauli Operators")
         end
     end
     @testset "Single qubit Paulis and their action" begin
-        @threads for i in 1:10
-            @threads for n in test_sizes
+        @mythreads for i in 1:10
+            @mythreads for n in test_sizes
                 ix, iy, iz = rand(1:n), rand(1:n), rand(1:n)
                 px = single_x(n,ix)
                 py = single_y(n,iy)
@@ -94,12 +103,12 @@ end
 if doset("Pure and Mixed state initialization")
 @testset "Pure and Mixed state initialization" begin
     @testset "Destabilizer initialization" begin
-        @threads for n in test_sizes
+        @mythreads for n in test_sizes
             @test destab_looks_good(Destabilizer(random_stabilizer(n)))
         end
     end
     @testset "Mixed destabilizer initialization" begin
-        @threads for n in test_sizes[2:end]
+        @mythreads for n in test_sizes[2:end]
             @test mixed_destab_looks_good(MixedDestabilizer(random_stabilizer(rand(n÷2+1:n-4),n)))
         end
     end
@@ -136,8 +145,8 @@ if doset("Stabilizer canonicalization")
         end
     end
     @testset "Gottesman canonicalization" begin
-        @threads for n in test_sizes
-            @threads for nrows in [n, rand(n÷3:n*2÷3)]
+        @mythreads for n in test_sizes
+            @mythreads for nrows in [n, rand(n÷3:n*2÷3)]
                 rs = random_stabilizer(nrows,n)
                 c = canonicalize!(copy(rs))
                 g, _, _, perm1, perm2 = canonicalize_gott!(copy(rs))
@@ -149,8 +158,8 @@ if doset("Stabilizer canonicalization")
         end
     end
     @testset "Canonicalization of complex tableaus" begin
-        @threads for n in test_sizes
-            @threads for nrows in [n, rand(n÷3:n*2÷3)]
+        @mythreads for n in test_sizes
+            @mythreads for nrows in [n, rand(n÷3:n*2÷3)]
                 rs = random_stabilizer(nrows,n)
                 c  = canonicalize_rref!(copy(rs),1:n)[1]
                 dc = canonicalize_rref!(Destabilizer(copy(rs)),1:n)[1]
@@ -186,7 +195,7 @@ if doset("Projective measurements")
         @test anticom==0 && isnothing(res) && ps == s
         @test stab_looks_good(ps)
 
-        @threads for n in test_sizes
+        @mythreads for n in test_sizes
             s = random_stabilizer(n)
             m = random_pauli(n;nophase=true)
             ps, anticom, res = project!(copy(s),m)
@@ -203,7 +212,7 @@ if doset("Projective measurements")
         end
     end
     @testset "Destabilizer representation" begin
-        @threads for n in test_sizes
+        @mythreads for n in test_sizes
             s = canonicalize!(random_stabilizer(n))
             m = random_pauli(n;nophase=true)
             ps, anticom, res = project!(copy(s),m)
@@ -306,8 +315,8 @@ end
 if doset("Partial traces")
 @testset "Partial traces" begin
     @testset "RREF canonicalization vs manual traceout" begin
-        @threads for N in test_sizes
-            @threads for rep in 1:5
+        @mythreads for N in test_sizes
+            @mythreads for rep in 1:5
                 to_delete = randperm(N)[1:rand(N÷4:N÷2)]
                 stab0 = random_stabilizer(N)
                 id_paulis = zero(PauliOperator, N)
@@ -362,8 +371,8 @@ end
 if doset("GF(2) representations")
 @testset "GF(2) representations" begin
     @testset "Equivalence of GF(2) Gaussian elimination and Stabilizer canonicalization" begin
-        @threads for n in test_sizes
-            @threads for rep in 1:5
+        @mythreads for n in test_sizes
+            @mythreads for rep in 1:5
                 s = random_stabilizer(n)[randperm(n)[1:rand(n÷2+1:n)]]
                 cs = canonicalize!(copy(s));
                 H = stab_to_gf2(cs);
@@ -373,8 +382,8 @@ if doset("GF(2) representations")
         end
     end
     @testset "GF(2) H and G matrices" begin
-        @threads for n in test_sizes
-            @threads for rep in 1:5
+        @mythreads for n in test_sizes
+            @mythreads for rep in 1:5
                 H = random_invertible_gf2(n)[randperm(n)[1:rand(n÷2+1:n)],:]
                 H = gf2_gausselim!(H)
                 G = gf2_H_to_G(H)
@@ -394,7 +403,7 @@ if doset("Clifford Operators")
         # TODO (see the column version)
     end
     @testset "Clifford acting on Stabilizer" begin
-        @threads for size in test_sizes
+        @mythreads for size in test_sizes
             s = random_stabilizer(size)
             gates = vcat([CNOT, Hadamard, Phase], repeat([CliffordId],size-4))
             gates_perm = randperm(size-1)
@@ -426,13 +435,13 @@ if doset("Clifford Operators (column representation)")
             ops = QuantumClifford.getallpaulis(c)
             CliffordColumnForm([ops[i][p] for i in 1:2*c.nqubits][vcat(p,p.+c.nqubits)])
         end
-        @threads for c in [CNOTcol, CliffordIdcol⊗Hadamardcol, CNOTcol⊗CNOTcol, tensor_pow(CNOTcol,6), tensor_pow(CNOTcol,7), tensor_pow(CNOTcol,6)⊗Phasecol, tensor_pow(CNOTcol,7)⊗Phasecol]
-            @threads for rep in 1:5
+        for c in [CNOTcol, CliffordIdcol⊗Hadamardcol, CNOTcol⊗CNOTcol, tensor_pow(CNOTcol,6), tensor_pow(CNOTcol,7), tensor_pow(CNOTcol,6)⊗Phasecol, tensor_pow(CNOTcol,7)⊗Phasecol]
+            for rep in 1:5
                 p = randperm(nqubits(c))
                @test permute(c,p) == naive_permute(c,p)
             end
         end
-        @threads for i in 1:5
+        for i in 1:5
             p = randperm(125)
             c = rand([CliffordIdcol, Hadamardcol, Phasecol], 125)
             @test ⊗(c[p]...) == naive_permute(⊗(c...), p) == permute(⊗(c...), p)
@@ -470,13 +479,13 @@ if doset("Clifford Operators (column representation)")
         function naive_tensor_pow(op::CliffordColumnForm,power::Integer)
             naive_tensor_pow(op,power,Dict{Integer,CliffordColumnForm}())
         end
-        @threads for s in test_sizes
-            @threads for g in [CNOTcol,Hadamardcol,CNOTcol⊗Phasecol]
+        for s in test_sizes
+            for g in [CNOTcol,Hadamardcol,CNOTcol⊗Phasecol]
                 @test naive_tensor_pow(g,s)==tensor_pow(g,s)
             end
         end
-        @threads for g1 in [CNOTcol,Hadamardcol,CNOTcol⊗Phasecol,CliffordIdcol]
-            @threads for g2 in [CNOTcol,Hadamardcol,CNOTcol⊗Phasecol,CliffordIdcol]
+        for g1 in [CNOTcol,Hadamardcol,CNOTcol⊗Phasecol,CliffordIdcol]
+            for g2 in [CNOTcol,Hadamardcol,CNOTcol⊗Phasecol,CliffordIdcol]
                 @test naive_mul(g1,g2)==g1⊗g2
             end
         end
@@ -489,7 +498,7 @@ if doset("Clifford Operators (column representation)")
         @test naive_mul(c2,c1) == c2⊗c1
     end
     @testset "Clifford acting on Stabilizer" begin
-        @threads for size in test_sizes
+        @mythreads for size in test_sizes
             s = random_stabilizer(size)
             gates = vcat([CNOTcol, Hadamardcol, Phasecol], repeat([CliffordIdcol],size-4))
             gates_perm = randperm(size-1)
