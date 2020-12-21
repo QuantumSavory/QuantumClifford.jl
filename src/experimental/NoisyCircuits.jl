@@ -8,6 +8,7 @@ module NoisyCircuits
 using QuantumClifford
 
 using StatsBase: countmap
+using Combinatorics: combinations
 
 export Operation, AbstractGate, AbstractBellMeasurement, AbstractNoise,
        UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, VerifyOp,
@@ -269,17 +270,22 @@ function applynoise_branches(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indi
     if l==0
         return [s,one(infid)]
     end
-    no_error1 = 1-3*infid
+    error1 = 3*infid
+    no_error1 = 1-error1
     no_error = no_error1^l
     single_error = no_error1^(l-1)*infid
     results = [(copy(s),no_error,0)] # state, prob, order
-    if max_order==0
-        return results
-    end
-    for i in indices # TODO max_order>1 is not currently implemented
-        push!(results,(apply_single_x!(copy(s),i), single_error, 1))
-        push!(results,(apply_single_y!(copy(s),i), single_error, 1))
-        push!(results,(apply_single_z!(copy(s),i), single_error, 1))
+    for order in 1:min(max_order,l)
+        error_prob = no_error1^(l-order)*infid^order
+        for error_indices in combinations(indices, order) # TODO clean this up, optimize it
+            for error_types in Base.Iterators.product(repeat([[apply_single_x!,apply_single_y!,apply_single_z!]],order)...)
+                new_state = copy(s)
+                for (i,t) in zip(error_indices, error_types)
+                    t(new_state,i)
+                end
+                push!(results,(new_state, error_prob, order))
+            end
+        end
     end
     results
 end
