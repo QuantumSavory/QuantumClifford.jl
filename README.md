@@ -52,7 +52,7 @@ julia> CNOT * S"-XX
 
 ## Quick Benchmarks
 
-Fast, in-place, (mostly) allocation free implementations.
+Fast, in-place, (mostly) allocation free implementations. Operations on states are very efficient. Operations modifying the Clifford operators themselves are not yet as efficient.
 
 #### Canonicalization of a random 100-qubit stabilizer
 
