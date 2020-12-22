@@ -8,9 +8,7 @@
 <!--[![Test coverage from coveralls](https://img.shields.io/coveralls/github/Krastanov/QuantumClifford.jl?label=coveralls)](https://coveralls.io/r/Krastanov/QuantumClifford.jl?branch=master)-->
 
 A Julia package for working with quantum stabilizer states and Clifford circuits
-that act on them.
-
-The package is still in an alpha state. It is already very fast for the majority of common operations, but there are still many low-hanging fruits performance-wise.
+that act on them. The package is already very fast for the majority of common operations, but there are still many low-hanging fruits performance-wise.
 
 To install it use:
 

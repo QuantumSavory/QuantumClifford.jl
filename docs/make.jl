@@ -22,9 +22,10 @@ pages = [
 "Plotting" => "plotting.md",
 "API" => "API.md",
 "Tutorials and Publications" => "tutandpub.md",
-"NoisyCircuits" => [
-    "Monte Carlo" => "noisycircuits_mc.md"
-    "Leading-order Expansions" => "noisycircuits_perturb.md"
+"Noisy Circuits" => [
+    "Simulation of Noisy Circuits" => "noisycircuits.md",
+    "Monte Carlo" => "noisycircuits_mc.md",
+    "Perturbative Expansions" => "noisycircuits_perturb.md",
     "API" => "noisycircuits_API.md"
 ]
 ]
