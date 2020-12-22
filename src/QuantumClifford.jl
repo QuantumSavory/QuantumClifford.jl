@@ -754,7 +754,6 @@ julia> canonicalize!(S"XXXX
 ```
 
 Based on arxiv:1210.6646.
-See arxiv:0505036 for other types of canonicalization.
 """
 function canonicalize!(stabilizer::Stabilizer; phases::Bool=true)
     xzs = stabilizer.xzs

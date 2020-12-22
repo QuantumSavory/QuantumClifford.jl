@@ -7,7 +7,11 @@ end
 ```
 
 A Julia package for working with quantum stabilizer states and Clifford circuits
-that act on them.
+that act on them. It uses the tableaux formalism[^1] with the destabilizer improvments[^2].
+
+[^1]: [gottesman1998heisenberg](@cite)
+
+[^2]: [aaronson2004improved](@cite)
 
 Works efficiently with
 [pure](@ref Stabilizers) and
