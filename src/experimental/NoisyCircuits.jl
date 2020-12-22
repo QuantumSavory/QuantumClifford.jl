@@ -26,6 +26,7 @@ abstract type AbstractBellMeasurement <: Operation end
 abstract type AbstractNoise end
 
 #TODO all these structs should use specified types
+#TODO all of the methods should better specified type signatures
 
 """Depolarization noise model with total probability of error `3*errprobthird`."""
 struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
@@ -236,7 +237,7 @@ function applyop!(s::Stabilizer, v::VerifyOp) # XXX It assumes the other qubits 
 end
 
 """Run a single Monte Carlo sample, starting with (and modifying) `initialstate` by applying the given `circuit`. Uses `applyop!` under the hood."""
-function mctrajectory!(initialstate::Stabilizer,circuit::AbstractVector{Operation})
+function mctrajectory!(initialstate::Stabilizer,circuit)
     state = initialstate
     for op in circuit
         state, cont = applyop!(state, op)
@@ -248,7 +249,7 @@ function mctrajectory!(initialstate::Stabilizer,circuit::AbstractVector{Operatio
 end
 
 """Run multiple Monte Carlo trajectories and report the aggregate final statuses of each."""
-function mctrajectories(initialstate::Stabilizer,circuit::AbstractVector{Operation};trajectories=500)
+function mctrajectories(initialstate::Stabilizer,circuit;trajectories=500)
     counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator
     return merge(Dict([(v=>0) for v in values(statuses)]),
                  Dict([statuses[k]=>v for (k,v) in counts]))
