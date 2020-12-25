@@ -1776,13 +1776,15 @@ const CliffordId = C"X
 # Helpers for binary codes
 ##############################
 
+"""The F(2,2) matrix of a given stabilizer, represented as the concatenation of two binary matrices, one for X and one for Z."""
 function stab_to_gf2(s::Stabilizer)
     xbits = vcat((xbit(s[i])' for i in eachindex(s))...)
     zbits = vcat((zbit(s[i])' for i in eachindex(s))...)
     H = hcat(xbits,zbits)
 end
 
-function gf2_gausselim!(H) # equivalent to just taking the canonicalized stabilizer
+"""Gaussian elimination over the binary field."""
+function gf2_gausselim!(H)
     rows, cols = size(H)
     j = 1
     for c in 1:cols
@@ -1804,11 +1806,13 @@ function gf2_gausselim!(H) # equivalent to just taking the canonicalized stabili
     H
 end
 
+"""Check whether a binary matrix is invertible."""
 function gf2_isinvertible(H) # TODO can be smarter and exit earlier. And should check for squareness.
     ut = gf2_gausselim!(copy(H))
     all((ut[i, i] for i in 1:size(ut,1)))
 end
 
+"""Invert a binary matrix."""
 function gf2_invert(H)
     id = zero(H)
     s = size(H,1)
@@ -1818,6 +1822,7 @@ function gf2_invert(H)
     M[:,s+1:end]
 end
 
+"""The permutation of columns which turns a binary matrix into standard form. It is assumed the matrix has already undergone Gaussian elimination."""
 function gf2_H_standard_form_indices(H)
     rows, cols = size(H)
     goodindices = Int[]
@@ -1832,6 +1837,7 @@ function gf2_H_standard_form_indices(H)
     return vcat(goodindices, badindices, goodindices[end]+1:cols)
 end
 
+"""For a given F(2,2) parity check matrix, return the generator matrix."""
 function gf2_H_to_G(H)
     # XXX it assumes that H is upper triangular (Gauss elimination, canonicalized, etc)
     # XXX careful, this is the binary code matrix - for the F(2,2) code you need to swap the x and z parts
