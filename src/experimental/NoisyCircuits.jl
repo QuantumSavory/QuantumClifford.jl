@@ -309,8 +309,8 @@ function applyop_branches(s::Stabilizer, m::NoisyBellMeasurement; max_order=1)
         new_branches = []
         nqubits = length(affectedqubits(m))
         p = (1-2m.flipprob)^nqubits
-        errprob = (1-p)/2
-        sucprob = (1+p)/2
+        errprob = 1//2*(1-p)
+        sucprob = 1//2*(1+p)
         for (mstate, success, mprob, morder) in measurement_branches
             push!(new_branches, (mstate, success, mprob*sucprob, morder))
             push!(new_branches, (mstate, success==s_continue ? s_detected_failure : s_continue, mprob*errprob, morder+1))
