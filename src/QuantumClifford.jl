@@ -284,6 +284,7 @@ end
 Base.firstindex(stab::Stabilizer) = 1
 
 Base.lastindex(stab::Stabilizer) = length(stab.phases)
+Base.lastindex(stab::Stabilizer, i) = size(stab)[i]
 
 Base.eachindex(stab::Stabilizer) = Base.OneTo(lastindex(stab.phases))
 
