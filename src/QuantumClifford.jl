@@ -779,7 +779,7 @@ julia> canonicalize!(S"XXXX
 
 Based on [garcia2012efficient](@cite).
 
-See also: [`canonicalize_reff!`](@ref), [`canonicalize_gott!`](@ref)
+See also: [`canonicalize_rref!`](@ref), [`canonicalize_gott!`](@ref)
 """
 function canonicalize!(stabilizer::Stabilizer; phases::Bool=true)
     xzs = stabilizer.xzs
@@ -921,8 +921,7 @@ to put the X and Z tableaux in standard form.
 
 Based on [gottesman1997stabilizer](@cite).
 
-See also: [`canonicalize!`](@ref), [`canonicalize_gott!`](@ref)
-
+See also: [`canonicalize!`](@ref), [`canonicalize_rref!`](@ref)
 """
 function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true)
     xzs = stabilizer.xzs
