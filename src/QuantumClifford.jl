@@ -83,6 +83,17 @@ julia> p.xz
  0x000000000000000c
  0x000000000000000a
 ```
+
+You can access the X and Z bits through getters and setters or through the
+`xview`, `zview`, `xbit`, and `zbit` functions.
+
+```jldoctest
+julia> p = P"XYZ"; p[1]
+(true, false)
+
+julia> p[1] = (true, true); p
++ YYZ
+```
 """
 struct PauliOperator{Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}} <: AbstractCliffordOperator
     phase::Tz
@@ -93,17 +104,21 @@ end
 PauliOperator(phase::UInt8, nqubits::Int, xz::Tv) where Tv<:AbstractVector{UInt64} = PauliOperator(fill(phase,()), nqubits, xz)
 PauliOperator(phase::UInt8, x::T, z::T) where T<:AbstractVector{Bool} = PauliOperator(fill(phase,()), length(x), vcat(BitVector(x).chunks,BitVector(z).chunks))
 
+"""Get a view of the X part of the `UInt64` array of packed qubits of a given Pauli operator."""
 function xview(p::PauliOperator)
     @view p.xz[1:end÷2]
 end
+"""Get a view of the Y part of the `UInt64` array of packed qubits of a given Pauli operator."""
 function zview(p::PauliOperator)
     @view p.xz[end÷2+1:end]
 end
+"""Extract as a new bit array the X part of the `UInt64` array of packed qubits of a given Pauli operator."""
 function xbit(p::PauliOperator)
     b = BitArray(UndefInitializer(),(p.nqubits,))
     b.chunks = xview(p)
     b
 end
+"""Extract as a new bit array the Z part of the `UInt64` array of packed qubits of a given Pauli operator."""
 function zbit(p::PauliOperator)
     b = BitArray(UndefInitializer(),(p.nqubits,))
     b.chunks = zview(p)
@@ -232,10 +247,11 @@ macro S_str(a)
     Stabilizer(paulis)
 end
 
-Base.getindex(stab::Stabilizer, i::Int) = PauliOperator((@view stab.phases[i]), nqubits(stab), (@view stab.xzs[i,:]))
+Base.getindex(stab::Stabilizer, i::Int) = PauliOperator(stab.phases[i], nqubits(stab), stab.xzs[i,:])
 Base.getindex(stab::Stabilizer, r::Int, c::Int) = (stab.xzs[r,_div64(c-1)+1] & UInt64(0x1)<<_mod64(c-1))!=0x0, (stab.xzs[r,end>>1+_div64(c-1)+1] & UInt64(0x1)<<_mod64(c-1))!=0x0 # TODO this has code repetition with the Pauli getindex
-Base.getindex(stab::Stabilizer, r) = Stabilizer((@view stab.phases[r]), nqubits(stab), (@view stab.xzs[r,:]))
+Base.getindex(stab::Stabilizer, r) = Stabilizer(stab.phases[r], nqubits(stab), stab.xzs[r,:])
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
+Base.view(stab::Stabilizer, r) = Stabilizer(view(stab.phases, r), nqubits(stab), view(stab.xzs, r, :))
 
 Base.iterate(stab::Stabilizer, state=1) = state>length(stab) ? nothing : (stab[state], state+1)
 
@@ -269,7 +285,10 @@ Base.firstindex(stab::Stabilizer) = 1
 
 Base.lastindex(stab::Stabilizer) = length(stab.phases)
 
-Base.eachindex(stab::Stabilizer) = 1:length(stab.phases)
+Base.eachindex(stab::Stabilizer) = Base.OneTo(lastindex(stab.phases))
+
+Base.axes(stab::Stabilizer) = (Base.OneTo(lastindex(stab)), Base.OneTo(nqubits(stab)))
+Base.axes(stab::Stabilizer,i) = axes(stab)[i]
 
 Base.size(stab::Stabilizer) = (length(stab.phases),nqubits(stab))
 Base.size(stab::Stabilizer,i) = size(stab)[i]
@@ -452,17 +471,22 @@ Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 # Subtableau views
 ##############################
 
+"""A view of the subtableau corresponding to the stabilizer."""
 @inline stabilizerview(s::Stabilizer) = s
-@inline stabilizerview(s::Destabilizer) = s.tab[end÷2+1:end]
-@inline stabilizerview(s::MixedStabilizer) = s.tab[1:s.rank]
-@inline stabilizerview(s::MixedDestabilizer) = s.tab[end÷2+1:end÷2+s.rank]
+@inline stabilizerview(s::Destabilizer) = @view s.tab[end÷2+1:end]
+@inline stabilizerview(s::MixedStabilizer) = @view s.tab[1:s.rank]
+@inline stabilizerview(s::MixedDestabilizer) = @view s.tab[end÷2+1:end÷2+s.rank]
 
-@inline destabilizerview(s::Destabilizer) = s.tab[1:end÷2]
-@inline destabilizerview(s::MixedDestabilizer) = s.tab[1:s.rank]
+"""A view of the subtableau corresponding to the destabilizer."""
+@inline destabilizerview(s::Destabilizer) = @view s.tab[1:end÷2]
+@inline destabilizerview(s::MixedDestabilizer) = @view s.tab[1:s.rank]
 
-@inline logicalxview(s::MixedDestabilizer) = s.tab[s.rank+1:end÷2]
-@inline logicalzview(s::MixedDestabilizer) = s.tab[end÷2+s.rank+1:end]
+"""A view of the subtableau corresponding to the logical X operators."""
+@inline logicalxview(s::MixedDestabilizer) = @view s.tab[s.rank+1:end÷2]
+"""A view of the subtableau corresponding to the logical Z operators."""
+@inline logicalzview(s::MixedDestabilizer) = @view s.tab[end÷2+s.rank+1:end]
 
+"""The number of qubits of a given state."""
 @inline nqubits(s::Stabilizer) = s.nqubits
 @inline nqubits(s::AbstractStabilizer) = s.tab.nqubits
 
