@@ -29,16 +29,19 @@ function doset(descr)
     return false
 end
 
-function tests()
-
-Random.seed!(42)
-
+function doctests()
 if doset("Doctests") && VERSION >= v"1.6"
 @testset "Doctests" begin
     DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
     doctest(QuantumClifford)
 end
 end
+end
+
+
+function tests()
+
+Random.seed!(42)
 
 if doset("Pauli Operators")
 @testset "Pauli Operators" begin
@@ -557,6 +560,7 @@ end
 
 end
 
+
 function noisycircuits_tests()
 if doset("Noisy Circuits")
 @testset "Noisy Circuits" begin
@@ -671,3 +675,4 @@ end
 
 tests()
 noisycircuits_tests()
+doctests()
