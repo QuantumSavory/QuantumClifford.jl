@@ -4,7 +4,7 @@ This list has a number of notebooks with tutorials, examples, and reproduction o
 
 ## On the topic of explicit use of the Tableaux formalism for Stabilizer states 
 
-- [Quantum coding with low-depth random circuits(https://github.com/Krastanov/QuantumClifford.jl/blob/master/docs/src/notebooks/Stabilizer_Codes_Based_on_Random_Circuits.ipynb) reproducing results from [gullans2020quantum](@cite).
+- [Quantum coding with low-depth random circuits](https://github.com/Krastanov/QuantumClifford.jl/blob/master/docs/src/notebooks/Stabilizer_Codes_Based_on_Random_Circuits.ipynb) reproducing results from [gullans2020quantum](@cite).
 
 
 ## On the Monte Carlo and Perturbative Expansions for **Noisy** Clifford circuits
