@@ -1087,12 +1087,12 @@ It returns
 
  - a stabilizer that might not be in canonical form
  - the index of the row where the non-commuting operator was (that row is now equal to `pauli`; its phase is not updated and for a faithful measurement simulation it needs to be randomized by the user)
- - and the result of the projection if there was no non-cummuting operator (`nothing` otherwise)
+ - and the result of the projection if there was no non-commuting operator (`nothing` otherwise)
 
 If `keep_result==false` that result of the projection in case of anticommutation
 is not computed, sparing a canonicalization operation.
 
-Here is an example of a projection destroing entanglement:
+Here is an example of a projection destroying entanglement:
 
 ```jldoctest
 julia> ghz = S"XXXX
