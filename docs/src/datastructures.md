@@ -43,13 +43,13 @@ be an expensive operation (``\mathcal{O}(n^3)``).
 [`MixedDestabilizer`](@ref) tracks both the destabilizer operators and the
 logical operators in addition to the stabilizer generators. It does not require
 canonicalization for measurements and its `project!` operations always takes
-``\mathcal{O}(n^3)``.
+``\mathcal{O}(n^2)``.
 
 | projection | `Stabilizer` | `MixedStabilizer` | `Destabilizer` | `MixedDestabilizer` |
 |---|---|---|---|---|
 | on anticommuting operator | correct result in ``\mathcal{O}(n^2)`` steps | same as `Stabilizer` | same as `Stabilizer` | same as `Stabilizer` |
 | on commuting operator in the stabilizer | ``\mathcal{O}(n^3)``, or ``\mathcal{O}(n^2)`` if `keep_result=false` | ``\mathcal{O}(n^3)`` | ``\mathcal{O}(n^2)`` if the state is pure, throws exception otherwise | ``\mathcal{O}(n^2)`` |
-| on commuting operator out of the stabilizer[^1] | ``\mathcal{O}(n^3)``, but the user needs to manually include the new operator to the stabilizer | ``\mathcal{O}(n^3)`` | not applicable if the state is pure, throws an error otherwise | ``\mathcal{O}(n^3)`` |
+| on commuting operator out of the stabilizer[^1] | ``\mathcal{O}(n^3)``, but the user needs to manually include the new operator to the stabilizer | ``\mathcal{O}(n^3)`` | not applicable if the state is pure, throws an error otherwise | ``\mathcal{O}(n^2)`` |
 
 [^1]:
 

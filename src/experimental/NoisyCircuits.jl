@@ -26,6 +26,7 @@ abstract type AbstractBellMeasurement <: Operation end
 abstract type AbstractNoise end
 
 #TODO all these structs should use specified types
+#TODO all of the methods should better specified type signatures
 
 """Depolarization noise model with total probability of error `3*errprobthird`."""
 struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
@@ -163,10 +164,9 @@ function applyop!(s::Stabilizer, mr::BellMeasurementAndReset)
     else
         # TODO is the traceout necessary given that we just performed measurements?
         traceout!(s,mr.meas.indices)# TODO it seems like a bad idea not to keep track of the rank here
-        n = nqubits(s) # TODO implement lastindex so we can just use end
         for (ii,i) in enumerate(affectedqubits(mr))
             for j in [1,2]
-                s[n-j+1,i] = mr.resetto[j,ii]
+                s[end-j+1,i] = mr.resetto[j,ii]
             end
         end
         return s,s_continue
@@ -180,10 +180,9 @@ function applyop!(s::Stabilizer, mr::BellMeasurementAndNoisyReset)
     else
         # TODO is the traceout necessary given that we just performed measurements?
         traceout!(s,affectedqubits(mr))# TODO it seems like a bad idea not to keep track of the rank here
-        n = nqubits(s) # TODO implement lastindex so we can just use end
         for (ii,i) in enumerate(affectedqubits(mr))
             for j in [1,2]
-                s[n-j+1,i] = mr.resetto[j,ii]
+                s[end-j+1,i] = mr.resetto[j,ii]
             end
         end
         return applynoise!(s,mr.noise,affectedqubits(mr)), s_continue
@@ -223,20 +222,18 @@ end
 # TODO this one needs more testing
 function applyop!(s::Stabilizer, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
     # TODO QuantumClifford should implement some submatrix comparison
-    n = nqubits(s) #  TODO QuantumClifford: implement lastindex(s)
-    m = nqubits(v.good_state)
-    s, _ = canonicalize_rref!(s,v.indices)
-    for i in 1:m
-        (s.phases[n-i+1]==v.good_state.phases[m-i+1]) || return s, s_undetected_failure
-        for (j,q) in zip(1:m,v.indices)
-            (s[n-i+1,q]==v.good_state[m-i+1,j]) || return s, s_undetected_failure
+    s, _ = canonicalize_rref!(s,v.indices) # Document why rref is used
+    for i in eachindex(v.good_state)
+        (s.phases[end-i+1]==v.good_state.phases[end-i+1]) || return s, s_undetected_failure
+        for (j,q) in zip(eachindex(v.good_state),v.indices)
+            (s[end-i+1,q]==v.good_state[end-i+1,j]) || return s, s_undetected_failure
         end
     end
     return s, s_true_success
 end
 
 """Run a single Monte Carlo sample, starting with (and modifying) `initialstate` by applying the given `circuit`. Uses `applyop!` under the hood."""
-function mctrajectory!(initialstate::Stabilizer,circuit::AbstractVector{Operation})
+function mctrajectory!(initialstate::Stabilizer,circuit)
     state = initialstate
     for op in circuit
         state, cont = applyop!(state, op)
@@ -248,7 +245,7 @@ function mctrajectory!(initialstate::Stabilizer,circuit::AbstractVector{Operatio
 end
 
 """Run multiple Monte Carlo trajectories and report the aggregate final statuses of each."""
-function mctrajectories(initialstate::Stabilizer,circuit::AbstractVector{Operation};trajectories=500)
+function mctrajectories(initialstate::Stabilizer,circuit;trajectories=500)
     counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator
     return merge(Dict([(v=>0) for v in values(statuses)]),
                  Dict([statuses[k]=>v for (k,v) in counts]))
@@ -312,8 +309,8 @@ function applyop_branches(s::Stabilizer, m::NoisyBellMeasurement; max_order=1)
         new_branches = []
         nqubits = length(affectedqubits(m))
         p = (1-2m.flipprob)^nqubits
-        errprob = (1-p)/2
-        sucprob = (1+p)/2
+        errprob = 1//2*(1-p)
+        sucprob = 1//2*(1+p)
         for (mstate, success, mprob, morder) in measurement_branches
             push!(new_branches, (mstate, success, mprob*sucprob, morder))
             push!(new_branches, (mstate, success==s_continue ? s_detected_failure : s_continue, mprob*errprob, morder+1))
@@ -384,10 +381,9 @@ end
 function _reset!(s, qubits, resetto)
     # TODO is the traceout necessary given that we just performed measurements?
     traceout!(s,qubits)# TODO it seems like a bad idea not to keep track of the rank here
-    n = nqubits(s) # TODO implement lastindex so we can just use end
     for (ii,i) in enumerate(qubits)
         for j in [1,2]
-            s[n-j+1,i] = resetto[j,ii]
+            s[end-j+1,i] = resetto[j,ii]
         end
     end
     return s

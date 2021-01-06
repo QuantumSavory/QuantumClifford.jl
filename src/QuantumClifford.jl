@@ -18,6 +18,7 @@ import LinearAlgebra
 import Random
 using Random: AbstractRNG, GLOBAL_RNG
 import RecipesBase
+using DocStringExtensions
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     xbit, zbit, xview, zview,
@@ -83,6 +84,17 @@ julia> p.xz
  0x000000000000000c
  0x000000000000000a
 ```
+
+You can access the X and Z bits through getters and setters or through the
+`xview`, `zview`, `xbit`, and `zbit` functions.
+
+```jldoctest
+julia> p = P"XYZ"; p[1]
+(true, false)
+
+julia> p[1] = (true, true); p
++ YYZ
+```
 """
 struct PauliOperator{Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}} <: AbstractCliffordOperator
     phase::Tz
@@ -93,17 +105,21 @@ end
 PauliOperator(phase::UInt8, nqubits::Int, xz::Tv) where Tv<:AbstractVector{UInt64} = PauliOperator(fill(phase,()), nqubits, xz)
 PauliOperator(phase::UInt8, x::T, z::T) where T<:AbstractVector{Bool} = PauliOperator(fill(phase,()), length(x), vcat(BitVector(x).chunks,BitVector(z).chunks))
 
+"""Get a view of the X part of the `UInt64` array of packed qubits of a given Pauli operator."""
 function xview(p::PauliOperator)
     @view p.xz[1:end÷2]
 end
+"""Get a view of the Y part of the `UInt64` array of packed qubits of a given Pauli operator."""
 function zview(p::PauliOperator)
     @view p.xz[end÷2+1:end]
 end
+"""Extract as a new bit array the X part of the `UInt64` array of packed qubits of a given Pauli operator."""
 function xbit(p::PauliOperator)
     b = BitArray(UndefInitializer(),(p.nqubits,))
     b.chunks = xview(p)
     b
 end
+"""Extract as a new bit array the Z part of the `UInt64` array of packed qubits of a given Pauli operator."""
 function zbit(p::PauliOperator)
     b = BitArray(UndefInitializer(),(p.nqubits,))
     b.chunks = zview(p)
@@ -232,10 +248,11 @@ macro S_str(a)
     Stabilizer(paulis)
 end
 
-Base.getindex(stab::Stabilizer, i::Int) = PauliOperator((@view stab.phases[i]), nqubits(stab), (@view stab.xzs[i,:]))
+Base.getindex(stab::Stabilizer, i::Int) = PauliOperator(stab.phases[i], nqubits(stab), stab.xzs[i,:])
 Base.getindex(stab::Stabilizer, r::Int, c::Int) = (stab.xzs[r,_div64(c-1)+1] & UInt64(0x1)<<_mod64(c-1))!=0x0, (stab.xzs[r,end>>1+_div64(c-1)+1] & UInt64(0x1)<<_mod64(c-1))!=0x0 # TODO this has code repetition with the Pauli getindex
-Base.getindex(stab::Stabilizer, r) = Stabilizer((@view stab.phases[r]), nqubits(stab), (@view stab.xzs[r,:]))
+Base.getindex(stab::Stabilizer, r) = Stabilizer(stab.phases[r], nqubits(stab), stab.xzs[r,:])
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
+Base.view(stab::Stabilizer, r) = Stabilizer(view(stab.phases, r), nqubits(stab), view(stab.xzs, r, :))
 
 Base.iterate(stab::Stabilizer, state=1) = state>length(stab) ? nothing : (stab[state], state+1)
 
@@ -268,8 +285,12 @@ end
 Base.firstindex(stab::Stabilizer) = 1
 
 Base.lastindex(stab::Stabilizer) = length(stab.phases)
+Base.lastindex(stab::Stabilizer, i) = size(stab)[i]
 
-Base.eachindex(stab::Stabilizer) = 1:length(stab.phases)
+Base.eachindex(stab::Stabilizer) = Base.OneTo(lastindex(stab.phases))
+
+Base.axes(stab::Stabilizer) = (Base.OneTo(lastindex(stab)), Base.OneTo(nqubits(stab)))
+Base.axes(stab::Stabilizer,i) = axes(stab)[i]
 
 Base.size(stab::Stabilizer) = (length(stab.phases),nqubits(stab))
 Base.size(stab::Stabilizer,i) = size(stab)[i]
@@ -452,17 +473,22 @@ Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 # Subtableau views
 ##############################
 
+"""A view of the subtableau corresponding to the stabilizer."""
 @inline stabilizerview(s::Stabilizer) = s
-@inline stabilizerview(s::Destabilizer) = s.tab[end÷2+1:end]
-@inline stabilizerview(s::MixedStabilizer) = s.tab[1:s.rank]
-@inline stabilizerview(s::MixedDestabilizer) = s.tab[end÷2+1:end÷2+s.rank]
+@inline stabilizerview(s::Destabilizer) = @view s.tab[end÷2+1:end]
+@inline stabilizerview(s::MixedStabilizer) = @view s.tab[1:s.rank]
+@inline stabilizerview(s::MixedDestabilizer) = @view s.tab[end÷2+1:end÷2+s.rank]
 
-@inline destabilizerview(s::Destabilizer) = s.tab[1:end÷2]
-@inline destabilizerview(s::MixedDestabilizer) = s.tab[1:s.rank]
+"""A view of the subtableau corresponding to the destabilizer."""
+@inline destabilizerview(s::Destabilizer) = @view s.tab[1:end÷2]
+@inline destabilizerview(s::MixedDestabilizer) = @view s.tab[1:s.rank]
 
-@inline logicalxview(s::MixedDestabilizer) = s.tab[s.rank+1:end÷2]
-@inline logicalzview(s::MixedDestabilizer) = s.tab[end÷2+s.rank+1:end]
+"""A view of the subtableau corresponding to the logical X operators."""
+@inline logicalxview(s::MixedDestabilizer) = @view s.tab[s.rank+1:end÷2]
+"""A view of the subtableau corresponding to the logical Z operators."""
+@inline logicalzview(s::MixedDestabilizer) = @view s.tab[end÷2+s.rank+1:end]
 
+"""The number of qubits of a given state."""
 @inline nqubits(s::Stabilizer) = s.nqubits
 @inline nqubits(s::AbstractStabilizer) = s.tab.nqubits
 
@@ -717,6 +743,8 @@ function unsafe_bitfindnext_(chunks::AbstractVector{UInt64}, start::Integer)
 end
 
 """
+$TYPEDSIGNATURES
+
 Canonicalize a stabilizer (in place).
 
 Assumes the input is a valid stabilizer (all operators commute and have
@@ -753,8 +781,9 @@ julia> canonicalize!(S"XXXX
 + ____
 ```
 
-Based on arxiv:1210.6646.
-See arxiv:0505036 for other types of canonicalization.
+Based on [garcia2012efficient](@cite).
+
+See also: [`canonicalize_rref!`](@ref), [`canonicalize_gott!`](@ref)
 """
 function canonicalize!(stabilizer::Stabilizer; phases::Bool=true)
     xzs = stabilizer.xzs
@@ -801,17 +830,27 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true)
     stabilizer
 end
 
+"""
+$TYPEDSIGNATURES
+"""
 function canonicalize!(ms::MixedStabilizer; phases::Bool=true)
     canonicalize!(stabilizerview(ms); phases=phases)
 end
 
 """
+$TYPEDSIGNATURES
+
 Canonicalize a stabilizer (in place) along only some columns.
 
-This uses different canonical form from `canonicalize!`. It also indexes in
-reverse in order to make its use in `traceout!` more efficient.
+This uses different canonical form from [`canonicalize!`](@ref). It also indexes in
+reverse in order to make its use in [`traceout!`](@ref) more efficient.
+Its use in `traceout!` is its main application.
 
-Based on arxiv:0505036.
+It returns the (in place) modified state and the index of the last pivot.
+
+Based on [audenaert2005entanglement](@cite).
+
+See also: [`canonicalize!`](@ref), [`canonicalize_gott!`](@ref)
 """
 function canonicalize_rref!(state::AbstractStabilizer, colindices::AbstractVector{T}; phases::Bool=true) where {T<:Integer}
     xzs = stabilizerview(state).xzs
@@ -850,6 +889,9 @@ function canonicalize_rref!(state::AbstractStabilizer, colindices::AbstractVecto
     state, i
 end
 
+"""
+$TYPEDSIGNATURES
+"""
 canonicalize_rref!(state::AbstractStabilizer; phases::Bool=true) = canonicalize_rref!(state, 1:nqubits(state); phases=phases)
 
 function gott_standard_form_indices(chunks2D, rows, cols; skip=0)
@@ -878,6 +920,21 @@ function colpermute!(s::Stabilizer, perm) # TODO rename and make public, same as
     s
 end
 
+"""
+Inplace Gottesman canonicalization of a tableau.
+
+This uses different canonical form from [`canonicalize!`](@ref).
+It is used in the computation of the logical X and Z operators
+of a [`MixedDestabilizer`](@ref).
+
+It returns the (in place) modified state, the indices of the last pivot
+of both Gaussian elimination steps, and the permutations necessary
+to put the X and Z tableaux in standard form.
+
+Based on [gottesman1997stabilizer](@cite).
+
+See also: [`canonicalize!`](@ref), [`canonicalize_rref!`](@ref)
+"""
 function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true)
     xzs = stabilizer.xzs
     xs = @view xzs[:,1:end÷2]
@@ -964,7 +1021,7 @@ end
 Generate a Pauli operator by using operators from a given the Stabilizer.
 
 **It assumes the stabilizer is already canonicalized.** It modifies
-the Pauli operator in place. It assumes the operator can be generated up to a phase.
+the Pauli operator in place, generating it in reverse, up to a phase.
 That phase is left in the modified operator, which should be the identity up to a phase.
 Returns the new operator and the list of indices denoting the elements of
 `stabilizer` that were used for the generation.
@@ -983,6 +1040,16 @@ julia> canonicalize!(ghz)
 
 julia> generate!(P"-ZIZI", ghz)
 (- ____, [2, 4])
+```
+
+When the Pauli operator can not be generated by the given tableau, `nothing` is returned.
+
+```jldoctest
+julia> generate!(P"XII",canonicalize!(S"ZII")) === nothing
+true
+
+julia> generate!(P"XII",canonicalize!(S"XII")) === nothing
+false
 ```
 """
 function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=true, saveindices::Bool=true) # TODO there is stuff that can be abstracted away here and in canonicalize!
@@ -1031,6 +1098,8 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=tr
 end
 
 """
+$TYPEDSIGNATURES
+
 Project the state of a Stabilizer on the two eigenspaces of a Pauli operator.
 
 Assumes the input is a valid stabilizer.
@@ -1041,12 +1110,12 @@ It returns
 
  - a stabilizer that might not be in canonical form
  - the index of the row where the non-commuting operator was (that row is now equal to `pauli`; its phase is not updated and for a faithful measurement simulation it needs to be randomized by the user)
- - and the result of the projection if there was no non-cummuting operator (`nothing` otherwise)
+ - and the result of the projection if there was no non-commuting operator (`nothing` otherwise)
 
 If `keep_result==false` that result of the projection in case of anticommutation
 is not computed, sparing a canonicalization operation.
 
-Here is an example of a projection destroing entanglement:
+Here is an example of a projection destroying entanglement:
 
 ```jldoctest
 julia> ghz = S"XXXX
@@ -1100,6 +1169,26 @@ julia> state
 julia> anticom_index, result
 (0, 0x02)
 ```
+
+While not the best choice, `Stabilizer` can be used for mixed states,
+simply by providing an incomplete tableau. In that case it is possible
+to attempt to project on an operator that can not be generated by the
+provided stabilizer operators. In that case we have both `anticom_index==0`
+and `result===nothing`.
+
+```jldoctest
+julia> s = S"XZI
+             IZI";
+
+julia> project!(s, P"IIX")
+(+ X__
++ _Z_, 0, nothing)
+```
+
+If we had used [`MixedStabilizer`](@ref) we would have added the projector
+to the list of stabilizers. However, [`MixedDestabilizer`](@ref) would
+be an even better choice as it has \$\\mathcal{O}(n^2)\$ complexity
+instead of the \$\\mathcal{O}(n^3)\$ complexity of `*Stabilizer`.
 """
 function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
@@ -1112,8 +1201,8 @@ function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=
     end
     if anticommutes == 0
         if keep_result
-            canonicalize!(stabilizer; phases=phases)
-            gen = generate!(copy(pauli), stabilizer, phases=phases)
+            canonicalize!(stabilizer; phases=phases) # O(n^3)
+            gen = generate!(copy(pauli), stabilizer, phases=phases) # O(n^2)
             result = isnothing(gen) ? nothing : gen[1].phase[]
         else
             result = nothing
@@ -1130,6 +1219,9 @@ function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=
     stabilizer, anticommutes, result
 end
 
+"""
+$TYPEDSIGNATURES
+"""
 function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
     stabilizer = stabilizerview(d)
@@ -1178,10 +1270,35 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
     d, anticommutes, result
 end
 
+"""
+$TYPEDSIGNATURES
+
+When using project on `MixedStabilizer` it automates some of the extra steps
+we encounter when implicitly using the `Stabilizer` datastructure to represent
+mixed states. Namely, it helps when the projector is not among the list of
+stabilizers:
+
+```jldoctest
+julia> s = S"XZI
+             IZI";
+
+julia> ms = MixedStabilizer(s)
+Rank 2 stabilizer
++ X__
++ _Z_
+
+julia> project!(ms, P"IIY")
+(Rank 3 stabilizer
++ X__
++ _Z_
++ __Y, 0, nothing)
+```
+"""
 function project!(ms::MixedStabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     _, anticom_index, res = project!(stabilizerview(ms), pauli; keep_result=keep_result, phases=phases)
     if anticom_index==0 && isnothing(res)
         ms.tab[ms.rank+1] = pauli
+        # anticom_index = ms.rank TODO this might be a better idea... do the same for MixedDestabilizer and maybe for Destabilizer
         if keep_result
             ms.rank += 1
         else
@@ -1213,6 +1330,9 @@ function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases) # TODO Ensure t
     end
 end
 
+"""
+$TYPEDSIGNATURES
+"""
 function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
     tab = d.tab
@@ -1280,6 +1400,8 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
 end
 
 """
+$TYPEDSIGNATURES
+
 Trace out a qubit.
 """ # TODO all of these should raise an error if length(qubits)>rank
 function traceout!(s::Stabilizer, qubits::AbstractVector{T}; phases=true) where {T<:Integer}
@@ -1753,13 +1875,15 @@ const CliffordId = C"X
 # Helpers for binary codes
 ##############################
 
+"""The F(2,2) matrix of a given stabilizer, represented as the concatenation of two binary matrices, one for X and one for Z."""
 function stab_to_gf2(s::Stabilizer)
     xbits = vcat((xbit(s[i])' for i in eachindex(s))...)
     zbits = vcat((zbit(s[i])' for i in eachindex(s))...)
     H = hcat(xbits,zbits)
 end
 
-function gf2_gausselim!(H) # equivalent to just taking the canonicalized stabilizer
+"""Gaussian elimination over the binary field."""
+function gf2_gausselim!(H)
     rows, cols = size(H)
     j = 1
     for c in 1:cols
@@ -1781,11 +1905,13 @@ function gf2_gausselim!(H) # equivalent to just taking the canonicalized stabili
     H
 end
 
+"""Check whether a binary matrix is invertible."""
 function gf2_isinvertible(H) # TODO can be smarter and exit earlier. And should check for squareness.
     ut = gf2_gausselim!(copy(H))
     all((ut[i, i] for i in 1:size(ut,1)))
 end
 
+"""Invert a binary matrix."""
 function gf2_invert(H)
     id = zero(H)
     s = size(H,1)
@@ -1795,6 +1921,7 @@ function gf2_invert(H)
     M[:,s+1:end]
 end
 
+"""The permutation of columns which turns a binary matrix into standard form. It is assumed the matrix has already undergone Gaussian elimination."""
 function gf2_H_standard_form_indices(H)
     rows, cols = size(H)
     goodindices = Int[]
@@ -1809,6 +1936,7 @@ function gf2_H_standard_form_indices(H)
     return vcat(goodindices, badindices, goodindices[end]+1:cols)
 end
 
+"""For a given F(2,2) parity check matrix, return the generator matrix."""
 function gf2_H_to_G(H)
     # XXX it assumes that H is upper triangular (Gauss elimination, canonicalized, etc)
     # XXX careful, this is the binary code matrix - for the F(2,2) code you need to swap the x and z parts

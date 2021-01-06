@@ -85,7 +85,7 @@ julia> one(S"XX
 ```
 
 A random stabilizer can be created as well (consult the source code for exact
-ensemble, as there are caveats to the choice of distribution).
+ensemble, as there are caveats to the choice of distribution). TODO: In the future this should use [koenig2014efficiently](@cite) and [bravyi2020hadamard](@cite).
 
 ```jldoctest rand
 julia> random_stabilizer(rng, 2,5)
