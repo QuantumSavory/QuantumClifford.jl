@@ -135,13 +135,16 @@ function applyop!(s::Stabilizer, m::BellMeasurement)
     indices = affectedqubits(m)
     res = 0x00
     for (pauli, index) in zip(m.pauli,affectedqubits(m))
-        if pauli==X # TODO this is not an elegant way to choose between X and Z coincidence measurements
-            op = op.phase*single_x(n,index) # TODO this is pretty terribly inefficient... use some sparse check
-        elseif pauli==Z
-            op = op.phase*single_z(n,index)
-        elseif
-            op = op.phase*single_y(n,index)
-        end # TODO permit Y operators and permit negative operators
+        if pauli == X # TODO this is not an elegant way to choose between X and Z coincidence measurements
+            op = single_x(n,index) # TODO this is pretty terribly inefficient... use some sparse check
+        elseif pauli == Z
+            op = single_z(n,index)
+        elseif pauli == Y
+            op = single_y(n,index)
+        else
+            op = -single_y(n, index)
+        end
+         # TODO permit Y operators and permit negative operators
         s,anticom,r = project!(s,op)
         if isnothing(r)
             if rand()>0.5 # TODO this seems stupid, float not necessary
@@ -339,12 +342,14 @@ function _applyop_branches_measurement(branches, paulis, qubits, n)
     otherpaulis = paulis[2:end]
     index = qubits[1]
     otherqubits = qubits[2:end]
-    if pauli==X # TODO this is not an elegant way to choose between X and Z coincidence measurements
-        op = op.phase*single_x(n,index) # TODO this is pretty terribly inefficient... use some sparse check
-    elseif pauli==Z
-        op = op.phase*single_z(n,index)
-    elseif
-            op = op.phase*single_y(n,index)
+    if pauli == X # TODO this is not an elegant way to choose between X and Z coincidence measurements
+        op = single_x(n,index) # TODO this is pretty terribly inefficient... use some sparse check
+    elseif pauli == Z
+        op = single_z(n,index)
+    elseif pauli == Y
+        op = single_y(n,index)
+    else
+        op = -single_y(n, index)
     end # TODO permit Y operators and permit negative operators
 
     for (s,r0,p) in branches
