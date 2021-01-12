@@ -1193,7 +1193,7 @@ instead of the \$\\mathcal{O}(n^3)\$ complexity of `*Stabilizer`.
 function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
     n = size(stabilizer,1)
-    for i in 1:n
+    for i in 1:n  # The explicit loop is faster than anticommutes = findfirst(row->comm(pauli,stabilizer,row)!=0x0, 1:n); both do not allocate.
         if comm(pauli,stabilizer,i)!=0x0
             anticommutes = i
             break
@@ -1227,7 +1227,7 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
     stabilizer = stabilizerview(d)
     destabilizer = destabilizerview(d)
     n = size(stabilizer,1)
-    for i in 1:n
+    for i in 1:n # The explicit loop is faster than anticommutes = findfirst(row->comm(pauli,stabilizer,row)!=0x0, 1:r); both do not allocate.
         if comm(pauli,stabilizer,i)!=0x0
             anticommutes = i
             break
@@ -1340,7 +1340,7 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
     destabilizer = destabilizerview(d)
     r = d.rank
     n = nqubits(d)
-    for i in 1:r # TODO use something like findfirst
+    for i in 1:r # The explicit loop is faster than anticommutes = findfirst(row->comm(pauli,stabilizer,row)!=0x0, 1:r); both do not allocate.
         if comm(pauli,stabilizer,i)!=0x0
             anticommutes = i
             break
@@ -1348,14 +1348,14 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
     end
     if anticommutes == 0
         anticomlog = 0
-        for i in r+1:n # TODO use something like findfirst
+        for i in r+1:n # The explicit loop is faster than findfirst.
             if comm(pauli,tab,i)!=0x0
                 anticomlog = i
                 break
             end
         end
         if anticomlog==0
-            for i in n+r+1:2*n # TODO use something like findfirst
+            for i in n+r+1:2*n # The explicit loop is faster than findfirst.
                 if comm(pauli,tab,i)!=0x0
                     anticomlog = i
                     break
@@ -1517,7 +1517,7 @@ function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this 
     CliffordOperator(Stabilizer([c.tab[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
 end
 
-function ⊗(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here # TODO stop using \oplus and use only \otimes notation
+function ⊗(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here
     CliffordOperator(vcat(
       foldl((l,r)->l⊗r.tab[1:end÷2    ],ops[2:end],init=ops[1].tab[1:end÷2]),
       foldl((l,r)->l⊗r.tab[end÷2+1:end],ops[2:end],init=ops[1].tab[end÷2+1:end])))
