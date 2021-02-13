@@ -96,13 +96,13 @@ julia> p[1] = (true, true); p
 + YYZ
 ```
 """
-struct PauliOperator{Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}} <: AbstractCliffordOperator
+struct PauliOperator{Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} <: AbstractCliffordOperator
     phase::Tz
     nqubits::Int
     xz::Tv
 end
 
-PauliOperator(phase::UInt8, nqubits::Int, xz::Tv) where Tv<:AbstractVector{UInt64} = PauliOperator(fill(phase,()), nqubits, xz)
+PauliOperator(phase::UInt8, nqubits::Int, xz::Tv) where Tv<:AbstractVector{<:Unsigned} = PauliOperator(fill(phase,()), nqubits, xz)
 PauliOperator(phase::UInt8, x::T, z::T) where T<:AbstractVector{Bool} = PauliOperator(fill(phase,()), length(x), vcat(BitVector(x).chunks,BitVector(z).chunks))
 
 """Get a view of the X part of the `UInt64` array of packed qubits of a given Pauli operator."""
@@ -132,19 +132,19 @@ macro P_str(a)
     PauliOperator(phase, [l=='X'||l=='Y' for l in letters], [l=='Z'||l=='Y' for l in letters])
 end
 
-Base.getindex(p::PauliOperator, i::Int) = (p.xz[_div64(i-1)+1] & UInt64(0x1)<<_mod64(i-1))!=0x0, (p.xz[end>>1+_div64(i-1)+1] & UInt64(0x1)<<_mod64(i-1))!=0x0
-Base.getindex(p::PauliOperator, r) = PauliOperator(p.phase[], xbit(p)[r], zbit(p)[r])
+Base.getindex(p::PauliOperator{Tz,Tv}, i::Int) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = (p.xz[_div(Tve, i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0, (p.xz[end>>1+_div(Tve,i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0
+Base.getindex(p::PauliOperator{Tz,Tv}, r) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = PauliOperator(p.phase[], xbit(p)[r], zbit(p)[r])
 
-function Base.setindex!(p::PauliOperator, (x,z)::Tuple{Bool,Bool}, i)
+function Base.setindex!(p::PauliOperator{Tz,Tv}, (x,z)::Tuple{Bool,Bool}, i) where {Tz, Tve, Tv<:AbstractVector{Tve}} 
     if x
-        p.xz[_div64(i-1)+1] |= UInt64(0x1)<<_mod64(i-1)
+        p.xz[_div(Tve,i-1)+1] |= Tve(0x1)<<_mod(Tve,i-1)
     else
-        p.xz[_div64(i-1)+1] &= ~(UInt64(0x1)<<_mod64(i-1))
+        p.xz[_div(Tve,i-1)+1] &= ~(Tve(0x1)<<_mod(Tve,i-1))
     end
     if z
-        p.xz[end>>1+_div64(i-1)+1] |= UInt64(0x1)<<_mod64(i-1)
+        p.xz[end>>1+_div(Tve,i-1)+1] |= Tve(0x1)<<_mod(Tve,i-1)
     else
-        p.xz[end>>1+_div64(i-1)+1] &= ~(UInt64(0x1)<<_mod64(i-1))
+        p.xz[end>>1+_div(Tve,i-1)+1] &= ~(Tve(0x1)<<_mod(Tve,i-1))
     end
     p
 end
@@ -223,13 +223,13 @@ might be properly abstracted away in future versions.
 
 See also: [`PauliOperator`](@ref), [`canonicalize!`](@ref)
 """
-struct Stabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractStabilizer
-    phases::Tv
+struct Stabilizer{Tzv<:AbstractVector{UInt8}, Tm<:AbstractMatrix{<:Unsigned}} <: AbstractStabilizer
+    phases::Tzv
     nqubits::Int
     xzs::Tm
 end
 
-Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}} = Stabilizer(vcat((p.phase for p in paulis)...), paulis[1].nqubits, vcat((p.xz' for p in paulis)...))
+Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{<:Unsigned}} = Stabilizer(vcat((p.phase for p in paulis)...), paulis[1].nqubits, vcat((p.xz' for p in paulis)...))
 
 Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(
     phases, size(xs,2),
@@ -249,7 +249,7 @@ macro S_str(a)
 end
 
 Base.getindex(stab::Stabilizer, i::Int) = PauliOperator(stab.phases[i], nqubits(stab), stab.xzs[i,:])
-Base.getindex(stab::Stabilizer, r::Int, c::Int) = (stab.xzs[r,_div64(c-1)+1] & UInt64(0x1)<<_mod64(c-1))!=0x0, (stab.xzs[r,end>>1+_div64(c-1)+1] & UInt64(0x1)<<_mod64(c-1))!=0x0 # TODO this has code repetition with the Pauli getindex
+Base.getindex(stab::Stabilizer{Tzv,Tm}, r::Int, c::Int) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}} = (stab.xzs[r,_div(Tme,c-1)+1] & Tme(0x1)<<_mod(Tme,c-1))!=0x0, (stab.xzs[r,end>>1+_div(Tme,c-1)+1] & Tme(0x1)<<_mod(Tme,c-1))!=0x0 # TODO this has code repetition with the Pauli getindex
 Base.getindex(stab::Stabilizer, r) = Stabilizer(stab.phases[r], nqubits(stab), stab.xzs[r,:])
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
 Base.view(stab::Stabilizer, r) = Stabilizer(view(stab.phases, r), nqubits(stab), view(stab.xzs, r, :))
@@ -268,16 +268,16 @@ function Base.setindex!(stab::Stabilizer, s::Stabilizer, i)
     stab
 end
 
-function Base.setindex!(stab::Stabilizer, (x,z)::Tuple{Bool,Bool}, i, j) # TODO this has code repetitions with the Pauli setindex
+function Base.setindex!(stab::Stabilizer{Tzv,Tm}, (x,z)::Tuple{Bool,Bool}, i, j) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}} # TODO this has code repetitions with the Pauli setindex
     if x
-        stab.xzs[i,_div64(j-1)+1] |= UInt64(0x1)<<_mod64(j-1)
+        stab.xzs[i,_div(Tme,j-1)+1] |= Tme(0x1)<<_mod(Tme,j-1)
     else
-        stab.xzs[i,_div64(j-1)+1] &= ~(UInt64(0x1)<<_mod64(j-1))
+        stab.xzs[i,_div(Tme,j-1)+1] &= ~(Tme(0x1)<<_mod(Tme,j-1))
     end
     if z
-        stab.xzs[i,end>>1+_div64(j-1)+1] |= UInt64(0x1)<<_mod64(j-1)
+        stab.xzs[i,end>>1+_div(Tme,j-1)+1] |= Tme(0x1)<<_mod(Tme,j-1)
     else
-        stab.xzs[i,end>>1+_div64(j-1)+1] &= ~(UInt64(0x1)<<_mod64(j-1))
+        stab.xzs[i,end>>1+_div(Tme,j-1)+1] &= ~(Tme(0x1)<<_mod(Tme,j-1))
     end
     stab
 end
@@ -351,8 +351,8 @@ no checks that the provided state is indeed pure. This enables the use of this
 data structure for mixed stabilizer state, but a better choice would be to use
 [`MixedDestabilizer`](@ref).
 """
-struct Destabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractStabilizer
-    tab::Stabilizer{Tv,Tm}
+struct Destabilizer{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractStabilizer
+    tab::Stabilizer{Tzv,Tm}
     function Destabilizer(s;noprocessing=false)
         if noprocessing
             new{typeof(s.phases),typeof(s.xzs)}(s)
@@ -380,14 +380,14 @@ A slight improvement of the [`Stabilizer`](@ref) data structure that enables
 more naturally and completely the treatment of mixed states, in particular when
 the [`project!`](@ref) function is used.
 """
-mutable struct MixedStabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractStabilizer
-    tab::Stabilizer{Tv,Tm} # TODO assert size on construction
+mutable struct MixedStabilizer{Tzv<:AbstractVector{UInt8}, Tm<:AbstractMatrix{<:Unsigned}} <: AbstractStabilizer
+    tab::Stabilizer{Tzv,Tm} # TODO assert size on construction
     rank::Int
 end
 
-function MixedStabilizer(s::Stabilizer)
+function MixedStabilizer(s::Stabilizer{Tzv,Tm}) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
     s = canonicalize!(s)
-    rp1 = findfirst(mapslices(row->all(==(UInt64(0)),row),s.xzs; dims=(2,))[:,1])
+    rp1 = findfirst(mapslices(row->all(==(Tme(0)),row),s.xzs; dims=(2,))[:,1])
     r = isnothing(rp1) ? size(s, 1) : rp1-1
     spadded = zero(Stabilizer, nqubits(s))
     spadded[1:r] = s
@@ -409,8 +409,8 @@ Base.copy(ms::MixedStabilizer) = MixedStabilizer(copy(ms.tab),ms.rank)
 A tableau representation for mixed stabilizer states that keeps track of the
 destabilizers in order to provide efficient projection operations.
 """
-mutable struct MixedDestabilizer{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractStabilizer
-    tab::Stabilizer{Tv,Tm} # TODO assert size on construction
+mutable struct MixedDestabilizer{Tzv<:AbstractVector{UInt8}, Tm<:AbstractMatrix{<:Unsigned}} <: AbstractStabilizer
+    tab::Stabilizer{Tzv,Tm} # TODO assert size on construction
     rank::Int
 end
 
@@ -512,7 +512,7 @@ julia> prodphase(P"XXX", P"ZZZ")
 0x01
 ```
 """
-@inline function prodphase(l::AbstractVector{UInt64}, r::AbstractVector{UInt64})::UInt64
+@inline function prodphase(l::AbstractVector{T}, r::AbstractVector{T})::T where T<:Unsigned
     res = 0
     len = length(l)>>1
     @inbounds @simd for i in 1:len
@@ -565,8 +565,8 @@ julia> comm(P"IZ", P"XX")
 0x01
 ```
 """
-@inline function comm(l::AbstractVector{UInt64}, r::AbstractVector{UInt64})::UInt8
-    res = UInt64(0)
+@inline function comm(l::AbstractVector{T}, r::AbstractVector{T})::UInt8 where T<:Unsigned
+    res = T(0)
     len = length(l)>>1
     @inbounds @simd for i in 1:len
         res ⊻= (l[i+len] & r[i]) ⊻ (l[i] & r[i+len])
@@ -719,14 +719,27 @@ end
     end
 end
 
-# Copied from base/bitarray.jl
-const _msk64 = ~UInt64(0)
-@inline _div64(l) = l >> 6
-@inline _mod64(l) = l & 63
-function unsafe_bitfindnext_(chunks::AbstractVector{UInt64}, start::Integer)
-    chunk_start = _div64(start-1)+1
-    within_chunk_start = _mod64(start-1)
-    mask = _msk64 << within_chunk_start
+@inline _logsizeof(::UInt128) = 7
+@inline _logsizeof(::UInt64 ) = 6
+@inline _logsizeof(::UInt32 ) = 5
+@inline _logsizeof(::UInt16 ) = 4
+@inline _logsizeof(::UInt8  ) = 3
+@inline _logsizeof(::Type{UInt128}) = 7
+@inline _logsizeof(::Type{UInt64 }) = 6
+@inline _logsizeof(::Type{UInt32 }) = 5
+@inline _logsizeof(::Type{UInt16 }) = 4
+@inline _logsizeof(::Type{UInt8  }) = 3
+@inline _mask(arg::T) where T<:Unsigned = sizeof(T)*8-1
+@inline _mask(arg::T) where T<:Type = sizeof(arg)*8-1
+@inline _div(T,l) = l >> _logsizeof(T)
+@inline _mod(T,l) = l & _mask(T)
+@inline _div64(l) = _div(UInt64, l) # TODO stop using this function
+@inline _mod64(l) = _mod(UInt64, l) # TODO stop using this function
+
+function unsafe_bitfindnext_(chunks::AbstractVector{T}, start::Integer) where T<:Unsigned
+    chunk_start = _div(T,start-1)+1
+    within_chunk_start = _mod(T,start-1)
+    mask = ~T(0) << within_chunk_start
 
     @inbounds begin
         if chunks[chunk_start] & mask != 0
@@ -742,9 +755,9 @@ function unsafe_bitfindnext_(chunks::AbstractVector{UInt64}, start::Integer)
     return nothing
 end
 
+#"""
+#$TYPEDSIGNATURES # TODO add the type signatures back in
 """
-$TYPEDSIGNATURES
-
 Canonicalize a stabilizer (in place).
 
 Assumes the input is a valid stabilizer (all operators commute and have
@@ -785,18 +798,18 @@ Based on [garcia2012efficient](@cite).
 
 See also: [`canonicalize_rref!`](@ref), [`canonicalize_gott!`](@ref)
 """
-function canonicalize!(stabilizer::Stabilizer; phases::Bool=true)
+function canonicalize!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
     xzs = stabilizer.xzs
     xs = @view xzs[:,1:end÷2]
     zs = @view xzs[:,end÷2+1:end]
-    lowbit = UInt64(0x1)
-    zero64 = UInt64(0x0)
+    lowbit = Tme(0x1)
+    zero64 = Tme(0x0)
     rows, columns = size(stabilizer)
     i = 1
     for j in 1:columns
         # find first row with X or Y in col `j`
-        jbig = _div64(j-1)+1
-        jsmall = lowbit<<_mod64(j-1)
+        jbig = _div(Tme,j-1)+1
+        jsmall = lowbit<<_mod(Tme,j-1)
         k = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                       (@view xs[i:end,jbig]))
         if k !== nothing
@@ -812,8 +825,8 @@ function canonicalize!(stabilizer::Stabilizer; phases::Bool=true)
     end
     for j in 1:columns
         # find first row with Z in col `j`
-        jbig = _div64(j-1)+1
-        jsmall = lowbit<<_mod64(j-1)
+        jbig = _div(Tme,j-1)+1
+        jsmall = lowbit<<_mod(Tme,j-1)
         k = findfirst(e->e&(jsmall)!=zero64,
                       (@view zs[i:end,jbig]))
         if k !== nothing
@@ -852,17 +865,18 @@ Based on [audenaert2005entanglement](@cite).
 
 See also: [`canonicalize!`](@ref), [`canonicalize_gott!`](@ref)
 """
-function canonicalize_rref!(state::AbstractStabilizer, colindices::AbstractVector{T}; phases::Bool=true) where {T<:Integer}
+function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=true)
     xzs = stabilizerview(state).xzs
     xs = @view xzs[:,1:end÷2]
     zs = @view xzs[:,end÷2+1:end]
-    lowbit = UInt64(0x1)
-    zero64 = UInt64(0x0)
+    Tme = eltype(xzs)
+    lowbit = Tme(0x1)
+    zero64 = Tme(0x0)
     rows, columns = size(stabilizerview(state))
     i = rows
     for j in colindices
-        jbig = _div64(j-1)+1
-        jsmall = lowbit<<_mod64(j-1)
+        jbig = _div(Tme,j-1)+1
+        jsmall = lowbit<<_mod(Tme,j-1)
         k = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                       (@view xs[1:i,jbig]))
         if k !== nothing
@@ -935,18 +949,18 @@ Based on [gottesman1997stabilizer](@cite).
 
 See also: [`canonicalize!`](@ref), [`canonicalize_rref!`](@ref)
 """
-function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true)
+function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
     xzs = stabilizer.xzs
     xs = @view xzs[:,1:end÷2]
     zs = @view xzs[:,end÷2+1:end]
-    lowbit = UInt64(0x1)
-    zero64 = UInt64(0x0)
+    lowbit = Tme(0x1)
+    zero64 = Tme(0x0)
     rows, columns = size(stabilizer)
     i = 1
     for j in 1:columns
         # find first row with X or Y in col `j`
-        jbig = _div64(j-1)+1
-        jsmall = lowbit<<_mod64(j-1)
+        jbig = _div(Tme,j-1)+1
+        jsmall = lowbit<<_mod(Tme,j-1)
         k = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                       xs[i:end,jbig])
         if k !== nothing
@@ -965,8 +979,8 @@ function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true)
     i = r+1
     for j in r+1:columns
         # find first row with Z in col `j`
-        jbig = _div64(j-1)+1
-        jsmall = lowbit<<_mod64(j-1)
+        jbig = _div(Tme,j-1)+1
+        jsmall = lowbit<<_mod(Tme,j-1)
         k = findfirst(e->e&(jsmall)!=zero64,
                       zs[i:end,jbig])
         if k !== nothing
@@ -1052,20 +1066,20 @@ julia> generate!(P"XII",canonicalize!(S"XII")) === nothing
 false
 ```
 """
-function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=true, saveindices::Bool=true) # TODO there is stuff that can be abstracted away here and in canonicalize!
+function generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true, saveindices::Bool=true) where {Tz<:AbstractArray{UInt8,0}, Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tv<:AbstractVector{Tme}, Tm<:AbstractMatrix{Tme}} # TODO there is stuff that can be abstracted away here and in canonicalize!
     rows, columns = size(stabilizer)
     xzs = stabilizer.xzs
     xs = @view xzs[:,1:end÷2]
     zs = @view xzs[:,end÷2+1:end]
-    lowbit = UInt64(0x1)
-    zero64 = UInt64(0x0)
+    lowbit = Tme(0x1)
+    zero64 = Tme(0x0)
     px,pz = xview(pauli), zview(pauli)
     used_indices = Int[]
     used = 0
     # remove Xs
     while (i=unsafe_bitfindnext_(px,1)) !== nothing
-        jbig = _div64(i-1)+1
-        jsmall = lowbit<<_mod64(i-1)
+        jbig = _div(Tme,i-1)+1
+        jsmall = lowbit<<_mod(Tme,i-1)
         candidate = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                               xs[used+1:end,jbig])
         if isnothing(candidate)
@@ -1080,8 +1094,8 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=tr
     end
     # remove Zs
     while (i=unsafe_bitfindnext_(pz,1)) !== nothing
-        jbig = _div64(i-1)+1
-        jsmall = lowbit<<_mod64(i-1)
+        jbig = _div(Tme,i-1)+1
+        jsmall = lowbit<<_mod(Tme,i-1)
         candidate = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
                               zs[used+1:end,jbig])
         if isnothing(candidate)
@@ -1296,6 +1310,7 @@ julia> project!(ms, P"IIY")
 """
 function project!(ms::MixedStabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     _, anticom_index, res = project!(stabilizerview(ms), pauli; keep_result=keep_result, phases=phases)
+    Tme = eltype(pauli.xz)
     if anticom_index==0 && isnothing(res)
         ms.tab[ms.rank+1] = pauli
         # anticom_index = ms.rank TODO this might be a better idea... do the same for MixedDestabilizer and maybe for Destabilizer
@@ -1303,7 +1318,7 @@ function project!(ms::MixedStabilizer,pauli::PauliOperator;keep_result::Bool=tru
             ms.rank += 1
         else
             canonicalize!(ms.tab[1:ms.rank+1]; phases=phases)
-            if ~all(==(UInt64(0)), @view ms.tab.xzs[ms.rank+1,:])
+            if ~all(==(Tme(0)), @view ms.tab.xzs[ms.rank+1,:])
                 ms.rank += 1
             end
         end
@@ -1469,8 +1484,8 @@ julia> entangled = CNOT*stab
 + ZZ
 ```
 """
-struct CliffordOperator{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractCliffordOperator
-    tab::Stabilizer{Tv,Tm}
+struct CliffordOperator{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractCliffordOperator
+    tab::Stabilizer{Tzv,Tm}
 end
 
 macro C_str(a)
@@ -1578,14 +1593,14 @@ An alternative representation of CliffordOperators.
 It stores the columns of the operator in bitarrays (instead of the rows),
 permitting faster application, but complicating the tracking of phases.
 """
-struct CliffordColumnForm{Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{UInt64}} <: AbstractCliffordOperator
-    phases::Tv
+struct CliffordColumnForm{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractCliffordOperator
+    phases::Tzv
     nqubits::Int
     xztox::Tm
     xztoz::Tm
 end
 
-function CliffordColumnForm(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{UInt64}}
+function CliffordColumnForm(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{<:Unsigned}}
     xztox = vcat((xbit(p)' for p in paulis)...)'
     xztoz = vcat((zbit(p)' for p in paulis)...)'
     xztox = vcat((vcat(BitArray(xztox[i,1:end÷2]).chunks,BitArray(xztox[i,end÷2+1:end]).chunks)'
@@ -1780,7 +1795,7 @@ function apply!(s::Stabilizer, c::CliffordColumnForm; phases::Bool=true)
     s
 end
 
-@inline get_bit(i::UInt64,bit) = (i & (UInt64(0x1)<<bit))>>bit
+@inline get_bit(i::T,bit) where T<:Unsigned = (i & (T(0x1)<<bit))>>bit
 
 function apply!(s::Stabilizer, c::CliffordColumnForm, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
     phases && error("calculation of phases is not implemented for `CliffordColumnForm`: try running with `phases=false`")
@@ -1970,10 +1985,10 @@ end
 ##############################
 
 """Apply a Pauli Z to the `i`-th qubit of state `s`."""
-function apply_single_z!(s::Stabilizer, i)
-    bigi = _div64(i-1)+1
-    smalli = _mod64(i-1)
-    mask = UInt64(0x1)<<smalli
+function apply_single_z!(s::Stabilizer{Tzv,Tm}, i) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
+    bigi = _div(Tme,i-1)+1
+    smalli = _mod(Tme,i-1)
+    mask = Tme(0x1)<<smalli
     @inbounds @simd for row in 1:size(s.xzs,1)
         if !iszero(s.xzs[row,bigi] & mask)
             s.phases[row] = (s.phases[row]+0x2)&0x3
@@ -1983,10 +1998,10 @@ function apply_single_z!(s::Stabilizer, i)
 end
 
 """Apply a Pauli X to the `i`-th qubit of state `s`."""
-function apply_single_x!(s::Stabilizer, i)
-    bigi = _div64(i-1)+1
-    smalli = _mod64(i-1)
-    mask = UInt64(0x1)<<smalli
+function apply_single_x!(s::Stabilizer{Tzv,Tm}, i) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
+    bigi = _div(Tme,i-1)+1
+    smalli = _mod(Tme,i-1)
+    mask = Tme(0x1)<<smalli
     @inbounds @simd for row in 1:size(s.xzs,1)
         if !iszero(s.xzs[row,end÷2+bigi] & mask)
             s.phases[row] = (s.phases[row]+0x2)&0x3
@@ -1996,10 +2011,10 @@ function apply_single_x!(s::Stabilizer, i)
 end
 
 """Apply a Pauli Y to the `i`-th qubit of state `s`."""
-function apply_single_y!(s::Stabilizer, i)
-    bigi = _div64(i-1)+1
-    smalli = _mod64(i-1)
-    mask = UInt64(0x1)<<smalli
+function apply_single_y!(s::Stabilizer{Tzv,Tm}, i) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
+    bigi = _div(Tme,i-1)+1
+    smalli = _mod(Tme,i-1)
+    mask = Tme(0x1)<<smalli
     @inbounds @simd for row in 1:size(s.xzs,1)
         if !iszero((s.xzs[row,bigi] & mask) ⊻ (s.xzs[row,end÷2+bigi] & mask))
             s.phases[row] = (s.phases[row]+0x2)&0x3
