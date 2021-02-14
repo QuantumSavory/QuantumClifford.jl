@@ -115,15 +115,15 @@ function zview(p::PauliOperator)
 end
 """Extract as a new bit array the X part of the `UInt64` array of packed qubits of a given Pauli operator."""
 function xbit(p::PauliOperator)
-    b = BitArray(UndefInitializer(),(p.nqubits,))
-    b.chunks = xview(p)
-    b
+    one = eltype(p.xz)(1)
+    size = sizeof(eltype(p.xz))*8
+    [(word>>s)&one==one for word in xview(p) for s in 0:size-1][begin:p.nqubits]
 end
 """Extract as a new bit array the Z part of the `UInt64` array of packed qubits of a given Pauli operator."""
 function zbit(p::PauliOperator)
-    b = BitArray(UndefInitializer(),(p.nqubits,))
-    b.chunks = zview(p)
-    b
+    one = eltype(p.xz)(1)
+    size = sizeof(eltype(p.xz))*8
+    [(word>>s)&one==one for word in zview(p) for s in 0:size-1][begin:p.nqubits]
 end
 
 macro P_str(a)
@@ -512,7 +512,7 @@ julia> prodphase(P"XXX", P"ZZZ")
 0x01
 ```
 """
-@inline function prodphase(l::AbstractVector{T}, r::AbstractVector{T})::T where T<:Unsigned
+@inline function prodphase(l::AbstractVector{T}, r::AbstractVector{T})::UInt8 where T<:Unsigned
     res = 0
     len = length(l)>>1
     @inbounds @simd for i in 1:len
@@ -520,7 +520,7 @@ julia> prodphase(P"XXX", P"ZZZ")
         res += count_ones((~z2 & x2 & ~x1 & z1) | ( z2 & ~x2 & x1 & z1) | (z2 &  x2 & x1 & ~z1))
         res -= count_ones(( z2 & x2 & ~x1 & z1) | (~z2 &  x2 & x1 & z1) | (z2 & ~x2 & x1 & ~z1))
     end
-    unsigned(res)
+    unsigned(res)&0x3
 end
 
 @inline function prodphase(l::PauliOperator, r::PauliOperator)::UInt8
@@ -543,6 +543,27 @@ end
     v ⊻= v >> 32
     v ⊻= v >> 16
     v ⊻= v >> 8
+    v ⊻= v >> 4
+    v ⊻= v >> 2
+    v ⊻= v >> 1
+    return v&1
+end
+@inline function xor_bits_(v::UInt32)
+    v ⊻= v >> 16
+    v ⊻= v >> 8
+    v ⊻= v >> 4
+    v ⊻= v >> 2
+    v ⊻= v >> 1
+    return v&1
+end
+@inline function xor_bits_(v::UInt16)
+    v ⊻= v >> 8
+    v ⊻= v >> 4
+    v ⊻= v >> 2
+    v ⊻= v >> 1
+    return v&1
+end
+@inline function xor_bits_(v::UInt8)
     v ⊻= v >> 4
     v ⊻= v >> 2
     v ⊻= v >> 1
