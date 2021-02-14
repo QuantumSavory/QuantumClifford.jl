@@ -525,6 +525,37 @@ if doset("Clifford Operators (column representation)")
 end
 end
 
+if doset("Alternative bit packing")
+@testset "Alternative bit packing" begin
+    results = []
+    for n in [1,3,5]
+        N = 64*n-2
+        s64 = random_stabilizer(N,N);
+        phases = s64.phases;
+        xzs64_colmajor = s64.xzs;
+        xzs64_rowmajor = collect(s64.xzs')';
+        p64 = random_pauli(N);
+
+        after_p = stab_to_gf2(p64*s64)
+        after_p_phases = (p64*s64).phases
+        after_can = stab_to_gf2(canonicalize!(copy(s64)))
+
+        for int in [UInt8, UInt16, UInt32, UInt64], order in [:column,:row]
+            p = PauliOperator(p64.phase, N, collect(reinterpret(int,p64.xz)));
+            xzs_rowmajor = collect(reinterpret(int, collect(xzs64_colmajor')))';
+            xzs_colmajor = collect(xzs_rowmajor);
+            s_col = Stabilizer(phases,N,xzs_colmajor);
+            s_row = Stabilizer(phases,N,xzs_rowmajor);
+            s = order == :column ? s_col : s_row
+            apply_pauli = p*s
+            @test after_p_phases == apply_pauli.phases
+            canon = canonicalize!(deepcopy(s))
+            @test after_can == stab_to_gf2(canon)
+        end
+    end
+end
+end
+
 if doset("Bug fixes - regression tests")
 @testset "Bug fixes - regression tests" begin
     @testset "Redundant row permutations in `project!(::MixedDestabilizer)`" begin

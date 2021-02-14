@@ -72,23 +72,9 @@ Both of these parameters are tested in the benchmark shown below (testing the ap
 
 ![Benchmarking Pauli application and Canonicalization for different bit-packing sizes and numbers of qubits.](bench.png)
 
-The platforms on which this was tested are:
-
-- a Core i5 processor from a 2012 MacBook Pro
-- an eary 8-core Ryzen in a desktop machine
+The benchmark was executed on an eary 8-core desktop Ryzen.
 
 ```
-# Core i5
-Julia Version 1.7.0-DEV.77
-Commit 80ace52b03 (2020-12-15 02:48 UTC)
-Platform Info:
-  OS: Linux (x86_64-pc-linux-gnu)
-  CPU: Intel(R) Core(TM) i5-3210M CPU @ 2.50GHz
-  WORD_SIZE: 64
-  LIBM: libopenlibm
-  LLVM: libLLVM-11.0.0 (ORCJIT, ivybridge)
-
-# Ryzen
 Julia Version 1.6.0-beta1
 Commit b84990e1ac (2021-01-08 12:42 UTC)
 Platform Info:
