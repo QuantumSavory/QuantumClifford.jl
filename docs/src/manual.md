@@ -119,7 +119,7 @@ The convenience methods [`xbit`](@ref) and [`zbit`](@ref) give you Bool (GF2) ve
 
 ```jldoctest
 julia> xbit(P"XYZI")
-4-element BitVector:
+4-element Vector{Bool}:
  1
  1
  0
@@ -220,7 +220,7 @@ check matrix.
 
 ```jldoctest stab
 julia> stab_to_gf2(s)
-3×6 BitMatrix:
+3×6 Matrix{Bool}:
  1  1  1  0  0  0
  0  0  0  1  1  0
  0  0  0  0  1  1
