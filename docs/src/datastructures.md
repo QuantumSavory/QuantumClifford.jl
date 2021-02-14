@@ -72,6 +72,8 @@ Both of these parameters are tested in the benchmark shown below (testing the ap
 
 ![Benchmarking Pauli application and Canonicalization for different bit-packing sizes and numbers of qubits.](bench.png)
 
+While row-major UInt64 is the best performing, currently we are using column-major UInt64. The column-major format is more completely tested, even though the row-major format has slightly better performance thanks to being friendlier to CPU caches. 
+
 The benchmark was executed on an eary 8-core desktop Ryzen.
 
 ```
