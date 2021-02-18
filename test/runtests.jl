@@ -535,10 +535,12 @@ if doset("Alternative bit packing")
         xzs64_colmajor = s64.xzs;
         xzs64_rowmajor = collect(s64.xzs')';
         p64 = random_pauli(N);
-
+        c64_stab = Destabilizer(random_stabilizer(N,N)).tab
+        
         after_p = stab_to_gf2(p64*s64)
         after_p_phases = (p64*s64).phases
         after_can = stab_to_gf2(canonicalize!(copy(s64)))
+        after_cliff = stab_to_gf2(apply!(copy(s64),CliffordOperator(c64_stab)))
 
         for int in [UInt8, UInt16, UInt32, UInt64], order in [:column,:row]
             p = PauliOperator(p64.phase, N, collect(reinterpret(int,p64.xz)));
@@ -551,6 +553,23 @@ if doset("Alternative bit packing")
             @test after_p_phases == apply_pauli.phases
             canon = canonicalize!(deepcopy(s))
             @test after_can == stab_to_gf2(canon)
+
+            for c_order in [:column, :row]
+                c_raw = Stabilizer(zeros(UInt8, 2N), N, collect(reinterpret(int, collect(c64_stab.xzs'))'))
+                c = CliffordOperator(c_raw)
+                if c_order == :row
+                    c = CliffordOperator(Stabilizer(c.tab.phases, N, collect(c.tab.xzs')'))
+                end
+                @test after_cliff == stab_to_gf2(apply!(deepcopy(s),c))
+                c_raw = CliffordColumnForm(c_raw)
+                c = CliffordColumnForm(c_raw.phases, N,
+                    collect(reinterpret(int, c_raw.xztox')'),
+                    collect(reinterpret(int, c_raw.xztoz')'))
+                if c_order == :row
+                    c = CliffordColumnForm(c.phases, N, collect(c.xztox')', collect(c.xztoz')')
+                end
+                @test after_cliff == stab_to_gf2(apply!(deepcopy(s),c;phases=false))
+            end
         end
     end
 end

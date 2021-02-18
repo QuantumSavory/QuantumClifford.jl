@@ -74,7 +74,7 @@ julia> Z*X
 ```
 
 We use a typical F(2,2) encoding internally. The X and Z bits are stored
-in a single concatenated padded array of UInt64 chunks of a bit array.
+in a single concatenated padded array of UInt chunks of a bit array.
 
 ```jldoctest
 julia> p = P"-IZXY";
@@ -100,26 +100,31 @@ struct PauliOperator{Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}}
     phase::Tz
     nqubits::Int
     xz::Tv
+    # Add an inner constructor to overwrite the generic one that has underspecified type signature (for automatic conversion).
+    # Automatic conversion would almost never work for Tv types, so it only causes ambiguities.
+    PauliOperator{Tz,Tv}(phase, nqubits, xz::Tv) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = new(phase, nqubits, xz)
 end
 
-PauliOperator(phase::UInt8, nqubits::Int, xz::Tv) where Tv<:AbstractVector{<:Unsigned} = PauliOperator(fill(phase,()), nqubits, xz)
-PauliOperator(phase::UInt8, x::T, z::T) where T<:AbstractVector{Bool} = PauliOperator(fill(phase,()), length(x), vcat(BitVector(x).chunks,BitVector(z).chunks))
+PauliOperator(phase::Tz, nqubits::Integer, xz::Tv) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = PauliOperator{Tz,Tv}(phase, nqubits, xz)
+PauliOperator(phase::Integer, nqubits::Integer, xz::Tv) where Tv<:AbstractVector{<:Unsigned} = PauliOperator(fill(UInt8(phase),()), nqubits, xz)
+PauliOperator{Tz,Tv}(phase::Integer, x::AbstractVector{Bool}, z::AbstractVector{Bool}) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = PauliOperator(fill(UInt8(phase),()), length(x), vcat(reinterpret(Tve,BitVector(x).chunks),reinterpret(Tve,BitVector(z).chunks)))
+PauliOperator(phase::Integer, x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator{Array{UInt8,0},Vector{UInt}}(phase, x, z)
 
-"""Get a view of the X part of the `UInt64` array of packed qubits of a given Pauli operator."""
+"""Get a view of the X part of the `UInt` array of packed qubits of a given Pauli operator."""
 function xview(p::PauliOperator)
     @view p.xz[1:end÷2]
 end
-"""Get a view of the Y part of the `UInt64` array of packed qubits of a given Pauli operator."""
+"""Get a view of the Y part of the `UInt` array of packed qubits of a given Pauli operator."""
 function zview(p::PauliOperator)
     @view p.xz[end÷2+1:end]
 end
-"""Extract as a new bit array the X part of the `UInt64` array of packed qubits of a given Pauli operator."""
+"""Extract as a new bit array the X part of the `UInt` array of packed qubits of a given Pauli operator."""
 function xbit(p::PauliOperator)
     one = eltype(p.xz)(1)
     size = sizeof(eltype(p.xz))*8
     [(word>>s)&one==one for word in xview(p) for s in 0:size-1][begin:p.nqubits]
 end
-"""Extract as a new bit array the Z part of the `UInt64` array of packed qubits of a given Pauli operator."""
+"""Extract as a new bit array the Z part of the `UInt` array of packed qubits of a given Pauli operator."""
 function zbit(p::PauliOperator)
     one = eltype(p.xz)(1)
     size = sizeof(eltype(p.xz))*8
@@ -710,13 +715,13 @@ end
 
 # TODO is this used anywhere?
 """Swap two columns of a stabilizer in place."""
-@inline function colswap!(s::Stabilizer, i, j)
-    lowbit = UInt64(1)
-    ibig = _div64(i-1)+1
-    ismall = _mod64(i-1)
+@inline function colswap!(s::Stabilizer{Tzv,Tm}, i, j) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
+    lowbit = Tme(1)
+    ibig = _div(Tme,i-1)+1
+    ismall = _mod(Tme,i-1)
     ismallm = lowbit<<(ismall)
-    jbig = _div64(j-1)+1
-    jsmall = _mod64(j-1)
+    jbig = _div(Tme,j-1)+1
+    jsmall = _mod(Tme,j-1)
     jsmallm = lowbit<<(jsmall)
     for off in [0,size(s.xzs,2)÷2]
         ibig += off
@@ -754,8 +759,6 @@ end
 @inline _mask(arg::T) where T<:Type = sizeof(arg)*8-1
 @inline _div(T,l) = l >> _logsizeof(T)
 @inline _mod(T,l) = l & _mask(T)
-@inline _div64(l) = _div(UInt64, l) # TODO stop using this function
-@inline _mod64(l) = _mod(UInt64, l) # TODO stop using this function
 
 function unsafe_bitfindnext_(chunks::AbstractVector{T}, start::Integer) where T<:Unsigned
     chunk_start = _div(T,start-1)+1
@@ -824,20 +827,20 @@ function canonicalize!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) where 
     xs = @view xzs[:,1:end÷2]
     zs = @view xzs[:,end÷2+1:end]
     lowbit = Tme(0x1)
-    zero64 = Tme(0x0)
+    zerobit = Tme(0x0)
     rows, columns = size(stabilizer)
     i = 1
     for j in 1:columns
         # find first row with X or Y in col `j`
         jbig = _div(Tme,j-1)+1
         jsmall = lowbit<<_mod(Tme,j-1)
-        k = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
+        k = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
                       (@view xs[i:end,jbig]))
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
-                if xs[m,jbig]&jsmall!=zero64 && m!=i # if X or Y
+                if xs[m,jbig]&jsmall!=zerobit && m!=i # if X or Y
                     rowmul!(stabilizer, m, i; phases=phases)
                 end
             end
@@ -848,13 +851,13 @@ function canonicalize!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) where 
         # find first row with Z in col `j`
         jbig = _div(Tme,j-1)+1
         jsmall = lowbit<<_mod(Tme,j-1)
-        k = findfirst(e->e&(jsmall)!=zero64,
+        k = findfirst(e->e&(jsmall)!=zerobit,
                       (@view zs[i:end,jbig]))
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
-                if zs[m,jbig]&jsmall!=zero64 && m!=i # if Z or Y
+                if zs[m,jbig]&jsmall!=zerobit && m!=i # if Z or Y
                     rowmul!(stabilizer, m, i; phases=phases)
                 end
             end
@@ -892,29 +895,29 @@ function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=
     zs = @view xzs[:,end÷2+1:end]
     Tme = eltype(xzs)
     lowbit = Tme(0x1)
-    zero64 = Tme(0x0)
+    zerobit = Tme(0x0)
     rows, columns = size(stabilizerview(state))
     i = rows
     for j in colindices
         jbig = _div(Tme,j-1)+1
         jsmall = lowbit<<_mod(Tme,j-1)
-        k = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
+        k = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
                       (@view xs[1:i,jbig]))
         if k !== nothing
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
-                if xs[m,jbig]&jsmall!=zero64 && m!=i # if X or Y
+                if xs[m,jbig]&jsmall!=zerobit && m!=i # if X or Y
                     rowmul!(state, m, i; phases=phases)
                 end
             end
             i -= 1
         end
-        k = findfirst(e->e&(jsmall)!=zero64,
+        k = findfirst(e->e&(jsmall)!=zerobit,
                       (@view zs[1:i,jbig]))
         if k !== nothing
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
-                if zs[m,jbig]&jsmall!=zero64 && m!=i # if Z or Y
+                if zs[m,jbig]&jsmall!=zerobit && m!=i # if Z or Y
                     rowmul!(state, m, i; phases=phases)
                 end
             end
@@ -975,20 +978,20 @@ function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) w
     xs = @view xzs[:,1:end÷2]
     zs = @view xzs[:,end÷2+1:end]
     lowbit = Tme(0x1)
-    zero64 = Tme(0x0)
+    zerobit = Tme(0x0)
     rows, columns = size(stabilizer)
     i = 1
     for j in 1:columns
         # find first row with X or Y in col `j`
         jbig = _div(Tme,j-1)+1
         jsmall = lowbit<<_mod(Tme,j-1)
-        k = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
+        k = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
                       xs[i:end,jbig])
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
-                if xs[m,jbig]&jsmall!=zero64 && m!=i # if X or Y
+                if xs[m,jbig]&jsmall!=zerobit && m!=i # if X or Y
                     rowmul!(stabilizer, m, i; phases=phases)
                 end
             end
@@ -1002,13 +1005,13 @@ function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) w
         # find first row with Z in col `j`
         jbig = _div(Tme,j-1)+1
         jsmall = lowbit<<_mod(Tme,j-1)
-        k = findfirst(e->e&(jsmall)!=zero64,
+        k = findfirst(e->e&(jsmall)!=zerobit,
                       zs[i:end,jbig])
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
-                if zs[m,jbig]&jsmall!=zero64 && m!=i # if Z or Y
+                if zs[m,jbig]&jsmall!=zerobit && m!=i # if Z or Y
                     rowmul!(stabilizer, m, i; phases=phases)
                 end
             end
@@ -1093,7 +1096,7 @@ function generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; 
     xs = @view xzs[:,1:end÷2]
     zs = @view xzs[:,end÷2+1:end]
     lowbit = Tme(0x1)
-    zero64 = Tme(0x0)
+    zerobit = Tme(0x0)
     px,pz = xview(pauli), zview(pauli)
     used_indices = Int[]
     used = 0
@@ -1101,7 +1104,7 @@ function generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; 
     while (i=unsafe_bitfindnext_(px,1)) !== nothing
         jbig = _div(Tme,i-1)+1
         jsmall = lowbit<<_mod(Tme,i-1)
-        candidate = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
+        candidate = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
                               xs[used+1:end,jbig])
         if isnothing(candidate)
             return nothing
@@ -1117,7 +1120,7 @@ function generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; 
     while (i=unsafe_bitfindnext_(pz,1)) !== nothing
         jbig = _div(Tme,i-1)+1
         jsmall = lowbit<<_mod(Tme,i-1)
-        candidate = findfirst(e->e&jsmall!=zero64, # TODO some form of reinterpret might be faster than equality check
+        candidate = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
                               zs[used+1:end,jbig])
         if isnothing(candidate)
             return nothing
@@ -1727,16 +1730,16 @@ function Base.:(*)(l::AbstractCliffordOperator, r::CliffordColumnForm)
 end
 
 # TODO create Base.permute! and getindex(..., permutation_array)
-function permute(c::CliffordColumnForm,p::AbstractArray{T,1} where T) # TODO why T and not Int?
+function permute(c::CliffordColumnForm{Tzv,Tm},p) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
     nc = zero(c)
     for (ii, i) in enumerate(p) nc.phases[ii] = c.phases[i] end
     for (ii, i) in enumerate(p)
         for (jj, j) in enumerate(p)
-            bigjj = _div64(jj-1)+1
-            bigj  = _div64(j -1)+1
-            smalljj = _mod64(jj-1)
-            smallj  = _mod64(j -1)
-            mask = UInt64(0x1)<<smallj # TODO do we really need to check the sign? Is there a better built-in shift op?
+            bigjj = _div(Tme,jj-1)+1
+            bigj  = _div(Tme,j -1)+1
+            smalljj = _mod(Tme,jj-1)
+            smallj  = _mod(Tme,j -1)
+            mask = Tme(0x1)<<smallj # TODO do we really need to check the sign? Is there a better built-in shift op?
             if smalljj>smallj # TODO this is also present in colswap!, maybe abstract away
                 nc.xztox[ii,       bigjj] |= (c.xztox[i,       bigj] & mask)<<(smalljj-smallj)
                 nc.xztox[ii,end>>1+bigjj] |= (c.xztox[i,end>>1+bigj] & mask)<<(smalljj-smallj)
@@ -1758,18 +1761,19 @@ function permute(c::CliffordColumnForm,p::AbstractArray{T,1} where T) # TODO why
     nc
 end
 
-function ⊗(ops::CliffordColumnForm...)
+function ⊗(ops::CliffordColumnForm{Tzv,Tm}...) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
     ns = [nqubits(op) for op in ops]
     totaln = sum(ns)
     s = 1
+    bits = sizeof(Tme)*8
     newop = zero(CliffordColumnForm,totaln)
     for i in eachindex(ops)
         n = ns[i]
         op = ops[i]
-        bigs = _div64(s-1)+1
-        smalls = _mod64(s-1)
-        bign = _div64(n-1)+1
-        smalln = _mod64(n-1)
+        bigs = _div(Tme,s-1)+1
+        smalls = _mod(Tme,s-1)
+        bign = _div(Tme,n-1)+1
+        smalln = _mod(Tme,n-1)
         for row in 1:n
             newop.phases[s+row-1] = op.phases[row]
             for j in 1:bign
@@ -1777,13 +1781,13 @@ function ⊗(ops::CliffordColumnForm...)
                 newop.xztoz[s+row-1,j+bigs-1] |= op.xztoz[row,j] << smalls
                 newop.xztox[s+row-1,j+bigs-1+end>>1] |= op.xztox[row,j+end>>1] << smalls
                 newop.xztoz[s+row-1,j+bigs-1+end>>1] |= op.xztoz[row,j+end>>1] << smalls
-                if j==bign && smalln+smalls<64
+                if j==bign && smalln+smalls<bits
                     break
                 end
-                newop.xztox[s+row-1,j+bigs] |= op.xztox[row,j] >> (64-smalls)
-                newop.xztoz[s+row-1,j+bigs] |= op.xztoz[row,j] >> (64-smalls)
-                newop.xztox[s+row-1,j+bigs+end>>1] |= op.xztox[row,j+end>>1] >> (64-smalls)
-                newop.xztoz[s+row-1,j+bigs+end>>1] |= op.xztoz[row,j+end>>1] >> (64-smalls)
+                newop.xztox[s+row-1,j+bigs] |= op.xztox[row,j] >> (bits-smalls)
+                newop.xztoz[s+row-1,j+bigs] |= op.xztoz[row,j] >> (bits-smalls)
+                newop.xztox[s+row-1,j+bigs+end>>1] |= op.xztox[row,j+end>>1] >> (bits-smalls)
+                newop.xztoz[s+row-1,j+bigs+end>>1] |= op.xztoz[row,j+end>>1] >> (bits-smalls)
             end
         end
         s += n
@@ -1791,7 +1795,7 @@ function ⊗(ops::CliffordColumnForm...)
     newop
 end
 
-function apply!(s::Stabilizer, c::CliffordColumnForm; phases::Bool=true)
+function apply!(s::Stabilizer{Tzv,Tm1}, c::CliffordColumnForm{Tzv,Tm2}; phases::Bool=true) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm1<:AbstractMatrix{Tme}, Tm2<:AbstractMatrix{Tme}}
     phases && error("calculation of phases is not implemented for `CliffordColumnForm`: try running with `phases=false`")
     new_stabrowx = zero(s.xzs[1,1:end÷2])
     new_stabrowz = zero(s.xzs[1,1:end÷2])
@@ -1801,8 +1805,8 @@ function apply!(s::Stabilizer, c::CliffordColumnForm; phases::Bool=true)
         fill!(new_stabrowx, zero(eltype(new_stabrowx)))
         fill!(new_stabrowz, zero(eltype(new_stabrowz)))
         for row_clif in 1:nqubits(s)
-            bigrow = _div64(row_clif-1)+1
-            smallrow = _mod64(row_clif-1)
+            bigrow = _div(Tme,row_clif-1)+1
+            smallrow = _mod(Tme,row_clif-1)
             @inbounds @simd for i in 1:length(xztox)
                 xztox[i] = c.xztox[row_clif,i] & s.xzs[row_stab,i]
                 xztoz[i] = c.xztoz[row_clif,i] & s.xzs[row_stab,i]
@@ -1818,11 +1822,11 @@ end
 
 @inline get_bit(i::T,bit) where T<:Unsigned = (i & (T(0x1)<<bit))>>bit
 
-function apply!(s::Stabilizer, c::CliffordColumnForm, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
+function apply!(s::Stabilizer{Tzv,Tm1}, c::CliffordColumnForm{Tzv,Tm2}, indices_of_application; phases::Bool=true) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm1<:AbstractMatrix{Tme}, Tm2<:AbstractMatrix{Tme}}
     phases && error("calculation of phases is not implemented for `CliffordColumnForm`: try running with `phases=false`")
     new_stabrowx = zeros(Bool,length(indices_of_application))
     new_stabrowz = zeros(Bool,length(indices_of_application))
-    lowbit = UInt64(0x1)
+    lowbit = Tme(0x1)
     for row_stab in eachindex(s)
         fill!(new_stabrowx, zero(eltype(new_stabrowx)))
         fill!(new_stabrowz, zero(eltype(new_stabrowz)))
@@ -1832,10 +1836,10 @@ function apply!(s::Stabilizer, c::CliffordColumnForm, indices_of_application::Ab
             xtoz = false
             ztoz = false
             for (i,i_redirect) in enumerate(indices_of_application)
-                bigi = _div64(i-1)+1
-                smalli = _mod64(i-1)
-                bigi_redirect = _div64(i_redirect-1)+1
-                smalli_redirect = _mod64(i_redirect-1)
+                bigi = _div(Tme,i-1)+1
+                smalli = _mod(Tme,i-1)
+                bigi_redirect = _div(Tme,i_redirect-1)+1
+                smalli_redirect = _mod(Tme,i_redirect-1)
                 # TODO find a better way than ~iszero
                 xtox ⊻= ~iszero(get_bit(c.xztox[row_clif,bigi],smalli) & get_bit(s.xzs[row_stab,bigi_redirect],smalli_redirect))
                 ztox ⊻= ~iszero(get_bit(c.xztox[row_clif,end÷2+bigi],smalli) & get_bit(s.xzs[row_stab,end÷2+bigi_redirect],smalli_redirect))
@@ -1846,8 +1850,8 @@ function apply!(s::Stabilizer, c::CliffordColumnForm, indices_of_application::Ab
             new_stabrowz[row_clif] |= xtoz ⊻ ztoz
         end
         for (i,i_redirect) in enumerate(indices_of_application)
-            bigi_redirect = _div64(i_redirect-1)+1
-            smalli_redirect = _mod64(i_redirect-1)
+            bigi_redirect = _div(Tme,i_redirect-1)+1
+            smalli_redirect = _mod(Tme,i_redirect-1)
             s.xzs[row_stab,bigi_redirect] &= ~(lowbit<<smalli_redirect)
             s.xzs[row_stab,bigi_redirect] |= new_stabrowx[i]<<smalli_redirect
             s.xzs[row_stab,end÷2+bigi_redirect] &= ~(lowbit<<smalli_redirect)
@@ -2088,8 +2092,9 @@ function single_y(n,i)
     PauliOperator(0x0,xs,zs)
 end
 
-Base.zero(::Type{PauliOperator}, n) = PauliOperator(0x0,falses(n),falses(n))
-Base.zero(p::PauliOperator) = PauliOperator(0x0,falses(p.nqubits),falses(p.nqubits))
+Base.zero(T::Type{PauliOperator}, n) = T(0x0,falses(n),falses(n))
+Base.zero(T::Type{PauliOperator{Tz,Tv}}, n) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = T(0x0,falses(n),falses(n))
+Base.zero(p::PauliOperator{Tz,Tv}) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = PauliOperator{Tz,Tv}(0x0,falses(p.nqubits),falses(p.nqubits))
 Base.zero(::Type{Stabilizer}, n, m) = Stabilizer(zeros(UInt8,n),falses(n,m),falses(n,m))
 Base.zero(::Type{Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(n,n))
 Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
@@ -2162,7 +2167,7 @@ function random_stabilizer(rng::AbstractRNG, n::Integer) # TODO this is vaguelly
     for i in 1:n
         cx[i,i], cz[i,i] = rand(rng,[(true,true),(true,false),(false,true)])
     end
-    C = random_invertible_gf2(n)
+    C = random_invertible_gf2(rng, n)
     CinvT = gf2_invert(C)'
     cx = Bool.((cx * C) .% 2)
     cz = Bool.((cz * CinvT) .% 2)

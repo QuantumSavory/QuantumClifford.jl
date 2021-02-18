@@ -1,4 +1,6 @@
-# [Choosing Appropriate Data Structure](@id Choosing-Appropriate-Data-Structure)
+# Data Structures Options
+
+## [Choosing Appropriate Tableau Data Structure](@id Choosing-Appropriate-Data-Structure)
 
 There are four different data structures used to represent stabilizer states. If
 you will never need projective measurements you probably would want to use
@@ -61,7 +63,7 @@ canonicalization for measurements and its `project!` operations always takes
     `project!` works correctly or raises an explicit warning on all 4 data
     structures.
 
-# [Bit Packing in Integers and Array Order](@id Bit-Packing-in-Integers-and-Array-Order)
+## [Bit Packing in Integers and Array Order](@id Bit-Packing-in-Integers-and-Array-Order)
 
 We do not use boolean arrays to store information about the qubits as this would be wasteful (7 out of 8 bits in the boolean would be unused). Instead, we use all 8 qubits in a byte and peform bitwise logical operations as necessary. Implementation details of the object in RAM can matter for performance. The library permits any of the standard `UInt` types to be used for packing the bits, and larger `UInt` types (like `UInt64`) are usually faster as they permit working on 64 qubits at a time (instead of 1 if we used a boolean, or 8 if we used a byte).
 
@@ -70,9 +72,15 @@ usually permits more efficient use of the CPU cache (for the particular algorith
 
 Both of these parameters are tested in the benchmark shown below (testing the application of a Pauli operator, which is an $\mathcal{O}(n^2)$ operation; and testing the canonicalization of a Stabilizer, which is an $\mathcal{O}(n^2)$ operation). The code for these benchmarks can be found in the `benchmakrs` folder.
 
-![Benchmarking Pauli application and Canonicalization for different bit-packing sizes and numbers of qubits.](bench.png)
+![Benchmarking Pauli application and Canonicalization for different bit-packing sizes and numbers of qubits.](bench_intsize.png)
 
 While row-major UInt64 is the best performing, currently we are using column-major UInt64. The column-major format is more completely tested, even though the row-major format has slightly better performance thanks to being friendlier to CPU caches. 
+
+## [Clifford Operators Datastructures](@id Clifford-Operators-Datastructures)
+
+The [`CliffordOperator`](@ref) data structure is the default one in most of the library. Internally, it is represented by a destabilizer tableaux given by applying the Clifford operation in question on the initial ground state. The [`CliffordColumnForm`](@ref) is an earlier implementation of the same functionality which is mostly deprecated and will be removed when all example notebooks are updated to use the newer structures. `CliffordColumnForm` uses bitpacking that is the transpose of the packing in `CliffordOperator`.
+
+![Benchmarking Clifford operator application for different Clifford data structures, bit-packing sizes, and numbers of qubits.](bench_intsize_clifford.png)
 
 The benchmark was executed on an eary 8-core desktop Ryzen.
 

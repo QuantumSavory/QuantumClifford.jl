@@ -1,3 +1,9 @@
+"""
+Benchmark canonicalization and Pauli application methods
+with respect to the choice of an array (column-major or row-major)
+and bitpacking (in UInt8, or 16, or 32, or 64 bit types).
+"""
+
 using QuantumClifford
 using StableRNGs
 using BenchmarkTools
