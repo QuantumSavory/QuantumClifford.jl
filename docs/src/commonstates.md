@@ -89,8 +89,8 @@ ensemble, as there are caveats to the choice of distribution). TODO: In the futu
 
 ```jldoctest rand
 julia> random_stabilizer(rng, 2,5)
-- _ZY__
-+ ___X_
++ XXX__
++ Y_ZX_
 ```
 ## Mixed States
 
