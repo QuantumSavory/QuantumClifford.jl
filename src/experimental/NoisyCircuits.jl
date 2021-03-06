@@ -19,7 +19,7 @@ export Operation, AbstractGate, AbstractBellMeasurement, AbstractNoise,
        applyop_branches, applynoise_branches,
        mctrajectory!, mctrajectories,
        petrajectory, petrajectories,
-       Register, Measurement, ConditionalGate
+       Register, Measurement, ConditionalGate, DecisionGate
 
 abstract type Operation end
 abstract type AbstractGate <: Operation end
@@ -438,13 +438,13 @@ end
 Base.copy(state::Register) = deepcopy(state)
 
 function applyop!(state::Register, op)
-    applyop!(state.stab, op)
-    state
+    s, status = applyop!(state.stab, op)
+    state, status
 end
 
 function applynoise!(state::Register, noise, indices)
-    applynoise!(state.stab, noise, indices)
-    state
+    s, status = applynoise!(state.stab, noise, indices)
+    state, status
 end
 
 function applyop_branches(state::Register, op; max_order=1)
@@ -470,6 +470,11 @@ struct ConditionalGate <: AbstractGate
     controlbit::Int
 end
 
+struct DecisionGate <: AbstractGate
+    gates::AbstractVector{AbstractGate}
+    decisionfunction
+end
+
 function applyop!(state::Register, op::Measurement)
     stab = state.stab
     stab,anticom,r = project!(stab, op.pauli)
@@ -480,7 +485,7 @@ function applyop!(state::Register, op::Measurement)
             r = stab.phases[anticom] = 0x02
         end
     end
-    state.bits[op.storagebit] = r==0x0
+    state.bits[op.storagebit] = r==0x02
     state, s_continue
 end
 
@@ -490,7 +495,15 @@ function applyop!(state::Register, op::ConditionalGate)
     else
         applyop!(state, op.falsegate)
     end
-    return state
+    return state, s_continue
+end
+
+function applyop!(state::Register, op::DecisionGate)
+    decision = op.decisionfunction(state.bits)
+    if !isnothing(decision)
+        applyop!(state, op.gates[decision])
+    end
+    state, s_continue
 end
 
 include("./quantikz_methods.jl")
