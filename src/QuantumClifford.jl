@@ -1481,6 +1481,19 @@ function apply!(s::Stabilizer, p::PauliOperator; phases::Bool=true)
     s
 end
 
+function apply!(s::Stabilizer, p::PauliOperator, indices; phases::Bool=true)
+    phases || return s
+    newp = zero(typeof(p),nqubits(s)) # TODO this is an unnecessarily slow operation for something that can be sparse
+    for (ii,i) in enumerate(indices)
+        newp[i] = p[ii]
+    end
+    newp.phase .= p.phase
+    for i in eachindex(s)
+        s.phases[i] = (s.phases[i]+comm(p,s,i)<<1+p.phase[]<<1)&0x3
+    end
+    s
+end
+
 function tensor_pow(op::AbstractCliffordOperator,power::Integer)
     ⊗(repeat([op],power)...)
 end
@@ -2092,6 +2105,7 @@ function single_y(n,i)
     PauliOperator(0x0,xs,zs)
 end
 
+# TODO the pauli and clifford functions should be `one`, not `zero`
 Base.zero(T::Type{PauliOperator}, n) = T(0x0,falses(n),falses(n))
 Base.zero(T::Type{PauliOperator{Tz,Tv}}, n) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = T(0x0,falses(n),falses(n))
 Base.zero(p::PauliOperator{Tz,Tv}) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = PauliOperator{Tz,Tv}(0x0,falses(p.nqubits),falses(p.nqubits))
