@@ -88,6 +88,7 @@ end
 struct VerifyOp <: Operation
     good_state::Stabilizer
     indices::AbstractVector{Int}
+    VerifyOp(s,indices) = new(canonicalize_rref!(copy(s))[1],indices)
 end
 
 """A dictionary of possible statuses returned by `applyop!`."""
