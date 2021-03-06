@@ -6,6 +6,7 @@ module NoisyCircuits
 #TODO permit the use of alternative RNGs
 
 using QuantumClifford
+using QuantumClifford: AbstractStabilizer, AbstractCliffordOperator
 
 using StatsBase: countmap
 using Combinatorics: combinations
@@ -17,11 +18,13 @@ export Operation, AbstractGate, AbstractBellMeasurement, AbstractNoise,
        affectedqubits, applyop!, applynoise!,
        applyop_branches, applynoise_branches,
        mctrajectory!, mctrajectories,
-       petrajectory, petrajectories
+       petrajectory, petrajectories,
+       Register, Measurement, ConditionalGate
 
 abstract type Operation end
 abstract type AbstractGate <: Operation end
 abstract type AbstractBellMeasurement <: Operation end
+abstract type AbstractMeasurement <: Operation end
 
 abstract type AbstractNoise end
 
@@ -46,7 +49,7 @@ end
 
 """A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`."""
 struct SparseGate <: AbstractGate
-    cliff::CliffordOperator
+    cliff::AbstractCliffordOperator
     indices::AbstractVector{Int}
 end
 
@@ -238,7 +241,7 @@ function applyop!(s::Stabilizer, v::VerifyOp) # XXX It assumes the other qubits 
 end
 
 """Run a single Monte Carlo sample, starting with (and modifying) `initialstate` by applying the given `circuit`. Uses `applyop!` under the hood."""
-function mctrajectory!(initialstate::Stabilizer,circuit)
+function mctrajectory!(initialstate,circuit)
     state = initialstate
     for op in circuit
         state, cont = applyop!(state, op)
@@ -424,6 +427,69 @@ end
 function petrajectories(state, circuit; branch_weight=1.0, max_order=1)
     status_probs = petrajectory(state, circuit; branch_weight=branch_weight, current_order=0, max_order=max_order)
     Dict([statuses[i]=>status_probs[i] for i in eachindex(status_probs)])
+end
+
+struct Register{S<:AbstractStabilizer, T<:AbstractVector{Bool}}
+    stab::S
+    bits::T
+end
+
+Base.copy(state::Register) = deepcopy(state)
+
+function applyop!(state::Register, op)
+    applyop!(state.stab, op)
+    state
+end
+
+function applynoise!(state::Register, noise, indices)
+    applynoise!(state.stab, noise, indices)
+    state
+end
+
+function applyop_branches(state::Register, op; max_order=1)
+    [(Register(newstate,copy(state.bits)), status, prob, order)
+     for (newstate, status, prob, order)
+     in applyop_branches(state.stab, op; max_order=max_order)
+    ]
+end
+
+function applynoise_branches(state::Register, noise, indices; max_order=1)
+    [(Register(newstate,copy(state.bits)), prob, order)
+     for (newstate, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
+end
+
+struct Measurement <: AbstractMeasurement
+    pauli::PauliOperator
+    storagebit::Int
+end
+
+struct ConditionalGate <: AbstractGate
+    truegate::AbstractGate
+    falsegate::AbstractGate
+    controlbit::Int
+end
+
+function applyop!(state::Register, op::Measurement)
+    stab = state.stab
+    stab,anticom,r = project!(stab, op.pauli)
+    if isnothing(r)
+        if rand()>0.5 # TODO float not necessary
+            r = stab.phases[anticom] = 0x00
+        else
+            r = stab.phases[anticom] = 0x02
+        end
+    end
+    state.bits[op.storagebit] = r==0x0
+    state, s_continue
+end
+
+function applyop!(state::Register, op::ConditionalGate)
+    if state.bits[op.controlbit]
+        applyop!(state, op.truegate)
+    else
+        applyop!(state, op.falsegate)
+    end
+    return state
 end
 
 include("./quantikz_methods.jl")
