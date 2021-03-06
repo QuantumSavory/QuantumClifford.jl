@@ -254,7 +254,7 @@ function mctrajectory!(initialstate,circuit)
 end
 
 """Run multiple Monte Carlo trajectories and report the aggregate final statuses of each."""
-function mctrajectories(initialstate::Stabilizer,circuit;trajectories=500)
+function mctrajectories(initialstate,circuit;trajectories=500)
     counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator
     return merge(Dict([(v=>0) for v in values(statuses)]),
                  Dict([statuses[k]=>v for (k,v) in counts]))
