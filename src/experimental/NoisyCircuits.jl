@@ -11,20 +11,17 @@ using QuantumClifford: AbstractStabilizer, AbstractCliffordOperator
 using StatsBase: countmap
 using Combinatorics: combinations
 
-export Operation, AbstractGate, AbstractBellMeasurement, AbstractNoise,
+export AbstractOperation,
        UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, VerifyOp,
        SparseGate, NoisyGate,
-       BellMeasurement, NoisyBellMeasurement, BellMeasurementAndReset, BellMeasurementAndNoisyReset,
+       BellMeasurement, NoisyBellMeasurement, BellMeasurementAndReset,
        affectedqubits, applyop!, applynoise!,
        applyop_branches, applynoise_branches,
        mctrajectory!, mctrajectories,
        petrajectory, petrajectories,
        Register, Measurement, ConditionalGate, DecisionGate
 
-abstract type Operation end
-abstract type AbstractGate <: Operation end
-abstract type AbstractBellMeasurement <: Operation end
-abstract type AbstractMeasurement <: Operation end
+abstract type AbstractOperation end
 
 abstract type AbstractNoise end
 
@@ -37,55 +34,48 @@ struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
 end
 
 """An operator that applies the given `noise` model to the qubits at the selected `indices`."""
-struct NoiseOp <: Operation
+struct NoiseOp <: AbstractOperation
     noise::AbstractNoise
     indices::AbstractVector{Int}
 end
 
 """An operator that applies the given `noise` model to all qubits."""
-struct NoiseOpAll <: Operation
+struct NoiseOpAll <: AbstractOperation
     noise::AbstractNoise
 end
 
 """A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`."""
-struct SparseGate <: AbstractGate
+struct SparseGate <: AbstractOperation
     cliff::AbstractCliffordOperator
     indices::AbstractVector{Int}
 end
 
 """A gate consisting of the given `noise` applied after the given perfect Clifford `gate`."""
-struct NoisyGate <: AbstractGate
-    gate::AbstractGate
+struct NoisyGate <: AbstractOperation
+    gate::AbstractOperation
     noise::AbstractNoise
 end
 
-"""A Bell measurement performing the correlation measurement corresponding to the given `paulis` projections on the qubits at the selected indices."""
-struct BellMeasurement <: AbstractBellMeasurement
+"""A Bell measurement performing the correlation measurement corresponding to the given `pauli` projections on the qubits at the selected indices."""
+struct BellMeasurement <: AbstractOperation
     pauli::AbstractVector{PauliOperator}
     indices::AbstractVector{Int}
 end
 
 """A Bell measurement in which each of the measured qubits has a chance to have flipped."""
-struct NoisyBellMeasurement{T} <: AbstractBellMeasurement
-    meas::AbstractBellMeasurement
+struct NoisyBellMeasurement{T} <: AbstractOperation
+    meas::AbstractOperation
     flipprob::T
 end
 
 """Performing a Bell measurement followed by resetting the measured qubits to the given state `resetto`."""
-struct BellMeasurementAndReset <: AbstractBellMeasurement
-    meas::AbstractBellMeasurement
+struct BellMeasurementAndReset <: AbstractOperation
+    meas::AbstractOperation
     resetto::Stabilizer
-end
-
-"""Performing a Bell measurement followed by resetting the measured qubits to the given state `resetto` followed by the same qubits being affected by the given `noise`."""
-struct BellMeasurementAndNoisyReset <: AbstractBellMeasurement
-    meas::AbstractBellMeasurement
-    resetto::Stabilizer
-    noise::AbstractNoise
 end
 
 """A "probe" to verify that the state of the qubits corresponds to a desired `good_state`, e.g. at the end of the execution of a circuit."""
-struct VerifyOp <: Operation
+struct VerifyOp <: AbstractOperation
     good_state::Stabilizer
     indices::AbstractVector{Int}
     VerifyOp(s,indices) = new(canonicalize_rref!(copy(s))[1],indices)
@@ -104,7 +94,6 @@ affectedqubits(g::NoisyGate) = affectedqubits(g.gate)
 affectedqubits(g::SparseGate) = g.indices
 affectedqubits(m::BellMeasurement) = m.indices
 affectedqubits(m::BellMeasurementAndReset) = affectedqubits(m.meas)
-affectedqubits(m::BellMeasurementAndNoisyReset) = affectedqubits(m.meas)
 affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
 affectedqubits(n::NoiseOp) = n.indices
 affectedqubits(v::VerifyOp) = v.indices
@@ -179,22 +168,6 @@ function applyop!(s::Stabilizer, mr::BellMeasurementAndReset)
             end
         end
         return s,s_continue
-    end
-end
-
-function applyop!(s::Stabilizer, mr::BellMeasurementAndNoisyReset)
-    s,res = applyop!(s,mr.meas)
-    if !res
-        return s,res
-    else
-        # TODO is the traceout necessary given that we just performed measurements?
-        traceout!(s,affectedqubits(mr))# TODO it seems like a bad idea not to keep track of the rank here
-        for (ii,i) in enumerate(affectedqubits(mr))
-            for j in [1,2]
-                s[end-j+1,i] = mr.resetto[j,ii]
-            end
-        end
-        return applynoise!(s,mr.noise,affectedqubits(mr)), s_continue
     end
 end
 
@@ -381,16 +354,6 @@ function applyop_branches(s::Stabilizer, mr::BellMeasurementAndReset; max_order=
     branches
 end
 
-# TODO a lot of repetition with applyop!
-function applyop_branches(s::Stabilizer, mr::BellMeasurementAndNoisyReset; max_order=1)
-    branches = applyop_branches(s,mr.meas)
-    # TODO can skip the inner loop if succ=false
-    noise_branches = [(state, succ, prob*mprob, order) 
-                      for (ms, succ, mprob, prime_order) in branches
-                      for (state, prob, order) in applynoise_branches(_reset!(ms,affectedqubits(mr),mr.resetto), mr.noise, affectedqubits(mr), max_order=max_order-prime_order)
-                     ]
-end
-
 function _reset!(s, qubits, resetto)
     # TODO is the traceout necessary given that we just performed measurements?
     traceout!(s,qubits)# TODO it seems like a bad idea not to keep track of the rank here
@@ -459,19 +422,19 @@ function applynoise_branches(state::Register, noise, indices; max_order=1)
      for (newstate, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
 end
 
-struct Measurement <: AbstractMeasurement
+struct Measurement <: AbstractOperation
     pauli::PauliOperator
     storagebit::Int
 end
 
-struct ConditionalGate <: AbstractGate
-    truegate::AbstractGate
-    falsegate::AbstractGate
+struct ConditionalGate <: AbstractOperation
+    truegate::AbstractOperation
+    falsegate::AbstractOperation
     controlbit::Int
 end
 
-struct DecisionGate <: AbstractGate
-    gates::AbstractVector{AbstractGate}
+struct DecisionGate <: AbstractOperation
+    gates::AbstractVector{AbstractOperation}
     decisionfunction
 end
 
