@@ -37,7 +37,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     single_z, single_x, single_y,
     apply_single_z!, apply_single_x!, apply_single_y!,
     random_invertible_gf2,
-    random_pauli, random_stabilizer, random_singlequbitop,
+    random_pauli, random_stabilizer, random_clifford, random_singlequbitop,
     BadDataStructure
 
 # Predefined constants representing the permitted phases encoded
@@ -2188,6 +2188,9 @@ function random_stabilizer(rng::AbstractRNG, n::Integer) # TODO this is vaguelly
     Stabilizer(rand(rng,[0x0,0x2],n), cx, cz)
 end
 random_stabilizer(n::Integer) =  random_stabilizer(GLOBAL_RNG, n)
+
+random_clifford(rng::AbstractRNG, n::Integer) = CliffordOperator(Destabilizer(random_stabilizer(rng, n)).tab)
+random_clifford(n::Integer) = random_clifford(GLOBAL_RNG, n::Integer)
 
 random_stabilizer(rng::AbstractRNG,r::Integer,n::Integer) = random_stabilizer(rng,n)[Random.randperm(rng,n)[1:r]]
 random_stabilizer(r::Integer,n::Integer) = random_stabilizer(GLOBAL_RNG,n)[Random.randperm(GLOBAL_RNG,n)[1:r]]
