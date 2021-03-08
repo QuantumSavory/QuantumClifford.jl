@@ -13,7 +13,7 @@ using Combinatorics: combinations
 
 export AbstractOperation,
        UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, VerifyOp,
-       SparseGate, NoisyGate,
+       SparseGate, DenseGate, NoisyGate,
        BellMeasurement, NoisyBellMeasurement, BellMeasurementAndReset,
        affectedqubits, applyop!, applynoise!,
        applyop_branches, applynoise_branches,
@@ -93,7 +93,7 @@ const statuses = [:continue, :detected_failure, :undetected_failure, :true_succe
 function affectedqubits end
 affectedqubits(g::NoisyGate) = affectedqubits(g.gate)
 affectedqubits(g::SparseGate) = g.indices
-affectedqubits(g::DenseGate) = :all
+affectedqubits(g::DenseGate) = 1:nqubits(g.cliff)
 affectedqubits(m::BellMeasurement) = m.indices
 affectedqubits(m::BellMeasurementAndReset) = affectedqubits(m.meas)
 affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
@@ -233,8 +233,7 @@ end
 """Run multiple Monte Carlo trajectories and report the aggregate final statuses of each."""
 function mctrajectories(initialstate,circuit;trajectories=500)
     counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator
-    return merge(Dict([(k=>0) for k in statuses]),
-                 Dict([statuses[k]=>v for (k,v) in counts]))
+    return merge(Dict([(k=>0) for k in statuses[2:end]]), counts)
 end
 
 """Compute all possible new states after the application of the given operator. Reports the probability of each one of them. Deterministic, part of the Perturbative Expansion interface."""
@@ -385,7 +384,7 @@ function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_or
                 branch_weight=branch_weight*prob, current_order=current_order+order, max_order=max_order)
             status_probs .+= out_probs
         else
-            status_probs[status] += prob*branch_weight
+            status_probs[findfirst(==(status),statuses)-1] += prob*branch_weight # TODO this findfirst needs to go, this is a bad way to do it
         end
     end
 
@@ -395,9 +394,10 @@ end
 """Run a perturbative expansion to a given order. This is the main public fuction for the perturbative expansion approach."""
 function petrajectories(state, circuit; branch_weight=1.0, max_order=1)
     status_probs = petrajectory(state, circuit; branch_weight=branch_weight, current_order=0, max_order=max_order)
-    Dict([statuses[i]=>status_probs[i] for i in eachindex(status_probs)])
+    Dict([statuses[i+1]=>status_probs[i] for i in eachindex(status_probs)])
 end
 
+"""A register, representing the state of a computer including both a tableaux and an array of classical bits (e.g. for storing measurement results)"""
 struct Register{S<:AbstractStabilizer, T<:AbstractVector{Bool}}
     stab::S
     bits::T
@@ -427,7 +427,8 @@ function applynoise_branches(state::Register, noise, indices; max_order=1)
      for (newstate, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
 end
 
-struct Measurement <: AbstractOperation
+"""A Stabilizer measurement on the """
+struct DenseMeasurement <: AbstractOperation
     pauli::PauliOperator
     storagebit::Int
 end
@@ -443,7 +444,7 @@ struct DecisionGate <: AbstractOperation
     decisionfunction
 end
 
-function applyop!(state::Register, op::Measurement)
+function applyop!(state::Register, op::DenseMeasurement)
     stab = state.stab
     stab,anticom,r = project!(stab, op.pauli)
     if isnothing(r)

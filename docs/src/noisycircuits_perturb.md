@@ -1,17 +1,19 @@
-# Perturbative expansions for simulating noisy Clifford circuits
+# [Perturbative expansions for simulating noisy Clifford circuits](@id noisycircuits_perturb)
 
 ```@meta
 DocTestSetup = quote
     using QuantumClifford
     using QuantumClifford.Experimental.NoisyCircuits
 end
+CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
 
 Import with `using QuantumClifford.Experimental.NoisyCircuits`.
 
-This module enables the simulation of noisy Clifford circuits through a perturbative expansion in the noise parameter (assuming the noise is small). Instead of simulating many Monte Carlo trajectories, only the leading order trajectories are exhaustively enumerated and simulated.
+This module enables the simulation of noisy Clifford circuits through a perturbative expansion in the noise parameter (assuming the noise is small).
+Instead of simulating many Monte Carlo trajectories, only the leading order trajectories are exhaustively enumerated and simulated.
 
-Here is an example of a purification circuit:
+Here is an example of a purification circuit (the same circuit seen in the [Monte Carlo example](@ref noisycircuits_mc))
 
 ```@example
 using QuantumClifford # hide
@@ -37,15 +39,19 @@ circuit = [n,g1,g2,m,v]
 petrajectories(initial_state, circuit)
 ```
 
-For more examples, see the [notebook comparing the Monte Carlo and Perturbative method](https://nbviewer.jupyter.org/github/Krastanov/QuantumClifford.jl/blob/master/docs/src/notebooks/Perturbative_Expansions_vs_Monte_Carlo_Simulations.ipynb) or this tutorial on [entanglement purification for many examples](https://github.com/Krastanov/QuantumClifford.jl/blob/master/docs/src/notebooks/Noisy_Circuits_Tutorial_with_Purification_Circuits.ipynb).
+For more examples, see the [notebook comparing the Monte Carlo and Perturbative method](https://nbviewer.jupyter.org/github/Krastanov/QuantumClifford.jl/blob/master/docs/src/notebooks/Perturbative_Expansions_vs_Monte_Carlo_Simulations.ipynb) or this tutorial on [entanglement purification](https://github.com/Krastanov/QuantumClifford.jl/blob/master/docs/src/notebooks/Noisy_Circuits_Tutorial_with_Purification_Circuits.ipynb).
 
 ## Symbolic expansions
 
-The perturbative expansion method works with symbolic variables as well. One can use any of the symbolic libraries available in Julia and simply plug symbolic parameters in lieu of numeric parameters. A detailed example is available as a [jupyter notebook](https://nbviewer.jupyter.org/github/Krastanov/QuantumClifford.jl/blob/master/docs/src/notebooks/Symbolic_Perturbative_Expansions.ipynb).
+The perturbative expansion method works with symbolic variables as well. One can use any of the symbolic libraries available in Julia and simply plug symbolic parameters in lieu of numeric parameters. A detailed example is available as a [Jupyter notebook](https://nbviewer.jupyter.org/github/Krastanov/QuantumClifford.jl/blob/master/docs/src/notebooks/Symbolic_Perturbative_Expansions.ipynb).
 
 ## Interface for custom operations
 
-`applyop_branches!(s::Stabilizer, g::Operation; max_order=1)::Vector{Tuple{Stabilizer,Int,Real,Int}}`
-where the first `Int` is the status of the operation, the `Real` is the probability for that branch, and the second `Int` is the order of that branch.
+If you want to create a custom gate type (e.g. calling it `Operation`), you need to definite the following methods.
 
-There is also `applynoise_branches!` which is convenient for the `NoisyGate` and `NoisyMeasurement` and so on, but you can also just make up your own noise operator simply by implementing `applyop_branches!` for it.
+`applyop_branches!(s::T, g::Operation; max_order=1)::Vector{Tuple{T,Symbol,Real,Int}}` where `T` is a tableaux type like [`Stabilizer`](@ref) or a [`Register`](@ref).
+The `Symbol` is the status of the operation, the `Real` is the probability for that branch, and the `Int` is the order of that branch.
+
+There is also `applynoise_branches!` which is convenient for use in `NoisyGate`, but you can also just make up your own noise operator simply by implementing `applyop_branches!` for it.
+
+You can also consult the [list of implemented operators](@ref noisycircuit_ops).

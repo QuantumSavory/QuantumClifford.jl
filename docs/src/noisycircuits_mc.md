@@ -1,24 +1,24 @@
-# Monte Carlo simulations of noisy Clifford circuits
+# [Monte Carlo simulations of noisy Clifford circuits](@id noisycircuits_mc)
 
 ```@meta
 DocTestSetup = quote
     using QuantumClifford
     using QuantumClifford.Experimental.NoisyCircuits
 end
+CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
 
 Import with `using QuantumClifford.Experimental.NoisyCircuits`.
 
 This module enables the simulation of noisy Clifford circuits through a Monte Carlo method where the same circuit is evaluated multiple times with random errors interspersed through it as prescribed by a given error model.
 
-Here is an example of a purification circuit:
+Below is an example of a purification circuit. We first prepare the circuit we desire to use, including a noise model. `Quantikz.jl` was is used to visualize the circuit.
 
-```@example
+```@example 1
 using QuantumClifford # hide
 using QuantumClifford.Experimental.NoisyCircuits # hide
 good_bell_state = S"XX
                     ZZ"
-canonicalize_rref!(good_bell_state)
 initial_state = good_bell_state⊗good_bell_state
 
 g1 = SparseGate(CNOT, [1,3]) # CNOT between qubit 1 and qubit 3 (both with Alice)
@@ -33,7 +33,11 @@ n = NoiseOpAll(UnbiasedUncorrelatedNoise(epsilon))
 # then a Bell measurement
 # followed by checking whether the final result indeed corresponds to the correct Bell pair.
 circuit = [n,g1,g2,m,v]
+```
 
+And we can run a Monte Carlo simulation of that circuit with [`mctrajectories`](@ref).
+
+```@example 1
 mctrajectories(initial_state, circuit, trajectories=500)
 ```
 
@@ -41,21 +45,18 @@ For more examples, see the [notebook comparing the Monte Carlo and Perturbative 
 
 ## Interface for custom operations
 
-`applyop!(s::Stabilizer, g::Operation)::Tuple{Stabilizer,Int}`
-where the `Int` is the status of the operation. Predefined statuses are kept in the `statuses` dictionary:
+If you want to create a custom gate type (e.g. calling it `Operation`), you need to definite the following methods.
+
+`applyop!(s::T, g::Operation)::Tuple{T,Symbol}` where `T` is a tableaux type like [`Stabilizer`](@ref) or a [`Register`](@ref).
+The `Symbol` is the status of the operation. Predefined statuses are kept in the `statuses` list, but you can add more:
 ```julia
-const statuses = Dict(0=>:continue,
-                      1=>:detected_failure,
-                      2=>:undetected_failure,
-                      3=>:true_success)
-const s_continue = 0
-const s_detected_failure = 1
-const s_undetected_failure = 2
-const s_true_success = 3
+const statuses = [:continue, :detected_failure, :undetected_failure, :true_success]
 ```
 
-Be sure to expand this dictionary if you want the trajectory simulators using your custom statuses to output all trajectories.
+Be sure to expand this list if you want the trajectory simulators using your custom statuses to output all trajectories.
 
-TODO: We probably do not want to use this dictionary, rather a type/dispatch-based approach or symbols/namedtuple-based approach? Something to consider for a future version.
+There is also [`applynoise!`](@ref) which is convenient wait to create a noise model that can then be plugged into the [`NoisyGate`](@ref) struct,
+letting you reuse the predefined perfect gates and measurements.
+However, you can also just make up your own noise operator simply by implementing [`applyop!`](@ref) for it.
 
-There is also `applynoise!` which is convenient wait to create a noise model that can then be plugged into the `NoisyGate`, `NoisyMeasurement`, etc, letting you reuse the predefined perfect gates and measurements. However, you can also just make up your own noise operator simply by implementing `applyop!` for it.
+You can also consult the [list of implemented operators](@ref noisycircuit_ops).

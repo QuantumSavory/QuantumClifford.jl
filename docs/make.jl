@@ -30,6 +30,7 @@ pages = [
     "Simulation of Noisy Circuits" => "noisycircuits.md",
     "Monte Carlo" => "noisycircuits_mc.md",
     "Perturbative Expansions" => "noisycircuits_perturb.md",
+    "Circuit Operations" => "noisycircuits_ops.md",
     "API" => "noisycircuits_API.md"
 ],
 "Suggested Readings & References" => "references.md",

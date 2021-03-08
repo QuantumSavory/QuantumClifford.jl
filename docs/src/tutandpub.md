@@ -1,4 +1,4 @@
-# Tutorials and Publications
+# [Tutorials and Publications](@id tutandpub)
 
 This list has a number of notebooks with tutorials, examples, and reproduction of published results (some of these results originally obtained with this very library).
 
