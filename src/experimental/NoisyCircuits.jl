@@ -50,6 +50,11 @@ struct SparseGate <: AbstractOperation
     indices::AbstractVector{Int}
 end
 
+"""A Clifford gate, applying the given `cliff` operator."""
+struct DenseGate <: AbstractOperation
+    cliff::AbstractCliffordOperator
+end
+
 """A gate consisting of the given `noise` applied after the given perfect Clifford `gate`."""
 struct NoisyGate <: AbstractOperation
     gate::AbstractOperation
@@ -81,17 +86,14 @@ struct VerifyOp <: AbstractOperation
     VerifyOp(s,indices) = new(canonicalize_rref!(copy(s))[1],indices)
 end
 
-"""A dictionary of possible statuses returned by `applyop!`."""
-const statuses = Dict(0=>:continue, 1=>:detected_failure, 2=>:undetected_failure, 3=>:true_success)
-const s_continue = 0
-const s_detected_failure = 1
-const s_undetected_failure = 2
-const s_true_success = 3
+"""A list of default statuses returned by `applyop!`."""
+const statuses = [:continue, :detected_failure, :undetected_failure, :true_success]
 
 """A method giving the qubits acted upon by a given operation. Part of the Noise interface."""
 function affectedqubits end
 affectedqubits(g::NoisyGate) = affectedqubits(g.gate)
 affectedqubits(g::SparseGate) = g.indices
+affectedqubits(g::DenseGate) = :all
 affectedqubits(m::BellMeasurement) = m.indices
 affectedqubits(m::BellMeasurementAndReset) = affectedqubits(m.meas)
 affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
@@ -106,17 +108,19 @@ function applyop!(s::Stabilizer, g::NoisyGate)
             applyop!(s,g.gate)[1],
             g.noise,
             affectedqubits(g.gate)),
-    return s, s_continue
+    return s, :continue
 end
 
-applyop!(s::Stabilizer, g::SparseGate) = (apply!(s,g.cliff,affectedqubits(g)), s_continue)
+applyop!(s::Stabilizer, g::SparseGate) = (apply!(s,g.cliff,affectedqubits(g)), :continue)
+
+applyop!(s::Stabilizer, g::DenseGate) = (apply!(s,g.cliff), :continue)
 
 function applyop!(s::Stabilizer, m::NoisyBellMeasurement)
     state, status = applyop!(s,m.meas)
     nqubits = length(affectedqubits(m))
     errprob = (1-(1-2m.flipprob)^nqubits)/2
     if rand()<errprob
-        return state, status==s_continue ? s_detected_failure : s_continue
+        return state, status==:continue ? :detected_failure : :continue
     else
         return state, status
     end
@@ -149,9 +153,9 @@ function applyop!(s::Stabilizer, m::BellMeasurement)
         res ⊻= r
     end
     if res==0x0
-        return s, s_continue
+        return s, :continue
     else
-        return s, s_detected_failure
+        return s, :detected_failure
     end
 end
 
@@ -167,7 +171,7 @@ function applyop!(s::Stabilizer, mr::BellMeasurementAndReset)
                 s[end-j+1,i] = mr.resetto[j,ii]
             end
         end
-        return s,s_continue
+        return s,:continue
     end
 end
 
@@ -194,11 +198,11 @@ end
 
 function applyop!(s::Stabilizer, mr::NoiseOpAll)
     n = nqubits(s)
-    return applynoise!(s, mr.noise, 1:n), s_continue
+    return applynoise!(s, mr.noise, 1:n), :continue
 end
 
 function applyop!(s::Stabilizer, mr::NoiseOp)
-    return applynoise!(s, mr.noise, affectedqubits(mr)), s_continue
+    return applynoise!(s, mr.noise, affectedqubits(mr)), :continue
 end
 
 # TODO this one needs more testing
@@ -206,12 +210,12 @@ function applyop!(s::Stabilizer, v::VerifyOp) # XXX It assumes the other qubits 
     # TODO QuantumClifford should implement some submatrix comparison
     s, _ = canonicalize_rref!(s,v.indices) # Document why rref is used
     for i in eachindex(v.good_state)
-        (s.phases[end-i+1]==v.good_state.phases[end-i+1]) || return s, s_undetected_failure
+        (s.phases[end-i+1]==v.good_state.phases[end-i+1]) || return s, :undetected_failure
         for (j,q) in zip(eachindex(v.good_state),v.indices)
-            (s[end-i+1,q]==v.good_state[end-i+1,j]) || return s, s_undetected_failure
+            (s[end-i+1,q]==v.good_state[end-i+1,j]) || return s, :undetected_failure
         end
     end
-    return s, s_true_success
+    return s, :true_success
 end
 
 """Run a single Monte Carlo sample, starting with (and modifying) `initialstate` by applying the given `circuit`. Uses `applyop!` under the hood."""
@@ -219,17 +223,17 @@ function mctrajectory!(initialstate,circuit)
     state = initialstate
     for op in circuit
         state, cont = applyop!(state, op)
-        if cont!=s_continue
+        if cont!=:continue
             return state, cont
         end
     end
-    return state, s_continue
+    return state, :continue
 end
 
 """Run multiple Monte Carlo trajectories and report the aggregate final statuses of each."""
 function mctrajectories(initialstate,circuit;trajectories=500)
     counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator
-    return merge(Dict([(v=>0) for v in values(statuses)]),
+    return merge(Dict([(k=>0) for k in statuses]),
                  Dict([statuses[k]=>v for (k,v) in counts]))
 end
 
@@ -237,6 +241,7 @@ end
 function applyop_branches end
 
 applyop_branches(s::Stabilizer, g::SparseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)] # there are no fall backs on purpose, otherwise it is easy to mistakenly make a non-deterministic version of this method
+applyop_branches(s::Stabilizer, g::DenseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)]
 applyop_branches(s::Stabilizer, v::VerifyOp; max_order=1) = [(applyop!(copy(s),v)...,1,0)] 
 
 """Compute all possible new states after the application of the given noise model. Reports the probability of each one of them. Deterministic, part of the Noise interface."""
@@ -271,16 +276,16 @@ end
 
 function applyop_branches(s::Stabilizer, nop::NoiseOpAll; max_order=1)
     n = nqubits(s)
-    return [(state, s_continue, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
+    return [(state, :continue, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
 end
 
 function applyop_branches(s::Stabilizer, nop::NoiseOp; max_order=1)
-    return [(state, s_continue, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, affectedqubits(nop), max_order=max_order)]
+    return [(state, :continue, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, affectedqubits(nop), max_order=max_order)]
 end
 
 function applyop_branches(s::Stabilizer, g::NoisyGate; max_order=1)
     news, _,_,_ = applyop_branches(s,g.gate,max_order=max_order)[1] # TODO this assumes only one always successful branch for the gate
-    return [(state, s_continue, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
+    return [(state, :continue, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
 end
 
 function applyop_branches(s::Stabilizer, m::NoisyBellMeasurement; max_order=1)
@@ -295,7 +300,7 @@ function applyop_branches(s::Stabilizer, m::NoisyBellMeasurement; max_order=1)
         sucprob = 1//2*(1+p)
         for (mstate, success, mprob, morder) in measurement_branches
             push!(new_branches, (mstate, success, mprob*sucprob, morder))
-            push!(new_branches, (mstate, success==s_continue ? s_detected_failure : s_continue, mprob*errprob, morder+1))
+            push!(new_branches, (mstate, success==:continue ? :detected_failure : :continue, mprob*errprob, morder+1))
         end
         return new_branches
     end
@@ -304,7 +309,7 @@ end
 # TODO a lot of repetition with applyop!
 function applyop_branches(s::Stabilizer, m::BellMeasurement; max_order=1)
     n = nqubits(s)
-    [(ns,iseven(r>>1) ? s_continue : s_detected_failure, p,0)
+    [(ns,iseven(r>>1) ? :continue : :detected_failure, p,0)
      for (ns,r,p) in _applyop_branches_measurement([(s,0x0,1.0)],m.pauli,affectedqubits(m),n)]
 end
 
@@ -375,7 +380,7 @@ function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_or
     p = 0
     for (i,(newstate, status, prob, order)) in enumerate(applyop_branches(state, next_op, max_order=max_order-current_order))
         p+=prob
-        if status==s_continue # TODO is the copy below necessary?
+        if status==:continue # TODO is the copy below necessary?
             out_probs = petrajectory(copy(newstate), rest_of_circuit,
                 branch_weight=branch_weight*prob, current_order=current_order+order, max_order=max_order)
             status_probs .+= out_probs
@@ -449,7 +454,7 @@ function applyop!(state::Register, op::Measurement)
         end
     end
     state.bits[op.storagebit] = r==0x02
-    state, s_continue
+    state, :continue
 end
 
 function applyop!(state::Register, op::ConditionalGate)
@@ -458,7 +463,7 @@ function applyop!(state::Register, op::ConditionalGate)
     else
         applyop!(state, op.falsegate)
     end
-    return state, s_continue
+    return state, :continue
 end
 
 function applyop!(state::Register, op::DecisionGate)
@@ -466,7 +471,7 @@ function applyop!(state::Register, op::DecisionGate)
     if !isnothing(decision)
         applyop!(state, op.gates[decision])
     end
-    state, s_continue
+    state, :continue
 end
 
 include("./quantikz_methods.jl")
