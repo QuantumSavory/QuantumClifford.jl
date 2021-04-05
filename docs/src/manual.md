@@ -531,12 +531,12 @@ julia> s=S"-XXX
 
 julia> d = Destabilizer(s)
 + Z__
-+ X__
 + _X_
++ __X
 ━━━━━
 - XXX
+- ZZ_
 - Z_Z
-+ _ZZ
 ```
 
 They have convenience methods to extract only the stabilizer and destabilizer
@@ -545,13 +545,13 @@ pieces:
 ```jldoctest destab
 julia> stabilizerview(d)
 - XXX
+- ZZ_
 - Z_Z
-+ _ZZ
 
 julia> destabilizerview(d)
 + Z__
-+ X__
 + _X_
++ __X
 ```
 
 Importantly commuting projections are much faster when tracking the destabilizer
@@ -561,12 +561,12 @@ the expensive ``\mathcal{O}(n^3)`` canonicalization operation).
 ```jldoctest destab
 julia> project!(d,P"ZZI")
 (+ Z__
-+ X__
 + _X_
++ __X
 ━━━━━
 - XXX
-- Z_Z
-+ _ZZ, 0, 0x02)
+- ZZ_
+- Z_Z, 0, 0x02)
 ```
 
 Non-commuting projections are just as fast as when using only stabilizers.
@@ -574,12 +574,12 @@ Non-commuting projections are just as fast as when using only stabilizers.
 ```jldoctest destab
 julia> project!(d,P"ZZZ")
 (- XXX
-+ _XX
 + X_X
++ XX_
 ━━━━━
 + ZZZ
-- Z_Z
-+ _ZZ, 1, nothing)
+- ZZ_
+- Z_Z, 1, nothing)
 ```
 
 Clifford operations can be applied the same way they are applied to stabilizers.
@@ -587,12 +587,12 @@ Clifford operations can be applied the same way they are applied to stabilizers.
 ```jldoctest destab
 julia> apply!(d,CNOT⊗Hadamard)
 - X_Z
-+ _XZ
 + XXZ
++ X__
 ━━━━━
 + _ZX
+- _Z_
 - Z_X
-+ ZZX
 ```
 
 # Mixed States

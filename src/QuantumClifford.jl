@@ -330,25 +330,6 @@ end
 # Destabilizer formalism
 ##############################
 
-function destabilizer_generators(stab::Stabilizer)::Tuple{Stabilizer,Stabilizer}
-    stab = canonicalize!(copy(stab))
-    dest = zero(stab)
-    s = 1
-    e = size(stab.xzs,2)>>1
-    op = (false, true)
-    for i in eachindex(stab)
-        j = unsafe_bitfindnext_(stab.xzs[i,s:e],1)
-        if isnothing(j)
-            s = e+1
-            e = 2*e
-            op = (true, false)
-            j = unsafe_bitfindnext_(stab.xzs[i,s:e],1)
-        end
-        dest[i,j] = op
-    end
-    dest, stab
-end
-
 """
 A tableau representation of a pure stabilizer state. The tableau tracks the
 destabilizers as well, for efficient projections. On initialization there are
@@ -362,7 +343,8 @@ struct Destabilizer{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <
         if noprocessing
             new{typeof(s.phases),typeof(s.xzs)}(s)
         else
-            tab = vcat(destabilizer_generators(s)...)
+            mixed_destab = MixedDestabilizer(s)
+            tab = vcat(destabilizerview(mixed_destab),stabilizerview(mixed_destab))
             new{typeof(s.phases),typeof(s.xzs)}(tab)
         end
     end
@@ -421,32 +403,33 @@ end
 
 function MixedDestabilizer(stab::Stabilizer; undoperm=true)
     r,n = size(stab)
-    r==n && return MixedDestabilizer(Destabilizer(stab).tab, r)
     stab, r, s, permx, permz = canonicalize_gott!(stab)
     n = nqubits(stab)
     tab = zero(Stabilizer, n*2, n)
-    tab[n+1:n+r+s] = stab
-    for i in 1:r
+    tab[n+1:n+r+s] = stab # The Stabilizer part of the tableau
+    for i in 1:r # The Destabilizer part
         tab[i,i] = (false,true)
     end
     for i in r+1:r+s
         tab[i,i] = (true,false)
     end
-    H = stab_to_gf2(stab)
-    k = n - r - s
-    E = H[r+1:end,end÷2+r+s+1:end]
-    C1 = H[1:r,end÷2+r+1:end÷2+r+s]
-    C2 = H[1:r,end÷2+r+s+1:end]
-    i = LinearAlgebra.I
-    U2 = E'
-    V1 = (E' * C1' + C2').%2 .!= 0x0
-    X = hcat(zeros(Bool,k,r),U2,i,V1,zeros(Bool,k,s+k))
-    sX = Stabilizer(X)
-    tab[r+s+1:n] = sX
-    A2 = H[1:r,r+s+1:end÷2]
-    Z = hcat(zeros(Bool,k,n),A2',zeros(Bool,k,s),i)
-    sZ = Stabilizer(Z)
-    tab[n+r+s+1:end] = sZ
+    if r+s!=n
+        H = stab_to_gf2(stab)
+        k = n - r - s
+        E = H[r+1:end,end÷2+r+s+1:end]
+        C1 = H[1:r,end÷2+r+1:end÷2+r+s]
+        C2 = H[1:r,end÷2+r+s+1:end]
+        i = LinearAlgebra.I
+        U2 = E'
+        V1 = (E' * C1' + C2').%2 .!= 0x0
+        X = hcat(zeros(Bool,k,r),U2,i,V1,zeros(Bool,k,s+k))
+        sX = Stabilizer(X)
+        tab[r+s+1:n] = sX # One of the logical sets in the tableau
+        A2 = H[1:r,r+s+1:end÷2]
+        Z = hcat(zeros(Bool,k,n),A2',zeros(Bool,k,s),i)
+        sZ = Stabilizer(Z)
+        tab[n+r+s+1:end] = sZ # The other logical set in the tableau
+    end
     if undoperm
         tab = tab[:,perm_inverse(permx[permz])]
     end
@@ -2270,6 +2253,7 @@ function destab_looks_good(destabilizer)
     s = stabilizerview(destabilizer)
     d = destabilizerview(destabilizer)
     good = stab_looks_good(s)
+    good &= stab_looks_good(d)
     for i in eachindex(s)
         good &= comm(s[i],d[i])==0x1
         for j in eachindex(s)
@@ -2289,6 +2273,10 @@ function mixed_destab_looks_good(destabilizer)
     x = logicalxview(destabilizer)
     z = logicalzview(destabilizer)
     good = check_allrowscommute(s)
+    good &= mixed_stab_looks_good(s)
+    good &= mixed_stab_looks_good(d)
+    good &= mixed_stab_looks_good(x)
+    good &= mixed_stab_looks_good(z)
     for i in eachindex(s)
         good &= comm(s[i],d[i])==0x1
         for j in eachindex(s)
