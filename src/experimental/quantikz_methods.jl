@@ -14,13 +14,18 @@ function Quantikz.QuantikzOp(op::SparseGate)
         return Quantikz.MultiControlU("",[],[],op.indices)
     end
 end
-Quantikz.QuantikzOp(op::NoisyGate) = Quantikz.QuantikzOp(op.gate)
+Quantikz.QuantikzOp(op::AbstractOperation) = Quantikz.MultiControlU(affectedqubits(op))
 Quantikz.QuantikzOp(op::BellMeasurement) = Quantikz.ParityMeasurement([string(o) for o in op.pauli], op.indices)
 Quantikz.QuantikzOp(op::NoisyBellMeasurement) = Quantikz.QuantikzOp(op.meas)
-Quantikz.QuantikzOp(op::VerifyOp) = Quantikz.MultiControlU("\\mathrm{V}",[],[],affectedqubits(op))
+Quantikz.QuantikzOp(op::ConditionalGate) = Quantikz.ClassicalDecision(affectedqubits(op),op.controlbit)
+Quantikz.QuantikzOp(op::DecisionGate) = Quantikz.ClassicalDecision(affectedqubits(op),1) # TODO this should depend on all bits, not just the first one
+Quantikz.QuantikzOp(op::DenseGate) = Quantikz.MultiControlU(affectedqubits(op))
+Quantikz.QuantikzOp(op::DenseMeasurement) = Quantikz.Measurement(affectedqubits(op),op.storagebit)
+Quantikz.QuantikzOp(op::NoisyGate) = Quantikz.QuantikzOp(op.gate)
+Quantikz.QuantikzOp(op::VerifyOp) = Quantikz.MultiControlU("\\mathrm{V}",affectedqubits(op))
 Quantikz.QuantikzOp(op::NoiseOp) = Quantikz.Noise(op.indices)
 Quantikz.QuantikzOp(op::NoiseOpAll) = Quantikz.NoiseAll()
-Quantikz.QuantikzOp(op::AbstractOperation) = Quantikz.MultiControlU("",[],[],affectedqubits(op))
+
 
 Base.show(io::IO, mime::MIME"image/png", circuit::AbstractVector{<:AbstractOperation}; scale=1, kw...) = 
     show(io, mime, [Quantikz.QuantikzOp(c) for c in circuit]; scale=scale, kw...)    

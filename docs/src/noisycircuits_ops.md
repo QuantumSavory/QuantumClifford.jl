@@ -59,7 +59,7 @@ This operator is frequently used in the simulation of entanglement purification.
 BellMeasurement([X, Y, Z], [1,3,4])
 ```
 
-TODO: [`NoisyBellMeasurement`](@ref), [`BellMeasurementAndReset`](@ref), noisy reset
+TODO: [`NoisyBellMeasurement`](@ref)
 
 ## Stabilizer Measurements
 
@@ -67,4 +67,12 @@ A measurement over one or more qubits can also be performed, e.g., a direct stab
 
 TODO: example and noisy measurement, SparseMeasurement
 
+## Reset Operations
+
+TODO
+
+## Gates Conditioned on Classical Bits
+
 ΤODO: `ConditionalGate`, `DecisionGate`
+
+TODO: Split `ConditionalGate` into quantum conditional and classical conditional

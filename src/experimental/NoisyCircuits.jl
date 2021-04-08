@@ -14,7 +14,9 @@ using Combinatorics: combinations
 export AbstractOperation,
        UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, VerifyOp,
        SparseGate, DenseGate, NoisyGate,
-       BellMeasurement, NoisyBellMeasurement, BellMeasurementAndReset,
+       BellMeasurement, NoisyBellMeasurement,
+       DenseMeasurement,
+       DecisionGate, ConditionalGate,
        affectedqubits, applyop!, applynoise!,
        applyop_branches, applynoise_branches,
        mctrajectory!, mctrajectories,
@@ -74,7 +76,7 @@ struct NoisyBellMeasurement{T} <: AbstractOperation
 end
 
 """Performing a Bell measurement followed by resetting the measured qubits to the given state `resetto`."""
-struct BellMeasurementAndReset <: AbstractOperation
+struct BellMeasurementAndReset <: AbstractOperation # TODO delete this and just make a standalone reset 
     meas::AbstractOperation
     resetto::Stabilizer
 end
