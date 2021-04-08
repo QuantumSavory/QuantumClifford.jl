@@ -118,7 +118,7 @@ applyop!(s::Stabilizer, g::DenseGate) = (apply!(s,g.cliff), :continue)
 function applyop!(s::Stabilizer, m::NoisyBellMeasurement)
     state, status = applyop!(s,m.meas)
     nqubits = length(affectedqubits(m))
-    errprob = (1-(1-2m.flipprob)^nqubits)/2
+    errprob = (1-(1-2*m.flipprob)^nqubits)/2 # probability of odd number of flips
     if rand()<errprob
         return state, status==:continue ? :detected_failure : :continue
     else
@@ -256,7 +256,6 @@ function applynoise_branches(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indi
     error1 = 3*infid
     no_error1 = 1-error1
     no_error = no_error1^l
-    single_error = no_error1^(l-1)*infid
     results = [(copy(s),no_error,0)] # state, prob, order
     for order in 1:min(max_order,l)
         error_prob = no_error1^(l-order)*infid^order
@@ -294,7 +293,6 @@ function applyop_branches(s::Stabilizer, m::NoisyBellMeasurement; max_order=1)
     else
         new_branches = []
         nqubits = length(affectedqubits(m))
-        p = (1-2m.flipprob)^nqubits
         errprob = 1//2*(1-p)
         sucprob = 1//2*(1+p)
         for (mstate, success, mprob, morder) in measurement_branches
@@ -376,9 +374,7 @@ function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_or
 
     status_probs = fill(zero(branch_weight), length(statuses)-1)
 
-    p = 0
     for (i,(newstate, status, prob, order)) in enumerate(applyop_branches(state, next_op, max_order=max_order-current_order))
-        p+=prob
         if status==:continue # TODO is the copy below necessary?
             out_probs = petrajectory(copy(newstate), rest_of_circuit,
                 branch_weight=branch_weight*prob, current_order=current_order+order, max_order=max_order)
