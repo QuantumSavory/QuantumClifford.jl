@@ -88,6 +88,23 @@ struct VerifyOp <: AbstractOperation
     VerifyOp(s,indices) = new(canonicalize_rref!(copy(s))[1],indices)
 end
 
+"""A Stabilizer measurement on the """
+struct DenseMeasurement <: AbstractOperation
+    pauli::PauliOperator
+    storagebit::Int
+end
+
+struct ConditionalGate <: AbstractOperation
+    truegate::AbstractOperation
+    falsegate::AbstractOperation
+    controlbit::Int
+end
+
+struct DecisionGate <: AbstractOperation
+    gates::AbstractVector{AbstractOperation}
+    decisionfunction
+end
+
 """A list of default statuses returned by `applyop!`."""
 const statuses = [:continue, :detected_failure, :undetected_failure, :true_success]
 
@@ -101,6 +118,9 @@ affectedqubits(m::BellMeasurementAndReset) = affectedqubits(m.meas)
 affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
 affectedqubits(n::NoiseOp) = n.indices
 affectedqubits(v::VerifyOp) = v.indices
+affectedqubits(g::DenseMeasurement) = 1:length(g.pauli)
+affectedqubits(d::ConditionalGate) = union(affectedqubits(d.truegate), affectedqubits(d.falsegate))
+affectedqubits(d::DecisionGate) = [(union(affectedqubits.(d.gates))...)...]
 
 """A method modifying a given state by applying the given operation. Non-deterministic, part of the Monte Carlo interface."""
 function applyop! end
@@ -426,23 +446,6 @@ end
 function applynoise_branches(state::Register, noise, indices; max_order=1)
     [(Register(newstate,copy(state.bits)), prob, order)
      for (newstate, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
-end
-
-"""A Stabilizer measurement on the """
-struct DenseMeasurement <: AbstractOperation
-    pauli::PauliOperator
-    storagebit::Int
-end
-
-struct ConditionalGate <: AbstractOperation
-    truegate::AbstractOperation
-    falsegate::AbstractOperation
-    controlbit::Int
-end
-
-struct DecisionGate <: AbstractOperation
-    gates::AbstractVector{AbstractOperation}
-    decisionfunction
 end
 
 function applyop!(state::Register, op::DenseMeasurement)
