@@ -88,6 +88,23 @@ struct VerifyOp <: AbstractOperation
     VerifyOp(s,indices) = new(canonicalize_rref!(copy(s))[1],indices)
 end
 
+"""A Stabilizer measurement on the """
+struct DenseMeasurement <: AbstractOperation
+    pauli::PauliOperator
+    storagebit::Int
+end
+
+struct ConditionalGate <: AbstractOperation
+    truegate::AbstractOperation
+    falsegate::AbstractOperation
+    controlbit::Int
+end
+
+struct DecisionGate <: AbstractOperation
+    gates::AbstractVector{AbstractOperation}
+    decisionfunction
+end
+
 """A list of default statuses returned by `applyop!`."""
 const statuses = [:continue, :detected_failure, :undetected_failure, :true_success]
 
@@ -101,6 +118,9 @@ affectedqubits(m::BellMeasurementAndReset) = affectedqubits(m.meas)
 affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
 affectedqubits(n::NoiseOp) = n.indices
 affectedqubits(v::VerifyOp) = v.indices
+affectedqubits(g::DenseMeasurement) = 1:length(g.pauli)
+affectedqubits(d::ConditionalGate) = union(affectedqubits(d.truegate), affectedqubits(d.falsegate))
+affectedqubits(d::DecisionGate) = [(union(affectedqubits.(d.gates))...)...]
 
 """A method modifying a given state by applying the given operation. Non-deterministic, part of the Monte Carlo interface."""
 function applyop! end
@@ -371,6 +391,9 @@ end
 
 """Run a perturbative expansion to a given order. Uses applyop_branches under the hood."""
 function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_order=1)
+    if size(circuit)[1] == 0
+        return fill(zero(branch_weight), length(statuses)-1)
+    end
     next_op = circuit[1]
     rest_of_circuit = circuit[2:end]
 
@@ -425,23 +448,6 @@ function applynoise_branches(state::Register, noise, indices; max_order=1)
      for (newstate, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
 end
 
-"""A Stabilizer measurement on the """
-struct DenseMeasurement <: AbstractOperation
-    pauli::PauliOperator
-    storagebit::Int
-end
-
-struct ConditionalGate <: AbstractOperation
-    truegate::AbstractOperation
-    falsegate::AbstractOperation
-    controlbit::Int
-end
-
-struct DecisionGate <: AbstractOperation
-    gates::AbstractVector{AbstractOperation}
-    decisionfunction
-end
-
 function applyop!(state::Register, op::DenseMeasurement)
     stab = state.stab
     stab,anticom,r = project!(stab, op.pauli)
@@ -471,6 +477,30 @@ function applyop!(state::Register, op::DecisionGate)
         applyop!(state, op.gates[decision])
     end
     state, :continue
+end
+
+
+applyop_branches(s::Register, op::ConditionalGate; max_order=1) = [(applyop!(copy(s),op)...,1,0)]
+applyop_branches(s::Register, op::DecisionGate; max_order=1) = [(applyop!(copy(s),op)...,1,0)]
+
+function applyop_branches(s::Register, op::DenseMeasurement; max_order=1)
+    stab = s.stab
+    stab, anticom, r = project!(stab, op.pauli)
+    new_branches = []
+    if isnothing(r)
+        s1 = s
+        s1.stab.phases[anticom] = 0x00
+        s1.bits[op.storagebit] = false
+        s2 = copy(s)
+        s2.stab.phases[anticom] = 0x02
+        s2.bits[op.storagebit] = true
+        push!(new_branches, (s1,:continue,1/2,0))
+        push!(new_branches, (s2,:continue,1/2,0))
+    else
+        s.bits[op.storagebit] = r==0x02
+        push!(new_branches, (s,:continue,1,0))
+    end
+    new_branches
 end
 
 include("./quantikz_methods.jl")
