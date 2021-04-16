@@ -8,6 +8,30 @@ using LinearAlgebra
 #= from Bravyi and Maslov Algorithm 1
 sample (h, S) from the distribution P_n(h, S) =#
 function quantum_mallows(n)
+    if n<500
+        quantum_mallows_float(n)
+    else
+        quantum_mallows_bigint(n)
+    end
+end
+
+function quantum_mallows_float(n)
+    arr = collect(1:n)
+    hadamard = falses(n)
+    perm = zeros(Int64, n)
+    for idx in 1:n
+        m = length(arr)
+        # sample h_i from given prob distribution
+        r = rand()
+        weight = Int64(2 * m - ceil(log2(r*(4.0^m-1) + 1)))
+        hadamard[idx] = (weight < m)
+        k = weight < m ? weight : 2*m - weight - 1
+        perm[idx] = popat!(arr, k + 1) # beware of indexing in julia
+    end
+    return hadamard, perm
+end
+
+function quantum_mallows_bigint(n)
     arr = collect(1:n)
     hadamard = falses(n)
     perm = zeros(Int64, n)
@@ -22,6 +46,7 @@ function quantum_mallows(n)
     end
     return hadamard, perm
 end
+
 
 #= replacement of QuantumClifford's random_clifford function
 from Algorithm 2 of Bravyi and Maslov, with code idioms following
