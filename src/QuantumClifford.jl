@@ -2324,5 +2324,6 @@ RecipesBase.@recipe function f(s::Stabilizer; xzcomponents=:split)
 end
 
 include("./experimental/Experimental.jl")
+include("./new_rand_ops.jl")
 
 end #module

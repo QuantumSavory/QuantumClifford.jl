@@ -2,12 +2,6 @@
 A module for sampling random n-qubit Clifford gates.
 Implements the algorithm in https://arxiv.org/abs/2003.09412
 """
-module CliffordOps
-
-using QuantumClifford
-import LinearAlgebra
-
-export rand_clifford, rand_clifford_qiskit
 
 #= from Bravyi and Maslov Algorithm 1
 sample (h, S) from the distribution P_n(h, S) =#
@@ -177,6 +171,4 @@ function fill_tril(matrix, n; symmetric::Bool=false)
         end
     end
     matrix
-end
-            
 end
