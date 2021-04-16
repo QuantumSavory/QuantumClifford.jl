@@ -1,5 +1,5 @@
-#!/usr/licensed/julia/1.5.0/bin/julia
 
+#!/usr/licensed/julia/1.5.0/bin/julia
 
 """
 A module for sampling random n-qubit Clifford gates.
@@ -118,10 +118,8 @@ function rand_clifford(n)
     return CliffordOperator(Stabilizer(phases, xzs))
 end
 
-
 #= simplified version of Algorithm 2 of Bravyi and Maslov
 (closely follows the Python code in Qiskit) =#
-
 function rand_clifford_qiskit(n)
 
     @assert n < 200 
