@@ -13,7 +13,7 @@ function quantum_mallows(n)
         m = length(arr)
         # sample h_i from given prob distribution
         r = rand()
-        weight = Int64(2 * m - ceil(log2(r*(4^m-1) + 1)))
+        weight = Int64(2 * m - ceil(log2(r*(BigInt(4)^m-1) + 1)))
         hadamard[idx] = (weight < m)
         k = weight < m ? weight : 2*m - weight - 1
         perm[idx] = popat!(arr, k + 1) # beware of indexing in julia
@@ -86,14 +86,14 @@ function rand_clifford(n)
     # now construct the tableau representation for F(I, Gamma, Delta)
     prod = gamma * delta
     prod_p = gamma_p * delta_p
-    inv_delta = Array{Int8}(inv(transpose(delta)))
-    inv_delta_p = Array{Int8}(inv(transpose(delta_p)))
+    inv_delta = Array(inv(transpose(delta)))
+    inv_delta_p = Array(inv(transpose(delta_p)))
     
     # block matrix form
     F1 = Array{Int8}(mod.([delta zeros(Int8, n, n); prod inv_delta], 2))
     F2 = Array{Int8}(mod.([delta_p zeros(Int8, n, n); prod_p inv_delta_p],2))
 
-   # apply qubit permutation S to F2
+    # apply qubit permutation S to F2
     perm_inds = vcat(perm, perm .+ n)
     U = F2[perm_inds,:]
     
@@ -134,8 +134,8 @@ function rand_clifford_qiskit(n)
     # now construct the tableau representation for F(I, Gamma, Delta)
     prod = gamma * delta
     prod_p = gamma_p * delta_p
-    inv_delta = Array{Int8}(inv(transpose(delta)))
-    inv_delta_p = Array{Int8}(inv(transpose(delta_p)))
+    inv_delta = inv(transpose(delta))
+    inv_delta_p = inv(transpose(delta_p))
     
     # block matrix form
     F1 = Array{Int8}(mod.([delta zeros(Int8, n, n); prod inv_delta], 2))
