@@ -3,6 +3,8 @@ A module for sampling random n-qubit Clifford gates.
 Implements the algorithm in https://arxiv.org/abs/2003.09412
 """
 
+using LinearAlgebra
+
 #= from Bravyi and Maslov Algorithm 1
 sample (h, S) from the distribution P_n(h, S) =#
 function quantum_mallows(n)
@@ -34,10 +36,25 @@ function rand_clifford(n)
     # delta, delta', gamma, gamma' appear in the canonical form
     # of a Clifford operator (Eq. 3/Theorem 1)
     # delta is unit lower triangular, gamma is symmetric
-    delta = Array{Int8}(LinearAlgebra.I, n, n)
-    delta_p = Array{Int8}(LinearAlgebra.I, n, n)
-    gamma = zeros(Int8, n, n)
-    gamma_p = Array{Int8}(LinearAlgebra.Diagonal(rand(0:1, n)))
+    #delta = Array{Int8}(LinearAlgebra.I, n, n)
+    #delta_p = Array{Int8}(LinearAlgebra.I, n, n)
+    #gamma = zeros(Int8, n, n)
+    #gamma_p = Array{Int8}(LinearAlgebra.Diagonal(rand(0:1, n)))
+    F1 = zeros(Int8, 2n, 2n)
+    F2 = zeros(Int8, 2n, 2n)
+    delta   = @view F1[1:n, 1:n]
+    delta_p = @view F2[1:n, 1:n]
+    prod   = @view F1[n+1:2n, 1:n]
+    prod_p = @view F2[n+1:2n, 1:n]
+    gamma   = @view F1[1:n, n+1:2n]
+    gamma_p = @view F2[1:n, n+1:2n]
+    inv_delta   = @view F1[n+1:2n, n+1:2n]
+    inv_delta_p = @view F2[n+1:2n, n+1:2n]
+    for i in 1:n
+        delta[i,i] = 1
+        delta_p[i,i] = 1
+        gamma_p[i,i] = rand(0:1)
+    end
     
     # Gamma_ii is zero if h[i] = 0
     for idx in had_idxs
@@ -84,14 +101,18 @@ function rand_clifford(n)
     end
 
     # now construct the tableau representation for F(I, Gamma, Delta)
-    prod = gamma * delta
-    prod_p = gamma_p * delta_p
-    inv_delta = Array(inv(transpose(delta)))
-    inv_delta_p = Array(inv(transpose(delta_p)))
-    
+    mul!(prod, gamma, delta)
+    mul!(prod_p, gamma_p, delta_p)
+    inv_delta .= mod.(inv(transpose(delta)), 2)
+    inv_delta_p .= mod.(inv(transpose(delta_p)), 2)
+ 
     # block matrix form
-    F1 = Array{Int8}(mod.([delta zeros(Int8, n, n); prod inv_delta], 2))
-    F2 = Array{Int8}(mod.([delta_p zeros(Int8, n, n); prod_p inv_delta_p],2))
+    #F1 = mod.([delta zeros(Int8, n, n); prod inv_delta], 2)
+    #F2 = mod.([delta_p zeros(Int8, n, n); prod_p inv_delta_p],2)
+    F1 .= mod.(F1, 2)
+    F2 .= mod.(F2, 2)
+    gamma .= 0
+    gamma_p .= 0
 
     # apply qubit permutation S to F2
     perm_inds = vcat(perm, perm .+ n)
@@ -103,12 +124,13 @@ function rand_clifford(n)
     U[lhs_inds, :] = U[rhs_inds, :]
  
     # apply F1
-    xzs = Array{Bool}(mod.(F1 * U,2))
+    xzs = mod.(F1 * U,2) .== 1
  
     # random Pauli matrix just amounts to phases on the stabilizer tableau
-    phases = Array{UInt8}(rand([0x0,0x2], 2 * n))
+    phases = rand([0x0,0x2], 2 * n)
     return CliffordOperator(Stabilizer(phases, xzs))
 end
+
 
 #= simplified version of Algorithm 2 of Bravyi and Maslov
 (closely follows the Python code in Qiskit) =#
