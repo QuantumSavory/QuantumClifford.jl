@@ -6,10 +6,10 @@ Implements the algorithm in https://arxiv.org/abs/2003.09412
 #= from Bravyi and Maslov Algorithm 1
 sample (h, S) from the distribution P_n(h, S) =#
 function quantum_mallows(n)
-    arr = [1:n;]
+    arr = collect(1:n)
     hadamard = falses(n)
     perm = zeros(Int64, n)
-    for idx in [1:n;]
+    for idx in 1:n
         m = length(arr)
         # sample h_i from given prob distribution
         r = rand()
@@ -29,7 +29,7 @@ function rand_clifford(n)
     @assert n < 200 # otherwise matrix operations could fail
 
     hadamard, perm = quantum_mallows(n)
-    had_idxs = findall(i -> hadamard[i], [1:n;])
+    had_idxs = findall(i -> hadamard[i], 1:n)
     
     # delta, delta', gamma, gamma' appear in the canonical form
     # of a Clifford operator (Eq. 3/Theorem 1)
@@ -49,7 +49,7 @@ function rand_clifford(n)
     fill_tril(delta_p, n)
 
     # off diagonal: Gamma, Delta must obey conditions C1-C5
-    for row in [1:n;], col in [1:row-1;]
+    for row in 1:n, col in 1:row-1
         if hadamard[row] && hadamard[col]
             b = rand(0:1)
             gamma[row, col] = b
@@ -146,7 +146,7 @@ function rand_clifford_qiskit(n)
     U = F2[perm_inds,:]
     
     # apply layer of hadamards
-    had_idxs = findall(i -> hadamard[i], [1:n;])
+    had_idxs = findall(i -> hadamard[i], 1:n)
     lhs_inds = vcat(had_idxs, had_idxs .+ n)
     rhs_inds = vcat(had_idxs .+ n, had_idxs)
     U[lhs_inds, :] = U[rhs_inds, :]
@@ -163,7 +163,7 @@ end
 # from Qiskit
 function fill_tril(matrix, n; symmetric::Bool=false)
     # Add (symmetric) random ints to off diagonals
-    for row in [1:n;], col in [1:row-1;]
+    for row in 1:n, col in 1:row-1
         b = rand(0:1)
         matrix[row, col] = b
         if symmetric
