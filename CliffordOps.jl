@@ -1,3 +1,6 @@
+#!/usr/licensed/julia/1.5.0/bin/julia
+
+
 """
 A module for sampling random n-qubit Clifford gates.
 Implements the algorithm in https://arxiv.org/abs/2003.09412
@@ -33,7 +36,6 @@ the Python implementation in Qiskit =#
 function rand_clifford(n)
 
     @assert n < 200 # otherwise matrix operations could fail
-
     hadamard, perm = quantum_mallows(n)
     had_idxs = findall(i -> hadamard[i], [1:n;])
     
@@ -116,8 +118,10 @@ function rand_clifford(n)
     return CliffordOperator(Stabilizer(phases, xzs))
 end
 
+
 #= simplified version of Algorithm 2 of Bravyi and Maslov
 (closely follows the Python code in Qiskit) =#
+
 function rand_clifford_qiskit(n)
 
     @assert n < 200 
