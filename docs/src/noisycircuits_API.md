@@ -4,4 +4,5 @@ This is experimental functionality with an unstable API.
 
 ```@autodocs
 Modules = [QuantumClifford.Experimental.NoisyCircuits]
+Private = false
 ```

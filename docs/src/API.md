@@ -2,4 +2,5 @@
 
 ```@autodocs
 Modules = [QuantumClifford]
+Private = false
 ```
