@@ -19,6 +19,8 @@ These publications describe the uniform sampling of random stabilizer states:
 
 - [koenig2014efficiently](@cite)
 - [bravyi2020hadamard](@cite)
+- [berg2020simple](@cite)
+- [li2019measurement](@cite)
 
 # References
 

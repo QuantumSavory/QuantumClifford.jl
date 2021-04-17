@@ -15,8 +15,6 @@ module QuantumClifford
 # TODO document phases=false
 
 import LinearAlgebra
-import Random
-using Random: AbstractRNG, GLOBAL_RNG
 import RecipesBase
 using DocStringExtensions
 
@@ -37,7 +35,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     single_z, single_x, single_y,
     apply_single_z!, apply_single_x!, apply_single_y!,
     random_invertible_gf2,
-    random_pauli, random_stabilizer, random_clifford, random_singlequbitop,
+    random_pauli, random_stabilizer, random_destabilizer, random_clifford, random_singlequbitop,
     BadDataStructure
 
 # Predefined constants representing the permitted phases encoded
@@ -1513,9 +1511,8 @@ macro C_str(a)
     CliffordOperator(tab)
 end
 
-function CliffordOperator(paulis::AbstractVector{PauliOperator})
-    CliffordOperator(Stabilizer(paulis))
-end
+CliffordOperator(paulis::AbstractVector{PauliOperator}) = CliffordOperator(Stabilizer(paulis))
+CliffordOperator(destab::Destabilizer) = CliffordOperator(destab.tab)
 
 Base.:(==)(l::CliffordOperator, r::CliffordOperator) = l.tab == r.tab
 
@@ -2123,90 +2120,6 @@ function Base.one(::Type{CliffordColumnForm}, n)
 end
 
 ##############################
-# Random objects
-##############################
-
-random_pauli(rnd::AbstractRNG, n::Integer; nophase=false) = PauliOperator(nophase ? 0x0 : rand(rnd,0x0:0x3), rand(rnd,Bool,n), rand(rnd,Bool,n))
-random_pauli(n::Integer; nophase=false) = random_pauli(GLOBAL_RNG, n, nophase=nophase)
-function random_pauli(rng::AbstractRNG,n::Integer,p; nophase=false,nonidbranch=false)
-    x = falses(n)
-    z = falses(n)
-    if nonidbranch
-        definite = rand(1:n)
-        p=(p/(1-(1-2p)^n) - 1/n/3)*n/(n-1)
-    end
-    for i in 1:n
-        r = rand(rng)
-        if nonidbranch && definite==i
-            r *= 3p
-        end
-        if (r<=2p) x[i]=true end
-        if (p<r<=3p) z[i]=true end
-    end
-    PauliOperator(nophase ? 0x0 : rand(rng,0x0:0x3), x, z)
-end
-random_pauli(n::Integer, p; nophase=false, nonidbranch=false) = random_pauli(GLOBAL_RNG,n,p; nophase=nophase,nonidbranch=nonidbranch)
-
-
-function random_invertible_gf2(rng::AbstractRNG, n::Integer)
-    while true
-        mat = rand(rng,Bool,n,n)
-        gf2_isinvertible(mat) && return mat
-    end
-end
-random_invertible_gf2(n::Integer) = random_invertible_gf2(GLOBAL_RNG, n)
-
-# function random_cnot_clifford(n) = ... #TODO
-
-function random_stabilizer(rng::AbstractRNG, n::Integer) # TODO this is vaguelly based on an unsupported slide deck off the internet. Probably incorrectly implemented too.
-    cx = falses(n,n)
-    cz = falses(n,n)
-    for i in 1:n
-        cx[i,i], cz[i,i] = rand(rng,[(true,true),(true,false),(false,true)])
-    end
-    C = random_invertible_gf2(rng, n)
-    CinvT = gf2_invert(C)'
-    cx = Bool.((cx * C) .% 2)
-    cz = Bool.((cz * CinvT) .% 2)
-    Stabilizer(rand(rng,[0x0,0x2],n), cx, cz)
-end
-random_stabilizer(n::Integer) =  random_stabilizer(GLOBAL_RNG, n)
-
-random_clifford(rng::AbstractRNG, n::Integer) = CliffordOperator(Destabilizer(random_stabilizer(rng, n)).tab)
-random_clifford(n::Integer) = random_clifford(GLOBAL_RNG, n::Integer)
-
-random_stabilizer(rng::AbstractRNG,r::Integer,n::Integer) = random_stabilizer(rng,n)[Random.randperm(rng,n)[1:r]]
-random_stabilizer(r::Integer,n::Integer) = random_stabilizer(GLOBAL_RNG,n)[Random.randperm(GLOBAL_RNG,n)[1:r]]
-
-function random_singlequbitop(rng::AbstractRNG,n::Integer)
-    xtox = [falses(n) for i in 1:n]
-    ztox = [falses(n) for i in 1:n]
-    xtoz = [falses(n) for i in 1:n]
-    ztoz = [falses(n) for i in 1:n]
-    for i in 1:n
-        gate = rand(rng,1:6)
-        if gate<5
-            xtox[i][i] = true
-            xtoz[i][i] = true
-            ztox[i][i] = true
-            ztoz[i][i] = true
-            [xtox,ztox,xtoz,ztoz][gate][i][i] = false
-        elseif gate==5
-            xtox[i][i] = true
-            ztoz[i][i] = true
-        else
-            xtoz[i][i] = true
-            ztox[i][i] = true
-        end
-    end
-    c = CliffordColumnForm(zeros(UInt8,n*2), n,
-                         vcat((vcat(x2x.chunks,z2x.chunks)' for (x2x,z2x) in zip(xtox,ztox))...),
-                         vcat((vcat(x2z.chunks,z2z.chunks)' for (x2z,z2z) in zip(xtoz,ztoz))...)
-        )
-end
-random_singlequbitop(n::Integer) = random_singlequbitop(GLOBAL_RNG,n)
-
-##############################
 # Consistency checks
 ##############################
 
@@ -2323,7 +2236,7 @@ RecipesBase.@recipe function f(s::Stabilizer; xzcomponents=:split)
     end
 end
 
+include("./randoms.jl")
 include("./experimental/Experimental.jl")
-include("./new_rand_ops.jl")
 
 end #module

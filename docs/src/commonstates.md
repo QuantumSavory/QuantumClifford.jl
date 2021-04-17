@@ -84,13 +84,12 @@ julia> one(S"XX
 + _Z
 ```
 
-A random stabilizer can be created as well (consult the source code for exact
-ensemble, as there are caveats to the choice of distribution). TODO: In the future this should use [koenig2014efficiently](@cite) and [bravyi2020hadamard](@cite).
+A random stabilizer (or destabilizers or Clifford operators) can be created as well. We use the algorithm described in [bravyi2020hadamard](@cite).
 
 ```jldoctest rand
 julia> random_stabilizer(rng, 2,5)
-+ XXX__
-+ Y_ZX_
+- YZY_Z
+- ZZ_XX
 ```
 ## Mixed States
 
