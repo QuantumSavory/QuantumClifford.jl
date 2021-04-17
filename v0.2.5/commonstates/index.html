@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Useful States and Operators · QuantumClifford.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">QuantumClifford.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">QuantumClifford.jl</a></li><li><a class="tocitem" href="../manual/">Manual</a></li><li><a class="tocitem" href="../canonicalization/">Canonicalization</a></li><li><a class="tocitem" href="../mixed/">Mixed States</a></li><li><a class="tocitem" href="../datastructures/">Datastructure Choice</a></li><li class="is-active"><a class="tocitem" href>Useful States and Operators</a><ul class="internal"><li class="toplevel"><a class="tocitem" href="#Pauli-Operators"><span>Pauli Operators</span></a></li><li class="toplevel"><a class="tocitem" href="#Stabilizer-States"><span>Stabilizer States</span></a></li><li><a class="tocitem" href="#Mixed-States"><span>Mixed States</span></a></li></ul></li><li><a class="tocitem" href="../plotting/">Plotting</a></li><li><a class="tocitem" href="../API/">API</a></li><li><a class="tocitem" href="../tutandpub/">Tutorials and Publications</a></li><li><span class="tocitem">Noisy Circuits</span><ul><li><a class="tocitem" href="../noisycircuits/">Simulation of Noisy Circuits</a></li><li><a class="tocitem" href="../noisycircuits_mc/">Monte Carlo</a></li><li><a class="tocitem" href="../noisycircuits_perturb/">Perturbative Expansions</a></li><li><a class="tocitem" href="../noisycircuits_ops/">Circuit Operations</a></li><li><a class="tocitem" href="../noisycircuits_API/">API</a></li></ul></li><li><a class="tocitem" href="../references/">Suggested Readings &amp; References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Useful States and Operators</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Useful States and Operators</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Krastanov/QuantumClifford.jl/blob/master/docs/src/commonstates.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Useful-States-and-Operators"><a class="docs-heading-anchor" href="#Useful-States-and-Operators">Useful States and Operators</a><a id="Useful-States-and-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Useful-States-and-Operators" title="Permalink"></a></h1><p>There are numerous frequently used stabilizer states already implemented in this library.</p><h1 id="Pauli-Operators"><a class="docs-heading-anchor" href="#Pauli-Operators">Pauli Operators</a><a id="Pauli-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Pauli-Operators" title="Permalink"></a></h1><p>Single qubit <code>PauliOperator</code> is implemented in [<code>single_z</code>] and [<code>single_x</code>].</p><pre><code class="language-julia-repl">julia&gt; single_z(4,2)
++ _Z__
+
+julia&gt; single_x(4,3)
++ __X_</code></pre><p>All identity operators use <code>zero</code>.</p><pre><code class="language-julia-repl">julia&gt; zero(PauliOperator, 3)
++ ___
+
+julia&gt; zero(P&quot;XYZXYZ&quot;)
++ ______</code></pre><p>Random Pauli operators are implemented as well (with or without a random phase).</p><pre><code class="language-julia-repl">julia&gt; using StableRNGs; rng = StableRNG(42);
+
+julia&gt; random_pauli(rng, 4)
++i_ZZ_
+
+julia&gt; random_pauli(rng, 4; nophase=true)
++ ZXZY</code></pre><h1 id="Stabilizer-States"><a class="docs-heading-anchor" href="#Stabilizer-States">Stabilizer States</a><a id="Stabilizer-States-1"></a><a class="docs-heading-anchor-permalink" href="#Stabilizer-States" title="Permalink"></a></h1><p>An all-identity stabilizer can be created with <code>zero</code>.</p><pre><code class="language-julia-repl">julia&gt; zero(Stabilizer, 3)
++ ___
++ ___
++ ___
+
+julia&gt; zero(Stabilizer, 2, 3)
++ ___
++ ___
+
+julia&gt; zero(S&quot;XIZ
+              YZX&quot;)
++ ___
++ ___</code></pre><p>Diagonal stabilizers in different bases are available as well, through <code>one</code>.</p><pre><code class="language-julia-repl">julia&gt; one(Stabilizer, 3)
++ Z__
++ _Z_
++ __Z
+
+julia&gt; one(Stabilizer, 3; basis=:Y)
++ Y__
++ _Y_
++ __Y
+
+julia&gt; one(S&quot;XX
+             ZZ&quot;)
++ Z_
++ _Z</code></pre><p>A random stabilizer (or destabilizers or Clifford operators) can be created as well. We use the algorithm described in <a href="../references/#bravyi2020hadamard">Sergey Bravyi , Dmitri Maslov  (2020)</a>.</p><pre><code class="language-julia-repl">julia&gt; random_stabilizer(rng, 2,5)
+- YZY_Z
+- ZZ_XX</code></pre><h2 id="Mixed-States"><a class="docs-heading-anchor" href="#Mixed-States">Mixed States</a><a id="Mixed-States-1"></a><a class="docs-heading-anchor-permalink" href="#Mixed-States" title="Permalink"></a></h2><p>Similarly, one can create a diagonal mixed state.</p><pre><code class="language-julia-repl">julia&gt; one(MixedDestabilizer, 2, 3)
+Rank 2 stabilizer
++ X__
++ _X_
+━━━━━
++ __X
+━━━━━
++ Z__
++ _Z_
+━━━━━
++ __Z</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../datastructures/">« Datastructure Choice</a><a class="docs-footer-nextpage" href="../plotting/">Plotting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 17 April 2021 22:32">Saturday 17 April 2021</span>. Using Julia version 1.6.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
