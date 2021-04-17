@@ -1,14 +1,23 @@
-"""
-A module for sampling random n-qubit Clifford gates.
-Implements the algorithm in https://arxiv.org/abs/2003.09412
-"""
-
 using LinearAlgebra
+using Nemo: ResidueRing, MatrixSpace
 
-#= from Bravyi and Maslov Algorithm 1
-sample (h, S) from the distribution P_n(h, S) =#
+const binaryring = ResidueRing(ZZ, 2)
+
+"""Inverting a binary matrix: uses floating point for small matrices and Nemo for large matrices."""
+function precise_inv(a)
+    n = size(a,1)
+    if n<200
+        return inv(a)
+    else
+        M = MatrixSpace(binaryring, n, n)
+        inverted = inv(M(Matrix{Int}(a))) # Nemo is very picky about input data types
+        return (x->x.data).(inverted)
+    end
+end
+
+"""Sample (h, S) from the distribution P_n(h, S) from Bravyi and Maslov Algorithm 1."""
 function quantum_mallows(n)
-    if n<500
+    if n<500 # TODO Do in a prettier way without repetition.
         quantum_mallows_float(n)
     else
         quantum_mallows_bigint(n)
@@ -47,24 +56,27 @@ function quantum_mallows_bigint(n)
     return hadamard, perm
 end
 
+"""Assign (symmetric) random ints to off diagonals of matrix."""
+function fill_tril(matrix, n; symmetric::Bool=false)
+    # Add (symmetric) random ints to off diagonals
+    for row in 1:n, col in 1:row-1
+        b = rand(0:1)
+        matrix[row, col] = b
+        if symmetric
+            matrix[col, row] = b
+        end
+    end
+    matrix
+end
 
-#= replacement of QuantumClifford's random_clifford function
-from Algorithm 2 of Bravyi and Maslov, with code idioms following
-the Python implementation in Qiskit =#
+"""from Algorithm 2 of Bravyi and Maslov"""
 function rand_clifford(n)
-
-    @assert n < 200 # otherwise matrix operations could fail
-
     hadamard, perm = quantum_mallows(n)
     had_idxs = findall(i -> hadamard[i], 1:n)
     
     # delta, delta', gamma, gamma' appear in the canonical form
     # of a Clifford operator (Eq. 3/Theorem 1)
     # delta is unit lower triangular, gamma is symmetric
-    #delta = Array{Int8}(LinearAlgebra.I, n, n)
-    #delta_p = Array{Int8}(LinearAlgebra.I, n, n)
-    #gamma = zeros(Int8, n, n)
-    #gamma_p = Array{Int8}(LinearAlgebra.Diagonal(rand(0:1, n)))
     F1 = zeros(Int8, 2n, 2n)
     F2 = zeros(Int8, 2n, 2n)
     delta   = @view F1[1:n, 1:n]
@@ -81,7 +93,7 @@ function rand_clifford(n)
         gamma_p[i,i] = rand(0:1)
     end
     
-    # Gamma_ii is zero if h[i] = 0
+    # gamma_ii is zero if h[i] = 0
     for idx in had_idxs
         gamma[idx, idx] = rand(0:1)
     end
@@ -90,7 +102,7 @@ function rand_clifford(n)
     fill_tril(gamma_p, n, symmetric = true)
     fill_tril(delta_p, n)
 
-    # off diagonal: Gamma, Delta must obey conditions C1-C5
+    # off diagonal: gamma, delta must obey conditions C1-C5
     for row in 1:n, col in 1:row-1
         if hadamard[row] && hadamard[col]
             b = rand(0:1)
@@ -100,24 +112,20 @@ function rand_clifford(n)
             if perm[row] > perm[col]
                  delta[row, col] = rand(0:1)
             end
-
         elseif hadamard[row] && (!hadamard[col]) && perm[row] < perm[col]
             # C5 imposes delta[row, col] = 0 for h[row]=1, h[col]=0
             # if perm[row] > perm[col] then C2 imposes gamma[row,col] = 0
             b = rand(0:1)
             gamma[row, col] = b
             gamma[col, row] = b
-            
         elseif (!hadamard[row]) && hadamard[col]
             delta[row, col] = rand(0:1)
-
             # not sure what condition imposes this
             if perm[row] > perm[col]
                  b = rand(0:1)
                  gamma[row, col] = b
                  gamma[col, row] = b
             end
-
         elseif (!hadamard[row]) && (!hadamard[col]) && perm[row] < perm[col]
             # C1 imposes gamma[row, col] = 0 for h[row]=h[col] = 0
             # if perm[row] > perm[col] then C3 imposes delta[row,col] = 0
@@ -128,12 +136,10 @@ function rand_clifford(n)
     # now construct the tableau representation for F(I, Gamma, Delta)
     mul!(prod, gamma, delta)
     mul!(prod_p, gamma_p, delta_p)
-    inv_delta .= mod.(inv(transpose(delta)), 2)
-    inv_delta_p .= mod.(inv(transpose(delta_p)), 2)
+    inv_delta .= mod.(precise_inv(delta'), 2)
+    inv_delta_p .= mod.(precise_inv(delta_p'), 2)
  
     # block matrix form
-    #F1 = mod.([delta zeros(Int8, n, n); prod inv_delta], 2)
-    #F2 = mod.([delta_p zeros(Int8, n, n); prod_p inv_delta_p],2)
     F1 .= mod.(F1, 2)
     F2 .= mod.(F2, 2)
     gamma .= 0
@@ -154,68 +160,4 @@ function rand_clifford(n)
     # random Pauli matrix just amounts to phases on the stabilizer tableau
     phases = rand([0x0,0x2], 2 * n)
     return CliffordOperator(Stabilizer(phases, xzs))
-end
-
-
-#= simplified version of Algorithm 2 of Bravyi and Maslov
-(closely follows the Python code in Qiskit) =#
-function rand_clifford_qiskit(n)
-
-    @assert n < 200 
-
-    hadamard, perm = quantum_mallows(n)
-
-    # delta, delta', gamma, gamma' appear in the canonical form
-    # of a Clifford operator (Eq. 3/Theorem 1)
-    # delta is unit lower triangular, gamma is symmetric
-    delta = Array{Int8}(LinearAlgebra.I, n, n)
-    delta_p = Array{Int8}(LinearAlgebra.I, n, n)
-    gamma = Array{Int8}(LinearAlgebra.Diagonal(rand(0:1, n)))
-    gamma_p = Array{Int8}(LinearAlgebra.Diagonal(rand(0:1, n)))
-
-    fill_tril(gamma, n, symmetric = true)
-    fill_tril(gamma_p, n, symmetric = true)
-    fill_tril(delta, n)
-    fill_tril(delta_p, n)
-
-    # now construct the tableau representation for F(I, Gamma, Delta)
-    prod = gamma * delta
-    prod_p = gamma_p * delta_p
-    inv_delta = inv(transpose(delta))
-    inv_delta_p = inv(transpose(delta_p))
-    
-    # block matrix form
-    F1 = Array{Int8}(mod.([delta zeros(Int8, n, n); prod inv_delta], 2))
-    F2 = Array{Int8}(mod.([delta_p zeros(Int8, n, n); prod_p inv_delta_p],2))
-
-    # apply qubit permutation S to F2
-    perm_inds = vcat(perm, perm .+ n)
-    U = F2[perm_inds,:]
-    
-    # apply layer of hadamards
-    had_idxs = findall(i -> hadamard[i], 1:n)
-    lhs_inds = vcat(had_idxs, had_idxs .+ n)
-    rhs_inds = vcat(had_idxs .+ n, had_idxs)
-    U[lhs_inds, :] = U[rhs_inds, :]
-    
-    # apply F1
-    xzs = Array{Bool}(mod.(F1 * U,2))
-    #println(xzs)
-    # random Pauli matrix
-    phases = Array{UInt8}(2 .* rand(0:1, 2 * n))
-    return CliffordOperator(Stabilizer(phases, xzs))
-end
-
-# assign (symmetric) random ints to off diagonals of matrix
-# from Qiskit
-function fill_tril(matrix, n; symmetric::Bool=false)
-    # Add (symmetric) random ints to off diagonals
-    for row in 1:n, col in 1:row-1
-        b = rand(0:1)
-        matrix[row, col] = b
-        if symmetric
-            matrix[col, row] = b
-        end
-    end
-    matrix
 end
