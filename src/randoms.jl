@@ -1,8 +1,7 @@
 using LinearAlgebra: inv, mul!
 using Random: randperm, AbstractRNG, GLOBAL_RNG
 
-ENV["NEMO_PRINT_BANNER"] = "false" # There is some misunderstanding with banners in Nemo.jl https://github.com/Nemocas/Nemo.jl/issues/817
-using Nemo: ZZ, ResidueRing, MatrixSpace
+using AbstractAlgebra: ZZ, ResidueRing, MatrixSpace
 
 const binaryring = ResidueRing(ZZ, 2)
 
