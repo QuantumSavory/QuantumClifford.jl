@@ -280,13 +280,16 @@ function applynoise_branches(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indi
     no_error = no_error1^l
     results = [(copy(s),no_error,0)] # state, prob, order
     for order in 1:min(max_order,l)
-        error_prob = no_error1^(l-order)*infid^order
+        error_prob1 = infid^order
         for error_indices in combinations(indices, order) # TODO clean this up, optimize it
             for error_types in Base.Iterators.product(repeat([[apply_single_x!,apply_single_y!,apply_single_z!]],order)...)
                 new_state = copy(s)
+                max_index = 0
                 for (i,t) in zip(error_indices, error_types)
                     t(new_state,i)
+                    max_index = max(max_index, i)
                 end
+                error_prob = no_error1^((max_index-order)+min((l-max_index),(max_order-order)))*error_prob1
                 push!(results,(new_state, error_prob, order))
             end
         end
