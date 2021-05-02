@@ -74,6 +74,7 @@ struct NoisyBellMeasurement{T} <: AbstractOperation
     meas::AbstractOperation
     flipprob::T
 end
+NoisyBellMeasurement(p,i,fp) = NoisyBellMeasurement(BellMeasurement(p,i),fp)
 
 """Performing a Bell measurement followed by resetting the measured qubits to the given state `resetto`."""
 struct BellMeasurementAndReset <: AbstractOperation # TODO delete this and just make a standalone reset 
@@ -88,18 +89,20 @@ struct VerifyOp <: AbstractOperation
     VerifyOp(s,indices) = new(canonicalize_rref!(copy(s))[1],indices)
 end
 
-"""A Stabilizer measurement on the """
+"""A Stabilizer measurement on the entirety of the quantum register."""
 struct DenseMeasurement <: AbstractOperation
     pauli::PauliOperator
     storagebit::Int
 end
 
+"""A conditional gate that either performs `truegate` or `falsegate`, depending on the value of `controlbit`."""
 struct ConditionalGate <: AbstractOperation
     truegate::AbstractOperation
     falsegate::AbstractOperation
     controlbit::Int
 end
 
+"""A conditional gate that performs one of the `gates`, depending on the output of `decisionfunction` applied to the entire classical bit register."""
 struct DecisionGate <: AbstractOperation
     gates::AbstractVector{AbstractOperation}
     decisionfunction

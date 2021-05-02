@@ -59,13 +59,27 @@ This operator is frequently used in the simulation of entanglement purification.
 BellMeasurement([X, Y, Z], [1,3,4])
 ```
 
-TODO: [`NoisyBellMeasurement`](@ref)
+There is also [`NoisyBellMeasurement`](@ref) that takes the bit-flip probability of a single-qubit measurement as a third argument.
 
 ## Stabilizer Measurements
 
 A measurement over one or more qubits can also be performed, e.g., a direct stabilizer measurement on multiple qubits without the use of ancillary qubits. When applied to multiple qubits, this differs from `BellMeasurement` as it performs a single projection, unlike `BellMeasurement` which performs a separate projection for every single qubit involved. This measurement is implemented in [`DenseMeasurement`](@ref) which requires a Pauli operator on which to project and the index of the classical bit in which to store the result.
 
-TODO: example and noisy measurement, SparseMeasurement
+```@example 1
+[DenseMeasurement(P"XYZ", 1), DenseMeasurement(P"ZZZ", 2)]
+```
+
+TODO: SparseMeasurement, NoisyMeasurement
+
+## Verification Operations
+
+At the end of many circuits one might want to check whether they performed correctly. The [`VerifyOp`](@ref) operation corresponds to an unphysical perfect tomographic operation, checking whether the state of the qubits at the given indices is indeed what is expected. If it is, the operation reports a success, otherwise it reports an undetected error.
+
+```@example 1
+desired_state = random_stabilizer(5)
+qubit_indices = [1,2,3,4,7]
+VerifyOp(desired_state, qubit_indices)
+```
 
 ## Reset Operations
 
@@ -73,6 +87,20 @@ TODO
 
 ## Gates Conditioned on Classical Bits
 
-ΤODO: `ConditionalGate`, `DecisionGate`
+
+[`ConditionalGate`](@ref) is a conditional gate that performs one of two provided gates, depending on the value of a given classical bit.
+
+[`DecisionGate`](@ref) is a conditional gate that performs one of the supplied `gates`, depending on the output of `decisionfunction` applied to the entire classical bit register.
+
+```@example 1
+gate1 = SparseGate(CNOT,   [1,2])
+gate2 = SparseGate(CPHASE, [1,2])
+gate3 = SparseGate(SWAP,   [1,3])
+cg = ConditionalGate(gate1, gate2, 2)
+dg = DecisionGate([gate1,gate2,gate3], bit_register->1) # it will always perform gate1
+[DenseMeasurement(P"XII",1), DenseMeasurement(P"IZI",2), cg, dg]
+```
+
+TODO: Use SparseMeasurement in the example above
 
 TODO: Split `ConditionalGate` into quantum conditional and classical conditional
