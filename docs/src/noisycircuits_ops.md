@@ -63,10 +63,10 @@ There is also [`NoisyBellMeasurement`](@ref) that takes the bit-flip probability
 
 ## Stabilizer Measurements
 
-A measurement over one or more qubits can also be performed, e.g., a direct stabilizer measurement on multiple qubits without the use of ancillary qubits. When applied to multiple qubits, this differs from `BellMeasurement` as it performs a single projection, unlike `BellMeasurement` which performs a separate projection for every single qubit involved. This measurement is implemented in [`DenseMeasurement`](@ref) which requires a Pauli operator on which to project and the index of the classical bit in which to store the result.
+A measurement over one or more qubits can also be performed, e.g., a direct stabilizer measurement on multiple qubits without the use of ancillary qubits. When applied to multiple qubits, this differs from `BellMeasurement` as it performs a single projection, unlike `BellMeasurement` which performs a separate projection for every single qubit involved. This measurement is implemented in [`DenseMeasurement`](@ref) which requires a Pauli operator on which to project and the index of the classical bit in which to store the result. Alternatively, there is [`SparseMeasurement`](@ref), which acts only on the subset of all qubits.
 
 ```@example 1
-[DenseMeasurement(P"XYZ", 1), DenseMeasurement(P"ZZZ", 2)]
+[DenseMeasurement(P"XYZ", 1), SparseMeasurement(P"Z", [2], 2), SparseMeasurement(P"XX", [1,3], 3)]
 ```
 
 TODO: SparseMeasurement, NoisyMeasurement
@@ -98,9 +98,7 @@ gate2 = SparseGate(CPHASE, [1,2])
 gate3 = SparseGate(SWAP,   [1,3])
 cg = ConditionalGate(gate1, gate2, 2)
 dg = DecisionGate([gate1,gate2,gate3], bit_register->1) # it will always perform gate1
-[DenseMeasurement(P"XII",1), DenseMeasurement(P"IZI",2), cg, dg]
+[SparseMeasurement(X,[4],1), SparseMeasurement(Z,[5],2), cg, dg]
 ```
-
-TODO: Use SparseMeasurement in the example above
 
 TODO: Split `ConditionalGate` into quantum conditional and classical conditional

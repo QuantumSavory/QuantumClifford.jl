@@ -15,7 +15,7 @@ export AbstractOperation,
        UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, VerifyOp,
        SparseGate, DenseGate, NoisyGate,
        BellMeasurement, NoisyBellMeasurement,
-       DenseMeasurement,
+       DenseMeasurement, SparseMeasurement,
        DecisionGate, ConditionalGate,
        affectedqubits, applyop!, applynoise!,
        applyop_branches, applynoise_branches,
@@ -95,6 +95,13 @@ struct DenseMeasurement <: AbstractOperation
     storagebit::Int
 end
 
+"""A Stabilizer measurement on specific qubits of the quantum register."""
+struct SparseMeasurement <: AbstractOperation
+    pauli::PauliOperator
+    indices::AbstractVector{Int}
+    storagebit::Int
+end
+
 """A conditional gate that either performs `truegate` or `falsegate`, depending on the value of `controlbit`."""
 struct ConditionalGate <: AbstractOperation
     truegate::AbstractOperation
@@ -122,6 +129,7 @@ affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
 affectedqubits(n::NoiseOp) = n.indices
 affectedqubits(v::VerifyOp) = v.indices
 affectedqubits(g::DenseMeasurement) = 1:length(g.pauli)
+affectedqubits(g::SparseMeasurement) = g.indices
 affectedqubits(d::ConditionalGate) = union(affectedqubits(d.truegate), affectedqubits(d.falsegate))
 affectedqubits(d::DecisionGate) = [(union(affectedqubits.(d.gates))...)...]
 
@@ -157,16 +165,9 @@ function applyop!(s::Stabilizer, m::BellMeasurement)
     indices = affectedqubits(m)
     res = 0x00
     for (pauli, index) in zip(m.pauli,affectedqubits(m))
-        if pauli == X # TODO this is not an elegant way to choose between X and Z coincidence measurements
-            op = single_x(n,index) # TODO this is pretty terribly inefficient... use some sparse check
-        elseif pauli == Z
-            op = single_z(n,index)
-        elseif pauli == Y
-            op = single_y(n,index)
-        else
-            op = -single_y(n, index)
-        end
-         # TODO permit Y operators and permit negative operators
+        op = zero(typeof(pauli), n) # TODO, create a sparse project!
+        op.phase[] = pauli.phase[]
+        op[index] = pauli[1]
         s,anticom,r = project!(s,op)
         if isnothing(r)
             if rand()>0.5 # TODO this seems stupid, float not necessary
@@ -465,6 +466,16 @@ function applyop!(state::Register, op::DenseMeasurement)
     state, :continue
 end
 
+function applyop!(state::Register, op::SparseMeasurement)
+    n = nqubits(state.stab) # TODO implement actual sparse measurements
+    p = zero(typeof(op.pauli), n)
+    for (ii,i) in enumerate(op.indices)
+        p[i] = op.pauli[ii]
+    end
+    dm = DenseMeasurement(p,op.storagebit)
+    applyop!(state,dm)
+end
+
 function applyop!(state::Register, op::ConditionalGate)
     if state.bits[op.controlbit]
         applyop!(state, op.truegate)
@@ -505,6 +516,17 @@ function applyop_branches(s::Register, op::DenseMeasurement; max_order=1)
     end
     new_branches
 end
+
+function applyop_branches(state::Register, op::SparseMeasurement)
+    n = nqubits(state.stab) # TODO implement actual sparse measurements
+    p = zero(typeof(op.pauli), n)
+    for (ii,i) in enumerate(op.indices)
+        p[i] = op.pauli[ii]
+    end
+    dm = DenseMeasurement(p,op.storagebit)
+    applyop_branches(state,dm)
+end
+
 
 include("./quantikz_methods.jl")
 

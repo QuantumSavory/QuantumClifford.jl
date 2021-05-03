@@ -2085,7 +2085,7 @@ function single_y(n,i)
     PauliOperator(0x0,xs,zs)
 end
 
-# TODO the pauli and clifford functions should be `one`, not `zero`
+# TODO the pauli and clifford functions should be `one`, not `zero`. Or `ones`/`zeros`. Plural or not?
 Base.zero(T::Type{PauliOperator}, n) = T(0x0,falses(n),falses(n))
 Base.zero(T::Type{PauliOperator{Tz,Tv}}, n) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = T(0x0,falses(n),falses(n))
 Base.zero(p::PauliOperator{Tz,Tv}) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = PauliOperator{Tz,Tv}(0x0,falses(p.nqubits),falses(p.nqubits))
