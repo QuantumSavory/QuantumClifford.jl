@@ -1,8 +1,7 @@
 using LinearAlgebra: inv, mul!
 using Random: randperm, AbstractRNG, GLOBAL_RNG
 
-using AbstractAlgebra: ZZ, ResidueRing, MatrixSpace
-
+using Nemo: ZZ, ResidueRing, MatrixSpace
 const binaryring = ResidueRing(ZZ, 2)
 
 ##############################
