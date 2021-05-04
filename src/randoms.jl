@@ -1,8 +1,12 @@
 using LinearAlgebra: inv, mul!
 using Random: randperm, AbstractRNG, GLOBAL_RNG
 
-using Nemo: ZZ, ResidueRing, MatrixSpace
-const binaryring = ResidueRing(ZZ, 2)
+# XXX Workaround for the Nemo banner: complex due to (1) Not possible to have using in non-top context (2) Not possible to embed NoBannerNemo.jl in this package
+function __init__()
+    ENV["NEMO_PRINT_BANNER"] = "false"
+    @eval using Nemo: ZZ, ResidueRing, MatrixSpace
+end
+
 
 ##############################
 # Random Paulis
@@ -187,6 +191,7 @@ function precise_inv(a)
     if n<200
         return inv(a)
     else
+        binaryring = ResidueRing(ZZ, 2)
         M = MatrixSpace(binaryring, n, n)
         inverted = inv(M(Matrix{Int}(a))) # Nemo is very picky about input data types
         return (x->x.data).(inverted)
