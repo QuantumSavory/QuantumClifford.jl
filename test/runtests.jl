@@ -314,6 +314,72 @@ if doset("Projective measurements")
                                                            _Z__
                                                            ___X"
     end
+    @testset "Interface Particularities" begin
+        s = S"ZII
+              IZI"
+        _, a, r = project!(copy(s), P"IZI"; keep_result=true)
+        @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
+        _, a, r = project!(copy(s), P"IIZ"; keep_result=true)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+        _, a, r = project!(copy(s), P"IZI"; keep_result=false)
+        @test (a, r) == (0, nothing) # on commuting operator in the stabilizer
+        _, a, r = project!(copy(s), P"IIZ"; keep_result=false)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+        s = S"ZII
+              IZI
+              III"
+        _, a, r = project!(copy(s), P"IZI"; keep_result=true)
+        @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
+        _, a, r = project!(copy(s), P"IIZ"; keep_result=true)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+        _, a, r = project!(copy(s), P"IZI"; keep_result=false)
+        @test (a, r) == (0, nothing) # on commuting operator in the stabilizer
+        _, a, r = project!(copy(s), P"IIZ"; keep_result=false)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+        s = MixedStabilizer(s, 2)
+        ms, a, r = project!(copy(s), P"IZI"; keep_result=true)
+        @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
+        @test ms.rank == 2
+        ms, a, r = project!(copy(s), P"IIZ"; keep_result=true)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+        @test ms.rank == 3
+        ms, a, r = project!(copy(s), P"IZI"; keep_result=false)
+        @test (a, r) == (0, nothing) # on commuting operator in the stabilizer
+        @test ms.rank == 2
+        ms, a, r = project!(copy(s), P"IIZ"; keep_result=false)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+        @test ms.rank == 3
+        s = S"ZII
+              IZI"
+        s = Destabilizer(s)
+        @test_throws BadDataStructure project!(copy(s), P"IZI"; keep_result=true)  # on comm
+        @test_throws BadDataStructure project!(copy(s), P"IIZ"; keep_result=true)  # operators
+        @test_throws BadDataStructure project!(copy(s), P"IZI"; keep_result=false) # in or out of
+        @test_throws BadDataStructure project!(copy(s), P"IIZ"; keep_result=false) # the stabilizer
+        s = S"ZII
+              IZI
+              IIZ"
+        s = Destabilizer(s)
+        _, a, r = project!(copy(s), P"IIZ"; keep_result=true)
+        @test (a, r) == (0, 0x0)
+        _, a, r = project!(copy(s), P"IIZ"; keep_result=false)
+        @test (a, r) == (0, nothing)
+        s = S"ZII
+              IZI"
+        s = MixedDestabilizer(s)
+        mds, a, r = project!(copy(s), P"IZI"; keep_result=true)
+        @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
+        @test mds.rank == 2
+        mds, a, r = project!(copy(s), P"IIZ"; keep_result=true)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+        @test mds.rank == 3
+        mds, a, r = project!(copy(s), P"IZI"; keep_result=false)
+        @test (a, r) == (0, nothing) # on commuting operator in the stabilizer
+        @test mds.rank == 2
+        mds, a, r = project!(copy(s), P"IIZ"; keep_result=false)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+        @test mds.rank == 3
+    end
 end
 end
 

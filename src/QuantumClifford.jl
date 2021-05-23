@@ -334,7 +334,7 @@ destabilizers as well, for efficient projections. On initialization there are
 no checks that the provided state is indeed pure. This enables the use of this
 data structure for mixed stabilizer state, but a better choice would be to use
 [`MixedDestabilizer`](@ref).
-"""
+""" # TODO clean up and document constructor
 struct Destabilizer{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractStabilizer
     tab::Stabilizer{Tzv,Tm}
     function Destabilizer(s;noprocessing=false)
@@ -1205,9 +1205,52 @@ julia> project!(s, P"IIX")
 ```
 
 If we had used [`MixedStabilizer`](@ref) we would have added the projector
-to the list of stabilizers. However, [`MixedDestabilizer`](@ref) would
+to the list of stabilizers.
+
+```jldoctest
+julia> s = one(MixedStabilizer, 2, 3)
+Rank 2 stabilizer
++ Z__
++ _Z_
+
+julia> project!(s, P"IIX")
+(Rank 3 stabilizer
++ Z__
++ _Z_
++ __X, 0, nothing)
+```
+
+However, [`MixedDestabilizer`](@ref) would
 be an even better choice as it has \$\\mathcal{O}(n^2)\$ complexity
 instead of the \$\\mathcal{O}(n^3)\$ complexity of `*Stabilizer`.
+
+```jldoctest
+julia> s = one(MixedDestabilizer, 2, 3)
+Rank 2 stabilizer
++ X__
++ _X_
+━━━━━
++ __X
+━━━━━
++ Z__
++ _Z_
+━━━━━
++ __Z
+
+julia> project!(s, P"IIX")
+(Rank 3 stabilizer
++ X__
++ _X_
++ __Z
+═════
++ Z__
++ _Z_
++ __X
+═════
+, 0, nothing)
+```
+
+See the "Datastructure Choice" section in the documentation for more details.
 """
 function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
@@ -1318,17 +1361,16 @@ function project!(ms::MixedStabilizer,pauli::PauliOperator;keep_result::Bool=tru
     Tme = eltype(pauli.xz)
     if anticom_index==0 && isnothing(res)
         ms.tab[ms.rank+1] = pauli
-        # anticom_index = ms.rank TODO this might be a better idea... do the same for MixedDestabilizer and maybe for Destabilizer
         if keep_result
             ms.rank += 1
         else
-            canonicalize!(ms.tab[1:ms.rank+1]; phases=phases)
+            canonicalize!(@view ms.tab[1:ms.rank+1]; phases=phases)
             if ~all(==(Tme(0)), @view ms.tab.xzs[ms.rank+1,:])
                 ms.rank += 1
             end
         end
     end
-    ms, anticom_index, res # TODO CHECK THIS res
+    ms, anticom_index, res
 end
 
 function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases) # TODO Ensure there are no redundant `comm` checks that can be skipped
@@ -2108,6 +2150,10 @@ function Base.one(::Type{Stabilizer}, n; basis=:Z)
 end
 Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, nqubits(s); basis=basis)
 Base.one(::Type{Destabilizer}, n) = Destabilizer(vcat(one(Stabilizer, n, basis=:X),one(Stabilizer, n, basis=:Z)),noprocessing=true)
+function Base.one(::Type{MixedStabilizer}, r, n, basis=:Z)
+    s = one(Stabilizer, n; basis=basis)
+    MixedStabilizer(s,r)
+end
 function Base.one(::Type{MixedDestabilizer}, r, n)
     d = one(Stabilizer, n; basis=:X)
     s = one(Stabilizer, n; basis=:Z)
