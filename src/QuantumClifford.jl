@@ -513,7 +513,7 @@ end
     (l.phase[]+r.phase[]+prodphase(l.xz,r.xz))&0x3
 end
 
-@inline function prodphase(l::PauliOperator, r::Stabilizer, i)::UInt8 # TODO rewrite it in a way that does not use views in order to have fewer allocations
+@inline function prodphase(l::PauliOperator, r::Stabilizer, i)::UInt8
     (l.phase[]+r.phases[i]+prodphase(l.xz, (@view r.xzs[i,:])))&0x3
 end
 
