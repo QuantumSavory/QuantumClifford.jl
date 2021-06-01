@@ -371,12 +371,10 @@ mutable struct MixedStabilizer{Tzv<:AbstractVector{UInt8}, Tm<:AbstractMatrix{<:
 end
 
 function MixedStabilizer(s::Stabilizer{Tzv,Tm}) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
-    s = canonicalize!(s)
-    rp1 = findfirst(mapslices(row->all(==(Tme(0)),row),s.xzs; dims=(2,))[:,1])
-    r = isnothing(rp1) ? size(s, 1) : rp1-1
+    s, xr, zr = canonicalize!(s,ranks=true)
     spadded = zero(Stabilizer, nqubits(s))
-    spadded[1:r] = s
-    MixedStabilizer(spadded,r)
+    spadded[1:zr] = s[1:zr]
+    MixedStabilizer(spadded,zr)
 end
 
 function Base.show(io::IO, ms::MixedStabilizer)
@@ -765,9 +763,9 @@ function unsafe_bitfindnext_(chunks::AbstractVector{T}, start::Integer) where T<
     return nothing
 end
 
-#"""
-#$TYPEDSIGNATURES # TODO add the type signatures back in
 """
+$TYPEDSIGNATURES
+
 Canonicalize a stabilizer (in place).
 
 Assumes the input is a valid stabilizer (all operators commute and have
@@ -813,11 +811,45 @@ For instance the [`MixedStabilizer`](@ref) or [`MixedDestabilizer`](@ref)
 structures (you can read more about them in the [Data Structures section](@ref Choosing-Appropriate-Data-Structure)
 of the documentation).
 
+If `phases=false` is set, the canonicalization does not track the phases
+in the tableau, leading to significant (constant factor) speedup.
+
+```jldoctest
+julia> s = S"-ZX
+              XZ"
+- ZX
++ XZ
+
+julia> canonicalize!(copy(s), phases=false)
+- XZ
++ ZX
+
+julia> canonicalize!(copy(s))
++ XZ
+- ZX
+```
+
+If `ranks=true` is set, the last pivot indices for the X and Z stage of
+the canonicalization are returned as well.
+
+```jldoctest
+julia> s = S"XXXX
+             ZZII
+             IZIZ
+             ZIIZ";
+
+julia> canonicalize!(s, ranks=true)
+(+ XXXX
++ Z__Z
++ _Z_Z
++ ____, 1, 3)
+```
+
 Based on [garcia2012efficient](@cite).
 
 See also: [`canonicalize_rref!`](@ref), [`canonicalize_gott!`](@ref)
 """
-function canonicalize!(state::AbstractStabilizer; phases::Bool=true)
+function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool=false)
     xzs = stabilizerview(state).xzs
     xs = @view xzs[:,1:end÷2]
     zs = @view xzs[:,end÷2+1:end]
@@ -843,6 +875,7 @@ function canonicalize!(state::AbstractStabilizer; phases::Bool=true)
             i += 1
         end
     end
+    rx = i
     for j in 1:columns
         # find first row with Z in col `j`
         jbig = _div(Tme,j-1)+1
@@ -860,7 +893,11 @@ function canonicalize!(state::AbstractStabilizer; phases::Bool=true)
             i += 1
         end
     end
-    state
+    if ranks
+        return state, rx-1, i-1
+    else
+        return state
+    end
 end
 
 """
