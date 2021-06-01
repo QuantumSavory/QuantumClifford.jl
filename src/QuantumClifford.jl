@@ -246,6 +246,8 @@ Stabilizer(xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(zero
 
 Stabilizer(xzs::AbstractMatrix{Bool}) = Stabilizer(zeros(UInt8, size(xzs,1)), xzs[:,1:end÷2], xzs[:,end÷2+1:end])
 
+Stabilizer(s::Stabilizer) = s
+
 macro S_str(a)
     paulis = [eval(quote @P_str($(strip(s))) end) for s in split(a,'\n')] #TODO seriously!?
     Stabilizer(paulis)
@@ -321,6 +323,11 @@ Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, s.tab, h)
 
 function apply!(s::AbstractStabilizer, p::AbstractCliffordOperator; phases::Bool=true)
     apply!(s.tab,p; phases=phases)
+    s
+end
+
+function apply!(s::AbstractStabilizer, p::AbstractCliffordOperator, indices; phases::Bool=true)
+    apply!(s.tab,p, indices; phases=phases)
     s
 end
 
@@ -454,8 +461,18 @@ end
 Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 
 function ⊗(l::MixedDestabilizer, r::MixedDestabilizer)
-    tab = vcat([v(l)⊗v(r) for v in [destabilizerview,logicalxview,stabilizerview,logicalzview]]...)
-    MixedDestabilizer(tab, l.rank+r.rank)
+    lone = zero(l.tab[1])
+    rone = zero(r.tab[1])
+    stabs = []
+    for v in [destabilizerview,logicalxview,stabilizerview,logicalzview]
+        ll = v(l)
+        rr = v(r)
+        paulis = vcat([ll[i]⊗rone for i in eachindex(ll)],
+                    [lone⊗rr[i] for i in eachindex(rr)]
+                    )
+        length(paulis)>0 && push!(stabs,Stabilizer(paulis))
+    end
+    MixedDestabilizer(vcat(stabs...), l.rank+r.rank)
 end
 
 ##############################
