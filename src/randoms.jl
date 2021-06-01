@@ -12,9 +12,11 @@ end
 # Random Paulis
 ##############################
 
-"""A random Pauli operator on n qubits."""
-random_pauli(rnd::AbstractRNG, n::Integer; nophase=false) = PauliOperator(nophase ? 0x0 : rand(rnd,0x0:0x3), rand(rnd,Bool,n), rand(rnd,Bool,n))
-random_pauli(n::Integer; nophase=false) = random_pauli(GLOBAL_RNG, n, nophase=nophase)
+"""A random Pauli operator on n qubits.
+
+Use `realphase=true` to get operators with phase ±1 (excluding ±i)."""
+random_pauli(rnd::AbstractRNG, n::Integer; nophase=false, realphase=false) = PauliOperator(nophase ? 0x0 : (realphase ? rand(rnd,[0x0,0x2]) : rand(rnd,0x0:0x3)), rand(rnd,Bool,n), rand(rnd,Bool,n))
+random_pauli(n::Integer; nophase=false, realphase=false) = random_pauli(GLOBAL_RNG, n, nophase=nophase, realphase=realphase)
 function random_pauli(rng::AbstractRNG,n::Integer,p; nophase=false,nonidbranch=false)
     x = falses(n)
     z = falses(n)

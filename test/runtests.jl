@@ -406,6 +406,109 @@ if doset("Projective measurements")
         @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
         @test mds.rank == 3
     end
+    @testset "Results from canonicalization vs from destabilizer" begin
+        @mythreads for n in test_sizes
+            for r in [n, rand(n÷3:n*2÷3)]
+                s = random_stabilizer(r,n)
+                ms = MixedStabilizer(copy(s))
+                d = Destabilizer(copy(s))
+                md = MixedDestabilizer(copy(s))
+                p = random_pauli(n,realphase=true)
+                _, as, rs = project!(s,p)
+                _, ams, rms = project!(ms,p)
+                _, amd, rmd = project!(md,p)
+                @test rs == rms == rmd
+                @test canonicalize!(s) == canonicalize!(stabilizerview(ms)) == canonicalize!(stabilizerview(md))
+                if as == 0
+                    @test ams == amd == 0
+                end
+                if r == n
+                    _, ad, rd = project!(d,p)
+                    @test s == canonicalize!(stabilizerview(d))
+                    @test rd == rs
+                    if as == 0
+                        @test ad == 0
+                    end
+                end
+            end
+        end
+    end
+    @testset "Reported phase" begin
+        s = S"ZII
+              IZI"
+        _, a, r = project!(copy(s), P"IZI"; keep_result=true)
+        @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
+        _, a, r = project!(copy(s), P"-IZI"; keep_result=true)
+        @test (a, r) == (0, 0x2) # on commuting operator in the stabilizer
+        _, a, r = project!(copy(s), P"IIZ"; keep_result=true)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+        _, a, r = project!(copy(s), P"-IIZ"; keep_result=true)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+
+        s = S" ZII
+              -IZI"
+        _, a, r = project!(copy(s), P"IZI"; keep_result=true)
+        @test (a, r) == (0, 0x2) # on commuting operator in the stabilizer
+        _, a, r = project!(copy(s), P"-IZI"; keep_result=true)
+        @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
+
+        s = S"ZII
+              IZI
+              III"
+        s = MixedStabilizer(s, 2)
+        _, a, r = project!(copy(s), P"IZI"; keep_result=true)
+        @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
+        _, a, r = project!(copy(s), P"-IZI"; keep_result=true)
+        @test (a, r) == (0, 0x2) # on commuting operator in the stabilizer
+        _, a, r = project!(copy(s), P"IIZ"; keep_result=true)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+        _, a, r = project!(copy(s), P"-IIZ"; keep_result=true)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+        s = S" ZII
+              -IZI
+               III"
+        s = MixedStabilizer(s, 2)
+        _, a, r = project!(copy(s), P"IZI"; keep_result=true)
+        @test (a, r) == (0, 0x2) # on commuting operator in the stabilizer
+        _, a, r = project!(copy(s), P"-IZI"; keep_result=true)
+        @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
+
+        s = S"ZII
+              IZI
+              IIZ"
+        s = Destabilizer(s)
+        _, a, r = project!(copy(s), P"IIZ"; keep_result=true)
+        @test (a, r) == (0, 0x0)
+        _, a, r = project!(copy(s), P"-IIZ"; keep_result=true)
+        @test (a, r) == (0, 0x2)
+        s = S" ZII
+               IZI
+              -IIZ"
+        s = Destabilizer(s)
+        _, a, r = project!(copy(s), P"IIZ"; keep_result=true)
+        @test (a, r) == (0, 0x2)
+        _, a, r = project!(copy(s), P"-IIZ"; keep_result=true)
+        @test (a, r) == (0, 0x0)
+
+        s = S"ZII
+              IZI"
+        s = MixedDestabilizer(s)
+        mds, a, r = project!(copy(s), P"IZI"; keep_result=true)
+        @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
+        mds, a, r = project!(copy(s), P"-IZI"; keep_result=true)
+        @test (a, r) == (0, 0x2) # on commuting operator in the stabilizer
+        mds, a, r = project!(copy(s), P"IIZ"; keep_result=true)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+        mds, a, r = project!(copy(s), P"-IIZ"; keep_result=true)
+        @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
+        s = S" ZII
+              -IZI"
+        s = MixedDestabilizer(s)
+        mds, a, r = project!(copy(s), P"IZI"; keep_result=true)
+        @test (a, r) == (0, 0x2) # on commuting operator in the stabilizer
+        mds, a, r = project!(copy(s), P"-IZI"; keep_result=true)
+        @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
+    end
 end
 end
 

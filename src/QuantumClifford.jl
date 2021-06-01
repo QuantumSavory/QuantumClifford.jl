@@ -1348,6 +1348,7 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
         end
         if keep_result
             new_pauli = zero(pauli)
+            new_pauli.phase[] = pauli.phase[]
             for i in 1:n
                 if comm(pauli,destabilizer,i)!=0
                     # TODO, this is just a long explicit way to write it... learn more about broadcast
@@ -1485,6 +1486,7 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
         else
             if keep_result
                 new_pauli = zero(pauli)
+                new_pauli.phase[] = pauli.phase[]
                 for i in 1:r
                     if comm(pauli,destabilizer,i)!=0
                         # TODO, this is just a long explicit way to write it... learn more about broadcast
