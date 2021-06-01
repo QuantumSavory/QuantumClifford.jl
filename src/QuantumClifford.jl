@@ -791,6 +791,7 @@ julia> canonicalize!(S"XXXX
 + XXXX
 + _Z_Z
 + __ZZ
+```
 
 Not all rows in the tableau in the next example are independent:
 
@@ -806,6 +807,11 @@ julia> canonicalize!(S"XXXX
 + __ZZ
 + ____
 ```
+
+In cases of lower rank, more advanced tableau structures might be better.
+For instance the [`MixedStabilizer`](@ref) or [`MixedDestabilizer`](@ref)
+structures (you can read more about them in the [Data Structures section](@ref Choosing-Appropriate-Data-Structure)
+of the documentation).
 
 Based on [garcia2012efficient](@cite).
 
