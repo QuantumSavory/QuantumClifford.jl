@@ -261,7 +261,7 @@ if doset("Projective measurements")
         @test a==0 && isnothing(r)
         @test_throws BadDataStructure pds, a, r = project!(copy(ds),p)
         pms, a, r = project!(copy(ms),p)
-        @test stab_looks_good(pms)
+        @test mixed_stab_looks_good(pms)
         @test pms.rank==3
         @test a==0 && isnothing(r)
         pmds, a, r = project!(copy(mds),p)
@@ -275,7 +275,7 @@ if doset("Projective measurements")
         @test a==0 && r==0x2
         @test_throws BadDataStructure pds, a, r = project!(copy(ds),p)
         pms, a, r = project!(copy(ms),p)
-        @test stab_looks_good(pms)
+        @test mixed_stab_looks_good(pms)
         @test pms.rank==2
         @test a==0 && r==0x2
         pmds, a, r = project!(copy(mds),p)
@@ -292,7 +292,7 @@ if doset("Projective measurements")
         @test destab_looks_good(pds)
         @test a==2 && isnothing(r)
         pms, a, r = project!(copy(ms),p)
-        @test stab_looks_good(pms)
+        @test mixed_stab_looks_good(pms)
         @test pms.rank==2
         @test a==2 && isnothing(r)
         pmds, a, r = project!(copy(mds),p)

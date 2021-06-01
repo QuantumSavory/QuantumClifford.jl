@@ -792,6 +792,9 @@ julia> canonicalize!(S"XXXX
 + _Z_Z
 + __ZZ
 
+Not all rows in the tableau in the next example are independent:
+
+```jldoctest
 julia> canonicalize!(S"XXXX
                        ZZII
                        IZZI
@@ -808,13 +811,14 @@ Based on [garcia2012efficient](@cite).
 
 See also: [`canonicalize_rref!`](@ref), [`canonicalize_gott!`](@ref)
 """
-function canonicalize!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
-    xzs = stabilizer.xzs
+function canonicalize!(state::AbstractStabilizer; phases::Bool=true)
+    xzs = stabilizerview(state).xzs
     xs = @view xzs[:,1:end÷2]
     zs = @view xzs[:,end÷2+1:end]
+    Tme = eltype(xzs)
     lowbit = Tme(0x1)
     zerobit = Tme(0x0)
-    rows, columns = size(stabilizer)
+    rows, columns = size(stabilizerview(state))
     i = 1
     for j in 1:columns
         # find first row with X or Y in col `j`
@@ -824,10 +828,10 @@ function canonicalize!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) where 
                       (@view xs[i:end,jbig]))
         if k !== nothing
             k += i-1
-            rowswap!(stabilizer, k, i; phases=phases)
+            rowswap!(state, k, i; phases=phases)
             for m in 1:rows
                 if xs[m,jbig]&jsmall!=zerobit && m!=i # if X or Y
-                    rowmul!(stabilizer, m, i; phases=phases)
+                    rowmul!(state, m, i; phases=phases)
                 end
             end
             i += 1
@@ -841,23 +845,16 @@ function canonicalize!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) where 
                       (@view zs[i:end,jbig]))
         if k !== nothing
             k += i-1
-            rowswap!(stabilizer, k, i; phases=phases)
+            rowswap!(state, k, i; phases=phases)
             for m in 1:rows
                 if zs[m,jbig]&jsmall!=zerobit && m!=i # if Z or Y
-                    rowmul!(stabilizer, m, i; phases=phases)
+                    rowmul!(state, m, i; phases=phases)
                 end
             end
             i += 1
         end
     end
-    stabilizer
-end
-
-"""
-$TYPEDSIGNATURES
-"""
-function canonicalize!(ms::MixedStabilizer; phases::Bool=true)
-    canonicalize!(stabilizerview(ms); phases=phases)
+    state
 end
 
 """
