@@ -178,13 +178,27 @@ if doset("Stabilizer canonicalization")
         @mythreads for n in test_sizes
             @mythreads for nrows in [n, rand(n÷3:n*2÷3)]
                 rs = random_stabilizer(nrows,n)
-                c  = canonicalize_rref!(copy(rs),1:n)[1]
-                dc = canonicalize_rref!(Destabilizer(copy(rs)),1:n)[1]
-                mc = canonicalize_rref!(MixedDestabilizer(copy(rs)),1:n)[1]
-                @test stabilizerview(mc) == stabilizerview(dc) == c
+                rs_m = MixedStabilizer(copy(rs))
+                rs_d = Destabilizer(copy(rs))
+                rs_md = MixedDestabilizer(copy(rs))
+                c  = canonicalize!(copy(rs))
+                mc  = canonicalize!(copy(rs_m))
+                dc = canonicalize!(copy(rs_d))
+                mdc = canonicalize!(copy(rs_md))
+                @test stabilizerview(mdc) == stabilizerview(mc) == stabilizerview(dc) == c
                 @test stab_looks_good(c)
+                @test mixed_stab_looks_good(mc)
                 @test destab_looks_good(dc)
-                @test mixed_destab_looks_good(mc)
+                @test mixed_destab_looks_good(mdc)
+                c  = canonicalize_rref!(copy(rs),1:n)[1]
+                mc  = canonicalize_rref!(copy(rs_m),1:n)[1]
+                dc = canonicalize_rref!(copy(rs_d),1:n)[1]
+                mdc = canonicalize_rref!(copy(rs_md),1:n)[1]
+                @test stabilizerview(mdc) == stabilizerview(mc) == stabilizerview(dc) == c
+                @test stab_looks_good(c)
+                @test mixed_stab_looks_good(mc)
+                @test destab_looks_good(dc)
+                @test mixed_destab_looks_good(mdc)
             end
         end
     end
