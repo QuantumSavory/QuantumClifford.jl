@@ -117,6 +117,18 @@ if doset("Pure and Mixed state initialization")
             @test mixed_destab_looks_good(MixedDestabilizer(random_stabilizer(rand(n÷2+1:n-4),n)))
         end
     end
+    @testset "Tensor products over stabilizers" begin
+        @mythreads for n in test_sizes
+            l = random_stabilizer(rand(n÷2+1:n-2),n)
+            r = random_stabilizer(rand(n÷3:n÷2),rand(n÷2:n))
+            s = l⊗r
+            ds = MixedDestabilizer(l)⊗MixedDestabilizer(r)
+            @test mixed_destab_looks_good(ds)
+            canonicalize!(s)
+            dss = canonicalize!(copy(stabilizerview(ds)))
+            @test s == dss
+        end
+    end
 end
 end
 

@@ -455,6 +455,11 @@ end
 
 Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 
+function ⊗(l::MixedDestabilizer, r::MixedDestabilizer)
+    tab = vcat([v(l)⊗v(r) for v in [destabilizerview,logicalxview,stabilizerview,logicalzview]]...)
+    MixedDestabilizer(tab, l.rank+r.rank)
+end
+
 ##############################
 # Subtableau views
 ##############################
