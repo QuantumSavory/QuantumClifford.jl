@@ -2148,11 +2148,11 @@ function apply_single_y!(s::Stabilizer{Tzv,Tm}, i) where {Tzv<:AbstractVector{UI
 end
 
 function apply_single_z!(s::AbstractStabilizer, i)
-    apply_single_y!(s.tab, i)
+    apply_single_z!(s.tab, i)
     s
 end
 function apply_single_x!(s::AbstractStabilizer, i)
-    apply_single_y!(s.tab, i)
+    apply_single_x!(s.tab, i)
     s
 end
 function apply_single_y!(s::AbstractStabilizer, i)

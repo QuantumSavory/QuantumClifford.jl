@@ -896,31 +896,32 @@ if doset("Perturbative expansion sims")
     end
     
     @testset "Symbolic" begin
-        R, (e,) = PolynomialRing(RealField, ["e"])
-        unity = R(1);
-        
-        good_bell_state = S"XX
-                            ZZ"
-        canonicalize_rref!(good_bell_state)
-        initial_state = good_bell_state⊗good_bell_state
+        for statetype in [Stabilizer, MixedDestabilizer]
+            R, (e,) = PolynomialRing(RealField, ["e"])
+            unity = R(1);
+            
+            good_bell_state = statetype(S"XX
+                                          ZZ")
+            initial_state = good_bell_state⊗good_bell_state
 
-        g1 = SparseGate(CNOT, [1,3]) # CNOT between qubit 1 and qubit 3 (both with Alice)
-        g2 = SparseGate(CNOT, [2,4]) # CNOT between qubit 2 and qubit 4 (both with Bob)
-        m = BellMeasurement([X,X],[3,4]) # Bell measurement on qubit 3 and 4
-        v = VerifyOp(good_bell_state,[1,2]) # Verify that qubit 1 and 2 indeed form a good Bell pair
-        epsilon = e # The error rate
-        n = NoiseOpAll(UnbiasedUncorrelatedNoise(epsilon))
+            g1 = SparseGate(CNOT, [1,3]) # CNOT between qubit 1 and qubit 3 (both with Alice)
+            g2 = SparseGate(CNOT, [2,4]) # CNOT between qubit 2 and qubit 4 (both with Bob)
+            m = BellMeasurement([X,X],[3,4]) # Bell measurement on qubit 3 and 4
+            v = VerifyOp(good_bell_state,[1,2]) # Verify that qubit 1 and 2 indeed form a good Bell pair
+            epsilon = e # The error rate
+            n = NoiseOpAll(UnbiasedUncorrelatedNoise(epsilon))
 
-        # This circuit performs a depolarization at rate `epsilon` to all qubits,
-        # then bilater CNOT operations
-        # then a Bell measurement
-        # followed by checking whether the final result indeed corresponds to the correct Bell pair.
-        circuit = [n,g1,g2,m,v]
+            # This circuit performs a depolarization at rate `epsilon` to all qubits,
+            # then bilater CNOT operations
+            # then a Bell measurement
+            # followed by checking whether the final result indeed corresponds to the correct Bell pair.
+            circuit = [n,g1,g2,m,v]
 
-        pe_symbolic = petrajectories(initial_state, circuit, branch_weight=unity) # perturbative expansion
-        @test pe_symbolic[:undetected_failure] == -162.0*e^4 + 162.0*e^3 + -54.0*e^2 + 6.0*e
-        @test pe_symbolic[:detected_failure]   == -108.0*e^4 + 108.0*e^3 + -36.0*e^2 + 4.0*e
-        @test pe_symbolic[:true_success]       == 27.0*e^4 + -54.0*e^3 + 36.0*e^2 + -10.0*e + 1.0
+            pe_symbolic = petrajectories(initial_state, circuit, branch_weight=unity) # perturbative expansion
+            @test pe_symbolic[:undetected_failure] == -162.0*e^4 + 162.0*e^3 + -54.0*e^2 + 6.0*e
+            @test pe_symbolic[:detected_failure]   == -108.0*e^4 + 108.0*e^3 + -36.0*e^2 + 4.0*e
+            @test pe_symbolic[:true_success]       == 27.0*e^4 + -54.0*e^3 + 36.0*e^2 + -10.0*e + 1.0
+        end
     end
 end
 end

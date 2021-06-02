@@ -86,7 +86,7 @@ end
 struct VerifyOp <: AbstractOperation
     good_state::Stabilizer
     indices::AbstractVector{Int}
-    VerifyOp(s,indices) = new(canonicalize_rref!(copy(s))[1],indices)
+    VerifyOp(s,indices) = new(canonicalize_rref!(copy(stabilizerview(s)))[1],indices)
 end
 
 """A Stabilizer measurement on the entirety of the quantum register."""
@@ -136,7 +136,7 @@ affectedqubits(d::DecisionGate) = [(union(affectedqubits.(d.gates))...)...]
 """A method modifying a given state by applying the given operation. Non-deterministic, part of the Monte Carlo interface."""
 function applyop! end
 
-function applyop!(s::Stabilizer, g::NoisyGate)
+function applyop!(s::AbstractStabilizer, g::NoisyGate)
     s = applynoise!(
             applyop!(s,g.gate)[1],
             g.noise,
@@ -144,11 +144,11 @@ function applyop!(s::Stabilizer, g::NoisyGate)
     return s, :continue
 end
 
-applyop!(s::Stabilizer, g::SparseGate) = (apply!(s,g.cliff,affectedqubits(g)), :continue)
+applyop!(s::AbstractStabilizer, g::SparseGate) = (apply!(s,g.cliff,affectedqubits(g)), :continue)
 
-applyop!(s::Stabilizer, g::DenseGate) = (apply!(s,g.cliff), :continue)
+applyop!(s::AbstractStabilizer, g::DenseGate) = (apply!(s,g.cliff), :continue)
 
-function applyop!(s::Stabilizer, m::NoisyBellMeasurement)
+function applyop!(s::AbstractStabilizer, m::NoisyBellMeasurement)
     state, status = applyop!(s,m.meas)
     nqubits = length(affectedqubits(m))
     errprob = (1-(1-2*m.flipprob)^nqubits)/2 # probability of odd number of flips
@@ -160,7 +160,7 @@ function applyop!(s::Stabilizer, m::NoisyBellMeasurement)
 end
 
 # TODO this seems unnecessarily complicated
-function applyop!(s::Stabilizer, m::BellMeasurement)
+function applyop!(s::AbstractStabilizer, m::BellMeasurement)
     n = nqubits(s)
     indices = affectedqubits(m)
     res = 0x00
@@ -185,7 +185,7 @@ function applyop!(s::Stabilizer, m::BellMeasurement)
     end
 end
 
-function applyop!(s::Stabilizer, mr::BellMeasurementAndReset)
+function applyop!(s::AbstractStabilizer, mr::BellMeasurementAndReset)
     s,res = applyop!(s,mr.meas)
     if !res
         return s,res
@@ -204,7 +204,7 @@ end
 """A method modifying a given state by applying the corresponding noise model. Non-deterministic, part of the Noise interface."""
 function applynoise! end
 
-function applynoise!(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int})
+function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int})
     n = nqubits(s)
     infid = noise.errprobthird
     for i in indices
@@ -222,23 +222,24 @@ function applynoise!(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indices::Abs
     s
 end
 
-function applyop!(s::Stabilizer, mr::NoiseOpAll)
+function applyop!(s::AbstractStabilizer, mr::NoiseOpAll)
     n = nqubits(s)
     return applynoise!(s, mr.noise, 1:n), :continue
 end
 
-function applyop!(s::Stabilizer, mr::NoiseOp)
+function applyop!(s::AbstractStabilizer, mr::NoiseOp)
     return applynoise!(s, mr.noise, affectedqubits(mr)), :continue
 end
 
 # TODO this one needs more testing
-function applyop!(s::Stabilizer, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
+function applyop!(s::AbstractStabilizer, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
     # TODO QuantumClifford should implement some submatrix comparison
     s, _ = canonicalize_rref!(s,v.indices) # Document why rref is used
+    sv = stabilizerview(s)
     for i in eachindex(v.good_state)
-        (s.phases[end-i+1]==v.good_state.phases[end-i+1]) || return s, :undetected_failure
+        (sv.phases[end-i+1]==v.good_state.phases[end-i+1]) || return s, :undetected_failure
         for (j,q) in zip(eachindex(v.good_state),v.indices)
-            (s[end-i+1,q]==v.good_state[end-i+1,j]) || return s, :undetected_failure
+            (sv[end-i+1,q]==v.good_state[end-i+1,j]) || return s, :undetected_failure
         end
     end
     return s, :true_success
@@ -265,14 +266,14 @@ end
 """Compute all possible new states after the application of the given operator. Reports the probability of each one of them. Deterministic, part of the Perturbative Expansion interface."""
 function applyop_branches end
 
-applyop_branches(s::Stabilizer, g::SparseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)] # there are no fall backs on purpose, otherwise it is easy to mistakenly make a non-deterministic version of this method
-applyop_branches(s::Stabilizer, g::DenseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)]
-applyop_branches(s::Stabilizer, v::VerifyOp; max_order=1) = [(applyop!(copy(s),v)...,1,0)] 
+applyop_branches(s::AbstractStabilizer, g::SparseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)] # there are no fall backs on purpose, otherwise it is easy to mistakenly make a non-deterministic version of this method
+applyop_branches(s::AbstractStabilizer, g::DenseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)]
+applyop_branches(s::AbstractStabilizer, v::VerifyOp; max_order=1) = [(applyop!(copy(s),v)...,1,0)] 
 
 """Compute all possible new states after the application of the given noise model. Reports the probability of each one of them. Deterministic, part of the Noise interface."""
 function applynoise_branches end
 
-function applynoise_branches(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int}; max_order=1)
+function applynoise_branches(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int}; max_order=1)
     n = nqubits(s)
     l = length(indices)
     infid = noise.errprobthird
@@ -298,21 +299,21 @@ function applynoise_branches(s::Stabilizer,noise::UnbiasedUncorrelatedNoise,indi
     results
 end
 
-function applyop_branches(s::Stabilizer, nop::NoiseOpAll; max_order=1)
+function applyop_branches(s::AbstractStabilizer, nop::NoiseOpAll; max_order=1)
     n = nqubits(s)
     return [(state, :continue, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
 end
 
-function applyop_branches(s::Stabilizer, nop::NoiseOp; max_order=1)
+function applyop_branches(s::AbstractStabilizer, nop::NoiseOp; max_order=1)
     return [(state, :continue, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, affectedqubits(nop), max_order=max_order)]
 end
 
-function applyop_branches(s::Stabilizer, g::NoisyGate; max_order=1)
+function applyop_branches(s::AbstractStabilizer, g::NoisyGate; max_order=1)
     news, _,_,_ = applyop_branches(s,g.gate,max_order=max_order)[1] # TODO this assumes only one always successful branch for the gate
     return [(state, :continue, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
 end
 
-function applyop_branches(s::Stabilizer, m::NoisyBellMeasurement; max_order=1)
+function applyop_branches(s::AbstractStabilizer, m::NoisyBellMeasurement; max_order=1)
     measurement_branches = applyop_branches(s, m.meas, max_order=max_order)
     if max_order==0
         return measurement_branches
@@ -331,7 +332,7 @@ function applyop_branches(s::Stabilizer, m::NoisyBellMeasurement; max_order=1)
 end
 
 # TODO a lot of repetition with applyop!
-function applyop_branches(s::Stabilizer, m::BellMeasurement; max_order=1)
+function applyop_branches(s::AbstractStabilizer, m::BellMeasurement; max_order=1)
     n = nqubits(s)
     [(ns,iseven(r>>1) ? :continue : :detected_failure, p,0)
      for (ns,r,p) in _applyop_branches_measurement([(s,0x0,1.0)],m.pauli,affectedqubits(m),n)]
@@ -360,11 +361,11 @@ function _applyop_branches_measurement(branches, paulis, qubits, n)
 
     for (s,r0,p) in branches
         s,anticom,r = project!(s,op)
-        if isnothing(r)
+        if isnothing(r) # TODO anticom could be zero if there was a rank change
             s1 = s
             s2 = copy(s)
-            r1 = s1.phases[anticom] = 0x00
-            r2 = s2.phases[anticom] = 0x02
+            r1 = stabilizerview(s1).phases[anticom] = 0x00
+            r2 = stabilizerview(s2).phases[anticom] = 0x02
             push!(new_branches, (s1,r0+r1,p/2))
             push!(new_branches, (s2,r0+r2,p/2))
         else
@@ -376,7 +377,7 @@ function _applyop_branches_measurement(branches, paulis, qubits, n)
 end
 
 # TODO a lot of repetition with applyop!
-function applyop_branches(s::Stabilizer, mr::BellMeasurementAndReset; max_order=1)
+function applyop_branches(s::AbstractStabilizer, mr::BellMeasurementAndReset; max_order=1)
     branches = applyop_branches(s,mr.meas, max_order=max_order)
     s = branches[1][1] # relies on the order of the branches, does not reset the branch with success==false, assumes order=0
     branches = [(_reset!(s,affectedqubits(mr).mr.resetto),succ,prob,order) for (s,succ,prob,order) in branches]
