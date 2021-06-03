@@ -116,6 +116,17 @@ if doset("Pure and Mixed state initialization")
         @mythreads for n in test_sizes[2:end]
             @test mixed_destab_looks_good(MixedDestabilizer(random_stabilizer(rand(n÷2+1:n-4),n)))
         end
+        # Test initialization out of overdetermined stabs
+        stabs = [S"XX
+                   II",
+                 S"XX
+                   XX",
+                 S"ZZ
+                   ZZ"]
+        for s in stabs
+            md = MixedDestabilizer(s[1:1])
+            @test_broken MixedDestabilizer(s) == md
+        end
     end
     @testset "Tensor products over stabilizers" begin
         @mythreads for n in test_sizes
@@ -516,9 +527,9 @@ if doset("Partial traces")
 @testset "Partial traces" begin
     @testset "RREF canonicalization vs manual traceout" begin
         @mythreads for N in test_sizes
-            @mythreads for rep in 1:5
+            @mythreads for n in [N,rand(N÷4:N÷2)]
                 to_delete = randperm(N)[1:rand(N÷4:N÷2)]
-                stab0 = random_stabilizer(N)
+                stab0 = random_stabilizer(n, N)
                 id_paulis = zero(PauliOperator, N)
                 # Trace out by doing projective measurements
                 naive_stab = copy(stab0)
@@ -527,21 +538,16 @@ if doset("Partial traces")
                     if anticom_index!=0
                         naive_stab[anticom_index] = id_paulis
                     end
-                    naive1_stab, anticom_index, result = project!(naive_stab, single_z(N,i))
+                    naive_stab, anticom_index, result = project!(naive_stab, single_z(N,i))
                     if anticom_index!=0
                         naive_stab[anticom_index] = id_paulis
-                    end
-                end
-                for i in 1:N
-                    for j in to_delete
-                        naive_stab[i,j] = (false,false)
                     end
                 end
                 canonicalize!(naive_stab)
                 # Trace out by using the RREF canonical form
                 stab = copy(stab0)
                 stab, last_row = canonicalize_rref!(stab, to_delete)
-                for i in last_row+1:N
+                for i in last_row+1:n
                     stab[i] = id_paulis
                 end
                 canonicalize!(stab)
@@ -553,13 +559,13 @@ if doset("Partial traces")
                 canonicalize!(s)
                 @test stab == s
                 # On MixedStabilizer instances
-                s = traceout!(MixedStabilizer(copy(stab0), N), to_delete)
+                s = traceout!(MixedStabilizer(copy(stab0), n), to_delete)
                 canonicalize!(s)
                 @test stab[1:last_row] == stabilizerview(s)
                 @test mixed_stab_looks_good(s)
                 # On MixedDestabilizer instances
                 s = traceout!(MixedDestabilizer(copy(stab0)), to_delete)
-                #@test mixed_destab_looks_good(s) #TODO why is this test failing
+                @test mixed_destab_looks_good(s)
                 s = canonicalize!(stabilizerview(s))
                 @test stab[1:last_row] == s
             end
