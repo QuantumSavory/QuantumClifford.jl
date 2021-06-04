@@ -54,9 +54,7 @@ function generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; 
         else
             used += candidate
         end
-        # TODO, this is just a long explicit way to write it... learn more about broadcast
-        phases && (pauli.phase[] = prodphase(pauli,stabilizer,used))
-        pauli.xz .⊻= @view xzs[used,:]
+        mul_left!(pauli, stabilizer, used, phases=phases)
         saveindices && push!(used_indices, used)
     end
     # remove Zs
@@ -70,9 +68,7 @@ function generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; 
         else
             used += candidate
         end
-        # TODO, this is just a long explicit way to write it... learn more about broadcast
-        phases && (pauli.phase[] = prodphase(pauli,stabilizer,used))
-        pauli.xz .⊻= @view xzs[used,:]
+        mul_left!(pauli, stabilizer, used, phases=phases)
         saveindices && push!(used_indices, used)
     end
     if saveindices
@@ -271,11 +267,7 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
             new_pauli = zero(pauli)
             new_pauli.phase[] = pauli.phase[]
             for i in 1:n
-                if comm(pauli,destabilizer,i)!=0
-                    # TODO, this is just a long explicit way to write it... learn more about broadcast
-                    phases && (new_pauli.phase[] = prodphase(stabilizer, new_pauli, i))
-                    new_pauli.xz .⊻= @view stabilizer.xzs[i,:]
-                end
+                comm(pauli,destabilizer,i)!=0 && mul_left!(new_pauli, stabilizer, i, phases=phases)
             end
             result = new_pauli.phase[]
         else
@@ -409,11 +401,7 @@ function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=tr
                 new_pauli = zero(pauli)
                 new_pauli.phase[] = pauli.phase[]
                 for i in 1:r
-                    if comm(pauli,destabilizer,i)!=0
-                        # TODO, this is just a long explicit way to write it... learn more about broadcast
-                        phases && (new_pauli.phase[] = prodphase(stabilizer, new_pauli, i))
-                        new_pauli.xz .⊻= @view stabilizer.xzs[i,:]
-                    end
+                    comm(pauli,destabilizer,i)!=0 && mul_left!(new_pauli, stabilizer, i, phases=phases)
                 end
                 result = new_pauli.phase[]
             else
