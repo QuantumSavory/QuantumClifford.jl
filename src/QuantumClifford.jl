@@ -1783,20 +1783,20 @@ end
 """
 Check basic consistency requirements of a stabilizer. Used in tests.
 """
-function stab_looks_good(s; verbose=false)
+function stab_looks_good(s)
     c = canonicalize!(copy(s))
     nrows, ncols = size(c)
-    phasesok = all((c.phases .== 0x0) .| (c.phases .== 0x2))
+    all((c.phases .== 0x0) .| (c.phases .== 0x2)) || return false
     H = stab_to_gf2(c)
     good_indices = reduce(|,H,dims=(1,))
     good_indices = good_indices[1:end÷2] .| good_indices[end÷2+1:end]
     colsok = ncols>nrows || all(good_indices) # TODO, this can be stricter
+    colsok || return false
     good_indices = reduce(|,H,dims=(2,))
     rowsok = nrows>ncols || all(good_indices) # TODO, this can be stricter
-    if verbose
-        return (phases=phasesok, rows=rowsok, cols=colsok, commute=check_allrowscommute(c))
-    end
-    return phasesok && rowsok && colsok && check_allrowscommute(c)
+    rowsok || return false
+    check_allrowscommute(c) || return false
+    return true
 end
 
 """
@@ -1805,15 +1805,13 @@ Check basic consistency requirements of a mixed stabilizer. Used in tests.
 function mixed_stab_looks_good(s)
     s = stabilizerview(s)
     c = canonicalize!(copy(s))
-    phasesok = all((c.phases .== 0x0) .| (c.phases .== 0x2))
+    all((c.phases .== 0x0) .| (c.phases .== 0x2)) || return false 
     H = stab_to_gf2(c)
     # Unlike for stabilizers, we do not expect all columns to have non-identity ops
-    #good_indices = reduce(|,H,dims=(1,))
-    #good_indices = good_indices[1:end÷2] .| good_indices[end÷2+1:end]
-    #colsok = all(good_indices)
-    good_indices = reduce(|,H,dims=(2,))
-    rowsok = all(good_indices)
-    return phasesok && rowsok && check_allrowscommute(c)
+    non_trivial_rows = reduce(|,H,dims=(2,))
+    all(non_trivial_rows) || return false
+    check_allrowscommute(c) || return false
+    return true
 end
 
 """
@@ -1822,16 +1820,16 @@ Check basic consistency requirements of a destabilizer. Used in tests.
 function destab_looks_good(destabilizer)
     s = stabilizerview(destabilizer)
     d = destabilizerview(destabilizer)
-    good = stab_looks_good(s)
-    good &= stab_looks_good(d)
+    stab_looks_good(s) || return false
+    stab_looks_good(d) || return false
     for i in eachindex(s)
-        good &= comm(s[i],d[i])==0x1
+        comm(s[i],d[i])==0x1 || return false
         for j in eachindex(s)
             j==i && continue
-            good &= comm(s[i],d[j])==0x0
+            comm(s[i],d[j])==0x0 || return false
         end
     end
-    good
+    return true
 end
 
 """
@@ -1842,34 +1840,34 @@ function mixed_destab_looks_good(destabilizer)
     d = destabilizerview(destabilizer)
     x = logicalxview(destabilizer)
     z = logicalzview(destabilizer)
-    good = check_allrowscommute(s)
-    good &= mixed_stab_looks_good(s)
-    good &= mixed_stab_looks_good(d)
-    good &= mixed_stab_looks_good(x)
-    good &= mixed_stab_looks_good(z)
+    check_allrowscommute(s) || return false
+    mixed_stab_looks_good(s) || return false
+    mixed_stab_looks_good(d) || return false
+    mixed_stab_looks_good(x) || return false
+    mixed_stab_looks_good(z) || return false
     for i in eachindex(s)
-        good &= comm(s[i],d[i])==0x1
+        comm(s[i],d[i])==0x1 || return false
         for j in eachindex(s)
             j==i && continue
-            good &= comm(s[i],d[j])==0x0
+            comm(s[i],d[j])==0x0 || return false
         end
         for j in eachindex(x)
-            good &= comm(s[i],x[j])==0x0
-            good &= comm(s[i],z[j])==0x0
+            comm(s[i],x[j])==0x0 || return false
+            comm(s[i],z[j])==0x0 || return false
         end
     end
     for i in eachindex(x)
         for j in eachindex(x)
-            good &= comm(x[i],x[j])==0x0
-            good &= comm(z[i],z[j])==0x0
+            comm(x[i],x[j])==0x0 || return false
+            comm(z[i],z[j])==0x0 || return false
             if i==j
-                good &= comm(x[i],z[j])==0x1
+                comm(x[i],z[j])==0x1 || return false
             else
-                good &= comm(x[i],z[j])==0x0
+                comm(x[i],z[j])==0x0 || return false
             end
         end
     end
-    good
+    return true
 end
 
 ##############################
