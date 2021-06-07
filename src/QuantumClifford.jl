@@ -699,7 +699,7 @@ end
 end
 
 @inline function rowmul!(s::Destabilizer, i, j; phases::Bool=true)
-    rowmul!(s.tab, j, i; phases=false)
+    rowmul!(s.tab, j, i; phases=false) # Indices are flipped to preserve commutation constraints
     n = size(s.tab,1)÷2
     rowmul!(s.tab, i+n, j+n; phases=phases)
 end
@@ -709,7 +709,7 @@ end
 end
 
 @inline function rowmul!(s::MixedDestabilizer, i, j; phases::Bool=true)
-    rowmul!(s.tab, j, i; phases=false)
+    rowmul!(s.tab, j, i; phases=false) # Indices are flipped to preserve commutation constraints
     n = nqubits(s)
     rowmul!(s.tab, i+n, j+n; phases=phases)
 end

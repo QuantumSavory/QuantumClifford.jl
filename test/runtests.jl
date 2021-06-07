@@ -574,6 +574,48 @@ if doset("Partial traces")
 end
 end
 
+if doset("Qubit resets")
+    @testset "Qubit resets" begin
+        @mythreads for N in test_sizes
+            for R in [rand(N÷2:N*2÷3), N]
+                s = random_stabilizer(R,N)
+                newstate = random_stabilizer(rand(N÷4:N*2÷3))
+                perm = randperm(N)[1:nqubits(newstate)]
+                to_trace = setdiff(1:N,perm)
+                # Testing MixedDestabilizer
+                md = MixedDestabilizer(s)
+                mdr1 = reset_qubits!(copy(md), newstate,perm)
+                @test mixed_destab_looks_good(mdr1)
+                mdr2 = reset_qubits!(copy(mdr1),newstate,perm)
+                @test mdr1==mdr2
+                traceout!(mdr2,to_trace)
+                mdr2v = stabilizerview(mdr2)
+                @test canonicalize!(copy(mdr2v)[:,perm]) == canonicalize!(copy(newstate))
+                # Testing MixedStabilizer
+                ms = MixedStabilizer(s)
+                msr1 = reset_qubits!(copy(ms), newstate,perm)
+                @test mixed_stab_looks_good(msr1)
+                msr2 = reset_qubits!(copy(msr1),newstate,perm)
+                @test msr1==msr2
+                traceout!(msr2,to_trace)
+                msr2v = stabilizerview(msr2)
+                @test canonicalize!(copy(msr2v)[:,perm]) == canonicalize!(copy(newstate))
+                @test canonicalize!(msr2v) == canonicalize!(mdr2v)
+                # Testing Stabilizer
+                ss = R==N ? s : MixedStabilizer(s).tab # Ensure the tableau is padded with Is
+                ssr1 = reset_qubits!(copy(ss), newstate,perm)
+                ssr2 = reset_qubits!(copy(ssr1),newstate,perm)
+                @test canonicalize!(ssr1)==canonicalize!(ssr2)
+                traceout!(ssr2,to_trace)
+                ssr2v = stabilizerview(ssr2)
+                c, x, z = canonicalize!(ssr2v, ranks=true)
+                @test canonicalize!(copy(ssr2v)[:,perm])[1:z] == canonicalize!(copy(newstate))
+                @test canonicalize!(msr2v) == c[1:z]
+            end
+        end
+    end
+end    
+
 if doset("GF(2) representations")
 @testset "GF(2) representations" begin
     @testset "Equivalence of GF(2) Gaussian elimination and Stabilizer canonicalization" begin
