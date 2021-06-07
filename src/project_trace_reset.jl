@@ -449,6 +449,11 @@ function _expand_pauli(pauli,qubits,n) # TODO rename and make public
     expanded
 end
 
+"""
+$TYPEDSIGNATURES
+
+Reset a given set of qubits to be in the state `newstate`.
+"""
 function reset_qubits!(s::Stabilizer, newstate, qubits; phases=true)
     # TODO raise error if sizes and length of qubits do not match
     n = nqubits(s)
@@ -464,6 +469,9 @@ function reset_qubits!(s::Stabilizer, newstate, qubits; phases=true)
     s
 end
 
+"""
+$TYPEDSIGNATURES
+"""
 function reset_qubits!(s::MixedStabilizer, newstate, qubits; phases=true) # TODO create the necessary interfaces so that Stabilizer and MixedStabilizer share this code
     # TODO raise error if sizes and length of qubits do not match
     n = nqubits(s)
@@ -476,6 +484,9 @@ function reset_qubits!(s::MixedStabilizer, newstate, qubits; phases=true) # TODO
     s
 end
 
+"""
+$TYPEDSIGNATURES
+"""
 function reset_qubits!(s::MixedDestabilizer, newstate::Stabilizer, qubits; phases=true) # TODO this is really inefficient
     # TODO raise error if sizes and length of qubits do not match
     for pauli in newstate
