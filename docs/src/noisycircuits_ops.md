@@ -83,7 +83,15 @@ VerifyOp(desired_state, qubit_indices)
 
 ## Reset Operations
 
-TODO
+The [`Reset`](@ref) operations lets you trace out the specified qubits and set their state to a specific tableau.
+
+```@example 1
+new_state = random_stabilizer(3)
+qubit_indices = [1,2,3]
+Reset(new_state, qubit_indices)
+```
+
+It can be done anywhere in a circuit, not just at the beginning.
 
 ## Gates Conditioned on Classical Bits
 

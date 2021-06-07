@@ -16,12 +16,13 @@ export AbstractOperation,
        SparseGate, DenseGate, NoisyGate,
        BellMeasurement, NoisyBellMeasurement,
        DenseMeasurement, SparseMeasurement,
+       Reset,
        DecisionGate, ConditionalGate,
        affectedqubits, applyop!, applynoise!,
        applyop_branches, applynoise_branches,
        mctrajectory!, mctrajectories,
        petrajectory, petrajectories,
-       Register, Measurement, ConditionalGate, DecisionGate
+       Register, ConditionalGate, DecisionGate
 
 abstract type AbstractOperation end
 
@@ -29,6 +30,7 @@ abstract type AbstractNoise end
 
 #TODO all these structs should use specified types
 #TODO all of the methods should better specified type signatures
+#TODO measure allocation in various apply* methods and verify it is not superfluous
 
 """Depolarization noise model with total probability of error `3*errprobthird`."""
 struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
@@ -76,10 +78,10 @@ struct NoisyBellMeasurement{T} <: AbstractOperation
 end
 NoisyBellMeasurement(p,i,fp) = NoisyBellMeasurement(BellMeasurement(p,i),fp)
 
-"""Performing a Bell measurement followed by resetting the measured qubits to the given state `resetto`."""
-struct BellMeasurementAndReset <: AbstractOperation # TODO delete this and just make a standalone reset 
-    meas::AbstractOperation
+"""Reset the specified qubits to the given state."""
+struct Reset <: AbstractOperation 
     resetto::Stabilizer
+    indices::AbstractVector{Int}
 end
 
 """A "probe" to verify that the state of the qubits corresponds to a desired `good_state`, e.g. at the end of the execution of a circuit."""
@@ -124,7 +126,7 @@ affectedqubits(g::NoisyGate) = affectedqubits(g.gate)
 affectedqubits(g::SparseGate) = g.indices
 affectedqubits(g::DenseGate) = 1:nqubits(g.cliff)
 affectedqubits(m::BellMeasurement) = m.indices
-affectedqubits(m::BellMeasurementAndReset) = affectedqubits(m.meas)
+affectedqubits(r::Reset) = r.indices
 affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
 affectedqubits(n::NoiseOp) = n.indices
 affectedqubits(v::VerifyOp) = v.indices
@@ -185,20 +187,9 @@ function applyop!(s::AbstractStabilizer, m::BellMeasurement)
     end
 end
 
-function applyop!(s::AbstractStabilizer, mr::BellMeasurementAndReset)
-    s,res = applyop!(s,mr.meas)
-    if !res
-        return s,res
-    else
-        # TODO is the traceout necessary given that we just performed measurements?
-        traceout!(s,mr.meas.indices)# TODO it seems like a bad idea not to keep track of the rank here
-        for (ii,i) in enumerate(affectedqubits(mr))
-            for j in [1,2]
-                s[end-j+1,i] = mr.resetto[j,ii]
-            end
-        end
-        return s,:continue
-    end
+function applyop!(s::AbstractStabilizer, reset::Reset)
+    reset_qubits!(s, reset.resetto, reset.indices)
+    return s,:continue
 end
 
 """A method modifying a given state by applying the corresponding noise model. Non-deterministic, part of the Noise interface."""
@@ -266,9 +257,11 @@ end
 """Compute all possible new states after the application of the given operator. Reports the probability of each one of them. Deterministic, part of the Perturbative Expansion interface."""
 function applyop_branches end
 
+#TODO is the use of copy here necessary?
 applyop_branches(s::AbstractStabilizer, g::SparseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)] # there are no fall backs on purpose, otherwise it is easy to mistakenly make a non-deterministic version of this method
 applyop_branches(s::AbstractStabilizer, g::DenseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)]
 applyop_branches(s::AbstractStabilizer, v::VerifyOp; max_order=1) = [(applyop!(copy(s),v)...,1,0)] 
+applyop_branches(s::AbstractStabilizer, r::Reset; max_order=1) = [(applyop!(copy(s),r)...,1,0)] 
 
 """Compute all possible new states after the application of the given noise model. Reports the probability of each one of them. Deterministic, part of the Noise interface."""
 function applynoise_branches end
@@ -374,25 +367,6 @@ function _applyop_branches_measurement(branches, paulis, qubits, n)
     end
 
     return _applyop_branches_measurement(new_branches, otherpaulis, otherqubits, n)
-end
-
-# TODO a lot of repetition with applyop!
-function applyop_branches(s::AbstractStabilizer, mr::BellMeasurementAndReset; max_order=1)
-    branches = applyop_branches(s,mr.meas, max_order=max_order)
-    s = branches[1][1] # relies on the order of the branches, does not reset the branch with success==false, assumes order=0
-    branches = [(_reset!(s,affectedqubits(mr).mr.resetto),succ,prob,order) for (s,succ,prob,order) in branches]
-    branches
-end
-
-function _reset!(s, qubits, resetto)
-    # TODO is the traceout necessary given that we just performed measurements?
-    traceout!(s,qubits)# TODO it seems like a bad idea not to keep track of the rank here
-    for (ii,i) in enumerate(qubits)
-        for j in [1,2]
-            s[end-j+1,i] = resetto[j,ii]
-        end
-    end
-    return s
 end
 
 """Run a perturbative expansion to a given order. Uses applyop_branches under the hood."""
