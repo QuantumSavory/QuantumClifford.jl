@@ -9,8 +9,8 @@ function __init__()
     @require Nemo="2edaba10-b0f1-5616-af89-8c11ac63239a" begin
         NEMO_LOADED[] = true
         function nemo_inv(a, n)
-            binaryring = Nemo.ResidueRing(ZZ, 2) # TODO should I use GF(2) instead of ResidueRing(ZZ, 2)?
-            M = MatrixSpace(binaryring, n, n)
+            binaryring = Nemo.ResidueRing(Nemo.ZZ, 2) # TODO should I use GF(2) instead of ResidueRing(ZZ, 2)?
+            M = Nemo.MatrixSpace(binaryring, n, n)
             inverted = inv(M(Matrix{Int}(a))) # Nemo is very picky about input data types
             return (x->x.data).(inverted)
         end

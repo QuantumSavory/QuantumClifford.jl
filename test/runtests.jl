@@ -4,6 +4,7 @@ using QuantumClifford: stab_looks_good, mixed_stab_looks_good, destab_looks_good
 using QuantumClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol
 using QuantumClifford.Experimental.NoisyCircuits
 using Nemo
+import AbstractAlgebra
 using Base.Threads: @threads, nthreads
 
 macro mythreads(arg)
@@ -945,7 +946,7 @@ if doset("Perturbative expansion sims")
     
     @testset "Symbolic" begin
         for statetype in [Stabilizer, MixedDestabilizer]
-            R, (e,) = PolynomialRing(RealField, ["e"])
+            R, (e,) = AbstractAlgebra.PolynomialRing(AbstractAlgebra.RealField, ["e"])
             unity = R(1);
             
             good_bell_state = statetype(S"XX
