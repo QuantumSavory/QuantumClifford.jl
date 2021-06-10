@@ -1,9 +1,9 @@
 using QuantumClifford, Test, Random, Documenter
-using AbstractAlgebra
 using Quantikz: circuit2string, QuantikzOp
 using QuantumClifford: stab_looks_good, mixed_stab_looks_good, destab_looks_good, mixed_destab_looks_good
 using QuantumClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol
 using QuantumClifford.Experimental.NoisyCircuits
+using Nemo
 using Base.Threads: @threads, nthreads
 
 macro mythreads(arg)
