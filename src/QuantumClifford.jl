@@ -129,10 +129,14 @@ function zbit(p::PauliOperator)
     [(word>>s)&one==one for word in zview(p) for s in 0:size-1][begin:p.nqubits]
 end
 
-macro P_str(a)
+function _P_str(a)
     letters = filter(x->occursin(x,"_IZXY"),a)
     phase = phasedict[strip(filter(x->!occursin(x,"_IZXY"),a))]
     PauliOperator(phase, [l=='X'||l=='Y' for l in letters], [l=='Z'||l=='Y' for l in letters])
+end
+
+macro P_str(a)
+    _P_str(a)
 end
 
 Base.getindex(p::PauliOperator{Tz,Tv}, i::Int) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = (p.xz[_div(Tve, i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0, (p.xz[end>>1+_div(Tve,i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0
@@ -248,9 +252,13 @@ Stabilizer(xzs::AbstractMatrix{Bool}) = Stabilizer(zeros(UInt8, size(xzs,1)), xz
 
 Stabilizer(s::Stabilizer) = s
 
-macro S_str(a)
-    paulis = [eval(quote @P_str($(strip(s))) end) for s in split(a,'\n')] #TODO seriously!?
+function _S_str(a)
+    paulis = [_P_str(strip(s)) for s in split(a,'\n')]
     Stabilizer(paulis)
+end
+
+macro S_str(a)
+    _S_str(a)
 end
 
 Base.getindex(stab::Stabilizer, i::Int) = PauliOperator(stab.phases[i], nqubits(stab), stab.xzs[i,:])
@@ -1159,7 +1167,7 @@ struct CliffordOperator{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned
 end
 
 macro C_str(a)
-    tab = eval(quote @S_str($(a)) end) #TODO this looks silly
+    tab = _S_str(a)
     CliffordOperator(tab)
 end
 
@@ -1290,7 +1298,7 @@ function CliffordColumnForm(s::Stabilizer)
 end
 
 macro Ccol_str(a)
-    paulis = [eval(quote @P_str($(strip(s))) end) for s in split(a,'\n')] #TODO seriously!?
+    paulis = [_P_str(strip(s)) for s in split(a,'\n')]
     CliffordColumnForm(paulis)
 end
 
