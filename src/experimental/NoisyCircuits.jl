@@ -493,14 +493,14 @@ function applyop_branches(s::Register, op::DenseMeasurement; max_order=1)
     new_branches
 end
 
-function applyop_branches(state::Register, op::SparseMeasurement)
+function applyop_branches(state::Register, op::SparseMeasurement; max_order=1)
     n = nqubits(state.stab) # TODO implement actual sparse measurements
     p = zero(typeof(op.pauli), n)
     for (ii,i) in enumerate(op.indices)
         p[i] = op.pauli[ii]
     end
     dm = DenseMeasurement(p,op.storagebit)
-    applyop_branches(state,dm)
+    applyop_branches(state,dm, max_order=max_order)
 end
 
 
