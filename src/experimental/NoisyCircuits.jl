@@ -173,9 +173,9 @@ function applyop!(s::AbstractStabilizer, m::BellMeasurement)
         s,anticom,r = project!(s,op)
         if isnothing(r)
             if rand()>0.5 # TODO this seems stupid, float not necessary
-                r = s.phases[anticom] = 0x00
+                r = stabilizerview(s).phases[anticom] = 0x00
             else
-                r = s.phases[anticom] = 0x02
+                r = stabilizerview(s).phases[anticom] = 0x02
             end
         end
         res ⊻= r
