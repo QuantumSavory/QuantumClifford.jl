@@ -36,6 +36,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     apply_single_z!, apply_single_x!, apply_single_y!,
     random_invertible_gf2,
     random_pauli, random_stabilizer, random_destabilizer, random_clifford, random_singlequbitop,
+    bell, ghz,
     BadDataStructure
 
 # Predefined constants representing the permitted phases encoded
@@ -337,6 +338,10 @@ end
 function apply!(s::AbstractStabilizer, p::AbstractCliffordOperator, indices; phases::Bool=true)
     apply!(s.tab,p, indices; phases=phases)
     s
+end
+
+function ⊗(ops::AbstractStabilizer...)
+    foldl(⊗, ops[2:end], init=ops[1])
 end
 
 ##############################
@@ -1135,7 +1140,7 @@ function apply!(s::Stabilizer, p::PauliOperator, indices; phases::Bool=true)
     s
 end
 
-function tensor_pow(op::AbstractCliffordOperator,power::Integer)
+function tensor_pow(op,power::Integer) # TODO optimize (recursively) for large power
     ⊗(repeat([op],power)...)
 end
 
@@ -1900,6 +1905,7 @@ RecipesBase.@recipe function f(s::Stabilizer; xzcomponents=:split)
 end
 
 include("./randoms.jl")
+include("./useful_states.jl")
 include("./experimental/Experimental.jl")
 
 end #module
