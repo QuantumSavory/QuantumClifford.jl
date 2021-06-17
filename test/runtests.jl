@@ -975,6 +975,144 @@ if doset("Perturbative expansion sims")
 end
 end
 
+if doset("Measurements")
+@testset "Measurements" begin
+    # compare(a, b, symbols, c) = [abs(a[symbol]/c-b[symbol]) / (a[symbol]/c+b[symbol]+1e-5) < 0.1 for symbol in symbols]
+    @testset "BellMeasurements" begin
+        stateX = S"X"
+        mX = BellMeasurement([X], [1])
+        vX = VerifyOp(S"X", [1])
+        for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+            determinate1 = mctrajectories(stabType(stateX), [mX,vX], trajectories=10)
+            @test determinate1[:detected_failure] == 0
+            @test determinate1[:undetected_failure] == 0
+            @test determinate1[:true_success] == 10
+            determinate1_pe = petrajectories(stabType(copy(stateX)), [mX,vX])
+            @test determinate1_pe[:detected_failure] == 0
+            @test determinate1_pe[:undetected_failure] == 0
+            @test determinate1_pe[:true_success] == 1
+        end
+        stateZ = S"Z"
+        for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+            random1 = mctrajectories(stabType(stateZ), [mX,vX], trajectories=500)
+            @test random1[:detected_failure] > 220
+            @test random1[:undetected_failure] == 0
+            @test random1[:true_success] > 220
+            random1_pe = petrajectories(stabType(copy(stateZ)), [mX,vX])
+            @test random1_pe[:detected_failure] > 0.44
+            @test random1_pe[:undetected_failure] == 0
+            @test random1_pe[:true_success] > 0.44
+        end
+        bell_state = S" XX
+                        ZZ"
+        m1 = BellMeasurement([X,X], [1,2])
+        for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+            determinate2 = mctrajectories(stabType(bell_state), [m1], trajectories=10)
+            @test determinate2[:detected_failure] == 0
+            @test determinate2[:undetected_failure] == 0
+            @test determinate2[:continue] == 10
+            determinate2_pe = petrajectories(stabType(copy(bell_state)), [m1])
+            @test determinate2_pe[:detected_failure] == 0
+            @test determinate2_pe[:undetected_failure] == 0
+        end
+        m2 = BellMeasurement([X,Z], [1,2])
+        v = VerifyOp(bell_state, [1,2])
+        for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+            random2 = mctrajectories(stabType(bell_state), [m2,v], trajectories=500)
+            @test random2[:detected_failure]+random2[:undetected_failure] == 500
+            @test random2[:true_success] == 0
+            random2_pe = petrajectories(stabType(copy(bell_state)), [m2,v])
+            @test random2_pe[:detected_failure]+random2_pe[:undetected_failure] == 1
+            @test random2_pe[:true_success] == 0
+        end
+    end
+    @testset "DenseMeasurements" begin
+        ghzState = S"XXX
+                    ZZI
+                    IZZ"
+        m1 = DenseMeasurement(P"ZZI", 1)
+        v = VerifyOp(ghzState, [1,2,3])
+        for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+            register1 = Register(stabType(ghzState), zeros(Bool, 1))
+            determinate1 = mctrajectories(register1, [m1,v], trajectories=10)
+            @test determinate1[:detected_failure] == 0
+            @test determinate1[:undetected_failure] == 0
+            @test determinate1[:true_success] == 10
+            determinate1_pe = petrajectories(register1, [m1,v])
+            @test determinate1_pe[:detected_failure] == 0
+            @test determinate1_pe[:undetected_failure] == 0
+            @test determinate1_pe[:true_success] == 1
+        end
+        m2 = DenseMeasurement(P"ZII", 1)
+        for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+            register1 = Register(stabType(ghzState), zeros(Bool, 1))
+            random1 = mctrajectories(register1, [m2,v], trajectories=50)
+            @test random1[:detected_failure] == 0
+            @test random1[:undetected_failure] == 50
+            @test random1[:true_success] == 0
+            random1_pe = petrajectories(register1, [m2,v])
+            @test random1_pe[:detected_failure] == 0
+            @test random1_pe[:undetected_failure] == 1
+            @test random1_pe[:true_success] == 0
+        end
+        m3 = DenseMeasurement(P"XII", 1)
+        for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+            register1 = Register(stabType(ghzState), zeros(Bool, 1))
+            random2 = mctrajectories(register1, [m3,v], trajectories=50)
+            @test random2[:detected_failure] == 0
+            @test random2[:undetected_failure] == 50
+            @test random2[:true_success] == 0
+            random2_pe = petrajectories(register1, [m3,v])
+            @test random2_pe[:detected_failure] == 0
+            @test random2_pe[:undetected_failure] == 1
+            @test random2_pe[:true_success] == 0
+        end
+    end
+    @testset "SparseMeasurements" begin
+        ghzState = S"XXX
+                    ZZI
+                    IZZ"
+        m1 = SparseMeasurement(P"ZZ", [1,2], 1)
+        v = VerifyOp(ghzState, [1,2,3])
+        for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+            register1 = Register(stabType(ghzState), zeros(Bool, 1))
+            determinate1 = mctrajectories(register1, [m1,v], trajectories=10)
+            @test determinate1[:detected_failure] == 0
+            @test determinate1[:undetected_failure] == 0
+            @test determinate1[:true_success] == 10
+            determinate1_pe = petrajectories(register1, [m1,v])
+            @test determinate1_pe[:detected_failure] == 0
+            @test determinate1_pe[:undetected_failure] == 0
+            @test determinate1_pe[:true_success] == 1
+        end
+        m2 = SparseMeasurement(P"Z", [1], 1)
+        for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+            register1 = Register(stabType(ghzState), zeros(Bool, 1))
+            random1 = mctrajectories(register1, [m2,v], trajectories=50)
+            @test random1[:detected_failure] == 0
+            @test random1[:undetected_failure] == 50
+            @test random1[:true_success] == 0
+            random1_pe = petrajectories(register1, [m2,v])
+            @test random1_pe[:detected_failure] == 0
+            @test random1_pe[:undetected_failure] == 1
+            @test random1_pe[:true_success] == 0
+        end
+        m3 = SparseMeasurement(P"X", [1], 1)
+        for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+            register1 = Register(stabType(ghzState), zeros(Bool, 1))
+            random2 = mctrajectories(register1, [m3,v], trajectories=50)
+            @test random2[:detected_failure] == 0
+            @test random2[:undetected_failure] == 50
+            @test random2[:true_success] == 0
+            random2_pe = petrajectories(register1, [m3,v])
+            @test random2_pe[:detected_failure] == 0
+            @test random2_pe[:undetected_failure] == 1
+            @test random2_pe[:true_success] == 0
+        end
+    end
+end
+end
+
 if doset("Quantikz diagrams")
 @testset "Quantikz diagrams" begin
     noise = UnbiasedUncorrelatedNoise(0.1)
