@@ -479,7 +479,7 @@ _X ⟼ + _Z
 Z_ ⟼ - X_
 _Z ⟼ + XX
 
-julia> CliffordColumnForm([P"-ZZ", P"_Z", P"-X_", P"XX"])
+julia> CliffordOperator([P"-ZZ", P"_Z", P"-X_", P"XX"])
 X_ ⟼ - ZZ
 _X ⟼ + _Z
 Z_ ⟼ - X_
@@ -489,7 +489,6 @@ _Z ⟼ + XX
 Naturally, the operators can be applied to stabilizer states. This includes high
 performance in-place operations (and the phase can be neglected with
 `phases=false` for faster computation).
-For some uses, the alternative datastructure [`CliffordColumnForm`](@ref) might be more performant.
 
 ```jldoctest
 julia> CNOT * S"X_"
