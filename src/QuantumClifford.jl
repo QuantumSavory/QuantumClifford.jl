@@ -29,7 +29,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     CliffordOperator, @C_str,
     CliffordColumnForm, @Ccol_str,
     CNOT, CPHASE, SWAP, Hadamard, Phase, CliffordId,
-    tensor_pow,
+    tensor, tensor_pow,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     perm_inverse, perm_product,
     single_z, single_x, single_y,
@@ -340,9 +340,15 @@ function apply!(s::AbstractStabilizer, p::AbstractCliffordOperator, indices; pha
     s
 end
 
+"""Tensor product between operators or tableaux. See also [`tensor`](@ref) and [`tensor_pow`](@ref)."""
+function ⊗ end
+
 function ⊗(ops::AbstractStabilizer...)
     foldl(⊗, ops[2:end], init=ops[1])
 end
+
+"""Tensor product between operators or tableaux. See also [`⊗`](@ref) and [`tensor_pow`](@ref)."""
+const tensor = ⊗
 
 ##############################
 # Destabilizer formalism
@@ -1140,8 +1146,29 @@ function apply!(s::Stabilizer, p::PauliOperator, indices; phases::Bool=true)
     s
 end
 
-function tensor_pow(op,power::Integer) # TODO optimize (recursively) for large power
-    ⊗(repeat([op],power)...)
+function tensor_pow(op,power,mem::Dict{Int,Any})
+    if power==1
+        return op
+    elseif haskey(mem,power)
+        return mem[power]
+    end
+    half,rest = divrem(power,2)
+    phalf = get!(mem,half) do
+        tensor_pow(op,half,mem)
+    end
+    res = phalf ⊗ phalf
+    if rest!=0
+        prest = get!(mem,rest) do
+            tensor_pow(op,half,mem)
+        end
+        res = res ⊗ prest
+    end
+    res
+end
+
+"""Repeated tensor product of an operators or a tableau. See also [`⊗`](@ref) and [`tensor_pow`](@ref)."""
+function tensor_pow(op,power)
+    tensor_pow(op,power,Dict{Int,Any}())
 end
 
 """

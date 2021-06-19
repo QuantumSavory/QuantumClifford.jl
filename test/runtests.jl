@@ -663,10 +663,36 @@ end
 if doset("Clifford Operators")
 @testset "Clifford Operators" begin
     @testset "Permutations of qubits" begin
-        # TODO (see the column version)
+        for c in [CNOT, CliffordId⊗Hadamard, CNOT⊗CNOT, tensor_pow(CNOT,6), tensor_pow(CNOT,7), tensor_pow(CNOT,6)⊗Phase, tensor_pow(CNOT,7)⊗Phase]
+            for rep in 1:5
+                p = randperm(nqubits(c))
+                s = random_stabilizer(nqubits(c))
+                @test permute(c,p)*s[:,p] == (c*s)[:,p]
+            end
+        end
+        for i in 1:5
+            p = randperm(125)
+            c = rand([CliffordId, Hadamard, Phase], 125)
+            @test ⊗(c[p]...) == permute(⊗(c...), p)
+        end
     end
     @testset "Tensor products" begin
-        # TODO (see the column version)
+        for n in test_sizes
+            for np in [2,3,4]
+                for pow in [1,2,10]
+                    s1 = random_stabilizer(n)
+                    sps = [random_stabilizer(np) for i in 1:pow]
+                    ss = [s1, sps...]
+                    c1 = random_clifford(n)
+                    cps = repeat([random_clifford(np)],pow)
+                    cs = [c1, cps...]
+                    res1 = ⊗([c*s for (c,s) in zip(cs,ss)]...)
+                    res2 = ⊗(cs...)*⊗(ss...)
+                    res3 = (c1*s1) ⊗ (⊗(tensor_pow(cps[1],pow)) * ⊗(sps...))
+                    @test res1==res2==res3
+                end
+            end
+        end
     end
     @testset "Clifford acting on Stabilizer" begin
         @mythreads for size in test_sizes
