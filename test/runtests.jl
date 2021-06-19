@@ -1,20 +1,11 @@
-using QuantumClifford, Test, Random, Documenter
-using Quantikz: circuit2string, QuantikzOp
+using Test, Random, Documenter
+using QuantumClifford
 using QuantumClifford: stab_looks_good, mixed_stab_looks_good, destab_looks_good, mixed_destab_looks_good
 using QuantumClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol
 using QuantumClifford.Experimental.NoisyCircuits
+using Quantikz: circuit2string, QuantikzOp
 using Nemo
 import AbstractAlgebra
-using Base.Threads: @threads, nthreads
-
-macro mythreads(arg)
-    return arg # TODO bypass this as multithreaded tests do not work yet
-    if nthreads()==1
-        return arg
-    else
-        return esc(:( @threads $arg ))
-    end
-end
 
 test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
@@ -39,11 +30,7 @@ end
 end
 end
 
-
-function tests()
-
-Random.seed!(42)
-
+function test_paulistab()
 if doset("Pauli Operators")
 @testset "Pauli Operators" begin
     @testset "Parsing, constructors, and properties" begin
@@ -52,7 +39,7 @@ if doset("Pauli Operators")
         @test xbit(P"-iXYZ") == Bool[1,1,0]
         @test zbit(P"-iXYZ") == Bool[0,1,1]
         @test P"-iXYZ".xz == UInt64[0x03, 0x06]
-        @test P"-iXYZ".phase[] == 0x03 # TODO why is this failing?
+        @test P"-iXYZ".phase[] == 0x03
         @test P"-iXYZ".nqubits == 3
         @test size(P"-iXYZ") == (3,)
     end
@@ -72,8 +59,8 @@ if doset("Pauli Operators")
         @test prodphase(P"ZZZ",P"XXX") == 0x3
     end
     @testset "Commutation implies real phase" begin
-        @mythreads for i in 1:10
-            @mythreads for n in test_sizes
+        for i in 1:10
+            for n in test_sizes
                 p1,p2 = random_pauli(n; nophase=true), random_pauli(n; nophase=true)
                 com = comm(p1,p2)==0x0
                 p = prodphase(p1,p2)
@@ -83,8 +70,8 @@ if doset("Pauli Operators")
         end
     end
     @testset "Single qubit Paulis and their action" begin
-        @mythreads for i in 1:10
-            @mythreads for n in test_sizes
+        for i in 1:10
+            for n in test_sizes
                 ix, iy, iz = rand(1:n), rand(1:n), rand(1:n)
                 px = single_x(n,ix)
                 py = single_y(n,iy)
@@ -109,12 +96,12 @@ end
 if doset("Pure and Mixed state initialization")
 @testset "Pure and Mixed state initialization" begin
     @testset "Destabilizer initialization" begin
-        @mythreads for n in test_sizes
+        for n in test_sizes
             @test destab_looks_good(Destabilizer(random_stabilizer(n)))
         end
     end
     @testset "Mixed destabilizer initialization" begin
-        @mythreads for n in test_sizes
+        for n in test_sizes
             @test n<10 || mixed_destab_looks_good(MixedDestabilizer(random_stabilizer(rand(n÷2+1:n-4),n)))
         end
         # Test initialization out of overdetermined stabs
@@ -130,7 +117,7 @@ if doset("Pure and Mixed state initialization")
         end
     end
     @testset "Tensor products over stabilizers" begin
-        @mythreads for n in test_sizes
+        for n in test_sizes
             n<10 && continue
             l = random_stabilizer(rand(n÷2+1:n-2),n)
             r = random_stabilizer(rand(n÷3:n÷2),rand(n÷2:n))
@@ -175,8 +162,8 @@ if doset("Stabilizer canonicalization")
         end
     end
     @testset "Gottesman canonicalization" begin
-        @mythreads for n in test_sizes
-            @mythreads for nrows in [n, rand(n÷3:n*2÷3)]
+        for n in test_sizes
+            for nrows in [n, rand(n÷3:n*2÷3)]
                 rs = random_stabilizer(nrows,n)
                 c = canonicalize!(copy(rs))
                 g, _, _, perm1, perm2 = canonicalize_gott!(copy(rs))
@@ -188,8 +175,8 @@ if doset("Stabilizer canonicalization")
         end
     end
     @testset "Canonicalization of complex tableaus" begin
-        @mythreads for n in test_sizes
-            @mythreads for nrows in [n, rand(n÷3:n*2÷3)]
+        for n in test_sizes
+            for nrows in [n, rand(n÷3:n*2÷3)]
                 if nrows==0
                     @test_broken error("can not process empty stab")
                     continue
@@ -222,6 +209,34 @@ if doset("Stabilizer canonicalization")
 end
 end
 
+if doset("GF(2) representations")
+@testset "GF(2) representations" begin
+    @testset "Equivalence of GF(2) Gaussian elimination and Stabilizer canonicalization" begin
+        for n in test_sizes
+            for rep in 1:5
+                s = random_stabilizer(n)[randperm(n)[1:rand(n÷2+1:n)]]
+                cs = canonicalize!(copy(s));
+                H = stab_to_gf2(cs);
+                cH = gf2_gausselim!(stab_to_gf2(s));
+                @test H==cH
+            end
+        end
+    end
+    @testset "GF(2) H and G matrices" begin
+        for n in test_sizes
+            for rep in 1:5
+                H = random_invertible_gf2(n)[randperm(n)[1:rand(n÷2+1:n)],:]
+                H = gf2_gausselim!(H)
+                G = gf2_H_to_G(H)
+                @test sum(G*H' .%2)==0;
+            end
+        end
+    end
+end
+end
+end
+
+function test_operations()
 if doset("Projective measurements")
 @testset "Projective measurements" begin
     @testset "Stabilizer representation" begin
@@ -243,7 +258,7 @@ if doset("Projective measurements")
         @test anticom==0 && isnothing(res) && ps == s
         @test stab_looks_good(ps)
 
-        @mythreads for n in test_sizes
+        for n in test_sizes
             s = random_stabilizer(n)
             m = random_pauli(n;nophase=true)
             ps, anticom, res = project!(copy(s),m)
@@ -260,7 +275,7 @@ if doset("Projective measurements")
         end
     end
     @testset "Destabilizer representation" begin
-        @mythreads for n in test_sizes
+        for n in test_sizes
             s = canonicalize!(random_stabilizer(n))
             m = random_pauli(n;nophase=true)
             ps, anticom, res = project!(copy(s),m)
@@ -424,7 +439,7 @@ if doset("Projective measurements")
         @test mds.rank == 3
     end
     @testset "Results from canonicalization vs from destabilizer" begin
-        @mythreads for n in test_sizes
+        for n in test_sizes
             for r in [n, rand(n÷3:n*2÷3)]
                 if r==0
                     @test_broken error("can not process empty stab")
@@ -530,14 +545,42 @@ if doset("Projective measurements")
         mds, a, r = project!(copy(s), P"-IZI"; keep_result=true)
         @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
     end
+    @testset "Redundant row permutations in `project!(::MixedDestabilizer)`" begin
+        # Fixed in 41ed1d3c
+        destab =  S"+ ZX_Y_YXZ
+                    + XY_Y____
+                    + _Z_XXY__
+                    + _ZYXXY__
+                    + X__Y_ZXZ
+                    + X__YXZXZ
+                    + ___YXXZZ
+                    + _______Z"
+        stab =    S"+ X_______
+                    + _X_Y____
+                    + __ZY____
+                    + __Z_____
+                    + ___YZY__
+                    + X__YZYZZ
+                    + X____YZZ
+                    + ______YX"
+        t = MixedDestabilizer(vcat(destab,stab), 8)
+        @test mixed_destab_looks_good(t)
+        c = copy(stabilizerview(t)[[1,3,5,7]])
+        traceout!(t,[1,4,3,6])
+        @test mixed_destab_looks_good(t)
+        project!(t,c[1])
+        @test mixed_destab_looks_good(t)
+        project!(t,c[2])
+        @test mixed_destab_looks_good(t) # This used to fail because anticomlog==rank+1 leading to a repeated row permutation
+    end
 end
 end
 
 if doset("Partial traces")
 @testset "Partial traces" begin
     @testset "RREF canonicalization vs manual traceout" begin
-        @mythreads for N in test_sizes
-            @mythreads for n in [N,rand(N÷4:N÷2)]
+        for N in test_sizes
+            for n in [N,rand(N÷4:N÷2)]
                 if n==0
                     @test_broken error("can not process empty stab")
                     continue
@@ -590,7 +633,7 @@ end
 
 if doset("Qubit resets")
     @testset "Qubit resets" begin
-        @mythreads for N in test_sizes
+        for N in test_sizes
             for R in [rand(N÷2:N*2÷3), N]
                 if N<10
                     @test_broken error("can not process empty stab")
@@ -633,33 +676,9 @@ if doset("Qubit resets")
         end
     end
 end    
-
-if doset("GF(2) representations")
-@testset "GF(2) representations" begin
-    @testset "Equivalence of GF(2) Gaussian elimination and Stabilizer canonicalization" begin
-        @mythreads for n in test_sizes
-            @mythreads for rep in 1:5
-                s = random_stabilizer(n)[randperm(n)[1:rand(n÷2+1:n)]]
-                cs = canonicalize!(copy(s));
-                H = stab_to_gf2(cs);
-                cH = gf2_gausselim!(stab_to_gf2(s));
-                @test H==cH
-            end
-        end
-    end
-    @testset "GF(2) H and G matrices" begin
-        @mythreads for n in test_sizes
-            @mythreads for rep in 1:5
-                H = random_invertible_gf2(n)[randperm(n)[1:rand(n÷2+1:n)],:]
-                H = gf2_gausselim!(H)
-                G = gf2_H_to_G(H)
-                @test sum(G*H' .%2)==0;
-            end
-        end
-    end
-end
 end
 
+function test_cliff()
 if doset("Clifford Operators")
 @testset "Clifford Operators" begin
     @testset "Permutations of qubits" begin
@@ -695,7 +714,7 @@ if doset("Clifford Operators")
         end
     end
     @testset "Clifford acting on Stabilizer" begin
-        @mythreads for size in test_sizes
+        for size in test_sizes
             size < 5 && continue
             s = random_stabilizer(size)
             gates = vcat([CNOT, Hadamard, Phase], repeat([CliffordId],size-4))
@@ -724,7 +743,7 @@ end
 if doset("Clifford Operators (column representation)")
 @testset "Clifford Operators (column representation)" begin
     @testset "Permutations of qubits" begin
-        function naive_permute(c::CliffordColumnForm,p::AbstractArray{T,1} where T) # TODO this is extremely slow stupid implementation
+        function naive_permute(c::CliffordColumnForm,p::AbstractArray{T,1} where T) # this is extremely slow stupid implementation
             ops = QuantumClifford.getallpaulis(c)
             CliffordColumnForm([ops[i][p] for i in 1:2*c.nqubits][vcat(p,p.+c.nqubits)])
         end
@@ -741,7 +760,7 @@ if doset("Clifford Operators (column representation)")
         end
     end
     @testset "Tensor products" begin
-        function naive_mul(l::CliffordColumnForm, r::CliffordColumnForm) # TODO this is extremely slow stupid implementation
+        function naive_mul(l::CliffordColumnForm, r::CliffordColumnForm) # this is extremely slow stupid implementation
             opsl = QuantumClifford.getallpaulis(l)
             opsr = QuantumClifford.getallpaulis(r)
             onel = zero(opsl[1])
@@ -791,7 +810,7 @@ if doset("Clifford Operators (column representation)")
         @test naive_mul(c2,c1) == c2⊗c1
     end
     @testset "Clifford acting on Stabilizer" begin
-        @mythreads for size in test_sizes
+        for size in test_sizes
             size < 5 && continue
             s = random_stabilizer(size)
             gates = vcat([CNOTcol, Hadamardcol, Phasecol], repeat([CliffordIdcol],size-4))
@@ -813,7 +832,9 @@ if doset("Clifford Operators (column representation)")
     end
 end
 end
+end
 
+function test_random()
 if doset("Random sampling of operators")
     @testset "Random sampling of operators" begin
         for n in [1, test_sizes..., 200,500]
@@ -842,8 +863,10 @@ if doset("Random sampling of operators")
             @test mixed_destab_looks_good(apply!(ms,sq,phases=false))
         end
     end
-end    
+end
+end
 
+function test_bitpack()
 if doset("Alternative bit packing")
 @testset "Alternative bit packing" begin
     for n in [1,3,5]
@@ -892,44 +915,9 @@ if doset("Alternative bit packing")
     end
 end
 end
-
-if doset("Bug fixes - regression tests")
-@testset "Bug fixes - regression tests" begin
-    @testset "Redundant row permutations in `project!(::MixedDestabilizer)`" begin
-        # Fixed in 41ed1d3c
-        destab =  S"+ ZX_Y_YXZ
-                    + XY_Y____
-                    + _Z_XXY__
-                    + _ZYXXY__
-                    + X__Y_ZXZ
-                    + X__YXZXZ
-                    + ___YXXZZ
-                    + _______Z"
-        stab =    S"+ X_______
-                    + _X_Y____
-                    + __ZY____
-                    + __Z_____
-                    + ___YZY__
-                    + X__YZYZZ
-                    + X____YZZ
-                    + ______YX"
-        t = MixedDestabilizer(vcat(destab,stab), 8)
-        @test mixed_destab_looks_good(t)
-        c = copy(stabilizerview(t)[[1,3,5,7]])
-        traceout!(t,[1,4,3,6])
-        @test mixed_destab_looks_good(t)
-        project!(t,c[1])
-        @test mixed_destab_looks_good(t)
-        project!(t,c[2])
-        @test mixed_destab_looks_good(t) # This used to fail because anticomlog==rank+1 leading to a repeated row permutation
-    end
-end
 end
 
-end
-
-
-function noisycircuits_tests()
+function test_noisycircuits()
 if doset("Noisy Circuits")
 @testset "Noisy Circuits" begin
 
@@ -1179,6 +1167,11 @@ end
 
 end
 
-tests()
-noisycircuits_tests()
+Random.seed!(42)
+test_paulistab()
+test_bitpack()
+test_cliff()
+test_operations()
+test_random()
+test_noisycircuits()
 doctests()
