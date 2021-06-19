@@ -16,7 +16,7 @@ macro mythreads(arg)
     end
 end
 
-test_sizes = [10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
+test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
 function doset(descr)
     if length(ARGS) == 0
@@ -114,8 +114,8 @@ if doset("Pure and Mixed state initialization")
         end
     end
     @testset "Mixed destabilizer initialization" begin
-        @mythreads for n in test_sizes[2:end]
-            @test mixed_destab_looks_good(MixedDestabilizer(random_stabilizer(rand(n÷2+1:n-4),n)))
+        @mythreads for n in test_sizes
+            @test n<10 || mixed_destab_looks_good(MixedDestabilizer(random_stabilizer(rand(n÷2+1:n-4),n)))
         end
         # Test initialization out of overdetermined stabs
         stabs = [S"XX
@@ -131,6 +131,7 @@ if doset("Pure and Mixed state initialization")
     end
     @testset "Tensor products over stabilizers" begin
         @mythreads for n in test_sizes
+            n<10 && continue
             l = random_stabilizer(rand(n÷2+1:n-2),n)
             r = random_stabilizer(rand(n÷3:n÷2),rand(n÷2:n))
             s = l⊗r
@@ -189,6 +190,10 @@ if doset("Stabilizer canonicalization")
     @testset "Canonicalization of complex tableaus" begin
         @mythreads for n in test_sizes
             @mythreads for nrows in [n, rand(n÷3:n*2÷3)]
+                if nrows==0
+                    @test_broken error("can not process empty stab")
+                    continue
+                end
                 rs = random_stabilizer(nrows,n)
                 rs_m = MixedStabilizer(copy(rs))
                 rs_d = Destabilizer(copy(rs))
@@ -421,6 +426,10 @@ if doset("Projective measurements")
     @testset "Results from canonicalization vs from destabilizer" begin
         @mythreads for n in test_sizes
             for r in [n, rand(n÷3:n*2÷3)]
+                if r==0
+                    @test_broken error("can not process empty stab")
+                    continue
+                end
                 s = random_stabilizer(r,n)
                 ms = MixedStabilizer(copy(s))
                 d = Destabilizer(copy(s))
@@ -529,6 +538,10 @@ if doset("Partial traces")
     @testset "RREF canonicalization vs manual traceout" begin
         @mythreads for N in test_sizes
             @mythreads for n in [N,rand(N÷4:N÷2)]
+                if n==0
+                    @test_broken error("can not process empty stab")
+                    continue
+                end
                 to_delete = randperm(N)[1:rand(N÷4:N÷2)]
                 stab0 = random_stabilizer(n, N)
                 id_paulis = zero(PauliOperator, N)
@@ -579,6 +592,10 @@ if doset("Qubit resets")
     @testset "Qubit resets" begin
         @mythreads for N in test_sizes
             for R in [rand(N÷2:N*2÷3), N]
+                if N<10
+                    @test_broken error("can not process empty stab")
+                    continue
+                end
                 s = random_stabilizer(R,N)
                 newstate = random_stabilizer(rand(N÷4:N*2÷3))
                 perm = randperm(N)[1:nqubits(newstate)]
@@ -653,6 +670,7 @@ if doset("Clifford Operators")
     end
     @testset "Clifford acting on Stabilizer" begin
         @mythreads for size in test_sizes
+            size < 5 && continue
             s = random_stabilizer(size)
             gates = vcat([CNOT, Hadamard, Phase], repeat([CliffordId],size-4))
             gates_perm = randperm(size-1)
@@ -748,6 +766,7 @@ if doset("Clifford Operators (column representation)")
     end
     @testset "Clifford acting on Stabilizer" begin
         @mythreads for size in test_sizes
+            size < 5 && continue
             s = random_stabilizer(size)
             gates = vcat([CNOTcol, Hadamardcol, Phasecol], repeat([CliffordIdcol],size-4))
             gates_perm = randperm(size-1)
