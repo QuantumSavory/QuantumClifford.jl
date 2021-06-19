@@ -1176,7 +1176,7 @@ macro C_str(a)
     CliffordOperator(tab)
 end
 
-CliffordOperator(paulis::AbstractVector{PauliOperator}) = CliffordOperator(Stabilizer(paulis))
+CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Stabilizer(paulis))
 CliffordOperator(destab::Destabilizer) = CliffordOperator(destab.tab)
 
 Base.:(==)(l::CliffordOperator, r::CliffordOperator) = l.tab == r.tab
@@ -1282,7 +1282,7 @@ struct CliffordColumnForm{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsign
     xztoz::Tm
 end
 
-function CliffordColumnForm(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{<:Unsigned}}
+function CliffordColumnForm(paulis::AbstractVector{<:PauliOperator})
     xztox = vcat((xbit(p)' for p in paulis)...)'
     xztoz = vcat((zbit(p)' for p in paulis)...)'
     xztox = vcat((vcat(BitArray(xztox[i,1:end÷2]).chunks,BitArray(xztox[i,end÷2+1:end]).chunks)'

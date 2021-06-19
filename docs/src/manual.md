@@ -479,7 +479,7 @@ _X ⟼ + _Z
 Z_ ⟼ - X_
 _Z ⟼ + XX
 
-julia> ClifforOperator([P"-ZZ", P"_Z", P"-X_", P"XX"])
+julia> CliffordOperator([P"-ZZ", P"_Z", P"-X_", P"XX"])
 X_ ⟼ - ZZ
 _X ⟼ + _Z
 Z_ ⟼ - X_
