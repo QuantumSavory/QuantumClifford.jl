@@ -88,8 +88,8 @@ A random stabilizer (or destabilizers or Clifford operators) can be created as w
 
 ```jldoctest rand
 julia> random_stabilizer(rng, 2,5)
-- YZY_Z
-- ZZ_XX
++ YZXZZ
+- XZYYY
 ```
 ## Mixed States
 
