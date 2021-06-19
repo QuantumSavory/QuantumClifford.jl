@@ -1577,7 +1577,7 @@ const CliffordId = C"X
 function stab_to_gf2(s::Stabilizer)
     xbits = vcat((xbit(s[i])' for i in eachindex(s))...)
     zbits = vcat((zbit(s[i])' for i in eachindex(s))...)
-    H = hcat(xbits,zbits)
+    H = Matrix{Bool}(hcat(xbits,zbits))
 end
 
 """Gaussian elimination over the binary field."""
