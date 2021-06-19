@@ -1,6 +1,7 @@
 using LinearAlgebra: inv, mul!
 using Random: randperm, AbstractRNG, GLOBAL_RNG
 using Requires
+using ILog2
 
 const NEMO_LOADED = fill(false)
 # XXX Workaround for the Nemo banner
@@ -208,12 +209,31 @@ function precise_inv(a)
 end
 
 """Sample (h, S) from the distribution P_n(h, S) from Bravyi and Maslov Algorithm 1."""
-function quantum_mallows(rng, n)
-    if n<500 # TODO Do in a prettier way without repetition.
+function quantum_mallows(rng, n) # each one is benchmakred in benchmarks/quantum_mallows.jl
+    if n<30 # TODO Do in a prettier way without repetition.
+        quantum_mallows_int(rng, n)
+    elseif n<500
         quantum_mallows_float(rng, n)
     else
         quantum_mallows_bigint(rng, n)
     end
+end
+
+function quantum_mallows_int(rng, n)
+    arr = collect(1:n)
+    hadamard = falses(n)
+    perm = zeros(Int64, n)
+    for idx in 1:n
+        m = length(arr)
+        # sample h_i from given prob distribution
+        k = rand(rng, 2:UInt(4)^m)
+        l = (ispow2(k) ? ilog2(k) : ilog2(k) + 1) # TODO use an offset in order to remove the ispow
+        weight = Int64(2 * m - l)
+        hadamard[idx] = (weight < m)
+        k = weight < m ? weight : 2*m - weight - 1
+        perm[idx] = popat!(arr, k + 1) # beware of indexing in julia
+    end
+    return hadamard, perm
 end
 
 function quantum_mallows_float(rng, n)
@@ -223,8 +243,9 @@ function quantum_mallows_float(rng, n)
     for idx in 1:n
         m = length(arr)
         # sample h_i from given prob distribution
-        r = rand(rng)
-        weight = Int64(2 * m - ceil(log2(r*(4.0^m-1) + 1)))
+        k = rand(rng)*(4.0^m-1) + 1
+        l = ceil(log2(k))
+        weight = Int64(2 * m - l)
         hadamard[idx] = (weight < m)
         k = weight < m ? weight : 2*m - weight - 1
         perm[idx] = popat!(arr, k + 1) # beware of indexing in julia
@@ -239,8 +260,15 @@ function quantum_mallows_bigint(rng, n)
     for idx in 1:n
         m = length(arr)
         # sample h_i from given prob distribution
-        r = rand(rng)
-        weight = Int64(2 * m - ceil(log2(r*(BigInt(4)^m-1) + 1)))
+        k = rand(rng, 2:BigInt(4)^m)
+        l = (ispow2(k) ? ilog2(k) : ilog2(k) + 1) # TODO use an offset in order to remove the ispow
+        # To compare to float implementations:
+        # function f1(r,m) k = r*(4.0^m-1) + 1; l = ceil(log2(k)) end
+        # function function f2(k,m) l = (ispow2(k) ? ilog2(k) : ilog2(k) + 1) end
+        # m = 3
+        # rs = 0:0.0025:0.999999; plot(rs, f1.(rs, m))
+        # rs = 2:4^m; plot!((rs.-1)./(maximum(rs)-1), f2.(rs, 1),line=false,marker=true,legend=false)
+        weight = Int64(2 * m - l)
         hadamard[idx] = (weight < m)
         k = weight < m ? weight : 2*m - weight - 1
         perm[idx] = popat!(arr, k + 1) # beware of indexing in julia
