@@ -226,12 +226,15 @@ function quantum_mallows_int(rng, n)
     for idx in 1:n
         m = length(arr)
         # sample h_i from given prob distribution
-        k = rand(rng, 2:UInt(4)^m)
-        l = (ispow2(k) ? ilog2(k) : ilog2(k) + 1) # TODO use an offset in order to remove the ispow
-        weight = Int64(2 * m - l)
+        k = rand(rng, 1:(UInt(4)^m-1))
+        l = Int64(ilog2(k))+1
+        # can also be written as
+        #k = rand(rng, 2:UInt(4)^m)
+        #l = (ispow2(k) ? ilog2(k) : ilog2(k) + 1)
+        weight = 2 * m - l
         hadamard[idx] = (weight < m)
         k = weight < m ? weight : 2*m - weight - 1
-        perm[idx] = popat!(arr, k + 1) # beware of indexing in julia
+        perm[idx] = popat!(arr, k + 1)
     end
     return hadamard, perm
 end
@@ -248,7 +251,7 @@ function quantum_mallows_float(rng, n)
         weight = Int64(2 * m - l)
         hadamard[idx] = (weight < m)
         k = weight < m ? weight : 2*m - weight - 1
-        perm[idx] = popat!(arr, k + 1) # beware of indexing in julia
+        perm[idx] = popat!(arr, k + 1)
     end
     return hadamard, perm
 end
@@ -261,7 +264,10 @@ function quantum_mallows_bigint(rng, n)
         m = length(arr)
         # sample h_i from given prob distribution
         k = rand(rng, 2:BigInt(4)^m)
-        l = (ispow2(k) ? ilog2(k) : ilog2(k) + 1) # TODO use an offset in order to remove the ispow
+        l = Int64(ispow2(k) ? ilog2(k) : ilog2(k) + 1)
+        # TODO This should be faster, but it is not:
+        #k = rand(rng, 1:(BigInt(4)^m-1))
+        #l = Int64(ilog2(k))+1
         # To compare to float implementations:
         # function f1(r,m) k = r*(4.0^m-1) + 1; l = ceil(log2(k)) end
         # function function f2(k,m) l = (ispow2(k) ? ilog2(k) : ilog2(k) + 1) end
@@ -271,7 +277,7 @@ function quantum_mallows_bigint(rng, n)
         weight = Int64(2 * m - l)
         hadamard[idx] = (weight < m)
         k = weight < m ? weight : 2*m - weight - 1
-        perm[idx] = popat!(arr, k + 1) # beware of indexing in julia
+        perm[idx] = popat!(arr, k + 1)
     end
     return hadamard, perm
 end
