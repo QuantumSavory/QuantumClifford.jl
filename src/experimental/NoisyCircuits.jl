@@ -173,9 +173,9 @@ function applyop!(s::AbstractStabilizer, m::BellMeasurement)
         s,anticom,r = project!(s,op)
         if isnothing(r)
             if rand()>0.5 # TODO this seems stupid, float not necessary
-                r = s.phases[anticom] = 0x00
+                r = stabilizerview(s).phases[anticom] = 0x00
             else
-                r = s.phases[anticom] = 0x02
+                r = stabilizerview(s).phases[anticom] = 0x02
             end
         end
         res ⊻= r
@@ -433,9 +433,9 @@ function applyop!(state::Register, op::DenseMeasurement)
     stab,anticom,r = project!(stab, op.pauli)
     if isnothing(r)
         if rand()>0.5 # TODO float not necessary
-            r = stab.phases[anticom] = 0x00
+            r = stabilizerview(stab).phases[anticom] = 0x00
         else
-            r = stab.phases[anticom] = 0x02
+            r = stabilizerview(stab).phases[anticom] = 0x02
         end
     end
     state.bits[op.storagebit] = r==0x02
@@ -479,10 +479,10 @@ function applyop_branches(s::Register, op::DenseMeasurement; max_order=1)
     new_branches = []
     if isnothing(r)
         s1 = s
-        s1.stab.phases[anticom] = 0x00
+        stabilizerview(s1.stab).phases[anticom] = 0x00
         s1.bits[op.storagebit] = false
         s2 = copy(s)
-        s2.stab.phases[anticom] = 0x02
+        stabilizerview(s2.stab).phases[anticom] = 0x02
         s2.bits[op.storagebit] = true
         push!(new_branches, (s1,:continue,1/2,0))
         push!(new_branches, (s2,:continue,1/2,0))
@@ -493,14 +493,14 @@ function applyop_branches(s::Register, op::DenseMeasurement; max_order=1)
     new_branches
 end
 
-function applyop_branches(state::Register, op::SparseMeasurement)
+function applyop_branches(state::Register, op::SparseMeasurement; max_order=1)
     n = nqubits(state.stab) # TODO implement actual sparse measurements
     p = zero(typeof(op.pauli), n)
     for (ii,i) in enumerate(op.indices)
         p[i] = op.pauli[ii]
     end
     dm = DenseMeasurement(p,op.storagebit)
-    applyop_branches(state,dm)
+    applyop_branches(state,dm, max_order=max_order)
 end
 
 
