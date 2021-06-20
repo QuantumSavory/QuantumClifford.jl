@@ -1244,6 +1244,7 @@ Inverse of a `CliffordOperator`
 function LinearAlgebra.inv(c::CliffordOperator; phases=true)
     ci = zero(c)
     n = nqubits(c)
+    # TODO this transpose can be much faster with proper SIMDing
     for i in 1:n
         for j in 1:n
             ci.tab[i,j] = c.tab[n+j,i][2], c.tab[j,i][2] 
