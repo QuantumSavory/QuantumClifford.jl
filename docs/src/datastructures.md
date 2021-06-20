@@ -78,7 +78,7 @@ Both of these parameters are tested in the benchmark shown below (testing the ap
 
 ![Benchmarking Pauli application and Canonicalization for different bit-packing sizes and numbers of qubits.](bench_intsize.png)
 
-While row-major UInt64 is the best performing, currently we are using column-major UInt64. The column-major format is more completely tested, even though the row-major format has slightly better performance thanks to being friendlier to CPU caches. 
+Row-major UInt64 is the best performing and it is mostly used by default in this library. 
 
 ## [Clifford Operators Datastructures](@id Clifford-Operators-Datastructures)
 
