@@ -1801,17 +1801,18 @@ function single_y(n,i)
 end
 
 # TODO the pauli and clifford functions should be `one`, not `zero`. Or `ones`/`zeros`. Plural or not?
-Base.zero(T::Type{PauliOperator}, n) = T(0x0,falses(n),falses(n))
+Base.zero(T::Type{<:PauliOperator}, n) = T(0x0,falses(n),falses(n))
 Base.zero(T::Type{PauliOperator{Tz,Tv}}, n) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = T(0x0,falses(n),falses(n))
 Base.zero(p::PauliOperator{Tz,Tv}) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = PauliOperator{Tz,Tv}(0x0,falses(p.nqubits),falses(p.nqubits))
-Base.zero(::Type{Stabilizer}, n, m) = Stabilizer(zeros(UInt8,n),falses(n,m),falses(n,m))
-Base.zero(::Type{Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(n,n))
+Base.zero(::Type{<:Stabilizer}, n, m) = Stabilizer(zeros(UInt8,n),falses(n,m),falses(n,m))
+Base.zero(::Type{<:Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(n,n))
 Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
-Base.zero(::Type{CliffordColumnForm}, n) = CliffordColumnForm(zeros(UInt8,2n),n,repeat(falses(n).chunks',n,2),repeat(falses(n).chunks',n,2))
+Base.zero(::Type{<:CliffordColumnForm}, n) = CliffordColumnForm(zeros(UInt8,2n),n,repeat(falses(n).chunks',n,2),repeat(falses(n).chunks',n,2))
 Base.zero(c::CliffordColumnForm) = CliffordColumnForm(zero(c.phases),c.nqubits,zero(c.xztox),zero(c.xztoz))
 Base.zero(c::CliffordOperator) = typeof(c)(zero(c.tab))
+Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Stabilizer, 2n, n))
 
-function Base.one(::Type{Stabilizer}, n; basis=:Z)
+function Base.one(::Type{<:Stabilizer}, n; basis=:Z)
     if basis==:X
         Stabilizer(LinearAlgebra.I(n),falses(n,n))
     elseif basis==:Y
@@ -1823,21 +1824,21 @@ function Base.one(::Type{Stabilizer}, n; basis=:Z)
     end
 end
 Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, nqubits(s); basis=basis)
-Base.one(::Type{Destabilizer}, n) = Destabilizer(vcat(one(Stabilizer, n, basis=:X),one(Stabilizer, n, basis=:Z)),noprocessing=true)
-function Base.one(::Type{MixedStabilizer}, r, n, basis=:Z)
+Base.one(::Type{<:Destabilizer}, n) = Destabilizer(vcat(one(Stabilizer, n, basis=:X),one(Stabilizer, n, basis=:Z)),noprocessing=true)
+function Base.one(::Type{<:MixedStabilizer}, r, n, basis=:Z)
     s = one(Stabilizer, n; basis=basis)
     MixedStabilizer(s,r)
 end
-function Base.one(::Type{MixedDestabilizer}, r, n)
+function Base.one(::Type{<:MixedDestabilizer}, r, n)
     d = one(Stabilizer, n; basis=:X)
     s = one(Stabilizer, n; basis=:Z)
     MixedDestabilizer(vcat(d,s),r)
 end
-
-function Base.one(::Type{CliffordColumnForm}, n)
-    phases = zeros(UInt8,n)
-    zx
+function Base.one(c::CliffordOperator)
+    n = nqubits(c)
+    one(typeof(c),n)
 end
+Base.one(::Type{<:CliffordOperator}, n) = CliffordOperator(Stabilizer([LinearAlgebra.I(n);falses(n,n)],[falses(n,n);LinearAlgebra.I(n)]))
 
 ##############################
 # Consistency checks
