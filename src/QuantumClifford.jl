@@ -230,6 +230,11 @@ struct Stabilizer{Tzv<:AbstractVector{UInt8}, Tm<:AbstractMatrix{<:Unsigned}} <:
     xzs::Tm
 end
 
+#TODO this is a rather silly way to ensure properly ordered (transposed) matrices are used for xzs
+# - simply ensure that this work is done by the constructors calling this constructor, so extra work and allocation is not done here
+# - add tests for this layout
+Stabilizer(phases::AbstractVector{UInt8}, nqubits::Int, xzs::Matrix{<:Unsigned}) = Stabilizer(phases, nqubits, collect(xzs')')
+
 Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{<:Unsigned}} = Stabilizer(vcat((p.phase for p in paulis)...), paulis[1].nqubits, vcat((p.xz' for p in paulis)...))
 
 Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(
