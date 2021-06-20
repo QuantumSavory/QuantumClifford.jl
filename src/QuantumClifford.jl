@@ -1236,6 +1236,27 @@ function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
     CliffordOperator(tab)
 end
 
+"""
+$TYPEDSIGNATURES
+
+Inverse of a `CliffordOperator`
+"""
+function LinearAlgebra.inv(c::CliffordOperator; phases=true)
+    ci = zero(c)
+    n = nqubits(c)
+    for i in 1:n
+        for j in 1:n
+            ci.tab[i,j] = c.tab[n+j,i][2], c.tab[j,i][2] 
+            ci.tab[n+i,j] = c.tab[n+j,i][1], c.tab[j,i][1]
+        end
+    end
+    if phases
+        ci*c*ci # TODO can this be skipped
+    else
+        ci
+    end
+end
+
 # TODO create Base.permute! and getindex(..., permutation_array)
 function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this is a slow stupid implementation
     CliffordOperator(Stabilizer([c.tab[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
@@ -1787,6 +1808,7 @@ Base.zero(::Type{Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(
 Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
 Base.zero(::Type{CliffordColumnForm}, n) = CliffordColumnForm(zeros(UInt8,2n),n,repeat(falses(n).chunks',n,2),repeat(falses(n).chunks',n,2))
 Base.zero(c::CliffordColumnForm) = CliffordColumnForm(zero(c.phases),c.nqubits,zero(c.xztox),zero(c.xztoz))
+Base.zero(c::CliffordOperator) = typeof(c)(zero(c.tab))
 
 function Base.one(::Type{Stabilizer}, n; basis=:Z)
     if basis==:X
