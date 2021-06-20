@@ -5,14 +5,7 @@ module QuantumClifford
 
 # TODO document phases=false
 
-# TODO PauliOperator should be mutable so that the phase is not a zero-dim
-# array, but to do that without sacrificing functionality we need to implement
-# views. That would also fix the current issue of getindex returning a view,
-# instead of us having a dedicated view type.
-
-# TODO Operations between Clifford operators are very slow
-
-# TODO document phases=false
+# TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
 import LinearAlgebra
 import RecipesBase
@@ -548,6 +541,25 @@ julia> prodphase(P"XXX", P"ZZZ")
     unsigned(res)&0x3
 end
 
+# The quantumlib/Stim implementation, which performs the prodphase and mul_left! together
+function _stim_prodphase(l::AbstractVector{T}, r::AbstractVector{T}) where T<: Unsigned
+    cnt1 = zero(T)
+    cnt2 = zero(T)
+    len = length(l)>>1
+    @inbounds @simd for i in 1:len
+        x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
+        newx1 = x1 ⊻ x2 # Here l or r would be updated in an actual multiplication
+        newz1 = z1 ⊻ z2 # Here l or r would be updated in an actual multiplication
+        x1z2 = x1 & z2
+        anti_comm = (x2 & z1) ⊻ x1z2
+        cnt2 ⊻= (cnt1 ⊻ newx1 ⊻ newz1 ⊻ x1z2) & anti_comm
+        cnt1 ⊻= anti_comm
+    end
+    s = count_ones(cnt1)
+    s ⊻= count_ones(cnt2) << 1
+    s & 0x3
+end
+
 @inline function prodphase(l::PauliOperator, r::PauliOperator)::UInt8
     (l.phase[]+r.phase[]+prodphase(l.xz,r.xz))&0x3
 end
@@ -636,18 +648,37 @@ function Base.:(*)(l::PauliOperator, r::PauliOperator)
     PauliOperator(prodphase(l,r), l.nqubits, l.xz .⊻ r.xz)
 end
 
+function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
+    if !phases
+        r .⊻= l
+        return zero(T)
+    end
+    cnt1 = zero(T)
+    cnt2 = zero(T)
+    len = length(l)>>1
+    @inbounds @simd for i in 1:len
+        x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
+        r[i] = newx1 = x1 ⊻ x2
+        r[i+len] = newz1 = z1 ⊻ z2
+        x1z2 = x1 & z2
+        anti_comm = (x2 & z1) ⊻ x1z2
+        cnt2 ⊻= (cnt1 ⊻ newx1 ⊻ newz1 ⊻ x1z2) & anti_comm
+        cnt1 ⊻= anti_comm
+    end
+    s = count_ones(cnt1)
+    s ⊻= count_ones(cnt2) << 1
+    s
+end
+
 @inline function mul_left!(r::PauliOperator, l::PauliOperator; phases::Bool=true)
-    phases && (r.phase[] = prodphase(l,r))
-    r.xz .⊻= l.xz
+    s = mul_left!(r.xz, l.xz, phases=phases)
+    phases && (r.phase[] = (s+r.phase[]+l.phase[])&0x3)
     r
 end
 
 @inline function mul_left!(r::PauliOperator, l::Stabilizer, i::Int; phases::Bool=true)
-    phases && (r.phase[] = prodphase(l,r,i))
-    #r.xz .⊻= @view l.xzs[i,:] # TODO why is this not as good as the loop?
-    @inbounds @simd for k in 1:length(r.xz)
-        r.xz[k] ⊻= l.xzs[i,k]
-    end
+    s = mul_left!(r.xz, (@view l.xzs[i,:]), phases=phases)
+    phases && (r.phase[] = (s+r.phase[]+l.phases[i])&0x3)
     r
 end
 
@@ -710,27 +741,26 @@ end
     rowswap!(s.tab, i+n, j+n; phases=phases)
 end
 
-@inline function rowmul!(s::Stabilizer, m, i; phases::Bool=true)
-    @inbounds @simd for d in 1:size(s.xzs,2)
-        s.xzs[m,d] ⊻= s.xzs[i,d]
-    end
-    phases && (s.phases[m] = prodphase(s,s,m,i))
+@inline function mul_left!(s::Stabilizer, m, i; phases::Bool=true)
+    extra_phase = mul_left!((@view s.xzs[m,:]), (@view s.xzs[i,:]); phases=phases)
+    phases && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
+    s
 end
 
-@inline function rowmul!(s::Destabilizer, i, j; phases::Bool=true)
-    rowmul!(s.tab, j, i; phases=false) # Indices are flipped to preserve commutation constraints
+@inline function mul_left!(s::Destabilizer, i, j; phases::Bool=true)
+    mul_left!(s.tab, j, i; phases=false) # Indices are flipped to preserve commutation constraints
     n = size(s.tab,1)÷2
-    rowmul!(s.tab, i+n, j+n; phases=phases)
+    mul_left!(s.tab, i+n, j+n; phases=phases)
 end
 
-@inline function rowmul!(s::MixedStabilizer, i, j; phases::Bool=true)
-    rowmul!(s.tab, i, j; phases=phases)
+@inline function mul_left!(s::MixedStabilizer, i, j; phases::Bool=true)
+    mul_left!(s.tab, i, j; phases=phases)
 end
 
-@inline function rowmul!(s::MixedDestabilizer, i, j; phases::Bool=true)
-    rowmul!(s.tab, j, i; phases=false) # Indices are flipped to preserve commutation constraints
+@inline function mul_left!(s::MixedDestabilizer, i, j; phases::Bool=true)
+    mul_left!(s.tab, j, i; phases=false) # Indices are flipped to preserve commutation constraints
     n = nqubits(s)
-    rowmul!(s.tab, i+n, j+n; phases=phases)
+    mul_left!(s.tab, i+n, j+n; phases=phases)
 end
 
 # TODO is this used anywhere?
@@ -905,7 +935,7 @@ function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
                 if xs[m,jbig]&jsmall!=zerobit && m!=i # if X or Y
-                    rowmul!(state, m, i; phases=phases)
+                    mul_left!(state, m, i; phases=phases)
                 end
             end
             i += 1
@@ -923,7 +953,7 @@ function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
                 if zs[m,jbig]&jsmall!=zerobit && m!=i # if Z or Y
-                    rowmul!(state, m, i; phases=phases)
+                    mul_left!(state, m, i; phases=phases)
                 end
             end
             i += 1
@@ -969,7 +999,7 @@ function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
                 if xs[m,jbig]&jsmall!=zerobit && m!=i # if X or Y
-                    rowmul!(state, m, i; phases=phases)
+                    mul_left!(state, m, i; phases=phases)
                 end
             end
             i -= 1
@@ -980,7 +1010,7 @@ function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
                 if zs[m,jbig]&jsmall!=zerobit && m!=i # if Z or Y
-                    rowmul!(state, m, i; phases=phases)
+                    mul_left!(state, m, i; phases=phases)
                 end
             end
             i -= 1
@@ -1054,7 +1084,7 @@ function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) w
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
                 if xs[m,jbig]&jsmall!=zerobit && m!=i # if X or Y
-                    rowmul!(stabilizer, m, i; phases=phases)
+                    mul_left!(stabilizer, m, i; phases=phases)
                 end
             end
             i += 1
@@ -1074,7 +1104,7 @@ function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) w
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
                 if zs[m,jbig]&jsmall!=zerobit && m!=i # if Z or Y
-                    rowmul!(stabilizer, m, i; phases=phases)
+                    mul_left!(stabilizer, m, i; phases=phases)
                 end
             end
             i += 1

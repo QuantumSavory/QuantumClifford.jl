@@ -1,7 +1,7 @@
 using Test, Random, Documenter
 using QuantumClifford
 using QuantumClifford: stab_looks_good, mixed_stab_looks_good, destab_looks_good, mixed_destab_looks_good
-using QuantumClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol
+using QuantumClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol, mul_left!
 using QuantumClifford.Experimental.NoisyCircuits
 using Quantikz: circuit2string, QuantikzOp
 using Nemo
@@ -67,6 +67,15 @@ if doset("Pauli Operators")
                 p = prodphase(p1,p2)
                 rea = p==0x0 || p==0x2
                 @test (com && rea) || (!com && !rea)
+            end
+        end
+    end
+    @testset "Prodphase" begin
+        for i in 1:10
+            for n in test_sizes
+                p1,p2 = random_pauli(n; nophase=true), random_pauli(n; nophase=true)
+                p = prodphase(p1.xz,p2.xz)
+                @test p == QuantumClifford._stim_prodphase(p1.xz,p2.xz)&0x3
             end
         end
     end
@@ -210,6 +219,21 @@ if doset("Stabilizer canonicalization")
 end
 end
 
+if doset("Low-level tableaux ops")
+@testset "Low-level tableaux ops" begin
+    for n in test_sizes
+        p1 = random_pauli(n)
+        p11 = copy(p1)
+        p2 = random_pauli(n)
+        p3 = p2*p1
+        s = Stabilizer([p1,p2])
+        mul_left!(p1,p2)
+        mul_left!(p11,s,2)
+        mul_left!(s,1,2)
+        @test p1 == p11 == p3 == s[1] 
+    end
+end
+end
 if doset("GF(2) representations")
 @testset "GF(2) representations" begin
     @testset "Equivalence of GF(2) Gaussian elimination and Stabilizer canonicalization" begin

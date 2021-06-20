@@ -234,7 +234,7 @@ function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=
     else
         for i in anticommutes+1:n
             if comm(pauli,stabilizer,i)!=0
-                rowmul!(stabilizer, i, anticommutes; phases=phases)
+                mul_left!(stabilizer, i, anticommutes; phases=phases)
             end
         end
         stabilizer[anticommutes] = pauli
@@ -276,12 +276,12 @@ function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,ph
     else
         for i in anticommutes+1:n
             if comm(pauli,stabilizer,i)!=0
-                rowmul!(stabilizer, i, anticommutes; phases=phases)
+                mul_left!(stabilizer, i, anticommutes; phases=phases)
             end
         end
         for i in 1:n
             if i!=anticommutes && comm(pauli,destabilizer,i)!=0
-                rowmul!(d.tab, i, n+anticommutes; phases=false)
+                mul_left!(d.tab, i, n+anticommutes; phases=false)
             end
         end
         destabilizer[anticommutes] = stabilizer[anticommutes]
@@ -336,17 +336,17 @@ function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases) # TODO Ensure t
     chunks = size(tab.xzs,2)
     for i in r+1:n
         if comm(pauli,tab,i)!=0
-            rowmul!(tab, i, n+anticommutes; phases=phases)
+            mul_left!(tab, i, n+anticommutes; phases=phases)
         end
     end
     for i in n+anticommutes+1:2n
         if comm(pauli,tab,i)!=0
-            rowmul!(tab, i, n+anticommutes; phases=phases)
+            mul_left!(tab, i, n+anticommutes; phases=phases)
         end
     end
     for i in 1:r
         if i!=anticommutes && comm(pauli,tab,i)!=0
-            rowmul!(tab, i, n+anticommutes; phases=false)
+            mul_left!(tab, i, n+anticommutes; phases=false)
         end
     end
 end
@@ -504,7 +504,7 @@ function reset_qubits!(s::MixedDestabilizer, newstate::Stabilizer, qubits; phase
                 loc = findfirst(i->comm(pauli,destab,i)!=0, 1:r)
                 for i in loc+1:r
                     if comm(pauli, destab, i)!=0
-                        rowmul!(s, i, loc)
+                        mul_left!(s, i, loc)
                     end
                 end
                 sv[loc] = pauli
