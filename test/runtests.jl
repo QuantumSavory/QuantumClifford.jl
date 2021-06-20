@@ -5,6 +5,7 @@ using QuantumClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol
 using QuantumClifford.Experimental.NoisyCircuits
 using Quantikz: circuit2string, QuantikzOp
 using Nemo
+using LinearAlgebra: inv
 import AbstractAlgebra
 
 test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
@@ -735,6 +736,16 @@ if doset("Clifford Operators")
             s2 = apply!(s2, Phase, [igates_perm[3]+(igates_perm[1]<igates_perm[3])])
 
             @test canonicalize!(s1) == canonicalize!(s2)
+        end
+    end
+    @testset "Inversions" begin
+        for n in test_sizes
+            c = random_clifford(n)
+            ci = inv(c; phases=false)
+            cip = inv(c)
+            id = one(c)
+            @test c*cip == cip*c == id
+            @test (ci*c).tab.xzs == (c*ci).tab.xzs == id.tab.xzs
         end
     end
 end
