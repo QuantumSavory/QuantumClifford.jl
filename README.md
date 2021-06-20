@@ -52,7 +52,31 @@ julia> CNOT * S"-XX
 
 ## Quick Benchmarks
 
-Fast, in-place, (mostly) allocation free implementations. Operations on states are very efficient. Operations modifying the Clifford operators themselves are not yet as efficient.
+Fast, in-place, allocation free implementations.
+
+#### Comparison against other Clifford simulators
+
+The only other simulator of similar performance I know of is [Stim](https://github.com/quantumlib/Stim). In particular, Stim implements convenient tracking of Pauli frames, that makes simulating the performance of error correcting codes blazingly fast (which are possible in QuantumClifford.jl, but no convenient interface is provided for that yet).
+
+The "low level" functionality is equaly fast in Stim and in QuantumClifford:
+
+```
+# QuantumClifford.jl
+julia> a = random_pauli(1_000_000_000);
+julia> b = random_pauli(1_000_000_000);
+julia> @btime a*b;
+  101.032 ms (4 allocations: 238.42 MiB)
+```
+
+```
+# Stim
+In []: a = PauliString.random(1_000_000_000);
+In []: b = PauliString.random(1_000_000_000);
+In []: %timeit a*b
+  214 ms ± 4.65 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+```
+
+Of note is that Stim achieved this performance through high-quality C++ SIMD code of significant sophistication, while QuantumClifford.jl is implemented in pure Julia.
 
 #### Canonicalization of a random 100-qubit stabilizer
 
