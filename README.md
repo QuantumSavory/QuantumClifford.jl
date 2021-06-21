@@ -58,7 +58,7 @@ Fast, in-place, allocation free implementations.
 
 The only other simulator of similar performance I know of is [Stim](https://github.com/quantumlib/Stim). In particular, Stim implements convenient tracking of Pauli frames, that makes simulating the performance of error correcting codes blazingly fast (which are possible in QuantumClifford.jl, but no convenient interface is provided for that yet).
 
-The "low level" functionality is equaly fast in Stim and in QuantumClifford:
+The "low level" functionality is about 50% faster in Stim than in QuantumClifford with some minor slowdowns in their Python interface:
 
 ```
 # QuantumClifford.jl
