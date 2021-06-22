@@ -227,7 +227,8 @@ if doset("Low-level tableaux ops")
         p2 = random_pauli(n)
         p3 = p2*p1
         s = Stabilizer([p1,p2])
-        mul_left!(p1,p2)
+        @test QuantumClifford.mul_left_nonvec!(copy(p1).xz,p2.xz)&3 == mul_left!(copy(p1).xz,p2.xz)&3 
+        @test prodphase(p2,p1) == mul_left!(p1,p2).phase[]
         mul_left!(p11,s,2)
         mul_left!(s,1,2)
         @test p1 == p11 == p3 == s[1] 

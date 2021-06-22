@@ -10,6 +10,7 @@ module QuantumClifford
 import LinearAlgebra
 import RecipesBase
 using DocStringExtensions
+using LoopVectorization
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     xbit, zbit, xview, zview,
@@ -649,11 +650,10 @@ function comm(l::PauliOperator, r::Stabilizer)::Vector{UInt8}
     [comm(l,r,i) for i in 1:size(r,1)]
 end
 
-function Base.:(*)(l::PauliOperator, r::PauliOperator)
-    PauliOperator(prodphase(l,r), l.nqubits, l.xz .⊻ r.xz)
-end
+Base.:(*)(l::PauliOperator, r::PauliOperator) = mul_left!(copy(r),l)
 
-function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
+"Nonvectorized version of `mul_left!` for tests."
+function mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
     if !phases
         r .⊻= l
         return zero(T)
@@ -673,6 +673,29 @@ function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true
     s = count_ones(cnt1)
     s ⊻= count_ones(cnt2) << 1
     s
+end
+
+function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
+    @assert length(l)==length(r) "The two Pauli operators should have the same length!"
+    if !phases
+        r .⊻= l
+        return zero(T)
+    end
+    cnt1 = zero(T)
+    cnt2 = zero(T)
+    len = length(l)>>1
+    @turbo for i in 1:len
+        x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
+        newx1 = x1 ⊻ x2
+        r[i] = newx1
+        newz1 = z1 ⊻ z2
+        r[i+len] = newz1
+        x1z2 = x1 & z2
+        anti_comm = (x2 & z1) ⊻ x1z2
+        cnt2 += count_ones((newx1 ⊻ newz1 ⊻ x1z2) & anti_comm)
+        cnt1 += count_ones(anti_comm)
+    end
+    (cnt1 ⊻ (cnt2<<1))&0x3
 end
 
 @inline function mul_left!(r::PauliOperator, l::PauliOperator; phases::Bool=true)
