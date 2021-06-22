@@ -342,7 +342,7 @@ end
 """Tensor product between operators or tableaux. See also [`tensor`](@ref) and [`tensor_pow`](@ref)."""
 function ⊗ end
 
-function ⊗(ops::AbstractStabilizer...)
+function ⊗(ops::AbstractStabilizer...) # TODO optimize this by doing preallocation
     foldl(⊗, ops[2:end], init=ops[1])
 end
 
@@ -478,7 +478,7 @@ end
 
 Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 
-function ⊗(l::MixedDestabilizer, r::MixedDestabilizer)
+function ⊗(l::MixedDestabilizer, r::MixedDestabilizer) # TODO optimize this by doing preallocation
     lone = zero(l.tab[1])
     rone = zero(r.tab[1])
     stabs = []
@@ -684,7 +684,7 @@ function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true
     cnt1 = zero(T)
     cnt2 = zero(T)
     len = length(l)>>1
-    @turbo for i in 1:len
+    @turbo for i in 1:len# TODO This can be further optimized with https://github.com/JuliaSIMD/LoopVectorization.jl/issues/291
         x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
         newx1 = x1 ⊻ x2
         r[i] = newx1
@@ -1156,7 +1156,7 @@ function check_allrowscommute(stabilizer::Stabilizer)
     return true
 end
 
-function ⊗(l::Stabilizer, r::Stabilizer)
+function ⊗(l::Stabilizer, r::Stabilizer) # TODO optimize this by doing preallocation
     lone = zero(l[1])
     rone = zero(r[1])
     paulis = vcat([l[i]⊗rone for i in eachindex(l)],
@@ -1204,7 +1204,7 @@ function apply!(s::Stabilizer, p::PauliOperator, indices; phases::Bool=true)
     s
 end
 
-function tensor_pow(op,power,mem::Dict{Int,Any})
+function tensor_pow(op,power,mem::Dict{Int,Any}) # TODO optimize this by doing preallocation instead of performing it recursively
     if power==1
         return op
     elseif haskey(mem,power)
