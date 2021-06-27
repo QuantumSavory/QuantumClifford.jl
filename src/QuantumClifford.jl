@@ -262,7 +262,7 @@ macro S_str(a)
 end
 
 Base.getindex(stab::Stabilizer, i::Int) = PauliOperator(stab.phases[i], nqubits(stab), stab.xzs[i,:])
-Base.getindex(stab::Stabilizer{Tzv,Tm}, r::Int, c::Int) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}} = (stab.xzs[r,_div(Tme,c-1)+1] & Tme(0x1)<<_mod(Tme,c-1))!=0x0, (stab.xzs[r,end>>1+_div(Tme,c-1)+1] & Tme(0x1)<<_mod(Tme,c-1))!=0x0 # TODO this has code repetition with the Pauli getindex
+@inline Base.getindex(stab::Stabilizer{Tzv,Tm}, r::Int, c::Int) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}} = (stab.xzs[r,_div(Tme,c-1)+1] & Tme(0x1)<<_mod(Tme,c-1))!=0x0, (stab.xzs[r,end>>1+_div(Tme,c-1)+1] & Tme(0x1)<<_mod(Tme,c-1))!=0x0 # TODO this has code repetition with the Pauli getindex
 Base.getindex(stab::Stabilizer, r) = Stabilizer(stab.phases[r], nqubits(stab), stab.xzs[r,:])
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
 Base.view(stab::Stabilizer, r) = Stabilizer(view(stab.phases, r), nqubits(stab), view(stab.xzs, r, :))
@@ -325,19 +325,12 @@ Base.copy(s::Stabilizer) = Stabilizer(copy(s.phases), s.nqubits, copy(s.xzs))
 # Helpers for sublcasses of AbstractStabilizer that use Stabilizer as a tableau internally.
 ##############################
 
-Base.:(==)(l::T, r::S) where {T<:AbstractStabilizer, S<:AbstractStabilizer} = T==S && r.tab==l.tab
+Base.:(==)(l::T, r::S) where {T<:AbstractStabilizer, S<:AbstractStabilizer} = T==S && tab(l)==tab(r)
 
-Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, s.tab, h)
+Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, tab(s), h)
 
-function apply!(s::AbstractStabilizer, p::AbstractCliffordOperator; phases::Bool=true)
-    apply!(s.tab,p; phases=phases)
-    s
-end
-
-function apply!(s::AbstractStabilizer, p::AbstractCliffordOperator, indices; phases::Bool=true)
-    apply!(s.tab,p, indices; phases=phases)
-    s
-end
+tab(s::Stabilizer) = s
+tab(s::AbstractStabilizer) = s.tab
 
 """Tensor product between operators or tableaux. See also [`tensor`](@ref) and [`tensor_pow`](@ref)."""
 function ⊗ end
@@ -684,7 +677,7 @@ function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true
     cnt1 = zero(T)
     cnt2 = zero(T)
     len = length(l)>>1
-    @turbo for i in 1:len# TODO This can be further optimized with https://github.com/JuliaSIMD/LoopVectorization.jl/issues/291
+    @turbo for i in 1:len# TODO This can be further optimized by factoring out count_ones with https://github.com/JuliaSIMD/LoopVectorization.jl/issues/291
         x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
         newx1 = x1 ⊻ x2
         r[i] = newx1
@@ -833,7 +826,7 @@ end
 @inline _logsizeof(::Type{UInt32 }) = 5
 @inline _logsizeof(::Type{UInt16 }) = 4
 @inline _logsizeof(::Type{UInt8  }) = 3
-@inline _mask(arg::T) where T<:Unsigned = sizeof(T)*8-1
+@inline _mask(::T) where T<:Unsigned = sizeof(T)*8-1
 @inline _mask(arg::T) where T<:Type = sizeof(arg)*8-1
 @inline _div(T,l) = l >> _logsizeof(T)
 @inline _mod(T,l) = l & _mask(T)
@@ -1183,16 +1176,19 @@ function Base.:(*)(p::AbstractCliffordOperator, s::AbstractStabilizer; phases::B
     apply!(s,p; phases=phases)
 end
 
-function apply!(s::Stabilizer, p::PauliOperator; phases::Bool=true)
-    phases || return s
+# TODO no need to track phases outside of stabview
+function apply!(stab::AbstractStabilizer, p::PauliOperator; phases::Bool=true)
+    s = tab(stab)
+    phases || return stab
     for i in eachindex(s)
         s.phases[i] = (s.phases[i]+comm(p,s,i)<<1+p.phase[]<<1)&0x3
     end
-    s
+    stab
 end
 
-function apply!(s::Stabilizer, p::PauliOperator, indices; phases::Bool=true)
-    phases || return s
+function apply!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Bool=true)
+    s = tab(stab)
+    phases || return stab
     newp = zero(typeof(p),nqubits(s)) # TODO this is an unnecessarily slow operation for something that can be sparse
     for (ii,i) in enumerate(indices)
         newp[i] = p[ii]
@@ -1201,7 +1197,7 @@ function apply!(s::Stabilizer, p::PauliOperator, indices; phases::Bool=true)
     for i in eachindex(s)
         s.phases[i] = (s.phases[i]+comm(p,s,i)<<1+p.phase[]<<1)&0x3
     end
-    s
+    stab
 end
 
 function tensor_pow(op,power,mem::Dict{Int,Any}) # TODO optimize this by doing preallocation instead of performing it recursively
@@ -1327,7 +1323,9 @@ function ⊗(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer
       foldl((l,r)->l⊗r.tab[end÷2+1:end],ops[2:end],init=ops[1].tab[end÷2+1:end])))
 end
 
-function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
+# TODO no need to track phases outside of stabview
+function apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true)
+    s = tab(stab)
     new_stabrow = zero(s[1])
     n = nqubits(c)
     for row_stab in eachindex(s)
@@ -1347,10 +1345,11 @@ function apply!(s::Stabilizer, c::CliffordOperator; phases::Bool=true)
         end
         s[row_stab] = new_stabrow
     end
-    s
+    stab
 end
 
-function apply!(s::Stabilizer, c::CliffordOperator, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
+function apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
+    s = tab(stab)
     new_stabrow = zero(c.tab[1])
     n = nqubits(c)
     for row_stab in eachindex(s)
@@ -1373,7 +1372,7 @@ function apply!(s::Stabilizer, c::CliffordOperator, indices_of_application::Abst
         end
         phases && (s.phases[row_stab] = new_stabrow.phase[])
     end
-    s
+    stab
 end
 
 """
@@ -1560,12 +1559,14 @@ function ⊗(ops::CliffordColumnForm{Tzv,Tm}...) where {Tzv<:AbstractVector{UInt
     newop
 end
 
-function apply!(s::Stabilizer{Tzv,Tm1}, c::CliffordColumnForm{Tzv,Tm2}; phases::Bool=true) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm1<:AbstractMatrix{Tme}, Tm2<:AbstractMatrix{Tme}}
+function apply!(stab::AbstractStabilizer, c::CliffordColumnForm; phases::Bool=true)
     phases && error("calculation of phases is not implemented for `CliffordColumnForm`: try running with `phases=false`")
+    s = tab(stab)
     new_stabrowx = zero(s.xzs[1,1:end÷2])
     new_stabrowz = zero(s.xzs[1,1:end÷2])
     xztox = zero(c.xztox[1,:])
     xztoz = zero(c.xztox[1,:])
+    Tme = eltype(s.xzs)
     for row_stab in eachindex(s)
         fill!(new_stabrowx, zero(eltype(new_stabrowx)))
         fill!(new_stabrowz, zero(eltype(new_stabrowz)))
@@ -1582,15 +1583,17 @@ function apply!(s::Stabilizer{Tzv,Tm1}, c::CliffordColumnForm{Tzv,Tm2}; phases::
         s.xzs[row_stab,1:end÷2] = new_stabrowx
         s.xzs[row_stab,end÷2+1:end] = new_stabrowz
     end
-    s
+    stab
 end
 
 @inline get_bit(i::T,bit) where T<:Unsigned = (i & (T(0x1)<<bit))>>bit
 
-function apply!(s::Stabilizer{Tzv,Tm1}, c::CliffordColumnForm{Tzv,Tm2}, indices_of_application; phases::Bool=true) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm1<:AbstractMatrix{Tme}, Tm2<:AbstractMatrix{Tme}}
+function apply!(stab::AbstractStabilizer, c::CliffordColumnForm, indices_of_application; phases::Bool=true)
     phases && error("calculation of phases is not implemented for `CliffordColumnForm`: try running with `phases=false`")
+    s = tab(stab)
     new_stabrowx = zeros(Bool,length(indices_of_application))
     new_stabrowz = zeros(Bool,length(indices_of_application))
+    Tme = eltype(s.xzs)
     lowbit = Tme(0x1)
     for row_stab in eachindex(s)
         fill!(new_stabrowx, zero(eltype(new_stabrowx)))
@@ -1623,7 +1626,7 @@ function apply!(s::Stabilizer{Tzv,Tm1}, c::CliffordColumnForm{Tzv,Tm2}, indices_
             s.xzs[row_stab,end÷2+bigi_redirect] |= new_stabrowz[i]<<smalli_redirect
         end
     end
-    s
+    stab
 end
 
 const CNOTcol = Ccol"XX
@@ -1776,7 +1779,9 @@ end
 ##############################
 
 """Apply a Pauli Z to the `i`-th qubit of state `s`."""
-function apply_single_z!(s::Stabilizer{Tzv,Tm}, i) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
+function apply_single_z!(stab::AbstractStabilizer, i)
+    s = tab(stab)
+    Tme = eltype(s.xzs)
     bigi = _div(Tme,i-1)+1
     smalli = _mod(Tme,i-1)
     mask = Tme(0x1)<<smalli
@@ -1785,11 +1790,13 @@ function apply_single_z!(s::Stabilizer{Tzv,Tm}, i) where {Tzv<:AbstractVector{UI
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end
-    s
+    stab
 end
 
 """Apply a Pauli X to the `i`-th qubit of state `s`."""
-function apply_single_x!(s::Stabilizer{Tzv,Tm}, i) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
+function apply_single_x!(stab::AbstractStabilizer, i)
+    s = tab(stab)
+    Tme = eltype(s.xzs)
     bigi = _div(Tme,i-1)+1
     smalli = _mod(Tme,i-1)
     mask = Tme(0x1)<<smalli
@@ -1798,11 +1805,13 @@ function apply_single_x!(s::Stabilizer{Tzv,Tm}, i) where {Tzv<:AbstractVector{UI
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end
-    s
+    stab
 end
 
 """Apply a Pauli Y to the `i`-th qubit of state `s`."""
-function apply_single_y!(s::Stabilizer{Tzv,Tm}, i) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
+function apply_single_y!(stab::AbstractStabilizer, i)
+    s = tab(stab)
+    Tme = eltype(s.xzs)
     bigi = _div(Tme,i-1)+1
     smalli = _mod(Tme,i-1)
     mask = Tme(0x1)<<smalli
@@ -1811,20 +1820,7 @@ function apply_single_y!(s::Stabilizer{Tzv,Tm}, i) where {Tzv<:AbstractVector{UI
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end
-    s
-end
-
-function apply_single_z!(s::AbstractStabilizer, i)
-    apply_single_z!(s.tab, i)
-    s
-end
-function apply_single_x!(s::AbstractStabilizer, i)
-    apply_single_x!(s.tab, i)
-    s
-end
-function apply_single_y!(s::AbstractStabilizer, i)
-    apply_single_y!(s.tab, i)
-    s
+    stab
 end
 
 ##############################
