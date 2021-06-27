@@ -204,7 +204,7 @@ function precise_inv(a)
         return inv(a)
     else
         NEMO_LOADED[] || error("A function you called in QuantumClifford is attempting to precisely invert a large (>200 qubits) tableau. This requires that you install and import Nemo.jl by running `]add Nemo` and `using Nemo`.") # TODO test this error message, before/after Nemo import
-	return nemo_inv(a,n)
+	    return nemo_inv(a,n)
     end
 end
 
