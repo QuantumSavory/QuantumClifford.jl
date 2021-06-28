@@ -877,11 +877,15 @@ if doset("Small symbolic operators")
     @testset "Small symbolic operators" begin
         for i in 1:6, n in test_sizes
             op = enumerate_single_qubit_gates(i, qubit=n, phases=rand(Bool,2))
+            op0 = enumerate_single_qubit_gates(i, qubit=n) 
             opt = CliffordOperator(op)
+            @test op==SingleQubitOperator(opt, n)
+            opt0 = CliffordOperator(op0)
             s = random_stabilizer(n)
             @test apply!(copy(s),op)==apply!(copy(s),opt,[n])
+            @test apply!(copy(s),op0)==apply!(copy(s),opt0,[n])
             r = random_clifford1(1)
-            @test r⊗op == r⊗opt
+            @test r⊗op⊗op0 == r⊗opt⊗opt0
         end
     end
 end

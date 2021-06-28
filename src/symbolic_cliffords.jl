@@ -99,10 +99,11 @@ end
 
 SingleQubitOperator(h::sHadamard) = SingleQubitOperator(h.q, false, true, true, false, false, false)
 SingleQubitOperator(p::sPhase) = SingleQubitOperator(p.q, true, true, false, true, false, false)
-function SingleQubitOperator(op::CliffordOperator)
+function SingleQubitOperator(op::CliffordOperator, qubit)
     @assert nqubits(op)==1 "You are trying to convert a multiqubit `CliffordOperator` into a symbolic `SingleQubitOperator`."
-    SingleQubitOperator(1,op.tab[1,1]...,op.tab[2,1]...,(~).(iszero.(op.tab.phases))...)
+    SingleQubitOperator(qubit,op.tab[1,1]...,op.tab[2,1]...,(~).(iszero.(op.tab.phases))...)
 end
+SingleQubitOperator(op::CliffordOperator) = SingleQubitOperator(op, 1)
 CliffordOperator(op::AbstractSingleQubitOperator) = CliffordOperator(SingleQubitOperator(op))
 CliffordOperator(op::SingleQubitOperator) = CliffordOperator(Stabilizer([op.px ? 0x2 : 0x0, op.pz ? 0x2 : 0x0],[op.xx op.xz; op.zx op.zz]))
 function Base.show(io::IO, op::AbstractSingleQubitOperator)
