@@ -23,7 +23,7 @@ julia> typeof(h)
 CliffordOperator{Vector{UInt8}, LinearAlgebra.Adjoint{UInt64, Matrix{UInt64}}}
 ```
 
-Notice that in tensor products and othe similar operations, this symbolic operator gets
+Notice that in tensor products and other similar operations, this symbolic operator gets
 transformed into a single-qubit tableau, losing the `qubit` index information.
 
 See also: [`SingleQubitOperator`](@ref)
@@ -51,7 +51,7 @@ julia> typeof(p)
 CliffordOperator{Vector{UInt8}, LinearAlgebra.Adjoint{UInt64, Matrix{UInt64}}}
 ```
 
-Notice that in tensor products and othe similar operations, this symbolic operator gets
+Notice that in tensor products and other similar operations, this symbolic operator gets
 transformed into a single-qubit tableau, losing the `qubit` index information.
 
 See also: [`SingleQubitOperator`](@ref)
@@ -82,7 +82,7 @@ julia> typeof(op ⊗ op) # Tensor and other operations are possible but some of 
 CliffordOperator{Vector{UInt8}, LinearAlgebra.Adjoint{UInt64, Matrix{UInt64}}}
 ```
 
-Notice that in tensor products and othe similar operations, this symbolic operator gets
+Notice that in tensor products and other similar operations, this symbolic operator gets
 transformed into a single-qubit tableau, losing the `qubit` index information.
 
 See also: [`sHadamard`](@ref), [`sPhase`](@ref), [`CliffordOperator`](@ref)
