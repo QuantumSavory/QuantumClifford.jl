@@ -872,6 +872,21 @@ end
 end
 end
 
+function test_symbolic()
+if doset("Small symbolic operators")
+    @testset "Small symbolic operators" begin
+        for i in 1:6, n in test_sizes
+            op = enumerate_single_qubit_gates(i, qubit=n, phases=rand(Bool,2))
+            opt = CliffordOperator(op)
+            s = random_stabilizer(n)
+            @test apply!(copy(s),op)==apply!(copy(s),opt,[n])
+            r = random_clifford1(1)
+            @test r⊗op == r⊗opt
+        end
+    end
+end
+end
+
 function test_random()
 if doset("Random sampling of operators")
     @testset "Random sampling of operators" begin
@@ -1210,6 +1225,7 @@ test_paulistab()
 test_bitpack()
 test_cliff()
 test_operations()
+test_symbolic()
 test_random()
 test_noisycircuits()
 doctests()

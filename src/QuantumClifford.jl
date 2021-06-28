@@ -23,6 +23,8 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     CliffordOperator, @C_str,
     CliffordColumnForm, @Ccol_str,
     CNOT, CPHASE, SWAP, Hadamard, Phase, CliffordId,
+    sHadamard, sPhase, SingleQubitOperator,
+    enumerate_single_qubit_gates, random_clifford1,
     tensor, tensor_pow,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     perm_inverse, perm_product,
@@ -1257,6 +1259,7 @@ macro C_str(a)
     CliffordOperator(tab)
 end
 
+CliffordOperator(op::CliffordOperator) = op
 CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Stabilizer(paulis))
 CliffordOperator(destab::Destabilizer) = CliffordOperator(destab.tab)
 
@@ -1317,7 +1320,8 @@ function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this 
     CliffordOperator(Stabilizer([c.tab[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
 end
 
-function ⊗(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here
+function ⊗(ops::AbstractCliffordOperator...) # TODO implement \otimes for Destabilizer and use it here
+    ops = CliffordOperator.(ops)
     CliffordOperator(vcat(
       foldl((l,r)->l⊗r.tab[1:end÷2    ],ops[2:end],init=ops[1].tab[1:end÷2]),
       foldl((l,r)->l⊗r.tab[end÷2+1:end],ops[2:end],init=ops[1].tab[end÷2+1:end])))
@@ -2009,6 +2013,7 @@ RecipesBase.@recipe function f(s::Stabilizer; xzcomponents=:split)
     end
 end
 
+include("./symbolic_cliffords.jl")
 include("./randoms.jl")
 include("./useful_states.jl")
 include("./experimental/Experimental.jl")
