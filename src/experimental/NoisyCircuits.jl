@@ -461,10 +461,14 @@ function applyop!(state::Register, op::ConditionalGate)
     return state, :continue
 end
 
+# TODO tests for this
+# for (a) integer output from decisionfunction, and (b) integer array output
 function applyop!(state::Register, op::DecisionGate)
     decision = op.decisionfunction(state.bits)
     if !isnothing(decision)
-        applyop!(state, op.gates[decision])
+        for i in 1:length(decision)
+            applyop!(state, op.gates[decision[i]])
+        end
     end
     state, :continue
 end
