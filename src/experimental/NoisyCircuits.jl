@@ -452,6 +452,7 @@ function applyop!(state::Register, op::SparseMeasurement)
     applyop!(state,dm)
 end
 
+# TODO tests for this
 function applyop!(state::Register, op::ConditionalGate)
     if state.bits[op.controlbit]
         applyop!(state, op.truegate)
@@ -461,8 +462,6 @@ function applyop!(state::Register, op::ConditionalGate)
     return state, :continue
 end
 
-# TODO tests for this
-# for (a) integer output from decisionfunction, and (b) integer array output
 function applyop!(state::Register, op::DecisionGate)
     decision = op.decisionfunction(state.bits)
     if !isnothing(decision)
