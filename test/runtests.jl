@@ -1212,24 +1212,20 @@ if doset("Classical Bits")
             r = Register(s, [false])
             applyop!(r, DenseMeasurement(P"Z", 1))
             correctiveGate = SparseGate(X_error, [1])
-            decisionFunction = syndrome ->
-                    syndrome[1] == true ?
-                    1 : nothing
+            decisionFunction = syndrome -> syndrome[1] ? 1 : nothing
             applyop!(r, DecisionGate([correctiveGate], decisionFunction))
             @test r.stab == S"Z"
         end
 
         # testing an array return from decision function
         expectedFinalState = S"ZI
-                        IZ"
+                               IZ"
         s = QuantumClifford.bell()
         r = Register(s, [false])
         applyop!(r, DenseMeasurement(P"ZI", 1))
         # applyop!(r, SparseMeasurement(P"Z", [1], 1))
         correctiveGates = [SparseGate(X_error, [1]), SparseGate(X_error, [2])]
-        decisionFunction = syndrome ->
-                syndrome[1] == true ?
-                [1,2] : nothing
+        decisionFunction = syndrome -> syndrome[1] ? [1,2] : nothing
         applyop!(r, DecisionGate(correctiveGates, decisionFunction))
         canonicalize!(r.stab)
         @test r.stab == expectedFinalState
@@ -1239,10 +1235,7 @@ if doset("Classical Bits")
         # applyop!(r, DenseMeasurement(P"ZI", 1))
         applyop!(r, SparseMeasurement(P"Z", [1], 1))
         # we use the same corrective gates, with a different decision function
-        decisionFunction = syndrome ->
-                syndrome[1] == true ?
-                [1] : 2
-                # both [1] and 1 should work
+        decisionFunction = syndrome -> syndrome[1] ? [1] : 2 # both [1] and 1 should work
         applyop!(r, DecisionGate(correctiveGates, decisionFunction))
         canonicalize!(r.stab)
         @test r.stab == expectedFinalState
@@ -1261,7 +1254,7 @@ if doset("Classical Bits")
         end
 
         expectedFinalState = S"ZI
-                        IZ"
+                               IZ"
         s = QuantumClifford.bell((false, true))
         r = Register(s, [false])
         applyop!(r, DenseMeasurement(P"ZI", 1))
