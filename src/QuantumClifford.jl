@@ -1354,7 +1354,7 @@ end
 
 function apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
     s = tab(stab)
-    new_stabrow = zero(c.tab[1])
+    new_stabrow = zero(PauliOperator,nqubits(c))
     n = nqubits(c)
     for row_stab in eachindex(s)
         fill!(new_stabrow.xz, zero(eltype(new_stabrow.xz))) # TODO there should be a prettier way to do this
