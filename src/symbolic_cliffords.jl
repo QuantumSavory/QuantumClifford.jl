@@ -135,6 +135,8 @@ Base.@propagate_inbounds function setzbit(s, r, c, z)
     s.xzs[r,end÷2+cbig] &= ~getmask(Tme,c)
     s.xzs[r,end÷2+cbig] |= z
 end
+Base.@propagate_inbounds setxbit(s, r, c, x, shift) = setxbit(s, r, c, x<<shift)
+Base.@propagate_inbounds setzbit(s, r, c, z, shift) = setzbit(s, r, c, z<<shift)
 
 function apply!(stab::AbstractStabilizer, h::sHadamard; phases::Bool=true)
     s = tab(stab)
@@ -225,3 +227,54 @@ function random_clifford1(rng::AbstractRNG, qubit)
     return enumerate_single_qubit_gates(rand(rng,1:6),qubit=qubit,phases=rand(rng,Bool,2))
 end
 random_clifford1(qubit) = random_clifford1(GLOBAL_RNG, qubit)
+
+
+"""A "symbolic" CNOT
+"""
+struct sCNOT <: AbstractSingleQubitOperator
+    q1::Int
+    q2::Int
+end
+
+"""A "symbolic" SWAP
+"""
+struct sSWAP <: AbstractSingleQubitOperator
+    q1::Int
+    q2::Int
+end
+
+function apply!(stab::AbstractStabilizer, cnot::sCNOT; phases::Bool=true)
+    s = tab(stab)
+    q1 = cnot.q1
+    q2 = cnot.q2
+    Tme = eltype(s.xzs)
+    shift = getshift(Tme, q1) - getshift(Tme, q2)
+    @inbounds @simd for r in eachindex(s)
+        x1 = getxbit(s, r, q1)
+        z1 = getzbit(s, r, q1)
+        x2 = getxbit(s, r, q2)
+        z2 = getzbit(s, r, q2)
+        setxbit(s, r, q2, x2⊻(x1<<-shift))
+        setzbit(s, r, q1, z1⊻(z2<<shift))
+    end
+    stab
+end
+
+function apply!(stab::AbstractStabilizer, swap::sSWAP; phases::Bool=true)
+    s = tab(stab)
+    q1 = swap.q1
+    q2 = swap.q2
+    Tme = eltype(s.xzs)
+    shift = getshift(Tme, q1) - getshift(Tme, q2)
+    @inbounds @simd for r in eachindex(s)
+        x1 = getxbit(s, r, q1)
+        z1 = getzbit(s, r, q1)
+        x2 = getxbit(s, r, q2)
+        z2 = getzbit(s, r, q2)
+        setxbit(s, r, q1, x2, shift)
+        setzbit(s, r, q1, z2, shift)
+        setxbit(s, r, q2, x1, -shift)
+        setzbit(s, r, q2, z1, -shift)
+    end
+    stab
+end
