@@ -44,3 +44,10 @@ Gadfly.with_theme(style(highlight_width=0.1mm)) do
     img = PNG("all_bench.png", 20cm, 5cm*length(unique(df[:,:benchmark])), dpi=200)
     draw(img, p)
 end
+
+# Geometric mean
+version_time_nomiss = stack(dropmissing(unstack(df, :benchmark, :version, :time)), Not(:benchmark))
+df_geomean = combine(groupby(version_time_nomiss, :variable), :value => (x->exp(sum(log.(x))/length(x))))
+Gadfly.plot(df_geomean, x=:variable, y=:value_function,
+    Geom.line(), Guide.xlabel("version"), Guide.ylabel("time")
+)
