@@ -20,6 +20,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     canonicalize!, canonicalize_rref!, canonicalize_gott!, colpermute!,
     generate!, project!, reset_qubits!, traceout!,
     apply!,
+    tab,
     CliffordOperator, @C_str,
     CliffordColumnForm, @Ccol_str,
     CNOT, CPHASE, SWAP, Hadamard, Phase, CliffordId,
@@ -267,6 +268,8 @@ Base.getindex(stab::Stabilizer, i::Int) = PauliOperator(stab.phases[i], nqubits(
 @inline Base.getindex(stab::Stabilizer{Tzv,Tm}, r::Int, c::Int) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}} = (stab.xzs[r,_div(Tme,c-1)+1] & Tme(0x1)<<_mod(Tme,c-1))!=0x0, (stab.xzs[r,end>>1+_div(Tme,c-1)+1] & Tme(0x1)<<_mod(Tme,c-1))!=0x0 # TODO this has code repetition with the Pauli getindex
 Base.getindex(stab::Stabilizer, r) = Stabilizer(stab.phases[r], nqubits(stab), stab.xzs[r,:])
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
+Base.getindex(stab::Stabilizer, r, c::Int) = stab[r,[c]]
+Base.getindex(stab::Stabilizer, r::Int, c) = stab[r][c]
 Base.view(stab::Stabilizer, r) = Stabilizer(view(stab.phases, r), nqubits(stab), view(stab.xzs, r, :))
 
 Base.iterate(stab::Stabilizer, state=1) = state>length(stab) ? nothing : (stab[state], state+1)
@@ -331,6 +334,31 @@ Base.:(==)(l::T, r::S) where {T<:AbstractStabilizer, S<:AbstractStabilizer} = T=
 
 Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, tab(s), h)
 
+"""Extract the underlying tableau structure.
+
+```jldoctest
+julia> s = S"X"
++ X
+
+julia> tab(s)
++ X
+
+julia> tab(Destabilizer(s))
++ Z
++ X
+
+julia> tab(MixedDestabilizer(s))
++ Z
++ X
+
+julia> tab(CliffordOperator(s))
++ Z
++ X
+
+julia> typeof(tab(CliffordOperator(s)))
+Stabilizer{Vector{UInt8}, LinearAlgebra.Adjoint{UInt64, Matrix{UInt64}}}
+```
+"""
 tab(s::Stabilizer) = s
 tab(s::AbstractStabilizer) = s.tab
 
@@ -1249,9 +1277,44 @@ julia> entangled = CNOT*stab
 + XX
 + ZZ
 ```
+
+You can convert a stabilizer into a Clifford Operator (if necessary, the destabilizers are calculated on the fly):
+
+```jldoctest
+julia> CliffordOperator(S"Y")
+X ⟼ + Z
+Z ⟼ + Y
+
+
+julia> CliffordOperator(S"YY")
+ERROR: DimensionMismatch("Input tableau should be square (in which case the destabilizers are calculated) or of size 2n×n (in which case it is used directly).")
+[...]
+```
+
+[`Destabilizer`](@ref) can also be converted (actually, internally, square stabilizer tableaux are first converted to destabilizer tableaux).
+```jldoctest
+julia> d = Destabilizer(S"Y")
++ Z
+━━━
++ Y
+
+julia> CliffordOperator(d)
+X ⟼ + Z
+Z ⟼ + Y
+```
 """
 struct CliffordOperator{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractCliffordOperator
     tab::Stabilizer{Tzv,Tm}
+    function CliffordOperator(stab::Stabilizer{Tzv,Tm}) where {Tzv,Tm}
+        if size(stab,1)==2*size(stab,2)
+            new{Tzv,Tm}(stab)
+        elseif size(stab,1)==size(stab,2)
+            destab = tab(Destabilizer(stab))
+            new{typeof(destab.phases),typeof(destab.xzs)}(destab) # TODO be smarter about type signatures here... there should be a better way
+        else
+            throw(DimensionMismatch("Input tableau should be square (in which case the destabilizers are calculated) or of size 2n×n (in which case it is used directly)."))
+        end
+    end
 end
 
 macro C_str(a)
@@ -1261,11 +1324,13 @@ end
 
 CliffordOperator(op::CliffordOperator) = op
 CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Stabilizer(paulis))
-CliffordOperator(destab::Destabilizer) = CliffordOperator(destab.tab)
+CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
 
 Base.:(==)(l::CliffordOperator, r::CliffordOperator) = l.tab == r.tab
 
-Base.getindex(c::CliffordOperator, i::Int) = c.tab[i]
+Base.getindex(c::CliffordOperator, args...) = getindex(tab(c), args...)
+
+tab(c::CliffordOperator) = c.tab
 
 function Base.show(io::IO, c::CliffordOperator)
     n = nqubits(c)
@@ -1867,7 +1932,7 @@ Base.zero(::Type{<:Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),false
 Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
 Base.zero(::Type{<:CliffordColumnForm}, n) = CliffordColumnForm(zeros(UInt8,2n),n,repeat(falses(n).chunks',n,2),repeat(falses(n).chunks',n,2))
 Base.zero(c::CliffordColumnForm) = CliffordColumnForm(zero(c.phases),c.nqubits,zero(c.xztox),zero(c.xztoz))
-Base.zero(c::CliffordOperator) = typeof(c)(zero(c.tab))
+Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.tab))
 Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Stabilizer, 2n, n))
 
 function Base.one(::Type{<:Stabilizer}, n; basis=:Z)

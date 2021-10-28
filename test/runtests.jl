@@ -221,6 +221,22 @@ if doset("Stabilizer canonicalization")
 end
 end
 
+if doset("Stabilizer indexing")
+@testset "Stabilizer indexing" begin
+    s = random_stabilizer(10,10)
+    @test s[1,1] == s[[1,3,4],[1,3,5]][1,1]
+    @test s[1,1] == s[:,[1,3,5]][1,1]
+    @test s[1,1] == s[1,[1,3,5]][1]
+    @test s[1,1] == s[[1,3,5],:][1,1]
+    @test s[1,1] == s[[1,3,5],1][1,1]
+    @test s[1,1] == s[:,1][1,1]
+    @test s[1,1] == s[1,:][1]
+    @test s[1,1] == s[:,:][1,1]
+    @test isa(s[1], PauliOperator)
+    @test isa(s[1,:], PauliOperator)
+    @test isa(s[1,[1,2,3]], PauliOperator)
+end
+end
 if doset("Low-level tableaux ops")
 @testset "Low-level tableaux ops" begin
     for n in test_sizes
