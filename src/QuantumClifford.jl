@@ -164,6 +164,8 @@ Base.size(pauli::PauliOperator) = (pauli.nqubits,)
 
 Base.length(pauli::PauliOperator) = pauli.nqubits
 
+nqubits(pauli::PauliOperator) = pauli.nqubits
+
 xz2str(x,z) = join(toletter[e] for e in zip(x,z))
 
 Base.show(io::IO, p::PauliOperator) = print(io, ["+ ","+i","- ","-i"][p.phase[]+1]*xz2str(xbit(p),zbit(p)))
@@ -699,7 +701,6 @@ function mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bo
 end
 
 function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
-    @assert length(l)==length(r) "The two Pauli operators should have the same length!"
     if !phases
         r .⊻= l
         return zero(T)
@@ -722,6 +723,7 @@ function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true
 end
 
 @inline function mul_left!(r::PauliOperator, l::PauliOperator; phases::Bool=true)
+    nqubits(l)==nqubits(r) || throw(DimensionMismatch("The two Pauli operators should have the same length!")) # TODO skip this when @inbounds is set
     s = mul_left!(r.xz, l.xz, phases=phases)
     phases && (r.phase[] = (s+r.phase[]+l.phase[])&0x3)
     r
@@ -1208,6 +1210,7 @@ end
 
 # TODO no need to track phases outside of stabview
 function apply!(stab::AbstractStabilizer, p::PauliOperator; phases::Bool=true)
+    nqubits(stab)==nqubits(p) || throw(DimensionMismatch("The tableau and the Pauli operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
     s = tab(stab)
     phases || return stab
     for i in eachindex(s)
@@ -1332,6 +1335,8 @@ Base.getindex(c::CliffordOperator, args...) = getindex(tab(c), args...)
 
 tab(c::CliffordOperator) = c.tab
 
+Base.size(c::CliffordOperator,args...) = size(tab(c),args...)
+
 function Base.show(io::IO, c::CliffordOperator)
     n = nqubits(c)
     for i in 1:n
@@ -1394,6 +1399,7 @@ end
 
 # TODO no need to track phases outside of stabview
 function apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true)
+    nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
     s = tab(stab)
     new_stabrow = zero(s[1])
     n = nqubits(c)
