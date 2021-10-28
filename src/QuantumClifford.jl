@@ -360,6 +360,8 @@ julia> tab(CliffordOperator(s))
 julia> typeof(tab(CliffordOperator(s)))
 Stabilizer{Vector{UInt8}, LinearAlgebra.Adjoint{UInt64, Matrix{UInt64}}}
 ```
+
+See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
 """
 tab(s::Stabilizer) = s
 tab(s::AbstractStabilizer) = s.tab
@@ -522,19 +524,19 @@ end
 # Subtableau views
 ##############################
 
-"""A view of the subtableau corresponding to the stabilizer."""
+"""A view of the subtableau corresponding to the stabilizer. See also [`tab`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
 @inline stabilizerview(s::Stabilizer) = s
 @inline stabilizerview(s::Destabilizer) = @view s.tab[end÷2+1:end]
 @inline stabilizerview(s::MixedStabilizer) = @view s.tab[1:s.rank]
 @inline stabilizerview(s::MixedDestabilizer) = @view s.tab[end÷2+1:end÷2+s.rank]
 
-"""A view of the subtableau corresponding to the destabilizer."""
+"""A view of the subtableau corresponding to the destabilizer. See also [`tab`](@ref), [`stabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
 @inline destabilizerview(s::Destabilizer) = @view s.tab[1:end÷2]
 @inline destabilizerview(s::MixedDestabilizer) = @view s.tab[1:s.rank]
 
-"""A view of the subtableau corresponding to the logical X operators."""
+"""A view of the subtableau corresponding to the logical X operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalzview`](@ref)"""
 @inline logicalxview(s::MixedDestabilizer) = @view s.tab[s.rank+1:end÷2]
-"""A view of the subtableau corresponding to the logical Z operators."""
+"""A view of the subtableau corresponding to the logical Z operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref)"""
 @inline logicalzview(s::MixedDestabilizer) = @view s.tab[end÷2+s.rank+1:end]
 
 """The number of qubits of a given state."""
