@@ -24,8 +24,9 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     CliffordOperator, @C_str,
     CliffordColumnForm, @Ccol_str,
     CNOT, CPHASE, SWAP, Hadamard, Phase, CliffordId,
-    sHadamard, sPhase, SingleQubitOperator,
+    sHadamard, sPhase, SingleQubitOperator,# sId1, sX, sY, sZ,
     enumerate_single_qubit_gates, random_clifford1,
+    sCNOT, sSWAP,
     tensor, tensor_pow,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     perm_inverse, perm_product,
@@ -1334,6 +1335,7 @@ CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
 Base.:(==)(l::CliffordOperator, r::CliffordOperator) = l.tab == r.tab
 
 Base.getindex(c::CliffordOperator, args...) = getindex(tab(c), args...)
+Base.setindex!(c::CliffordOperator, args...) = setindex!(tab(c), args...)
 
 tab(c::CliffordOperator) = c.tab
 

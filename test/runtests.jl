@@ -891,19 +891,29 @@ end
 function test_symbolic()
 if doset("Small symbolic operators")
     @testset "Small symbolic operators" begin
-        for i in 1:6, n in test_sizes
-            op = enumerate_single_qubit_gates(i, qubit=n, phases=rand(Bool,2))
-            op0 = enumerate_single_qubit_gates(i, qubit=n) 
-            opt = CliffordOperator(op)
-            @test op==SingleQubitOperator(opt, n)
-            opt0 = CliffordOperator(op0)
+        for n in test_sizes
+            for i in 1:6
+                op = enumerate_single_qubit_gates(i, qubit=n, phases=rand(Bool,2))
+                op0 = enumerate_single_qubit_gates(i, qubit=n) 
+                op_cc = CliffordOperator(op, 1, compact=true)
+                op_c = CliffordOperator(op, n)
+                @test op==SingleQubitOperator(op_cc, n)
+                op0_c = CliffordOperator(op0, n)
+                s = random_stabilizer(n)
+                @test apply!(copy(s),op)==apply!(copy(s),op_cc,[n])==apply!(copy(s),op_c)
+                @test apply!(copy(s),op,phases=false)==apply!(copy(s),op_cc,[n],phases=false)
+                @test apply!(copy(s),op0)==apply!(copy(s),op0_c)
+            end
+            n==1 && continue
             s = random_stabilizer(n)
-            @test apply!(copy(s),op)==apply!(copy(s),opt,[n])
-            @test apply!(copy(s),op0)==apply!(copy(s),opt0,[n])
-            r = random_clifford1(1)
-            @test r⊗op⊗op0 == r⊗opt⊗opt0
+            i1,i2 = randperm(n)[1:2]
+            @test apply!(copy(s),CNOT,[i1,i2]) == apply!(copy(s),sCNOT(i1,i2))
+            @test apply!(copy(s),SWAP,[i1,i2]) == apply!(copy(s),sSWAP(i1,i2))
         end
     end
+    @test_throws DimensionMismatch SingleQubitOperator(CNOT,1)
+    @test_throws DimensionMismatch CliffordOperator(sHadamard(5),2)
+    @test_throws ArgumentError CliffordOperator(sHadamard(5),6,compact=true)
 end
 end
 

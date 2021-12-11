@@ -18,16 +18,13 @@ Z ⟼ + X
 julia> typeof(sh)
 sHadamard
 
-julia> h = CliffordOperator(sh) # Transforming it back into an explicit tableau representation
+julia> h = CliffordOperator(sh,1) # Transforming it back into an explicit tableau representation
 X ⟼ + Z
 Z ⟼ + X
 
 julia> typeof(h)
 CliffordOperator{Vector{UInt8}, LinearAlgebra.Adjoint{UInt64, Matrix{UInt64}}}
 ```
-
-Notice that in tensor products and other similar operations, this symbolic operator gets
-transformed into a single-qubit tableau, losing the `qubit` index information.
 
 See also: [`SingleQubitOperator`](@ref)
 """
@@ -46,7 +43,7 @@ Z ⟼ + Z
 julia> typeof(sp)
 sPhase
 
-julia> p = CliffordOperator(sp) # Transforming it back into an explicit tableau representation
+julia> p = CliffordOperator(sp,1) # Transforming it back into an explicit tableau representation
 X ⟼ + Y
 Z ⟼ + Z
 
@@ -54,41 +51,74 @@ julia> typeof(p)
 CliffordOperator{Vector{UInt8}, LinearAlgebra.Adjoint{UInt64, Matrix{UInt64}}}
 ```
 
-Notice that in tensor products and other similar operations, this symbolic operator gets
-transformed into a single-qubit tableau, losing the `qubit` index information.
-
 See also: [`SingleQubitOperator`](@ref)
 """
 struct sPhase <: AbstractSingleQubitOperator
     q::Int
 end
 
-"""A "symbolic" single-qubit operator which permits faster multiplication than an operator expressed as an explicit tableau.
+"""A "symbolic" single-qubit Identity operation.
+
+See also: [`SingleQubitOperator`](@ref)
+"""
+struct sId1 <: AbstractSingleQubitOperator # TODO
+    q::Int
+end
+
+"""A "symbolic" single-qubit Pauli X operation.
+
+See also: [`SingleQubitOperator`](@ref)
+"""
+struct sX <: AbstractSingleQubitOperator
+    q::Int
+end
+"""A "symbolic" single-qubit Pauli Y operation.
+
+See also: [`SingleQubitOperator`](@ref)
+"""
+struct sY <: AbstractSingleQubitOperator
+    q::Int
+end
+"""A "symbolic" single-qubit Pauli Z operation.
+
+See also: [`SingleQubitOperator`](@ref)
+"""
+struct sZ <: AbstractSingleQubitOperator
+    q::Int
+end
+
+"""A "symbolic" general single-qubit operator which permits faster multiplication than an operator expressed as an explicit tableau.
 
 ```jldoctest
-julia> op = SingleQubitOperator(1, true, true, true, false, true, true) # Tableau components and phases
-Symbolic single-qubit gate on qubit 1
+julia> op = SingleQubitOperator(2, true, true, true, false, true, true) # Tableau components and phases
+Symbolic single-qubit gate on qubit 2
 X ⟼ - Y
 Z ⟼ - X
 
 julia> typeof(op)
 SingleQubitOperator
 
-julia> t_op = CliffordOperator(op) # Transforming it back into an explicit tableau representation
-X ⟼ - Y
-Z ⟼ - X
+julia> t_op = CliffordOperator(op, 3) # Transforming it back into an explicit tableau representation (specifying the size)
+X__ ⟼ + X__
+_X_ ⟼ - _Y_
+__X ⟼ + __X
+Z__ ⟼ + Z__
+_Z_ ⟼ - _X_
+__Z ⟼ + __Z
 
 julia> typeof(t_op)
 CliffordOperator{Vector{UInt8}, LinearAlgebra.Adjoint{UInt64, Matrix{UInt64}}}
 
-julia> typeof(op ⊗ op) # Tensor and other operations are possible but some of them revert to tableau representation
-CliffordOperator{Vector{UInt8}, LinearAlgebra.Adjoint{UInt64, Matrix{UInt64}}}
+julia> CliffordOperator(op, 1, compact=true) # You can also extract just the non-trivial part of the tableau
+X ⟼ - Y
+Z ⟼ - X
 ```
 
-Notice that in tensor products and other similar operations, this symbolic operator gets
-transformed into a single-qubit tableau, losing the `qubit` index information.
+See also: [`sHadamard`](@ref), [`sPhase`](@ref), [`sId1`](@ref), [`sX`](@ref), [`sY`](@ref), [`sZ`](@ref), [`CliffordOperator`](@ref)
 
-See also: [`sHadamard`](@ref), [`sPhase`](@ref), [`CliffordOperator`](@ref)
+Or simply consult `subtypes(QuantumClifford.AbstractSingleQubitOperator)` and
+`subtypes(QuantumClifford.AbstractTwoQubitOperator)` for a full list.
+You can think of the `s` prefix as "symbolic" or "sparse".
 """
 struct SingleQubitOperator <: AbstractSingleQubitOperator
     q::Int
@@ -103,17 +133,31 @@ end
 SingleQubitOperator(h::sHadamard) = SingleQubitOperator(h.q, false, true, true, false, false, false)
 SingleQubitOperator(p::sPhase) = SingleQubitOperator(p.q, true, true, false, true, false, false)
 function SingleQubitOperator(op::CliffordOperator, qubit)
-    @assert nqubits(op)==1 "You are trying to convert a multiqubit `CliffordOperator` into a symbolic `SingleQubitOperator`."
+    nqubits(op)==1 || throw(DimensionMismatch("You are trying to convert a multiqubit `CliffordOperator` into a symbolic `SingleQubitOperator`."))
     SingleQubitOperator(qubit,op.tab[1,1]...,op.tab[2,1]...,(~).(iszero.(op.tab.phases))...)
 end
 SingleQubitOperator(op::CliffordOperator) = SingleQubitOperator(op, 1)
-CliffordOperator(op::AbstractSingleQubitOperator) = CliffordOperator(SingleQubitOperator(op))
-CliffordOperator(op::SingleQubitOperator) = CliffordOperator(Stabilizer([op.px ? 0x2 : 0x0, op.pz ? 0x2 : 0x0],[op.xx op.xz; op.zx op.zz]))
+CliffordOperator(op::AbstractSingleQubitOperator, n; kw...) = CliffordOperator(SingleQubitOperator(op), n; kw...)
+function CliffordOperator(op::SingleQubitOperator, n; compact=false)
+    if compact
+        n==1 || throw(ArgumentError("Set `n=1` as a `SingleQubitOperator` being compacted (`compact=true`) has to result in a 1D `CliffordOperator`."))
+        return CliffordOperator(Stabilizer([op.px ? 0x2 : 0x0, op.pz ? 0x2 : 0x0],[op.xx op.xz; op.zx op.zz]))
+    else
+        n >= op.q || throw(DimensionMismatch("Set a larger `n`, otherwise the `SingleQubitOperator` can not fit in the allocated `CliffordOperator`. Use `compact=true` if you want to discard the target index."))
+        c = one(CliffordOperator, n)
+        c[op.q,op.q] = op.xx, op.xz # TODO define an `embed` helper function
+        c[n+op.q,op.q] = op.zx, op.zz
+        c.tab.phases[op.q] = op.px ? 0x2 : 0x0 # TODO define a `phasesview` or `phases` helper function 
+        c.tab.phases[n+op.q] = op.pz ? 0x2 : 0x0
+        return c
+    end
+end
 function Base.show(io::IO, op::AbstractSingleQubitOperator)
     print(io, "Symbolic single-qubit gate on qubit $(op.q)\n")
-    show(io, CliffordOperator(op))
+    show(io, CliffordOperator(op, 1, compact=true))
 end
 
+#TODO these are too low level to be used directly in the apply! functions. Make a better abstractions.
 @inline getshift(Tme::Type,col::Int) = _mod(Tme,col-1)
 @inline getmask(Tme::Type,col::Int) = Tme(0x1)<<getshift(Tme,col)
 @inline getbigindex(Tme::Type,col::Int) = _div(Tme,col-1)+1
@@ -167,7 +211,7 @@ function apply!(stab::AbstractStabilizer, p::sPhase; phases::Bool=true)
     stab
 end
 
-function apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Bool=true) # TODO generated functions that simplify the whole `if phases` branch might be a good optimization
+function apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Bool=true) # TODO Generated functions that simplify the whole `if phases` branch might be a good optimization, but a quick benchmakr comparing sHadamard to SingleQubitOperator(sHadamard) did not show a worthwhile difference.
     s = tab(stab)
     c = op.q
     Tme = eltype(s.xzs)
@@ -198,12 +242,12 @@ function apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Bool=
 end
 
 const all_single_qubit_patterns = (
-    (true, false, false, true),
-    (false, true, true, true),
-    (true, true, true, false),
-    (false, true, true, false),
-    (true, false, true, true),
-    (true, true, false, true)
+    (true, false, false, true), # X, Z ↦ X, Z
+    (false, true, true, true),  # X, Z ↦ Z, Y
+    (true, true, true, false),  # X, Z ↦ Y, X
+    (false, true, true, false), # X, Z ↦ Z, X - Hadamard
+    (true, false, true, true),  # X, Z ↦ X, Y
+    (true, true, false, true)   # X, Z ↦ Y, Z - Phase
 )
 
 """Generate a symbolic single-qubit gate given its index. Optionally, set non-trivial phases."""
@@ -234,14 +278,14 @@ random_clifford1(qubit) = random_clifford1(GLOBAL_RNG, qubit)
 
 """A "symbolic" CNOT
 """
-struct sCNOT <: AbstractSingleQubitOperator
+struct sCNOT <: AbstractTwoQubitOperator
     q1::Int
     q2::Int
 end
 
 """A "symbolic" SWAP
 """
-struct sSWAP <: AbstractSingleQubitOperator
+struct sSWAP <: AbstractTwoQubitOperator
     q1::Int
     q2::Int
 end
@@ -259,6 +303,10 @@ function apply!(stab::AbstractStabilizer, cnot::sCNOT; phases::Bool=true)
         z2 = getzbit(s, r, q2)
         setxbit(s, r, q2, x2⊻(x1<<-shift))
         setzbit(s, r, q1, z1⊻(z2<<shift))
+        if phases && ~iszero( x1&z1&((x2&z2)<<shift) | (x1&z2<<shift & ~(z1|x2<<shift)) )
+            s.phases[r] += 0x2
+            s.phases[r] &= 3
+        end
     end
     stab
 end
