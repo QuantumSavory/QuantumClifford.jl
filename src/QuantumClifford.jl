@@ -1381,7 +1381,7 @@ function LinearAlgebra.inv(c::CliffordOperator; phases=true)
         end
     end
     if phases
-        ci*c*ci # TODO can this be skipped
+        ci*c*ci # TODO perform this inplace as in Stim https://github.com/quantumlib/Stim/blob/e51ea66d213b25920e72c08e53266ec56fd14db4/src/stim/stabilizers/tableau.cc#L383
     else
         ci
     end
