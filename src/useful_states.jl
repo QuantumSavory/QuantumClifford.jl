@@ -29,7 +29,7 @@ function bell()
            ZZ")
 end
 
-function bell(n::Integer)
+function bell(n::Int)
     tensor_pow(bell(), n)
 end
 
@@ -82,7 +82,7 @@ function ghz()
            IZZ")
 end
 
-function ghz(n::Integer)
+function ghz(n::Int)
     s = zero(Stabilizer, n)
     for i in 1:n
         s[1,i] = (true,false)

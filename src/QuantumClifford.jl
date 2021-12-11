@@ -102,10 +102,10 @@ struct PauliOperator{Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}}
     PauliOperator{Tz,Tv}(phase, nqubits, xz::Tv) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = new(phase, nqubits, xz)
 end
 
-PauliOperator(phase::Tz, nqubits::Integer, xz::Tv) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = PauliOperator{Tz,Tv}(phase, nqubits, xz)
-PauliOperator(phase::Integer, nqubits::Integer, xz::Tv) where Tv<:AbstractVector{<:Unsigned} = PauliOperator(fill(UInt8(phase),()), nqubits, xz)
-PauliOperator{Tz,Tv}(phase::Integer, x::AbstractVector{Bool}, z::AbstractVector{Bool}) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = PauliOperator(fill(UInt8(phase),()), length(x), vcat(reinterpret(Tve,BitVector(x).chunks),reinterpret(Tve,BitVector(z).chunks)))
-PauliOperator(phase::Integer, x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator{Array{UInt8,0},Vector{UInt}}(phase, x, z)
+PauliOperator(phase::Tz, nqubits::Int, xz::Tv) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = PauliOperator{Tz,Tv}(phase, nqubits, xz)
+PauliOperator(phase::UInt8, nqubits::Int, xz::Tv) where Tv<:AbstractVector{<:Unsigned} = PauliOperator(fill(UInt8(phase),()), nqubits, xz)
+PauliOperator{Tz,Tv}(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{Bool}) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = PauliOperator(fill(UInt8(phase),()), length(x), vcat(reinterpret(Tve,BitVector(x).chunks),reinterpret(Tve,BitVector(z).chunks)))
+PauliOperator(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator{Array{UInt8,0},Vector{UInt}}(phase, x, z)
 
 """Get a view of the X part of the `UInt` array of packed qubits of a given Pauli operator."""
 function xview(p::PauliOperator)
@@ -866,7 +866,7 @@ end
 @inline _div(T,l) = l >> _logsizeof(T)
 @inline _mod(T,l) = l & _mask(T)
 
-function unsafe_bitfindnext_(chunks::AbstractVector{T}, start::Integer) where T<:Unsigned
+function unsafe_bitfindnext_(chunks::AbstractVector{T}, start::Int) where T<:Unsigned
     chunk_start = _div(T,start-1)+1
     within_chunk_start = _mod(T,start-1)
     mask = ~T(0) << within_chunk_start
@@ -1427,7 +1427,7 @@ function apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true
     stab
 end
 
-function apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{T,1} where T; phases::Bool=true) # TODO why T and not Int?
+function apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{Int,1}; phases::Bool=true)
     s = tab(stab)
     new_stabrow = zero(PauliOperator,nqubits(c))
     n = nqubits(c)
