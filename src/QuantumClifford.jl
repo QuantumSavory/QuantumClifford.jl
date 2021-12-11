@@ -575,7 +575,7 @@ julia> prodphase(P"XXX", P"ZZZ")
     unsigned(res)&0x3
 end
 
-# The quantumlib/Stim implementation, which performs the prodphase and mul_left! together
+"""The quantumlib/Stim implementation, which performs the prodphase and mul_left! together. Used for unit tests."""
 function _stim_prodphase(l::AbstractVector{T}, r::AbstractVector{T}) where T<: Unsigned
     cnt1 = zero(T)
     cnt2 = zero(T)
@@ -680,8 +680,8 @@ end
 
 Base.:(*)(l::PauliOperator, r::PauliOperator) = mul_left!(copy(r),l)
 
-"Nonvectorized version of `mul_left!` for tests."
-function mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
+"""Nonvectorized version of `mul_left!` used for unit tests."""
+function _mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
     if !phases
         r .⊻= l
         return zero(T)
