@@ -334,7 +334,13 @@ Base.copy(s::Stabilizer) = Stabilizer(copy(s.phases), s.nqubits, copy(s.xzs))
 # Helpers for sublcasses of AbstractStabilizer that use Stabilizer as a tableau internally.
 ##############################
 
-Base.:(==)(l::T, r::S) where {T<:AbstractStabilizer, S<:AbstractStabilizer} = T==S && tab(l)==tab(r)
+function Base.:(==)(l::T, r::S; phases=true) where {T<:AbstractStabilizer, S<:AbstractStabilizer}
+    if phases
+        return T==S && tab(l)==tab(r)
+    else
+        return T==S && tab(l).xzs==tab(r).xzs
+    end
+end
 
 Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, tab(s), h)
 
@@ -1412,7 +1418,7 @@ function apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true
     new_stabrow = zero(s[1])
     n = nqubits(c)
     for row_stab in eachindex(s)
-        fill!(new_stabrow.xz, zero(eltype(new_stabrow.xz))) # TODO there should be a prettier way to do this
+        zero!(new_stabrow)
         phases && (new_stabrow.phase[] = s.phases[row_stab])
         for qubit in 1:nqubits(s)
             x,z = s[row_stab,qubit]
@@ -1436,7 +1442,7 @@ function apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_applic
     new_stabrow = zero(PauliOperator,nqubits(c))
     n = nqubits(c)
     for row_stab in eachindex(s)
-        fill!(new_stabrow.xz, zero(eltype(new_stabrow.xz))) # TODO there should be a prettier way to do this
+        zero!(new_stabrow)
         phases && (new_stabrow.phase[] = s.phases[row_stab])
         for (qubit_i, qubit) in enumerate(indices_of_application)
             x,z = s[row_stab,qubit]
@@ -1948,6 +1954,12 @@ Base.zero(::Type{<:CliffordColumnForm}, n) = CliffordColumnForm(zeros(UInt8,2n),
 Base.zero(c::CliffordColumnForm) = CliffordColumnForm(zero(c.phases),c.nqubits,zero(c.xztox),zero(c.xztoz))
 Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.tab))
 Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Stabilizer, 2n, n))
+
+@inline function zero!(p::PauliOperator)
+    fill!(p.xz, zero(eltype(p.xz)))
+    p.phase[] = 0x0
+    p
+end
 
 function Base.one(::Type{<:Stabilizer}, n; basis=:Z)
     if basis==:X

@@ -881,7 +881,7 @@ if doset("Clifford Operators (column representation)")
             s2 = apply!(s2, Hadamardcol, [igates_perm[2]+(igates_perm[1]<igates_perm[2])]; phases=false)
             s2 = apply!(s2, Phasecol, [igates_perm[3]+(igates_perm[1]<igates_perm[3])]; phases=false)
 
-            @test s1 == s2
+            @test ==(s1, s2, phases=false)
         end
     end
 end
@@ -901,7 +901,7 @@ if doset("Small symbolic operators")
                 op0_c = CliffordOperator(op0, n)
                 s = random_stabilizer(n)
                 @test apply!(copy(s),op)==apply!(copy(s),op_cc,[n])==apply!(copy(s),op_c)
-                @test apply!(copy(s),op,phases=false)==apply!(copy(s),op_cc,[n],phases=false)
+                @test ==(apply!(copy(s),op,phases=false),apply!(copy(s),op_cc,[n],phases=false), phases=false)
                 @test apply!(copy(s),op0)==apply!(copy(s),op0_c)
             end
             n==1 && continue
