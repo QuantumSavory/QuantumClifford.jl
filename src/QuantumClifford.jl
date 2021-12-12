@@ -1411,57 +1411,110 @@ function ⊗(ops::AbstractCliffordOperator...) # TODO implement \otimes for Dest
       foldl((l,r)->l⊗r.tab[end÷2+1:end],ops[2:end],init=ops[1].tab[end÷2+1:end])))
 end
 
-# TODO no need to track phases outside of stabview
-function apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true)
+"""Nonvectorized version of `apply!` used for unit tests."""
+function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true)
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
-    s = tab(stab)
-    new_stabrow = zero(s[1])
-    n = nqubits(c)
-    for row_stab in eachindex(s)
+    s_tab = tab(stab)
+    c_tab = tab(c)
+    new_stabrow = zero(s_tab[1])
+    for row_stab in eachindex(s_tab)
         zero!(new_stabrow)
-        phases && (new_stabrow.phase[] = s.phases[row_stab])
-        for qubit in 1:nqubits(s)
-            x,z = s[row_stab,qubit]
-            if phases&&x&&z
-                new_stabrow.phase[] -= 0x1
-            end
-            if x
-                mul_left!(new_stabrow, c.tab, qubit, phases=phases)
-            end
-            if z
-                mul_left!(new_stabrow, c.tab, qubit+n, phases=phases)
-            end
-        end
-        s[row_stab] = new_stabrow
+        apply_row_kernel!(new_stabrow, row_stab, s_tab, c_tab, phases=phases)
     end
     stab
 end
 
-function apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{Int,1}; phases::Bool=true)
-    s = tab(stab)
-    new_stabrow = zero(PauliOperator,nqubits(c))
-    n = nqubits(c)
-    for row_stab in eachindex(s)
-        zero!(new_stabrow)
-        phases && (new_stabrow.phase[] = s.phases[row_stab])
-        for (qubit_i, qubit) in enumerate(indices_of_application)
-            x,z = s[row_stab,qubit]
-            if phases&&x&&z
-                new_stabrow.phase[] -= 0x1
-            end
-            if x
-                mul_left!(new_stabrow, c.tab, qubit_i, phases=phases)
-            end
-            if z
-                mul_left!(new_stabrow, c.tab, qubit_i+n, phases=phases)
-            end
+# TODO no need to track phases outside of stabview
+function apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true)
+    nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
+    s_tab = tab(stab)
+    c_tab = tab(c)
+    rows = length(s_tab)
+    threads = min(rows÷10+1, Polyester.num_cores()) # The denominator scales as the minimal number of rows before threading kicks in. TODO might be simplified with new API https://github.com/JuliaSIMD/Polyester.jl/issues/53
+    new_stabrows = [zero(c_tab[1]) for i in 1:threads]
+    @batch for thread_id in 1:threads
+        new_stabrow = new_stabrows[thread_id]
+        start_row = 1+(thread_id-1)*rows÷threads
+        end_row = thread_id==threads ? rows : thread_id*rows÷threads
+        for row_stab in start_row:end_row
+            zero!(new_stabrow)
+            apply_row_kernel!(new_stabrow, row_stab, s_tab, c_tab, phases=phases)
         end
-        for (qubit_i, qubit) in enumerate(indices_of_application)
-            s[row_stab,qubit] = new_stabrow[qubit_i]
-        end
-        phases && (s.phases[row_stab] = new_stabrow.phase[])
     end
     stab
+end
+
+@inline function apply_row_kernel!(new_stabrow, row, s_tab, c_tab; phases=true)
+    phases && (new_stabrow.phase[] = s_tab.phases[row])
+    n = nqubits(c_tab)
+    for qubit in 1:n
+        x,z = s_tab[row,qubit]
+        if phases&&x&&z
+            new_stabrow.phase[] -= 0x1
+        end
+        if x
+            mul_left!(new_stabrow, c_tab, qubit, phases=phases)
+        end
+        if z
+            mul_left!(new_stabrow, c_tab, qubit+n, phases=phases)
+        end
+    end
+    s_tab[row] = new_stabrow
+    new_stabrow
+end
+
+"""Nonvectorized version of `apply!` used for unit tests."""
+function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{Int,1}; phases::Bool=true)
+    s_tab = tab(stab)
+    c_tab = tab(c)
+    new_stabrow = zero(PauliOperator,nqubits(c))
+    for row in eachindex(s_tab)
+        zero!(new_stabrow)
+        apply_row_kernel!(new_stabrow, row, s_tab, c_tab, indices_of_application; phases=phases)
+    end
+    stab
+end
+
+#TODO a lot of code repetition with apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true) and apply_row_kernel!
+function apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{Int,1}; phases::Bool=true)
+    #max(indices_of_application)<=nqubits(s) || throw(DimensionMismatch("")) # Too expensive to check every time
+    s_tab = tab(stab)
+    c_tab = tab(c)
+    rows = length(s_tab)
+    threads = min(rows÷30+1, Polyester.num_cores()) # The denominator scales as the minimal number of rows before threading kicks in. TODO might be simplified with new API https://github.com/JuliaSIMD/Polyester.jl/issues/53
+    new_stabrows = [zero(c_tab[1]) for i in 1:threads]
+    @batch for thread_id in 1:threads
+        new_stabrow = new_stabrows[thread_id]
+        start_row = 1+(thread_id-1)*rows÷threads
+        end_row = thread_id==threads ? rows : thread_id*rows÷threads
+        for row_stab in start_row:end_row
+            zero!(new_stabrow)
+            apply_row_kernel!(new_stabrow, row_stab, s_tab, c_tab, indices_of_application, phases=phases)
+        end
+    end
+    stab
+end
+
+@inline function apply_row_kernel!(new_stabrow, row, s_tab, c_tab, indices_of_application; phases=true)
+    phases && (new_stabrow.phase[] = s_tab.phases[row])
+    n = nqubits(c_tab)
+    for (qubit_i, qubit) in enumerate(indices_of_application)
+        x,z = s_tab[row,qubit]
+        if phases&&x&&z
+            new_stabrow.phase[] -= 0x1
+        end
+        if x
+            mul_left!(new_stabrow, c_tab, qubit_i, phases=phases)
+        end
+        if z
+            mul_left!(new_stabrow, c_tab, qubit_i+n, phases=phases)
+        end
+    end
+    for (qubit_i, qubit) in enumerate(indices_of_application)
+        s_tab[row,qubit] = new_stabrow[qubit_i]
+    end
+    phases && (s_tab.phases[row] = new_stabrow.phase[])
+    new_stabrow
 end
 
 """

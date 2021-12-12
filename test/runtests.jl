@@ -781,6 +781,20 @@ if doset("Clifford Operators")
             @test canonicalize!(s1) == canonicalize!(s2)
         end
     end
+    @testset "Clifford acting on (Mixed)(De)Stabilizer" begin
+        for size in test_sizes
+            size < 2 && continue # TODO remove this line
+            d = random_destabilizer(size)
+            md = MixedDestabilizer(copy(d),size÷2)
+            s = copy(stabilizerview(md))
+            c = random_clifford(size)
+            @test QuantumClifford._apply_nonthread!(s,c) == stabilizerview(apply!(md,c)) == stabilizerview(MixedDestabilizer(apply!(d,c),size÷2))
+            newsize = min(size, 5)
+            indices = randperm(size)[1:newsize]
+            cn = random_clifford(newsize)
+            @test QuantumClifford._apply_nonthread!(s,cn,indices) == stabilizerview(apply!(md,cn,indices)) == stabilizerview(MixedDestabilizer(apply!(d,cn,indices),size÷2))
+        end
+    end
     @testset "Inversions" begin
         for n in test_sizes
             c = random_clifford(n)
