@@ -15,12 +15,12 @@ using Glob
 
 ## Pick a name for the logs
 
-NAME = "NAME"
+NAME = ""
 
 ## Run the benchmarks and save results
 
 results = []
-for n in 1:20, int in [UInt8, UInt16, UInt32, UInt64], order in [:column,:row]
+for n in 20:-1:1, int in [UInt8, UInt16, UInt32, UInt64], order in [:column,:row]
     @show n, int, order
     N = 64*n-2
     rng = StableRNG(42)
@@ -84,7 +84,7 @@ Gadfly.with_theme(style(highlight_width=0.1mm)) do
         Guide.xlabel("Number of Qubits\n(grouped by array order)"),
         Guide.ylabel("Time (ns)\n(grouped by benchmark)"),
     )
-    img = PNG("bench.png", 20cm, 15cm, dpi=200)
+    img = PNG("bench_intsize.png", 20cm, 15cm, dpi=200)
     draw(img, p)
 end
 for df in dfs
@@ -105,33 +105,7 @@ for df in dfs
             Guide.ylabel("Time (ns)\n(grouped by benchmark)"),
         )
         system = df[1,:system]
-        img = PNG("bench_$(system).png", 20cm, 15cm, dpi=200)
+        img = PNG("bench_intsize_$(system).png", 20cm, 15cm, dpi=200)
         draw(img, p)
     end
 end
-
-## Run this with custom settings for a quick-and-dirty benchmark
-
-N = 3*64-2   # Pick a number of qubits
-int = UInt32 # Pick a data type
-
-rng = StableRNG(42)
-s64 = random_stabilizer(rng,N,N);
-phases = s64.phases;
-xzs64_colmajor = s64.xzs;
-xzs64_rowmajor = collect(s64.xzs')';
-p64 = random_pauli(rng,N);
-
-p = PauliOperator(p64.phase, N, collect(reinterpret(int,p64.xz)));
-xzs_rowmajor = collect(reinterpret(int, collect(xzs64_colmajor')))';
-xzs_colmajor = collect(xzs_rowmajor);
-s_col = Stabilizer(phases,N,xzs_colmajor);
-s_row = Stabilizer(phases,N,xzs_rowmajor);
-
-# Both column-major and row-major orders will be tested
-@benchmark canonicalize!(_s, phases=false) setup=(_s=deepcopy($s_row))
-@benchmark canonicalize!(_s, phases=false) setup=(_s=deepcopy($s_col))
-@benchmark canonicalize!(_s) setup=(_s=deepcopy($s_row))
-@benchmark canonicalize!(_s) setup=(_s=deepcopy($s_col))
-@benchmark apply!(_s,_p) setup=(_s=deepcopy($s_row);_p=deepcopy($p))
-@benchmark apply!(_s,_p) setup=(_s=deepcopy($s_col);_p=deepcopy($p))

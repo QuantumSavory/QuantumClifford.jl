@@ -6,6 +6,7 @@ and bitpacking (in UInt8, or 16, or 32, or 64 bit types).
 """
 
 using QuantumClifford
+using Nemo
 using StableRNGs
 using BenchmarkTools
 using DataFrames
@@ -16,12 +17,12 @@ using Glob
 
 ## Pick a name for the logs
 
-NAME = "ryzen"
+NAME = ""
 
 ## Run the benchmarks and save results
 
 results = []
-for n in [2,20], 
+for n in 20:-1:1, 
     int in [UInt8, UInt16, UInt32, UInt64], 
     s_order in [:column,:row], 
     c_order in [:column,:row], 
@@ -96,6 +97,6 @@ Gadfly.with_theme(style(highlight_width=0.1mm)) do
         Guide.ylabel("Time (ns)\n(grouped by Clifford array order)"),
         Guide.colorkey(title="Clifford\ndatastructure"),
     )
-    img = PNG("bench.png", 20cm, 15cm, dpi=200)
+    img = PNG("bench_intsizeclifford.png", 20cm, 15cm, dpi=200)
     draw(img, p)
 end
