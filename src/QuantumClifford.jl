@@ -485,6 +485,9 @@ function MixedDestabilizer(stab::Stabilizer; undoperm=true)
     MixedDestabilizer(tab, r+s)
 end
 
+MixedDestabilizer(d::Destabilizer, r::Int) = MixedDestabilizer(tab(d), r)
+MixedDestabilizer(d::Destabilizer) = MixedDestabilizer(d, nqubits(d))
+
 function Base.show(io::IO, d::MixedDestabilizer)
     println(io, "Rank $(d.rank) stabilizer")
     show(io, destabilizerview(d))
