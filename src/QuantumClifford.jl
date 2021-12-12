@@ -11,6 +11,7 @@ import LinearAlgebra
 import RecipesBase
 using DocStringExtensions
 using LoopVectorization
+using Polyester
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     xbit, zbit, xview, zview,
