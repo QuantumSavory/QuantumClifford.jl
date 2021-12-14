@@ -19,7 +19,7 @@ Works efficiently with
 states of thousands of qubits
 as well as
 [sparse or dense Clifford operations](@ref Clifford-Operators)
-acting upon them.
+acting upon them. The operations are generally vectorized and multithreaded.
 
 Provides
 [canonicalization](@ref Canonicalization-of-Stabilizers),

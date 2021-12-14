@@ -49,6 +49,8 @@ julia> CNOT * S"-XX
 + _Z
 ```
 
+The code is vectorized and multithreaded.
+
 
 ## Quick Benchmarks
 
@@ -60,56 +62,72 @@ The only other simulator of similar performance I know of is [Stim](https://gith
 
 The "low level" functionality is of similar performance in Stim and QuantumClifford but different tradeoffs are made at the higher levels: to multiply in-place 1M-qubit Pauli operators Stim needs 16us while QuantumClifford.jl needs 20us.
 
-
 Of note is that Stim achieved this performance through high-quality C++ SIMD code of significant sophistication, while QuantumClifford.jl is implemented in pure Julia.
 
-#### Canonicalization of a random 100-qubit stabilizer
+#### Multiplying two 1 gigaqubit Paulis in 32 ms
 
 ```jldoctest
-julia> @benchmark canonicalize!(s) setup=(s=random_stabilizer(100))
-BenchmarkTools.Trial:
-  memory estimate:  0 bytes
-  allocs estimate:  0
-  --------------
-  minimum time:     139.927 μs (0.00% GC)
-  median time:      161.090 μs (0.00% GC)
-  mean time:        165.824 μs (0.00% GC)
-  maximum time:     278.056 μs (0.00% GC)
-  --------------
-  samples:          376
-  evals/sample:     1
+julia> a = random_pauli(1_000_000_000);
+julia> b = random_pauli(1_000_000_000);
+julia> @benchmark QuantumClifford.mul_left!(a,b)
+BenchmarkTools.Trial: 155 samples with 1 evaluation.
+ Range (min … max):  32.074 ms … 32.425 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     32.246 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   32.247 ms ± 63.427 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+                  ▃  ▃▃ ▄ ▆▄▄▄██▃ ▃▄▁▆█▃▃ ▃      ▁             
+  ▄▁▁▄▁▁▄▆▁▁▄▆▄▆▇▇█▄▄██▄█▆███████▇███████▆█▆▄▄▄▁▄█▁▄▄▁▄▁▁▁▁▁▄ ▄
+  32.1 ms         Histogram: frequency by time        32.4 ms <
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
 ```
 
-#### Gate application (50 CNOT gates on 100 qubits)
+#### Canonicalization of a random 1000-qubit stabilizer in 22 ms
 
 ```jldoctest
-julia> @benchmark apply!(s, gate) setup=(s=random_stabilizer(100); gate=tensor_pow(CNOT,50))
-BenchmarkTools.Trial: 
-  memory estimate:  752 bytes
-  allocs estimate:  11
-  --------------
-  minimum time:     248.900 μs (0.00% GC)
-  median time:      277.454 μs (0.00% GC)
-  mean time:        277.948 μs (0.00% GC)
-  maximum time:     338.304 μs (0.00% GC)
-  --------------
-  samples:          236
-  evals/sample:     1
+julia> @benchmark canonicalize!(s) setup=(s=random_stabilizer(1000))
+BenchmarkTools.Trial: 226 samples with 1 evaluation.
+ Range (min … max):  21.938 ms …  22.680 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     22.025 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   22.057 ms ± 115.247 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+    ▂▂ █▃▃▂                                                     
+  ▄▇███████▆▇▆█▆▄▄▄▄▄▅▄▃▃▁▄▃▃▃▃▃▃▁▁▁▁▁▃▁▁▁▁▁▃▁▃▁▁▁▁▃▁▁▁▁▁▁▁▁▃▃ ▃
+  21.9 ms         Histogram: frequency by time         22.6 ms <
+
+ Memory estimate: 32 bytes, allocs estimate: 1.
 ```
 
-#### Sparse gate application to only specified qubits
+#### Gate application (500 CNOT gates on 1000 qubits) in 6 ms
 
 ```jldoctest
-julia> @benchmark apply!(s, CNOT, [32,54]) setup=(s=random_stabilizer(100))
-BenchmarkTools.Trial: 
-  memory estimate:  832 bytes
-  allocs estimate:  12
-  --------------
-  minimum time:     6.480 μs (0.00% GC)
-  median time:      7.350 μs (0.00% GC)
-  mean time:        7.435 μs (0.00% GC)
-  maximum time:     15.171 μs (0.00% GC)
-  --------------
-  samples:          490
-  evals/sample:     6
+julia> @benchmark apply!(s, gate) setup=(s=random_stabilizer(1000); gate=tensor_pow(CNOT,500))
+BenchmarkTools.Trial: 801 samples with 1 evaluation.
+ Range (min … max):  5.758 ms …  10.479 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     5.800 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   6.107 ms ± 624.182 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  █▆▃                               ▂                          
+  ███▇▆▅▅▅▅▅▆▅▄▁▁▆▄▇▆▆▆▇▅▅▅▅▅▆▆▆▅▇███▇▆▇▇▅▅▁▅▇▅▅▁▅▅▁▁▁▁▁▄▁▁▁▅ ▇
+  5.76 ms      Histogram: log(frequency) by time      8.22 ms <
+
+ Memory estimate: 52.62 KiB, allocs estimate: 2592.
 ```
+
+#### Sparse gate application to only specified qubits in a 1000 qubit tableau in 4 microseconds
+
+```jldoctest
+julia> @benchmark apply!(s, sCNOT(32,504)) setup=(s=random_stabilizer(1000))
+BenchmarkTools.Trial: 10000 samples with 9 evaluations.
+ Range (min … max):  3.373 μs … 252.630 μs  ┊ GC (min … max): 0.00% … 53.27%
+ Time  (median):     3.766 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   3.892 μs ±   2.525 μs  ┊ GC (mean ± σ):  0.35% ±  0.53%
+
+        ▃▆█▅▁                                                  
+  ▁▁▁▂▃▇█████▅▃▂▂▃▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ ▂
+  3.37 μs         Histogram: frequency by time        6.07 μs <
+
+ Memory estimate: 96 bytes, allocs estimate: 2.
+```
+
+Benchmarks executed on a Ryzen Zen1 8-core CPU.

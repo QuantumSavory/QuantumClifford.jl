@@ -74,30 +74,16 @@ We do not use boolean arrays to store information about the qubits as this would
 Moreover, how a tableau is stored in memory can affect performance, as a row-major storage
 usually permits more efficient use of the CPU cache (for the particular algorithms we use).
 
-Both of these parameters are tested in the benchmark shown below (testing the application of a Pauli operator, which is an $\mathcal{O}(n^2)$ operation; and testing the canonicalization of a Stabilizer, which is an $\mathcal{O}(n^2)$ operation). The code for these benchmarks can be found in the `benchmakrs` folder.
-
-![Benchmarking Pauli application and Canonicalization for different bit-packing sizes and numbers of qubits.](bench_intsize.png)
+Both of these parameters are tested in the benchmark shown below (testing the application of a Pauli operator, which is an $\mathcal{O}(n^2)$ operation; and testing the canonicalization of a Stabilizer, which is an $\mathcal{O}(n^2)$ operation). The code for these benchmarks can be found in the `benchmarks` folder. [The benchmark results are available here](bench_intsize.png).
 
 Row-major UInt64 is the best performing and it is mostly used by default in this library. 
 
 ## [Clifford Operators Datastructures](@id Clifford-Operators-Datastructures)
 
-The [`CliffordOperator`](@ref) data structure is the default one in most of the library. Internally, it is represented by a destabilizer tableaux given by applying the Clifford operation in question on the initial ground state. The [`CliffordColumnForm`](@ref) is an earlier implementation of the same functionality which is mostly deprecated and will be removed when all example notebooks are updated to use the newer structures. `CliffordColumnForm` uses bitpacking that is the transpose of the packing in `CliffordOperator`.
+The [`CliffordOperator`](@ref) data structure is the default one in most of the library. Internally, it is represented by a destabilizer tableaux given by applying the Clifford operation in question on the initial ground state. The [`CliffordColumnForm`](@ref) is an earlier implementation of the same functionality which is mostly deprecated and will be removed when all example notebooks are updated to use the newer structures. `CliffordColumnForm` uses bitpacking that is the transpose of the packing in `CliffordOperator`. [Benchmark comparisons are available](bench_intsize_clifford.png) and the scripts to run the benchmarks are in the `benchmarks` folder.
 
-![Benchmarking Clifford operator application for different Clifford data structures, bit-packing sizes, and numbers of qubits.](bench_intsize_clifford.png)
+Importantly, for small Clifford operators it might be an order-of-magnitude more efficient to use the special case symbolic operations instead of a generic tableu-based structure like `CliffordOperator`. These are small structs for which the `apply!` functions are specialized and much faster. They are implemented as subtypes of `AbstractSingleQubitOperator` and `AbstractTwoQubitOperator`.
 
-The benchmark was executed on an eary 8-core desktop Ryzen.
+Both the generic `CliffordOperator` and the small symbolic Clifford datastructures have a multithreaded `apply!` function. [Benchmakrs](bench_threaded_apply.png) show that small symbolic operators are indeed 10× faster than the equivalent small dense `CliffordOperator`. Moreover, the benchmarks clearly show for large problems a linear performance increase with increased threads, which can be seen more easily if we [plot `wall_time*number_of_threads`](bench_threaded_apply_threadtime.png).
 
-```
-Julia Version 1.6.0-beta1
-Commit b84990e1ac (2021-01-08 12:42 UTC)
-Platform Info:
-  OS: Linux (x86_64-pc-linux-gnu)
-  CPU: AMD Ryzen 7 1700 Eight-Core Processor
-  WORD_SIZE: 64
-  LIBM: libopenlibm
-  LLVM: libLLVM-11.0.0 (ORCJIT, znver1)
-Environment:
-  JULIA_EDITOR = "/usr/share/code/code"
-  JULIA_NUM_THREADS = 8
-```
+All benchmarks were executed on a Ryzen Zen1 CPU.

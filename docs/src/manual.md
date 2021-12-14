@@ -517,6 +517,43 @@ julia> P"XII" * S"ZXX"
 - ZXX
 ```
 
+Internally, the `CliffordOperator` structure simply stores the tableau representation of the operation.
+
+The `apply!` function is efficiently multithreaded for `CliffordOperators`. To start Julia with `julia -t<N>`
+where `<N>` specifies the number of threads.
+
+# Small Symbolic Clifford Operators
+
+Much faster implementations for a number of common Clifford operators are available. They are stored as special
+named structs, instead of as a full tableau. These are the subtypes of `AbstractSingleQubitOperator` and
+`AbstractTwoQubitOperator`.
+
+<!--```@eval
+for op in [subtypes(QuantumClifford.AbstractSingleQubitOperator); subtypes(QuantumClifford.AbstractTwoQubitOperator)]
+    println(op)
+end
+```-->
+
+Generally, they have the prefix `s` for symbolic/small/sparse.
+They are used slightly differently, as one needs to specify the qubits on which they act while instantiating them:
+
+```jldoctest
+julia> sHadamard(2)
+Symbolic single-qubit gate on qubit 2
+X ⟼ + Z
+Z ⟼ + X
+
+julia> sHadamard(2)*S"XXX"
++ XZX
+
+julia> sCNOT(2,3)*S"XYY"
+- XXZ
+```
+
+The `apply!` function is efficiently multithreaded for these symbolic operators as well. To start Julia with `julia -t<N>`
+where `<N>` specifies the number of threads.
+
+
 # Destabilizers
 
 Slightly abusing the name: What we call "destabilizers" here is a stabilizer and
