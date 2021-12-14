@@ -528,11 +528,11 @@ Much faster implementations for a number of common Clifford operators are availa
 named structs, instead of as a full tableau. These are the subtypes of `AbstractSingleQubitOperator` and
 `AbstractTwoQubitOperator`.
 
-<!--```@eval
+```@eval
 for op in [subtypes(QuantumClifford.AbstractSingleQubitOperator); subtypes(QuantumClifford.AbstractTwoQubitOperator)]
     println(op)
 end
-```-->
+```
 
 Generally, they have the prefix `s` for symbolic/small/sparse.
 They are used slightly differently, as one needs to specify the qubits on which they act while instantiating them:
