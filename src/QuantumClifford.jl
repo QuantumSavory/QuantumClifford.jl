@@ -25,7 +25,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     CliffordOperator, @C_str,
     CliffordColumnForm, @Ccol_str,
     CNOT, CPHASE, SWAP, Hadamard, Phase, CliffordId,
-    sHadamard, sPhase, SingleQubitOperator,# sId1, sX, sY, sZ,
+    sHadamard, sPhase, SingleQubitOperator, sId1, sX, sY, sZ,
     enumerate_single_qubit_gates, random_clifford1,
     sCNOT, sSWAP,
     tensor, tensor_pow,
@@ -1898,55 +1898,6 @@ struct BadDataStructure <: Exception
     message::String
     whichop::Symbol
     whichstructure::Symbol
-end
-
-##############################
-# Functions that perform direct application of common operators without needing an operator instance
-##############################
-
-"""Apply a Pauli Z to the `i`-th qubit of state `s`."""
-function apply_single_z!(stab::AbstractStabilizer, i)
-    s = tab(stab)
-    Tme = eltype(s.xzs)
-    bigi = _div(Tme,i-1)+1
-    smalli = _mod(Tme,i-1)
-    mask = Tme(0x1)<<smalli
-    @inbounds @simd for row in 1:size(s.xzs,1)
-        if !iszero(s.xzs[row,bigi] & mask)
-            s.phases[row] = (s.phases[row]+0x2)&0x3
-        end
-    end
-    stab
-end
-
-"""Apply a Pauli X to the `i`-th qubit of state `s`."""
-function apply_single_x!(stab::AbstractStabilizer, i)
-    s = tab(stab)
-    Tme = eltype(s.xzs)
-    bigi = _div(Tme,i-1)+1
-    smalli = _mod(Tme,i-1)
-    mask = Tme(0x1)<<smalli
-    @inbounds @simd for row in 1:size(s.xzs,1)
-        if !iszero(s.xzs[row,end÷2+bigi] & mask)
-            s.phases[row] = (s.phases[row]+0x2)&0x3
-        end
-    end
-    stab
-end
-
-"""Apply a Pauli Y to the `i`-th qubit of state `s`."""
-function apply_single_y!(stab::AbstractStabilizer, i)
-    s = tab(stab)
-    Tme = eltype(s.xzs)
-    bigi = _div(Tme,i-1)+1
-    smalli = _mod(Tme,i-1)
-    mask = Tme(0x1)<<smalli
-    @inbounds @simd for row in 1:size(s.xzs,1)
-        if !iszero((s.xzs[row,bigi] & mask) ⊻ (s.xzs[row,end÷2+bigi] & mask))
-            s.phases[row] = (s.phases[row]+0x2)&0x3
-        end
-    end
-    stab
 end
 
 ##############################

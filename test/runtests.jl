@@ -911,13 +911,17 @@ if doset("Small symbolic operators")
                 op0 = enumerate_single_qubit_gates(i, qubit=n) 
                 op_cc = CliffordOperator(op, 1, compact=true)
                 op_c = CliffordOperator(op, n)
-                @test op==SingleQubitOperator(op_cc, n)
+                @test SingleQubitOperator(op)==SingleQubitOperator(op_cc, n)
                 op0_c = CliffordOperator(op0, n)
                 s = random_stabilizer(n)
-                @test apply!(copy(s),op)==apply!(copy(s),op_cc,[n])==apply!(copy(s),op_c)
+                @test apply!(copy(s),op)==apply!(copy(s),SingleQubitOperator(op))==apply!(copy(s),op_cc,[n])==apply!(copy(s),op_c)
                 @test ==(apply!(copy(s),op,phases=false),apply!(copy(s),op_cc,[n],phases=false), phases=false)
                 @test apply!(copy(s),op0)==apply!(copy(s),op0_c)
             end
+            i = n÷2+1
+            @test apply!(copy(s),sX(i)) == apply_single_x!(copy(s),i)
+            @test apply!(copy(s),sY(i)) == apply_single_y!(copy(s),i)
+            @test apply!(copy(s),sZ(i)) == apply_single_z!(copy(s),i)
             n==1 && continue
             s = random_stabilizer(n)
             i1,i2 = randperm(n)[1:2]

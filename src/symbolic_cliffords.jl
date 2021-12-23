@@ -61,7 +61,7 @@ end
 
 See also: [`SingleQubitOperator`](@ref)
 """
-struct sId1 <: AbstractSingleQubitOperator # TODO
+struct sId1 <: AbstractSingleQubitOperator
     q::Int
 end
 
@@ -132,6 +132,11 @@ end
 
 SingleQubitOperator(h::sHadamard) = SingleQubitOperator(h.q, false, true, true, false, false, false)
 SingleQubitOperator(p::sPhase) = SingleQubitOperator(p.q, true, true, false, true, false, false)
+SingleQubitOperator(p::sId1) = SingleQubitOperator(p.q, true, false, false, true, false, false)
+SingleQubitOperator(p::sX) = SingleQubitOperator(p.q, true, false, false, true, false, true)
+SingleQubitOperator(p::sY) = SingleQubitOperator(p.q, true, false, false, true, true,  true)
+SingleQubitOperator(p::sZ) = SingleQubitOperator(p.q, true, false, false, true, true,  false)
+SingleQubitOperator(o::SingleQubitOperator) = o
 function SingleQubitOperator(op::CliffordOperator, qubit)
     nqubits(op)==1 || throw(DimensionMismatch("You are trying to convert a multiqubit `CliffordOperator` into a symbolic `SingleQubitOperator`."))
     SingleQubitOperator(qubit,op.tab[1,1]...,op.tab[2,1]...,(~).(iszero.(op.tab.phases))...)
@@ -211,6 +216,46 @@ function apply!(stab::AbstractStabilizer, p::sPhase; phases::Bool=true)
     stab
 end
 
+function apply!(stab::AbstractStabilizer, p::sX; phases::Bool=true)
+    phases || return stab
+    s = tab(stab)
+    c = p.q
+    @batch per=core minbatch=200 for r in eachindex(s)
+        x = getxbit(s, r, c)
+        z = getzbit(s, r, c)
+        z!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
+    end
+    stab
+end
+
+function apply!(stab::AbstractStabilizer, p::sZ; phases::Bool=true)
+    phases || return stab
+    s = tab(stab)
+    c = p.q
+    @batch per=core minbatch=200 for r in eachindex(s)
+        x = getxbit(s, r, c)
+        z = getzbit(s, r, c)
+        x!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
+    end
+    stab
+end
+
+function apply!(stab::AbstractStabilizer, p::sY; phases::Bool=true)
+    phases || return stab
+    s = tab(stab)
+    c = p.q
+    @batch per=core minbatch=200 for r in eachindex(s)
+        x = getxbit(s, r, c)
+        z = getzbit(s, r, c)
+        (x⊻z)!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
+    end
+    stab
+end
+
+function apply!(stab::AbstractStabilizer, ::sId1; phases::Bool=true)
+    stab
+end
+
 function apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Bool=true) # TODO Generated functions that simplify the whole `if phases` branch might be a good optimization, but a quick benchmakr comparing sHadamard to SingleQubitOperator(sHadamard) did not show a worthwhile difference.
     s = tab(stab)
     c = op.q
@@ -251,7 +296,7 @@ const all_single_qubit_patterns = (
 )
 
 """Generate a symbolic single-qubit gate given its index. Optionally, set non-trivial phases."""
-function enumerate_single_qubit_gates(index; qubit=1, phases=nothing)
+function enumerate_single_qubit_gates(index; qubit=1, phases=(false,false))
     @assert index<=6 "Only 6 single-qubit gates exit, up to the choice of phases"
     if isnothing(phases)
         if index==4
@@ -262,7 +307,19 @@ function enumerate_single_qubit_gates(index; qubit=1, phases=nothing)
             return SingleQubitOperator(qubit, all_single_qubit_patterns[index]..., false, false)
         end
     else
-        return SingleQubitOperator(qubit, all_single_qubit_patterns[index]..., phases...)
+        if index==1
+            if     (phases[1], phases[2]) == (false, false)
+                return sId1(qubit)
+            elseif (phases[1], phases[2]) == (false,  true)
+                return sX(qubit)
+            elseif (phases[1], phases[2]) == (true,  false)
+                return sZ(qubit)
+            else
+                return sY(qubit)
+            end
+        else
+            return SingleQubitOperator(qubit, all_single_qubit_patterns[index]..., phases...)
+        end
     end
 end
 
@@ -277,6 +334,8 @@ random_clifford1(qubit) = random_clifford1(GLOBAL_RNG, qubit)
 
 
 """A "symbolic" CNOT
+
+See also: [`SingleQubitOperator`](@ref)
 """
 struct sCNOT <: AbstractTwoQubitOperator
     q1::Int
@@ -284,6 +343,8 @@ struct sCNOT <: AbstractTwoQubitOperator
 end
 
 """A "symbolic" SWAP
+
+See also: [`SingleQubitOperator`](@ref)
 """
 struct sSWAP <: AbstractTwoQubitOperator
     q1::Int
@@ -326,6 +387,57 @@ function apply!(stab::AbstractStabilizer, swap::sSWAP; phases::Bool=true)
         setzbit(s, r, q1, z2, shift)
         setxbit(s, r, q2, x1, -shift)
         setzbit(s, r, q2, z1, -shift)
+    end
+    stab
+end
+
+##############################
+# Functions that perform direct application of common operators without needing an operator instance
+##############################
+# TODO is there a reason to keep these given that sZ/sX/sY exist?
+# TODO currently these are faster than sZ/sX/sY
+
+"""Apply a Pauli Z to the `i`-th qubit of state `s`. You might prefer to use `sZ` instead of this."""
+function apply_single_z!(stab::AbstractStabilizer, i)
+    s = tab(stab)
+    Tme = eltype(s.xzs)
+    bigi = _div(Tme,i-1)+1
+    smalli = _mod(Tme,i-1)
+    mask = Tme(0x1)<<smalli
+    @inbounds @simd for row in 1:size(s.xzs,1)
+        if !iszero(s.xzs[row,bigi] & mask)
+            s.phases[row] = (s.phases[row]+0x2)&0x3
+        end
+    end
+    stab
+end
+
+"""Apply a Pauli X to the `i`-th qubit of state `s`. You might prefer to use `sX` instead of this."""
+function apply_single_x!(stab::AbstractStabilizer, i)
+    s = tab(stab)
+    Tme = eltype(s.xzs)
+    bigi = _div(Tme,i-1)+1
+    smalli = _mod(Tme,i-1)
+    mask = Tme(0x1)<<smalli
+    @inbounds @simd for row in 1:size(s.xzs,1)
+        if !iszero(s.xzs[row,end÷2+bigi] & mask)
+            s.phases[row] = (s.phases[row]+0x2)&0x3
+        end
+    end
+    stab
+end
+
+"""Apply a Pauli Y to the `i`-th qubit of state `s`. You might prefer to use `sY` instead of this."""
+function apply_single_y!(stab::AbstractStabilizer, i)
+    s = tab(stab)
+    Tme = eltype(s.xzs)
+    bigi = _div(Tme,i-1)+1
+    smalli = _mod(Tme,i-1)
+    mask = Tme(0x1)<<smalli
+    @inbounds @simd for row in 1:size(s.xzs,1)
+        if !iszero((s.xzs[row,bigi] & mask) ⊻ (s.xzs[row,end÷2+bigi] & mask))
+            s.phases[row] = (s.phases[row]+0x2)&0x3
+        end
     end
     stab
 end
