@@ -526,15 +526,17 @@ where `<N>` specifies the number of threads.
 
 Much faster implementations for a number of common Clifford operators are available. They are stored as special
 named structs, instead of as a full tableau. These are the subtypes of `AbstractSingleQubitOperator` and
-`AbstractTwoQubitOperator`.
+`AbstractTwoQubitOperator`. Currently these are:
 
-```@example
-import QuantumClifford # hide
-subtypes(QuantumClifford.AbstractSingleQubitOperator)
-```
-```@example
-import QuantumClifford # hide
-subtypes(QuantumClifford.AbstractTwoQubitOperator)]
+```julia
+sHadamard
+sId1
+sPhase
+sX
+sY
+sZ
+sCNOT
+sSWAP
 ```
 
 Generally, they have the prefix `s` for symbolic/small/sparse.
