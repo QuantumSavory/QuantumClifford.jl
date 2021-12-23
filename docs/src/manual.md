@@ -529,9 +529,11 @@ named structs, instead of as a full tableau. These are the subtypes of `Abstract
 `AbstractTwoQubitOperator`.
 
 ```@example
+import QuantumClifford # hide
 subtypes(QuantumClifford.AbstractSingleQubitOperator)
 ```
 ```@example
+import QuantumClifford # hide
 subtypes(QuantumClifford.AbstractTwoQubitOperator)]
 ```
 
