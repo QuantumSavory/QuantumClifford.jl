@@ -1429,17 +1429,9 @@ function apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
     s_tab = tab(stab)
     c_tab = tab(c)
-    rows = length(s_tab)
-    threads = min(rows÷10+1, Polyester.num_cores()) # The denominator scales as the minimal number of rows before threading kicks in. TODO might be simplified with new API https://github.com/JuliaSIMD/Polyester.jl/issues/53
-    new_stabrows = [zero(c_tab[1]) for i in 1:threads]
-    @batch for thread_id in 1:threads
-        new_stabrow = new_stabrows[thread_id]
-        start_row = 1+(thread_id-1)*rows÷threads
-        end_row = thread_id==threads ? rows : thread_id*rows÷threads
-        for row_stab in start_row:end_row
-            zero!(new_stabrow)
-            apply_row_kernel!(new_stabrow, row_stab, s_tab, c_tab, phases=phases)
-        end
+    @batch minbatch=25 threadlocal=zero(c_tab[1]) for row_stab in eachindex(s_tab)
+        zero!(threadlocal) # a new stabrow for temporary storage
+        apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, phases=phases)
     end
     stab
 end
@@ -1480,17 +1472,9 @@ function apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_applic
     #max(indices_of_application)<=nqubits(s) || throw(DimensionMismatch("")) # Too expensive to check every time
     s_tab = tab(stab)
     c_tab = tab(c)
-    rows = length(s_tab)
-    threads = min(rows÷30+1, Polyester.num_cores()) # The denominator scales as the minimal number of rows before threading kicks in. TODO might be simplified with new API https://github.com/JuliaSIMD/Polyester.jl/issues/53
-    new_stabrows = [zero(c_tab[1]) for i in 1:threads]
-    @batch for thread_id in 1:threads
-        new_stabrow = new_stabrows[thread_id]
-        start_row = 1+(thread_id-1)*rows÷threads
-        end_row = thread_id==threads ? rows : thread_id*rows÷threads
-        for row_stab in start_row:end_row
-            zero!(new_stabrow)
-            apply_row_kernel!(new_stabrow, row_stab, s_tab, c_tab, indices_of_application, phases=phases)
-        end
+    @batch minbatch=25 threadlocal=zero(c_tab[1]) for row_stab in eachindex(s_tab)
+        zero!(threadlocal) # a new stabrow for temporary storage
+        apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, indices_of_application, phases=phases)
     end
     stab
 end
