@@ -237,17 +237,12 @@ struct Stabilizer{Tzv<:AbstractVector{UInt8}, Tm<:AbstractMatrix{<:Unsigned}} <:
     xzs::Tm
 end
 
-#TODO this is a rather silly way to ensure properly ordered (transposed) matrices are used for xzs
-# - simply ensure that this work is done by the constructors calling this constructor, so extra work and allocation is not done here
-# - add tests for this layout
-Stabilizer(phases::AbstractVector{UInt8}, nqubits::Int, xzs::Matrix{<:Unsigned}) = Stabilizer(phases, nqubits, collect(xzs')')
-
-Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{<:Unsigned}} = Stabilizer(vcat((p.phase for p in paulis)...), paulis[1].nqubits, vcat((p.xz' for p in paulis)...))
+Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{<:Unsigned}} = Stabilizer(vcat((p.phase for p in paulis)...), paulis[1].nqubits, hcat((p.xz for p in paulis)...))
 
 Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(
     phases, size(xs,2),
-    hcat(vcat((BitArray(xs[i,:]).chunks' for i in 1:size(xs,1))...),
-         vcat((BitArray(zs[i,:]).chunks' for i in 1:size(zs,1))...))
+    vcat(hcat((BitArray(xs[i,:]).chunks for i in 1:size(xs,1))...),
+         hcat((BitArray(zs[i,:]).chunks for i in 1:size(zs,1))...))
 )
 
 Stabilizer(phases::AbstractVector{UInt8}, xzs::AbstractMatrix{Bool}) = Stabilizer(phases, xzs[:,1:end÷2], xzs[:,end÷2+1:end])
@@ -267,38 +262,38 @@ macro S_str(a)
     _S_str(a)
 end
 
-Base.getindex(stab::Stabilizer, i::Int) = PauliOperator(stab.phases[i], nqubits(stab), stab.xzs[i,:])
-@inline Base.getindex(stab::Stabilizer{Tzv,Tm}, r::Int, c::Int) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}} = (stab.xzs[r,_div(Tme,c-1)+1] & Tme(0x1)<<_mod(Tme,c-1))!=0x0, (stab.xzs[r,end>>1+_div(Tme,c-1)+1] & Tme(0x1)<<_mod(Tme,c-1))!=0x0 # TODO this has code repetition with the Pauli getindex
-Base.getindex(stab::Stabilizer, r) = Stabilizer(stab.phases[r], nqubits(stab), stab.xzs[r,:])
+Base.getindex(stab::Stabilizer, i::Int) = PauliOperator(stab.phases[i], nqubits(stab), stab.xzs[:,i])
+@inline Base.getindex(stab::Stabilizer{Tzv,Tm}, r::Int, c::Int) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}} = (stab.xzs[_div(Tme,c-1)+1,r] & Tme(0x1)<<_mod(Tme,c-1))!=0x0, (stab.xzs[end>>1+_div(Tme,c-1)+1,r] & Tme(0x1)<<_mod(Tme,c-1))!=0x0 # TODO this has code repetition with the Pauli getindex
+Base.getindex(stab::Stabilizer, r) = Stabilizer(stab.phases[r], nqubits(stab), stab.xzs[:,r])
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
 Base.getindex(stab::Stabilizer, r, c::Int) = stab[r,[c]]
 Base.getindex(stab::Stabilizer, r::Int, c) = stab[r][c]
-Base.view(stab::Stabilizer, r) = Stabilizer(view(stab.phases, r), nqubits(stab), view(stab.xzs, r, :))
+Base.view(stab::Stabilizer, r) = Stabilizer(view(stab.phases, r), nqubits(stab), view(stab.xzs, :, r))
 
 Base.iterate(stab::Stabilizer, state=1) = state>length(stab) ? nothing : (stab[state], state+1)
 
 function Base.setindex!(stab::Stabilizer, pauli::PauliOperator, i)
     stab.phases[i] = pauli.phase[]
-    stab.xzs[i,:] = pauli.xz
+    stab.xzs[:,i] = pauli.xz
     stab
 end
 
 function Base.setindex!(stab::Stabilizer, s::Stabilizer, i)
     stab.phases[i] = s.phases
-    stab.xzs[i,:] = s.xzs
+    stab.xzs[:,i] = s.xzs
     stab
 end
 
 function Base.setindex!(stab::Stabilizer{Tzv,Tm}, (x,z)::Tuple{Bool,Bool}, i, j) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}} # TODO this has code repetitions with the Pauli setindex
     if x
-        stab.xzs[i,_div(Tme,j-1)+1] |= Tme(0x1)<<_mod(Tme,j-1)
+        stab.xzs[_div(Tme,j-1)+1,        i] |= Tme(0x1)<<_mod(Tme,j-1)
     else
-        stab.xzs[i,_div(Tme,j-1)+1] &= ~(Tme(0x1)<<_mod(Tme,j-1))
+        stab.xzs[_div(Tme,j-1)+1,        i] &= ~(Tme(0x1)<<_mod(Tme,j-1))
     end
     if z
-        stab.xzs[i,end>>1+_div(Tme,j-1)+1] |= Tme(0x1)<<_mod(Tme,j-1)
+        stab.xzs[end>>1+_div(Tme,j-1)+1, i] |= Tme(0x1)<<_mod(Tme,j-1)
     else
-        stab.xzs[i,end>>1+_div(Tme,j-1)+1] &= ~(Tme(0x1)<<_mod(Tme,j-1))
+        stab.xzs[end>>1+_div(Tme,j-1)+1, i] &= ~(Tme(0x1)<<_mod(Tme,j-1))
     end
     stab
 end
@@ -365,7 +360,7 @@ julia> tab(CliffordOperator(s))
 + X
 
 julia> typeof(tab(CliffordOperator(s)))
-Stabilizer{Vector{UInt8}, LinearAlgebra.Adjoint{UInt64, Matrix{UInt64}}}
+Stabilizer{Vector{UInt8}, Matrix{UInt64}}
 ```
 
 See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
@@ -608,15 +603,15 @@ end
 end
 
 @inline function prodphase(l::PauliOperator, r::Stabilizer, i)::UInt8
-    (l.phase[]+r.phases[i]+prodphase(l.xz, (@view r.xzs[i,:])))&0x3
+    (l.phase[]+r.phases[i]+prodphase(l.xz, (@view r.xzs[:,i])))&0x3
 end
 
 @inline function prodphase(l::Stabilizer, r::PauliOperator, i)::UInt8
-    (l.phases[i]+r.phase[]+prodphase((@view l.xzs[i,:]), r.xz))&0x3
+    (l.phases[i]+r.phase[]+prodphase((@view l.xzs[:,i]), r.xz))&0x3
 end
 
 @inline function prodphase(l::Stabilizer, r::Stabilizer, i, j)::UInt8
-    (l.phases[i]+r.phases[j]+prodphase((@view l.xzs[i,:]), (@view r.xzs[j,:])))&0x3
+    (l.phases[i]+r.phases[j]+prodphase((@view l.xzs[:,i]), (@view r.xzs[:,j])))&0x3
 end
 
 @inline function xor_bits_(v::UInt64)
@@ -680,7 +675,7 @@ end
 end
 
 @inline function comm(l::PauliOperator, r::Stabilizer, i::Int)::UInt8
-    comm(l.xz,(@view r.xzs[i,:]))
+    comm(l.xz,(@view r.xzs[:,i]))
 end
 
 function comm(l::PauliOperator, r::Stabilizer)::Vector{UInt8}
@@ -742,7 +737,7 @@ end
 end
 
 @inline function mul_left!(r::PauliOperator, l::Stabilizer, i::Int; phases::Bool=true)
-    s = mul_left!(r.xz, (@view l.xzs[i,:]), phases=phases)
+    s = mul_left!(r.xz, (@view l.xzs[:,i]), phases=phases)
     phases && (r.phase[] = (s+r.phase[]+l.phases[i])&0x3)
     r
 end
@@ -785,8 +780,8 @@ const Y = P"Y"
 @inline function rowswap!(s::Stabilizer, i, j; phases::Bool=true) # Written only so we can avoid copying in `canonicalize!`
     (i == j) && return
     phases && begin s.phases[i], s.phases[j] = s.phases[j], s.phases[i] end
-    @inbounds @simd for k in 1:size(s.xzs,2)
-        s.xzs[i,k], s.xzs[j,k] = s.xzs[j,k], s.xzs[i,k]
+    @inbounds @simd for k in 1:size(s.xzs,1)
+        s.xzs[k,i], s.xzs[k,j] = s.xzs[k,j], s.xzs[k,i]
     end
 end
 
@@ -807,7 +802,7 @@ end
 end
 
 @inline function mul_left!(s::Stabilizer, m, i; phases::Bool=true)
-    extra_phase = mul_left!((@view s.xzs[m,:]), (@view s.xzs[i,:]); phases=phases)
+    extra_phase = mul_left!((@view s.xzs[:,m]), (@view s.xzs[:,i]); phases=phases)
     phases && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
     s
 end
@@ -841,20 +836,20 @@ end
     for off in [0,size(s.xzs,2)÷2]
         ibig += off
         jbig += off
-        @inbounds for k in 1:size(s.xzs,1)
-            ival = s.xzs[k,ibig] & ismallm
-            jval = s.xzs[k,jbig] & jsmallm
-            s.xzs[k,ibig] &= ~ismallm
-            s.xzs[k,jbig] &= ~jsmallm  # TODO do we really need to check the sign? Is there a better built-in shift op?
+        @inbounds for k in 1:size(s.xzs,2)
+            ival = s.xzs[ibig,k] & ismallm
+            jval = s.xzs[jbig,k] & jsmallm
+            s.xzs[ibig,k] &= ~ismallm
+            s.xzs[jbig,k] &= ~jsmallm  # TODO do we really need to check the sign? Is there a better built-in shift op?
             if ismall>jsmall # TODO this is also present in permute(CliffordOp,...), maybe abstract away
-                s.xzs[k,ibig] |= jval<<(ismall-jsmall)
-                s.xzs[k,jbig] |= ival>>(ismall-jsmall)
+                s.xzs[ibig,k] |= jval<<(ismall-jsmall)
+                s.xzs[jbig,k] |= ival>>(ismall-jsmall)
             elseif ismall<jsmall
-                s.xzs[k,ibig] |= jval>>(jsmall-ismall)
-                s.xzs[k,jbig] |= ival<<(jsmall-ismall)
+                s.xzs[ibig,k] |= jval>>(jsmall-ismall)
+                s.xzs[jbig,k] |= ival<<(jsmall-ismall)
             else
-                s.xzs[k,ibig] |= jval
-                s.xzs[k,jbig] |= ival
+                s.xzs[ibig,k] |= jval
+                s.xzs[jbig,k] |= ival
             end
         end
     end
@@ -982,8 +977,8 @@ See also: [`canonicalize_rref!`](@ref), [`canonicalize_gott!`](@ref)
 """
 function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool=false)
     xzs = stabilizerview(state).xzs
-    xs = @view xzs[:,1:end÷2]
-    zs = @view xzs[:,end÷2+1:end]
+    xs = @view xzs[1:end÷2,:]
+    zs = @view xzs[end÷2+1:end,:]
     Tme = eltype(xzs)
     lowbit = Tme(0x1)
     zerobit = Tme(0x0)
@@ -994,12 +989,12 @@ function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool
         jbig = _div(Tme,j-1)+1
         jsmall = lowbit<<_mod(Tme,j-1)
         k = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
-                      (@view xs[i:end,jbig]))
+                      (@view xs[jbig,i:end]))
         if k !== nothing
             k += i-1
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
-                if xs[m,jbig]&jsmall!=zerobit && m!=i # if X or Y
+                if xs[jbig,m]&jsmall!=zerobit && m!=i # if X or Y
                     mul_left!(state, m, i; phases=phases)
                 end
             end
@@ -1012,12 +1007,12 @@ function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool
         jbig = _div(Tme,j-1)+1
         jsmall = lowbit<<_mod(Tme,j-1)
         k = findfirst(e->e&(jsmall)!=zerobit,
-                      (@view zs[i:end,jbig]))
+                      (@view zs[jbig,i:end]))
         if k !== nothing
             k += i-1
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
-                if zs[m,jbig]&jsmall!=zerobit && m!=i # if Z or Y
+                if zs[jbig,m]&jsmall!=zerobit && m!=i # if Z or Y
                     mul_left!(state, m, i; phases=phases)
                 end
             end
@@ -1048,8 +1043,8 @@ See also: [`canonicalize!`](@ref), [`canonicalize_gott!`](@ref)
 """
 function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=true)
     xzs = stabilizerview(state).xzs
-    xs = @view xzs[:,1:end÷2]
-    zs = @view xzs[:,end÷2+1:end]
+    xs = @view xzs[1:end÷2,:]
+    zs = @view xzs[end÷2+1:end,:]
     Tme = eltype(xzs)
     lowbit = Tme(0x1)
     zerobit = Tme(0x0)
@@ -1059,22 +1054,22 @@ function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=
         jbig = _div(Tme,j-1)+1
         jsmall = lowbit<<_mod(Tme,j-1)
         k = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
-                      (@view xs[1:i,jbig]))
+                      (@view xs[jbig,1:i]))
         if k !== nothing
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
-                if xs[m,jbig]&jsmall!=zerobit && m!=i # if X or Y
+                if xs[jbig,m]&jsmall!=zerobit && m!=i # if X or Y
                     mul_left!(state, m, i; phases=phases)
                 end
             end
             i -= 1
         end
         k = findfirst(e->e&(jsmall)!=zerobit,
-                      (@view zs[1:i,jbig]))
+                      (@view zs[jbig,1:i]))
         if k !== nothing
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
-                if zs[m,jbig]&jsmall!=zerobit && m!=i # if Z or Y
+                if zs[jbig,m]&jsmall!=zerobit && m!=i # if Z or Y
                     mul_left!(state, m, i; phases=phases)
                 end
             end
@@ -1094,7 +1089,7 @@ function gott_standard_form_indices(chunks2D, rows, cols; skip=0)
     j = 1
     r = 1
     for r in skip+1:rows
-        i = unsafe_bitfindnext_(chunks2D[r,:],skip+1)
+        i = unsafe_bitfindnext_(chunks2D[:,r],skip+1)
         isnothing(i) && break
         i ∈ goodindices && continue
         push!(goodindices, i)
@@ -1132,8 +1127,8 @@ See also: [`canonicalize!`](@ref), [`canonicalize_rref!`](@ref)
 """
 function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
     xzs = stabilizer.xzs
-    xs = @view xzs[:,1:end÷2]
-    zs = @view xzs[:,end÷2+1:end]
+    xs = @view xzs[1:end÷2,:]
+    zs = @view xzs[end÷2+1:end,:]
     lowbit = Tme(0x1)
     zerobit = Tme(0x0)
     rows, columns = size(stabilizer)
@@ -1143,19 +1138,19 @@ function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) w
         jbig = _div(Tme,j-1)+1
         jsmall = lowbit<<_mod(Tme,j-1)
         k = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
-                      xs[i:end,jbig])
+                      xs[jbig,i:end])
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
-                if xs[m,jbig]&jsmall!=zerobit && m!=i # if X or Y
+                if xs[jbig,m]&jsmall!=zerobit && m!=i # if X or Y
                     mul_left!(stabilizer, m, i; phases=phases)
                 end
             end
             i += 1
         end
     end
-    xperm, r = gott_standard_form_indices((@view xzs[:,1:end÷2]),rows,columns)
+    xperm, r = gott_standard_form_indices((@view xzs[1:end÷2,:]),rows,columns)
     colpermute!(stabilizer,xperm)
     i = r+1
     for j in r+1:columns
@@ -1163,19 +1158,19 @@ function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) w
         jbig = _div(Tme,j-1)+1
         jsmall = lowbit<<_mod(Tme,j-1)
         k = findfirst(e->e&(jsmall)!=zerobit,
-                      zs[i:end,jbig])
+                      zs[jbig,i:end])
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
-                if zs[m,jbig]&jsmall!=zerobit && m!=i # if Z or Y
+                if zs[jbig,m]&jsmall!=zerobit && m!=i # if Z or Y
                     mul_left!(stabilizer, m, i; phases=phases)
                 end
             end
             i += 1
         end
     end
-    zperm, s = gott_standard_form_indices((@view xzs[:,end÷2+1:end]),rows,columns,skip=r)
+    zperm, s = gott_standard_form_indices((@view xzs[end÷2+1:end,:]),rows,columns,skip=r)
     colpermute!(stabilizer,zperm)
     stabilizer, r, s, xperm, zperm
 end
@@ -1205,7 +1200,7 @@ end
 function Base.vcat(stabs::Stabilizer...)
     Stabilizer(vcat((s.phases for s in stabs)...),
                stabs[1].nqubits,
-               vcat((s.xzs for s in stabs)...))
+               hcat((s.xzs for s in stabs)...))
 end
 
 
@@ -1687,8 +1682,8 @@ end
 function apply!(stab::AbstractStabilizer, c::CliffordColumnForm; phases::Bool=true)
     phases && error("calculation of phases is not implemented for `CliffordColumnForm`: try running with `phases=false`")
     s = tab(stab)
-    new_stabrowx = zero(s.xzs[1,1:end÷2])
-    new_stabrowz = zero(s.xzs[1,1:end÷2])
+    new_stabrowx = zero(s.xzs[1:end÷2,1])
+    new_stabrowz = zero(s.xzs[1:end÷2,1])
     xztox = zero(c.xztox[1,:])
     xztoz = zero(c.xztox[1,:])
     Tme = eltype(s.xzs)
@@ -1699,14 +1694,14 @@ function apply!(stab::AbstractStabilizer, c::CliffordColumnForm; phases::Bool=tr
             bigrow = _div(Tme,row_clif-1)+1
             smallrow = _mod(Tme,row_clif-1)
             @inbounds @simd for i in 1:length(xztox)
-                xztox[i] = c.xztox[row_clif,i] & s.xzs[row_stab,i]
-                xztoz[i] = c.xztoz[row_clif,i] & s.xzs[row_stab,i]
+                xztox[i] = c.xztox[row_clif,i] & s.xzs[i,row_stab]
+                xztoz[i] = c.xztoz[row_clif,i] & s.xzs[i,row_stab]
             end
             new_stabrowx[bigrow] |= xor_bits_(reduce(⊻,xztox)) << smallrow
             new_stabrowz[bigrow] |= xor_bits_(reduce(⊻,xztoz)) << smallrow
         end
-        s.xzs[row_stab,1:end÷2] = new_stabrowx
-        s.xzs[row_stab,end÷2+1:end] = new_stabrowz
+        s.xzs[1:end÷2,row_stab] = new_stabrowx
+        s.xzs[end÷2+1:end,row_stab] = new_stabrowz
     end
     stab
 end
@@ -1734,10 +1729,10 @@ function apply!(stab::AbstractStabilizer, c::CliffordColumnForm, indices_of_appl
                 bigi_redirect = _div(Tme,i_redirect-1)+1
                 smalli_redirect = _mod(Tme,i_redirect-1)
                 # TODO find a better way than ~iszero
-                xtox ⊻= ~iszero(get_bit(c.xztox[row_clif,bigi],smalli) & get_bit(s.xzs[row_stab,bigi_redirect],smalli_redirect))
-                ztox ⊻= ~iszero(get_bit(c.xztox[row_clif,end÷2+bigi],smalli) & get_bit(s.xzs[row_stab,end÷2+bigi_redirect],smalli_redirect))
-                xtoz ⊻= ~iszero(get_bit(c.xztoz[row_clif,bigi],smalli) & get_bit(s.xzs[row_stab,bigi_redirect],smalli_redirect))
-                ztoz ⊻= ~iszero(get_bit(c.xztoz[row_clif,end÷2+bigi],smalli) & get_bit(s.xzs[row_stab,end÷2+bigi_redirect],smalli_redirect))
+                xtox ⊻= ~iszero(get_bit(c.xztox[row_clif,bigi],smalli) & get_bit(s.xzs[bigi_redirect,row_stab],smalli_redirect))
+                ztox ⊻= ~iszero(get_bit(c.xztox[row_clif,end÷2+bigi],smalli) & get_bit(s.xzs[end÷2+bigi_redirect,row_stab],smalli_redirect))
+                xtoz ⊻= ~iszero(get_bit(c.xztoz[row_clif,bigi],smalli) & get_bit(s.xzs[bigi_redirect,row_stab],smalli_redirect))
+                ztoz ⊻= ~iszero(get_bit(c.xztoz[row_clif,end÷2+bigi],smalli) & get_bit(s.xzs[end÷2+bigi_redirect,row_stab],smalli_redirect))
             end
             new_stabrowx[row_clif] |= xtox ⊻ ztox
             new_stabrowz[row_clif] |= xtoz ⊻ ztoz
@@ -1745,10 +1740,10 @@ function apply!(stab::AbstractStabilizer, c::CliffordColumnForm, indices_of_appl
         for (i,i_redirect) in enumerate(indices_of_application)
             bigi_redirect = _div(Tme,i_redirect-1)+1
             smalli_redirect = _mod(Tme,i_redirect-1)
-            s.xzs[row_stab,bigi_redirect] &= ~(lowbit<<smalli_redirect)
-            s.xzs[row_stab,bigi_redirect] |= new_stabrowx[i]<<smalli_redirect
-            s.xzs[row_stab,end÷2+bigi_redirect] &= ~(lowbit<<smalli_redirect)
-            s.xzs[row_stab,end÷2+bigi_redirect] |= new_stabrowz[i]<<smalli_redirect
+            s.xzs[bigi_redirect,row_stab] &= ~(lowbit<<smalli_redirect)
+            s.xzs[bigi_redirect,row_stab] |= new_stabrowx[i]<<smalli_redirect
+            s.xzs[end÷2+bigi_redirect,row_stab] &= ~(lowbit<<smalli_redirect)
+            s.xzs[end÷2+bigi_redirect,row_stab] |= new_stabrowz[i]<<smalli_redirect
         end
     end
     stab
@@ -2068,27 +2063,6 @@ function mixed_destab_looks_good(destabilizer)
         end
     end
     return true
-end
-
-##############################
-# Plotting
-##############################
-
-RecipesBase.@recipe function f(s::Stabilizer; xzcomponents=:split)
-    seriestype  := :heatmap
-    aspect_ratio := :equal
-    yflip := true
-    colorbar := false
-    grid := false
-    framestyle := :none
-    if xzcomponents==:split
-        stab_to_gf2(s)
-    elseif xzcomponents==:together
-        h = stab_to_gf2(s)
-        h[:,1:end÷2]*2 + h[:,end÷2+1:end]
-    else
-        throw(ErrorException("`xzcomponents` should be `:split` or `:together`"))
-    end
 end
 
 include("./symbolic_cliffords.jl")

@@ -23,7 +23,7 @@ X ⟼ + Z
 Z ⟼ + X
 
 julia> typeof(h)
-CliffordOperator{Vector{UInt8}, LinearAlgebra.Adjoint{UInt64, Matrix{UInt64}}}
+CliffordOperator{Vector{UInt8}, Matrix{UInt64}}
 ```
 
 See also: [`SingleQubitOperator`](@ref)
@@ -48,7 +48,7 @@ X ⟼ + Y
 Z ⟼ + Z
 
 julia> typeof(p)
-CliffordOperator{Vector{UInt8}, LinearAlgebra.Adjoint{UInt64, Matrix{UInt64}}}
+CliffordOperator{Vector{UInt8}, Matrix{UInt64}}
 ```
 
 See also: [`SingleQubitOperator`](@ref)
@@ -107,7 +107,7 @@ _Z_ ⟼ - _X_
 __Z ⟼ + __Z
 
 julia> typeof(t_op)
-CliffordOperator{Vector{UInt8}, LinearAlgebra.Adjoint{UInt64, Matrix{UInt64}}}
+CliffordOperator{Vector{UInt8}, Matrix{UInt64}}
 
 julia> CliffordOperator(op, 1, compact=true) # You can also extract just the non-trivial part of the tableau
 X ⟼ - Y
@@ -169,23 +169,23 @@ end
 
 Base.@propagate_inbounds function getxbit(s, r, c)
     Tme = eltype(s.xzs)
-    s.xzs[r,getbigindex(Tme,c)]&getmask(Tme,c)
+    s.xzs[getbigindex(Tme,c),r]&getmask(Tme,c)
 end
 Base.@propagate_inbounds function getzbit(s, r, c)
     Tme = eltype(s.xzs)
-    s.xzs[r,end÷2+getbigindex(Tme,c)]&getmask(Tme,c)
+    s.xzs[end÷2+getbigindex(Tme,c),r]&getmask(Tme,c)
 end
 Base.@propagate_inbounds function setxbit(s, r, c, x)
     Tme = eltype(s.xzs)
     cbig = getbigindex(Tme,c)
-    s.xzs[r,cbig] &= ~getmask(Tme,c)
-    s.xzs[r,cbig] |= x
+    s.xzs[cbig,r] &= ~getmask(Tme,c)
+    s.xzs[cbig,r] |= x
 end
 Base.@propagate_inbounds function setzbit(s, r, c, z)
     Tme = eltype(s.xzs)
     cbig = getbigindex(Tme,c)
-    s.xzs[r,end÷2+cbig] &= ~getmask(Tme,c)
-    s.xzs[r,end÷2+cbig] |= z
+    s.xzs[end÷2+cbig,r] &= ~getmask(Tme,c)
+    s.xzs[end÷2+cbig,r] |= z
 end
 Base.@propagate_inbounds setxbit(s, r, c, x, shift) = setxbit(s, r, c, x<<shift)
 Base.@propagate_inbounds setzbit(s, r, c, z, shift) = setzbit(s, r, c, z<<shift)
@@ -404,8 +404,8 @@ function apply_single_z!(stab::AbstractStabilizer, i)
     bigi = _div(Tme,i-1)+1
     smalli = _mod(Tme,i-1)
     mask = Tme(0x1)<<smalli
-    @inbounds @simd for row in 1:size(s.xzs,1)
-        if !iszero(s.xzs[row,bigi] & mask)
+    @inbounds @simd for row in 1:size(s.xzs,2)
+        if !iszero(s.xzs[bigi,row] & mask)
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end
@@ -419,8 +419,8 @@ function apply_single_x!(stab::AbstractStabilizer, i)
     bigi = _div(Tme,i-1)+1
     smalli = _mod(Tme,i-1)
     mask = Tme(0x1)<<smalli
-    @inbounds @simd for row in 1:size(s.xzs,1)
-        if !iszero(s.xzs[row,end÷2+bigi] & mask)
+    @inbounds @simd for row in 1:size(s.xzs,2)
+        if !iszero(s.xzs[end÷2+bigi,row] & mask)
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end
@@ -434,8 +434,8 @@ function apply_single_y!(stab::AbstractStabilizer, i)
     bigi = _div(Tme,i-1)+1
     smalli = _mod(Tme,i-1)
     mask = Tme(0x1)<<smalli
-    @inbounds @simd for row in 1:size(s.xzs,1)
-        if !iszero((s.xzs[row,bigi] & mask) ⊻ (s.xzs[row,end÷2+bigi] & mask))
+    @inbounds @simd for row in 1:size(s.xzs,2)
+        if !iszero((s.xzs[bigi,row] & mask) ⊻ (s.xzs[end÷2+bigi,row] & mask))
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end

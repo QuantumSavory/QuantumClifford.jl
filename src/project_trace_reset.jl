@@ -34,10 +34,9 @@ false
 ```
 """
 function generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true, saveindices::Bool=true) where {Tz<:AbstractArray{UInt8,0}, Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tv<:AbstractVector{Tme}, Tm<:AbstractMatrix{Tme}} # TODO there is stuff that can be abstracted away here and in canonicalize!
-    rows, columns = size(stabilizer)
     xzs = stabilizer.xzs
-    xs = @view xzs[:,1:end÷2]
-    zs = @view xzs[:,end÷2+1:end]
+    xs = @view xzs[1:end÷2,:]
+    zs = @view xzs[end÷2+1:end,:]
     lowbit = Tme(0x1)
     zerobit = Tme(0x0)
     px,pz = xview(pauli), zview(pauli)
@@ -48,7 +47,7 @@ function generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; 
         jbig = _div(Tme,i-1)+1
         jsmall = lowbit<<_mod(Tme,i-1)
         candidate = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
-                              xs[used+1:end,jbig])
+                              xs[jbig,used+1:end])
         if isnothing(candidate)
             return nothing
         else
@@ -62,7 +61,7 @@ function generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; 
         jbig = _div(Tme,i-1)+1
         jsmall = lowbit<<_mod(Tme,i-1)
         candidate = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
-                              zs[used+1:end,jbig])
+                              zs[jbig,used+1:end])
         if isnothing(candidate)
             return nothing
         else
@@ -324,7 +323,7 @@ function project!(ms::MixedStabilizer,pauli::PauliOperator;keep_result::Bool=tru
             ms.rank += 1
         else
             canonicalize!(@view ms.tab[1:ms.rank+1]; phases=phases)
-            if ~all(==(Tme(0)), @view ms.tab.xzs[ms.rank+1,:])
+            if ~all(==(Tme(0)), @view ms.tab.xzs[:,ms.rank+1])
                 ms.rank += 1
             end
         end
@@ -333,7 +332,6 @@ function project!(ms::MixedStabilizer,pauli::PauliOperator;keep_result::Bool=tru
 end
 
 function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases) # TODO Ensure there are no redundant `comm` checks that can be skipped
-    chunks = size(tab.xzs,2)
     for i in r+1:n
         if comm(pauli,tab,i)!=0
             mul_left!(tab, i, n+anticommutes; phases=phases)
