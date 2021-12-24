@@ -8,7 +8,6 @@ module QuantumClifford
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
 import LinearAlgebra
-import RecipesBase
 using DocStringExtensions
 using LoopVectorization
 using Polyester
@@ -2095,6 +2094,7 @@ end
 include("./symbolic_cliffords.jl")
 include("./randoms.jl")
 include("./useful_states.jl")
+include("./plotting.jl")
 include("./experimental/Experimental.jl")
 
 end #module
