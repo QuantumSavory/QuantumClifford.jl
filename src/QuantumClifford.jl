@@ -241,8 +241,8 @@ Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArra
 
 Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(
     phases, size(xs,2),
-    vcat(hcat((BitArray(xs[i,:]).chunks for i in 1:size(xs,1))...),
-         hcat((BitArray(zs[i,:]).chunks for i in 1:size(zs,1))...))
+    vcat(hcat((BitArray(xs[i,:]).chunks for i in 1:size(xs,1))...)::Matrix{UInt},
+         hcat((BitArray(zs[i,:]).chunks for i in 1:size(zs,1))...)::Matrix{UInt}) # type assertions to help Julia infer types
 )
 
 Stabilizer(phases::AbstractVector{UInt8}, xzs::AbstractMatrix{Bool}) = Stabilizer(phases, xzs[:,1:end÷2], xzs[:,end÷2+1:end])
@@ -451,11 +451,12 @@ mutable struct MixedDestabilizer{Tzv<:AbstractVector{UInt8}, Tm<:AbstractMatrix{
     rank::Int
 end
 
-function MixedDestabilizer(stab::Stabilizer; undoperm=true)
+# Added a lot of type assertions to help Julia infer types
+function MixedDestabilizer(stab::Stabilizer{Tv,Tm}; undoperm=true) where {Tve,Tme,Tv<:AbstractVector{Tve},Tm<:AbstractMatrix{Tme}}
     r,n = size(stab)
     stab, r, s, permx, permz = canonicalize_gott!(stab)
     n = nqubits(stab)
-    tab = zero(Stabilizer, n*2, n)
+    tab = zero(Stabilizer, n*2, n)::Stabilizer{Vector{Tve},Matrix{Tme}}
     tab[n+1:n+r+s] = stab # The Stabilizer part of the tableau
     for i in 1:r # The Destabilizer part
         tab[i,i] = (false,true)
@@ -481,9 +482,9 @@ function MixedDestabilizer(stab::Stabilizer; undoperm=true)
         tab[n+r+s+1:end] = sZ # The other logical set in the tableau
     end
     if undoperm
-        tab = tab[:,perm_inverse(permx[permz])]
+        tab = tab[:,perm_inverse(permx[permz])]::Stabilizer{Vector{Tve},Matrix{Tme}}
     end
-    MixedDestabilizer(tab, r+s)
+    MixedDestabilizer(tab, r+s)::MixedDestabilizer{Vector{Tve},Matrix{Tme}}
 end
 
 MixedDestabilizer(d::Destabilizer, r::Int) = MixedDestabilizer(tab(d), r)
@@ -707,10 +708,10 @@ function _mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::B
     s
 end
 
-function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
+function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true)::UInt8 where T<:Unsigned
     if !phases
         r .⊻= l
-        return zero(T)
+        return UInt8(0x0)
     end
     cnt1 = zero(T)
     cnt2 = zero(T)
@@ -726,7 +727,7 @@ function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true
         cnt2 += count_ones((newx1 ⊻ newz1 ⊻ x1z2) & anti_comm)
         cnt1 += count_ones(anti_comm)
     end
-    (cnt1 ⊻ (cnt2<<1))&0x3
+    UInt8((cnt1 ⊻ (cnt2<<1))&0x3)
 end
 
 @inline function mul_left!(r::PauliOperator, l::PauliOperator; phases::Bool=true)
@@ -1084,7 +1085,7 @@ $TYPEDSIGNATURES
 """
 canonicalize_rref!(state::AbstractStabilizer; phases::Bool=true) = canonicalize_rref!(state, 1:nqubits(state); phases=phases)
 
-function gott_standard_form_indices(chunks2D, rows, cols; skip=0)
+function gott_standard_form_indices(chunks2D, rows, cols; skip=0)::Tuple{Vector{Int},Int}
     goodindices = Int[]
     j = 1
     r = 1
@@ -1099,7 +1100,7 @@ function gott_standard_form_indices(chunks2D, rows, cols; skip=0)
         badindices = [r for r in 1+skip:goodindices[end] if !(r ∈ goodindices)]
         return vcat(1:skip, goodindices, badindices, goodindices[end]+1:cols), rank
     else
-        return 1:cols, rank
+        return collect(1:cols), rank # without the collect it is not type stable; TODO is the collect making this slow?
     end
 end
 
@@ -1430,6 +1431,8 @@ function apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true
     stab
 end
 
+# TODO Added a lot of type assertions to help Julia infer types, but they are much too strict for cases where bitpacking varies (check tests)
+#@inline function apply_row_kernel!(new_stabrow::PauliOperator{Array{UInt8,0},Vector{Tme}}, row::Int, s_tab::Stabilizer{Tv,Tm}, c_tab::Stabilizer{Tv,Tm}; phases=true) where {Tme,Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{Tme}}
 @inline function apply_row_kernel!(new_stabrow, row, s_tab, c_tab; phases=true)
     phases && (new_stabrow.phase[] = s_tab.phases[row])
     n = nqubits(c_tab)
@@ -2070,5 +2073,6 @@ include("./randoms.jl")
 include("./useful_states.jl")
 include("./plotting.jl")
 include("./experimental/Experimental.jl")
+include("./precompiles.jl")
 
 end #module
