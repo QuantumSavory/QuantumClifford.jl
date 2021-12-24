@@ -1,22 +1,7 @@
 using LinearAlgebra: inv, mul!
 using Random: randperm, AbstractRNG, GLOBAL_RNG
-using Requires
 using ILog2
-
-const NEMO_LOADED = fill(false)
-# XXX Workaround for the Nemo banner
-function __init__()
-    ENV["NEMO_PRINT_BANNER"] = "false"
-    @require Nemo="2edaba10-b0f1-5616-af89-8c11ac63239a" begin
-        NEMO_LOADED[] = true
-        function nemo_inv(a, n)
-            binaryring = Nemo.ResidueRing(Nemo.ZZ, 2) # TODO should I use GF(2) instead of ResidueRing(ZZ, 2)?
-            M = Nemo.MatrixSpace(binaryring, n, n)
-            inverted = inv(M(Matrix{Int}(a))) # Nemo is very picky about input data types
-            return (x->x.data).(inverted)
-        end
-    end
-end
+import Nemo
 
 ##############################
 # Random Paulis
@@ -203,9 +188,15 @@ function precise_inv(a)
     if n<200
         return inv(a)
     else
-        NEMO_LOADED[] || error("A function you called in QuantumClifford is attempting to precisely invert a large (>200 qubits) tableau. This requires that you install and import Nemo.jl by running `]add Nemo` and `using Nemo`.") # TODO test this error message, before/after Nemo import
 	    return nemo_inv(a,n)
     end
+end
+
+function nemo_inv(a, n)
+    binaryring = Nemo.ResidueRing(Nemo.ZZ, 2) # TODO should I use GF(2) instead of ResidueRing(ZZ, 2)?
+    M = Nemo.MatrixSpace(binaryring, n, n)
+    inverted = inv(M(Matrix{Int}(a))) # Nemo is very picky about input data types
+    return (x->x.data).(inverted)
 end
 
 """Sample (h, S) from the distribution P_n(h, S) from Bravyi and Maslov Algorithm 1."""
