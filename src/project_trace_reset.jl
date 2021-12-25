@@ -70,6 +70,7 @@ function generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; 
         mul_left!(pauli, stabilizer, used, phases=phases)
         saveindices && push!(used_indices, used)
     end
+    all(iszero, pauli.xz) || return nothing # Need to check due to cases like generate!(P"_Z", S"XZ") that bypass the X checks # TODO do this better, without this extra loop through p.xz
     if saveindices
         return pauli, used_indices
     else
