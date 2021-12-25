@@ -25,12 +25,12 @@ function test_allocations()
             g = enumerate_single_qubit_gates(i,qubit=10,phases=phases)
             f5() = apply!(s,g)
             f5()
-            @test allocated(f5) < 50*n
+            @test allocated(f5) < 100*n
         end
         for g in [sSWAP(10,200), sCNOT(10,200)]
             f6() = apply!(s,g)
             f6()
-            @test allocated(f6) < 100*n
+            @test allocated(f6) < 150*n
         end 
         # TODO project! and the other canonicalize           
     end
