@@ -98,20 +98,20 @@ BenchmarkTools.Trial: 226 samples with 1 evaluation.
  Memory estimate: 32 bytes, allocs estimate: 1.
 ```
 
-#### Gate application (500 CNOT gates on 1000 qubits) in 6 ms
+#### Gate application (500 CNOT gates on 1000 qubits) in 7 ms
 
 ```jldoctest
 julia> @benchmark apply!(s, gate) setup=(s=random_stabilizer(1000); gate=tensor_pow(CNOT,500))
-BenchmarkTools.Trial: 801 samples with 1 evaluation.
- Range (min … max):  5.758 ms …  10.479 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     5.800 ms               ┊ GC (median):    0.00%
- Time  (mean ± σ):   6.107 ms ± 624.182 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+BenchmarkTools.Trial: 564 samples with 1 evaluation.
+ Range (min … max):  6.602 ms … 17.719 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     8.411 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   8.865 ms ±  1.836 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-  █▆▃                               ▂                          
-  ███▇▆▅▅▅▅▅▆▅▄▁▁▆▄▇▆▆▆▇▅▅▅▅▅▆▆▆▅▇███▇▆▇▇▅▅▁▅▇▅▅▁▅▅▁▁▁▁▁▄▁▁▁▅ ▇
-  5.76 ms      Histogram: log(frequency) by time      8.22 ms <
+  ▂             ▁                    █                        
+  ██▆▆▆▄▅▃▄▄▄▄▅▇█▇▆▄▅▃▄▃▃▃▃▃▃▁▂▂▃▁▃▃██▃▂▃▂▂▂▂▂▂▂▂▁▃▃▃▁▂▂▂▂▂▂ ▃
+  6.6 ms         Histogram: frequency by time        13.7 ms <
 
- Memory estimate: 52.62 KiB, allocs estimate: 2592.
+ Memory estimate: 13.84 KiB, allocs estimate: 111.
 ```
 
 #### Sparse gate application to only specified qubits in a 1000 qubit tableau in 4 microseconds

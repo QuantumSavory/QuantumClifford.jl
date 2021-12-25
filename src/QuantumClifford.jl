@@ -273,7 +273,10 @@ Base.iterate(stab::Stabilizer, state=1) = state>length(stab) ? nothing : (stab[s
 
 function Base.setindex!(stab::Stabilizer, pauli::PauliOperator, i)
     stab.phases[i] = pauli.phase[]
-    stab.xzs[:,i] = pauli.xz
+    #stab.xzs[:,i] = pauli.xz # TODO why is this assigment causing allocations
+    for j in 1:length(pauli.xz)
+        stab.xzs[j,i] = pauli.xz[j]
+    end
     stab
 end
 
@@ -1105,7 +1108,7 @@ end
 
 function colpermute!(s::Stabilizer, perm) # TODO rename and make public, same as permute and maybe Base.permute!
     for r in 1:size(s,1)
-        s[r] = s[r][perm]
+        s[r] = s[r][perm] # TODO make a local temporary buffer row instead of constantly allocating new rows
     end
     s
 end

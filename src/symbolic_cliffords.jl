@@ -298,7 +298,7 @@ const all_single_qubit_patterns = (
 """Generate a symbolic single-qubit gate given its index. Optionally, set non-trivial phases."""
 function enumerate_single_qubit_gates(index; qubit=1, phases=(false,false))
     @assert index<=6 "Only 6 single-qubit gates exit, up to the choice of phases"
-    if isnothing(phases)
+    if phases==(false,false)
         if index==4
             return sHadamard(qubit)
         elseif index==6
