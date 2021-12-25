@@ -153,35 +153,6 @@ random_stabilizer(n::Int) = random_stabilizer(GLOBAL_RNG, n)
 random_stabilizer(rng::AbstractRNG,r::Int,n::Int) = random_stabilizer(rng,n)[randperm(rng,n)[1:r]]
 random_stabilizer(r::Int,n::Int) = random_stabilizer(GLOBAL_RNG,n)[randperm(GLOBAL_RNG,n)[1:r]]
 
-function random_singlequbitop(rng::AbstractRNG,n::Int)
-    xtox = [falses(n) for i in 1:n]
-    ztox = [falses(n) for i in 1:n]
-    xtoz = [falses(n) for i in 1:n]
-    ztoz = [falses(n) for i in 1:n]
-    for i in 1:n
-        gate = rand(rng,1:6)
-        if gate<5
-            xtox[i][i] = true
-            xtoz[i][i] = true
-            ztox[i][i] = true
-            ztoz[i][i] = true
-            [xtox,ztox,xtoz,ztoz][gate][i][i] = false
-        elseif gate==5
-            xtox[i][i] = true
-            ztoz[i][i] = true
-        else
-            xtoz[i][i] = true
-            ztox[i][i] = true
-        end
-    end
-    c = CliffordColumnForm(zeros(UInt8,n*2), n,
-                         vcat((vcat(x2x.chunks,z2x.chunks)' for (x2x,z2x) in zip(xtox,ztox))...),
-                         vcat((vcat(x2z.chunks,z2z.chunks)' for (x2z,z2z) in zip(xtoz,ztoz))...)
-        )
-end
-random_singlequbitop(n::Int) = random_singlequbitop(GLOBAL_RNG,n)
-
-
 """Inverting a binary matrix: uses floating point for small matrices and Nemo for large matrices."""
 function precise_inv(a)
     n = size(a,1)

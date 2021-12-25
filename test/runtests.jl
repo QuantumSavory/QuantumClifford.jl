@@ -1,7 +1,7 @@
 using Test, Random, Documenter
 using QuantumClifford
 using QuantumClifford: stab_looks_good, mixed_stab_looks_good, destab_looks_good, mixed_destab_looks_good
-using QuantumClifford: CNOTcol, SWAPcol, Hadamardcol, Phasecol, CliffordIdcol, mul_left!
+using QuantumClifford: mul_left!
 using QuantumClifford.Experimental.NoisyCircuits
 using Quantikz: circuit2string, QuantikzOp
 using Nemo
@@ -807,99 +807,6 @@ if doset("Clifford Operators")
     end
 end
 end
-
-if doset("Clifford Operators (column representation)")
-@testset "Clifford Operators (column representation)" begin
-    @testset "Permutations of qubits" begin
-        function naive_permute(c::CliffordColumnForm,p::AbstractArray{T,1} where T) # this is extremely slow stupid implementation
-            ops = QuantumClifford.getallpaulis(c)
-            CliffordColumnForm([ops[i][p] for i in 1:2*c.nqubits][vcat(p,p.+c.nqubits)])
-        end
-        for c in [CNOTcol, CliffordIdcol⊗Hadamardcol, CNOTcol⊗CNOTcol, tensor_pow(CNOTcol,6), tensor_pow(CNOTcol,7), tensor_pow(CNOTcol,6)⊗Phasecol, tensor_pow(CNOTcol,7)⊗Phasecol]
-            for rep in 1:5
-                p = randperm(nqubits(c))
-               @test permute(c,p) == naive_permute(c,p)
-            end
-        end
-        for i in 1:5
-            p = randperm(125)
-            c = rand([CliffordIdcol, Hadamardcol, Phasecol], 125)
-            @test ⊗(c[p]...) == naive_permute(⊗(c...), p) == permute(⊗(c...), p)
-        end
-    end
-    @testset "Tensor products" begin
-        function naive_mul(l::CliffordColumnForm, r::CliffordColumnForm) # this is extremely slow stupid implementation
-            opsl = QuantumClifford.getallpaulis(l)
-            opsr = QuantumClifford.getallpaulis(r)
-            onel = zero(opsl[1])
-            oner = zero(opsr[1])
-            opsl = [l⊗oner for l in opsl]
-            opsr = [onel⊗r for r in opsr]
-            CliffordColumnForm(vcat(opsl[1:end÷2],opsr[1:end÷2],opsl[end÷2+1:end],opsr[end÷2+1:end]))
-        end
-        function naive_tensor_pow(op::CliffordColumnForm,power::Integer,mem::Dict{Integer,CliffordColumnForm})
-            if power==1
-                return op
-            elseif haskey(mem,power)
-                return mem[power]
-            end
-            half,rest = divrem(power,2)
-            phalf = get!(mem,half) do
-                naive_tensor_pow(op,half,mem)
-            end
-            res = naive_mul(phalf,phalf)
-            if rest!=0
-                prest = get!(mem,rest) do
-                    naive_tensor_pow(op,half,mem)
-                end
-                res = naive_mul(res,prest)
-            end
-            res
-        end
-        function naive_tensor_pow(op::CliffordColumnForm,power::Integer)
-            naive_tensor_pow(op,power,Dict{Integer,CliffordColumnForm}())
-        end
-        for s in test_sizes
-            for g in [CNOTcol,Hadamardcol,CNOTcol⊗Phasecol]
-                @test naive_tensor_pow(g,s)==tensor_pow(g,s)
-            end
-        end
-        for g1 in [CNOTcol,Hadamardcol,CNOTcol⊗Phasecol,CliffordIdcol]
-            for g2 in [CNOTcol,Hadamardcol,CNOTcol⊗Phasecol,CliffordIdcol]
-                @test naive_mul(g1,g2)==g1⊗g2
-            end
-        end
-        c1 = tensor_pow(CNOTcol,32)
-        @test naive_mul(c1,c1) == c1⊗c1
-        c1 = naive_tensor_pow(Hadamardcol,33)
-        @test naive_mul(c1,c1) == c1⊗c1
-        c2 = naive_tensor_pow(Hadamardcol,32)
-        @test naive_mul(c1,c2) == c1⊗c2
-        @test naive_mul(c2,c1) == c2⊗c1
-    end
-    @testset "Clifford acting on Stabilizer" begin
-        for size in test_sizes
-            size < 5 && continue
-            s = random_stabilizer(size)
-            gates = vcat([CNOTcol, Hadamardcol, Phasecol], repeat([CliffordIdcol],size-4))
-            gates_perm = randperm(size-1)
-            gates = gates[gates_perm]
-            big_gate = reduce(⊗,gates)
-
-            s1 = apply!(copy(s),big_gate; phases=false)
-            @test stab_looks_good(s1)
-
-            igates_perm = perm_inverse(gates_perm)
-            s2 = copy(s)
-            s2 = apply!(s2, CNOTcol, [igates_perm[1],igates_perm[1]+1]; phases=false)
-            s2 = apply!(s2, Hadamardcol, [igates_perm[2]+(igates_perm[1]<igates_perm[2])]; phases=false)
-            s2 = apply!(s2, Phasecol, [igates_perm[3]+(igates_perm[1]<igates_perm[3])]; phases=false)
-
-            @test ==(s1, s2, phases=false)
-        end
-    end
-end
-end
 end
 
 function test_symbolic()
@@ -945,7 +852,7 @@ if doset("Random sampling of operators")
             ms = MixedDestabilizer(ss)
             d = random_destabilizer(n)
             c = random_clifford(n)
-            sq = random_singlequbitop(n)
+            sq = random_clifford1(n÷2+1)
             @test stab_looks_good(s)
             @test stab_looks_good(ss)
             @test destab_looks_good(d)

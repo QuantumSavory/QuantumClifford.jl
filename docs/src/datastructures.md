@@ -78,12 +78,4 @@ Both of these parameters are tested in the benchmark shown below (testing the ap
 
 Row-major UInt64 is the best performing and it is mostly used by default in this library. 
 
-## [Clifford Operators Datastructures](@id Clifford-Operators-Datastructures)
-
-The [`CliffordOperator`](@ref) data structure is the default one in most of the library. Internally, it is represented by a destabilizer tableaux given by applying the Clifford operation in question on the initial ground state. The [`CliffordColumnForm`](@ref) is an earlier implementation of the same functionality which is mostly deprecated and will be removed when all example notebooks are updated to use the newer structures. `CliffordColumnForm` uses bitpacking that is the transpose of the packing in `CliffordOperator`. [Benchmark comparisons are available](bench_intsize_clifford.png) and the scripts to run the benchmarks are in the `benchmarks` folder.
-
-Importantly, for small Clifford operators it might be an order-of-magnitude more efficient to use the special case symbolic operations instead of a generic tableu-based structure like `CliffordOperator`. These are small structs for which the `apply!` functions are specialized and much faster. They are implemented as subtypes of `AbstractSingleQubitOperator` and `AbstractTwoQubitOperator`.
-
-Both the generic `CliffordOperator` and the small symbolic Clifford datastructures have a multithreaded `apply!` function. [Benchmakrs](bench_threaded_apply.png) show that small symbolic operators are indeed 10× faster than the equivalent small dense `CliffordOperator`. Moreover, the benchmarks clearly show for large problems a linear performance increase with increased threads, which can be seen more easily if we [plot `wall_time*number_of_threads`](bench_threaded_apply_threadtime.png).
-
 All benchmarks were executed on a Ryzen Zen1 CPU.

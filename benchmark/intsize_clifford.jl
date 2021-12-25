@@ -5,6 +5,8 @@ and array (column-major or row-major)
 and bitpacking (in UInt8, or 16, or 32, or 64 bit types).
 """
 
+# TODO this benchmark is outdates as in version 0.3.0 we dropped CliffordColumnForm
+
 using QuantumClifford
 using Nemo
 using StableRNGs
