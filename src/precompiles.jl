@@ -49,20 +49,8 @@ function __lookup_kwbody__(mnokw::Method)
     return f
 end
 
-function _my_precompile()
-    a = UInt[0x1]
-    b = UInt[0x2]
-    mul_left!(a,b,phases=true)
-    mul_left!(a,b,phases=false)
-    p = P"XX"
-    s = S"ZZ"
-    mul_left!(p,s,1,phases=true)
-    mul_left!(p,s,1,phases=false)
-end
-
 function _precompile_()
     ccall(:jl_generating_output, Cint, ()) == 1 || return nothing
-    _my_precompile()
     Base.precompile(Tuple{typeof(*),SingleQubitOperator,Stabilizer{Vector{UInt8}, Matrix{UInt64}}})   # time: 0.18761368
     Base.precompile(Tuple{typeof(*),sX,Stabilizer{Vector{UInt8}, Matrix{UInt64}}})   # time: 0.077348635
     Base.precompile(Tuple{typeof(*),sSWAP,Stabilizer{Vector{UInt8}, Matrix{UInt64}}})   # time: 0.05619128
