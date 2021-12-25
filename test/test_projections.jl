@@ -216,7 +216,8 @@ function test_projections()
                     _, ams, rms = project!(ms,p)
                     _, amd, rmd = project!(md,p)
                     @test rs == rms == rmd
-                    @test canonicalize!(s) == canonicalize!(stabilizerview(ms)) == canonicalize!(stabilizerview(md))
+                    @test (md.rank!=r) || (canonicalize!(s) == canonicalize!(stabilizerview(ms)))
+                    @test canonicalize!(stabilizerview(ms)) == canonicalize!(stabilizerview(md))
                     if as == 0
                         @test ams == amd == 0
                     end
