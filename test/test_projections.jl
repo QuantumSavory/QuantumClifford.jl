@@ -200,6 +200,7 @@ function test_projections()
             @test mds.rank == 3
         end
         @testset "Results from canonicalization vs from destabilizer" begin
+            @test generate!(P"_Z", S"XZ") === nothing # for bug fixed in 4b536231c3ee4e6446262fcc61ba8da669415bc8
             for n in test_sizes
                 for r in [n, rand(n÷3:n*2÷3)]
                     if r==0
