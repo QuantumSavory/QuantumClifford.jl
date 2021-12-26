@@ -1793,7 +1793,6 @@ end
 include("./symbolic_cliffords.jl")
 include("./randoms.jl")
 include("./useful_states.jl")
-include("./plotting.jl")
 include("./experimental/Experimental.jl")
 include("./precompiles.jl")
 

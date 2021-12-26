@@ -11,7 +11,7 @@ First do elimination on all X components and only then perform elimination on
 the Z components. Based on [garcia2012efficient](@cite)
 
 ```julia
-julia> plot(canonicalize!(random_stabilizer(40,50)));
+julia> plot(canonicalize!(random_stabilizer(20,30)));
 ```
 
 ![](plot-canostab.png)
@@ -22,7 +22,7 @@ Cycle between elimination on X and Z for each qubit. Particularly useful for
 tracing out qubits. Based on [audenaert2005entanglement](@cite).
 
 ```julia
-julia> plot(canonicalize_rref!(random_stabilizer(40,50),1:50)[1]; xzcomponents=:together);
+julia> plot(canonicalize_rref!(random_stabilizer(20,30),1:30)[1]; xzcomponents=:together);
 ```
 
 ![](plot-rref-together.png)
@@ -35,7 +35,7 @@ the X pass. Particularly useful as certain blocks of the new created matrix are
 related to logical operations of the corresponding code. Based on [gottesman1997stabilizer](@cite).
 
 ```julia
-julia> plot(canonicalize_gott!(random_stabilizer(40,50))[1]; xzcomponents=:together);
+julia> plot(canonicalize_gott!(random_stabilizer(20,30))[1]; xzcomponents=:together);
 ```
 
 ![](plot-gottstab-together.png)
