@@ -34,7 +34,8 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     random_invertible_gf2,
     random_pauli, random_stabilizer, random_destabilizer, random_clifford,
     bell, ghz,
-    BadDataStructure
+    BadDataStructure,
+    graphstate, graphstate!
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -1794,6 +1795,7 @@ include("./symbolic_cliffords.jl")
 include("./randoms.jl")
 include("./useful_states.jl")
 include("./experimental/Experimental.jl")
+include("./graphs.jl")
 include("./precompiles.jl")
 
 end #module
