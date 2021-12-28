@@ -222,6 +222,42 @@ julia> P"YYY" * s
 + _ZZ
 ```
 
+Additional methods to generate stabilizers:
+
+Generate Stabilizers from a list of Pauli operators
+
+```jldoctest stabilizer
+julia> Stabilizer([P"XX", P"ZZ"])
++ XX
++ ZZ
+```
+
+Generate Stabilizers from boolean matrices
+
+```jldoctest stabilizer
+julia> a = rand(Bool, 2,2); b = rand(Bool, 2,2);
+
+julia> Stabilizer(a, b)
++ YY
++ _Z
+
+julia> Stabilizer([0x0, 0x2], a, b)
++ YY
+- _Z
+```
+
+Generate Stabilizers from empty tableau
+
+```jldoctest stabilizer
+julia> s = zero(Stabilizer, 2)
++ __
++ __
+
+julia> s[1,1] = (true, false); s
++ X_
++ __
+```
+
 There are no automatic checks for correctness (i.e. independence of all rows,
 commutativity of all rows, hermiticity of all rows). The rank (number of rows)
 is permitted to be less than the number of qubits (number of columns):
