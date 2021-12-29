@@ -4,7 +4,7 @@ import Graphs
 function graphstate!(stab::Stabilizer)
     n = nqubits(stab)
     stab, r, s, permx, permz = canonicalize_gott!(stab)
-    perm = permx[permz]
+    perm = perm_inverse(permx[permz])
     h_idx = [perm[i] for i in (r+1):n] # Qubits in which X ↔ Z is needed
     ip_idx = [perm[i] for i in 1:n if stab[i,i]==(true,true)] # Qubits for which Y → X is needed
     phase_flips = [perm[i] for i in 1:n if stab.phases[i]!=0x0]
@@ -13,6 +13,7 @@ function graphstate!(stab::Stabilizer)
         for i in 1:n, j in 1:n
         if i!=j && stab[i,j]!=(false,false)
     ))
+    Graphs.add_vertices!(graph, n-Graphs.nv(graph))
     graph, h_idx, ip_idx, phase_flips
 end
 
@@ -38,7 +39,7 @@ and the rest specifies the single-qubit gates converting `stab` to `graph`:
 and `flips_idx` are the qubits that require a phase flip (Pauli Z gate),
 after the previous two sets of gates.
 
-```jldoctest
+```jldoctest graph
 julia> using Graphs
 
 julia> s = S" XXX
@@ -68,9 +69,110 @@ julia> z_idx
 The `Graphs.jl` library provides many graph-theory tools and the
 `MakieGraphs.jl` library provides plotting utilies for graphs.
 
+You can directly call the graph constructor on a stabilizer,
+if you just want the graph and do not care about the Clifford
+operation necessary to convert an arbitrary state to a state
+representable as a graph:
+
+```jldoctest graph
+julia> collect(edges( Graph(bell()) ))
+1-element Vector{Graphs.SimpleGraphs.SimpleEdge{Int64}}:
+ Edge 1 => 2
+```
+
 For a version that does not copy the stabilizer, but rather
 performs transformations in-place, use `graphstate!`. It would
 perform `canonicalize_gott!` on its argument as it finds a way
 to convert it to a graph state.
 """
 graphstate(s::AbstractStabilizer) = graphstate!(copy(stabilizerview(s)))
+
+Graphs.Graph(s::AbstractStabilizer) = graphstate(s)[1]
+
+"""Convert a graph representing a stabilizer state to an explicit Stabilizer.
+
+See also: [`graphstate`](@ref)"""
+function Stabilizer(g::Graphs.Graph)
+    s = zero(Stabilizer, Graphs.nv(g)) # number of vertices
+    for v in Graphs.vertices(g)
+        s[v,v]=(true,false)
+        for n in Graphs.neighbors(g,v)
+            s[v,n]=(false,true)
+        end
+    end
+    return s
+end
+
+"""A helper function converting the gate indices from [`graphstate`](@ref) into a sequence of gates.
+
+```jldoctest
+julia> s = S" XXX
+              YZ_
+             -_ZZ";
+
+julia> graph, h_idx, ip_idx, z_idx = graphstate(s);
+
+julia> gates = graph_gatesequence(h_idx, ip_idx, z_idx);
+
+julia> for gate in vcat(gates...) apply!(s, gate) end
+
+julia> s # This is now a graph state (notice you need to multiply row 1 by row 2)
++ YYZ
++ XZ_
++ _ZX
+
+julia> canonicalize!(s) == canonicalize!(Stabilizer(graph))
+true
+```
+
+See also: [`graph_gatesequence`](@ref)
+"""
+function graph_gatesequence(h_idx, ip_idx, z_idx)
+    ([sHadamard(i) for i in h_idx], [sInvPhase(i) for i in ip_idx], [sZ(i) for i in z_idx])
+end
+
+"""A helper function converting the gate indices from [`graphstate`](@ref) into a Clifford operator.
+
+```jldoctest
+julia> s = S" XXX
+              YZ_
+             -_ZZ";
+
+julia> graph, h_idx, ip_idx, z_idx = graphstate(s);
+
+julia> gate = graph_gate(h_idx, ip_idx, z_idx, nqubits(s));
+
+julia> apply!(s, gate) # This is now a graph state (notice you need to multiply row 1 by row 2)
++ YYZ
++ XZ_
++ _ZX
+
+julia> canonicalize!(s) == canonicalize!(Stabilizer(graph))
+true
+```
+
+See also: [`graph_gatesequence`](@ref)
+"""
+function graph_gate(h_idx, ip_idx, z_idx, n)
+    c = one(CliffordOperator,n)
+    t = tab(c)
+    x = @view t[1:n]
+    z = @view t[n+1:end]
+    for i in h_idx
+        x[i,i] = (false,true)
+        z[i,i] = (true,false)
+    end
+    for i in ip_idx
+        x[i,i] = (true,true)
+        x.phases[i] = 0x2
+    end
+    for i in z_idx
+        if x[i,i][1]
+            x.phases[i] = (x.phases[i]+0x2)&0x3
+        end
+        if z[i,i][1]
+            z.phases[i] = (z.phases[i]+0x2)&0x3
+        end
+    end
+    c
+end

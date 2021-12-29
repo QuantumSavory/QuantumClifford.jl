@@ -21,6 +21,7 @@ pages = [
 "Manual" => "manual.md",
 "Canonicalization" => "canonicalization.md",
 "Mixed States" => "mixed.md",
+"Graph States" => "graphs.md",
 "Datastructure Choice" => "datastructures.md",
 "Useful States and Operators" => "commonstates.md",
 "Plotting" => "plotting.md",

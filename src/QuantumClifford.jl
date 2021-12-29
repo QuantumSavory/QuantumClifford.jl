@@ -23,7 +23,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     tab,
     CliffordOperator, @C_str,
     CNOT, CPHASE, SWAP, Hadamard, Phase, CliffordId,
-    sHadamard, sPhase, SingleQubitOperator, sId1, sX, sY, sZ,
+    sHadamard, sPhase, sInvPhase, SingleQubitOperator, sId1, sX, sY, sZ,
     enumerate_single_qubit_gates, random_clifford1,
     sCNOT, sSWAP,
     tensor, tensor_pow,
@@ -35,7 +35,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     random_pauli, random_stabilizer, random_destabilizer, random_clifford,
     bell, ghz,
     BadDataStructure,
-    graphstate, graphstate!
+    graphstate, graphstate!, graph_gatesequence, graph_gate
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -222,9 +222,9 @@ julia> P"YYY" * s
 + _ZZ
 ```
 
-Additional methods to generate stabilizers:
+There are a number of ways to create a Stabilizer, including:
 
-Generate Stabilizers from a list of Pauli operators
+- generate Stabilizers from a list of Pauli operators
 
 ```jldoctest stabilizer
 julia> Stabilizer([P"XX", P"ZZ"])
@@ -232,21 +232,21 @@ julia> Stabilizer([P"XX", P"ZZ"])
 + ZZ
 ```
 
-Generate Stabilizers from boolean matrices
+- generate Stabilizers from boolean matrices
 
 ```jldoctest stabilizer
-julia> a = rand(Bool, 2,2); b = rand(Bool, 2,2);
+julia> a = [true true; false false]; b = [false true; true true];
 
 julia> Stabilizer(a, b)
-+ YY
-+ _Z
++ XY
++ ZZ
 
 julia> Stabilizer([0x0, 0x2], a, b)
-+ YY
-- _Z
++ XY
+- ZZ
 ```
 
-Generate Stabilizers from empty tableau
+- initialize an empty Stabilizer and fill it through indexing
 
 ```jldoctest stabilizer
 julia> s = zero(Stabilizer, 2)

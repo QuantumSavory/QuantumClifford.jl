@@ -19,7 +19,8 @@ Works efficiently with
 states of thousands of qubits
 as well as
 [sparse or dense Clifford operations](@ref Clifford-Operators)
-acting upon them. The operations are generally vectorized and multithreaded.
+acting upon them.
+It supports [graph states](@ref Graph-States).
 
 Provides
 [canonicalization](@ref Canonicalization-of-Stabilizers),
@@ -27,6 +28,7 @@ Provides
 [generation](@ref Generating-a-Pauli-Operator-with-Stabilizer-Generators) operations,
 as well as
 [partial traces](@ref Partial-Traces).
+The operations are generally vectorized and multithreaded.
 
 ```jldoctest
 julia> P"X" * P"Z"

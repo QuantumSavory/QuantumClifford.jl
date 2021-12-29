@@ -57,6 +57,14 @@ struct sPhase <: AbstractSingleQubitOperator
     q::Int
 end
 
+"""A "symbolic" inverse of the Phase operator.
+
+See also: [`sPhase`](@ref), [`SingleQubitOperator`](@ref)
+"""
+struct sInvPhase <: AbstractSingleQubitOperator
+    q::Int
+end
+
 """A "symbolic" single-qubit Identity operation.
 
 See also: [`SingleQubitOperator`](@ref)
@@ -130,12 +138,13 @@ struct SingleQubitOperator <: AbstractSingleQubitOperator
     pz::Bool
 end
 
-SingleQubitOperator(h::sHadamard) = SingleQubitOperator(h.q, false, true, true, false, false, false)
-SingleQubitOperator(p::sPhase) = SingleQubitOperator(p.q, true, true, false, true, false, false)
-SingleQubitOperator(p::sId1) = SingleQubitOperator(p.q, true, false, false, true, false, false)
-SingleQubitOperator(p::sX) = SingleQubitOperator(p.q, true, false, false, true, false, true)
-SingleQubitOperator(p::sY) = SingleQubitOperator(p.q, true, false, false, true, true,  true)
-SingleQubitOperator(p::sZ) = SingleQubitOperator(p.q, true, false, false, true, true,  false)
+SingleQubitOperator(h::sHadamard) = SingleQubitOperator(h.q, false, true , true , false, false, false)
+SingleQubitOperator(p::sPhase)    = SingleQubitOperator(p.q, true , true , false, true , false, false)
+SingleQubitOperator(p::sInvPhase) = SingleQubitOperator(p.q, true , true , false, true , true , false)
+SingleQubitOperator(p::sId1)      = SingleQubitOperator(p.q, true , false, false, true , false, false)
+SingleQubitOperator(p::sX)        = SingleQubitOperator(p.q, true , false, false, true , false, true)
+SingleQubitOperator(p::sY)        = SingleQubitOperator(p.q, true , false, false, true , true , true)
+SingleQubitOperator(p::sZ)        = SingleQubitOperator(p.q, true , false, false, true , true , false)
 SingleQubitOperator(o::SingleQubitOperator) = o
 function SingleQubitOperator(op::CliffordOperator, qubit)
     nqubits(op)==1 || throw(DimensionMismatch("You are trying to convert a multiqubit `CliffordOperator` into a symbolic `SingleQubitOperator`."))
@@ -212,6 +221,19 @@ function apply!(stab::AbstractStabilizer, p::sPhase; phases::Bool=true)
         #setxbit no op
         setzbit(s, r, c, x⊻z)
         phases && x!=0 && z!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
+    end
+    stab
+end
+
+function apply!(stab::AbstractStabilizer, p::sInvPhase; phases::Bool=true)
+    s = tab(stab)
+    c = p.q
+    @batch per=core minbatch=200 for r in eachindex(s)
+        x = getxbit(s, r, c)
+        z = getzbit(s, r, c)
+        #setxbit no op
+        setzbit(s, r, c, x⊻z)
+        phases && x!=0 && z==0 && (s.phases[r] = (s.phases[r]+0x2)&3)
     end
     stab
 end
