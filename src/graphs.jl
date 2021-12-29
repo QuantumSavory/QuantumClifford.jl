@@ -39,6 +39,8 @@ and `flips_idx` are the qubits that require a phase flip (Pauli Z gate),
 after the previous two sets of gates.
 
 ```jldoctest
+julia> using Graphs
+
 julia> s = S" XXX
               ZZ_
              -_ZZ";
