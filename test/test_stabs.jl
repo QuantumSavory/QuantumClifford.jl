@@ -2,12 +2,25 @@ function test_stabs()
     @testset "Pure and Mixed state initialization" begin
         @testset "Destabilizer initialization" begin
             for n in test_sizes
-                @test destab_looks_good(Destabilizer(random_stabilizer(n)))
+                s = random_stabilizer(n)
+                d = Destabilizer(s)
+                @test destab_looks_good(d)
+                canonicalize!(s)
+                s1 = copy(stabilizerview(d))
+                canonicalize!(s1)
+                @test s1 == s
             end
         end
         @testset "Mixed destabilizer initialization" begin
             for n in test_sizes
-                @test n<10 || mixed_destab_looks_good(MixedDestabilizer(random_stabilizer(rand(n÷2+1:n-4),n)))
+                n<10 && continue
+                s = random_stabilizer(rand(n÷2+1:n-4),n)
+                md = MixedDestabilizer(s)
+                @test mixed_destab_looks_good(md)
+                canonicalize!(s)
+                s1 = copy(stabilizerview(md))
+                canonicalize!(s1)
+                @test s1 == s
             end
             # Test initialization out of overdetermined stabs
             stabs = [S"XX
