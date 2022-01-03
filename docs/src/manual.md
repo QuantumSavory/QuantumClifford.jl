@@ -519,7 +519,7 @@ julia> P"XII" * S"ZXX"
 
 Internally, the `CliffordOperator` structure simply stores the tableau representation of the operation.
 
-The `apply!` function is efficiently multithreaded for `CliffordOperators`. To start Julia with `julia -t<N>`
+The `apply!` function is efficiently multithreaded for `CliffordOperators`. To start multithreaded Julia, use `julia -t<N>`
 where `<N>` specifies the number of threads.
 
 # Small Symbolic Clifford Operators
@@ -555,7 +555,7 @@ julia> sCNOT(2,3)*S"XYY"
 - XXZ
 ```
 
-The `apply!` function is efficiently multithreaded for these symbolic operators as well. To start Julia with `julia -t<N>`
+The `apply!` function is efficiently multithreaded for these symbolic operators as well. To start multithreaded Julia, use `julia -t<N>`
 where `<N>` specifies the number of threads.
 
 
