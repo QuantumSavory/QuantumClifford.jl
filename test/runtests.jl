@@ -24,6 +24,7 @@ println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREA
 doset("paulis")             && include("./test_paulis.jl")
 doset("stabilizers")        && include("./test_stabs.jl")
 doset("canonicalization")   && include("./test_stabcanon.jl")
+doset("inner")              && include("./test_inner.jl")
 doset("gf2")                && include("./test_gf2.jl")
 doset("projection")         && include("./test_projections.jl")
 doset("trace")              && include("./test_trace.jl")

@@ -18,6 +18,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     Destabilizer, MixedStabilizer, MixedDestabilizer,
     nqubits, stabilizerview, destabilizerview, logicalxview, logicalzview,
     canonicalize!, canonicalize_rref!, canonicalize_gott!, colpermute!,
+    logdot,
     generate!, project!, reset_qubits!, traceout!,
     apply!,
     tab,
@@ -1705,7 +1706,7 @@ Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Stabilizer, 2n,
     p
 end
 
-function Base.one(::Type{<:Stabilizer}, n; basis=:Z)
+function Base.one(::Type{<:Stabilizer}, n; basis=:Z) # TODO support `basis` in all other `one(::[Mixed][De]Stabilizer)` functions
     if basis==:X
         Stabilizer(LinearAlgebra.I(n),falses(n,n))
     elseif basis==:Y
@@ -1827,6 +1828,7 @@ function mixed_destab_looks_good(destabilizer)
     return true
 end
 
+include("./linalg.jl")
 include("./symbolic_cliffords.jl")
 include("./randoms.jl")
 include("./useful_states.jl")
