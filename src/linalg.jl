@@ -17,6 +17,8 @@ end
 If the result is `nothing`, the dot inner product is zero.
 Otherwise the inner product is `2^(-logdot/2)`.
 
+The actual inner product can be computed with `LinearAlgebra.dot`.
+
 Based on [garcia2012efficient](@cite)."""
 function logdot(s1::AbstractStabilizer, s2::AbstractStabilizer) # TODO verify rank
     logdot(stabilizerview(s1),stabilizerview(s2))
