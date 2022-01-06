@@ -29,7 +29,6 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     sCNOT, sSWAP,
     tensor, tensor_pow,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
-    perm_inverse, perm_product,
     single_z, single_x, single_y,
     apply_single_z!, apply_single_x!, apply_single_y!,
     random_invertible_gf2,
@@ -1646,7 +1645,7 @@ function gf2_H_to_G(H)
     G[:,perm_inverse(sindx)]
 end
 
-function perm_inverse(perm)
+function perm_inverse(perm) # TODO find a better implementation (e.g. n*log(n))
     [findfirst(a->l==a,perm) for l in 1:length(perm)]
 end
 
