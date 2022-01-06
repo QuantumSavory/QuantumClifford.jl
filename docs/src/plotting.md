@@ -38,12 +38,12 @@ julia> plot(canonicalize!(random_stabilizer(20,30)), xzcomponents=:split);
 
 ```@eval
 using Random; Random.seed!(1); using QuantumClifford, QuantumCliffordPlots, Plots
-plot(canonicalize_gott!(random_stabilizer(20,30))[1], xzcomponents=:split);
+plot(canonicalize_gott!(random_stabilizer(30))[1], xzcomponents=:split);
 savefig("plot-gottstab.png"); nothing
 ```
 
 ```julia
-julia> plot(canonicalize_gott!(random_stabilizer(20,30))[1], xzcomponents=:split);
+julia> plot(canonicalize_gott!(random_stabilizer(30))[1], xzcomponents=:split);
 ```
 
 ![](plot-gottstab.png)
@@ -51,12 +51,12 @@ julia> plot(canonicalize_gott!(random_stabilizer(20,30))[1], xzcomponents=:split
 
 ```@eval
 using Random; Random.seed!(1); using QuantumClifford, QuantumCliffordPlots, Plots
-plot(canonicalize_gott!(random_stabilizer(20,30))[1]; xzcomponents=:together);
+plot(canonicalize_gott!(random_stabilizer(30))[1]; xzcomponents=:together);
 savefig("plot-gottstab-together.png"); nothing
 ```
 
 ```julia
-julia> plot(canonicalize_gott!(random_stabilizer(20,30))[1]; xzcomponents=:together);
+julia> plot(canonicalize_gott!(random_stabilizer(30))[1]; xzcomponents=:together);
 ```
 
 ![](plot-gottstab-together.png)

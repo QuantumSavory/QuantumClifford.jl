@@ -49,7 +49,7 @@ e.g. computing the logical X and Z operators of a [`MixedDestabilizer`](@ref).
 Based on [gottesman1997stabilizer](@cite).
 
 ```julia
-julia> plot(canonicalize_gott!(random_stabilizer(20,30))[1]; xzcomponents=:together);
+julia> plot(canonicalize_gott!(random_stabilizer(30))[1]; xzcomponents=:together);
 ```
 
 ![](plot-gottstab-together.png)
