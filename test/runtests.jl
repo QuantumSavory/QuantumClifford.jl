@@ -2,6 +2,7 @@ using Test, Random
 using QuantumClifford
 using QuantumClifford: stab_looks_good, mixed_stab_looks_good, destab_looks_good, mixed_destab_looks_good
 using QuantumClifford: mul_left!
+using QuantumClifford: perm_inverse
 using LinearAlgebra: inv
 #using Nemo
 
