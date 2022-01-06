@@ -36,3 +36,6 @@ doset("allocations")        && include("./test_allocations.jl")
 doset("bitpack")            && include("./test_bitpack.jl")
 doset("graphs")             && include("./test_graphs.jl")
 doset("doctests")           && include("./doctests.jl")
+
+using Aqua
+doset("aqua") && Aqua.test_all(QuantumClifford, ambiguities=false)
