@@ -43,10 +43,17 @@ julia> plot(canonicalize_rref!(random_stabilizer(20,30),1:30)[1]; xzcomponents=:
 
 First do elimination on all X components and only then perform elimination on
 the Z components, but without touching the qubits that were eliminated during
-the X pass. Particularly useful as certain blocks of the new created matrix are
+the X pass.
+Unlike other canonicalization operations, qubit columns are reordered,
+providing for a straight diagonal in each block.
+Particularly useful as certain blocks of the new created matrix are
 related to logical operations of the corresponding code,
 e.g. computing the logical X and Z operators of a [`MixedDestabilizer`](@ref).
 Based on [gottesman1997stabilizer](@cite).
+
+A canonicalized tableau would look like the following (the right-most block does
+not exist for square tableaux).
+![](canonicalize_rref.png)
 
 ```julia
 julia> plot(canonicalize_gott!(random_stabilizer(30))[1]; xzcomponents=:together);
