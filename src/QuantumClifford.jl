@@ -1689,13 +1689,16 @@ function single_y(n,i)
     PauliOperator(0x0,xs,zs)
 end
 
-# TODO the pauli and clifford functions should be `one`, not `zero`. Or `ones`/`zeros`. Plural or not?
-Base.zero(T::Type{<:PauliOperator}, n) = T(0x0,falses(n),falses(n))
-Base.zero(T::Type{PauliOperator{Tz,Tv}}, n) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = T(0x0,falses(n),falses(n))
-Base.zero(p::PauliOperator{Tz,Tv}) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = PauliOperator{Tz,Tv}(0x0,falses(p.nqubits),falses(p.nqubits))
-Base.zero(::Type{<:Stabilizer}, n, m) = Stabilizer(zeros(UInt8,n),falses(n,m),falses(n,m))
-Base.zero(::Type{<:Stabilizer}, n) = Stabilizer(zeros(UInt8,n),falses(n,n),falses(n,n))
-Base.zero(s::Stabilizer) = Stabilizer(zeros(UInt8,size(s,1)),falses(size(s)...),falses(size(s)...))
+nchunks(i::Int) = 2*( (i-1) ÷ (8*sizeof(UInt)) + 1 )
+Base.zero(::Type{<:PauliOperator}, q) = PauliOperator(zeros(UInt8), q, zeros(UInt, nchunks(q)))
+Base.zero(p::PauliOperator) = zero(PauliOperator, nqubits(p))
+function Base.zero(::Type{<:Stabilizer}, r, q)
+    phases = zeros(UInt8,r)
+    xzs = zeros(UInt, nchunks(q), r)
+    Stabilizer(phases, q, xzs)
+end
+Base.zero(::Type{<:Stabilizer}, q) = zero(Stabilizer, q, q)
+Base.zero(s::Stabilizer) = zero(Stabilizer, length(s), nqubits(s))
 Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.tab))
 Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Stabilizer, 2n, n))
 
@@ -1705,6 +1708,7 @@ Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Stabilizer, 2n,
     p
 end
 
+# TODO make faster by using fewer initializations, like in Base.zero above
 function Base.one(::Type{<:Stabilizer}, n; basis=:Z) # TODO support `basis` in all other `one(::[Mixed][De]Stabilizer)` functions
     if basis==:X
         Stabilizer(LinearAlgebra.I(n),falses(n,n))
