@@ -8,6 +8,9 @@ end
 CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
 
+!!! warning "Unstable"
+    This is experimental functionality with an unstable API.
+
 Import with `using QuantumClifford.Experimental.NoisyCircuits`.
 
 This module enables the simulation of noisy Clifford circuits through a Monte Carlo method where the same circuit is evaluated multiple times with random errors interspersed through it as prescribed by a given error model.

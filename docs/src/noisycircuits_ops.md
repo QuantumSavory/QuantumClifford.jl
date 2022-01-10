@@ -8,7 +8,10 @@ end
 CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
 
-Available by `using QuantumClifford.Experimental.NoisyCircuits`.
+!!! warning "Unstable"
+    This is experimental functionality with an unstable API.
+    
+Import with `using QuantumClifford.Experimental.NoisyCircuits`.
 
 ## Unitary Gates
 

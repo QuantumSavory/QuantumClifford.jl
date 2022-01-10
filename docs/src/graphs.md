@@ -1,5 +1,8 @@
 # [Graph States](@id Graph-States)
 
+!!! warning "The `graphstate` API is not considered stable"
+    `graphstate` returns a lot of information about encoding a given stabilizer state in a graph. A different API is being designed that streamlines the work with graph states.
+
 Conversion to and from [graph states](https://en.wikipedia.org/wiki/Graph_state) is possible.
 
 Consider a GHZ state:

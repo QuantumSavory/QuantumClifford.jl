@@ -8,6 +8,9 @@ end
 CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
 
+!!! warning "Unstable"
+    This is experimental functionality with an unstable API.
+    
 Import with `using QuantumClifford.Experimental.NoisyCircuits`.
 
 This module enables the simulation of noisy Clifford circuits through a perturbative expansion in the noise parameter (assuming the noise is small).
