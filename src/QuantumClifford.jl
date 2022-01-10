@@ -407,16 +407,6 @@ See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`]
 tab(s::Stabilizer) = s
 tab(s::AbstractStabilizer) = s.tab
 
-"""Tensor product between operators or tableaux. See also [`tensor`](@ref) and [`tensor_pow`](@ref)."""
-function ⊗ end
-
-function ⊗(ops::AbstractStabilizer...) # TODO optimize this by doing preallocation
-    foldl(⊗, ops[2:end], init=ops[1])
-end
-
-"""Tensor product between operators or tableaux. See also [`⊗`](@ref) and [`tensor_pow`](@ref)."""
-const tensor = ⊗
-
 ##############################
 # Destabilizer formalism
 ##############################
@@ -549,21 +539,6 @@ function Base.show(io::IO, d::MixedDestabilizer)
 end
 
 Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
-
-function ⊗(l::MixedDestabilizer, r::MixedDestabilizer) # TODO optimize this by doing preallocation
-    lone = zero(l.tab[1])
-    rone = zero(r.tab[1])
-    stabs = []
-    for v in [destabilizerview,logicalxview,stabilizerview,logicalzview]
-        ll = v(l)
-        rr = v(r)
-        paulis = vcat([ll[i]⊗rone for i in eachindex(ll)],
-                    [lone⊗rr[i] for i in eachindex(rr)]
-                    )
-        length(paulis)>0 && push!(stabs,Stabilizer(paulis))
-    end
-    MixedDestabilizer(vcat(stabs...), l.rank+r.rank)
-end
 
 ##############################
 # Subtableau views
@@ -880,17 +855,9 @@ end
             ival = s.xzs[ibig,k] & ismallm
             jval = s.xzs[jbig,k] & jsmallm
             s.xzs[ibig,k] &= ~ismallm
-            s.xzs[jbig,k] &= ~jsmallm  # TODO do we really need to check the sign? Is there a better built-in shift op?
-            if ismall>jsmall # TODO this is also present in permute(CliffordOp,...), maybe abstract away
-                s.xzs[ibig,k] |= jval<<(ismall-jsmall)
-                s.xzs[jbig,k] |= ival>>(ismall-jsmall)
-            elseif ismall<jsmall
-                s.xzs[ibig,k] |= jval>>(jsmall-ismall)
-                s.xzs[jbig,k] |= ival<<(jsmall-ismall)
-            else
-                s.xzs[ibig,k] |= jval
-                s.xzs[jbig,k] |= ival
-            end
+            s.xzs[jbig,k] &= ~jsmallm
+            s.xzs[ibig,k] |= jval>>>(jsmall-ismall)
+            s.xzs[jbig,k] |= ival>>>(ismall-jsmall)
         end
     end
 end
@@ -1228,23 +1195,11 @@ function check_allrowscommute(stabilizer::Stabilizer)
     return true
 end
 
-function ⊗(l::Stabilizer, r::Stabilizer) # TODO optimize this by doing preallocation
-    lone = zero(l[1])
-    rone = zero(r[1])
-    paulis = vcat([l[i]⊗rone for i in eachindex(l)],
-                  [lone⊗r[i] for i in eachindex(r)]
-                 )
-    Stabilizer(paulis)
-end
-
 function Base.vcat(stabs::Stabilizer...)
     Stabilizer(vcat((s.phases for s in stabs)...),
                stabs[1].nqubits,
                hcat((s.xzs for s in stabs)...))
 end
-
-
-include("project_trace_reset.jl")
 
 ##############################
 # Unitary Clifford Operations
@@ -1278,31 +1233,6 @@ function apply!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Boo
         s.phases[i] = (s.phases[i]+comm(p,s,i)<<1+p.phase[]<<1)&0x3
     end
     stab
-end
-
-function tensor_pow(op,power,mem::Dict{Int,Any}) # TODO optimize this by doing preallocation instead of performing it recursively
-    if power==1
-        return op
-    elseif haskey(mem,power)
-        return mem[power]
-    end
-    half,rest = divrem(power,2)
-    phalf = get!(mem,half) do
-        tensor_pow(op,half,mem)
-    end
-    res = phalf ⊗ phalf
-    if rest!=0
-        prest = get!(mem,rest) do
-            tensor_pow(op,half,mem)
-        end
-        res = res ⊗ prest
-    end
-    res
-end
-
-"""Repeated tensor product of an operators or a tableau. See also [`⊗`](@ref) and [`tensor_pow`](@ref)."""
-function tensor_pow(op,power)
-    tensor_pow(op,power,Dict{Int,Any}())
 end
 
 """
@@ -1436,13 +1366,6 @@ end
 # TODO create Base.permute! and getindex(..., permutation_array)
 function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this is a slow stupid implementation
     CliffordOperator(Stabilizer([c.tab[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
-end
-
-function ⊗(ops::AbstractCliffordOperator...) # TODO implement \otimes for Destabilizer and use it here
-    ops = CliffordOperator.(ops)
-    CliffordOperator(vcat(
-      foldl((l,r)->l⊗r.tab[1:end÷2    ],ops[2:end],init=ops[1].tab[1:end÷2]),
-      foldl((l,r)->l⊗r.tab[end÷2+1:end],ops[2:end],init=ops[1].tab[end÷2+1:end])))
 end
 
 """Nonvectorized version of `apply!` used for unit tests."""
@@ -1695,7 +1618,7 @@ Base.zero(p::PauliOperator) = zero(PauliOperator, nqubits(p))
 function Base.zero(::Type{<:Stabilizer}, r, q)
     phases = zeros(UInt8,r)
     xzs = zeros(UInt, nchunks(q), r)
-    Stabilizer(phases, q, xzs)
+    Stabilizer(phases, q, xzs)::Stabilizer{Vector{UInt8},Matrix{UInt}}
 end
 Base.zero(::Type{<:Stabilizer}, q) = zero(Stabilizer, q, q)
 Base.zero(s::Stabilizer) = zero(Stabilizer, length(s), nqubits(s))
@@ -1831,6 +1754,7 @@ function mixed_destab_looks_good(destabilizer)
     return true
 end
 
+include("project_trace_reset.jl")
 include("./linalg.jl")
 include("./symbolic_cliffords.jl")
 include("./randoms.jl")
