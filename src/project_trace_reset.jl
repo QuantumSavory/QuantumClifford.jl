@@ -499,7 +499,7 @@ function reset_qubits!(s::MixedDestabilizer, newstate::Stabilizer, qubits; phase
         else # Commutes with everyone
             if res!=0 && phases # TODO many of the checks below were already done by project!; find a way to not repeat them
                 destab = destabilizerview(s)
-                r = rank(s)
+                r = LinearAlgebra.rank(s)
                 loc = findfirst(i->comm(pauli,destab,i)!=0, 1:r)
                 for i in loc+1:r
                     if comm(pauli, destab, i)!=0
