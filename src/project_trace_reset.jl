@@ -512,3 +512,19 @@ function reset_qubits!(s::MixedDestabilizer, newstate::Stabilizer, qubits; phase
     end
     s
 end
+
+"""
+    expect(p::PauliOperator, st::AbstractStabilizer)
+
+Compute the expectation value of a Pauli operator `p` on a stabilizer state `st`. 
+This function will allocate a temporary copy of the stabilizer state `st`.
+"""
+function expect(p::PauliOperator, s::AbstractStabilizer)
+    nqubits(p) == nqubits(s) || error("The number of qubits does not match")
+    _, _, result = project!(copy(s), p)
+    result === nothing && return 0
+    result === 0x00 && return 1
+    result === 0x01 && return im
+    result === 0x02 && return -1
+    result === 0x03 && return -im
+end

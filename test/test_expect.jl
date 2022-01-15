@@ -1,11 +1,11 @@
 using Test
 using QuantumClifford
 
-function alter_expect(s::Stabilizer, p::PauliOperator)
+function alter_expect(p::PauliOperator, s::Stabilizer)
     nqubits(p) == nqubits(s) || error("The number of qubits does not match")
     n = nqubits(p)
     s_anc = s ⊗ one(Stabilizer, n)
-    p_anc = ['I' for _ = 1:2n]
+    p_anc = zero(PauliOperator, 2n)
     for i = 1:n
         if p[i] != (false, false)
             if p[i][1]
@@ -13,11 +13,9 @@ function alter_expect(s::Stabilizer, p::PauliOperator)
                 p[i][2] && apply!(s_anc, sInvPhase(i))
             end
             apply!(s_anc, sCNOT(i, i+n))
-            p_anc[i+n] = 'Z'
+            p_anc[i+n] = (false, true)
         end
     end
-    traceout!(s_anc, [i for i = 1:n])
-    p_anc = QuantumClifford._P_str(string(p_anc...))
     p_anc.phase[] = p.phase[]
     _, _, result = project!(s_anc, p_anc)
     result === nothing && return 0
@@ -30,11 +28,11 @@ end
 @testset "Expectation of Pauli strings on stabilizer states" begin
     st = bell()
     apply!(st, sX(2))
-    @test expect(st, P"XX") == alter_expect(st, P"XX") == 1
-    @test expect(st, P"ZZ") == alter_expect(st, P"ZZ") == -1
-    @test expect(st, P"XI") == alter_expect(st, P"XI") == 0
-    @test expect(st, P"ZI") == alter_expect(st, P"ZI") == 0
-    @test expect(st, P"II") == alter_expect(st, P"II") == 1
-    @test expect(st, P"-XX") == alter_expect(st, P"-XX") == -1        
-    @test expect(st, P"-iXX") == alter_expect(st, P"-iXX") == -im
+    @test expect(P"XX", st) == alter_expect(P"XX", st) == 1
+    @test expect(P"ZZ", st) == alter_expect(P"ZZ", st) == -1
+    @test expect(P"XI", st) == alter_expect(P"XI", st) == 0
+    @test expect(P"ZI", st) == alter_expect(P"ZI", st) == 0
+    @test expect(P"II", st) == alter_expect(P"II", st) == 1
+    @test expect(P"-XX", st) == alter_expect(P"-XX", st) == -1        
+    @test expect(P"-iXX", st) == alter_expect(P"-iXX", st) == -im
 end
