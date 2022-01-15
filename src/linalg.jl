@@ -149,3 +149,18 @@ end
     phases && (ph[row+1:row+r] .= sph)
     target, row+r, col+n
 end
+
+"""
+    expect(st::AbstractStabilizer, p::PauliOperator)
+
+Compute the expectation value of a Pauli operator `p` on a stabilizer state `st`.
+"""
+function expect(s::AbstractStabilizer, p::PauliOperator)
+    nqubits(p) == nqubits(s) || error("The number of qubits does not match")
+    _, _, result = project!(copy(s), p)
+    result === nothing && return 0
+    result === 0x00 && return 1
+    result === 0x01 && return im
+    result === 0x02 && return -1
+    result === 0x03 && return -im
+end
