@@ -219,6 +219,15 @@ function test_noisycircuits()
                     @test random2_pe[:true_success] == 0
                 end
             end
+            @testset "Conforming to the project! interface" begin
+                state = Register(MixedDestabilizer(S"ZZ"), zeros(Bool, 1))
+                meas = DenseMeasurement(P"ZI", 1)
+                state, flag = applyop!(state, meas)
+                @test state.stab.rank == 2
+                tab(state.stab).phases .= 0
+                @test stabilizerview(state.stab) == S"ZZ
+                                                      ZI"
+            end
         end
 
         @testset "Classical Bits" begin

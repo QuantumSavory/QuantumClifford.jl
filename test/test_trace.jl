@@ -14,11 +14,11 @@ function test_trace()
                     naive_stab = copy(stab0)
                     for i in to_delete
                         naive_stab, anticom_index, result = project!(naive_stab, single_x(N,i))
-                        if anticom_index!=0
+                        if anticom_index!=0 && anticom_index<=length(naive_stab)
                             naive_stab[anticom_index] = id_paulis
                         end
                         naive_stab, anticom_index, result = project!(naive_stab, single_z(N,i))
-                        if anticom_index!=0
+                        if anticom_index!=0 && anticom_index<=length(naive_stab)
                             naive_stab[anticom_index] = id_paulis
                         end
                     end
