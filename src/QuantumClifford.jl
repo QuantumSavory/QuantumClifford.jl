@@ -290,7 +290,7 @@ Stabilizer(xzs::AbstractMatrix{Bool}) = Stabilizer(zeros(UInt8, size(xzs,1)), xz
 Stabilizer(s::Stabilizer) = s
 
 function _S_str(a)
-    paulis = [_P_str(strip(s)) for s in split(a,'\n')]
+    paulis = [_P_str(strip(s.match)) for s in eachmatch(r"[+-]?\h*[i]?\h*[XYZI_]+", a)]
     Stabilizer(paulis)
 end
 
