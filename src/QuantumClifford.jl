@@ -1631,6 +1631,12 @@ Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Stabilizer, 2n,
     p
 end
 
+@inline function zero!(s::Stabilizer,i)
+    s.xzs[:,i] .= zero(eltype(s.xzs))
+    s.phases[i] = 0x0
+    s
+end
+
 # TODO make faster by using fewer initializations, like in Base.zero above
 function Base.one(::Type{<:Stabilizer}, n; basis=:Z) # TODO support `basis` in all other `one(::[Mixed][De]Stabilizer)` functions
     if basis==:X

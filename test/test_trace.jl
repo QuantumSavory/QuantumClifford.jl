@@ -52,14 +52,19 @@ function test_trace()
         end
     end
     @testset "Qubit resets" begin
+        @test_throws DimensionMismatch reset_qubits!(S"XX YY",S"X",[1,2])
+        @test_throws DimensionMismatch reset_qubits!(S"X",S"XX YY",[1,2])
+        @test_throws DimensionMismatch reset_qubits!(MixedStabilizer(S"XX YY"),S"X",[1,2])
+        @test_throws DimensionMismatch reset_qubits!(MixedStabilizer(S"X"),S"XX YY",[1,2])
+        @test_throws DimensionMismatch reset_qubits!(MixedDestabilizer(S"XX YY"),S"X",[1,2])
+        @test_throws DimensionMismatch reset_qubits!(MixedDestabilizer(S"X"),S"XX YY",[1,2])
         for N in test_sizes
             for R in [rand(N÷2:N*2÷3), N]
-                if N<10
-                    @test_broken error("can not process empty stab")
-                    continue
-                end
+                R > 0 || continue
                 s = random_stabilizer(R,N)
-                newstate = random_stabilizer(rand(N÷4:N*2÷3))
+                nnew = rand(N÷4:N*2÷3)
+                nnew > 0 || continue
+                newstate = random_stabilizer(nnew)
                 perm = randperm(N)[1:nqubits(newstate)]
                 to_trace = setdiff(1:N,perm)
                 # Testing MixedDestabilizer
@@ -67,7 +72,7 @@ function test_trace()
                 mdr1 = reset_qubits!(copy(md), newstate,perm)
                 @test mixed_destab_looks_good(mdr1)
                 mdr2 = reset_qubits!(copy(mdr1),newstate,perm)
-                @test mdr1==mdr2
+                @test canonicalize!(copy(stabilizerview(mdr1)))==canonicalize!(copy(stabilizerview(mdr2)))
                 traceout!(mdr2,to_trace)
                 mdr2v = stabilizerview(mdr2)
                 @test canonicalize!(copy(mdr2v)[:,perm]) == canonicalize!(copy(newstate))
@@ -91,6 +96,8 @@ function test_trace()
                 c, x, z = canonicalize!(ssr2v, ranks=true)
                 @test canonicalize!(copy(ssr2v)[:,perm])[1:z] == canonicalize!(copy(newstate))
                 @test canonicalize!(msr2v) == c[1:z]
+                # Compare different datastractures
+                @test canonicalize!(copy(stabilizerview(mdr1)))==canonicalize!(copy(stabilizerview(msr1)))==canonicalize!(ssr1[1:mdr1.rank])
             end
         end
     end

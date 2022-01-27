@@ -452,9 +452,8 @@ Trace out a qubit.
 """ # TODO all of these should raise an error if length(qubits)>rank
 function traceout!(s::Stabilizer, qubits; phases=true, rank=false)
     _,i = canonicalize_rref!(s,qubits;phases=phases)
-    idpaulis = zero(PauliOperator,nqubits(s))
     for j in i+1:size(s,1)
-        s[j] = idpaulis # TODO - this can be done without creating/allocating an idpaulis object
+        zero!(s,j)
     end
     if rank return (s, i) else return s end
 end
@@ -481,18 +480,20 @@ end
 $TYPEDSIGNATURES
 
 Reset a given set of qubits to be in the state `newstate`.
+These qubits are traced out first, which could lead to "nonlocal" changes in
+the tableau.
 """
 function reset_qubits!(s::Stabilizer, newstate, qubits; phases=true)
-    # TODO raise error if sizes and length of qubits do not match
+    nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
+    length(qubits) <= nqubits(s) || throw(DimensionMismatch("the stabilizer is not big enough to contain the new state"))
     n = nqubits(s)
     s, x, z = canonicalize!(s,ranks=true) # TODO this is unnecessary, but it provides for nicely formatted tableaux; consider removing it for speed reasons
     _, rref_i = canonicalize_rref!((@view s[1:z]),qubits,phases=phases)
     for row in 1:length(newstate)
         s[row+rref_i] = _expand_pauli(newstate[row], qubits, n) # TODO do something that does not alocate temporary arrays
     end
-    idpaulis = zero(PauliOperator, n)
     for row in rref_i+length(newstate)+1:z
-        s[row] = idpaulis # TODO - this can be done without creating/allocating an idpaulis object
+        zero!(s,row)
     end
     s
 end
@@ -501,7 +502,8 @@ end
 $TYPEDSIGNATURES
 """
 function reset_qubits!(s::MixedStabilizer, newstate, qubits; phases=true) # TODO create the necessary interfaces so that Stabilizer and MixedStabilizer share this code
-    # TODO raise error if sizes and length of qubits do not match
+    nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
+    length(qubits) <= nqubits(s) || throw(DimensionMismatch("the stabilizer is not big enough to contain the new state"))
     n = nqubits(s)
     sv = stabilizerview(s)
     sv, rref_i = canonicalize_rref!(sv,qubits,phases=phases)
@@ -515,16 +517,17 @@ end
 """
 $TYPEDSIGNATURES
 """
-function reset_qubits!(s::MixedDestabilizer, newstate::Stabilizer, qubits; phases=true) # TODO this is really inefficient
-    # TODO raise error if sizes and length of qubits do not match
-    for pauli in newstate
+function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubits; phases=true) # TODO this is really inefficient
+    nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
+    length(qubits) <= nqubits(s) || throw(DimensionMismatch("the stabilizer is not big enough to contain the new state"))
+    newstatestab = stabilizerview(newstate)
+    traceout!(s,qubits)
+    for pauli in newstatestab
         expanded = _expand_pauli(pauli, qubits, nqubits(s)) # TODO, use a sparse project that does not require this expand
         _, anticomm, res = project!(s,expanded, phases=phases) # TODO make an `apply_measurement_phase!(project!(...), phase)`
         sv =  stabilizerview(s)
-        if anticomm!=0 # Does not commute with the stabilizer
+        if anticomm!=0 # Does not commute with the stabilizer or logical ops
             sv.phases[anticomm] = pauli.phase[]
-        elseif isnothing(res) # Is not in the stabilizer
-            sv.phases[s.rank] = pauli.phase[]
         else # Commutes with everyone
             if res!=0 && phases # TODO many of the checks below were already done by project!; find a way to not repeat them
                 destab = destabilizerview(s)
