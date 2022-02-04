@@ -1,5 +1,10 @@
 # News
 
+## v0.4.1-dev
+
+- Random states with zeroed phases with `phases=false`.
+- Pre-compilation cleanup (useful for Julia 1.8+).
+
 ## v0.4.0
 
 - Permit whitespace separators in the `S` string macro.

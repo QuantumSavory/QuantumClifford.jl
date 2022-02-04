@@ -697,6 +697,8 @@ function comm(l::PauliOperator, r::Stabilizer)::Vector{UInt8}
     [comm(l,r,i) for i in 1:size(r,1)]
 end
 
+comm(l::Stabilizer, r::PauliOperator) = comm(r, l)
+
 Base.:(*)(l::PauliOperator, r::PauliOperator) = mul_left!(copy(r),l)
 
 """Nonvectorized version of `mul_left!` used for unit tests."""
