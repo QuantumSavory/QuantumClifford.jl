@@ -75,12 +75,12 @@ function random_destabilizer(rng::AbstractRNG, n::Int; phases::Bool=true)
     for i in 1:n
         delta[i,i] = 1
         delta_p[i,i] = 1
-        gamma_p[i,i] = rand(rng, 0:1)
+        gamma_p[i,i] = rand(rng, 0x0:0x1)::UInt8
     end
     
     # gamma_ii is zero if h[i] = 0
     for idx in had_idxs
-        gamma[idx, idx] = rand(rng, 0:1)
+        gamma[idx, idx] = rand(rng, 0x0:0x1)::UInt8
     end
 
     # gamma' and delta' are unconstrained on the lower triangular
@@ -90,39 +90,33 @@ function random_destabilizer(rng::AbstractRNG, n::Int; phases::Bool=true)
     # off diagonal: gamma, delta must obey conditions C1-C5
     for row in 1:n, col in 1:row-1
         if hadamard[row] && hadamard[col]
-            b = rand(rng, 0:1)
-            gamma[row, col] = b
-            gamma[col, row] = b
+            gamma[row, col] = gamma[col, row] = rand(rng, 0x0:0x1)::UInt8
             # otherwise delta[row,col] must be zero by C4
             if perm[row] > perm[col]
-                 delta[row, col] = rand(rng, 0:1)
+                 delta[row, col] = rand(rng, 0x0:0x1)::UInt8
             end
         elseif hadamard[row] && (!hadamard[col]) && perm[row] < perm[col]
             # C5 imposes delta[row, col] = 0 for h[row]=1, h[col]=0
             # if perm[row] > perm[col] then C2 imposes gamma[row,col] = 0
-            b = rand(rng, 0:1)
-            gamma[row, col] = b
-            gamma[col, row] = b
+            gamma[row, col] = gamma[col, row] = rand(rng, 0x0:0x1)::UInt8
         elseif (!hadamard[row]) && hadamard[col]
-            delta[row, col] = rand(rng, 0:1)
+            delta[row, col] = rand(rng, 0x0:0x1)::UInt8
             # not sure what condition imposes this
             if perm[row] > perm[col]
-                 b = rand(rng, 0:1)
-                 gamma[row, col] = b
-                 gamma[col, row] = b
+                 gamma[row, col] = gamma[col, row] = rand(rng, 0x0:0x1)::UInt8
             end
         elseif (!hadamard[row]) && (!hadamard[col]) && perm[row] < perm[col]
             # C1 imposes gamma[row, col] = 0 for h[row]=h[col] = 0
             # if perm[row] > perm[col] then C3 imposes delta[row,col] = 0
-            delta[row, col] = rand(rng, 0:1)
+            delta[row, col] = rand(rng, 0x0:0x1)::UInt8
         end
     end
 
     # now construct the tableau representation for F(I, Gamma, Delta)
     mul!(prod, gamma, delta)
     mul!(prod_p, gamma_p, delta_p)
-    inv_delta .= mod.(precise_inv(delta'), 2)
-    inv_delta_p .= mod.(precise_inv(delta_p'), 2)
+    inv_delta .= precise_inv(delta')
+    inv_delta_p .= precise_inv(delta_p')
  
     # block matrix form
     F1 .= mod.(F1, 2)
@@ -137,13 +131,13 @@ function random_destabilizer(rng::AbstractRNG, n::Int; phases::Bool=true)
     # apply layer of hadamards
     lhs_inds = vcat(had_idxs, had_idxs .+ n)
     rhs_inds = vcat(had_idxs .+ n, had_idxs)
-    U[lhs_inds, :] = U[rhs_inds, :]
+    U[lhs_inds, :] .= U[rhs_inds, :]
  
     # apply F1
     xzs = mod.(F1 * U,2) .== 1
  
     # random Pauli matrix just amounts to phases on the stabilizer tableau
-    phasesarray = if phases rand(rng, [0x0,0x2], 2n) else zeros(UInt8, 2n) end
+    phasesarray::Vector{UInt8} = if phases rand(rng, [0x0,0x2], 2n) else zeros(UInt8, 2n) end
     return Destabilizer(Stabilizer(phasesarray, xzs), noprocessing=true)
 end
 random_destabilizer(n::Int; phases::Bool=true) =  random_destabilizer(GLOBAL_RNG, n; phases)
@@ -159,20 +153,20 @@ random_stabilizer(rng::AbstractRNG,r::Int,n::Int; phases::Bool=true) = random_st
 random_stabilizer(r::Int,n::Int; phases::Bool=true) = random_stabilizer(GLOBAL_RNG,n; phases)[randperm(GLOBAL_RNG,n)[1:r]]
 
 """Inverting a binary matrix: uses floating point for small matrices and Nemo for large matrices."""
-function precise_inv(a)
+function precise_inv(a)::Matrix{UInt8}
     n = size(a,1)
     if n<200
-        return inv(a)
+        return UInt8.(mod.(inv(a),0x2))
     else
 	    return nemo_inv(a,n)
     end
 end
 
-function nemo_inv(a, n)
+function nemo_inv(a, n)::Matrix{UInt8}
     binaryring = Nemo.ResidueRing(Nemo.ZZ, 2) # TODO should I use GF(2) instead of ResidueRing(ZZ, 2)?
     M = Nemo.MatrixSpace(binaryring, n, n)
     inverted = inv(M(Matrix{Int}(a))) # Nemo is very picky about input data types
-    return (x->x.data).(inverted)
+    return (x->mod(UInt8(x.data),0x2)).(inverted)
 end
 
 """Sample (h, S) from the distribution P_n(h, S) from Bravyi and Maslov Algorithm 1."""
