@@ -206,7 +206,7 @@ end
 function _apply!(stab::AbstractStabilizer, h::sHadamard; phases::Val{B}=Val(true)) where B
     s = tab(stab)
     c = h.q
-    @batch per=core minbatch=200 for r in eachindex(s)
+    for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
         setxbit(s, r, c, z)
@@ -219,7 +219,7 @@ end
 function _apply!(stab::AbstractStabilizer, p::sPhase; phases::Val{B}=Val(true)) where B
     s = tab(stab)
     c = p.q
-    @batch per=core minbatch=200 for r in eachindex(s)
+    for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
         #setxbit no op
@@ -232,7 +232,7 @@ end
 function _apply!(stab::AbstractStabilizer, p::sInvPhase; phases::Val{B}=Val(true)) where B
     s = tab(stab)
     c = p.q
-    @batch per=core minbatch=200 for r in eachindex(s)
+    for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
         #setxbit no op
@@ -246,7 +246,7 @@ function _apply!(stab::AbstractStabilizer, p::sX; phases::Val{B}=Val(true)) wher
     B || return stab
     s = tab(stab)
     c = p.q
-    @batch per=core minbatch=200 for r in eachindex(s)
+    for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
         B && z!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
@@ -258,7 +258,7 @@ function _apply!(stab::AbstractStabilizer, p::sZ; phases::Val{B}=Val(true)) wher
     B || return stab
     s = tab(stab)
     c = p.q
-    @batch per=core minbatch=200 for r in eachindex(s)
+    for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
         B && x!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
@@ -270,7 +270,7 @@ function _apply!(stab::AbstractStabilizer, p::sY; phases::Val{B}=Val(true)) wher
     B || return stab
     s = tab(stab)
     c = p.q
-    @batch per=core minbatch=200 for r in eachindex(s)
+    for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
         B && (x⊻z)!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
@@ -289,7 +289,7 @@ function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{
     sh = getshift(Tme, c)
     xx,zx,xz,zz = Tme.((op.xx,op.zx,op.xz,op.zz)) .<< sh
     anticom = ~iszero((~zz & xz & ~xx & zx) | ( zz & ~xz & xx & zx) | (zz &  xz & xx & ~zx))
-    @batch per=core minbatch=200 for r in eachindex(s)
+    for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
         setxbit(s, r, c, (x&xx)⊻(z&zx))
@@ -383,7 +383,7 @@ function _apply!(stab::AbstractStabilizer, cnot::sCNOT; phases::Val{B}=Val(true)
     q2 = cnot.q2
     Tme = eltype(s.xzs)
     shift = getshift(Tme, q1) - getshift(Tme, q2)
-    @batch per=core minbatch=200 for r in eachindex(s)
+    for r in eachindex(s)
         x1 = getxbit(s, r, q1)
         z1 = getzbit(s, r, q1)
         x2 = getxbit(s, r, q2)
@@ -404,7 +404,7 @@ function _apply!(stab::AbstractStabilizer, swap::sSWAP; phases::Val{B}=Val(true)
     q2 = swap.q2
     Tme = eltype(s.xzs)
     shift = getshift(Tme, q1) - getshift(Tme, q2)
-    @batch per=core minbatch=200 for r in eachindex(s)
+    for r in eachindex(s)
         x1 = getxbit(s, r, q1)
         z1 = getzbit(s, r, q1)
         x2 = getxbit(s, r, q2)
