@@ -199,7 +199,11 @@ end
 Base.@propagate_inbounds setxbit(s, r, c, x, shift) = setxbit(s, r, c, x<<shift)
 Base.@propagate_inbounds setzbit(s, r, c, z, shift) = setzbit(s, r, c, z<<shift)
 
-function apply!(stab::AbstractStabilizer, h::sHadamard; phases::Bool=true)
+function _apply!(stab::AbstractStabilizer, op::AbstractSymbolicOperator; phases::Bool=true)
+    apply!(stab,op; phases=Val(phases))
+end
+
+function _apply!(stab::AbstractStabilizer, h::sHadamard; phases::Val{B}=Val(true)) where B
     s = tab(stab)
     c = h.q
     @batch per=core minbatch=200 for r in eachindex(s)
@@ -207,12 +211,12 @@ function apply!(stab::AbstractStabilizer, h::sHadamard; phases::Bool=true)
         z = getzbit(s, r, c)
         setxbit(s, r, c, z)
         setzbit(s, r, c, x)
-        phases && x!=0 && z!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
+        B && x!=0 && z!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
     end
     stab
 end
 
-function apply!(stab::AbstractStabilizer, p::sPhase; phases::Bool=true)
+function _apply!(stab::AbstractStabilizer, p::sPhase; phases::Val{B}=Val(true)) where B
     s = tab(stab)
     c = p.q
     @batch per=core minbatch=200 for r in eachindex(s)
@@ -220,12 +224,12 @@ function apply!(stab::AbstractStabilizer, p::sPhase; phases::Bool=true)
         z = getzbit(s, r, c)
         #setxbit no op
         setzbit(s, r, c, x⊻z)
-        phases && x!=0 && z!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
+        B && x!=0 && z!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
     end
     stab
 end
 
-function apply!(stab::AbstractStabilizer, p::sInvPhase; phases::Bool=true)
+function _apply!(stab::AbstractStabilizer, p::sInvPhase; phases::Val{B}=Val(true)) where B
     s = tab(stab)
     c = p.q
     @batch per=core minbatch=200 for r in eachindex(s)
@@ -233,52 +237,52 @@ function apply!(stab::AbstractStabilizer, p::sInvPhase; phases::Bool=true)
         z = getzbit(s, r, c)
         #setxbit no op
         setzbit(s, r, c, x⊻z)
-        phases && x!=0 && z==0 && (s.phases[r] = (s.phases[r]+0x2)&3)
+        B && x!=0 && z==0 && (s.phases[r] = (s.phases[r]+0x2)&3)
     end
     stab
 end
 
-function apply!(stab::AbstractStabilizer, p::sX; phases::Bool=true)
-    phases || return stab
+function _apply!(stab::AbstractStabilizer, p::sX; phases::Val{B}=Val(true)) where B
+    B || return stab
     s = tab(stab)
     c = p.q
     @batch per=core minbatch=200 for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
-        z!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
+        B && z!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
     end
     stab
 end
 
-function apply!(stab::AbstractStabilizer, p::sZ; phases::Bool=true)
-    phases || return stab
+function _apply!(stab::AbstractStabilizer, p::sZ; phases::Val{B}=Val(true)) where B
+    B || return stab
     s = tab(stab)
     c = p.q
     @batch per=core minbatch=200 for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
-        x!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
+        B && x!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
     end
     stab
 end
 
-function apply!(stab::AbstractStabilizer, p::sY; phases::Bool=true)
-    phases || return stab
+function _apply!(stab::AbstractStabilizer, p::sY; phases::Val{B}=Val(true)) where B
+    B || return stab
     s = tab(stab)
     c = p.q
     @batch per=core minbatch=200 for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
-        (x⊻z)!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
+        B && (x⊻z)!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
     end
     stab
 end
 
-function apply!(stab::AbstractStabilizer, ::sId1; phases::Bool=true)
+function _apply!(stab::AbstractStabilizer, ::sId1; phases::Val{B}=Val(true)) where B
     stab
 end
 
-function apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Bool=true) # TODO Generated functions that simplify the whole `if phases` branch might be a good optimization, but a quick benchmakr comparing sHadamard to SingleQubitOperator(sHadamard) did not show a worthwhile difference.
+function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{B}=Val(true)) where B # TODO Generated functions that simplify the whole `if phases` branch might be a good optimization, but a quick benchmakr comparing sHadamard to SingleQubitOperator(sHadamard) did not show a worthwhile difference.
     s = tab(stab)
     c = op.q
     Tme = eltype(s.xzs)
@@ -290,7 +294,7 @@ function apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Bool=
         z = getzbit(s, r, c)
         setxbit(s, r, c, (x&xx)⊻(z&zx))
         setzbit(s, r, c, (x&xz)⊻(z&zz))
-        if phases
+        if B
             if op.px && ~iszero(x)
                 s.phases[r] += 0x2
                 s.phases[r] &= 3
@@ -373,7 +377,7 @@ struct sSWAP <: AbstractTwoQubitOperator
     q2::Int
 end
 
-function apply!(stab::AbstractStabilizer, cnot::sCNOT; phases::Bool=true)
+function _apply!(stab::AbstractStabilizer, cnot::sCNOT; phases::Val{B}=Val(true)) where B
     s = tab(stab)
     q1 = cnot.q1
     q2 = cnot.q2
@@ -386,7 +390,7 @@ function apply!(stab::AbstractStabilizer, cnot::sCNOT; phases::Bool=true)
         z2 = getzbit(s, r, q2)
         setxbit(s, r, q2, x2⊻(x1<<-shift))
         setzbit(s, r, q1, z1⊻(z2<<shift))
-        if phases && ~iszero( x1&z1&((x2&z2)<<shift) | (x1&z2<<shift & ~(z1|x2<<shift)) )
+        if B && ~iszero( x1&z1&((x2&z2)<<shift) | (x1&z2<<shift & ~(z1|x2<<shift)) )
             s.phases[r] += 0x2
             s.phases[r] &= 3
         end
@@ -394,7 +398,7 @@ function apply!(stab::AbstractStabilizer, cnot::sCNOT; phases::Bool=true)
     stab
 end
 
-function apply!(stab::AbstractStabilizer, swap::sSWAP; phases::Bool=true)
+function _apply!(stab::AbstractStabilizer, swap::sSWAP; phases::Val{B}=Val(true)) where B
     s = tab(stab)
     q1 = swap.q1
     q2 = swap.q2

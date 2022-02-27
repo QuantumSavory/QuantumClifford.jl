@@ -8,9 +8,11 @@ module QuantumClifford
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
 import LinearAlgebra
-using DocStringExtensions
-using LoopVectorization
+#using DocStringExtensions
+#using LoopVectorization
 using Polyester
+const TYPEDSIGNATURES = 1
+Polyester.num_threads()
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     xbit, zbit, xview, zview,
@@ -732,7 +734,7 @@ function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true
     cnt1 = zero(T)
     cnt2 = zero(T)
     len = length(l)>>1
-    @turbo for i in 1:len# TODO This can be further optimized by factoring out count_ones with https://github.com/JuliaSIMD/LoopVectorization.jl/issues/291
+    @inbounds @simd for i in 1:len# TODO This can be further optimized by factoring out count_ones with https://github.com/JuliaSIMD/LoopVectorization.jl/issues/291
         x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
         newx1 = x1 ⊻ x2
         r[i] = newx1
@@ -1209,23 +1211,29 @@ end
 
 function Base.:(*)(p::AbstractCliffordOperator, s::AbstractStabilizer; phases::Bool=true)
     s = copy(s)
-    apply!(s,p; phases=phases)
+    _apply!(s,p; phases=Val(phases))
+end
+function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator; phases::Bool=true)
+    _apply!(stab,op; phases=Val(phases))
+end
+function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices; phases::Bool=true)
+    _apply!(stab,op,indices; phases=Val(phases))
 end
 
 # TODO no need to track phases outside of stabview
-function apply!(stab::AbstractStabilizer, p::PauliOperator; phases::Bool=true)
+function _apply!(stab::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
     nqubits(stab)==nqubits(p) || throw(DimensionMismatch("The tableau and the Pauli operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
     s = tab(stab)
-    phases || return stab
+    B || return stab
     for i in eachindex(s)
         s.phases[i] = (s.phases[i]+comm(p,s,i)<<1+p.phase[]<<1)&0x3
     end
     stab
 end
 
-function apply!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Bool=true)
+function _apply!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Val{B}=Val(true)) where B
     s = tab(stab)
-    phases || return stab
+    B || return stab
     newp = zero(typeof(p),nqubits(s)) # TODO this is an unnecessarily slow operation for something that can be sparse
     for (ii,i) in enumerate(indices)
         newp[i] = p[ii]
@@ -1384,13 +1392,13 @@ function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator; phases
 end
 
 # TODO no need to track phases outside of stabview
-function apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true)
+function _apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=Val(true)) where B
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
     s_tab = tab(stab)
     c_tab = tab(c)
     @batch minbatch=25 threadlocal=zero(c_tab[1]) for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
-        apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, phases=phases)
+        apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, phases=B)
     end
     stab
 end
@@ -1429,13 +1437,13 @@ function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator, indice
 end
 
 #TODO a lot of code repetition with apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true) and apply_row_kernel!
-function apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{Int,1}; phases::Bool=true)
+function _apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{Int,1}; phases::Val{B}=Val(true)) where B
     #max(indices_of_application)<=nqubits(s) || throw(DimensionMismatch("")) # Too expensive to check every time
     s_tab = tab(stab)
     c_tab = tab(c)
     @batch minbatch=25 threadlocal=zero(c_tab[1]) for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
-        apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, indices_of_application, phases=phases)
+        apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, indices_of_application, phases=B)
     end
     stab
 end
