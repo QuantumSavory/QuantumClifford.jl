@@ -475,6 +475,17 @@ Base.copy(ms::MixedStabilizer) = MixedStabilizer(copy(ms.tab),ms.rank)
 """
 A tableau representation for mixed stabilizer states that keeps track of the
 destabilizers in order to provide efficient projection operations.
+
+The rank `r` of the `n`-qubit tableau is tracked, either so that it can be
+used to represent a mixed stabilizer state, or so that it can be used to
+represent an `n-r` logical-qubit code over `n` physical qubits. The "logical"
+operators are tracked as well.
+
+When the constructor is called on an incomplete [`Stabilizer`](@ref) it 
+automatically calculates the destabilizers and logical operators, following
+chapter 4 of [gottesman1997stabilizer](@cite).
+
+See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
 """
 mutable struct MixedDestabilizer{Tzv<:AbstractVector{UInt8}, Tm<:AbstractMatrix{<:Unsigned}} <: AbstractStabilizer
     tab::Stabilizer{Tzv,Tm} # TODO assert size on construction
@@ -495,19 +506,23 @@ function MixedDestabilizer(stab::Stabilizer{Tv,Tm}; undoperm=true) where {Tve,Tm
         tab[i,i] = (true,false)
     end
     if r+s!=n
-        H = stab_to_gf2(stab)
+        H = stab_to_gf2(stab)             # n-k × 2n
         k = n - r - s
-        E = H[r+1:end,end÷2+r+s+1:end]
-        C1 = H[1:r,end÷2+r+1:end÷2+r+s]
-        C2 = H[1:r,end÷2+r+s+1:end]
-        i = LinearAlgebra.I
-        U2 = E'
-        V1 = (E' * C1' + C2').%2 .!= 0x0
-        X = hcat(zeros(Bool,k,r),U2,i,V1,zeros(Bool,k,s+k))
+        E = H[r+1:end,end÷2+r+s+1:end]    # n-k-r × n-r-s
+        C1 = H[1:r,end÷2+r+1:end÷2+r+s]   #     r ×     s
+        C2 = H[1:r,end÷2+r+s+1:end]       #     r × n-r-s
+        U2 = E'                           # n-r-s × n-k-r
+        V1 = (E' * C1' + C2').%2 .!= 0x0  # n-r-s ×     r
+        #X = hcat(zeros(Bool,k,r),U2,I,V1,zeros(Bool,k,s+k))
+        X = zeros(Bool, k, 2n)
+        X[:,r+1:n-k] .= U2 
+        X[:,n+1:n+r] .= V1
         sX = Stabilizer(X)
         tab[r+s+1:n] = sX # One of the logical sets in the tableau
-        A2 = H[1:r,r+s+1:end÷2]
-        Z = hcat(zeros(Bool,k,n),A2',zeros(Bool,k,s),i)
+        A2 = H[1:r,r+s+1:end÷2]           #     r × n-r-s
+        #Z = hcat(zeros(Bool,k,n),A2',zeros(Bool,k,s),I)
+        Z = zeros(Bool, k, 2n)
+        Z[:,n+1:n+r] .= A2
         sZ = Stabilizer(Z)
         tab[n+r+s+1:end] = sZ # The other logical set in the tableau
     end
@@ -1502,10 +1517,14 @@ const CliffordId = C"X
 ##############################
 
 """The F(2,2) matrix of a given stabilizer, represented as the concatenation of two binary matrices, one for X and one for Z."""
-function stab_to_gf2(s::Stabilizer)
-    xbits = vcat((xbit(s[i])' for i in eachindex(s))...)
-    zbits = vcat((zbit(s[i])' for i in eachindex(s))...)
-    H = Matrix{Bool}(hcat(xbits,zbits))
+function stab_to_gf2(s::Stabilizer)::Matrix{Bool}
+    r, n = size(s)
+    H = zeros(Bool,r,2n)
+    for iᵣ in 1:r
+        @inbounds @simd for iₙ in 1:n
+            H[iᵣ,iₙ], H[iᵣ,iₙ+n] = s[iᵣ,iₙ]
+        end
+    end
 end
 
 """Gaussian elimination over the binary field."""
