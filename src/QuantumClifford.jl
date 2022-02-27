@@ -10,8 +10,9 @@ module QuantumClifford
 import LinearAlgebra
 #using DocStringExtensions
 #using LoopVectorization
-#using Polyester
+using Polyester
 const TYPEDSIGNATURES = 1
+Polyester.num_threads()
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     xbit, zbit, xview, zview,
@@ -1410,8 +1411,7 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=V
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
     s_tab = tab(stab)
     c_tab = tab(c)
-    threadlocal=zero(c_tab[1])
-    for row_stab in eachindex(s_tab)
+    @batch minbatch=25 threadlocal=zero(c_tab[1]) for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, phases=B)
     end
@@ -1456,8 +1456,7 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_appli
     #max(indices_of_application)<=nqubits(s) || throw(DimensionMismatch("")) # Too expensive to check every time
     s_tab = tab(stab)
     c_tab = tab(c)
-    threadlocal=zero(c_tab[1])
-    for row_stab in eachindex(s_tab)
+    @batch minbatch=25 threadlocal=zero(c_tab[1]) for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, indices_of_application, phases=B)
     end
