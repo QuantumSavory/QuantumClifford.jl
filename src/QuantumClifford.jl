@@ -754,8 +754,8 @@ function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true
     rcnt2 = 0
     packs = len÷veclen
     if packs>0
-        cnt1 = zero(SIMD.Vec{4,T})
-        cnt2 = zero(SIMD.Vec{4,T})
+        cnt1 = zero(SIMD.Vec{veclen,T})
+        cnt2 = zero(SIMD.Vec{veclen,T})
         lane = SIMD.VecRange{veclen}(0)
         @inbounds for i in 1:veclen:(len-veclen+1)
             x1, x2, z1, z2 = l[i+lane], r[i+lane], l[i+len+lane], r[i+len+lane]
