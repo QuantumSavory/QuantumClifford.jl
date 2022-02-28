@@ -8,11 +8,11 @@ module QuantumClifford
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
 import LinearAlgebra
-#using DocStringExtensions
-#using LoopVectorization
+using DocStringExtensions
 using Polyester
-const TYPEDSIGNATURES = 1
-Polyester.num_threads()
+#using LoopVectorization
+using HostCPUFeatures: pick_vector_width
+import SIMD
 
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     xbit, zbit, xview, zview,
@@ -748,21 +748,45 @@ function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true
         r .⊻= l
         return UInt8(0x0)
     end
-    cnt1 = zero(T)
-    cnt2 = zero(T)
     len = length(l)>>1
-    @inbounds @simd for i in 1:len# TODO This can be further optimized by factoring out count_ones with https://github.com/JuliaSIMD/LoopVectorization.jl/issues/291
+    veclen = Int(pick_vector_width(T)) # TODO remove the Int cast
+    rcnt1 = 0
+    rcnt2 = 0
+    packs = len÷veclen
+    if packs>0
+        cnt1 = zero(SIMD.Vec{4,T})
+        cnt2 = zero(SIMD.Vec{4,T})
+        lane = SIMD.VecRange{veclen}(0)
+        @inbounds for i in 1:veclen:(len-veclen+1)
+            x1, x2, z1, z2 = l[i+lane], r[i+lane], l[i+len+lane], r[i+len+lane]
+            r[i+lane] = newx1 = x1 ⊻ x2
+            r[i+len+lane] = newz1 = z1 ⊻ z2
+            x1z2 = x1 & z2
+            anti_comm = (x2 & z1) ⊻ x1z2
+            cnt2 ⊻= (newx1 ⊻ newz1 ⊻ x1z2) & anti_comm
+            cnt1 ⊻= anti_comm
+        end
+        for i in 1:length(cnt1)
+            rcnt1 += count_ones(cnt1[i])
+        end
+        for i in 1:length(cnt2)
+            rcnt2 += count_ones(cnt2[i])
+        end
+    end
+    scnt1 = zero(T)
+    scnt2 = zero(T)
+    @inbounds for i in (packs*veclen+1):len # same code for the pieces that do not fit in a vector at the end (TODO padding would simplify the code)
         x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
-        newx1 = x1 ⊻ x2
-        r[i] = newx1
-        newz1 = z1 ⊻ z2
-        r[i+len] = newz1
+        r[i] = newx1 = x1 ⊻ x2
+        r[i+len] = newz1 = z1 ⊻ z2
         x1z2 = x1 & z2
         anti_comm = (x2 & z1) ⊻ x1z2
-        cnt2 += count_ones((newx1 ⊻ newz1 ⊻ x1z2) & anti_comm)
-        cnt1 += count_ones(anti_comm)
+        scnt2 ⊻= (scnt1 ⊻ newx1 ⊻ newz1 ⊻ x1z2) & anti_comm
+        scnt1 ⊻= anti_comm
     end
-    UInt8((cnt1 ⊻ (cnt2<<1))&0x3)
+    rcnt1 += count_ones(scnt1)
+    rcnt2 += count_ones(scnt2)
+    UInt8((rcnt1 ⊻ (rcnt2<<1))&0x3)
 end
 
 @inline function mul_left!(r::PauliOperator, l::PauliOperator; phases::Bool=true)
