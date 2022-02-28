@@ -518,12 +518,14 @@ function MixedDestabilizer(stab::Stabilizer{Tv,Tm}; undoperm=true) where {Tve,Tm
         X = zeros(Bool, k, 2n)
         X[:,r+1:n-k] .= U2 
         X[:,n+1:n+r] .= V1
+        @inbounds @simd for i in 1:k X[i,n-k+i] = true end
         sX = Stabilizer(X)
         tab[r+s+1:n] = sX # One of the logical sets in the tableau
         A2 = H[1:r,r+s+1:end÷2]           #     r × n-r-s
         #Z = hcat(zeros(Bool,k,n),A2',zeros(Bool,k,s),I)
         Z = zeros(Bool, k, 2n)
-        Z[:,n+1:n+r] .= A2
+        Z[:,n+1:n+r] .= A2'
+        @inbounds @simd for i in 1:k Z[i,2n-k+i] = true end
         sZ = Stabilizer(Z)
         tab[n+r+s+1:end] = sZ # The other logical set in the tableau
     end
@@ -1524,6 +1526,7 @@ function stab_to_gf2(s::Stabilizer)::Matrix{Bool}
             H[iᵣ,iₙ], H[iᵣ,iₙ+n] = s[iᵣ,iₙ]
         end
     end
+    H
 end
 
 """Gaussian elimination over the binary field."""
