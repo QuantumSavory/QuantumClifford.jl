@@ -3,7 +3,8 @@
 ## v0.4.1-dev
 
 - Random states with zeroed phases with `phases=false`.
-- Pre-compilation cleanup (useful for Julia 1.8+).
+- Pre-compilation and inference cleanup (useful for Julia 1.8+).
+- Switch from `LoopVectorization.jl` to `SIMD.jl` for fine-tuning of performance (and coincidentally, better TTFX).
 
 ## v0.4.0
 
