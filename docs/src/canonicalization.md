@@ -53,7 +53,7 @@ Based on [gottesman1997stabilizer](@cite).
 
 A canonicalized tableau would look like the following (the right-most block does
 not exist for square tableaux).
-![](canonicalize_rref.png)
+![](canonicalize_gott.png)
 
 ```julia
 julia> plot(canonicalize_gott!(random_stabilizer(30))[1]; xzcomponents=:together);
