@@ -104,13 +104,13 @@ function test_noisycircuits()
                 stateZ = S"Z"
                 for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
                     random1 = mctrajectories(stabType(stateZ), [mX,vX], trajectories=500)
-                    @test random1[:detected_failure] > 220
+                    @test random1[:detected_failure] > 200
                     @test random1[:undetected_failure] == 0
-                    @test random1[:true_success] > 220
+                    @test random1[:true_success] > 200
                     random1_pe = petrajectories(stabType(copy(stateZ)), [mX,vX])
-                    @test random1_pe[:detected_failure] > 0.44
+                    @test random1_pe[:detected_failure] > 0.4
                     @test random1_pe[:undetected_failure] == 0
-                    @test random1_pe[:true_success] > 0.44
+                    @test random1_pe[:true_success] > 0.4
                 end
                 bell_state = S" XX
                                 ZZ"
