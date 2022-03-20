@@ -40,4 +40,4 @@ doset("graphs")             && include("./test_graphs.jl")
 doset("doctests")           && include("./doctests.jl")
 
 using Aqua
-doset("aqua") && Aqua.test_all(QuantumClifford, ambiguities=false)
+doset("aqua") && Aqua.test_all(QuantumClifford, ambiguities=false,project_toml_formatting=false)
