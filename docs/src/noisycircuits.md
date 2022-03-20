@@ -8,7 +8,10 @@ end
 CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
 
-We have experimental support for simulation of noisy Clifford circuirts which can be imported with `using QuantumClifford.Experimental.NoisyCircuits`.
+!!! warning "Unstable"
+    This is unfinished experimental functionality that will change significantly.
+
+We have experimental support for simulation of noisy Clifford circuits which can be imported with `using QuantumClifford.Experimental.NoisyCircuits`.
 
 Both [Monte Carlo](@ref noisycircuits_mc) and [Perturbative Expansion](@ref noisycircuits_perturb) approaches are supported. When performing a perturbative expansion in the noise parameter, the expansion can optionally be performed symbolically, to arbitrary high orders.
 

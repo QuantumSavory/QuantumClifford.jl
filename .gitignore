@@ -1,5 +1,6 @@
 *.ipynb_checkpoints
 Manifest.toml
+LocalPreferences.toml
 */.*swp
 scratch/
 *.cov

@@ -2,6 +2,7 @@
 
 ## v0.4.1-dev
 
+- Move circuit plotting with `Quantikz.jl` to `QuantumCliffordPlots.jl`
 - Random states with zeroed phases with `phases=false`.
 - Pre-compilation and inference cleanup (useful for Julia 1.8+).
 - Switch from `LoopVectorization.jl` to `SIMD.jl` for fine-tuning of performance (and coincidentally, better TTFX).

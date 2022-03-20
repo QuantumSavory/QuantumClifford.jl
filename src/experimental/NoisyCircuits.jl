@@ -506,7 +506,4 @@ function applyop_branches(state::Register, op::SparseMeasurement; max_order=1)
     applyop_branches(state,dm, max_order=max_order)
 end
 
-
-include("./quantikz_methods.jl")
-
 end

@@ -4,6 +4,7 @@
 DocTestSetup = quote
     using QuantumClifford
     using QuantumClifford.Experimental.NoisyCircuits
+    using QuantumCliffordPlots
 end
 CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
@@ -21,6 +22,7 @@ Here is an example of a purification circuit (the same circuit seen in the [Mont
 ```@example
 using QuantumClifford # hide
 using QuantumClifford.Experimental.NoisyCircuits # hide
+using QuantumCliffordPlots # hide
 good_bell_state = S"XX
                     ZZ"
 canonicalize_rref!(good_bell_state)

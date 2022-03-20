@@ -9,3 +9,6 @@ Quantikz = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
 QuantumClifford = "0525e862-1e90-11e9-3e4d-1b39d7109de1"
 QuantumCliffordPlots = "4eeed724-23be-436c-a322-a8540588cc9f"
 StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
+
+[extras]
+CPUSummary = "2a0fbf3d-bb9c-48f3-b0a9-814d99fd7ab9"

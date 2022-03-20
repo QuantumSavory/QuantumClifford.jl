@@ -4,6 +4,7 @@
 DocTestSetup = quote
     using QuantumClifford
     using QuantumClifford.Experimental.NoisyCircuits
+    using QuantumCliffordPlots
 end
 CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
@@ -21,6 +22,7 @@ They can be specified by giving a Clifford operator tableaux and the indices on 
 ```@example 1
 using QuantumClifford # hide
 using QuantumClifford.Experimental.NoisyCircuits # hide
+using QuantumCliffordPlots # hide
 SparseGate(CNOT, [2,4])
 ```
 
