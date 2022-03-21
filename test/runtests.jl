@@ -1,6 +1,7 @@
 using Test, Random
 using QuantumClifford
 using QuantumClifford: stab_looks_good, mixed_stab_looks_good, destab_looks_good, mixed_destab_looks_good
+using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
 using QuantumClifford: mul_left!
 using QuantumClifford: perm_inverse
 using LinearAlgebra: inv

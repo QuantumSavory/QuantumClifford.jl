@@ -1,5 +1,4 @@
 using QuantumClifford.Experimental.NoisyCircuits
-using Quantikz: circuit2string, QuantikzOp
 import AbstractAlgebra
 
 function test_noisycircuits()

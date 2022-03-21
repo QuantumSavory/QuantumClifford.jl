@@ -1,7 +1,8 @@
 # News
 
-## v0.4.1-dev
+## v0.4.1
 
+- `apply_single_*` are not exported anymore, as `sX`/`sY`/`sZ` are cleaner choices.
 - Faster single-qubit projections with `projectX!`, `projectY!`, `projectZ!`.
 - Move circuit plotting with `Quantikz.jl` to `QuantumCliffordPlots.jl`
 - Random states with zeroed phases with `phases=false`.

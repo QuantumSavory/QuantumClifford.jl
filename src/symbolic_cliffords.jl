@@ -423,7 +423,7 @@ end
 # TODO is there a reason to keep these given that sZ/sX/sY exist?
 # TODO currently these are faster than sZ/sX/sY
 
-"""Apply a Pauli Z to the `i`-th qubit of state `s`. You might prefer to use `sZ` instead of this."""
+"""Apply a Pauli Z to the `i`-th qubit of state `s`. You should use `apply!(stab,sZ(i))` instead of this."""
 function apply_single_z!(stab::AbstractStabilizer, i)
     s = tab(stab)
     Tme = eltype(s.xzs)
@@ -438,7 +438,7 @@ function apply_single_z!(stab::AbstractStabilizer, i)
     stab
 end
 
-"""Apply a Pauli X to the `i`-th qubit of state `s`. You might prefer to use `sX` instead of this."""
+"""Apply a Pauli X to the `i`-th qubit of state `s`. You should use `apply!(stab,sX(i))` instead of this."""
 function apply_single_x!(stab::AbstractStabilizer, i)
     s = tab(stab)
     Tme = eltype(s.xzs)
@@ -453,7 +453,7 @@ function apply_single_x!(stab::AbstractStabilizer, i)
     stab
 end
 
-"""Apply a Pauli Y to the `i`-th qubit of state `s`. You might prefer to use `sY` instead of this."""
+"""Apply a Pauli Y to the `i`-th qubit of state `s`. You should use `apply!(stab,sY(i))` instead of this."""
 function apply_single_y!(stab::AbstractStabilizer, i)
     s = tab(stab)
     Tme = eltype(s.xzs)

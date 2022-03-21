@@ -6,7 +6,7 @@ module NoisyCircuits
 #TODO permit the use of alternative RNGs
 
 using QuantumClifford
-using QuantumClifford: AbstractStabilizer, AbstractCliffordOperator
+using QuantumClifford: AbstractStabilizer, AbstractCliffordOperator, apply_single_x!, apply_single_y!, apply_single_z!
 
 using StatsBase: countmap
 using Combinatorics: combinations
