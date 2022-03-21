@@ -17,19 +17,19 @@ To install it use:
 ```
 
 Works efficiently with
-[pure](https://krastanov.github.io/QuantumClifford/dev/manual/#Stabilizers-1) and
-[mixed stabilizer](https://krastanov.github.io/QuantumClifford/dev/mixed/#Mixed-Stabilizer-States-1)
+[pure](https://krastanov.github.io/QuantumClifford.jl/dev/manual/#Stabilizers-1) and
+[mixed stabilizer](https://krastanov.github.io/QuantumClifford.jl/dev/mixed/#Mixed-Stabilizer-States-1)
 states of thousands of qubits
 as well as
-[sparse or dense Clifford operations](https://krastanov.github.io/QuantumClifford/dev/manual/#Clifford-Operators-1)
+[sparse or dense Clifford operations](https://krastanov.github.io/QuantumClifford.jl/dev/manual/#Clifford-Operators-1)
 acting upon them.
 
 Provides
-[canonicalization](https://krastanov.github.io/QuantumClifford/dev/manual/#Canonicalization-of-Stabilizers-1),
-[projection](https://krastanov.github.io/QuantumClifford/dev/manual/#Projective-Measurements-1), and
-[generation](https://krastanov.github.io/QuantumClifford/dev/manual/#Generating-a-Pauli-Operator-with-Stabilizer-Generators-1) operations,
+[canonicalization](https://krastanov.github.io/QuantumClifford.jl/dev/manual/#Canonicalization-of-Stabilizers-1),
+[projection](https://krastanov.github.io/QuantumClifford.jl/dev/manual/#Projective-Measurements-1), and
+[generation](https://krastanov.github.io/QuantumClifford.jl/dev/manual/#Generating-a-Pauli-Operator-with-Stabilizer-Generators-1) operations,
 as well as
-[partial traces](https://krastanov.github.io/QuantumClifford/dev/manual/#Partial-Traces-1).
+[partial traces](https://krastanov.github.io/QuantumClifford.jl/dev/manual/#Partial-Traces-1).
 
 ```jldoctest
 julia> P"X" * P"Z"
