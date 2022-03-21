@@ -97,6 +97,10 @@ anticommutation is not computed, sparing a canonicalization operation. This
 canonicalization operation is the only one of cubic complexity. The rest of
 the calculations are of quadratic complexity.
 
+If you need to measure a single qubit instead of a multiqubit Pauli operator,
+the faster [`projectX!`](@ref), [`projectY!`](@ref), and [`projectZ!`](@ref)
+are available.
+
 Here is an example of a projection destroying entanglement:
 
 ```jldoctest
@@ -216,6 +220,8 @@ julia> project!(s, P"IIX")
 ```
 
 See the "Datastructure Choice" section in the documentation for more details.
+
+See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
 """
 function project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
@@ -254,8 +260,8 @@ end
 """
 $TYPEDSIGNATURES
 
-Similar to the `project!` on `Stabilizer`, but with quadratic instead of cubic
-runtime, achieved thanks to the stored destabilizer rows.
+Similar to the [`project!`](@ref) on [`Stabilizer`](@ref), but with quadratic
+instead of cubic runtime, achieved thanks to the stored destabilizer rows.
 
 If `keep_result=false`, then the projection result is not calculated, saving
 an additional quadratic operation. The rank is always correctly calculated,
@@ -263,6 +269,10 @@ even when `keep_result=false`.
 
 Can be applied only to full-rank tableaux. Use (`MixedDestabilizer`)[@ref] if
 that is not the case.
+
+See the "Datastructure Choice" section in the documentation for more details.
+
+See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
 """
 function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
@@ -312,10 +322,10 @@ end
 """
 $TYPEDSIGNATURES
 
-When using project on `MixedStabilizer` it automates some of the extra steps
-we encounter when implicitly using the `Stabilizer` datastructure to represent
-mixed states. Namely, it helps when the projector is not among the list of
-stabilizers:
+When using project on [`MixedStabilizer`](@ref) it automates some of the extra
+steps we encounter when implicitly using the `Stabilizer` datastructure to
+represent mixed states. Namely, it helps when the projector is not among the
+list of stabilizers:
 
 ```jldoctest
 julia> s = S"XZI
@@ -333,13 +343,17 @@ julia> project!(ms, P"IIY")
 + __Y, 3, nothing)
 ```
 
-Similarly to `project!` on `Stabilizer`, this function has cubic complexity
-when the Pauli operator commutes with all rows of the tableau.
+Similarly to [`project!`](@ref) on [`Stabilizer`](@ref), this function has cubic
+complexity when the Pauli operator commutes with all rows of the tableau.
 
 Unlike other `project!` methods, this one does not allow for
 `keep_result=false`, as the correct rank or anticommutation index can not be
 calculated without the expensive (cubic) canonicalization operation required
 by `keep_result=true`.
+
+See the "Datastructure Choice" section in the documentation for more details.
+
+See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
 """
 function project!(ms::MixedStabilizer,pauli::PauliOperator;phases::Bool=true)
     _, anticom_index, res = project!(stabilizerview(ms), pauli; keep_result=true, phases=phases)
@@ -371,12 +385,16 @@ end
 """
 $TYPEDSIGNATURES
 
-Similar to the `project!` on `Stabilizer`, but with quadratic instead of cubic
-runtime, achieved thanks to the stored destabilizer rows.
+Similar to the [`project!`](@ref) on [`Stabilizer`](@ref), but with quadratic
+instead of cubic runtime, achieved thanks to the stored destabilizer rows.
 
 If `keep_result=false`, then the projection result is not calculated, saving
 an additional quadratic operation. The rank is always correctly calculated,
 even when `keep_result=false`.
+
+See the "Datastructure Choice" section in the documentation for more details.
+
+See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
 """
 function project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     anticommutes = 0
@@ -559,4 +577,127 @@ function expect(p::PauliOperator, s::AbstractStabilizer)
     result === 0x01 && return im
     result === 0x02 && return -1
     result === 0x03 && return -im
+end
+
+
+@inline isX(tab,row,col) = tab[row,col][1]
+@inline isZ(tab,row,col) = tab[row,col][2]
+@inline isY(tab,row,col) = (&)(tab[row,col]...)
+@inline isXorZ(tab,row,col) = ⊻(tab[row,col]...)
+
+function anticomm_update_rows_cond(tab,qubit,r,n,anticommutes,phases,cond::Val{IS}) where {IS} # TODO Ensure there are no redundant `comm` checks that can be skipped
+    for i in r+1:n
+        if IS(tab,i,qubit)
+            mul_left!(tab, i, n+anticommutes; phases=phases)
+        end
+    end
+    for i in n+anticommutes+1:2n
+        if IS(tab,i,qubit)
+            mul_left!(tab, i, n+anticommutes; phases=phases)
+        end
+    end
+    for i in 1:r
+        if i!=anticommutes && IS(tab,i,qubit)
+            mul_left!(tab, i, n+anticommutes; phases=false)
+        end
+    end
+end
+
+"""
+Measure a given qubit in the X basis.
+A faster special-case version of [`project!`](@ref).
+
+See also: [`project!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
+"""
+function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    project_cond!(d,qubit,Val(isZ),Val((true,false));keep_result,phases)
+end
+
+"""
+Measure a given qubit in the Z basis.
+A faster special-case version of [`project!`](@ref).
+
+See also: [`project!`](@ref), [`projectY!`](@ref), [`projectX!`](@ref).
+"""
+function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    project_cond!(d,qubit,Val(isX),Val((false,true));keep_result,phases)
+end
+
+"""
+Measure a given qubit in the Y basis.
+A faster special-case version of [`project!`](@ref).
+
+See also: [`project!`](@ref), [`projectX!`](@ref), [`projectZ!`](@ref).
+"""
+function projectY!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    project_cond!(d,qubit,Val(isXorZ),Val((true,true));keep_result,phases)
+end
+
+"""Internal method used to implement [`projectX!`](@ref), [`projectZ!`](@ref), and [`projectY!`](@ref)."""
+function project_cond!(d::MixedDestabilizer,qubit::Int,cond::Val{IS},reset::Val{RESET};keep_result::Bool=true,phases::Bool=true) where {IS,RESET}
+    anticommutes = 0
+    tab = d.tab
+    stabilizer = stabilizerview(d)
+    destabilizer = destabilizerview(d)
+    r = d.rank
+    n = nqubits(d)
+    # Check whether we anticommute with any of the stabilizer rows
+    for i in 1:r # The explicit loop is faster than anticommutes = findfirst(row->comm(pauli,stabilizer,row)!=0x0, 1:r); both do not allocate.
+        if IS(stabilizer,i,qubit)
+            anticommutes = i
+            break
+        end
+    end
+    if anticommutes == 0
+        anticomlog = 0
+        # Check whether we anticommute with any of the logical X rows
+        for i in r+1:n # The explicit loop is faster than findfirst.
+            if IS(tab,i,qubit)
+                anticomlog = i
+                break
+            end
+        end
+        if anticomlog==0
+            # Check whether we anticommute with any of the logical Z rows
+            for i in n+r+1:2*n # The explicit loop is faster than findfirst.
+                if IS(tab,i,qubit)
+                    anticomlog = i
+                    break
+                end
+            end
+        end
+        if anticomlog!=0
+            if anticomlog<=n
+                rowswap!(tab, r+1+n, anticomlog)
+                n!=r+1 && anticomlog!=r+1 && rowswap!(tab, r+1, anticomlog+n)
+            else
+                rowswap!(tab, r+1, anticomlog-n)
+                rowswap!(tab, r+1+n, anticomlog)
+            end
+            anticomm_update_rows_cond(tab,qubit,r+1,n,r+1,phases,cond)
+            d.rank += 1
+            anticommutes = d.rank
+            tab[r+1] = tab[n+r+1]
+            zero!(tab,n+r+1) # set to projector
+            tab[n+r+1,qubit] = RESET
+            result = nothing
+        else
+            if keep_result
+                new_pauli = zero(PauliOperator,n)
+                for i in 1:r # comm check bellow
+                    IS(destabilizer,i,qubit) && mul_left!(new_pauli, stabilizer, i, phases=phases)
+                end
+                result = new_pauli.phase[]
+            else
+                result = nothing
+            end
+        end
+    else
+        anticomm_update_rows_cond(tab,qubit,r,n,anticommutes,phases,cond)
+        destabilizer[anticommutes] = stabilizer[anticommutes]
+        zero!(stabilizer, anticommutes) # set to projector
+        stabilizer[anticommutes,qubit] = RESET
+        result = nothing
+    end
+    d, anticommutes, result
 end

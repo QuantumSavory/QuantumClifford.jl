@@ -304,6 +304,24 @@ function test_projections()
             mds, a, r = project!(copy(s), P"-IZI"; keep_result=true)
             @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
         end
+        @testset "Single Qubit Projections" begin
+            for n in test_sizes
+                s = MixedDestabilizer(random_destabilizer(n));
+                r = rand(1:n)
+                px = single_x(n,r);
+                py = single_y(n,r);
+                pz = single_z(n,r);
+                @test project!(copy(s),px) == projectX!(copy(s),r)
+                @test project!(copy(s),py) == projectY!(copy(s),r)
+                @test project!(copy(s),pz) == projectZ!(copy(s),r)
+                sx = project!(copy(s),px)[1]
+                sy = project!(copy(s),py)[1]
+                sz = project!(copy(s),pz)[1]
+                @test project!(copy(sx),px) == projectX!(copy(sx),r)
+                @test project!(copy(sy),py) == projectY!(copy(sy),r)
+                @test project!(copy(sz),pz) == projectZ!(copy(sz),r)
+            end
+        end
         @testset "Redundant row permutations in `project!(::MixedDestabilizer)`" begin
             # Fixed in 41ed1d3c
             destab =  S"+ ZX_Y_YXZ

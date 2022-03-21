@@ -2,6 +2,7 @@
 
 ## v0.4.1-dev
 
+- Faster single-qubit projections with `projectX!`, `projectY!`, `projectZ!`.
 - Move circuit plotting with `Quantikz.jl` to `QuantumCliffordPlots.jl`
 - Random states with zeroed phases with `phases=false`.
 - Pre-compilation and inference cleanup (useful for Julia 1.8+).
