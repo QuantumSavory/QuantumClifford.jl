@@ -3,22 +3,22 @@
 _X ⟼ + _X
 Z_ ⟼ + Z_
 _Z ⟼ + ZZ
-, [2, 4])</code></pre><p>The Clifford operator tableaux can be completely arbitrary.</p><pre><code class="language-julia hljs">SparseGate(random_clifford(3), [2,4,5])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">QuantumClifford.Experimental.NoisyCircuits.SparseGate(X__ ⟼ + ZX_
-_X_ ⟼ + XZZ
-__X ⟼ + XYX
-Z__ ⟼ + YX_
-_Z_ ⟼ + XY_
-__Z ⟼ + __Z
-, [2, 4, 5])</code></pre><p>If the Clifford operator acts on all qubits, we do not need to specify indices.</p><pre><code class="language-julia hljs">DenseGate(random_clifford(5))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">QuantumClifford.Experimental.NoisyCircuits.DenseGate(X____ ⟼ - ZYZYZ
-_X___ ⟼ + _XY_Z
-__X__ ⟼ - ZZYZY
-___X_ ⟼ + _XYY_
-____X ⟼ - ZXY_Z
-Z____ ⟼ + Z_XZX
-_Z___ ⟼ + XZXYX
-__Z__ ⟼ + ZZXYZ
-___Z_ ⟼ + _YXZ_
-____Z ⟼ - XYX_Z
+, [2, 4])</code></pre><p>The Clifford operator tableaux can be completely arbitrary.</p><pre><code class="language-julia hljs">SparseGate(random_clifford(3), [2,4,5])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">QuantumClifford.Experimental.NoisyCircuits.SparseGate(X__ ⟼ + ZYY
+_X_ ⟼ - ZXX
+__X ⟼ + _YY
+Z__ ⟼ + XY_
+_Z_ ⟼ + __Y
+__Z ⟼ - YXY
+, [2, 4, 5])</code></pre><p>If the Clifford operator acts on all qubits, we do not need to specify indices.</p><pre><code class="language-julia hljs">DenseGate(random_clifford(5))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">QuantumClifford.Experimental.NoisyCircuits.DenseGate(X____ ⟼ - ZZ_ZX
+_X___ ⟼ - __ZYZ
+__X__ ⟼ - YX_XY
+___X_ ⟼ + XZXYX
+____X ⟼ - YYXXZ
+Z____ ⟼ - _YY_X
+_Z___ ⟼ - XYXYZ
+__Z__ ⟼ + XZZXX
+___Z_ ⟼ - ZYX_Y
+____Z ⟼ + Z_XYY
 )</code></pre><h2 id="Noisy-Gates"><a class="docs-heading-anchor" href="#Noisy-Gates">Noisy Gates</a><a id="Noisy-Gates-1"></a><a class="docs-heading-anchor-permalink" href="#Noisy-Gates" title="Permalink"></a></h2><p>Each gate can be followed by noise applied to the qubits on which it has acted. This is done by wrapping the given gate into a <a href="../noisycircuits_API/#QuantumClifford.Experimental.NoisyCircuits.NoisyGate"><code>NoisyGate</code></a></p><pre><code class="language-julia hljs">ε = 0.03 # X/Y/Z error probability
 noise = UnbiasedUncorrelatedNoise(ε)
 noisy_gate = NoisyGate(SparseGate(CNOT, [2,4]), noise)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">QuantumClifford.Experimental.NoisyCircuits.NoisyGate(QuantumClifford.Experimental.NoisyCircuits.SparseGate(X_ ⟼ + XX
@@ -32,15 +32,15 @@ _Z ⟼ + ZZ
  QuantumClifford.Experimental.NoisyCircuits.SparseMeasurement(+ Z, [2], 2)
  QuantumClifford.Experimental.NoisyCircuits.SparseMeasurement(+ XX, [1, 3], 3)</code></pre><p>TODO: SparseMeasurement, NoisyMeasurement</p><h2 id="Verification-Operations"><a class="docs-heading-anchor" href="#Verification-Operations">Verification Operations</a><a id="Verification-Operations-1"></a><a class="docs-heading-anchor-permalink" href="#Verification-Operations" title="Permalink"></a></h2><p>At the end of many circuits one might want to check whether they performed correctly. The <a href="../noisycircuits_API/#QuantumClifford.Experimental.NoisyCircuits.VerifyOp"><code>VerifyOp</code></a> operation corresponds to an unphysical perfect tomographic operation, checking whether the state of the qubits at the given indices is indeed what is expected. If it is, the operation reports a success, otherwise it reports an undetected error.</p><pre><code class="language-julia hljs">desired_state = random_stabilizer(5)
 qubit_indices = [1,2,3,4,7]
-VerifyOp(desired_state, qubit_indices)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">QuantumClifford.Experimental.NoisyCircuits.VerifyOp(+ __Z_Y
-+ __XZX
-+ _Z_XY
-+ _X_YY
-- X____, [1, 2, 3, 4, 7])</code></pre><h2 id="Reset-Operations"><a class="docs-heading-anchor" href="#Reset-Operations">Reset Operations</a><a id="Reset-Operations-1"></a><a class="docs-heading-anchor-permalink" href="#Reset-Operations" title="Permalink"></a></h2><p>The <a href="../noisycircuits_API/#QuantumClifford.Experimental.NoisyCircuits.Reset"><code>Reset</code></a> operations lets you trace out the specified qubits and set their state to a specific tableau.</p><pre><code class="language-julia hljs">new_state = random_stabilizer(3)
+VerifyOp(desired_state, qubit_indices)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">QuantumClifford.Experimental.NoisyCircuits.VerifyOp(+ ___YZ
+- __XZY
+- _ZZZX
++ ZXZ_Z
+- XX_ZY, [1, 2, 3, 4, 7])</code></pre><h2 id="Reset-Operations"><a class="docs-heading-anchor" href="#Reset-Operations">Reset Operations</a><a id="Reset-Operations-1"></a><a class="docs-heading-anchor-permalink" href="#Reset-Operations" title="Permalink"></a></h2><p>The <a href="../noisycircuits_API/#QuantumClifford.Experimental.NoisyCircuits.Reset"><code>Reset</code></a> operations lets you trace out the specified qubits and set their state to a specific tableau.</p><pre><code class="language-julia hljs">new_state = random_stabilizer(3)
 qubit_indices = [1,2,3]
-Reset(new_state, qubit_indices)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">QuantumClifford.Experimental.NoisyCircuits.Reset(+ ZXX
-- XYX
-+ XXY, [1, 2, 3])</code></pre><p>It can be done anywhere in a circuit, not just at the beginning.</p><h2 id="Gates-Conditioned-on-Classical-Bits"><a class="docs-heading-anchor" href="#Gates-Conditioned-on-Classical-Bits">Gates Conditioned on Classical Bits</a><a id="Gates-Conditioned-on-Classical-Bits-1"></a><a class="docs-heading-anchor-permalink" href="#Gates-Conditioned-on-Classical-Bits" title="Permalink"></a></h2><p><a href="../noisycircuits_API/#QuantumClifford.Experimental.NoisyCircuits.ConditionalGate"><code>ConditionalGate</code></a> is a conditional gate that performs one of two provided gates, depending on the value of a given classical bit.</p><p><a href="../noisycircuits_API/#QuantumClifford.Experimental.NoisyCircuits.DecisionGate"><code>DecisionGate</code></a> is a conditional gate that performs one of the supplied <code>gates</code>, depending on the output of <code>decisionfunction</code> applied to the entire classical bit register.</p><pre><code class="language-julia hljs">gate1 = SparseGate(CNOT,   [1,2])
+Reset(new_state, qubit_indices)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">QuantumClifford.Experimental.NoisyCircuits.Reset(+ ZYZ
+- YX_
+- XYY, [1, 2, 3])</code></pre><p>It can be done anywhere in a circuit, not just at the beginning.</p><h2 id="Gates-Conditioned-on-Classical-Bits"><a class="docs-heading-anchor" href="#Gates-Conditioned-on-Classical-Bits">Gates Conditioned on Classical Bits</a><a id="Gates-Conditioned-on-Classical-Bits-1"></a><a class="docs-heading-anchor-permalink" href="#Gates-Conditioned-on-Classical-Bits" title="Permalink"></a></h2><p><a href="../noisycircuits_API/#QuantumClifford.Experimental.NoisyCircuits.ConditionalGate"><code>ConditionalGate</code></a> is a conditional gate that performs one of two provided gates, depending on the value of a given classical bit.</p><p><a href="../noisycircuits_API/#QuantumClifford.Experimental.NoisyCircuits.DecisionGate"><code>DecisionGate</code></a> is a conditional gate that performs one of the supplied <code>gates</code>, depending on the output of <code>decisionfunction</code> applied to the entire classical bit register.</p><pre><code class="language-julia hljs">gate1 = SparseGate(CNOT,   [1,2])
 gate2 = SparseGate(CPHASE, [1,2])
 gate3 = SparseGate(SWAP,   [1,3])
 cg = ConditionalGate(gate1, gate2, 2)
@@ -69,4 +69,4 @@ _Z ⟼ + _Z
 _X ⟼ + X_
 Z_ ⟼ + _Z
 _Z ⟼ + Z_
-, [1, 3])], Main.var&quot;#1#2&quot;())</code></pre><p>TODO: Split <code>ConditionalGate</code> into quantum conditional and classical conditional</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../noisycircuits_perturb/">« Perturbative Expansions</a><a class="docs-footer-nextpage" href="../noisycircuits_API/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.15 on <span class="colophon-date" title="Monday 21 March 2022 05:58">Monday 21 March 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+, [1, 3])], Main.var&quot;#1#2&quot;())</code></pre><p>TODO: Split <code>ConditionalGate</code> into quantum conditional and classical conditional</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../noisycircuits_perturb/">« Perturbative Expansions</a><a class="docs-footer-nextpage" href="../noisycircuits_API/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.15 on <span class="colophon-date" title="Monday 21 March 2022 06:24">Monday 21 March 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
