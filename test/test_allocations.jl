@@ -34,7 +34,35 @@ function test_allocations()
                 @test allocated(f6) < 150*n
             end 
         end
-        # TODO project! and the other canonicalize           
+        @testset "project!" begin
+            N = 100
+            d = random_destabilizer(N)
+            md = MixedDestabilizer(random_destabilizer(N))
+            md.rank = 50
+            s = copy(stabilizerview(d))
+            ms = MixedStabilizer(s)
+            ms.rank = 50
+            p = s[end];
+            f1() = project!(s,p)
+            f1()
+            f2() = project!(ms,p)
+            f2()
+            f3() = project!(d,p)
+            f3()
+            f4() = project!(md,p)
+            f4()
+            @test_broken allocated(f1) < 300
+            @test_broken allocated(f2) < 300
+            @test allocated(f3) < 300
+            @test allocated(f4) < 300
+            for p! in [projectX!, projectY!, projectZ!]
+                md = MixedDestabilizer(random_destabilizer(N))
+                md.rank = 50
+                f5() = p!(md,40)
+                f5()
+                @test allocated(f5) < 300
+            end
+        end
         @testset "tensor product" begin
             stabs = [s[1:5] for s in [random_stabilizer(n) for n in [63,64,65,127,128,129]]]
             f1() = ⊗(stabs...)

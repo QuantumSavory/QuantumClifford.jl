@@ -114,7 +114,7 @@ BenchmarkTools.Trial: 564 samples with 1 evaluation.
  Memory estimate: 13.84 KiB, allocs estimate: 111.
 ```
 
-#### Sparse gate application to only specified qubits in a 1000 qubit tableau in 4 microseconds
+#### Sparse gate application to only specified qubits in a 1000 qubit tableau in 4 μs
 
 ```jldoctest
 julia> @benchmark apply!(s, sCNOT(32,504)) setup=(s=random_stabilizer(1000))
@@ -128,6 +128,42 @@ BenchmarkTools.Trial: 10000 samples with 9 evaluations.
   3.37 μs         Histogram: frequency by time        6.07 μs <
 
  Memory estimate: 96 bytes, allocs estimate: 2.
+```
+
+#### Measuring a dense 1000 qubit Pauli operator in 74 μs
+
+```jldoctest
+julia> s=random_destabilizer(1000); p=random_pauli(1000);
+
+julia> @benchmark project!(_s,_p) setup=(_s=copy(s);_p=copy(p)) evals=1
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):  69.030 μs … 144.963 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     73.799 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   73.639 μs ±   4.118 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+    ▂           ▁█▁                                             
+  ▃██▆▄▃▃▃▄▆▅▄▃▃███▃▂▂▂▁▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▂▂▂▂▂▂▂▂▂ ▃
+  69 μs           Histogram: frequency by time         92.8 μs <
+
+ Memory estimate: 480 bytes, allocs estimate: 4.
+```
+
+#### Measuring a single qubit in a 1000 qubit tableau in 50 μs
+
+```jldoctest
+julia> s=MixedDestabilizer(random_destabilizer(1000));
+
+julia> @benchmark projectY!(_s,42) setup=(_s=copy(s)) evals=1
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):  46.928 μs … 88.046 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     49.934 μs              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   49.776 μs ±  2.623 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+     ▁      ▄█▂                                                
+  ▂▂▆██▄▄▄▄▆███▅▃▂▂▂▂▂▂▂▂▂▂▂▂▂▁▁▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▁▂ ▃
+  46.9 μs         Histogram: frequency by time        63.8 μs <
+
+ Memory estimate: 464 bytes, allocs estimate: 5.
 ```
 
 Benchmarks executed on a Ryzen Zen1 8-core CPU.

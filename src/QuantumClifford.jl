@@ -743,8 +743,8 @@ function _mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::B
     s
 end
 
-function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true)::UInt8 where T<:Unsigned
-    if !phases
+function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}=Val(true))::UInt8 where {T<:Unsigned, B}
+    if !B
         r .⊻= l
         return UInt8(0x0)
     end
@@ -789,16 +789,16 @@ function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true
     UInt8((rcnt1 ⊻ (rcnt2<<1))&0x3)
 end
 
-@inline function mul_left!(r::PauliOperator, l::PauliOperator; phases::Bool=true)
+@inline function mul_left!(r::PauliOperator, l::PauliOperator; phases::Val{B}=Val(true)) where B
     nqubits(l)==nqubits(r) || throw(DimensionMismatch("The two Pauli operators should have the same length!")) # TODO skip this when @inbounds is set
     s = mul_left!(r.xz, l.xz, phases=phases)
-    phases && (r.phase[] = (s+r.phase[]+l.phase[])&0x3)
+    B && (r.phase[] = (s+r.phase[]+l.phase[])&0x3)
     r
 end
 
-@inline function mul_left!(r::PauliOperator, l::Stabilizer, i::Int; phases::Bool=true)
+@inline function mul_left!(r::PauliOperator, l::Stabilizer, i::Int; phases::Val{B}=Val(true)) where B
     s = mul_left!(r.xz, (@view l.xzs[:,i]), phases=phases)
-    phases && (r.phase[] = (s+r.phase[]+l.phases[i])&0x3)
+    B && (r.phase[] = (s+r.phase[]+l.phases[i])&0x3)
     r
 end
 
@@ -861,24 +861,24 @@ end
     rowswap!(s.tab, i+n, j+n; phases=phases)
 end
 
-@inline function mul_left!(s::Stabilizer, m, i; phases::Bool=true)
+@inline function mul_left!(s::Stabilizer, m, i; phases::Val{B}=Val(true)) where B
     extra_phase = mul_left!((@view s.xzs[:,m]), (@view s.xzs[:,i]); phases=phases)
-    phases && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
+    B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
     s
 end
 
-@inline function mul_left!(s::Destabilizer, i, j; phases::Bool=true)
-    mul_left!(s.tab, j, i; phases=false) # Indices are flipped to preserve commutation constraints
+@inline function mul_left!(s::Destabilizer, i, j; phases::Val{B}=Val(true)) where B
+    mul_left!(s.tab, j, i; phases=Val(false)) # Indices are flipped to preserve commutation constraints
     n = size(s.tab,1)÷2
     mul_left!(s.tab, i+n, j+n; phases=phases)
 end
 
-@inline function mul_left!(s::MixedStabilizer, i, j; phases::Bool=true)
+@inline function mul_left!(s::MixedStabilizer, i, j; phases::Val{B}=Val(true)) where B
     mul_left!(s.tab, i, j; phases=phases)
 end
 
-@inline function mul_left!(s::MixedDestabilizer, i, j; phases::Bool=true)
-    mul_left!(s.tab, j, i; phases=false) # Indices are flipped to preserve commutation constraints
+@inline function mul_left!(s::MixedDestabilizer, i, j; phases::Val{B}=Val(true)) where B
+    mul_left!(s.tab, j, i; phases=Val(false)) # Indices are flipped to preserve commutation constraints
     n = nqubits(s)
     mul_left!(s.tab, i+n, j+n; phases=phases)
 end
@@ -1028,6 +1028,7 @@ Based on [garcia2012efficient](@cite).
 See also: [`canonicalize_rref!`](@ref), [`canonicalize_gott!`](@ref)
 """
 function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool=false)
+    _phases = Val(phases)
     xzs = stabilizerview(state).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
@@ -1047,7 +1048,7 @@ function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
                 if xs[jbig,m]&jsmall!=zerobit && m!=i # if X or Y
-                    mul_left!(state, m, i; phases=phases)
+                    mul_left!(state, m, i; phases=_phases)
                 end
             end
             i += 1
@@ -1065,7 +1066,7 @@ function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
                 if zs[jbig,m]&jsmall!=zerobit && m!=i # if Z or Y
-                    mul_left!(state, m, i; phases=phases)
+                    mul_left!(state, m, i; phases=_phases)
                 end
             end
             i += 1
@@ -1094,6 +1095,7 @@ Based on [audenaert2005entanglement](@cite).
 See also: [`canonicalize!`](@ref), [`canonicalize_gott!`](@ref)
 """
 function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=true)
+    _phases = Val(phases)
     xzs = stabilizerview(state).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
@@ -1111,7 +1113,7 @@ function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
                 if xs[jbig,m]&jsmall!=zerobit && m!=i # if X or Y
-                    mul_left!(state, m, i; phases=phases)
+                    mul_left!(state, m, i; phases=_phases)
                 end
             end
             i -= 1
@@ -1122,7 +1124,7 @@ function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=
             rowswap!(state, k, i; phases=phases)
             for m in 1:rows
                 if zs[jbig,m]&jsmall!=zerobit && m!=i # if Z or Y
-                    mul_left!(state, m, i; phases=phases)
+                    mul_left!(state, m, i; phases=_phases)
                 end
             end
             i -= 1
@@ -1178,6 +1180,7 @@ Based on [gottesman1997stabilizer](@cite).
 See also: [`canonicalize!`](@ref), [`canonicalize_rref!`](@ref)
 """
 function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
+    _phases = Val(phases)
     xzs = stabilizer.xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
@@ -1196,7 +1199,7 @@ function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) w
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
                 if xs[jbig,m]&jsmall!=zerobit && m!=i # if X or Y
-                    mul_left!(stabilizer, m, i; phases=phases)
+                    mul_left!(stabilizer, m, i; phases=_phases)
                 end
             end
             i += 1
@@ -1216,7 +1219,7 @@ function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) w
             rowswap!(stabilizer, k, i; phases=phases)
             for m in 1:rows
                 if zs[jbig,m]&jsmall!=zerobit && m!=i # if Z or Y
-                    mul_left!(stabilizer, m, i; phases=phases)
+                    mul_left!(stabilizer, m, i; phases=_phases)
                 end
             end
             i += 1
@@ -1427,7 +1430,7 @@ function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator; phases
     new_stabrow = zero(s_tab[1])
     for row_stab in eachindex(s_tab)
         zero!(new_stabrow)
-        apply_row_kernel!(new_stabrow, row_stab, s_tab, c_tab, phases=phases)
+        apply_row_kernel!(new_stabrow, row_stab, s_tab, c_tab, phases=Val(phases))
     end
     stab
 end
@@ -1439,19 +1442,19 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=V
     c_tab = tab(c)
     @batch minbatch=25 threadlocal=zero(c_tab[1]) for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
-        apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, phases=B)
+        apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, phases=phases)
     end
     stab
 end
 
 # TODO Added a lot of type assertions to help Julia infer types, but they are much too strict for cases where bitpacking varies (check tests)
 #@inline function apply_row_kernel!(new_stabrow::PauliOperator{Array{UInt8,0},Vector{Tme}}, row::Int, s_tab::Stabilizer{Tv,Tm}, c_tab::Stabilizer{Tv,Tm}; phases=true) where {Tme,Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{Tme}}
-@inline function apply_row_kernel!(new_stabrow, row, s_tab, c_tab; phases=true)
-    phases && (new_stabrow.phase[] = s_tab.phases[row])
+@inline function apply_row_kernel!(new_stabrow, row, s_tab, c_tab; phases::Val{B}=Val(true)) where B
+    B && (new_stabrow.phase[] = s_tab.phases[row])
     n = nqubits(c_tab)
     for qubit in 1:n
         x,z = s_tab[row,qubit]
-        if phases&&x&&z
+        if B&&x&&z
             new_stabrow.phase[] -= 0x1
         end
         if x
@@ -1472,7 +1475,7 @@ function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator, indice
     new_stabrow = zero(PauliOperator,nqubits(c))
     for row in eachindex(s_tab)
         zero!(new_stabrow)
-        apply_row_kernel!(new_stabrow, row, s_tab, c_tab, indices_of_application; phases=phases)
+        apply_row_kernel!(new_stabrow, row, s_tab, c_tab, indices_of_application; phases=Val(phases))
     end
     stab
 end
@@ -1484,17 +1487,17 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_appli
     c_tab = tab(c)
     @batch minbatch=25 threadlocal=zero(c_tab[1]) for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
-        apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, indices_of_application, phases=B)
+        apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, indices_of_application, phases=phases)
     end
     stab
 end
 
-@inline function apply_row_kernel!(new_stabrow, row, s_tab, c_tab, indices_of_application; phases=true)
-    phases && (new_stabrow.phase[] = s_tab.phases[row])
+@inline function apply_row_kernel!(new_stabrow, row, s_tab, c_tab, indices_of_application; phases::Val{B}=Val(true)) where B
+    B && (new_stabrow.phase[] = s_tab.phases[row])
     n = nqubits(c_tab)
     for (qubit_i, qubit) in enumerate(indices_of_application)
         x,z = s_tab[row,qubit]
-        if phases&&x&&z
+        if B&&x&&z
             new_stabrow.phase[] -= 0x1
         end
         if x
@@ -1507,7 +1510,7 @@ end
     for (qubit_i, qubit) in enumerate(indices_of_application)
         s_tab[row,qubit] = new_stabrow[qubit_i]
     end
-    phases && (s_tab.phases[row] = new_stabrow.phase[])
+    B && (s_tab.phases[row] = new_stabrow.phase[])
     new_stabrow
 end
 
