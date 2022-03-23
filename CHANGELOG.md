@@ -1,5 +1,9 @@
 # News
 
+## v0.4.2
+
+- `project!` does not needlessly allocate anymore on `MixedDestabilizer`. PR `#41`
+
 ## v0.4.1
 
 - `apply_single_*` are not exported anymore, as `sX`/`sY`/`sZ` are cleaner choices.
