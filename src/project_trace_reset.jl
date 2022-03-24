@@ -304,51 +304,6 @@ function _project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool
     stabilizer, anticommutes, result
 end
 
-function project!(d::Destabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Val{B}=Val(true)) where B
-    anticommutes = 0
-    stabilizer = stabilizerview(d)
-    destabilizer = destabilizerview(d)
-    n = size(stabilizer,1)
-    for i in 1:n # The explicit loop is faster than anticommutes = findfirst(row->comm(pauli,stabilizer,row)!=0x0, 1:r); both do not allocate.
-        if comm(pauli,stabilizer,i)!=0x0
-            anticommutes = i
-            break
-        end
-    end
-    if anticommutes == 0
-        if n != nqubits(stabilizer)
-            throw(BadDataStructure("`Destabilizer` can not efficiently (faster than n^3) detect whether you are projecting on a stabilized or a logical operator. Switch to one of the `Mixed*` data structures.",
-                                   :project!,
-                                   :Destabilizer))
-        end
-        if keep_result
-            new_pauli = zero(pauli)
-            new_pauli.phase[] = pauli.phase[]
-            for i in 1:n
-                comm(pauli,destabilizer,i)!=0 && mul_left!(new_pauli, stabilizer, i, phases=phases)
-            end
-            result = new_pauli.phase[]
-        else
-            result = nothing
-        end
-    else
-        for i in anticommutes+1:n
-            if comm(pauli,stabilizer,i)!=0
-                mul_left!(stabilizer, i, anticommutes; phases=phases)
-            end
-        end
-        for i in 1:n
-            if i!=anticommutes && comm(pauli,destabilizer,i)!=0
-                mul_left!(d.tab, i, n+anticommutes; phases=Val(false))
-            end
-        end
-        destabilizer[anticommutes] = stabilizer[anticommutes]
-        stabilizer[anticommutes] = pauli
-        result = nothing
-    end
-    d, anticommutes, result
-end
-
 function _project!(ms::MixedStabilizer,pauli::PauliOperator;phases::Val{B}=Val(true)) where B
     _, anticom_index, res = _project!(stabilizerview(ms), pauli; keep_result=true, phases=phases)
     if anticom_index==ms.rank+1 && isnothing(res)
@@ -358,7 +313,7 @@ function _project!(ms::MixedStabilizer,pauli::PauliOperator;phases::Val{B}=Val(t
     ms, anticom_index, res
 end
 
-function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases::Val{B}=Val(true)) where {B} # TODO Ensure there are no redundant `comm` checks that can be skipped
+@inline function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases::Val{B}=Val(true)) where {B} # TODO Ensure there are no redundant `comm` checks that can be skipped
     for i in r+1:n
         if comm(pauli,tab,i)!=0
             mul_left!(tab, i, n+anticommutes; phases=phases)
@@ -376,14 +331,13 @@ function anticomm_update_rows(tab,pauli,r,n,anticommutes,phases::Val{B}=Val(true
     end
 end
 
-function _project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Val{B}=Val(true)) where B
+function _project!(d::Union{Destabilizer,MixedDestabilizer},pauli::PauliOperator;keep_result::Bool=true,phases::Val{B}=Val(true)) where B
     anticommutes = 0
     tab = d.tab
     stabilizer = stabilizerview(d)
     destabilizer = destabilizerview(d)
-    r = d.rank
-    n = nqubits(d)
-    # Check whether we anticommute with any of the stabilizer rows
+    r = trusted_rank(d)
+    n = length(d) # not `nqubits(d)` in case we have an incomplete tableau    # Check whether we anticommute with any of the stabilizer rows
     for i in 1:r # The explicit loop is faster than anticommutes = findfirst(row->comm(pauli,stabilizer,row)!=0x0, 1:r); both do not allocate.
         if comm(pauli,stabilizer,i)!=0x0
             anticommutes = i
@@ -391,6 +345,11 @@ function _project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=t
         end
     end
     if anticommutes == 0
+        if n != nqubits(stabilizer)
+            throw(BadDataStructure("`Destabilizer` can not efficiently (faster than n^3) detect whether you are projecting on a stabilized or a logical operator. Switch to one of the `Mixed*` data structures.",
+                                   :project!,
+                                   :Destabilizer))
+        end
         anticomlog = 0
         # Check whether we anticommute with any of the logical X rows
         for i in r+1:n # The explicit loop is faster than findfirst.
@@ -438,6 +397,131 @@ function _project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Bool=t
         anticomm_update_rows(tab,pauli,r,n,anticommutes,phases)
         destabilizer[anticommutes] = stabilizer[anticommutes]
         stabilizer[anticommutes] = pauli
+        result = nothing
+    end
+    d, anticommutes, result
+end
+
+"""
+Measure a given qubit in the X basis.
+A faster special-case version of [`project!`](@ref).
+
+See also: [`project!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
+"""
+function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    _phases = Val(phases)
+    project_cond!(d,qubit,Val(isZ),Val((true,false));keep_result,phases=_phases)
+end
+
+"""
+Measure a given qubit in the Z basis.
+A faster special-case version of [`project!`](@ref).
+
+See also: [`project!`](@ref), [`projectY!`](@ref), [`projectX!`](@ref).
+"""
+function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    _phases = Val(phases)
+    project_cond!(d,qubit,Val(isX),Val((false,true));keep_result,phases=_phases)
+end
+
+"""
+Measure a given qubit in the Y basis.
+A faster special-case version of [`project!`](@ref).
+
+See also: [`project!`](@ref), [`projectX!`](@ref), [`projectZ!`](@ref).
+"""
+function projectY!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    _phases = Val(phases)
+    project_cond!(d,qubit,Val(isXorZ),Val((true,true));keep_result,phases=_phases)
+end
+
+@inline isX(tab,row,col) = tab[row,col][1]
+@inline isZ(tab,row,col) = tab[row,col][2]
+@inline isY(tab,row,col) = (&)(tab[row,col]...)
+@inline isXorZ(tab,row,col) = ⊻(tab[row,col]...)
+
+@inline function anticomm_update_rows_cond(tab,qubit,r,n,anticommutes,phases::Val{B},cond::Val{IS}) where {B,IS} # TODO Ensure there are no redundant `comm` checks that can be skipped
+    for i in r+1:n
+        if IS(tab,i,qubit)
+            mul_left!(tab, i, n+anticommutes; phases=phases)
+        end
+    end
+    for i in n+anticommutes+1:2n
+        if IS(tab,i,qubit)
+            mul_left!(tab, i, n+anticommutes; phases=phases)
+        end
+    end
+    for i in 1:r
+        if i!=anticommutes && IS(tab,i,qubit)
+            mul_left!(tab, i, n+anticommutes; phases=Val(false))
+        end
+    end
+end
+
+"""Internal method used to implement [`projectX!`](@ref), [`projectZ!`](@ref), and [`projectY!`](@ref)."""
+function project_cond!(d::MixedDestabilizer,qubit::Int,cond::Val{IS},reset::Val{RESET};keep_result::Bool=true,phases::Val{PHASES}=Val(true)) where {IS,RESET,PHASES}
+    anticommutes = 0
+    tab = d.tab
+    stabilizer = stabilizerview(d)
+    destabilizer = destabilizerview(d)
+    r = d.rank
+    n = nqubits(d)
+    # Check whether we anticommute with any of the stabilizer rows
+    for i in 1:r # The explicit loop is faster than anticommutes = findfirst(row->comm(pauli,stabilizer,row)!=0x0, 1:r); both do not allocate.
+        if IS(stabilizer,i,qubit)
+            anticommutes = i
+            break
+        end
+    end
+    if anticommutes == 0
+        anticomlog = 0
+        # Check whether we anticommute with any of the logical X rows
+        for i in r+1:n # The explicit loop is faster than findfirst.
+            if IS(tab,i,qubit)
+                anticomlog = i
+                break
+            end
+        end
+        if anticomlog==0
+            # Check whether we anticommute with any of the logical Z rows
+            for i in n+r+1:2*n # The explicit loop is faster than findfirst.
+                if IS(tab,i,qubit)
+                    anticomlog = i
+                    break
+                end
+            end
+        end
+        if anticomlog!=0
+            if anticomlog<=n
+                rowswap!(tab, r+1+n, anticomlog)
+                n!=r+1 && anticomlog!=r+1 && rowswap!(tab, r+1, anticomlog+n)
+            else
+                rowswap!(tab, r+1, anticomlog-n)
+                rowswap!(tab, r+1+n, anticomlog)
+            end
+            anticomm_update_rows_cond(tab,qubit,r+1,n,r+1,phases,cond)
+            d.rank += 1
+            anticommutes = d.rank
+            tab[r+1] = tab[n+r+1]
+            zero!(tab,n+r+1) # set to projector
+            tab[n+r+1,qubit] = RESET
+            result = nothing
+        else
+            if keep_result
+                new_pauli = zero(PauliOperator,n)
+                for i in 1:r # comm check bellow
+                    IS(destabilizer,i,qubit) && mul_left!(new_pauli, stabilizer, i, phases=phases)
+                end
+                result = new_pauli.phase[]
+            else
+                result = nothing
+            end
+        end
+    else
+        anticomm_update_rows_cond(tab,qubit,r,n,anticommutes,phases,cond)
+        destabilizer[anticommutes] = stabilizer[anticommutes]
+        zero!(stabilizer, anticommutes) # set to projector
+        stabilizer[anticommutes,qubit] = RESET
         result = nothing
     end
     d, anticommutes, result
@@ -558,130 +642,4 @@ function expect(p::PauliOperator, s::AbstractStabilizer)
     result === 0x01 && return im
     result === 0x02 && return -1
     result === 0x03 && return -im
-end
-
-
-@inline isX(tab,row,col) = tab[row,col][1]
-@inline isZ(tab,row,col) = tab[row,col][2]
-@inline isY(tab,row,col) = (&)(tab[row,col]...)
-@inline isXorZ(tab,row,col) = ⊻(tab[row,col]...)
-
-function anticomm_update_rows_cond(tab,qubit,r,n,anticommutes,phases::Val{B},cond::Val{IS}) where {B,IS} # TODO Ensure there are no redundant `comm` checks that can be skipped
-    for i in r+1:n
-        if IS(tab,i,qubit)
-            mul_left!(tab, i, n+anticommutes; phases=phases)
-        end
-    end
-    for i in n+anticommutes+1:2n
-        if IS(tab,i,qubit)
-            mul_left!(tab, i, n+anticommutes; phases=phases)
-        end
-    end
-    for i in 1:r
-        if i!=anticommutes && IS(tab,i,qubit)
-            mul_left!(tab, i, n+anticommutes; phases=Val(false))
-        end
-    end
-end
-
-"""
-Measure a given qubit in the X basis.
-A faster special-case version of [`project!`](@ref).
-
-See also: [`project!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
-"""
-function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
-    _phases = Val(phases)
-    project_cond!(d,qubit,Val(isZ),Val((true,false));keep_result,phases=_phases)
-end
-
-"""
-Measure a given qubit in the Z basis.
-A faster special-case version of [`project!`](@ref).
-
-See also: [`project!`](@ref), [`projectY!`](@ref), [`projectX!`](@ref).
-"""
-function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
-    _phases = Val(phases)
-    project_cond!(d,qubit,Val(isX),Val((false,true));keep_result,phases=_phases)
-end
-
-"""
-Measure a given qubit in the Y basis.
-A faster special-case version of [`project!`](@ref).
-
-See also: [`project!`](@ref), [`projectX!`](@ref), [`projectZ!`](@ref).
-"""
-function projectY!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
-    _phases = Val(phases)
-    project_cond!(d,qubit,Val(isXorZ),Val((true,true));keep_result,phases=_phases)
-end
-
-"""Internal method used to implement [`projectX!`](@ref), [`projectZ!`](@ref), and [`projectY!`](@ref)."""
-function project_cond!(d::MixedDestabilizer,qubit::Int,cond::Val{IS},reset::Val{RESET};keep_result::Bool=true,phases::Val{PHASES}=Val(true)) where {IS,RESET,PHASES}
-    anticommutes = 0
-    tab = d.tab
-    stabilizer = stabilizerview(d)
-    destabilizer = destabilizerview(d)
-    r = d.rank
-    n = nqubits(d)
-    # Check whether we anticommute with any of the stabilizer rows
-    for i in 1:r # The explicit loop is faster than anticommutes = findfirst(row->comm(pauli,stabilizer,row)!=0x0, 1:r); both do not allocate.
-        if IS(stabilizer,i,qubit)
-            anticommutes = i
-            break
-        end
-    end
-    if anticommutes == 0
-        anticomlog = 0
-        # Check whether we anticommute with any of the logical X rows
-        for i in r+1:n # The explicit loop is faster than findfirst.
-            if IS(tab,i,qubit)
-                anticomlog = i
-                break
-            end
-        end
-        if anticomlog==0
-            # Check whether we anticommute with any of the logical Z rows
-            for i in n+r+1:2*n # The explicit loop is faster than findfirst.
-                if IS(tab,i,qubit)
-                    anticomlog = i
-                    break
-                end
-            end
-        end
-        if anticomlog!=0
-            if anticomlog<=n
-                rowswap!(tab, r+1+n, anticomlog)
-                n!=r+1 && anticomlog!=r+1 && rowswap!(tab, r+1, anticomlog+n)
-            else
-                rowswap!(tab, r+1, anticomlog-n)
-                rowswap!(tab, r+1+n, anticomlog)
-            end
-            anticomm_update_rows_cond(tab,qubit,r+1,n,r+1,phases,cond)
-            d.rank += 1
-            anticommutes = d.rank
-            tab[r+1] = tab[n+r+1]
-            zero!(tab,n+r+1) # set to projector
-            tab[n+r+1,qubit] = RESET
-            result = nothing
-        else
-            if keep_result
-                new_pauli = zero(PauliOperator,n)
-                for i in 1:r # comm check bellow
-                    IS(destabilizer,i,qubit) && mul_left!(new_pauli, stabilizer, i, phases=phases)
-                end
-                result = new_pauli.phase[]
-            else
-                result = nothing
-            end
-        end
-    else
-        anticomm_update_rows_cond(tab,qubit,r,n,anticommutes,phases,cond)
-        destabilizer[anticommutes] = stabilizer[anticommutes]
-        zero!(stabilizer, anticommutes) # set to projector
-        stabilizer[anticommutes,qubit] = RESET
-        result = nothing
-    end
-    d, anticommutes, result
 end

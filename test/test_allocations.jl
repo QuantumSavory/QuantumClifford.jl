@@ -53,8 +53,8 @@ function test_allocations()
             f4()
             @test_broken allocated(f1) < 300
             @test_broken allocated(f2) < 300
-            @test allocated(f3) < 300
-            @test allocated(f4) < 300
+            @test allocated(f3) < 400
+            @test allocated(f4) < 450
             for p! in [projectX!, projectY!, projectZ!]
                 md = MixedDestabilizer(random_destabilizer(N))
                 md.rank = 50

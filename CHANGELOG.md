@@ -1,5 +1,12 @@
 # News
 
+## v0.4.3
+
+- Implement `trusted_rank` that returns `rank` for states that support it and `length` for others (e.g. `Stabilizer`).
+- Implement `length` for `[Mixed]Destabilizer`.
+- Clean up code repetition between `project!` and `projectX/Y/Z!`.
+- More conversion constructors between different tableau types.
+
 ## v0.4.2
 
 - `project!` does not needlessly allocate anymore on `MixedDestabilizer`. PR `#41`

@@ -47,14 +47,19 @@ function logdot(s1::Stabilizer, s2::Stabilizer)
     return k
 end
 
-LinearAlgebra.rank(s::Stabilizer)   = throw(BadDataStructure("Using a `Stabilizer` type does not permit automatic tracking of the rank. Use `length`, the `MixedDestabilizer` type, or track the rank manually.",
+LinearAlgebra.rank(s::Stabilizer)   = throw(BadDataStructure("Using a `Stabilizer` type does not permit automatic tracking of the rank. Use `length`, `trusted_rank`, the `MixedDestabilizer` type, or track the rank manually.",
                                             :rank, :Stabilizer))
-
-LinearAlgebra.rank(s::Destabilizer) = throw(BadDataStructure("Using a `Destabilizer` type does not permit automatic tracking of the rank. Use `length`, the `MixedDestabilizer` type, or track the rank manually.",
-                                            :rank, :Stabilizer))
-
+LinearAlgebra.rank(s::Destabilizer) = throw(BadDataStructure("Using a `Destabilizer` type does not permit automatic tracking of the rank. Use `length`, `trusted_rank`, the `MixedDestabilizer` type, or track the rank manually.",
+                                            :rank, :Destabilizer))
 LinearAlgebra.rank(s::MixedStabilizer) = s.rank
 LinearAlgebra.rank(s::MixedDestabilizer) = s.rank
+
+"""A "trusted" `rank` which returns `rank(state)` for `Mixed[De]Stabilizer` and `lenght(state)` for `[De]Stabilizer`."""
+function trusted_rank end
+trusted_rank(s::Stabilizer) = length(s)
+trusted_rank(s::Destabilizer) = length(s)
+trusted_rank(s::MixedStabilizer) = LinearAlgebra.rank(s)
+trusted_rank(s::MixedDestabilizer) = LinearAlgebra.rank(s)
 
 """Tensor product between operators or tableaux. See also [`tensor`](@ref) and [`tensor_pow`](@ref)."""
 function ⊗ end

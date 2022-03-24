@@ -423,12 +423,15 @@ data structure for mixed stabilizer state, but a better choice would be to use
 struct Destabilizer{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractStabilizer
     tab::Stabilizer{Tzv,Tm}
     function Destabilizer(s;noprocessing=false)
-        if noprocessing
+        r,n = size(s)
+        if r==2n || noprocessing
             new{typeof(s.phases),typeof(s.xzs)}(s)
-        else
+        elseif r<=n
             mixed_destab = MixedDestabilizer(s)
             tab = vcat(destabilizerview(mixed_destab),stabilizerview(mixed_destab))
             new{typeof(s.phases),typeof(s.xzs)}(tab)
+        else
+            throw(DomainError("To construct a `Destabilizer`, either use a 2n×n tableau of destabilizer and stabilizer rows that is directly used or an r×n (r<n) tableau of stabilizers from which destabilizers are automatically computed. Or better, just use `MixedDestabilizer`."))
         end
     end
 end
@@ -438,6 +441,8 @@ function Base.show(io::IO, d::Destabilizer)
     print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
     show(io, stabilizerview(d))
 end
+
+Base.length(d::Destabilizer) = length(d.tab.phases)÷2
 
 Base.copy(d::Destabilizer) = Destabilizer(copy(d.tab);noprocessing=true)
 
@@ -466,6 +471,8 @@ function Base.show(io::IO, ms::MixedStabilizer)
     println(io, "Rank $(ms.rank) stabilizer")
     show(io, stabilizerview(ms))
 end
+
+Base.length(d::MixedStabilizer) = length(d.tab)
 
 Base.copy(ms::MixedStabilizer) = MixedStabilizer(copy(ms.tab),ms.rank)
 
@@ -535,8 +542,22 @@ function MixedDestabilizer(stab::Stabilizer{Tv,Tm}; undoperm=true) where {Tve,Tm
     MixedDestabilizer(tab, r+s)::MixedDestabilizer{Vector{Tve},Matrix{Tme}}
 end
 
-MixedDestabilizer(d::Destabilizer, r::Int) = MixedDestabilizer(tab(d), r)
-MixedDestabilizer(d::Destabilizer) = MixedDestabilizer(d, nqubits(d))
+function MixedDestabilizer(d::Destabilizer, r::Int)
+    l,n = size(d.tab)
+    if l==2n
+        MixedDestabilizer(tab(d), r)
+    else
+        throw(DomainError("Only full-rank `Destabilizer` can be converted to `MixedDestabilizer` with specific rank. Try not specifying `r`."))
+    end
+end
+function MixedDestabilizer(d::Destabilizer)
+    l,n = size(d.tab)
+    if l==2n
+        MixedDestabilizer(d, nqubits(d))
+    else
+        MixedDestabilizer(stabilizerview(d))
+    end
+end
 
 function Base.show(io::IO, d::MixedDestabilizer)
     println(io, "Rank $(d.rank) stabilizer")
@@ -556,6 +577,8 @@ function Base.show(io::IO, d::MixedDestabilizer)
         print(io, "\n══" * "═"^size(d.tab,2) * "\n")
     end
 end
+
+Base.length(d::MixedDestabilizer) = length(d.tab)÷2
 
 Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 
@@ -1709,7 +1732,7 @@ function Base.one(::Type{<:Stabilizer}, n; basis=:Z) # TODO support `basis` in a
     end
 end
 Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, nqubits(s); basis=basis)
-Base.one(::Type{<:Destabilizer}, n) = Destabilizer(vcat(one(Stabilizer, n, basis=:X),one(Stabilizer, n, basis=:Z)),noprocessing=true)
+Base.one(::Type{<:Destabilizer}, n) = Destabilizer(vcat(one(Stabilizer, n, basis=:X),one(Stabilizer, n, basis=:Z)))
 function Base.one(::Type{<:MixedStabilizer}, r, n, basis=:Z)
     s = one(Stabilizer, n; basis=basis)
     MixedStabilizer(s,r)
