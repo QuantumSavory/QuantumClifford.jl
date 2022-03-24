@@ -49,4 +49,4 @@ function _precompile_()
     _my_precompile_()
 end
 
-#_precompile_()
+VERSION > v"1.8" && _precompile_()

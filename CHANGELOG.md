@@ -6,6 +6,7 @@
 - Implement `length` for `[Mixed]Destabilizer`.
 - Clean up code repetition between `project!` and `projectX/Y/Z!`.
 - More conversion constructors between different tableau types.
+- Implement pre-compilation examples (again) for julia 1.9+.
 
 ## v0.4.2
 
