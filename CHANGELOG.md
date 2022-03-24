@@ -4,13 +4,14 @@
 
 - Implement `trusted_rank` that returns `rank` for states that support it and `length` for others (e.g. `Stabilizer`).
 - Implement `length` for `[Mixed]Destabilizer`.
-- Clean up code repetition between `project!` and `projectX/Y/Z!`.
+- Clean up code repetition between `project!` and `projectX/Y/Z!`. Issue `#40`
 - More conversion constructors between different tableau types.
 - Implement pre-compilation examples (again) for julia 1.9+.
+- `generate!` does not needlessly allocate anymore, helping `project!` on `Stabilizer`. Issue `#39`
 
 ## v0.4.2
 
-- `project!` does not needlessly allocate anymore on `MixedDestabilizer`. PR `#41`
+- `project!` does not needlessly allocate anymore on `MixedDestabilizer`. Issue `#39`, PR `#41`
 
 ## v0.4.1
 

@@ -33,8 +33,13 @@ julia> generate!(P"XII",canonicalize!(S"XII")) === nothing
 false
 ```
 """
-function generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true, saveindices::Bool=true) where {Tz<:AbstractArray{UInt8,0}, Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tv<:AbstractVector{Tme}, Tm<:AbstractMatrix{Tme}} # TODO there is stuff that can be abstracted away here and in canonicalize!
+function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=true, saveindices::Bool=true)
     _phases = Val(phases)
+    _saveindices = Val(saveindices)
+    _generate!(pauli, stabilizer; phases=_phases, saveindices=_saveindices)
+end
+
+function _generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; phases::Val{PHASES}=Val(true), saveindices::Val{SAVEIDX}=Val(true)) where {Tz<:AbstractArray{UInt8,0}, Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tv<:AbstractVector{Tme}, Tm<:AbstractMatrix{Tme}, PHASES, SAVEIDX} # TODO there is stuff that can be abstracted away here and in canonicalize!
     xzs = stabilizer.xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
@@ -54,8 +59,8 @@ function generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; 
         else
             used += candidate
         end
-        mul_left!(pauli, stabilizer, used, phases=_phases)
-        saveindices && push!(used_indices, used)
+        mul_left!(pauli, stabilizer, used, phases=phases)
+        SAVEIDX && push!(used_indices, used)
     end
     # remove Zs
     while (i=unsafe_bitfindnext_(pz,1)) !== nothing
@@ -68,11 +73,11 @@ function generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; 
         else
             used += candidate
         end
-        mul_left!(pauli, stabilizer, used, phases=_phases)
-        saveindices && push!(used_indices, used)
+        mul_left!(pauli, stabilizer, used, phases=phases)
+        SAVEIDX && push!(used_indices, used)
     end
     all(iszero, pauli.xz) || return nothing # Need to check due to cases like generate!(P"_Z", S"XZ") that bypass the X checks # TODO do this better, without this extra loop through p.xz
-    if saveindices
+    if SAVEIDX
         return pauli, used_indices
     else
         return pauli
@@ -282,7 +287,7 @@ function _project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool
     if anticommutes == 0
         if keep_result
             _,_,r = canonicalize!(stabilizer; phases=B, ranks=true) # O(n^3)
-            gen = generate!(copy(pauli), stabilizer, phases=B) # O(n^2)
+            gen = _generate!(copy(pauli), stabilizer, phases=phases) # O(n^2)
             if isnothing(gen)
                 result = nothing
                 anticommutes = r+1

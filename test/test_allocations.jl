@@ -51,8 +51,8 @@ function test_allocations()
             f3()
             f4() = project!(md,p)
             f4()
-            @test_broken allocated(f1) < 300
-            @test_broken allocated(f2) < 300
+            @test allocated(f1) < 1600
+            @test allocated(f2) < 1500
             @test allocated(f3) < 400
             @test allocated(f4) < 450
             for p! in [projectX!, projectY!, projectZ!]
