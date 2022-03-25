@@ -167,10 +167,15 @@ function applyop!(s::AbstractQCState, m::BellMeasurement)
     indices = affectedqubits(m)
     res = 0x00
     for (pauli, index) in zip(m.pauli,affectedqubits(m))
-        op = zero(typeof(pauli), n) # TODO, create a sparse project!
-        op.phase[] = pauli.phase[]
-        op[index] = pauli[1]
-        s,anticom,r = project!(s,op)
+        if pauli == P"X" # TODO use sMX sMY sMZ instead of PauliOp
+            s,anticom,r = projectX!(s,index)
+        elseif pauli == P"Y"
+            s,anticom,r = projectY!(s,index)
+        elseif pauli == P"Z"
+            s,anticom,r = projectZ!(s,index)
+        else
+            throw(DomainError("only measurement operators with positive phase are permitted"))
+        end
         if isnothing(r)
             if rand()>0.5 # TODO this seems stupid, float not necessary
                 r = stabilizerview(s).phases[anticom] = 0x00
@@ -236,9 +241,8 @@ function applyop!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the other qu
     return s, :true_success
 end
 
-"""Run a single Monte Carlo sample, starting with (and modifying) `initialstate` by applying the given `circuit`. Uses `applyop!` under the hood."""
-function mctrajectory!(initialstate,circuit)
-    state = initialstate
+"""Run a single Monte Carlo sample, starting with (and modifying) `state` by applying the given `circuit`. Uses `applyop!` under the hood."""
+function mctrajectory!(state,circuit)
     for op in circuit
         state, cont = applyop!(state, op)
         if cont!=:continue
@@ -342,18 +346,17 @@ function _applyop_branches_measurement(branches, paulis, qubits, n)
     otherpaulis = paulis[2:end]
     index = qubits[1]
     otherqubits = qubits[2:end]
-    if pauli == X # TODO this is not an elegant way to choose between X and Z coincidence measurements
-        op = single_x(n,index) # TODO this is pretty terribly inefficient... use some sparse check
-    elseif pauli == Z
-        op = single_z(n,index)
-    elseif pauli == Y
-        op = single_y(n,index)
-    else
-        op = -single_y(n, index)
-    end # TODO permit Y operators and permit negative operators
 
     for (s,r0,p) in branches
-        s,anticom,r = project!(s,op)
+        if pauli == P"X" # TODO use sMX sMY sMZ instead of PauliOp
+            s,anticom,r = projectX!(s,index)
+        elseif pauli == P"Y"
+            s,anticom,r = projectY!(s,index)
+        elseif pauli == P"Z"
+            s,anticom,r = projectZ!(s,index)
+        else
+            throw(DomainError("only measurement operators with positive phase are permitted"))
+        end
         if isnothing(r) # TODO anticom could be zero if there was a rank change
             s1 = s
             s2 = copy(s)
@@ -393,8 +396,8 @@ function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_or
 end
 
 """Run a perturbative expansion to a given order. This is the main public fuction for the perturbative expansion approach."""
-function petrajectories(state, circuit; branch_weight=1.0, max_order=1)
-    status_probs = petrajectory(state, circuit; branch_weight=branch_weight, current_order=0, max_order=max_order)
+function petrajectories(initialstate, circuit; branch_weight=1.0, max_order=1)
+    status_probs = petrajectory(initialstate, circuit; branch_weight=branch_weight, current_order=0, max_order=max_order)
     Dict([statuses[i+1]=>status_probs[i] for i in eachindex(status_probs)])
 end
 

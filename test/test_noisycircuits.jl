@@ -13,15 +13,16 @@ function test_noisycircuits()
                 canonicalize_rref!(good_bell_state)
                 v = VerifyOp(good_bell_state,[1,2])
                 n = NoiseOpAll(UnbiasedUncorrelatedNoise(0.01))
-                with_purification = mctrajectories(good_bell_state⊗good_bell_state, [n,g1,g2,m,v], trajectories=500)
+                init = MixedDestabilizer(good_bell_state⊗good_bell_state)
+                with_purification = mctrajectories(init, [n,g1,g2,m,v], trajectories=500)
                 @test with_purification[:detected_failure] > 5
                 @test with_purification[:undetected_failure] > 10
                 @test with_purification[:true_success] > 430
-                without_purification = mctrajectories(good_bell_state⊗good_bell_state, [n,v], trajectories=500)
+                without_purification = mctrajectories(init, [n,v], trajectories=500)
                 @test without_purification[:detected_failure] == 0
                 @test without_purification[:undetected_failure] > 10
                 @test without_purification[:true_success] > 450
-                nonoise = mctrajectories(good_bell_state⊗good_bell_state, [g1,g2,m,v], trajectories=10)
+                nonoise = mctrajectories(init, [g1,g2,m,v], trajectories=10)
                 @test nonoise[:detected_failure] == 0
                 @test nonoise[:undetected_failure] == 0
                 @test nonoise[:true_success] == 10
@@ -38,30 +39,31 @@ function test_noisycircuits()
                 canonicalize_rref!(good_bell_state)
                 v = VerifyOp(good_bell_state,[1,2])
                 n = NoiseOpAll(UnbiasedUncorrelatedNoise(0.01))
-                mc = mctrajectories(good_bell_state⊗good_bell_state, [n,g1,g2,m,v], trajectories=500)
-                pe = petrajectories(good_bell_state⊗good_bell_state, [n,g1,g2,m,v])
+                init = MixedDestabilizer(good_bell_state⊗good_bell_state)
+                mc = mctrajectories(init, [n,g1,g2,m,v], trajectories=500)
+                pe = petrajectories(init, [n,g1,g2,m,v])
                 @test compare(mc,pe,:detected_failure)
                 @test compare(mc,pe,:undetected_failure)
                 @test compare(mc,pe,:true_success)
-                mc = mctrajectories(good_bell_state⊗good_bell_state, [n,v], trajectories=500)
-                pe = petrajectories(good_bell_state⊗good_bell_state, [n,v])
+                mc = mctrajectories(init, [n,v], trajectories=500)
+                pe = petrajectories(init, [n,v])
                 @test compare(mc,pe,:detected_failure)
                 @test compare(mc,pe,:undetected_failure)
                 @test compare(mc,pe,:true_success)
-                mc = mctrajectories(good_bell_state⊗good_bell_state, [g1,g2,m,v], trajectories=500)
-                pe = petrajectories(good_bell_state⊗good_bell_state, [g1,g2,m,v])
+                mc = mctrajectories(init, [g1,g2,m,v], trajectories=500)
+                pe = petrajectories(init, [g1,g2,m,v])
                 @test compare(mc,pe,:detected_failure)
                 @test compare(mc,pe,:undetected_failure)
                 @test compare(mc,pe,:true_success)
             end
             
             @testset "Symbolic" begin
-                for statetype in [Stabilizer, MixedDestabilizer]
+                for statetype in [MixedDestabilizer]
                     R, (e,) = AbstractAlgebra.PolynomialRing(AbstractAlgebra.RealField, ["e"])
                     unity = R(1);
                     
                     good_bell_state = statetype(S"XX
-                                                ZZ")
+                                                  ZZ")
                     initial_state = good_bell_state⊗good_bell_state
 
                     g1 = SparseGate(CNOT, [1,3]) # CNOT between qubit 1 and qubit 3 (both with Alice)
@@ -90,7 +92,7 @@ function test_noisycircuits()
                 stateX = S"X"
                 mX = BellMeasurement([X], [1])
                 vX = VerifyOp(S"X", [1])
-                for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+                for stabType in [MixedDestabilizer]
                     determinate1 = mctrajectories(stabType(stateX), [mX,vX], trajectories=10)
                     @test determinate1[:detected_failure] == 0
                     @test determinate1[:undetected_failure] == 0
@@ -101,7 +103,7 @@ function test_noisycircuits()
                     @test determinate1_pe[:true_success] == 1
                 end
                 stateZ = S"Z"
-                for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+                for stabType in [MixedDestabilizer]
                     random1 = mctrajectories(stabType(stateZ), [mX,vX], trajectories=500)
                     @test random1[:detected_failure] > 200
                     @test random1[:undetected_failure] == 0
@@ -114,7 +116,7 @@ function test_noisycircuits()
                 bell_state = S" XX
                                 ZZ"
                 m1 = BellMeasurement([X,X], [1,2])
-                for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+                for stabType in [MixedDestabilizer]
                     determinate2 = mctrajectories(stabType(bell_state), [m1], trajectories=10)
                     @test determinate2[:detected_failure] == 0
                     @test determinate2[:undetected_failure] == 0
@@ -125,7 +127,7 @@ function test_noisycircuits()
                 end
                 m2 = BellMeasurement([X,Z], [1,2])
                 v = VerifyOp(bell_state, [1,2])
-                for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+                for stabType in [MixedDestabilizer]
                     random2 = mctrajectories(stabType(bell_state), [m2,v], trajectories=500)
                     @test random2[:detected_failure]+random2[:undetected_failure] == 500
                     @test random2[:true_success] == 0
@@ -140,7 +142,7 @@ function test_noisycircuits()
                             IZZ"
                 m1 = DenseMeasurement(P"ZZI", 1)
                 v = VerifyOp(ghzState, [1,2,3])
-                for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+                for stabType in [MixedDestabilizer]
                     register1 = Register(stabType(ghzState), zeros(Bool, 1))
                     determinate1 = mctrajectories(register1, [m1,v], trajectories=10)
                     @test determinate1[:detected_failure] == 0
@@ -152,7 +154,7 @@ function test_noisycircuits()
                     @test determinate1_pe[:true_success] == 1
                 end
                 m2 = DenseMeasurement(P"ZII", 1)
-                for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+                for stabType in [MixedDestabilizer]
                     register1 = Register(stabType(ghzState), zeros(Bool, 1))
                     random1 = mctrajectories(register1, [m2,v], trajectories=50)
                     @test random1[:detected_failure] == 0
@@ -164,7 +166,7 @@ function test_noisycircuits()
                     @test random1_pe[:true_success] == 0
                 end
                 m3 = DenseMeasurement(P"XII", 1)
-                for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+                for stabType in [MixedDestabilizer]
                     register1 = Register(stabType(ghzState), zeros(Bool, 1))
                     random2 = mctrajectories(register1, [m3,v], trajectories=50)
                     @test random2[:detected_failure] == 0
@@ -182,7 +184,7 @@ function test_noisycircuits()
                             IZZ"
                 m1 = SparseMeasurement(P"ZZ", [1,2], 1)
                 v = VerifyOp(ghzState, [1,2,3])
-                for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+                for stabType in [MixedDestabilizer]
                     register1 = Register(stabType(ghzState), zeros(Bool, 1))
                     determinate1 = mctrajectories(register1, [m1,v], trajectories=10)
                     @test determinate1[:detected_failure] == 0
@@ -194,7 +196,7 @@ function test_noisycircuits()
                     @test determinate1_pe[:true_success] == 1
                 end
                 m2 = SparseMeasurement(P"Z", [1], 1)
-                for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+                for stabType in [MixedDestabilizer]
                     register1 = Register(stabType(ghzState), zeros(Bool, 1))
                     random1 = mctrajectories(register1, [m2,v], trajectories=50)
                     @test random1[:detected_failure] == 0
@@ -206,7 +208,7 @@ function test_noisycircuits()
                     @test random1_pe[:true_success] == 0
                 end
                 m3 = SparseMeasurement(P"X", [1], 1)
-                for stabType in [Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer]
+                for stabType in [MixedDestabilizer]
                     register1 = Register(stabType(ghzState), zeros(Bool, 1))
                     random2 = mctrajectories(register1, [m3,v], trajectories=50)
                     @test random2[:detected_failure] == 0
