@@ -239,7 +239,7 @@ function test_noisycircuits()
                     correctiveGate = SparseGate(X_error, [1])
                     decisionFunction = syndrome -> syndrome[1] ? 1 : nothing
                     applyop!(r, DecisionGate([correctiveGate], decisionFunction))
-                    @test r.stab == S"Z"
+                    @test stabilizerview(r) == S"Z"
                 end
 
                 # testing an array return from decision function
@@ -252,8 +252,8 @@ function test_noisycircuits()
                 correctiveGates = [SparseGate(X_error, [1]), SparseGate(X_error, [2])]
                 decisionFunction = syndrome -> syndrome[1] ? [1,2] : nothing
                 applyop!(r, DecisionGate(correctiveGates, decisionFunction))
-                canonicalize!(r.stab)
-                @test r.stab == expectedFinalState
+                canonicalize!(quantumstate(r))
+                @test stabilizerview(r) == expectedFinalState
 
                 s = QuantumClifford.bell((false, true)) # |01>+|10>
                 r = Register(s, [false])
@@ -262,8 +262,8 @@ function test_noisycircuits()
                 # we use the same corrective gates, with a different decision function
                 decisionFunction = syndrome -> syndrome[1] ? [1] : 2 # both [1] and 1 should work
                 applyop!(r, DecisionGate(correctiveGates, decisionFunction))
-                canonicalize!(r.stab)
-                @test r.stab == expectedFinalState
+                canonicalize!(quantumstate(r))
+                @test stabilizerview(r) == expectedFinalState
             end
             @testset "ConditionalGate" begin
                 id_op = CliffordOperator([P"X", P"Z"])
@@ -275,19 +275,19 @@ function test_noisycircuits()
                     correctiveGate = SparseGate(X_error, [1])
                     identityGate = SparseGate(id_op, [1])
                     applyop!(r, ConditionalGate(correctiveGate, identityGate, 1))
-                    @test r.stab == S"Z"
+                    @test stabilizerview(r) == S"Z"
                 end
 
                 expectedFinalState = S"ZI
-                                    IZ"
+                                       IZ"
                 s = QuantumClifford.bell((false, true))
                 r = Register(s, [false])
                 applyop!(r, DenseMeasurement(P"ZI", 1))
                 correctiveGate1 = SparseGate(X_error, [1])
                 correctiveGate2 = SparseGate(X_error, [2])
                 applyop!(r, ConditionalGate(correctiveGate1, correctiveGate2, 1))
-                canonicalize!(r.stab)
-                @test r.stab == expectedFinalState
+                canonicalize!(quantumstate(r))
+                @test stabilizerview(r) == expectedFinalState
             end
         end
     end

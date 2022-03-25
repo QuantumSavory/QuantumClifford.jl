@@ -3,6 +3,7 @@ using Random: AbstractRNG, GLOBAL_RNG
 abstract type AbstractSymbolicOperator <: AbstractCliffordOperator end
 abstract type AbstractSingleQubitOperator <: AbstractSymbolicOperator end
 abstract type AbstractTwoQubitOperator <: AbstractSymbolicOperator end
+abstract type AbstractSymbolicMeasurement end
 
 # Stim has a good list of specialized single and two qubit operations at https://github.com/quantumlib/Stim/blob/e51ea66d213b25920e72c08e53266ec56fd14db4/src/stim/stabilizers/tableau_specialized_prepend.cc
 # Note that their specialized operations are for prepends (right multiplications), while we implement append (left multiplication) operations.
@@ -466,4 +467,36 @@ function apply_single_y!(stab::AbstractStabilizer, i)
         end
     end
     stab
+end
+
+struct sMX{T<:Union{Int,Nothing}} <: AbstractSymbolicMeasurement
+    qubit::Int
+    bit::T
+end
+
+struct sMY{T<:Union{Int,Nothing}} <: AbstractSymbolicMeasurement
+    qubit::Int
+    bit::T
+end
+
+struct sMZ{T<:Union{Int,Nothing}} <: AbstractSymbolicMeasurement
+    qubit::Int
+    bit::T
+end
+
+sMX(i) = sMX(i,nothing)
+sMY(i) = sMY(i,nothing)
+sMZ(i) = sMZ(i,nothing)
+
+function apply!(state::AbstractStabilizer, m::sMX)
+    projectXrand!(state,m.qubit)
+    state
+end
+function apply!(state::AbstractStabilizer, m::sMY)
+    projectXrand!(state,m.qubit)
+    state
+end
+function apply!(state::AbstractStabilizer, m::sMZ)
+    projectXrand!(state,m.qubit)
+    state
 end

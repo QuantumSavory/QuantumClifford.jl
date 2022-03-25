@@ -19,17 +19,21 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     @S_str, Stabilizer, prodphase, comm, check_allrowscommute,
     Destabilizer, MixedStabilizer, MixedDestabilizer,
     nqubits, stabilizerview, destabilizerview, logicalxview, logicalzview,
+    bitview, quantumstate,
     canonicalize!, canonicalize_rref!, canonicalize_gott!, colpermute!,
     logdot, expect,
     generate!, project!, reset_qubits!, traceout!,
     apply!,
     projectX!, projectY!, projectZ!,
+    projectrand!, projectXrand!, projectYrand!, projectZrand!,
     tab,
     CliffordOperator, @C_str,
     CNOT, CPHASE, SWAP, Hadamard, Phase, CliffordId,
     sHadamard, sPhase, sInvPhase, SingleQubitOperator, sId1, sX, sY, sZ,
     enumerate_single_qubit_gates, random_clifford1,
     sCNOT, sSWAP,
+    sMX, sMY, sMZ,
+    Register,
     tensor, tensor_pow,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     single_z, single_x, single_y,
@@ -183,7 +187,9 @@ Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
 # Stabilizers
 ##############################
 
-abstract type AbstractStabilizer end
+abstract type AbstractQCState end
+
+abstract type AbstractStabilizer <: AbstractQCState end
 
 """
 Stabilizer, i.e. a list of commuting multi-qubit Hermitian Pauli operators.
@@ -558,6 +564,8 @@ function MixedDestabilizer(d::Destabilizer)
         MixedDestabilizer(stabilizerview(d))
     end
 end
+
+function MixedDestabilizer(d::MixedStabilizer) MixedDestabilizer(stabilizerview(d)) end
 
 function Base.show(io::IO, d::MixedDestabilizer)
     println(io, "Rank $(d.rank) stabilizer")
@@ -1842,9 +1850,10 @@ function mixed_destab_looks_good(destabilizer)
     return true
 end
 
-include("project_trace_reset.jl")
+include("./project_trace_reset.jl")
 include("./linalg.jl")
 include("./symbolic_cliffords.jl")
+include("./classical_register.jl")
 include("./randoms.jl")
 include("./useful_states.jl")
 include("./experimental/Experimental.jl")

@@ -1,5 +1,11 @@
 # News
 
+## v0.4.4-dev
+
+- Implement `project[X|Y|Z]rand!` as a simpler interface to `project!` with automatic randomization of measurement phases.
+- Implement `sMX`/`sMY`/`sMZ` symbolic measurement operations that can be used with `apply!`. Use `projectrand!` internally.
+- Move `Register` out of `Experimental`. Used with `sMX`/etc to store classical bit results during circuit evolution.
+
 ## v0.4.3
 
 - Implement `trusted_rank` that returns `rank` for states that support it and `length` for others (e.g. `Stabilizer`).

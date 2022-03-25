@@ -107,6 +107,8 @@ If you need to measure a single qubit instead of a multiqubit Pauli operator,
 the faster [`projectX!`](@ref), [`projectY!`](@ref), and [`projectZ!`](@ref)
 are available.
 
+For less boilerplate and automatic randomization of the phase use [`projectrand!`](@ref).
+
 Here is an example of a projection destroying entanglement:
 
 ```jldoctest
@@ -227,7 +229,7 @@ julia> project!(s, P"IIX")
 
 See the "Datastructure Choice" section in the documentation for more details.
 
-See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
+See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref)
 """
 function project!(state,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     return _project!(state,pauli;keep_result,phases=Val(phases))
@@ -411,7 +413,7 @@ end
 Measure a given qubit in the X basis.
 A faster special-case version of [`project!`](@ref).
 
-See also: [`project!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
+See also: [`project!`](@ref), [`projectXrand!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
 """
 function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
     _phases = Val(phases)
@@ -422,7 +424,7 @@ end
 Measure a given qubit in the Z basis.
 A faster special-case version of [`project!`](@ref).
 
-See also: [`project!`](@ref), [`projectY!`](@ref), [`projectX!`](@ref).
+See also: [`project!`](@ref), [`projectZrand!`](@ref), [`projectY!`](@ref), [`projectX!`](@ref).
 """
 function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
     _phases = Val(phases)
@@ -433,7 +435,7 @@ end
 Measure a given qubit in the Y basis.
 A faster special-case version of [`project!`](@ref).
 
-See also: [`project!`](@ref), [`projectX!`](@ref), [`projectZ!`](@ref).
+See also: [`project!`](@ref), [`projectYrand!`](@ref), [`projectX!`](@ref), [`projectZ!`](@ref).
 """
 function projectY!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
     _phases = Val(phases)
@@ -530,6 +532,66 @@ function project_cond!(d::MixedDestabilizer,qubit::Int,cond::Val{IS},reset::Val{
         result = nothing
     end
     d, anticommutes, result
+end
+
+"""
+$TYPEDSIGNATURES
+
+Project `qubit` of `state` along the X axis and randomize the phase if necessary.
+
+Lower boilerplate version of [`project!`](@ref).
+
+See also: [`project!`](@ref), [`projectX!`](@ref), [`projectZrand!`](@ref), [`projectYrand!`](@ref)
+"""
+function projectXrand!(state, qubit)
+    _, anticom, res = projectX!(state, qubit)
+    anticom>0 && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
+    return state, res
+end
+
+"""
+$TYPEDSIGNATURES
+
+Project `qubit` of `state` along the Z axis and randomize the phase if necessary.
+
+Lower boilerplate version of [`project!`](@ref).
+
+See also: [`project!`](@ref), [`projectZ!`](@ref), [`projectXrand!`](@ref), [`projectYrand!`](@ref)
+"""
+function projectZrand!(state, qubit)
+    _, anticom, res = projectZ!(state, qubit)
+    anticom>0 && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
+    return state, res
+end
+
+"""
+$TYPEDSIGNATURES
+
+Project `qubit` of `state` along the Y axis and randomize the phase if necessary.
+
+Lower boilerplate version of [`project!`](@ref).
+
+See also: [`project!`](@ref), [`projectY!`](@ref), [`projectXrand!`](@ref), [`projectZrand!`](@ref)
+"""
+function projectYrand!(state, qubit)
+    _, anticom, res = projectY!(state, qubit)
+    anticom>0 && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
+    return state, res
+end
+
+"""
+$TYPEDSIGNATURES
+
+Measure `pauli` operator on `state` and randomize the phase if necessary.
+
+Lower boilerplate version of [`project!`](@ref).
+
+See also: [`project!`](@ref), [`projectXrand!`](@ref), [`projectZrand!`](@ref), [`projectYrand!`](@ref)
+"""
+function projectrand!(state, pauli)
+    _, anticom, res = project!(state, pauli)
+    anticom>0 && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
+    return state, res
 end
 
 """
