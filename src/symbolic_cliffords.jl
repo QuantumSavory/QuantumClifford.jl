@@ -5,66 +5,76 @@ abstract type AbstractSingleQubitOperator <: AbstractSymbolicOperator end
 abstract type AbstractTwoQubitOperator <: AbstractSymbolicOperator end
 abstract type AbstractSymbolicMeasurement end
 
+const MINBATCH1Q = 100
+const MINBATCH2Q = 100
+
 # Stim has a good list of specialized single and two qubit operations at https://github.com/quantumlib/Stim/blob/e51ea66d213b25920e72c08e53266ec56fd14db4/src/stim/stabilizers/tableau_specialized_prepend.cc
 # Note that their specialized operations are for prepends (right multiplications), while we implement append (left multiplication) operations.
 
-"""A "symbolic" Hadamard operator which permits faster multiplication than an operator expressed as an explicit tableau.
+@inline getshift(Tme::Type,col::Int) = _mod(Tme,col-1)
+@inline getmask(Tme::Type,col::Int) = Tme(0x1)<<getshift(Tme,col)
+@inline getbigindex(Tme::Type,col::Int) = _div(Tme,col-1)+1
 
-```jldoctest
-julia> sh = sHadamard(1)
-Symbolic single-qubit gate on qubit 1
-X ⟼ + Z
-Z ⟼ + X
+Base.@propagate_inbounds function getxbit(s, r, c)
+    Tme = eltype(s.xzs)
+    s.xzs[getbigindex(Tme,c),r]&getmask(Tme,c)
+end
+Base.@propagate_inbounds function getzbit(s, r, c)
+    Tme = eltype(s.xzs)
+    s.xzs[end÷2+getbigindex(Tme,c),r]&getmask(Tme,c)
+end
+Base.@propagate_inbounds function setxbit(s, r, c, x)
+    Tme = eltype(s.xzs)
+    cbig = getbigindex(Tme,c)
+    s.xzs[cbig,r] &= ~getmask(Tme,c)
+    s.xzs[cbig,r] |= x
+end
+Base.@propagate_inbounds function setzbit(s, r, c, z)
+    Tme = eltype(s.xzs)
+    cbig = getbigindex(Tme,c)
+    s.xzs[end÷2+cbig,r] &= ~getmask(Tme,c)
+    s.xzs[end÷2+cbig,r] |= z
+end
+Base.@propagate_inbounds setxbit(s, r, c, x, shift) = setxbit(s, r, c, x<<shift)
+Base.@propagate_inbounds setzbit(s, r, c, z, shift) = setzbit(s, r, c, z<<shift)
 
-julia> typeof(sh)
-sHadamard
+##############################
+# Single-qubit gates
+##############################
 
-julia> h = CliffordOperator(sh,1) # Transforming it back into an explicit tableau representation
-X ⟼ + Z
-Z ⟼ + X
-
-julia> typeof(h)
-CliffordOperator{Vector{UInt8}, Matrix{UInt64}}
-```
-
-See also: [`SingleQubitOperator`](@ref)
-"""
-struct sHadamard <: AbstractSingleQubitOperator
-    q::Int
+function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) where {B, G<:AbstractSingleQubitOperator}
+    s = tab(stab)
+    c = gate.q
+    @batch per=core minbatch=MINBATCH1Q for r in eachindex(s)
+        x = getxbit(s, r, c)
+        z = getzbit(s, r, c)
+        x,z,phase = qubit_kernel(gate,x,z)
+        setxbit(s, r, c, x)
+        setzbit(s, r, c, z)
+        B && phase && (s.phases[r] = (s.phases[r]+0x2)&3)
+    end
+    stab
 end
 
-"""A "symbolic" Phase operator which permits faster multiplication than an operator expressed as an explicit tableau.
-
-```jldoctest
-julia> sp = sPhase(1)
-Symbolic single-qubit gate on qubit 1
-X ⟼ + Y
-Z ⟼ + Z
-
-julia> typeof(sp)
-sPhase
-
-julia> p = CliffordOperator(sp,1) # Transforming it back into an explicit tableau representation
-X ⟼ + Y
-Z ⟼ + Z
-
-julia> typeof(p)
-CliffordOperator{Vector{UInt8}, Matrix{UInt64}}
-```
-
-See also: [`SingleQubitOperator`](@ref)
-"""
-struct sPhase <: AbstractSingleQubitOperator
-    q::Int
+"""Macro used to define single qubit symbolic gates and their `qubit_kernel` methods."""
+macro qubitop1(name, kernel)
+    prefixname = Symbol(:s,name)
+    docstring = "A \"symbolic\" single-qubit $name. See also: [`SingleQubitOperator`](@ref), [`AbstractSymbolicOperator`](@ref)"
+    quote
+        struct $(esc(prefixname)) <: AbstractSingleQubitOperator
+            q::Int
+        end
+        @doc $docstring $prefixname
+        @inline $(esc(:qubit_kernel))(::$prefixname, x, z) = $kernel 
+    end
 end
 
-"""A "symbolic" inverse of the Phase operator.
-
-See also: [`sPhase`](@ref), [`SingleQubitOperator`](@ref)
-"""
-struct sInvPhase <: AbstractSingleQubitOperator
-    q::Int
-end
+@qubitop1 Hadamard (z , x   , x!=0 && z!=0)
+@qubitop1 Phase    (x , x⊻z , x!=0 && z!=0)
+@qubitop1 InvPhase (x , x⊻z , x!=0 && z==0)
+@qubitop1 X        (x , z   , z!=0)
+@qubitop1 Y        (x , z   , (x⊻z)!=0)
+@qubitop1 Z        (x , z   , x!=0)
 
 """A "symbolic" single-qubit Identity operation.
 
@@ -73,27 +83,8 @@ See also: [`SingleQubitOperator`](@ref)
 struct sId1 <: AbstractSingleQubitOperator
     q::Int
 end
-
-"""A "symbolic" single-qubit Pauli X operation.
-
-See also: [`SingleQubitOperator`](@ref)
-"""
-struct sX <: AbstractSingleQubitOperator
-    q::Int
-end
-"""A "symbolic" single-qubit Pauli Y operation.
-
-See also: [`SingleQubitOperator`](@ref)
-"""
-struct sY <: AbstractSingleQubitOperator
-    q::Int
-end
-"""A "symbolic" single-qubit Pauli Z operation.
-
-See also: [`SingleQubitOperator`](@ref)
-"""
-struct sZ <: AbstractSingleQubitOperator
-    q::Int
+function _apply!(stab::AbstractStabilizer, ::sId1; phases::Val{B}=Val(true)) where B
+    stab
 end
 
 """A "symbolic" general single-qubit operator which permits faster multiplication than an operator expressed as an explicit tableau.
@@ -138,6 +129,35 @@ struct SingleQubitOperator <: AbstractSingleQubitOperator
     px::Bool
     pz::Bool
 end
+function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{B}=Val(true)) where B # TODO Generated functions that simplify the whole `if phases` branch might be a good optimization, but a quick benchmakr comparing sHadamard to SingleQubitOperator(sHadamard) did not show a worthwhile difference.
+    s = tab(stab)
+    c = op.q
+    Tme = eltype(s.xzs)
+    sh = getshift(Tme, c)
+    xx,zx,xz,zz = Tme.((op.xx,op.zx,op.xz,op.zz)) .<< sh
+    anticom = ~iszero((~zz & xz & ~xx & zx) | ( zz & ~xz & xx & zx) | (zz &  xz & xx & ~zx))
+    @batch per=core minbatch=MINBATCH1Q for r in eachindex(s)
+        x = getxbit(s, r, c)
+        z = getzbit(s, r, c)
+        setxbit(s, r, c, (x&xx)⊻(z&zx))
+        setzbit(s, r, c, (x&xz)⊻(z&zz))
+        if B
+            if op.px && ~iszero(x)
+                s.phases[r] += 0x2
+                s.phases[r] &= 3
+            end
+            if op.pz && ~iszero(z)
+                s.phases[r] += 0x2
+                s.phases[r] &= 3
+            end
+            if ~iszero(x&z) && anticom
+                s.phases[r] += 0x2
+                s.phases[r] &= 3
+            end
+        end
+    end
+    stab
+end
 
 SingleQubitOperator(h::sHadamard) = SingleQubitOperator(h.q, false, true , true , false, false, false)
 SingleQubitOperator(p::sPhase)    = SingleQubitOperator(p.q, true , true , false, true , false, false)
@@ -170,147 +190,6 @@ end
 function Base.show(io::IO, op::AbstractSingleQubitOperator)
     print(io, "Symbolic single-qubit gate on qubit $(op.q)\n")
     show(io, CliffordOperator(op, 1, compact=true))
-end
-
-#TODO these are too low level to be used directly in the apply! functions. Make a better abstractions.
-@inline getshift(Tme::Type,col::Int) = _mod(Tme,col-1)
-@inline getmask(Tme::Type,col::Int) = Tme(0x1)<<getshift(Tme,col)
-@inline getbigindex(Tme::Type,col::Int) = _div(Tme,col-1)+1
-
-Base.@propagate_inbounds function getxbit(s, r, c)
-    Tme = eltype(s.xzs)
-    s.xzs[getbigindex(Tme,c),r]&getmask(Tme,c)
-end
-Base.@propagate_inbounds function getzbit(s, r, c)
-    Tme = eltype(s.xzs)
-    s.xzs[end÷2+getbigindex(Tme,c),r]&getmask(Tme,c)
-end
-Base.@propagate_inbounds function setxbit(s, r, c, x)
-    Tme = eltype(s.xzs)
-    cbig = getbigindex(Tme,c)
-    s.xzs[cbig,r] &= ~getmask(Tme,c)
-    s.xzs[cbig,r] |= x
-end
-Base.@propagate_inbounds function setzbit(s, r, c, z)
-    Tme = eltype(s.xzs)
-    cbig = getbigindex(Tme,c)
-    s.xzs[end÷2+cbig,r] &= ~getmask(Tme,c)
-    s.xzs[end÷2+cbig,r] |= z
-end
-Base.@propagate_inbounds setxbit(s, r, c, x, shift) = setxbit(s, r, c, x<<shift)
-Base.@propagate_inbounds setzbit(s, r, c, z, shift) = setzbit(s, r, c, z<<shift)
-
-function _apply!(stab::AbstractStabilizer, op::AbstractSymbolicOperator; phases::Bool=true)
-    apply!(stab,op; phases=Val(phases))
-end
-
-function _apply!(stab::AbstractStabilizer, h::sHadamard; phases::Val{B}=Val(true)) where B
-    s = tab(stab)
-    c = h.q
-    @batch per=core minbatch=200 for r in eachindex(s)
-        x = getxbit(s, r, c)
-        z = getzbit(s, r, c)
-        setxbit(s, r, c, z)
-        setzbit(s, r, c, x)
-        B && x!=0 && z!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
-    end
-    stab
-end
-
-function _apply!(stab::AbstractStabilizer, p::sPhase; phases::Val{B}=Val(true)) where B
-    s = tab(stab)
-    c = p.q
-    @batch per=core minbatch=200 for r in eachindex(s)
-        x = getxbit(s, r, c)
-        z = getzbit(s, r, c)
-        #setxbit no op
-        setzbit(s, r, c, x⊻z)
-        B && x!=0 && z!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
-    end
-    stab
-end
-
-function _apply!(stab::AbstractStabilizer, p::sInvPhase; phases::Val{B}=Val(true)) where B
-    s = tab(stab)
-    c = p.q
-    @batch per=core minbatch=200 for r in eachindex(s)
-        x = getxbit(s, r, c)
-        z = getzbit(s, r, c)
-        #setxbit no op
-        setzbit(s, r, c, x⊻z)
-        B && x!=0 && z==0 && (s.phases[r] = (s.phases[r]+0x2)&3)
-    end
-    stab
-end
-
-function _apply!(stab::AbstractStabilizer, p::sX; phases::Val{B}=Val(true)) where B
-    B || return stab
-    s = tab(stab)
-    c = p.q
-    @batch per=core minbatch=200 for r in eachindex(s)
-        x = getxbit(s, r, c)
-        z = getzbit(s, r, c)
-        B && z!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
-    end
-    stab
-end
-
-function _apply!(stab::AbstractStabilizer, p::sZ; phases::Val{B}=Val(true)) where B
-    B || return stab
-    s = tab(stab)
-    c = p.q
-    @batch per=core minbatch=200 for r in eachindex(s)
-        x = getxbit(s, r, c)
-        z = getzbit(s, r, c)
-        B && x!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
-    end
-    stab
-end
-
-function _apply!(stab::AbstractStabilizer, p::sY; phases::Val{B}=Val(true)) where B
-    B || return stab
-    s = tab(stab)
-    c = p.q
-    @batch per=core minbatch=200 for r in eachindex(s)
-        x = getxbit(s, r, c)
-        z = getzbit(s, r, c)
-        B && (x⊻z)!=0 && (s.phases[r] = (s.phases[r]+0x2)&3)
-    end
-    stab
-end
-
-function _apply!(stab::AbstractStabilizer, ::sId1; phases::Val{B}=Val(true)) where B
-    stab
-end
-
-function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{B}=Val(true)) where B # TODO Generated functions that simplify the whole `if phases` branch might be a good optimization, but a quick benchmakr comparing sHadamard to SingleQubitOperator(sHadamard) did not show a worthwhile difference.
-    s = tab(stab)
-    c = op.q
-    Tme = eltype(s.xzs)
-    sh = getshift(Tme, c)
-    xx,zx,xz,zz = Tme.((op.xx,op.zx,op.xz,op.zz)) .<< sh
-    anticom = ~iszero((~zz & xz & ~xx & zx) | ( zz & ~xz & xx & zx) | (zz &  xz & xx & ~zx))
-    @batch per=core minbatch=200 for r in eachindex(s)
-        x = getxbit(s, r, c)
-        z = getzbit(s, r, c)
-        setxbit(s, r, c, (x&xx)⊻(z&zx))
-        setzbit(s, r, c, (x&xz)⊻(z&zz))
-        if B
-            if op.px && ~iszero(x)
-                s.phases[r] += 0x2
-                s.phases[r] &= 3
-            end
-            if op.pz && ~iszero(z)
-                s.phases[r] += 0x2
-                s.phases[r] &= 3
-            end
-            if ~iszero(x&z) && anticom
-                s.phases[r] += 0x2
-                s.phases[r] &= 3
-            end
-        end
-    end
-    stab
 end
 
 const all_single_qubit_patterns = (
@@ -359,39 +238,27 @@ function random_clifford1(rng::AbstractRNG, qubit)
 end
 random_clifford1(qubit) = random_clifford1(GLOBAL_RNG, qubit)
 
+##############################
+# Two-qubit gates
+##############################
 
-"""A "symbolic" CNOT
-
-See also: [`SingleQubitOperator`](@ref)
-"""
-struct sCNOT <: AbstractTwoQubitOperator
-    q1::Int
-    q2::Int
-end
-
-"""A "symbolic" SWAP
-
-See also: [`SingleQubitOperator`](@ref)
-"""
-struct sSWAP <: AbstractTwoQubitOperator
-    q1::Int
-    q2::Int
-end
-
-function _apply!(stab::AbstractStabilizer, cnot::sCNOT; phases::Val{B}=Val(true)) where B
+function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) where {B, G<:AbstractTwoQubitOperator}
     s = tab(stab)
-    q1 = cnot.q1
-    q2 = cnot.q2
+    q1 = gate.q1
+    q2 = gate.q2
     Tme = eltype(s.xzs)
     shift = getshift(Tme, q1) - getshift(Tme, q2)
-    @batch per=core minbatch=200 for r in eachindex(s)
+    @batch per=core minbatch=MINBATCH2Q for r in eachindex(s)
         x1 = getxbit(s, r, q1)
         z1 = getzbit(s, r, q1)
-        x2 = getxbit(s, r, q2)
-        z2 = getzbit(s, r, q2)
-        setxbit(s, r, q2, x2⊻(x1<<-shift))
-        setzbit(s, r, q1, z1⊻(z2<<shift))
-        if B && ~iszero( x1&z1&((x2&z2)<<shift) | (x1&z2<<shift & ~(z1|x2<<shift)) )
+        x2 = getxbit(s, r, q2)<<shift
+        z2 = getzbit(s, r, q2)<<shift
+        x1,z1,x2,z2,phase = qubit_kernel(gate,x1,z1,x2,z2) # Most `qubit_kernel` functions are defined by a `qubitop2` macro
+        setxbit(s, r, q1, x1, 0)
+        setzbit(s, r, q1, z1, 0)
+        setxbit(s, r, q2, x2, -shift)
+        setzbit(s, r, q2, z2, -shift)
+        if B && phase
             s.phases[r] += 0x2
             s.phases[r] &= 3
         end
@@ -399,24 +266,22 @@ function _apply!(stab::AbstractStabilizer, cnot::sCNOT; phases::Val{B}=Val(true)
     stab
 end
 
-function _apply!(stab::AbstractStabilizer, swap::sSWAP; phases::Val{B}=Val(true)) where B
-    s = tab(stab)
-    q1 = swap.q1
-    q2 = swap.q2
-    Tme = eltype(s.xzs)
-    shift = getshift(Tme, q1) - getshift(Tme, q2)
-    @batch per=core minbatch=200 for r in eachindex(s)
-        x1 = getxbit(s, r, q1)
-        z1 = getzbit(s, r, q1)
-        x2 = getxbit(s, r, q2)
-        z2 = getzbit(s, r, q2)
-        setxbit(s, r, q1, x2, shift)
-        setzbit(s, r, q1, z2, shift)
-        setxbit(s, r, q2, x1, -shift)
-        setzbit(s, r, q2, z1, -shift)
+"""Macro used to define 2-qubit symbolic gates and their `qubit_kernel` methods."""
+macro qubitop2(name, kernel)
+    prefixname = Symbol(:s,name)
+    docstring = "A \"symbolic\" $name. See also: [`AbstractSymbolicOperator`](@ref)"
+    quote
+        struct $(esc(prefixname)) <: AbstractTwoQubitOperator
+            q1::Int
+            q2::Int
+        end
+        @doc $docstring $prefixname
+        @inline $(esc(:qubit_kernel))(::$prefixname, x1, z1, x2, z2) = $kernel 
     end
-    stab
 end
+
+@qubitop2 SWAP (x2, z2, x1, z1, false)
+@qubitop2 CNOT (x1, z1⊻z2, x2⊻x1, z2, ~iszero( (x1&z1&x2&z2) | (x1&z2&~(z1|x2)) ))
 
 ##############################
 # Functions that perform direct application of common operators without needing an operator instance
@@ -468,6 +333,10 @@ function apply_single_y!(stab::AbstractStabilizer, i)
     end
     stab
 end
+
+##############################
+# Measurements
+##############################
 
 struct sMX{T<:Union{Int,Nothing}} <: AbstractSymbolicMeasurement
     qubit::Int
