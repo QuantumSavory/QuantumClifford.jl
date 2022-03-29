@@ -239,7 +239,7 @@ end
 """
 $TYPEDSIGNATURES
 
-When using [`project`](@ref) on [`MixedStabilizer`](@ref) it automates some of the extra
+When using [`project!`](@ref) on [`MixedStabilizer`](@ref) it automates some of the extra
 steps we encounter when implicitly using the `Stabilizer` datastructure to
 represent mixed states. Namely, it helps when the projector is not among the
 list of stabilizers:

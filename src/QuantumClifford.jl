@@ -26,12 +26,13 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     apply!,
     projectX!, projectY!, projectZ!,
     projectrand!, projectXrand!, projectYrand!, projectZrand!,
-    tab,
+    tab, puttableau!,
     CliffordOperator, @C_str,
-    CNOT, CPHASE, SWAP, Hadamard, Phase, CliffordId,
+    tCNOT, tCPHASE, tSWAP, tHadamard, tPhase, tId1,
+    AbstractSymbolicOperator, AbstractSingleQubitOperator, AbstractTwoQubitOperator,
     sHadamard, sPhase, sInvPhase, SingleQubitOperator, sId1, sX, sY, sZ,
     enumerate_single_qubit_gates, random_clifford1,
-    sCNOT, sSWAP,
+    sCNOT, sCPHASE, sSWAP,
     sMX, sMY, sMZ,
     Register,
     tensor, tensor_pow,
@@ -1545,31 +1546,29 @@ end
     new_stabrow
 end
 
+const tCNOT = C"XX
+                IX
+                ZI
+                ZZ"
 
-const CNOT = C"XX
-               IX
-               ZI
-               ZZ"
+const tCPHASE = C"XZ
+                  ZX
+                  ZI
+                  IZ"
 
-const CPHASE = C"XZ
-                 ZX
-                 ZI
-                 IZ"
+const tSWAP = C"IX
+                XI
+                IZ
+                ZI"
 
-const SWAP = C"IX
-               XI
-               IZ
-               ZI"
+const tHadamard = C"Z
+                    X"
 
-const Hadamard = C"Z
-                   X"
+const tPhase = C"Y
+                 Z"
 
-const Phase = C"Y
-                Z"
-
-const CliffordId = C"X
-                     Z"
-
+const tId1 = C"X
+               Z"
 
 ##############################
 # Helpers for binary codes

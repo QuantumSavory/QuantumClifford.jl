@@ -15,7 +15,7 @@ function test_cliff()
     end
     @testset "Clifford Operators" begin
         @testset "Permutations of qubits" begin
-            for c in [CNOT, CliffordId⊗Hadamard, CNOT⊗CNOT, tensor_pow(CNOT,6), tensor_pow(CNOT,7), tensor_pow(CNOT,6)⊗Phase, tensor_pow(CNOT,7)⊗Phase]
+            for c in [tCNOT, tId1⊗tHadamard, tCNOT⊗tCNOT, tensor_pow(tCNOT,6), tensor_pow(tCNOT,7), tensor_pow(tCNOT,6)⊗tPhase, tensor_pow(tCNOT,7)⊗tPhase]
                 for rep in 1:5
                     p = randperm(nqubits(c))
                     s = random_stabilizer(nqubits(c))
@@ -24,7 +24,7 @@ function test_cliff()
             end
             for i in 1:5
                 p = randperm(125)
-                c = rand([CliffordId, Hadamard, Phase], 125)
+                c = rand([tId1, tHadamard, tPhase], 125)
                 @test ⊗(c[p]...) == permute(⊗(c...), p)
             end
         end
@@ -50,7 +50,7 @@ function test_cliff()
             for size in test_sizes
                 size < 5 && continue
                 s = random_stabilizer(size)
-                gates = vcat([CNOT, Hadamard, Phase], repeat([CliffordId],size-4))
+                gates = vcat([tCNOT, tHadamard, tPhase], repeat([tId1],size-4))
                 gates_perm = randperm(size-1)
                 gates = gates[gates_perm]
                 big_gate = reduce(⊗,gates)
@@ -61,11 +61,11 @@ function test_cliff()
                 igates_perm = perm_inverse(gates_perm)
                 s2 = copy(s)
                 canonicalize!(s2)
-                s2 = apply!(s2, CNOT, [igates_perm[1],igates_perm[1]+1])
+                s2 = apply!(s2, tCNOT, [igates_perm[1],igates_perm[1]+1])
                 canonicalize!(s2)
-                s2 = apply!(s2, Hadamard, [igates_perm[2]+(igates_perm[1]<igates_perm[2])])
+                s2 = apply!(s2, tHadamard, [igates_perm[2]+(igates_perm[1]<igates_perm[2])])
                 canonicalize!(s2)
-                s2 = apply!(s2, Phase, [igates_perm[3]+(igates_perm[1]<igates_perm[3])])
+                s2 = apply!(s2, tPhase, [igates_perm[3]+(igates_perm[1]<igates_perm[3])])
 
                 @test canonicalize!(s1) == canonicalize!(s2)
             end

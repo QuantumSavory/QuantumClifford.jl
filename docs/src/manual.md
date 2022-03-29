@@ -345,6 +345,49 @@ julia> project!(copy(s), P"ZZI", phases=false)
 - _ZZ, 0, 0x00)
 ```
 
+## Sparse single-qubit measurements
+
+In many circumstances only a single-qubit operator is being measured. In that case one should use the [`projectX!`](@ref), [`projectY!`](@ref), and [`projectZ!`](@ref) functions as they are much faster thanks to tracking only a single qubit.
+
+## Gate-like interface
+
+If you do not need all this boilerplate, and especially if you want to perform the randomization automatically, you can use the gate-like "symbolic" objects [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref), that perform the measurement and the necessary randomization of phase. If the measurement result is to be stored, you can use the [`Register`](@ref) structure that stores both stabilizer tableaux and bit values.
+
+<!-- # TODO make a jldoctest -->
+```
+julia> state = Register(ghz(3), [false,false])
+Register{Vector{UInt8}, Matrix{UInt64}}(Rank 3 stabilizer
++ Z__
++ _X_
++ __X
+═════
++ XXX
++ ZZ_
++ Z_Z
+═════
+, Bool[0, 0])
+
+julia> apply!(state, sMX(3,2)) # which qubit is measured and in which bit it is stored
+Register{Vector{UInt8}, Matrix{UInt64}}(Rank 3 stabilizer
++ Z__
++ _X_
++ Z_Z
+═════
++ XXX
++ ZZ_
++ __X
+═════
+, Bool[0, 1])
+
+julia> bitview(state)
+2-element Vector{Bool}:
+ 0
+ 1
+```
+
+Or you can use the [`projectXrand!`](@ref), [`projectYrand!`](@ref), and [`projectZrand!`](@ref) if you prefer a function-call interface.
+
+
 # [Partial Traces](@id Partial-Traces)
 
 Partial trace (using [`traceout!`](@ref)) over even a single qubit might cause many of them to decohere due to entanglement.
@@ -423,25 +466,27 @@ julia> generate!(P"YYY", s)
 
 The [`CliffordOperator`](@ref) structure represents a linear mapping between
 stabilizers (which should also preserve commutation relationships, but that is
-not checked at instantiation). A number of predefined Clifford operators are
-available.
+not checked at instantiation).
+These are n-qubit dense tableaux, representing an operation on n-qubit states. For single- or two-qubit gates, it is much more efficient to use small sparse [symbolic clifford operators](@ref Symbolic-Clifford-Operators).
+A number of predefined Clifford operators are available,
+their name prefixed with `t` to mark them as dense tableaux.
 
 ```jldoctest
-julia> Hadamard
+julia> tHadamard
 X ⟼ + Z
 Z ⟼ + X
 
-julia> Phase
+julia> tPhase
 X ⟼ + Y
 Z ⟼ + Z
 
-julia> CNOT
+julia> tCNOT
 X_ ⟼ + XX
 _X ⟼ + _X
 Z_ ⟼ + Z_
 _Z ⟼ + ZZ
 
-julia> CliffordId
+julia> tId1
 X ⟼ + X
 Z ⟼ + Z
 ```
@@ -449,17 +494,17 @@ Z ⟼ + Z
 Chaining and tensor products are possible. Same for qubit permutations.
 
 ```jldoctest
-julia> Hadamard ⊗ Phase
+julia> tHadamard ⊗ tPhase
 X_ ⟼ + Z_
 _X ⟼ + _Y
 Z_ ⟼ + X_
 _Z ⟼ + _Z
 
-julia> Hadamard * Phase
+julia> tHadamard * tPhase
 X ⟼ - Y
 Z ⟼ + X
 
-julia> permute(CNOT, [2,1])
+julia> permute(tCNOT, [2,1])
 X_ ⟼ + X_
 _X ⟼ + XX
 Z_ ⟼ + ZZ
@@ -491,21 +536,21 @@ performance in-place operations (and the phase can be neglected with
 `phases=false` for faster computation).
 
 ```jldoctest
-julia> CNOT * S"X_"
+julia> tCNOT * S"X_"
 + XX
 
 julia> s = S"X_";
 
-julia> apply!(s,CNOT)
+julia> apply!(s,tCNOT)
 + XX
 ```
 
-Sparse applications where a small Clifford operator is applied only on a particular subset of a larger stabilizer is also possible.
+Sparse applications where a small Clifford operator is applied only on a particular subset of a larger stabilizer is also possible, but in such circumstances it is useful to consider using [symbolic operators](@ref Symbolic-Clifford-Operators) too.
 
 ```jldoctest
 julia> s = S"Z_YX";
 
-julia> apply!(s, CNOT, [4,2]) # Apply the CNOT on qubits 4 and 2
+julia> apply!(s, tCNOT, [4,2]) # Apply the CNOT on qubits 4 and 2
 + ZXYX
 ```
 
@@ -522,7 +567,7 @@ Internally, the `CliffordOperator` structure simply stores the tableau represent
 The `apply!` function is efficiently multithreaded for `CliffordOperators`. To start multithreaded Julia, use `julia -t<N>`
 where `<N>` specifies the number of threads.
 
-# Small Symbolic Clifford Operators
+# [Symbolic Clifford Operators](@id Symbolic-Clifford-Operators)
 
 Much faster implementations for a number of common Clifford operators are available. They are stored as special
 named structs, instead of as a full tableau. These are the subtypes of `AbstractSingleQubitOperator` and
@@ -532,10 +577,12 @@ named structs, instead of as a full tableau. These are the subtypes of `Abstract
 sHadamard
 sId1
 sPhase
+sInvPhase
 sX
 sY
 sZ
 sCNOT
+sCPHASE
 sSWAP
 ```
 
@@ -558,6 +605,7 @@ julia> sCNOT(2,3)*S"XYY"
 The `apply!` function is efficiently multithreaded for these symbolic operators as well. To start multithreaded Julia, use `julia -t<N>`
 where `<N>` specifies the number of threads.
 
+Symbolic projectors on single qubits also exist: [`sMX`](@ref), [`sMY`](@ref), [`sMZ`](@ref). When used with the [`Register`](@ref) state representation, they can store the measurement results in the corresponding classical register.
 
 # Destabilizers
 
@@ -626,7 +674,7 @@ julia> project!(d,P"ZZZ")
 Clifford operations can be applied the same way they are applied to stabilizers.
 
 ```jldoctest destab
-julia> apply!(d,CNOT⊗Hadamard)
+julia> apply!(d,tCNOT⊗tHadamard)
 - X_Z
 + XXZ
 + X__

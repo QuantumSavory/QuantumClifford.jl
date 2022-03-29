@@ -20,10 +20,11 @@ function test_symcliff()
             n==1 && continue
             s = random_stabilizer(n)
             i1,i2 = randperm(n)[1:2]
-            @test apply!(copy(s),CNOT,[i1,i2]) == apply!(copy(s),sCNOT(i1,i2))
-            @test apply!(copy(s),SWAP,[i1,i2]) == apply!(copy(s),sSWAP(i1,i2))
+            @test apply!(copy(s),tCNOT,[i1,i2]) == apply!(copy(s),sCNOT(i1,i2))
+            @test apply!(copy(s),tSWAP,[i1,i2]) == apply!(copy(s),sSWAP(i1,i2))
+            @test apply!(copy(s),tCPHASE,[i1,i2]) == apply!(copy(s),sCPHASE(i1,i2))
         end
-        @test_throws DimensionMismatch SingleQubitOperator(CNOT,1)
+        @test_throws DimensionMismatch SingleQubitOperator(tCNOT,1)
         @test_throws DimensionMismatch CliffordOperator(sHadamard(5),2)
         @test_throws ArgumentError CliffordOperator(sHadamard(5),6,compact=true)    
     end

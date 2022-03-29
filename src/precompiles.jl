@@ -8,7 +8,7 @@ function _my_precompile_()
     canonicalize_rref!(s,phases=false)
     c = random_clifford(3)
     apply!(s, c);
-    apply!(s, CNOT, [1,2]);
+    apply!(s, tCNOT, [1,2]);
     apply!(s, sCNOT(1,2));
     project!(s, P"XXX");
     s = S"XX
@@ -37,6 +37,7 @@ function _my_precompile_()
     end
     for op in [ sCNOT
                 sSWAP
+                sCPHASE
             ]#subtypes(QuantumClifford.AbstractTwoQubitOperator)
         op(2,1)*s
     end

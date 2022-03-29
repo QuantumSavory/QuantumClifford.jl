@@ -23,7 +23,7 @@ They can be specified by giving a Clifford operator tableaux and the indices on 
 using QuantumClifford # hide
 using QuantumClifford.Experimental.NoisyCircuits # hide
 using QuantumCliffordPlots # hide
-SparseGate(CNOT, [2,4])
+SparseGate(tCNOT, [2,4])
 ```
 
 The Clifford operator tableaux can be completely arbitrary.
@@ -106,9 +106,9 @@ It can be done anywhere in a circuit, not just at the beginning.
 [`DecisionGate`](@ref) is a conditional gate that performs one of the supplied `gates`, depending on the output of `decisionfunction` applied to the entire classical bit register.
 
 ```@example 1
-gate1 = SparseGate(CNOT,   [1,2])
-gate2 = SparseGate(CPHASE, [1,2])
-gate3 = SparseGate(SWAP,   [1,3])
+gate1 = SparseGate(tCNOT,   [1,2])
+gate2 = SparseGate(tCPHASE, [1,2])
+gate3 = SparseGate(tSWAP,   [1,3])
 cg = ConditionalGate(gate1, gate2, 2)
 dg = DecisionGate([gate1,gate2,gate3], bit_register->1) # it will always perform gate1
 [SparseMeasurement(X,[4],1), SparseMeasurement(Z,[5],2), cg, dg]

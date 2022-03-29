@@ -1,8 +1,12 @@
 using Random: AbstractRNG, GLOBAL_RNG
 
+"""Supertype of all symbolic operators. Subtype of `AbstractCliffordOperator`"""
 abstract type AbstractSymbolicOperator <: AbstractCliffordOperator end
+"""Supertype of all single-qubit symbolic operators."""
 abstract type AbstractSingleQubitOperator <: AbstractSymbolicOperator end
+"""Supertype of all two-qubit symbolic operators."""
 abstract type AbstractTwoQubitOperator <: AbstractSymbolicOperator end
+"""Supertype of all symbolic single-qubit measurements."""
 abstract type AbstractSymbolicMeasurement end
 
 const MINBATCH1Q = 100
@@ -172,10 +176,11 @@ function SingleQubitOperator(op::CliffordOperator, qubit)
     SingleQubitOperator(qubit,op.tab[1,1]...,op.tab[2,1]...,(~).(iszero.(op.tab.phases))...)
 end
 SingleQubitOperator(op::CliffordOperator) = SingleQubitOperator(op, 1)
+
 CliffordOperator(op::AbstractSingleQubitOperator, n; kw...) = CliffordOperator(SingleQubitOperator(op), n; kw...)
 function CliffordOperator(op::SingleQubitOperator, n; compact=false)
     if compact
-        n==1 || throw(ArgumentError("Set `n=1` as a `SingleQubitOperator` being compacted (`compact=true`) has to result in a 1D `CliffordOperator`."))
+        n==1 || throw(ArgumentError("Set `n=1` as a `SingleQubitOperator` being compacted (`compact=true`) has to result in a 1×1 `CliffordOperator`."))
         return CliffordOperator(Stabilizer([op.px ? 0x2 : 0x0, op.pz ? 0x2 : 0x0],[op.xx op.xz; op.zx op.zz]))
     else
         n >= op.q || throw(DimensionMismatch("Set a larger `n`, otherwise the `SingleQubitOperator` can not fit in the allocated `CliffordOperator`. Use `compact=true` if you want to discard the target index."))
@@ -187,9 +192,12 @@ function CliffordOperator(op::SingleQubitOperator, n; compact=false)
         return c
     end
 end
+
+CliffordOperator(::Type{O}) where {O<:AbstractSingleQubitOperator} = CliffordOperator(apply!(one(Destabilizer,1),O(1)))
+
 function Base.show(io::IO, op::AbstractSingleQubitOperator)
     print(io, "Symbolic single-qubit gate on qubit $(op.q)\n")
-    show(io, CliffordOperator(op, 1, compact=true))
+    show(io, CliffordOperator(typeof(op)))
 end
 
 const all_single_qubit_patterns = (
@@ -280,8 +288,34 @@ macro qubitop2(name, kernel)
     end
 end
 
-@qubitop2 SWAP (x2, z2, x1, z1, false)
-@qubitop2 CNOT (x1, z1⊻z2, x2⊻x1, z2, ~iszero( (x1&z1&x2&z2) | (x1&z2&~(z1|x2)) ))
+@qubitop2 SWAP   (x2 , z2    , x1    , z1    , false)
+@qubitop2 CNOT   (x1 , z1⊻z2 , x2⊻x1 , z2    , ~iszero( (x1 & z1 & x2 & z2)  | (x1 & z2 &~(z1|x2)) ))
+@qubitop2 CPHASE (x1 , z1⊻x2 , x2    , z2⊻x1 , ~iszero( (x1 & z1 & x2 &~z2)  | (x1 &~z1 & x2 & z2) ))
+
+function CliffordOperator(op::AbstractTwoQubitOperator, n; compact=false)
+    if compact
+        n==2 || throw(ArgumentError("Set `n=2` as a `TwoQubitOperator` being compacted (`compact=true`) has to result in a 2×2 `CliffordOperator`."))
+        return CliffordOperator(typeof(op))
+    else
+        n >= max(op.q1,op.q2) || throw(DimensionMismatch("Set a larger `n`, otherwise the `TwoQubitOperator` can not fit in the allocated `CliffordOperator`. Use `compact=true` if you want to discard the target index."))
+        c = one(CliffordOperator, n)
+        _c = CliffordOperator(typeof(op))
+        for (i,q) in ((1,op.q1),(2,op.q2))
+            c[q,q] = _c[i,i] # TODO define an `embed` helper function
+            c[n+q,q] = _c[n+i,i]
+            c.tab.phases[q] = _c.tab.phases[i] # TODO define a `phasesview` or `phases` helper function 
+            c.tab.phases[n+q] = _c.tab.phases[n+i]
+        end
+        return c
+    end
+end
+
+CliffordOperator(::Type{O}) where {O<:AbstractTwoQubitOperator} = CliffordOperator(apply!(one(Destabilizer,2),O(1,2)))
+
+function Base.show(io::IO, op::AbstractTwoQubitOperator)
+    print(io, "Symbolic two-qubit gate on qubit $(op.q1) and $(op.q2)\n")
+    show(io, CliffordOperator(typeof(op)))
+end
 
 ##############################
 # Functions that perform direct application of common operators without needing an operator instance
@@ -338,16 +372,19 @@ end
 # Measurements
 ##############################
 
+"""Symbolic single qubit X measurement. See also [`Register`](@ref), [`projectXrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref)"""
 struct sMX{T<:Union{Int,Nothing}} <: AbstractSymbolicMeasurement
     qubit::Int
     bit::T
 end
 
+"""Symbolic single qubit Y measurement. See also [`Register`](@ref), [`projectYrand!`](@ref), [`sMX`](@ref), [`sMZ`](@ref)"""
 struct sMY{T<:Union{Int,Nothing}} <: AbstractSymbolicMeasurement
     qubit::Int
     bit::T
 end
 
+"""Symbolic single qubit Z measurement. See also [`Register`](@ref), [`projectZrand!`](@ref), [`sMX`](@ref), [`sMY`](@ref)"""
 struct sMZ{T<:Union{Int,Nothing}} <: AbstractSymbolicMeasurement
     qubit::Int
     bit::T

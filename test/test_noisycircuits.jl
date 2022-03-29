@@ -5,8 +5,8 @@ function test_noisycircuits()
     @testset "Noisy Circuits" begin
         @testset "Monte Carlo sims" begin
             @testset "Purification examples" begin
-                g1 = SparseGate(CNOT, [1,3])
-                g2 = SparseGate(CNOT, [2,4])
+                g1 = SparseGate(tCNOT, [1,3])
+                g2 = SparseGate(tCNOT, [2,4])
                 m = BellMeasurement([X,X],[3,4])
                 good_bell_state = S"XX
                                     ZZ"
@@ -31,8 +31,8 @@ function test_noisycircuits()
         @testset "Perturbative expansion sims" begin
             @testset "Purification examples comparison to MC" begin
                 compare(a,b, symbol) = abs(a[symbol]/500-b[symbol]) / (a[symbol]/500+b[symbol]+1e-5) < 0.3
-                g1 = SparseGate(CNOT, [1,3])
-                g2 = SparseGate(CNOT, [2,4])
+                g1 = SparseGate(tCNOT, [1,3])
+                g2 = SparseGate(tCNOT, [2,4])
                 m = BellMeasurement([X,X],[3,4])
                 good_bell_state = S"XX
                                     ZZ"
@@ -66,8 +66,8 @@ function test_noisycircuits()
                                                   ZZ")
                     initial_state = good_bell_state⊗good_bell_state
 
-                    g1 = SparseGate(CNOT, [1,3]) # CNOT between qubit 1 and qubit 3 (both with Alice)
-                    g2 = SparseGate(CNOT, [2,4]) # CNOT between qubit 2 and qubit 4 (both with Bob)
+                    g1 = SparseGate(tCNOT, [1,3]) # CNOT between qubit 1 and qubit 3 (both with Alice)
+                    g2 = SparseGate(tCNOT, [2,4]) # CNOT between qubit 2 and qubit 4 (both with Bob)
                     m = BellMeasurement([X,X],[3,4]) # Bell measurement on qubit 3 and 4
                     v = VerifyOp(good_bell_state,[1,2]) # Verify that qubit 1 and 2 indeed form a good Bell pair
                     epsilon = e # The error rate

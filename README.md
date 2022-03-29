@@ -43,8 +43,8 @@ julia> S"-XX
 - XX
 + ZZ
 
-julia> CNOT * S"-XX
-                +ZZ"
+julia> tCNOT * S"-XX
+                 +ZZ"
 - X_
 + _Z
 ```
@@ -101,7 +101,7 @@ BenchmarkTools.Trial: 226 samples with 1 evaluation.
 #### Gate application (500 CNOT gates on 1000 qubits) in 7 ms
 
 ```jldoctest
-julia> @benchmark apply!(s, gate) setup=(s=random_stabilizer(1000); gate=tensor_pow(CNOT,500))
+julia> @benchmark apply!(s, gate) setup=(s=random_stabilizer(1000); gate=tensor_pow(tCNOT,500))
 BenchmarkTools.Trial: 564 samples with 1 evaluation.
  Range (min … max):  6.602 ms … 17.719 ms  ┊ GC (min … max): 0.00% … 0.00%
  Time  (median):     8.411 ms              ┊ GC (median):    0.00%

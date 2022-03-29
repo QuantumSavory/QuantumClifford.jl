@@ -19,7 +19,7 @@ function test_allocations()
             f3() = apply!(s,c)
             f3()
             @test allocated(f3) < 1500*n # TODO lower it by making apply! more efficient
-            f4() = apply!(s,CNOT,[5,20])
+            f4() = apply!(s,tCNOT,[5,20])
             f4()
             @test allocated(f4) < 1500*n # TODO lower it by making apply! more efficient
             for phases in [(0,0),(0,1),(1,0),(1,1)], i in 1:6

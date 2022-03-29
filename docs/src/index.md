@@ -42,8 +42,8 @@ julia> S"-XX
 - XX
 + ZZ
 
-julia> CNOT * S"-XX
-                +ZZ"
+julia> tCNOT * S"-XX
+                 +ZZ"
 - X_
 + _Z
 ```
