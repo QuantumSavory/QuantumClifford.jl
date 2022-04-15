@@ -1,4 +1,4 @@
-# Manual
+# [Manual](@id Manual)
 
 ```@meta
 DocTestSetup = quote

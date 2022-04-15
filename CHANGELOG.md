@@ -7,8 +7,15 @@
 - Implement convertors from symbolic operators to dense tableau operators: `CliffordOperator(sCNOT)` now gives `tCNOT` which acts equivalently to `sCNOT(1,2)`.
 - Implement `project[X|Y|Z]rand!` as a simpler interface to `project!` with automatic randomization of measurement phases.
 - Implement `sMX`/`sMY`/`sMZ` symbolic measurement operations that can be used with `apply!`. Use `projectrand!` internally.
-- Move `Register` out of `Experimental`. Used with `sMX`/etc to store classical bit results during circuit evolution.
-- **(breaking)** The experimental module `NoisyCircuits` now supports only `MixedDestabilizer` and `Register`.
+- **(breaking)** Cleanup of `NoisyCircuits`
+  - The experimental module `NoisyCircuits` now supports only `MixedDestabilizer` and `Register`.
+  - `Register` is moved out of `NoisyCircuits`. Used with `sMX`/etc to store classical bit results during circuit evolution.
+  - `SparseGate` is moved out of `NoisyCircuits`.
+  - `Reset` is moved out of `NoisyCircuits`.
+  - `DenseMeasurement` is renamed `PauliMeasurement` and moved out of `NoisyCircuits`.
+  - `DenseGate` is removed (just use any dense CliffordOperator).
+  - `SparseMeasurement` is removed (just use `sMX`, `sMY`, `sMZ`).
+  - `applyop!` is renamed to `applywstatus!` and simplified.
 
 ## v0.4.3
 

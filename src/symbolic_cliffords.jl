@@ -7,7 +7,7 @@ abstract type AbstractSingleQubitOperator <: AbstractSymbolicOperator end
 """Supertype of all two-qubit symbolic operators."""
 abstract type AbstractTwoQubitOperator <: AbstractSymbolicOperator end
 """Supertype of all symbolic single-qubit measurements."""
-abstract type AbstractSymbolicMeasurement end
+abstract type AbstractMeasurement <: AbstractOperation end
 
 const MINBATCH1Q = 100
 const MINBATCH2Q = 100
@@ -373,19 +373,19 @@ end
 ##############################
 
 """Symbolic single qubit X measurement. See also [`Register`](@ref), [`projectXrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref)"""
-struct sMX{T<:Union{Int,Nothing}} <: AbstractSymbolicMeasurement
+struct sMX{T<:Union{Int,Nothing}} <: AbstractMeasurement
     qubit::Int
     bit::T
 end
 
 """Symbolic single qubit Y measurement. See also [`Register`](@ref), [`projectYrand!`](@ref), [`sMX`](@ref), [`sMZ`](@ref)"""
-struct sMY{T<:Union{Int,Nothing}} <: AbstractSymbolicMeasurement
+struct sMY{T<:Union{Int,Nothing}} <: AbstractMeasurement
     qubit::Int
     bit::T
 end
 
 """Symbolic single qubit Z measurement. See also [`Register`](@ref), [`projectZrand!`](@ref), [`sMX`](@ref), [`sMY`](@ref)"""
-struct sMZ{T<:Union{Int,Nothing}} <: AbstractSymbolicMeasurement
+struct sMZ{T<:Union{Int,Nothing}} <: AbstractMeasurement
     qubit::Int
     bit::T
 end
@@ -399,10 +399,16 @@ function apply!(state::AbstractStabilizer, m::sMX)
     state
 end
 function apply!(state::AbstractStabilizer, m::sMY)
-    projectXrand!(state,m.qubit)
+    projectYrand!(state,m.qubit)
     state
 end
 function apply!(state::AbstractStabilizer, m::sMZ)
-    projectXrand!(state,m.qubit)
+    projectZrand!(state,m.qubit)
     state
 end
+project!(state::AbstractStabilizer, m::sMX) = projectX!(state, m.qubit)
+project!(state::AbstractStabilizer, m::sMY) = projectY!(state, m.qubit)
+project!(state::AbstractStabilizer, m::sMZ) = projectZ!(state, m.qubit)
+projectrand!(state::AbstractStabilizer, m::sMX) = projectXrand!(state, m.qubit)
+projectrand!(state::AbstractStabilizer, m::sMY) = projectYrand!(state, m.qubit)
+projectrand!(state::AbstractStabilizer, m::sMZ) = projectZrand!(state, m.qubit)

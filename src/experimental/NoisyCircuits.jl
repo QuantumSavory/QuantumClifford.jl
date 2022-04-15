@@ -6,25 +6,21 @@ module NoisyCircuits
 #TODO permit the use of alternative RNGs
 
 using QuantumClifford
-using QuantumClifford: AbstractQCState, AbstractCliffordOperator, apply_single_x!, apply_single_y!, apply_single_z!
+using QuantumClifford: AbstractQCState, AbstractOperation, AbstractMeasurement, AbstractCliffordOperator, apply_single_x!, apply_single_y!, apply_single_z!
 
 using StatsBase: countmap
 using Combinatorics: combinations
 
 export AbstractOperation,
        UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, VerifyOp,
-       SparseGate, DenseGate, NoisyGate,
+       NoisyGate,
        BellMeasurement, NoisyBellMeasurement,
-       DenseMeasurement, SparseMeasurement,
-       Reset,
        DecisionGate, ConditionalGate,
-       affectedqubits, applyop!, applynoise!,
-       applyop_branches, applynoise_branches,
+       affectedqubits, applynoise!,# TODO rename applyop to apply_mc
+       applyop_branches, applynoise_branches,# TODO rename applyop_branches to apply_pe
        mctrajectory!, mctrajectories,
        petrajectory, petrajectories,
-       Register, ConditionalGate, DecisionGate
-
-abstract type AbstractOperation end
+       ConditionalGate, DecisionGate
 
 abstract type AbstractNoise end
 
@@ -48,17 +44,6 @@ struct NoiseOpAll <: AbstractOperation
     noise::AbstractNoise
 end
 
-"""A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`."""
-struct SparseGate <: AbstractOperation
-    cliff::AbstractCliffordOperator
-    indices::AbstractVector{Int}
-end
-
-"""A Clifford gate, applying the given `cliff` operator."""
-struct DenseGate <: AbstractOperation
-    cliff::AbstractCliffordOperator
-end
-
 """A gate consisting of the given `noise` applied after the given perfect Clifford `gate`."""
 struct NoisyGate <: AbstractOperation
     gate::AbstractOperation
@@ -67,8 +52,7 @@ end
 
 """A Bell measurement performing the correlation measurement corresponding to the given `pauli` projections on the qubits at the selected indices."""
 struct BellMeasurement <: AbstractOperation
-    pauli::AbstractVector{PauliOperator}
-    indices::AbstractVector{Int}
+    measurements::Vector{AbstractMeasurement}# TODO make the type concrete e.g. Vector{Union{sMX{T},sMY{T},sMZ{T}}}
 end
 
 """A Bell measurement in which each of the measured qubits has a chance to have flipped."""
@@ -78,30 +62,11 @@ struct NoisyBellMeasurement{T} <: AbstractOperation
 end
 NoisyBellMeasurement(p,i,fp) = NoisyBellMeasurement(BellMeasurement(p,i),fp)
 
-"""Reset the specified qubits to the given state."""
-struct Reset <: AbstractOperation 
-    resetto::Stabilizer
-    indices::AbstractVector{Int}
-end
-
 """A "probe" to verify that the state of the qubits corresponds to a desired `good_state`, e.g. at the end of the execution of a circuit."""
 struct VerifyOp <: AbstractOperation
     good_state::Stabilizer
     indices::AbstractVector{Int}
     VerifyOp(s,indices) = new(canonicalize_rref!(copy(stabilizerview(s)))[1],indices)
-end
-
-"""A Stabilizer measurement on the entirety of the quantum register."""
-struct DenseMeasurement <: AbstractOperation
-    pauli::PauliOperator
-    storagebit::Int
-end
-
-"""A Stabilizer measurement on specific qubits of the quantum register."""
-struct SparseMeasurement <: AbstractOperation
-    pauli::PauliOperator
-    indices::AbstractVector{Int}
-    storagebit::Int
 end
 
 """A conditional gate that either performs `truegate` or `falsegate`, depending on the value of `controlbit`."""
@@ -117,84 +82,49 @@ struct DecisionGate <: AbstractOperation
     decisionfunction
 end
 
-"""A list of default statuses returned by `applyop!`."""
-const statuses = [:continue, :detected_failure, :undetected_failure, :true_success]
-
 """A method giving the qubits acted upon by a given operation. Part of the Noise interface."""
 function affectedqubits end
 affectedqubits(g::NoisyGate) = affectedqubits(g.gate)
-affectedqubits(g::SparseGate) = g.indices
-affectedqubits(g::DenseGate) = 1:nqubits(g.cliff)
 affectedqubits(m::BellMeasurement) = m.indices
 affectedqubits(r::Reset) = r.indices
 affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
 affectedqubits(n::NoiseOp) = n.indices
 affectedqubits(v::VerifyOp) = v.indices
-affectedqubits(g::DenseMeasurement) = 1:length(g.pauli)
-affectedqubits(g::SparseMeasurement) = g.indices
+affectedqubits(g::PauliMeasurement) = 1:length(g.pauli)
 affectedqubits(d::ConditionalGate) = union(affectedqubits(d.truegate), affectedqubits(d.falsegate))
 affectedqubits(d::DecisionGate) = [(union(affectedqubits.(d.gates))...)...]
 
-"""A method modifying a given state by applying the given operation. Non-deterministic, part of the Monte Carlo interface."""
-function applyop! end
-
-function applyop!(s::AbstractQCState, g::NoisyGate)
+function apply!(s::AbstractQCState, g::NoisyGate)
     s = applynoise!(
-            applyop!(s,g.gate)[1],
+            apply!(s,g.gate),
             g.noise,
             affectedqubits(g.gate)),
-    return s, :continue
+    return s
 end
 
-applyop!(s::AbstractQCState, g::SparseGate) = (apply!(s,g.cliff,affectedqubits(g)), :continue)
-
-applyop!(s::AbstractQCState, g::DenseGate) = (apply!(s,g.cliff), :continue)
-
-function applyop!(s::AbstractQCState, m::NoisyBellMeasurement)
-    state, status = applyop!(s,m.meas)
+function applywstatus!(s::AbstractQCState, m::NoisyBellMeasurement)
+    state, status = applywstatus!(s,m.meas)
     nqubits = length(affectedqubits(m))
     errprob = (1-(1-2*m.flipprob)^nqubits)/2 # probability of odd number of flips
     if rand()<errprob
-        return state, status==:continue ? :detected_failure : :continue
+        return state, status==continue_stat ? failure_stat : continue_stat
     else
         return state, status
     end
 end
 
 # TODO this seems unnecessarily complicated
-function applyop!(s::AbstractQCState, m::BellMeasurement)
-    n = nqubits(s)
-    indices = affectedqubits(m)
+function applywstatus!(s::AbstractQCState, m::BellMeasurement)
     res = 0x00
-    for (pauli, index) in zip(m.pauli,affectedqubits(m))
-        if pauli == P"X" # TODO use sMX sMY sMZ instead of PauliOp
-            s,anticom,r = projectX!(s,index)
-        elseif pauli == P"Y"
-            s,anticom,r = projectY!(s,index)
-        elseif pauli == P"Z"
-            s,anticom,r = projectZ!(s,index)
-        else
-            throw(DomainError("only measurement operators with positive phase are permitted"))
-        end
-        if isnothing(r)
-            if rand()>0.5 # TODO this seems stupid, float not necessary
-                r = stabilizerview(s).phases[anticom] = 0x00
-            else
-                r = stabilizerview(s).phases[anticom] = 0x02
-            end
-        end
+    for meas in m.measurements
+        s,r = projectrand!(s,meas)
         res ⊻= r
     end
     if res==0x0
-        return s, :continue
+        return s, continue_stat
     else
-        return s, :detected_failure
+        return s, failure_stat
     end
-end
-
-function applyop!(s::AbstractQCState, reset::Reset)
-    reset_qubits!(s, reset.resetto, reset.indices)
-    return s,:continue
 end
 
 """A method modifying a given state by applying the corresponding noise model. Non-deterministic, part of the Noise interface."""
@@ -218,54 +148,77 @@ function applynoise!(s::AbstractQCState,noise::UnbiasedUncorrelatedNoise,indices
     s
 end
 
-function applyop!(s::AbstractQCState, mr::NoiseOpAll)
+function apply!(s::AbstractQCState, mr::NoiseOpAll)
     n = nqubits(s)
-    return applynoise!(s, mr.noise, 1:n), :continue
+    return applynoise!(s, mr.noise, 1:n)
 end
 
-function applyop!(s::AbstractQCState, mr::NoiseOp)
-    return applynoise!(s, mr.noise, affectedqubits(mr)), :continue
+function apply!(s::AbstractQCState, mr::NoiseOp)
+    return applynoise!(s, mr.noise, affectedqubits(mr))
 end
 
 # TODO this one needs more testing
-function applyop!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
+function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
     # TODO QuantumClifford should implement some submatrix comparison
     canonicalize_rref!(quantumstate(s),v.indices) # Document why rref is used
     sv = stabilizerview(s)
     for i in eachindex(v.good_state)
-        (sv.phases[end-i+1]==v.good_state.phases[end-i+1]) || return s, :undetected_failure
+        (sv.phases[end-i+1]==v.good_state.phases[end-i+1]) || return s, false_success_stat
         for (j,q) in zip(eachindex(v.good_state),v.indices)
-            (sv[end-i+1,q]==v.good_state[end-i+1,j]) || return s, :undetected_failure
+            (sv[end-i+1,q]==v.good_state[end-i+1,j]) || return s, false_success_stat
         end
     end
-    return s, :true_success
+    return s, true_success_stat
 end
 
-"""Run a single Monte Carlo sample, starting with (and modifying) `state` by applying the given `circuit`. Uses `applyop!` under the hood."""
+struct CircuitStatus
+    status::Int
+end
+
+const continue_stat = CircuitStatus(0)
+const true_success_stat = CircuitStatus(1)
+const false_success_stat = CircuitStatus(2)
+const failure_stat = CircuitStatus(3)
+
+const registered_statuses = ["continue",
+                             "true_success",
+                             "false_success",
+                             "failure"
+                             ]
+
+function Base.show(io::IO, s::CircuitStatus)
+    print(io, get(registered_statuses,s.status+1,nothing))
+    print(io, ":CircuitStatus($(s.status))")
+end
+
+
+function applywstatus!(state, op)
+    apply!(state,op), continue_stat
+end
+
+"""Run a single Monte Carlo sample, starting with (and modifying) `state` by applying the given `circuit`. Uses `apply!` under the hood."""
 function mctrajectory!(state,circuit)
     for op in circuit
-        state, cont = applyop!(state, op)
-        if cont!=:continue
+        state, cont = applywstatus!(state, op)
+        if cont!=continue_stat
             return state, cont
         end
     end
-    return state, :continue
+    return state, continue_stat
 end
 
 """Run multiple Monte Carlo trajectories and report the aggregate final statuses of each."""
 function mctrajectories(initialstate,circuit;trajectories=500)
-    counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator
-    return merge(Dict([(k=>0) for k in statuses[2:end]]), counts)
+    counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator, but without breaking Polyester
+    return counts
 end
 
 """Compute all possible new states after the application of the given operator. Reports the probability of each one of them. Deterministic, part of the Perturbative Expansion interface."""
 function applyop_branches end
 
 #TODO is the use of copy here necessary?
-applyop_branches(s::AbstractQCState, g::SparseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)] # there are no fall backs on purpose, otherwise it is easy to mistakenly make a non-deterministic version of this method
-applyop_branches(s::AbstractQCState, g::DenseGate; max_order=1) = [(applyop!(copy(s),g)...,1,0)]
-applyop_branches(s::AbstractQCState, v::VerifyOp; max_order=1) = [(applyop!(copy(s),v)...,1,0)] 
-applyop_branches(s::AbstractQCState, r::Reset; max_order=1) = [(applyop!(copy(s),r)...,1,0)] 
+applyop_branches(s::AbstractQCState, v::VerifyOp; max_order=1) = [(applywstatus!(copy(s),v)...,1,0)] 
+applyop_branches(s::AbstractQCState, r::Reset; max_order=1) = [(applywstatus!(copy(s),r)...,1,0)] 
 
 """Compute all possible new states after the application of the given noise model. Reports the probability of each one of them. Deterministic, part of the Noise interface."""
 function applynoise_branches end
@@ -298,16 +251,16 @@ end
 
 function applyop_branches(s::AbstractQCState, nop::NoiseOpAll; max_order=1)
     n = nqubits(s)
-    return [(state, :continue, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
+    return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
 end
 
 function applyop_branches(s::AbstractQCState, nop::NoiseOp; max_order=1)
-    return [(state, :continue, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, affectedqubits(nop), max_order=max_order)]
+    return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, affectedqubits(nop), max_order=max_order)]
 end
 
 function applyop_branches(s::AbstractQCState, g::NoisyGate; max_order=1)
     news, _,_,_ = applyop_branches(s,g.gate,max_order=max_order)[1] # TODO this assumes only one always successful branch for the gate
-    return [(state, :continue, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
+    return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
 end
 
 function applyop_branches(s::AbstractQCState, m::NoisyBellMeasurement; max_order=1)
@@ -322,16 +275,16 @@ function applyop_branches(s::AbstractQCState, m::NoisyBellMeasurement; max_order
         sucprob = 1//2*(1+p)
         for (mstate, success, mprob, morder) in measurement_branches
             push!(new_branches, (mstate, success, mprob*sucprob, morder))
-            push!(new_branches, (mstate, success==:continue ? :detected_failure : :continue, mprob*errprob, morder+1))
+            push!(new_branches, (mstate, success==continue_stat ? failure_stat : continue_stat, mprob*errprob, morder+1))
         end
         return new_branches
     end
 end
 
-# TODO a lot of repetition with applyop!
+# TODO a lot of repetition with applywstatus!
 function applyop_branches(s::AbstractQCState, m::BellMeasurement; max_order=1)
     n = nqubits(s)
-    [(ns,iseven(r>>1) ? :continue : :detected_failure, p,0)
+    [(ns,iseven(r>>1) ? continue_stat : failure_stat, p,0)
      for (ns,r,p) in _applyop_branches_measurement([(s,0x0,1.0)],m.pauli,affectedqubits(m),n)]
 end
 
@@ -383,7 +336,7 @@ function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_or
     status_probs = fill(zero(branch_weight), length(statuses)-1)
 
     for (i,(newstate, status, prob, order)) in enumerate(applyop_branches(state, next_op, max_order=max_order-current_order))
-        if status==:continue # TODO is the copy below necessary?
+        if status==continue_stat # TODO is the copy below necessary?
             out_probs = petrajectory(copy(newstate), rest_of_circuit,
                 branch_weight=branch_weight*prob, current_order=current_order+order, max_order=max_order)
             status_probs .+= out_probs
@@ -411,55 +364,31 @@ function applynoise_branches(state::Register, noise, indices; max_order=1)
      for (newstate, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
 end
 
-function applyop!(state::Register, op::DenseMeasurement)
-    stab = state.stab
-    stab,anticom,r = project!(stab, op.pauli)
-    if isnothing(r)
-        if rand()>0.5 # TODO float not necessary
-            r = stabilizerview(stab).phases[anticom] = 0x00
-        else
-            r = stabilizerview(stab).phases[anticom] = 0x02
-        end
-    end
-    state.bits[op.storagebit] = r==0x02
-    state, :continue
-end
-
-function applyop!(state::Register, op::SparseMeasurement)
-    n = nqubits(state.stab) # TODO implement actual sparse measurements
-    p = zero(typeof(op.pauli), n)
-    for (ii,i) in enumerate(op.indices)
-        p[i] = op.pauli[ii]
-    end
-    dm = DenseMeasurement(p,op.storagebit)
-    applyop!(state,dm)
-end
-
 # TODO tests for this
-function applyop!(state::Register, op::ConditionalGate)
+function apply!(state::Register, op::ConditionalGate)
     if state.bits[op.controlbit]
-        applyop!(state, op.truegate)
+        apply!(state, op.truegate)
     else
-        applyop!(state, op.falsegate)
+        apply!(state, op.falsegate)
     end
-    return state, :continue
+    return state
 end
 
-function applyop!(state::Register, op::DecisionGate)
+function apply!(state::Register, op::DecisionGate)
     decision = op.decisionfunction(state.bits)
     if !isnothing(decision)
         for i in 1:length(decision)
-            applyop!(state, op.gates[decision[i]])
+            apply!(state, op.gates[decision[i]])
         end
     end
-    state, :continue
+    state
 end
 
 
-applyop_branches(s::Register, op::ConditionalGate; max_order=1) = [(applyop!(copy(s),op)...,1,0)]
-applyop_branches(s::Register, op::DecisionGate; max_order=1) = [(applyop!(copy(s),op)...,1,0)]
+applyop_branches(s::Register, op::ConditionalGate; max_order=1) = [(applywstatus!(copy(s),op)...,1,0)]
+applyop_branches(s::Register, op::DecisionGate; max_order=1) = [(applywstatus!(copy(s),op)...,1,0)]
 
-function applyop_branches(s::Register, op::DenseMeasurement; max_order=1)
+function applyop_branches(s::Register, op::PauliMeasurement; max_order=1)
     stab = s.stab
     stab, anticom, r = project!(stab, op.pauli)
     new_branches = []
@@ -470,23 +399,25 @@ function applyop_branches(s::Register, op::DenseMeasurement; max_order=1)
         s2 = copy(s)
         stabilizerview(s2.stab).phases[anticom] = 0x02
         s2.bits[op.storagebit] = true
-        push!(new_branches, (s1,:continue,1/2,0))
-        push!(new_branches, (s2,:continue,1/2,0))
+        push!(new_branches, (s1,continue_stat,1/2,0))
+        push!(new_branches, (s2,continue_stat,1/2,0))
     else
         s.bits[op.storagebit] = r==0x02
-        push!(new_branches, (s,:continue,1,0))
+        push!(new_branches, (s,continue_stat,1,0))
     end
     new_branches
 end
 
+#= TODO switch to sMX etc
 function applyop_branches(state::Register, op::SparseMeasurement; max_order=1)
     n = nqubits(state.stab) # TODO implement actual sparse measurements
     p = zero(typeof(op.pauli), n)
     for (ii,i) in enumerate(op.indices)
         p[i] = op.pauli[ii]
     end
-    dm = DenseMeasurement(p,op.storagebit)
+    dm = PauliMeasurement(p,op.storagebit)
     applyop_branches(state,dm, max_order=max_order)
 end
+=#
 
 end

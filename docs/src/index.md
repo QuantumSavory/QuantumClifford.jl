@@ -30,6 +30,8 @@ as well as
 [partial traces](@ref Partial-Traces).
 The operations are generally vectorized and multithreaded.
 
+See the [manual](@ref Manual) or the curated list of [useful functions](@ref Full-API).
+
 ```jldoctest
 julia> P"X" * P"Z"
 -iY

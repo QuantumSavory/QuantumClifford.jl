@@ -48,3 +48,8 @@ function apply!(r::Register, m::sMZ{T}) where T
     T==Int && (bitview(r)[m.bit] = iszero(res))
     r
 end
+function apply!(r::Register, m::PauliMeasurement{A,B,T}) where {A,B,T}
+    _, res = projectrand!(quantumstate(r),m.pauli)
+    T==Int && (bitview(r)[m.bit] = iszero(res))
+    r
+end

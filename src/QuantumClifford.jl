@@ -33,7 +33,8 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     sHadamard, sPhase, sInvPhase, SingleQubitOperator, sId1, sX, sY, sZ,
     enumerate_single_qubit_gates, random_clifford1,
     sCNOT, sCPHASE, sSWAP,
-    sMX, sMY, sMZ,
+    SparseGate,
+    sMX, sMY, sMZ, PauliMeasurement, Reset,
     Register,
     tensor, tensor_pow,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
@@ -58,7 +59,8 @@ const toletter = Dict((false,false)=>"_",(true,false)=>"X",(false,true)=>"Z",(tr
 # Pauli Operators
 ##############################
 
-abstract type AbstractCliffordOperator end
+abstract type AbstractOperation end
+abstract type AbstractCliffordOperator <: AbstractOperation end
 
 """
 A multi-qubit Pauli operator (``±\\{1,i\\}\\{I,Z,X,Y\\}^{\\otimes n}``).
@@ -1852,6 +1854,7 @@ end
 include("./project_trace_reset.jl")
 include("./linalg.jl")
 include("./symbolic_cliffords.jl")
+include("./misc_ops.jl")
 include("./classical_register.jl")
 include("./randoms.jl")
 include("./useful_states.jl")
