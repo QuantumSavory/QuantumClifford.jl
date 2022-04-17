@@ -4,6 +4,7 @@
 
 - **(breaking)** Rename all pre-defined tableaux to have a `t` prefix. e.g., `CNOT`→`tCNOT`, in order to distinguish them from "symbolic" operators like `sCNOT`.
 - **(breaking)** Rename `CliffordId` to `tId1` to match the naming style of `sId1`.
+- Implement `enumerate_cliffords`, `enumerate_phases`, `symplecticGS` used for the enumeration of all Clifford operations over given number of qubits.
 - Implement convertors from symbolic operators to dense tableau operators: `CliffordOperator(sCNOT)` now gives `tCNOT` which acts equivalently to `sCNOT(1,2)`.
 - Implement `project[X|Y|Z]rand!` as a simpler interface to `project!` with automatic randomization of measurement phases.
 - Implement `sMX`/`sMY`/`sMZ` symbolic measurement operations that can be used with `apply!`. Use `projectrand!` internally.

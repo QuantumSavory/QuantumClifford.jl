@@ -15,6 +15,8 @@ Stabilizer states can be represented with the [`Stabilizer`](@ref), [`Destabiliz
 
 Moreover, a [`MixedDestabilizer`](@ref) can be stored inside a [`Register`](@ref) together with a set of classical bits in which measurement results can be written.
 
+There are [convenience constructors for common types of states and operators](@ref Useful-States-and-Operators).
+
 ## Operations
 
 All of these can be applied on a state with the [`apply!`](@ref) function. Whether they are deterministic and their computational complexity is listed in the table below. A list of lower-level functions for more control over how an operation is performed is also given.

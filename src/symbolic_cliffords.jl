@@ -200,43 +200,6 @@ function Base.show(io::IO, op::AbstractSingleQubitOperator)
     show(io, CliffordOperator(typeof(op)))
 end
 
-const all_single_qubit_patterns = (
-    (true, false, false, true), # X, Z ↦ X, Z
-    (false, true, true, true),  # X, Z ↦ Z, Y
-    (true, true, true, false),  # X, Z ↦ Y, X
-    (false, true, true, false), # X, Z ↦ Z, X - Hadamard
-    (true, false, true, true),  # X, Z ↦ X, Y
-    (true, true, false, true)   # X, Z ↦ Y, Z - Phase
-)
-
-"""Generate a symbolic single-qubit gate given its index. Optionally, set non-trivial phases."""
-function enumerate_single_qubit_gates(index; qubit=1, phases=(false,false))
-    @assert index<=6 "Only 6 single-qubit gates exit, up to the choice of phases"
-    if phases==(false,false)
-        if index==4
-            return sHadamard(qubit)
-        elseif index==6
-            return sPhase(qubit)
-        else
-            return SingleQubitOperator(qubit, all_single_qubit_patterns[index]..., false, false)
-        end
-    else
-        if index==1
-            if     (phases[1], phases[2]) == (false, false)
-                return sId1(qubit)
-            elseif (phases[1], phases[2]) == (false,  true)
-                return sX(qubit)
-            elseif (phases[1], phases[2]) == (true,  false)
-                return sZ(qubit)
-            else
-                return sY(qubit)
-            end
-        else
-            return SingleQubitOperator(qubit, all_single_qubit_patterns[index]..., phases...)
-        end
-    end
-end
-
 """Random symbolic single-qubit Clifford applied to qubit at index `qubit`.
 
 See also: [`SingleQubitOperator`](@ref), [`random_clifford`](@ref)

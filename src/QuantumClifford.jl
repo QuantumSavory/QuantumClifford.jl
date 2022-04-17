@@ -31,7 +31,6 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     tCNOT, tCPHASE, tSWAP, tHadamard, tPhase, tId1,
     AbstractSymbolicOperator, AbstractSingleQubitOperator, AbstractTwoQubitOperator,
     sHadamard, sPhase, sInvPhase, SingleQubitOperator, sId1, sX, sY, sZ,
-    enumerate_single_qubit_gates, random_clifford1,
     sCNOT, sCPHASE, sSWAP,
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset,
@@ -39,6 +38,8 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     tensor, tensor_pow,
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     single_z, single_x, single_y,
+    enumerate_single_qubit_gates, random_clifford1,
+    enumerate_cliffords, symplecticGS, clifford_cardinality, enumerate_phases,
     random_invertible_gf2,
     random_pauli, random_stabilizer, random_destabilizer, random_clifford,
     bell, ghz,
@@ -115,6 +116,8 @@ PauliOperator(phase::Tz, nqubits::Int, xz::Tv) where {Tz<:AbstractArray{UInt8,0}
 PauliOperator(phase::UInt8, nqubits::Int, xz::Tv) where Tv<:AbstractVector{<:Unsigned} = PauliOperator(fill(UInt8(phase),()), nqubits, xz)
 PauliOperator{Tz,Tv}(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{Bool}) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = PauliOperator(fill(UInt8(phase),()), length(x), vcat(reinterpret(Tve,BitVector(x).chunks),reinterpret(Tve,BitVector(z).chunks)))
 PauliOperator(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator{Array{UInt8,0},Vector{UInt}}(phase, x, z)
+PauliOperator(x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator{Array{UInt8,0},Vector{UInt}}(0x0, x, z)
+PauliOperator(xz::AbstractVector{Bool}) = PauliOperator{Array{UInt8,0},Vector{UInt}}(0x0, (@view xz[1:end÷2]), (@view xz[end÷2+1:end]))
 
 """Get a view of the X part of the `UInt` array of packed qubits of a given Pauli operator."""
 function xview(p::PauliOperator)
@@ -182,7 +185,7 @@ Base.show(io::IO, p::PauliOperator) = print(io, ["+ ","+i","- ","-i"][p.phase[]+
 
 Base.:(==)(l::PauliOperator, r::PauliOperator) = r.phase==l.phase && r.nqubits==l.nqubits && r.xz==l.xz
 
-Base.hash(p::PauliOperator, h::UInt) = hash((p.phase,p.nqubits,p.xz), h)
+Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.x, h)))
 
 Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
 
@@ -370,7 +373,7 @@ Base.show(io::IO, s::Stabilizer) = print(io,
 
 Base.:(==)(l::Stabilizer, r::Stabilizer) = r.nqubits==l.nqubits && r.phases==l.phases && r.xzs==l.xzs
 
-Base.hash(s::Stabilizer, h::UInt) = hash(s.nqubits, s.phases, s.xzs, h)
+Base.hash(s::Stabilizer, h::UInt) = hash(s.nqubits, hash(s.phases, hash(s.xzs, h)))
 
 Base.copy(s::Stabilizer) = Stabilizer(copy(s.phases), s.nqubits, copy(s.xzs))
 
@@ -386,7 +389,7 @@ function Base.:(==)(l::T, r::S; phases=true) where {T<:AbstractStabilizer, S<:Ab
     end
 end
 
-Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, tab(s), h)
+Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, hash(tab(s), h))
 
 """Extract the underlying tableau structure.
 
@@ -744,6 +747,14 @@ end
 
 @inline function comm(l::PauliOperator, r::Stabilizer, i::Int)::UInt8
     comm(l.xz,(@view r.xzs[:,i]))
+end
+
+@inline function comm(l::Stabilizer, r::PauliOperator, i::Int)::UInt8
+    comm(r, l, i)
+end
+
+@inline function comm(s::Stabilizer, l::Int, r::Int)::UInt8
+    comm((@view s.xzs[:,l]),(@view s.xzs[:,r]))
 end
 
 function comm(l::PauliOperator, r::Stabilizer)::Vector{UInt8}
@@ -1395,6 +1406,7 @@ CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Sta
 CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
 
 Base.:(==)(l::CliffordOperator, r::CliffordOperator) = l.tab == r.tab
+Base.hash(c::T, h::UInt) where {T<:CliffordOperator} = hash(T, hash(tab(c), h))
 
 Base.getindex(c::CliffordOperator, args...) = getindex(tab(c), args...)
 Base.setindex!(c::CliffordOperator, args...) = setindex!(tab(c), args...)
@@ -1427,6 +1439,11 @@ function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
     tab = copy(r.tab)
     apply!(tab,l)
     CliffordOperator(tab)
+end
+
+function apply!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
+    _apply!(tab(r),l;phases=Val(phases))
+    r
 end
 
 """
@@ -1856,6 +1873,7 @@ include("./linalg.jl")
 include("./symbolic_cliffords.jl")
 include("./misc_ops.jl")
 include("./classical_register.jl")
+include("./enumeration.jl")
 include("./randoms.jl")
 include("./useful_states.jl")
 include("./experimental/Experimental.jl")

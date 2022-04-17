@@ -1,4 +1,4 @@
-# Useful States and Operators
+# [Useful States and Operators](@id Useful-States-and-Operators)
 
 ```@meta
 DocTestSetup = quote
@@ -11,7 +11,7 @@ end
 There are numerous frequently used stabilizer states already implemented in this
 library.
 
-# Pauli Operators
+## Pauli Operators
 
 Single qubit `PauliOperator` is implemented in [`single_z`] and [`single_x`].
 
@@ -45,7 +45,7 @@ julia> random_pauli(rng, 4; nophase=true)
 + ZXZY
 ```
 
-# Stabilizer States
+## Stabilizer States
 
 An all-identity stabilizer can be created with `zero`.
 
@@ -107,4 +107,48 @@ Rank 2 stabilizer
 + _Z_
 ━━━━━
 + __Z
+```
+
+## Enumerating all Clifford operations
+
+The algorithm from [koenig2014efficiently](@cite) can be used to enumerate all Clifford operations on a given number of qubits through [`enumerate_cliffords`](@ref).
+
+```jldoctest
+julia> length(enumerate_cliffords(1))
+6
+
+julia> length(enumerate_cliffords(2))
+720
+```
+
+To also enumerate possible phases, you can use [`enumerate_phases`](@ref).
+
+```jldoctest
+julia> length(collect(enumerate_phases(tCNOT)))
+16
+
+julia> length(collect(enumerate_phases(enumerate_cliffords(2))))
+11520
+```
+
+## Common entangled states
+
+Bell states and GHZ states have convenience constructors:
+
+```jldoctest
+julia> bell()
++ XX
++ ZZ
+
+julia> bell(2)
++ XX__
++ ZZ__
++ __XX
++ __ZZ
+
+julia> ghz(4)
++ XXXX
++ ZZ__
++ _ZZ_
++ __ZZ
 ```
