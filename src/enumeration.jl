@@ -84,7 +84,7 @@ end
 The algorithm is detailed in [koenig2014efficiently](@cite).
 
 See also: [`enumerate_cliffords`](@ref), [`clifford_cardinality`](@ref)."""
-function symplecticGS(pauli; padded_n=nqubits(pauli))
+function symplecticGS(pauli::PauliOperator; padded_n=nqubits(pauli))
     n = nqubits(pauli)
     basis = zero(Stabilizer, 2padded_n+1, padded_n)
     δn = padded_n-n
@@ -120,24 +120,36 @@ end
 The algorithm is detailed in [koenig2014efficiently](@cite).
 
 See also: [`symplecticGS`](@ref), [`clifford_cardinality`](@ref)."""
-function enumerate_cliffords(n,i;padded_n=n)
+function enumerate_cliffords(n,i;padded_n=n,onlycoset=false)
+    enumerate_cliffords_slow(n,i;padded_n,onlycoset)
+end
+
+"""The O(n^4) implementation from [koenig2014efficiently](@cite) -- their algorithm seems wrong as ⟨w'₁|wₗ⟩=bₗ which is not always zero."""
+function enumerate_cliffords_slow(n,i;padded_n=n,onlycoset=false) # TODO implement the faster n^3 algorithm
     @assert n<32 # Assuming 64 bit system
     s = 2^(2n)-1
     k = (i-1)%s+1
     pauli = PauliOperator(int_to_bits(2n,k))
     op = symplecticGS(pauli;padded_n)
     basis = tab(op)
-    idivs = i÷s
-    for j in 0:n-1 # first n bits
-        iszero(idivs>>j&0x1) || mul_left!(basis, n+1, j+1; phases=Val(false))
+    δn = padded_n-n
+    idivs = (i-1)÷s
+    for j in 0:n-1 # first n bits # w₁ ← w₁+vⱼ
+        iszero(idivs>>j&0x1) || mul_left!(basis, padded_n+δn+1, δn+j+1; phases=Val(false))
     end
-    for j in n:2n-2 # following n-1 bits
-        iszero(idivs>>j&0x1) || mul_left!(basis, n+1, j+2; phases=Val(false))
+    for j in n:2n-2 # following n-1 bits # w₁ ← w₁+wⱼ
+        iszero(idivs>>j&0x1) || mul_left!(basis, padded_n+δn+1, 2δn+j+2; phases=Val(false))
     end
-    if n==1
+    for j in 1:n-1 # first n-1 bits after first bit # wⱼ ← wⱼ+v₁ # missing from koenig2014efficiently
+        iszero(idivs>>j&0x1) || mul_left!(basis, padded_n+δn+j+1, δn+1; phases=Val(false)) # δn+j+1+n
+    end
+    for j in n:2n-2 # following n-1 bits # vⱼ ← vⱼ+v₁ # missing from koenig2014efficiently
+        iszero(idivs>>j&0x1) || mul_left!(basis, δn+j+2-n, δn+1; phases=Val(false))
+    end
+    if n==1 || onlycoset
         return op
     else
-        subop = enumerate_cliffords(n-1,idivs÷2^(2n-1);padded_n)
+        subop = enumerate_cliffords(n-1,idivs÷2^(2n-1)+1;padded_n)
         return apply!(subop, op; phases=false)
     end
 end
@@ -147,8 +159,13 @@ end
 The algorithm is detailed in [koenig2014efficiently](@cite).
 
 See also: [`symplecticGS`](@ref), [`clifford_cardinality`](@ref)."""
-function enumerate_cliffords(n)
-    (enumerate_cliffords(n,i) for i in 1:clifford_cardinality(n;phases=false))
+function enumerate_cliffords(n;padded_n=n,onlycoset=false) # TODO make an enumerator that does not compute the cosets from scratch each time
+    if onlycoset
+        cosetsize = (2^(2n)-1)*2^(2n-1)
+        (enumerate_cliffords(n,i;padded_n,onlycoset=true) for i in 1:cosetsize)
+    else
+        (enumerate_cliffords(n,i;padded_n,onlycoset=false) for i in 1:clifford_cardinality(n;phases=false))
+    end
 end
 
 @inline function _change_phases!(op, phases)
