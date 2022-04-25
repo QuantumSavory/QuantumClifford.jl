@@ -230,7 +230,7 @@ function quantum_mallows_bigint(rng, n)
         # l = Int64(ispow2(k) ? ilog2(k) : ilog2(k) + 1)
         # TODO This should be faster, but it is not:
         # ulim = BIG_INT_FOUR[]^m # BigInt(4)^m
-        # Base.GMP.MPZ.add!(ulim, BIG_INT_MINUS_ONE_[])
+        # Base.GMP.MPZ.add!(ulim, BIG_INT_MINUS_ONE[])
         # k = rand(rng, 1:ulim)
         # k = rand(rng, 1:BigInt(4)^m-1)
         # l = Int64(ilog2(k))+1
