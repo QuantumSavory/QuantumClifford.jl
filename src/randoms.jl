@@ -225,12 +225,12 @@ function quantum_mallows_bigint(rng, n)
         m = length(arr)
         # sample h_i from given prob distribution
         # k = rand(rng, 2:BigInt(4)^m)
-        k = rand(rng, 2:big_four_[]^m)
+        k = rand(rng, 2:BIG_INT_FOUR[]^m)
         l = ilog2(k, RoundUp)
         # l = Int64(ispow2(k) ? ilog2(k) : ilog2(k) + 1)
         # TODO This should be faster, but it is not:
-        # ulim = big_four_[]^m # BigInt(4)^m
-        # Base.GMP.MPZ.add!(ulim, big_minus_one_[])
+        # ulim = BIG_INT_FOUR[]^m # BigInt(4)^m
+        # Base.GMP.MPZ.add!(ulim, BIG_INT_MINUS_ONE_[])
         # k = rand(rng, 1:ulim)
         # k = rand(rng, 1:BigInt(4)^m-1)
         # l = Int64(ilog2(k))+1

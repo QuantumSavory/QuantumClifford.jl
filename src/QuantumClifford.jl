@@ -47,12 +47,12 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     graphstate, graphstate!, graph_gatesequence, graph_gate
 
 
-const big_minus_one_ = Ref{BigInt}()
-const big_four_ = Ref{BigInt}()
+const BIG_INT_MINUS_ONE_ = Ref{BigInt}()
+const BIG_INT_FOUR = Ref{BigInt}()
 
 function __init__()
-    big_minus_one_[] = parse(BigInt, "-1")
-    big_four_[] = parse(BigInt, "4")
+    BIG_INT_MINUS_ONE_[] = BigInt(-1)
+    BIG_INT_FOUR[] = BigInt(4)
 end
 
 # Predefined constants representing the permitted phases encoded
