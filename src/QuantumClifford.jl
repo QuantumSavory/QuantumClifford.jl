@@ -46,6 +46,15 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     BadDataStructure,
     graphstate, graphstate!, graph_gatesequence, graph_gate
 
+
+const big_minus_one_ = Ref{BigInt}()
+const big_four_ = Ref{BigInt}()
+
+function __init__()
+    big_minus_one_[] = parse(BigInt, "-1")
+    big_four_[] = parse(BigInt, "4")
+end
+
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
 const _p  = 0x00
