@@ -252,7 +252,7 @@ end
 function fill_tril(rng, matrix, n; symmetric::Bool=false)
     # Add (symmetric) random ints to off diagonals
     @inbounds for row in 1:n, col in 1:row-1
-        b = rand(rng, (0, 1))
+        b = rand(rng, Bool)
         matrix[row, col] = b
         if symmetric
             matrix[col, row] = b
