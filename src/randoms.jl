@@ -58,7 +58,7 @@ random_invertible_gf2(n::Int) = random_invertible_gf2(GLOBAL_RNG, n)
 function random_destabilizer(rng::AbstractRNG, n::Int; phases::Bool=true)
     hadamard, perm = quantum_mallows(rng, n)
     had_idxs = findall(i -> hadamard[i], 1:n)
-    
+
     # delta, delta', gamma, gamma' appear in the canonical form
     # of a Clifford operator (Eq. 3/Theorem 1)
     # delta is unit lower triangular, gamma is symmetric
@@ -77,7 +77,7 @@ function random_destabilizer(rng::AbstractRNG, n::Int; phases::Bool=true)
         delta_p[i,i] = 1
         gamma_p[i,i] = rand(rng, 0x0:0x1)::UInt8
     end
-    
+
     # gamma_ii is zero if h[i] = 0
     for idx in had_idxs
         gamma[idx, idx] = rand(rng, 0x0:0x1)::UInt8
@@ -117,7 +117,7 @@ function random_destabilizer(rng::AbstractRNG, n::Int; phases::Bool=true)
     mul!(prod_p, gamma_p, delta_p)
     inv_delta .= precise_inv(delta')
     inv_delta_p .= precise_inv(delta_p')
- 
+
     # block matrix form
     F1 .= mod.(F1, 2)
     F2 .= mod.(F2, 2)
@@ -127,15 +127,15 @@ function random_destabilizer(rng::AbstractRNG, n::Int; phases::Bool=true)
     # apply qubit permutation S to F2
     perm_inds = vcat(perm, perm .+ n)
     U = F2[perm_inds,:]
-    
+
     # apply layer of hadamards
     lhs_inds = vcat(had_idxs, had_idxs .+ n)
     rhs_inds = vcat(had_idxs .+ n, had_idxs)
     U[lhs_inds, :] .= U[rhs_inds, :]
- 
+
     # apply F1
     xzs = mod.(F1 * U,2) .== 1
- 
+
     # random Pauli matrix just amounts to phases on the stabilizer tableau
     phasesarray::Vector{UInt8} = if phases rand(rng, [0x0,0x2], 2n) else zeros(UInt8, 2n) end
     return Destabilizer(Stabilizer(phasesarray, xzs))
@@ -180,6 +180,7 @@ function quantum_mallows(rng, n) # each one is benchmakred in benchmarks/quantum
     end
 end
 
+"""This function is correct for n<30"""
 function quantum_mallows_int(rng, n)
     arr = collect(1:n)
     hadamard = falses(n)
@@ -187,11 +188,8 @@ function quantum_mallows_int(rng, n)
     for idx in 1:n
         m = length(arr)
         # sample h_i from given prob distribution
-        k = rand(rng, 1:(UInt(4)^m-1))
-        l = Int64(ilog2(k))+1
-        # can also be written as
-        #k = rand(rng, 2:UInt(4)^m)
-        #l = (ispow2(k) ? ilog2(k) : ilog2(k) + 1)
+        k = rand(rng, 2:UInt(4)^m)
+        l = ilog2(k, RoundUp)
         weight = 2 * m - l
         hadamard[idx] = (weight < m)
         k = weight < m ? weight : 2*m - weight - 1
@@ -200,6 +198,7 @@ function quantum_mallows_int(rng, n)
     return hadamard, perm
 end
 
+"""This function is correct for n<500, but slower than `quantum_mallows_int`."""
 function quantum_mallows_float(rng, n)
     arr = collect(1:n)
     hadamard = falses(n)
@@ -217,6 +216,7 @@ function quantum_mallows_float(rng, n)
     return hadamard, perm
 end
 
+"""This function is correct for any n, but slower than `quantum_mallows_float`."""
 function quantum_mallows_bigint(rng, n)
     arr = collect(1:n)
     hadamard = falses(n)
@@ -224,17 +224,8 @@ function quantum_mallows_bigint(rng, n)
     for idx in 1:n
         m = length(arr)
         # sample h_i from given prob distribution
-        k = rand(rng, 2:BigInt(4)^m)
-        l = Int64(ispow2(k) ? ilog2(k) : ilog2(k) + 1)
-        # TODO This should be faster, but it is not:
-        #k = rand(rng, 1:(BigInt(4)^m-1))
-        #l = Int64(ilog2(k))+1
-        # To compare to float implementations:
-        # function f1(r,m) k = r*(4.0^m-1) + 1; l = ceil(log2(k)) end
-        # function function f2(k,m) l = (ispow2(k) ? ilog2(k) : ilog2(k) + 1) end
-        # m = 3
-        # rs = 0:0.0025:0.999999; plot(rs, f1.(rs, m))
-        # rs = 2:4^m; plot!((rs.-1)./(maximum(rs)-1), f2.(rs, 1),line=false,marker=true,legend=false)
+        k = rand(rng, 2:BIG_INT_FOUR[]^m)
+        l = ilog2(k, RoundUp)
         weight = Int64(2 * m - l)
         hadamard[idx] = (weight < m)
         k = weight < m ? weight : 2*m - weight - 1
