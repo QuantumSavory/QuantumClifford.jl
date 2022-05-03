@@ -24,8 +24,8 @@ struct SparseGate{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: 
     indices::Vector{Int}
 end
 
-function apply!(state, g::SparseGate; kwargs...)
-    apply!(state, gate.cliff, gate.indices; kwargs...)
+function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
+    apply!(state, g.cliff, g.indices; kwargs...)
 end
 
 """Reset the specified qubits to the given state."""
@@ -34,7 +34,7 @@ struct Reset{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: Abstr
     indices::Vector{Int}
 end
 
-function apply!(state, reset::Reset)
+function apply!(state::AbstractStabilizer, reset::Reset)
     reset_qubits!(state, reset.resetto, reset.indices)
     return s
 end

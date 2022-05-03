@@ -20,7 +20,9 @@ export AbstractOperation,
        applyop_branches, applynoise_branches,# TODO rename applyop_branches to apply_pe
        mctrajectory!, mctrajectories,
        petrajectory, petrajectories,
-       ConditionalGate, DecisionGate
+       ConditionalGate, DecisionGate,
+       continue_stat, true_success_stat, false_success_stat, failure_stat
+
 
 abstract type AbstractNoise end
 
@@ -94,7 +96,7 @@ affectedqubits(g::PauliMeasurement) = 1:length(g.pauli)
 affectedqubits(d::ConditionalGate) = union(affectedqubits(d.truegate), affectedqubits(d.falsegate))
 affectedqubits(d::DecisionGate) = [(union(affectedqubits.(d.gates))...)...]
 
-function apply!(s::AbstractQCState, g::NoisyGate)
+function QuantumClifford.apply!(s::AbstractQCState, g::NoisyGate)
     s = applynoise!(
             apply!(s,g.gate),
             g.noise,
@@ -148,12 +150,12 @@ function applynoise!(s::AbstractQCState,noise::UnbiasedUncorrelatedNoise,indices
     s
 end
 
-function apply!(s::AbstractQCState, mr::NoiseOpAll)
+function QuantumClifford.apply!(s::AbstractQCState, mr::NoiseOpAll)
     n = nqubits(s)
     return applynoise!(s, mr.noise, 1:n)
 end
 
-function apply!(s::AbstractQCState, mr::NoiseOp)
+function QuantumClifford.apply!(s::AbstractQCState, mr::NoiseOp)
     return applynoise!(s, mr.noise, affectedqubits(mr))
 end
 
@@ -365,7 +367,7 @@ function applynoise_branches(state::Register, noise, indices; max_order=1)
 end
 
 # TODO tests for this
-function apply!(state::Register, op::ConditionalGate)
+function QuantumClifford.apply!(state::Register, op::ConditionalGate)
     if state.bits[op.controlbit]
         apply!(state, op.truegate)
     else
@@ -374,7 +376,7 @@ function apply!(state::Register, op::ConditionalGate)
     return state
 end
 
-function apply!(state::Register, op::DecisionGate)
+function QuantumClifford.apply!(state::Register, op::DecisionGate)
     decision = op.decisionfunction(state.bits)
     if !isnothing(decision)
         for i in 1:length(decision)
