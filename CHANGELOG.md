@@ -17,6 +17,7 @@
   - `DenseGate` is removed (just use any dense CliffordOperator).
   - `SparseMeasurement` is removed (just use `sMX`, `sMY`, `sMZ`).
   - `applyop!` is renamed to `applywstatus!` and simplified.
+  - `applyop_branches` is renamed to `applybranches` and simplified.
 
 ## v0.4.3
 
