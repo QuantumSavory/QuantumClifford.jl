@@ -89,6 +89,7 @@ function affectedqubits end
 affectedqubits(g::AbstractSingleQubitOperator) = [g.q,]
 affectedqubits(g::AbstractTwoQubitOperator) = [g.q1, g.q2]
 affectedqubits(g::NoisyGate) = affectedqubits(g.gate)
+affectedqubits(g::SparseGate) = g.indices
 affectedqubits(b::BellMeasurement) = [m.qubit for m in b.measurements]
 affectedqubits(r::Reset) = r.indices
 affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
@@ -97,6 +98,8 @@ affectedqubits(v::VerifyOp) = v.indices
 affectedqubits(g::PauliMeasurement) = 1:length(g.pauli)
 affectedqubits(d::ConditionalGate) = union(affectedqubits(d.truegate), affectedqubits(d.falsegate))
 affectedqubits(d::DecisionGate) = [(union(affectedqubits.(d.gates))...)...]
+affectedqubits(m::AbstractMeasurement) = [m.qubit]
+
 
 function QuantumClifford.apply!(s::AbstractQCState, g::NoisyGate)
     s = applynoise!(

@@ -15,7 +15,7 @@
   - `Reset` is moved out of `NoisyCircuits`.
   - `DenseMeasurement` is renamed `PauliMeasurement` and moved out of `NoisyCircuits`.
   - `DenseGate` is removed (just use any dense CliffordOperator).
-  - `SparseMeasurement` is removed (just use `sMX`, `sMY`, `sMZ`).
+  - `SparseMeasurement` is removed (just use `sMX`, `sMY`, `sMZ`). Due to this we lost the functionality of measuring more than one but less than all qubits.
   - `applyop!` is renamed to `applywstatus!` and simplified.
   - `applyop_branches` is renamed to `applybranches` and simplified.
 
