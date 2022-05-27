@@ -19,7 +19,7 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 Combinatorics = "1.0"
-DocStringExtensions = "0.8"
+DocStringExtensions = "0.8, 0.9"
 Graphs = "1.4.1"
 HostCPUFeatures = "0.1.6"
 ILog2 = "0.2.3"
