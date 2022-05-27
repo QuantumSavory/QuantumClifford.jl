@@ -17,10 +17,12 @@ export AbstractOperation,
        BellMeasurement, NoisyBellMeasurement,
        DecisionGate, ConditionalGate,
        affectedqubits, applynoise!,# TODO rename applyop to apply_mc
-       applyop_branches, applynoise_branches,# TODO rename applyop_branches to apply_pe
+       applybranches, applynoise_branches,# TODO rename applybranches to apply_pe
        mctrajectory!, mctrajectories,
        petrajectory, petrajectories,
-       ConditionalGate, DecisionGate
+       ConditionalGate, DecisionGate,
+       continue_stat, true_success_stat, false_success_stat, failure_stat
+
 
 abstract type AbstractNoise end
 
@@ -84,8 +86,11 @@ end
 
 """A method giving the qubits acted upon by a given operation. Part of the Noise interface."""
 function affectedqubits end
+affectedqubits(g::AbstractSingleQubitOperator) = [g.q,]
+affectedqubits(g::AbstractTwoQubitOperator) = [g.q1, g.q2]
 affectedqubits(g::NoisyGate) = affectedqubits(g.gate)
-affectedqubits(m::BellMeasurement) = m.indices
+affectedqubits(g::SparseGate) = g.indices
+affectedqubits(b::BellMeasurement) = [m.qubit for m in b.measurements]
 affectedqubits(r::Reset) = r.indices
 affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
 affectedqubits(n::NoiseOp) = n.indices
@@ -93,8 +98,10 @@ affectedqubits(v::VerifyOp) = v.indices
 affectedqubits(g::PauliMeasurement) = 1:length(g.pauli)
 affectedqubits(d::ConditionalGate) = union(affectedqubits(d.truegate), affectedqubits(d.falsegate))
 affectedqubits(d::DecisionGate) = [(union(affectedqubits.(d.gates))...)...]
+affectedqubits(m::AbstractMeasurement) = [m.qubit]
 
-function apply!(s::AbstractQCState, g::NoisyGate)
+
+function QuantumClifford.apply!(s::AbstractQCState, g::NoisyGate)
     s = applynoise!(
             apply!(s,g.gate),
             g.noise,
@@ -148,12 +155,12 @@ function applynoise!(s::AbstractQCState,noise::UnbiasedUncorrelatedNoise,indices
     s
 end
 
-function apply!(s::AbstractQCState, mr::NoiseOpAll)
+function QuantumClifford.apply!(s::AbstractQCState, mr::NoiseOpAll)
     n = nqubits(s)
     return applynoise!(s, mr.noise, 1:n)
 end
 
-function apply!(s::AbstractQCState, mr::NoiseOp)
+function QuantumClifford.apply!(s::AbstractQCState, mr::NoiseOp)
     return applynoise!(s, mr.noise, affectedqubits(mr))
 end
 
@@ -214,11 +221,12 @@ function mctrajectories(initialstate,circuit;trajectories=500)
 end
 
 """Compute all possible new states after the application of the given operator. Reports the probability of each one of them. Deterministic, part of the Perturbative Expansion interface."""
-function applyop_branches end
+function applybranches end
 
 #TODO is the use of copy here necessary?
-applyop_branches(s::AbstractQCState, v::VerifyOp; max_order=1) = [(applywstatus!(copy(s),v)...,1,0)] 
-applyop_branches(s::AbstractQCState, r::Reset; max_order=1) = [(applywstatus!(copy(s),r)...,1,0)] 
+function applybranches(state, op; max_order=1)
+    [(applywstatus!(copy(state),op)...,1,0)]
+end
 
 """Compute all possible new states after the application of the given noise model. Reports the probability of each one of them. Deterministic, part of the Noise interface."""
 function applynoise_branches end
@@ -249,22 +257,22 @@ function applynoise_branches(s::AbstractQCState,noise::UnbiasedUncorrelatedNoise
     results
 end
 
-function applyop_branches(s::AbstractQCState, nop::NoiseOpAll; max_order=1)
+function applybranches(s::AbstractQCState, nop::NoiseOpAll; max_order=1)
     n = nqubits(s)
     return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
 end
 
-function applyop_branches(s::AbstractQCState, nop::NoiseOp; max_order=1)
+function applybranches(s::AbstractQCState, nop::NoiseOp; max_order=1)
     return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, affectedqubits(nop), max_order=max_order)]
 end
 
-function applyop_branches(s::AbstractQCState, g::NoisyGate; max_order=1)
-    news, _,_,_ = applyop_branches(s,g.gate,max_order=max_order)[1] # TODO this assumes only one always successful branch for the gate
+function applybranches(s::AbstractQCState, g::NoisyGate; max_order=1)
+    news, _,_,_ = applybranches(s,g.gate,max_order=max_order)[1] # TODO this assumes only one always successful branch for the gate
     return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
 end
 
-function applyop_branches(s::AbstractQCState, m::NoisyBellMeasurement; max_order=1)
-    measurement_branches = applyop_branches(s, m.meas, max_order=max_order)
+function applybranches(s::AbstractQCState, m::NoisyBellMeasurement; max_order=1)
+    measurement_branches = applybranches(s, m.meas, max_order=max_order)
     if max_order==0
         return measurement_branches
     else
@@ -282,34 +290,24 @@ function applyop_branches(s::AbstractQCState, m::NoisyBellMeasurement; max_order
 end
 
 # TODO a lot of repetition with applywstatus!
-function applyop_branches(s::AbstractQCState, m::BellMeasurement; max_order=1)
+function applybranches(s::AbstractQCState, m::BellMeasurement; max_order=1)
     n = nqubits(s)
     [(ns,iseven(r>>1) ? continue_stat : failure_stat, p,0)
-     for (ns,r,p) in _applyop_branches_measurement([(s,0x0,1.0)],m.pauli,affectedqubits(m),n)]
+     for (ns,r,p) in _applybranches_measurement([(s,0x0,1.0)],m.measurements,n)]
 end
 
 # TODO XXX THIS IS PARTICULARLY INEFFICIENT recurrent implementation
-function _applyop_branches_measurement(branches, paulis, qubits, n)
-    if length(paulis) == 0
+function _applybranches_measurement(branches, measurements, n)
+    if length(measurements) == 0
         return branches
     end
 
     new_branches = []
-    pauli = paulis[1]
-    otherpaulis = paulis[2:end]
-    index = qubits[1]
-    otherqubits = qubits[2:end]
+    pauli = measurements[1]
+    otherpaulis = measurements[2:end]
 
     for (s,r0,p) in branches
-        if pauli == P"X" # TODO use sMX sMY sMZ instead of PauliOp
-            s,anticom,r = projectX!(s,index)
-        elseif pauli == P"Y"
-            s,anticom,r = projectY!(s,index)
-        elseif pauli == P"Z"
-            s,anticom,r = projectZ!(s,index)
-        else
-            throw(DomainError("only measurement operators with positive phase are permitted"))
-        end
+        s,anticom,r = project!(s,pauli)
         if isnothing(r) # TODO anticom could be zero if there was a rank change
             s1 = s
             s2 = copy(s)
@@ -322,26 +320,26 @@ function _applyop_branches_measurement(branches, paulis, qubits, n)
         end
     end
 
-    return _applyop_branches_measurement(new_branches, otherpaulis, otherqubits, n)
+    return _applybranches_measurement(new_branches, otherpaulis, n)
 end
 
-"""Run a perturbative expansion to a given order. Uses applyop_branches under the hood."""
+"""Run a perturbative expansion to a given order. Uses applybranches under the hood."""
 function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_order=1)
     if size(circuit)[1] == 0
-        return fill(zero(branch_weight), length(statuses)-1)
+        return fill(zero(branch_weight), length(registered_statuses)-1)
     end
     next_op = circuit[1]
     rest_of_circuit = circuit[2:end]
 
-    status_probs = fill(zero(branch_weight), length(statuses)-1)
+    status_probs = fill(zero(branch_weight), length(registered_statuses)-1)
 
-    for (i,(newstate, status, prob, order)) in enumerate(applyop_branches(state, next_op, max_order=max_order-current_order))
+    for (i,(newstate, status, prob, order)) in enumerate(applybranches(state, next_op, max_order=max_order-current_order))
         if status==continue_stat # TODO is the copy below necessary?
             out_probs = petrajectory(copy(newstate), rest_of_circuit,
                 branch_weight=branch_weight*prob, current_order=current_order+order, max_order=max_order)
             status_probs .+= out_probs
         else
-            status_probs[findfirst(==(status),statuses)-1] += prob*branch_weight # TODO this findfirst needs to go, this is a bad way to do it
+            status_probs[status.status] += prob*branch_weight
         end
     end
 
@@ -351,7 +349,7 @@ end
 """Run a perturbative expansion to a given order. This is the main public fuction for the perturbative expansion approach."""
 function petrajectories(initialstate, circuit; branch_weight=1.0, max_order=1)
     status_probs = petrajectory(initialstate, circuit; branch_weight=branch_weight, current_order=0, max_order=max_order)
-    Dict([statuses[i+1]=>status_probs[i] for i in eachindex(status_probs)])
+    Dict([CircuitStatus(i)=>status_probs[i] for i in eachindex(status_probs)])
 end
 
 function applynoise!(state::Register, noise, indices)
@@ -365,7 +363,7 @@ function applynoise_branches(state::Register, noise, indices; max_order=1)
 end
 
 # TODO tests for this
-function apply!(state::Register, op::ConditionalGate)
+function QuantumClifford.apply!(state::Register, op::ConditionalGate)
     if state.bits[op.controlbit]
         apply!(state, op.truegate)
     else
@@ -374,7 +372,7 @@ function apply!(state::Register, op::ConditionalGate)
     return state
 end
 
-function apply!(state::Register, op::DecisionGate)
+function QuantumClifford.apply!(state::Register, op::DecisionGate)
     decision = op.decisionfunction(state.bits)
     if !isnothing(decision)
         for i in 1:length(decision)
@@ -385,10 +383,10 @@ function apply!(state::Register, op::DecisionGate)
 end
 
 
-applyop_branches(s::Register, op::ConditionalGate; max_order=1) = [(applywstatus!(copy(s),op)...,1,0)]
-applyop_branches(s::Register, op::DecisionGate; max_order=1) = [(applywstatus!(copy(s),op)...,1,0)]
+applybranches(s::Register, op::ConditionalGate; max_order=1) = [(applywstatus!(copy(s),op)...,1,0)]
+applybranches(s::Register, op::DecisionGate; max_order=1) = [(applywstatus!(copy(s),op)...,1,0)]
 
-function applyop_branches(s::Register, op::PauliMeasurement; max_order=1)
+function applybranches(s::Register, op::PauliMeasurement; max_order=1)
     stab = s.stab
     stab, anticom, r = project!(stab, op.pauli)
     new_branches = []
@@ -409,14 +407,14 @@ function applyop_branches(s::Register, op::PauliMeasurement; max_order=1)
 end
 
 #= TODO switch to sMX etc
-function applyop_branches(state::Register, op::SparseMeasurement; max_order=1)
+function applybranches(state::Register, op::SparseMeasurement; max_order=1)
     n = nqubits(state.stab) # TODO implement actual sparse measurements
     p = zero(typeof(op.pauli), n)
     for (ii,i) in enumerate(op.indices)
         p[i] = op.pauli[ii]
     end
     dm = PauliMeasurement(p,op.storagebit)
-    applyop_branches(state,dm, max_order=max_order)
+    applybranches(state,dm, max_order=max_order)
 end
 =#
 
