@@ -6,11 +6,11 @@ function test_cliff()
             p2 = random_pauli(n)
             p3 = p2*p1
             s = Stabilizer([p1,p2])
-            @test QuantumClifford._mul_left_nonvec!(copy(p1).xz,p2.xz)&3 == mul_left!(copy(p1).xz,p2.xz)&3 
+            @test QuantumClifford._mul_left_nonvec!(copy(p1).xz,p2.xz)&3 == mul_left!(copy(p1).xz,p2.xz)&3
             @test prodphase(p2,p1) == mul_left!(p1,p2).phase[]
             mul_left!(p11,s,2)
             mul_left!(s,1,2)
-            @test p1 == p11 == p3 == s[1] 
+            @test p1 == p11 == p3 == s[1]
         end
     end
     @testset "Clifford Operators" begin
@@ -58,7 +58,7 @@ function test_cliff()
                 s1 = apply!(copy(s),big_gate)
                 @test stab_looks_good(s1)
 
-                igates_perm = perm_inverse(gates_perm)
+                igates_perm = invperm(gates_perm)
                 s2 = copy(s)
                 canonicalize!(s2)
                 s2 = apply!(s2, tCNOT, [igates_perm[1],igates_perm[1]+1])

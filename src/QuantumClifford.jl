@@ -162,7 +162,7 @@ end
 Base.getindex(p::PauliOperator{Tz,Tv}, i::Int) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = (p.xz[_div(Tve, i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0, (p.xz[end>>1+_div(Tve,i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0
 Base.getindex(p::PauliOperator{Tz,Tv}, r) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = PauliOperator(p.phase[], xbit(p)[r], zbit(p)[r])
 
-function Base.setindex!(p::PauliOperator{Tz,Tv}, (x,z)::Tuple{Bool,Bool}, i) where {Tz, Tve, Tv<:AbstractVector{Tve}} 
+function Base.setindex!(p::PauliOperator{Tz,Tv}, (x,z)::Tuple{Bool,Bool}, i) where {Tz, Tve, Tv<:AbstractVector{Tve}}
     if x
         p.xz[_div(Tve,i-1)+1] |= Tve(0x1)<<_mod(Tve,i-1)
     else
@@ -194,7 +194,7 @@ Base.show(io::IO, p::PauliOperator) = print(io, ["+ ","+i","- ","-i"][p.phase[]+
 
 Base.:(==)(l::PauliOperator, r::PauliOperator) = r.phase==l.phase && r.nqubits==l.nqubits && r.xz==l.xz
 
-Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.x, h)))
+Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.xz, h)))
 
 Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
 
@@ -510,7 +510,7 @@ used to represent a mixed stabilizer state, or so that it can be used to
 represent an `n-r` logical-qubit code over `n` physical qubits. The "logical"
 operators are tracked as well.
 
-When the constructor is called on an incomplete [`Stabilizer`](@ref) it 
+When the constructor is called on an incomplete [`Stabilizer`](@ref) it
 automatically calculates the destabilizers and logical operators, following
 chapter 4 of [gottesman1997stabilizer](@cite).
 
@@ -544,7 +544,7 @@ function MixedDestabilizer(stab::Stabilizer{Tv,Tm}; undoperm=true) where {Tve,Tm
         V1 = (E' * C1' + C2').%2 .!= 0x0  # n-r-s ×     r
         #X = hcat(zeros(Bool,k,r),U2,I,V1,zeros(Bool,k,s+k))
         X = zeros(Bool, k, 2n)
-        X[:,r+1:n-k] .= U2 
+        X[:,r+1:n-k] .= U2
         X[:,n+1:n+r] .= V1
         @inbounds @simd for i in 1:k X[i,n-k+i] = true end
         sX = Stabilizer(X)
@@ -558,7 +558,7 @@ function MixedDestabilizer(stab::Stabilizer{Tv,Tm}; undoperm=true) where {Tve,Tm
         tab[n+r+s+1:end] = sZ # The other logical set in the tableau
     end
     if undoperm
-        tab = tab[:,perm_inverse(permx[permz])]::Stabilizer{Vector{Tve},Matrix{Tme}}
+        tab = tab[:,invperm(permx[permz])]::Stabilizer{Vector{Tve},Matrix{Tme}}
     end
     MixedDestabilizer(tab, r+s)::MixedDestabilizer{Vector{Tve},Matrix{Tme}}
 end
@@ -891,28 +891,28 @@ const Y = P"Y"
 # Stabilizer helpers
 ##############################
 
-@inline function rowswap!(s::Stabilizer, i, j; phases::Bool=true) # Written only so we can avoid copying in `canonicalize!`
+@inline function rowswap!(s::Stabilizer, i, j; phases::Val{B}=Val(true)) where B # Written only so we can avoid copying in `canonicalize!`
     (i == j) && return
-    phases && begin s.phases[i], s.phases[j] = s.phases[j], s.phases[i] end
+    B && begin s.phases[i], s.phases[j] = s.phases[j], s.phases[i] end
     @inbounds @simd for k in 1:size(s.xzs,1)
         s.xzs[k,i], s.xzs[k,j] = s.xzs[k,j], s.xzs[k,i]
     end
 end
 
-@inline function rowswap!(s::Destabilizer, i, j; phases::Bool=true)
-    rowswap!(s.tab, i, j; phases=phases)
+@inline function rowswap!(s::Destabilizer, i, j; phases::Val{B}=Val(true)) where B
+    rowswap!(s.tab, i, j; phases)
     n = size(s.tab,1)÷2
-    rowswap!(s.tab, i+n, j+n; phases=phases)
+    rowswap!(s.tab, i+n, j+n; phases)
 end
 
-@inline function rowswap!(s::MixedStabilizer, i, j; phases::Bool=true)
-    rowswap!(s.tab, i, j; phases=phases)
+@inline function rowswap!(s::MixedStabilizer, i, j; phases::Val{B}=Val(true)) where B
+    rowswap!(s.tab, i, j; phases)
 end
 
-@inline function rowswap!(s::MixedDestabilizer, i, j; phases::Bool=true)
-    rowswap!(s.tab, i, j; phases=phases)
+@inline function rowswap!(s::MixedDestabilizer, i, j; phases::Val{B}=Val(true)) where B
+    rowswap!(s.tab, i, j; phases)
     n = nqubits(s)
-    rowswap!(s.tab, i+n, j+n; phases=phases)
+    rowswap!(s.tab, i+n, j+n; phases)
 end
 
 @inline function mul_left!(s::Stabilizer, m, i; phases::Val{B}=Val(true)) where B
@@ -1082,7 +1082,9 @@ Based on [garcia2012efficient](@cite).
 See also: [`canonicalize_rref!`](@ref), [`canonicalize_gott!`](@ref)
 """
 function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool=false)
-    _phases = Val(phases)
+    _canonicalize!(state; phases=Val(phases), ranks=Val(ranks))
+end
+function _canonicalize!(state::AbstractStabilizer; phases::Val{Bphases}=Val(true), ranks::Val{Branks}=Val(false)) where {Bphases,Branks}
     xzs = stabilizerview(state).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
@@ -1099,10 +1101,10 @@ function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool
                       (@view xs[jbig,i:end]))
         if k !== nothing
             k += i-1
-            rowswap!(state, k, i; phases=phases)
+            rowswap!(state, k, i; phases)
             for m in 1:rows
                 if xs[jbig,m]&jsmall!=zerobit && m!=i # if X or Y
-                    mul_left!(state, m, i; phases=_phases)
+                    mul_left!(state, m, i; phases)
                 end
             end
             i += 1
@@ -1117,16 +1119,16 @@ function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool
                       (@view zs[jbig,i:end]))
         if k !== nothing
             k += i-1
-            rowswap!(state, k, i; phases=phases)
+            rowswap!(state, k, i; phases)
             for m in 1:rows
                 if zs[jbig,m]&jsmall!=zerobit && m!=i # if Z or Y
-                    mul_left!(state, m, i; phases=_phases)
+                    mul_left!(state, m, i; phases)
                 end
             end
             i += 1
         end
     end
-    if ranks
+    if Branks
         return state, rx-1, i-1
     else
         return state
@@ -1149,7 +1151,9 @@ Based on [audenaert2005entanglement](@cite).
 See also: [`canonicalize!`](@ref), [`canonicalize_gott!`](@ref)
 """
 function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=true)
-    _phases = Val(phases)
+    _canonicalize_rref!(state, colindices; phases=Val(phases))
+end
+function _canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Val{B}=Val(true)) where B
     xzs = stabilizerview(state).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
@@ -1164,10 +1168,10 @@ function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=
         k = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
                       (@view xs[jbig,1:i]))
         if k !== nothing
-            rowswap!(state, k, i; phases=phases)
+            rowswap!(state, k, i; phases)
             for m in 1:rows
                 if xs[jbig,m]&jsmall!=zerobit && m!=i # if X or Y
-                    mul_left!(state, m, i; phases=_phases)
+                    mul_left!(state, m, i; phases)
                 end
             end
             i -= 1
@@ -1175,10 +1179,10 @@ function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=
         k = findfirst(e->e&(jsmall)!=zerobit,
                       (@view zs[jbig,1:i]))
         if k !== nothing
-            rowswap!(state, k, i; phases=phases)
+            rowswap!(state, k, i; phases)
             for m in 1:rows
                 if zs[jbig,m]&jsmall!=zerobit && m!=i # if Z or Y
-                    mul_left!(state, m, i; phases=_phases)
+                    mul_left!(state, m, i; phases)
                 end
             end
             i -= 1
@@ -1234,7 +1238,9 @@ Based on [gottesman1997stabilizer](@cite).
 See also: [`canonicalize!`](@ref), [`canonicalize_rref!`](@ref)
 """
 function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
-    _phases = Val(phases)
+    _canonicalize_gott!(stabilizer; phases=Val(phases))
+end
+function _canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Val{B}=Val(true)) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}, B}
     xzs = stabilizer.xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
@@ -1250,10 +1256,10 @@ function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) w
                       xs[jbig,i:end])
         if k !== nothing
             k += i-1
-            rowswap!(stabilizer, k, i; phases=phases)
+            rowswap!(stabilizer, k, i; phases)
             for m in 1:rows
                 if xs[jbig,m]&jsmall!=zerobit && m!=i # if X or Y
-                    mul_left!(stabilizer, m, i; phases=_phases)
+                    mul_left!(stabilizer, m, i; phases)
                 end
             end
             i += 1
@@ -1270,10 +1276,10 @@ function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) w
                       zs[jbig,i:end])
         if k !== nothing
             k += i-1
-            rowswap!(stabilizer, k, i; phases=phases)
+            rowswap!(stabilizer, k, i; phases)
             for m in 1:rows
                 if zs[jbig,m]&jsmall!=zerobit && m!=i # if Z or Y
-                    mul_left!(stabilizer, m, i; phases=_phases)
+                    mul_left!(stabilizer, m, i; phases)
                 end
             end
             i += 1
@@ -1466,7 +1472,7 @@ function LinearAlgebra.inv(c::CliffordOperator; phases=true)
     # TODO this transpose can be much faster with proper SIMDing
     for i in 1:n
         for j in 1:n
-            ci.tab[i,j] = c.tab[n+j,i][2], c.tab[j,i][2] 
+            ci.tab[i,j] = c.tab[n+j,i][2], c.tab[j,i][2]
             ci.tab[n+i,j] = c.tab[n+j,i][1], c.tab[j,i][1]
         end
     end
@@ -1682,11 +1688,7 @@ function gf2_H_to_G(H)
         I[i,i]=true
     end
     G = hcat(P,I)
-    G[:,perm_inverse(sindx)]
-end
-
-function perm_inverse(perm) # TODO find a better implementation (e.g. n*log(n))
-    [findfirst(a->l==a,perm) for l in 1:length(perm)]
+    G[:,invperm(sindx)]
 end
 
 ##############################
@@ -1812,7 +1814,7 @@ Check basic consistency requirements of a mixed stabilizer. Used in tests.
 function mixed_stab_looks_good(s)
     s = stabilizerview(s)
     c = canonicalize!(copy(s))
-    all((c.phases .== 0x0) .| (c.phases .== 0x2)) || return false 
+    all((c.phases .== 0x0) .| (c.phases .== 0x2)) || return false
     H = stab_to_gf2(c)
     # Unlike for stabilizers, we do not expect all columns to have non-identity ops
     non_trivial_rows = reduce(|,H,dims=(2,))

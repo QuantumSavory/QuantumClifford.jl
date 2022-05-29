@@ -14,7 +14,11 @@ function test_allocations()
             f2() = canonicalize!(s)
             f2()
             allocated(f2)
-            @test allocated(f2) < 50
+            @test allocated(f2) < 70
+            f2a() = QuantumClifford._canonicalize!(s)
+            f2a()
+            allocated(f2a)
+            @test allocated(f2a) < 40
             c = random_clifford(500)
             f3() = apply!(s,c)
             f3()
@@ -32,7 +36,7 @@ function test_allocations()
                 f6() = apply!(s,g)
                 f6()
                 @test allocated(f6) < 170*n
-            end 
+            end
         end
         @testset "project!" begin
             N = 100

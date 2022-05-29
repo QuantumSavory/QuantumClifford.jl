@@ -49,7 +49,7 @@ function _generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm};
     used_indices = Int[]
     used = 0
     # remove Xs
-    while (i=unsafe_bitfindnext_(px,1)) !== nothing
+    while (i=unsafe_bitfindnext_(px,1); i !== nothing) # TODO awkward notation due to https://github.com/JuliaLang/julia/issues/45499
         jbig = _div(Tme,i-1)+1
         jsmall = lowbit<<_mod(Tme,i-1)
         candidate = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
@@ -63,7 +63,7 @@ function _generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm};
         SAVEIDX && push!(used_indices, used)
     end
     # remove Zs
-    while (i=unsafe_bitfindnext_(pz,1)) !== nothing
+    while (i=unsafe_bitfindnext_(pz,1); i !== nothing) # TODO awkward notation due to https://github.com/JuliaLang/julia/issues/45499
         jbig = _div(Tme,i-1)+1
         jsmall = lowbit<<_mod(Tme,i-1)
         candidate = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
@@ -232,7 +232,7 @@ See the "Datastructure Choice" section in the documentation for more details.
 See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref)
 """
 function project!(state,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
-    return _project!(state,pauli;keep_result,phases=Val(phases))
+    return _project!(state,pauli;keep_result=Val(keep_result),phases=Val(phases))
 end
 
 # TODO maybe just add keep_result to it, for consistency
@@ -277,7 +277,7 @@ function project!(state::MixedStabilizer,pauli::PauliOperator;phases::Bool=true)
     return _project!(state,pauli;phases=Val(phases))
 end
 
-function _project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool=true,phases::Val{B}=Val(true)) where B
+function _project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr,Bp}
     anticommutes = 0
     n = size(stabilizer,1)
     for i in 1:n  # The explicit loop is faster than anticommutes = findfirst(row->comm(pauli,stabilizer,row)!=0x0, 1:n); both do not allocate.
@@ -287,9 +287,9 @@ function _project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool
         end
     end
     if anticommutes == 0
-        if keep_result
-            _,_,r = canonicalize!(stabilizer; phases=B, ranks=true) # O(n^3)
-            gen = _generate!(copy(pauli), stabilizer, phases=phases) # O(n^2)
+        if Bkr
+            _,_,r = _canonicalize!(stabilizer; phases, ranks=Val(true)) # O(n^3)
+            gen = _generate!(copy(pauli), stabilizer; phases) # O(n^2)
             if isnothing(gen)
                 result = nothing
                 anticommutes = r+1
@@ -302,7 +302,7 @@ function _project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool
     else
         for i in anticommutes+1:n
             if comm(pauli,stabilizer,i)!=0
-                mul_left!(stabilizer, i, anticommutes; phases=phases)
+                mul_left!(stabilizer, i, anticommutes; phases)
             end
         end
         stabilizer[anticommutes] = pauli
@@ -312,7 +312,7 @@ function _project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Bool
 end
 
 function _project!(ms::MixedStabilizer,pauli::PauliOperator;phases::Val{B}=Val(true)) where B
-    _, anticom_index, res = _project!(stabilizerview(ms), pauli; keep_result=true, phases=phases)
+    _, anticom_index, res = _project!(stabilizerview(ms), pauli; keep_result=Val(true), phases=phases)
     if anticom_index==ms.rank+1 && isnothing(res)
         ms.tab[ms.rank+1] = pauli
         ms.rank += 1
@@ -338,7 +338,7 @@ end
     end
 end
 
-function _project!(d::Union{Destabilizer,MixedDestabilizer},pauli::PauliOperator;keep_result::Bool=true,phases::Val{B}=Val(true)) where B
+function _project!(d::Union{Destabilizer,MixedDestabilizer},pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr, Bp}
     anticommutes = 0
     tab = d.tab
     stabilizer = stabilizerview(d)
@@ -389,7 +389,7 @@ function _project!(d::Union{Destabilizer,MixedDestabilizer},pauli::PauliOperator
             tab[n+r+1] = pauli
             result = nothing
         else
-            if keep_result
+            if Bkr
                 new_pauli = zero(pauli)
                 new_pauli.phase[] = pauli.phase[]
                 for i in 1:r
@@ -698,7 +698,7 @@ end
 """
     expect(p::PauliOperator, st::AbstractStabilizer)
 
-Compute the expectation value of a Pauli operator `p` on a stabilizer state `st`. 
+Compute the expectation value of a Pauli operator `p` on a stabilizer state `st`.
 This function will allocate a temporary copy of the stabilizer state `st`.
 """
 function expect(p::PauliOperator, s::AbstractStabilizer)

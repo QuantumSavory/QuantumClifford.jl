@@ -4,7 +4,7 @@ import Graphs
 function graphstate!(stab::Stabilizer)
     n = nqubits(stab)
     stab, r, s, permx, permz = canonicalize_gott!(stab)
-    perm = perm_inverse(permx[permz])
+    perm = invperm(permx[permz])
     h_idx = [perm[i] for i in (r+1):n] # Qubits in which X ↔ Z is needed
     ip_idx = [perm[i] for i in 1:n if stab[i,i]==(true,true)] # Qubits for which Y → X is needed
     phase_flips = [perm[i] for i in 1:n if stab.phases[i]!=0x0]
