@@ -1,3 +1,78 @@
+"""A multiqubit operator corresponding to all identities except for Pauli Z at `i`. See also: [`sY`](@ref), [`sMY`](@ref)"""
+function single_z(n,i)
+    p = zero(PauliOperator, n)
+    p[i] = (false, true)
+    p
+end
+
+"""A multiqubit operator corresponding to all identities except for Pauli X at `i`. See also: [`sX`](@ref), [`sMX`](@ref)"""
+function single_x(n,i)
+    p = zero(PauliOperator, n)
+    p[i] = (true, false)
+    p
+end
+
+"""A multiqubit operator corresponding to all identities except for Pauli Y at `i`. See also: [`sY`](@ref), [`sMY`](@ref)"""
+function single_y(n,i)
+    p = zero(PauliOperator, n)
+    p[i] = (true, true)
+    p
+end
+
+nchunks(i::Int) = 2*( (i-1) ÷ (8*sizeof(UInt)) + 1 )
+Base.zero(::Type{<:PauliOperator}, q) = PauliOperator(zeros(UInt8), q, zeros(UInt, nchunks(q)))
+Base.zero(p::PauliOperator) = zero(PauliOperator, nqubits(p))
+function Base.zero(::Type{<:Stabilizer}, r, q)
+    phases = zeros(UInt8,r)
+    xzs = zeros(UInt, nchunks(q), r)
+    Stabilizer(phases, q, xzs)::Stabilizer{Vector{UInt8},Matrix{UInt}}
+end
+Base.zero(::Type{<:Stabilizer}, q) = zero(Stabilizer, q, q)
+Base.zero(s::Stabilizer) = zero(Stabilizer, length(s), nqubits(s))
+Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.tab))
+Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Stabilizer, 2n, n))
+
+@inline function zero!(p::PauliOperator)
+    fill!(p.xz, zero(eltype(p.xz)))
+    p.phase[] = 0x0
+    p
+end
+
+@inline function zero!(s::Stabilizer,i)
+    s.xzs[:,i] .= zero(eltype(s.xzs))
+    s.phases[i] = 0x0
+    s
+end
+
+# TODO make faster by using fewer initializations, like in Base.zero above
+function Base.one(::Type{<:Stabilizer}, n; basis=:Z) # TODO support `basis` in all other `one(::[Mixed][De]Stabilizer)` functions
+    if basis==:X
+        Stabilizer(LinearAlgebra.I(n),falses(n,n))
+    elseif basis==:Y
+        Stabilizer(LinearAlgebra.I(n),LinearAlgebra.I(n))
+    elseif basis==:Z
+        Stabilizer(falses(n,n),LinearAlgebra.I(n))
+    else
+        throw(ErrorException("`basis` should be one of :X, :Y, or :Z"))
+    end
+end
+Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, nqubits(s); basis=basis)
+Base.one(::Type{<:Destabilizer}, n) = Destabilizer(vcat(one(Stabilizer, n, basis=:X),one(Stabilizer, n, basis=:Z)))
+function Base.one(::Type{<:MixedStabilizer}, r, n, basis=:Z)
+    s = one(Stabilizer, n; basis=basis)
+    MixedStabilizer(s,r)
+end
+function Base.one(::Type{<:MixedDestabilizer}, r, n)
+    d = one(Stabilizer, n; basis=:X)
+    s = one(Stabilizer, n; basis=:Z)
+    MixedDestabilizer(vcat(d,s),r)
+end
+function Base.one(c::CliffordOperator)
+    n = nqubits(c)
+    one(typeof(c),n)
+end
+Base.one(::Type{<:CliffordOperator}, n) = CliffordOperator(Stabilizer([LinearAlgebra.I(n);falses(n,n)],[falses(n,n);LinearAlgebra.I(n)]))
+
 """Prepare one or more Bell pairs (with optional phases).
 
 ```jldoctest

@@ -1,3 +1,25 @@
+"""
+$TYPEDSIGNATURES
+
+Inverse of a `CliffordOperator`
+"""
+function LinearAlgebra.inv(c::CliffordOperator; phases=true)
+    ci = zero(c)
+    n = nqubits(c)
+    # TODO this transpose can be much faster with proper SIMDing
+    for i in 1:n
+        for j in 1:n
+            ci.tab[i,j] = c.tab[n+j,i][2], c.tab[j,i][2]
+            ci.tab[n+i,j] = c.tab[n+j,i][1], c.tab[j,i][1]
+        end
+    end
+    if phases
+        ci*c*ci # TODO perform this inplace as in Stim https://github.com/quantumlib/Stim/blob/e51ea66d213b25920e72c08e53266ec56fd14db4/src/stim/stabilizers/tableau.cc#L383
+    else
+        ci
+    end
+end
+
 """The inner product of two Stabilizers.
 
 Based on [garcia2012efficient](@cite).
@@ -140,7 +162,7 @@ end
     eₗ = bₗ + _div(T,n-1)
     eᵣ = _div(T,col+n-1)+1
     shiftₗ = _mod(T,col)
-    shiftᵣ = 8*sizeof(T)-shiftₗ        
+    shiftᵣ = 8*sizeof(T)-shiftₗ
     for i in 1:r
     @inbounds @simd for j in 0:eₗ-bₗ
         xzs[bₗ+j,row+i] |= sxzs[j+1,i] >>> -shiftₗ
