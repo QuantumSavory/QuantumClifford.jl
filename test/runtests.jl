@@ -38,6 +38,7 @@ doset("allocations")        && include("./test_allocations.jl")
 doset("bitpack")            && include("./test_bitpack.jl")
 doset("graphs")             && include("./test_graphs.jl")
 doset("hash")               && include("./test_hash.jl")
+doset("entanglement")       && include("./test_entanglement.jl")
 doset("doctests")           && include("./doctests.jl")
 
 using Aqua
