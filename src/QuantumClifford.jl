@@ -45,7 +45,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     bell, ghz,
     BadDataStructure,
     graphstate, graphstate!, graph_gatesequence, graph_gate,
-    halfclip!
+    halfclip!, clip!
 
 
 const BIG_INT_MINUS_ONE = Ref{BigInt}()
