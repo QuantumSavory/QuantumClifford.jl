@@ -10,7 +10,6 @@ function clip!(state::AbstractStabilizer; phases::Bool=true)
     lowbit = Tme(0x1)
     zerobit = Tme(0x0)
     rows, columns = size(stabilizerview(state))
-    
     # step 1: pregauge
     i = 1 # index to place used stab
     for j in 1:columns
@@ -18,7 +17,6 @@ function clip!(state::AbstractStabilizer; phases::Bool=true)
         jsmall = lowbit<<_mod(Tme,j-1)
         # find first row that is not I in col j
         k1 = findfirst(e->e&jsmall!=zerobit, xs[jbig,i:end] .| zs[jbig,i:end])
-        
         # find second row that is not I and not same as k1
         if k1!==nothing
             k1 += i-1
@@ -27,7 +25,6 @@ function clip!(state::AbstractStabilizer; phases::Bool=true)
                     ((xs[jbig,k] | zs[jbig,k]) & # not identity
                     ((xs[jbig,k]⊻xs[jbig,k1]) | (zs[jbig,k]⊻zs[jbig,k1]))) != zerobit, # not same as k1
                 k1+1:columns)
-            
             if k2!==nothing
                 k2 += k1
                 # move k1 and k2 up to i and i+1
@@ -58,7 +55,6 @@ function clip!(state::AbstractStabilizer; phases::Bool=true)
             end
         end
     end
-
     # step 2: gauge
     unfrozen_rows = Array(rows:-1:1)
     for j in columns:-1:1 # in reversed order to keep left ends
@@ -125,7 +121,6 @@ function halfclip!(state::AbstractStabilizer; phases::Bool=true)
     lowbit = Tme(0x1)
     zerobit = Tme(0x0)
     rows, columns = size(stabilizerview(state))
-    
     # step 1: pregauge
     i = 1 # index to place used stab
     for j in 1:columns
@@ -133,7 +128,6 @@ function halfclip!(state::AbstractStabilizer; phases::Bool=true)
         jsmall = lowbit<<_mod(Tme,j-1)
         # find first row that is not I in col j
         k1 = findfirst(e->e&jsmall!=zerobit, xs[jbig,i:end] .| zs[jbig,i:end])
-
         # find second row that is not I and not same as k1
         if k1!==nothing
             k1 += i-1
@@ -142,7 +136,6 @@ function halfclip!(state::AbstractStabilizer; phases::Bool=true)
                     ((xs[jbig,k] | zs[jbig,k]) & # not identity
                     ((xs[jbig,k]⊻xs[jbig,k1]) | (zs[jbig,k]⊻zs[jbig,k1]))) != zerobit, # not same as k1
                 k1+1:columns)
-            
             if k2!==nothing
                 k2 += k1
                 # move k1 and k2 up to i and i+1
@@ -173,8 +166,37 @@ function halfclip!(state::AbstractStabilizer; phases::Bool=true)
             end
             # @show k1, k2
         end
-
         # @show state
     end
     state
+end
+
+
+"""
+Get bigram which contains the location of endpoints.
+"""
+function get_bigram(state::AbstractStabilizer; do_clip::Bool=true)
+    if do_clip
+        clip!(state)
+    end
+    xzs = stabilizerview(state).xzs
+    xs = @view xzs[1:end÷2,:]
+    zs = @view xzs[end÷2+1:end,:]
+    Tme = eltype(xzs)
+    lowbit = Tme(0x1)
+    zerobit = Tme(0x0)
+    rows, columns = size(stabilizerview(state))
+    xorzs = xs .| zs
+    bigram = zeros(Int, rows, 2)
+    for i in 1:rows
+        bigram[i, 1] = findfirst(j->(
+            jbig = _div(Tme,j-1)+1;
+            jsmall = lowbit<<_mod(Tme,j-1);
+            xorzs[jbig,i]&jsmall!=zerobit), 1:columns)
+        bigram[i, 2] = findlast(j->(
+            jbig = _div(Tme,j-1)+1;
+            jsmall = lowbit<<_mod(Tme,j-1);
+            xorzs[jbig,i]&jsmall!=zerobit), 1:columns)
+    end
+    bigram
 end
