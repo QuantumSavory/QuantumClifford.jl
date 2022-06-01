@@ -182,7 +182,7 @@ end
 Get bipartite entanglement by first convertig the state to a graph.
 """
 function entanglement_from_graph(state::Stabilizer, subsystem)
-    graph = Graphs.graph(state)
+    graph = Graphs.Graph(state)
     adjmat = Matrix{Bool}(Graphs.adjacency_matrix(graph))
     other_subsystem = filter(i->!(i in collect(subsystem)), 1:Graphs.nv(graph))
     subadjmat = adjmat[subsystem,other_subsystem]

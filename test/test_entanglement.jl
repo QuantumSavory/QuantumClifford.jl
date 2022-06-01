@@ -1,15 +1,15 @@
 function test_clipping()
     @testset "Clipped gauge of stabilizer states" begin
         for n in test_sizes
-            s = random_stabilizer(n)
-            s_clipped = copy(s)
-            clip!(s_clipped)
-            @test logdot(s, s_clipped)==0
-            bigram = get_bigram(s_clipped; do_clip=false)
-            rows, columns = size(stabilizerview(s_clipped))
-            for j in 1:columns
-                @test count(==(j), bigram)==2
-                #TODO: we do not whether test endpoints are different Pauli operators
+            num_repeat = 100
+            for i_repeat in 1:num_repeat
+                s = random_stabilizer(n)
+                s_clipped = copy(s)
+                clip!(s_clipped)
+                @test logdot(s, s_clipped)==0
+                bigram = get_bigram(s_clipped; do_clip=false)
+                rows, columns = size(stabilizerview(s_clipped))
+                @test all(count(==(j), bigram)==2 for j in 1:columns)
             end
         end
     end
@@ -26,19 +26,18 @@ import Graphs
 
 function test_entanglement()
     @testset "Entanglement calculated by clipping and graph" begin
-        num_part = 500
+        num_repeat = 500
         for n in [3, 4, 5, 6]
-            s = random_stabilizer(n)
-            for i_part in 1:num_part
+            for i_part in 1:num_repeat
+                s = random_stabilizer(n)
                 endpoints = rand(1:n, 2)
                 leftend = min(endpoints...)
                 rightend = max(endpoints...)
-                #@test entanglement_cont(copy(s), (leftend, rightend))==entanglement_from_graph(s, leftend:rightend)
                 onfail(@test entanglement_cont(copy(s), (leftend, rightend))==entanglement_from_graph(s, leftend:rightend)) do
-                    @show(leftend, rightend)
-                    @show s
-                    graph = Graphs.graph(s)
-                    @show collect(Graphs.edges(graph))
+                    @debug(leftend, rightend)
+                    @debug s
+                    graph = Graphs.Graph(s)
+                    @debug collect(Graphs.edges(graph))
                 end
             end  
         end
@@ -50,12 +49,12 @@ import LinearAlgebra
 
 function test_graph_entanglement()
     @testset "Entanglement calculated by clipping and graph" begin
-        num_part = 200
+        num_repeat = 200
         for n in test_sizes
-            s1 = random_stabilizer(n)
-            graph = Graphs.graph(s1)
-            s = Stabilizer(graph)
-            for i_part in 1:num_part
+            for i_part in 1:num_repeat
+                s1 = random_stabilizer(n)
+                graph = Graphs.Graph(s1)
+                s = Stabilizer(graph)
                 endpoints = rand(1:n, 2)
                 leftend = min(endpoints...)
                 rightend = max(endpoints...)
