@@ -68,7 +68,50 @@ function test_graph_entanglement()
     end
 end
 
+import HDF5
+
+function test_with_qiskit()
+    @testset "Compare entanglement with qiskit data" begin
+        data_path = "qiskit_data/stab_ent.h5"
+        test_sizes_qiskit = [3, 4, 6, 8]
+        num_repeat = 200
+        HDF5.h5open(data_path, "r") do f
+            for test_size in test_sizes_qiskit
+                grp = f["size$test_size"]
+                    for i_repeat in 1:num_repeat
+                        # load from qiskit data
+                        xzs = convert(Matrix{Bool}, grp["xzs"][:,:,i_repeat]) # Bool is not supported in HDF5.jl
+                        xzs = transpose(xzs)
+                        phases = grp["phases"][:,i_repeat]
+                        leftend = grp["leftend"][i_repeat] + 1
+                        rightend = grp["rightend"][i_repeat] + 1
+                        entanglement_qiskit = grp["entanglement"][i_repeat]
+                        # calculate by our approaches
+                        s = Stabilizer(phases, xzs)
+                        entanglement_clipped = entanglement_cont(copy(s), (leftend, rightend))
+                        entanglement_graph = entanglement_from_graph(s, leftend:rightend)
+                        onfail(
+                            @test isapprox(entanglement_qiskit, entanglement_clipped, atol=1e-3) &&
+                            isapprox(entanglement_qiskit, entanglement_graph, atol=1e-3)
+                        ) do
+                            @debug entanglement_qiskit
+                            @debug entanglement_clipped
+                            @debug entanglement_graph
+                            @debug(leftend, rightend)
+                            @debug s
+                            graph = Graphs.Graph(s)
+                            @debug collect(Graphs.edges(graph))
+                        end
+                        
+                    end
+            end
+        end
+    end
+end
 
 test_clipping()
 test_entanglement()
 test_graph_entanglement()
+
+# first generate data by https://github.com/royess/test-stab-entanglement/blob/main/get_data.py
+test_with_qiskit() 
