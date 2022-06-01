@@ -45,7 +45,7 @@ export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     bell, ghz,
     BadDataStructure,
     graphstate, graphstate!, graph_gatesequence, graph_gate,
-    halfclip!, clip!, get_bigram
+    clip!, get_bigram, entanglement_cont, entanglement_from_graph
 
 
 const BIG_INT_MINUS_ONE = Ref{BigInt}()
