@@ -1,8 +1,7 @@
 """
 Get the clipped gauge of a stablizer state. 
 """
-function clip!(state::AbstractStabilizer; phases::Bool=true)
-    _phases = Val(phases)
+function clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)) where B
     xzs = stabilizerview(state).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
@@ -33,12 +32,12 @@ function clip!(state::AbstractStabilizer; phases::Bool=true)
                 # use them to eliminate others
                 for m in i+2:rows
                     if (xs[jbig,m]⊻xs[jbig,i])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,i])&jsmall==zerobit
-                        mul_left!(state, m, i; phases=_phases)
+                        mul_left!(state, m, i; phases=phases)
                     elseif (xs[jbig,m]⊻xs[jbig,i+1])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,i+1])&jsmall==zerobit
-                        mul_left!(state, m, i+1; phases=_phases)
+                        mul_left!(state, m, i+1; phases=phases)
                     elseif (xs[jbig,m]⊻xs[jbig,i]⊻xs[jbig,i+1])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,i]⊻zs[jbig,i+1])&jsmall==zerobit
-                        mul_left!(state, m, i; phases=_phases)
-                        mul_left!(state, m, i+1; phases=_phases)
+                        mul_left!(state, m, i; phases=phases)
+                        mul_left!(state, m, i+1; phases=phases)
                     end
                 end
                 i += 2
@@ -48,7 +47,7 @@ function clip!(state::AbstractStabilizer; phases::Bool=true)
                 # use it to eliminate others
                 for m in i+1:rows
                     if (xs[jbig,m]⊻xs[jbig,i])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,i])&jsmall==zerobit
-                        mul_left!(state, m, i; phases=_phases)
+                        mul_left!(state, m, i; phases=phases)
                     end
                 end
                 i += 1
@@ -79,18 +78,18 @@ function clip!(state::AbstractStabilizer; phases::Bool=true)
                 # for rows between k1 and k2, use k1 
                 for m in unfrozen_rows[k1+1:k2-1]
                     if (xs[jbig,m]⊻xs[jbig,k1_row])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,k1_row])&jsmall==zerobit
-                        mul_left!(state, m, k1_row; phases=_phases)
+                        mul_left!(state, m, k1_row; phases=phases)
                     end
                 end
                 # for other rows, use both
                 for m in unfrozen_rows[k2+1:end]
                     if (xs[jbig,m]⊻xs[jbig,k1_row])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,k1_row])&jsmall==zerobit
-                        mul_left!(state, m, k1_row; phases=_phases)
+                        mul_left!(state, m, k1_row; phases=phases)
                     elseif (xs[jbig,m]⊻xs[jbig,k2_row])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,k2_row])&jsmall==zerobit
-                        mul_left!(state, m, k2_row; phases=_phases)
+                        mul_left!(state, m, k2_row; phases=phases)
                     elseif (xs[jbig,m]⊻xs[jbig,k1_row]⊻xs[jbig,k2_row])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,k1_row]⊻zs[jbig,k2_row])&jsmall==zerobit
-                        mul_left!(state, m, k1_row; phases=_phases)
-                        mul_left!(state, m, k2_row; phases=_phases)
+                        mul_left!(state, m, k1_row; phases=phases)
+                        mul_left!(state, m, k2_row; phases=phases)
                     end
                 end
                 deleteat!(unfrozen_rows, (k1, k2))
@@ -98,7 +97,7 @@ function clip!(state::AbstractStabilizer; phases::Bool=true)
                 # use it to eliminate others
                 for m in unfrozen_rows[k1+1:end]
                     if (xs[jbig,m]⊻xs[jbig,k1_row])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,k1_row])&jsmall==zerobit
-                        mul_left!(state, m, k1_row; phases=_phases)
+                        mul_left!(state, m, k1_row; phases=phases)
                     end
                 end
                 deleteat!(unfrozen_rows, k1)
