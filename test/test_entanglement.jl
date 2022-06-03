@@ -21,19 +21,30 @@ onfail(body, _::Test.Pass) = nothing
 onfail(body, _::Test.Fail) = body()
 onfail(body, _::Tuple{Test.Fail,T}) where {T} = body()
 
+import LinearAlgebra
+
+# by Krastanov, here for testing
+function entropy(state, qubits_to_be_deleted)
+    nb_of_qubits = nqubits(state)
+    nb_of_deletions = length(qubits_to_be_deleted)
+    new_state = traceout!(MixedDestabilizer(state), qubits_to_be_deleted) # TODO: this can be written better
+    rank_after_deletion = LinearAlgebra.rank(new_state)
+    return nb_of_qubits - rank_after_deletion - nb_of_deletions
+end
 
 import Graphs
 
-function test_entanglement()
-    @testset "Entanglement calculated by clipping and graph" begin
+function test_entanglement_from_clipping()
+    @testset "Entanglement calculated from clipping" begin
         num_repeat = 500
-        for n in [3, 4, 5, 6]
+        for n in test_sizes
             for i_part in 1:num_repeat
                 s = random_stabilizer(n)
                 endpoints = rand(1:n, 2)
                 leftend = min(endpoints...)
                 rightend = max(endpoints...)
-                onfail(@test entanglement_cont(copy(s), (leftend, rightend))==entanglement_from_graph(s, leftend:rightend)) do
+                entanglement_new = entropy(s, leftend:rightend)
+                onfail(@test entanglement_cont(copy(s), (leftend, rightend))==entanglement_new) do
                     @debug(leftend, rightend)
                     @debug s
                     graph = Graphs.Graph(s)
@@ -44,25 +55,22 @@ function test_entanglement()
     end
 end
 
-
-import LinearAlgebra
-
-function test_graph_entanglement()
-    @testset "Entanglement calculated by clipping and graph" begin
-        num_repeat = 200
-        for n in test_sizes
+function test_entanglement_from_graph()
+    @testset "Entanglement calculated from graph" begin
+        num_repeat = 500
+        for n in [3, 4, 5, 6]
             for i_part in 1:num_repeat
-                s1 = random_stabilizer(n)
-                graph = Graphs.Graph(s1)
-                s = Stabilizer(graph)
+                s = random_stabilizer(n)
                 endpoints = rand(1:n, 2)
                 leftend = min(endpoints...)
                 rightend = max(endpoints...)
-                adjmat = Matrix{Bool}(Graphs.adjacency_matrix(graph))
-                subsystem = leftend:rightend
-                other_subsystem = filter(i->!(i in collect(subsystem)), 1:Graphs.nv(graph))
-                subadjmat = adjmat[subsystem,other_subsystem]
-                @test entanglement_cont(copy(s), (leftend, rightend))==LinearAlgebra.rank(subadjmat)
+                entanglement_new = entropy(s, leftend:rightend)
+                onfail(@test entanglement_from_graph(s, leftend:rightend)==entanglement_new) do
+                    @debug(leftend, rightend)
+                    @debug s
+                    graph = Graphs.Graph(s)
+                    @debug collect(Graphs.edges(graph))
+                end
             end  
         end
     end
@@ -110,8 +118,8 @@ function test_with_qiskit()
 end
 
 test_clipping()
-test_entanglement()
-test_graph_entanglement()
+test_entanglement_from_clipping()
+test_entanglement_from_graph() #TODO: rarely failed
 
-# first generate data by https://github.com/royess/test-stab-entanglement/blob/main/get_data.py
-test_with_qiskit() 
+# uncomment the line below for cross checking with Qiskit, first generate data by https://github.com/royess/test-stab-entanglement/blob/main/get_data.py
+# test_with_qiskit() 
