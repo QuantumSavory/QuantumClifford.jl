@@ -88,25 +88,17 @@ function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool
     _canonicalize!(state; phases=Val(phases), ranks=Val(ranks))
 end
 function _canonicalize!(state::AbstractStabilizer; phases::Val{Bphases}=Val(true), ranks::Val{Branks}=Val(false)) where {Bphases,Branks}
-    xzs = stabilizerview(state).xzs
-    xs = @view xzs[1:end÷2,:]
-    zs = @view xzs[end÷2+1:end,:]
-    Tme = eltype(xzs)
-    lowbit = Tme(0x1)
-    zerobit = Tme(0x0)
+    tab = stabilizerview(state)
     rows, columns = size(stabilizerview(state))
     i = 1
     for j in 1:columns
         # find first row with X or Y in col `j`
-        jbig = _div(Tme,j-1)+1
-        jsmall = lowbit<<_mod(Tme,j-1)
-        k = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
-                      (@view xs[jbig,i:end]))
+        k = findfirst(ii->tab[ii,j][1],i:rows)
         if k !== nothing
             k += i-1
             rowswap!(state, k, i; phases)
             for m in 1:rows
-                if xs[jbig,m]&jsmall!=zerobit && m!=i # if X or Y
+                if tab[m,j][1] && m!=i # if X or Y
                     mul_left!(state, m, i; phases)
                 end
             end
@@ -116,15 +108,12 @@ function _canonicalize!(state::AbstractStabilizer; phases::Val{Bphases}=Val(true
     rx = i
     for j in 1:columns
         # find first row with Z in col `j`
-        jbig = _div(Tme,j-1)+1
-        jsmall = lowbit<<_mod(Tme,j-1)
-        k = findfirst(e->e&(jsmall)!=zerobit,
-                      (@view zs[jbig,i:end]))
+        k = findfirst(ii->tab[ii,j][2],i:rows)
         if k !== nothing
             k += i-1
             rowswap!(state, k, i; phases)
             for m in 1:rows
-                if zs[jbig,m]&jsmall!=zerobit && m!=i # if Z or Y
+                if tab[m,j][2] && m!=i # if Z or Y
                     mul_left!(state, m, i; phases)
                 end
             end
@@ -157,34 +146,25 @@ function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=
     _canonicalize_rref!(state, colindices; phases=Val(phases))
 end
 function _canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Val{B}=Val(true)) where B
-    xzs = stabilizerview(state).xzs
-    xs = @view xzs[1:end÷2,:]
-    zs = @view xzs[end÷2+1:end,:]
-    Tme = eltype(xzs)
-    lowbit = Tme(0x1)
-    zerobit = Tme(0x0)
+    tab = stabilizerview(state)
     rows, columns = size(stabilizerview(state))
     i = rows
     for j in colindices
-        jbig = _div(Tme,j-1)+1
-        jsmall = lowbit<<_mod(Tme,j-1)
-        k = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
-                      (@view xs[jbig,1:i]))
+        k = findfirst(ii->tab[ii,j][1],1:i)
         if k !== nothing
             rowswap!(state, k, i; phases)
             for m in 1:rows
-                if xs[jbig,m]&jsmall!=zerobit && m!=i # if X or Y
+                if tab[m,j][1] && m!=i # if X or Y
                     mul_left!(state, m, i; phases)
                 end
             end
             i -= 1
         end
-        k = findfirst(e->e&(jsmall)!=zerobit,
-                      (@view zs[jbig,1:i]))
+        k = findfirst(ii->tab[ii,j][2],1:i)
         if k !== nothing
             rowswap!(state, k, i; phases)
             for m in 1:rows
-                if zs[jbig,m]&jsmall!=zerobit && m!=i # if Z or Y
+                if tab[m,j][2] && m!=i # if Z or Y
                     mul_left!(state, m, i; phases)
                 end
             end
@@ -237,24 +217,18 @@ function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) w
     _canonicalize_gott!(stabilizer; phases=Val(phases))
 end
 function _canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Val{B}=Val(true)) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}, B}
+    tab = stabilizerview(stabilizer)
     xzs = stabilizer.xzs
-    xs = @view xzs[1:end÷2,:]
-    zs = @view xzs[end÷2+1:end,:]
-    lowbit = Tme(0x1)
-    zerobit = Tme(0x0)
     rows, columns = size(stabilizer)
     i = 1
     for j in 1:columns
         # find first row with X or Y in col `j`
-        jbig = _div(Tme,j-1)+1
-        jsmall = lowbit<<_mod(Tme,j-1)
-        k = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
-                      xs[jbig,i:end])
+        k = findfirst(ii->tab[ii,j][1],i:rows)
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases)
             for m in 1:rows
-                if xs[jbig,m]&jsmall!=zerobit && m!=i # if X or Y
+                if tab[m,j][1] && m!=i # if X or Y
                     mul_left!(stabilizer, m, i; phases)
                 end
             end
@@ -266,15 +240,12 @@ function _canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Val{B}=Val(
     i = r+1
     for j in r+1:columns
         # find first row with Z in col `j`
-        jbig = _div(Tme,j-1)+1
-        jsmall = lowbit<<_mod(Tme,j-1)
-        k = findfirst(e->e&(jsmall)!=zerobit,
-                      zs[jbig,i:end])
+        k = findfirst(ii->tab[ii,j][2],i:rows)
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases)
             for m in 1:rows
-                if zs[jbig,m]&jsmall!=zerobit && m!=i # if Z or Y
+                if tab[m,j][2] && m!=i # if Z or Y
                     mul_left!(stabilizer, m, i; phases)
                 end
             end
