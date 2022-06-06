@@ -15,7 +15,7 @@ function clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)) where B
         jbig = _div(Tme,j-1)+1
         jsmall = lowbit<<_mod(Tme,j-1)
         # find first row that is not I in col j
-        k1 = findfirst(e->e&jsmall!=zerobit, xs[jbig,i:end] .| zs[jbig,i:end])
+        k1 = findfirst(k->(xs[jbig,k] .| zs[jbig,k])&jsmall!=zerobit, i:rows)
         # find second row that is not I and not same as k1
         if k1!==nothing
             k1 += i-1
@@ -60,7 +60,7 @@ function clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)) where B
         jbig = _div(Tme,j-1)+1
         jsmall = lowbit<<_mod(Tme,j-1)
         # find first row that is not I in col j
-        k1 = findfirst(e->e&jsmall!=zerobit, xs[jbig,unfrozen_rows] .| zs[jbig,unfrozen_rows])
+        k1 = findfirst(k->(xs[jbig,k] .| zs[jbig,k])&jsmall!=zerobit, unfrozen_rows)
         
         # find second row that is not I and not same as k1
         if k1!==nothing
