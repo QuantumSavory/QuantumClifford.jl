@@ -1,4 +1,5 @@
 import Graphs
+import Nemo
 
 """An in-place version of [`graphstate`](@ref)."""
 function graphstate!(stab::Stabilizer)
@@ -185,6 +186,6 @@ function entanglement_from_graph(state::Stabilizer, subsystem)
     graph = Graphs.Graph(state)
     adjmat = Matrix{Bool}(Graphs.adjacency_matrix(graph))
     other_subsystem = filter(i->!(i in collect(subsystem)), 1:Graphs.nv(graph))
-    subadjmat = adjmat[subsystem,other_subsystem]
+    subadjmat = Nemo.matrix(Nemo.ResidueRing(Nemo.ZZ, 2), collect(adjmat[subsystem,other_subsystem]))
     LinearAlgebra.rank(subadjmat)
 end
