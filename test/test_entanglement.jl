@@ -5,11 +5,11 @@ function test_clipping()
             for i_repeat in 1:num_repeat
                 s = random_stabilizer(n)
                 s_clipped = copy(s)
-                clip!(s_clipped)
+                canonicalize_clip!(s_clipped)
                 @test logdot(s, s_clipped)==0
-                bigram = get_bigram(s_clipped; do_clip=false)
+                bg = bigram(s_clipped; clip=false)
                 rows, columns = size(stabilizerview(s_clipped))
-                @test all(count(==(j), bigram)==2 for j in 1:columns)
+                @test all(count(==(j), bg)==2 for j in 1:columns)
             end
         end
     end
@@ -23,8 +23,8 @@ onfail(body, _::Tuple{Test.Fail,T}) where {T} = body()
 
 import LinearAlgebra
 
-# by Krastanov, here for testing
-function entropy(state, qubits_to_be_deleted)
+# by Krastanov, here for testing, to be move to src file
+function entanglement_entropy_traceout(state, qubits_to_be_deleted)
     nb_of_qubits = nqubits(state)
     nb_of_deletions = length(qubits_to_be_deleted)
     new_state = traceout!(MixedDestabilizer(state), qubits_to_be_deleted) # TODO: this can be written better
@@ -38,14 +38,12 @@ function test_entanglement_from_clipping()
     @testset "Entanglement calculated from clipping" begin
         num_repeat = 500
         for n in test_sizes
-            for i_part in 1:num_repeat
+            for i_repeat in 1:num_repeat
                 s = random_stabilizer(n)
                 endpoints = rand(1:n, 2)
-                leftend = min(endpoints...)
-                rightend = max(endpoints...)
-                entanglement_new = entropy(s, leftend:rightend)
-                onfail(@test entanglement_cont(copy(s), (leftend, rightend))==entanglement_new) do
-                    @debug(leftend, rightend)
+                subsystem_range = min(endpoints...):max(endpoints...)
+                onfail(@test entanglement_entropy(copy(s), subsystem_range, Val(:clipping))==entanglement_entropy_traceout(copy(s), subsystem_range)) do
+                    @debug subsystem_range 
                     @debug s
                     graph = Graphs.Graph(s)
                     @debug collect(Graphs.edges(graph))
@@ -55,18 +53,17 @@ function test_entanglement_from_clipping()
     end
 end
 
+
 function test_entanglement_from_graph()
     @testset "Entanglement calculated from graph" begin
         num_repeat = 500
-        for n in [3, 4, 5, 6]
-            for i_part in 1:num_repeat
+        for n in test_sizes
+            for i_repeat in 1:num_repeat
                 s = random_stabilizer(n)
                 endpoints = rand(1:n, 2)
-                leftend = min(endpoints...)
-                rightend = max(endpoints...)
-                entanglement_new = entropy(s, leftend:rightend)
-                onfail(@test entanglement_from_graph(s, leftend:rightend)==entanglement_new) do
-                    @debug(leftend, rightend)
+                subsystem_range = min(endpoints...):max(endpoints...)
+                onfail(@test entanglement_entropy(copy(s), subsystem_range, Val(:graph))==entanglement_entropy_traceout(copy(s), subsystem_range)) do
+                    @debug subsystem_range 
                     @debug s
                     graph = Graphs.Graph(s)
                     @debug collect(Graphs.edges(graph))

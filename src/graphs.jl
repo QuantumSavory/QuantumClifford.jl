@@ -177,15 +177,3 @@ function graph_gate(h_idx, ip_idx, z_idx, n)
     end
     c
 end
-
-
-"""
-Get bipartite entanglement by first convertig the state to a graph.
-"""
-function entanglement_from_graph(state::Stabilizer, subsystem)
-    graph = Graphs.Graph(state)
-    adjmat = Matrix{Bool}(Graphs.adjacency_matrix(graph))
-    other_subsystem = filter(i->!(i in collect(subsystem)), 1:Graphs.nv(graph))
-    subadjmat = Nemo.matrix(Nemo.ResidueRing(Nemo.ZZ, 2), collect(adjmat[subsystem,other_subsystem]))
-    LinearAlgebra.rank(subadjmat)
-end

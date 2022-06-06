@@ -1,7 +1,7 @@
 """
 Get the clipped gauge of a stablizer state. 
 """
-function clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)) where B
+function canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)) where B
     xzs = stabilizerview(state).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
@@ -111,9 +111,9 @@ end
 """
 Get bigram which contains the location of endpoints.
 """
-function get_bigram(state::AbstractStabilizer; do_clip::Bool=true)
-    if do_clip
-        clip!(state)
+function bigram(state::AbstractStabilizer; clip::Bool=true)
+    if clip
+        canonicalize_clip!(state)
     end
     xzs = stabilizerview(state).xzs
     xs = @view xzs[1:end÷2,:]
@@ -123,26 +123,51 @@ function get_bigram(state::AbstractStabilizer; do_clip::Bool=true)
     zerobit = Tme(0x0)
     rows, columns = size(stabilizerview(state))
     xorzs = xs .| zs
-    bigram = zeros(Int, rows, 2)
+    bg = zeros(Int, rows, 2)
     for i in 1:rows
-        bigram[i, 1] = findfirst(j->(
+        bg[i, 1] = findfirst(j->(
             jbig = _div(Tme,j-1)+1;
             jsmall = lowbit<<_mod(Tme,j-1);
             xorzs[jbig,i]&jsmall!=zerobit), 1:columns)
-        bigram[i, 2] = findlast(j->(
+        bg[i, 2] = findlast(j->(
             jbig = _div(Tme,j-1)+1;
             jsmall = lowbit<<_mod(Tme,j-1);
             xorzs[jbig,i]&jsmall!=zerobit), 1:columns)
     end
-    bigram
+    bg
 end
 
 
 """
-Get bipartite entanglement of a contiguous subsystem.
+Get bipartite entanglement entropy of subsystem.
+
+TODO: more detailed docstring
 """
-function entanglement_cont(state::AbstractStabilizer, subsystem_ends; do_clip::Bool=true)
-    bigram = get_bigram(state; do_clip=do_clip)
-    leftend, rightend = subsystem_ends
-    0.5 * count(r->(leftend<=r[1]<=rightend)⊻(leftend<=r[2]<=rightend), eachrow(bigram))
+function entanglement_entropy end
+
+
+"""
+Get bipartite entanglement entropy of a contiguous subsystem by clipping algorithm.
+"""
+function entanglement_entropy(state::AbstractStabilizer, subsystem_range::UnitRange, ::Val{:clipping}; clip::Bool=true)
+    bg = bigram(state; clip=clip)
+    count(r->(r[1] in subsystem_range)⊻(r[2] in subsystem_range), eachrow(bg)) ÷ 2
 end
+
+
+import Graphs, Nemo, LinearAlgebra
+
+
+"""
+Get bipartite entanglement entropy by first convertig the state to a graph.
+"""
+function entanglement_entropy(state::AbstractStabilizer, subsystem::AbstractVector, ::Val{:graph})
+    graph = Graphs.Graph(state)
+    adjmat = Graphs.adjacency_matrix(graph)
+    other_subsystem = filter(i->!(i in collect(subsystem)), 1:Graphs.nv(graph))
+    subadjmat = Nemo.matrix(Nemo.ResidueRing(Nemo.ZZ, 2), collect(adjmat[subsystem,other_subsystem]))
+    LinearAlgebra.rank(subadjmat)
+end
+
+
+#TODO: function entanglement_entropy(state, range::AbstractVector, ::Val{:traceout})
