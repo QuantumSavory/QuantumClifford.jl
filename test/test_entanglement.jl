@@ -7,6 +7,7 @@ function test_clipping()
                 s_clipped = copy(s)
                 canonicalize_clip!(s_clipped)
                 @test logdot(s, s_clipped)==0
+                @test stab_looks_good(s_clipped)
                 bg = bigram(s_clipped; clip=false)
                 rows, columns = size(stabilizerview(s_clipped))
                 @test all(count(==(j), bg)==2 for j in 1:columns)
@@ -15,11 +16,6 @@ function test_clipping()
     end
 end
 
-
-# functions to show info when fails
-onfail(body, _::Test.Pass) = nothing
-onfail(body, _::Test.Fail) = body()
-onfail(body, _::Tuple{Test.Fail,T}) where {T} = body()
 
 import LinearAlgebra
 
@@ -74,6 +70,22 @@ function test_entanglement_from_graph()
 end
 
 
+function test_entanglement_special_cases()
+    @testset "Entanglement of special cases" begin
+        s = S"
+            + XZZ_ZZ
+            + ZX_ZZ_
+            + Z_XZ_Z
+            + _ZZXZZ
+            + ZZ_ZXZ
+            + Z_ZZZX"
+        subsystem = 1:3
+        @test entanglement_entropy(copy(s), subsystem, Val(:clipping))==2
+        @test entanglement_entropy(copy(s), subsystem, Val(:graph))==2
+    end
+end
+
 test_clipping()
 test_entanglement_from_clipping()
 test_entanglement_from_graph()
+test_entanglement_special_cases()

@@ -20,6 +20,13 @@ function doset(descr)
     return false
 end
 
+
+# functions to show info when fails, credit to  https://discourse.julialang.org/t/print-debug-info-for-failed-test/22311
+onfail(body, _::Test.Pass) = nothing
+onfail(body, _::Test.Fail) = body()
+onfail(body, _::Tuple{Test.Fail,T}) where {T} = body()
+
+
 println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREADS = $(Sys.CPU_THREADS)`...")
 
 doset("paulis")             && include("./test_paulis.jl")
