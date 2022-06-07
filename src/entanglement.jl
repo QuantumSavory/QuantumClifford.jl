@@ -1,5 +1,43 @@
 """
-Get the clipped gauge of a stablizer state. 
+$TYPEDSIGNATURES
+
+Fix the clipped gauge of a stabilizer (in place).
+
+Assumes the input is a valid stabilizer (all operators commute and have
+real phases). It permits identity generators. But it is required that the number of generators should be the same as the number of qubits. 
+
+```jldoctest
+julia> ghz = S"XXXX
+               ZZII
+               IZZI
+               IIZZ";
+
+julia> canonicalize_clip!(ghz)
++ XXXX
++ ZZ__
++ _ZZ_
++ __ZZ
+```
+
+If `phases=false` is set, the canonicalization does not track the phases
+in the tableau. (A speedup is expected but not benchmarked.)
+
+```jldoctest
+julia> s = S"-ZX
+              XX"
+- ZX
++ XX
+
+julia> canonicalize_clip!(copy(s))
++iY_
++ XX
+
+julia> canonicalize_clip!(copy(s), phases=false)
+- Y_
++ XX
+```
+
+Introduced in [nahum2017quantum](@cite), with a more detailed explanation of the algorithm in Appendix A of [li2019measurement](@cite)
 """
 function canonicalize_clip!(state::AbstractStabilizer; phases::Bool=true)
     _canonicalize_clip!(state; phases=Val(phases))
@@ -112,7 +150,13 @@ end
 
 
 """
-Get bigram which contains the location of endpoints.
+Get bigram which is a tableau containing the location of endpoints. Each row for a qubit, and each column for left (1) and right (2).
+
+If `clip=false` is set, the function will calculate bigram without fixing clipped gauge. This is for the case where the input state is already in clipped gauge.
+
+Introduced in [nahum2017quantum](@cite), with a more detailed explanation of the algorithm in Appendix A of [li2019measurement](@cite)
+
+See also: [`canonicalize_clip!`](@ref)
 """
 function bigram(state::AbstractStabilizer; clip::Bool=true)
     if clip
@@ -138,21 +182,26 @@ function bigram(state::AbstractStabilizer; clip::Bool=true)
             jbig = _div(Tme,j-1)+1;
             jsmall = lowbit<<_mod(Tme,j-1);
             xorzs[jbig,i]&jsmall!=zerobit), 1:columns)
+        #TODO: check whether findfirst(j->|(tab[i,j]...), 1:columns) is faster
     end
     bg
 end
 
 
 """
-Get bipartite entanglement entropy of subsystem.
+Get bipartite entanglement entropy of a subsystem, which is defined as entropy of the reduced density matrix.
 
-TODO: more detailed docstring
+Two backends are supported: `:clipping` uses clipping algorithm and supports only a contiguous subsystem, `:graph` uses an algorithm based on conversion to graph states.
 """
 function entanglement_entropy end
 
 
 """
 Get bipartite entanglement entropy of a contiguous subsystem by clipping algorithm.
+
+If `clip=false` is set, the function will calculate entanglement entropy (by bigram) without fixing clipped gauge. This is for the case where the input state is already in clipped gauge.
+
+See also: [`bigram`](@ref), [`canonicalize_clip!`](@ref)
 """
 function entanglement_entropy(state::AbstractStabilizer, subsystem_range::UnitRange, ::Val{:clipping}; clip::Bool=true)
     bg = bigram(state; clip=clip)
@@ -164,7 +213,9 @@ import Graphs, Nemo, LinearAlgebra
 
 
 """
-Get bipartite entanglement entropy by first convertig the state to a graph.
+Get bipartite entanglement entropy by first converting the state to a graph.
+
+Based on [hein2006entanglement](@cite).
 """
 function entanglement_entropy(state::AbstractStabilizer, subsystem::AbstractVector, ::Val{:graph})
     graph = Graphs.Graph(state)
