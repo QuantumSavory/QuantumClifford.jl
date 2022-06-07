@@ -1,7 +1,10 @@
 """
 Get the clipped gauge of a stablizer state. 
 """
-function canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)) where B
+function canonicalize_clip!(state::AbstractStabilizer; phases::Bool=true)
+    _canonicalize_clip!(state; phases=Val(phases))
+end
+function  _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)) where B
     xzs = stabilizerview(state).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
