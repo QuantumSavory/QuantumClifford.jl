@@ -8,6 +8,7 @@ function test_clipping()
                 canonicalize_clip!(s_clipped)
                 @test logdot(s, s_clipped)==0
                 @test stab_looks_good(s_clipped)
+                @test canonicalize!(copy(s_clipped))==canonicalize!(copy(s))
                 bg = bigram(s_clipped; clip=false)
                 rows, columns = size(stabilizerview(s_clipped))
                 @test all(count(==(j), bg)==2 for j in 1:columns)
