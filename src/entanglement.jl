@@ -116,15 +116,17 @@ Get bigram which contains the location of endpoints.
 """
 function bigram(state::AbstractStabilizer; clip::Bool=true)
     if clip
-        canonicalize_clip!(state)
+        clipped_state = canonicalize_clip!(copy(state))
+    else
+        clipped_state = state
     end
-    xzs = stabilizerview(state).xzs
+    xzs = stabilizerview(clipped_state).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
     Tme = eltype(xzs)
     lowbit = Tme(0x1)
     zerobit = Tme(0x0)
-    rows, columns = size(stabilizerview(state))
+    rows, columns = size(stabilizerview(clipped_state))
     xorzs = xs .| zs
     bg = zeros(Int, rows, 2)
     for i in 1:rows
