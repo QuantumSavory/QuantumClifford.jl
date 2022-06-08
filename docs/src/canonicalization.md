@@ -1,9 +1,9 @@
 # Canonicalization operations
 
-Three different types of canonicalization operations are implemented.
+Four different types of canonicalization operations are implemented. All of them are types of Gaussian elimination.
 
-All of them are types of Gaussian elimination, with different choices for how to
-relate the X and Z components.
+- `canonicalize!`, `canonicalize_rref!` and `canonicalize_gott!` are similiar to get canonical stabilizer states, with different choices for how to relate the X and Z components.
+- `canonicalize_clip!` fixes the clipped gauge of a stabilizer state.
 
 ## [`canonicalize!`](@ref)
 
@@ -60,3 +60,14 @@ julia> plot(canonicalize_gott!(random_stabilizer(30))[1]; xzcomponents=:together
 ```
 
 ![](plot-gottstab-together.png)
+
+## [`canonicalize_clip!`](@ref)
+
+Fix the clipped gauge of a stabilizer state so that:
+
+1. For each qubit, the density of endpoints stay on it equals to 2;
+2. if endpoints on a qubit are both left endpoints or right endpoints, the two Pauli operators are different.
+
+It is used in [`bigram`](@ref) for bigram of a stabilizer state, which is also related to entanglement entropy.
+
+Introduced in [nahum2017quantum](@cite), with a more detailed explanation of the algorithm in Appendix A of [li2019measurement](@cite).
