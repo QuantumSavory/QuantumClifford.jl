@@ -1,5 +1,4 @@
 import Graphs
-import Nemo
 
 """An in-place version of [`graphstate`](@ref)."""
 function graphstate!(stab::Stabilizer)

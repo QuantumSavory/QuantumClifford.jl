@@ -1,5 +1,10 @@
 # News
 
+## v0.5.2
+
+- Implement the clipped gauge canonicalization `canonicalize_clip!` and related functions.
+- Implement `entanglement_entropy`.
+
 ## v0.5.1
 
 - **(fix `#57` `c83f85f`)** - Graph vertex indices and qubit indices in tableaux were mismatched.
