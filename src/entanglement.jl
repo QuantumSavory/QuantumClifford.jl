@@ -35,27 +35,19 @@ function canonicalize_clip!(state::AbstractStabilizer; phases::Bool=true)
 end
 function  _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)) where B
     # TODO: the function has spurious allocation, to be further optimized
-    xzs = stabilizerview(state).xzs
-    xs = @view xzs[1:end÷2,:]
-    zs = @view xzs[end÷2+1:end,:]
-    Tme = eltype(xzs)
-    lowbit = Tme(0x1)
-    zerobit = Tme(0x0)
+    tab = stabilizerview(state)
     rows, columns = size(stabilizerview(state))
     # step 1: pregauge
     i = 1 # index to place used stab
     for j in 1:columns
-        jbig = _div(Tme,j-1)+1
-        jsmall = lowbit<<_mod(Tme,j-1)
         # find first row that is not I in col j
-        k1 = findfirst(k->(xs[jbig,k] .| zs[jbig,k])&jsmall!=zerobit, i:rows)
+        k1 = findfirst(k->|(tab[k,j]...), i:rows)
         # find second row that is not I and not same as k1
         if k1!==nothing
             k1 += i-1
             k2 = findfirst(k->
-                    jsmall & # take the bit
-                    ((xs[jbig,k] | zs[jbig,k]) & # not identity
-                    ((xs[jbig,k]⊻xs[jbig,k1]) | (zs[jbig,k]⊻zs[jbig,k1]))) != zerobit, # not same as k1
+                (|(tab[k,j]...) & # not identity
+                ((tab[k,j][1]⊻tab[k1,j][1]) | (tab[k,j][2]⊻tab[k1,j][2]))), # not same as k1
                 k1+1:columns)
             if k2!==nothing
                 k2 += k1
@@ -64,11 +56,11 @@ function  _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true
                 rowswap!(state, k2, i+1; phases=phases)
                 # use them to eliminate others
                 for m in i+2:rows
-                    if (xs[jbig,m]⊻xs[jbig,i])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,i])&jsmall==zerobit
+                    if !(tab[m,j][1]⊻tab[i,j][1]) && !(tab[m,j][2]⊻tab[i,j][2])
                         mul_left!(state, m, i; phases=phases)
-                    elseif (xs[jbig,m]⊻xs[jbig,i+1])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,i+1])&jsmall==zerobit
+                    elseif !(tab[m,j][1]⊻tab[i+1,j][1]) && !(tab[m,j][2]⊻tab[i+1,j][2])
                         mul_left!(state, m, i+1; phases=phases)
-                    elseif (xs[jbig,m]⊻xs[jbig,i]⊻xs[jbig,i+1])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,i]⊻zs[jbig,i+1])&jsmall==zerobit
+                    elseif !(tab[m,j][1]⊻tab[i,j][1]⊻tab[i+1,j][1]) && !(tab[m,j][2]⊻tab[i,j][2]⊻tab[i+1,j][2])
                         mul_left!(state, m, i; phases=phases)
                         mul_left!(state, m, i+1; phases=phases)
                     end
@@ -79,7 +71,7 @@ function  _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true
                 rowswap!(state, k1, i; phases=phases)
                 # use it to eliminate others
                 for m in i+1:rows
-                    if (xs[jbig,m]⊻xs[jbig,i])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,i])&jsmall==zerobit
+                    if !(tab[m,j][1]⊻tab[i,j][1]) && !(tab[m,j][2]⊻tab[i,j][2])
                         mul_left!(state, m, i; phases=phases)
                     end
                 end
@@ -90,18 +82,14 @@ function  _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true
     # step 2: gauge
     unfrozen_rows = Array(rows:-1:1)
     for j in columns:-1:1 # in reversed order to keep left ends
-        jbig = _div(Tme,j-1)+1
-        jsmall = lowbit<<_mod(Tme,j-1)
         # find first row that is not I in col j
-        k1 = findfirst(k->(xs[jbig,k] .| zs[jbig,k])&jsmall!=zerobit, unfrozen_rows)
-
+        k1 = findfirst(k->|(tab[k,j]...), unfrozen_rows)
         # find second row that is not I and not same as k1
         if k1!==nothing
             k1_row = unfrozen_rows[k1]
             k2 = findfirst(k->
-                    jsmall & # take the bit
-                    ((xs[jbig,k] | zs[jbig,k]) & # not identity
-                    ((xs[jbig,k]⊻xs[jbig,k1_row]) | (zs[jbig,k]⊻zs[jbig,k1_row]))) != zerobit, # not same as k1
+                (|(tab[k,j]...) & # not identity
+                ((tab[k,j][1]⊻tab[k1_row,j][1]) | (tab[k,j][2]⊻tab[k1_row,j][2]))), # not same as k1
                 unfrozen_rows[k1+1:end])
 
             if k2!==nothing
@@ -110,17 +98,17 @@ function  _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true
                 # use them to eliminate others
                 # for rows between k1 and k2, use k1
                 for m in unfrozen_rows[k1+1:k2-1]
-                    if (xs[jbig,m]⊻xs[jbig,k1_row])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,k1_row])&jsmall==zerobit
+                    if !(tab[m,j][1]⊻tab[k1_row,j][1]) && !(tab[m,j][2]⊻tab[k1_row,j][2])
                         mul_left!(state, m, k1_row; phases=phases)
                     end
                 end
                 # for other rows, use both
                 for m in unfrozen_rows[k2+1:end]
-                    if (xs[jbig,m]⊻xs[jbig,k1_row])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,k1_row])&jsmall==zerobit
+                    if !(tab[m,j][1]⊻tab[k1_row,j][1]) && !(tab[m,j][2]⊻tab[k1_row,j][2])
                         mul_left!(state, m, k1_row; phases=phases)
-                    elseif (xs[jbig,m]⊻xs[jbig,k2_row])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,k2_row])&jsmall==zerobit
+                    elseif !(tab[m,j][1]⊻tab[k2_row,j][1]) && !(tab[m,j][2]⊻tab[k2_row,j][2])
                         mul_left!(state, m, k2_row; phases=phases)
-                    elseif (xs[jbig,m]⊻xs[jbig,k1_row]⊻xs[jbig,k2_row])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,k1_row]⊻zs[jbig,k2_row])&jsmall==zerobit
+                    elseif !(tab[m,j][1]⊻tab[k1_row,j][1]⊻tab[k2_row,j][1]) && !(tab[m,j][2]⊻tab[k1_row,j][2]⊻tab[k2_row,j][2])
                         mul_left!(state, m, k1_row; phases=phases)
                         mul_left!(state, m, k2_row; phases=phases)
                     end
@@ -129,7 +117,7 @@ function  _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true
             else # can only find k1
                 # use it to eliminate others
                 for m in unfrozen_rows[k1+1:end]
-                    if (xs[jbig,m]⊻xs[jbig,k1_row])&jsmall==zerobit && (zs[jbig,m]⊻zs[jbig,k1_row])&jsmall==zerobit
+                    if !(tab[m,j][1]⊻tab[k1_row,j][1]) && !(tab[m,j][2]⊻tab[k1_row,j][2])
                         mul_left!(state, m, k1_row; phases=phases)
                     end
                 end
@@ -156,30 +144,13 @@ Introduced in [nahum2017quantum](@cite), with a more detailed explanation of the
 See also: [`canonicalize_clip!`](@ref)
 """
 function bigram(state::AbstractStabilizer; clip::Bool=true)
-    if clip
-        clipped_state = canonicalize_clip!(state)
-    else
-        clipped_state = state
-    end
-    xzs = stabilizerview(clipped_state).xzs
-    xs = @view xzs[1:end÷2,:]
-    zs = @view xzs[end÷2+1:end,:]
-    Tme = eltype(xzs)
-    lowbit = Tme(0x1)
-    zerobit = Tme(0x0)
-    rows, columns = size(stabilizerview(clipped_state))
-    xorzs = xs .| zs
+    clip && canonicalize_clip!(state)
+    tab = stabilizerview(state)
+    rows, columns = size(tab)
     bg = zeros(Int, rows, 2)
     for i in 1:rows
-        bg[i, 1] = findfirst(j->(
-            jbig = _div(Tme,j-1)+1;
-            jsmall = lowbit<<_mod(Tme,j-1);
-            xorzs[jbig,i]&jsmall!=zerobit), 1:columns)
-        bg[i, 2] = findlast(j->(
-            jbig = _div(Tme,j-1)+1;
-            jsmall = lowbit<<_mod(Tme,j-1);
-            xorzs[jbig,i]&jsmall!=zerobit), 1:columns)
-        #TODO: check whether findfirst(j->|(tab[i,j]...), 1:columns) is faster
+        bg[i, 1] = findfirst(j->|(tab[i,j]...), 1:columns)
+        bg[i, 2] = findlast(j->|(tab[i,j]...), 1:columns)
     end
     bg
 end
