@@ -67,7 +67,7 @@ using Random; Random.seed!(1); using QuantumClifford, QuantumCliffordPlots, Plot
 plot(canonicalize_clip!(random_stabilizer(30)); xzcomponents=:together)
 savefig("plot-clip-together.png"); nothing
 ```
-![](plot-gottstab-together.png)
+![](plot-clip-together.png)
 
 The properties of the clipped gauge are:
 
