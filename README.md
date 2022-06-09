@@ -51,10 +51,10 @@ julia> tCNOT * S"-XX
 
 The code is vectorized and multithreaded.
 
-
-## Quick Benchmarks
-
 Fast, in-place, allocation free implementations.
+
+<details>
+    <summary>Quick Benchmarks (click to expand)</summary>
 
 #### Comparison against other Clifford simulators
 
@@ -167,3 +167,4 @@ BenchmarkTools.Trial: 10000 samples with 1 evaluation.
 ```
 
 Benchmarks executed on a Ryzen Zen1 8-core CPU.
+</details>
