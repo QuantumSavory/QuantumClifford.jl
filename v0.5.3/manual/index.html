@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Manual · QuantumClifford.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.044/juliamono.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">QuantumClifford.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">QuantumClifford.jl</a></li><li class="is-active"><a class="tocitem" href>Manual</a><ul class="internal"><li class="toplevel"><a class="tocitem" href="#Pauli-Operators"><span>Pauli Operators</span></a></li><li class="toplevel"><a class="tocitem" href="#Stabilizers"><span>Stabilizers</span></a></li><li class="toplevel"><a class="tocitem" href="#Canonicalization-of-Stabilizers"><span>Canonicalization of Stabilizers</span></a></li><li class="toplevel"><a class="tocitem" href="#Projective-Measurements"><span>Projective Measurements</span></a></li><li><a class="tocitem" href="#Sparse-single-qubit-measurements"><span>Sparse single-qubit measurements</span></a></li><li><a class="tocitem" href="#Gate-like-interface"><span>Gate-like interface</span></a></li><li class="toplevel"><a class="tocitem" href="#Partial-Traces"><span>Partial Traces</span></a></li><li class="toplevel"><a class="tocitem" href="#Generating-a-Pauli-Operator-with-Stabilizer-Generators"><span>Generating a Pauli Operator with Stabilizer Generators</span></a></li><li class="toplevel"><a class="tocitem" href="#Clifford-Operators"><span>Clifford Operators</span></a></li><li class="toplevel"><a class="tocitem" href="#Symbolic-Clifford-Operators"><span>Symbolic Clifford Operators</span></a></li><li class="toplevel"><a class="tocitem" href="#Destabilizers"><span>Destabilizers</span></a></li><li class="toplevel"><a class="tocitem" href="#Mixed-States"><span>Mixed States</span></a></li></ul></li><li><a class="tocitem" href="../canonicalization/">Canonicalization</a></li><li><a class="tocitem" href="../mixed/">Mixed States</a></li><li><a class="tocitem" href="../graphs/">Graph States</a></li><li><a class="tocitem" href="../datastructures/">Datastructure Choice</a></li><li><a class="tocitem" href="../commonstates/">Useful States and Operators</a></li><li><a class="tocitem" href="../plotting/">Plotting</a></li><li><a class="tocitem" href="../API/">API</a></li><li><a class="tocitem" href="../tutandpub/">Tutorials and Publications</a></li><li><span class="tocitem">Noisy Circuits</span><ul><li><a class="tocitem" href="../noisycircuits/">Simulation of Noisy Circuits</a></li><li><a class="tocitem" href="../noisycircuits_mc/">Monte Carlo</a></li><li><a class="tocitem" href="../noisycircuits_perturb/">Perturbative Expansions</a></li><li><a class="tocitem" href="../noisycircuits_ops/">Circuit Operations</a></li><li><a class="tocitem" href="../noisycircuits_API/">API</a></li></ul></li><li><a class="tocitem" href="../references/">Suggested Readings &amp; References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Manual</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Manual</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Krastanov/QuantumClifford.jl/blob/master/docs/src/manual.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Manual"><a class="docs-heading-anchor" href="#Manual">Manual</a><a id="Manual-1"></a><a class="docs-heading-anchor-permalink" href="#Manual" title="Permalink"></a></h1><h1 id="Pauli-Operators"><a class="docs-heading-anchor" href="#Pauli-Operators">Pauli Operators</a><a id="Pauli-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Pauli-Operators" title="Permalink"></a></h1><p>The <a href="../API/#QuantumClifford.PauliOperator"><code>PauliOperator</code></a> object representes multi-qubit Pauli operator (<span>$±\{1,i\}\{I,Z,X,Y\}^{\otimes n}$</span>). It is stored in memory as a phase (a single byte where <code>0x0,0x1,0x2,0x3</code> corresponds to <span>$1,i,-1,-i$</span>) and two bit-arrays, for X and for Z components.</p><p>You can create them with a <code>P</code> string.</p><pre><code class="language-julia-repl hljs">julia&gt; P&quot;-iXZ&quot;
+-iXZ</code></pre><p>Or by specifying phase and X/Z components:</p><pre><code class="language-julia-repl hljs">julia&gt; PauliOperator(0x0,Bool[0,1,0],Bool[0,0,1])
++ _XZ</code></pre><p>Both underscore and I can be used for identity.</p><pre><code class="language-julia-repl hljs">julia&gt; P&quot;I_XYZ&quot;
++ __XYZ</code></pre><p>Multiplication with scalars or other Pauli operators works as expected, as well as tensor products of Pauli operators.</p><pre><code class="language-julia-repl hljs">julia&gt; -1im*P&quot;X&quot;
+-iX
+
+julia&gt; P&quot;X&quot; * P&quot;Z&quot;
+-iY
+
+julia&gt; P&quot;X&quot; ⊗ P&quot;Z&quot;
++ XZ</code></pre><p>One can check for commutativity with <a href="../API/#QuantumClifford.comm-Union{Tuple{T}, Tuple{AbstractVector{T}, AbstractVector{T}}} where T&lt;:Unsigned"><code>comm</code></a>.</p><pre><code class="language-julia-repl hljs">julia&gt; comm(P&quot;X&quot;,P&quot;Z&quot;)
+0x01
+
+julia&gt; comm(P&quot;XX&quot;,P&quot;ZZ&quot;)
+0x00</code></pre><p>And check the phase of a product with <a href="../API/#QuantumClifford.prodphase-Union{Tuple{T}, Tuple{AbstractVector{T}, AbstractVector{T}}} where T&lt;:Unsigned"><code>prodphase</code></a>.</p><pre><code class="language-julia-repl hljs">julia&gt; prodphase(P&quot;X&quot;, P&quot;Z&quot;)
+0x03
+
+julia&gt; prodphase(P&quot;X&quot;, P&quot;iZ&quot;)
+0x00
+
+julia&gt; prodphase(P&quot;X&quot;,P&quot;Y&quot;)
+0x01</code></pre><p>Indexing operations are available.</p><pre><code class="language-julia-repl hljs">julia&gt; p = P&quot;IXYZ&quot;;
+
+julia&gt; p[1], p[2], p[3], p[4]
+((false, false), (true, false), (true, true), (false, true))
+
+julia&gt; p = P&quot;III&quot;;
+
+julia&gt; p[2] = (true, true);
+
+julia&gt; p
++ _Y_</code></pre><p>Including fancy indexing:</p><pre><code class="language-julia-repl hljs">julia&gt; P&quot;IXYZ&quot;[[2,3]]
++ XY
+
+julia&gt; P&quot;IXYZ&quot;[[false,true,true,false]]
++ XY</code></pre><p>The operator is represented in memory by bit arrays (much denser than using byte arrays).</p><pre><code class="language-julia-repl hljs">julia&gt; p = P&quot;-IXYZ&quot;;
+
+julia&gt; p.nqubits, p.xz
+(4, UInt64[0x0000000000000006, 0x000000000000000c])</code></pre><p>Views that give just the X or Z components of the <code>xz</code> bitarray are available through <a href="../API/#QuantumClifford.xview-Tuple{PauliOperator}"><code>xview</code></a> and <a href="../API/#QuantumClifford.zview-Tuple{PauliOperator}"><code>zview</code></a>.</p><pre><code class="language-julia-repl hljs">julia&gt; xview(P&quot;XYZI&quot;)
+1-element view(::Vector{UInt64}, 1:1) with eltype UInt64:
+ 0x0000000000000003</code></pre><p>The convenience methods <a href="../API/#QuantumClifford.xbit-Tuple{PauliOperator}"><code>xbit</code></a> and <a href="../API/#QuantumClifford.zbit-Tuple{PauliOperator}"><code>zbit</code></a> give you Bool (GF2) vectors.</p><pre><code class="language-julia-repl hljs">julia&gt; xbit(P&quot;XYZI&quot;)
+4-element Vector{Bool}:
+ 1
+ 1
+ 0
+ 0</code></pre><h1 id="Stabilizers"><a class="docs-heading-anchor" href="#Stabilizers">Stabilizers</a><a id="Stabilizers-1"></a><a class="docs-heading-anchor-permalink" href="#Stabilizers" title="Permalink"></a></h1><p>A <a href="../API/#QuantumClifford.Stabilizer"><code>Stabilizer</code></a> object is a tableau of Pauli operators. When the tableau is meant to represent a (pure or mixed) stabilizer state, all of these operators should commute (but that is not enforced, rather <code>Stabilizer</code> is a generic tableau data structure). It is stored in memory as a phase list and a bit-matrix for X and Z components. It can be instantiated by an <code>S</code> string, or with a number of different constructors.</p><p>For data structures that build upon this tableau representation to track other useful information, consider <a href="../API/#QuantumClifford.Destabilizer"><code>Destabilizer</code></a>, <a href="../API/#QuantumClifford.MixedStabilizer"><code>MixedStabilizer</code></a>, and <a href="../API/#QuantumClifford.MixedDestabilizer"><code>MixedDestabilizer</code></a>. See also the <a href="../datastructures/#Choosing-Appropriate-Data-Structure">data structures discussion page</a>.</p><pre><code class="language-julia-repl hljs">julia&gt; S&quot;-XX
+         +ZZ&quot;
+- XX
++ ZZ
+
+julia&gt; Stabilizer([P&quot;-XX&quot;,P&quot;+ZZ&quot;])
+- XX
++ ZZ
+
+julia&gt; Stabilizer([0x2, 0x0],
+                  Bool[1 1;
+                       0 0],
+                  Bool[0 0;
+                       1 1])
+- XX
++ ZZ</code></pre><p>Direct sums can be performed,</p><pre><code class="language-julia-repl hljs">julia&gt; S&quot;-XX&quot; ⊗ S&quot;ZZ&quot;
+- XX__
++ __ZZ</code></pre><p>Indexing operations are available, including fancy indexing. Be careful about how phase information gets transferred during sub-indexing.</p><pre><code class="language-julia-repl hljs">julia&gt; s = S&quot;-XYZ
+             -ZIX
+             +XIZ&quot;;
+
+julia&gt; s[1]
+- XYZ
+
+julia&gt; s[1,2]
+(true, true)
+
+julia&gt; s[[3,1]]
++ X_Z
+- XYZ
+
+julia&gt; s[[3,1],[2]]
++ _
+- Y</code></pre><p>Consistency at creation is not verified so nonsensical stabilizers can be created, both in terms of content and shape.</p><pre><code class="language-julia-repl hljs">julia&gt; S&quot;iX
+         +Z&quot;
++iX
++ Z</code></pre><p>Similarly to the Pauli operators, a bit array representation is used.</p><pre><code class="language-julia-repl hljs">julia&gt; s = S&quot;-XXX
+             +ZZI
+             -IZZ&quot;
+- XXX
++ ZZ_
+- _ZZ
+
+julia&gt; s.phases, s.nqubits, s.xzs
+(UInt8[0x02, 0x00, 0x02], 3, UInt64[0x0000000000000007 0x0000000000000000 0x0000000000000000; 0x0000000000000000 0x0000000000000003 0x0000000000000006])</code></pre><p>And there are convenience functions that can extract the corresponding binary check matrix.</p><pre><code class="language-julia-repl hljs">julia&gt; stab_to_gf2(s)
+3×6 Matrix{Bool}:
+ 1  1  1  0  0  0
+ 0  0  0  1  1  0
+ 0  0  0  0  1  1</code></pre><h1 id="Canonicalization-of-Stabilizers"><a class="docs-heading-anchor" href="#Canonicalization-of-Stabilizers">Canonicalization of Stabilizers</a><a id="Canonicalization-of-Stabilizers-1"></a><a class="docs-heading-anchor-permalink" href="#Canonicalization-of-Stabilizers" title="Permalink"></a></h1><p>Canonicalization (akin to Gaussian elimination over F(2,2)) is implemented in the <a href="../API/#QuantumClifford.canonicalize!-Tuple{QuantumClifford.AbstractStabilizer}"><code>canonicalize!</code></a> function. Besides the default canonicalization prescription, alternative ones are available as described in the <a href="../canonicalization/#Canonicalization-operations">canonicalization page</a>.</p><pre><code class="language-julia-repl hljs">julia&gt; s = S&quot;-XXX
+             +ZZX
+             +III&quot;;
+
+julia&gt; canonicalize!(s)
++ YY_
++ ZZX
++ ___</code></pre><p>If phases are inconsequential, the operations can be faster by not tracking and updating them.</p><pre><code class="language-julia-repl hljs">julia&gt; s = S&quot;-XXX
+             +ZZX
+             +III&quot;;
+
+julia&gt; canonicalize!(s; phases=false)
+- YY_
++ ZZX
++ ___</code></pre><p>These operations are in place (as customarily signified by &quot;!&quot;).</p><pre><code class="language-julia-repl hljs">julia&gt; s = S&quot;-XXX
+             +ZZX
+             +III&quot;;
+
+julia&gt; canonicalize!(s; phases=false);
+
+julia&gt; s
+- YY_
++ ZZX
++ ___</code></pre><h1 id="Projective-Measurements"><a class="docs-heading-anchor" href="#Projective-Measurements">Projective Measurements</a><a id="Projective-Measurements-1"></a><a class="docs-heading-anchor-permalink" href="#Projective-Measurements" title="Permalink"></a></h1><p>To observe the effect of different projections, we will start with a GHZ state.</p><pre><code class="language-julia-repl hljs">julia&gt; s = S&quot;-XXX
+             +ZZI
+             -IZZ&quot;;</code></pre><p>The <a href="../API/#QuantumClifford.project!-Tuple{Any, PauliOperator}"><code>project!</code></a> function returns the new stabilizer, the index where the anticommutation was detected, and the result of the projection (<code>nothing</code> being an undetermined result). For instance here we project on an operator that does not commute with all stabilizer generators.</p><pre><code class="language-julia-repl hljs">julia&gt; project!(copy(s), P&quot;ZII&quot;)
+(+ Z__
++ ZZ_
+- _ZZ, 1, nothing)</code></pre><p>Importantly, when there is an undetermined result, we return <code>nothing</code> <strong>and leave the phase of the new stabilizer the same as the phase of the projection operator</strong>. If you want to perform a Monte Carlo simulation, you need to randomize the phase of the stabilizer at the anticommuting index yourself. For instance, one can do:</p><pre><code class="language-julia hljs">newstate, anticomindex, result = project!(state, projector)
+if isnothing(result)
+    newstate.phases[anticomindex] = rand([0x0,0x2])
+end</code></pre><p>Or we can project on a commuting operator, hence no anticommuting terms (the index is zero), and the result is perfectly determined (-1, or in our convention to represent the phase, 0x2).</p><pre><code class="language-julia-repl hljs">julia&gt; project!(copy(s), P&quot;-ZZI&quot;)
+(- XXX
+- Z_Z
+- _ZZ, 0, 0x02)</code></pre><p>When the projection is consistent with the stabilizer (i.e. the measurement result is not <code>nothing</code>), this would trigger an expensive canonicalization procedure in order to calculate the measurement result (unless we are using more advanced data structures to represent the state, which are discussed later). If all you want to know is whether the projection is consistent with the stabilizer, but you do not care about the measurement result, you can skip the canonicalization and calculation of the result.</p><pre><code class="language-julia-repl hljs">julia&gt; project!(copy(s), P&quot;-ZZI&quot;, keep_result=false)
+(- XXX
++ ZZ_
+- _ZZ, 0, nothing)</code></pre><p>Lastly, in either case, you can skip the calculation of the phases as well, if they are unimportant.</p><pre><code class="language-julia-repl hljs">julia&gt; project!(copy(s), P&quot;ZZI&quot;, phases=false)
+(- XXX
++ Z_Z
+- _ZZ, 0, 0x00)</code></pre><h2 id="Sparse-single-qubit-measurements"><a class="docs-heading-anchor" href="#Sparse-single-qubit-measurements">Sparse single-qubit measurements</a><a id="Sparse-single-qubit-measurements-1"></a><a class="docs-heading-anchor-permalink" href="#Sparse-single-qubit-measurements" title="Permalink"></a></h2><p>In many circumstances only a single-qubit operator is being measured. In that case one should use the <a href="../API/#QuantumClifford.projectX!-Tuple{MixedDestabilizer, Int64}"><code>projectX!</code></a>, <a href="../API/#QuantumClifford.projectY!-Tuple{MixedDestabilizer, Int64}"><code>projectY!</code></a>, and <a href="../API/#QuantumClifford.projectZ!-Tuple{MixedDestabilizer, Int64}"><code>projectZ!</code></a> functions as they are much faster thanks to tracking only a single qubit.</p><h2 id="Gate-like-interface"><a class="docs-heading-anchor" href="#Gate-like-interface">Gate-like interface</a><a id="Gate-like-interface-1"></a><a class="docs-heading-anchor-permalink" href="#Gate-like-interface" title="Permalink"></a></h2><p>If you do not need all this boilerplate, and especially if you want to perform the randomization automatically, you can use the gate-like &quot;symbolic&quot; objects <a href="../API/#QuantumClifford.sMX"><code>sMX</code></a>, <a href="../API/#QuantumClifford.sMY"><code>sMY</code></a>, and <a href="../API/#QuantumClifford.sMZ"><code>sMZ</code></a>, that perform the measurement and the necessary randomization of phase. If the measurement result is to be stored, you can use the <a href="../API/#QuantumClifford.Register"><code>Register</code></a> structure that stores both stabilizer tableaux and bit values.</p><p>&lt;!– # TODO make a jldoctest –&gt;</p><pre><code class="nohighlight hljs">julia&gt; state = Register(ghz(3), [false,false])
+Register{Vector{UInt8}, Matrix{UInt64}}(Rank 3 stabilizer
++ Z__
++ _X_
++ __X
+═════
++ XXX
++ ZZ_
++ Z_Z
+═════
+, Bool[0, 0])
+
+julia&gt; apply!(state, sMX(3,2)) # which qubit is measured and in which bit it is stored
+Register{Vector{UInt8}, Matrix{UInt64}}(Rank 3 stabilizer
++ Z__
++ _X_
++ Z_Z
+═════
++ XXX
++ ZZ_
++ __X
+═════
+, Bool[0, 1])
+
+julia&gt; bitview(state)
+2-element Vector{Bool}:
+ 0
+ 1</code></pre><p>Or you can use the <a href="../API/#QuantumClifford.projectXrand!-Tuple{Any, Any}"><code>projectXrand!</code></a>, <a href="../API/#QuantumClifford.projectYrand!-Tuple{Any, Any}"><code>projectYrand!</code></a>, and <a href="../API/#QuantumClifford.projectZrand!-Tuple{Any, Any}"><code>projectZrand!</code></a> if you prefer a function-call interface.</p><h1 id="Partial-Traces"><a class="docs-heading-anchor" href="#Partial-Traces">Partial Traces</a><a id="Partial-Traces-1"></a><a class="docs-heading-anchor-permalink" href="#Partial-Traces" title="Permalink"></a></h1><p>Partial trace (using <a href="../API/#QuantumClifford.traceout!-Tuple{Stabilizer, Any}"><code>traceout!</code></a>) over even a single qubit might cause many of them to decohere due to entanglement.</p><pre><code class="language-julia-repl hljs">julia&gt; ghz = S&quot;XXX
+               ZZ_
+               _ZZ&quot;;
+
+julia&gt; traceout!(ghz, [1])
++ _ZZ
++ ___
++ ___</code></pre><p>This is somewhat more elegant when the datastructure being used explicitly supports mixed states.</p><pre><code class="language-julia-repl hljs">julia&gt; ghz = MixedStabilizer(S&quot;XXX
+                               ZZ_
+                               _ZZ&quot;);
+
+julia&gt; traceout!(ghz, [1])
+Rank 1 stabilizer
++ _ZZ</code></pre><h1 id="Generating-a-Pauli-Operator-with-Stabilizer-Generators"><a class="docs-heading-anchor" href="#Generating-a-Pauli-Operator-with-Stabilizer-Generators">Generating a Pauli Operator with Stabilizer Generators</a><a id="Generating-a-Pauli-Operator-with-Stabilizer-Generators-1"></a><a class="docs-heading-anchor-permalink" href="#Generating-a-Pauli-Operator-with-Stabilizer-Generators" title="Permalink"></a></h1><p>The <a href="../API/#QuantumClifford.generate!-Tuple{PauliOperator, Stabilizer}"><code>generate!</code></a> function attempts to generate a Pauli operator by multiplying together the operators belonging to a given stabilizer (or reports their independence). This particular function requires the stabilizer to be already canonicalized.</p><pre><code class="language-julia-repl hljs">julia&gt; s = S&quot;-XXX
+             +ZZI
+             -IZZ&quot;;
+
+julia&gt; s = canonicalize!(s)
+- XXX
+- Z_Z
+- _ZZ</code></pre><p>It modifies the Pauli operator in place, reducing it to identity if possible. The leftover phase is present to indicate if the phase itself could not have been canceled. The list of indices specifies which rows of the stabilizer were used to generated the desired Pauli operator.</p><pre><code class="language-julia-repl hljs">julia&gt; generate!(P&quot;XYY&quot;, s)
+(- ___, [1, 3])</code></pre><p>Phases can be neglected, for higher performance.</p><pre><code class="language-julia-repl hljs">julia&gt; generate!(P&quot;XYY&quot;, s, phases=false)
+(+ ___, [1, 3])</code></pre><p>If the Pauli operator can not be generated by the stabilizer, <code>nothing</code> value is returned.</p><pre><code class="language-julia-repl hljs">julia&gt; generate!(P&quot;ZZZ&quot;, s)
+
+julia&gt; generate!(P&quot;XZX&quot;, s)
+
+julia&gt; generate!(P&quot;YYY&quot;, s)</code></pre><h1 id="Clifford-Operators"><a class="docs-heading-anchor" href="#Clifford-Operators">Clifford Operators</a><a id="Clifford-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Clifford-Operators" title="Permalink"></a></h1><p>The <a href="../API/#QuantumClifford.CliffordOperator"><code>CliffordOperator</code></a> structure represents a linear mapping between stabilizers (which should also preserve commutation relationships, but that is not checked at instantiation). These are n-qubit dense tableaux, representing an operation on n-qubit states. For single- or two-qubit gates, it is much more efficient to use small sparse <a href="#Symbolic-Clifford-Operators">symbolic clifford operators</a>. A number of predefined Clifford operators are available, their name prefixed with <code>t</code> to mark them as dense tableaux.</p><pre><code class="language-julia-repl hljs">julia&gt; tHadamard
+X ⟼ + Z
+Z ⟼ + X
+
+julia&gt; tPhase
+X ⟼ + Y
+Z ⟼ + Z
+
+julia&gt; tCNOT
+X_ ⟼ + XX
+_X ⟼ + _X
+Z_ ⟼ + Z_
+_Z ⟼ + ZZ
+
+julia&gt; tId1
+X ⟼ + X
+Z ⟼ + Z</code></pre><p>Chaining and tensor products are possible. Same for qubit permutations.</p><pre><code class="language-julia-repl hljs">julia&gt; tHadamard ⊗ tPhase
+X_ ⟼ + Z_
+_X ⟼ + _Y
+Z_ ⟼ + X_
+_Z ⟼ + _Z
+
+julia&gt; tHadamard * tPhase
+X ⟼ - Y
+Z ⟼ + X
+
+julia&gt; permute(tCNOT, [2,1])
+X_ ⟼ + X_
+_X ⟼ + XX
+Z_ ⟼ + ZZ
+_Z ⟼ + _Z</code></pre><p>You can create custom Clifford operators with C-strings or with a list of Pauli operators.</p><pre><code class="language-julia-repl hljs">julia&gt; C&quot;-ZZ
+         +_Z
+         -X_
+         +XX&quot;
+X_ ⟼ - ZZ
+_X ⟼ + _Z
+Z_ ⟼ - X_
+_Z ⟼ + XX
+
+julia&gt; CliffordOperator([P&quot;-ZZ&quot;, P&quot;_Z&quot;, P&quot;-X_&quot;, P&quot;XX&quot;])
+X_ ⟼ - ZZ
+_X ⟼ + _Z
+Z_ ⟼ - X_
+_Z ⟼ + XX</code></pre><p>Naturally, the operators can be applied to stabilizer states. This includes high performance in-place operations (and the phase can be neglected with <code>phases=false</code> for faster computation).</p><pre><code class="language-julia-repl hljs">julia&gt; tCNOT * S&quot;X_&quot;
++ XX
+
+julia&gt; s = S&quot;X_&quot;;
+
+julia&gt; apply!(s,tCNOT)
++ XX</code></pre><p>Sparse applications where a small Clifford operator is applied only on a particular subset of a larger stabilizer is also possible, but in such circumstances it is useful to consider using <a href="#Symbolic-Clifford-Operators">symbolic operators</a> too.</p><pre><code class="language-julia-repl hljs">julia&gt; s = S&quot;Z_YX&quot;;
+
+julia&gt; apply!(s, tCNOT, [4,2]) # Apply the CNOT on qubits 4 and 2
++ ZXYX</code></pre><p>Pauli operators act as Clifford operators too (but they are rather boring, as they only change signs).</p><pre><code class="language-julia-repl hljs">julia&gt; P&quot;XII&quot; * S&quot;ZXX&quot;
+- ZXX</code></pre><p>Internally, the <code>CliffordOperator</code> structure simply stores the tableau representation of the operation.</p><p>The <code>apply!</code> function is efficiently multithreaded for <code>CliffordOperators</code>. To start multithreaded Julia, use <code>julia -t&lt;N&gt;</code> where <code>&lt;N&gt;</code> specifies the number of threads.</p><h1 id="Symbolic-Clifford-Operators"><a class="docs-heading-anchor" href="#Symbolic-Clifford-Operators">Symbolic Clifford Operators</a><a id="Symbolic-Clifford-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Symbolic-Clifford-Operators" title="Permalink"></a></h1><p>Much faster implementations for a number of common Clifford operators are available. They are stored as special named structs, instead of as a full tableau. These are the subtypes of <code>AbstractSingleQubitOperator</code> and <code>AbstractTwoQubitOperator</code>. Currently these are:</p><pre><code class="language-julia hljs">sHadamard
+sId1
+sPhase
+sInvPhase
+sX
+sY
+sZ
+sCNOT
+sCPHASE
+sSWAP</code></pre><p>Generally, they have the prefix <code>s</code> for symbolic/small/sparse. They are used slightly differently, as one needs to specify the qubits on which they act while instantiating them:</p><pre><code class="language-julia-repl hljs">julia&gt; sHadamard(2)
+Symbolic single-qubit gate on qubit 2
+X ⟼ + Z
+Z ⟼ + X
+
+julia&gt; sHadamard(2)*S&quot;XXX&quot;
++ XZX
+
+julia&gt; sCNOT(2,3)*S&quot;XYY&quot;
+- XXZ</code></pre><p>The <code>apply!</code> function is efficiently multithreaded for these symbolic operators as well. To start multithreaded Julia, use <code>julia -t&lt;N&gt;</code> where <code>&lt;N&gt;</code> specifies the number of threads.</p><p>Symbolic projectors on single qubits also exist: <a href="../API/#QuantumClifford.sMX"><code>sMX</code></a>, <a href="../API/#QuantumClifford.sMY"><code>sMY</code></a>, <a href="../API/#QuantumClifford.sMZ"><code>sMZ</code></a>. When used with the <a href="../API/#QuantumClifford.Register"><code>Register</code></a> state representation, they can store the measurement results in the corresponding classical register.</p><h1 id="Destabilizers"><a class="docs-heading-anchor" href="#Destabilizers">Destabilizers</a><a id="Destabilizers-1"></a><a class="docs-heading-anchor-permalink" href="#Destabilizers" title="Permalink"></a></h1><p>Slightly abusing the name: What we call &quot;destabilizers&quot; here is a stabilizer and its destabilizing operators saved together. They are implemented with the <a href="../API/#QuantumClifford.Destabilizer"><code>Destabilizer</code></a> object and are initialized from a stabilizer.</p><pre><code class="language-julia-repl hljs">julia&gt; s=S&quot;-XXX
+           -ZZI
+           +IZZ&quot;;
+
+julia&gt; d = Destabilizer(s)
++ Z__
++ _X_
++ __X
+━━━━━
+- XXX
+- ZZ_
+- Z_Z</code></pre><p>They have convenience methods to extract only the stabilizer and destabilizer pieces:</p><pre><code class="language-julia-repl hljs">julia&gt; stabilizerview(d)
+- XXX
+- ZZ_
+- Z_Z
+
+julia&gt; destabilizerview(d)
++ Z__
++ _X_
++ __X</code></pre><p>Importantly commuting projections are much faster when tracking the destabilizer as canonicalization is not necessary (an <span>$\mathcal{O}(n^2)$</span> complexity because it avoids the expensive <span>$\mathcal{O}(n^3)$</span> canonicalization operation).</p><pre><code class="language-julia-repl hljs">julia&gt; project!(d,P&quot;ZZI&quot;)
+(+ Z__
++ _X_
++ __X
+━━━━━
+- XXX
+- ZZ_
+- Z_Z, 0, 0x02)</code></pre><p>Non-commuting projections are just as fast as when using only stabilizers.</p><pre><code class="language-julia-repl hljs">julia&gt; project!(d,P&quot;ZZZ&quot;)
+(- XXX
++ X_X
++ XX_
+━━━━━
++ ZZZ
+- ZZ_
+- Z_Z, 1, nothing)</code></pre><p>Clifford operations can be applied the same way they are applied to stabilizers.</p><pre><code class="language-julia-repl hljs">julia&gt; apply!(d,tCNOT⊗tHadamard)
+- X_Z
++ XXZ
++ X__
+━━━━━
++ _ZX
+- _Z_
+- Z_X</code></pre><h1 id="Mixed-States"><a class="docs-heading-anchor" href="#Mixed-States">Mixed States</a><a id="Mixed-States-1"></a><a class="docs-heading-anchor-permalink" href="#Mixed-States" title="Permalink"></a></h1><p>Both the <code>Stabilizer</code> and <code>Destabilizer</code> structures have more general forms that enable work with mixed stabilizer states. They are the <a href="../API/#QuantumClifford.MixedStabilizer"><code>MixedStabilizer</code></a> and <a href="../API/#QuantumClifford.MixedDestabilizer"><code>MixedDestabilizer</code></a> structures, described in <a href="../mixed/#Mixed-Stabilizer-States">Mixed States</a>. More information that can be seen in the <a href="../datastructures/#Choosing-Appropriate-Data-Structure">data structures page</a>, which expands upon the algorithms available for each structure.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« QuantumClifford.jl</a><a class="docs-footer-nextpage" href="../canonicalization/">Canonicalization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.19 on <span class="colophon-date" title="Sunday 12 June 2022 03:24">Sunday 12 June 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
