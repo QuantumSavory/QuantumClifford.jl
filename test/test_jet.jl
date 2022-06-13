@@ -1,7 +1,6 @@
 using JET
 
 function test_jet()
-    VERSION > v"1.8" || return
     @testset "JET checks" begin
         @test_broken isempty(JET.get_reports(@report_call random_destabilizer(10)))
         @test_broken isempty(JET.get_reports(@report_call random_stabilizer(10)))
