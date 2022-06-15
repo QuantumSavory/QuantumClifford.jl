@@ -1,5 +1,13 @@
 # News
 
+## v0.5.4-dev
+
+- Start using `JET.jl` for static analysis during CI.
+
+## v0.5.3 - 2022-06-11
+
+- **(fix `#60`)** `enumerate_clifford` was broken due to an earlier refactor in `rowswap!`
+
 ## v0.5.2
 
 - Implement the clipped gauge canonicalization `canonicalize_clip!` and related functions.

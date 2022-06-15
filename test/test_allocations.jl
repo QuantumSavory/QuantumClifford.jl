@@ -1,5 +1,4 @@
 function test_allocations()
-    VERSION >= v"1.7" || return
     @testset "Allocation checks" begin
         n = Threads.nthreads()
         allocated(f::F) where {F} = @allocated f()

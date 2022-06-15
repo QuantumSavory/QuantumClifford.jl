@@ -160,7 +160,7 @@ macro P_str(a)
     _P_str(a)
 end
 
-Base.getindex(p::PauliOperator{Tz,Tv}, i::Int) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = (p.xz[_div(Tve, i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0, (p.xz[end>>1+_div(Tve,i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0
+Base.getindex(p::PauliOperator{Tz,Tv}, i::Int) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = (p.xz[_div(Tve, i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0, (p.xz[end÷2+_div(Tve,i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0
 Base.getindex(p::PauliOperator{Tz,Tv}, r) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = PauliOperator(p.phase[], xbit(p)[r], zbit(p)[r])
 
 function Base.setindex!(p::PauliOperator{Tz,Tv}, (x,z)::Tuple{Bool,Bool}, i) where {Tz, Tve, Tv<:AbstractVector{Tve}}
@@ -170,9 +170,9 @@ function Base.setindex!(p::PauliOperator{Tz,Tv}, (x,z)::Tuple{Bool,Bool}, i) whe
         p.xz[_div(Tve,i-1)+1] &= ~(Tve(0x1)<<_mod(Tve,i-1))
     end
     if z
-        p.xz[end>>1+_div(Tve,i-1)+1] |= Tve(0x1)<<_mod(Tve,i-1)
+        p.xz[end÷2+_div(Tve,i-1)+1] |= Tve(0x1)<<_mod(Tve,i-1)
     else
-        p.xz[end>>1+_div(Tve,i-1)+1] &= ~(Tve(0x1)<<_mod(Tve,i-1))
+        p.xz[end÷2+_div(Tve,i-1)+1] &= ~(Tve(0x1)<<_mod(Tve,i-1))
     end
     p
 end
@@ -323,7 +323,7 @@ macro S_str(a)
 end
 
 Base.getindex(stab::Stabilizer, i::Int) = PauliOperator(stab.phases[i], nqubits(stab), stab.xzs[:,i])
-@inline Base.getindex(stab::Stabilizer{Tzv,Tm}, r::Int, c::Int) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}} = (stab.xzs[_div(Tme,c-1)+1,r] & Tme(0x1)<<_mod(Tme,c-1))!=0x0, (stab.xzs[end>>1+_div(Tme,c-1)+1,r] & Tme(0x1)<<_mod(Tme,c-1))!=0x0 # TODO this has code repetition with the Pauli getindex
+@inline Base.getindex(stab::Stabilizer{Tzv,Tm}, r::Int, c::Int) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}} = (stab.xzs[_div(Tme,c-1)+1,r] & Tme(0x1)<<_mod(Tme,c-1))!=0x0, (stab.xzs[end÷2+_div(Tme,c-1)+1,r] & Tme(0x1)<<_mod(Tme,c-1))!=0x0 # TODO this has code repetition with the Pauli getindex
 Base.getindex(stab::Stabilizer, r) = Stabilizer(stab.phases[r], nqubits(stab), stab.xzs[:,r])
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
 Base.getindex(stab::Stabilizer, r, c::Int) = stab[r,[c]]
@@ -354,9 +354,9 @@ function Base.setindex!(stab::Stabilizer{Tzv,Tm}, (x,z)::Tuple{Bool,Bool}, i, j)
         stab.xzs[_div(Tme,j-1)+1,        i] &= ~(Tme(0x1)<<_mod(Tme,j-1))
     end
     if z
-        stab.xzs[end>>1+_div(Tme,j-1)+1, i] |= Tme(0x1)<<_mod(Tme,j-1)
+        stab.xzs[end÷2+_div(Tme,j-1)+1, i] |= Tme(0x1)<<_mod(Tme,j-1)
     else
-        stab.xzs[end>>1+_div(Tme,j-1)+1, i] &= ~(Tme(0x1)<<_mod(Tme,j-1))
+        stab.xzs[end÷2+_div(Tme,j-1)+1, i] &= ~(Tme(0x1)<<_mod(Tme,j-1))
     end
     stab
 end
@@ -651,7 +651,7 @@ julia> prodphase(P"XXX", P"ZZZ")
 """
 @inline function prodphase(l::AbstractVector{T}, r::AbstractVector{T})::UInt8 where T<:Unsigned
     res = 0
-    len = length(l)>>1
+    len = length(l)÷2
     @inbounds @simd for i in 1:len
         x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
         res += count_ones((~z2 & x2 & ~x1 & z1) | ( z2 & ~x2 & x1 & z1) | (z2 &  x2 & x1 & ~z1))
@@ -664,7 +664,7 @@ end
 function _stim_prodphase(l::AbstractVector{T}, r::AbstractVector{T}) where T<: Unsigned
     cnt1 = zero(T)
     cnt2 = zero(T)
-    len = length(l)>>1
+    len = length(l)÷2
     @inbounds @simd for i in 1:len
         x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
         newx1 = x1 ⊻ x2 # Here l or r would be updated in an actual multiplication
@@ -695,37 +695,6 @@ end
     (l.phases[i]+r.phases[j]+prodphase((@view l.xzs[:,i]), (@view r.xzs[:,j])))&0x3
 end
 
-@inline function xor_bits_(v::UInt64)
-    v ⊻= v >> 32
-    v ⊻= v >> 16
-    v ⊻= v >> 8
-    v ⊻= v >> 4
-    v ⊻= v >> 2
-    v ⊻= v >> 1
-    return v&1
-end
-@inline function xor_bits_(v::UInt32)
-    v ⊻= v >> 16
-    v ⊻= v >> 8
-    v ⊻= v >> 4
-    v ⊻= v >> 2
-    v ⊻= v >> 1
-    return v&1
-end
-@inline function xor_bits_(v::UInt16)
-    v ⊻= v >> 8
-    v ⊻= v >> 4
-    v ⊻= v >> 2
-    v ⊻= v >> 1
-    return v&1
-end
-@inline function xor_bits_(v::UInt8)
-    v ⊻= v >> 4
-    v ⊻= v >> 2
-    v ⊻= v >> 1
-    return v&1
-end
-
 """
 Check whether two operators commute.
 
@@ -744,11 +713,11 @@ julia> comm(P"IZ", P"XX")
 """
 @inline function comm(l::AbstractVector{T}, r::AbstractVector{T})::UInt8 where T<:Unsigned
     res = T(0)
-    len = length(l)>>1
+    len = length(l)÷2
     @inbounds @simd for i in 1:len
         res ⊻= (l[i+len] & r[i]) ⊻ (l[i] & r[i+len])
     end
-    xor_bits_(res)
+    count_ones(res)&0x1
 end
 
 @inline function comm(l::PauliOperator, r::PauliOperator)::UInt8
@@ -783,7 +752,7 @@ function _mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::B
     end
     cnt1 = zero(T)
     cnt2 = zero(T)
-    len = length(l)>>1
+    len = length(l)÷2
     @inbounds @simd for i in 1:len
         x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
         r[i] = newx1 = x1 ⊻ x2
@@ -803,7 +772,7 @@ function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}=Va
         r .⊻= l
         return UInt8(0x0)
     end
-    len = length(l)>>1
+    len = length(l)÷2
     veclen = Int(pick_vector_width(T)) # TODO remove the Int cast
     rcnt1 = 0
     rcnt2 = 0

@@ -60,7 +60,7 @@ end
         comm(basis, δn+start, i)==0x1 && return i
     end
     # the following hapens only if the input is P"X___..."
-    rowswap!(basis, δn+start, 2padded_n+1)
+    rowswap!(basis, δn+start, 2padded_n+1; phases=Val(false))
     _findanticommGS(basis, start, n, padded_n, δn)
 end
 
@@ -104,7 +104,7 @@ function symplecticGS(pauli::PauliOperator; padded_n=nqubits(pauli))
     doneupto = 1
     while doneupto <= n
         i = _findanticommGS(basis, doneupto, n, padded_n, δn)
-        rowswap!(basis, padded_n+δn+doneupto, i; phases=false)
+        rowswap!(basis, padded_n+δn+doneupto, i; phases=Val(false))
         _eliminateGS(basis, doneupto, n, padded_n, δn)
         doneupto += 1
     end
