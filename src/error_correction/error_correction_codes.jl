@@ -6,14 +6,6 @@ abstract type Code end
 struct Shor_code <: Code
 end
 
-struct Toric_code <: Code
-    l::Int
-end
-
-struct CSSfromClassical <: Code
-    classicalcode::Matrix{Bool}
-end
-
 """documents"""
 
 function rate end
