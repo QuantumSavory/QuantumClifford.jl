@@ -80,6 +80,11 @@ function rate(code::Shor_code) return 1//9 end
     #Step 4: Error
     #X: Bit flip error
     #Z: Phase flip error
+    for qubit in range(N)
+        X = S"X"
+        Z = S"Z"
+        X(qubit)
+        Z(qubit)
 
     #Step 5: 4th set of  CNOT GATES
     c7 = sCNOT(1,2)
