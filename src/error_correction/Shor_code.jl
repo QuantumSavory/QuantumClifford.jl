@@ -78,8 +78,8 @@ function rate(code::Shor_code) return 1//9 end
     c6 = sCNOT(7,9)   
     
     #Step 4: Error
-    X
-    Z
+    #X: Bit flip error
+    #Z: Phase flip error
 
     #Step 5: 4th set of  CNOT GATES
     c7 = sCNOT(1,2)
