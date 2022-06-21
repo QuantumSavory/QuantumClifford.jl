@@ -31,7 +31,7 @@ function QuantumClifford.MixedDestabilizer(code::Shor_code)
                     0 -1])
 end
 
-...
+####
 
 function rate(code::Shor_code) return 1//9 end
     N= 9 #n qubits 
