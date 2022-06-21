@@ -1,6 +1,5 @@
 #currently in the works
 
-
 #function H(code::Shor_code) end
 
 function QuantumClifford.MixedDestabilizer(code::Shor_code)
