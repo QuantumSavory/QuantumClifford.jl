@@ -2,10 +2,10 @@
 
 #function H(code::Shor_code) end
 
-function QuantumClifford.MixedDestabilizer(code::Shor_code)
+function QuantumClifford.MixedDestabilizer(code::Shor_code) #!!!UndefVarError
 
     #pauli matrices of the code 
-    Stabilizer([P"X",P"Y",P"Z"])
+    Stabilizer([P"X",P"Y",P"Z"]) #!!!UndefVarError
 
     Stabilizer(Bool[0 1;
                     1 0],
