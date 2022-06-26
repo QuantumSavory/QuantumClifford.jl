@@ -1,3 +1,5 @@
+#currently in the works
+
 #Parity matrix 
 function QuantumClifford.MixedDestabilizer(code::Steade_code) #!!!UndefVarError
 
