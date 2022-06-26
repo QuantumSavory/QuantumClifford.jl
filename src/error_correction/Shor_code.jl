@@ -8,8 +8,6 @@ module Shor_code_mod
 
     struct Shor_code <: Code
 
-end
-
 """documents"""
 
 function rate end
