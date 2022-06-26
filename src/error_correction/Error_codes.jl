@@ -1,16 +1,7 @@
+#currently in the works
 
-module Codes # requires end
-abstract type Code end
-
-struct Shor_code <: Code
+module Error_correction_codes 
+    export Code
+    abstract type Code 
 end
 
-"""documents"""
-
-function rate end
-
-function logicalqubits end
-
-function physicalqubits end
-
-function codedistance end

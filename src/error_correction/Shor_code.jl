@@ -1,8 +1,13 @@
 #currently in the works
-module Codes # requires end
-abstract type Code end
 
-struct Shor_code <: Code
+module Shor_code_mod
+    export Shor code
+
+    include("/Error_codes,jl")
+    using Error_correction_codes
+
+    struct Shor_code <: Code
+
 end
 
 """documents"""
@@ -15,7 +20,7 @@ function physicalqubits end
 
 function codedistance end
 
-#function H(code::Shor_code) end
+function Shor(code::Shor_code) end
 
 function QuantumClifford.MixedDestabilizer(code::Shor_code) #!!!UndefVarError
 
