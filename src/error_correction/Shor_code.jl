@@ -1,4 +1,19 @@
 #currently in the works
+module Codes # requires end
+abstract type Code end
+
+struct Shor_code <: Code
+end
+
+"""documents"""
+
+function rate end
+
+function logicalqubits end
+
+function physicalqubits end
+
+function codedistance end
 
 #function H(code::Shor_code) end
 
