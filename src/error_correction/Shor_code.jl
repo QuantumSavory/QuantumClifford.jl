@@ -18,7 +18,7 @@ function physicalqubits end
 
 function codedistance end
 
-function Shor(code::Shor_code) end
+#function Shor(code::Shor_code) end
 
 function QuantumClifford.MixedDestabilizer(code::Shor_code) #!!!UndefVarError
 
