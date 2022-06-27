@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 export Shorcircuit
 
@@ -8,6 +9,50 @@ function Shorcircuit()#Codes::Shorcode)
     N= 9 #n qubits 
            #Step 1   #Step 2 #Step 3     #Step 4 #S 5  #S 6  #Step 7  #Step 8 #Step 9  #S 10 #S 11
     
+=======
+#currently in the works
+
+module Codemodule
+    export Shor code
+
+    include("/Error_codes,jl")
+    using Error_correction_codes
+
+    struct Shor_code <: Code
+
+"""documents"""
+
+function rate end
+
+function logicalqubits end
+
+function physicalqubits end
+
+function codedistance end
+
+#function Shor(code::Shor_code) end
+
+function QuantumClifford.MixedDestabilizer(code::Shor_code) #!!!UndefVarError
+
+    #pauli matrices of the code 
+    Stabilizer([P"X",P"Y",P"Z"]) #!!!UndefVarError
+
+    Stabilizer(Bool[0 1;
+                    1 0],
+                Bool[0 -i;
+                    i 1],
+                Bool[1 0;
+                    0 -1])
+end
+
+####
+
+function rate(code::Shor_code) return 1//9 end
+    N= 9 #n qubits 
+
+           #Step 1   #Step 2 #Step 3     #Step 4 #S 5  #S 6  #Step 7  #Step 8 #Step 9  #S 10 #S 11
+    """
+>>>>>>> 4921213 (error library made aware of existing codes)
                       ┌───┐              ┌─────┐              ┌────┐   ┌───┐                ┌────┐                
     q_1: ──■────■─────┤ H ├──■─────■─────┤     ├───■─────■────┤CNOT├───┤ H ├────■───────■───┤CNOT├
            |    |     └───┘┌─┴──┐  |     |     | ┌─┴──┐  |    └─|──┘   └───┘    |       |   └─|──┘
@@ -27,10 +72,17 @@ function Shorcircuit()#Codes::Shorcode)
                           └────┘┌─┴──┐   |     | └────┘┌─┴──┐  |                           
     q_9: ───────────────────────┤CNOT├───┤     ├───────┤CNOT├──■──────────────────────────────────
                                 └────┘   └─────┘       └────┘
+<<<<<<< HEAD
     =#
 
     #Step 0
     #initial_state = one(Stabilizer, N) #CHECK THIS
+=======
+    """
+
+    #Step 0
+    # initial_state = one(Stabilizer, N)
+>>>>>>> 4921213 (error library made aware of existing codes)
 
     #Step 1: 1st set of  CNOT gates
     c1 = sCNOT(1,4)
@@ -45,12 +97,25 @@ function Shorcircuit()#Codes::Shorcode)
     c3 = sCNOT(4,5)
     c4 = sCNOT(4,6)
     c5 = sCNOT(7,8)
+<<<<<<< HEAD
     c6 = sCNOT(7,9)
     
     #Step 4: Error
     single_x(9,1) #X: Bit flip error
     single_z(9,1) #Z: Phase flip error
     #check x and z have the right def (a,b)
+=======
+    c6 = sCNOT(7,9)   
+    
+    #Step 4: Error
+    #X: Bit flip error
+    #Z: Phase flip error
+    for qubit in range(N) #check this
+        X = S"X"
+        Z = S"Z"
+        X(qubit)
+        Z(qubit)
+>>>>>>> 4921213 (error library made aware of existing codes)
 
     #Step 5: 4th set of  CNOT GATES
     c7 = sCNOT(1,2)
@@ -61,6 +126,7 @@ function Shorcircuit()#Codes::Shorcode)
     c10 = sCNOT(1,2)
     c11 = sCNOT(4,5)
     c12 = sCNOT(7,8)
+<<<<<<< HEAD
 
     #Step 7: 1st set of  Toffoli gates
     #are toffoli gates represented by sCCNOT?
@@ -71,6 +137,14 @@ function Shorcircuit()#Codes::Shorcode)
     cc22 = sCNOT(6,4)
     cc31 = sCNOT(8,7)
     cc32 = sCNOT(9,7)
+=======
+    
+    #Step 7: 1st set of  Toffoli gates
+    #are toffoli gates represented by sCCNOT?
+    cc1 = sCCNOT(2,3,1)
+    cc2 = sCCNOT(5,6,4)
+    cc3 = sCCNOT(9,8,7)
+>>>>>>> 4921213 (error library made aware of existing codes)
 
     #Step 8: 2nd set of  Haramard gates
     h1 = sHadamard(1)
@@ -83,6 +157,7 @@ function Shorcircuit()#Codes::Shorcode)
     #Step 10: 7th set of CNOT gates
     c14 = sCNOT(1,7)
 
+<<<<<<< HEAD
 
     #Step 11: 2nd set of Toffoli gates
     #Final gates
@@ -93,3 +168,13 @@ function Shorcircuit()#Codes::Shorcode)
     #circuit = [c2,c2,h1,h2,h3,c3,c4,c5,c6,single_x,single_z,c7,c8,c9,c10,c11,c12,cc11,cc12,cc21,cc22,cc31,cc32,h1,h2,h3,c13,c14,cc41,cc42]
 
 end #Shorcircuit
+=======
+    #Step 11: 2nd set of Toffoli gates
+    #Final gates
+    cc4 = sCCNOT(7,4,1)
+
+# This circuit performs a depolarization at rate `epsilon` to all qubits,
+circuit = [c2,c2,h1,h2,h3,c3,c4,c5,c6,X,Z,c7,c8,c9,c10,c11,c12,cc1,cc2,cc3,h1,h2,h3,c13,c14,cc4]
+
+end # module
+>>>>>>> 4921213 (error library made aware of existing codes)
