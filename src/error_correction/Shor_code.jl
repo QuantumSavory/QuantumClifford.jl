@@ -1,6 +1,6 @@
 #currently in the works
 
-module Shor_code_mod
+module Codemodule
     export Shor code
 
     include("/Error_codes,jl")
