@@ -2,6 +2,7 @@
 
 module ErrorCorrectionCodes 
     export Code
+<<<<<<< HEAD
     export Shorcircuit
     #abstract type AbstractCode end
     include("./Shorcode.jl")
@@ -9,3 +10,11 @@ module ErrorCorrectionCodes
 
 end
 x#qHEr9!z0Uowh3&Y
+=======
+    #abstract type AbstractCode end
+    include("./Shorcode.jl")
+    include("./Steanecode.jl")
+
+end
+
+>>>>>>> aca2daf (naming convention)
