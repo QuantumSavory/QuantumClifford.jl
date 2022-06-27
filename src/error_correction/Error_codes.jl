@@ -2,6 +2,6 @@
 
 module Error_correction_codes 
     export Code
-    abstract type Code 
+    abstract type AbstractCode end
 end
 
