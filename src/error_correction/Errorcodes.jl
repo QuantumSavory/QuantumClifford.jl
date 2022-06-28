@@ -16,5 +16,8 @@ x#qHEr9!z0Uowh3&Y
     include("./Steanecode.jl")
 
 end
+<<<<<<< HEAD
 
 >>>>>>> aca2daf (naming convention)
+=======
+>>>>>>> aa2c938 (minor spacing change)
