@@ -12,6 +12,9 @@ function Shorcircuit()#Codes::Shorcode)
 =======
 #currently in the works
 
+module Codes end
+abstract type Code end
+
 export Shorcode, Shorcircuit
 
 struct Shorcode <: Code end
