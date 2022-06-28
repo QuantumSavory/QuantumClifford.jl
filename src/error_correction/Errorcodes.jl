@@ -7,4 +7,3 @@ module ErrorCorrectionCodes
     include("./Steanecode.jl")
 
 end
-
