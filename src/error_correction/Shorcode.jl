@@ -12,13 +12,6 @@ function Shorcircuit()#Codes::Shorcode)
 =======
 #currently in the works
 
-module Codemodule
-    export Shor code
-
-    include("/Error_codes,jl")
-    using Error_correction_codes
-end #module
-
 struct Shor_code <: Code end
     
 
