@@ -5,8 +5,10 @@ module Codemodule
 
     include("/Error_codes,jl")
     using Error_correction_codes
+end #module
 
-    struct Shor_code <: Code
+struct Shor_code <: Code end
+    
 
 """documents"""
 
@@ -121,5 +123,3 @@ function rate(code::Shor_code) return 1//9 end
 
 # This circuit performs a depolarization at rate `epsilon` to all qubits,
 circuit = [c2,c2,h1,h2,h3,c3,c4,c5,c6,X,Z,c7,c8,c9,c10,c11,c12,cc1,cc2,cc3,h1,h2,h3,c13,c14,cc4]
-
-end # module
