@@ -19,10 +19,10 @@ function codedistance end
 
 #function Shor(code::Shor_code) end
 
-function QuantumClifford.MixedDestabilizer(code::Shor_code) #!!!UndefVarError
+function QuantumClifford.MixedDestabilizer(code::Shor_code) #not a MixedDestabilizer
 
     #pauli matrices of the code 
-    Stabilizer([P"X",P"Y",P"Z"]) #!!!UndefVarError
+    Stabilizer([P"X",P"Y",P"Z"]) #!!!UndefVarError: @P_str not defined
 
     Stabilizer(Bool[0 1;
                     1 0],
