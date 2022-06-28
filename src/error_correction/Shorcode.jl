@@ -29,7 +29,9 @@ function physicalqubits end
 
 function codedistance end
 
-#function Shor(code::Shor_code) end
+"""end documents"""
+
+#function Shor(code::Shor_code) end #Main Shor_code function
 
 function QuantumClifford.MixedDestabilizer(code::Shor_code) #not a MixedDestabilizer
 
@@ -48,7 +50,7 @@ end
 
 function rate(code::Shor_code) return 1//9 end
 
-function Shorcircuit()
+function Shorcircuit(code::Shor_code)
     N= 9 #n qubits 
 
            #Step 1   #Step 2 #Step 3     #Step 4 #S 5  #S 6  #Step 7  #Step 8 #Step 9  #S 10 #S 11
