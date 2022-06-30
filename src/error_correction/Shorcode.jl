@@ -112,6 +112,7 @@ function Shorcircuit(code::Shor_code)
     c6 = sCNOT(7,9)   
     
     #Step 4: Error
+<<<<<<< HEAD
     #X: Bit flip error
     #Z: Phase flip error
     for qubit in range(N) #check this
@@ -120,6 +121,11 @@ function Shorcircuit(code::Shor_code)
         X(qubit)
         Z(qubit)
 >>>>>>> 4921213 (error library made aware of existing codes)
+=======
+    single_x(9,1) #X: Bit flip error
+    single_z(9,1) #Z: Phase flip error
+    #check x and z have the right def (a,b)
+>>>>>>> f69433d (bit and phase flip error def)
 
     #Step 5: 4th set of  CNOT GATES
     c7 = sCNOT(1,2)
@@ -188,7 +194,7 @@ end # module
 >>>>>>> 0d82741 (testing error line 3 expected "end" got "code")
 =======
     # This circuit performs a depolarization at rate `epsilon` to all qubits,
-    circuit = [c2,c2,h1,h2,h3,c3,c4,c5,c6,X,Z,c7,c8,c9,c10,c11,c12,cc1,cc2,cc3,h1,h2,h3,c13,c14,cc4]
+    circuit = [c2,c2,h1,h2,h3,c3,c4,c5,c6,single_x,single_z,c7,c8,c9,c10,c11,c12,cc1,cc2,cc3,h1,h2,h3,c13,c14,cc4]
 
     end #end Shorcircuit
 
