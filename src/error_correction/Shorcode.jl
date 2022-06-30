@@ -16,6 +16,7 @@ module Codes end
 abstract type Code end
 
 export Shorcode, Shorcircuit
+using QuantumClifford import X, Z
 
 struct Shorcode <: Code end
 
@@ -33,18 +34,18 @@ function codedistance end
 
 #function Shor(code::Shor_code) end #Main Shor_code function
 
-function QuantumClifford.MixedDestabilizer(code::Shor_code) #not a MixedDestabilizer
+# function QuantumClifford.MixedDestabilizer(code::Shor_code) #not a MixedDestabilizer
 
-    #pauli matrices of the code 
-    Stabilizer([P"X",P"Y",P"Z"]) #!!!UndefVarError: @P_str not defined
+#     #pauli matrices of the code 
+#     Stabilizer([P"X",P"Y",P"Z"]) #!!!UndefVarError: @P_str not defined
 
-    Stabilizer(Bool[0 1;
-                    1 0],
-                Bool[0 -i;
-                    i 1],
-                Bool[1 0;
-                    0 -1])
-end
+#     Stabilizer(Bool[0 1;
+#                     1 0],
+#                 Bool[0 -i;
+#                     i 1],
+#                 Bool[1 0;
+#                     0 -1])
+# end
 
 ####
 
@@ -114,8 +115,8 @@ function Shorcircuit(code::Shor_code)
     #X: Bit flip error
     #Z: Phase flip error
     for qubit in range(N) #check this
-        X = S"X"
-        Z = S"Z"
+        #X = S"X"
+        #Z = S"Z"
         X(qubit)
         Z(qubit)
 >>>>>>> 4921213 (error library made aware of existing codes)
