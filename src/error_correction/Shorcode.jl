@@ -68,8 +68,12 @@ function Shorcircuit(code::Shor_code)
     """
 
     #Step 0
+<<<<<<< HEAD
     # initial_state = one(Stabilizer, N)
 >>>>>>> 4921213 (error library made aware of existing codes)
+=======
+    initial_state = one(Stabilizer, N) #CHECK THIS
+>>>>>>> 322da12 (comment)
 
     #Step 1: 1st set of  CNOT gates
     c1 = sCNOT(1,4)
@@ -181,5 +185,9 @@ end # module
 
     end #end Shorcircuit
 
+<<<<<<< HEAD
 end #module
 >>>>>>> df1b849 (reformating shor mod, struct & function hyerarchy)
+=======
+end #function
+>>>>>>> 322da12 (comment)
