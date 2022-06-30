@@ -15,7 +15,7 @@ using QuantumClifford #import X, Z
 
 module Codes end
 abstract type Code end
-struct Shorcode <: Code 
+struct Shorcode <: Code end 
 
 export Shorcode, Shorcircuit
 
@@ -31,7 +31,7 @@ function codedistance end
 
 """end documents"""
 
-function Shorcircuit(code::Shor_code)
+function Shorcircuit(code::Shorcode)
     N= 9 #n qubits 
 
            #Step 1   #Step 2 #Step 3     #Step 4 #S 5  #S 6  #Step 7  #Step 8 #Step 9  #S 10 #S 11
