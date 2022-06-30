@@ -11,7 +11,7 @@ function Shorcircuit()#Codes::Shorcode)
     
 =======
 #currently in the works
-using QuantumClifford import X, Z
+using QuantumClifford #import X, Z
 
 module Codes end
 abstract type Code end
@@ -32,7 +32,9 @@ function codedistance end
 
 """end documents"""
 
-function rate(code::Shor_code) return 1//9 end
+function rate(code::Shor_code) 
+    return 1//9 
+end
 
 function Shorcircuit(code::Shor_code)
     N= 9 #n qubits 
