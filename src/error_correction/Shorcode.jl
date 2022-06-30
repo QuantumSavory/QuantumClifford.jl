@@ -32,23 +32,6 @@ function codedistance end
 
 """end documents"""
 
-#function Shor(code::Shor_code) end #Main Shor_code function
-
-# function QuantumClifford.MixedDestabilizer(code::Shor_code) #not a MixedDestabilizer
-
-#     #pauli matrices of the code 
-#     Stabilizer([P"X",P"Y",P"Z"]) #!!!UndefVarError: @P_str not defined
-
-#     Stabilizer(Bool[0 1;
-#                     1 0],
-#                 Bool[0 -i;
-#                     i 1],
-#                 Bool[1 0;
-#                     0 -1])
-# end
-
-####
-
 function rate(code::Shor_code) return 1//9 end
 
 function Shorcircuit(code::Shor_code)
