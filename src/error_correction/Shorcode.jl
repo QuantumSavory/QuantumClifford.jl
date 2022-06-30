@@ -32,10 +32,6 @@ function codedistance end
 
 """end documents"""
 
-function rate(code::Shor_code) 
-    return 1//9 
-end
-
 function Shorcircuit(code::Shor_code)
     N= 9 #n qubits 
 
@@ -183,13 +179,19 @@ end # module
 >>>>>>> 0d82741 (testing error line 3 expected "end" got "code")
 =======
     # This circuit performs a depolarization at rate `epsilon` to all qubits,
-    Shor_code = [c2,c2,h1,h2,h3,c3,c4,c5,c6,single_x,single_z,c7,c8,c9,c10,c11,c12,cc1,cc2,cc3,h1,h2,h3,c13,c14,cc4]
+    circuit = [c2,c2,h1,h2,h3,c3,c4,c5,c6,single_x,single_z,c7,c8,c9,c10,c11,c12,cc1,cc2,cc3,h1,h2,h3,c13,c14,cc4]
 
-    end #end Shorcircuit
+end #function
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 end #module
 >>>>>>> df1b849 (reformating shor mod, struct & function hyerarchy)
 =======
 end #function
 >>>>>>> 322da12 (comment)
+=======
+function rate(code::Shor_code) 
+    return 1//9 
+end
+>>>>>>> 30f5469 (function org)
