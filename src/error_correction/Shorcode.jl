@@ -11,12 +11,12 @@ function Shorcircuit()#Codes::Shorcode)
     
 =======
 #currently in the works
+using QuantumClifford import X, Z
 
 module Codes end
 abstract type Code end
 
 export Shorcode, Shorcircuit
-using QuantumClifford import X, Z
 
 struct Shorcode <: Code end
 
