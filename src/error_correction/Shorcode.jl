@@ -49,7 +49,7 @@ function Shorcircuit(code::Shor_code)
     """
 
     #Step 0
-    # initial_state = one(Stabilizer, N)
+    initial_state = one(Stabilizer, N) #CHECK THIS
 
     #Step 1: 1st set of  CNOT gates
     c1 = sCNOT(1,4)
@@ -107,4 +107,4 @@ function Shorcircuit(code::Shor_code)
 
     end #end Shorcircuit
 
-end #module
+end #function
