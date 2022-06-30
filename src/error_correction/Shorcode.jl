@@ -20,10 +20,6 @@ function codedistance end
 
 """end documents"""
 
-function rate(code::Shor_code) 
-    return 1//9 
-end
-
 function Shorcircuit(code::Shor_code)
     N= 9 #n qubits 
 
@@ -105,8 +101,10 @@ function Shorcircuit(code::Shor_code)
     cc4 = sCCNOT(7,4,1)
 
     # This circuit performs a depolarization at rate `epsilon` to all qubits,
-    Shor_code = [c2,c2,h1,h2,h3,c3,c4,c5,c6,single_x,single_z,c7,c8,c9,c10,c11,c12,cc1,cc2,cc3,h1,h2,h3,c13,c14,cc4]
-
-    end #end Shorcircuit
+    circuit = [c2,c2,h1,h2,h3,c3,c4,c5,c6,single_x,single_z,c7,c8,c9,c10,c11,c12,cc1,cc2,cc3,h1,h2,h3,c13,c14,cc4]
 
 end #function
+
+function rate(code::Shor_code) 
+    return 1//9 
+end
