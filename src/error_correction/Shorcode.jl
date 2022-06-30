@@ -15,10 +15,9 @@ using QuantumClifford #import X, Z
 
 module Codes end
 abstract type Code end
+struct Shorcode <: Code 
 
 export Shorcode, Shorcircuit
-
-struct Shorcode <: Code end
 
 """documents"""
 
@@ -181,8 +180,9 @@ end # module
     # This circuit performs a depolarization at rate `epsilon` to all qubits,
     circuit = [c2,c2,h1,h2,h3,c3,c4,c5,c6,single_x,single_z,c7,c8,c9,c10,c11,c12,cc1,cc2,cc3,h1,h2,h3,c13,c14,cc4]
 
-end #function
+end #Shorcode
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 end #module
@@ -192,6 +192,9 @@ end #function
 >>>>>>> 322da12 (comment)
 =======
 function rate(code::Shor_code) 
+=======
+function rate(code::Shorcode) 
+>>>>>>> fd827fd (minor change)
     return 1//9 
 end
 >>>>>>> 30f5469 (function org)
