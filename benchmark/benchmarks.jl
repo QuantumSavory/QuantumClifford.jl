@@ -7,11 +7,17 @@ const SUITE = BenchmarkGroup()
 
 rng = StableRNG(42)
 
+# Due to breacking changes in v0.5.0
+const tableauCNOT = C"XX
+                      IX
+                      ZI
+                      ZZ"
+
 const s500 = random_stabilizer(rng,500)
 const md500 = MixedDestabilizer(random_destabilizer(rng,500),250)
 const p500 = random_pauli(rng,500)
 const c500 = random_clifford(rng,500)
-const cnots250 = tensor_pow(CNOT,250)
+const cnots250 = tensor_pow(tableauCNOT,250)
 const pa1 = random_pauli(rng,100)
 const pb1 = random_pauli(rng,100)
 const pa2 = random_pauli(rng,1000)
@@ -60,13 +66,13 @@ SUITE["clifford"]["dense"] = BenchmarkGroup(["dense"])
 SUITE["clifford"]["dense"]["dense500_on_dense500_stab"]   = @benchmarkable apply!(s,c) setup=(s=copy(s500);c=c500) evals=1
 SUITE["clifford"]["dense"]["dense500_on_dense500_destab"] = @benchmarkable apply!(s,c) setup=(s=copy(md500);c=c500) evals=1
 # The operator is a small 2-qubit CNOT operator.
-SUITE["clifford"]["dense"]["cnot_on_dense500_stab"]   = @benchmarkable apply!(s,c,[30,200]) setup=(s=copy(s500);c=CNOT) evals=1
-SUITE["clifford"]["dense"]["cnot_on_dense500_destab"] = @benchmarkable apply!(s,c,[30,200]) setup=(s=copy(md500);c=CNOT) evals=1
+SUITE["clifford"]["dense"]["cnot_on_dense500_stab"]   = @benchmarkable apply!(s,c,[30,200]) setup=(s=copy(s500);c=tableauCNOT) evals=1
+SUITE["clifford"]["dense"]["cnot_on_dense500_destab"] = @benchmarkable apply!(s,c,[30,200]) setup=(s=copy(md500);c=tableauCNOT) evals=1
 # The state is a diagonal matrix (and the operator is dense large matrix or just a dense 2-qubit CNOT matrix).
 SUITE["clifford"]["dense"]["dense500_on_diag500_stab"]   = @benchmarkable apply!(s,c) setup=(s=one(Stabilizer,500);c=c500) evals=1
 SUITE["clifford"]["dense"]["dense500_on_diag500_destab"] = @benchmarkable apply!(s,c) setup=(s=one(Destabilizer,500);c=c500) evals=1
-SUITE["clifford"]["dense"]["cnot_on_diag500_stab"]   = @benchmarkable apply!(s,c,[30,200]) setup=(s=one(Stabilizer,500);c=CNOT) evals=1
-SUITE["clifford"]["dense"]["cnot_on_diag500_destab"] = @benchmarkable apply!(s,c,[30,200]) setup=(s=MixedDestabilizer(one(Destabilizer,500),250);c=CNOT) evals=1
+SUITE["clifford"]["dense"]["cnot_on_diag500_stab"]   = @benchmarkable apply!(s,c,[30,200]) setup=(s=one(Stabilizer,500);c=tableauCNOT) evals=1
+SUITE["clifford"]["dense"]["cnot_on_diag500_destab"] = @benchmarkable apply!(s,c,[30,200]) setup=(s=MixedDestabilizer(one(Destabilizer,500),250);c=tableauCNOT) evals=1
 # The operator is a mostly diagonal matrix (250 CNOTs), while the state is a random dense matrix.
 SUITE["clifford"]["dense"]["cnot250_on_dense500_stab"]   = @benchmarkable apply!(s,c) setup=(s=copy(s500);c=cnots250) evals=1
 SUITE["clifford"]["dense"]["cnot250_on_dense500_destab"] = @benchmarkable apply!(s,c) setup=(s=copy(md500);c=cnots250) evals=1

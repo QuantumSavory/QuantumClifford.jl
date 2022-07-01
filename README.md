@@ -168,4 +168,6 @@ BenchmarkTools.Trial: 10000 samples with 1 evaluation.
 ```
 
 Benchmarks executed on a Ryzen Zen1 8-core CPU.
+
+More detailed benchmarks can be seen at [github.com/Krastanov/QuantumCliffordBenchmarksLog](https://github.com/Krastanov/QuantumCliffordBenchmarksLog).
 </details>
