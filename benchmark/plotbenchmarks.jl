@@ -52,8 +52,8 @@ df2 = combine(groupby(df, [:groupname, :taxon1, :tag, :julia, :threads]), :logti
 df1 = combine(groupby(df2, [:taxon1, :tag, :julia, :threads]), :logtime=>mean=>:logtime)
 df0 = combine(groupby(df1, [:tag, :julia, :threads]), :logtime=>mean=>:logtime)
 
-layers = visual(Stairs)
-axis = (;width = 500, height = 400)
+layers = visual(Stairs, step=:post)
+axis = (;width = 500, height = 400, xticklabelrotation=-pi/3)
 facet = (;linkyaxes=:minimal)
 
 ##
