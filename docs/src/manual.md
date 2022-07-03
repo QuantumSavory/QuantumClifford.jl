@@ -353,7 +353,6 @@ In many circumstances only a single-qubit operator is being measured. In that ca
 
 If you do not need all this boilerplate, and especially if you want to perform the randomization automatically, you can use the gate-like "symbolic" objects [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref), that perform the measurement and the necessary randomization of phase. If the measurement result is to be stored, you can use the [`Register`](@ref) structure that stores both stabilizer tableaux and bit values.
 
-<!-- # TODO make a jldoctest -->
 ```
 julia> state = Register(ghz(3), [false,false])
 Register{Vector{UInt8}, Matrix{UInt64}}(Rank 3 stabilizer
@@ -692,3 +691,7 @@ They are the [`MixedStabilizer`](@ref) and [`MixedDestabilizer`](@ref) structure
 described in [Mixed States](@ref Mixed-Stabilizer-States).
 More information that can be seen in the [data structures page](@ref Choosing-Appropriate-Data-Structure),
 which expands upon the algorithms available for each structure.
+
+# Random States and Circuits
+
+[random_clifford](@ref), [random_stabilizer](@ref), and [`enumerate_cliffords`](@ref) can be used for the generation of random states.
