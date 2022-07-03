@@ -8,7 +8,6 @@ module NoisyCircuits
 using QuantumClifford
 using QuantumClifford: AbstractQCState, AbstractOperation, AbstractMeasurement, AbstractCliffordOperator, apply_single_x!, apply_single_y!, apply_single_z!
 
-using StatsBase: countmap
 using Combinatorics: combinations
 
 export AbstractOperation,
@@ -212,6 +211,22 @@ function mctrajectory!(state,circuit)
         end
     end
     return state, continue_stat
+end
+
+function countmap(samples::Vector{CircuitStatus}) # A simpler version of StatsBase.countmap, because StatsBase is slow to import
+    #=
+    T = eltype(samples)
+    counts = Dict{T,Int}
+    for s in samples
+        counts[s] = get(counts, s, 0)+1
+    end
+    counts
+    =#
+    counts = zeros(length(registered_statuses))
+    for s in samples
+        counts[s.status] += 1
+    end
+    Dict(CircuitStatus(i)=>counts[i] for i in eachindex(counts))
 end
 
 """Run multiple Monte Carlo trajectories and report the aggregate final statuses of each."""
