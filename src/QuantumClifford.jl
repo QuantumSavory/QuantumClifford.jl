@@ -203,9 +203,9 @@ Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
 # Stabilizers
 ##############################
 
-abstract type AbstractQCState end
+abstract type AbstractQCState end # This could include classical bits
 
-abstract type AbstractStabilizer <: AbstractQCState end
+abstract type AbstractStabilizer <: AbstractQCState end # This includs only qubits
 
 """
 Stabilizer, i.e. a list of commuting multi-qubit Hermitian Pauli operators.
@@ -323,7 +323,13 @@ macro S_str(a)
 end
 
 Base.getindex(stab::Stabilizer, i::Int) = PauliOperator(stab.phases[i], nqubits(stab), stab.xzs[:,i])
-@inline Base.getindex(stab::Stabilizer{Tzv,Tm}, r::Int, c::Int) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}} = (stab.xzs[_div(Tme,c-1)+1,r] & Tme(0x1)<<_mod(Tme,c-1))!=0x0, (stab.xzs[end÷2+_div(Tme,c-1)+1,r] & Tme(0x1)<<_mod(Tme,c-1))!=0x0 # TODO this has code repetition with the Pauli getindex
+@inline function Base.getindex(stab::Stabilizer, r::Int, c::Int)
+     # TODO this has code repetition with the Pauli getindex
+     Tme = eltype(stab.xzs)
+     x = (stab.xzs[_div(Tme,c-1)+1,r] & Tme(0x1)<<_mod(Tme,c-1))!=0x0
+     z = (stab.xzs[end÷2+_div(Tme,c-1)+1,r] & Tme(0x1)<<_mod(Tme,c-1))!=0x0
+     return (x,z)
+end
 Base.getindex(stab::Stabilizer, r) = Stabilizer(stab.phases[r], nqubits(stab), stab.xzs[:,r])
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
 Base.getindex(stab::Stabilizer, r, c::Int) = stab[r,[c]]
@@ -828,7 +834,7 @@ end
 
 (⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator((l.phase[]+r.phase[])&0x3, vcat(xbit(l),xbit(r)), vcat(zbit(l),zbit(r)))
 
-function Base.:(*)(l, r::PauliOperator)
+function Base.:(*)(l::Number, r::PauliOperator)
     p = copy(r)
     if l==1
         nothing

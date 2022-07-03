@@ -1,8 +1,10 @@
 # News
 
-## v0.5.4-dev
+## v0.5.4 - 2022-07-03
 
 - Start using `JET.jl` for static analysis during CI.
+- The `MixedDestabilizer` constructor now accepts over redundant tableaux (tableaux with redundant rows).
+- Resolved multiple method ambiguities and started testing for them with `Aqua.jl` in CI.
 
 ## v0.5.3 - 2022-06-11
 

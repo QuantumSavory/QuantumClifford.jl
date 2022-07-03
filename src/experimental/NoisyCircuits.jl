@@ -6,7 +6,7 @@ module NoisyCircuits
 #TODO permit the use of alternative RNGs
 
 using QuantumClifford
-using QuantumClifford: AbstractQCState, AbstractOperation, AbstractMeasurement, AbstractCliffordOperator, apply_single_x!, apply_single_y!, apply_single_z!
+using QuantumClifford: AbstractQCState, AbstractStabilizer, AbstractOperation, AbstractMeasurement, AbstractCliffordOperator, apply_single_x!, apply_single_y!, apply_single_z!
 
 using Combinatorics: combinations
 
@@ -100,7 +100,7 @@ affectedqubits(d::DecisionGate) = [(union(affectedqubits.(d.gates))...)...]
 affectedqubits(m::AbstractMeasurement) = [m.qubit]
 
 
-function QuantumClifford.apply!(s::AbstractQCState, g::NoisyGate)
+function QuantumClifford.apply!(s::AbstractStabilizer, g::NoisyGate)
     s = applynoise!(
             apply!(s,g.gate),
             g.noise,
@@ -136,7 +136,7 @@ end
 """A method modifying a given state by applying the corresponding noise model. Non-deterministic, part of the Noise interface."""
 function applynoise! end
 
-function applynoise!(s::AbstractQCState,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int})
+function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int})
     n = nqubits(s)
     infid = noise.errprobthird
     for i in indices
@@ -154,17 +154,17 @@ function applynoise!(s::AbstractQCState,noise::UnbiasedUncorrelatedNoise,indices
     s
 end
 
-function QuantumClifford.apply!(s::AbstractQCState, mr::NoiseOpAll)
+function QuantumClifford.apply!(s::AbstractStabilizer, mr::NoiseOpAll)
     n = nqubits(s)
     return applynoise!(s, mr.noise, 1:n)
 end
 
-function QuantumClifford.apply!(s::AbstractQCState, mr::NoiseOp)
+function QuantumClifford.apply!(s::AbstractStabilizer, mr::NoiseOp)
     return applynoise!(s, mr.noise, affectedqubits(mr))
 end
 
 # TODO this one needs more testing
-function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
+function applywstatus!(s::AbstractStabilizer, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
     # TODO QuantumClifford should implement some submatrix comparison
     canonicalize_rref!(quantumstate(s),v.indices) # Document why rref is used
     sv = stabilizerview(s)
@@ -246,7 +246,7 @@ end
 """Compute all possible new states after the application of the given noise model. Reports the probability of each one of them. Deterministic, part of the Noise interface."""
 function applynoise_branches end
 
-function applynoise_branches(s::AbstractQCState,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int}; max_order=1)
+function applynoise_branches(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int}; max_order=1)
     n = nqubits(s)
     l = length(indices)
     infid = noise.errprobthird

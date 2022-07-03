@@ -102,6 +102,8 @@ function tensor_pow(op,power)
     end
 end
 
+function ⊗() zero(Stabilizer, 0, 0) end # defined to avoid method ambiguities (can be tested with Aqua.jl)
+
 function ⊗(ops::Stabilizer...)
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)

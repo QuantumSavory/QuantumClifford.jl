@@ -51,4 +51,7 @@ doset("allocations")        && VERSION >= v"1.7" && include("./test_allocations.
 doset("doctests")           && VERSION == v"1.7" && include("./doctests.jl")
 
 using Aqua
-doset("aqua") && Aqua.test_all(QuantumClifford, ambiguities=false,project_toml_formatting=false)
+doset("aqua") && begin
+    Aqua.test_all(QuantumClifford, ambiguities=false)
+    Aqua.test_ambiguities([QuantumClifford,Core]) # otherwise Base causes false positives
+end
