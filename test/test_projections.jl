@@ -197,10 +197,6 @@ function test_projections()
             @test generate!(P"_Z", S"XZ") === nothing # for bug fixed in 4b536231c3ee4e6446262fcc61ba8da669415bc8
             for n in test_sizes
                 for r in [n, rand(n÷3:n*2÷3)]
-                    if r==0
-                        @test_broken error("can not process empty stab")
-                        continue
-                    end
                     s = random_stabilizer(r,n)
                     ms = MixedStabilizer(copy(s))
                     d = Destabilizer(copy(s))

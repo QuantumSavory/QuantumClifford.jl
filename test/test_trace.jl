@@ -3,10 +3,6 @@ function test_trace()
         @testset "RREF canonicalization vs manual traceout" begin
             for N in test_sizes
                 for n in [N,rand(N÷4:N÷2)]
-                    if n==0
-                        @test_broken error("can not process empty stab")
-                        continue
-                    end
                     to_delete = randperm(N)[1:rand(N÷4:N÷2)]
                     stab0 = random_stabilizer(n, N)
                     id_paulis = zero(PauliOperator, N)

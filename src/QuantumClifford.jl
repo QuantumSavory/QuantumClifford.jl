@@ -524,11 +524,11 @@ end
 
 # Added a lot of type assertions to help Julia infer types
 function MixedDestabilizer(stab::Stabilizer{Tv,Tm}; undoperm=true) where {Tve,Tme,Tv<:AbstractVector{Tve},Tm<:AbstractMatrix{Tme}}
-    r,n = size(stab)
+    rows,n = size(stab)
     stab, r, s, permx, permz = canonicalize_gott!(copy(stab))
-    n = nqubits(stab)
     tab = zero(Stabilizer, n*2, n)::Stabilizer{Vector{Tve},Matrix{Tme}}
-    tab[n+1:n+r+s] = stab # The Stabilizer part of the tableau
+    vstab = @view stab[1:r+s] # this view is necessary for cases of tableaux with redundant rows
+    tab[n+1:n+r+s] = vstab # The Stabilizer part of the tableau
     for i in 1:r # The Destabilizer part
         tab[i,i] = (false,true)
     end
@@ -536,7 +536,7 @@ function MixedDestabilizer(stab::Stabilizer{Tv,Tm}; undoperm=true) where {Tve,Tm
         tab[i,i] = (true,false)
     end
     if r+s!=n
-        H = stab_to_gf2(stab)             # n-k × 2n
+        H = stab_to_gf2(vstab)            # n-k × 2n
         k = n - r - s
         E = H[r+1:end,end÷2+r+s+1:end]    # n-k-r × n-r-s
         C1 = H[1:r,end÷2+r+1:end÷2+r+s]   #     r ×     s

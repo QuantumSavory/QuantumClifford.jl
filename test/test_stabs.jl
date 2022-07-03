@@ -24,14 +24,14 @@ function test_stabs()
             end
             # Test initialization out of overdetermined stabs
             stabs = [S"XX
-                    II",
-                    S"XX
-                    XX",
-                    S"ZZ
-                    ZZ"]
+                       II",
+                     S"XX
+                       XX",
+                     S"ZZ
+                       ZZ"]
             for s in stabs
                 md = MixedDestabilizer(s[1:1])
-                @test_broken MixedDestabilizer(s) == md
+                @test MixedDestabilizer(s) == md
             end
         end
     end

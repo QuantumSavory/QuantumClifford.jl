@@ -43,10 +43,6 @@ function test_stabcanon()
         @testset "Canonicalization of complex tableaus" begin
             for n in test_sizes
                 for nrows in [n, rand(n÷3:n*2÷3)]
-                    if nrows==0
-                        @test_broken error("can not process empty stab")
-                        continue
-                    end
                     rs = random_stabilizer(nrows,n)
                     rs_m = MixedStabilizer(copy(rs))
                     rs_d = Destabilizer(copy(rs))
