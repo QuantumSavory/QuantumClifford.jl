@@ -40,6 +40,10 @@ jobs:
             ${{ runner.os }}-test-
             ${{ runner.os }}-
       - uses: julia-actions/julia-buildpkg@v1
+            - run: |
+              julia --project=@. -e '
+                using Pkg
+                Pkg.add(PackageSpec(name="JET", rev="master"))'
       - uses: julia-actions/julia-runtest@v1
         env:
           JULIA_NUM_THREADS: ${{ matrix.threads }}
