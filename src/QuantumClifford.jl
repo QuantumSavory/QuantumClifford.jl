@@ -204,8 +204,8 @@ Base.zero(::Type{<:PauliOperator}, q) = PauliOperator(zeros(UInt8), q, zeros(UIn
 Base.zero(p::PauliOperator) = zero(PauliOperator, nqubits(p))
 
 """Zero-out the phases and single-qubit operators in a [`PauliOperator`](@ref)"""
-@inline function zero!(p::PauliOperator)
-    fill!(p.xz, zero(eltype(p.xz)))
+@inline function zero!(p::PauliOperator{Tz,Tv}) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}}
+    fill!(p.xz, zero(Tve))
     p.phase[] = 0x0
     p
 end
@@ -491,7 +491,7 @@ struct Destabilizer{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <
         elseif r<=n
             mixed_destab = MixedDestabilizer(s)
             tab = vcat(destabilizerview(mixed_destab),stabilizerview(mixed_destab))
-            new{typeof(s.phases),typeof(s.xzs)}(tab)
+            new{typeof(tab.phases),typeof(tab.xzs)}(tab)
         else
             throw(DomainError("To construct a `Destabilizer`, either use a 2n×n tableau of destabilizer and stabilizer rows that is directly used or an r×n (r<n) tableau of stabilizers from which destabilizers are automatically computed. Or better, just use `MixedDestabilizer`."))
         end
