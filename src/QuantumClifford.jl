@@ -350,9 +350,9 @@ Base.getindex(stab::Stabilizer, i::Int) = PauliOperator(stab.phases[i], nqubits(
      return (x,z)
 end
 Base.getindex(stab::Stabilizer, r) = Stabilizer(stab.phases[r], nqubits(stab), stab.xzs[:,r])
-Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
-Base.getindex(stab::Stabilizer, r, c::Int) = stab[r,[c]]
-Base.getindex(stab::Stabilizer, r::Int, c) = stab[r][c]
+Base.getindex(stab::Stabilizer, r::Union{Colon,AbstractVector}, c::Union{Colon,AbstractVector}) = Stabilizer([s[c] for s in stab[r]])
+Base.getindex(stab::Stabilizer, r::Union{Colon,AbstractVector}, c::Int) = stab[r,[c]]
+Base.getindex(stab::Stabilizer, r::Int, c::Union{Colon,AbstractVector}) = stab[r][c]
 Base.view(stab::Stabilizer, r) = Stabilizer(view(stab.phases, r), nqubits(stab), view(stab.xzs, :, r))
 
 Base.iterate(stab::Stabilizer, state=1) = state>length(stab) ? nothing : (stab[state], state+1)
