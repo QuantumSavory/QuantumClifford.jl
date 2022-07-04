@@ -19,32 +19,7 @@ function single_y(n,i)
     p
 end
 
-nchunks(i::Int) = 2*( (i-1) ÷ (8*sizeof(UInt)) + 1 )
-Base.zero(::Type{<:PauliOperator}, q) = PauliOperator(zeros(UInt8), q, zeros(UInt, nchunks(q)))
-Base.zero(p::PauliOperator) = zero(PauliOperator, nqubits(p))
-function Base.zero(::Type{<:Stabilizer}, r, q)
-    phases = zeros(UInt8,r)
-    xzs = zeros(UInt, nchunks(q), r)
-    Stabilizer(phases, q, xzs)::Stabilizer{Vector{UInt8},Matrix{UInt}}
-end
-Base.zero(::Type{<:Stabilizer}, q) = zero(Stabilizer, q, q)
-Base.zero(s::Stabilizer) = zero(Stabilizer, length(s), nqubits(s))
-Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.tab))
-Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Stabilizer, 2n, n))
-
-@inline function zero!(p::PauliOperator)
-    fill!(p.xz, zero(eltype(p.xz)))
-    p.phase[] = 0x0
-    p
-end
-
-@inline function zero!(s::Stabilizer,i)
-    s.xzs[:,i] .= zero(eltype(s.xzs))
-    s.phases[i] = 0x0
-    s
-end
-
-# TODO make faster by using fewer initializations, like in Base.zero above
+# TODO make faster by using fewer initializations, like in Base.zero
 function Base.one(::Type{<:Stabilizer}, n; basis=:Z) # TODO support `basis` in all other `one(::[Mixed][De]Stabilizer)` functions
     if basis==:X
         Stabilizer(LinearAlgebra.I(n),falses(n,n))

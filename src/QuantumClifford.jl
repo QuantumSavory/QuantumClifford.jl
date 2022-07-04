@@ -199,6 +199,17 @@ Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.xz, h)
 
 Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
 
+_nchunks(i::Int) = 2*( (i-1) ÷ (8*sizeof(UInt)) + 1 )
+Base.zero(::Type{<:PauliOperator}, q) = PauliOperator(zeros(UInt8), q, zeros(UInt, _nchunks(q)))
+Base.zero(p::PauliOperator) = zero(PauliOperator, nqubits(p))
+
+"""Zero-out the phases and single-qubit operators in a [`PauliOperator`](@ref)"""
+@inline function zero!(p::PauliOperator)
+    fill!(p.xz, zero(eltype(p.xz)))
+    p.phase[] = 0x0
+    p
+end
+
 ##############################
 # Stabilizers
 ##############################
@@ -297,7 +308,15 @@ struct Stabilizer{Tzv<:AbstractVector{UInt8}, Tm<:AbstractMatrix{<:Unsigned}} <:
     xzs::Tm
 end
 
-Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tv<:AbstractVector{<:Unsigned}} = Stabilizer(vcat((p.phase for p in paulis)...), paulis[1].nqubits, hcat((p.xz for p in paulis)...))
+function Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tve<:Unsigned,Tv<:AbstractVector{Tve}}
+    r = length(paulis)
+    n = nqubits(paulis[1])
+    stab = zero(Stabilizer{Vector{UInt8},Matrix{Tve}},r,n)
+    for i in eachindex(paulis)
+        stab[i] = paulis[i]
+    end
+    stab
+end
 
 Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(
     phases, size(xs,2),
@@ -392,6 +411,21 @@ Base.:(==)(l::Stabilizer, r::Stabilizer) = r.nqubits==l.nqubits && r.phases==l.p
 Base.hash(s::Stabilizer, h::UInt) = hash(s.nqubits, hash(s.phases, hash(s.xzs, h)))
 
 Base.copy(s::Stabilizer) = Stabilizer(copy(s.phases), s.nqubits, copy(s.xzs))
+
+function Base.zero(::Type{<:Stabilizer}, r, q)
+    phases = zeros(UInt8,r)
+    xzs = zeros(UInt, _nchunks(q), r)
+    Stabilizer(phases, q, xzs)::Stabilizer{Vector{UInt8},Matrix{UInt}}
+end
+Base.zero(::Type{<:Stabilizer}, q) = zero(Stabilizer, q, q)
+Base.zero(s::Stabilizer) = zero(Stabilizer, length(s), nqubits(s))
+
+"""Zero-out a given row of a [`Stabilizer`](@ref)"""
+@inline function zero!(s::Stabilizer,i)
+    s.xzs[:,i] .= zero(eltype(s.xzs))
+    s.phases[i] = 0x0
+    s
+end
 
 ##############################
 # Helpers for sublcasses of AbstractStabilizer that use Stabilizer as a tableau internally.

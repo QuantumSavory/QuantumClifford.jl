@@ -99,6 +99,9 @@ end
 
 @inline nqubits(c::CliffordOperator) = nqubits(c.tab)
 
+Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.tab))
+Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Stabilizer, 2n, n))
+
 function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
     tab = copy(r.tab)
     apply!(tab,l)
