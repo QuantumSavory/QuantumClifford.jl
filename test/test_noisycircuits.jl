@@ -17,7 +17,7 @@ function test_noisycircuits()
                 with_purification = mctrajectories(init, [n,g1,g2,m,v], trajectories=500)
                 @test with_purification[failure_stat] > 5
                 @test with_purification[false_success_stat] > 10
-                @test with_purification[true_success_stat] > 430
+                @test with_purification[true_success_stat] > 420
                 without_purification = mctrajectories(init, [n,v], trajectories=500)
                 @test get(without_purification,failure_stat,0) == 0
                 @test without_purification[false_success_stat] > 10
@@ -57,12 +57,12 @@ function test_noisycircuits()
                 @test compare(mc,pe,false_success_stat)
                 @test compare(mc,pe,true_success_stat)
             end
-            
+
             @testset "Symbolic" begin
                 for statetype in [MixedDestabilizer]
                     R, (e,) = AbstractAlgebra.PolynomialRing(AbstractAlgebra.RealField, ["e"])
                     unity = R(1);
-                    
+
                     good_bell_state = statetype(S"XX
                                                   ZZ")
                     initial_state = good_bell_state⊗good_bell_state
