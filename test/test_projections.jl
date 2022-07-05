@@ -22,8 +22,10 @@ function test_projections()
             for n in test_sizes
                 s = random_stabilizer(n)
                 m = random_pauli(n;nophase=true)
+                mop = PauliMeasurement(m)
                 ps, anticom, res = project!(copy(s),m)
                 @test anticom==0x0 || ps[anticom]==m
+                @test ps.xzs == apply!(copy(s),mop).xzs
                 @test stab_looks_good(ps)
                 m = single_z(n,1)
                 ps, anticom, res = project!(copy(s),m)
@@ -316,6 +318,9 @@ function test_projections()
                 @test project!(copy(sx),px) == projectX!(copy(sx),r)
                 @test project!(copy(sy),py) == projectY!(copy(sy),r)
                 @test project!(copy(sz),pz) == projectZ!(copy(sz),r)
+                @test tab(apply!(copy(s),sMX(r))).xzs == tab(sx).xzs
+                @test tab(apply!(copy(s),sMY(r))).xzs == tab(sy).xzs
+                @test tab(apply!(copy(s),sMZ(r))).xzs == tab(sz).xzs
             end
         end
         @testset "Redundant row permutations in `project!(::MixedDestabilizer)`" begin

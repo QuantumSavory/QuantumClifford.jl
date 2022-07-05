@@ -29,12 +29,12 @@ function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
 end
 
 """Reset the specified qubits to the given state."""
-struct Reset{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractOperation 
+struct Reset{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractOperation
     resetto::Stabilizer{Tzv, Tm}
     indices::Vector{Int}
 end
 
 function apply!(state::AbstractStabilizer, reset::Reset)
     reset_qubits!(state, reset.resetto, reset.indices)
-    return s
+    return state
 end
