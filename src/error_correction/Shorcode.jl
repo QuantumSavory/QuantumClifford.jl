@@ -1,29 +1,13 @@
-#currently in the works
-using QuantumClifford #import X, Z
 
-module Codes end
-abstract type Code end
-struct Shorcode <: Code end 
+export Shorcircuit
 
-export Shorcode, Shorcircuit
+function Shorcircuit()#Codes::Shorcode)
+    println("I work") #test
 
-"""documents"""
-
-function rate end
-
-function logicalqubits end
-
-function physicalqubits end
-
-function codedistance end
-
-"""end documents"""
-
-function Shorcircuit(code::Shorcode)
+    #=
     N= 9 #n qubits 
-
            #Step 1   #Step 2 #Step 3     #Step 4 #S 5  #S 6  #Step 7  #Step 8 #Step 9  #S 10 #S 11
-    """
+    
                       ┌───┐              ┌─────┐              ┌────┐   ┌───┐                ┌────┐                
     q_1: ──■────■─────┤ H ├──■─────■─────┤     ├───■─────■────┤CNOT├───┤ H ├────■───────■───┤CNOT├
            |    |     └───┘┌─┴──┐  |     |     | ┌─┴──┐  |    └─|──┘   └───┘    |       |   └─|──┘
@@ -43,10 +27,10 @@ function Shorcircuit(code::Shorcode)
                           └────┘┌─┴──┐   |     | └────┘┌─┴──┐  |                           
     q_9: ───────────────────────┤CNOT├───┤     ├───────┤CNOT├──■──────────────────────────────────
                                 └────┘   └─────┘       └────┘
-    """
+    =#
 
     #Step 0
-    initial_state = one(Stabilizer, N) #CHECK THIS
+    #initial_state = one(Stabilizer, N) #CHECK THIS
 
     #Step 1: 1st set of  CNOT gates
     c1 = sCNOT(1,4)
@@ -61,7 +45,7 @@ function Shorcircuit(code::Shorcode)
     c3 = sCNOT(4,5)
     c4 = sCNOT(4,6)
     c5 = sCNOT(7,8)
-    c6 = sCNOT(7,9)   
+    c6 = sCNOT(7,9)
     
     #Step 4: Error
     single_x(9,1) #X: Bit flip error
@@ -77,12 +61,16 @@ function Shorcircuit(code::Shorcode)
     c10 = sCNOT(1,2)
     c11 = sCNOT(4,5)
     c12 = sCNOT(7,8)
-    
+
     #Step 7: 1st set of  Toffoli gates
     #are toffoli gates represented by sCCNOT?
-    cc1 = sCCNOT(2,3,1)
-    cc2 = sCCNOT(5,6,4)
-    cc3 = sCCNOT(9,8,7)
+    #MethodError
+    cc11 = sCNOT(2,1)
+    cc12 = sCNOT(3,1)
+    cc21 = sCNOT(5,4)
+    cc22 = sCNOT(6,4)
+    cc31 = sCNOT(8,7)
+    cc32 = sCNOT(9,7)
 
     #Step 8: 2nd set of  Haramard gates
     h1 = sHadamard(1)
@@ -95,15 +83,13 @@ function Shorcircuit(code::Shorcode)
     #Step 10: 7th set of CNOT gates
     c14 = sCNOT(1,7)
 
+
     #Step 11: 2nd set of Toffoli gates
     #Final gates
-    cc4 = sCCNOT(7,4,1)
+    cc4 = sCNOT(4,1)
+    cc4 = sCNOT(7,1)
 
     # This circuit performs a depolarization at rate `epsilon` to all qubits,
-    circuit = [c2,c2,h1,h2,h3,c3,c4,c5,c6,single_x,single_z,c7,c8,c9,c10,c11,c12,cc1,cc2,cc3,h1,h2,h3,c13,c14,cc4]
+    #circuit = [c2,c2,h1,h2,h3,c3,c4,c5,c6,single_x,single_z,c7,c8,c9,c10,c11,c12,cc11,cc12,cc21,cc22,cc31,cc32,h1,h2,h3,c13,c14,cc41,cc42]
 
-end #Shorcode
-
-function rate(code::Shorcode) 
-    return 1//9 
-end
+end #Shorcircuit

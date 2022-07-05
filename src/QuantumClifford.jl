@@ -1276,5 +1276,7 @@ include("graphs.jl")
 include("entanglement.jl")
 include("ecc/ECC.jl")
 include("precompiles.jl")
+include("error_correction/Errorcodes.jl")
+include("error_correction/Shorcode.jl") #not importing from error codes
 
 end #module
