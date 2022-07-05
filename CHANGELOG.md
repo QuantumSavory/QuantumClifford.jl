@@ -1,5 +1,9 @@
 # News
 
+## v0.5.6 - dev
+
+- **(fix)** Bug-fixes to `PauliMeasurement` and `Reset`, detected by JET.
+
 ## v0.5.5 - 2022-07-05
 
 - **(breaking fix)** `CliffordOperator` constructor called on a square tableau occasionally resulted in incorrect results due to row-reordering during cannonicalization.
