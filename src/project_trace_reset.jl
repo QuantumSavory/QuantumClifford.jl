@@ -338,7 +338,7 @@ end
     end
 end
 
-function _project!(d::Union{Destabilizer,MixedDestabilizer},pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr, Bp}
+function _project!(d::Destabilizer,pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr, Bp} # repetition between Destabilizer and MixedDestabilizer, but the redundancy makes the two codes slightly simpler and easier to infer
     anticommutes = 0
     tab = d.tab
     stabilizer = stabilizerview(d)
@@ -357,6 +357,39 @@ function _project!(d::Union{Destabilizer,MixedDestabilizer},pauli::PauliOperator
                                    :project!,
                                    :Destabilizer))
         end
+        if Bkr
+            new_pauli = zero(pauli)
+            new_pauli.phase[] = pauli.phase[]
+            for i in 1:r
+                comm(pauli,destabilizer,i)!=0 && mul_left!(new_pauli, stabilizer, i, phases=phases)
+            end
+            result = new_pauli.phase[]
+        else
+            result = nothing
+        end
+    else
+        anticomm_update_rows(tab,pauli,r,n,anticommutes,phases)
+        destabilizer[anticommutes] = stabilizer[anticommutes]
+        stabilizer[anticommutes] = pauli
+        result = nothing
+    end
+    d, anticommutes, result
+end
+
+function _project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr, Bp} # repetition between Destabilizer and MixedDestabilizer, but the redundancy makes the two codes slightly simpler and easier to infer
+    anticommutes = 0
+    tab = d.tab
+    stabilizer = stabilizerview(d)
+    destabilizer = destabilizerview(d)
+    r = trusted_rank(d)
+    n = length(d) # not `nqubits(d)` in case we have an incomplete tableau    # Check whether we anticommute with any of the stabilizer rows
+    for i in 1:r # The explicit loop is faster than anticommutes = findfirst(row->comm(pauli,stabilizer,row)!=0x0, 1:r); both do not allocate.
+        if comm(pauli,stabilizer,i)!=0x0
+            anticommutes = i
+            break
+        end
+    end
+    if anticommutes == 0
         anticomlog = 0
         # Check whether we anticommute with any of the logical X rows
         for i in r+1:n # The explicit loop is faster than findfirst.
@@ -383,7 +416,7 @@ function _project!(d::Union{Destabilizer,MixedDestabilizer},pauli::PauliOperator
                 rowswap!(tab, r+1+n, anticomlog)
             end
             anticomm_update_rows(tab,pauli,r+1,n,r+1,phases)
-            d.rank += 1
+            d.rank+=1
             anticommutes = d.rank
             tab[r+1] = tab[n+r+1]
             tab[n+r+1] = pauli

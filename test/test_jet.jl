@@ -33,7 +33,7 @@ function test_jet()
         @test isempty(JET.get_reports(@report_call QuantumClifford._canonicalize_gott!(s)))
         @test isempty(JET.get_reports(@report_call QuantumClifford._canonicalize_rref!(s,[1,3])))
 
-        @test_broken isempty(JET.get_reports(report_package("QuantumClifford")))
+        @test_broken isempty(JET.get_reports(report_package("QuantumClifford"; ignored_modules=(AnyFrameModule(Graphs.LinAlg),))))
     end
 end
 
