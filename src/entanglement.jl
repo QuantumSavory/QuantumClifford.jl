@@ -34,22 +34,21 @@ function canonicalize_clip!(state::AbstractStabilizer; phases::Bool=true)
     _canonicalize_clip!(state; phases=Val(phases))
 end
 function  _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)) where B
-    # TODO: the function has spurious allocation, to be further optimized
     tab = stabilizerview(state)
     rows, columns = size(stabilizerview(state))
     # step 1: pregauge
     i = 1 # index to place used stab
     for j in 1:columns
         # find first row that is not I in col j
-        k1 = findfirst(k->|(tab[k,j]...), i:rows)
+        k1 = findfirst(let j=j; k->|(tab[k,j]...) end, i:rows)
         # find second row that is not I and not same as k1
-        if k1!==nothing
+        if !isnothing(k1)
             k1 += i-1
-            k2 = findfirst(k->
-                (|(tab[k,j]...) & # not identity
-                ((tab[k,j][1]⊻tab[k1,j][1]) | (tab[k,j][2]⊻tab[k1,j][2]))), # not same as k1
-                k1+1:columns)
-            if k2!==nothing
+            k2 = findfirst(let j=j, k1=k1; k->
+                           (|(tab[k,j]...) & # not identity
+                           (tab[k,j]!=tab[k1,j])) end, # not same as k1
+                           k1+1:columns)
+            if !isnothing(k2)
                 k2 += k1
                 # move k1 and k2 up to i and i+1
                 rowswap!(state, k1, i; phases=phases)
@@ -83,27 +82,27 @@ function  _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true
     unfrozen_rows = Array(rows:-1:1)
     for j in columns:-1:1 # in reversed order to keep left ends
         # find first row that is not I in col j
-        k1 = findfirst(k->|(tab[k,j]...), unfrozen_rows)
+        k1 = findfirst(let j=j; k->|(tab[k,j]...) end, unfrozen_rows)
         # find second row that is not I and not same as k1
         if k1!==nothing
             k1_row = unfrozen_rows[k1]
-            k2 = findfirst(k->
-                (|(tab[k,j]...) & # not identity
-                ((tab[k,j][1]⊻tab[k1_row,j][1]) | (tab[k,j][2]⊻tab[k1_row,j][2]))), # not same as k1
-                unfrozen_rows[k1+1:end])
+            k2 = findfirst(let j=j, k1_row=k1_row; k->
+                           (|(tab[k,j]...) & # not identity
+                           (tab[k,j]!=tab[k1_row,j])) end, # not same as k1
+                           @view unfrozen_rows[k1+1:end])
 
             if k2!==nothing
                 k2 += k1
                 k2_row = unfrozen_rows[k2]
                 # use them to eliminate others
                 # for rows between k1 and k2, use k1
-                for m in unfrozen_rows[k1+1:k2-1]
+                for m in @view unfrozen_rows[k1+1:k2-1]
                     if !(tab[m,j][1]⊻tab[k1_row,j][1]) && !(tab[m,j][2]⊻tab[k1_row,j][2])
                         mul_left!(state, m, k1_row; phases=phases)
                     end
                 end
                 # for other rows, use both
-                for m in unfrozen_rows[k2+1:end]
+                for m in @view unfrozen_rows[k2+1:end]
                     if !(tab[m,j][1]⊻tab[k1_row,j][1]) && !(tab[m,j][2]⊻tab[k1_row,j][2])
                         mul_left!(state, m, k1_row; phases=phases)
                     elseif !(tab[m,j][1]⊻tab[k2_row,j][1]) && !(tab[m,j][2]⊻tab[k2_row,j][2])
@@ -116,7 +115,7 @@ function  _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true
                 deleteat!(unfrozen_rows, (k1, k2))
             else # can only find k1
                 # use it to eliminate others
-                for m in unfrozen_rows[k1+1:end]
+                for m in @view unfrozen_rows[k1+1:end]
                     if !(tab[m,j][1]⊻tab[k1_row,j][1]) && !(tab[m,j][2]⊻tab[k1_row,j][2])
                         mul_left!(state, m, k1_row; phases=phases)
                     end
@@ -149,8 +148,11 @@ function bigram(state::AbstractStabilizer; clip::Bool=true)
     rows, columns = size(tab)
     bg = zeros(Int, rows, 2)
     for i in 1:rows
-        bg[i, 1] = findfirst(j->|(tab[i,j]...), 1:columns)
-        bg[i, 2] = findlast(j->|(tab[i,j]...), 1:columns)
+        l = findfirst(j->|(tab[i,j]...), 1:columns)
+        r = findlast(j->|(tab[i,j]...), 1:columns)
+        (isnothing(l) || isnothing(r)) && throw(DomainError("the tableau is inconsistent (check if it is clip-canonicalized and Hermitian)"))
+        bg[i, 1] = l
+        bg[i, 2] = r
     end
     bg
 end

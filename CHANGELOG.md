@@ -1,5 +1,11 @@
 # News
 
+## v0.5.5 - 2022-07-05
+
+- **(breaking fix)** `CliffordOperator` constructor called on a square tableau occasionally resulted in incorrect results due to row-reordering during cannonicalization.
+- Continuing static analysis fixes thanks to JET.
+- Optimization of `canonicalize_clip!`, now resulting in much fewer allocations.
+
 ## v0.5.4 - 2022-07-03
 
 - Start using `JET.jl` for static analysis during CI.

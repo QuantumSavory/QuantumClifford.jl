@@ -204,8 +204,8 @@ Base.zero(::Type{<:PauliOperator}, q) = PauliOperator(zeros(UInt8), q, zeros(UIn
 Base.zero(p::PauliOperator) = zero(PauliOperator, nqubits(p))
 
 """Zero-out the phases and single-qubit operators in a [`PauliOperator`](@ref)"""
-@inline function zero!(p::PauliOperator)
-    fill!(p.xz, zero(eltype(p.xz)))
+@inline function zero!(p::PauliOperator{Tz,Tv}) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}}
+    fill!(p.xz, zero(Tve))
     p.phase[] = 0x0
     p
 end
@@ -350,9 +350,9 @@ Base.getindex(stab::Stabilizer, i::Int) = PauliOperator(stab.phases[i], nqubits(
      return (x,z)
 end
 Base.getindex(stab::Stabilizer, r) = Stabilizer(stab.phases[r], nqubits(stab), stab.xzs[:,r])
-Base.getindex(stab::Stabilizer, r, c) = Stabilizer([s[c] for s in stab[r]])
-Base.getindex(stab::Stabilizer, r, c::Int) = stab[r,[c]]
-Base.getindex(stab::Stabilizer, r::Int, c) = stab[r][c]
+Base.getindex(stab::Stabilizer, r::Union{Colon,AbstractVector}, c::Union{Colon,AbstractVector}) = Stabilizer([s[c] for s in stab[r]])
+Base.getindex(stab::Stabilizer, r::Union{Colon,AbstractVector}, c::Int) = stab[r,[c]]
+Base.getindex(stab::Stabilizer, r::Int, c::Union{Colon,AbstractVector}) = stab[r][c]
 Base.view(stab::Stabilizer, r) = Stabilizer(view(stab.phases, r), nqubits(stab), view(stab.xzs, :, r))
 
 Base.iterate(stab::Stabilizer, state=1) = state>length(stab) ? nothing : (stab[state], state+1)
@@ -491,7 +491,7 @@ struct Destabilizer{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <
         elseif r<=n
             mixed_destab = MixedDestabilizer(s)
             tab = vcat(destabilizerview(mixed_destab),stabilizerview(mixed_destab))
-            new{typeof(s.phases),typeof(s.xzs)}(tab)
+            new{typeof(tab.phases),typeof(tab.xzs)}(tab)
         else
             throw(DomainError("To construct a `Destabilizer`, either use a 2n×n tableau of destabilizer and stabilizer rows that is directly used or an r×n (r<n) tableau of stabilizers from which destabilizers are automatically computed. Or better, just use `MixedDestabilizer`."))
         end

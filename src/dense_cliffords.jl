@@ -51,11 +51,11 @@ struct CliffordOperator{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned
     function CliffordOperator(stab::Stabilizer{Tzv,Tm}) where {Tzv,Tm}
         if size(stab,1)==2*size(stab,2)
             new{Tzv,Tm}(stab)
-        elseif size(stab,1)==size(stab,2)
-            destab = tab(Destabilizer(stab))
-            new{typeof(destab.phases),typeof(destab.xzs)}(destab) # TODO be smarter about type signatures here... there should be a better way
+        #elseif size(stab,1)==size(stab,2) # TODO be able to work with squara tableaux (by reversing all row operations)
+        #    destab = tab(Destabilizer(stab))
+        #    new{typeof(destab.phases),typeof(destab.xzs)}(destab) # TODO be smarter about type signatures here... there should be a better way
         else
-            throw(DimensionMismatch("Input tableau should be square (in which case the destabilizers are calculated) or of size 2n×n (in which case it is used directly)."))
+            throw(DimensionMismatch("Input tableau should be of size 2n×n (top half is the X mappings and the bottom half are the Z mappings)."))
         end
     end
 end
