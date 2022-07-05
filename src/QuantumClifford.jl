@@ -1274,6 +1274,7 @@ include("useful_states.jl")
 include("experimental/Experimental.jl")
 include("graphs.jl")
 include("entanglement.jl")
+include("ecc/ECC.jl")
 include("precompiles.jl")
 
 end #module
