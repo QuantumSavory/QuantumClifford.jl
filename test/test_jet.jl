@@ -5,9 +5,9 @@ function test_jet()
     @testset "JET checks" begin
         n = nthreads()
 
-        @test_broken isempty(JET.get_reports(@report_call random_destabilizer(10)))
-        @test_broken isempty(JET.get_reports(@report_call random_stabilizer(10)))
-        @test_broken isempty(JET.get_reports(@report_call random_clifford(10)))
+        @test isempty(JET.get_reports(@report_call random_destabilizer(10)))
+        @test isempty(JET.get_reports(@report_call random_stabilizer(10)))
+        @test isempty(JET.get_reports(@report_call random_clifford(10)))
 
         s = random_stabilizer(10)
         p = random_pauli(10)
