@@ -42,7 +42,7 @@ Otherwise the inner product is `2^(-logdot/2)`.
 The actual inner product can be computed with `LinearAlgebra.dot`.
 
 Based on [garcia2012efficient](@cite)."""
-function logdot(s1::AbstractStabilizer, s2::AbstractStabilizer) # TODO verify rank
+function logdot(s1::AbstractStabilizer, s2::AbstractStabilizer) # TODO verify rank # TODO this is currently very inefficient as we discard the destabilizers and then recreate them
     logdot(stabilizerview(s1),stabilizerview(s2))
 end
 
@@ -53,7 +53,7 @@ function logdot(s1::Stabilizer, s2::Stabilizer)
     if nqubits(s1)!=nqubits(s2)
         throw(DimensionMismatch("Inner product can be calculated only between states with the same number of qubits."))
     end
-    c1_inv = inv(CliffordOperator(copy(s1)))
+    c1_inv = inv(CliffordOperator(tab(MixedDestabilizer(copy(s1)))))
     s2_prime = canonicalize!(c1_inv*s2)
     canonicalize!(s2_prime)
     k = 0
