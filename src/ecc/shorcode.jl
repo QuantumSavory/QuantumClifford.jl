@@ -1,22 +1,15 @@
 struct Shor9 <: AbstractECC end
 
-parity_checks(c::Shor9) = S"ZZ_ZZ_ZZ_
-                            ____ZZ_ZZ
-                            Z_ZZZ____
-                            ____ZZ___
-                            YYXXYY___
-                            Z_ZYXYYXY
-                             _ZZ_____
-                            ____ZZ___"
+
+parity_checks(c::Shor9) = Sh9"ZZ_______
+                              _ZZ______
+                              ___ZZ____
+                              ____ZZ___
+                              ______ZZ_
+                              _______ZZ
+                              XXXXXX___
+                              ___XXXXXX"
 
 code_n(c::Shor9) = 9
 
-parity_matrix(c::Shor9) = [[1:0:0:0:0:0:0:0]
-                           [1:1:0:0:0:0:0:0]
-                           [0:1:0:0:0:0:0:0]
-                           [0:0:1:0:0:0:0:0]
-                           [0:0:1:1:0:0:0:0]
-                           [0:0:0:1:0:0:0:0]
-                           [0:0:0:0:1:0:0:0]
-                           [0:0:0:0:1:1:0:0]
-                           [0:0:0:0:0:1:0:0]]
+parity_matrix(c::Shor9) = stab_to_gf2(Sh9)

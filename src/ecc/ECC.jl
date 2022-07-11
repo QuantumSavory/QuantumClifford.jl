@@ -44,9 +44,10 @@ function isdegenerate end
 
 # Shor code
 include("./shorcode.jl")
+# Steane, 7 qubit, 5 qubit
+include("./steanecode.jl")
 #include("./surface_codes.jl")
 #include...
-# Steane, 7 qubit, 5 qubit
 # repetition codes
 # CSS codes
 # concatenated codes
