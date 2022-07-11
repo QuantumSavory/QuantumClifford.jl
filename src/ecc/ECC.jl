@@ -34,15 +34,18 @@ function logx_ops end # can be computed from the parity checks
 """Logical Z operations of a code."""
 function logz_ops end # can be computed from the parity checks
 
+"""Logical Y operations of a code."""
+function logy_ops end # can be computed from the parity checks
+
 """Is the code degenerate"""
 function isdegenerate end
 
 # Add others
 
-include("./small_named_codes.jl")
+# Shor code
+include("./shorcode.jl")
 #include("./surface_codes.jl")
 #include...
-# Shor code
 # Steane, 7 qubit, 5 qubit
 # repetition codes
 # CSS codes
