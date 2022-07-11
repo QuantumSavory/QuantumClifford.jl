@@ -4,6 +4,7 @@ using QuantumClifford.ECC: AbstractECC, Steane5, Steane7, Shor9, Bitflip3, naive
 
 function test_op(c::AbstractECC)
     @testset "Physical and Logical qubit" begin
+<<<<<<< HEAD
         physicalqubit = random_stabilizer(code_k(c))
 
         gate = rand((:x,:z))
@@ -41,11 +42,52 @@ function test_op(c::AbstractECC)
 
         @test canonicalize!(logicalqubit1) == canonicalize!(logicalqubit2)
        
+=======
+        #physicalqubit
+        encoding_circuit_physical = encoding_circuit(c)
+        physicalqubit = S"X"
+        apply!(physicalqubit,P"X")
+
+        #logicalqubit
+        encoding_circuit_logical = encoding_circuit(c)
+
+        if c == Steane5()
+            ancillary_qubit_count = 3
+        elseif c == Steane7()
+            ancillary_qubit_count = 4
+        elseif c == Shor9()
+            ancillary_qubit_count = 8
+        elseif c == Bitflip3()
+            ancillary_qubit_count = 2
+        end
+
+        
+
+        bufferqubits = one(Stabilizer,ancillary_qubit_count)
+        logicalqubit = physicalqubit⊗bufferqubits 
+        for gate in encoding_circuit_logical
+            apply!(logicalqubit,gate)
+        end
+        #=
+        for gate in logx_ops(c)
+            apply!(logicalqubit,gate) #logical gate
+        end
+        =#
+        canonicalize!(logicalqubit)
+
+        for gate in encoding_circuit(c)
+            @test encoding_circuit_physical == encoding_circuit_logical
+        end
+>>>>>>> c894f28 (parent 9490ace429c1bcbfe7da3f35eeac181dc205e242)
     end
 end
 
 
+<<<<<<< HEAD
 codes = [Steane5(),Steane7(),Shor9(),Bitflip3()] #fix other encoding circuits
+=======
+codes = [Steane5(),Steane7(),Shor9(),Bitflip3()] #requires code generators
+>>>>>>> c894f28 (parent 9490ace429c1bcbfe7da3f35eeac181dc205e242)
 
 for c in codes
     test_op(c)

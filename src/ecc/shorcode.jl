@@ -17,28 +17,38 @@ parity_checks(c::Shor9) = S"ZZ_______
                             XXXXXX___
                             ___XXXXXX"
 
+parity_matrix(c::Shor9) = stab_to_gf2(parity_checks(c::Shor9)) 
+
 #Enconding circuit ----------------------------------
+c1 = sCNOT(1,4)
+c2 = sCNOT(1,7)
 
-function encoding_circuit(c::Shor9) 
-    c1 = sCNOT(1,4)
-    c2 = sCNOT(1,7)
+h1 = sHadamard(1)
+h2 = sHadamard(4)
+h3 = sHadamard(7)
 
-    h1 = sHadamard(1)
-    h2 = sHadamard(4)
-    h3 = sHadamard(7)
+c3 = sCNOT(1,2)
+c4 = sCNOT(4,5)
+c5 = sCNOT(7,8)
 
-    c3 = sCNOT(1,2)
-    c4 = sCNOT(4,5)
-    c5 = sCNOT(7,8)
+c6 = sCNOT(1,3)
+c7 = sCNOT(4,6)
+c8 = sCNOT(7,9) 
 
-    c6 = sCNOT(1,3)
-    c7 = sCNOT(4,6)
-    c8 = sCNOT(7,9) 
-    
-    return [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
-end
+encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
+
 #----------------------------------------------------------------
 
+code_s(c::Shor9) = length(parity_checks(c))
+
+code_k(c::Shor9) = code_n(c) - code_s(c)
+
+rate(c::Shor9) = code_k(c)/code_s(c)
+
 distance(c::Shor9) = 3 #arg included body but not used
+
+logx_ops(c::Shor9) = P"XXXXXXXXX"
+                       
+logz_ops(c::Shor9) = P"ZZZZZZZZZ"
 
 isdegenerate(c::Shor9) = true 
