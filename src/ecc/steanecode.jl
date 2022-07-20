@@ -52,7 +52,9 @@ code_n(c::Steane7) = 7
 
 parity_matrix(c::Steane7) = stab_to_gf2(parity_checks(c::Steane7))
 
-syndrome_circuit(c::Steane7) = #TODO
+#start : see p9/31
+#start simple <- create funct for all 4 versions
+syndrome_circuit(c::Steane7) = #TODO: automate
 
 #Enconding circuit ----------------------------------
 c1 = sCNOT(1,2)
@@ -71,7 +73,7 @@ c8 = sCNOT(6,4)
 c9 = sCNOT(5,2)
 c10 = sCNOT(5,3)
 c11 = sCNOT(5,2)
-
+#TODO: automate
 encoding_circuit(c::Steane7) = [c1,c2,h1,h2,h3,c3,c4,c5,c6, c7, c8, c9, c10, c11]
 #----------------------------------------------------------------
 
