@@ -46,12 +46,15 @@ function isdegenerate end
 include("./shorcode.jl")
 # Steane, 7 qubit, 5 qubit
 include("./steanecode.jl")
+# Surface codes
 #include("./surface_codes.jl")
 #include...
 # repetition codes
 # CSS codes
+include("./csscodes.jl")
 # concatenated codes
-# surface and toric codes
+# Toric codes
+include("./toriccode.jl")
 # color codes
 # LDPC expander and hypergraph codes
 # reed muller and reed solomon codes
