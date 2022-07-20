@@ -33,7 +33,7 @@ jobs:
 
           let
               judgement = BenchmarkCI._loadjudge(BenchmarkCI.DEFAULT_WORKSPACE)
-              title = "JET Benchmark Result"
+              title = "Benchmark Result"
               ciresult = BenchmarkCI.CIResult(; judgement, title)
               BenchmarkCI.printcommentmd(stdout::IO, ciresult)
           end

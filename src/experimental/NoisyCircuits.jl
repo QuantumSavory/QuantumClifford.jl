@@ -164,7 +164,7 @@ function QuantumClifford.apply!(s::AbstractStabilizer, mr::NoiseOp)
 end
 
 # TODO this one needs more testing
-function applywstatus!(s::AbstractStabilizer, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
+function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
     # TODO QuantumClifford should implement some submatrix comparison
     canonicalize_rref!(quantumstate(s),v.indices) # Document why rref is used
     sv = stabilizerview(s)
@@ -374,7 +374,7 @@ end
 
 function applynoise_branches(state::Register, noise, indices; max_order=1)
     [(Register(newstate,copy(state.bits)), prob, order)
-     for (newstate, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
+     for (newstate, prob, order) in applynoise_branches(state, noise, indices, max_order=max_order)]
 end
 
 # TODO tests for this
