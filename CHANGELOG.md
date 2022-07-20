@@ -1,5 +1,9 @@
 # News
 
+## v0.5.7 - dev
+
+- Expanding tests suite of `Experimental.NoisyCircuits`, in particular `petrajectory`.
+
 ## v0.5.6 - 2022-07-20
 
 - **(fix)** Bug-fixes to `PauliMeasurement`, `Reset`, and `Register`, detected by JET.

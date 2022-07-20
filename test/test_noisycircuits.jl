@@ -3,34 +3,50 @@ import AbstractAlgebra
 
 function test_noisycircuits()
     @testset "Noisy Circuits" begin
-        @testset "Monte Carlo sims" begin
-            @testset "Purification examples" begin
-                g1 = SparseGate(tCNOT, [1,3])
-                g2 = SparseGate(tCNOT, [2,4])
-                m = BellMeasurement([sMX(3),sMX(4)])
-                good_bell_state = S"XX
-                                    ZZ"
-                canonicalize_rref!(good_bell_state)
-                v = VerifyOp(good_bell_state,[1,2])
-                n = NoiseOpAll(UnbiasedUncorrelatedNoise(0.01))
-                init = Register(MixedDestabilizer(good_bell_state⊗good_bell_state))
-                with_purification = mctrajectories(init, [n,g1,g2,m,v], trajectories=500)
-                @test with_purification[failure_stat] > 5
-                @test with_purification[false_success_stat] > 10
-                @test with_purification[true_success_stat] > 420
-                without_purification = mctrajectories(init, [n,v], trajectories=500)
-                @test get(without_purification,failure_stat,0) == 0
-                @test without_purification[false_success_stat] > 10
-                @test without_purification[true_success_stat] > 450
-                nonoise = mctrajectories(init, [g1,g2,m,v], trajectories=10)
-                @test get(nonoise,failure_stat,0) == 0
-                @test get(nonoise,false_success_stat,0) == 0
-                @test nonoise[true_success_stat] == 10
-            end
+        @testset "Noisy Gates" begin
+            g1 = SparseGate(tId1, [1])
+            g2 = SparseGate(tCNOT, [2,3])
+            g3 = sCNOT(4,5)
+            g4 = sHadamard(6)
+            n = UnbiasedUncorrelatedNoise(1/3)
+            ng1 = NoisyGate(g1, n)
+            ng2 = NoisyGate(g2, n)
+            ng3 = NoisyGate(g3, n)
+            ng4 = NoisyGate(g4, n)
+            ng5 = NoiseOp(n,[7])
+            state = ghz(7)
+            res1, _ = mctrajectory!(copy(state), [ng1,ng2,ng3,ng4,ng5])
+            res2, _ = mctrajectory!(copy(state), [g1,g2,g3,g4])
+            @test res1 != res2
+            resp = petrajectories(copy(state), [ng1,ng2,ng3,ng4,ng5])
+            @test all(values(resp).==0)
+        end
+        @testset "Monte Carlo Purification examples" begin
+            g1 = SparseGate(tCNOT, [1,3])
+            g2 = SparseGate(tCNOT, [2,4])
+            m = BellMeasurement([sMX(3),sMX(4)])
+            good_bell_state = S"XX
+                                ZZ"
+            canonicalize_rref!(good_bell_state)
+            v = VerifyOp(good_bell_state,[1,2])
+            n = NoiseOpAll(UnbiasedUncorrelatedNoise(0.01))
+            init = Register(MixedDestabilizer(good_bell_state⊗good_bell_state))
+            with_purification = mctrajectories(init, [n,g1,g2,m,v], trajectories=500)
+            @test with_purification[failure_stat] > 5
+            @test with_purification[false_success_stat] > 10
+            @test with_purification[true_success_stat] > 420
+            without_purification = mctrajectories(init, [n,v], trajectories=500)
+            @test get(without_purification,failure_stat,0) == 0
+            @test without_purification[false_success_stat] > 10
+            @test without_purification[true_success_stat] > 450
+            nonoise = mctrajectories(init, [g1,g2,m,v], trajectories=10)
+            @test get(nonoise,failure_stat,0) == 0
+            @test get(nonoise,false_success_stat,0) == 0
+            @test nonoise[true_success_stat] == 10
         end
         return
-        @testset "Perturbative expansion sims" begin
-            @testset "Purification examples comparison to MC" begin
+        @testset "Perturbative expansion Purification examples" begin
+            @testset "Comparison to MC" begin
                 compare(a,b, symbol) = abs(a[symbol]/500-b[symbol]) / (a[symbol]/500+b[symbol]+1e-5) < 0.3
                 g1 = SparseGate(tCNOT, [1,3])
                 g2 = SparseGate(tCNOT, [2,4])
@@ -57,27 +73,18 @@ function test_noisycircuits()
                 @test compare(mc,pe,false_success_stat)
                 @test compare(mc,pe,true_success_stat)
             end
-
             @testset "Symbolic" begin
                 R, (e,) = AbstractAlgebra.PolynomialRing(AbstractAlgebra.RealField, ["e"])
                 unity = R(1);
-
                 good_bell_state = Register(MixedDestabilizer(S"XX ZZ"))
                 initial_state = good_bell_state⊗good_bell_state
-
                 g1 = SparseGate(tCNOT, [1,3]) # CNOT between qubit 1 and qubit 3 (both with Alice)
                 g2 = SparseGate(tCNOT, [2,4]) # CNOT between qubit 2 and qubit 4 (both with Bob)
                 m = BellMeasurement([X,X],[3,4]) # Bell measurement on qubit 3 and 4
                 v = VerifyOp(good_bell_state,[1,2]) # Verify that qubit 1 and 2 indeed form a good Bell pair
                 epsilon = e # The error rate
                 n = NoiseOpAll(UnbiasedUncorrelatedNoise(epsilon))
-
-                # This circuit performs a depolarization at rate `epsilon` to all qubits,
-                # then bilater CNOT operations
-                # then a Bell measurement
-                # followed by checking whether the final result indeed corresponds to the correct Bell pair.
                 circuit = [n,g1,g2,m,v]
-
                 pe_symbolic = petrajectories(initial_state, circuit, branch_weight=unity) # perturbative expansion
                 @test pe_symbolic[false_success_stat] == -162.0*e^4 + 162.0*e^3 + -54.0*e^2 + 6.0*e
                 @test pe_symbolic[failure_stat]   == -108.0*e^4 + 108.0*e^3 + -36.0*e^2 + 4.0*e
@@ -127,8 +134,8 @@ function test_noisycircuits()
             end
             @testset "DenseMeasurements" begin
                 ghzState = S"XXX
-                            ZZI
-                            IZZ"
+                             ZZI
+                             IZZ"
                 m1 = DenseMeasurement(P"ZZI", 1)
                 v = VerifyOp(ghzState, [1,2,3])
                 register1 = Register(Register(ghzState), zeros(Bool, 1))
@@ -207,7 +214,6 @@ function test_noisycircuits()
                                                       ZI"
             end
         end
-
         @testset "Classical Bits" begin
             @testset "DecisionGate" begin
                 X_error = CliffordOperator([P"X", P"-Z"])
@@ -223,7 +229,7 @@ function test_noisycircuits()
 
                 # testing an array return from decision function
                 expectedFinalState = S"ZI
-                                    IZ"
+                                       IZ"
                 s = QuantumClifford.bell()
                 r = Register(s, [false])
                 applyop!(r, DenseMeasurement(P"ZI", 1))
