@@ -1,8 +1,8 @@
 # News
 
-## v0.5.6 - dev
+## v0.5.6 - 2022-07-20
 
-- **(fix)** Bug-fixes to `PauliMeasurement` and `Reset`, detected by JET.
+- **(fix)** Bug-fixes to `PauliMeasurement`, `Reset`, and `Register`, detected by JET.
 
 ## v0.5.5 - 2022-07-05
 

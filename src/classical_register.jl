@@ -6,6 +6,7 @@ struct Register{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: Ab
 end
 
 Register(s,bits) = Register(MixedDestabilizer(s), bits)
+Register(s) = Register(s, Bool[])
 
 Base.copy(r::Register) = Register(copy(r.stab),copy(r.bits))
 
@@ -34,22 +35,27 @@ function apply!(r::Register, op::AbstractCliffordOperator, indices; kwargs...)
 end
 
 function apply!(r::Register, m::sMX{T}) where T
-    _, res = projectXrand!(quantumstate(r),m.qubit)
+    _, res = projectXrand!(r,m.qubit)
     T==Int && (bitview(r)[m.bit] = iszero(res))
     r
 end
 function apply!(r::Register, m::sMY{T}) where T
-    _, res = projectYrand!(quantumstate(r),m.qubit)
+    _, res = projectYrand!(r,m.qubit)
     T==Int && (bitview(r)[m.bit] = iszero(res))
     r
 end
 function apply!(r::Register, m::sMZ{T}) where T
-    _, res = projectZrand!(quantumstate(r),m.qubit)
+    _, res = projectZrand!(r,m.qubit)
     T==Int && (bitview(r)[m.bit] = iszero(res))
     r
 end
 function apply!(r::Register, m::PauliMeasurement{A,B,T}) where {A,B,T}
-    _, res = projectrand!(quantumstate(r),m.pauli)
+    _, res = projectrand!(r,m.pauli)
     T==Int && (bitview(r)[m.storagebit] = iszero(res))
     r
+end
+function projectrand!(r::Register, m)
+    q = quantumstate(r)
+    _, res = projectrand!(q,m)
+    r, res
 end

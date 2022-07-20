@@ -69,7 +69,7 @@ macro qubitop1(name, kernel)
             q::Int
         end
         @doc $docstring $prefixname
-        @inline $(esc(:qubit_kernel))(::$prefixname, x, z) = $kernel 
+        @inline $(esc(:qubit_kernel))(::$prefixname, x, z) = $kernel
     end
 end
 
@@ -187,7 +187,7 @@ function CliffordOperator(op::SingleQubitOperator, n; compact=false)
         c = one(CliffordOperator, n)
         c[op.q,op.q] = op.xx, op.xz # TODO define an `embed` helper function
         c[n+op.q,op.q] = op.zx, op.zz
-        c.tab.phases[op.q] = op.px ? 0x2 : 0x0 # TODO define a `phasesview` or `phases` helper function 
+        c.tab.phases[op.q] = op.px ? 0x2 : 0x0 # TODO define a `phasesview` or `phases` helper function
         c.tab.phases[n+op.q] = op.pz ? 0x2 : 0x0
         return c
     end
@@ -247,7 +247,7 @@ macro qubitop2(name, kernel)
             q2::Int
         end
         @doc $docstring $prefixname
-        @inline $(esc(:qubit_kernel))(::$prefixname, x1, z1, x2, z2) = $kernel 
+        @inline $(esc(:qubit_kernel))(::$prefixname, x1, z1, x2, z2) = $kernel
     end
 end
 
@@ -266,7 +266,7 @@ function CliffordOperator(op::AbstractTwoQubitOperator, n; compact=false)
         for (i,q) in ((1,op.q1),(2,op.q2))
             c[q,q] = _c[i,i] # TODO define an `embed` helper function
             c[n+q,q] = _c[n+i,i]
-            c.tab.phases[q] = _c.tab.phases[i] # TODO define a `phasesview` or `phases` helper function 
+            c.tab.phases[q] = _c.tab.phases[i] # TODO define a `phasesview` or `phases` helper function
             c.tab.phases[n+q] = _c.tab.phases[n+i]
         end
         return c

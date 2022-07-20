@@ -578,7 +578,7 @@ See also: [`project!`](@ref), [`projectX!`](@ref), [`projectZrand!`](@ref), [`pr
 """
 function projectXrand!(state, qubit)
     _, anticom, res = projectX!(state, qubit)
-    anticom>0 && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
+    isnothing(res) && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
     return state, res
 end
 
@@ -593,7 +593,7 @@ See also: [`project!`](@ref), [`projectZ!`](@ref), [`projectXrand!`](@ref), [`pr
 """
 function projectZrand!(state, qubit)
     _, anticom, res = projectZ!(state, qubit)
-    anticom>0 && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
+    isnothing(res) && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
     return state, res
 end
 
@@ -608,7 +608,7 @@ See also: [`project!`](@ref), [`projectY!`](@ref), [`projectXrand!`](@ref), [`pr
 """
 function projectYrand!(state, qubit)
     _, anticom, res = projectY!(state, qubit)
-    anticom>0 && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
+    isnothing(res) && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
     return state, res
 end
 
@@ -623,7 +623,7 @@ See also: [`project!`](@ref), [`projectXrand!`](@ref), [`projectZrand!`](@ref), 
 """
 function projectrand!(state, pauli)
     _, anticom, res = project!(state, pauli)
-    anticom>0 && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
+    isnothing(res) && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
     return state, res
 end
 
