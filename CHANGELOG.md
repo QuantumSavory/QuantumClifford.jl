@@ -2,7 +2,8 @@
 
 ## v0.5.7 - dev
 
-- Expanding tests suite of `Experimental.NoisyCircuits`, in particular `petrajectory`.
+- Expanding test suite, including base functions, `Experimental.NoisyCircuits`, and others.
+- **(fix)** `apply!(S"XXX", P"X", [1])` and similar sparse Pauli applies were giving wrong results.
 
 ## v0.5.6 - 2022-07-20
 

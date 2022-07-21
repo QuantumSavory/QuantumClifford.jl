@@ -3,6 +3,7 @@ function test_paulis()
         @testset "Parsing, constructors, and properties" begin
             @test P"-iXYZ" == PauliOperator(0x3, 3, vcat(BitArray([1,1,0]).chunks, BitArray([0,1,1]).chunks))
             @test P"-iXYZ" == PauliOperator(0x3, Bool[1,1,0], Bool[0,1,1])
+            @test P"XYZ" == PauliOperator(Bool[1,1,0],Bool[0,1,1])
             @test xbit(P"-iXYZ") == Bool[1,1,0]
             @test zbit(P"-iXYZ") == Bool[0,1,1]
             @test P"-iXYZ".xz == UInt64[0x03, 0x06]
@@ -14,16 +15,26 @@ function test_paulis()
             @test eachindex(P"IXYZ") == 1:4
             @test P"IXYZ"[3] == (true, true)
             p = P"IXYZ"
+            @test firstindex(p):lastindex(p) == eachindex(p) == 1:length(p)
             @test p[[3,2]] == P"YX"
             p[4] = (true,false)
             @test p == P"IXYX"
         end
         @testset "Elementary operations" begin
             @test P"X"*P"Z" == P"-iY"
+            @test P"X"⊗P"Z" == P"XZ"
+            @test -P"X" == P"-X"
+            @test +P"X" == P"X"
+            @test 1*P"X" == P"X"
+            @test 1.0*P"X" == P"X"
+            @test -1*P"X" == P"-X"
+            @test im*P"X" == P"iX"
+            @test -im*P"X" == P"-iX"
+            @test_throws DomainError 0.5*P"X"
             @test comm(P"XX",P"YY") == 0x0
-            @test comm(P"XZ",P"YZ") == 0x1
+            @test comm(P"XZ",P"YZ") == comm(S"II XZ",P"YZ", 2) == comm(P"XZ",S"II YZ", 2) == comm(S"II XZ",P"YZ")[2] == comm(P"XZ",S"II YZ")[2] == 0x1
             @test prodphase(P"XX",P"YY") == 0x2
-            @test prodphase(P"ZZZ",P"XXX") == 0x3
+            @test prodphase(P"ZZZ",P"XXX") == prodphase(S"III ZZZ",P"XXX",2) == prodphase(P"ZZZ",S"III XXX",2) == prodphase(S"III ZZZ",S"III XXX",2,2) == 0x3
         end
         @testset "Commutation implies real phase" begin
             for i in 1:10
@@ -55,15 +66,19 @@ function test_paulis()
                         pz = single_z(n,iz)
                         s1 = t(random_stabilizer(n))
                         s2 = copy(s1)
+                        s3 = copy(s1)
                         apply!(s1,px)
                         apply_single_x!(s2,ix)
-                        @test s1==s2
+                        apply!(s3,P"X",[ix])
+                        @test s1==s2==s3
                         apply!(s1,py)
                         apply_single_y!(s2,iy)
-                        @test s1==s2
+                        apply!(s3,P"Y",[iy])
+                        @test s1==s2==s3
                         apply!(s1,pz)
                         apply_single_z!(s2,iz)
-                        @test s1==s2
+                        apply!(s3,P"Z",[iz])
+                        @test s1==s2==s3
                     end
                 end
             end
