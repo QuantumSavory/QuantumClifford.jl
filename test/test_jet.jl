@@ -1,10 +1,9 @@
 using JET
-using Base.Threads: nthreads
+using ArrayInterface
+using Static
 
 function test_jet()
     @testset "JET checks" begin
-        n = nthreads()
-
         @test isempty(JET.get_reports(@report_call random_destabilizer(10)))
         @test isempty(JET.get_reports(@report_call random_stabilizer(10)))
         @test isempty(JET.get_reports(@report_call random_clifford(10)))
@@ -33,7 +32,16 @@ function test_jet()
         @test isempty(JET.get_reports(@report_call QuantumClifford._canonicalize_gott!(s)))
         @test isempty(JET.get_reports(@report_call QuantumClifford._canonicalize_rref!(s,[1,3])))
 
-        @test_broken isempty(JET.get_reports(report_package("QuantumClifford"; ignored_modules=(AnyFrameModule(Graphs.LinAlg),))))
+        @test_broken isempty(JET.get_reports(
+            report_package("QuantumClifford";
+                ignored_modules=(
+                    AnyFrameModule(Graphs.LinAlg),
+                    AnyFrameModule(Graphs.SimpleGraphs),
+                    AnyFrameModule(ArrayInterface),
+                    AnyFrameModule(Static),
+                )
+            )
+        ))
     end
 end
 
