@@ -16,11 +16,13 @@ function test_stabs()
                 n<10 && continue
                 s = random_stabilizer(rand(n÷2+1:n-4),n)
                 md = MixedDestabilizer(s)
+                ms = MixedStabilizer(s)
+                @test mixed_stab_looks_good(ms)
                 @test mixed_destab_looks_good(md)
                 canonicalize!(s)
                 s1 = copy(stabilizerview(md))
                 canonicalize!(s1)
-                @test s1 == s
+                @test s1 == s == stabilizerview(canonicalize!(ms))
             end
             # Test initialization out of overdetermined stabs
             stabs = [S"XX
@@ -52,7 +54,7 @@ function test_stabs()
         end
     end
     @testset "Stabilizer indexing" begin
-        s = random_stabilizer(10,10)
+        s = random_stabilizer(9,10)
         @test s[1,1] == s[[1,3,4],[1,3,5]][1,1]
         @test s[1,1] == s[:,[1,3,5]][1,1]
         @test s[1,1] == s[1,[1,3,5]][1]
@@ -64,6 +66,11 @@ function test_stabs()
         @test isa(s[1], PauliOperator)
         @test isa(s[1,:], PauliOperator)
         @test isa(s[1,[1,2,3]], PauliOperator)
+        @test axes(s) == (axes(s,1), axes(s,2)) == (Base.OneTo(9),Base.OneTo(10))
+        ms = MixedStabilizer(s)
+        mds = MixedStabilizer(s)
+        @test length(mds) == length(ms) == 10
+        @test length(s) == 9
     end
 end
 
