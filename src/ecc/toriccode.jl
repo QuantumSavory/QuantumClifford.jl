@@ -10,7 +10,7 @@ parity_checks(c::Toric) = S"XZZX_
 
 parity_matrix(c::Toric) = stab_to_gf2(parity_checks(c::Toricx))
 
-syndrome_circuit(c::Toric) = #TODO
+naive_syndrome_circuit(c::Toric) = #TODO
 
 #Enconding circuit ----------------------------------
 
@@ -23,9 +23,9 @@ code_k(c::Toric) = #variable input dependent
 
 code_s(c::Toric) = #variable input dependent
 
-rate(c::Toric) = #variable input dependent
+rate(c::Toric) = code_k(c::Toric)/code_s(c::Toric)
 
-distance(c::Toric) = #variable input dependent
+distance(c::Toric) = code_s(c::Toric)/2
 
 logx_ops(c::Toric) = #variable input dependent
 

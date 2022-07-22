@@ -5,7 +5,8 @@ using QuantumClifford
 abstract type AbstractECC end
 
 """The syndrome measurement circuit of a given code."""
-function syndrome_circuit end
+function naive_syndrome_circuit end #TODO: add the other 3 types of syndrome circuit
+#fault tolerant (3 types) -Neil, Steane, Shor
 
 """The encoding circuit of a given code."""
 function encoding_circuit end
@@ -40,24 +41,31 @@ function logy_ops end # can be computed from the parity checks
 """Is the code degenerate"""
 function isdegenerate end
 
-# Add others
+#------IN PROGRESS-------------------------
 
 # Shor code
 include("./shorcode.jl")
+
 # Steane, 7 qubit, 5 qubit
 include("./steanecode.jl")
+
+# CSS codes
+include("./csscodes.jl")
+
+#------TODO--------------------------------
+
+# Toric codes
+include("./toriccode.jl") #has to b commented for tsting
+
 # Surface codes
 #include("./surface_codes.jl")
 #include...
 # repetition codes
-# CSS codes
-include("./csscodes.jl")
 # concatenated codes
-# Toric codes
-include("./toriccode.jl")
 # color codes
 # LDPC expander and hypergraph codes
 # reed muller and reed solomon codes
 
+# Add others ------------------------
 
 end
