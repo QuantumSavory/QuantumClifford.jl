@@ -50,7 +50,7 @@ classical_code_H_matrix(c::CSS) = [0:0:1 0:1:0 0:1:1 1:0:0 1:0:1 1:1:0 1:1:1]
 
 #convert into nemo matrix: def space matrix (float -> binary)
 
-
+#=
 #port processing nemo ------
 MatrixSpace(ResidueRing(ZZ,2), rᴬ, Δ)
 
@@ -63,7 +63,8 @@ end
 
 G2_orthcolumnspace(c::Rep3) = nullspace(M, rtol=3) 
 
-GD(c::Rep3) = [0:G2 G2_orthcolumnspace:0]
+GD(c::Rep3) = [0:G2 G2_orthcolumnspace:0] =#
+
 #------------------------------
 
 #det with nemo
