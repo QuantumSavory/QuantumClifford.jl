@@ -99,8 +99,8 @@ for i in encoding_circuit(c::Steane5):
                 $(Symbol(:x, i)) = step[$i]
                 #adding the steps to the circuit build
                 append!(naive_syndrome_circuit(step[$i], sCNOT(b,a)))
+            
             #change X->Z & vice-versage 
-
             elseif i == Z(a):
                 @eval 
                 $(Symbol(:x, i)) = step[$i]
