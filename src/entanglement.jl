@@ -142,7 +142,7 @@ Introduced in [nahum2017quantum](@cite), with a more detailed explanation of the
 
 See also: [`canonicalize_clip!`](@ref)
 """
-function bigram(state::AbstractStabilizer; clip::Bool=true)
+function bigram(state::AbstractStabilizer; clip::Bool=true)::Matrix{Int} # JET-XXX The ::Matrix{Int} should not be necessary, but they help with inference
     clip && canonicalize_clip!(state)
     tab = stabilizerview(state)
     rows, columns = size(tab)
@@ -182,7 +182,8 @@ If `clip=false` is set the canonicalization step is skipped, useful if the input
 See also: [`bigram`](@ref), [`canonicalize_clip!`](@ref)
 """
 function entanglement_entropy(state::AbstractStabilizer, subsystem_range::UnitRange, algorithm::Val{:clip}; clip::Bool=true)
-    bg = bigram(state; clip=clip)
+    # JET-XXX The ::Matrix{Int} should not be necessary, but they help with inference
+    bg = bigram(state; clip=clip)::Matrix{Int}
     count(r->(r[1] in subsystem_range)⊻(r[2] in subsystem_range), eachrow(bg)) ÷ 2
 end
 

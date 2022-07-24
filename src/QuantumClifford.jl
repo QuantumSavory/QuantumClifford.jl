@@ -817,12 +817,14 @@ function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}=Va
     rcnt1 = 0
     rcnt2 = 0
     packs = len÷veclen
+    VT = SIMD.Vec{veclen,T}
     if packs>0
-        cnt1 = zero(SIMD.Vec{veclen,T})
-        cnt2 = zero(SIMD.Vec{veclen,T})
+        cnt1 = zero(VT)
+        cnt2 = zero(VT)
         lane = SIMD.VecRange{veclen}(0)
         @inbounds for i in 1:veclen:(len-veclen+1)
-            x1, x2, z1, z2 = l[i+lane], r[i+lane], l[i+len+lane], r[i+len+lane]
+            # JET-XXX The ::VT should not be necessary, but they help with inference
+            x1::VT, x2::VT, z1::VT, z2::VT = l[i+lane], r[i+lane], l[i+len+lane], r[i+len+lane]
             r[i+lane] = newx1 = x1 ⊻ x2
             r[i+len+lane] = newz1 = z1 ⊻ z2
             x1z2 = x1 & z2
