@@ -32,10 +32,10 @@ end
 #[7,4] Hamming code -> Steane's 7
 
 #classical_code_G_matrix
-classical_code_G_matrix(c::) = [1:0:0:0 0:1:0:0 0:0:1:0 0:0:0:1]
+classical_code_G_matrix(c) = [1:0:0:0 0:1:0:0 0:0:1:0 0:0:0:1]
 
 #classical_code_H_matrix
-classical_code_H_matrix(c::) = [0:0:1 0:1:0 0:1:1 1:0:0 1:0:1 1:1:0 1:1:1]
+classical_code_H_matrix(c) = [0:0:1 0:1:0 0:1:1 1:0:0 1:0:1 1:1:0 1:1:1]
 
 #----------------------------------------------------------------------------------------------
 
@@ -71,31 +71,31 @@ GD(c::Rep3) = [0:G2 G2_orthcolumnspace:0]
 #------------------------------
 
 #det with nemo
-dual_code_prt1(c::) = [1:0:0:0 0:1:0:0 0:0:1:0 0:0:0:1] #tst H 8 https://en.wikipedia.org/wiki/Hamming_code#[7,4]_Hamming_code
-dual_code_prt2(c::) = [0:1:1:1 1:0:1:1 1:1:0:1 1:1:1:0] #tst H 8
+dual_code_prt1(c) = [1:0:0:0 0:1:0:0 0:0:1:0 0:0:0:1] #tst H 8 https://en.wikipedia.org/wiki/Hamming_code#[7,4]_Hamming_code
+dual_code_prt2(c) = [0:1:1:1 1:0:1:1 1:1:0:1 1:1:1:0] #tst H 8
 
 #-----------Building CSS code ----------------
 
-parity_checks(c::) = S"" 
+parity_checks(c) = S"" 
 
-code_n(c::) = css_n(c::)#variable input dependent?
+code_n(c) = css_n(c)#variable input 
 
-parity_matrix(c::) = stab_to_gf2(parity_checks(c::))
+parity_matrix(c) = stab_to_gf2(parity_checks(c::))
 
 #Enconding circuit ----------------------------------
 
-encoding_circuit(c::) = []#TODO
+encoding_circuit(c) = []#TODO
 #----------------------------------------------------------------
 
 #Syndrome circuit -------------------------------------
-naive_syndrome_circuit(c::) = []
+naive_syndrome_circuit(c) = []
 
 #iterating through all the steps of the encoding circuit
-for i in encoding_circuit(c::):
+for i in encoding_circuit(c):
     #iterating through the different physical qubits
-    for a in code_n(c::):
+    for a in code_n(c):
         #second iteration through available physical qubits (for CNOT gates)
-        for b in code_n(c::):
+        for b in code_n(c):
             #change qubit order if CNOT gate
             if i == sCNOT(a,b):
                 #naming the steps
@@ -122,16 +122,16 @@ for i in encoding_circuit(c::):
 
 #----------------------------------------------------------------
 
-code_s(c::) = nrow(S)
+code_s(c) = nrow(S)
 
-code_k(c::) = css_n(c::) - code_s(c::)
+code_k(c) = css_n(c) - code_s(c)
 
-rate(c::) = code_k(c::)/code_s(c::)
+rate(c) = code_k(c)/code_s(c)
 
 #distance(c::CSS) = undefined for now
 
-logx_ops(c::) = P"XXXXXXXXX"
+logx_ops(c) = P"XXXXXXXXX"
 
-logy_ops(c::) = #TODO
+logy_ops(c) = #TODO
 
-logy_ops(c::) = P"YYYYYYYYY" 
+logy_ops(c) = P"YYYYYYYYY" 
