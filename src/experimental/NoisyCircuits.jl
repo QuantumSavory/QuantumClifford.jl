@@ -9,6 +9,7 @@ using QuantumClifford
 using QuantumClifford: AbstractQCState, AbstractStabilizer, AbstractOperation, AbstractMeasurement, AbstractCliffordOperator, apply_single_x!, apply_single_y!, apply_single_z!
 
 using Combinatorics: combinations
+using Base.Cartesian
 
 export AbstractOperation,
        UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, VerifyOp,
@@ -259,17 +260,28 @@ function applynoise_branches(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNo
     results = [(copy(s),no_error,0)] # state, prob, order
     for order in 1:min(max_order,l)
         error_prob = no_error1^(l-order)*infid^order
-        for error_indices in combinations(indices, order) # TODO clean this up, optimize it
-            for error_types in Base.Iterators.product(repeat([[apply_single_x!,apply_single_y!,apply_single_z!]],order)...)
-                new_state = copy(s)
-                for (i,t) in zip(error_indices, error_types)
-                    t(new_state,i)
-                end
-                push!(results,(new_state, error_prob, order))
-            end
+        for error_indices in combinations(indices, order)
+            _applynoise_branches_unbiased_uncorrelated(Val(order),s,error_indices,results,error_prob)
         end
     end
     results
+end
+
+@generated function _applynoise_branches_unbiased_uncorrelated(::Val{order},s,error_indices,results,error_prob) where {order}
+    error_calls = Expr(:block)
+    for i in 1:order
+        call = quote (apply_single_x!,apply_single_y!,apply_single_z!)[$(Symbol(:i_,i))](new_state,error_indices[$i]) end
+        push!(error_calls.args, call)
+    end
+    # n nested loops, one for each affected qubit, each loop dedicated to the 3 possible errors (X, Y, or Z)
+    quote
+        @nloops $order i d->1:3 begin
+            new_state = copy(s)
+            $error_calls
+            push!(results,(new_state, error_prob, order))
+        end
+        results
+    end
 end
 
 function applybranches(s::AbstractQCState, nop::NoiseOpAll; max_order=1)
