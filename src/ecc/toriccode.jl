@@ -40,9 +40,13 @@ for i in encoding_circuit(c::Steane5):
                 @eval 
                 $(Symbol(:x, i)) = step[$i]
                 append!(naive_syndrome_circuit(step[$i], Z(a)))
+            #Hadamard gates response -> keep step as is
+            else:
+                @eval 
+                $(Symbol(:x, i)) = step[$i]
+                append!(encoding_circuit(step[$i], i)) 
 
 #----------------------------------------------------------------
-
 code_n(c::Toric) = #variable input dependent
 
 code_k(c::Toric) = #variable input dependent
