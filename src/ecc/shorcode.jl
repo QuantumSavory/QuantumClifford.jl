@@ -32,14 +32,14 @@ encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6]
 #----------------------------------------------------------------
 
 #Syndrome circuit -------------------------------------
-naive_syndrome_circuit(c::Steane5) = []
+naive_syndrome_circuit(c::Shor9) = []
 
 #iterating through all the steps of the encoding circuit
-for i in encoding_circuit(c::Steane5):
+for i in encoding_circuit(c::Shor9):
     #iterating through the different physical qubits
-    for a in code_n(c::Steane5):
+    for a in code_n(c::Shor9):
         #second iteration through available physical qubits (for CNOT gates)
-        for b in code_n(c::Steane5):
+        for b in code_n(c::Shor9):
             #change qubit order if CNOT gate
             if i == sCNOT(a,b):
                 #naming the steps

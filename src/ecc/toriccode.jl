@@ -3,27 +3,27 @@ struct Toric <: AbstractECC end
 
 
 #Toric x qubit code
-parity_checks(c::Toric) = S"XZZX_
+parity_checks(c::) = S"XZZX_
                               _XZZX
                               X_XZZ
                               ZX_XZ"
 
-parity_matrix(c::Toric) = stab_to_gf2(parity_checks(c::Toricx))
+parity_matrix(c::) = stab_to_gf2(parity_checks(c::))
 
 #Enconding circuit -----------------------------------
 
-encoding_circuit(c::Toric) = [] #TODO
+encoding_circuit(c::) = [] #TODO
 #-----------------------------------------------------
 
 #Syndrome circuit -------------------------------------
-naive_syndrome_circuit(c::Steane5) = []
+naive_syndrome_circuit(c::) = []
 
 #iterating through all the steps of the encoding circuit
-for i in encoding_circuit(c::Steane5):
+for i in encoding_circuit(c::):
     #iterating through the different physical qubits
-    for a in code_n(c::Steane5):
+    for a in code_n(c::):
         #second iteration through available physical qubits (for CNOT gates)
-        for b in code_n(c::Steane5):
+        for b in code_n(c::Toric):
             #change qubit order if CNOT gate
             if i == sCNOT(a,b):
                 #naming the steps
@@ -42,7 +42,7 @@ for i in encoding_circuit(c::Steane5):
                 @eval 
                 $(Symbol(:x, i)) = step[$i]
                 append!(naive_syndrome_circuit(step[$i], Z(a)))
-                
+
             #Hadamard gates response -> keep step as is
             else:
                 @eval 
@@ -50,21 +50,21 @@ for i in encoding_circuit(c::Steane5):
                 append!(encoding_circuit(step[$i], i)) 
 
 #----------------------------------------------------------------
-code_n(c::Toric) = #variable input dependent
+code_n(c::) = #variable input dependent
 
-code_k(c::Toric) = #variable input dependent
+code_k(c::) = #variable input dependent
 
-code_s(c::Toric) = #variable input dependent
+code_s(c::) = #variable input dependent
 
-rate(c::Toric) = code_k(c::Toric)/code_s(c::Toric)
+rate(c::) = code_k(c::)/code_s(c::)
 
-#distance(c::Toric) = undefined for now
+#distance(c::) = undefined for now
 
-logx_ops(c::Toric) = #variable input dependent
+logx_ops(c::) = #variable input dependent
 
-logz_ops(c::Toric) = #variable input dependent
+logz_ops(c::) = #variable input dependent
 
-logy_ops(c::Toric) = #variable input dependent
+logy_ops(c::) = #variable input dependent
 
-isdegenerate(c::Toric) = #variable input dependent
+isdegenerate(c::) = #variable input dependent
 

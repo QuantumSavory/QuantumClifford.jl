@@ -32,10 +32,10 @@ end
 #[7,4] Hamming code -> Steane's 7
 
 #classical_code_G_matrix
-classical_code_G_matrix(c::CSS) = [1:0:0:0 0:1:0:0 0:0:1:0 0:0:0:1]
+classical_code_G_matrix(c::) = [1:0:0:0 0:1:0:0 0:0:1:0 0:0:0:1]
 
 #classical_code_H_matrix
-classical_code_H_matrix(c::CSS) = [0:0:1 0:1:0 0:1:1 1:0:0 1:0:1 1:1:0 1:1:1]
+classical_code_H_matrix(c::) = [0:0:1 0:1:0 0:1:1 1:0:0 1:0:1 1:1:0 1:1:1]
 
 #----------------------------------------------------------------------------------------------
 
@@ -50,7 +50,8 @@ classical_code_H_matrix(c::CSS) = [0:0:1 0:1:0 0:1:1 1:0:0 1:0:1 1:1:0 1:1:1]
 
 #convert into nemo matrix: def space matrix (float -> binary)
 
-#=
+#= ERROR
+
 #port processing nemo ------
 MatrixSpace(ResidueRing(ZZ,2), rᴬ, Δ)
 
@@ -63,36 +64,38 @@ end
 
 G2_orthcolumnspace(c::Rep3) = nullspace(M, rtol=3) 
 
-GD(c::Rep3) = [0:G2 G2_orthcolumnspace:0] =#
+GD(c::Rep3) = [0:G2 G2_orthcolumnspace:0] 
+
+=#
 
 #------------------------------
 
 #det with nemo
-dual_code_prt1(c:CSS) = [1:0:0:0 0:1:0:0 0:0:1:0 0:0:0:1] #tst H 8 https://en.wikipedia.org/wiki/Hamming_code#[7,4]_Hamming_code
-dual_code_prt2(c:CSS) = [0:1:1:1 1:0:1:1 1:1:0:1 1:1:1:0] #tst H 8
+dual_code_prt1(c::) = [1:0:0:0 0:1:0:0 0:0:1:0 0:0:0:1] #tst H 8 https://en.wikipedia.org/wiki/Hamming_code#[7,4]_Hamming_code
+dual_code_prt2(c::) = [0:1:1:1 1:0:1:1 1:1:0:1 1:1:1:0] #tst H 8
 
 #-----------Building CSS code ----------------
 
-parity_checks(c::CSS) = S"" 
+parity_checks(c::) = S"" 
 
-code_n(c::CSS) = css_n(c::CSS)#variable input dependent?
+code_n(c::) = css_n(c::)#variable input dependent?
 
-parity_matrix(c::CSS) = stab_to_gf2(parity_checks(c::CSS))
+parity_matrix(c::) = stab_to_gf2(parity_checks(c::))
 
 #Enconding circuit ----------------------------------
 
-encoding_circuit(c::CSS) = []#TODO
+encoding_circuit(c::) = []#TODO
 #----------------------------------------------------------------
 
 #Syndrome circuit -------------------------------------
-naive_syndrome_circuit(c::Steane5) = []
+naive_syndrome_circuit(c::) = []
 
 #iterating through all the steps of the encoding circuit
-for i in encoding_circuit(c::Steane5):
+for i in encoding_circuit(c::):
     #iterating through the different physical qubits
-    for a in code_n(c::Steane5):
+    for a in code_n(c::):
         #second iteration through available physical qubits (for CNOT gates)
-        for b in code_n(c::Steane5):
+        for b in code_n(c::):
             #change qubit order if CNOT gate
             if i == sCNOT(a,b):
                 #naming the steps
@@ -119,16 +122,16 @@ for i in encoding_circuit(c::Steane5):
 
 #----------------------------------------------------------------
 
-code_s(c::CSS) = nrow(S)
+code_s(c::) = nrow(S)
 
-code_k(c::CSS) = css_n(c::CSS) - code_s(c::CSS)
+code_k(c::) = css_n(c::) - code_s(c::)
 
-rate(c::CSS) = code_k(c::CSS)/code_s(c::CSS)
+rate(c::) = code_k(c::)/code_s(c::)
 
 #distance(c::CSS) = undefined for now
 
-logx_ops(c::CSS) = P"XXXXXXXXX"
+logx_ops(c::) = P"XXXXXXXXX"
 
-logz_ops(c::CSS) = P"ZZZZZZZZZ"
+logy_ops(c::) = #TODO
 
-logy_ops(c::CSS) = P"YYYYYYYYY" 
+logy_ops(c::) = P"YYYYYYYYY" 
