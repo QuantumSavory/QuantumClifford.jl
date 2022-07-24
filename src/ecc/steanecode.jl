@@ -49,7 +49,7 @@ code_k(c::Steane5) = code_n(c::Steane5) - code_s(c::Steane5)
 
 rate(c::Steane5) = code_k(c::Steane5)/code_s(c::Steane5)
 
-distance(c::Steane5) = code_s(c::Steane5)/2
+distance(c::Steane5) = 3
 
 logx_ops(c::Steane5) = P"XXXXX" 
                        
@@ -121,7 +121,7 @@ code_k(c::Steane7) = code_n(c::Steane7) - code_s(c::Steane7)
 
 rate(c::Steane7) = code_k(c::Steane7)/code_s(c::Steane7)
 
-distance(c::Steane7) = code_s(c::Steane7)/2 
+distance(c::Steane7) = 3
 
 logx_ops(c::Steane7) = P"XXXXXXX" 
                        

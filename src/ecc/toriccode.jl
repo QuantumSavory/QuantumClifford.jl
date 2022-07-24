@@ -25,7 +25,7 @@ code_s(c::Toric) = #variable input dependent
 
 rate(c::Toric) = code_k(c::Toric)/code_s(c::Toric)
 
-distance(c::Toric) = code_s(c::Toric)/2
+#distance(c::Toric) = undefined for now
 
 logx_ops(c::Toric) = #variable input dependent
 

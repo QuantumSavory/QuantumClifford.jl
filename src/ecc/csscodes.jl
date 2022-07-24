@@ -94,7 +94,7 @@ code_k(c::CSS) = css_n(c::CSS) - code_s(c::CSS)
 
 rate(c::CSS) = code_k(c::CSS)/code_s(c::CSS)
 
-distance(c::CSS) = code_s(c::CSS)/2
+#distance(c::CSS) = undefined for now
 
 logx_ops(c::CSS) = P"XXXXXXXXX"
 

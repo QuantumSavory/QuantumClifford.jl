@@ -53,7 +53,7 @@ code_k(c::Shor9) = code_n(c::Shor9) - code_s(c::Shor9)
 
 rate(c::Shor9) = code_k(c::Shor9)/code_s(c::Shor9)
 
-distance(c::Shor9) = code_s(c::Shor9)/2 #mmm.... not correct
+distance(c::Shor9) = 3
 
 logx_ops(c::Shor9) = P"XXXXXXXXX"
                        
