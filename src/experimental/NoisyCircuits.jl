@@ -386,7 +386,7 @@ end
 
 function applynoise_branches(state::Register, noise, indices; max_order=1)
     [(Register(newstate,copy(state.bits)), prob, order)
-     for (newstate, prob, order) in applynoise_branches(state, noise, indices, max_order=max_order)]
+     for (newstate, prob, order) in applynoise_branches(state, noise, indices; max_order=max_order)]
 end
 
 # TODO tests for this
