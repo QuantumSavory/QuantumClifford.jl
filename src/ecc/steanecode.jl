@@ -1,7 +1,6 @@
 struct Steane5 <: AbstractECC end
 struct Steane7 <: AbstractECC end
 
-
 #Steane 5 qubit code
 parity_checks(c::Steane5) = S"XZZX_
                               _XZZX
@@ -30,7 +29,7 @@ encoding_circuit(c::Steane5) = [c1,c2,c3,c4,c5,z1,z2,z3]
 naive_syndrome_circuit(c::Steane5) = []
 
 #iterating through all the steps of the encoding circuit
-for i in encoding_circuit(c::Steane5):
+for i in size(encoding_circuit(c::Steane5)):
     #iterating through the different physical qubits
     for a in code_n(c::Steane5):
         #second iteration through available physical qubits (for CNOT gates)

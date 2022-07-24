@@ -19,7 +19,7 @@ encoding_circuit(c) = [] #TODO
 naive_syndrome_circuit(c) = []
 
 #iterating through all the steps of the encoding circuit
-for i in encoding_circuit(c):
+for i in size(encoding_circuit(c)):
     #iterating through the different physical qubits
     for a in code_n(c):
         #second iteration through available physical qubits (for CNOT gates)

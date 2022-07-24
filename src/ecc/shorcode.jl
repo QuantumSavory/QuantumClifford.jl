@@ -35,7 +35,7 @@ encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6]
 naive_syndrome_circuit(c::Shor9) = []
 
 #iterating through all the steps of the encoding circuit
-for i in encoding_circuit(c::Shor9):
+for i in size(encoding_circuit(c::Shor9)):
     #iterating through the different physical qubits
     for a in code_n(c::Shor9):
         #second iteration through available physical qubits (for CNOT gates)

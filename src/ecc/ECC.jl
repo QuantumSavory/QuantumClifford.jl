@@ -50,12 +50,12 @@ include("./shorcode.jl")
 include("./steanecode.jl")
 
 # CSS codes
-include("./csscodes.jl")
+#include("./csscodes.jl")
 
 #------TODO--------------------------------
 
 # Toric codes
-include("./toriccode.jl") #has to b commented for tsting
+#include("./toriccode.jl") #has to b commented for tsting
 
 # Surface codes
 #include("./surface_codes.jl")

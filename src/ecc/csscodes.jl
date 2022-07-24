@@ -80,7 +80,7 @@ parity_checks(c) = S""
 
 code_n(c) = css_n(c)#variable input 
 
-parity_matrix(c) = stab_to_gf2(parity_checks(c::))
+parity_matrix(c) = stab_to_gf2(parity_checks(c))
 
 #Enconding circuit ----------------------------------
 
@@ -91,7 +91,7 @@ encoding_circuit(c) = []#TODO
 naive_syndrome_circuit(c) = []
 
 #iterating through all the steps of the encoding circuit
-for i in encoding_circuit(c):
+for i in size(encoding_circuit(c)):
     #iterating through the different physical qubits
     for a in code_n(c):
         #second iteration through available physical qubits (for CNOT gates)
