@@ -12,23 +12,6 @@ code_n(c::Steane5) = 5
 
 parity_matrix(c::Steane5) = stab_to_gf2(parity_checks(c::Steane5))
 
-#Syndrome circuit -------------------------------------
-# Figure 5: https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwiK5u3rlI35AhVAh_0HHSwhChIQFnoECAgQAQ&url=https%3A%2F%2Fwww.sciencedirect.com%2Ftopics%2Fmathematics%2Fhadamard-gate&usg=AOvVaw0o2EggDP0p5Jni0POFB7u1
-
-c1 = sCNOT(6,1)
-c2 = sCNOT(6,2)
-C3 = sCNOT(6,3)
-c4 = sCNOT(6,4)
-C5 = sCNOT(6,5)
-
-x1 = X(4)
-x2 = X(5)
-x3 = X(6)
-
-naive_syndrome_circuit(c::Steane5) = [c1,c2,c3,c4,c5,x1,x2,x3] 
-#----------------------------------------------------------------
-
-
 #Enconding circuit ----------------------------------
 c1 = sCNOT(1,6)
 c2 = sCNOT(2,6)
@@ -41,6 +24,34 @@ z2 = Z(5)
 z3 = Z(5)
 
 encoding_circuit(c::Steane5) = [c1,c2,c3,c4,c5,z1,z2,z3] 
+#----------------------------------------------------------------
+
+#Syndrome circuit -------------------------------------
+naive_syndrome_circuit(c::Steane5) = []
+
+#iterating through all the steps of the encoding circuit
+for i in encoding_circuit(c::Steane5):
+    #iterating through the different physical qubits
+    for a in code_n(c::Steane5):
+        #second iteration through available physical qubits (for CNOT gates)
+        for b in code_n(c::Steane5):
+            #change qubit order if CNOT gate
+            if i == sCNOT(a,b):
+                #naming the steps
+                @eval 
+                $(Symbol(:x, i)) = step[$i]
+                #adding the steps to the circuit build
+                append!(naive_syndrome_circuit(step[$i], sCNOT(b,a)))
+            #change X->Z & vice-versage 
+            elseif i == Z(a):
+                @eval 
+                $(Symbol(:x, i)) = step[$i]
+                append!(naive_syndrome_circuit(step[$i], X(a)))
+            elseif i == X(a):
+                @eval 
+                $(Symbol(:x, i)) = step[$i]
+                append!(naive_syndrome_circuit(step[$i], Z(a)))
+
 #----------------------------------------------------------------
 
 code_s(c::Steane5) = nrow(S)

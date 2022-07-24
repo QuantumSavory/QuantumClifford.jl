@@ -78,14 +78,37 @@ code_n(c::CSS) = css_n(c::CSS)#variable input dependent?
 
 parity_matrix(c::CSS) = stab_to_gf2(parity_checks(c::CSS))
 
-#Syndrome circuit ----------------------------------
-
-naive_syndrome_circuit(c::CSS) = []#TODO
-#----------------------------------------------------------------
-
 #Enconding circuit ----------------------------------
 
 encoding_circuit(c::CSS) = []#TODO
+#----------------------------------------------------------------
+
+#Syndrome circuit -------------------------------------
+naive_syndrome_circuit(c::Steane5) = []
+
+#iterating through all the steps of the encoding circuit
+for i in encoding_circuit(c::Steane5):
+    #iterating through the different physical qubits
+    for a in code_n(c::Steane5):
+        #second iteration through available physical qubits (for CNOT gates)
+        for b in code_n(c::Steane5):
+            #change qubit order if CNOT gate
+            if i == sCNOT(a,b):
+                #naming the steps
+                @eval 
+                $(Symbol(:x, i)) = step[$i]
+                #adding the steps to the circuit build
+                append!(naive_syndrome_circuit(step[$i], sCNOT(b,a)))
+            #change X->Z & vice-versage 
+            elseif i == Z(a):
+                @eval 
+                $(Symbol(:x, i)) = step[$i]
+                append!(naive_syndrome_circuit(step[$i], X(a)))
+            elseif i == X(a):
+                @eval 
+                $(Symbol(:x, i)) = step[$i]
+                append!(naive_syndrome_circuit(step[$i], Z(a)))
+
 #----------------------------------------------------------------
 
 code_s(c::CSS) = nrow(S)
