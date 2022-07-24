@@ -127,7 +127,7 @@ true
 
 See also: [`graph_gatesequence`](@ref)
 """
-function graph_gatesequence(h_idx, ip_idx, z_idx)
+function graph_gatesequence(h_idx::Vector{Int}, ip_idx::Vector{Int}, z_idx::Vector{Int})
     ([sHadamard(i) for i in h_idx], [sInvPhase(i) for i in ip_idx], [sZ(i) for i in z_idx])
 end
 
