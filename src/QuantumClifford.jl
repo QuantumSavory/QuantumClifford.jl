@@ -199,9 +199,10 @@ Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.xz, h)
 
 Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
 
-_nchunks(i::Int) = 2*( (i-1) ÷ (8*sizeof(UInt)) + 1 )
-Base.zero(::Type{<:PauliOperator}, q) = PauliOperator(zeros(UInt8), q, zeros(UInt, _nchunks(q)))
-Base.zero(p::PauliOperator) = zero(PauliOperator, nqubits(p))
+_nchunks(i::Int,T::Type{<:Unsigned}) = 2*( (i-1) ÷ (8*sizeof(T)) + 1 )
+Base.zero(::Type{PauliOperator{Tz, Tv}}, q) where {Tz,T<:Unsigned,Tv<:AbstractVector{T}} = PauliOperator(zeros(UInt8), q, zeros(T, _nchunks(q,T)))
+Base.zero(::Type{PauliOperator}, q) = zero(PauliOperator{Array{UInt8, 0}, Vector{UInt}}, q)
+Base.zero(p::P) where {P<:PauliOperator} = zero(P, nqubits(p))
 
 """Zero-out the phases and single-qubit operators in a [`PauliOperator`](@ref)"""
 @inline function zero!(p::PauliOperator{Tz,Tv}) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}}
@@ -412,13 +413,14 @@ Base.hash(s::Stabilizer, h::UInt) = hash(s.nqubits, hash(s.phases, hash(s.xzs, h
 
 Base.copy(s::Stabilizer) = Stabilizer(copy(s.phases), s.nqubits, copy(s.xzs))
 
-function Base.zero(::Type{<:Stabilizer}, r, q)
+function Base.zero(::Type{Stabilizer{Tzv, Tm}}, r, q) where {Tzv,T<:Unsigned,Tm<:AbstractMatrix{T}}
     phases = zeros(UInt8,r)
-    xzs = zeros(UInt, _nchunks(q), r)
+    xzs = zeros(UInt, _nchunks(q,T), r)
     Stabilizer(phases, q, xzs)::Stabilizer{Vector{UInt8},Matrix{UInt}}
 end
-Base.zero(::Type{<:Stabilizer}, q) = zero(Stabilizer, q, q)
-Base.zero(s::Stabilizer) = zero(Stabilizer, length(s), nqubits(s))
+Base.zero(::Type{S}, q) where {S<:Stabilizer}= zero(S, q, q)
+Base.zero(::Type{Stabilizer}, r, q) = zero(Stabilizer{Vector{UInt8},Matrix{UInt}}, r, q)
+Base.zero(s::S) where {S<:Stabilizer} = zero(S, length(s), nqubits(s))
 
 """Zero-out a given row of a [`Stabilizer`](@ref)"""
 @inline function zero!(s::Stabilizer,i)
@@ -566,7 +568,7 @@ end
 function MixedDestabilizer(stab::Stabilizer{Tv,Tm}; undoperm=true) where {Tve,Tme,Tv<:AbstractVector{Tve},Tm<:AbstractMatrix{Tme}}
     rows,n = size(stab)
     stab, r, s, permx, permz = canonicalize_gott!(copy(stab))
-    tab = zero(Stabilizer, n*2, n)::Stabilizer{Vector{Tve},Matrix{Tme}}
+    tab = zero(Stabilizer{Vector{Tve},Matrix{Tme}}, n*2, n)
     vstab = @view stab[1:r+s] # this view is necessary for cases of tableaux with redundant rows
     tab[n+1:n+r+s] = vstab # The Stabilizer part of the tableau
     for i in 1:r # The Destabilizer part
