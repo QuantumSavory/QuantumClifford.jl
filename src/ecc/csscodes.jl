@@ -1,3 +1,4 @@
+using Nemo 
 
 #structure for CSS codes
 struct CSS <: AbstractECC
@@ -12,7 +13,7 @@ struct CSS <: AbstractECC
 end
 
 #----------------Generating Hamming codes ----------------------------------------------------
-#= ODO:
+#= TODO:
     Number the bits starting from 1: bit 1, 2, 3, 4, 5, 6, 7, etc.
     Write the bit numbers in binary: 1, 10, 11, 100, 101, 110, 111, etc.
     All bit positions that are powers of two (have a single 1 bit in the binary form of their position) are parity bits: 1, 2, 4, 8, etc. (1, 10, 100, 1000)
@@ -33,7 +34,8 @@ classical_code_G_matrix(c) = [1:0:0:0 0:1:0:0 0:0:1:0 0:0:0:1]
 
 #classical_code_H_matrix
 classical_code_H_matrix(c) = [0:0:1 0:1:0 0:1:1 1:0:0 1:0:1 1:1:0 1:1:1]
-
+H = classical_code_H_matrix(c)
+ishadamard(H)
 #----------------------------------------------------------------------------------------------
 
 
@@ -42,7 +44,7 @@ classical_code_H_matrix(c) = [0:0:1 0:1:0 0:1:1 1:0:0 1:0:1 1:1:0 1:1:1]
 #-----------Building dual code ----------------
 
 #create matrix, over space range x
-
+dual_code(c) = 
 
 
 #convert into nemo matrix: def space matrix (float -> binary)
