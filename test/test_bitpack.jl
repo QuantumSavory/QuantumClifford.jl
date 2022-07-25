@@ -1,43 +1,46 @@
 function test_bitpack()
     @testset "Alternative bit packing" begin
-        @test_broken false # TODO fix these tests (started failing when switched to SIMD.jl)
-        return
-        for n in [1,3,5]
+        for n in [1,3] # can not go higher than 4 (limitation from SIMD acting on transposed/strided arrays)
             N = 64*n-2
             s64 = random_stabilizer(N,N);
             phases = s64.phases;
-            xzs64_rowmajor = s64.xzs;
-            xzs64_colmajor = collect(s64.xzs')';
-            p64 = random_pauli(N);
-            c64_stab = Destabilizer(random_stabilizer(N,N)).tab
-            
-            after_p = stab_to_gf2(p64*s64)
-            after_p_phases = (p64*s64).phases
-            after_can = stab_to_gf2(canonicalize!(copy(s64)))
-            after_cliff = stab_to_gf2(apply!(copy(s64),CliffordOperator(c64_stab)))
+            xzs64 = s64.xzs;
+            xzs64T = collect(xzs64')';
+            p64 = random_pauli(N;nophase=true);
+            c64_stab = random_destabilizer(N;phases=false).tab;
 
-            for int in [UInt8, UInt16, UInt32, UInt64], order in [:column,:row]
+            _after_p = p64*s64
+            after_p = stab_to_gf2(_after_p);
+            after_p_phases = (_after_p).phases;
+            after_can = stab_to_gf2(canonicalize!(copy(s64)));
+            _after_clif = apply!(copy(s64),CliffordOperator(c64_stab));
+            after_cliff = stab_to_gf2(_after_clif);
+            after_cliff_phases = _after_clif.phases;
+
+            for int in [UInt8, UInt16, UInt32, UInt64]
                 p = PauliOperator(p64.phase, N, collect(reinterpret(int,p64.xz)));
-                xzs_colmajor = collect(reinterpret(int, collect(xzs64_rowmajor))')';
-                xzs_rowmajor = collect(xzs_colmajor);
-                s_col = Stabilizer(phases,N,xzs_colmajor);
-                s_row = Stabilizer(phases,N,xzs_rowmajor);
-                s = order == :column ? s_col : s_row
-                apply_pauli = p*s
-                @test after_p_phases == apply_pauli.phases
-                canon = canonicalize!(deepcopy(s))
-                @test after_can == stab_to_gf2(canon)
+                xzs = collect(reinterpret(int, collect(xzs64)));
+                xzsT = collect(xzs')';
+                _s = Stabilizer(phases,N,xzs);
+                _sT = Stabilizer(phases,N,xzsT);
 
-                for c_order in [:column, :row]
-                    c_raw = Stabilizer(zeros(UInt8, 2N), N, reinterpret(int, collect(c64_stab.xzs)))
-                    c = CliffordOperator(c_raw)
-                    if c_order == :column
-                        c = CliffordOperator(Stabilizer(c.tab.phases, N, collect(c.tab.xzs')'))
-                    end
-                    if int==UInt64
-                        @test after_cliff == stab_to_gf2(apply!(deepcopy(s),c))
-                    else
-                        @test_broken after_cliff == stab_to_gf2(apply!(deepcopy(s),c))
+                for trans in (true, false)
+                    s = trans ? _sT : _s
+                    apply_pauli = p*s
+                    @test after_p_phases == apply_pauli.phases
+                    canon = canonicalize!(deepcopy(s))
+                    @test after_can == stab_to_gf2(canon)
+
+                    cxzs = collect(reinterpret(int, collect(c64_stab.xzs)));
+                    cxzsT = collect(cxzs')';
+                    _c = CliffordOperator(Stabilizer(zeros(UInt8,2N),N,cxzs));
+                    _cT = CliffordOperator(Stabilizer(zeros(UInt8,2N),N,cxzsT));
+
+                    for ctrans in (true, false)
+                        c = ctrans ? _c : _cT
+                        after_clifford = apply!(deepcopy(s),c)
+                        @test after_cliff == stab_to_gf2(after_clifford)
+                        @test after_cliff_phases == after_clifford.phases
                     end
                 end
             end
