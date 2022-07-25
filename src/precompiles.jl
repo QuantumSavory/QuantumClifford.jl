@@ -1,4 +1,5 @@
 function _my_precompile_()
+    ds = random_destabilizer(3);
     s = random_stabilizer(3);
     canonicalize!(s);
     canonicalize_rref!(s);
