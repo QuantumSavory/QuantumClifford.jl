@@ -1,4 +1,5 @@
 using Nemo 
+using LinearAlgebra
 
 #structure for CSS codes
 struct CSS <: AbstractECC
@@ -41,37 +42,38 @@ classical_code_G_matrix(c) = gf2_H_to_G(classical_code_H_matrix)
 
 
 #----------------CSS code generation ----------------------------------------------------------
+#----------Dual code -------------------
+#Size
+H_absarray = BitArray(classical_code_H_matrix) #TODO
+size_row_H = size(H_array, 1)
+size_column_H = size(classical_code_H_matrix, 2)
 
-#-----------Check matrix ----------------
+G_absarray = #TODO
+size_row_G = size(G_array, 1)
+size_column_G = size(classical_code_G_matrix, 2)
 
-#create matrix, over space range x
-check_matrix_X(c) = classical_code_H_matrix(c)
-check_matrix_Z(c) = classical_code_G_matrix(c)
+#Dual code build
+X_zeros = zeros(classical_code_H_matrix, size_column_H)
+Z_zeros = zeros(classical_code_G_matrix, size_column_G)
 
-#------------------------------
+#Final X & Z matrix
+X_matrix = X_zeros
+Z_matrix = classical_code_G_matrix
+#TODO: overlap X & Z -> Y !!!
+append!(Z_matrix,Z_zeros)
+append!(X_matrix,classical_code_H_matrix)
 
 #-----------Building CSS code ----------------
-#=
-S = Stabilizer([0x2, 7x3],
-                  check_matrix_X,
-                  check_matrix_Z)
-=#
-#=
-julia> Stabilizer([0x2, 0x0],
-                  Bool[1 1;
-                       0 0],
-                  Bool[0 0;
-                       1 1])
-- XX
-+ ZZ
-=#
+
+S = Stabilizer([0x2, 0x0],
+                  Bool[X_matrix],
+                  Bool[Z_matrix])
 
 parity_checks(c) = S 
-print(S) = S #testing
 
-code_n(c) = size(classical_code_H_matrix, 1) + size(classical_code_G_matrix, 1) #variable input 
+code_n(c) = size(X_matrix, 1) #variable input dependant
 
-parity_matrix(c) = stab_to_gf2(parity_checks(c))
+parity_matrix(c) = stab_to_gf2(parity_checks(c)) #test parity_matrix = Z+X
 
 #Encoding circuit ----------------------------------
 
