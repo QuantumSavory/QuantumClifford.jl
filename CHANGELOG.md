@@ -26,16 +26,16 @@
 
 - **(fix `#60`)** `enumerate_clifford` was broken due to an earlier refactor in `rowswap!`
 
-## v0.5.2
+## v0.5.2 - 2022-06-08
 
 - Implement the clipped gauge canonicalization `canonicalize_clip!` and related functions.
 - Implement `entanglement_entropy`.
 
-## v0.5.1
+## v0.5.1 - 2022-06-02
 
 - **(fix `#57` `c83f85f`)** - Graph vertex indices and qubit indices in tableaux were mismatched.
 
-## v0.5.0
+## v0.5.0 - 2022-05-19
 
 - **(breaking)** Rename all pre-defined tableaux to have a `t` prefix. e.g., `CNOT`→`tCNOT`, in order to distinguish them from "symbolic" operators like `sCNOT`.
 - **(breaking)** Rename `CliffordId` to `tId1` to match the naming style of `sId1`.
@@ -54,7 +54,7 @@
   - `applyop!` is renamed to `applywstatus!` and simplified.
   - `applyop_branches` is renamed to `applybranches` and simplified.
 
-## v0.4.3
+## v0.4.3 - 2022-03-24
 
 - Implement `trusted_rank` that returns `rank` for states that support it and `length` for others (e.g. `Stabilizer`).
 - Implement `length` for `[Mixed]Destabilizer`.
@@ -63,11 +63,11 @@
 - Implement pre-compilation examples (again) for julia 1.9+.
 - `generate!` does not needlessly allocate anymore, helping `project!` on `Stabilizer`. Issue `#39`
 
-## v0.4.2
+## v0.4.2 - 2022-03-22
 
 - `project!` does not needlessly allocate anymore on `MixedDestabilizer`. Issue `#39`, PR `#41`
 
-## v0.4.1
+## v0.4.1 - 2022-03-21
 
 - `apply_single_*` are not exported anymore, as `sX`/`sY`/`sZ` are cleaner choices.
 - Faster single-qubit projections with `projectX!`, `projectY!`, `projectZ!`.
@@ -76,7 +76,7 @@
 - Pre-compilation and inference cleanup (useful for Julia 1.8+).
 - Switch from `LoopVectorization.jl` to `SIMD.jl` for fine-tuning of performance (and coincidentally, better TTFX).
 
-## v0.4.0
+## v0.4.0 - 2022-01-27
 
 - Permit whitespace separators in the `S` string macro.
 - **(breaking)** `project!` now returns `anticom_index=rank` instead of `anticom_index=0` in the case of projection operator commuting with all stabilizer rows but not in the stabilizer group. If your code previously had `anticom_index!=0` checks, now you might want to use `anticom_index!=0 && anticom_index!=rank`. Conversely, treating projective measurements in general code is now much simpler.
@@ -84,7 +84,7 @@
 - A new `expect` function to find the expectation value of a Pauli measurement for a given stabilizer; simpler to use compared to `project!`.
 - **(fix `#28` `9292333a`)** Fix a rare bug in `reset_qubits!(::MixedDestabilizer)`.
 
-## v0.3.0
+## v0.3.0 - 2022-01-10
 
 - `dot` and `logdot` for calculating dot products between `Stabilizer` states.
 - Initial support for graph states, e.g., conversion to and from arbitrary `Stabilizer` state.
@@ -97,11 +97,11 @@
 - **(fix `4b536231`)** Fixed bug in `generate!` that occurs on small `IZ` Paulis.
 - Some performance improvements related to allocations in `apply!`.
 
-## v0.2.12
+## v0.2.12 - 2021-12-32
 
 - `apply!` is now multi-threaded thanks to Polyester.
 - Named Clifford operators with much-faster special-cased `apply!` are implemented.
 - An assortment of new constructors are available to ease the conversion between data structures.
 - Drop support for Julia 1.5.
 
-## Older - unrecorded
+## Older - before 2021-10-28 unrecorded
