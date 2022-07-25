@@ -9,10 +9,15 @@ end
 
 #Qubit n -------------------------------------
 
+<<<<<<< HEAD
 code_n(c::Toric) = 2*c.l*(c.l+1)
+=======
+#Encoding circuit ----------------------------------
+>>>>>>> 58a4737 (compiling errors)
 
 #Parity checks ----------------------------------
 
+<<<<<<< HEAD
 function plaquette_to_qubit_indices_Z(rown,columnn) 
     
     q1 = [rown,columnn]
@@ -32,6 +37,33 @@ function plaquette_to_qubit_indices_X_q4(row::Int64,column::Int64,j::Int64)
     q3 = [row+1,column-1]
     q4 = [row+2,column]
     return q1,q2,q3,q4
+=======
+#Syndrome circuit -------------------------------------
+function naive_syndrome(encoding_circuit)
+    naive_syndrome_circuit = []
+
+    #iterating through all the steps of the encoding circuit
+    for i in 1:size(encoding_circuit)
+        #iterating through the different physical qubits
+        for a in 1:code_n
+            #second iteration through available physical qubits (for CNOT gates)
+            for b in 1:code_n
+                #change qubit order if CNOT gate
+                if encoding_circuit[i] == sCNOT(a,b)
+                    #adding the steps to the circuit build
+                    append!(naive_syndrome_circuit(sCNOT(b,a)))
+            
+                #Hadamard gates response -> keep step as is
+                else
+                    append!(naive_syndrome_circuit(encoding_circuit[i]))                
+                end
+            end
+        end
+        return naive_syndrome_circuit
+    end
+end
+#----------------------------------------------------------------
+>>>>>>> 58a4737 (compiling errors)
 
 end
 
