@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Graph States · QuantumClifford.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">QuantumClifford.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">QuantumClifford.jl</a></li><li><a class="tocitem" href="../manual/">Manual</a></li><li><a class="tocitem" href="../canonicalization/">Canonicalization</a></li><li><a class="tocitem" href="../mixed/">Mixed States</a></li><li class="is-active"><a class="tocitem" href>Graph States</a></li><li><a class="tocitem" href="../datastructures/">Datastructure Choice</a></li><li><a class="tocitem" href="../commonstates/">Useful States and Operators</a></li><li><a class="tocitem" href="../plotting/">Plotting</a></li><li><a class="tocitem" href="../API/">API</a></li><li><a class="tocitem" href="../tutandpub/">Tutorials and Publications</a></li><li><span class="tocitem">Noisy Circuits</span><ul><li><a class="tocitem" href="../noisycircuits/">Simulation of Noisy Circuits</a></li><li><a class="tocitem" href="../noisycircuits_mc/">Monte Carlo</a></li><li><a class="tocitem" href="../noisycircuits_perturb/">Perturbative Expansions</a></li><li><a class="tocitem" href="../noisycircuits_ops/">Circuit Operations</a></li><li><a class="tocitem" href="../noisycircuits_API/">API</a></li></ul></li><li><a class="tocitem" href="../references/">Suggested Readings &amp; References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Graph States</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Graph States</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Krastanov/QuantumClifford.jl/blob/master/docs/src/graphs.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Graph-States"><a class="docs-heading-anchor" href="#Graph-States">Graph States</a><a id="Graph-States-1"></a><a class="docs-heading-anchor-permalink" href="#Graph-States" title="Permalink"></a></h1><div class="admonition is-warning"><header class="admonition-header">The `graphstate` API is not considered stable</header><div class="admonition-body"><p><code>graphstate</code> returns a lot of information about encoding a given stabilizer state in a graph. A different API is being designed that streamlines the work with graph states.</p></div></div><p>Conversion to and from <a href="https://en.wikipedia.org/wiki/Graph_state">graph states</a> is possible.</p><p>Consider a GHZ state:</p><pre><code class="language-julia hljs">ghz(4)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">+ XXXX
++ ZZ__
++ _ZZ_
++ __ZZ</code></pre><p>It can be converted to a graph state with <a href="../API/#QuantumClifford.graphstate-Tuple{QuantumClifford.AbstractStabilizer}"><code>graphstate</code></a></p><pre><code class="language-julia hljs">graphstate(ghz(4))[1]</code></pre><p><img src="../ghz4graph.png" alt/></p><p>Notice that the initial GHZ state was not in the typical graph state form. We can see that explicitly by converting back and forth between the two forms:</p><pre><code class="language-julia-repl hljs">julia&gt; using Graphs, QuantumClifford
+
+julia&gt; ghz(4)
++ XXXX
++ ZZ__
++ _ZZ_
++ __ZZ
+
+julia&gt; Stabilizer(Graph(ghz(4)))
++ XZZZ
++ ZX__
++ Z_X_
++ Z__X</code></pre><p>There is a set of single-qubit operations that can convert any stabilizer tableau into a state representable as a graph. These transformations are performed implicitly by the <code>Graph</code> constructor when converting from a <code>Stabilizer</code>. If you need the explicit transformation you can use the <a href="../API/#QuantumClifford.graphstate-Tuple{QuantumClifford.AbstractStabilizer}"><code>graphstate</code></a> function that specifies which qubits require a Hadamard, Inverse Phase, or Phase Flip gate. The <a href="../API/#QuantumClifford.graph_gatesequence-Tuple{Vector{Int64}, Vector{Int64}, Vector{Int64}}"><code>graph_gatesequence</code></a> or <a href="../API/#QuantumClifford.graph_gate-NTuple{4, Any}"><code>graph_gate</code></a> helper functions can be used to generate the exact operations:</p><pre><code class="language-julia-repl hljs">julia&gt; s = ghz(4)
++ XXXX
++ ZZ__
++ _ZZ_
++ __ZZ
+
+julia&gt; g, h_idx, ip_idx, z_idx = graphstate(s)
+({4, 3} undirected simple Int64 graph, [2, 3, 4], Int64[], Int64[])
+
+julia&gt; gate = graph_gate(h_idx, ip_idx, z_idx, nqubits(s))
+X___ ⟼ + X___
+_X__ ⟼ + _Z__
+__X_ ⟼ + __Z_
+___X ⟼ + ___Z
+Z___ ⟼ + Z___
+_Z__ ⟼ + _X__
+__Z_ ⟼ + __X_
+___Z ⟼ + ___X
+
+julia&gt; canonicalize!(apply!(s,gate)) == canonicalize!(Stabilizer(g))
+true</code></pre><p>These converters also provides for a convenient way to create graph and cluster states, by using the helper constructors provided in <code>Graphs.jl</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; Stabilizer(grid([4,1])) # Linear cluster state
++ XZ__
++ ZXZ_
++ _ZXZ
++ __ZX
+
+julia&gt; Stabilizer(grid([2,2])) # Small 2D cluster state
++ XZZ_
++ ZX_Z
++ Z_XZ
++ _ZZX</code></pre><p>Graphs are represented with the <code>Graphs.jl</code> package and plotting can be done both in <code>Plots.jl</code> and <code>Makie.jl</code> (with <code>GraphMakie</code>).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../mixed/">« Mixed States</a><a class="docs-footer-nextpage" href="../datastructures/">Datastructure Choice »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.22 on <span class="colophon-date" title="Monday 25 July 2022 01:55">Monday 25 July 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
