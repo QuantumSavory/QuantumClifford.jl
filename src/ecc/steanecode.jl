@@ -11,7 +11,7 @@ code_n(c::Steane5) = 5
 
 parity_matrix(c::Steane5) = stab_to_gf2(parity_checks(c::Steane5))
 
-#Enconding circuit ----------------------------------
+#Encoding circuit ----------------------------------
 c1 = sCNOT(1,6)
 c2 = sCNOT(2,6)
 C3 = sCNOT(3,6)
@@ -27,7 +27,7 @@ encoding_circuit(c::Steane5) = [c1,c2,c3,c4,c5,z1,z2,z3]
 
 #Syndrome circuit -------------------------------------
 function naive_syndrome(encoding_circuit)
-    naive_syndrome_circuit(c::Shor9) = []
+    naive_syndrome_circuit = []
 
     #iterating through all the steps of the encoding circuit
     for i in 1:size(encoding_circuit)
@@ -37,32 +37,18 @@ function naive_syndrome(encoding_circuit)
             for b in 1:code_n
                 #change qubit order if CNOT gate
                 if encoding_circuit[i] == sCNOT(a,b)
-                    #naming the steps
-                    @eval (Symbol("step$i")) = $(i)
                     #adding the steps to the circuit build
-                    append!(naive_syndrome_circuit(step[$i]), sCNOT(b,a))
-            
-                #change X->Z & vice-versage 
-                elseif encoding_circuit[i] == Z(a)
-                    @eval (Symbol("step$i")) = $i
-                    append!(naive_syndrome_circuit(step[$i]), X(a))
-            
-                elseif encoding_circuit[i] == X(a)
-                    @eval (Symbol("step$i")) = $(i)
-                    append!(naive_syndrome_circuit(step[$i]), Z(a))
+                    append!(naive_syndrome_circuit(sCNOT(b,a)))
             
                 #Hadamard gates response -> keep step as is
                 else
-                    @eval (Symbol("step$i")) = $(i)
-                    append!(naive_syndrome_circuit(step[$i]), encoding_circuit(step[$i]))
-        
+                    append!(naive_syndrome_circuit(encoding_circuit[i]))                
                 end
             end
         end
         return naive_syndrome_circuit
     end
 end
-
 #----------------------------------------------------------------
 
 code_s(c::Steane5) = nrow(S)
@@ -92,13 +78,7 @@ code_n(c::Steane7) = 7
 
 parity_matrix(c::Steane7) = stab_to_gf2(parity_checks(c::Steane7))
 
-#start : see p9/31
-#start simple <- create funct for all 4 versions
-
-#Enconding circuit ----------------------------------
-c1 = sCNOT(1,2)
-c2 = sCNOT(1,3)
-
+#Encoding circuit ----------------------------------
 h1 = sHadamard(5)
 h2 = sHadamard(6)
 h3 = sHadamard(7)
@@ -118,7 +98,7 @@ encoding_circuit(c::Steane7) = [c1,c2,h1,h2,h3,c3,c4,c5,c6, c7, c8, c9, c10, c11
 
 #Syndrome circuit -------------------------------------
 function naive_syndrome(encoding_circuit)
-    naive_syndrome_circuit(c::Shor9) = []
+    naive_syndrome_circuit = []
 
     #iterating through all the steps of the encoding circuit
     for i in 1:size(encoding_circuit)
@@ -128,32 +108,18 @@ function naive_syndrome(encoding_circuit)
             for b in 1:code_n
                 #change qubit order if CNOT gate
                 if encoding_circuit[i] == sCNOT(a,b)
-                    #naming the steps
-                    @eval (Symbol("step$i")) = $(i)
                     #adding the steps to the circuit build
-                    append!(naive_syndrome_circuit(step[$i]), sCNOT(b,a))
-            
-                #change X->Z & vice-versage 
-                elseif encoding_circuit[i] == Z(a)
-                    @eval (Symbol("step$i")) = $i
-                    append!(naive_syndrome_circuit(step[$i]), X(a))
-            
-                elseif encoding_circuit[i] == X(a)
-                    @eval (Symbol("step$i")) = $(i)
-                    append!(naive_syndrome_circuit(step[$i]), Z(a))
+                    append!(naive_syndrome_circuit(sCNOT(b,a)))
             
                 #Hadamard gates response -> keep step as is
                 else
-                    @eval (Symbol("step$i")) = $(i)
-                    append!(naive_syndrome_circuit(step[$i]), encoding_circuit(step[$i]))
-        
+                    append!(naive_syndrome_circuit(encoding_circuit(i)))        
                 end
             end
         end
         return naive_syndrome_circuit
     end
 end
-
 #----------------------------------------------------------------
 
 code_s(c::Steane7) = nrow(S)

@@ -10,14 +10,14 @@ parity_checks(c) = S"XZZX_
 
 parity_matrix(c) = stab_to_gf2(parity_checks(c))
 
-#Enconding circuit -----------------------------------
+#Encoding circuit ----------------------------------
 
 encoding_circuit(c) = [] #TODO
 #-----------------------------------------------------
 
 #Syndrome circuit -------------------------------------
 function naive_syndrome(encoding_circuit)
-    naive_syndrome_circuit(c::Shor9) = []
+    naive_syndrome_circuit = []
 
     #iterating through all the steps of the encoding circuit
     for i in 1:size(encoding_circuit)
@@ -27,32 +27,18 @@ function naive_syndrome(encoding_circuit)
             for b in 1:code_n
                 #change qubit order if CNOT gate
                 if encoding_circuit[i] == sCNOT(a,b)
-                    #naming the steps
-                    @eval (Symbol("step$i")) = $(i)
                     #adding the steps to the circuit build
-                    append!(naive_syndrome_circuit(step[$i]), sCNOT(b,a))
-            
-                #change X->Z & vice-versage 
-                elseif encoding_circuit[i] == Z(a)
-                    @eval (Symbol("step$i")) = $i
-                    append!(naive_syndrome_circuit(step[$i]), X(a))
-            
-                elseif encoding_circuit[i] == X(a)
-                    @eval (Symbol("step$i")) = $(i)
-                    append!(naive_syndrome_circuit(step[$i]), Z(a))
+                    append!(naive_syndrome_circuit(sCNOT(b,a)))
             
                 #Hadamard gates response -> keep step as is
                 else
-                    @eval (Symbol("step$i")) = $(i)
-                    append!(naive_syndrome_circuit(step[$i]), encoding_circuit(step[$i]))
-        
+                    append!(naive_syndrome_circuit(encoding_circuit[i]))                
                 end
             end
         end
         return naive_syndrome_circuit
     end
 end
-
 #----------------------------------------------------------------
 
 code_n(c) = #variable input dependent

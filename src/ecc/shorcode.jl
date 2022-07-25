@@ -33,7 +33,7 @@ encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6]
 
 #Syndrome circuit -------------------------------------
 function naive_syndrome(encoding_circuit)
-    naive_syndrome_circuit(c::Shor9) = []
+    naive_syndrome_circuit = []
 
     #iterating through all the steps of the encoding circuit
     for i in 1:size(encoding_circuit)
@@ -43,32 +43,25 @@ function naive_syndrome(encoding_circuit)
             for b in 1:code_n
                 #change qubit order if CNOT gate
                 if encoding_circuit[i] == sCNOT(a,b)
-                    #naming the steps
-                    @eval (Symbol("step$i")) = $(i)
                     #adding the steps to the circuit build
-                    append!(naive_syndrome_circuit(step[$i]), sCNOT(b,a))
+                    append!(naive_syndrome_circuit(sCNOT(b,a)))
             
                 #change X->Z & vice-versage 
                 elseif encoding_circuit[i] == Z(a)
-                    @eval (Symbol("step$i")) = $i
-                    append!(naive_syndrome_circuit(step[$i]), X(a))
+                    append!(naive_syndrome_circuit(X(a)))
             
                 elseif encoding_circuit[i] == X(a)
-                    @eval (Symbol("step$i")) = $(i)
-                    append!(naive_syndrome_circuit(step[$i]), Z(a))
+                    append!(naive_syndrome_circuit(Z(a)))
             
                 #Hadamard gates response -> keep step as is
                 else
-                    @eval (Symbol("step$i")) = $(i)
-                    append!(naive_syndrome_circuit(step[$i]), encoding_circuit(step[$i]))
-        
+                    append!(naive_syndrome_circuit(encoding_circuit[i]))                        
                 end
             end
         end
         return naive_syndrome_circuit
     end
 end
-
 #----------------------------------------------------------------
 
 code_s(c::Shor9) = nrow(S)

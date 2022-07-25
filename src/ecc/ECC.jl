@@ -5,11 +5,35 @@ using QuantumClifford
 abstract type AbstractECC end
 
 """The syndrome measurement circuit of a given code."""
-function naive_syndrome_circuit end #TODO: add the other 3 types of syndrome circuit
-#fault tolerant (3 types) -Neil, Steane, Shor
+function syndrome_circuits(encoding_circuit) #TODO: add the other 3 types of syndrome circuit
+    
+    naive_syndrome_circuit = []
+    #iterating through all the steps of the encoding circuit
+    for i in 1:size(encoding_circuit)
+        #iterating through the different physical qubits
+        for a in 1:code_n
+            #second iteration through available physical qubits (for CNOT gates)
+            for b in 1:code_n
+                #change qubit order if CNOT gate
+                if encoding_circuit[i] == sCNOT(a,b)
+                    #adding the steps to the circuit build
+                    append!(naive_syndrome_circuit(sCNOT(b,a)))
+            
+                #Hadamard gates response -> keep step as is
+                else
+                    append!(naive_syndrome_circuit(encoding_circuit[i]))                        
+                end
+            end
+        end
+        return naive_syndrome_circuit
+    end
+
+    #fault tolerant (3 types) -Neil, Steane, Shor
+
+end 
 
 """The encoding circuit of a given code."""
-function encoding_circuit end
+function encoding_circuit end 
 
 """The number of physical qubits in a code."""
 function code_n end
