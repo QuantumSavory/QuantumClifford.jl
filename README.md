@@ -1,14 +1,35 @@
 # QuantumClifford.jl
 
-[![Documentation of latest stable version](https://img.shields.io/badge/docs-stable-blue.svg)](https://krastanov.github.io/QuantumClifford.jl/stable)
-[![Documentation of dev version](https://img.shields.io/badge/docs-dev-blue.svg)](https://krastanov.github.io/QuantumClifford.jl/dev)
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Krastanov/QuantumClifford.jl/CI)](https://github.com/Krastanov/QuantumClifford.jl/actions?query=workflow%3ACI+branch%3Amaster)
-[![Test coverage from codecov](https://img.shields.io/codecov/c/gh/Krastanov/QuantumClifford.jl?label=codecov)](https://codecov.io/gh/Krastanov/QuantumClifford.jl)
-[![PkgEval](https://juliahub.com/docs/QuantumClifford/pkgeval.svg)](https://juliahub.com/ui/Packages/QuantumClifford/BsGZO)
-[![JET QA](https://img.shields.io/badge/JET.jl-%E2%9C%88%EF%B8%8F-9cf)](https://github.com/aviatesk/JET.jl)
-[![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
-<!--[![Build status](https://api.travis-ci.com/Krastanov/QuantumClifford.jl.svg?branch=master)](https://travis-ci.com/Krastanov/QuantumClifford.jl)-->
-<!--[![Test coverage from coveralls](https://img.shields.io/coveralls/github/Krastanov/QuantumClifford.jl?label=coveralls)](https://coveralls.io/r/Krastanov/QuantumClifford.jl?branch=master)-->
+<table>
+    <tr>
+        <td>Documentation</td>
+        <td>
+            <a href="https://krastanov.github.io/QuantumClifford.jl/stable"><img src="https://img.shields.io/badge/docs-stable-blue.svg" alt="Documentation of latest stable version"></a>
+            <a href="https://krastanov.github.io/QuantumClifford.jl/dev"><img src="https://img.shields.io/badge/docs-dev-blue.svg" alt="Documentation of dev version"></a>
+        </td>
+    </tr><tr></tr>
+    <tr>
+        <td>Continuous integration</td>
+        <td>
+            <a href="https://github.com/Krastanov/QuantumClifford.jl/actions?query=workflow%3ACI+branch%3Amaster"><img src="https://img.shields.io/github/workflow/status/Krastanov/QuantumClifford.jl/CI" alt="GitHub Workflow Status"></a>
+            <a href="https://juliahub.com/ui/Packages/QuantumClifford/BsGZO"><img src="https://juliahub.com/docs/QuantumClifford/pkgeval.svg" alt="PkgEval status"></a>
+        </td>
+    </tr><tr></tr>
+    <tr>
+        <td>Code coverage</td>
+        <td>
+            <a href="https://codecov.io/gh/Krastanov/QuantumClifford.jl"><img src="https://img.shields.io/codecov/c/gh/Krastanov/QuantumClifford.jl?label=codecov" alt="Test coverage from codecov"></a>
+        </td>
+    </tr><tr></tr>
+    <tr>
+        <td>Static analysis with</td>
+        <td>
+            <a href="https://github.com/aviatesk/JET.jl"><img src="https://img.shields.io/badge/JET.jl-%E2%9C%88%EF%B8%8F-9cf" alt="JET static analysis"></a>
+            <a href="https://github.com/JuliaTesting/Aqua.jl"><img src="https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg" alt="Aqua QA"></a>
+        </td>
+    </tr>
+</table>
+
 
 A Julia package for working with quantum stabilizer states and Clifford circuits
 that act on them. Graphs states are also supported. The package is already very fast for the majority of common operations, but there are still many low-hanging fruits performance-wise. See the detailed [suggested readings & references page](https://krastanov.github.io/QuantumClifford.jl/dev/references/#Suggested-reading) for background on the various algorithms.
