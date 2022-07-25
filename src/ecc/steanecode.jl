@@ -12,17 +12,23 @@ code_n(c::Steane5) = 5
 parity_matrix(c::Steane5) = stab_to_gf2(parity_checks(c::Steane5))
 
 #Encoding circuit ----------------------------------
-c1 = sCNOT(1,6)
-c2 = sCNOT(2,6)
-C3 = sCNOT(3,6)
-c4 = sCNOT(4,6)
-C5 = sCNOT(5,6)
+h1 = sHadamard(1)
+h2 = sHadamard(2)
+h4 = sHadamard(4)
 
-z1 = Z(4)
-z2 = Z(5)
-z3 = Z(5)
+c1 = sCNOT(1,3)
+c2 = sCNOT(4,6)
 
-encoding_circuit(c::Steane5) = [c1,c2,c3,c4,c5,z1,z2,z3] 
+c3 = sCNOT(2,7)
+c4 = sCNOT(1,5)
+c5 = sCNOT(4,7)
+C6 = sCNOT(2,6)
+C7 = sCNOT(1,7)
+
+c8 = sCNOT(2,3)
+c9 = sCNOT(4,5)
+
+encoding_circuit(c::Steane5) = [h1,h2,h3,c1,c2,c3,c4,c5,c6,c7,c8,c9] 
 #----------------------------------------------------------------
 
 #Syndrome circuit -------------------------------------
@@ -79,6 +85,9 @@ code_n(c::Steane7) = 7
 parity_matrix(c::Steane7) = stab_to_gf2(parity_checks(c::Steane7))
 
 #Encoding circuit ----------------------------------
+c1 = sCNOT(1,2)
+c2 = sCNOT(1,3)
+
 h1 = sHadamard(5)
 h2 = sHadamard(6)
 h3 = sHadamard(7)

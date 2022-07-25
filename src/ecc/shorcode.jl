@@ -23,12 +23,15 @@ h1 = sHadamard(1)
 h2 = sHadamard(4)
 h3 = sHadamard(7)
 
-c3 = sCNOT(4,5)
-c4 = sCNOT(4,6)
+c3 = sCNOT(1,2)
+c4 = sCNOT(4,5)
 c5 = sCNOT(7,8)
-c6 = sCNOT(7,9) 
 
-encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6]
+c6 = sCNOT(1,3)
+c7 = sCNOT(4,6)
+c8 = sCNOT(7,9) 
+
+encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
 #----------------------------------------------------------------
 
 #Syndrome circuit -------------------------------------
@@ -45,13 +48,6 @@ function naive_syndrome(encoding_circuit)
                 if encoding_circuit[i] == sCNOT(a,b)
                     #adding the steps to the circuit build
                     append!(naive_syndrome_circuit(sCNOT(b,a)))
-            
-                #change X->Z & vice-versage 
-                elseif encoding_circuit[i] == Z(a)
-                    append!(naive_syndrome_circuit(X(a)))
-            
-                elseif encoding_circuit[i] == X(a)
-                    append!(naive_syndrome_circuit(Z(a)))
             
                 #Hadamard gates response -> keep step as is
                 else
