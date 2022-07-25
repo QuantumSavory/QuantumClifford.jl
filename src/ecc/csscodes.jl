@@ -29,23 +29,24 @@ end
 #Testing code for CSS code contruction
 #[7,4] Hamming code -> Steane's 7
 
-#classical_code_G_matrix
-classical_code_G_matrix(c) = [1:0:0:0 0:1:0:0 0:0:1:0 0:0:0:1]
-
 #classical_code_H_matrix
 classical_code_H_matrix(c) = [0:0:1 0:1:0 0:1:1 1:0:0 1:0:1 1:1:0 1:1:1]
-H = classical_code_H_matrix(c)
-ishadamard(H)
+#H = classical_code_H_matrix(c)
+#ishadamard(H)
+
+#classical_code_G_matrix - dual code
+#classical_code_G_matrix(c) = [1:0:0:0 0:1:0:0 0:0:1:0 0:0:0:1] #tst
+classical_code_G_matrix(c) = gf2_H_to_G(classical_code_H_matrix)
 #----------------------------------------------------------------------------------------------
 
 
 #----------------CSS code generation ----------------------------------------------------------
 
-#-----------Building dual code ----------------
+#-----------Check matrix ----------------
 
 #create matrix, over space range x
-dual_code(c) = 
-
+check_matrix_X(c) = classical_code_H_matrix(c)
+check_matrix_Z(c) = classical_code_G_matrix(c)
 
 #convert into nemo matrix: def space matrix (float -> binary)
 
@@ -69,15 +70,11 @@ GD(c::Rep3) = [0:G2 G2_orthcolumnspace:0]
 
 #------------------------------
 
-#det with nemo
-dual_code_prt1(c) = [1:0:0:0 0:1:0:0 0:0:1:0 0:0:0:1] #tst H 8 https://en.wikipedia.org/wiki/Hamming_code#[7,4]_Hamming_code
-dual_code_prt2(c) = [0:1:1:1 1:0:1:1 1:1:0:1 1:1:1:0] #tst H 8
-
 #-----------Building CSS code ----------------
 
 parity_checks(c) = S"" 
 
-code_n(c) = css_n #variable input 
+code_n(c) = size(classical_code_H_matrix, 1) + size(classical_code_G_matrix, 1) #variable input 
 
 parity_matrix(c) = stab_to_gf2(parity_checks(c))
 
