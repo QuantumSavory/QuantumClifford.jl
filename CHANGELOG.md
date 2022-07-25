@@ -1,10 +1,10 @@
 # News
 
-## v0.5.7 - dev
+## v0.5.7 - 2022-07-24
 
-- Expanding test suite, including base functions, `Experimental.NoisyCircuits`, and others.
 - **(fix)** `apply!(S"XXX", P"X", [1])` and similar sparse Pauli applies were giving wrong results.
 - Significant speedup of `petrajectories` thanks to an order of magnitude speedup in `applynoise_branches(...,::UnbiasedUncorrelatedNoise)`.
+- Expanding test suite, including base functions, `Experimental.NoisyCircuits`, and others. Re-establishing tests of alternative big-packing.
 
 ## v0.5.6 - 2022-07-20
 
