@@ -35,35 +35,38 @@ encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6]
 naive_syndrome_circuit(c::Shor9) = []
 
 #iterating through all the steps of the encoding circuit
-for i in size(encoding_circuit(c::Shor9)):
+for i in size(encoding_circuit)
     #iterating through the different physical qubits
-    for a in code_n(c::Shor9):
+    for a in code_n
         #second iteration through available physical qubits (for CNOT gates)
-        for b in code_n(c::Shor9):
+        for b in code_n
             #change qubit order if CNOT gate
-            if i == sCNOT(a,b):
+            if encoding_circuit[i] == sCNOT(a,b)
                 #naming the steps
                 @eval 
                 $(Symbol(:x, i)) = step[$i]
                 #adding the steps to the circuit build
-                append!(naive_syndrome_circuit(step[$i], sCNOT(b,a)))
+                append!(naive_syndrome_circuit(step[$i]), sCNOT(b,a))
             
             #change X->Z & vice-versage 
-            elseif i == Z(a):
+            elseif encoding_circuit[i] == Z(a)
                 @eval 
                 $(Symbol(:x, i)) = step[$i]
-                append!(naive_syndrome_circuit(step[$i], X(a)))
+                append!(naive_syndrome_circuit(step[$i]), X(a))
             
-            elseif i == X(a):
+            elseif encoding_circuit[i] == X(a)
                 @eval 
                 $(Symbol(:x, i)) = step[$i]
-                append!(naive_syndrome_circuit(step[$i], Z(a)))
+                append!(naive_syndrome_circuit(step[$i]), Z(a))
             
             #Hadamard gates response -> keep step as is
-            else:
+            else
                 @eval 
                 $(Symbol(:x, i)) = step[$i]
-                append!(encoding_circuit(step[$i], i)) 
+                append!(naive_syndrome_circuit(step[$i]), encoding_circuit(step[$i]))
+        end
+    end
+end
 #----------------------------------------------------------------
 
 code_s(c::Shor9) = nrow(S)
