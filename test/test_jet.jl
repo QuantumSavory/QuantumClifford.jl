@@ -32,16 +32,15 @@ function test_jet()
         @test isempty(JET.get_reports(@report_call QuantumClifford._canonicalize_gott!(s)))
         @test isempty(JET.get_reports(@report_call QuantumClifford._canonicalize_rref!(s,[1,3])))
 
-        @test length(JET.get_reports(
-            report_package("QuantumClifford";
-                ignored_modules=(
-                    AnyFrameModule(Graphs.LinAlg),
-                    AnyFrameModule(Graphs.SimpleGraphs),
-                    AnyFrameModule(ArrayInterface),
-                    AnyFrameModule(Static),
-                )
+        rep = report_package("QuantumClifford";
+            ignored_modules=(
+                AnyFrameModule(Graphs.LinAlg),
+                AnyFrameModule(Graphs.SimpleGraphs),
+                AnyFrameModule(ArrayInterface),
+                AnyFrameModule(Static),
             )
-        )) == 3
+        )
+        @test length(JET.get_reports(rep)) == 3
         #= TODO These false positives appear. Figure out how to filter them out.
         ┌ @ /home/stefan/Documents/ScratchSpace/clifford/QuantumClifford/src/linalg.jl:72 LinearAlgebra.rank(::QuantumClifford.Stabilizer)
         │ may throw: QuantumClifford.throw(BadDataStructure("Using a `Stabilizer` type does not ...
