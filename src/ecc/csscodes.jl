@@ -30,12 +30,12 @@ end
 #[7,4] Hamming code -> Steane's 7
 
 #classical_code_H_matrix
-classical_code_H_matrix(c) = [0:0:1 0:1:0 0:1:1 1:0:0 1:0:1 1:1:0 1:1:1]
+classical_code_H_matrix(c) = [0:0:1; 0:1:0; 0:1:1; 1:0:0; 1:0:1; 1:1:0; 1:1:1]
 #H = classical_code_H_matrix(c)
 #ishadamard(H)
 
 #classical_code_G_matrix - dual code
-#classical_code_G_matrix(c) = [1:0:0:0 0:1:0:0 0:0:1:0 0:0:0:1] #tst
+#classical_code_G_matrix(c) = [1:0:0:0; 0:1:0:0; 0:0:1:0; 0:0:0:1] #tst
 classical_code_G_matrix(c) = gf2_H_to_G(classical_code_H_matrix)
 #----------------------------------------------------------------------------------------------
 
@@ -48,31 +48,26 @@ classical_code_G_matrix(c) = gf2_H_to_G(classical_code_H_matrix)
 check_matrix_X(c) = classical_code_H_matrix(c)
 check_matrix_Z(c) = classical_code_G_matrix(c)
 
-#convert into nemo matrix: def space matrix (float -> binary)
-
-#= ERROR
-
-#port processing nemo ------
-MatrixSpace(ResidueRing(ZZ,2), rᴬ, Δ)
-
-function dual_code(H)
-    null = nullspace(H)[2]
-    @assert all(a*null .== 0)
-    @assert size(a,1) + size(null,2) == size(a,2)
-    transpose(null)
-end
-
-G2_orthcolumnspace(c::Rep3) = nullspace(M, rtol=3) 
-
-GD(c::Rep3) = [0:G2 G2_orthcolumnspace:0] 
-
-=#
-
 #------------------------------
 
 #-----------Building CSS code ----------------
+#=
+S = Stabilizer([0x2, 7x3],
+                  check_matrix_X,
+                  check_matrix_Z)
+=#
+#=
+julia> Stabilizer([0x2, 0x0],
+                  Bool[1 1;
+                       0 0],
+                  Bool[0 0;
+                       1 1])
+- XX
++ ZZ
+=#
 
-parity_checks(c) = S"" 
+parity_checks(c) = S 
+print(S) = S #testing
 
 code_n(c) = size(classical_code_H_matrix, 1) + size(classical_code_G_matrix, 1) #variable input 
 
@@ -119,6 +114,6 @@ rate(c) = code_k/code_s
 
 logx_ops(c) = P"XXXXXXXXX"
 
-logy_ops(c) = #TODO
+logz_ops(c) = P"ZZZZZZZZZ"
 
 logy_ops(c) = P"YYYYYYYYY" 
