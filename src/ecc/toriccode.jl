@@ -16,42 +16,45 @@ encoding_circuit(c) = [] #TODO
 #-----------------------------------------------------
 
 #Syndrome circuit -------------------------------------
-naive_syndrome_circuit(c) = []
+function naive_syndrome(encoding_circuit)
+    naive_syndrome_circuit(c::Shor9) = []
 
-#iterating through all the steps of the encoding circuit
-for i in size(encoding_circuit)
-    #iterating through the different physical qubits
-    for a in code_n
-        #second iteration through available physical qubits (for CNOT gates)
-        for b in code_n
-            #change qubit order if CNOT gate
-            if encoding_circuit[i] == sCNOT(a,b)
-                #naming the steps
-                @eval 
-                $(Symbol(:x, i)) = step[$i]
-                #adding the steps to the circuit build
-                append!(naive_syndrome_circuit(step[$i]), sCNOT(b,a))
+    #iterating through all the steps of the encoding circuit
+    for i in 1:size(encoding_circuit)
+        #iterating through the different physical qubits
+        for a in 1:code_n
+            #second iteration through available physical qubits (for CNOT gates)
+            for b in 1:code_n
+                #change qubit order if CNOT gate
+                if encoding_circuit[i] == sCNOT(a,b)
+                    #naming the steps
+                    @eval (Symbol("step$i")) = $(i)
+                    #adding the steps to the circuit build
+                    append!(naive_syndrome_circuit(step[$i]), sCNOT(b,a))
             
-            #change X->Z & vice-versage 
-            elseif encoding_circuit[i] == Z(a)
-                @eval 
-                $(Symbol(:x, i)) = step[$i]
-                append!(naive_syndrome_circuit(step[$i]), X(a))
+                #change X->Z & vice-versage 
+                elseif encoding_circuit[i] == Z(a)
+                    @eval (Symbol("step$i")) = $i
+                    append!(naive_syndrome_circuit(step[$i]), X(a))
             
-            elseif encoding_circuit[i] == X(a)
-                @eval 
-                $(Symbol(:x, i)) = step[$i]
-                append!(naive_syndrome_circuit(step[$i]), Z(a))
+                elseif encoding_circuit[i] == X(a)
+                    @eval (Symbol("step$i")) = $(i)
+                    append!(naive_syndrome_circuit(step[$i]), Z(a))
             
-            #Hadamard gates response -> keep step as is
-            else
-                @eval 
-                $(Symbol(:x, i)) = step[$i]
-                append!(naive_syndrome_circuit(step[$i]), encoding_circuit(step[$i]))
+                #Hadamard gates response -> keep step as is
+                else
+                    @eval (Symbol("step$i")) = $(i)
+                    append!(naive_syndrome_circuit(step[$i]), encoding_circuit(step[$i]))
+        
+                end
+            end
         end
+        return naive_syndrome_circuit
     end
 end
+
 #----------------------------------------------------------------
+
 code_n(c) = #variable input dependent
 
 code_k(c) = #variable input dependent
