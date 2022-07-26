@@ -15,31 +15,7 @@ parity_matrix(c) = stab_to_gf2(parity_checks(c))
 encoding_circuit(c) = [] #TODO
 #-----------------------------------------------------
 
-#Syndrome circuit -------------------------------------
-function naive_syndrome(encoding_circuit)
-    naive_syndrome_circuit = []
-
-    #iterating through all the steps of the encoding circuit
-    for i in 1:size(encoding_circuit)
-        #iterating through the different physical qubits
-        for a in 1:code_n
-            #second iteration through available physical qubits (for CNOT gates)
-            for b in 1:code_n
-                #change qubit order if CNOT gate
-                if encoding_circuit[i] == sCNOT(a,b)
-                    #adding the steps to the circuit build
-                    append!(naive_syndrome_circuit(sCNOT(b,a)))
-            
-                #Hadamard gates response -> keep step as is
-                else
-                    append!(naive_syndrome_circuit(encoding_circuit[i]))                
-                end
-            end
-        end
-        return naive_syndrome_circuit
-    end
-end
-#----------------------------------------------------------------
+#naive_syndrome(encoding_circuit) #Syndrome circuit
 
 code_n(c) = #variable input dependent
 

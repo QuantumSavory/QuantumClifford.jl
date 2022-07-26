@@ -31,31 +31,7 @@ c9 = sCNOT(4,5)
 encoding_circuit(c::Steane5) = [h1,h2,h3,c1,c2,c3,c4,c5,c6,c7,c8,c9] 
 #----------------------------------------------------------------
 
-#Syndrome circuit -------------------------------------
-function naive_syndrome(encoding_circuit)
-    naive_syndrome_circuit = []
-
-    #iterating through all the steps of the encoding circuit
-    for i in 1:size(encoding_circuit)
-        #iterating through the different physical qubits
-        for a in 1:code_n
-            #second iteration through available physical qubits (for CNOT gates)
-            for b in 1:code_n
-                #change qubit order if CNOT gate
-                if encoding_circuit[i] == sCNOT(a,b)
-                    #adding the steps to the circuit build
-                    append!(naive_syndrome_circuit(sCNOT(b,a)))
-            
-                #Hadamard gates response -> keep step as is
-                else
-                    append!(naive_syndrome_circuit(encoding_circuit[i]))                
-                end
-            end
-        end
-        return naive_syndrome_circuit
-    end
-end
-#----------------------------------------------------------------
+naive_syndrome(encoding_circuit) #Syndrome circuit
 
 code_s(c::Steane5) = nrow(S)
 
@@ -105,31 +81,7 @@ c11 = sCNOT(5,2)
 encoding_circuit(c::Steane7) = [c1,c2,h1,h2,h3,c3,c4,c5,c6, c7, c8, c9, c10, c11]
 #----------------------------------------------------------------
 
-#Syndrome circuit -------------------------------------
-function naive_syndrome(encoding_circuit)
-    naive_syndrome_circuit = []
-
-    #iterating through all the steps of the encoding circuit
-    for i in 1:size(encoding_circuit)
-        #iterating through the different physical qubits
-        for a in 1:code_n
-            #second iteration through available physical qubits (for CNOT gates)
-            for b in 1:code_n
-                #change qubit order if CNOT gate
-                if encoding_circuit[i] == sCNOT(a,b)
-                    #adding the steps to the circuit build
-                    append!(naive_syndrome_circuit(sCNOT(b,a)))
-            
-                #Hadamard gates response -> keep step as is
-                else
-                    append!(naive_syndrome_circuit(encoding_circuit(i)))        
-                end
-            end
-        end
-        return naive_syndrome_circuit
-    end
-end
-#----------------------------------------------------------------
+#naive_syndrome(encoding_circuit) #Syndrome circuit
 
 code_s(c::Steane7) = nrow(S)
 

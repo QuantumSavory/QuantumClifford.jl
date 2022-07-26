@@ -4,33 +4,32 @@ using QuantumClifford
 
 abstract type AbstractECC end
 
-"""The syndrome measurement circuit of a given code."""
-function syndrome_circuits(encoding_circuit) #TODO: add the other 3 types of syndrome circuit
+#=
+function naive_syndrome_circuit(encondingc::Vector) #TODO: add the other 3 types of syndrome circuit
     
-    naive_syndrome_circuit = []
+    naive_sc = []
     #iterating through all the steps of the encoding circuit
-    for i in 1:size(encoding_circuit)
-        #iterating through the different physical qubits
-        for a in 1:code_n
-            #second iteration through available physical qubits (for CNOT gates)
-            for b in 1:code_n
-                #change qubit order if CNOT gate
-                if encoding_circuit[i] == sCNOT(a,b)
-                    #adding the steps to the circuit build
-                    append!(naive_syndrome_circuit(sCNOT(b,a)))
+    dim_encondingc = length(encondingc)
+    #=for h in encondingc
+        dim_encondingc = dim_encondingc + 1
+    end=#
+
+    for i in 1:dim_encondingc
+        #change qubit order if CNOT gate
+        if encondingc[i] == sCNOT(a,b) #pattern matching
+            #adding the steps to the circuit build
+            append!(naive_sc(sCNOT(b,a)))
             
-                #Hadamard gates response -> keep step as is
-                else
-                    append!(naive_syndrome_circuit(encoding_circuit[i]))                        
-                end
-            end
+        #Hadamard gates response -> keep step as is
+        else
+            append!(naive_sc(encondingc[i]))                        
         end
-        return naive_syndrome_circuit
     end
 
+    return naive_sc
     #fault tolerant (3 types) -Neil, Steane, Shor
-
 end 
+=#
 
 """The encoding circuit of a given code."""
 function encoding_circuit end 
@@ -74,7 +73,7 @@ include("./shorcode.jl")
 include("./steanecode.jl")
 
 # CSS codes
-#include("./csscodes.jl")
+include("./csscodes.jl")
 
 #------TODO--------------------------------
 
