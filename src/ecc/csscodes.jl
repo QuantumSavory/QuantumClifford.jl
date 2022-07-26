@@ -1,5 +1,6 @@
 using Nemo 
 using LinearAlgebra
+#using Statistics
 
 #structure for CSS codes
 struct CSS <: AbstractECC
@@ -31,80 +32,52 @@ end
 #[7,4] Hamming code -> Steane's 7
 
 #classical_code_H_matrix
-classical_code_H_matrix(c) = [0:0:1; 0:1:0; 0:1:1; 1:0:0; 1:0:1; 1:1:0; 1:1:1]
+classical_code_H_matrix = [0 0 1; 0 1 0; 0 1 1; 1 0 0; 1 0 1; 1 1 0; 1 1 1]
+#classical_code_H_matrix(c) = ((0,0,1),(0,1,0),(0,1,1),(1,0,0),(1,0,1),(1,1,0),(1,1,1))
+
 #H = classical_code_H_matrix(c)
 #ishadamard(H)
 
 #classical_code_G_matrix - dual code
-#classical_code_G_matrix(c) = [1:0:0:0; 0:1:0:0; 0:0:1:0; 0:0:0:1] #tst
-classical_code_G_matrix(c) = gf2_H_to_G(classical_code_H_matrix)
-#----------------------------------------------------------------------------------------------
+classical_code_G_matrix = [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1] #tst
+#classical_code_G_matrix(c) = gf2_H_to_G(classical_code_H_matrix)
 
+#----------------------------------------------------------------------------------------------
 
 #----------------CSS code generation ----------------------------------------------------------
 #----------Dual code -------------------
 #Size
-H_absarray = BitArray(classical_code_H_matrix) #TODO
-size_row_H = size(H_array, 1)
+size_row_H = size(classical_code_H_matrix, 1)
 size_column_H = size(classical_code_H_matrix, 2)
 
-G_absarray = #TODO
-size_row_G = size(G_array, 1)
+size_row_G = size(classical_code_G_matrix, 1)
 size_column_G = size(classical_code_G_matrix, 2)
 
 #Dual code build
-X_zeros = zeros(classical_code_H_matrix, size_column_H)
-Z_zeros = zeros(classical_code_G_matrix, size_column_G)
+X_zeros = zeros(Int8, size_row_H, size_column_H)
+Z_zeros = zeros(Int8, size_row_G, size_column_G)
 
 #Final X & Z matrix
 X_matrix = X_zeros
 Z_matrix = classical_code_G_matrix
 #TODO: overlap X & Z -> Y !!!
-append!(Z_matrix,Z_zeros)
-append!(X_matrix,classical_code_H_matrix)
+hcat(Z_matrix,Z_zeros)
+hcat(X_matrix,classical_code_H_matrix)
 
 #-----------Building CSS code ----------------
 
-S = Stabilizer([0x2, 0x0],
-                  Bool[X_matrix],
-                  Bool[Z_matrix])
-
-parity_checks(c) = S 
+parity_checks(c) = Stabilizer(Z_matrix,X_matrix)
 
 code_n(c) = size(X_matrix, 1) #variable input dependant
 
-parity_matrix(c) = stab_to_gf2(parity_checks(c)) #test parity_matrix = Z+X
+parity_matrix(c) = stab_to_gf2(parity_checks) #test vcat(Z_matrix,X_matrix)
 
 #Encoding circuit ----------------------------------
 
 encoding_circuit(c) = []#TODO
 #----------------------------------------------------------------
 
-#Syndrome circuit -------------------------------------
-function naive_syndrome(encoding_circuit)
-    naive_syndrome_circuit = []
-
-    #iterating through all the steps of the encoding circuit
-    for i in 1:size(encoding_circuit)
-        #iterating through the different physical qubits
-        for a in 1:code_n
-            #second iteration through available physical qubits (for CNOT gates)
-            for b in 1:code_n
-                #change qubit order if CNOT gate
-                if encoding_circuit[i] == sCNOT(a,b)
-                    #adding the steps to the circuit build
-                    append!(naive_syndrome_circuit(sCNOT(b,a)))
-            
-                #Hadamard gates response -> keep step as is
-                else
-                    append!(naive_syndrome_circuit(encoding_circuit[i]))                
-                end
-            end
-        end
-        return naive_syndrome_circuit
-    end
-end
-#----------------------------------------------------------------
+#naive_syndrome(encoding_circuit) #Syndrome circuit
 
 code_s(c) = nrow(S)
 
