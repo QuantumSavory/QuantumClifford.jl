@@ -31,7 +31,7 @@ c9 = sCNOT(4,5)
 encoding_circuit(c::Steane5) = [h1,h2,h3,c1,c2,c3,c4,c5,c6,c7,c8,c9] 
 #----------------------------------------------------------------
 
-naive_syndrome(encoding_circuit) #Syndrome circuit
+#naive_syndrome(encoding_circuit) #Syndrome circuit
 
 code_s(c::Steane5) = nrow(S)
 

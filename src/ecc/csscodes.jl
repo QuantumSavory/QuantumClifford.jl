@@ -42,7 +42,6 @@ classical_code_H_matrix = [0 0 1; 0 1 0; 0 1 1; 1 0 0; 1 0 1; 1 1 0; 1 1 1]
 classical_code_G_matrix = [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1] #tst
 #classical_code_G_matrix(c) = gf2_H_to_G(classical_code_H_matrix) 
 
-#ldpc.codes.hamming_code(rank)
 #----------------------------------------------------------------------------------------------
 
 #----------------CSS code generation ----------------------------------------------------------
