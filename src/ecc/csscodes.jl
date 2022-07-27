@@ -28,6 +28,7 @@ end
         In general each parity bit covers all bits where the bitwise AND of the parity position and the bit position is non-zero.
 =#
 
+
 #Testing code for CSS code contruction
 #[7,4] Hamming code -> Steane's 7
 
