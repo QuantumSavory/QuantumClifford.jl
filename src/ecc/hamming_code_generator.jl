@@ -1,9 +1,15 @@
-#https://dspace.sunyconnect.suny.edu/bitstream/handle/1951/70206/R%20Quinn%20MS%20Project%20document%2020180507.pdf?sequence=1&isAllowed=y
+#=
+This code was published as an Appendix in the following project by Ryan Quinn:
+Applicability of the Julia Programming Language to Forward Error-Correction Coding in Digital Communications Systems
+https://dspace.sunyconnect.suny.edu/bitstream/handle/1951/70206/R%20Quinn%20MS%20Project%20document%2020180507.pdf?sequence=1&isAllowed=y
+This project was presented to the Department of Computer and Information Sciences, at State University of New York Polytechnic Institute, Utica, noisy
+In partial fulfillment of the requirements of the author's Master of Science Degree, in May 2018
+=#
 
 module Hamming
 
-#----------------Generating Hamming codes ----------------------------------------------------
-#= TODO:
+#=---------------Generating Hamming codes step by step instructions----------------------------------------
+   TODO:
     Number the bits starting from 1: bit 1, 2, 3, 4, 5, 6, 7, etc.
     Write the bit numbers in binary: 1, 10, 11, 100, 101, 110, 111, etc.
     All bit positions that are powers of two (have a single 1 bit in the binary form of their position) are parity bits: 1, 2, 4, 8, etc. (1, 10, 100, 1000)
@@ -14,7 +20,7 @@ module Hamming
         Parity bit 4 covers all bit positions which have the third least significant bit set: bits 4–7, 12–15, 20–23, etc.
         Parity bit 8 covers all bit positions which have the fourth least significant bit set: bits 8–15, 24–31, 40–47, etc.
         In general each parity bit covers all bits where the bitwise AND of the parity position and the bit position is non-zero.
-=#
+---------------------------------------------------------------------------------------------------------=#
 
 # INCLUDES
 include("types.jl")
