@@ -4,7 +4,9 @@ using QuantumClifford
 
 abstract type AbstractECC end
 
-#=
+function sCNOT_gatechange(gate::sCNOT) sCNOT(gate.q2,gate.q1) end
+
+
 function naive_syndrome_circuit(encondingc::Vector) #TODO: add the other 3 types of syndrome circuit
     
     naive_sc = []
@@ -16,9 +18,9 @@ function naive_syndrome_circuit(encondingc::Vector) #TODO: add the other 3 types
 
     for i in 1:dim_encondingc
         #change qubit order if CNOT gate
-        if encondingc[i] == sCNOT(a,b) #pattern matching
+        if encondingc[i] == sCNOT
             #adding the steps to the circuit build
-            append!(naive_sc(sCNOT(b,a)))
+            append!(naive_sc(sCNOT_gatechange(encondingc[i])))
             
         #Hadamard gates response -> keep step as is
         else
@@ -29,7 +31,7 @@ function naive_syndrome_circuit(encondingc::Vector) #TODO: add the other 3 types
     return naive_sc
     #fault tolerant (3 types) -Neil, Steane, Shor
 end 
-=#
+
 
 """The encoding circuit of a given code."""
 function encoding_circuit end 
