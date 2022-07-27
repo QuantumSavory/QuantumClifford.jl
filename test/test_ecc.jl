@@ -1,6 +1,3 @@
-#Testing file ecc library
-
-
 
 
 #Syndrome circuit testing-------------------------------------
