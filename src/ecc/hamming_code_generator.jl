@@ -22,25 +22,13 @@ module Hamming
         In general each parity bit covers all bits where the bitwise AND of the parity position and the bit position is non-zero.
 ---------------------------------------------------------------------------------------------------------=#
 
-# INCLUDES
-include("types.jl")
-
 # EXPORTS
-export Hamming_Params
 export construct_A, construct_G_from_A, construct_H_from_A,
 construct_R_from_A, construct_hamming_parameters
 export encode, decode, encode_stream, decode_stream
 
-# TYPES
-type Hamming_Params
-A::BitArray
-G::BitArray
-H::BitArray
-R::BitArray
-end
 
 # FUNCTIONS
-
 """
 construct_A( block_len::SizeType, message_len::SizeType )
 Create a valid A matrix for a Hamming code of arbitrary size. It is the
@@ -98,8 +86,7 @@ function construct_G_from_A( A::BitArray )
     message_len = 2^r - r - 1
     parity = A
     data = eye( Bit, message_len )
-    # Since G is being constructed in its transposed form, we think of parity
-    bits as
+    # Since G is being constructed in its transposed form, we think of parity bits as
     # protecting rows, not columns
     parity_rows = [ 2^(x-1) for x in range(1,r) ]
     # The data rows are all the non-parity rows
