@@ -7,8 +7,9 @@ abstract type AbstractECC end
 function sCNOT_gatechange(gate::sCNOT) sCNOT(gate.q2,gate.q1) end
 
 
-function naive_syndrome_circuit(encondingc::Vector) #TODO: add the other 3 types of syndrome circuit
-    
+function naive_syndrome_circuit(code::AbstractECC) #TODO: add the other 3 types of syndrome circuit
+    #AbstractECC type
+    encondingc = encoding_circuit(code)
     naive_sc = []
     #iterating through all the steps of the encoding circuit
     dim_encondingc = length(encondingc)

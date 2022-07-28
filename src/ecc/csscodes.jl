@@ -3,7 +3,9 @@ using LinearAlgebra
 #using Statistics
 
 #structure for CSS codes
-struct CSS <: AbstractECC
+struct CSS <: AbstractECC end
+
+#=struct CSS <: AbstractECC
 
     function css_n end
     function classical_code_G_matrix end
@@ -12,7 +14,9 @@ struct CSS <: AbstractECC
     function dual_code_prt1 end
     function dual_code_prt2 end
 
-end
+end=#
+
+#include("hamming_code_generator.jl") #hamming code generator
 
 #Testing code for CSS code contruction
 #[7,4] Hamming code -> Steane's 7
@@ -48,29 +52,29 @@ hcat(X_matrix,classical_code_H_matrix)
 
 #-----------Building CSS code ----------------
 
-parity_checks(c) = Stabilizer(Z_matrix,X_matrix)
+parity_checks(c::CSS) = Stabilizer(Z_matrix,X_matrix) #READ MANUAL 
 
-code_n(c) = size(X_matrix, 1) #variable input dependant
+code_n(c::CSS) = size(X_matrix, 1) #variable input dependant
 
-parity_matrix(c) = stab_to_gf2(parity_checks) 
+parity_matrix(c::CSS) = stab_to_gf2(parity_checks) 
 
 #Encoding circuit ----------------------------------
 
-encoding_circuit(c) = []#TODO
+encoding_circuit(c::CSS) = [] #TODO -> START SYNDROME CIRCUIT
 #----------------------------------------------------------------
 
 #naive_syndrome(encoding_circuit) #Syndrome circuit
 
-code_s(c) = nrow(S)
+code_s(c::CSS) = nrow(S)
 
-code_k(c) = css_n - code_s
+code_k(c::CSS) = css_n - code_s
 
-rate(c) = code_k/code_s
+rate(c::CSS) = code_k/code_s
 
 #distance(c::CSS) = undefined for now
 
-logx_ops(c) = P"XXXXXXXXX"
+logx_ops(c::CSS) = P"XXXXXXXXX"
 
-logz_ops(c) = P"ZZZZZZZZZ"
+logz_ops(cc::CSS) = P"ZZZZZZZZZ"
 
-logy_ops(c) = P"YYYYYYYYY" 
+logy_ops(cc::CSS) = P"YYYYYYYYY" 

@@ -35,7 +35,8 @@ encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
 
 #----------------------------------------------------------------
 
-#naive_syndrome_circuit([c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]) #Syndrome circuit
+#naive_syndrome_circuit(encoding_circuit) #Syndrome circuit
+#steane tutorial, book <- check doc: 
 
 code_s(c::Shor9) = nrow(S)
 
