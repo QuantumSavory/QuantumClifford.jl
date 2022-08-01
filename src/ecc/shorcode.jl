@@ -35,14 +35,17 @@ encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
 
 #----------------------------------------------------------------
 
-#naive_syndrome_circuit(encoding_circuit) #Syndrome circuit
+#These functions are current in ECC
+#=
+naive_syndrome_circuit(c::Shor9) #Syndrome circuit
 #steane tutorial, book <- check doc: 
 
-code_s(c::Shor9) = nrow(S)
+code_s(c::Shor9) = sizeof(parity_checks) / code_n
 
 code_k(c::Shor9) = code_n(c::Shor9) - code_s(c::Shor9)
 
 rate(c::Shor9) = code_k(c::Shor9)/code_s(c::Shor9)
+=#
 
 distance(c::Shor9) = 3
 

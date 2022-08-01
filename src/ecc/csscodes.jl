@@ -60,18 +60,19 @@ parity_matrix(c::CSS) = stab_to_gf2(parity_checks)
 
 #Encoding circuit ----------------------------------
 
-encoding_circuit(c::CSS) = [] #TODO -> START SYNDROME CIRCUIT
+#encoding_circuit(c::CSS) = [] #TODO -> START SYNDROME CIRCUIT
 #----------------------------------------------------------------
 
-#naive_syndrome(encoding_circuit) #Syndrome circuit
+#These functions are current in ECC
+#=
+naive_syndrome(c::CSS) #Syndrome circuit
 
 code_s(c::CSS) = nrow(S)
 
 code_k(c::CSS) = css_n - code_s
 
 rate(c::CSS) = code_k/code_s
-
-#distance(c::CSS) = undefined for now
+=#
 
 logx_ops(c::CSS) = P"XXXXXXXXX"
 

@@ -31,13 +31,16 @@ c9 = sCNOT(4,5)
 encoding_circuit(c::Steane5) = [h1,h2,h3,c1,c2,c3,c4,c5,c6,c7,c8,c9] 
 #----------------------------------------------------------------
 
-#naive_syndrome(encoding_circuit) #Syndrome circuit
+#These functions are current in ECC
+#=
+naive_syndrome(c::Steane5) #Syndrome circuit
 
 code_s(c::Steane5) = nrow(S)
 
 code_k(c::Steane5) = code_n(c::Steane5) - code_s(c::Steane5)
 
 rate(c::Steane5) = code_k(c::Steane5)/code_s(c::Steane5)
+=#
 
 distance(c::Steane5) = 3
 
@@ -80,14 +83,16 @@ c11 = sCNOT(5,2)
 
 encoding_circuit(c::Steane7) = [c1,c2,h1,h2,h3,c3,c4,c5,c6, c7, c8, c9, c10, c11]
 #----------------------------------------------------------------
-
-#naive_syndrome(encoding_circuit) #Syndrome circuit
+#These functions are current in ECC
+#=
+naive_syndrome(encoding_circuit) #Syndrome circuit
 
 code_s(c::Steane7) = nrow(S)
 
 code_k(c::Steane7) = code_n(c::Steane7) - code_s(c::Steane7)
 
 rate(c::Steane7) = code_k(c::Steane7)/code_s(c::Steane7)
+=#
 
 distance(c::Steane7) = 3
 

@@ -6,7 +6,7 @@ This project was presented to the Department of Computer and Information Science
 In partial fulfillment of the requirements of the author's Master of Science Degree, in May 2018
 =#
 
-module Hamming
+#module Hamming
 
 #=---------------Generating Hamming codes step by step instructions----------------------------------------
    TODO:
@@ -131,12 +131,12 @@ function construct_H_from_A( A::BitArray )
 end
 
 
-"""
-construct_hamming_parameters( block_len::SizeType, message_len::SizeType
-)
-Construct the A, G, H, and R matrices necessary for Hamming encoding and
-decoding.
-"""
+
+construct_hamming_parameters( block_len::SizeType, message_len::SizeType)
+
+#Construct the A, G, H, and R matrices necessary for Hamming encoding and decoding.
+
+
 function construct_hamming_parameters( block_len::SizeType,
     message_len::SizeType )
     A = construct_A( block_len, message_len )
