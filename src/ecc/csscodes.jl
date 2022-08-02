@@ -24,9 +24,10 @@ classical_code_H_matrix = [0 0 1; 0 1 0; 0 1 1; 1 0 0; 1 0 1; 1 1 0; 1 1 1]
 #classical_code_G_matrix - dual code
 classical_code_G_matrix = [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1] #tst
 #classical_code_G_matrix(c) = gf2_H_to_G(classical_code_H_matrix) 
-=#---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------=#
 
 include("hamming_code_generator.jl") #hamming code generator
+using Hamming
 
 classical_code_H_matrix = construct_H_from_A()
 classical_code_G_matrix = construct_G_from_A()
