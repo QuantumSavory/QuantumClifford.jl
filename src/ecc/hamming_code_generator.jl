@@ -7,6 +7,7 @@ In partial fulfillment of the requirements of the author's Master of Science Deg
 =#
 
 #module Hamming
+struct SizeType end
 
 #=---------------Generating Hamming codes step by step instructions----------------------------------------
    TODO:
@@ -29,7 +30,7 @@ export encode, decode, encode_stream, decode_stream
 
 
 # FUNCTIONS
-"""
+#=
 construct_A( block_len::SizeType, message_len::SizeType )
 Create a valid A matrix for a Hamming code of arbitrary size. It is the
 responsibility of
@@ -41,8 +42,18 @@ Common Hamming codes include:
 * Hamming-(15,11)
 * Hamming-(31,26)
 * etc.
-"""
-function construct_A( block_len::SizeType, message_len::SizeType )
+=#
+
+#Input desired length
+block_length = 12
+message_length = 10
+
+#Change type input
+block_len = convert(Int64, block_length)
+message_len = convert(Int64, message_length)
+
+#function construct_A( block_len::SizeType, message_len::SizeType )
+function construct_A()
     @assert block_len > message_len
     # r is the number of parity bits to be added
     r = block_len - message_len
@@ -71,14 +82,15 @@ function construct_A( block_len::SizeType, message_len::SizeType )
     return A
 end
 
-"""
+#=
 construct_G_from_A( A::BitArray )
 Create a genrator matrix for a Hamming code of arbitrary size from a
 previously-construct A
 matrix. It is easiest to pass the return value of construct_A( block_len,
 message_len ) as
 the parameter to this function.
-"""
+=#
+
 function construct_G_from_A( A::BitArray )
     # All parameters used to construct A can be retreived from its structure
     r = size(A,1)
@@ -101,14 +113,15 @@ function construct_G_from_A( A::BitArray )
     return G
 end
 
-"""
+#=
 construct_H_from_A( A::BitArray )
 Create a parity check matrix for a Hamming code of arbitrary size from a
 previously-constructed
 A matrix. It is easiest to pass the return value of construct_A( block_len,
 message_len ) as
 the parameter to this function.
-"""
+=#
+
 function construct_H_from_A( A::BitArray )
     # All parameters used to construct A can be retreived from its structure
     r = size(A,1)
@@ -130,17 +143,13 @@ function construct_H_from_A( A::BitArray )
     return H
 end
 
-
-
-construct_hamming_parameters( block_len::SizeType, message_len::SizeType)
-
-#Construct the A, G, H, and R matrices necessary for Hamming encoding and decoding.
-
-
-function construct_hamming_parameters( block_len::SizeType,
-    message_len::SizeType )
-    A = construct_A( block_len, message_len )
+#=
+#Construct the A, G, and H matrices necessary for Hamming encoding and decoding.
+#function construct_hamming_parameters( block_len::SizeType, message_len::SizeType )
+function construct_hamming_parameters()
+    A = construct_A(block_len,message_len)
     G = construct_G_from_A( A )
     H = construct_H_from_A( A )
-    return Hamming_Params( A, G, H, R )
+    return Hamming_Params(A, G, H)
 end
+=#
