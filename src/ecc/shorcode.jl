@@ -27,16 +27,7 @@ y =    S"ZZ_______
          _______ZZ
          XXXXXX___
          ___XXXXXX" 
-#=                        
-#Testing parity check type
-typeof(x)
-typeof(y)
 
-dim_encondingc = length(y)
-println(dim_encondingc)
-tracking1 = (dim_encondingc - 1)
-println(tracking1)
-=#
 ##--------------------------------------------------------
 
 #=
@@ -73,23 +64,18 @@ encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
 #----------------------------------------------------------------
 
 #Related functions
-#=
+
 code_s(c::Shor9) = (size(parity_checks(c))[1]) / code_n(c)
 
 code_k(c::Shor9) = code_n(c::Shor9) - code_s(c::Shor9)
 
 rate(c::Shor9) = code_k(c::Shor9)/code_s(c::Shor9)
-=#
+
 #Naive Syndrome circuit ----------------------------------
 naive_sc = []
 dim_encondingc = length(y)
 println(dim_encondingc)
-#= tried:
-length(parity_checks((c::Shor9))())
-length(parity_checks)
-length(parity_checks(Shor9))
-length(parity_checks())
-=#
+
 
 ancilla_qubit = dim_encondingc+1
 tracking1 = (dim_encondingc - 1)
