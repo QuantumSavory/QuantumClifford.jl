@@ -15,7 +15,7 @@ parity_checks(c::Shor9) = S"ZZ_______
                             _______ZZ
                             XXXXXX___
                             ___XXXXXX"
-
+#arg included function signature - breaking?
 
 x = parity_checks
 #println(x)
@@ -64,12 +64,21 @@ encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
 #----------------------------------------------------------------
 
 #Related functions
+code_s(c::Shor9) = (size(parity_checks)[1]) / code_n #MethodError: no method matching parity_checks(::Shor9)
+#=
+#tested:
+parity_checks(c)
+parity_checks(c::Shor9)
+parity_checks()
+parity_checks
+parity_checks(Shor9)
+code_s(c::Shor9) = (size(y)[1]) / code_n(Shor9) #MethodError: no method matching parity_checks(::Shor9)
+=#
 
-code_s(c::Shor9) = (size(parity_checks(c))[1]) / code_n(c)
 
-code_k(c::Shor9) = code_n(c::Shor9) - code_s(c::Shor9)
+code_k(c::Shor9) = code_n - code_s
 
-rate(c::Shor9) = code_k(c::Shor9)/code_s(c::Shor9)
+rate(c::Shor9) = code_k/code_s
 
 #Naive Syndrome circuit ----------------------------------
 naive_sc = []

@@ -27,10 +27,13 @@ classical_code_G_matrix = [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1] #tst
 ---------------------------------------------------------------------------------------=#
 
 include("hamming_code_generator.jl") #hamming code generator
-using Hamming
+import .Hamming
+using .Hamming
+using .Hamming: construct_A, construct_H_from_A, construct_G_from_A
 
-classical_code_H_matrix = construct_H_from_A()
-classical_code_G_matrix = construct_G_from_A()
+A = construct_A()
+classical_code_H_matrix = construct_H_from_A(A)
+classical_code_G_matrix = construct_G_from_A(A)
 
 #----------------------------------------------------------------------------------------------
 
