@@ -9,7 +9,7 @@ parity_checks(code)
 encoding_circuit(code)
 code_n(code)
 
-code_s(code) #MethodError: no method matching parity_checks(::Shor9)
+code_s(code, parity_checks) #MethodError: no method matching parity_checks(::Shor9)
 code_k(code)
 rate(code)
 

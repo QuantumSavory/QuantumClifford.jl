@@ -1,4 +1,3 @@
-
 module ECC
 
     using QuantumClifford
@@ -52,7 +51,7 @@ module ECC
 
     """The encoding circuit of a given code."""
     function encoding_circuit end 
-    
+
     """Parity check tableau of a code."""
     function parity_checks end
 
@@ -60,7 +59,7 @@ module ECC
     function code_n end
 
     """The number of stabilizer checks in a code."""
-    function code_s(code::AbstractECC)
+    function code_s(code::AbstractECC, parity_check)
         #s = sizeof(parity_checks(code)) / code_n(code)
         #s = nrow(parity_checks(code))
         size = size(parity_checks(code))[1]
