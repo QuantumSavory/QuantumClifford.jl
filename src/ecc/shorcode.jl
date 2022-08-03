@@ -1,3 +1,5 @@
+using Main.ECC
+
 struct Shor9 <: AbstractECC end
 
 """The number of physical qubits in a code."""
@@ -13,6 +15,18 @@ parity_checks(c::Shor9) = S"ZZ_______
                             XXXXXX___
                             ___XXXXXX"
 
+#=
+parity_checks(c::Shor9) = if c == Shor9
+                            S"ZZ_______
+                              _ZZ______
+                              ___ZZ____
+                              ____ZZ___
+                              ______ZZ_
+                              _______ZZ
+                              XXXXXX___
+                              ___XXXXXX"
+                           end
+=#
 parity_matrix(c::Shor9) = stab_to_gf2(parity_checks(c::Shor9))
 
 #Enconding circuit ----------------------------------
@@ -46,6 +60,14 @@ code_k(c::Shor9) = code_n(c::Shor9) - code_s(c::Shor9)
 
 rate(c::Shor9) = code_k(c::Shor9)/code_s(c::Shor9)
 =#
+
+#naive_syndrome_circuit(c::Shor9)
+
+code_s(Shor9)
+
+code_k(Shor9)
+
+rate(Shor9)
 
 distance(c::Shor9) = 3
 

@@ -2,8 +2,8 @@
 module ECC
 
     using QuantumClifford
-
     abstract type AbstractECC end
+    #export AbstractECC
 
     function sCNOT_gatechange(gate::sCNOT) sCNOT(gate.q2,gate.q1) end
 
@@ -52,6 +52,9 @@ module ECC
 
     """The encoding circuit of a given code."""
     function encoding_circuit end 
+    
+    """Parity check tableau of a code."""
+    function parity_checks end
 
     """The number of physical qubits in a code."""
     function code_n end
@@ -80,9 +83,6 @@ module ECC
 
     """The distance of a code."""
     function distance end
-
-    """Parity check tableau of a code."""
-    function parity_checks end
 
     """Parity matrix of a code."""
     function parity_matrix end
