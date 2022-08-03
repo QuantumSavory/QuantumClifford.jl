@@ -2,25 +2,26 @@ using Revise
 using BenchmarkTools
 using QuantumClifford
 using QuantumClifford.Main.ECC: Shor9,code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, isdegenerate
+#ENTER+ALT+SHIFT : SQUARE DIV COMMENTS
 
 ##Shor9 run ----------------------------
 code = Shor9()
 parity_checks(code)
 encoding_circuit(code)
 code_n(code)
-
-code_s(code, parity_checks) #MethodError: no method matching parity_checks(::Shor9)
+#=
+code_s(code) #MethodError: no method matching parity_checks(::Shor9)
 code_k(code)
 rate(code)
-
+=#
 #=
 distance(code)
 logx_ops(code)
 logz_ops(code)
 isdegenerate(code)
 =#
-x = (parity_matrix(code)) #Bool
-#naive_syndrome_circuit(code)
+#x = (parity_matrix(code)) #Bool
+naive_syndrome_circuit(code)
 
 #Measuring
 measured_states = []

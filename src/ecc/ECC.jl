@@ -7,8 +7,8 @@ module ECC
     function sCNOT_gatechange(gate::sCNOT) sCNOT(gate.q2,gate.q1) end
 
     #syndrome extraction circuit 
-    function naive_syndrome_circuit(code::AbstractECC) #TODO: add the other 3 types of syndrome circuit
-        #AbstractECC type
+    function naive_syndrome_circuit end #TODO: add the other 3 types of syndrome circuit
+        #=
         encondingc = encoding_circuit(code)
         naive_sc = []
         dim_encondingc = length(encondingc)
@@ -25,6 +25,7 @@ module ECC
         return naive_sc
         #fault tolerant (3 types) -Neil, Steane, Shor
     end 
+    =#
 
     #=
     function shor_syndrome_circuit(code::AbstractECC) #TODO: add the other 3 types of syndrome circuit
@@ -58,8 +59,9 @@ module ECC
     """The number of physical qubits in a code."""
     function code_n end
 
+    #=
     """The number of stabilizer checks in a code."""
-    function code_s(code::AbstractECC, parity_check)
+    function code_s(code::AbstractECC)
         #s = sizeof(parity_checks(code)) / code_n(code)
         #s = nrow(parity_checks(code))
         size = size(parity_checks(code))[1]
@@ -79,6 +81,16 @@ module ECC
         rate = code_k(code)/code_s(code)
         return rate
     end
+    =#
+
+    """The number of stabilizer checks in a code."""
+    function code_s end
+
+    """The number of logical qubits in a code."""
+    function code_k end
+
+    """The rate of a code."""
+    function rate end
 
     """The distance of a code."""
     function distance end
