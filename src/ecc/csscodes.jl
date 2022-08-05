@@ -70,15 +70,12 @@ parity_matrix(c::CSS) = stab_to_gf2(parity_checks)
 #encoding_circuit(c::CSS) = [] #TODO -> START SYNDROME CIRCUIT
 #----------------------------------------------------------------
 
-#These functions are current in ECC
 #=
-naive_syndrome(c::CSS) #Syndrome circuit
+code_s(c::CSS) = #Need to det from input somehow
 
-code_s(c::CSS) = nrow(S)
+code_k(c::CSS) = code_n(c) - code_s(c)
 
-code_k(c::CSS) = css_n - code_s
-
-rate(c::CSS) = code_k/code_s
+rate(c::CSS) = code_k(c)/code_s(c)
 =#
 
 logx_ops(c::CSS) = P"XXXXXXXXX"
@@ -86,3 +83,5 @@ logx_ops(c::CSS) = P"XXXXXXXXX"
 logz_ops(cc::CSS) = P"ZZZZZZZZZ"
 
 logy_ops(cc::CSS) = P"YYYYYYYYY" 
+
+#naive_syndrome(c::CSS) #Syndrome circuit
