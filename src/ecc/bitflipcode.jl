@@ -1,3 +1,6 @@
+import .ECC
+using .ECC
+
 struct Bitflip3 <: AbstractECC end
 
 """The number of physical qubits in a code."""
@@ -19,14 +22,13 @@ encoding_circuit(c::Bitflip3) = [c1,c2]
 
 #----------------------------------------------------------------
 #syndrome extraction circuit 
-naive_syndrome_circuit(c::Bitflip3) #Syndrome circuit
-#steane tutorial, book <- check doc: 
+#naive_syndrome_circuit(c::Bitflip3) #Syndrome circuit
 
-code_s(c::Bitflip3) = sizeof(parity_checks) / code_n
+code_s(c::Bitflip3) = length(parity_checks(c))
 
-code_k(c::Bitflip3) = code_n(c::Bitflip3) - code_s(c::Bitflip3)
+code_k(c::Bitflip3) = code_n(c) - code_s(c)
 
-rate(c::Bitflip3) = code_k(c::Bitflip3)/code_s(c::Bitflip3)
+rate(c::Bitflip3) = code_k(c)/code_s(c)
 
 logx_ops(c::Bitflip3) = P"XXXXXXXXX"
                        

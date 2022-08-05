@@ -66,7 +66,7 @@ module ECC
 
     #------IN PROGRESS-------------------------
     # 3 qubit bit flip code 
-    #include("./bitflipcode.jl")
+    include("./bitflipcode.jl")
 
     # Shor code
     include("./shorcode.jl")
