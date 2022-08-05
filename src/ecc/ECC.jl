@@ -1,3 +1,4 @@
+module Check end
 module ECC
 
     using QuantumClifford
@@ -5,50 +6,6 @@ module ECC
     #export AbstractECC
 
     function sCNOT_gatechange(gate::sCNOT) sCNOT(gate.q2,gate.q1) end
-
-    #syndrome extraction circuit 
-    function naive_syndrome_circuit end #TODO: add the other 3 types of syndrome circuit
-        #=
-        encondingc = encoding_circuit(code)
-        naive_sc = []
-        dim_encondingc = length(encondingc)
-        ancilla_qubit = dim_encondingc+1
-        tracking1 = (dim_encondingc - 1)
-        tracking2 = 2
-        #iterating through all the steps of the encoding circuit
-        for qubit in 1:tracking1
-            append!(naive_sc, sCNOT(1,ancilla_qubit))
-            append!(naive_sc, sCNOT(tracking2,ancilla_qubit))
-            ancilla_qubit + 1
-            tracking2 +1
-        end
-        return naive_sc
-        #fault tolerant (3 types) -Neil, Steane, Shor
-    end 
-    =#
-
-    #=
-    function shor_syndrome_circuit(code::AbstractECC) #TODO: add the other 3 types of syndrome circuit
-        #p20 of https://young.physics.ucsc.edu/150/error_corr.pdf
-        #AbstractECC type
-        encondingc = encoding_circuit(code)
-        naive_sc = []
-        ancilla_qubit = 1
-        #iterating through all the steps of the encoding circuit
-        dim_encondingc = length(encondingc)
-        for gate in parity_checks(code) 
-            for qubit in 1:dim_encondingc
-                if non identy gate for qubit in gate
-                    append!(naive_sc, sCNOT(ancilla_qubit,qubit))
-                end
-                
-            end
-            ancilla_qubit + 1
-            return naive_sc
-        end
-        #fault tolerant (3 types) -Neil, Steane, Shor
-    end 
-    =#
 
     """The encoding circuit of a given code."""
     function encoding_circuit end 
@@ -91,6 +48,9 @@ module ECC
 
     """The rate of a code."""
     function rate end
+
+    """Naive syndrome circuit"""
+    function naive_syndrome_circuit end #TODO: add the other 3 types of syndrome circuit
 
     """The distance of a code."""
     function distance end

@@ -50,6 +50,7 @@ logz_ops(c::Steane5) = P"ZZZZZ"
 
 isdegenerate(c::Steane5) = false 
 
+##----------------------------------------------------------------------------------------------------------------------------
 
 #steane 7 qubit code
 parity_checks(c::Steane7) = S"___XXXX
