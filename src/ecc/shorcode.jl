@@ -18,29 +18,6 @@ parity_checks(c::Shor9) = S"ZZ_______
                             ___XXXXXX"
 
 parity_matrix(c::Shor9) = stab_to_gf2(parity_checks(c::Shor9)) 
-#=
-#function naive_syndrome_circuit end #TODO: add the other 3 types of syndrome circuit
-##Naive Syndrome circuit ----------------------------------
-naive_syndrome_circuit(c::Shor9)
-  naive_sc = []
-  dim_encondingc = length(parity_checks(c))
-
-  ancilla_qubit = dim_encondingc+1
-  tracking1 = (dim_encondingc - 1)
-  tracking2 = 2
-
-  #iterating through all the steps of the encoding circuit
-  for qubit in 1:tracking1 
-    push!(naive_sc, sCNOT(1,ancilla_qubit)) 
-    push!(naive_sc, sCNOT(tracking2,ancilla_qubit)) 
-    ancilla_qubit + 1
-    tracking2 +1
-    return naive_sc
-  end
-
-  return naive_sc
-end
-=#
 
 #Enconding circuit ----------------------------------
 c1 = sCNOT(1,4)
@@ -64,7 +41,7 @@ encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
 
 #Related functions
 #code_s(c::Shor9) = (size(parity_checks(c))[1]) / code_n #MethodError: no method matching parity_checks(::Shor9)
-code_s(c::Shor9) = 8
+code_s(c::Shor9) = length(parity_checks(c))
 
 code_k(c::Shor9) = code_n(c) - code_s(c)
 

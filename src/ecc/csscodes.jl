@@ -70,13 +70,13 @@ parity_matrix(c::CSS) = stab_to_gf2(parity_checks)
 #encoding_circuit(c::CSS) = [] #TODO -> START SYNDROME CIRCUIT
 #----------------------------------------------------------------
 
-#=
-code_s(c::CSS) = #Need to det from input somehow
+
+code_s(c::CSS) = length(parity_checks(c))
 
 code_k(c::CSS) = code_n(c) - code_s(c)
 
 rate(c::CSS) = code_k(c)/code_s(c)
-=#
+
 
 logx_ops(c::CSS) = P"XXXXXXXXX"
 

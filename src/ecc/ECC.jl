@@ -16,30 +16,6 @@ module ECC
     """The number of physical qubits in a code."""
     function code_n end
 
-    #=
-    """The number of stabilizer checks in a code."""
-    function code_s(code::AbstractECC)
-        #s = sizeof(parity_checks(code)) / code_n(code)
-        #s = nrow(parity_checks(code))
-        size = size(parity_checks(code))[1]
-        s = size / code_n(code)
-        return s
-    end
-
-    """The number of logical qubits in a code."""
-    function code_k(code::AbstractECC)
-        k = css_n(code) - code_s(code)
-        return k
-    end
-
-
-    """The rate of a code."""
-    function rate(code::AbstractECC)
-        rate = code_k(code)/code_s(code)
-        return rate
-    end
-    =#
-
     """The number of stabilizer checks in a code."""
     function code_s end
 
@@ -49,8 +25,26 @@ module ECC
     """The rate of a code."""
     function rate end
 
-    """Naive syndrome circuit"""
-    function naive_syndrome_circuit end #TODO: add the other 3 types of syndrome circuit
+    """Naive syndrome circuit""" #TODO: add the other 3 types of syndrome circuit
+    function naive_syndrome_circuit(c::AbstractECC)
+        naive_sc = []
+        dim_encondingc = length(parity_checks(c))
+    
+        ancilla_qubit = dim_encondingc+1
+        tracking1 = (dim_encondingc - 1)
+        tracking2 = 2
+    
+        #iterating through all the steps of the encoding circuit
+        for qubit in 1:tracking1 
+            push!(naive_sc, sCNOT(1,ancilla_qubit)) 
+            push!(naive_sc, sCNOT(tracking2,ancilla_qubit)) 
+            ancilla_qubit + 1
+            tracking2 +1
+            return naive_sc
+        end
+    
+        return naive_sc
+    end
 
     """The distance of a code."""
     function distance end
