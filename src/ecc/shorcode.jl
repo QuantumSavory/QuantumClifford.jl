@@ -38,9 +38,9 @@ c8 = sCNOT(7,9)
 encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
 
 #----------------------------------------------------------------
+#syndrome extraction circuit 
+#naive_syndrome_circuit(c::Bitflip3) #Syndrome circuit
 
-#Related functions
-#code_s(c::Shor9) = (size(parity_checks(c))[1]) / code_n #MethodError: no method matching parity_checks(::Shor9)
 code_s(c::Shor9) = length(parity_checks(c))
 
 code_k(c::Shor9) = code_n(c) - code_s(c)
