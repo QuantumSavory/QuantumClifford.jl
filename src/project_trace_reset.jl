@@ -743,3 +743,116 @@ function expect(p::PauliOperator, s::AbstractStabilizer)
     result === 0x02 && return -1
     result === 0x03 && return -im
 end
+
+"""Put source tableau in target tableau at given row and column. Assumes target location is zeroed out.""" # TODO implement a getindex setindex interface to this
+@inline function puttableau!(target::Stabilizer{V1,M1}, source::Stabilizer{V2,M2}, row::Int, col::Int; phases::Val{B}=Val(true)) where {B,V1,V2,T<:Unsigned,M1<:AbstractMatrix{T},M2<:AbstractMatrix{T}}
+    xzs = target.xzs
+    ph = target.phases
+    sxzs = source.xzs
+    sph = source.phases
+    r,n = size(source)
+    bₗ = _div(T,col) + 1
+    bᵣ = bₗ + 1
+    eₗ = bₗ + _div(T,n-1)
+    eᵣ = _div(T,col+n-1) + 1
+    shiftₗ = _mod(T,col)
+    shiftᵣ = 8*sizeof(T)-shiftₗ
+    for i in 1:r
+    @inbounds @simd for j in 0:eₗ-bₗ # TODO more simdification
+        xzs[bₗ+j,row+i] |= sxzs[j+1,i] >>> -shiftₗ
+        xzs[end÷2+bₗ+j,row+i] |= sxzs[end÷2+j+1,i] >>> -shiftₗ
+    end
+    @inbounds @simd for j in 0:eᵣ-bᵣ
+        xzs[bᵣ+j,row+i] |= sxzs[j+1,i] >>> shiftᵣ
+        xzs[end÷2+bᵣ+j,row+i] |= sxzs[end÷2+j+1,i] >>> shiftᵣ
+    end
+    end
+    B && (ph[row+1:row+r] .= sph)
+    target, row+r, col+n
+end
+
+"""Unexported low-level function that removes a column (by shifting all columns to the right of the target by one step to the left)
+
+Because Stabilizer is not mutable we return a new Stabilizer with the same (modified) xzs array."""
+function remove_column!(s::Stabilizer{V,M}, col::Int) where {V,T<:Unsigned,M<:AbstractMatrix{T}}
+    rows,cols=size(s)
+    xzs = s.xzs
+    big = _div(T,col-1) + 1
+    nbig = size(s.xzs,1)÷2
+    shiftᵣ = 8*sizeof(T)-1
+    zero_span = ~zero(T) << _mod(T,col-1)
+    zero_first = ~zero(T) >> 1
+    for i in 1:rows # TODO more simdification
+        xzs[big,i]        = (xzs[big,i]       & ~zero_span) | ( zero_span & (xzs[big,i]       >>> 1))
+        xzs[end÷2+big,i]  = (xzs[end÷2+big,i] & ~zero_span) | ( zero_span & (xzs[end÷2+big,i] >>> 1))
+        for j in big+1:nbig
+            xzs[j-1,i]        = (xzs[j-1,i]       & zero_first) | (xzs[j,i]       << shiftᵣ)
+            xzs[end÷2+j-1,i]  = (xzs[end÷2+j-1,i] & zero_first) | (xzs[end÷2+j,i] << shiftᵣ)
+            xzs[j,i] = xzs[j,i] >> 1
+            xzs[end÷2+j,i] = xzs[end÷2+j,i] >> 1
+        end
+    end
+    Stabilizer(s.phases, nqubits(s)-1, s.xzs)
+end
+
+"""Unexported low-level function that moves row i to row j.
+
+Used on its own, this function will break invariants. Meant to be used in `_remove_rowcol!`.
+"""
+@inline function _rowmove!(s::Stabilizer, i, j; phases::Val{B}=Val(true)) where B
+    (i == j) && return
+    B && begin s.phases[j] = s.phases[i] end
+    @inbounds @simd for k in 1:size(s.xzs,1)
+        s.xzs[k,j] = s.xzs[k,i]
+    end
+end
+
+"""Unexported low-level function that removes a row (by shifting all rows up as necessary)
+
+Because MixedDestabilizer is not mutable we return a new MixedDestabilizer with the same (modified) xzs array.
+
+Used on its own, this function will break invariants. Meant to be used with `projectremove!`.
+"""
+function _remove_rowcol!(s::MixedDestabilizer, r,c)
+    t = tab(s)
+    rows, cols = size(t)
+    t = remove_column!(t,c) # TODO col and row removal should be done in the same loop, not two separate loops
+    for i in r+1:cols+r-1
+        _rowmove!(t, i, i-1)
+    end
+    for i in cols+r+1:rows
+        _rowmove!(t, i, i-2)
+    end
+    oldrank = rank(s)
+    newrank = r<=oldrank ? oldrank-1 : oldrank
+    MixedDestabilizer(Stabilizer((@view t.phases[1:end-2]),cols-1,(@view t.xzs[:,1:end-2])), newrank)
+end
+
+"""Unexported low-level function that projects a qubit and returns the result while making the tableau smaller by a qubit.
+
+Because MixedDestabilizer is not mutable we return a new MixedDestabilizer with the same (modified) xzs array.
+"""
+function projectremove!(s::MixedDestabilizer, projfunc::F, qubit) where {F<:Union{typeof(projectX!),typeof(projectY!),typeof(projectZ!)}}
+    error("can not be implemented in the style of project!, because one can not change `res` after the row has been removed")
+end
+
+"""Unexported low-level function that projects a qubit and returns the result while making the tableau smaller by a qubit.
+
+Because MixedDestabilizer is not mutable we return a new MixedDestabilizer with the same (modified) xzs array.
+"""
+function projectremoverand!(s::MixedDestabilizer, projfunc::F, qubit) where {F<:Union{typeof(projectX!),typeof(projectY!),typeof(projectZ!)}}
+    _, anticom, res = projfunc(s, qubit)
+    if anticom!=0
+        res = rand((0x0,0x2))
+        stabilizerview(s).phases[anticom] = res
+    end
+    r = rank(s)
+    traceout!(s,[qubit]) # TODO this can be optimized thanks to the information already known from projfunc
+    s = _remove_rowcol!(s, r, qubit)
+    s, res
+end
+
+function traceoutremove!(s::MixedDestabilizer, qubit)
+    traceout!(s,[qubit]) # TODO this can be optimized thanks to the information already known from projfunc
+    s = _remove_rowcol!(s, nqubits(s), qubit)
+end

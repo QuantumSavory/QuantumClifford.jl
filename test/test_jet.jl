@@ -40,6 +40,7 @@ function test_jet()
                 AnyFrameModule(Static),
             )
         )
+        @show rep
         @test length(JET.get_reports(rep)) == 3
         #= TODO These false positives appear. Figure out how to filter them out.
         ┌ @ /home/stefan/Documents/ScratchSpace/clifford/QuantumClifford/src/linalg.jl:72 LinearAlgebra.rank(::QuantumClifford.Stabilizer)

@@ -8,6 +8,7 @@ module QuantumClifford
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
 import LinearAlgebra
+using LinearAlgebra: inv, mul!, rank
 using DocStringExtensions
 using Polyester
 #using LoopVectorization

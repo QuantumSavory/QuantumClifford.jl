@@ -1,4 +1,3 @@
-using LinearAlgebra: inv, mul!
 using Random: randperm, AbstractRNG, GLOBAL_RNG
 using ILog2
 import Nemo

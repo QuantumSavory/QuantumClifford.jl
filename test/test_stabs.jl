@@ -71,6 +71,19 @@ function test_stabs()
         mds = MixedStabilizer(s)
         @test length(mds) == length(ms) == 10
         @test length(s) == 9
+        for n in test_sizes
+            s = random_stabilizer(n)
+            r1 = rand(1:n)
+            ri1 = deleteat!(collect(1:n),r1)
+            s1a = QuantumClifford.remove_column!(copy(s),r1)
+            s1b = copy(s)[:,ri1]
+            r2 = min(n,rand([63,64,65]))
+            ri2 = deleteat!(collect(1:n),r2)
+            s2a = QuantumClifford.remove_column!(copy(s),r2)
+            s2b = copy(s)[:,ri2]
+            @test stab_to_gf2(s1a) == stab_to_gf2(s1b)
+            @test stab_to_gf2(s2a) == stab_to_gf2(s2b)
+        end
     end
 end
 

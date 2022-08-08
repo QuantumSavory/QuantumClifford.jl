@@ -1,5 +1,9 @@
 # News
 
+## v0.5.8 - dev
+
+- Implement `projectremoverand!` which besides performing a projective measurement lik `projectrand!` also removed the measured qubit from the tableau, returning a smaller tableau. Not yet exported in public API.
+
 ## v0.5.7 - 2022-07-24
 
 - **(fix)** `apply!(S"XXX", P"X", [1])` and similar sparse Pauli applies were giving wrong results.

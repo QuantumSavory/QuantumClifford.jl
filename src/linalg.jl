@@ -151,30 +151,3 @@ function ⊗(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer
     end
     CliffordOperator(tab)
 end
-
-"""Put source tableau in target tableau at given row and column. Assumes target location is zeroed out.""" # TODO implement a getindex setindex interface to this
-@inline function puttableau!(target::Stabilizer{V1,M1}, source::Stabilizer{V2,M2}, row::Int, col::Int; phases::Bool=true) where {V1,V2,T<:Unsigned,M1<:AbstractMatrix{T},M2<:AbstractMatrix{T}}
-    xzs = target.xzs
-    ph = target.phases
-    sxzs = source.xzs
-    sph = source.phases
-    r,n = size(source)
-    bₗ = _div(T,col)+1
-    bᵣ = bₗ + 1
-    eₗ = bₗ + _div(T,n-1)
-    eᵣ = _div(T,col+n-1)+1
-    shiftₗ = _mod(T,col)
-    shiftᵣ = 8*sizeof(T)-shiftₗ
-    for i in 1:r
-    @inbounds @simd for j in 0:eₗ-bₗ
-        xzs[bₗ+j,row+i] |= sxzs[j+1,i] >>> -shiftₗ
-        xzs[end÷2+bₗ+j,row+i] |= sxzs[end÷2+j+1,i] >>> -shiftₗ
-    end
-    @inbounds @simd for j in 0:eᵣ-bᵣ
-        xzs[bᵣ+j,row+i] |= sxzs[j+1,i] >>> shiftᵣ
-        xzs[end÷2+bᵣ+j,row+i] |= sxzs[end÷2+j+1,i] >>> shiftᵣ
-    end
-    end
-    phases && (ph[row+1:row+r] .= sph)
-    target, row+r, col+n
-end
