@@ -28,7 +28,12 @@ classical_code_G_matrix = [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1] #tst
 ##---------------------------------------------------------------------------------
 
 ##Hamming code generator-------------------------------------------------------------=#
+include("hammingcodegenerator.jl") #hamming code generator
+import .Hamming
+using .Hamming
+using .Hamming: construct_A, construct_H_from_A, construct_G_from_A
 
+#=
 #function construct_A( block_len::SizeType, message_len::SizeType )
 function construct_A()
     #Input desired length - TEMPORARY
@@ -117,10 +122,10 @@ function construct_H_from_A( A::BitArray )
     end
     return H
 end
-
+=#
 ##---------------------------------------------------------------------------------
 
-A = construct_A()
+A = construct_A(12,10)
 classical_code_H_matrix = construct_H_from_A(A)
 classical_code_G_matrix = construct_G_from_A(A)
 
