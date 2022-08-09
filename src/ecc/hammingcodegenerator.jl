@@ -50,31 +50,32 @@ module Hamming
     message_length = 10
     =#
     #function construct_A( block_len::SizeType, message_len::SizeType )
+
+    
     function construct_A( block_len::Int64, message_len::Int64 )
+
+        #Change type input
+        block_len = convert(Number, block_length)
+        message_len = convert(Number, message_length)
 
         @assert block_len > message_len
 
-        # r is the number of parity bits to be added
         r = block_len - message_len
 
-        # Each parity bit 'n' will be placed in column 2^(n-1)
-        # These columns are exised in A, so we need to keep track of them
         parity_cols = [ 2^(x-1) for x in range(1,r) ]
 
-        # Data columns include all columns in A except parity columns
         data_cols = findall( [ !(x in parity_cols) for x in range(1,block_len) ] )
-        
-        # Each parity bit 'n' protects the codeword bits in columns where the bit corresponding
-        # to 'n' is set. So parity bit 1 protects all odd columns, etc.
+
         parity_masks = [ (1 << x) for x in range(0,length(parity_cols)) ]
 
         # First make the whole table, then excise parity columns later
+        #A_init = zeros( Bit, r, block_len ) #SOME SORT OF ERROR HERE - TEST
         A_init = zeros( r, block_len )
 
         for row = 1:size(A_init,1)
             for column = 1:size(A_init,2)
-            # Is this column protected by the parity bit in question?
-            A_init[row,column] = ( column & parity_masks[row] ) > 0
+                # Is this column protected by the parity bit in question?
+                A_init[row,column] = ( column & parity_masks[row] ) > 0
             end
         end
 
@@ -83,6 +84,7 @@ module Hamming
         for d = 1:length(data_cols)
             A[:,d] = A_init[:,data_cols[d]]
         end
+
         return A
     end
 
@@ -137,21 +139,26 @@ module Hamming
         block_len = 2^r - 1
         message_len = 2^r - r - 1
         data = A
+        println("data",data)
+    
         parity = I(r)
-
+        println("parity",parity)
+    
         # Each parity column 'n' will be placed in column 2^(n-1)
         parity_cols = [ 2^(x-1) for x in range(1,r) ]
-
+    
         # Data columns are all the non-parity columns
         data_cols = findall( [ !(x in parity_cols) for x in range(1,block_len) ] )
         H = zeros( r, block_len )
-
+    
         for p = 1:size(parity,2)
             H[:,parity_cols[p]] = parity[:,p]
+            println("p:",p)
         end
-
+    
         for d = 1:size(data,2)
-            H[:,data_cols[d]] = data[:,d] #SOME SORT OF ERROR HERE - TEST
+            H[:,data_cols[d]] = data[:,d]
+            println("d:",d)
         end
 
         return H
