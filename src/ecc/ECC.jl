@@ -28,15 +28,15 @@ module ECC
     """Naive syndrome circuit""" #TODO: add the other 3 types of syndrome circuit
     function naive_syndrome_circuit(c::AbstractECC)
         naive_sc = []
-        dim_encondingc = length(parity_checks(c))
+        dim_encondingc = code_n(c) -1
     
-        ancilla_qubit = dim_encondingc - 1
-        tracking1 = (dim_encondingc - 2)
+        ancilla_qubit = dim_encondingc
+        tracking1 = dim_encondingc 
     
         #iterating through all the steps of the encoding circuit
         for qubit in 0:tracking1
             tracking2 = qubit+1
-            if tracking2 <= tracking1
+            if qubit < dim_encondingc
                 push!(naive_sc, sCNOT(qubit,ancilla_qubit)) 
                 push!(naive_sc, sCNOT(tracking2,ancilla_qubit)) 
                 ancilla_qubit = ancilla_qubit + 1
