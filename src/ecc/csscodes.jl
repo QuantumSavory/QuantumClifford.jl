@@ -16,15 +16,16 @@ struct CSS <: AbstractECC end
 
 end=#
 
-#=Testing code for CSS code contruction--------------------------------------------------
+#Testing code for CSS code contruction--------------------------------------------------
 #[7,4] Hamming code -> Steane's 7
-
+#=
 #classical_code_H_matrix
 classical_code_H_matrix = [0 0 1; 0 1 0; 0 1 1; 1 0 0; 1 0 1; 1 1 0; 1 1 1]
 #classical_code_G_matrix - dual code
 classical_code_G_matrix = [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1] #tst
 #classical_code_G_matrix(c) = gf2_H_to_G(classical_code_H_matrix) 
----------------------------------------------------------------------------------------=#
+=#
+##---------------------------------------------------------------------------------------=#
 
 include("hamming_code_generator.jl") #hamming code generator
 import .Hamming
