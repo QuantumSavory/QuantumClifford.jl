@@ -39,7 +39,7 @@ encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
 
 #----------------------------------------------------------------
 #syndrome extraction circuit 
-#naive_syndrome_circuit(c::Bitflip3) #Syndrome circuit
+naive_syndrome_circuit(c::Shor9) #Syndrome circuit
 
 code_s(c::Shor9) = length(parity_checks(c))
 

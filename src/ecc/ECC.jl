@@ -38,11 +38,11 @@ module ECC
         for qubit in 1:tracking1 
             push!(naive_sc, sCNOT(1,ancilla_qubit)) 
             push!(naive_sc, sCNOT(tracking2,ancilla_qubit)) 
-            ancilla_qubit + 1
-            tracking2 +1
-            return naive_sc
+            ancilla_qubit = ancilla_qubit + 1
+            tracking2 = tracking2 + 1
+            tracking3 = tracking3 + 1
         end
-    
+
         return naive_sc
     end
 
