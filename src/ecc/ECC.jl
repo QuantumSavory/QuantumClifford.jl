@@ -30,17 +30,18 @@ module ECC
         naive_sc = []
         dim_encondingc = length(parity_checks(c))
     
-        ancilla_qubit = dim_encondingc+1
-        tracking1 = (dim_encondingc - 1)
-        tracking2 = 2
+        ancilla_qubit = dim_encondingc - 1
+        tracking1 = (dim_encondingc - 2)
     
         #iterating through all the steps of the encoding circuit
-        for qubit in 1:tracking1 
-            push!(naive_sc, sCNOT(1,ancilla_qubit)) 
-            push!(naive_sc, sCNOT(tracking2,ancilla_qubit)) 
-            ancilla_qubit = ancilla_qubit + 1
-            tracking2 = tracking2 + 1
-            tracking3 = tracking3 + 1
+        for qubit in 0:tracking1
+            tracking2 = qubit+1
+            if tracking2 <= tracking1
+                push!(naive_sc, sCNOT(qubit,ancilla_qubit)) 
+                push!(naive_sc, sCNOT(tracking2,ancilla_qubit)) 
+                ancilla_qubit = ancilla_qubit + 1
+                tracking2 = tracking2 + 1
+            end
         end
 
         return naive_sc
