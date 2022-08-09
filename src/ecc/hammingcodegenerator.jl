@@ -5,8 +5,9 @@ https://dspace.sunyconnect.suny.edu/bitstream/handle/1951/70206/R%20Quinn%20MS%2
 This project was presented to the Department of Computer and Information Sciences, at State University of New York Polytechnic Institute, Utica, noisy
 In partial fulfillment of the requirements of the author's Master of Science Degree, in May 2018
 =#
-
 module Hamming
+    using LinearAlgebra
+
     #struct SizeType end
 
     #=---------------Generating Hamming codes step by step instructions----------------------------------------
@@ -68,7 +69,7 @@ module Hamming
         parity_masks = [ (1 << x) for x in range(0,length(parity_cols)) ]
 
         # First make the whole table, then excise parity columns later
-        A_init = zeros( Bit, r, block_len ) #SOME SORT OF ERROR HERE - TEST
+        A_init = zeros( r, block_len )
 
         for row = 1:size(A_init,1)
             for column = 1:size(A_init,2)
@@ -78,7 +79,7 @@ module Hamming
         end
 
         # And now excise the parity columns
-        A = zeros( Bit, r, message_len )
+        A = zeros( r, message_len )
         for d = 1:length(data_cols)
             A[:,d] = A_init[:,data_cols[d]]
         end
@@ -100,7 +101,7 @@ module Hamming
         block_len = 2^r - 1
         message_len = 2^r - r - 1
         parity = A
-        data = eye( Bit, message_len )
+        data = I(message_len)
 
         # Since G is being constructed in its transposed form, we think of parity bits as
         # protecting rows, not columns
@@ -108,7 +109,7 @@ module Hamming
 
         # The data rows are all the non-parity rows
         data_rows = findall( [ !(x in parity_rows) for x in range(1,block_len) ] )
-        G = zeros( Bit, block_len, message_len )
+        G = zeros( block_len, message_len )
 
         for p = 1:size(parity,1)
             G[parity_rows[p],:] = parity[p,:]
@@ -130,27 +131,27 @@ module Hamming
     the parameter to this function.
     =#
 
-    function construct_H_from_A( A::BitArray )
+    function construct_H_from_A( A::Matrix{Float64})
         # All parameters used to construct A can be retreived from its structure
         r = size(A,1)
         block_len = 2^r - 1
         message_len = 2^r - r - 1
         data = A
-        parity = eye( Bit, r )
+        parity = I(r)
 
         # Each parity column 'n' will be placed in column 2^(n-1)
         parity_cols = [ 2^(x-1) for x in range(1,r) ]
 
         # Data columns are all the non-parity columns
         data_cols = findall( [ !(x in parity_cols) for x in range(1,block_len) ] )
-        H = zeros( Bit, r, block_len )
+        H = zeros( r, block_len )
 
         for p = 1:size(parity,2)
             H[:,parity_cols[p]] = parity[:,p]
         end
 
         for d = 1:size(data,2)
-            H[:,data_cols[d]] = data[:,d]
+            H[:,data_cols[d]] = data[:,d] #SOME SORT OF ERROR HERE - TEST
         end
 
         return H
