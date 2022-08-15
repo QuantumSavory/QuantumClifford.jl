@@ -1,8 +1,8 @@
 # News
 
-## v0.5.8 - dev
+## v0.5.8
 
-- Implement `projectremoverand!` which besides performing a projective measurement lik `projectrand!` also removed the measured qubit from the tableau, returning a smaller tableau. Not yet exported in public API.
+- Implement `projectremoverand!` which besides performing a projective measurement like `projectrand!` also removes the measured qubit from the tableau, returning a smaller tableau. Not yet exported in public API.
 
 ## v0.5.7 - 2022-07-24
 

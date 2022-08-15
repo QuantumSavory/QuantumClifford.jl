@@ -214,15 +214,7 @@ function mctrajectory!(state,circuit)
     return state, continue_stat
 end
 
-function countmap(samples::Vector{CircuitStatus}) # A simpler version of StatsBase.countmap, because StatsBase is slow to import
-    #=
-    T = eltype(samples)
-    counts = Dict{T,Int}
-    for s in samples
-        counts[s] = get(counts, s, 0)+1
-    end
-    counts
-    =#
+function countmap(samples::Vector{CircuitStatus}) # A simpler faster version of StatsBase.countmap
     counts = zeros(length(registered_statuses))
     for s in samples
         counts[s.status] += 1

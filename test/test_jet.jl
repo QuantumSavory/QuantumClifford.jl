@@ -1,6 +1,7 @@
 using JET
 using ArrayInterface
 using Static
+using Graphs
 
 function test_jet()
     @testset "JET checks" begin

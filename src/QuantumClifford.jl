@@ -471,7 +471,7 @@ Stabilizer{Vector{UInt8}, Matrix{UInt64}}
 
 See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
 """
-tab(s::Stabilizer) = s
+tab(s::Stabilizer{V,T}) where {V,T} = s
 tab(s::AbstractStabilizer) = s.tab
 
 ##############################
@@ -669,8 +669,7 @@ Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 @inline logicalzview(s::MixedDestabilizer) = @view s.tab[end÷2+s.rank+1:end]
 
 """The number of qubits of a given state."""
-@inline nqubits(s::Stabilizer) = s.nqubits
-@inline nqubits(s::AbstractStabilizer) = s.tab.nqubits
+@inline nqubits(s::AbstractStabilizer) = tab(s).nqubits
 
 ##############################
 # Pauli Operator Helpers

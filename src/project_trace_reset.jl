@@ -828,6 +828,7 @@ function _remove_rowcol!(s::MixedDestabilizer, r,c)
     MixedDestabilizer(Stabilizer((@view t.phases[1:end-2]),cols-1,(@view t.xzs[:,1:end-2])), newrank)
 end
 
+#=
 """Unexported low-level function that projects a qubit and returns the result while making the tableau smaller by a qubit.
 
 Because MixedDestabilizer is not mutable we return a new MixedDestabilizer with the same (modified) xzs array.
@@ -835,6 +836,7 @@ Because MixedDestabilizer is not mutable we return a new MixedDestabilizer with 
 function projectremove!(s::MixedDestabilizer, projfunc::F, qubit) where {F<:Union{typeof(projectX!),typeof(projectY!),typeof(projectZ!)}}
     error("can not be implemented in the style of project!, because one can not change `res` after the row has been removed")
 end
+=#
 
 """Unexported low-level function that projects a qubit and returns the result while making the tableau smaller by a qubit.
 
