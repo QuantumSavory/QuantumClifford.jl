@@ -251,7 +251,7 @@ end
 
 #----------------CSS code generation ----------------------------------------------------------
 #----------Dual code -------------------
-#Size
+#Size -not working atm: needs to be fixed
 size_row_H = size(H, 1)
 size_column_H = size(H, 2)
 
