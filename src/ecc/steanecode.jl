@@ -12,23 +12,28 @@ code_n(c::Steane5) = 5
 parity_matrix(c::Steane5) = stab_to_gf2(parity_checks(c::Steane5))
 
 #Encoding circuit ----------------------------------
-h1 = sHadamard(1)
-h2 = sHadamard(2)
-h4 = sHadamard(4)
+#https://www.researchgate.net/figure/Encoding-circuit-for-the-five-qubit-code-a-Circuit-to-encode-the-logical-minus-state_fig1_337273308
 
-c1 = sCNOT(1,3)
-c2 = sCNOT(4,6)
+z1 = sZ(1)
+h1 = sHadamard(3)
+h2 = sHadamard(4)
+is1 = sInvPhase(1)
+c1 = sCNOT(3,5)
+c2 = sCNOT(4,2)
+h3 = sHadamard(2)
+c3 = sCNOT(4,5)
+c4 = sCNOT(2,1)
+is2 = sInvPhase(3)
+s2 = sPhase(4)
+is3 = sInvPhase(5)
+s2 = sPhase(1)
+s3 = sPhase(2)
+z2 = sZ(3)
+c5 = sCNOT(1,5)
+h4 = sHadamard(5)
+c6 = sCNOT(2,5)
 
-c3 = sCNOT(2,7)
-c4 = sCNOT(1,5)
-c5 = sCNOT(4,7)
-C6 = sCNOT(2,6)
-C7 = sCNOT(1,7)
-
-c8 = sCNOT(2,3)
-c9 = sCNOT(4,5)
-
-encoding_circuit(c::Steane5) = [h1,h2,h3,c1,c2,c3,c4,c5,c6,c7,c8,c9] 
+encoding_circuit(c::Steane5) = [z1,h1,h2,is1,c1,c2,h3,c3,c4,is2,s2,is3,s2,s3,z2,c5,h4,c6] 
 #----------------------------------------------------------------
 
 code_s(c::Steane5) = length(parity_checks(c))

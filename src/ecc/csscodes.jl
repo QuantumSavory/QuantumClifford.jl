@@ -270,7 +270,7 @@ hcat(Z_matrix,Z_zeros)
 hcat(X_matrix,H)
 
 #-----------Building CSS code ----------------
-
+#RE-SIZE BEFORE NOT AFTER
 parity_checks(c::CSS) = Stabilizer(Z_matrix,X_matrix) #READ MANUAL 
 
 code_n(c::CSS) = size(X_matrix, 1) #variable input dependant
@@ -292,8 +292,8 @@ rate(c::CSS) = code_k(c)/code_s(c)
 
 logx_ops(c::CSS) = P"XXXXXXXXX"
 
-logz_ops(cc::CSS) = P"ZZZZZZZZZ"
+logz_ops(c::CSS) = P"ZZZZZZZZZ"
 
-logy_ops(cc::CSS) = P"YYYYYYYYY" 
+logy_ops(c::CSS) = P"YYYYYYYYY" 
 
 #naive_syndrome(c::CSS) #Syndrome circuit
