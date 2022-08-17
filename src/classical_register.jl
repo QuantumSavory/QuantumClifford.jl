@@ -54,8 +54,29 @@ function apply!(r::Register, m::PauliMeasurement{A,B,T}) where {A,B,T}
     T==Int && (bitview(r)[m.storagebit] = iszero(res))
     r
 end
+function projectXrand!(r::Register, m)
+    q = quantumstate(r)
+    _, res = projectXrand!(q,m)
+    r, res
+end
+function projectYrand!(r::Register, m)
+    q = quantumstate(r)
+    _, res = projectYrand!(q,m)
+    r, res
+end
+function projectZrand!(r::Register, m)
+    q = quantumstate(r)
+    _, res = projectZrand!(q,m)
+    r, res
+end
 function projectrand!(r::Register, m)
     q = quantumstate(r)
     _, res = projectrand!(q,m)
     r, res
+end
+
+function traceout!(r::Register, arg)
+    q = quantumstate(r)
+    traceout!(q,arg)
+    q
 end

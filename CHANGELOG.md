@@ -1,6 +1,10 @@
 # News
 
-## v0.5.8
+## v0.5.9 - 2022-08-17
+
+- `Register` now works with `traceout!` and `project*rand!`.
+
+## v0.5.8 - 2022-08-15
 
 - Implement `projectremoverand!` which besides performing a projective measurement like `projectrand!` also removes the measured qubit from the tableau, returning a smaller tableau. Not yet exported in public API.
 
