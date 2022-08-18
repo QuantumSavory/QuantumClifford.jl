@@ -7,7 +7,7 @@ In partial fulfillment of the requirements of the author's Master of Science Deg
 =#
 using LinearAlgebra
     
-#Input desired length - TEMPORARY
+#Input dependent
 block_length = 7
 message_length = 4
 
@@ -27,7 +27,6 @@ data_cols = findall( [ !(x in parity_cols) for x in range(1,block_len) ] )
 parity_masks = [ (1 << x) for x in range(0,length(parity_cols)) ]
 
 # First make the whole table, then excise parity columns later
-#A_init = zeros( Bit, r, block_len ) #SOME SORT OF ERROR HERE - TEST
 A_init = zeros( r, block_len )
 
 for row = 1:size(A_init,1)
@@ -77,7 +76,6 @@ parity = A
 data = I(message_len)
 
 # Since G is being constructed in its transposed form, we think of parity bits as
-# protecting rows, not columns
 parity_rows = [ 2^(x-1) for x in range(1,r) ]
 
 # The data rows are all the non-parity rows
@@ -99,7 +97,6 @@ parity = A
 data = I(message_len)
 
 # Since G is being constructed in its transposed form, we think of parity bits as
-# protecting rows, not columns
 parity_rows = [ 2^(x-1) for x in range(1,r) ]
 
 # The data rows are all the non-parity rows
@@ -113,5 +110,3 @@ end
 for d = 1:size(data,1)
     G[data_rows[d],:] = data[d,:]
 end
-
-#----------------------------------------------------------------------------------------------
