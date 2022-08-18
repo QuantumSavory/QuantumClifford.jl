@@ -38,12 +38,11 @@ Z_bool = !=(0).(Z)
 X_bool = !=(0).(X)
 
 #-----------Building CSS code ----------------
-#RE-SIZE BEFORE NOT AFTER
-parity_checks(c::CSS) = Stabilizer(X_bool,Z_bool) #READ MANUAL 
+parity_checks(c::CSS) = Stabilizer(X_bool,Z_bool) 
 
 code_n(c::CSS) = size(X_bool, 1) #variable input dependant
 
-parity_matrix(c::CSS) = stab_to_gf2(parity_checks) 
+parity_matrix(c::CSS) = stab_to_gf2(parity_checks(c)) 
 
 #Encoding circuit ----------------------------------
 
