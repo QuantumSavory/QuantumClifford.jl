@@ -1,12 +1,10 @@
+import .ECC
+
 include("./hammingcodegenerator.jl")
 
 #using Nemo 
 using LinearAlgebra
-import .ECC
-#import .hammingcodegenerator
 using .ECC
-#using .hammingcodegenerator: H,G
-
 #using Statistics
 
 #structure for CSS codes
@@ -14,23 +12,8 @@ struct CSS <: AbstractECC end
 
 #----------------CSS code generation ----------------------------------------------------------
 #----------Dual code -------------------
-<<<<<<< HEAD
 #defining X & Z matrix
 X_matrix = H
-=======
-#Size -not working atm: needs to be fixed
-size_row_H = size(H, 1)
-size_column_H = size(H, 2)
-
-size_row_G = size(G, 1)
-size_column_G = size(G, 2)
-
-#Dual code build
-X_zeros = zeros(Int8, size_row_H, size_column_H)
-Z_zeros = zeros(Int8, size_row_G, size_column_G)
-
-#Final X & Z matrix
-X_matrix = X_zeros
 Z_matrix = G
 
 #transforming the matrices into vec
@@ -79,5 +62,3 @@ logx_ops(c::CSS) = P"XXXXXXXXX"
 logz_ops(c::CSS) = P"ZZZZZZZZZ"
 
 logy_ops(c::CSS) = P"YYYYYYYYY" 
-
-naive_syndrome(c::CSS) #Syndrome circuit
