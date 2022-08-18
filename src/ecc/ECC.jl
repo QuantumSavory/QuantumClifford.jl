@@ -1,4 +1,3 @@
-module Check end
 module ECC
 
     using QuantumClifford
