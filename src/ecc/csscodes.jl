@@ -33,7 +33,10 @@ Z_zeros = zeros(Int8, size_row_G, size_column_G)
 
 #Final X & Z matrix
 X_matrix = X_zeros
+<<<<<<< HEAD
 >>>>>>> 1984f61 (issue ln 254-270: size Z&X matrices)
+=======
+>>>>>>> 36d58e9 (error line)
 Z_matrix = G
 
 #transforming the matrices into vec
