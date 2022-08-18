@@ -31,7 +31,6 @@ Z_zeros = zeros(Int8, size_row_G, size_column_G)
 
 #Final X & Z matrix
 X_matrix = X_zeros
->>>>>>> 1984f61951897e55df810110a50297157acf4d3b
 Z_matrix = G
 
 #transforming the matrices into vec
