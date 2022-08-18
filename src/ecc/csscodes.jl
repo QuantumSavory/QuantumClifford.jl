@@ -1,10 +1,21 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import .ECC
 
 using LinearAlgebra
 using .ECC
 =======
 >>>>>>> 58a4737 (compiling errors)
+=======
+import .ECC
+
+include("./hammingcodegenerator.jl")
+
+#using Nemo 
+using LinearAlgebra
+using .ECC
+#using Statistics
+>>>>>>> 5dc6b67 (working vrsion)
 
 #structure for CSS codes
 struct CSS <: AbstractECC 
@@ -16,9 +27,9 @@ end
 <<<<<<< HEAD
 =======
 #----------Dual code -------------------
-<<<<<<< HEAD
 #defining X & Z matrix
 X_matrix = H
+<<<<<<< HEAD
 =======
 #Size -not working atm: needs to be fixed
 size_row_H = size(H, 1)
@@ -37,6 +48,8 @@ X_matrix = X_zeros
 >>>>>>> 1984f61 (issue ln 254-270: size Z&X matrices)
 =======
 >>>>>>> 36d58e9 (error line)
+=======
+>>>>>>> 34ba876 (working vrsion)
 Z_matrix = G
 
 #transforming the matrices into vec
@@ -143,5 +156,14 @@ logx_ops(c) = P"XXXXXXXXX"
 
 logy_ops(c) = #TODO
 
+<<<<<<< HEAD
 logy_ops(c) = P"YYYYYYYYY" 
 >>>>>>> 58a4737 (compiling errors)
+=======
+logy_ops(c::CSS) = P"YYYYYYYYY" 
+<<<<<<< HEAD
+
+#naive_syndrome(c::CSS) #Syndrome circuit
+=======
+>>>>>>> 34ba876 (working vrsion)
+>>>>>>> 5dc6b67 (working vrsion)
