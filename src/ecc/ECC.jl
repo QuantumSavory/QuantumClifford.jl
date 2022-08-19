@@ -77,6 +77,9 @@ module ECC
     # CSS codes
     include("./csscodes.jl")
 
+    #Hamming code generator (for CSS codes)
+    include("./hammingcodegenerator.jl")
+
     #------TODO--------------------------------
 
     # Toric codes
