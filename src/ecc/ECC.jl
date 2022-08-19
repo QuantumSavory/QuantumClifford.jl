@@ -97,6 +97,11 @@ module ECC
 
     #Hamming code generator (for CSS codes)
     include("./hammingcodegenerator.jl")
+<<<<<<< HEAD
+=======
+
+    #------TODO--------------------------------
+>>>>>>> 9060b2a (updates restructuring (currently breaking))
 
     # Toric codes
     include("./toriccode.jl") 

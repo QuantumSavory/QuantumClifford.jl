@@ -9,8 +9,6 @@ using .ECC
 =======
 import .ECC
 
-include("./hammingcodegenerator.jl")
-
 #using Nemo 
 using LinearAlgebra
 using .ECC
@@ -25,7 +23,10 @@ end
 
 #----------------CSS code generation ----------------------------------------------------------
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 9060b2a (updates restructuring (currently breaking))
 #----------Dual code -------------------
 #defining X & Z matrix
 X_matrix = H
@@ -72,7 +73,12 @@ X = reshape(Xvec, 7, 7)
 #making X & Z into bool
 Z_bool = !=(0).(Z)
 X_bool = !=(0).(X)
+<<<<<<< HEAD
 >>>>>>> c114444 (issue ln 254-270: size Z&X matrices)
+=======
+=======
+>>>>>>> 5425292 (updates restructuring (currently breaking))
+>>>>>>> 9060b2a (updates restructuring (currently breaking))
 
 #-----------Building CSS code ----------------
 function parity_checks(c::CSS)
@@ -85,6 +91,7 @@ function parity_checks(c::CSS)
     Xvec = vec(X_matrix)
     Zvec = vec(Z_matrix)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
     #ensuring the vector are type Int8
     Xvec = convert(Array{Int8,1}, Xvec)
@@ -108,6 +115,21 @@ code_n(c) = css_n #variable input
     X = reshape(Xvec, n, n)
 
 <<<<<<< HEAD
+=======
+    #ensuring the vector are type Int8
+    Xvec = convert(Array{Int8,1}, Xvec)
+    Zvec = convert(Array{Int8,1}, Zvec)
+
+
+    #resizing the vectors into desired size
+    resize!(Xvec, 7*7)
+    resize!(Zvec, 7*7)
+
+    #reshappinng X & Z into matrix
+    Z = reshape(Zvec, 7, 7)
+    X = reshape(Xvec, 7, 7)
+
+>>>>>>> 9060b2a (updates restructuring (currently breaking))
     #making X & Z into bool
     Z_bool = !=(0).(Z)
     X_bool = !=(0).(X)
@@ -150,9 +172,13 @@ code_k(c) = css_n - code_s
 
 rate(c) = code_k/code_s
 
+<<<<<<< HEAD
 #distance(c::CSS) = undefined for now
 
 logx_ops(c) = P"XXXXXXXXX"
+=======
+logx_ops(c::CSS) = P"XXXXXXXXX"
+>>>>>>> 9060b2a (updates restructuring (currently breaking))
 
 logy_ops(c) = #TODO
 
