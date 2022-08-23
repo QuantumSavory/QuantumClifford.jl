@@ -33,7 +33,7 @@ function Base.one(::Type{T}, n; basis=:Z) where {T<:Tableau}# TODO support `basi
 end
 Base.one(::Type{<:Stabilizer}, n; basis=:Z) = Stabilizer(one(Tableau,n; basis)) # TODO make it type preserving
 Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, nqubits(s); basis)
-Base.one(::Type{<:Destabilizer}, n) = Destabilizer(vcat(one(Stabilizer, n, basis=:X),one(Stabilizer, n, basis=:Z)))
+Base.one(::Type{<:Destabilizer}, n) = Destabilizer(vcat(one(Tableau, n, basis=:X),one(Tableau, n, basis=:Z)))
 function Base.one(::Type{<:MixedStabilizer}, r, n, basis=:Z)
     s = one(Stabilizer, n; basis=basis)
     MixedStabilizer(s,r)
@@ -47,7 +47,7 @@ function Base.one(c::CliffordOperator)
     n = nqubits(c)
     one(typeof(c),n)
 end
-Base.one(::Type{<:CliffordOperator}, n) = CliffordOperator(vcat(one(Tableau,n;basis=:X),one(Tableau,n;basis=:Z)))
+Base.one(::Type{<:CliffordOperator}, n) = CliffordOperator(one(Destabilizer,n))
 
 """Prepare one or more Bell pairs (with optional phases).
 
@@ -95,12 +95,10 @@ function bell(phases::AbstractVector{Tuple{Bool, Bool}})
     ⊗((bell(t) for t in phases)...)
 end
 
-function bell(phases::AbstractVector{Bool})
-    s = bell(length(phases)÷2)
+function bell(bellphases::AbstractVector{Bool})
+    s = bell(length(bellphases)÷2)
     for i in 1:length(s)
-        phases[i]
-        phases(s)[i] = phases[i] ? 0x2 : 0x0
-        s[i], s.phases[i]
+        phases(s)[i] = bellphases[i] ? 0x2 : 0x0
     end
     s
 end
