@@ -2,7 +2,7 @@
 Clifford Operator specified by the mapping of the basis generators.
 
 ```jldoctest
-julia> CNOT
+julia> tCNOT
 X_ ⟼ + XX
 _X ⟼ + _X
 Z_ ⟼ + Z_
@@ -16,25 +16,17 @@ Z ⟼ + Z
 julia> stab = S"XI
                 IZ";
 
-julia> entangled = CNOT*stab
+julia> entangled = tCNOT*stab
 + XX
 + ZZ
 ```
 
-You can convert a stabilizer into a Clifford Operator (if necessary, the destabilizers are calculated on the fly):
-
-```jldoctest
-julia> CliffordOperator(S"Y")
-X ⟼ + Z
-Z ⟼ + Y
-
-
-julia> CliffordOperator(S"YY")
+julia> CliffordOperator(T"YY")
 ERROR: DimensionMismatch("Input tableau should be square (in which case the destabilizers are calculated) or of size 2n×n (in which case it is used directly).")
 [...]
 ```
 
-[`Destabilizer`](@ref) can also be converted (actually, internally, square stabilizer tableaux are first converted to destabilizer tableaux).
+[`Destabilizer`](@ref) can also be converted.
 ```jldoctest
 julia> d = Destabilizer(S"Y")
 + Z
@@ -66,7 +58,7 @@ macro C_str(a)
 end
 
 CliffordOperator(op::CliffordOperator) = op
-CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Stabilizer(paulis))
+CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Tableau(paulis))
 CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
 
 Base.:(==)(l::CliffordOperator, r::CliffordOperator) = l.tab == r.tab

@@ -111,7 +111,7 @@ _Z_ ⟼ - _X_
 __Z ⟼ + __Z
 
 julia> typeof(t_op)
-CliffordOperator{Vector{UInt8}, Matrix{UInt64}}
+CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}
 
 julia> CliffordOperator(op, 1, compact=true) # You can also extract just the non-trivial part of the tableau
 X ⟼ - Y
@@ -197,7 +197,7 @@ CliffordOperator(::Type{O}) where {O<:AbstractSingleQubitOperator} = CliffordOpe
 
 function Base.show(io::IO, op::AbstractSingleQubitOperator)
     print(io, "Symbolic single-qubit gate on qubit $(op.q)\n")
-    show(io, CliffordOperator(typeof(op)))
+    show(io, CliffordOperator(op,1;compact=true))
 end
 
 """Random symbolic single-qubit Clifford applied to qubit at index `qubit`.

@@ -518,12 +518,12 @@ julia> tab(MixedDestabilizer(s))
 + Z
 + X
 
-julia> tab(CliffordOperator(s))
+julia> tab(tHadamard)
 + Z
 + X
 
-julia> typeof(tab(CliffordOperator(s)))
-Stabilizer{Vector{UInt8}, Matrix{UInt64}}
+julia> typeof(tab(tHadamard))
+QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}
 ```
 
 See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
@@ -547,6 +547,8 @@ struct Destabilizer{T<:Tableau} <: AbstractStabilizer
 end
 
 function Destabilizer(s::Stabilizer)
+    row, col = size(s)
+    row>col && error(DomainError("The input stabilizer has more rows than columns, making it inconsistent or overdetermined."))
     mixed_destab = MixedDestabilizer(s)
     t = vcat(tab(destabilizerview(mixed_destab)),tab(stabilizerview(mixed_destab)))
     Destabilizer(t)
