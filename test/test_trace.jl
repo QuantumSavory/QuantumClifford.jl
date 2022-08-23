@@ -86,7 +86,7 @@ function test_trace()
                 @test canonicalize!(copy(msr2v)[:,perm]) == canonicalize!(copy(newstate))
                 @test canonicalize!(msr2v) == canonicalize!(mdr2v)
                 # Testing Stabilizer
-                ss = R==N ? s : MixedStabilizer(s).tab # Ensure the tableau is padded with Is
+                ss = R==N ? s : Stabilizer(tab(MixedStabilizer(s))) # Ensure the tableau is padded with Is
                 ssr1 = reset_qubits!(copy(ss), newstate,perm)
                 ssr2 = reset_qubits!(copy(ssr1),newstate,perm)
                 ssro = apply!(copy(ss), resetop)

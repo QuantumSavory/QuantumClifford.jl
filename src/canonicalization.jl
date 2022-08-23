@@ -213,22 +213,21 @@ Based on [gottesman1997stabilizer](@cite).
 
 See also: [`canonicalize!`](@ref), [`canonicalize_rref!`](@ref)
 """
-function canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Bool=true) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}}
+function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true)
     _canonicalize_gott!(stabilizer; phases=Val(phases))
 end
-function _canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Val{B}=Val(true)) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}, B}
-    tab = stabilizerview(stabilizer)
-    xzs = stabilizer.xzs
+function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) where {B}
+    xzs = tab(stabilizer).xzs
     rows, columns = size(stabilizer)
     i = 1
     for j in 1:columns
         # find first row with X or Y in col `j`
-        k = findfirst(ii->tab[ii,j][1],i:rows)
+        k = findfirst(ii->stabilizer[ii,j][1],i:rows)
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases)
             for m in 1:rows
-                if tab[m,j][1] && m!=i # if X or Y
+                if stabilizer[m,j][1] && m!=i # if X or Y
                     mul_left!(stabilizer, m, i; phases)
                 end
             end
@@ -240,12 +239,12 @@ function _canonicalize_gott!(stabilizer::Stabilizer{Tzv,Tm}; phases::Val{B}=Val(
     i = r+1
     for j in r+1:columns
         # find first row with Z in col `j`
-        k = findfirst(ii->tab[ii,j][2],i:rows)
+        k = findfirst(ii->stabilizer[ii,j][2],i:rows)
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases)
             for m in 1:rows
-                if tab[m,j][2] && m!=i # if Z or Y
+                if stabilizer[m,j][2] && m!=i # if Z or Y
                     mul_left!(stabilizer, m, i; phases)
                 end
             end

@@ -25,7 +25,7 @@ function test_projections()
                 mop = PauliMeasurement(m)
                 ps, anticom, res = project!(copy(s),m)
                 @test anticom==0x0 || ps[anticom]==m
-                @test ps.xzs == apply!(copy(s),mop).xzs
+                @test tab(ps).xzs == tab(apply!(copy(s),mop)).xzs
                 @test stab_looks_good(ps)
                 m = single_z(n,1)
                 ps, anticom, res = project!(copy(s),m)
@@ -325,7 +325,7 @@ function test_projections()
         end
         @testset "Redundant row permutations in `project!(::MixedDestabilizer)`" begin
             # Fixed in 41ed1d3c
-            destab =  S"+ ZX_Y_YXZ
+            destab =  T"+ ZX_Y_YXZ
                         + XY_Y____
                         + _Z_XXY__
                         + _ZYXXY__
@@ -333,7 +333,7 @@ function test_projections()
                         + X__YXZXZ
                         + ___YXXZZ
                         + _______Z"
-            stab =    S"+ X_______
+            stab =    T"+ X_______
                         + _X_Y____
                         + __ZY____
                         + __Z_____

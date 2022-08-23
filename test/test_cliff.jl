@@ -15,7 +15,7 @@ function test_cliff()
     end
     @testset "Clifford Operators" begin
         @testset "Constructors" begin
-            @test_throws DimensionMismatch CliffordOperator(S"X")
+            @test_throws DimensionMismatch CliffordOperator(T"X")
         end
         @testset "Permutations of qubits" begin
             for c in [tCNOT, tId1⊗tHadamard, tCNOT⊗tCNOT, tensor_pow(tCNOT,6), tensor_pow(tCNOT,7), tensor_pow(tCNOT,6)⊗tPhase, tensor_pow(tCNOT,7)⊗tPhase]
