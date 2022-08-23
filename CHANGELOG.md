@@ -1,5 +1,10 @@
 # News
 
+## v0.6.0 - 2022-08-22
+
+- **(breaking)** Split the `Stabilizer` object into a `Stabilizer` that semantically represents a state, and a general `Tableau` that does not carry such an interpretation. `Stabilizer` uses `Tableau` internally. `stab.xzs` and `stab.phases` property access would now fail. Use `tab(stab)` to get the tableau object and `phases(stab)` to get the phases.
+- Simplify type parameters.
+
 ## v0.5.9 - 2022-08-17
 
 - `Register` now works with `traceout!` and `project*rand!`.

@@ -86,7 +86,7 @@ The algorithm is detailed in [koenig2014efficiently](@cite).
 See also: [`enumerate_cliffords`](@ref), [`clifford_cardinality`](@ref)."""
 function symplecticGS(pauli::PauliOperator; padded_n=nqubits(pauli))
     n = nqubits(pauli)
-    basis = zero(Stabilizer, 2padded_n+1, padded_n)
+    basis = zero(Tableau, 2padded_n+1, padded_n)
     δn = padded_n-n
     # fillup the padded tableau
     for i in 1:δn

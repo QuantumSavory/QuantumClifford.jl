@@ -181,7 +181,7 @@ CliffordOperator(op::AbstractSingleQubitOperator, n; kw...) = CliffordOperator(S
 function CliffordOperator(op::SingleQubitOperator, n; compact=false)
     if compact
         n==1 || throw(ArgumentError("Set `n=1` as a `SingleQubitOperator` being compacted (`compact=true`) has to result in a 1×1 `CliffordOperator`."))
-        return CliffordOperator(Stabilizer([op.px ? 0x2 : 0x0, op.pz ? 0x2 : 0x0],[op.xx op.xz; op.zx op.zz]))
+        return CliffordOperator(Tableau([op.px ? 0x2 : 0x0, op.pz ? 0x2 : 0x0],[op.xx op.xz; op.zx op.zz]))
     else
         n >= op.q || throw(DimensionMismatch("Set a larger `n`, otherwise the `SingleQubitOperator` can not fit in the allocated `CliffordOperator`. Use `compact=true` if you want to discard the target index."))
         c = one(CliffordOperator, n)

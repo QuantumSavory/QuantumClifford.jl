@@ -1,8 +1,8 @@
 """A register, representing the state of a computer including both a tableaux and an array of classical bits (e.g. for storing measurement results)"""
-struct Register{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractQCState
-    stab::MixedDestabilizer{Tzv,Tm}
+struct Register{T<:Tableau} <: AbstractQCState # TODO simplify type parameters (remove nesting)
+    stab::MixedDestabilizer{T}
     bits::Vector{Bool}
-    Register(s::MixedDestabilizer{A,B}, bits) where {A,B} = new{A,B}(s,bits)
+    Register(s::MixedDestabilizer{T}, bits) where {T} = new{T}(s,bits)
 end
 
 Register(s,bits) = Register(MixedDestabilizer(s), bits)
@@ -24,6 +24,8 @@ bitview(r::Register) = r.bits
 function quantumstate end
 quantumstate(s::AbstractStabilizer) = s
 quantumstate(r::Register) = r.stab
+
+tab(r::Register) = tab(quantumstate(r))
 
 function apply!(r::Register, args...; kwargs...)
     apply!(quantumstate(r), args...; kwargs...)

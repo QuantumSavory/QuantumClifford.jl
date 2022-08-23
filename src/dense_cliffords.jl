@@ -46,11 +46,11 @@ X ⟼ + Z
 Z ⟼ + Y
 ```
 """
-struct CliffordOperator{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractCliffordOperator
-    tab::Stabilizer{Tzv,Tm}
-    function CliffordOperator(stab::Stabilizer{Tzv,Tm}) where {Tzv,Tm}
-        if size(stab,1)==2*size(stab,2)
-            new{Tzv,Tm}(stab)
+struct CliffordOperator{T<:Tableau} <: AbstractCliffordOperator
+    tab::T
+    function CliffordOperator(tab::Tableau)
+        if size(tab,1)==2*size(tab,2)
+            new{typeof(tab)}(tab)
         #elseif size(stab,1)==size(stab,2) # TODO be able to work with squara tableaux (by reversing all row operations)
         #    destab = tab(Destabilizer(stab))
         #    new{typeof(destab.phases),typeof(destab.xzs)}(destab) # TODO be smarter about type signatures here... there should be a better way
@@ -61,7 +61,7 @@ struct CliffordOperator{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned
 end
 
 macro C_str(a)
-    tab = _S_str(a)
+    tab = _T_str(a)
     CliffordOperator(tab)
 end
 
@@ -104,18 +104,18 @@ Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Stabilizer, 2n,
 
 function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
     tab = copy(r.tab)
-    apply!(tab,l)
+    apply!(Stabilizer(tab),l) # TODO maybe not the most elegant way to perform apply!(::Tableau, gate)
     CliffordOperator(tab)
 end
 
 function apply!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
-    _apply!(tab(r),l;phases=Val(phases))
+    _apply!(Stabilizer(tab(r)),l;phases=Val(phases)) # TODO maybe not the most elegant way to perform apply!(::Tableau, gate)
     r
 end
 
 # TODO create Base.permute! and getindex(..., permutation_array)
 function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this is a slow stupid implementation
-    CliffordOperator(Stabilizer([c.tab[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
+    CliffordOperator(Tableau([c.tab[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
 end
 
 """Nonvectorized version of `apply!` used for unit tests."""

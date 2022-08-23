@@ -137,7 +137,7 @@ function random_destabilizer(rng::AbstractRNG, n::Int; phases::Bool=true)
 
     # random Pauli matrix just amounts to phases on the stabilizer tableau
     phasesarray::Vector{UInt8} = if phases rand(rng, [0x0,0x2], 2n) else zeros(UInt8, 2n) end
-    return Destabilizer(Stabilizer(phasesarray, xzs))
+    return Destabilizer(Tableau(phasesarray, xzs))
 end
 random_destabilizer(n::Int; phases::Bool=true) =  random_destabilizer(GLOBAL_RNG, n; phases)
 

@@ -19,8 +19,8 @@ end
 """A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`.
 
 `apply!(state, cliff, indices)` and `apply!(state, SparseGate(cliff, indices))` give the same result."""
-struct SparseGate{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractCliffordOperator
-    cliff::CliffordOperator{Tzv,Tm}
+struct SparseGate{T<:Tableau} <: AbstractCliffordOperator # TODO simplify type parameters (remove nesting)
+    cliff::CliffordOperator{T}
     indices::Vector{Int}
 end
 
@@ -29,8 +29,8 @@ function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
 end
 
 """Reset the specified qubits to the given state."""
-struct Reset{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractOperation
-    resetto::Stabilizer{Tzv, Tm}
+struct Reset{T<:Tableau} <: AbstractOperation # TODO simplify type parameters (remove nesting)
+    resetto::Stabilizer{T}
     indices::Vector{Int}
 end
 

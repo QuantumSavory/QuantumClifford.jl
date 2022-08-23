@@ -135,12 +135,13 @@ tableau data structure). It is stored in memory as a phase list and a bit-matrix
 for X and Z components. It can be instantiated by an `S` string, or with a
 number of different constructors.
 
-For data structures that build upon this tableau representation
-to track other useful information, consider
-[`Destabilizer`](@ref),
-[`MixedStabilizer`](@ref),
-and [`MixedDestabilizer`](@ref).
-See also the [data structures discussion page](@ref Choosing-Appropriate-Data-Structure).
+!!! tip "Stabilizers and Destabilizers"
+    In many cases you probably would prefer to use the [`MixedDestabilizer`](@ref)
+    data structure, as it caries a lot of useful additional information, like tracking
+    rank and destabilizer operators. `Stabilizer` has mostly a pedagogical value, and it
+    is also used for slightly faster simulation of a particular subset of Clifford
+    operations.
+    See also the [data structures discussion page](@ref Choosing-Appropriate-Data-Structure).
 
 ```jldoctest
 julia> S"-XX
@@ -211,7 +212,7 @@ julia> s = S"-XXX
 + ZZ_
 - _ZZ
 
-julia> s.phases, s.nqubits, s.xzs
+julia> phases(s), tab(s).xzs
 (UInt8[0x02, 0x00, 0x02], 3, UInt64[0x0000000000000007 0x0000000000000000 0x0000000000000000; 0x0000000000000000 0x0000000000000003 0x0000000000000006])
 ```
 
@@ -275,6 +276,13 @@ julia> s
 ```
 
 # [Projective Measurements](@id Projective-Measurements)
+
+The [`project!`](@ref) function is used to perform generic projective measurements.
+
+!!! tip "Single qubit projections"
+    If you know your Pauli measurement operator acts on a single qubit, there are
+    much faster projection functions available, discussed in the next section.
+    Namely [`projectX!`](@ref), [`projectY!`](@ref), and [`projectZ!`](@ref).
 
 To observe the effect of different projections, we will start with a GHZ state.
 

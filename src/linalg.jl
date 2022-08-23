@@ -61,7 +61,7 @@ function logdot(s1::Stabilizer, s2::Stabilizer)
         if any(i->s2_prime[row,i][1], 1:nqubits(s2_prime)) # X or Y
             k += 1
         else
-            if !iszero(s2_prime.phases[row])
+            if !iszero(tab(s2_prime).phases[row])
                 return nothing
             end
         end
@@ -121,7 +121,7 @@ function ⊗(ops::MixedDestabilizer...)
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)
     rtot = sum(LinearAlgebra.rank, ops)
-    tab = zero(Stabilizer, 2*ntot, ntot)
+    tab = zero(Tableau, 2*ntot, ntot)
     last_svrow = ntot
     last_dvrow = 0
     last_lxrow = rtot
@@ -141,7 +141,7 @@ end
 function ⊗(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)
-    tab = zero(Stabilizer, 2*ntot, ntot)
+    tab = zero(Tableau, 2*ntot, ntot)
     last_zrow = ntot
     last_xrow = 0
     for op in ops

@@ -168,11 +168,12 @@ end
 function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
     # TODO QuantumClifford should implement some submatrix comparison
     canonicalize_rref!(quantumstate(s),v.indices) # Document why rref is used
-    sv = stabilizerview(s)
-    for i in eachindex(v.good_state)
-        (sv.phases[end-i+1]==v.good_state.phases[end-i+1]) || return s, false_success_stat
-        for (j,q) in zip(eachindex(v.good_state),v.indices)
-            (sv[end-i+1,q]==v.good_state[end-i+1,j]) || return s, false_success_stat
+    sv = tab(s)
+    good_state = tab(v.good_state)
+    for i in eachindex(good_state)
+        (sv.phases[end-i+1]==good_state.phases[end-i+1]) || return s, false_success_stat
+        for (j,q) in zip(eachindex(good_state),v.indices)
+            (sv[end-i+1,q]==good_state[end-i+1,j]) || return s, false_success_stat
         end
     end
     return s, true_success_stat
@@ -330,8 +331,8 @@ function _applybranches_measurement(branches, measurements, n)
         if isnothing(r) # TODO anticom could be zero if there was a rank change
             s1 = s
             s2 = copy(s)
-            r1 = stabilizerview(s1).phases[anticom] = 0x00
-            r2 = stabilizerview(s2).phases[anticom] = 0x02
+            r1 = phases(stabilizerview(s1))[anticom] = 0x00
+            r2 = phases(stabilizerview(s2))[anticom] = 0x02
             push!(new_branches, (s1,r0+r1,p/2))
             push!(new_branches, (s2,r0+r2,p/2))
         else
@@ -411,10 +412,10 @@ function applybranches(s::Register, op::PauliMeasurement; max_order=1)
     new_branches = []
     if isnothing(r)
         s1 = s
-        stabilizerview(s1.stab).phases[anticom] = 0x00
+        phases(stabilizerview(s1.stab))[anticom] = 0x00
         s1.bits[op.storagebit] = false
         s2 = copy(s)
-        stabilizerview(s2.stab).phases[anticom] = 0x02
+        phases(stabilizerview(s2.stab))[anticom] = 0x02
         s2.bits[op.storagebit] = true
         push!(new_branches, (s1,continue_stat,1/2,0))
         push!(new_branches, (s2,continue_stat,1/2,0))

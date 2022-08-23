@@ -20,33 +20,34 @@ function single_y(n,i)
 end
 
 # TODO make faster by using fewer initializations, like in Base.zero
-function Base.one(::Type{<:Stabilizer}, n; basis=:Z) # TODO support `basis` in all other `one(::[Mixed][De]Stabilizer)` functions
+function Base.one(::Type{T}, n; basis=:Z) where {T<:Tableau}# TODO support `basis` in all other `one(::[Mixed][De]Stabilizer)` functions
     if basis==:X
-        Stabilizer(LinearAlgebra.I(n),falses(n,n))
+        T(LinearAlgebra.I(n),falses(n,n))
     elseif basis==:Y
-        Stabilizer(LinearAlgebra.I(n),LinearAlgebra.I(n))
+        T(LinearAlgebra.I(n),LinearAlgebra.I(n))
     elseif basis==:Z
-        Stabilizer(falses(n,n),LinearAlgebra.I(n))
+        T(falses(n,n),LinearAlgebra.I(n))
     else
         throw(ErrorException("`basis` should be one of :X, :Y, or :Z"))
     end
 end
-Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, nqubits(s); basis=basis)
+Base.one(::Type{<:Stabilizer}, n; basis=:Z) = Stabilizer(one(Tableau,n; basis)) # TODO make it type preserving
+Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, nqubits(s); basis)
 Base.one(::Type{<:Destabilizer}, n) = Destabilizer(vcat(one(Stabilizer, n, basis=:X),one(Stabilizer, n, basis=:Z)))
 function Base.one(::Type{<:MixedStabilizer}, r, n, basis=:Z)
     s = one(Stabilizer, n; basis=basis)
     MixedStabilizer(s,r)
 end
 function Base.one(::Type{<:MixedDestabilizer}, r, n)
-    d = one(Stabilizer, n; basis=:X)
-    s = one(Stabilizer, n; basis=:Z)
+    d = one(Tableau, n; basis=:X)
+    s = one(Tableau, n; basis=:Z)
     MixedDestabilizer(vcat(d,s),r)
 end
 function Base.one(c::CliffordOperator)
     n = nqubits(c)
     one(typeof(c),n)
 end
-Base.one(::Type{<:CliffordOperator}, n) = CliffordOperator(Stabilizer([LinearAlgebra.I(n);falses(n,n)],[falses(n,n);LinearAlgebra.I(n)]))
+Base.one(::Type{<:CliffordOperator}, n) = CliffordOperator(vcat(one(Tableau,n;basis=:X),one(Tableau,n;basis=:Z)))
 
 """Prepare one or more Bell pairs (with optional phases).
 
@@ -85,8 +86,8 @@ end
 
 function bell(phase::Tuple{Bool, Bool})
     s = bell()
-    s.phases[1] = phase[1] ? 0x2 : 0x0
-    s.phases[2] = phase[2] ? 0x2 : 0x0
+    phases(s)[1] = phase[1] ? 0x2 : 0x0
+    phases(s)[2] = phase[2] ? 0x2 : 0x0
     s
 end
 
@@ -98,7 +99,7 @@ function bell(phases::AbstractVector{Bool})
     s = bell(length(phases)÷2)
     for i in 1:length(s)
         phases[i]
-        s.phases[i] = phases[i] ? 0x2 : 0x0
+        phases(s)[i] = phases[i] ? 0x2 : 0x0
         s[i], s.phases[i]
     end
     s

@@ -8,7 +8,7 @@ function test_graphs()
             gates = graph_gatesequence(h_idx, ip_idx, z_idx)
             gate = graph_gate(h_idx, ip_idx, z_idx, nqubits(s))
             c0 = one(CliffordOperator,nqubits(s))
-            for gate in vcat(gates...) apply!(tab(c0), gate) end
+            for gate in vcat(gates...) apply!(Stabilizer(tab(c0)), gate) end # TODO this wrapping in a Stabilizer hack is ugly; clean it up
             @test c0==gate
             s1 = copy(s)
             for gate in vcat(gates...) apply!(s1, gate) end
@@ -24,7 +24,7 @@ function test_graphs()
         gates = graph_gatesequence(h_idx, ip_idx, z_idx)
         gate = graph_gate(h_idx, ip_idx, z_idx, nqubits(s))
         c0 = one(CliffordOperator,nqubits(s))
-        for gate in vcat(gates...) apply!(tab(c0), gate) end
+        for gate in vcat(gates...) apply!(Stabilizer(tab(c0)), gate) end # TODO this wrapping in a Stabilizer hack is ugly; clean it up
         @test c0==gate
         s1 = copy(s)
         for gate in vcat(gates...) apply!(s1, gate) end
