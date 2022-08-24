@@ -1,9 +1,7 @@
 import .ECC
 
-#using Nemo 
 using LinearAlgebra
 using .ECC
-#using Statistics
 
 #structure for CSS codes
 struct CSS <: AbstractECC 
