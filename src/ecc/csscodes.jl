@@ -183,13 +183,22 @@ logx_ops(c::CSS) = P"XXXXXXXXX"
 logy_ops(c) = #TODO
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 logy_ops(c) = P"YYYYYYYYY" 
 >>>>>>> 58a4737 (compiling errors)
 =======
+=======
+>>>>>>> 4aff1e9 (unbroken version code)
 logy_ops(c::CSS) = P"YYYYYYYYY" 
 <<<<<<< HEAD
 
 #naive_syndrome(c::CSS) #Syndrome circuit
 =======
 >>>>>>> 34ba876 (working vrsion)
+<<<<<<< HEAD
 >>>>>>> 5dc6b67 (working vrsion)
+=======
+=======
+logy_ops(c::CSS) = P"YYYYYYYYY" 
+>>>>>>> 00eb204 (unbroken version code)
+>>>>>>> 4aff1e9 (unbroken version code)
