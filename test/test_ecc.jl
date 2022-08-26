@@ -2,6 +2,7 @@ using Revise
 using BenchmarkTools
 using QuantumClifford
 using QuantumClifford.ECC: AbstractECC, Steane5, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, isdegenerate
+using Tests 
 
 function test_physicalqubit(c::AbstractECC)
     @testset "Physical and Logical qubit" begin
