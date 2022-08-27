@@ -41,13 +41,15 @@ SUITE["stabilizer"]["canon"] = BenchmarkGroup(["canonicalization"])
 SUITE["stabilizer"]["canon"]["cano500"] = @benchmarkable canonicalize!(s) setup=(s=copy(s500)) evals=1
 SUITE["stabilizer"]["canon"]["gott500"] = @benchmarkable canonicalize_gott!(s) setup=(s=copy(s500)) evals=1
 SUITE["stabilizer"]["canon"]["rref500"] = @benchmarkable canonicalize_rref!(s) setup=(s=copy(s500)) evals=1
+SUITE["stabilizer"]["canon"]["md_cano500"] = @benchmarkable canonicalize!(md) setup=(md=copy(md500)) evals=1
+SUITE["stabilizer"]["canon"]["md_rref500"] = @benchmarkable canonicalize_rref!(md) setup=(md=copy(md500)) evals=1
 SUITE["stabilizer"]["canon"]["diag_cano500"] = @benchmarkable canonicalize!(s) setup=(s=one(Stabilizer,500))  evals=1
 SUITE["stabilizer"]["canon"]["diag_gott500"] = @benchmarkable canonicalize_gott!(s) setup=(s=one(Stabilizer,500)) evals=1
 SUITE["stabilizer"]["canon"]["diag_rref500"] = @benchmarkable canonicalize_rref!(s) setup=(s=one(Stabilizer,500)) evals=1
-# Tensor products of tableaux. # TODO finish functionality and add benchmarks
-#SUITE["stabilizer"]["tensor"] = BenchmarkGroup(["tensor product"])
-#SUITE["stabilizer"]["tensor"]["pow5_20"] = @benchmarkable tensor_pow(s,20) setup=(s=random_stabilizer(5))
-#SUITE["stabilizer"]["tensor"]["diag_pow5_20"] = @benchmarkable tensor_pow(s,20) setup=(s=one(Stabilizer,500))
+# Tensor products of tableaux.
+SUITE["stabilizer"]["tensor"] = BenchmarkGroup(["tensor product"])
+SUITE["stabilizer"]["tensor"]["pow5_20"] = @benchmarkable tensor_pow(s,20) setup=(s=random_stabilizer(5))
+SUITE["stabilizer"]["tensor"]["diag_pow5_20"] = @benchmarkable tensor_pow(s,20) setup=(s=one(Stabilizer,500))
 # Projection operations.
 SUITE["stabilizer"]["project"] = BenchmarkGroup(["project", "measure"])
 SUITE["stabilizer"]["project"]["stabilizer"]   = @benchmarkable project!(s,p) setup=(s=copy(s500);p=copy(p500)) evals=1

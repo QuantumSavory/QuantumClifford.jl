@@ -29,7 +29,7 @@ end
 
 df = DataFrame(records)
 df[!,:total] .= df[:,:task] .+ df[:,:pkgimport]
-df = stack(df, [:total, :task, :pkgimport], variable_name=:x, value_name=:time)
+df = DataFrames.stack(df, [:total, :task, :pkgimport], variable_name=:x, value_name=:time)
 
 layers = visual(Stairs, step=:post)
 axis = (;width = 500, height = 400, xticklabelrotation=-pi/3)
