@@ -1,12 +1,11 @@
 #IN PROGRESS
 struct Toric <: AbstractECC end 
 
-
 #Toric x qubit code
 parity_checks(c::Toric) = S"XZZX_
-                              _XZZX
-                              X_XZZ
-                              ZX_XZ"
+                            _XZZX
+                            X_XZZ
+                            ZX_XZ"
 
 parity_matrix(c::Toric) = stab_to_gf2(parity_checks(c))
 

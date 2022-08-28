@@ -50,10 +50,6 @@ logz_ops(c::Steane5) = P"ZZZZZ"
 
 isdegenerate(c::Steane5) = false 
 
-#=
-naive_syndrome(encoding_circuit) #Syndrome circuit
-=#
-
 ##----------------------------------------------------------------------------------------------------------------------------
 
 #steane 7 qubit code
@@ -102,7 +98,3 @@ logx_ops(c::Steane7) = P"XXXXXXX"
 logz_ops(c::Steane7) = P"ZZZZZZZ" 
 
 isdegenerate(c::Steane7) = false 
-
-#=
-naive_syndrome(encoding_circuit) #Syndrome circuit
-=#
