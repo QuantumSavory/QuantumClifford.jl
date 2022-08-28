@@ -33,7 +33,7 @@ function test_physicalqubit(c::AbstractECC)
         canonicalize!(logicalqubit)
 
         @test encoding_circuit_physical == encoding_circuit_logical
-        end
+        
     end
 end
 
