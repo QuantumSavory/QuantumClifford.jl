@@ -92,11 +92,10 @@ module ECC
     #Hamming code generator (for CSS codes)
     include("./hammingcodegenerator.jl")
 
-    #------TODO--------------------------------
-
     # Toric codes
-    #include("./toriccode.jl") #has to b commented for tsting
+    include("./toriccode.jl") 
 
+    #------TODO--------------------------------
     # Surface codes
     #include("./surface_codes.jl")
     #include...
