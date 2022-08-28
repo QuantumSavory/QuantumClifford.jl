@@ -16,13 +16,19 @@ module ECC
     function code_n end
 
     """The number of stabilizer checks in a code."""
-    function code_s end
+    function code_s(c::AbstractECC) 
+        length(parity_checks(c))
+    end
 
     """The number of logical qubits in a code."""
-    function code_k end
+    function code_k(c::AbstractECC)
+        code_n(c) - code_s(c)
+    end
 
     """The rate of a code."""
-    function rate end
+    function rate(c::AbstractECC)
+        code_k(c)/code_s(c)
+    end
 
     """Naive syndrome circuit""" #TODO: add the other 3 types of syndrome circuit
     function naive_syndrome_circuit(c::AbstractECC)
@@ -50,7 +56,9 @@ module ECC
     function distance end
 
     """Parity matrix of a code."""
-    function parity_matrix end
+    function parity_matrix(c::AbstractECC) 
+        stab_to_gf2(parity_checks(c)) 
+    end
 
     """Logical X operations of a code."""
     function logx_ops end # can be computed from the parity checks

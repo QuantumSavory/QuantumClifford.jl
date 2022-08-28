@@ -9,8 +9,6 @@ parity_checks(c::Steane5) = S"XZZX_
 
 code_n(c::Steane5) = 5
 
-parity_matrix(c::Steane5) = stab_to_gf2(parity_checks(c::Steane5))
-
 #Encoding circuit ----------------------------------
 #https://www.researchgate.net/figure/Encoding-circuit-for-the-five-qubit-code-a-Circuit-to-encode-the-logical-minus-state_fig1_337273308
 
@@ -36,12 +34,6 @@ c6 = sCNOT(2,5)
 encoding_circuit(c::Steane5) = [z1,h1,h2,is1,c1,c2,h3,c3,c4,is2,s2,is3,s2,s3,z2,c5,h4,c6] 
 #----------------------------------------------------------------
 
-code_s(c::Steane5) = length(parity_checks(c))
-
-code_k(c::Steane5) = code_n(c) - code_s(c)
-
-rate(c::Steane5) = code_k(c)/code_s(c)
-
 distance(c::Steane5) = 3
 
 logx_ops(c::Steane5) = P"XXXXX" 
@@ -61,8 +53,6 @@ parity_checks(c::Steane7) = S"___XXXX
                               Z_Z_Z_Z"
 
 code_n(c::Steane7) = 7
-
-parity_matrix(c::Steane7) = stab_to_gf2(parity_checks(c::Steane7))
 
 #Encoding circuit ----------------------------------
 c1 = sCNOT(1,2)
@@ -84,12 +74,6 @@ c11 = sCNOT(5,2)
 
 encoding_circuit(c::Steane7) = [c1,c2,h1,h2,h3,c3,c4,c5,c6, c7, c8, c9, c10, c11]
 #----------------------------------------------------------------
-
-code_s(c::Steane7) = length(parity_checks(c))
-
-code_k(c::Steane7) = code_n(c) - code_s(c)
-
-rate(c::Steane7) = code_k(c)/code_s(c)
 
 distance(c::Steane7) = 3
 
