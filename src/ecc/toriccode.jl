@@ -4,16 +4,17 @@ using LinearAlgebra
 using .ECC
 
 struct Toric <: AbstractECC 
-    n #qubits
+    lx
+    lz
 end 
 
-code_n(c::Toric) = c.n
+code_n(c::Toric) = c.lx * c.lz
 
 #Parity checks ----------------------------------
 
 #matrix with 1 zero per conection point 
-empty_grid_matrix = zeros(code_n, code_n -1)
-    
+empty_grid_matrix(c::Toric) = zeros(c.lx, c.lz)
+
 #HOW TO I CONNECT THEM
 
 parity_checks(c::Toric) = 1 #temporary
@@ -26,4 +27,5 @@ parity_matrix(c::Toric) = stab_to_gf2(parity_checks(c))
 encoding_circuit(c::Toric) = [] #TODO
 #-----------------------------------------------------
 
+distance(c::Toric) = min(c.lx,c.lz)
 
