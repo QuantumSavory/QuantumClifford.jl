@@ -1,81 +1,80 @@
-#=
 import .ECC
 
 using LinearAlgebra
 using .ECC
-=#
+
 struct Toric <: AbstractECC 
     n
 end 
 
-        code_n(c::Toric) = c.n
+code_n(c::Toric) = c.n
 
-        #Parity checks ----------------------------------
+#Parity checks ----------------------------------
 
-        function checks(c::Toric) 
-            #not all n can make square lattices
-            available_n = [4,7,12,17,24,31] #these values only go up to 9 sided grids - working on a generation function
+function checks(c::Toric) 
+    #not all n can make square lattices
+    available_n = [4,7,12,17,24,31] #these values only go up to 9 sided grids - working on a generation function
 
-            for i in available_n 
-                if c.n == i
-                    n = sqrt(c.n)
-                    grid = zeros(n, n)
-                    z_locations = zeros(n, n)
-                    x_locations = zeros(n, n)
-                    z_n = 0
-                    x_n = 0
+    for i in available_n 
+        if c.n == i
+            n = sqrt(c.n)
+            grid = zeros(n, n)
+            z_locations = zeros(n, n)
+            x_locations = zeros(n, n)
+            z_n = 0
+            x_n = 0
 
-                    for i in grid
-                        #Z gates
-                        if i == b && b < (c.n-2n) && b_row < rows
-                            z_locations[i,z_n] = 1
-                            z_locations[i+n,z_n] = 1
-                            z_locations[i+n+1,z_n] = 1
-                            z_locations[i+n+1+n,z_n] = 1
-                        end
+            for i in grid
+                #Z gates
+                if i == b && b < (c.n-2n) && b_row < rows
+                    z_locations[i,z_n] = 1
+                    z_locations[i+n,z_n] = 1
+                    z_locations[i+n+1,z_n] = 1
+                    z_locations[i+n+1+n,z_n] = 1
+                end
 
-                        #X gates
-                        if isdefined(grid[i+n],0) && isdefined(grid[i+(2*c.n)+1],0) && isdefined(grid[i+(3*c.n)+1],0)
-                            x_locations[i,x_n] = 1
-                            x_locations[i+n,x_n] = 1
-                            x_locations[i+(2*n)+1,x_n] = 1
-                            x_locations[i+(3*n)+1,x_n] = 1                   
-                        elseif isdefined(grid[i+n],0) 
-                            x_locations[i,n] = 1
-                            x_locations[i+n,x_n] = 1
-                        elseif isdefined(grid[i+(2*n)+1],0) 
-                            x_locations[i,x_n] = 1
-                            x_locations[i+(2*n)+1,x_n] = 1
-                        elseif isdefined(grid[i+(3*n)+1],0) 
-                            x_locations[i,x_n] = 1
-                            x_locations[i+(3*n)+1,x_n] = 1
-                        end
+                #X gates
+                if isdefined(grid[i+n],0) && isdefined(grid[i+(2*c.n)+1],0) && isdefined(grid[i+(3*c.n)+1],0)
+                    x_locations[i,x_n] = 1
+                    x_locations[i+n,x_n] = 1
+                    x_locations[i+(2*n)+1,x_n] = 1
+                    x_locations[i+(3*n)+1,x_n] = 1                   
+                elseif isdefined(grid[i+n],0) 
+                    x_locations[i,n] = 1
+                    x_locations[i+n,x_n] = 1
+                elseif isdefined(grid[i+(2*n)+1],0) 
+                    x_locations[i,x_n] = 1
+                    x_locations[i+(2*n)+1,x_n] = 1
+                elseif isdefined(grid[i+(3*n)+1],0) 
+                    x_locations[i,x_n] = 1
+                    x_locations[i+(3*n)+1,x_n] = 1
+                end
 
-                        z_n += 1 #next z
-                        x_n += 1 #next x
+                z_n += 1 #next z
+                x_n += 1 #next x
 
-                    end #for 
+            end #for 
 
-                    #making X & Z into bool
-                    z_locations = !=(0).(Z)
-                    x_locations = !=(0).(X)
+            #making X & Z into bool
+            z_locations = !=(0).(Z)
+            x_locations = !=(0).(X)
 
-                    return Stabilizer(x_locations,z_locations)
+            return Stabilizer(x_locations,z_locations)
 
-                end #if
-            end #for
+        end #if
+    end #for
 
-        end #function
+end #function
 
-        parity_checks(c::Toric) = checks(c)
-        #-----------------------------------------------------
+parity_checks(c::Toric) = checks(c)
+#-----------------------------------------------------
 
-        parity_matrix(c::Toric) = stab_to_gf2(parity_checks(c))
+parity_matrix(c::Toric) = stab_to_gf2(parity_checks(c))
 
-        #Encoding circuit ----------------------------------
+#Encoding circuit ----------------------------------
 
-        encoding_circuit(c::Toric) = [] #TODO
-        #-----------------------------------------------------
+encoding_circuit(c::Toric) = [] #TODO
+#-----------------------------------------------------
 
-        distance(c::Toric) = sqrt(c.n)
+distance(c::Toric) = sqrt(c.n)
 
