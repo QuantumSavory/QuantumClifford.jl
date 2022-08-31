@@ -17,7 +17,7 @@ function checks(c::Toric)
 
     for i in available_n 
         if c.n == i
-            n = Int8(sqrt(c.n)) #NOPE
+            n = Int8(sqrt(c.n)) #NOPE -trying to obtain the size of the matrix
             grid = zeros(Int8,n, n)
             z_locations = zeros(n, n)
             x_locations = zeros(n, n)
