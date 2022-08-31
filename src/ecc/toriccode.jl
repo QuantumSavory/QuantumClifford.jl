@@ -17,7 +17,7 @@ function checks(c::Toric)
     
     for i in available_n 
         if c.n == i
-            for j in range(0,1,1000)
+            for j in range(0,1000)
                 if i <= j^2
                     grid = zeros(Int8,j, j)
                     z_locations = zeros(j, j)
@@ -25,32 +25,33 @@ function checks(c::Toric)
                     z_n = 0
                     x_n = 0
 
-                    for i in grid
+                    for location in grid
                         #Z gates
-                        if i == b && b < (c.n-2n) && b_row < rows
-                            z_locations[i,z_n] = 1
-                            z_locations[i+n,z_n] = 1
-                            z_locations[i+n+1,z_n] = 1
-                            z_locations[i+n+1+n,z_n] = 1
+                        if location < (c.n-j-1) && location%(j-1) !=0 #i is not the last layer and is not at the end of a row
+                            z_locations[location,z_n] = 1
+                            z_locations[location+n,z_n] = 1
+                            z_locations[location+n+1,z_n] = 1
+                            z_locations[location+n+1+n,z_n] = 1
                             #TODO not count edges
                             #TODO not count unused qubits
+                            z_counter +=1
                         end
 
                         #X gates
-                        if isdefined(grid[i+n],0) && isdefined(grid[i+(2*c.n)+1],0) && isdefined(grid[i+(3*c.n)+1],0)
-                            x_locations[i,x_n] = 1
-                            x_locations[i+n,x_n] = 1
-                            x_locations[i+(2*n)+1,x_n] = 1
-                            x_locations[i+(3*n)+1,x_n] = 1                   
-                        elseif isdefined(grid[i+n],0) 
-                            x_locations[i,n] = 1
-                            x_locations[i+n,x_n] = 1
-                        elseif isdefined(grid[i+(2*n)+1],0) 
-                            x_locations[i,x_n] = 1
-                            x_locations[i+(2*n)+1,x_n] = 1
-                        elseif isdefined(grid[i+(3*n)+1],0) 
-                            x_locations[i,x_n] = 1
-                            x_locations[i+(3*n)+1,x_n] = 1
+                        if isdefined(grid[location+j],0) && isdefined(grid[location+(2*j)+1],0) && isdefined(grid[location+(3*j)+1],0)
+                            x_locations[location,x_n] = 1
+                            x_locations[location+j,x_n] = 1
+                            x_locations[location+(2*j)+1,x_n] = 1
+                            x_locations[location+(3*j)+1,x_n] = 1                   
+                        elseif isdefined(grid[location+j],0) 
+                            x_locations[location,x_n] = 1
+                            x_locations[location+j,x_n] = 1
+                        elseif isdefined(grid[location+(2*j)+1],0) 
+                            x_locations[location,x_n] = 1
+                            x_locations[location+(2*j)+1,x_n] = 1
+                        elseif isdefined(grid[location+(3*j)+1],0) 
+                            x_locations[location,x_n] = 1
+                            x_locations[location+(3*j)+1,x_n] = 1
                         end
 
                         z_n += 1 #next z
