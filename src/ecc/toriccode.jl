@@ -58,10 +58,10 @@ function checks(c::Toric)
                     end #for 
 
                     #making X & Z into bool
-                    z_locations = !=(0).(Z)
-                    x_locations = !=(0).(X)
+                    Z = !=(0).(z_locations)
+                    X = !=(0).(x_locations)
 
-                    return Stabilizer(x_locations,z_locations)
+                    return Stabilizer(X,Z)
 
                 end #if
             end #for
