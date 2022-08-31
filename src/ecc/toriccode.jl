@@ -13,7 +13,7 @@ code_n(c::Toric) = c.n
 
 function checks(c::Toric) 
     #not all n can make square lattices
-    available_n = [4,7,12,17,24,31] #these values only go up to 9 sided grids - working on a generation function
+    available_n = [4,7,12,17,24,31] #these values only go up to 9 sided grids - working on a generation function #not count unused qubits
     
     for i in available_n 
         if c.n == i
@@ -32,8 +32,6 @@ function checks(c::Toric)
                             z_locations[location+n,z_n] = 1
                             z_locations[location+n+1,z_n] = 1
                             z_locations[location+n+1+n,z_n] = 1
-                            #TODO not count edges
-                            #TODO not count unused qubits
                             z_counter +=1
                         end
 
