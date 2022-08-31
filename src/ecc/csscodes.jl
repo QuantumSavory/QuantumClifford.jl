@@ -47,7 +47,7 @@ code_n(c::CSS) = size(X_bool, 1) #variable input dependant
 
 #Encoding circuit ----------------------------------
 
-#encoding_circuit(c::CSS) = [] #TODO -> START SYNDROME CIRCUIT
+encoding_circuit(c::CSS) = [] #TODO
 #----------------------------------------------------------------
 
 logx_ops(c::CSS) = P"XXXXXXXXX"
