@@ -22,34 +22,35 @@ function checks(c::Toric)
                     grid = zeros(Int8,j, j)
                     z_locations = zeros(j, j)
                     x_locations = zeros(j, j)
-                    z_n = 0
-                    x_n = 0
+                    z_n = 1
+                    x_n = 1
 
-                    for location in grid
+                    for location in range(1,j*j)
                         #Z gates
-                        if location < (c.n-j-1) && location%(j-1) !=0 #i is not the last layer and is not at the end of a row
+                        if (location + 1)%(j) !=0 && (location - 1)%(j) !=0 && z_n < (j) && (location%j) !=0 #i is not the last layer,is not at the end of a row, not outside of bounds
                             z_locations[location,z_n] = 1
-                            z_locations[location+n,z_n] = 1
-                            z_locations[location+n+1,z_n] = 1
-                            z_locations[location+n+1+n,z_n] = 1
-                            z_counter +=1
+                            z_locations[location+1,z_n] = 1
+                            z_locations[location,z_n+1] = 1
+                            z_locations[location+1,z_n+1] = 1
+                            println("Z has run")
                         end
 
-                        #X gates
-                        if isdefined(grid[location+j],0) && isdefined(grid[location+(2*j)+1],0) && isdefined(grid[location+(3*j)+1],0)
+                        #X gates -not running as expected
+                        if isdefined(location,x_n+1) && isdefined(location+1,x_n+1) && isdefined(location+1,x_n+2)
                             x_locations[location,x_n] = 1
-                            x_locations[location+j,x_n] = 1
-                            x_locations[location+(2*j)+1,x_n] = 1
-                            x_locations[location+(3*j)+1,x_n] = 1                   
-                        elseif isdefined(grid[location+j],0) 
+                            x_locations[location,x_n+1] = 1
+                            x_locations[location+1,x_n+1] = 1
+                            x_locations[location+1,x_n+2] = 1                   
+                            println("X has run")
+                        elseif isdefined(location,x_n+1) 
                             x_locations[location,x_n] = 1
-                            x_locations[location+j,x_n] = 1
-                        elseif isdefined(grid[location+(2*j)+1],0) 
+                            x_locations[location,x_n+1] = 1
+                        elseif isdefined(location+1,x_n+1) 
                             x_locations[location,x_n] = 1
-                            x_locations[location+(2*j)+1,x_n] = 1
-                        elseif isdefined(grid[location+(3*j)+1],0) 
+                            x_locations[location+1,x_n+1] = 1
+                        elseif isdefined(location+1,x_n+2) 
                             x_locations[location,x_n] = 1
-                            x_locations[location+(3*j)+1,x_n] = 1
+                            x_locations[location+1,x_n+2] = 1
                         end
 
                         z_n += 1 #next z
