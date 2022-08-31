@@ -28,7 +28,7 @@ function parity_checks(c::CSS)
 
 
     #resizing the vectors into desired size
-    resize!(Xvec, 7*7)
+    resize!(Xvec, 7*7) #TODO: MAKE SIZE DERIV FROM INPUT
     resize!(Zvec, 7*7)
 
     #reshappinng X & Z into matrix
