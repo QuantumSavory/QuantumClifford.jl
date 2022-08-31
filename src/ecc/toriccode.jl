@@ -17,8 +17,8 @@ function checks(c::Toric)
 
     for i in available_n 
         if c.n == i
-            n = sqrt(c.n)
-            grid = zeros(n, n)
+            n = Int8(sqrt(c.n)) #NOPE
+            grid = zeros(Int8,n, n)
             z_locations = zeros(n, n)
             x_locations = zeros(n, n)
             z_n = 0
