@@ -21,22 +21,56 @@ function checks(c::Toric)
             else
                 j = i/4 -1
             end
+
             j = convert(Int8, j)
-            @show j
-            @show typeof(j)
             z_locations = zeros(c.n, c.n)
             x_locations = zeros(c.n, c.n)
             z_n = 1
             x_n = 1
+            
+            #Row classification
+            oddrows = []
+            evenrows = []
+            rowcounter = 1
+            endevenrow = j-1
+            counterqineven = 2
+
+            for location in range(1,c.n*c.n)
+                if (rowcounter % j == 0) && ((counterqineven - j/2) % j != 0) 
+                    if endevenrow !=0 && endevenrow % (j+1) == 0
+                        push!(evenrows,location)
+                        counterqineven += 1
+                        endevenrow += 1
+                        rowcounter += 1
+                    else
+                        push!(evenrows,location)
+                        endevenrow += 1
+                    end
+                elseif location < j*rowcounter && location <= c.n
+                    push!(oddrows,location)
+                elseif location == j*rowcounter && location <= c.n #issue 1st 
+                    push!(oddrows,location)
+                    rowcounter += 1
+                    counterqineven = 0
+                end #if
+            end #for
+            @show evenrows
+            @show oddrows
+            @show rowcounter
+            @show counterqineven
+            @show endevenrow
 
             for location in range(1,c.n*c.n)
                 #Z gates
-                #i is not the last layer,is not at the end of a row, not outside of bounds
-                if (location)%(j) !=0 && z_n < (c.n) && (location+2j+1) < (c.n) && (location%j) !=0 
-                    z_locations[location,z_n] = 1
-                    z_locations[location+j,z_n] = 1
-                    z_locations[location+j+1,z_n] = 1
-                    z_locations[location+2j+1,z_n] = 1
+                #within the rox bounds
+                #last location within length bounds
+                #want to make sure w don't take midle row values  
+                if z_n <= (c.n) && (location+2j+1) <= (c.n) && location in oddrows
+                    @show location
+                    z_locations[z_n,location] = 1
+                    z_locations[z_n,location+j] = 1
+                    z_locations[z_n,location+j+1] = 1
+                    z_locations[z_n,location+2j+1] = 1
                 #=
                 elseif z_locations[location] !=1 && z_n < (c.n) && (location) < (c.n) 
                     z_locations[location,z_n] = 0
@@ -45,16 +79,16 @@ function checks(c::Toric)
 
                 #X gates -not running as expected
                 if (location+1+2j) <= (c.n) && x_n <= (c.n)
-                    x_locations[location,x_n] = 1
-                    x_locations[location+1,x_n] = 1
-                    x_locations[location+1+j,x_n] = 1
-                    x_locations[location+1+2j,x_n] = 1                   
+                    x_locations[x_n,location] = 1
+                    x_locations[x_n,location+1] = 1
+                    x_locations[x_n,location+1+j] = 1
+                    x_locations[x_n,location+2j+1] = 1                   
                 elseif (location+1) <= (c.n) && x_n <= (c.n)
-                    x_locations[location,x_n] = 1
-                    x_locations[location+1,x_n] = 1
+                    x_locations[x_n,location] = 1
+                    x_locations[x_n,location+1] = 1
                 elseif (location+1+j) <= (c.n) && x_n <= (c.n)
-                    x_locations[location,x_n] = 1
-                    x_locations[location+1+j,x_n] = 1
+                    x_locations[x_n,location] = 1
+                    x_locations[x_n,location+1+j] = 1
                 #=
                 elseif isdefined(location,x_n) && isdefined(location+1+j,x_n) 
                     x_locations[location,x_n] = 1
