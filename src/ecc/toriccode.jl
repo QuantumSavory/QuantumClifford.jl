@@ -27,45 +27,26 @@ function checks(c::Toric)
             x_locations = zeros(c.n, c.n)
             z_n = 1
             x_n = 1
-            
+
             #Row classification
             oddrows = []
             evenrows = []
-            rowcounter = 1
-            endevenrow = j-1
-            counterqineven = 2
-
-            for location in range(1,c.n*c.n)
-                if (rowcounter % j == 0) && ((counterqineven - j/2) % j != 0) 
-                    if endevenrow !=0 && endevenrow % (j+1) == 0
-                        push!(evenrows,location)
-                        counterqineven += 1
-                        endevenrow += 1
-                        rowcounter += 1
-                    else
-                        push!(evenrows,location)
-                        endevenrow += 1
-                    end
-                elseif location < j*rowcounter && location <= c.n
-                    push!(oddrows,location)
-                elseif location == j*rowcounter && location <= c.n #issue 1st 
-                    push!(oddrows,location)
-                    rowcounter += 1
-                    counterqineven = 0
-                end #if
-            end #for
-            @show evenrows
-            @show oddrows
-            @show rowcounter
-            @show counterqineven
-            @show endevenrow
-
+            for i in range(1,c.n+1)
+                if i % ((2j)+(j/2)) == 0 && i != 0
+                    push!(evenrows,i-4)
+                    push!(evenrows,i-3)
+                    push!(oddrows,i-2)    
+                    push!(oddrows,i-1)  
+                    push!(oddrows,i) 
+                end               
+            end
+            
             for location in range(1,c.n*c.n)
                 #Z gates
                 #within the rox bounds
                 #last location within length bounds
                 #want to make sure w don't take midle row values  
-                if z_n <= (c.n) && (location+2j+1) <= (c.n) && location in oddrows
+                if z_n <= (c.n) && (location+2j+1) <= (c.n) && location in evenrows
                     @show location
                     z_locations[z_n,location] = 1
                     z_locations[z_n,location+j] = 1
