@@ -88,3 +88,5 @@ encoding_circuit(c::Toric) = [] #TODO
 #-----------------------------------------------------
 
 distance(c::Toric) = sqrt(c.n)
+
+code_k(c::Toric) = 1
