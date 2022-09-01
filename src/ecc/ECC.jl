@@ -25,11 +25,7 @@ module ECC
     
     """The number of logical qubits in a code."""
     function code_k(c::AbstractECC)
-        if c == Surface
-            k = 1
-        else
-            k = code_n(c) - code_s(c)
-        end
+        k = code_n(c) - code_s(c)
         return k
     end
     

@@ -29,3 +29,4 @@ encoding_circuit(c::Surface) = [] #TODO
 
 distance(c::Surface) = min(c.lx,c.lz)
 
+code_k(c::Surface) = 1
