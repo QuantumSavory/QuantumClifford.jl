@@ -19,39 +19,41 @@ function checks(c::Toric)
         if c.n == i
             for j in range(0,1000)
                 if i <= j^2
-                    grid = zeros(Int8,j, j)
-                    z_locations = zeros(j, j)
-                    x_locations = zeros(j, j)
+                    z_locations = zeros(c.n, c.n)
+                    x_locations = zeros(c.n, c.n)
                     z_n = 1
                     x_n = 1
 
-                    for location in range(1,j*j)
+                    for location in range(1,c.n*c.n)
                         #Z gates
-                        if (location + 1)%(j) !=0 && (location - 1)%(j) !=0 && z_n < (j) && (location%j) !=0 #i is not the last layer,is not at the end of a row, not outside of bounds
+                        #i is not the last layer,is not at the end of a row, not outside of bounds
+                        if (location + 1)%(j) !=0 && (location - 1)%(j) !=0 && z_n < (c.n) && (location+j+1) < (c.n) && (location%j) !=0 
                             z_locations[location,z_n] = 1
                             z_locations[location+1,z_n] = 1
-                            z_locations[location,z_n+1] = 1
-                            z_locations[location+1,z_n+1] = 1
-                            println("Z has run")
+                            z_locations[location+j,z_n] = 1
+                            z_locations[location+j+1,z_n] = 1
+                        elseif z_locations[location] !=1 && z_n < (c.n) && (location) < (c.n) 
+                            z_locations[location,z_n] = 0
                         end
 
                         #X gates -not running as expected
-                        if isdefined(location,x_n+1) && isdefined(location+1,x_n+1) && isdefined(location+1,x_n+2)
+                        if (location+1+2j) <= (c.n) && x_n <= (c.n)
                             x_locations[location,x_n] = 1
-                            x_locations[location,x_n+1] = 1
-                            x_locations[location+1,x_n+1] = 1
-                            x_locations[location+1,x_n+2] = 1                   
-                            println("X has run")
-                        elseif isdefined(location,x_n+1) 
+                            x_locations[location+1,x_n] = 1
+                            x_locations[location+1+j,x_n] = 1
+                            x_locations[location+1+2j,x_n] = 1                   
+                        elseif (location+1) <= (c.n) && x_n <= (c.n)
                             x_locations[location,x_n] = 1
-                            x_locations[location,x_n+1] = 1
-                        elseif isdefined(location+1,x_n+1) 
+                            x_locations[location+1,x_n] = 1
+                        elseif (location+1+j) <= (c.n) && x_n <= (c.n)
                             x_locations[location,x_n] = 1
-                            x_locations[location+1,x_n+1] = 1
-                        elseif isdefined(location+1,x_n+2) 
+                            x_locations[location+1+j,x_n] = 1
+                        #=
+                        elseif isdefined(location,x_n) && isdefined(location+1+j,x_n) 
                             x_locations[location,x_n] = 1
-                            x_locations[location+1,x_n+2] = 1
-                        end
+                            x_locations[location+1+j,x_n] = 1
+                        =#
+                        end #pretty sure there are more combos
 
                         z_n += 1 #next z
                         x_n += 1 #next x
