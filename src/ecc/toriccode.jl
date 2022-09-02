@@ -10,6 +10,15 @@ end
 code_n(c::Toric) = c.n
 
 #Parity checks ----------------------------------
+function valinrow(o::Vector, v::Int64)
+    for a in o
+        if v == a
+            return true
+        else
+            return false
+        end
+    end
+end
 
 function checks(c::Toric) 
     #not all n can make square lattices
@@ -57,52 +66,44 @@ function checks(c::Toric)
                 =#
                 end
 
+                a = (j/2)+2j
+                b = (j/2)+j
+                a = convert(Int8, a)
+                b = convert(Int8, b)
                 #X gates -not running as expected
-                if (location+1+2j) <= (c.n) && x_n <= (c.n)
-                    for e in evenrows
-                        for o in oddrows
-                            for l in evenrows
-                                for p in oddrows
-                                    
-                                    if (location == e && location + j == o) || (location == o && location + j == e) # top and left
-                                        
-                                        if ((location == e && location + j +1 != o) || (location == o && location + j +1 != e)) && ((location == e && location + j != o) || (location == o && location + j != e))#making sure we are not at a border
-                                            
-                                            if (location == o && location+j == e && location+1+j == l && x_n,location+2j+1 == p) || (location == e && location+j == o && location+1+j == p && x_n,location+2j+1 == l)
-                                                # 4 sides
-                                                x_locations[x_n,location] = 1
-                                                x_locations[x_n,location+j] = 1
-                                                x_locations[x_n,location+1+j] = 1
-                                                x_locations[x_n,location+2j+1] = 1
-                                            
-                                            elseif (location == o && location+j == e && x_n,location+2j+1 == p) || (location == e && location+j == o && x_n,location+2j+1 == l) #top left
-                                                x_locations[x_n,location] = 1
-                                                x_locations[x_n,location+j] = 1
-                                                x_locations[x_n,location+2j+1] = 1
-                                            
-                                            elseif (location == o && location+j+1 == e && x_n,location+2j+1 == p) || (location == e && location+j+1 == o && x_n,location+2j+1 == l) #top right
-                                                x_locations[x_n,location] = 1
-                                                x_locations[x_n,location+1+j] = 1
-                                                x_locations[x_n,location+2j+1] = 1
-                                            end
-                                        end 
+                if (location+a) <= (c.n) && x_n <= (c.n)
+                    if (valinrow(oddrows,location) != valinrow(oddrows,location+j)) # top and left
+                        if (valinrow(oddrows,location) != valinrow(oddrows,location+j+1)) #making sure we are not at a border
+                            if (valinrow(oddrows,location) != valinrow(oddrows,location+j) && (valinrow(oddrows,location+j) == valinrow(oddrows,location+j+1)) && (valinrow(oddrows,location+j+1) !=valinrow(oddrows,location+a) == true)) # 4 sides
+                                x_locations[x_n,location] = 1
+                                x_locations[x_n,location+j] = 1
+                                x_locations[x_n,location+1+j] = 1
+                                x_locations[x_n,la] = 1
+                            
+                            elseif (valinrow(oddrows,location) != valinrow(oddrows,location+j)) && ( valinrow(oddrows,location+j) != valinrow(oddrows,location+a))  #top left
+                                x_locations[x_n,location] = 1
+                                x_locations[x_n,location+j] = 1
+                                x_locations[x_n,a] = 1
+                            
+                            elseif (valinrow(oddrows,location) != valinrow(oddrows,location+b)) && (valinrow(oddrows,location+b) != valinrow(oddrows,location+a)) #top right
+                                x_locations[x_n,location] = 1
+                                x_locations[x_n,location+1+j] = 1
+                                x_locations[x_n,a] = 1
+                            end
+                        end 
 
-                                    elseif (location+j) <= (c.n) && x_n <= (c.n) #right bottom
-                                        if (location == e && location + j == o) || (location == o && location + j == e)
-                                            x_locations[x_n,location] = 1
-                                            x_locations[x_n,locationj] = 1
-                                        end
-
-                                    elseif (location+j+j/2) <= (c.n) && x_n <= (c.n) #left bottom
-                                        if (location == e && location + j +j/2 == o) || (location == o && location +j +j/2 == e)
-                                            x_locations[x_n,location] = 1
-                                            x_locations[x_n,location+j+j/2] = 1
-                                        end
-                                    end
-                                end
+                    elseif (location+j) <= (c.n) && x_n <= (c.n) #right bottom
+                        if (valinrow(oddrows,location) != valinrow(oddrows,location+j))
+                            x_locations[x_n,location] = 1
+                            x_locations[x_n,location+j] = 1
+                        elseif (location+b) <= (c.n) && x_n <= (c.n) #left bottom
+                            if (valinrow(oddrows,location) != valinrow(oddrows,location+b) == true)
+                                x_locations[x_n,location] = 1
+                                x_locations[x_n,location+b] = 1
                             end
                         end
                     end
+
                 end
                 z_n += 1 #next z
                 x_n += 1 #next x
@@ -113,6 +114,7 @@ function checks(c::Toric)
             X = !=(0).(x_locations)
 
             return Stabilizer(X,Z)
+
         end #if
     end #for
 
