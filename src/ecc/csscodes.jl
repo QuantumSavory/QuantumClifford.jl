@@ -28,12 +28,13 @@ function parity_checks(c::CSS)
 
 
     #resizing the vectors into desired size
-    resize!(Xvec, 7*7) #TODO: MAKE SIZE DERIV FROM INPUT
-    resize!(Zvec, 7*7)
+    n = size(c.G,1)
+    resize!(Xvec, n*n) 
+    resize!(Zvec, n*n)
 
     #reshappinng X & Z into matrix
-    Z = reshape(Zvec, 7, 7)
-    X = reshape(Xvec, 7, 7)
+    Z = reshape(Zvec, n, n)
+    X = reshape(Xvec, n, n)
 
     #making X & Z into bool
     Z_bool = !=(0).(Z)
