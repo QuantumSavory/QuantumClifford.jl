@@ -165,6 +165,7 @@ function naive_syndrome(encoding_circuit)
     end
 end
 #----------------------------------------------------------------
+<<<<<<< HEAD
 
 code_s(c) = nrow(S)
 
@@ -201,4 +202,9 @@ logy_ops(c::CSS) = P"YYYYYYYYY"
 =======
 logy_ops(c::CSS) = P"YYYYYYYYY" 
 >>>>>>> 00eb204 (unbroken version code)
+<<<<<<< HEAD
 >>>>>>> 4aff1e9 (unbroken version code)
+=======
+=======
+>>>>>>> 160d1e8 (logx & z ops automation)
+>>>>>>> a874140 (logx & z ops automation)

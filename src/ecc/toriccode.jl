@@ -4,7 +4,11 @@ using LinearAlgebra
 using .ECC
 
 struct Toric <: AbstractECC 
+<<<<<<< HEAD
     l
+=======
+    n #change to l
+>>>>>>> a874140 (logx & z ops automation)
 end 
 
 #Qubit n -------------------------------------

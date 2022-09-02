@@ -21,4 +21,7 @@ function encoding_circuit(c::Bitflip3)
     return [c1,c2]
 end 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> a874140 (logx & z ops automation)
