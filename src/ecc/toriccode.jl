@@ -4,7 +4,7 @@ using LinearAlgebra
 using .ECC
 
 struct Toric <: AbstractECC 
-    n
+    n #change to l
 end 
 
 code_n(c::Toric) = c.n

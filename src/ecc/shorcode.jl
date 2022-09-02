@@ -38,8 +38,4 @@ encoding_circuit(c::Shor9) = [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
 
 distance(c::Shor9) = 3 #arg included body but not used
 
-logx_ops(c::Shor9) = P"XXXXXXXXX"
-                       
-logz_ops(c::Shor9) = P"ZZZZZZZZZ"
-
 isdegenerate(c::Shor9) = true 

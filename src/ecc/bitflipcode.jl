@@ -19,8 +19,3 @@ c2 = sCNOT(0,3)
 
 encoding_circuit(c::Bitflip3) = [c1,c2]
 
-#----------------------------------------------------------------
-
-logx_ops(c::Bitflip3) = P"XXXXXXXXX"
-                       
-logz_ops(c::Bitflip3) = P"ZZZZZZZZZ"

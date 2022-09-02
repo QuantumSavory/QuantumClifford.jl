@@ -67,13 +67,16 @@ module ECC
     end
     
     """Logical X operations of a code."""
-    function logx_ops end # can be computed from the parity checks
+    function logx_ops(c::AbstractECC)
+        MixedDest = MixedDestabilizer(parity_checks(c))
+        logicalxview(MixedDest)
+    end 
 
     """Logical Z operations of a code."""
-    function logz_ops end # can be computed from the parity checks
-
-    """Logical Y operations of a code."""
-    function logy_ops end # can be computed from the parity checks
+    function logz_ops(c::AbstractECC)
+        MixedDest = MixedDestabilizer(parity_checks(c))
+        logicalzview(MixedDest)
+    end 
 
     """Is the code degenerate"""
     function isdegenerate end
