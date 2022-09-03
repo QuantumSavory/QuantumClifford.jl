@@ -39,7 +39,7 @@ end
 
 codes = [Steane5(),Steane7(),Shor9(),Bitflip3()] #requires code generators
 
-
+#delete bellow after testing
 for code in codes
     test_physicalqubit(code)
 
