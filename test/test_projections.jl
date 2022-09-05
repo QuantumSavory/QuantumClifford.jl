@@ -1,3 +1,5 @@
+using QuantumClifford: projectremoverand!
+
 function test_projections()
     @testset "Projective measurements" begin
         @testset "Stabilizer representation" begin
@@ -321,6 +323,15 @@ function test_projections()
                 @test tab(apply!(copy(s),sMX(r))).xzs == tab(sx).xzs
                 @test tab(apply!(copy(s),sMY(r))).xzs == tab(sy).xzs
                 @test tab(apply!(copy(s),sMZ(r))).xzs == tab(sz).xzs
+            end
+        end
+        @testset "projectremoverand!" begin
+            for n in test_sizes
+                n > 3 || continue
+                state = MixedDestabilizer(random_destabilizer(n),n÷2)
+                state_a = projectremoverand!(copy(state),projectX!,n)[1]
+                state_b = traceout!(projectX!(state,n)[1],n)
+                @test stab_to_gf2(canonicalize!(stabilizerview(state_a))) == stab_to_gf2(canonicalize!(stabilizerview(state_b)[:,1:end-1]))
             end
         end
         @testset "Redundant row permutations in `project!(::MixedDestabilizer)`" begin

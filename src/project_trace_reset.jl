@@ -837,7 +837,7 @@ function _remove_rowcol!(s::MixedDestabilizer, r,c)
     end
     oldrank = rank(s)
     newrank = r<=oldrank ? oldrank-1 : oldrank
-    MixedDestabilizer(Stabilizer((@view t.phases[1:end-2]),cols-1,(@view t.xzs[:,1:end-2])), newrank)
+    MixedDestabilizer(Tableau((@view t.phases[1:end-2]),cols-1,(@view t.xzs[:,1:end-2])), newrank)
 end
 
 #=
