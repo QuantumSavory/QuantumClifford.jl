@@ -29,8 +29,6 @@ onfail(body, _::Tuple{Test.Fail,T}) where {T} = body()
 
 println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREADS = $(Sys.CPU_THREADS)`...")
 
-#doset("ecc")                && include("./test_ecc.jl")
-
 doset("paulis")             && include("./test_paulis.jl")
 doset("stabilizers")        && include("./test_stabs.jl")
 doset("canonicalization")   && include("./test_stabcanon.jl")
@@ -51,7 +49,7 @@ doset("enumeration")        && include("./test_enumerate.jl")
 doset("jet")                && haskey(ENV,"QUANTUMCLIFFORD_JET_TEST") && ENV["QUANTUMCLIFFORD_JET_TEST"]=="true" && include("./test_jet.jl")
 doset("allocations")        && VERSION >= v"1.7" && include("./test_allocations.jl")
 doset("doctests")           && VERSION == v"1.7" && include("./doctests.jl")
-
+doset("ecc")                && include("./test_ecc.jl")
 
 using Aqua
 doset("aqua") && begin
