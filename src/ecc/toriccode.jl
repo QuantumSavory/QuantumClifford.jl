@@ -4,119 +4,88 @@ using LinearAlgebra
 using .ECC
 
 struct Toric <: AbstractECC 
-    n #change to l
+    l
 end 
 
-code_n(c::Toric) = c.n
+#Qubit n -------------------------------------
+
+code_n(c::Toric) = 2*c.l*(c.l+1)
 
 #Parity checks ----------------------------------
-function valinrow(o::Vector, v::Int64)
-    for a in o
-        if v == a
-            return true
-        else
-            return false
-        end
+
+function plaquette_to_qubit_indices_Z(rown,columnn) 
+    
+    q1 = [rown,columnn]
+    q2 = [rown+1,columnn]
+    q3 = [rown+1,columnn+1]
+    q4 = [rown+2,columnn]
+
+    return (q1,q2,q3,q4)
+end
+
+function plaquette_to_qubit_indices_X(rown,columnn,j) 
+    
+    #special cases: corners
+    if (rown == 1 && column == 1) || (rown == 2*j && column == 1) 
+        q1 = [rown,columnn]
+        q2 = [rown+1,columnn]
+        return q1,q2
+    elseif (row == 1) && (column == j)
+        q1 = [rown,columnn]
+        q2 = [rown+1,columnn+1]
+        return q1,q2        
+    elseif (rown %2 == 0) && (columnn!= j) && (columnn!= 1) && (rown < j^2)
+        q1 = [rown,columnn]
+        q2 = [rown+1,columnn]
+        q3 = [rown+1,columnn-1]
+        q4 = [rown+2,columnn]
+        return q1,q2,q3,q4
     end
+    
+end
+
+function grid_index_to_linear_index(q) 
+    a,b = q 
+    
+    if a%2 != 0
+        l = a*4+b
+    elseif a%2 == 0 
+        l = 3+a*3+b 
+    end
+
+    return l
 end
 
 function checks(c::Toric) 
-    #not all n can make square lattices
-    available_n = [4,12,24] #these values only go up to 9 sided grids - working on a generation function #not count unused qubits
-    for i in available_n
-        if c.n == i
-            if i == 4
-                j = 1
-            else
-                j = i/4 -1
+
+    #Z checks
+    for i1 in range(1,2,c.l)
+        for i2 in range(1,c.l)
+            if i2+2 <= (c.l^2 + 1)
+                q1, q2, q3, q4 = plaquette_to_qubit_indices_Z(i1,i2)
+                # q1 is a tuple
+                Q1 = grid_index_to_linear_index(q1) # Q1 is an Int
+                #Z[stab_index, Q1] = true
             end
+        end
+    end
 
-            j = convert(Int8, j)
-            z_locations = zeros(c.n, c.n)
-            x_locations = zeros(c.n, c.n)
-            z_n = 1
-            x_n = 1
+    #X checks
+    for i1 in range(1,2,c.l)
+        #=
+        if (i1 == 1 && i2 == 1) || (i1 == 2*j && i2 == 1) || (i1 == 1) && (i2 == j)
+            q1, q2 == plaquette_to_qubit_indices_X(i1,i2,c.l) #may not work for corners
+        else
+            q1, q2, q3, q4 == plaquette_to_qubit_indices_X(i1,i2,c.l) #may not work for corners
+        end
+        =#
+        q1, q2, q3, q4 == plaquette_to_qubit_indices_X(i1,i2,c.l) #may not work for corners
+        # q1 is a tuple
+        Q1 = grid_index_to_linear_index(q1) # Q1 is an Int
+        #X[stab_index, Q1] = true
+    end
 
-            #Row classification
-            oddrows = []
-            evenrows = []
-            for i in range(1,c.n+1)
-                if i % ((2j)+(j/2)) == 0 && i != 0
-                    push!(evenrows,i-4)
-                    push!(evenrows,i-3)
-                    push!(oddrows,i-2)    
-                    push!(oddrows,i-1)  
-                    push!(oddrows,i) 
-                end               
-            end
-            
-            for location in range(1,c.n)
-                #Z gates
-                #within the rox bounds
-                #last location within length bounds
-                #want to make sure w don't take midle row values  
-                if z_n <= (c.n) && (location+2j+1) <= (c.n) && location in evenrows
-                    z_locations[z_n,location] = 1
-                    z_locations[z_n,location+j] = 1
-                    z_locations[z_n,location+j+1] = 1
-                    z_locations[z_n,location+2j+1] = 1
-                #=
-                elseif z_locations[location] !=1 && z_n < (c.n) && (location) < (c.n) 
-                    z_locations[location,z_n] = 0
-                =#
-                end
-
-                a = (j/2)+2j
-                b = (j/2)+j
-                a = convert(Int8, a)
-                b = convert(Int8, b)
-                #X gates -not running as expected
-                if (location+a) <= (c.n) && x_n <= (c.n)
-                    if (valinrow(oddrows,location) != valinrow(oddrows,location+j)) # top and left
-                        if (valinrow(oddrows,location) != valinrow(oddrows,location+j+1)) #making sure we are not at a border
-                            if (valinrow(oddrows,location) != valinrow(oddrows,location+j) && (valinrow(oddrows,location+j) == valinrow(oddrows,location+j+1)) && (valinrow(oddrows,location+j+1) !=valinrow(oddrows,location+a) == true)) # 4 sides
-                                x_locations[x_n,location] = 1
-                                x_locations[x_n,location+j] = 1
-                                x_locations[x_n,location+1+j] = 1
-                                x_locations[x_n,la] = 1
-                            
-                            elseif (valinrow(oddrows,location) != valinrow(oddrows,location+j)) && ( valinrow(oddrows,location+j) != valinrow(oddrows,location+a))  #top left
-                                x_locations[x_n,location] = 1
-                                x_locations[x_n,location+j] = 1
-                                x_locations[x_n,a] = 1
-                            
-                            elseif (valinrow(oddrows,location) != valinrow(oddrows,location+b)) && (valinrow(oddrows,location+b) != valinrow(oddrows,location+a)) #top right
-                                x_locations[x_n,location] = 1
-                                x_locations[x_n,location+1+j] = 1
-                                x_locations[x_n,a] = 1
-                            end
-                        end 
-
-                    elseif (location+j) <= (c.n) && x_n <= (c.n) #right bottom
-                        if (valinrow(oddrows,location) != valinrow(oddrows,location+j))
-                            x_locations[x_n,location] = 1
-                            x_locations[x_n,location+j] = 1
-                        elseif (location+b) <= (c.n) && x_n <= (c.n) #left bottom
-                            if (valinrow(oddrows,location) != valinrow(oddrows,location+b) == true)
-                                x_locations[x_n,location] = 1
-                                x_locations[x_n,location+b] = 1
-                            end
-                        end
-                    end
-
-                end
-                z_n += 1 #next z
-                x_n += 1 #next x
-            end #for 
-
-            #making X & Z into bool
-            Z = !=(0).(z_locations)
-            X = !=(0).(x_locations)
-
-            return Stabilizer(X,Z)
-
-        end #if
-    end #for
+    #return Stabilizer(X,Z)
 
 end #function
 
