@@ -20,36 +20,42 @@ function plaquette_to_qubit_indices_Z(rown,columnn)
     q3 = [rown+1,columnn+1]
     q4 = [rown+2,columnn]
     return (q1,q2,q3,q4)
+
 end
 
-function plaquette_to_qubit_indices_X(row::Int64,column::Int64,j::Int64) 
+function plaquette_to_qubit_indices_X_q4(row::Int64,column::Int64,j::Int64) 
+    
+    #middle cross(s)
+    q1 = [row,column]
+    q2 = [row+1,column]
+    q3 = [row+1,column-1]
+    q4 = [row+2,column]
+    print("D")
+    @show q1,q2,q3,q4 
+    return q1,q2,q3,q4
+
+end
+
+function plaquette_to_qubit_indices_X_q2(row::Int64,column::Int64,j::Int64) 
     
     #special cases: corners
-    if (row %2 == 0) && (column != j+1) && (column != 1) && (row < 2*j)
-        q1 = [row,column]
-        q2 = [row+1,column]
-        q3 = [row+1,column-1]
-        q4 = [row+2,column]
-        print("D")
-        @show q1,q2,q3,q4 #not working
-        return q1,q2,q3,q4
-    elseif (row == 1 && column == 1) || (row == 2*j && column == 1) 
+    if (row == 1 && column == 1) || (row == 2*j && column == 1) 
         q1 = [row,column]
         q2 = [row+1,column]
         return q1,q2
+
     elseif (row == 1) && (column == j)
         q1 = [row,column]
         q2 = [row+1,column+1]
         return q1,q2   
+    
     elseif (row == j*2 -2) && (column == j)
         q1 = [row,column]
         q2 = [row+1,column]
-        print("C")
-        @show q1,q2
-        return q1,q2 #not working
+        return q1,q2 
+    return q1,q2 
 
     end
-    
 end
 
 function grid_index_to_linear_index(c,q)::Int8 #to test with big grids
@@ -57,15 +63,21 @@ function grid_index_to_linear_index(c,q)::Int8 #to test with big grids
     
     if a <= 2
         l = c.l*(a-1)+b 
+
     elseif a == 3
         l = c.l*(a-1)+b + 1
+
     else
         if (a+1) % 2 == 0
             l = c.l*(a) + b 
+
         else
             l = c.l*(a-1)+b + a/2 - 1
+
         end
+
     end
+
     return l
 end
 
@@ -96,11 +108,11 @@ function checks(c::Toric)
     end
     
     #X checks
-    for i1 in range(start=1,step=2,length=c.l)
+    for i1 in range(start=1,step=1,length=c.l)
         for i2 in range(1,c.l)        
-            
+
             if ((i1 == 1 && i2 == 1) || (i1 == 2*c.l && i2 == 1)) || ((i1 == 1) && (i2 == c.l)) || ((i1 == c.l*2 -2) && (i2 == c.l))
-                q1, q2 = plaquette_to_qubit_indices_X(i1,i2,c.l) #may not work for corners
+                q1, q2 = plaquette_to_qubit_indices_X_q2(i1,i2,c.l) 
                 # q1 is a tuple
                 Q1 = grid_index_to_linear_index(c,q1) # Q1 is an Int
                 Q2 = grid_index_to_linear_index(c,q2)
@@ -108,11 +120,10 @@ function checks(c::Toric)
                 X[x_stab_index, Q1] = 1 
                 X[x_stab_index, Q2] = 1 
 
-                println("D")
-
-            elseif (i1 %2 == 0) && (i2= c.l) && (i2= 1) && (i1 < c.l^2)
-                q1, q2, q3, q4 = plaquette_to_qubit_indices_X(i1,i2,c.l) #may not work for corners
- 
+            elseif (i1 %2 == 0) && (i2 < c.l^2)  
+                println("E1")
+                q1, q2, q3, q4 = plaquette_to_qubit_indices_X_q4(i1,i2,c.l) 
+    
                 Q1 = grid_index_to_linear_index(c,q1) # Q1 is an Int
                 Q2 = grid_index_to_linear_index(c,q2)
                 Q3 = grid_index_to_linear_index(c,q3)
@@ -126,8 +137,6 @@ function checks(c::Toric)
 
             end
             
-            #q1, q2, q3, q4 = plaquette_to_qubit_indices_X(i1,i2,c) #may not work for corners
-
             x_stab_index +=1
         end
     end
@@ -135,9 +144,9 @@ function checks(c::Toric)
     #making X & Z into bool
     Z = !=(0).(Z)
     X = !=(0).(X) 
-    @show(X)
-    #return Stabilizer(X,Z)
 
+    return Stabilizer(X,Z)
+    
 end #function
 
 parity_checks(c::Toric) = checks(c)
