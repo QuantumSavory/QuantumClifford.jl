@@ -100,11 +100,7 @@ module ECC
     # Toric codes
     include("./toriccode.jl") 
 
-    #------TODO--------------------------------
     # Surface codes
-    #include("./surface_codes.jl")
-    # repetition codes
-    # concatenated codes
-    # color codes
+    include("./surfacecodes.jl")
 
 end #module
