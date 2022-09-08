@@ -69,7 +69,7 @@ function grid_index_to_linear_index(c,q)::Int8 #to test with big grids
     return l
 end
 
-function checks(c::Toric) 
+function parity_checks(c::Toric) 
     Z = zeros(code_n(c),code_n(c))
     X = zeros(code_n(c),code_n(c))
     z_stab_index = 1
@@ -134,11 +134,10 @@ function checks(c::Toric)
     Z = !=(0).(Z)
     X = !=(0).(X) 
 
-    return Stabilizer(X,Z)
+    return Stabilizer(X,Z) #appears twice!
 
 end #function
 
-parity_checks(c::Toric) = checks(c)
 #-----------------------------------------------------
 
 parity_matrix(c::Toric) = stab_to_gf2(parity_checks(c))
