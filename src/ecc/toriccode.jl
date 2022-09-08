@@ -30,8 +30,6 @@ function plaquette_to_qubit_indices_X_q4(row::Int64,column::Int64,j::Int64)
     q2 = [row+1,column]
     q3 = [row+1,column-1]
     q4 = [row+2,column]
-    print("D")
-    @show q1,q2,q3,q4 
     return q1,q2,q3,q4
 
 end
@@ -61,23 +59,13 @@ end
 function grid_index_to_linear_index(c,q)::Int8 #to test with big grids
     a,b = q 
     
-    if a <= 2
-        l = c.l*(a-1)+b 
-
-    elseif a == 3
-        l = c.l*(a-1)+b + 1
-
+    if a<= 2
+        l = c.l*(a-1) +b 
+    elseif a%2 == 0
+        l = c.l*(a-1) +b +a/2 -1
     else
-        if (a+1) % 2 == 0
-            l = c.l*(a) + b 
-
-        else
-            l = c.l*(a-1)+b + a/2 - 1
-
-        end
-
+        l = c.l*(a-1) +b +(a-1)/2 
     end
-
     return l
 end
 
@@ -108,10 +96,10 @@ function checks(c::Toric)
     end
     
     #X checks
-    for i1 in range(start=1,step=1,length=c.l)
+    for i1 in range(start=1,length=c.l)
         for i2 in range(1,c.l)        
 
-            if ((i1 == 1 && i2 == 1) || (i1 == 2*c.l && i2 == 1)) || ((i1 == 1) && (i2 == c.l)) || ((i1 == c.l*2 -2) && (i2 == c.l))
+            if ((i1 == 1 && i2 == 1) || (i1 == 2*c.l+1 && i2 == 1)) || ((i1 == 1) && (i2 == c.l)) 
                 q1, q2 = plaquette_to_qubit_indices_X_q2(i1,i2,c.l) 
                 # q1 is a tuple
                 Q1 = grid_index_to_linear_index(c,q1) # Q1 is an Int
@@ -120,8 +108,8 @@ function checks(c::Toric)
                 X[x_stab_index, Q1] = 1 
                 X[x_stab_index, Q2] = 1 
 
-            elseif (i1 %2 == 0) && (i2 < c.l^2)  
-                println("E1")
+            elseif (i1 %2 == 0) && (i2 <= c.l)   && (i2 > 1) 
+
                 q1, q2, q3, q4 = plaquette_to_qubit_indices_X_q4(i1,i2,c.l) 
     
                 Q1 = grid_index_to_linear_index(c,q1) # Q1 is an Int
@@ -133,20 +121,21 @@ function checks(c::Toric)
                 X[x_stab_index, Q3] = 1 
                 X[x_stab_index, Q4] = 1 
 
-                println("E")
-
             end
             
             x_stab_index +=1
         end
     end
-    
+
+    @show(size(Z))
+    @show(size(X))
+
     #making X & Z into bool
     Z = !=(0).(Z)
     X = !=(0).(X) 
 
     return Stabilizer(X,Z)
-    
+
 end #function
 
 parity_checks(c::Toric) = checks(c)
