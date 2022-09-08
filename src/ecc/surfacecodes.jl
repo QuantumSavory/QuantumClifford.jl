@@ -58,7 +58,7 @@ function checks_s(c::Surface)
 
     for i1 in range(1,rown)
         for i2 in range(1,columnn)
-            if (i1+2 <= (rown)) && (i1%2  != 0) && (i2+1< columnn)
+            if (i1+2 <= (rown)) && (i2+1< columnn)
                 q1, q2, q3, q4 = plaquette_to_qubit_indices(i1,i2)
                 # q1 is a tuple
                 Q1 = grid_index_to_linear_index(c,q1) # Q1 is an Int
