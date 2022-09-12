@@ -76,6 +76,7 @@ function test_op(c::AbstractECC)
     end
 end
 
+#=
 function test_ns(c::AbstractECC)
     @testset "Naive syndrome circuits" begin
         #start encoded state
@@ -89,6 +90,7 @@ function test_ns(c::AbstractECC)
 
     end
 end
+=#
 
 
 codes = [Steane5(),Steane7(),Shor9(),Bitflip3()]
