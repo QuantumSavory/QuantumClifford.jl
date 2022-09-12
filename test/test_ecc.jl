@@ -67,11 +67,7 @@ function test_op(c::AbstractECC)
         for gate in encoding_circuit_logical
             apply!(logicalqubit,gate)
         end
-        #=
-        for gate in logx_ops(c)
-            apply!(logicalqubit,gate) #logical gate
-        end
-        =#
+
         canonicalize!(logicalqubit)
 
         for gate in encoding_circuit(c)
@@ -81,9 +77,7 @@ function test_op(c::AbstractECC)
     end
 end
 
-
-codes = [Steane5(),Steane7(),Shor9(),Bitflip3()] #fix other encoding circuits
-codes = [Steane5(),Steane7(),Shor9(),Bitflip3()] #requires code generators
+codes = [Steane5(),Steane7(),Shor9(),Bitflip3()]
 
 for c in codes
     test_op(c)
