@@ -45,8 +45,3 @@ function parity_checks(c::CSS)
 end
 
 code_n(c::CSS) = size(X_bool, 1) #variable input dependant
-
-#Encoding circuit ----------------------------------
-
-encoding_circuit(c::CSS) = [] #TODO
-#----------------------------------------------------------------

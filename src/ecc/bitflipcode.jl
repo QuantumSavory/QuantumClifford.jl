@@ -14,8 +14,11 @@ parity_checks(c::Bitflip3) = S"___
                                ZZ_"
 
 #Enconding circuit ----------------------------------
-c1 = sCNOT(0,1)
-c2 = sCNOT(0,3)
+function encoding_circuit(c::Bitflip3)
+    c1 = sCNOT(0,1)
+    c2 = sCNOT(0,3)
 
-encoding_circuit(c::Bitflip3) = [c1,c2]
+    return [c1,c2]
+end 
+
 

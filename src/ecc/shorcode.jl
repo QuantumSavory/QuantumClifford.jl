@@ -35,7 +35,7 @@ function encoding_circuit(c::Shor9)
     c7 = sCNOT(4,6)
     c8 = sCNOT(7,9) 
     
-    [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
+    return [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
 end
 #----------------------------------------------------------------
 

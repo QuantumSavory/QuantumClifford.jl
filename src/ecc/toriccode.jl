@@ -158,11 +158,6 @@ parity_checks(c::Toric) = checks_t(c)
 
 parity_matrix(c::Toric) = stab_to_gf2(parity_checks(c))
 
-#Encoding circuit ----------------------------------
-
-encoding_circuit(c::Toric) = [] #TODO
-#-----------------------------------------------------
-
 distance(c::Toric) = sqrt(c.n)
 
 code_k(c::Toric) = 1

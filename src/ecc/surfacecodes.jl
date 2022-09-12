@@ -100,11 +100,6 @@ parity_checks(c::Surface) = checks_s(c)
 
 parity_matrix(c::Surface) = stab_to_gf2(parity_checks(c))
 
-#Encoding circuit ----------------------------------
-
-encoding_circuit(c::Surface) = [] #TODO
-#-----------------------------------------------------
-
 distance(c::Surface) = min(c.lx,c.ly)
 
 code_k(c::Surface) = 1
