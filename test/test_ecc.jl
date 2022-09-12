@@ -4,7 +4,7 @@ using QuantumClifford.ECC: AbstractECC, Steane5, Steane7, Shor9, Bitflip3, naive
 
 function test_op(c::AbstractECC)
     @testset "Physical and Logical qubit" begin
-<<<<<<< HEAD
+
         physicalqubit = random_stabilizer(code_k(c))
 
         gate = rand((:x,:z))
@@ -42,7 +42,6 @@ function test_op(c::AbstractECC)
 
         @test canonicalize!(logicalqubit1) == canonicalize!(logicalqubit2)
        
-=======
         #physicalqubit
         encoding_circuit_physical = encoding_circuit(c)
         physicalqubit = S"X"
@@ -78,16 +77,13 @@ function test_op(c::AbstractECC)
         for gate in encoding_circuit(c)
             @test encoding_circuit_physical == encoding_circuit_logical
         end
->>>>>>> c894f28 (parent 9490ace429c1bcbfe7da3f35eeac181dc205e242)
+
     end
 end
 
 
-<<<<<<< HEAD
 codes = [Steane5(),Steane7(),Shor9(),Bitflip3()] #fix other encoding circuits
-=======
 codes = [Steane5(),Steane7(),Shor9(),Bitflip3()] #requires code generators
->>>>>>> c894f28 (parent 9490ace429c1bcbfe7da3f35eeac181dc205e242)
 
 for c in codes
     test_op(c)
