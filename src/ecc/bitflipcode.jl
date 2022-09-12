@@ -17,18 +17,5 @@ parity_checks(c::Bitflip3) = S"___
 function encoding_circuit(c::Bitflip3)
     c1 = sCNOT(0,1)
     c2 = sCNOT(0,3)
-<<<<<<< HEAD
-
     return [c1,c2]
-end 
-=======
-
-    return [c1,c2]
-end 
-
->>>>>>> 028f813 (encoding circuits)
-
-<<<<<<< HEAD
-
-=======
->>>>>>> a874140 (logx & z ops automation)
+end
