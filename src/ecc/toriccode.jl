@@ -72,8 +72,7 @@ end
 function checks_t(c::Toric) 
     Z = zeros(code_n(c),code_n(c))
     X = zeros(code_n(c),code_n(c))
-    z_stab_index = 1
-    x_stab_index = 1
+    stab_index = 1
 
     #Z checks
     for i1 in range(start=1,step=2,length=c.l)
@@ -86,11 +85,11 @@ function checks_t(c::Toric)
                 Q3 = grid_index_to_linear_index_toric(c,q3)
                 Q4 = grid_index_to_linear_index_toric(c,q4)
                 
-                Z[z_stab_index, Q1] = 1 
-                Z[z_stab_index, Q2] = 1 
-                Z[z_stab_index, Q3] = 1 
-                Z[z_stab_index, Q4] = 1 
-                z_stab_index += 1
+                Z[stab_index, Q1] = 1 
+                Z[stab_index, Q2] = 1 
+                Z[stab_index, Q3] = 1 
+                Z[stab_index, Q4] = 1 
+                stab_index += 1
             end
         end
     end
@@ -105,8 +104,8 @@ function checks_t(c::Toric)
                 Q1 = grid_index_to_linear_index_toric(c,q1) # Q1 is an Int
                 Q2 = grid_index_to_linear_index_toric(c,q2)
 
-                X[x_stab_index, Q1] = 1 
-                X[x_stab_index, Q2] = 1 
+                X[stab_index, Q1] = 1 
+                X[stab_index, Q2] = 1 
 
             elseif (i1 %2 == 0) && (i2 <= c.l)   && (i2 > 1) 
 
@@ -116,19 +115,16 @@ function checks_t(c::Toric)
                 Q2 = grid_index_to_linear_index_toric(c,q2)
                 Q3 = grid_index_to_linear_index_toric(c,q3)
                 Q4 = grid_index_to_linear_index_toric(c,q4)
-                X[x_stab_index, Q1] = 1 
-                X[x_stab_index, Q2] = 1 
-                X[x_stab_index, Q3] = 1 
-                X[x_stab_index, Q4] = 1 
+                X[stab_index, Q1] = 1 
+                X[stab_index, Q2] = 1 
+                X[stab_index, Q3] = 1 
+                X[stab_index, Q4] = 1 
 
             end
             
-            x_stab_index +=1
+            stab_index +=1
         end
     end
-
-    @show(size(Z))
-    @show(size(X))
 
     #making X & Z into bool
     Z = !=(0).(Z)
