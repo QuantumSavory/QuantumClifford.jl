@@ -37,6 +37,7 @@ function encoding_circuit(c::Shor9)
     c8 = sCNOT(7,9) 
     
     return [c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
+<<<<<<< HEAD
 =======
 #Syndrome circuit -------------------------------------
 function naive_syndrome(encoding_circuit)
@@ -69,6 +70,8 @@ function naive_syndrome(encoding_circuit)
         return naive_syndrome_circuit
     end
 >>>>>>> 58a4737 (compiling errors)
+=======
+>>>>>>> 028f813 (encoding circuits)
 end
 #----------------------------------------------------------------
 

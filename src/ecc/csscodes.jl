@@ -139,10 +139,14 @@ code_n(c) = css_n #variable input
 end
 
 code_n(c::CSS) = size(X_bool, 1) #variable input dependant
+<<<<<<< HEAD
 =======
 #Syndrome circuit -------------------------------------
 function naive_syndrome(encoding_circuit)
     naive_syndrome_circuit = []
+=======
+<<<<<<< HEAD
+>>>>>>> 028f813 (encoding circuits)
 
     #iterating through all the steps of the encoding circuit
     for i in 1:size(encoding_circuit)
@@ -207,4 +211,9 @@ logy_ops(c::CSS) = P"YYYYYYYYY"
 =======
 =======
 >>>>>>> 160d1e8 (logx & z ops automation)
+<<<<<<< HEAD
 >>>>>>> a874140 (logx & z ops automation)
+=======
+=======
+>>>>>>> b24b428 (encoding circuits)
+>>>>>>> 028f813 (encoding circuits)
