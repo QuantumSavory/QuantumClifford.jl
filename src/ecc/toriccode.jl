@@ -19,6 +19,7 @@ function plaquette_to_qubit_indices_Z(rown,columnn)
     q2 = [rown+1,columnn]
     q3 = [rown+1,columnn+1]
     q4 = [rown+2,columnn]
+
     return q1,q2,q3,q4
 
 end
@@ -40,32 +41,50 @@ function plaquette_to_qubit_indices_X_q2(row::Int64,column::Int64,j::Int64)
     if (row == 1 && column == 1) || (row == 2*j && column == 1) 
         q1 = [row,column]
         q2 = [row+1,column]
-        return q1,q2
 
     elseif (row == 1) && (column == j)
         q1 = [row,column]
         q2 = [row+1,column+1]
-        return q1,q2   
     
     elseif (row == j*2 -2) && (column == j)
         q1 = [row,column]
         q2 = [row+1,column]
-        return q1,q2 
-    return q1,q2 
 
     end
+
+    return q1,q2 
+    
 end
 
 function grid_index_to_linear_index_toric(c,q)::Int8 #to test with big grids
-    a,b = q 
+    a,b = q  #a = row. b = column
     
-    if a<= 2
-        l = c.l*(a-1) +b 
-    elseif a%2 == 0
-        l = c.l*(a-1) +b +a/2 -1
+    if (a%2 != 0) && (b-c.l == 1) #torus sides
+        if a<= 2
+            l = c.l*(a-1) +1
+        elseif a%2 == 0
+            l = c.l*(a-1) +1 +a/2 -1
+        else
+            l = c.l*(a-1) +1 +(a-1)/2 
+        end
+
+    elseif a -2*c.l == 1 #torus up and down
+        if a%2 == 0 && a != 2
+            l = b +1/2 -1
+        else
+            l = b 
+        end
+
     else
-        l = c.l*(a-1) +b +(a-1)/2 
+        if a<= 2
+            l = c.l*(a-1) +b 
+        elseif a%2 == 0
+            l = c.l*(a-1) +b +a/2 -1
+        else
+            l = c.l*(a-1) +b +(a-1)/2 
+        end
     end
+
     return l
 end
 
