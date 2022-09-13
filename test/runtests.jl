@@ -20,37 +20,38 @@ function doset(descr)
     return false
 end
 
-
-# functions to show info when fails, credit to  https://discourse.julialang.org/t/print-debug-info-for-failed-test/22311
-onfail(body, _::Test.Pass) = nothing
-onfail(body, _::Test.Fail) = body()
-onfail(body, _::Tuple{Test.Fail,T}) where {T} = body()
-
+macro doset(descr)
+    quote
+        if doset($descr)
+            @testset $descr begin include("test_"*$descr*".jl") end
+        end
+    end
+end
 
 println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREADS = $(Sys.CPU_THREADS)`...")
 
-doset("paulis")             && include("./test_paulis.jl")
-doset("stabilizers")        && include("./test_stabs.jl")
-doset("canonicalization")   && include("./test_stabcanon.jl")
-doset("inner")              && include("./test_inner.jl")
-doset("gf2")                && include("./test_gf2.jl")
-doset("projection")         && include("./test_projections.jl")
-doset("expect")             && include("./test_expect.jl")
-doset("trace")              && include("./test_trace.jl")
-doset("cliffords")          && include("./test_cliff.jl")
-doset("symbolic cliffords") && include("./test_symcliff.jl")
-doset("random")             && include("./test_random.jl")
-doset("noisy circuits")     && include("./test_noisycircuits.jl")
-doset("syndrome measure")   && include("./test_syndromemeas.jl")
-doset("bitpack")            && include("./test_bitpack.jl")
-doset("graphs")             && include("./test_graphs.jl")
-doset("hash")               && include("./test_hash.jl")
-doset("entanglement")       && include("./test_entanglement.jl")
-doset("enumeration")        && include("./test_enumerate.jl")
-doset("precompile")         && include("./test_precompile.jl")
-doset("jet")                && haskey(ENV,"QUANTUMCLIFFORD_JET_TEST") && ENV["QUANTUMCLIFFORD_JET_TEST"]=="true" && include("./test_jet.jl")
-doset("allocations")        && VERSION >= v"1.7" && include("./test_allocations.jl")
-((doset("doctests") && VERSION == v"1.8") || (haskey(ENV,"QUANTUMCLIFFORD_DOCTEST") && ENV["QUANTUMCLIFFORD_DOCTEST"]=="true")) && include("./doctests.jl")
+@doset "paulis"
+@doset "stabs"
+@doset "stabcanon"
+@doset "inner"
+@doset "gf2"
+@doset "projections"
+@doset "expect"
+@doset "trace"
+@doset "cliff"
+@doset "symcliff"
+@doset "random"
+@doset "noisycircuits"
+@doset "syndromemeas"
+@doset "bitpack"
+@doset "graphs"
+@doset "hash"
+@doset "entanglement"
+@doset "enumerate"
+@doset "precompile"
+VERSION >= v"1.7" && @doset "allocations"
+VERSION == v"1.8" && @doset "doctests"
+get(ENV,"QUANTUMCLIFFORD_JET_TEST","")=="true" && @doset "jet"
 
 using Aqua
 doset("aqua") && begin

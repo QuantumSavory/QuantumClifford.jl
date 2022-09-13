@@ -21,12 +21,7 @@ function test_entanglement_from_clipped()
             s = random_stabilizer(n)
             endpoints = rand(1:n, 2)
             subsystem_range = min(endpoints...):max(endpoints...)
-            onfail(@test entanglement_entropy(copy(s), subsystem_range, Val(:clip))==entanglement_entropy(s, subsystem_range, Val(:graph))) do
-                @debug subsystem_range
-                @debug s
-                graph = Graphs.Graph(s)
-                @debug collect(Graphs.edges(graph))
-            end
+            @test entanglement_entropy(copy(s), subsystem_range, Val(:clip))==entanglement_entropy(s, subsystem_range, Val(:graph))
         end
     end
 end
@@ -38,12 +33,7 @@ function test_entanglement_from_graph()
             s = random_stabilizer(n)
             endpoints = rand(1:n, 2)
             subsystem_range = min(endpoints...):max(endpoints...)
-            onfail(@test entanglement_entropy(copy(s), subsystem_range, Val(:graph))==entanglement_entropy(s, subsystem_range, Val(:rref))) do
-                @debug subsystem_range
-                @debug s
-                graph = Graphs.Graph(s)
-                @debug collect(Graphs.edges(graph))
-            end
+            @test entanglement_entropy(copy(s), subsystem_range, Val(:graph))==entanglement_entropy(s, subsystem_range, Val(:rref))
         end
     end
 end
