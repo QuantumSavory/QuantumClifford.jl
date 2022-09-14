@@ -76,21 +76,20 @@ function test_op(c::AbstractECC)
     end
 end
 
-#=
 function test_ns(c::AbstractECC)
     @testset "Naive syndrome circuits" begin
         #start encoded state
         physicalqubit = random_stabilizer(code_k(c))
-        physicalqubit1 = copy(physicalqubit)
 
         #project(circuit) gives you the syndrome
-        a = apply!(physicalqubit,project(encoding_circuit(c)))
+        for gate in naive_syndrome_measurement
+            apply!(physicalqubit,gate)
+        end
 
-        @test a == naive_syndrome_measurement(circuit)
+        @test project(encoding_circuit(c)) == naive_syndrome_measurement(c)
 
     end
 end
-=#
 
 
 codes = [Steane5(),Steane7(),Shor9(),Bitflip3()]
