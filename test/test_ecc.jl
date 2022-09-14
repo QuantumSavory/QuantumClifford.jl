@@ -87,7 +87,7 @@ function test_ns(c::AbstractECC)
         end
 
         @test project(encoding_circuit(c)) == naive_syndrome_measurement(c)
-
+        #test
     end
 end
 
