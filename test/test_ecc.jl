@@ -94,23 +94,31 @@ function test_ns(c::AbstractECC)
         nc = naive_syndrome_circuit(c)
         convert(Vector{AbstractSymbolicOperator}, nc)
 
-        for gate in nc
-            try
-                apply!(physicalqubit,gate)
-            catch
-                0
-            end
-        end
-
         s = []
+        #h = []
         for check in parity_checks(c)
             append!(s,project!(physicalqubit,check))
         end
 
-        a = s[1]
-        b = canonicalize!(physicalqubit)
+        i = 1
+        for gate in nc
+            try
+                apply!(physicalqubit,gate)
 
-        @test a == b
+                a = s[i]
+                b = Register(physicalqubit)
+                #append!(h,project!(b,check))
+
+                @test a == b
+                
+
+            catch
+                0
+            end
+            i+= 1
+        end
+
+        
     end
     
 end
@@ -118,7 +126,7 @@ end
 codes = [Steane5(),Steane7(),Shor9()]
     
 for c in codes
-    test_op(c)
+    #test_op(c)
     test_ns(c)
 end
     
