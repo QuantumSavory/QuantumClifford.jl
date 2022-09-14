@@ -47,6 +47,7 @@ doset("graphs")             && include("./test_graphs.jl")
 doset("hash")               && include("./test_hash.jl")
 doset("entanglement")       && include("./test_entanglement.jl")
 doset("doctests")           && include("./doctests.jl")
+doset("ecc")                && include("./test_ecc.jl")
 
 using Aqua
 doset("aqua") && Aqua.test_all(QuantumClifford, ambiguities=false,project_toml_formatting=false)
