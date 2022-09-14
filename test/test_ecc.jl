@@ -90,6 +90,7 @@ function test_ns(c::AbstractECC)
          
     end
 end
+
 =#
 
 codes = [Steane5(),Steane7(),Shor9(),Bitflip3()]
