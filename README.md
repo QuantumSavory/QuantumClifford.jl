@@ -12,7 +12,6 @@
         <td>Continuous integration</td>
         <td>
             <a href="https://github.com/Krastanov/QuantumClifford.jl/actions?query=workflow%3ACI+branch%3Amaster"><img src="https://img.shields.io/github/workflow/status/Krastanov/QuantumClifford.jl/CI" alt="GitHub Workflow Status"></a>
-            <a href="https://juliahub.com/ui/Packages/QuantumClifford/BsGZO"><img src="https://juliahub.com/docs/QuantumClifford/pkgeval.svg" alt="PkgEval status"></a>
         </td>
     </tr><tr></tr>
     <tr>

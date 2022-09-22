@@ -17,7 +17,7 @@ function test_noisycircuits()
             state = ghz(7)
             res1, _ = mctrajectory!(copy(state), [ng1,ng2,ng3,ng4,ng5])
             res2, _ = mctrajectory!(copy(state), [g1,g2,g3,g4])
-            @test res1 != res2
+            @test res1 != res2 # has a very small chance of failing
             resp = petrajectories(copy(state), [ng1,ng2,ng3,ng4,ng5])
             @test all(values(resp).==0)
         end

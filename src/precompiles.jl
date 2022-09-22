@@ -1,4 +1,4 @@
-function _my_precompile_()
+function _precompile_()
     ds = random_destabilizer(3);
     s = random_stabilizer(3);
     canonicalize!(s);
@@ -46,9 +46,14 @@ function _my_precompile_()
     project!(md,p)
 end
 
-function _precompile_()
-    ccall(:jl_generating_output, Cint, ()) == 1 || return nothing
-    _my_precompile_()
-end
+using SnoopPrecompile
 
-VERSION > v"1.8" && _precompile_()
+@precompile_setup begin
+    # Putting some things in `setup` can reduce the size of the
+    # precompile file and potentially make loading faster.
+    @precompile_all_calls begin
+        # all calls in this block will be precompiled, regardless of whether
+        # they belong to your package or not (on Julia 1.8 and higher)
+        _precompile_()
+    end
+end

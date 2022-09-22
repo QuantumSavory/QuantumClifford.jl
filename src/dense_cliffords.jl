@@ -100,7 +100,7 @@ function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
     CliffordOperator(tab)
 end
 
-function apply!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
+Base.@constprop :aggressive function apply!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
     _apply!(Stabilizer(tab(r)),l;phases=Val(phases)) # TODO maybe not the most elegant way to perform apply!(::Tableau, gate)
     r
 end

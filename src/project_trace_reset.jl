@@ -33,7 +33,7 @@ julia> generate!(P"XII",canonicalize!(S"XII")) === nothing
 false
 ```
 """
-function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=true, saveindices::Bool=true)
+Base.@constprop :aggressive function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=true, saveindices::Bool=true)
     _phases = Val(phases)
     _saveindices = Val(saveindices)
     _generate!(pauli, stabilizer; phases=_phases, saveindices=_saveindices)
@@ -231,7 +231,7 @@ See the "Datastructure Choice" section in the documentation for more details.
 
 See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref)
 """
-function project!(state,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
+Base.@constprop :aggressive function project!(state,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
     return _project!(state,pauli;keep_result=Val(keep_result),phases=Val(phases))
 end
 
@@ -273,7 +273,7 @@ See the "Datastructure Choice" section in the documentation for more details.
 
 See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
 """
-function project!(state::MixedStabilizer,pauli::PauliOperator;phases::Bool=true)
+Base.@constprop :aggressive function project!(state::MixedStabilizer,pauli::PauliOperator;phases::Bool=true)
     return _project!(state,pauli;phases=Val(phases))
 end
 
@@ -448,7 +448,7 @@ A faster special-case version of [`project!`](@ref).
 
 See also: [`project!`](@ref), [`projectXrand!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
 """
-function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+Base.@constprop :aggressive function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
     _phases = Val(phases)
     project_cond!(d,qubit,Val(isZ),Val((true,false));keep_result,phases=_phases)
 end
@@ -459,7 +459,7 @@ A faster special-case version of [`project!`](@ref).
 
 See also: [`project!`](@ref), [`projectZrand!`](@ref), [`projectY!`](@ref), [`projectX!`](@ref).
 """
-function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+Base.@constprop :aggressive function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
     _phases = Val(phases)
     project_cond!(d,qubit,Val(isX),Val((false,true));keep_result,phases=_phases)
 end
@@ -470,7 +470,7 @@ A faster special-case version of [`project!`](@ref).
 
 See also: [`project!`](@ref), [`projectYrand!`](@ref), [`projectX!`](@ref), [`projectZ!`](@ref).
 """
-function projectY!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+Base.@constprop :aggressive function projectY!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
     _phases = Val(phases)
     project_cond!(d,qubit,Val(isXorZ),Val((true,true));keep_result,phases=_phases)
 end
@@ -699,7 +699,7 @@ end
 """
 $TYPEDSIGNATURES
 """
-function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubits; phases=true) # TODO this is really inefficient
+Base.@constprop :aggressive function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubits; phases=true) # TODO this is really inefficient
     _phases = Val(phases)
     nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
     length(qubits) <= nqubits(s) || throw(DimensionMismatch("the stabilizer is not big enough to contain the new state"))

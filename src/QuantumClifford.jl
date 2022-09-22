@@ -1128,14 +1128,14 @@ Base.vcat(stabs::Stabilizer...) = Stabilizer(vcat((tab(s) for s in stabs)...))
 # Unitary Clifford Operations
 ##############################
 
-function Base.:(*)(p::AbstractCliffordOperator, s::AbstractStabilizer; phases::Bool=true)
+Base.@constprop :aggressive function Base.:(*)(p::AbstractCliffordOperator, s::AbstractStabilizer; phases::Bool=true)
     s = copy(s)
     _apply!(s,p; phases=Val(phases))
 end
-function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator; phases::Bool=true)
+Base.@constprop :aggressive function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator; phases::Bool=true)
     _apply!(stab,op; phases=Val(phases))
 end
-function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices; phases::Bool=true)
+Base.@constprop :aggressive function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices; phases::Bool=true)
     _apply!(stab,op,indices; phases=Val(phases))
 end
 
