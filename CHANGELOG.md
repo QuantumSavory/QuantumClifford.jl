@@ -1,5 +1,10 @@
 # News
 
+## v0.6.2 - 2022-09-22
+
+- Performance improvements: fine tuning of `:constprop`, eliminating a handful of common causes of dynamic dispatch.
+- Drop support for Julia 1.6.
+
 ## v0.6.1 - 2022-09-05
 
 - **(fix)** Fix a bug in the unexported `projectremoverand!` that occurred due to the introduction of `Tableau`.
