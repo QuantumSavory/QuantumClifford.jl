@@ -30,8 +30,8 @@ Introduced in [nahum2017quantum](@cite), with a more detailed explanation of the
 
 See also: [`canonicalize!`](@ref), [`canonicalize_rref!`](@ref), [`canonicalize_gott!`](@ref).
 """
-Base.@constprop :aggressive function canonicalize_clip!(state::AbstractStabilizer; phases::Bool=true)
-    _canonicalize_clip!(state; phases=Val(phases))
+function canonicalize_clip!(state::AbstractStabilizer; phases::Bool=true)
+    @valbooldispatch _canonicalize_clip!(state; phases=Val(phases)) phases
 end
 function  _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)) where B
     tab = stabilizerview(state)
