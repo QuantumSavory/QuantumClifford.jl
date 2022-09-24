@@ -33,10 +33,8 @@ julia> generate!(P"XII",canonicalize!(S"XII")) === nothing
 false
 ```
 """
-Base.@constprop :aggressive function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=true, saveindices::Bool=true)
-    _phases = Val(phases)
-    _saveindices = Val(saveindices)
-    _generate!(pauli, stabilizer; phases=_phases, saveindices=_saveindices)
+function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=true, saveindices::Bool=true)
+    @valbooldispatch _generate!(pauli, stabilizer; phases=Val(phases), saveindices=Val(saveindices)) phases saveindices
 end
 
 function _generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tableau{Tzv,Tm}}; phases::Val{PHASES}=Val(true), saveindices::Val{SAVEIDX}=Val(true)) where {Tz<:AbstractArray{UInt8,0}, Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tv<:AbstractVector{Tme}, Tm<:AbstractMatrix{Tme}, PHASES, SAVEIDX} # TODO there is stuff that can be abstracted away here and in canonicalize!
@@ -231,8 +229,8 @@ See the "Datastructure Choice" section in the documentation for more details.
 
 See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref)
 """
-Base.@constprop :aggressive function project!(state,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
-    return _project!(state,pauli;keep_result=Val(keep_result),phases=Val(phases))
+function project!(state,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
+    @valbooldispatch _project!(state,pauli;keep_result=Val(keep_result),phases=Val(phases)) keep_result phases
 end
 
 # TODO maybe just add keep_result to it, for consistency
@@ -273,8 +271,8 @@ See the "Datastructure Choice" section in the documentation for more details.
 
 See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
 """
-Base.@constprop :aggressive function project!(state::MixedStabilizer,pauli::PauliOperator;phases::Bool=true)
-    return _project!(state,pauli;phases=Val(phases))
+function project!(state::MixedStabilizer,pauli::PauliOperator;phases::Bool=true)
+    @valbooldispatch _project!(state,pauli;phases=Val(phases)) phases
 end
 
 function _project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr,Bp}
@@ -448,9 +446,8 @@ A faster special-case version of [`project!`](@ref).
 
 See also: [`project!`](@ref), [`projectXrand!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
 """
-Base.@constprop :aggressive function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
-    _phases = Val(phases)
-    project_cond!(d,qubit,Val(isZ),Val((true,false));keep_result,phases=_phases)
+function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    @valbooldispatch project_cond!(d,qubit,Val(isZ),Val((true,false));keep_result,phases=Val(phases)) phases
 end
 
 """
@@ -459,9 +456,8 @@ A faster special-case version of [`project!`](@ref).
 
 See also: [`project!`](@ref), [`projectZrand!`](@ref), [`projectY!`](@ref), [`projectX!`](@ref).
 """
-Base.@constprop :aggressive function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
-    _phases = Val(phases)
-    project_cond!(d,qubit,Val(isX),Val((false,true));keep_result,phases=_phases)
+function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    @valbooldispatch project_cond!(d,qubit,Val(isX),Val((false,true));keep_result,phases=Val(phases))
 end
 
 """
@@ -470,9 +466,8 @@ A faster special-case version of [`project!`](@ref).
 
 See also: [`project!`](@ref), [`projectYrand!`](@ref), [`projectX!`](@ref), [`projectZ!`](@ref).
 """
-Base.@constprop :aggressive function projectY!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
-    _phases = Val(phases)
-    project_cond!(d,qubit,Val(isXorZ),Val((true,true));keep_result,phases=_phases)
+function projectY!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    @valbooldispatch project_cond!(d,qubit,Val(isXorZ),Val((true,true));keep_result,phases=Val(phases))
 end
 
 @inline isX(tab,row,col) = tab[row,col][1]
@@ -699,7 +694,7 @@ end
 """
 $TYPEDSIGNATURES
 """
-Base.@constprop :aggressive function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubits; phases=true) # TODO this is really inefficient
+function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubits; phases=true) # TODO this is really inefficient
     _phases = Val(phases)
     nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
     length(qubits) <= nqubits(s) || throw(DimensionMismatch("the stabilizer is not big enough to contain the new state"))

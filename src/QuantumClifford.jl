@@ -67,6 +67,8 @@ const _mi = 0x03
 const phasedict = Dict(""=>_p,"+"=>_p,"i"=>_pi,"+i"=>_pi,"-"=>_m,"-i"=>_mi)
 const toletter = Dict((false,false)=>"_",(true,false)=>"X",(false,true)=>"Z",(true,true)=>"Y")
 
+include("macrotools.jl")
+
 ##############################
 # Pauli Operators
 ##############################
@@ -1128,15 +1130,15 @@ Base.vcat(stabs::Stabilizer...) = Stabilizer(vcat((tab(s) for s in stabs)...))
 # Unitary Clifford Operations
 ##############################
 
-Base.@constprop :aggressive function Base.:(*)(p::AbstractCliffordOperator, s::AbstractStabilizer; phases::Bool=true)
+function Base.:(*)(p::AbstractCliffordOperator, s::AbstractStabilizer; phases::Bool=true)
     s = copy(s)
-    _apply!(s,p; phases=Val(phases))
+    @valbooldispatch _apply!(s,p; phases=Val(phases)) phases
 end
-Base.@constprop :aggressive function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator; phases::Bool=true)
-    _apply!(stab,op; phases=Val(phases))
+function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator; phases::Bool=true)
+    @valbooldispatch _apply!(stab,op; phases=Val(phases)) phases
 end
-Base.@constprop :aggressive function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices; phases::Bool=true)
-    _apply!(stab,op,indices; phases=Val(phases))
+function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices; phases::Bool=true)
+    @valbooldispatch _apply!(stab,op,indices; phases=Val(phases)) phases
 end
 
 # TODO no need to track phases outside of stabview

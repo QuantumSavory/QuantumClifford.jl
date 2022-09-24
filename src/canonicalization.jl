@@ -84,8 +84,8 @@ Based on [garcia2012efficient](@cite).
 
 See also: [`canonicalize_rref!`](@ref), [`canonicalize_gott!`](@ref)
 """
-Base.@constprop :aggressive function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool=false)
-    _canonicalize!(state; phases=Val(phases), ranks=Val(ranks))
+function canonicalize!(state::AbstractStabilizer; phases::Bool=true, ranks::Bool=false)
+    @valbooldispatch _canonicalize!(state; phases=Val(phases), ranks=Val(ranks)) phases ranks
 end
 function _canonicalize!(state::AbstractStabilizer; phases::Val{Bphases}=Val(true), ranks::Val{Branks}=Val(false)) where {Bphases,Branks}
     tab = stabilizerview(state)
@@ -142,8 +142,8 @@ Based on [audenaert2005entanglement](@cite).
 
 See also: [`canonicalize!`](@ref), [`canonicalize_gott!`](@ref)
 """
-Base.@constprop :aggressive function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=true)
-    _canonicalize_rref!(state, colindices; phases=Val(phases))
+function canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Bool=true)
+    @valbooldispatch _canonicalize_rref!(state, colindices; phases=Val(phases)) phases
 end
 function _canonicalize_rref!(state::AbstractStabilizer, colindices; phases::Val{B}=Val(true)) where B
     tab = stabilizerview(state)
@@ -213,8 +213,8 @@ Based on [gottesman1997stabilizer](@cite).
 
 See also: [`canonicalize!`](@ref), [`canonicalize_rref!`](@ref)
 """
-Base.@constprop :aggressive function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true)
-    _canonicalize_gott!(stabilizer; phases=Val(phases))
+function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true)
+    @valbooldispatch _canonicalize_gott!(stabilizer; phases=Val(phases)) phases
 end
 function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) where {B}
     xzs = tab(stabilizer).xzs
