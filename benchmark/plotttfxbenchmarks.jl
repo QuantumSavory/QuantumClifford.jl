@@ -31,7 +31,7 @@ df = DataFrame(records)
 df[!,:total] .= df[:,:task] .+ df[:,:pkgimport]
 df = DataFrames.stack(df, [:total, :task, :pkgimport], variable_name=:x, value_name=:time)
 
-layers = visual(Stairs, step=:post)
+layers = visual(Stairs, step=:center)
 axis = (;width = 500, height = 400, xticklabelrotation=-pi/3)
 facet = (;linkyaxes=:minimal)
 
