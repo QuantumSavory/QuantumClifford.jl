@@ -54,6 +54,5 @@ get(ENV,"QUANTUMCLIFFORD_JET_TEST","")=="true" && @doset "jet"
 
 using Aqua
 doset("aqua") && begin
-    Aqua.test_all(QuantumClifford, ambiguities=false)
-    Aqua.test_ambiguities([QuantumClifford,Core]) # otherwise Base causes false positives
+    Aqua.test_all(QuantumClifford)
 end

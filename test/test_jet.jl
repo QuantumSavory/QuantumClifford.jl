@@ -3,6 +3,22 @@ using ArrayInterface
 using Static
 using Graphs
 
+using JET: ReportPass, BasicPass, InferenceErrorReport, UncaughtExceptionReport
+
+# Custom report pass that ignores `UncaughtExceptionReport`
+# Too coarse currently, but it serves to ignore the various
+# "may throw" messages for runtime errors we raise on purpose
+# (mostly on malformed user input)
+struct MayThrowIsOk <: ReportPass end
+
+# ignores `UncaughtExceptionReport` analyzed by `JETAnalyzer`
+(::MayThrowIsOk)(::Type{UncaughtExceptionReport}, @nospecialize(_...)) = return
+
+# forward to `BasicPass` for everything else
+function (::MayThrowIsOk)(report_type::Type{<:InferenceErrorReport}, @nospecialize(args...))
+    BasicPass()(report_type, args...)
+end
+
 function test_jet()
     @testset "JET checks" begin
         @test isempty(JET.get_reports(@report_call random_destabilizer(10)))
@@ -34,6 +50,7 @@ function test_jet()
         @test isempty(JET.get_reports(@report_call QuantumClifford._canonicalize_rref!(s,[1,3])))
 
         rep = report_package("QuantumClifford";
+            report_pass=MayThrowIsOk(),
             ignored_modules=(
                 AnyFrameModule(Graphs.LinAlg),
                 AnyFrameModule(Graphs.SimpleGraphs),
@@ -42,19 +59,7 @@ function test_jet()
             )
         )
         @show rep
-        @test length(JET.get_reports(rep)) == 3
-        #= TODO These false positives appear. Figure out how to filter them out.
-        ┌ @ /home/stefan/Documents/ScratchSpace/clifford/QuantumClifford/src/linalg.jl:72 LinearAlgebra.rank(::QuantumClifford.Stabilizer)
-        │ may throw: QuantumClifford.throw(BadDataStructure("Using a `Stabilizer` type does not ...
-        └─────────────────────────────────────────────────────────────────────────────────
-        ┌ @ /home/stefan/Documents/ScratchSpace/clifford/QuantumClifford/src/linalg.jl:74 LinearAlgebra.rank(::QuantumClifford.Destabilizer)
-        │ may throw: QuantumClifford.throw(BadDataStructure("Using a `Destabilizer` type does not ...
-        └─────────────────────────────────────────────────────────────────────────────────
-        ┌ @ /home/stefan/Documents/ScratchSpace/clifford/QuantumClifford/src/experimental/NoisyCircuits.jl:387 Base.kwerr(_2, _3, state, noise, indices)
-        │┌ @ error.jl:163 Base.kwerr(::Any, ::typeof(QuantumClifford.Experimental.NoisyCircuits.applynoise_branches), ::Register, ::Any, ::Any)
-        ││ may throw: Base.throw(Base.MethodError(getproperty(getproperty(getproperty(Base.typeof(applynoise_branches...
-        │└────────────────
-        =#
+        @test length(JET.get_reports(rep)) == 0
     end
 end
 
