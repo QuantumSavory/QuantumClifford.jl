@@ -53,6 +53,6 @@ VERSION == v"1.8" && @doset "doctests"
 get(ENV,"QUANTUMCLIFFORD_JET_TEST","")=="true" && @doset "jet"
 
 using Aqua
-doset("aqua") && begin
+VERSION >= v"1.8" && doset("aqua") && begin
     Aqua.test_all(QuantumClifford)
 end
