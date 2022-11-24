@@ -84,14 +84,9 @@ trusted_rank(s::MixedStabilizer) = LinearAlgebra.rank(s)
 trusted_rank(s::MixedDestabilizer) = LinearAlgebra.rank(s)
 
 """Tensor product between operators or tableaux. See also [`tensor`](@ref) and [`tensor_pow`](@ref)."""
-function ⊗ end
-
 function ⊗(ops::AbstractStabilizer...) # TODO optimize this by doing conversion to common type to enable preallocation
     foldl(⊗, ops[2:end], init=ops[1])
 end
-
-"""Tensor product between operators or tableaux. See also [`⊗`](@ref) and [`tensor_pow`](@ref)."""
-const tensor = ⊗
 
 """Repeated tensor product of an operators or a tableau. See also [`⊗`](@ref) and [`tensor_pow`](@ref)."""
 function tensor_pow(op,power)
@@ -101,8 +96,6 @@ function tensor_pow(op,power)
         return tensor((op for i in 1:power)...)
     end
 end
-
-function ⊗() zero(Stabilizer, 0, 0) end # defined to avoid method ambiguities (can be tested with Aqua.jl)
 
 function ⊗(ops::Stabilizer...)
     length(ops)==1 && return ops[1]
