@@ -15,6 +15,8 @@ using Polyester
 using HostCPUFeatures: pick_vector_width
 import SIMD
 
+import QuantumInterface: tensor, ⊗, tensor_pow, apply!, nqubits, expect, project!, reset_qubits!, traceout!, ptrace, apply!, projectX!, projectY!, projectZ!, entanglement_entropy
+
 export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
     @T_str, xbit, zbit, xview, zview,
     @S_str, Stabilizer, prodphase, comm, check_allrowscommute,
