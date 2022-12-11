@@ -1,5 +1,9 @@
 # News
 
+## v0.6.4 - 2022-12-11
+
+- Move the API declarations to `QuantumInterface.jl`, a mostly namespacing package shared with `QuantumOptics.jl`.
+
 ## v0.6.3 - 2022-09-24
 
 - Bring the v0.6.2 performance improvements to Julia 1.7 and 1.6. Switch from using `constprop` to explicit static dispatch with `@valbooldispatch`.
