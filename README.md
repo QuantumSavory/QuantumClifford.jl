@@ -11,7 +11,7 @@
     <tr>
         <td>Continuous integration</td>
         <td>
-            <a href="https://github.com/Krastanov/QuantumClifford.jl/actions?query=workflow%3ACI+branch%3Amaster"><img src="https://img.shields.io/github/workflow/status/Krastanov/QuantumClifford.jl/CI" alt="GitHub Workflow Status"></a>
+            <a href="https://github.com/Krastanov/QuantumClifford.jl/actions?query=workflow%3ACI+branch%3Amaster"><img src="https://img.shields.io/github/actions/workflow/status/Krastanov/QuantumClifford.jl/ci.yml?branch=master" alt="GitHub Workflow Status"></a>
         </td>
     </tr><tr></tr>
     <tr>
