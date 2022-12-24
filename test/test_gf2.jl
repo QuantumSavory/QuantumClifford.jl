@@ -1,3 +1,10 @@
+using Random
+using QuantumClifford
+
+using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
+
+test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
+
 function test_gf2()
     @testset "GF(2) representations" begin
         @testset "Equivalence of GF(2) Gaussian elimination and Stabilizer canonicalization" begin
@@ -21,7 +28,7 @@ function test_gf2()
                 end
             end
         end
-    end    
+    end
 end
 
 test_gf2()

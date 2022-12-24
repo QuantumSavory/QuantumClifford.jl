@@ -1,10 +1,7 @@
 using Documenter
+using QuantumClifford
 
-function doctests()
-    @testset "Doctests" begin
-        DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
-        doctest(QuantumClifford)
-    end
+@testset "Doctests" begin
+    DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
+    doctest(QuantumClifford)
 end
-
-doctests()

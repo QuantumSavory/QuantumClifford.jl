@@ -1,3 +1,4 @@
+using QuantumClifford
 using JET
 using ArrayInterface
 using Static
@@ -19,48 +20,44 @@ function (::MayThrowIsOk)(report_type::Type{<:InferenceErrorReport}, @nospeciali
     BasicPass()(report_type, args...)
 end
 
-function test_jet()
-    @testset "JET checks" begin
-        @test isempty(JET.get_reports(@report_call random_destabilizer(10)))
-        @test isempty(JET.get_reports(@report_call random_stabilizer(10)))
-        @test isempty(JET.get_reports(@report_call random_clifford(10)))
+@testset "JET checks" begin
+    @test isempty(JET.get_reports(@report_call random_destabilizer(10)))
+    @test isempty(JET.get_reports(@report_call random_stabilizer(10)))
+    @test isempty(JET.get_reports(@report_call random_clifford(10)))
 
-        s = random_stabilizer(10)
-        p = random_pauli(10)
-        c = random_clifford(10)
-        c2 = random_clifford(2)
-        @test isempty(JET.get_reports(@report_call project!(s,p)))
-        @test isempty(JET.get_reports(@report_call apply!(s,p)))
-        @test isempty(JET.get_reports(@report_call apply!(s,c)))
-        @test isempty(JET.get_reports(@report_call apply!(s,sCNOT(1,2))))
-        @test isempty(JET.get_reports(@report_call apply!(s,sHadamard(1))))
-        @test isempty(JET.get_reports(@report_call apply!(s,c2,[1,2])))
-        @test isempty(JET.get_reports(@report_call canonicalize!(s)))
-        @test isempty(JET.get_reports(@report_call canonicalize_gott!(s)))
-        @test isempty(JET.get_reports(@report_call canonicalize_rref!(s)))
+    s = random_stabilizer(10)
+    p = random_pauli(10)
+    c = random_clifford(10)
+    c2 = random_clifford(2)
+    @test isempty(JET.get_reports(@report_call project!(s,p)))
+    @test isempty(JET.get_reports(@report_call apply!(s,p)))
+    @test isempty(JET.get_reports(@report_call apply!(s,c)))
+    @test isempty(JET.get_reports(@report_call apply!(s,sCNOT(1,2))))
+    @test isempty(JET.get_reports(@report_call apply!(s,sHadamard(1))))
+    @test isempty(JET.get_reports(@report_call apply!(s,c2,[1,2])))
+    @test isempty(JET.get_reports(@report_call canonicalize!(s)))
+    @test isempty(JET.get_reports(@report_call canonicalize_gott!(s)))
+    @test isempty(JET.get_reports(@report_call canonicalize_rref!(s)))
 
-        @test isempty(JET.get_reports(@report_call QuantumClifford._project!(s,p)))
-        @test isempty(JET.get_reports(@report_call QuantumClifford._apply!(s,p)))
-        @test isempty(JET.get_reports(@report_call QuantumClifford._apply!(s,c)))
-        @test isempty(JET.get_reports(@report_call QuantumClifford._apply!(s,sCNOT(1,2))))
-        @test isempty(JET.get_reports(@report_call QuantumClifford._apply!(s,sHadamard(1))))
-        @test isempty(JET.get_reports(@report_call QuantumClifford._apply!(s,c2,[1,2])))
-        @test isempty(JET.get_reports(@report_call QuantumClifford._canonicalize!(s)))
-        @test isempty(JET.get_reports(@report_call QuantumClifford._canonicalize_gott!(s)))
-        @test isempty(JET.get_reports(@report_call QuantumClifford._canonicalize_rref!(s,[1,3])))
+    @test isempty(JET.get_reports(@report_call QuantumClifford._project!(s,p)))
+    @test isempty(JET.get_reports(@report_call QuantumClifford._apply!(s,p)))
+    @test isempty(JET.get_reports(@report_call QuantumClifford._apply!(s,c)))
+    @test isempty(JET.get_reports(@report_call QuantumClifford._apply!(s,sCNOT(1,2))))
+    @test isempty(JET.get_reports(@report_call QuantumClifford._apply!(s,sHadamard(1))))
+    @test isempty(JET.get_reports(@report_call QuantumClifford._apply!(s,c2,[1,2])))
+    @test isempty(JET.get_reports(@report_call QuantumClifford._canonicalize!(s)))
+    @test isempty(JET.get_reports(@report_call QuantumClifford._canonicalize_gott!(s)))
+    @test isempty(JET.get_reports(@report_call QuantumClifford._canonicalize_rref!(s,[1,3])))
 
-        rep = report_package("QuantumClifford";
-            report_pass=MayThrowIsOk(),
-            ignored_modules=(
-                AnyFrameModule(Graphs.LinAlg),
-                AnyFrameModule(Graphs.SimpleGraphs),
-                AnyFrameModule(ArrayInterface),
-                AnyFrameModule(Static),
-            )
+    rep = report_package("QuantumClifford";
+        report_pass=MayThrowIsOk(),
+        ignored_modules=(
+            AnyFrameModule(Graphs.LinAlg),
+            AnyFrameModule(Graphs.SimpleGraphs),
+            AnyFrameModule(ArrayInterface),
+            AnyFrameModule(Static),
         )
-        @show rep
-        @test length(JET.get_reports(rep)) == 0
-    end
+    )
+    @show rep
+    @test length(JET.get_reports(rep)) == 0
 end
-
-test_jet()
