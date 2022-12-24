@@ -1,5 +1,9 @@
 # News
 
+## v0.6.5 - 2022-12-23
+
+- Minor API adjustments in preparation for releasing `BPGates.jl`.
+
 ## v0.6.4 - 2022-12-11
 
 - Move the API declarations to `QuantumInterface.jl`, a mostly namespacing package shared with `QuantumOptics.jl`.

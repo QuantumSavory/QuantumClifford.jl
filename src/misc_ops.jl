@@ -24,6 +24,8 @@ struct SparseGate{T<:Tableau} <: AbstractCliffordOperator # TODO simplify type p
     indices::Vector{Int}
 end
 
+SparseGate(c,t::Tuple) = SparseGate(c,collect(t))
+
 function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
     apply!(state, g.cliff, g.indices; kwargs...)
 end
