@@ -106,7 +106,7 @@ function apply!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
 end
 
 # TODO create Base.permute! and getindex(..., permutation_array)
-function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this is a slow stupid implementation
+function permute(c::CliffordOperator,p) # TODO this is a slow stupid implementation
     CliffordOperator(Tableau([c.tab[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
 end
 

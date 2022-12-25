@@ -6,7 +6,8 @@ module NoisyCircuits
 #TODO permit the use of alternative RNGs
 
 using QuantumClifford
-using QuantumClifford: AbstractQCState, AbstractStabilizer, AbstractOperation, AbstractMeasurement, AbstractCliffordOperator, apply_single_x!, apply_single_y!, apply_single_z!
+using QuantumClifford: AbstractQCState, AbstractStabilizer, AbstractOperation, AbstractMeasurement, AbstractCliffordOperator, apply_single_x!, apply_single_y!, apply_single_z!, registered_statuses
+import QuantumClifford: applywstatus!
 
 using Combinatorics: combinations
 using Base.Cartesian
@@ -14,15 +15,12 @@ using Base.Cartesian
 export AbstractOperation,
        UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, VerifyOp,
        NoisyGate,
-       BellMeasurement, NoisyBellMeasurement,
+       NoisyBellMeasurement,
        DecisionGate, ConditionalGate,
        affectedqubits, applynoise!,# TODO rename applyop to apply_mc
        applybranches, applynoise_branches,# TODO rename applybranches to apply_pe
-       mctrajectory!, mctrajectories,
        petrajectory, petrajectories,
-       ConditionalGate, DecisionGate,
-       continue_stat, true_success_stat, false_success_stat, failure_stat
-
+       ConditionalGate, DecisionGate
 
 abstract type AbstractNoise end
 
@@ -50,11 +48,6 @@ end
 struct NoisyGate <: AbstractOperation
     gate::AbstractOperation
     noise::AbstractNoise
-end
-
-"""A Bell measurement performing the correlation measurement corresponding to the given `pauli` projections on the qubits at the selected indices."""
-struct BellMeasurement <: AbstractOperation
-    measurements::Vector{AbstractMeasurement}# TODO make the type concrete e.g. Vector{Union{sMX{T},sMY{T},sMZ{T}}}
 end
 
 """A Bell measurement in which each of the measured qubits has a chance to have flipped."""
@@ -120,20 +113,6 @@ function applywstatus!(s::AbstractQCState, m::NoisyBellMeasurement)
     end
 end
 
-# TODO this seems unnecessarily complicated
-function applywstatus!(s::AbstractQCState, m::BellMeasurement)
-    res = 0x00
-    for meas in m.measurements
-        s,r = projectrand!(s,meas)
-        res ⊻= r
-    end
-    if res==0x0
-        return s, continue_stat
-    else
-        return s, failure_stat
-    end
-end
-
 """A method modifying a given state by applying the corresponding noise model. Non-deterministic, part of the Noise interface."""
 function applynoise! end
 
@@ -177,56 +156,6 @@ function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the oth
         end
     end
     return s, true_success_stat
-end
-
-struct CircuitStatus
-    status::Int
-end
-
-const continue_stat = CircuitStatus(0)
-const true_success_stat = CircuitStatus(1)
-const false_success_stat = CircuitStatus(2)
-const failure_stat = CircuitStatus(3)
-
-const registered_statuses = ["continue",
-                             "true_success",
-                             "false_success",
-                             "failure"
-                             ]
-
-function Base.show(io::IO, s::CircuitStatus)
-    print(io, get(registered_statuses,s.status+1,nothing))
-    print(io, ":CircuitStatus($(s.status))")
-end
-
-
-function applywstatus!(state, op)
-    apply!(state,op), continue_stat
-end
-
-"""Run a single Monte Carlo sample, starting with (and modifying) `state` by applying the given `circuit`. Uses `apply!` under the hood."""
-function mctrajectory!(state,circuit)
-    for op in circuit
-        state, cont = applywstatus!(state, op)
-        if cont!=continue_stat
-            return state, cont
-        end
-    end
-    return state, continue_stat
-end
-
-function countmap(samples::Vector{CircuitStatus}) # A simpler faster version of StatsBase.countmap
-    counts = zeros(length(registered_statuses))
-    for s in samples
-        counts[s.status] += 1
-    end
-    Dict(CircuitStatus(i)=>counts[i] for i in eachindex(counts))
-end
-
-"""Run multiple Monte Carlo trajectories and report the aggregate final statuses of each."""
-function mctrajectories(initialstate,circuit;trajectories=500)
-    counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator, but without breaking Polyester
-    return counts
 end
 
 """Compute all possible new states after the application of the given operator. Reports the probability of each one of them. Deterministic, part of the Perturbative Expansion interface."""
@@ -312,7 +241,7 @@ end
 # TODO a lot of repetition with applywstatus!
 function applybranches(s::AbstractQCState, m::BellMeasurement; max_order=1)
     n = nqubits(s)
-    [(ns,iseven(r>>1) ? continue_stat : failure_stat, p,0)
+    [(ns,iseven(r>>1 + m.parity) ? continue_stat : failure_stat, p,0)
      for (ns,r,p) in _applybranches_measurement([(s,0x0,1.0)],m.measurements,n)]
 end
 

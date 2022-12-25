@@ -1,5 +1,20 @@
 # News
 
+Planned for v1.0.0:
+
+- `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
+- reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
+
+## v0.6.6 - 2022-12-24
+
+- `random_destabilizer(rank,nb_of_qubits)` now exists to provide a random `MixedDestabilizer` instance of a given `rank`.
+- Stabilizing a few features, moving out of `Experimental.NoisyCircuits`
+    - `BellMeasurement`
+    - `mctrajectories`, `mctrajectory!`, `applywstatus!`
+    - `CircuitStatus`
+- `colpermute!` was turned into `Base.permute!`. It was not documented or used previously.
+- `check_allrowscommute` is not exported by default anymore. It was not documented or used previously.
+
 ## v0.6.5 - 2022-12-23
 
 - Minor API adjustments in preparation for releasing `BPGates.jl`.
@@ -39,7 +54,7 @@
 
 - **(fix)** `apply!(S"XXX", P"X", [1])` and similar sparse Pauli applies were giving wrong results.
 - Significant speedup of `petrajectories` thanks to an order of magnitude speedup in `applynoise_branches(...,::UnbiasedUncorrelatedNoise)`.
-- Expanding test suite, including base functions, `Experimental.NoisyCircuits`, and others. Re-establishing tests of alternative big-packing.
+- Expanding test suite, including base functions, `Experimental.NoisyCircuits`, and others. Re-establishing tests of alternative bit-packing.
 
 ## v0.5.6 - 2022-07-20
 

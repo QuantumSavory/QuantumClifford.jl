@@ -40,3 +40,24 @@ function apply!(state::AbstractStabilizer, reset::Reset)
     reset_qubits!(state, reset.resetto, reset.indices)
     return state
 end
+
+"""A Bell measurement performing the correlation measurement corresponding to the given `pauli` projections on the qubits at the selected indices."""
+struct BellMeasurement <: AbstractOperation
+    measurements::Vector{AbstractMeasurement}# TODO make the type concrete e.g. Vector{Union{sMX{T},sMY{T},sMZ{T}}}
+    parity::Bool
+end
+BellMeasurement(meas) = BellMeasurement(meas,false)
+
+# TODO this seems unnecessarily complicated
+function applywstatus!(s::AbstractQCState, m::BellMeasurement)
+    res = 0x00
+    for meas in m.measurements
+        s,r = projectrand!(s,meas)
+        res ⊻= r
+    end
+    if iseven(res>>1+m.parity)
+        return s, continue_stat
+    else
+        return s, failure_stat
+    end
+end

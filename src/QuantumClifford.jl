@@ -17,38 +17,56 @@ import SIMD
 
 import QuantumInterface: tensor, ⊗, tensor_pow, apply!, nqubits, expect, project!, reset_qubits!, traceout!, ptrace, apply!, projectX!, projectY!, projectZ!, entanglement_entropy
 
-export @P_str, PauliOperator, ⊗, I, X, Y, Z, permute,
+export
+    @P_str, PauliOperator, ⊗, I, X, Y, Z,
     @T_str, xbit, zbit, xview, zview,
-    @S_str, Stabilizer, prodphase, comm, check_allrowscommute,
+    @S_str, Stabilizer,
     Destabilizer, MixedStabilizer, MixedDestabilizer,
-    nqubits, stabilizerview, destabilizerview, logicalxview, logicalzview, phases,
-    bitview, quantumstate,
-    canonicalize!, canonicalize_rref!, canonicalize_gott!, colpermute!,
+    prodphase, comm,
+    nqubits,
+    stabilizerview, destabilizerview, logicalxview, logicalzview, phases,
+    bitview, quantumstate, tab,
+    BadDataStructure,
+    # GF2
+    stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
+    # Canonicalization
+    canonicalize!, canonicalize_rref!, canonicalize_gott!,
+    # Linear Algebra
+    tensor, tensor_pow,
     logdot, expect,
-    generate!, project!, reset_qubits!, traceout!,
     apply!,
+    # Low Level Function Interface
+    generate!, project!, reset_qubits!, traceout!,
     projectX!, projectY!, projectZ!,
     projectrand!, projectXrand!, projectYrand!, projectZrand!,
-    tab, puttableau!,
-    CliffordOperator, @C_str,
+    puttableau!,
+    # Clifford Ops
+    CliffordOperator, @C_str, permute,
     tCNOT, tCPHASE, tSWAP, tHadamard, tPhase, tId1,
+    # Symbolic Clifford Ops
     AbstractSymbolicOperator, AbstractSingleQubitOperator, AbstractTwoQubitOperator,
     sHadamard, sPhase, sInvPhase, SingleQubitOperator, sId1, sX, sY, sZ,
     sCNOT, sCPHASE, sSWAP,
+    # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset,
+    BellMeasurement,
     Register,
-    tensor, tensor_pow,
-    stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
-    single_z, single_x, single_y,
+    # Enumeration and Randoms
     enumerate_single_qubit_gates, random_clifford1,
     enumerate_cliffords, symplecticGS, clifford_cardinality, enumerate_phases,
     random_invertible_gf2,
     random_pauli, random_stabilizer, random_destabilizer, random_clifford,
+    # Useful States
     bell, ghz,
-    BadDataStructure,
+    single_z, single_x, single_y,
+    # Graphs
     graphstate, graphstate!, graph_gatesequence, graph_gate,
-    canonicalize_clip!, bigram, entanglement_entropy
+    # Clipped Gauge
+    canonicalize_clip!, bigram, entanglement_entropy,
+    # mctrajectories
+    CircuitStatus, continue_stat, true_success_stat, false_success_stat, failure_stat,
+    mctrajectory!, mctrajectories, applywstatus!
 
 
 const BIG_INT_MINUS_ONE = Ref{BigInt}()
@@ -1098,14 +1116,18 @@ function unsafe_bitfindnext_(chunks::AbstractVector{T}, start::Int) where T<:Uns
     return nothing
 end
 
-function colpermute!(s::Stabilizer, perm) # TODO rename and make public, same as permute and maybe Base.permute!
+"""Permute the qubits (i.e., columns) of the tableau in place."""
+function Base.permute!(s::Tableau, perm::AbstractVector)
     for r in 1:size(s,1)
         s[r] = s[r][perm] # TODO make a local temporary buffer row instead of constantly allocating new rows
     end
     s
 end
 
-function ishermitian() # TODO write it both for paulis and stabilizers (ugh... stabilizers are always so)
+"""Permute the qubits (i.e., columns) of the state in place."""
+function Base.permute!(s::AbstractStabilizer, perm::AbstractVector)
+    permute!(tab(s), perm)
+    s
 end
 
 function check_allrowscommute(stabilizer::Tableau)
@@ -1364,6 +1386,7 @@ include("dense_cliffords.jl")
 include("project_trace_reset.jl")
 include("linalg.jl")
 include("symbolic_cliffords.jl")
+include("mctrajectory.jl")
 include("misc_ops.jl")
 include("classical_register.jl")
 include("enumeration.jl")
