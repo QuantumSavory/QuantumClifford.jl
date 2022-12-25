@@ -27,7 +27,7 @@ using QuantumClifford: mul_left!
         f4() = apply!(s,tCNOT,[5,20])
         f4()
         @test allocated(f4) < 1500*n # TODO lower it by making apply! more efficient
-        for phases in [(0,0),(0,1),(1,0),(1,1)], i in 1:6
+        for phases in [(false,false),(false,true),(true,false),(true,true)], i in 1:6
             g = enumerate_single_qubit_gates(i,qubit=10,phases=phases)
             f5() = apply!(s,g)
             f5()

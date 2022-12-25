@@ -10,7 +10,7 @@ const all_single_qubit_patterns = (
 """Generate a symbolic single-qubit gate given its index. Optionally, set non-trivial phases.
 
 See also: [`enumerate_cliffords`](@ref)."""
-function enumerate_single_qubit_gates(index; qubit=1, phases=(false,false))
+function enumerate_single_qubit_gates(index; qubit=1, phases::Tuple{Bool,Bool}=(false,false))
     @assert index<=6 "Only 6 single-qubit gates exit, up to the choice of phases"
     if phases==(false,false)
         if index==4

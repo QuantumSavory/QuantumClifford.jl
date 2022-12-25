@@ -710,7 +710,7 @@ function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubit
             if res!=0 && phases # TODO many of the checks below were already done by project!; find a way to not repeat them
                 destab = destabilizerview(s)
                 r = LinearAlgebra.rank(s)
-                loc = findfirst(i->comm(pauli,destab,i)!=0, 1:r)
+                loc = findfirst(i->comm(pauli,destab,i)!=0, 1:r)::Int # `nothing` should not be a possible answer
                 for i in loc+1:r
                     if comm(pauli, destab, i)!=0
                         mul_left!(s, i, loc; phases=_phases)

@@ -43,7 +43,7 @@ end
 
 """A Bell measurement performing the correlation measurement corresponding to the given `pauli` projections on the qubits at the selected indices."""
 struct BellMeasurement <: AbstractOperation
-    measurements::Vector{AbstractMeasurement}# TODO make the type concrete e.g. Vector{Union{sMX{T},sMY{T},sMZ{T}}}
+    measurements::Vector{Union{sMX{Nothing},sMY{Nothing},sMZ{Nothing}}}
     parity::Bool
 end
 BellMeasurement(meas) = BellMeasurement(meas,false)

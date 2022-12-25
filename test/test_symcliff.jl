@@ -9,7 +9,7 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
 @testset "Small symbolic operators" begin
     for n in test_sizes
         for i in 1:6
-            op = enumerate_single_qubit_gates(i, qubit=n, phases=rand(Bool,2))
+            op = enumerate_single_qubit_gates(i, qubit=n, phases=(rand(Bool),rand(Bool)))
             op0 = enumerate_single_qubit_gates(i, qubit=n)
             op_cc = CliffordOperator(op, 1, compact=true)
             op_c = CliffordOperator(op, n)

@@ -205,7 +205,7 @@ end
 See also: [`SingleQubitOperator`](@ref), [`random_clifford`](@ref)
 """
 function random_clifford1(rng::AbstractRNG, qubit)
-    return enumerate_single_qubit_gates(rand(rng,1:6),qubit=qubit,phases=rand(rng,Bool,2))
+    return enumerate_single_qubit_gates(rand(rng,1:6),qubit=qubit,phases=(rand(rng,Bool),rand(rng,Bool)))
 end
 random_clifford1(qubit) = random_clifford1(GLOBAL_RNG, qubit)
 

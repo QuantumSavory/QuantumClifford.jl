@@ -140,17 +140,12 @@ struct PauliOperator{Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}}
     phase::Tz
     nqubits::Int
     xz::Tv
-    # Add an inner constructor to overwrite the generic one that has underspecified type signature (for automatic conversion).
-    # Automatic conversion would almost never work for Tv types, so it only causes ambiguities.
-    PauliOperator{Tz,Tv}(phase, nqubits, xz::Tv) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = new(phase, nqubits, xz)
 end
 
-PauliOperator(phase::Tz, nqubits::Int, xz::Tv) where {Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} = PauliOperator{Tz,Tv}(phase, nqubits, xz)
 PauliOperator(phase::UInt8, nqubits::Int, xz::Tv) where Tv<:AbstractVector{<:Unsigned} = PauliOperator(fill(UInt8(phase),()), nqubits, xz)
-PauliOperator{Tz,Tv}(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{Bool}) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = PauliOperator(fill(UInt8(phase),()), length(x), vcat(reinterpret(Tve,BitVector(x).chunks),reinterpret(Tve,BitVector(z).chunks)))
-PauliOperator(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator{Array{UInt8,0},Vector{UInt}}(phase, x, z)
-PauliOperator(x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator{Array{UInt8,0},Vector{UInt}}(0x0, x, z)
-PauliOperator(xz::AbstractVector{Bool}) = PauliOperator{Array{UInt8,0},Vector{UInt}}(0x0, (@view xz[1:end÷2]), (@view xz[end÷2+1:end]))
+PauliOperator(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator(fill(UInt8(phase),()), length(x), vcat(reinterpret(UInt,BitVector(x).chunks),reinterpret(UInt,BitVector(z).chunks)))
+PauliOperator(x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator(0x0, x, z)
+PauliOperator(xz::AbstractVector{Bool}) = PauliOperator(0x0, (@view xz[1:end÷2]), (@view xz[end÷2+1:end]))
 
 """Get a view of the X part of the `UInt` array of packed qubits of a given Pauli operator."""
 function xview(p::PauliOperator)
@@ -291,7 +286,7 @@ Base.getindex(tab::Tableau, r::Union{Colon,AbstractVector}, c::Int) = tab[r,[c]]
 Base.getindex(tab::Tableau, r::Int, c::Union{Colon,AbstractVector}) = tab[r][c]
 Base.view(tab::Tableau, r) = Tableau(view(tab.phases, r), nqubits(tab), view(tab.xzs, :, r))
 
-Base.iterate(tab::Tableau, state=1) = state>length(tab) ? nothing : (tab[state], state+1)
+Base.iterate(tab::Tableau, state::Int=1) = state>length(tab) ? nothing : (tab[state], state+1)
 
 function Base.setindex!(tab::Tableau, pauli::PauliOperator, i)
     tab.phases[i] = pauli.phase[]
@@ -1234,7 +1229,7 @@ end
 """Check whether a binary matrix is invertible."""
 function gf2_isinvertible(H) # TODO can be smarter and exit earlier. And should check for squareness.
     ut = gf2_gausselim!(copy(H))
-    all((ut[i, i] for i in 1:size(ut,1)))
+    all((ut[i, i] for i in 1:size(ut,1)))::Bool
 end
 
 """Invert a binary matrix."""
@@ -1255,7 +1250,7 @@ function gf2_H_standard_form_indices(H)
     r = 1
     for r in 1:rows
         i = findfirst(H[r,:])
-        i ∈ goodindices && continue
+        (i ∈ goodindices)::Bool && continue
         push!(goodindices, i)
     end
     badindices = [r for r in 1:goodindices[end] if !(r ∈ goodindices)]

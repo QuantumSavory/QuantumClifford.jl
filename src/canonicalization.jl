@@ -186,7 +186,7 @@ function gott_standard_form_indices(chunks2D, rows, cols; skip=0)::Tuple{Vector{
     for r in skip+1:rows
         i = unsafe_bitfindnext_(chunks2D[:,r],skip+1)
         isnothing(i) && break
-        i ∈ goodindices && continue
+        (i ∈ goodindices)::Bool && continue
         push!(goodindices, i)
     end
     rank = length(goodindices)
