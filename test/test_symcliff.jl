@@ -3,6 +3,7 @@ using QuantumClifford
 
 using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
 using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
+using InteractiveUtils
 
 test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
@@ -34,4 +35,24 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
     @test_throws DimensionMismatch SingleQubitOperator(tCNOT,1)
     @test_throws DimensionMismatch CliffordOperator(sHadamard(5),2)
     @test_throws ArgumentError CliffordOperator(sHadamard(5),6,compact=true)
+end
+
+@testset "Convert between small ops" begin
+    for op in subtypes(QuantumClifford.AbstractSingleQubitOperator)
+        op == SingleQubitOperator && continue
+        sop = op(1)
+        sqsop = SingleQubitOperator(sop)
+        cop = CliffordOperator(sop,1)
+        csqop = CliffordOperator(sqsop,1)
+        tcop = CliffordOperator(op)
+        s = random_destabilizer(1)
+        @test sop*s == sqsop*s == cop*s == csqop*s == tcop*s
+    end
+    for op in subtypes(QuantumClifford.AbstractTwoQubitOperator)
+        sop = op(1,2)
+        cop = CliffordOperator(sop,2)
+        tcop = CliffordOperator(op)
+        s = random_destabilizer(2)
+        @test sop*s == cop*s == tcop*s
+    end
 end

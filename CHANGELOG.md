@@ -5,6 +5,12 @@ Planned for v1.0.0:
 - `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
 
+## v0.6.7
+
+- Test coverage increase.
+- Fixes to inference failures (detected by JET).
+- **(fix)** Fixed bug in `CliffordOperator(AbstractTwoQubitOperator)`.
+
 ## v0.6.6 - 2022-12-24
 
 - `random_destabilizer(rank,nb_of_qubits)` now exists to provide a random `MixedDestabilizer` instance of a given `rank`.
