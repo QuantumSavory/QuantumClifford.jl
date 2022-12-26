@@ -142,8 +142,7 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
                                                             ___X"
     end
     @testset "Interface Particularities" begin
-        s = S"ZII
-                IZI"
+        s = S"ZII IZI"
         _, a, r = project!(copy(s), P"IZI"; keep_result=true)
         @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
         _, a, r = project!(copy(s), P"IIZ"; keep_result=true)
@@ -152,9 +151,7 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         @test (a, r) == (0, nothing) # on commuting operator in the stabilizer
         _, a, r = project!(copy(s), P"IIZ"; keep_result=false)
         @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
-        s = S"ZII
-                IZI
-                III"
+        s = S"ZII IZI III"
         _, a, r = project!(copy(s), P"IZI"; keep_result=true)
         @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
         _, a, r = project!(copy(s), P"IIZ"; keep_result=true)
@@ -170,23 +167,19 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         ms, a, r = project!(copy(s), P"IIZ")
         @test (a, r) == (3, nothing) # on commuting operator out of the stabilizer
         @test ms.rank == 3
-        s = S"ZII
-                IZI"
+        s = S"ZII IZI"
         s = Destabilizer(s)
         @test_throws BadDataStructure project!(copy(s), P"IZI"; keep_result=true)  # on comm
         @test_throws BadDataStructure project!(copy(s), P"IIZ"; keep_result=true)  # operators
         @test_throws BadDataStructure project!(copy(s), P"IZI"; keep_result=false) # in or out of
         @test_throws BadDataStructure project!(copy(s), P"IIZ"; keep_result=false) # the stabilizer
-        s = S"ZII
-                IZI
-                IIZ"
+        s = S"ZII IZI IIZ"
         s = Destabilizer(s)
         _, a, r = project!(copy(s), P"IIZ"; keep_result=true)
         @test (a, r) == (0, 0x0)
         _, a, r = project!(copy(s), P"IIZ"; keep_result=false)
         @test (a, r) == (0, nothing)
-        s = S"ZII
-                IZI"
+        s = S"ZII IZI"
         s = MixedDestabilizer(s)
         mds, a, r = project!(copy(s), P"IZI"; keep_result=true)
         @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
@@ -231,8 +224,7 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         end
     end
     @testset "Reported phase" begin
-        s = S"ZII
-                IZI"
+        s = S"ZII IZI"
         _, a, r = project!(copy(s), P"IZI"; keep_result=true)
         @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
         _, a, r = project!(copy(s), P"-IZI"; keep_result=true)
@@ -244,16 +236,13 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         _, a, r = project!(copy(s), P"-IIZ"; keep_result=false)
         @test (a, r) == (0, nothing) # on commuting operator out of the stabilizer
 
-        s = S" ZII
-                -IZI"
+        s = S"ZII -IZI"
         _, a, r = project!(copy(s), P"IZI"; keep_result=true)
         @test (a, r) == (0, 0x2) # on commuting operator in the stabilizer
         _, a, r = project!(copy(s), P"-IZI"; keep_result=true)
         @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
 
-        s = S"ZII
-                IZI
-                III"
+        s = S"ZII IZI III"
         s = MixedStabilizer(s, 2)
         _, a, r = project!(copy(s), P"IZI")
         @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
@@ -263,34 +252,27 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         @test (a, r) == (3, nothing) # on commuting operator out of the stabilizer
         _, a, r = project!(copy(s), P"-IIZ")
         @test (a, r) == (3, nothing) # on commuting operator out of the stabilizer
-        s = S" ZII
-                -IZI
-                III"
+        s = S"ZII -IZI III"
         s = MixedStabilizer(s, 2)
         _, a, r = project!(copy(s), P"IZI")
         @test (a, r) == (0, 0x2) # on commuting operator in the stabilizer
         _, a, r = project!(copy(s), P"-IZI")
         @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
 
-        s = S"ZII
-                IZI
-                IIZ"
+        s = S"ZII IZI IIZ"
         s = Destabilizer(s)
         _, a, r = project!(copy(s), P"IIZ"; keep_result=true)
         @test (a, r) == (0, 0x0)
         _, a, r = project!(copy(s), P"-IIZ"; keep_result=true)
         @test (a, r) == (0, 0x2)
-        s = S" ZII
-                IZI
-                -IIZ"
+        s = S"ZII IZI -IIZ"
         s = Destabilizer(s)
         _, a, r = project!(copy(s), P"IIZ"; keep_result=true)
         @test (a, r) == (0, 0x2)
         _, a, r = project!(copy(s), P"-IIZ"; keep_result=true)
         @test (a, r) == (0, 0x0)
 
-        s = S"ZII
-                IZI"
+        s = S"ZII IZI"
         s = MixedDestabilizer(s)
         mds, a, r = project!(copy(s), P"IZI"; keep_result=true)
         @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
@@ -300,8 +282,7 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         @test (a, r) == (3, nothing) # on commuting operator out of the stabilizer
         mds, a, r = project!(copy(s), P"-IIZ"; keep_result=true)
         @test (a, r) == (3, nothing) # on commuting operator out of the stabilizer
-        s = S" ZII
-                -IZI"
+        s = S" ZII -IZI"
         s = MixedDestabilizer(s)
         mds, a, r = project!(copy(s), P"IZI"; keep_result=true)
         @test (a, r) == (0, 0x2) # on commuting operator in the stabilizer
@@ -321,12 +302,18 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
             sx = project!(copy(s),px)[1]
             sy = project!(copy(s),py)[1]
             sz = project!(copy(s),pz)[1]
+            ssx = project!(copy(s),sMX(r))[1]
+            ssy = project!(copy(s),sMY(r))[1]
+            ssz = project!(copy(s),sMZ(r))[1]
+            rssx = projectrand!(copy(s),sMX(r))[1]
+            rssy = projectrand!(copy(s),sMY(r))[1]
+            rssz = projectrand!(copy(s),sMZ(r))[1]
             @test project!(copy(sx),px) == projectX!(copy(sx),r)
             @test project!(copy(sy),py) == projectY!(copy(sy),r)
             @test project!(copy(sz),pz) == projectZ!(copy(sz),r)
-            @test tab(apply!(copy(s),sMX(r))).xzs == tab(sx).xzs
-            @test tab(apply!(copy(s),sMY(r))).xzs == tab(sy).xzs
-            @test tab(apply!(copy(s),sMZ(r))).xzs == tab(sz).xzs
+            @test tab(apply!(copy(s),sMX(r))).xzs == tab(sx).xzs == tab(ssx).xzs == tab(rssx).xzs
+            @test tab(apply!(copy(s),sMY(r))).xzs == tab(sy).xzs == tab(ssy).xzs == tab(rssy).xzs
+            @test tab(apply!(copy(s),sMZ(r))).xzs == tab(sz).xzs == tab(ssz).xzs == tab(rssz).xzs
         end
     end
     @testset "projectremoverand!" begin
