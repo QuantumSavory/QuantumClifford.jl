@@ -89,7 +89,7 @@ function ⊗(ops::AbstractStabilizer...) # TODO optimize this by doing conversio
 end
 
 """Repeated tensor product of an operators or a tableau. See also [`⊗`](@ref) and [`tensor_pow`](@ref)."""
-function tensor_pow(op,power)
+function tensor_pow(op::Union{<:AbstractStabilizer,<:AbstractCliffordOperator},power)
     if power==1
         return op
     else

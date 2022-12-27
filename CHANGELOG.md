@@ -7,9 +7,15 @@ Planned for v1.0.0:
 
 ## v0.6.7
 
-- Test coverage increase.
-- Fixes to inference failures (detected by JET).
 - **(fix)** Fixed bug in `CliffordOperator(AbstractTwoQubitOperator)`.
+- Fixes to inference failures (detected by JET).
+- Significant test coverage increase.
+- Stabilizing a few features, moving out of `Experimental.NoisyCircuits`
+    - `applynoise!`
+    - `affectedqubits`
+    - `NoisyGate`
+    - `NoiseOp` and `NoiseOpAll`
+    - `UnbiasedUncorrelatedNoise`
 
 ## v0.6.6 - 2022-12-24
 

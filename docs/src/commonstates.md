@@ -7,9 +7,14 @@ DocTestSetup = quote
     rng = StableRNG(42)
 end
 ```
+## States
 
-There are numerous frequently used stabilizer states already implemented in this
-library.
+Stabilizer states can be represented with the [`Stabilizer`](@ref), [`Destabilizer`](@ref), [`MixedStabilizer`](@ref), and [`MixedDestabilizer`](@ref) tableau data structures. You probably want to use [`MixedDestabilizer`](@ref) which supports the widest set of operations.
+
+Moreover, a [`MixedDestabilizer`](@ref) can be stored inside a [`Register`](@ref) together with a set of classical bits in which measurement results can be written.
+
+Below are convenience constructors for common types of states and operators,
+already implemented in this library.
 
 ## Pauli Operators
 

@@ -27,6 +27,7 @@ export
     stabilizerview, destabilizerview, logicalxview, logicalzview, phases,
     bitview, quantumstate, tab,
     BadDataStructure,
+    affectedqubits,
     # GF2
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     # Canonicalization
@@ -57,6 +58,8 @@ export
     enumerate_cliffords, symplecticGS, clifford_cardinality, enumerate_phases,
     random_invertible_gf2,
     random_pauli, random_stabilizer, random_destabilizer, random_clifford,
+    # Noise
+    applynoise!, UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, NoisyGate,
     # Useful States
     bell, ghz,
     single_z, single_x, single_y,
@@ -1387,6 +1390,8 @@ include("classical_register.jl")
 include("enumeration.jl")
 include("randoms.jl")
 include("useful_states.jl")
+include("noise.jl")
+include("affectedqubits.jl")
 include("experimental/Experimental.jl")
 include("graphs.jl")
 include("entanglement.jl")

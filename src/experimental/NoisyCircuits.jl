@@ -1,13 +1,10 @@
-"""
-A module for simulating noisy Clifford circuits.
-"""
 module NoisyCircuits
 
 #TODO permit the use of alternative RNGs
 
 using QuantumClifford
 using QuantumClifford: AbstractQCState, AbstractStabilizer, AbstractOperation, AbstractMeasurement, AbstractCliffordOperator, apply_single_x!, apply_single_y!, apply_single_z!, registered_statuses
-import QuantumClifford: applywstatus!
+import QuantumClifford: applywstatus!, affectedqubits
 
 using Combinatorics: combinations
 using Base.Cartesian
@@ -22,33 +19,9 @@ export AbstractOperation,
        petrajectory, petrajectories,
        ConditionalGate, DecisionGate
 
-abstract type AbstractNoise end
-
 #TODO all these structs should use specified types
 #TODO all of the methods should better specified type signatures
 #TODO measure allocation in various apply* methods and verify it is not superfluous
-
-"""Depolarization noise model with total probability of error `3*errprobthird`."""
-struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
-    errprobthird::T
-end
-
-"""An operator that applies the given `noise` model to the qubits at the selected `indices`."""
-struct NoiseOp <: AbstractOperation
-    noise::AbstractNoise
-    indices::AbstractVector{Int}
-end
-
-"""An operator that applies the given `noise` model to all qubits."""
-struct NoiseOpAll <: AbstractOperation
-    noise::AbstractNoise
-end
-
-"""A gate consisting of the given `noise` applied after the given perfect Clifford `gate`."""
-struct NoisyGate <: AbstractOperation
-    gate::AbstractOperation
-    noise::AbstractNoise
-end
 
 """A Bell measurement in which each of the measured qubits has a chance to have flipped."""
 struct NoisyBellMeasurement{T} <: AbstractOperation
@@ -77,31 +50,6 @@ struct DecisionGate <: AbstractOperation
     decisionfunction
 end
 
-"""A method giving the qubits acted upon by a given operation. Part of the Noise interface."""
-function affectedqubits end
-affectedqubits(g::AbstractSingleQubitOperator) = [g.q,]
-affectedqubits(g::AbstractTwoQubitOperator) = [g.q1, g.q2]
-affectedqubits(g::NoisyGate) = affectedqubits(g.gate)
-affectedqubits(g::SparseGate) = g.indices
-affectedqubits(b::BellMeasurement) = [m.qubit for m in b.measurements]
-affectedqubits(r::Reset) = r.indices
-affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
-affectedqubits(n::NoiseOp) = n.indices
-affectedqubits(v::VerifyOp) = v.indices
-affectedqubits(g::PauliMeasurement) = 1:length(g.pauli)
-affectedqubits(d::ConditionalGate) = union(affectedqubits(d.truegate), affectedqubits(d.falsegate))
-affectedqubits(d::DecisionGate) = [(union(affectedqubits.(d.gates))...)...]
-affectedqubits(m::AbstractMeasurement) = [m.qubit]
-
-
-function QuantumClifford.apply!(s::AbstractStabilizer, g::NoisyGate)
-    s = applynoise!(
-            apply!(s,g.gate),
-            g.noise,
-            affectedqubits(g.gate)),
-    return s
-end
-
 function applywstatus!(s::AbstractQCState, m::NoisyBellMeasurement)
     state, status = applywstatus!(s,m.meas)
     nqubits = length(affectedqubits(m))
@@ -111,36 +59,6 @@ function applywstatus!(s::AbstractQCState, m::NoisyBellMeasurement)
     else
         return state, status
     end
-end
-
-"""A method modifying a given state by applying the corresponding noise model. Non-deterministic, part of the Noise interface."""
-function applynoise! end
-
-function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int})
-    n = nqubits(s)
-    infid = noise.errprobthird
-    for i in indices
-        r = rand()
-        if r<infid
-            apply_single_x!(s,i)
-        end
-        if infid<=r<2infid
-            apply_single_z!(s,i)
-        end
-        if 2infid<=r<3infid
-            apply_single_y!(s,i)
-        end
-    end
-    s
-end
-
-function QuantumClifford.apply!(s::AbstractStabilizer, mr::NoiseOpAll)
-    n = nqubits(s)
-    return applynoise!(s, mr.noise, 1:n)
-end
-
-function QuantumClifford.apply!(s::AbstractStabilizer, mr::NoiseOp)
-    return applynoise!(s, mr.noise, affectedqubits(mr))
 end
 
 # TODO this one needs more testing
@@ -301,11 +219,6 @@ function petrajectories(initialstate, circuit; branch_weight=1.0, max_order=1)
     Dict([CircuitStatus(i)=>status_probs[i] for i in eachindex(status_probs)])
 end
 
-function applynoise!(state::Register, noise, indices)
-    s, status = applynoise!(state.stab, noise, indices)
-    state, status
-end
-
 function applynoise_branches(state::Register, noise, indices; max_order=1)
     [(Register(newstate,copy(state.bits)), prob, order)
      for (newstate, prob, order) in applynoise_branches(state, noise, indices; max_order=max_order)]
@@ -366,5 +279,10 @@ function applybranches(state::Register, op::SparseMeasurement; max_order=1)
     applybranches(state,dm, max_order=max_order)
 end
 =#
+
+affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
+affectedqubits(d::ConditionalGate) = union(affectedqubits(d.truegate), affectedqubits(d.falsegate))
+affectedqubits(d::DecisionGate) = [(union(affectedqubits.(d.gates))...)...]
+affectedqubits(v::VerifyOp) = v.indices
 
 end

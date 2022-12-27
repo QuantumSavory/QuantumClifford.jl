@@ -9,6 +9,7 @@ Register(s,bits) = Register(MixedDestabilizer(s), bits)
 Register(s) = Register(s, Bool[])
 
 Base.copy(r::Register) = Register(copy(r.stab),copy(r.bits))
+Base.:(==)(l::Register,r::Register) = l.stab==r.stab && l.bits==r.bits
 
 stabilizerview(r::Register) = stabilizerview(quantumstate(r))
 destabilizerview(r::Register) = destabilizerview(quantumstate(r))
