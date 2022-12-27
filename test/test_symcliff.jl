@@ -45,14 +45,18 @@ end
         cop = CliffordOperator(sop,1)
         csqop = CliffordOperator(sqsop,1)
         tcop = CliffordOperator(op)
+        stcop = SingleQubitOperator(tcop)
         s = random_destabilizer(1)
-        @test sop*s == sqsop*s == cop*s == csqop*s == tcop*s
+        @test sop*s == sqsop*s == cop*s == csqop*s == tcop*s == stcop*s
     end
     for op in subtypes(QuantumClifford.AbstractTwoQubitOperator)
         sop = op(1,2)
         cop = CliffordOperator(sop,2)
+        ccop = CliffordOperator(sop,2; compact=true)
+        @test_throws DimensionMismatch CliffordOperator(op(1,4),3)
+        @test_throws ArgumentError CliffordOperator(sop,3; compact=true)
         tcop = CliffordOperator(op)
         s = random_destabilizer(2)
-        @test sop*s == cop*s == tcop*s
+        @test sop*s == cop*s == tcop*s == ccop*s
     end
 end

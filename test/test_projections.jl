@@ -291,7 +291,7 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
     end
     @testset "Single Qubit Projections" begin
         for n in test_sizes
-            s = MixedDestabilizer(random_destabilizer(n));
+            s = MixedDestabilizer(random_destabilizer(n),n÷2);
             r = rand(1:n)
             px = single_x(n,r);
             py = single_y(n,r);
