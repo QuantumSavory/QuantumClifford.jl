@@ -1,15 +1,16 @@
-# News
-
-Planned for v1.0.0:
+# Planned changes for v1.0.0:
 
 - `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
 
-## v0.6.7
+# News
+
+## v0.6.7 - 2022-12-27
 
 - **(fix)** Fixed bug in `CliffordOperator(AbstractTwoQubitOperator)`.
 - Fixes to inference failures (detected by JET).
 - Significant test coverage increase.
+- Significant improvement in TTFX thanks to fixes to Polyester.jl (for Julia 1.9).
 - Stabilizing a few features, moving out of `Experimental.NoisyCircuits`
     - `applynoise!`
     - `affectedqubits`
