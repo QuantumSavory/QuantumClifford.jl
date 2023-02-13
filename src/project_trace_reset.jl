@@ -34,13 +34,11 @@ false
 ```
 """
 function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=true, saveindices::Bool=true)
-    _phases = Val(phases)
-    _saveindices = Val(saveindices)
-    _generate!(pauli, stabilizer; phases=_phases, saveindices=_saveindices)
+    @valbooldispatch _generate!(pauli, stabilizer; phases=Val(phases), saveindices=Val(saveindices)) phases saveindices
 end
 
-function _generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tzv,Tm}; phases::Val{PHASES}=Val(true), saveindices::Val{SAVEIDX}=Val(true)) where {Tz<:AbstractArray{UInt8,0}, Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tv<:AbstractVector{Tme}, Tm<:AbstractMatrix{Tme}, PHASES, SAVEIDX} # TODO there is stuff that can be abstracted away here and in canonicalize!
-    xzs = stabilizer.xzs
+function _generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tableau{Tzv,Tm}}; phases::Val{PHASES}=Val(true), saveindices::Val{SAVEIDX}=Val(true)) where {Tz<:AbstractArray{UInt8,0}, Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tv<:AbstractVector{Tme}, Tm<:AbstractMatrix{Tme}, PHASES, SAVEIDX} # TODO there is stuff that can be abstracted away here and in canonicalize!
+    xzs = tab(stabilizer).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
     lowbit = Tme(0x1)
@@ -232,7 +230,7 @@ See the "Datastructure Choice" section in the documentation for more details.
 See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref)
 """
 function project!(state,pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
-    return _project!(state,pauli;keep_result=Val(keep_result),phases=Val(phases))
+    @valbooldispatch _project!(state,pauli;keep_result=Val(keep_result),phases=Val(phases)) keep_result phases
 end
 
 # TODO maybe just add keep_result to it, for consistency
@@ -274,7 +272,7 @@ See the "Datastructure Choice" section in the documentation for more details.
 See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
 """
 function project!(state::MixedStabilizer,pauli::PauliOperator;phases::Bool=true)
-    return _project!(state,pauli;phases=Val(phases))
+    @valbooldispatch _project!(state,pauli;phases=Val(phases)) phases
 end
 
 function _project!(stabilizer::Stabilizer,pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr,Bp}
@@ -338,7 +336,7 @@ end
     end
 end
 
-function _project!(d::Union{Destabilizer,MixedDestabilizer},pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr, Bp}
+function _project!(d::Destabilizer,pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr, Bp} # repetition between Destabilizer and MixedDestabilizer, but the redundancy makes the two codes slightly simpler and easier to infer
     anticommutes = 0
     tab = d.tab
     stabilizer = stabilizerview(d)
@@ -357,6 +355,39 @@ function _project!(d::Union{Destabilizer,MixedDestabilizer},pauli::PauliOperator
                                    :project!,
                                    :Destabilizer))
         end
+        if Bkr
+            new_pauli = zero(pauli)
+            new_pauli.phase[] = pauli.phase[]
+            for i in 1:r
+                comm(pauli,destabilizer,i)!=0 && mul_left!(new_pauli, stabilizer, i, phases=phases)
+            end
+            result = new_pauli.phase[]
+        else
+            result = nothing
+        end
+    else
+        anticomm_update_rows(tab,pauli,r,n,anticommutes,phases)
+        destabilizer[anticommutes] = stabilizer[anticommutes]
+        stabilizer[anticommutes] = pauli
+        result = nothing
+    end
+    d, anticommutes, result
+end
+
+function _project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr, Bp} # repetition between Destabilizer and MixedDestabilizer, but the redundancy makes the two codes slightly simpler and easier to infer
+    anticommutes = 0
+    tab = d.tab
+    stabilizer = stabilizerview(d)
+    destabilizer = destabilizerview(d)
+    r = trusted_rank(d)
+    n = length(d) # not `nqubits(d)` in case we have an incomplete tableau    # Check whether we anticommute with any of the stabilizer rows
+    for i in 1:r # The explicit loop is faster than anticommutes = findfirst(row->comm(pauli,stabilizer,row)!=0x0, 1:r); both do not allocate.
+        if comm(pauli,stabilizer,i)!=0x0
+            anticommutes = i
+            break
+        end
+    end
+    if anticommutes == 0
         anticomlog = 0
         # Check whether we anticommute with any of the logical X rows
         for i in r+1:n # The explicit loop is faster than findfirst.
@@ -383,7 +414,7 @@ function _project!(d::Union{Destabilizer,MixedDestabilizer},pauli::PauliOperator
                 rowswap!(tab, r+1+n, anticomlog)
             end
             anticomm_update_rows(tab,pauli,r+1,n,r+1,phases)
-            d.rank += 1
+            d.rank+=1
             anticommutes = d.rank
             tab[r+1] = tab[n+r+1]
             tab[n+r+1] = pauli
@@ -416,8 +447,7 @@ A faster special-case version of [`project!`](@ref).
 See also: [`project!`](@ref), [`projectXrand!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
 """
 function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
-    _phases = Val(phases)
-    project_cond!(d,qubit,Val(isZ),Val((true,false));keep_result,phases=_phases)
+    @valbooldispatch project_cond!(d,qubit,Val(isZ),Val((true,false));keep_result,phases=Val(phases)) phases
 end
 
 """
@@ -427,8 +457,7 @@ A faster special-case version of [`project!`](@ref).
 See also: [`project!`](@ref), [`projectZrand!`](@ref), [`projectY!`](@ref), [`projectX!`](@ref).
 """
 function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
-    _phases = Val(phases)
-    project_cond!(d,qubit,Val(isX),Val((false,true));keep_result,phases=_phases)
+    @valbooldispatch project_cond!(d,qubit,Val(isX),Val((false,true));keep_result,phases=Val(phases))
 end
 
 """
@@ -438,8 +467,7 @@ A faster special-case version of [`project!`](@ref).
 See also: [`project!`](@ref), [`projectYrand!`](@ref), [`projectX!`](@ref), [`projectZ!`](@ref).
 """
 function projectY!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
-    _phases = Val(phases)
-    project_cond!(d,qubit,Val(isXorZ),Val((true,true));keep_result,phases=_phases)
+    @valbooldispatch project_cond!(d,qubit,Val(isXorZ),Val((true,true));keep_result,phases=Val(phases))
 end
 
 @inline isX(tab,row,col) = tab[row,col][1]
@@ -545,7 +573,7 @@ See also: [`project!`](@ref), [`projectX!`](@ref), [`projectZrand!`](@ref), [`pr
 """
 function projectXrand!(state, qubit)
     _, anticom, res = projectX!(state, qubit)
-    anticom>0 && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
+    isnothing(res) && (res = tab(stabilizerview(state)).phases[anticom] = rand((0x0, 0x2)))
     return state, res
 end
 
@@ -560,7 +588,7 @@ See also: [`project!`](@ref), [`projectZ!`](@ref), [`projectXrand!`](@ref), [`pr
 """
 function projectZrand!(state, qubit)
     _, anticom, res = projectZ!(state, qubit)
-    anticom>0 && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
+    isnothing(res) && (res = tab(stabilizerview(state)).phases[anticom] = rand((0x0, 0x2)))
     return state, res
 end
 
@@ -575,7 +603,7 @@ See also: [`project!`](@ref), [`projectY!`](@ref), [`projectXrand!`](@ref), [`pr
 """
 function projectYrand!(state, qubit)
     _, anticom, res = projectY!(state, qubit)
-    anticom>0 && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
+    isnothing(res) && (res = tab(stabilizerview(state)).phases[anticom] = rand((0x0, 0x2)))
     return state, res
 end
 
@@ -590,7 +618,7 @@ See also: [`project!`](@ref), [`projectXrand!`](@ref), [`projectZrand!`](@ref), 
 """
 function projectrand!(state, pauli)
     _, anticom, res = project!(state, pauli)
-    anticom>0 && (res = stabilizerview(state).phases[anticom] = rand((0x0, 0x2)))
+    isnothing(res) && (res = tab(stabilizerview(state)).phases[anticom] = rand((0x0, 0x2)))
     return state, res
 end
 
@@ -677,12 +705,12 @@ function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubit
         _, anticomm, res = project!(s,expanded, phases=phases) # TODO make an `apply_measurement_phase!(project!(...), phase)`
         sv =  stabilizerview(s)
         if anticomm!=0 # Does not commute with the stabilizer or logical ops
-            sv.phases[anticomm] = pauli.phase[]
+            tab(sv).phases[anticomm] = pauli.phase[]
         else # Commutes with everyone
             if res!=0 && phases # TODO many of the checks below were already done by project!; find a way to not repeat them
                 destab = destabilizerview(s)
                 r = LinearAlgebra.rank(s)
-                loc = findfirst(i->comm(pauli,destab,i)!=0, 1:r)
+                loc = findfirst(i->comm(pauli,destab,i)!=0, 1:r)::Int # `nothing` should not be a possible answer
                 for i in loc+1:r
                     if comm(pauli, destab, i)!=0
                         mul_left!(s, i, loc; phases=_phases)
@@ -709,4 +737,131 @@ function expect(p::PauliOperator, s::AbstractStabilizer)
     result === 0x01 && return im
     result === 0x02 && return -1
     result === 0x03 && return -im
+end
+
+"""Put source tableau in target tableau at given row and column. Assumes target location is zeroed out.""" # TODO implement a getindex setindex interface to this
+@inline function puttableau!(target::Tableau{V1,M1}, source::Tableau{V2,M2}, row::Int, col::Int; phases::Val{B}=Val(true)) where {B,V1,V2,T<:Unsigned,M1<:AbstractMatrix{T},M2<:AbstractMatrix{T}}
+    xzs = target.xzs
+    ph = target.phases
+    sxzs = source.xzs
+    sph = source.phases
+    r,n = size(source)
+    bₗ = _div(T,col) + 1
+    bᵣ = bₗ + 1
+    eₗ = bₗ + _div(T,n-1)
+    eᵣ = _div(T,col+n-1) + 1
+    shiftₗ = _mod(T,col)
+    shiftᵣ = 8*sizeof(T)-shiftₗ
+    for i in 1:r
+    @inbounds @simd for j in 0:eₗ-bₗ # TODO more simdification
+        xzs[bₗ+j,row+i] |= sxzs[j+1,i] >>> -shiftₗ
+        xzs[end÷2+bₗ+j,row+i] |= sxzs[end÷2+j+1,i] >>> -shiftₗ
+    end
+    @inbounds @simd for j in 0:eᵣ-bᵣ
+        xzs[bᵣ+j,row+i] |= sxzs[j+1,i] >>> shiftᵣ
+        xzs[end÷2+bᵣ+j,row+i] |= sxzs[end÷2+j+1,i] >>> shiftᵣ
+    end
+    end
+    B && (ph[row+1:row+r] .= sph)
+    target, row+r, col+n
+end
+
+function puttableau!(target::Stabilizer{T1}, source::Stabilizer{T2}, row::Int, col::Int; phases::Val{B}=Val(true)) where {B,T1,T2}
+    puttableau!(tab(target), tab(source), row, col; phases)
+end
+function puttableau!(target::Tableau, source::Stabilizer{T2}, row::Int, col::Int; phases::Val{B}=Val(true)) where {B,T2}
+    puttableau!(target, tab(source), row, col; phases)
+end
+function puttableau!(target::Stabilizer{T1}, source::Tableau, row::Int, col::Int; phases::Val{B}=Val(true)) where {B,T1}
+    puttableau!(tab(target), source, row, col; phases)
+end
+
+"""Unexported low-level function that removes a column (by shifting all columns to the right of the target by one step to the left)
+
+Because Tableau is not mutable we return a new Tableau with the same (modified) xzs array."""
+function remove_column!(s::Tableau{V,M}, col::Int) where {V,T<:Unsigned,M<:AbstractMatrix{T}}
+    rows,cols=size(s)
+    xzs = s.xzs
+    big = _div(T,col-1) + 1
+    nbig = size(s.xzs,1)÷2
+    shiftᵣ = 8*sizeof(T)-1
+    zero_span = ~zero(T) << _mod(T,col-1)
+    zero_first = ~zero(T) >> 1
+    for i in 1:rows # TODO more simdification
+        xzs[big,i]        = (xzs[big,i]       & ~zero_span) | ( zero_span & (xzs[big,i]       >>> 1))
+        xzs[end÷2+big,i]  = (xzs[end÷2+big,i] & ~zero_span) | ( zero_span & (xzs[end÷2+big,i] >>> 1))
+        for j in big+1:nbig
+            xzs[j-1,i]        = (xzs[j-1,i]       & zero_first) | (xzs[j,i]       << shiftᵣ)
+            xzs[end÷2+j-1,i]  = (xzs[end÷2+j-1,i] & zero_first) | (xzs[end÷2+j,i] << shiftᵣ)
+            xzs[j,i] = xzs[j,i] >> 1
+            xzs[end÷2+j,i] = xzs[end÷2+j,i] >> 1
+        end
+    end
+    Tableau(s.phases, nqubits(s)-1, s.xzs)
+end
+remove_column!(s::Stabilizer, col::Int) = Stabilizer(remove_column!(tab(s),col))
+
+"""Unexported low-level function that moves row i to row j.
+
+Used on its own, this function will break invariants. Meant to be used in `_remove_rowcol!`.
+"""
+@inline function _rowmove!(s::Tableau, i, j; phases::Val{B}=Val(true)) where B
+    (i == j) && return
+    B && begin s.phases[j] = s.phases[i] end
+    @inbounds @simd for k in 1:size(s.xzs,1)
+        s.xzs[k,j] = s.xzs[k,i]
+    end
+end
+@inline _rowmove!(s::Stabilizer, i, j; phases::Val{B}=Val(true)) where B = _rowmove!(tab(s), i, j; phases)
+
+"""Unexported low-level function that removes a row (by shifting all rows up as necessary)
+
+Because MixedDestabilizer is not mutable we return a new MixedDestabilizer with the same (modified) xzs array.
+
+Used on its own, this function will break invariants. Meant to be used with `projectremove!`.
+"""
+function _remove_rowcol!(s::MixedDestabilizer, r,c)
+    t = tab(s)
+    rows, cols = size(t)
+    t = remove_column!(t,c) # TODO col and row removal should be done in the same loop, not two separate loops
+    for i in r+1:cols+r-1
+        _rowmove!(t, i, i-1)
+    end
+    for i in cols+r+1:rows
+        _rowmove!(t, i, i-2)
+    end
+    oldrank = rank(s)
+    newrank = r<=oldrank ? oldrank-1 : oldrank
+    MixedDestabilizer(Tableau((@view t.phases[1:end-2]),cols-1,(@view t.xzs[:,1:end-2])), newrank)
+end
+
+#=
+"""Unexported low-level function that projects a qubit and returns the result while making the tableau smaller by a qubit.
+
+Because MixedDestabilizer is not mutable we return a new MixedDestabilizer with the same (modified) xzs array.
+"""
+function projectremove!(s::MixedDestabilizer, projfunc::F, qubit) where {F<:Union{typeof(projectX!),typeof(projectY!),typeof(projectZ!)}}
+    error("can not be implemented in the style of project!, because one can not change `res` after the row has been removed")
+end
+=#
+
+"""Unexported low-level function that projects a qubit and returns the result while making the tableau smaller by a qubit.
+
+Because MixedDestabilizer is not mutable we return a new MixedDestabilizer with the same (modified) xzs array.
+"""
+function projectremoverand!(s::MixedDestabilizer, projfunc::F, qubit) where {F<:Union{typeof(projectX!),typeof(projectY!),typeof(projectZ!)}}
+    _, anticom, res = projfunc(s, qubit)
+    if anticom!=0
+        res = rand((0x0,0x2))
+        phases(stabilizerview(s))[anticom] = res
+    end
+    r = rank(s)
+    traceout!(s,[qubit]) # TODO this can be optimized thanks to the information already known from projfunc
+    s = _remove_rowcol!(s, r, qubit)
+    s, res
+end
+
+function traceoutremove!(s::MixedDestabilizer, qubit)
+    traceout!(s,[qubit]) # TODO this can be optimized thanks to the information already known from projfunc
+    s = _remove_rowcol!(s, nqubits(s), qubit)
 end

@@ -135,12 +135,13 @@ tableau data structure). It is stored in memory as a phase list and a bit-matrix
 for X and Z components. It can be instantiated by an `S` string, or with a
 number of different constructors.
 
-For data structures that build upon this tableau representation
-to track other useful information, consider
-[`Destabilizer`](@ref),
-[`MixedStabilizer`](@ref),
-and [`MixedDestabilizer`](@ref).
-See also the [data structures discussion page](@ref Choosing-Appropriate-Data-Structure).
+!!! tip "Stabilizers and Destabilizers"
+    In many cases you probably would prefer to use the [`MixedDestabilizer`](@ref)
+    data structure, as it caries a lot of useful additional information, like tracking
+    rank and destabilizer operators. `Stabilizer` has mostly a pedagogical value, and it
+    is also used for slightly faster simulation of a particular subset of Clifford
+    operations.
+    See also the [data structures discussion page](@ref Choosing-Appropriate-Data-Structure).
 
 ```jldoctest
 julia> S"-XX
@@ -211,8 +212,8 @@ julia> s = S"-XXX
 + ZZ_
 - _ZZ
 
-julia> s.phases, s.nqubits, s.xzs
-(UInt8[0x02, 0x00, 0x02], 3, UInt64[0x0000000000000007 0x0000000000000000 0x0000000000000000; 0x0000000000000000 0x0000000000000003 0x0000000000000006])
+julia> phases(s), tab(s).xzs
+(UInt8[0x02, 0x00, 0x02], UInt64[0x0000000000000007 0x0000000000000000 0x0000000000000000; 0x0000000000000000 0x0000000000000003 0x0000000000000006])
 ```
 
 And there are convenience functions that can extract the corresponding binary
@@ -275,6 +276,13 @@ julia> s
 ```
 
 # [Projective Measurements](@id Projective-Measurements)
+
+The [`project!`](@ref) function is used to perform generic projective measurements.
+
+!!! tip "Single qubit projections"
+    If you know your Pauli measurement operator acts on a single qubit, there are
+    much faster projection functions available, discussed in the next section.
+    Namely [`projectX!`](@ref), [`projectY!`](@ref), and [`projectZ!`](@ref).
 
 To observe the effect of different projections, we will start with a GHZ state.
 
@@ -353,7 +361,6 @@ In many circumstances only a single-qubit operator is being measured. In that ca
 
 If you do not need all this boilerplate, and especially if you want to perform the randomization automatically, you can use the gate-like "symbolic" objects [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref), that perform the measurement and the necessary randomization of phase. If the measurement result is to be stored, you can use the [`Register`](@ref) structure that stores both stabilizer tableaux and bit values.
 
-<!-- # TODO make a jldoctest -->
 ```
 julia> state = Register(ghz(3), [false,false])
 Register{Vector{UInt8}, Matrix{UInt64}}(Rank 3 stabilizer
@@ -692,3 +699,7 @@ They are the [`MixedStabilizer`](@ref) and [`MixedDestabilizer`](@ref) structure
 described in [Mixed States](@ref Mixed-Stabilizer-States).
 More information that can be seen in the [data structures page](@ref Choosing-Appropriate-Data-Structure),
 which expands upon the algorithms available for each structure.
+
+# Random States and Circuits
+
+[random_clifford](@ref), [random_stabilizer](@ref), and [`enumerate_cliffords`](@ref) can be used for the generation of random states.

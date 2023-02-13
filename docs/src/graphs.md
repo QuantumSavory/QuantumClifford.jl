@@ -57,8 +57,7 @@ julia> s = ghz(4)
 + _ZZ_
 + __ZZ
 
-julia> g, h_idx, ip_idx, z_idx = graphstate(s)
-({4, 3} undirected simple Int64 graph, [2, 3, 4], Int64[], Int64[])
+julia> g, h_idx, ip_idx, z_idx = graphstate(s);
 
 julia> gate = graph_gate(h_idx, ip_idx, z_idx, nqubits(s))
 X___ ⟼ + X___

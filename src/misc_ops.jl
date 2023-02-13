@@ -19,22 +19,45 @@ end
 """A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`.
 
 `apply!(state, cliff, indices)` and `apply!(state, SparseGate(cliff, indices))` give the same result."""
-struct SparseGate{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractCliffordOperator
-    cliff::CliffordOperator{Tzv,Tm}
+struct SparseGate{T<:Tableau} <: AbstractCliffordOperator # TODO simplify type parameters (remove nesting)
+    cliff::CliffordOperator{T}
     indices::Vector{Int}
 end
+
+SparseGate(c,t::Tuple) = SparseGate(c,collect(t))
 
 function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
     apply!(state, g.cliff, g.indices; kwargs...)
 end
 
 """Reset the specified qubits to the given state."""
-struct Reset{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractOperation 
-    resetto::Stabilizer{Tzv, Tm}
+struct Reset{T<:Tableau} <: AbstractOperation # TODO simplify type parameters (remove nesting)
+    resetto::Stabilizer{T}
     indices::Vector{Int}
 end
 
 function apply!(state::AbstractStabilizer, reset::Reset)
     reset_qubits!(state, reset.resetto, reset.indices)
-    return s
+    return state
+end
+
+"""A Bell measurement performing the correlation measurement corresponding to the given `pauli` projections on the qubits at the selected indices."""
+struct BellMeasurement <: AbstractOperation
+    measurements::Vector{Union{sMX{Nothing},sMY{Nothing},sMZ{Nothing}}}
+    parity::Bool
+end
+BellMeasurement(meas) = BellMeasurement(meas,false)
+
+# TODO this seems unnecessarily complicated
+function applywstatus!(s::AbstractQCState, m::BellMeasurement)
+    res = 0x00
+    for meas in m.measurements
+        s,r = projectrand!(s,meas)
+        res ⊻= r
+    end
+    if iseven(res>>1+m.parity)
+        return s, continue_stat
+    else
+        return s, failure_stat
+    end
 end

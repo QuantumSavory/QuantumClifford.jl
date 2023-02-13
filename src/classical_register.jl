@@ -1,13 +1,15 @@
 """A register, representing the state of a computer including both a tableaux and an array of classical bits (e.g. for storing measurement results)"""
-struct Register{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractQCState
-    stab::MixedDestabilizer{Tzv,Tm}
+struct Register{T<:Tableau} <: AbstractQCState # TODO simplify type parameters (remove nesting)
+    stab::MixedDestabilizer{T}
     bits::Vector{Bool}
-    Register(s::MixedDestabilizer{A,B}, bits) where {A,B} = new{A,B}(s,bits)
+    Register(s::MixedDestabilizer{T}, bits) where {T} = new{T}(s,bits)
 end
 
 Register(s,bits) = Register(MixedDestabilizer(s), bits)
+Register(s) = Register(s, Bool[])
 
 Base.copy(r::Register) = Register(copy(r.stab),copy(r.bits))
+Base.:(==)(l::Register,r::Register) = l.stab==r.stab && l.bits==r.bits
 
 stabilizerview(r::Register) = stabilizerview(quantumstate(r))
 destabilizerview(r::Register) = destabilizerview(quantumstate(r))
@@ -24,6 +26,8 @@ function quantumstate end
 quantumstate(s::AbstractStabilizer) = s
 quantumstate(r::Register) = r.stab
 
+tab(r::Register) = tab(quantumstate(r))
+
 function apply!(r::Register, args...; kwargs...)
     apply!(quantumstate(r), args...; kwargs...)
     r
@@ -34,22 +38,48 @@ function apply!(r::Register, op::AbstractCliffordOperator, indices; kwargs...)
 end
 
 function apply!(r::Register, m::sMX{T}) where T
-    _, res = projectXrand!(quantumstate(r),m.qubit)
+    _, res = projectXrand!(r,m.qubit)
     T==Int && (bitview(r)[m.bit] = iszero(res))
     r
 end
 function apply!(r::Register, m::sMY{T}) where T
-    _, res = projectYrand!(quantumstate(r),m.qubit)
+    _, res = projectYrand!(r,m.qubit)
     T==Int && (bitview(r)[m.bit] = iszero(res))
     r
 end
 function apply!(r::Register, m::sMZ{T}) where T
-    _, res = projectZrand!(quantumstate(r),m.qubit)
+    _, res = projectZrand!(r,m.qubit)
     T==Int && (bitview(r)[m.bit] = iszero(res))
     r
 end
 function apply!(r::Register, m::PauliMeasurement{A,B,T}) where {A,B,T}
-    _, res = projectrand!(quantumstate(r),m.pauli)
-    T==Int && (bitview(r)[m.bit] = iszero(res))
+    _, res = projectrand!(r,m.pauli)
+    T==Int && (bitview(r)[m.storagebit] = iszero(res))
     r
+end
+function projectXrand!(r::Register, m)
+    q = quantumstate(r)
+    _, res = projectXrand!(q,m)
+    r, res
+end
+function projectYrand!(r::Register, m)
+    q = quantumstate(r)
+    _, res = projectYrand!(q,m)
+    r, res
+end
+function projectZrand!(r::Register, m)
+    q = quantumstate(r)
+    _, res = projectZrand!(q,m)
+    r, res
+end
+function projectrand!(r::Register, m)
+    q = quantumstate(r)
+    _, res = projectrand!(q,m)
+    r, res
+end
+
+function traceout!(r::Register, arg)
+    q = quantumstate(r)
+    traceout!(q,arg)
+    q
 end

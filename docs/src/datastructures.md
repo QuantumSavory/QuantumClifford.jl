@@ -74,6 +74,4 @@ We do not use boolean arrays to store information about the qubits as this would
 Moreover, how a tableau is stored in memory can affect performance, as a row-major storage
 usually permits more efficient use of the CPU cache (for the particular algorithms we use).
 
-Both of these parameters are [benchmarked](bench_intsize.png) (testing the application of a Pauli operator, which is an $\mathcal{O}(n^2)$ operation; and testing the canonicalization of a Stabilizer, which is an $\mathcal{O}(n^3)$ operation). The code for these benchmarks can be found in the `benchmarks` folder. Row-major UInt64 is the best performing and it is  used by default in this library. 
-
-All benchmarks were executed on a Ryzen Zen1 CPU.
+Both of these parameters are [benchmarked](bench_intsize.png) (testing the application of a Pauli operator, which is an $\mathcal{O}(n^2)$ operation; and testing the canonicalization of a Stabilizer, which is an $\mathcal{O}(n^3)$ operation). Row-major UInt64 is the best performing and it is  used by default in this library.

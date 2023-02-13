@@ -2,7 +2,7 @@
 Clifford Operator specified by the mapping of the basis generators.
 
 ```jldoctest
-julia> CNOT
+julia> tCNOT
 X_ ⟼ + XX
 _X ⟼ + _X
 Z_ ⟼ + Z_
@@ -16,25 +16,17 @@ Z ⟼ + Z
 julia> stab = S"XI
                 IZ";
 
-julia> entangled = CNOT*stab
+julia> entangled = tCNOT*stab
 + XX
 + ZZ
 ```
 
-You can convert a stabilizer into a Clifford Operator (if necessary, the destabilizers are calculated on the fly):
-
-```jldoctest
-julia> CliffordOperator(S"Y")
-X ⟼ + Z
-Z ⟼ + Y
-
-
-julia> CliffordOperator(S"YY")
+julia> CliffordOperator(T"YY")
 ERROR: DimensionMismatch("Input tableau should be square (in which case the destabilizers are calculated) or of size 2n×n (in which case it is used directly).")
 [...]
 ```
 
-[`Destabilizer`](@ref) can also be converted (actually, internally, square stabilizer tableaux are first converted to destabilizer tableaux).
+[`Destabilizer`](@ref) can also be converted.
 ```jldoctest
 julia> d = Destabilizer(S"Y")
 + Z
@@ -46,27 +38,27 @@ X ⟼ + Z
 Z ⟼ + Y
 ```
 """
-struct CliffordOperator{Tzv<:AbstractVector{UInt8},Tm<:AbstractMatrix{<:Unsigned}} <: AbstractCliffordOperator
-    tab::Stabilizer{Tzv,Tm}
-    function CliffordOperator(stab::Stabilizer{Tzv,Tm}) where {Tzv,Tm}
-        if size(stab,1)==2*size(stab,2)
-            new{Tzv,Tm}(stab)
-        elseif size(stab,1)==size(stab,2)
-            destab = tab(Destabilizer(stab))
-            new{typeof(destab.phases),typeof(destab.xzs)}(destab) # TODO be smarter about type signatures here... there should be a better way
+struct CliffordOperator{T<:Tableau} <: AbstractCliffordOperator
+    tab::T
+    function CliffordOperator(tab::Tableau)
+        if size(tab,1)==2*size(tab,2)
+            new{typeof(tab)}(tab)
+        #elseif size(stab,1)==size(stab,2) # TODO be able to work with squara tableaux (by reversing all row operations)
+        #    destab = tab(Destabilizer(stab))
+        #    new{typeof(destab.phases),typeof(destab.xzs)}(destab) # TODO be smarter about type signatures here... there should be a better way
         else
-            throw(DimensionMismatch("Input tableau should be square (in which case the destabilizers are calculated) or of size 2n×n (in which case it is used directly)."))
+            throw(DimensionMismatch("Input tableau should be of size 2n×n (top half is the X mappings and the bottom half are the Z mappings)."))
         end
     end
 end
 
 macro C_str(a)
-    tab = _S_str(a)
+    tab = _T_str(a)
     CliffordOperator(tab)
 end
 
 CliffordOperator(op::CliffordOperator) = op
-CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Stabilizer(paulis))
+CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Tableau(paulis))
 CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
 
 Base.:(==)(l::CliffordOperator, r::CliffordOperator) = l.tab == r.tab
@@ -99,20 +91,23 @@ end
 
 @inline nqubits(c::CliffordOperator) = nqubits(c.tab)
 
+Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.tab))
+Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Tableau, 2n, n))
+
 function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
     tab = copy(r.tab)
-    apply!(tab,l)
+    apply!(Stabilizer(tab),l) # TODO maybe not the most elegant way to perform apply!(::Tableau, gate)
     CliffordOperator(tab)
 end
 
 function apply!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
-    _apply!(tab(r),l;phases=Val(phases))
+    @valbooldispatch _apply!(Stabilizer(tab(r)),l;phases=Val(phases)) phases # TODO maybe not the most elegant way to perform apply!(::Tableau, gate)
     r
 end
 
 # TODO create Base.permute! and getindex(..., permutation_array)
-function permute(c::CliffordOperator,p::AbstractArray{T,1} where T) # TODO this is a slow stupid implementation
-    CliffordOperator(Stabilizer([c.tab[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
+function permute(c::CliffordOperator,p) # TODO this is a slow stupid implementation
+    CliffordOperator(Tableau([c.tab[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
 end
 
 """Nonvectorized version of `apply!` used for unit tests."""

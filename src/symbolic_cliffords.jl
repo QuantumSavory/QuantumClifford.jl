@@ -69,7 +69,7 @@ macro qubitop1(name, kernel)
             q::Int
         end
         @doc $docstring $prefixname
-        @inline $(esc(:qubit_kernel))(::$prefixname, x, z) = $kernel 
+        @inline $(esc(:qubit_kernel))(::$prefixname, x, z) = $kernel
     end
 end
 
@@ -111,7 +111,7 @@ _Z_ ⟼ - _X_
 __Z ⟼ + __Z
 
 julia> typeof(t_op)
-CliffordOperator{Vector{UInt8}, Matrix{UInt64}}
+CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}
 
 julia> CliffordOperator(op, 1, compact=true) # You can also extract just the non-trivial part of the tableau
 X ⟼ - Y
@@ -181,13 +181,13 @@ CliffordOperator(op::AbstractSingleQubitOperator, n; kw...) = CliffordOperator(S
 function CliffordOperator(op::SingleQubitOperator, n; compact=false)
     if compact
         n==1 || throw(ArgumentError("Set `n=1` as a `SingleQubitOperator` being compacted (`compact=true`) has to result in a 1×1 `CliffordOperator`."))
-        return CliffordOperator(Stabilizer([op.px ? 0x2 : 0x0, op.pz ? 0x2 : 0x0],[op.xx op.xz; op.zx op.zz]))
+        return CliffordOperator(Tableau([op.px ? 0x2 : 0x0, op.pz ? 0x2 : 0x0],[op.xx op.xz; op.zx op.zz]))
     else
         n >= op.q || throw(DimensionMismatch("Set a larger `n`, otherwise the `SingleQubitOperator` can not fit in the allocated `CliffordOperator`. Use `compact=true` if you want to discard the target index."))
         c = one(CliffordOperator, n)
         c[op.q,op.q] = op.xx, op.xz # TODO define an `embed` helper function
         c[n+op.q,op.q] = op.zx, op.zz
-        c.tab.phases[op.q] = op.px ? 0x2 : 0x0 # TODO define a `phasesview` or `phases` helper function 
+        c.tab.phases[op.q] = op.px ? 0x2 : 0x0 # TODO define a `phasesview` or `phases` helper function
         c.tab.phases[n+op.q] = op.pz ? 0x2 : 0x0
         return c
     end
@@ -197,7 +197,7 @@ CliffordOperator(::Type{O}) where {O<:AbstractSingleQubitOperator} = CliffordOpe
 
 function Base.show(io::IO, op::AbstractSingleQubitOperator)
     print(io, "Symbolic single-qubit gate on qubit $(op.q)\n")
-    show(io, CliffordOperator(typeof(op)))
+    show(io, CliffordOperator(op,1;compact=true))
 end
 
 """Random symbolic single-qubit Clifford applied to qubit at index `qubit`.
@@ -205,7 +205,7 @@ end
 See also: [`SingleQubitOperator`](@ref), [`random_clifford`](@ref)
 """
 function random_clifford1(rng::AbstractRNG, qubit)
-    return enumerate_single_qubit_gates(rand(rng,1:6),qubit=qubit,phases=rand(rng,Bool,2))
+    return enumerate_single_qubit_gates(rand(rng,1:6),qubit=qubit,phases=(rand(rng,Bool),rand(rng,Bool)))
 end
 random_clifford1(qubit) = random_clifford1(GLOBAL_RNG, qubit)
 
@@ -247,7 +247,7 @@ macro qubitop2(name, kernel)
             q2::Int
         end
         @doc $docstring $prefixname
-        @inline $(esc(:qubit_kernel))(::$prefixname, x1, z1, x2, z2) = $kernel 
+        @inline $(esc(:qubit_kernel))(::$prefixname, x1, z1, x2, z2) = $kernel
     end
 end
 
@@ -264,9 +264,11 @@ function CliffordOperator(op::AbstractTwoQubitOperator, n; compact=false)
         c = one(CliffordOperator, n)
         _c = CliffordOperator(typeof(op))
         for (i,q) in ((1,op.q1),(2,op.q2))
-            c[q,q] = _c[i,i] # TODO define an `embed` helper function
-            c[n+q,q] = _c[n+i,i]
-            c.tab.phases[q] = _c.tab.phases[i] # TODO define a `phasesview` or `phases` helper function 
+            for (ii,qq) in ((1,op.q1),(2,op.q2))
+                c[q,qq] = _c[i,ii] # TODO define an `embed` helper function
+                c[n+q,qq] = _c[n+i,ii]
+            end
+            c.tab.phases[q] = _c.tab.phases[i] # TODO define a `phasesview` or `phases` helper function
             c.tab.phases[n+q] = _c.tab.phases[n+i]
         end
         return c

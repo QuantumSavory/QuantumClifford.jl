@@ -19,59 +19,35 @@ function single_y(n,i)
     p
 end
 
-nchunks(i::Int) = 2*( (i-1) ÷ (8*sizeof(UInt)) + 1 )
-Base.zero(::Type{<:PauliOperator}, q) = PauliOperator(zeros(UInt8), q, zeros(UInt, nchunks(q)))
-Base.zero(p::PauliOperator) = zero(PauliOperator, nqubits(p))
-function Base.zero(::Type{<:Stabilizer}, r, q)
-    phases = zeros(UInt8,r)
-    xzs = zeros(UInt, nchunks(q), r)
-    Stabilizer(phases, q, xzs)::Stabilizer{Vector{UInt8},Matrix{UInt}}
-end
-Base.zero(::Type{<:Stabilizer}, q) = zero(Stabilizer, q, q)
-Base.zero(s::Stabilizer) = zero(Stabilizer, length(s), nqubits(s))
-Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.tab))
-Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Stabilizer, 2n, n))
-
-@inline function zero!(p::PauliOperator)
-    fill!(p.xz, zero(eltype(p.xz)))
-    p.phase[] = 0x0
-    p
-end
-
-@inline function zero!(s::Stabilizer,i)
-    s.xzs[:,i] .= zero(eltype(s.xzs))
-    s.phases[i] = 0x0
-    s
-end
-
-# TODO make faster by using fewer initializations, like in Base.zero above
-function Base.one(::Type{<:Stabilizer}, n; basis=:Z) # TODO support `basis` in all other `one(::[Mixed][De]Stabilizer)` functions
+# TODO make faster by using fewer initializations, like in Base.zero
+function Base.one(::Type{T}, n; basis=:Z) where {T<:Tableau}# TODO support `basis` in all other `one(::[Mixed][De]Stabilizer)` functions
     if basis==:X
-        Stabilizer(LinearAlgebra.I(n),falses(n,n))
+        T(LinearAlgebra.I(n),falses(n,n))
     elseif basis==:Y
-        Stabilizer(LinearAlgebra.I(n),LinearAlgebra.I(n))
+        T(LinearAlgebra.I(n),LinearAlgebra.I(n))
     elseif basis==:Z
-        Stabilizer(falses(n,n),LinearAlgebra.I(n))
+        T(falses(n,n),LinearAlgebra.I(n))
     else
         throw(ErrorException("`basis` should be one of :X, :Y, or :Z"))
     end
 end
-Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, nqubits(s); basis=basis)
-Base.one(::Type{<:Destabilizer}, n) = Destabilizer(vcat(one(Stabilizer, n, basis=:X),one(Stabilizer, n, basis=:Z)))
+Base.one(::Type{<:Stabilizer}, n; basis=:Z) = Stabilizer(one(Tableau,n; basis)) # TODO make it type preserving
+Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, nqubits(s); basis)
+Base.one(::Type{<:Destabilizer}, n) = Destabilizer(vcat(one(Tableau, n, basis=:X),one(Tableau, n, basis=:Z)))
 function Base.one(::Type{<:MixedStabilizer}, r, n, basis=:Z)
     s = one(Stabilizer, n; basis=basis)
     MixedStabilizer(s,r)
 end
 function Base.one(::Type{<:MixedDestabilizer}, r, n)
-    d = one(Stabilizer, n; basis=:X)
-    s = one(Stabilizer, n; basis=:Z)
+    d = one(Tableau, n; basis=:X)
+    s = one(Tableau, n; basis=:Z)
     MixedDestabilizer(vcat(d,s),r)
 end
 function Base.one(c::CliffordOperator)
     n = nqubits(c)
     one(typeof(c),n)
 end
-Base.one(::Type{<:CliffordOperator}, n) = CliffordOperator(Stabilizer([LinearAlgebra.I(n);falses(n,n)],[falses(n,n);LinearAlgebra.I(n)]))
+Base.one(::Type{<:CliffordOperator}, n) = CliffordOperator(one(Destabilizer,n))
 
 """Prepare one or more Bell pairs (with optional phases).
 
@@ -110,8 +86,8 @@ end
 
 function bell(phase::Tuple{Bool, Bool})
     s = bell()
-    s.phases[1] = phase[1] ? 0x2 : 0x0
-    s.phases[2] = phase[2] ? 0x2 : 0x0
+    phases(s)[1] = phase[1] ? 0x2 : 0x0
+    phases(s)[2] = phase[2] ? 0x2 : 0x0
     s
 end
 
@@ -119,12 +95,10 @@ function bell(phases::AbstractVector{Tuple{Bool, Bool}})
     ⊗((bell(t) for t in phases)...)
 end
 
-function bell(phases::AbstractVector{Bool})
-    s = bell(length(phases)÷2)
+function bell(bellphases::AbstractVector{Bool})
+    s = bell(length(bellphases)÷2)
     for i in 1:length(s)
-        phases[i]
-        s.phases[i] = phases[i] ? 0x2 : 0x0
-        s[i], s.phases[i]
+        phases(s)[i] = bellphases[i] ? 0x2 : 0x0
     end
     s
 end

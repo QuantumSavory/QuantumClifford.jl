@@ -10,7 +10,7 @@ const all_single_qubit_patterns = (
 """Generate a symbolic single-qubit gate given its index. Optionally, set non-trivial phases.
 
 See also: [`enumerate_cliffords`](@ref)."""
-function enumerate_single_qubit_gates(index; qubit=1, phases=(false,false))
+function enumerate_single_qubit_gates(index; qubit=1, phases::Tuple{Bool,Bool}=(false,false))
     @assert index<=6 "Only 6 single-qubit gates exit, up to the choice of phases"
     if phases==(false,false)
         if index==4
@@ -60,7 +60,7 @@ end
         comm(basis, δn+start, i)==0x1 && return i
     end
     # the following hapens only if the input is P"X___..."
-    rowswap!(basis, δn+start, 2padded_n+1)
+    rowswap!(basis, δn+start, 2padded_n+1; phases=Val(false))
     _findanticommGS(basis, start, n, padded_n, δn)
 end
 
@@ -86,7 +86,7 @@ The algorithm is detailed in [koenig2014efficiently](@cite).
 See also: [`enumerate_cliffords`](@ref), [`clifford_cardinality`](@ref)."""
 function symplecticGS(pauli::PauliOperator; padded_n=nqubits(pauli))
     n = nqubits(pauli)
-    basis = zero(Stabilizer, 2padded_n+1, padded_n)
+    basis = zero(Tableau, 2padded_n+1, padded_n)
     δn = padded_n-n
     # fillup the padded tableau
     for i in 1:δn
@@ -104,7 +104,7 @@ function symplecticGS(pauli::PauliOperator; padded_n=nqubits(pauli))
     doneupto = 1
     while doneupto <= n
         i = _findanticommGS(basis, doneupto, n, padded_n, δn)
-        rowswap!(basis, padded_n+δn+doneupto, i; phases=false)
+        rowswap!(basis, padded_n+δn+doneupto, i; phases=Val(false))
         _eliminateGS(basis, doneupto, n, padded_n, δn)
         doneupto += 1
     end

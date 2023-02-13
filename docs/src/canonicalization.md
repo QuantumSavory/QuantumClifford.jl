@@ -1,9 +1,6 @@
 # Canonicalization operations
 
-Four different types of canonicalization operations are implemented. All of them are types of Gaussian elimination.
-
-- `canonicalize!`, `canonicalize_rref!` and `canonicalize_gott!` are similiar to get canonical stabilizer states, with different choices for how to relate the X and Z components.
-- `canonicalize_clip!` fixes the clipped gauge of a stabilizer state.
+Different types of canonicalization operations are implemented. All of them are types of Gaussian elimination.
 
 ## [`canonicalize!`](@ref)
 
@@ -63,11 +60,21 @@ julia> plot(canonicalize_gott!(random_stabilizer(30))[1]; xzcomponents=:together
 
 ## [`canonicalize_clip!`](@ref)
 
-Fix the clipped gauge of a stabilizer state so that:
+Convert to the "clipped" gauge of a stabilizer state resulting in a "river" of non-identity operators around the diagonal.
 
-1. For each qubit, the density of endpoints stay on it equals to 2;
-2. if endpoints on a qubit are both left endpoints or right endpoints, the two Pauli operators are different.
+```@eval
+using Random; Random.seed!(1); using QuantumClifford, QuantumCliffordPlots, Plots
+plot(canonicalize_clip!(random_stabilizer(30)); xzcomponents=:together)
+savefig("plot-clip-together.png"); nothing
+```
+![](plot-clip-together.png)
 
-It is used in [`bigram`](@ref) for bigram of a stabilizer state, which is also related to entanglement entropy.
+The properties of the clipped gauge are:
+
+1. Each qubit is the left/right "endpoint" of exactly two stabilizer rows.
+2. For the same qubit the two endpoints are always different Pauli operators.
+
+This canonicalization is used to derive the [`bigram`](@ref) a stabilizer state,
+which is also related to entanglement entropy in the state.
 
 Introduced in [nahum2017quantum](@cite), with a more detailed explanation of the algorithm in Appendix A of [li2019measurement](@cite).

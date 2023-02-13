@@ -1,5 +1,4 @@
 import Graphs
-import Nemo
 
 """An in-place version of [`graphstate`](@ref)."""
 function graphstate!(stab::Stabilizer)
@@ -8,7 +7,7 @@ function graphstate!(stab::Stabilizer)
     perm = permx[permz]
     h_idx = [perm[i] for i in (r+1):n] # Qubits in which X ↔ Z is needed
     ip_idx = [perm[i] for i in 1:n if stab[i,i]==(true,true)] # Qubits for which Y → X is needed
-    phase_flips = [perm[i] for i in 1:n if stab.phases[i]!=0x0]
+    phase_flips = [perm[i] for i in 1:n if phases(stab)[i]!=0x0]
     graph = Graphs.SimpleGraphFromIterator((
         Graphs.SimpleEdge(perm[i],perm[j])
         for i in 1:n, j in 1:n
@@ -128,7 +127,7 @@ true
 
 See also: [`graph_gatesequence`](@ref)
 """
-function graph_gatesequence(h_idx, ip_idx, z_idx)
+function graph_gatesequence(h_idx::Vector{Int}, ip_idx::Vector{Int}, z_idx::Vector{Int})
     ([sHadamard(i) for i in h_idx], [sInvPhase(i) for i in ip_idx], [sZ(i) for i in z_idx])
 end
 

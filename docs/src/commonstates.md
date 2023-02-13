@@ -7,9 +7,14 @@ DocTestSetup = quote
     rng = StableRNG(42)
 end
 ```
+## States
 
-There are numerous frequently used stabilizer states already implemented in this
-library.
+Stabilizer states can be represented with the [`Stabilizer`](@ref), [`Destabilizer`](@ref), [`MixedStabilizer`](@ref), and [`MixedDestabilizer`](@ref) tableau data structures. You probably want to use [`MixedDestabilizer`](@ref) which supports the widest set of operations.
+
+Moreover, a [`MixedDestabilizer`](@ref) can be stored inside a [`Register`](@ref) together with a set of classical bits in which measurement results can be written.
+
+Below are convenience constructors for common types of states and operators,
+already implemented in this library.
 
 ## Pauli Operators
 
@@ -109,9 +114,10 @@ Rank 2 stabilizer
 + __Z
 ```
 
-## Enumerating all Clifford operations
+## Enumerating all Clifford Operations
 
 The algorithm from [koenig2014efficiently](@cite) can be used to enumerate all Clifford operations on a given number of qubits through [`enumerate_cliffords`](@ref).
+Or one can use [random_clifford](@ref), [random_stabilizer](@ref) to directly sample from that set.
 
 ```jldoctest
 julia> length(enumerate_cliffords(1))

@@ -42,7 +42,7 @@ Otherwise the inner product is `2^(-logdot/2)`.
 The actual inner product can be computed with `LinearAlgebra.dot`.
 
 Based on [garcia2012efficient](@cite)."""
-function logdot(s1::AbstractStabilizer, s2::AbstractStabilizer) # TODO verify rank
+function logdot(s1::AbstractStabilizer, s2::AbstractStabilizer) # TODO verify rank # TODO this is currently very inefficient as we discard the destabilizers and then recreate them
     logdot(stabilizerview(s1),stabilizerview(s2))
 end
 
@@ -53,7 +53,7 @@ function logdot(s1::Stabilizer, s2::Stabilizer)
     if nqubits(s1)!=nqubits(s2)
         throw(DimensionMismatch("Inner product can be calculated only between states with the same number of qubits."))
     end
-    c1_inv = inv(CliffordOperator(copy(s1)))
+    c1_inv = inv(CliffordOperator(tab(MixedDestabilizer(copy(s1)))))
     s2_prime = canonicalize!(c1_inv*s2)
     canonicalize!(s2_prime)
     k = 0
@@ -61,7 +61,7 @@ function logdot(s1::Stabilizer, s2::Stabilizer)
         if any(i->s2_prime[row,i][1], 1:nqubits(s2_prime)) # X or Y
             k += 1
         else
-            if !iszero(s2_prime.phases[row])
+            if !iszero(tab(s2_prime).phases[row])
                 return nothing
             end
         end
@@ -84,17 +84,12 @@ trusted_rank(s::MixedStabilizer) = LinearAlgebra.rank(s)
 trusted_rank(s::MixedDestabilizer) = LinearAlgebra.rank(s)
 
 """Tensor product between operators or tableaux. See also [`tensor`](@ref) and [`tensor_pow`](@ref)."""
-function ⊗ end
-
 function ⊗(ops::AbstractStabilizer...) # TODO optimize this by doing conversion to common type to enable preallocation
     foldl(⊗, ops[2:end], init=ops[1])
 end
 
-"""Tensor product between operators or tableaux. See also [`⊗`](@ref) and [`tensor_pow`](@ref)."""
-const tensor = ⊗
-
 """Repeated tensor product of an operators or a tableau. See also [`⊗`](@ref) and [`tensor_pow`](@ref)."""
-function tensor_pow(op,power)
+function tensor_pow(op::Union{<:AbstractStabilizer,<:AbstractCliffordOperator},power)
     if power==1
         return op
     else
@@ -119,7 +114,7 @@ function ⊗(ops::MixedDestabilizer...)
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)
     rtot = sum(LinearAlgebra.rank, ops)
-    tab = zero(Stabilizer, 2*ntot, ntot)
+    tab = zero(Tableau, 2*ntot, ntot)
     last_svrow = ntot
     last_dvrow = 0
     last_lxrow = rtot
@@ -139,7 +134,7 @@ end
 function ⊗(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)
-    tab = zero(Stabilizer, 2*ntot, ntot)
+    tab = zero(Tableau, 2*ntot, ntot)
     last_zrow = ntot
     last_xrow = 0
     for op in ops
@@ -148,31 +143,4 @@ function ⊗(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer
         _, last_xrow, _ = puttableau!(tab, (@view t[1:end÷2]), last_xrow, last_xrow)
     end
     CliffordOperator(tab)
-end
-
-"""Put source tableau in target tableau at given row and column. Assumes target location is zeroed out.""" # TODO implement a getindex setindex interface to this
-@inline function puttableau!(target::Stabilizer{V1,M1}, source::Stabilizer{V2,M2}, row::Int, col::Int; phases::Bool=true) where {V1,V2,T<:Unsigned,M1<:AbstractMatrix{T},M2<:AbstractMatrix{T}}
-    xzs = target.xzs
-    ph = target.phases
-    sxzs = source.xzs
-    sph = source.phases
-    r,n = size(source)
-    bₗ = _div(T,col)+1
-    bᵣ = bₗ + 1
-    eₗ = bₗ + _div(T,n-1)
-    eᵣ = _div(T,col+n-1)+1
-    shiftₗ = _mod(T,col)
-    shiftᵣ = 8*sizeof(T)-shiftₗ
-    for i in 1:r
-    @inbounds @simd for j in 0:eₗ-bₗ
-        xzs[bₗ+j,row+i] |= sxzs[j+1,i] >>> -shiftₗ
-        xzs[end÷2+bₗ+j,row+i] |= sxzs[end÷2+j+1,i] >>> -shiftₗ
-    end
-    @inbounds @simd for j in 0:eᵣ-bᵣ
-        xzs[bᵣ+j,row+i] |= sxzs[j+1,i] >>> shiftᵣ
-        xzs[end÷2+bᵣ+j,row+i] |= sxzs[end÷2+j+1,i] >>> shiftᵣ
-    end
-    end
-    phases && (ph[row+1:row+r] .= sph)
-    target, row+r, col+n
 end

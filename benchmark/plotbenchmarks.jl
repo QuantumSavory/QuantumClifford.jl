@@ -1,44 +1,83 @@
-using PkgBenchmark: BenchmarkTools
-using Gadfly; import Cairo, Fontconfig
-using DataFrames
+using CairoMakie
+using AlgebraOfGraphics
+using QuantumClifford
 using PkgBenchmark
-using BenchmarkTools
+using DataFrames
+using DataFramesMeta
+using Statistics
+using Glob
 
-versions = [ # The files containing the benchmark results to be plotted.
-]
-
-flatres(br::BenchmarkResults) = flatres(br.benchmarkgroup)
-flatres(bg::BenchmarkGroup) = vcat([[(key*"⋅"*k, f) for (k,f) in flatres(subgroup)] for (key,subgroup) in bg]...)
-flatres(t::BenchmarkTools.Trial) = [("",t)]
-
-df = DataFrame([Dict(:version=>v,:benchmark=>b,:result=>r) for v in versions for (b,r) in flatres(readresults(v))])
-df[:,:time] = (x->median(x).time).(df[:,:result])
-df[:,:memory] = (x->median(x).memory).(df[:,:result])
-df[:,:allocs] = (x->median(x).allocs).(df[:,:result])
-
-df_stacked = stack(df, [:time, :memory, :allocs],)
-
-Gadfly.with_theme(style(highlight_width=0.1mm)) do
-    p = Gadfly.plot(
-        df,
-        x=:version, y=:time,
-        ygroup=:benchmark,
-        Geom.subplot_grid(Geom.line,free_y_axis=true,free_x_axis=true),
-        #Scale.y_log10(),
-        Scale.y_continuous(minvalue=0),
-        Scale.x_discrete(levels=unique(versions)),
-        Guide.xlabel("version"),
-        Guide.ylabel("time"),
-    )
-    img = PNG("all_bench.png", 20cm, 5cm*length(unique(df[:,:benchmark])), dpi=200)
-    draw(img, p)
+function results_to_dataframe(res)
+    recs = []
+    bmg = res.benchmarkgroup
+    for taxon1 in keys(bmg)
+        for taxon2 in keys(bmg[taxon1])
+            for taxon3 in keys(bmg[taxon1][taxon2])
+                best = minimum(bmg[taxon1][taxon2][taxon3])
+                time = best.time
+                memory = best.memory
+                allocs = best.allocs
+                push!(recs, (;taxon1,taxon2,taxon3,time,memory,allocs))
+            end
+        end
+    end
+    DataFrame(recs)
 end
 
-# Geometric mean
-version_time_nomiss = stack(dropmissing(unstack(df, :benchmark, :version, :time)), Not(:benchmark))
-df_geomean = combine(groupby(version_time_nomiss, :variable), :value => (x->exp(sum(log.(x))/length(x))))
-p = Gadfly.plot(df_geomean, x=:variable, y=:value_function,
-    Geom.line(), Guide.xlabel("version"), Guide.ylabel("time"), Scale.y_continuous(minvalue=0),
-)
-img = PNG("geommean_bench.png", dpi=200)
-draw(img, p)
+##
+
+files = glob("*.benchmarkresults")
+subframes = []
+for f in files
+    m = match(r"tag=(v[\d\.]*)-nthreads=(\d)-julia=([\d\.\w]*).benchmarkresults", f)
+    if isnothing(m)
+        @warn "problem with $(f)"
+        continue
+    end
+    sdf = results_to_dataframe(readresults(f))
+    sdf[!,:tag] .= m.captures[1]
+    sdf[!,:threads] .= m.captures[2]
+    sdf[!,:julia] .= m.captures[3]
+    push!(subframes, sdf)
+end
+
+##
+
+df = vcat(subframes...)
+df[!,:fullname] .= df[:,:taxon1] .* "-" .* df[:,:taxon2] .* "-" .* df[:,:taxon3]
+df[!,:groupname] .= df[:,:taxon1] .* "-" .* df[:,:taxon2]
+df[!,:logtime] .= log10.(df[:,:time])
+
+df2 = combine(groupby(df, [:groupname, :taxon1, :tag, :julia, :threads]), :logtime=>mean=>:logtime)
+df1 = combine(groupby(df2, [:taxon1, :tag, :julia, :threads]), :logtime=>mean=>:logtime)
+df0 = combine(groupby(df1, [:tag, :julia, :threads]), :logtime=>mean=>:logtime)
+
+layers = visual(Stairs, step=:center)
+axis = (;width = 500, height = 400, xticklabelrotation=-pi/3)
+facet = (;linkyaxes=:minimal)
+
+##
+
+benchmark_data3 = data(df)
+mappings3 = mapping(:tag, :time, color=:julia, row=:fullname, col=:threads)
+f3 = draw(benchmark_data3 * layers * mappings3; facet, axis)
+save("../benchmarks3.png",f3)
+
+benchmark_data2 = data(df2)
+mappings2 = mapping(:tag, :logtime, color=:julia, row=:groupname, col=:threads)
+f2 = draw(benchmark_data2 * layers * mappings2; facet, axis)
+save("../benchmarks2.png",f2)
+
+benchmark_data1 = data(df1)
+mappings1 = mapping(:tag, :logtime, color=:julia, row=:taxon1, col=:threads)
+f1 = draw(benchmark_data1 * layers * mappings1; facet, axis)
+save("../benchmarks1.png",f1)
+
+benchmark_data0 = data(df0)
+mappings0 = mapping(:tag, :logtime, color=:julia, col=:threads)
+f0 = draw(benchmark_data0 * layers * mappings0; facet, axis)
+save("../benchmarks0.png",f0)
+
+mappings3a = mapping(:tag, :allocs, color=:julia, row=:fullname, col=:threads)
+f3a = draw(benchmark_data3 * layers * mappings3a; facet, axis)
+save("../benchmarks3_allocs.png",f3a)

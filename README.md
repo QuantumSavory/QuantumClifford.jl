@@ -1,11 +1,34 @@
 # QuantumClifford.jl
 
-[![Documentation of latest stable version](https://img.shields.io/badge/docs-stable-blue.svg)](https://krastanov.github.io/QuantumClifford.jl/stable)
-[![Documentation of dev version](https://img.shields.io/badge/docs-dev-blue.svg)](https://krastanov.github.io/QuantumClifford.jl/dev)
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Krastanov/QuantumClifford.jl/CI)](https://github.com/Krastanov/QuantumClifford.jl/actions?query=workflow%3ACI+branch%3Amaster)
-[![Test coverage from codecov](https://img.shields.io/codecov/c/gh/Krastanov/QuantumClifford.jl?label=codecov)](https://codecov.io/gh/Krastanov/QuantumClifford.jl)
-<!--[![Build status](https://api.travis-ci.com/Krastanov/QuantumClifford.jl.svg?branch=master)](https://travis-ci.com/Krastanov/QuantumClifford.jl)-->
-<!--[![Test coverage from coveralls](https://img.shields.io/coveralls/github/Krastanov/QuantumClifford.jl?label=coveralls)](https://coveralls.io/r/Krastanov/QuantumClifford.jl?branch=master)-->
+<table>
+    <tr>
+        <td>Documentation</td>
+        <td>
+            <a href="https://krastanov.github.io/QuantumClifford.jl/stable"><img src="https://img.shields.io/badge/docs-stable-blue.svg" alt="Documentation of latest stable version"></a>
+            <a href="https://krastanov.github.io/QuantumClifford.jl/dev"><img src="https://img.shields.io/badge/docs-dev-blue.svg" alt="Documentation of dev version"></a>
+        </td>
+    </tr><tr></tr>
+    <tr>
+        <td>Continuous integration</td>
+        <td>
+            <a href="https://github.com/Krastanov/QuantumClifford.jl/actions?query=workflow%3ACI+branch%3Amaster"><img src="https://img.shields.io/github/actions/workflow/status/Krastanov/QuantumClifford.jl/ci.yml?branch=master" alt="GitHub Workflow Status"></a>
+        </td>
+    </tr><tr></tr>
+    <tr>
+        <td>Code coverage</td>
+        <td>
+            <a href="https://codecov.io/gh/Krastanov/QuantumClifford.jl"><img src="https://img.shields.io/codecov/c/gh/Krastanov/QuantumClifford.jl?label=codecov" alt="Test coverage from codecov"></a>
+        </td>
+    </tr><tr></tr>
+    <tr>
+        <td>Static analysis with</td>
+        <td>
+            <a href="https://github.com/aviatesk/JET.jl"><img src="https://img.shields.io/badge/JET.jl-%E2%9C%88%EF%B8%8F-9cf" alt="JET static analysis"></a>
+            <a href="https://github.com/JuliaTesting/Aqua.jl"><img src="https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg" alt="Aqua QA"></a>
+        </td>
+    </tr>
+</table>
+
 
 A Julia package for working with quantum stabilizer states and Clifford circuits
 that act on them. Graphs states are also supported. The package is already very fast for the majority of common operations, but there are still many low-hanging fruits performance-wise. See the detailed [suggested readings & references page](https://krastanov.github.io/QuantumClifford.jl/dev/references/#Suggested-reading) for background on the various algorithms.
@@ -51,10 +74,10 @@ julia> tCNOT * S"-XX
 
 The code is vectorized and multithreaded.
 
-
-## Quick Benchmarks
-
 Fast, in-place, allocation free implementations.
+
+<details>
+    <summary>Quick Benchmarks (click to expand)</summary>
 
 #### Comparison against other Clifford simulators
 
@@ -98,52 +121,52 @@ BenchmarkTools.Trial: 226 samples with 1 evaluation.
  Memory estimate: 32 bytes, allocs estimate: 1.
 ```
 
-#### Gate application (500 CNOT gates on 1000 qubits) in 7 ms
+#### Gate application (500 CNOT gates on 1000 qubits) in 5 ms
 
 ```jldoctest
 julia> @benchmark apply!(s, gate) setup=(s=random_stabilizer(1000); gate=tensor_pow(tCNOT,500))
-BenchmarkTools.Trial: 564 samples with 1 evaluation.
- Range (min … max):  6.602 ms … 17.719 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     8.411 ms              ┊ GC (median):    0.00%
- Time  (mean ± σ):   8.865 ms ±  1.836 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+BenchmarkTools.Trial: 931 samples with 1 evaluation.
+ Range (min … max):  4.902 ms …   9.070 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     5.097 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   5.172 ms ± 319.591 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-  ▂             ▁                    █                        
-  ██▆▆▆▄▅▃▄▄▄▄▅▇█▇▆▄▅▃▄▃▃▃▃▃▃▁▂▂▃▁▃▃██▃▂▃▂▂▂▂▂▂▂▂▁▃▃▃▁▂▂▂▂▂▂ ▃
-  6.6 ms         Histogram: frequency by time        13.7 ms <
+    ▃▇█▄▁▂▁▃▁                                                  
+  ▃▇█████████▆▆▃▆▄▄▃▃▂▃▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▁▂▂▁▂▂▁▁▁▁▁▁▁▃▁▁▂▁▁▁▁▂ ▃
+  4.9 ms          Histogram: frequency by time         6.6 ms <
 
- Memory estimate: 13.84 KiB, allocs estimate: 111.
+ Memory estimate: 6.89 KiB, allocs estimate: 49.
 ```
 
-#### Sparse gate application to only specified qubits in a 1000 qubit tableau in 4 μs
+#### Sparse gate application to only specified qubits in a 1000 qubit tableau in 3 μs
 
 ```jldoctest
 julia> @benchmark apply!(s, sCNOT(32,504)) setup=(s=random_stabilizer(1000))
 BenchmarkTools.Trial: 10000 samples with 9 evaluations.
- Range (min … max):  3.373 μs … 252.630 μs  ┊ GC (min … max): 0.00% … 53.27%
- Time  (median):     3.766 μs               ┊ GC (median):    0.00%
- Time  (mean ± σ):   3.892 μs ±   2.525 μs  ┊ GC (mean ± σ):  0.35% ±  0.53%
+ Range (min … max):  2.602 μs …  12.860 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     2.934 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   3.048 μs ± 595.358 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-        ▃▆█▅▁                                                  
-  ▁▁▁▂▃▇█████▅▃▂▂▃▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ ▂
-  3.37 μs         Histogram: frequency by time        6.07 μs <
+      ▂▆█▅                                                     
+  ▁▁▂▅█████▅▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ ▂
+  2.6 μs          Histogram: frequency by time        5.53 μs <
 
- Memory estimate: 96 bytes, allocs estimate: 2.
+ Memory estimate: 112 bytes, allocs estimate: 2.
 ```
 
-#### Measuring a dense 1000 qubit Pauli operator in 74 μs
+#### Measuring a dense 1000 qubit Pauli operator in 70 μs
 
 ```jldoctest
 julia> s=random_destabilizer(1000); p=random_pauli(1000);
 
 julia> @benchmark project!(_s,_p) setup=(_s=copy(s);_p=copy(p)) evals=1
 BenchmarkTools.Trial: 10000 samples with 1 evaluation.
- Range (min … max):  69.030 μs … 144.963 μs  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     73.799 μs               ┊ GC (median):    0.00%
- Time  (mean ± σ):   73.639 μs ±   4.118 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+ Range (min … max):  52.930 μs … 112.682 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     67.628 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   67.100 μs ±   5.624 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-    ▂           ▁█▁                                             
-  ▃██▆▄▃▃▃▄▆▅▄▃▃███▃▂▂▂▁▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▂▂▂▂▂▂▂▂▂ ▃
-  69 μs           Histogram: frequency by time         92.8 μs <
+  ▂▁      ▃▄       ▆▆▄▁▁▂▃▃▃▄█▇▃▂▂▂▁▁▃▃▁         ▁          ▁▂ ▂
+  ██▆▅▅▇▆▄██▇▅▅▄▄▄▆██████████████████████▇▇▇▇▇▆▇███▇▇█▇▇▇▆▇▇██ █
+  52.9 μs       Histogram: log(frequency) by time        85 μs <
 
  Memory estimate: 480 bytes, allocs estimate: 4.
 ```
@@ -155,15 +178,18 @@ julia> s=MixedDestabilizer(random_destabilizer(1000));
 
 julia> @benchmark projectY!(_s,42) setup=(_s=copy(s)) evals=1
 BenchmarkTools.Trial: 10000 samples with 1 evaluation.
- Range (min … max):  46.928 μs … 88.046 μs  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     49.934 μs              ┊ GC (median):    0.00%
- Time  (mean ± σ):   49.776 μs ±  2.623 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+ Range (min … max):  40.356 μs … 151.946 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     49.203 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   49.992 μs ±   6.442 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-     ▁      ▄█▂                                                
-  ▂▂▆██▄▄▄▄▆███▅▃▂▂▂▂▂▂▂▂▂▂▂▂▂▁▁▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▁▂ ▃
-  46.9 μs         Histogram: frequency by time        63.8 μs <
+  ▃▁▄▄        ▄▇▅██▄▄▃▃▄▂           ▁ ▁▂▁                      ▂
+  ████▇▅▅▄▅▄▅▅█████████████▇▇█▇▇▇████████▆▇▅▆▆▆▆▅▄▄▅▄▄▅▅▄▆▆▄▅▆ █
+  40.4 μs       Histogram: log(frequency) by time      73.8 μs <
 
- Memory estimate: 464 bytes, allocs estimate: 5.
+ Memory estimate: 432 bytes, allocs estimate: 3.
 ```
 
 Benchmarks executed on a Ryzen Zen1 8-core CPU.
+
+More detailed benchmarks can be seen at [github.com/Krastanov/QuantumCliffordBenchmarksLog](https://github.com/Krastanov/QuantumCliffordBenchmarksLog).
+</details>
