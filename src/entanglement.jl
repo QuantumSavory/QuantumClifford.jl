@@ -47,7 +47,7 @@ function  _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true
             k2 = findfirst(let j=j, k1=k1; k->
                            (|(tab[k,j]...) & # not identity
                            (tab[k,j]!=tab[k1,j])) end, # not same as k1
-                           k1+1:columns)
+                           k1+1:rows)
             if !isnothing(k2)
                 k2 += k1
                 # move k1 and k2 up to i and i+1
@@ -184,7 +184,8 @@ See also: [`bigram`](@ref), [`canonicalize_clip!`](@ref)
 function entanglement_entropy(state::AbstractStabilizer, subsystem_range::UnitRange, algorithm::Val{:clip}; clip::Bool=true)
     # JET-XXX The ::Matrix{Int} should not be necessary, but they help with inference
     bg = bigram(state; clip=clip)::Matrix{Int}
-    count(r->(r[1] in subsystem_range)⊻(r[2] in subsystem_range), eachrow(bg)) ÷ 2
+    # this formula is only valid for contiguous regions that don't wrap around - see Eq. E7 of https://journals.aps.org/prx/abstract/10.1103/PhysRevX.10.041020
+    length(subsystem_range) - count(r->(r[1] in subsystem_range && r[2] in subsystem_range), eachrow(bg))
 end
 
 
@@ -209,9 +210,16 @@ The state will be partially canonicalized in an RREF form.
 
 See also: [`canonicalize_rref!`](@ref), [`traceout!`](@ref).
 """
-function entanglement_entropy(state::AbstractStabilizer, subsystem::AbstractVector, algorithm::Val{:rref})
+function entanglement_entropy(state::AbstractStabilizer, subsystem::AbstractVector, algorithm::Val{:rref}; pure::Bool=false)
     nb_of_qubits = nqubits(state)
-    nb_of_deletions = length(subsystem)
-    state, rank_after_deletion = canonicalize_rref!(state, subsystem)
+    # if state is pure, then S(A) = S(A_complement), so trace out whichever is shorter
+    if pure && length(subsystem) < nb_of_qubits/2
+       state, rank_after_deletion = canonicalize_rref!(state, subsystem)    
+       nb_of_deletions = length(subsystem)
+    else
+	# trace out the complement to get S(A)
+	state, rank_after_deletion = canonicalize_rref!(state, setdiff(1:nb_of_qubits, subsystem))
+        nb_of_deletions = nb_of_qubits - length(subsystem)
+    end
     return nb_of_qubits - rank_after_deletion - nb_of_deletions
 end
