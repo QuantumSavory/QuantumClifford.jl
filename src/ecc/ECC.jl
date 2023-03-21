@@ -12,10 +12,14 @@ module ECC
     function encoding_circuit end 
 
     """Parity check tableau of a code."""
-    function parity_checks  end
+    function parity_checks(c::AbstractECC)
+        
+    end
 
     """The number of physical qubits in a code."""
-    function code_n end
+    function code_n(c::AbstractECC)
+        return length(c[0]) #do we even need to return in this function?
+    end
     
     """The number of stabilizer checks in a code."""
     function code_s(c::AbstractECC) 
@@ -37,7 +41,6 @@ module ECC
     
     """Naive syndrome circuit""" 
     function naive_syndrome_circuit(c::AbstractECC)
-        print("I was called")
         naive_sc = []
         dim_encondingc = code_n(c) -1
     
@@ -61,7 +64,9 @@ module ECC
     end
 
     """The distance of a code."""
-    function distance end
+    function distance(c::AbstractECC)
+        
+    end
     
     """Parity matrix of a code."""
     function parity_matrix(c::AbstractECC) 
@@ -81,8 +86,20 @@ module ECC
         logicalzview(MixedDest)
     end 
 
+
+    #NEW!
     """Is the code degenerate"""
-    function isdegenerate end
+    function isdegenerate(c::AbstractECC, errors)
+        syndromes = Set()
+        for e in errors
+            s = c ⊻ e
+            if s in syndromes
+                return true
+            end
+            syndromes.add(s)
+        end
+        return false
+    end
 
     #------IN PROGRESS-------------------------
     # 3 qubit bit flip code 
