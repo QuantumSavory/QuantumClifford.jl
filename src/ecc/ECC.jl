@@ -33,7 +33,7 @@ module ECC
     
     """The rate of a code."""
     function rate(c::AbstractECC)
-        rate = code_k(c)/code_s(c)
+        rate = code_k(c)//code_s(c)
         return rate
     end
     
