@@ -12,9 +12,7 @@ module ECC
     function encoding_circuit end 
 
     """Parity check tableau of a code."""
-    function parity_checks(c::AbstractECC)
-        
-    end
+    function parity_checks end
 
     """The number of physical qubits in a code."""
     function code_n(c::AbstractECC)
@@ -64,9 +62,7 @@ module ECC
     end
 
     """The distance of a code."""
-    function distance(c::AbstractECC)
-        
-    end
+    function distance end
     
     """Parity matrix of a code."""
     function parity_matrix(c::AbstractECC) 
