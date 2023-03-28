@@ -88,7 +88,7 @@ module ECC
     function isdegenerate(c::AbstractECC, errors)
         syndromes = Set()
         for e in errors
-            s = c ⊻ e
+            s = parity_matrix(c) ⊻ e #this will have to be more than just \xor, maybe we should write a helper function
             if s in syndromes
                 return true
             end
