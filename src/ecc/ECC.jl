@@ -16,7 +16,7 @@ module ECC
 
     """The number of physical qubits in a code."""
     function code_n(c::AbstractECC)
-        return length(c[0]) #do we even need to return in this function?
+        return length(parity_checks(c)[0]) #do we even need to return in this function?
     end
     
     """The number of stabilizer checks in a code."""
@@ -88,7 +88,7 @@ module ECC
     function isdegenerate(c::AbstractECC, errors)
         syndromes = Set()
         for e in errors
-            s = parity_matrix(c) ⊻ e #this will have to be more than just \xor, maybe we should write a helper function
+            s = parity_matrix(c) * e 
             if s in syndromes
                 return true
             end
