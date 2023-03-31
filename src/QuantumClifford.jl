@@ -73,10 +73,12 @@ export
 
 
 const BIG_INT_MINUS_ONE = Ref{BigInt}()
+const BIG_INT_TWO = Ref{BigInt}()
 const BIG_INT_FOUR = Ref{BigInt}()
 
 function __init__()
     BIG_INT_MINUS_ONE[] = BigInt(-1)
+    BIG_INT_TWO[] = BigInt(2)
     BIG_INT_FOUR[] = BigInt(4)
 end
 
