@@ -175,25 +175,13 @@ end
 
 """Sample (h, S) from the distribution P_n(h, S) from Bravyi and Maslov Algorithm 1."""
 function quantum_mallows(rng, n) # each one is benchmakred in benchmarks/quantum_mallows.jl
-    if n<30 # TODO Do in a prettier way without repetition.
-        quantum_mallows_int(rng, n)
-    elseif n<500
-        quantum_mallows_float(rng, n)
-    else
-        quantum_mallows_bigint(rng, n)
-    end
-end
-
-"""This function is correct for n<30"""
-function quantum_mallows_int(rng, n)
     arr = collect(1:n)
     hadamard = falses(n)
     perm = zeros(Int64, n)
     for idx in 1:n
         m = length(arr)
         # sample h_i from given prob distribution
-        k = rand(rng, 2:UInt(4)^m)
-        l = ilog2(k, RoundUp)
+        l = sample_geometric_2(rng, 2 * m)
         weight = 2 * m - l
         hadamard[idx] = (weight < m)
         k = weight < m ? weight : 2*m - weight - 1
@@ -202,40 +190,20 @@ function quantum_mallows_int(rng, n)
     return hadamard, perm
 end
 
-"""This function is correct for n<500, but slower than `quantum_mallows_int`."""
-function quantum_mallows_float(rng, n)
-    arr = collect(1:n)
-    hadamard = falses(n)
-    perm = zeros(Int64, n)
-    for idx in 1:n
-        m = length(arr)
-        # sample h_i from given prob distribution
-        k = rand(rng)*(4.0^m-1) + 1
-        l = ceil(log2(k))
-        weight = Int64(2 * m - l)
-        hadamard[idx] = (weight < m)
-        k = weight < m ? weight : 2*m - weight - 1
-        perm[idx] = popat!(arr, k + 1)
+""" This function samples a number from 1 to `n` where `n >= 1`
+    probability of outputting `i` is proportional to `2^i`"""
+function sample_geometric_2(rng, n::Integer)
+    n < 1 && throw(DomainError(n))
+    if n<30
+        k = rand(rng, 2:UInt(2)^n)
+        return ilog2(k, RoundUp)
+    elseif n<500
+        k = rand(rng)*(2.0^n-1) + 1
+        return Int(ceil(log2(k)))
+    else
+        k = rand(rng, 2:BIG_INT_TWO[]^n)
+        return ilog2(k, RoundUp)
     end
-    return hadamard, perm
-end
-
-"""This function is correct for any n, but slower than `quantum_mallows_float`."""
-function quantum_mallows_bigint(rng, n)
-    arr = collect(1:n)
-    hadamard = falses(n)
-    perm = zeros(Int64, n)
-    for idx in 1:n
-        m = length(arr)
-        # sample h_i from given prob distribution
-        k = rand(rng, 2:BIG_INT_FOUR[]^m)
-        l = ilog2(k, RoundUp)
-        weight = Int64(2 * m - l)
-        hadamard[idx] = (weight < m)
-        k = weight < m ? weight : 2*m - weight - 1
-        perm[idx] = popat!(arr, k + 1)
-    end
-    return hadamard, perm
 end
 
 """Assign (symmetric) random ints to off diagonals of matrix."""
