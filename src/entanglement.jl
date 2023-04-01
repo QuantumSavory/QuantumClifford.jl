@@ -169,9 +169,7 @@ It can be calculated with multiple different algorithms,
 the most performant one depending on the particular case.
 
 Currently implemented are the `:clip` (clipped gauge), `:graph` (graph state), and `:rref` (Gaussian elimination) algorithms.
-Benchmark your particular case to choose the best one and be careful about
-failure modes of `:clip` with non-pure states (see the discussion around
-Eq. E7 of [gullans2020quantum](@cite)).
+Benchmark your particular case to choose the best one.
 """
 function entanglement_entropy end
 
@@ -181,15 +179,14 @@ Get bipartite entanglement entropy of a contiguous subsystem by passing through 
 
 If `clip=false` is set the canonicalization step is skipped, useful if the input state is already in the clipped gauge.
 
-!!! danger "Not always valid"
-    For mixed states, this method could give a wrong result (see Eq. E7 of [gullans2020quantum](@cite)). Use the `:rref` canonicalization algorithm in that case.
-
 See also: [`bigram`](@ref), [`canonicalize_clip!`](@ref)
 """
 function entanglement_entropy(state::AbstractStabilizer, subsystem_range::UnitRange, algorithm::Val{:clip}; clip::Bool=true)
     # JET-XXX The ::Matrix{Int} should not be necessary, but they help with inference
     bg = bigram(state; clip=clip)::Matrix{Int}
-    # this formula is only valid for contiguous regions that don't wrap around - see Eq. E7 of gullans2020quantum
+    # If the state is mixed, this formula is valid only for contiguous regions that don't wrap around.
+    # See Eq. E7 of gullans2020quantum.
+    # As subsystem_range is UnitRange, we know the formula will be valid.
     length(subsystem_range) - count(r->(r[1] in subsystem_range && r[2] in subsystem_range), eachrow(bg))
 end
 
