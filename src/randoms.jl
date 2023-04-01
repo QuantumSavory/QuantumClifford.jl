@@ -181,8 +181,8 @@ function quantum_mallows(rng, n) # each one is benchmakred in benchmarks/quantum
     for idx in 1:n
         m = length(arr)
         # sample h_i from given prob distribution
-        l = sample_geometric_2(rng, 2 * m)        
-        weight = Int64(2 * m - l)
+        l = sample_geometric_2(rng, 2 * m)
+        weight = 2 * m - l
         hadamard[idx] = (weight < m)
         k = weight < m ? weight : 2*m - weight - 1
         perm[idx] = popat!(arr, k + 1)
@@ -199,7 +199,7 @@ function sample_geometric_2(rng, n::Integer)
         return ilog2(k, RoundUp)
     elseif n<500
         k = rand(rng)*(2.0^n-1) + 1
-        return ceil(log2(k))
+        return Int(ceil(log2(k)))
     else
         k = rand(rng, 2:BIG_INT_TWO[]^n)
         return ilog2(k, RoundUp)
