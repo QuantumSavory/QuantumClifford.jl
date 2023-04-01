@@ -382,7 +382,7 @@ Register{Vector{UInt8}, Matrix{UInt64}}(Rank 3 stabilizer
 ═════
 + XXX
 + ZZ_
-+ __X
+- __X
 ═════
 , Bool[0, 1])
 

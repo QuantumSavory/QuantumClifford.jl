@@ -23,7 +23,7 @@ import AbstractAlgebra
         for qubit in 1:n
             if op[qubit] == (false, true) # it is a Z
                 if isnothing(measurement) || measurement==sMZ
-                    resetgate = Reset(S"-Z",[anc])
+                    resetgate = Reset(S"Z",[anc])
                     measurement = sMZ
                 else
                     error("can not do mixed syndromes")
@@ -31,7 +31,7 @@ import AbstractAlgebra
                 push!(circuit, sCNOT(qubit, anc))
             elseif op[qubit] == (true, false) # it is a X
                 if isnothing(measurement) || measurement==sMX
-                    resetgate = Reset(S"-X",[anc])
+                    resetgate = Reset(S"X",[anc])
                     measurement = sMX
                 else
                     error("can not do mixed syndromes")
