@@ -71,16 +71,40 @@ tab(c::CliffordOperator) = c.tab
 
 Base.size(c::CliffordOperator,args...) = size(tab(c),args...)
 
-function Base.show(io::IO, c::CliffordOperator)
+function row_limit(str, limit=50)
+    n = length(str)
+    if (n <= limit || limit==-1)
+        return str
+    end
+    padding = Int64(floor(limit/2))
+    return SubString(str, 1, padding) * " ... " * SubString(str, n - padding, n - 1)
+end
+
+function Base.show(io::IO, c::CliffordOperator, limit=50, limit_vertical=20)
     n = nqubits(c)
-    for i in 1:n
-        print(io, repeat("_",i-1),"X",repeat("_",n-i), " ⟼ ")
-        print(io, c.tab[i])
+    padding = Int64(floor(limit_vertical/2))
+    range = 1:n
+    if (limit_vertical < n && limit_vertical != -1)
+        range = [1:padding; -1; (n-padding):n]
+    end
+    for i in range
+        if (i == -1)
+            print("[ ..... ]\n")
+            continue
+        end
+        row = repeat("_",i-1)*"X"*repeat("_",n-i)* " ⟼ "
+        print(io, row_limit(row, limit)*"  ")
+        show(io, c.tab[i], limit)
         println(io)
     end
-    for i in 1:n
-        print(io, repeat("_",i-1),"Z",repeat("_",n-i), " ⟼ ")
-        print(io, c.tab[i+n])
+    for i in range
+        if (i == -1)
+            print("[ ..... ]\n")
+            continue
+        end
+        row = repeat("_",i-1)*"Z"*repeat("_",n-i)* " ⟼ "
+        print(io, row_limit(row, limit)*"  ")
+        show(io, c.tab[i+n], limit)
         println(io)
     end
 end

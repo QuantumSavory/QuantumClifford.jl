@@ -214,7 +214,17 @@ nqubits(pauli::PauliOperator) = pauli.nqubits
 
 xz2str(x,z) = join(toletter[e] for e in zip(x,z))
 
-Base.show(io::IO, p::PauliOperator) = print(io, ["+ ","+i","- ","-i"][p.phase[]+1]*xz2str(xbit(p),zbit(p)))
+function xz2str_limited(x,z, limit=50)
+    tupl = collect(zip(x,z))
+    n = length(tupl)
+    if (limit >= n || limit == -1)
+        return xz2str(x, z)
+    end
+    padding = Int64(floor(limit/2))
+    return join(toletter[tupl[i]] for i in 1:padding) * " ... " * join(toletter[tupl[i]] for i in (n-padding):n)
+end
+
+Base.show(io::IO, p::PauliOperator, limit=50) = print(io, ["+ ","+i","- ","-i"][p.phase[]+1]*xz2str_limited(xbit(p),zbit(p), limit))
 
 Base.:(==)(l::PauliOperator, r::PauliOperator) = r.phase==l.phase && r.nqubits==l.nqubits && r.xz==l.xz
 
@@ -337,14 +347,22 @@ Base.size(tab::Tableau,i) = size(tab)[i]
 
 Base.length(tab::Tableau) = length(tab.phases)
 
-Base.show(io::IO, t::Tableau) = print(
-    io,
-    join(
-        [["+ ","+i","- ","-i"][t[i].phase[]+1]*xz2str(xbit(t[i]),zbit(t[i]))
-         for i in eachindex(t)],
-        '\n'
-    )
-)
+function Base.show(io::IO, t::Tableau, limit=50, limit_vertical=20)
+    padding = Int64(floor(limit_vertical/2))
+    n = lastindex(t)
+    range = 1:n
+    if (limit_vertical < n && limit_vertical != -1)
+        range = [1:padding; -1; (n-padding):n]
+    end
+    for i in range
+        if (i == -1)
+            print("[ ..... ]\n")
+            continue
+        end
+        show(io, t[i], limit)
+        println(io)
+    end
+end
 
 Base.:(==)(l::Tableau, r::Tableau) = r.nqubits==l.nqubits && r.phases==l.phases && r.xzs==l.xzs
 
@@ -499,7 +517,7 @@ Base.axes(stab::Stabilizer, i) = axes(tab(stab), i)
 Base.size(stab::Stabilizer) = size(tab(stab))
 Base.size(stab::Stabilizer,i) = size(tab(stab),i)
 Base.length(stab::Stabilizer) = length(tab(stab))
-Base.show(io::IO, s::Stabilizer) = show(io, tab(s))
+Base.show(io::IO, s::Stabilizer, limit=50, limit_vertical=20) = show(io, tab(s), limit, limit_vertical)
 Base.:(==)(l::Stabilizer, r::Stabilizer) = tab(l) == tab(r)
 Base.hash(s::Stabilizer, h::UInt) = hash(tab(s), h)
 Base.copy(s::Stabilizer) = Stabilizer(copy(tab(s)))
@@ -576,10 +594,15 @@ function Destabilizer(s::Stabilizer)
     Destabilizer(t)
 end
 
-function Base.show(io::IO, d::Destabilizer)
-    show(io, destabilizerview(d))
-    print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
-    show(io, stabilizerview(d))
+function Base.show(io::IO, d::Destabilizer, limit=50, limit_vertical=20)
+    show(io, destabilizerview(d), limit, limit_vertical)
+    cap = limit
+    if (limit == -1)
+        cap = size(d.tab,2)
+    end
+    cap += 6 # number of uncounted-for spaces and dots
+    print(io, "\n━━" * "━"^min(cap,size(d.tab,2)) * "\n")
+    show(io, stabilizerview(d), limit, limit_vertical)
 end
 
 Base.length(d::Destabilizer) = length(tab(d))÷2
@@ -609,9 +632,9 @@ end
 
 MixedStabilizer(s::Stabilizer,rank::Int) = MixedStabilizer(tab(s),rank)
 
-function Base.show(io::IO, ms::MixedStabilizer)
+function Base.show(io::IO, ms::MixedStabilizer, limit=50, limit_vertical=20)
     println(io, "Rank $(ms.rank) stabilizer")
-    show(io, stabilizerview(ms))
+    show(io, stabilizerview(ms), limit, limit_vertical)
 end
 
 Base.length(d::MixedStabilizer) = length(d.tab)
@@ -703,20 +726,20 @@ end
 
 function MixedDestabilizer(d::MixedStabilizer) MixedDestabilizer(stabilizerview(d)) end
 
-function Base.show(io::IO, d::MixedDestabilizer)
+function Base.show(io::IO, d::MixedDestabilizer, limit=50, limit_vertical=20)
     println(io, "Rank $(d.rank) stabilizer")
-    show(io, destabilizerview(d))
+    show(io, destabilizerview(d), limit, limit_vertical)
     if d.rank != nqubits(d)
         print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
-        show(io, logicalxview(d))
+        show(io, logicalxview(d), limit, limit_vertical)
         print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
     else
         print(io, "\n══" * "═"^size(d.tab,2) * "\n")
     end
-    show(io, stabilizerview(d))
+    show(io, stabilizerview(d), limit, limit_vertical)
     if d.rank != nqubits(d)
         print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
-        show(io, logicalzview(d))
+        show(io, logicalzview(d), limit, limit_vertical)
     else
         print(io, "\n══" * "═"^size(d.tab,2) * "\n")
     end
