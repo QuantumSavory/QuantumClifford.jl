@@ -33,7 +33,7 @@ See also: [`canonicalize!`](@ref), [`canonicalize_rref!`](@ref), [`canonicalize_
 function canonicalize_clip!(state::AbstractStabilizer; phases::Bool=true)
     @valbooldispatch _canonicalize_clip!(state; phases=Val(phases)) phases
 end
-function  _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)) where B
+function _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)) where B
     tab = stabilizerview(state)
     rows, columns = size(stabilizerview(state))
     # step 1: pregauge
@@ -138,7 +138,7 @@ It is the list of endpoints of a tableau in the clipped gauge.
 If `clip=true` (the default) the tableau is converted to the clipped gauge in-place before calculating the bigram.
 Otherwise, the clip gauge conversion is skipped (for cases where the input is already known to be in the correct gauge).
 
-Introduced in [nahum2017quantum](@cite), with a more detailed explanation of the algorithm in Appendix A of [li2019measurement](@cite)
+Introduced in [nahum2017quantum](@cite), with a more detailed explanation of the algorithm in [li2019measurement](@cite) and [gullans2020quantum](@cite).
 
 See also: [`canonicalize_clip!`](@ref)
 """
@@ -168,8 +168,10 @@ Defined as entropy of the reduced density matrix.
 It can be calculated with multiple different algorithms,
 the most performant one depending on the particular case.
 
-Currently implemented are the `:clip`, `:graph`, and `:rref` algorithms.
-Benchmark your particular case to choose the best one.
+Currently implemented are the `:clip` (clipped gauge), `:graph` (graph state), and `:rref` (Gaussian elimination) algorithms.
+Benchmark your particular case to choose the best one and be careful about
+failure modes of `:clip` with non-pure states (see the discussion around
+Eq. E7 of [gullans2020quantum](@cite)).
 """
 function entanglement_entropy end
 
@@ -179,12 +181,15 @@ Get bipartite entanglement entropy of a contiguous subsystem by passing through 
 
 If `clip=false` is set the canonicalization step is skipped, useful if the input state is already in the clipped gauge.
 
+!!! danger "Not always valid"
+    For mixed states, this method could give a wrong result (see Eq. E7 of [gullans2020quantum](@cite)). Use the `:rref` canonicalization algorithm in that case.
+
 See also: [`bigram`](@ref), [`canonicalize_clip!`](@ref)
 """
 function entanglement_entropy(state::AbstractStabilizer, subsystem_range::UnitRange, algorithm::Val{:clip}; clip::Bool=true)
     # JET-XXX The ::Matrix{Int} should not be necessary, but they help with inference
     bg = bigram(state; clip=clip)::Matrix{Int}
-    # this formula is only valid for contiguous regions that don't wrap around - see Eq. E7 of https://journals.aps.org/prx/abstract/10.1103/PhysRevX.10.041020
+    # this formula is only valid for contiguous regions that don't wrap around - see Eq. E7 of gullans2020quantum
     length(subsystem_range) - count(r->(r[1] in subsystem_range && r[2] in subsystem_range), eachrow(bg))
 end
 
@@ -214,12 +219,14 @@ function entanglement_entropy(state::AbstractStabilizer, subsystem::AbstractVect
     nb_of_qubits = nqubits(state)
     # if state is pure, then S(A) = S(A_complement), so trace out whichever is shorter
     if pure && length(subsystem) < nb_of_qubits/2
-       state, rank_after_deletion = canonicalize_rref!(state, subsystem)    
-       nb_of_deletions = length(subsystem)
+        state, rank_after_deletion = canonicalize_rref!(state, subsystem)
+        nb_of_deletions = length(subsystem)
     else
 	# trace out the complement to get S(A)
-	state, rank_after_deletion = canonicalize_rref!(state, setdiff(1:nb_of_qubits, subsystem))
+        state, rank_after_deletion = canonicalize_rref!(state, setdiff(1:nb_of_qubits, subsystem))
         nb_of_deletions = nb_of_qubits - length(subsystem)
     end
     return nb_of_qubits - rank_after_deletion - nb_of_deletions
 end
+
+entanglement_entropy(state::MixedDestabilizer, subsystem::AbstractVector, a::Val{:rref}) = entanglement_entropy(state, subsystem, a; pure=nqubits(state)==rank(state))
