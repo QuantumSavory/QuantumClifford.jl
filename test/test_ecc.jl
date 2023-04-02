@@ -1,5 +1,6 @@
 using QuantumClifford
-using QuantumClifford.ECC: AbstractECC, Steane5, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, isdegenerate
+include("../src/ecc/ECC.jl")
+using .ECC: AbstractECC, Steane5, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, isdegenerate
 
 function test_op(c::AbstractECC)
     @testset "Physical and Logical qubit" begin
@@ -126,7 +127,7 @@ end
 codes = [Steane5(),Steane7(),Shor9()]
     
 for c in codes
-    #test_op(c)
+    test_op(c)
     test_ns(c)
 end
     

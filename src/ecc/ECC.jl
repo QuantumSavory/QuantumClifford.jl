@@ -106,17 +106,4 @@ module ECC
 
     # Steane, 7 qubit, 5 qubit
     include("./steanecode.jl")
-
-    # CSS codes
-    include("./csscodes.jl")
-
-    #Hamming code generator (for CSS codes)
-    include("./hammingcodegenerator.jl")
-
-    # Toric codes
-    include("./toriccode.jl") 
-
-    # Surface codes
-    include("./surfacecodes.jl")
-
 end #module
