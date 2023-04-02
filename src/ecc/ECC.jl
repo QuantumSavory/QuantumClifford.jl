@@ -15,9 +15,7 @@ module ECC
     function parity_checks end
 
     """The number of physical qubits in a code."""
-    function code_n(c::AbstractECC)
-        return length(parity_checks(c)[0]) #do we even need to return in this function?
-    end
+    function code_n end
     
     """The number of stabilizer checks in a code."""
     function code_s(c::AbstractECC) 

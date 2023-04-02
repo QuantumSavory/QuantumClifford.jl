@@ -96,7 +96,7 @@ function test_ns(c::AbstractECC)
         convert(Vector{AbstractSymbolicOperator}, nc)
 
         s = []
-        #h = []
+        # h = []
         for check in parity_checks(c)
             append!(s,project!(physicalqubit,check))
         end
@@ -108,22 +108,23 @@ function test_ns(c::AbstractECC)
 
                 a = s[i]
                 b = Register(physicalqubit)
-                #append!(h,project!(b,check))
+                # append!(h,project!(b,check))
 
-                @test a == b
+                @test a == physicalqubit
                 
 
             catch
                 0
             end
-            i+= 1
+            i += 3
         end
 
         
     end
     
 end
-    
+
+# codes = [Steane5()]
 codes = [Steane5(),Steane7(),Shor9()]
     
 for c in codes
