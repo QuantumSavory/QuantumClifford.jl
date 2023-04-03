@@ -80,7 +80,7 @@ function row_limit(str, limit=50)
     return SubString(str, 1, padding) * " ... " * SubString(str, n - padding, n - 1)
 end
 
-function Base.show(io::IO, c::CliffordOperator, limit=50, limit_vertical=20)
+function _show(io::IO, c::CliffordOperator, limit=50, limit_vertical=20)
     n = nqubits(c)
     padding = Int64(floor(limit_vertical/2))
     range = 1:n
@@ -94,7 +94,7 @@ function Base.show(io::IO, c::CliffordOperator, limit=50, limit_vertical=20)
         end
         row = repeat("_",i-1)*"X"*repeat("_",n-i)* " ⟼ "
         print(io, row_limit(row, limit)*"  ")
-        show(io, c.tab[i], limit)
+        _show(io, c.tab[i], limit)
         println(io)
     end
     for i in range
@@ -104,8 +104,22 @@ function Base.show(io::IO, c::CliffordOperator, limit=50, limit_vertical=20)
         end
         row = repeat("_",i-1)*"Z"*repeat("_",n-i)* " ⟼ "
         print(io, row_limit(row, limit)*"  ")
-        show(io, c.tab[i+n], limit)
+        _show(io, c.tab[i+n], limit)
         println(io)
+    end
+end
+
+function Base.show(io::IO, c::CliffordOperator)
+    if !haskey(io, :limit)
+        io = IOContext(io, :limit => true)
+    end
+
+    if get(io, :limit, true)
+        sz = displaysize(io)
+        print(sz[1], ' ', sz[2], '\n')
+        _show(io, c, sz[1], sz[2])
+    else 
+        _show(io, c, -1, -1)
     end
 end
 
