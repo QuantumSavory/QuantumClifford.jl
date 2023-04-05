@@ -4,4 +4,3 @@ LocalPreferences.toml
 */.*swp
 scratch/
 *.cov
-main.jl
