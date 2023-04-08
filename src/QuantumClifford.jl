@@ -124,6 +124,7 @@ in a single concatenated padded array of UInt chunks of a bit array.
 ```jldoctest
 julia> p = P"-IZXY";
 
+
 julia> p.xz
 2-element Vector{UInt64}:
  0x000000000000000c
@@ -770,62 +771,43 @@ end
 function MixedDestabilizer(d::MixedStabilizer) MixedDestabilizer(stabilizerview(d)) end
 
 function Base.show(io::IO, d::MixedDestabilizer)
-    println(io, "Rank $(d.rank) stabilizer")
-    show(io, destabilizerview(d))
-    if d.rank != nqubits(d)
-        print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
-        show(io, logicalxview(d))
-        print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
-    else
-        print(io, "\n══" * "═"^size(d.tab,2) * "\n")
-    end
-    show(io, stabilizerview(d))
-    if d.rank != nqubits(d)
-        print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
-        show(io, logicalzview(d))
-    else
-        print(io, "\n══" * "═"^size(d.tab,2) * "\n")
-    end
-end
-
-function Base.show(io::IO, d::MixedDestabilizer)
     r = rank(d)
     q = nqubits(d)
     if get(io, :compact, false)
         print(io, "MixedDestablizer $r×$q")
     elseif get(io, :limit, false)
         h,w = displaysize(io)
-        if r != q
-            println(io, "𝒳ₗ" * "━"^max(min(w-5,size(d.tab,2)-4),0))
-            _show(io, logicalxview(d).tab, w, h÷4)
-            println(io)
-        end
         println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(min(w-9,size(d.tab,2)-4),0))
         _show(io, destabilizerview(d).tab, w, h÷4)
-        println(io)
         if r != q
-            println(io, "𝒵ₗ" * "━"^max(min(w-5,size(d.tab,2)-4),0))
-            _show(io, logicalzview(d).tab, w, h÷4)
             println(io)
+            println(io, "𝒳ₗ" * "━"^max(min(w-5,size(d.tab,2)),0))
+            _show(io, logicalxview(d).tab, w, h÷4)
         end
+        println(io)
         println(io, "𝒮𝓉𝒶𝒷" * "━"^max(min(w-7,size(d.tab,2)-2),0))
         _show(io, stabilizerview(d).tab, w, h÷4)
-    else
         if r != q
-            println(io, "𝒳ₗ" * "━"^max(size(d.tab,2)-4,0))
-            _show(io, logicalxview(d).tab, -1, -1)
             println(io)
+            println(io, "𝒵ₗ" * "━"^max(min(w-5,size(d.tab,2)),0))
+            _show(io, logicalzview(d).tab, w, h÷4)
         end
+    else
         println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-4,0))
         _show(io, destabilizerview(d).tab, -1, -1)
-        println(io)
         if r != q
-            println(io, "𝒵ₗ" * "━"^max(size(d.tab,2)-4),0)
-            _show(io, logicalzview(d).tab, -1, -1)
             println(io)
+            println(io, "𝒳ₗ" * "━"^max(size(d.tab,2),0))
+            _show(io, logicalxview(d).tab, -1, -1)
         end
+        println(io)
         println(io, "𝒮𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-2,0))
         _show(io, stabilizerview(d).tab, -1, -1)
+        if r != q
+            println(io)
+            println(io, "𝒵ₗ" * "━"^max(size(d.tab,2)),0)
+            _show(io, logicalzview(d).tab, -1, -1)
+        end
     end
 end
 

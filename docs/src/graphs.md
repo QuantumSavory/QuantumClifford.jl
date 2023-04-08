@@ -60,14 +60,14 @@ julia> s = ghz(4)
 julia> g, h_idx, ip_idx, z_idx = graphstate(s);
 
 julia> gate = graph_gate(h_idx, ip_idx, z_idx, nqubits(s))
-X___ ⟼ + X___
-_X__ ⟼ + _Z__
-__X_ ⟼ + __Z_
-___X ⟼ + ___Z
-Z___ ⟼ + Z___
-_Z__ ⟼ + _X__
-__Z_ ⟼ + __X_
-___Z ⟼ + ___X
+X₁ ⟼ + X___
+X₂ ⟼ + _Z__
+X₃ ⟼ + __Z_
+X₄ ⟼ + ___Z
+Z₁ ⟼ + Z___
+Z₂ ⟼ + _X__
+Z₃ ⟼ + __X_
+Z₄ ⟼ + ___X
 
 julia> canonicalize!(apply!(s,gate)) == canonicalize!(Stabilizer(g))
 true

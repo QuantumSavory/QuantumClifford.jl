@@ -14,6 +14,7 @@ julia> s = S"- X_ZX_X
              + _Z_Y_Y
              - ____Z_";
 
+
 julia> canonicalize_clip!(s)
 - X_XY__
 + YZY___

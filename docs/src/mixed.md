@@ -20,9 +20,10 @@ julia> s = S"XXX
              IZZ";
 
 julia> Destabilizer(s)
+𝒟ℯ𝓈𝓉𝒶𝒷
 + Z__
 + _X_
-━━━━━
+𝒮𝓉𝒶𝒷━
 + XXX
 + _ZZ
 ```
@@ -32,15 +33,15 @@ operation generators.
 
 ```jldoctest mix
 julia> m = MixedDestabilizer(s)
-Rank 2 stabilizer
+𝒟ℯ𝓈𝓉𝒶𝒷
 + Z__
 + _X_
-━━━━━
+𝒳ₗ━━━
 + _XX
-━━━━━
+𝒮𝓉𝒶𝒷━
 + XXX
 + _ZZ
-━━━━━
+𝒵ₗ━━━
 + Z_Z
 
 julia> stabilizerview(m)
@@ -72,27 +73,27 @@ julia> s = S"XXX
              ZIZ";
 
 julia> MixedDestabilizer(s)
-Rank 2 stabilizer
+𝒟ℯ𝓈𝓉𝒶𝒷
 + Z__
 + __X
-━━━━━
+𝒳ₗ━━━
 + _X_
-━━━━━
+𝒮𝓉𝒶𝒷━
 + XXX
 + Z_Z
-━━━━━
+𝒵ₗ━━━
 + ZZ_
 
 julia> MixedDestabilizer(s; undoperm=false)
-Rank 2 stabilizer
+𝒟ℯ𝓈𝓉𝒶𝒷
 + Z__
 + _X_
-━━━━━
+𝒳ₗ━━━
 + __X
-━━━━━
+𝒮𝓉𝒶𝒷━
 + XXX
 + ZZ_
-━━━━━
+𝒵ₗ━━━
 + Z_Z
 ```
 

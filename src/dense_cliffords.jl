@@ -3,18 +3,19 @@ Clifford Operator specified by the mapping of the basis generators.
 
 ```jldoctest
 julia> tCNOT
-X_ ⟼ + XX
-_X ⟼ + _X
-Z_ ⟼ + Z_
-_Z ⟼ + ZZ
+X₁ ⟼ + XX
+X₂ ⟼ + _X
+Z₁ ⟼ + Z_
+Z₂ ⟼ + ZZ
 
 julia> phase_gate = C"Y
                       Z"
-X ⟼ + Y
-Z ⟼ + Z
+X₁ ⟼ + Y
+Z₁ ⟼ + Z
 
 julia> stab = S"XI
                 IZ";
+
 
 julia> entangled = tCNOT*stab
 + XX

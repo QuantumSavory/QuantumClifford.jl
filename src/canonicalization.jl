@@ -12,6 +12,7 @@ julia> ghz = S"XXXX
                IZZI
                IIZZ";
 
+
 julia> canonicalize!(ghz)
 + XXXX
 + Z__Z
@@ -72,6 +73,7 @@ julia> s = S"XXXX
              ZZII
              IZIZ
              ZIIZ";
+
 
 julia> canonicalize!(s, ranks=true)
 (+ XXXX
