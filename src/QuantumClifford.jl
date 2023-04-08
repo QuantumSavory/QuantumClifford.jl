@@ -124,6 +124,7 @@ in a single concatenated padded array of UInt chunks of a bit array.
 ```jldoctest
 julia> p = P"-IZXY";
 
+
 julia> p.xz
 2-element Vector{UInt64}:
  0x000000000000000c
@@ -214,7 +215,28 @@ nqubits(pauli::PauliOperator) = pauli.nqubits
 
 xz2str(x,z) = join(toletter[e] for e in zip(x,z))
 
-Base.show(io::IO, p::PauliOperator) = print(io, ["+ ","+i","- ","-i"][p.phase[]+1]*xz2str(xbit(p),zbit(p)))
+function xz2str_limited(x,z, limit=50)
+    tupl = collect(zip(x,z))
+    n = length(tupl)
+    if (limit >= n || limit == -1)
+        return xz2str(x, z)
+    end
+    padding = limit÷2
+    return join(toletter[tupl[i]] for i in 1:padding) * "…" * join(toletter[tupl[i]] for i in (n-padding):n)
+end
+
+_show(io::IO, p::PauliOperator, limit=50) = print(io, ["+ ","+i","- ","-i"][p.phase[]+1]*xz2str_limited(xbit(p),zbit(p), limit))
+
+function Base.show(io::IO, p::PauliOperator)
+    if get(io, :compact, false)
+        _show(io, p, 10)
+    elseif get(io, :limit, false)
+        sz = displaysize(io)
+        _show(io, p, sz[2]-7)
+    else
+        _show(io, p, -1)
+    end
+end
 
 Base.:(==)(l::PauliOperator, r::PauliOperator) = r.phase==l.phase && r.nqubits==l.nqubits && r.xz==l.xz
 
@@ -337,14 +359,34 @@ Base.size(tab::Tableau,i) = size(tab)[i]
 
 Base.length(tab::Tableau) = length(tab.phases)
 
-Base.show(io::IO, t::Tableau) = print(
-    io,
-    join(
-        [["+ ","+i","- ","-i"][t[i].phase[]+1]*xz2str(xbit(t[i]),zbit(t[i]))
-         for i in eachindex(t)],
-        '\n'
-    )
-)
+function _show(io::IO, t::Tableau, limit=50, limit_vertical=20)
+    padding = limit_vertical÷2-3
+    n = size(t,1)
+    range = 1:n
+    if (limit_vertical < n && limit_vertical != -1)
+        range = [1:padding; -1; (n-padding):n]
+    end
+    for i in range
+        if (i == -1)
+            print(io," ⋮\n")
+            continue
+        end
+        _show(io, t[i], limit-7)
+        i!=n && println(io)
+    end
+end
+
+function Base.show(io::IO, t::Tableau)
+    if get(io, :compact, false)
+        r,q = size(t)
+        print(io, "Tableaux $r×$q")
+    elseif get(io, :limit, false)
+        sz = displaysize(io)
+        _show(io, t, sz[2], sz[1])
+    else
+        _show(io, t, -1, -1)
+    end
+end
 
 Base.:(==)(l::Tableau, r::Tableau) = r.nqubits==l.nqubits && r.phases==l.phases && r.xzs==l.xzs
 
@@ -499,7 +541,7 @@ Base.axes(stab::Stabilizer, i) = axes(tab(stab), i)
 Base.size(stab::Stabilizer) = size(tab(stab))
 Base.size(stab::Stabilizer,i) = size(tab(stab),i)
 Base.length(stab::Stabilizer) = length(tab(stab))
-Base.show(io::IO, s::Stabilizer) = show(io, tab(s))
+
 Base.:(==)(l::Stabilizer, r::Stabilizer) = tab(l) == tab(r)
 Base.hash(s::Stabilizer, h::UInt) = hash(tab(s), h)
 Base.copy(s::Stabilizer) = Stabilizer(copy(tab(s)))
@@ -509,8 +551,17 @@ Base.zero(::Type{Stabilizer}, r, q) = zero(Stabilizer{Tableau{Vector{UInt8},Matr
 Base.zero(s::S) where {S<:Stabilizer} = zero(S, length(s), nqubits(s))
 @inline zero!(s::Stabilizer,i) = zero!(tab(s),i)
 
+function Base.show(io::IO, s::Stabilizer)
+    if get(io, :compact, false)
+        r,q = size(s)
+        print(io, "Stabilizer $r×$q")
+    else
+        show(io, tab(s))
+    end
+end
+
 ##############################
-# Helpers for sublcasses of AbstractStabilizer that use Stabilizer as a tableau internally.
+# Helpers for subclasses of AbstractStabilizer that use Stabilizer as a tableau internally.
 ##############################
 
 function Base.:(==)(l::T, r::S; phases=true) where {T<:AbstractStabilizer, S<:AbstractStabilizer}
@@ -577,9 +628,21 @@ function Destabilizer(s::Stabilizer)
 end
 
 function Base.show(io::IO, d::Destabilizer)
-    show(io, destabilizerview(d))
-    print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
-    show(io, stabilizerview(d))
+    if get(io, :compact, false)
+        r,q = size(stabilizerview(d))
+        print(io, "Destablizer $r×$q")
+    elseif get(io, :limit, false)
+        h,w = displaysize(io)
+        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(min(w-9,size(d.tab,2)-4),0))
+        _show(io, destabilizerview(d).tab, w, h÷2)
+        println(io, "\n𝒮𝓉𝒶𝒷" * "━"^max(min(w-7,size(d.tab,2)-2),0))
+        _show(io, stabilizerview(d).tab, w, h÷2)
+    else
+        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-4,0))
+        _show(io, destabilizerview(d).tab, -1, -1)
+        println(io, "\n𝒮𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-2,0))
+        _show(io, stabilizerview(d).tab, -1, -1)
+    end
 end
 
 Base.length(d::Destabilizer) = length(tab(d))÷2
@@ -609,9 +672,13 @@ end
 
 MixedStabilizer(s::Stabilizer,rank::Int) = MixedStabilizer(tab(s),rank)
 
-function Base.show(io::IO, ms::MixedStabilizer)
-    println(io, "Rank $(ms.rank) stabilizer")
-    show(io, stabilizerview(ms))
+function Base.show(io::IO, s::MixedStabilizer)
+    if get(io, :compact, false)
+        r,q = size(s)
+        print(io, "MixedStabilizer $r×$q")
+    else
+        show(io, stabilizerview(s))
+    end
 end
 
 Base.length(d::MixedStabilizer) = length(d.tab)
@@ -704,21 +771,43 @@ end
 function MixedDestabilizer(d::MixedStabilizer) MixedDestabilizer(stabilizerview(d)) end
 
 function Base.show(io::IO, d::MixedDestabilizer)
-    println(io, "Rank $(d.rank) stabilizer")
-    show(io, destabilizerview(d))
-    if d.rank != nqubits(d)
-        print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
-        show(io, logicalxview(d))
-        print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
+    r = rank(d)
+    q = nqubits(d)
+    if get(io, :compact, false)
+        print(io, "MixedDestablizer $r×$q")
+    elseif get(io, :limit, false)
+        h,w = displaysize(io)
+        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(min(w-9,size(d.tab,2)-4),0))
+        _show(io, destabilizerview(d).tab, w, h÷4)
+        if r != q
+            println(io)
+            println(io, "𝒳ₗ" * "━"^max(min(w-5,size(d.tab,2)),0))
+            _show(io, logicalxview(d).tab, w, h÷4)
+        end
+        println(io)
+        println(io, "𝒮𝓉𝒶𝒷" * "━"^max(min(w-7,size(d.tab,2)-2),0))
+        _show(io, stabilizerview(d).tab, w, h÷4)
+        if r != q
+            println(io)
+            println(io, "𝒵ₗ" * "━"^max(min(w-5,size(d.tab,2)),0))
+            _show(io, logicalzview(d).tab, w, h÷4)
+        end
     else
-        print(io, "\n══" * "═"^size(d.tab,2) * "\n")
-    end
-    show(io, stabilizerview(d))
-    if d.rank != nqubits(d)
-        print(io, "\n━━" * "━"^size(d.tab,2) * "\n")
-        show(io, logicalzview(d))
-    else
-        print(io, "\n══" * "═"^size(d.tab,2) * "\n")
+        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-4,0))
+        _show(io, destabilizerview(d).tab, -1, -1)
+        if r != q
+            println(io)
+            println(io, "𝒳ₗ" * "━"^max(size(d.tab,2),0))
+            _show(io, logicalxview(d).tab, -1, -1)
+        end
+        println(io)
+        println(io, "𝒮𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-2,0))
+        _show(io, stabilizerview(d).tab, -1, -1)
+        if r != q
+            println(io)
+            println(io, "𝒵ₗ" * "━"^max(size(d.tab,2)),0)
+            _show(io, logicalzview(d).tab, -1, -1)
+        end
     end
 end
 

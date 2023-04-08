@@ -13,6 +13,7 @@ julia> ghz = S"XXXX
                IZZI
                IIZZ";
 
+
 julia> canonicalize!(ghz)
 + XXXX
 + Z__Z
@@ -115,6 +116,7 @@ julia> ghz = S"XXXX
                IZZI
                IIZZ";
 
+
 julia> canonicalize!(ghz)
 + XXXX
 + Z__Z
@@ -122,6 +124,7 @@ julia> canonicalize!(ghz)
 + __ZZ
 
 julia> state, anticom_index, result = project!(ghz, P"ZIII");
+
 
 julia> state
 + Z___
@@ -146,12 +149,14 @@ julia> s = S"ZII
              IXI
              IIY";
 
+
 julia> canonicalize!(s)
 + _X_
 + __Y
 + Z__
 
 julia> state, anticom_index, result = project!(s, P"-ZII");
+
 
 julia> state
 + _X_
@@ -174,6 +179,7 @@ one more than the number of rows in the initial tableau. However, if
 julia> s = S"XZI
              IZI";
 
+
 julia> project!(s, P"IIX")
 (+ X__
 + _Z_, 3, nothing)
@@ -184,13 +190,11 @@ to the list of stabilizers.
 
 ```jldoctest
 julia> s = one(MixedStabilizer, 2, 3)
-Rank 2 stabilizer
 + Z__
 + _Z_
 
 julia> project!(s, P"IIX")
-(Rank 3 stabilizer
-+ Z__
+(+ Z__
 + _Z_
 + __X, 3, nothing)
 ```
@@ -201,28 +205,26 @@ instead of the \$\\mathcal{O}(n^3)\$ complexity of `*Stabilizer`.
 
 ```jldoctest
 julia> s = one(MixedDestabilizer, 2, 3)
-Rank 2 stabilizer
+𝒟ℯ𝓈𝓉𝒶𝒷
 + X__
 + _X_
-━━━━━
+𝒳ₗ━━━
 + __X
-━━━━━
+𝒮𝓉𝒶𝒷━
 + Z__
 + _Z_
-━━━━━
+𝒵ₗ━━━
 + __Z
 
 julia> project!(s, P"IIX")
-(Rank 3 stabilizer
+(𝒟ℯ𝓈𝓉𝒶𝒷
 + X__
 + _X_
 + __Z
-═════
+𝒮𝓉𝒶𝒷━
 + Z__
 + _Z_
-+ __X
-═════
-, 3, nothing)
++ __X, 3, nothing)
 ```
 
 See the "Datastructure Choice" section in the documentation for more details.
@@ -246,14 +248,13 @@ list of stabilizers:
 julia> s = S"XZI
              IZI";
 
+
 julia> ms = MixedStabilizer(s)
-Rank 2 stabilizer
 + X__
 + _Z_
 
 julia> project!(ms, P"IIY")
-(Rank 3 stabilizer
-+ X__
+(+ X__
 + _Z_
 + __Y, 3, nothing)
 ```

@@ -418,7 +418,6 @@ julia> ghz = MixedStabilizer(S"XXX
                                _ZZ");
 
 julia> traceout!(ghz, [1])
-Rank 1 stabilizer
 + _ZZ
 ```
 
@@ -480,42 +479,42 @@ their name prefixed with `t` to mark them as dense tableaux.
 
 ```jldoctest
 julia> tHadamard
-X ⟼ + Z
-Z ⟼ + X
+X₁ ⟼ + Z
+Z₁ ⟼ + X
 
 julia> tPhase
-X ⟼ + Y
-Z ⟼ + Z
+X₁ ⟼ + Y
+Z₁ ⟼ + Z
 
 julia> tCNOT
-X_ ⟼ + XX
-_X ⟼ + _X
-Z_ ⟼ + Z_
-_Z ⟼ + ZZ
+X₁ ⟼ + XX
+X₂ ⟼ + _X
+Z₁ ⟼ + Z_
+Z₂ ⟼ + ZZ
 
 julia> tId1
-X ⟼ + X
-Z ⟼ + Z
+X₁ ⟼ + X
+Z₁ ⟼ + Z
 ```
 
 Chaining and tensor products are possible. Same for qubit permutations.
 
 ```jldoctest
 julia> tHadamard ⊗ tPhase
-X_ ⟼ + Z_
-_X ⟼ + _Y
-Z_ ⟼ + X_
-_Z ⟼ + _Z
+X₁ ⟼ + Z_
+X₂ ⟼ + _Y
+Z₁ ⟼ + X_
+Z₂ ⟼ + _Z
 
 julia> tHadamard * tPhase
-X ⟼ - Y
-Z ⟼ + X
+X₁ ⟼ - Y
+Z₁ ⟼ + X
 
 julia> permute(tCNOT, [2,1])
-X_ ⟼ + X_
-_X ⟼ + XX
-Z_ ⟼ + ZZ
-_Z ⟼ + _Z
+X₁ ⟼ + X_
+X₂ ⟼ + XX
+Z₁ ⟼ + ZZ
+Z₂ ⟼ + _Z
 ```
 
 You can create custom Clifford operators with C-strings or with a list of Pauli
@@ -526,16 +525,16 @@ julia> C"-ZZ
          +_Z
          -X_
          +XX"
-X_ ⟼ - ZZ
-_X ⟼ + _Z
-Z_ ⟼ - X_
-_Z ⟼ + XX
+X₁ ⟼ - ZZ
+X₂ ⟼ + _Z
+Z₁ ⟼ - X_
+Z₂ ⟼ + XX
 
 julia> CliffordOperator([P"-ZZ", P"_Z", P"-X_", P"XX"])
-X_ ⟼ - ZZ
-_X ⟼ + _Z
-Z_ ⟼ - X_
-_Z ⟼ + XX
+X₁ ⟼ - ZZ
+X₂ ⟼ + _Z
+Z₁ ⟼ - X_
+Z₂ ⟼ + XX
 ```
 
 Naturally, the operators can be applied to stabilizer states. This includes high
@@ -599,8 +598,8 @@ They are used slightly differently, as one needs to specify the qubits on which 
 ```jldoctest
 julia> sHadamard(2)
 Symbolic single-qubit gate on qubit 2
-X ⟼ + Z
-Z ⟼ + X
+X₁ ⟼ + Z
+Z₁ ⟼ + X
 
 julia> sHadamard(2)*S"XXX"
 + XZX
@@ -626,10 +625,11 @@ julia> s=S"-XXX
            +IZZ";
 
 julia> d = Destabilizer(s)
+𝒟ℯ𝓈𝓉𝒶𝒷
 + Z__
 + _X_
 + __X
-━━━━━
+𝒮𝓉𝒶𝒷━
 - XXX
 - ZZ_
 - Z_Z
@@ -656,10 +656,11 @@ the expensive ``\mathcal{O}(n^3)`` canonicalization operation).
 
 ```jldoctest destab
 julia> project!(d,P"ZZI")
-(+ Z__
+(𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
 + _X_
 + __X
-━━━━━
+𝒮𝓉𝒶𝒷━
 - XXX
 - ZZ_
 - Z_Z, 0, 0x02)
@@ -669,10 +670,11 @@ Non-commuting projections are just as fast as when using only stabilizers.
 
 ```jldoctest destab
 julia> project!(d,P"ZZZ")
-(- XXX
+(𝒟ℯ𝓈𝓉𝒶𝒷
+- XXX
 + X_X
 + XX_
-━━━━━
+𝒮𝓉𝒶𝒷━
 + ZZZ
 - ZZ_
 - Z_Z, 1, nothing)
@@ -682,10 +684,11 @@ Clifford operations can be applied the same way they are applied to stabilizers.
 
 ```jldoctest destab
 julia> apply!(d,tCNOT⊗tHadamard)
+𝒟ℯ𝓈𝓉𝒶𝒷
 - X_Z
 + XXZ
 + X__
-━━━━━
+𝒮𝓉𝒶𝒷━
 + _ZX
 - _Z_
 - Z_X

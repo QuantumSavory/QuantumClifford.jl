@@ -102,15 +102,15 @@ Similarly, one can create a diagonal mixed state.
 
 ```jldoctest
 julia> one(MixedDestabilizer, 2, 3)
-Rank 2 stabilizer
+𝒟ℯ𝓈𝓉𝒶𝒷
 + X__
 + _X_
-━━━━━
+𝒳ₗ━━━
 + __X
-━━━━━
+𝒮𝓉𝒶𝒷━
 + Z__
 + _Z_
-━━━━━
+𝒵ₗ━━━
 + __Z
 ```
 

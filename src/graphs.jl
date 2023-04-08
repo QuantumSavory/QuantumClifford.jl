@@ -46,7 +46,9 @@ julia> s = S" XXX
               ZZ_
              -_ZZ";
 
+
 julia> g, h_idx, ip_idx, z_idx = graphstate(s);
+
 
 julia> collect(edges(g))
 2-element Vector{Graphs.SimpleGraphs.SimpleEdge{Int64}}:
@@ -110,11 +112,15 @@ julia> s = S" XXX
               YZ_
              -_ZZ";
 
+
 julia> graph, h_idx, ip_idx, z_idx = graphstate(s);
+
 
 julia> gates = graph_gatesequence(h_idx, ip_idx, z_idx);
 
+
 julia> for gate in vcat(gates...) apply!(s, gate) end
+
 
 julia> s # This is now a graph state (notice you need to multiply row 1 by row 2)
 + YYZ
@@ -138,9 +144,12 @@ julia> s = S" XXX
               YZ_
              -_ZZ";
 
+
 julia> graph, h_idx, ip_idx, z_idx = graphstate(s);
 
+
 julia> gate = graph_gate(h_idx, ip_idx, z_idx, nqubits(s));
+
 
 julia> apply!(s, gate) # This is now a graph state (notice you need to multiply row 1 by row 2)
 + YYZ
