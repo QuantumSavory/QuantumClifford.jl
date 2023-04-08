@@ -80,45 +80,46 @@ function row_limit(str, limit=50)
     return SubString(str, 1, padding) * " ... " * SubString(str, n - padding, n - 1)
 end
 
+digits_subchars = collect("₀₁₂₃₄₅₆₇₈₉")
+digits_substr(n,nwidth) = join(([digits_subchars[d+1] for d in reverse(digits(n, pad=nwidth))]))
+
 function _show(io::IO, c::CliffordOperator, limit=50, limit_vertical=20)
     n = nqubits(c)
-    padding = Int64(floor(limit_vertical/2))
+    nwidth = Int(ceil(log10(n+1)))
+    _limit = limit==-1 ? -1 : limit-nwidth-10
     range = 1:n
     if (limit_vertical < n && limit_vertical != -1)
-        range = [1:padding; -1; (n-padding):n]
+        padding = limit_vertical÷4
+        range = [1:padding-1; -1; (n-padding+2):n]
     end
     for i in range
         if (i == -1)
-            print("[ ..... ]\n")
+            print(" ⋮\n")
             continue
         end
-        row = repeat("_",i-1)*"X"*repeat("_",n-i)* " ⟼ "
-        print(io, row_limit(row, limit)*"  ")
-        _show(io, c.tab[i], limit)
+        print(io, "X"*digits_substr(i,nwidth)*" ⟼ ")
+        _show(io, c.tab[i], _limit)
         println(io)
     end
     for i in range
         if (i == -1)
-            print("[ ..... ]\n")
+            print(" ⋮\n")
             continue
         end
-        row = repeat("_",i-1)*"Z"*repeat("_",n-i)* " ⟼ "
-        print(io, row_limit(row, limit)*"  ")
-        _show(io, c.tab[i+n], limit)
-        println(io)
+        print(io, "Z"*digits_substr(i,nwidth)*" ⟼ ")
+        _show(io, c.tab[i+n], _limit)
+        i!=n && println(io)
     end
 end
 
 function Base.show(io::IO, c::CliffordOperator)
-    if !haskey(io, :limit)
-        io = IOContext(io, :limit => true)
-    end
-
-    if get(io, :limit, true)
+    if get(io, :compact, false)
+        q = nqubits(c)
+        print(io, "Clifford $q qubits")
+    elseif get(io, :limit, false)
         sz = displaysize(io)
-        print(sz[1], ' ', sz[2], '\n')
-        _show(io, c, sz[1], sz[2])
-    else 
+        _show(io, c, sz[2], sz[1])
+    else
         _show(io, c, -1, -1)
     end
 end
