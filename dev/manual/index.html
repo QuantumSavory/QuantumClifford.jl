@@ -171,7 +171,6 @@ julia&gt; traceout!(ghz, [1])
                                _ZZ&quot;);
 
 julia&gt; traceout!(ghz, [1])
-Rank 1 stabilizer
 + _ZZ</code></pre><h1 id="Generating-a-Pauli-Operator-with-Stabilizer-Generators"><a class="docs-heading-anchor" href="#Generating-a-Pauli-Operator-with-Stabilizer-Generators">Generating a Pauli Operator with Stabilizer Generators</a><a id="Generating-a-Pauli-Operator-with-Stabilizer-Generators-1"></a><a class="docs-heading-anchor-permalink" href="#Generating-a-Pauli-Operator-with-Stabilizer-Generators" title="Permalink"></a></h1><p>The <a href="../API/#QuantumClifford.generate!-Tuple{PauliOperator, Stabilizer}"><code>generate!</code></a> function attempts to generate a Pauli operator by multiplying together the operators belonging to a given stabilizer (or reports their independence). This particular function requires the stabilizer to be already canonicalized.</p><pre><code class="language-julia-repl hljs">julia&gt; s = S&quot;-XXX
              +ZZI
              -IZZ&quot;;
@@ -186,49 +185,49 @@ julia&gt; s = canonicalize!(s)
 julia&gt; generate!(P&quot;XZX&quot;, s)
 
 julia&gt; generate!(P&quot;YYY&quot;, s)</code></pre><h1 id="Clifford-Operators"><a class="docs-heading-anchor" href="#Clifford-Operators">Clifford Operators</a><a id="Clifford-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Clifford-Operators" title="Permalink"></a></h1><p>The <a href="../API/#QuantumClifford.CliffordOperator"><code>CliffordOperator</code></a> structure represents a linear mapping between stabilizers (which should also preserve commutation relationships, but that is not checked at instantiation). These are n-qubit dense tableaux, representing an operation on n-qubit states. For single- or two-qubit gates, it is much more efficient to use small sparse <a href="#Symbolic-Clifford-Operators">symbolic clifford operators</a>. A number of predefined Clifford operators are available, their name prefixed with <code>t</code> to mark them as dense tableaux.</p><pre><code class="language-julia-repl hljs">julia&gt; tHadamard
-X ⟼ + Z
-Z ⟼ + X
+X₁ ⟼ + Z
+Z₁ ⟼ + X
 
 julia&gt; tPhase
-X ⟼ + Y
-Z ⟼ + Z
+X₁ ⟼ + Y
+Z₁ ⟼ + Z
 
 julia&gt; tCNOT
-X_ ⟼ + XX
-_X ⟼ + _X
-Z_ ⟼ + Z_
-_Z ⟼ + ZZ
+X₁ ⟼ + XX
+X₂ ⟼ + _X
+Z₁ ⟼ + Z_
+Z₂ ⟼ + ZZ
 
 julia&gt; tId1
-X ⟼ + X
-Z ⟼ + Z</code></pre><p>Chaining and tensor products are possible. Same for qubit permutations.</p><pre><code class="language-julia-repl hljs">julia&gt; tHadamard ⊗ tPhase
-X_ ⟼ + Z_
-_X ⟼ + _Y
-Z_ ⟼ + X_
-_Z ⟼ + _Z
+X₁ ⟼ + X
+Z₁ ⟼ + Z</code></pre><p>Chaining and tensor products are possible. Same for qubit permutations.</p><pre><code class="language-julia-repl hljs">julia&gt; tHadamard ⊗ tPhase
+X₁ ⟼ + Z_
+X₂ ⟼ + _Y
+Z₁ ⟼ + X_
+Z₂ ⟼ + _Z
 
 julia&gt; tHadamard * tPhase
-X ⟼ - Y
-Z ⟼ + X
+X₁ ⟼ - Y
+Z₁ ⟼ + X
 
 julia&gt; permute(tCNOT, [2,1])
-X_ ⟼ + X_
-_X ⟼ + XX
-Z_ ⟼ + ZZ
-_Z ⟼ + _Z</code></pre><p>You can create custom Clifford operators with C-strings or with a list of Pauli operators.</p><pre><code class="language-julia-repl hljs">julia&gt; C&quot;-ZZ
+X₁ ⟼ + X_
+X₂ ⟼ + XX
+Z₁ ⟼ + ZZ
+Z₂ ⟼ + _Z</code></pre><p>You can create custom Clifford operators with C-strings or with a list of Pauli operators.</p><pre><code class="language-julia-repl hljs">julia&gt; C&quot;-ZZ
          +_Z
          -X_
          +XX&quot;
-X_ ⟼ - ZZ
-_X ⟼ + _Z
-Z_ ⟼ - X_
-_Z ⟼ + XX
+X₁ ⟼ - ZZ
+X₂ ⟼ + _Z
+Z₁ ⟼ - X_
+Z₂ ⟼ + XX
 
 julia&gt; CliffordOperator([P&quot;-ZZ&quot;, P&quot;_Z&quot;, P&quot;-X_&quot;, P&quot;XX&quot;])
-X_ ⟼ - ZZ
-_X ⟼ + _Z
-Z_ ⟼ - X_
-_Z ⟼ + XX</code></pre><p>Naturally, the operators can be applied to stabilizer states. This includes high performance in-place operations (and the phase can be neglected with <code>phases=false</code> for faster computation).</p><pre><code class="language-julia-repl hljs">julia&gt; tCNOT * S&quot;X_&quot;
+X₁ ⟼ - ZZ
+X₂ ⟼ + _Z
+Z₁ ⟼ - X_
+Z₂ ⟼ + XX</code></pre><p>Naturally, the operators can be applied to stabilizer states. This includes high performance in-place operations (and the phase can be neglected with <code>phases=false</code> for faster computation).</p><pre><code class="language-julia-repl hljs">julia&gt; tCNOT * S&quot;X_&quot;
 + XX
 
 julia&gt; s = S&quot;X_&quot;;
@@ -249,8 +248,8 @@ sCNOT
 sCPHASE
 sSWAP</code></pre><p>Generally, they have the prefix <code>s</code> for symbolic/small/sparse. They are used slightly differently, as one needs to specify the qubits on which they act while instantiating them:</p><pre><code class="language-julia-repl hljs">julia&gt; sHadamard(2)
 Symbolic single-qubit gate on qubit 2
-X ⟼ + Z
-Z ⟼ + X
+X₁ ⟼ + Z
+Z₁ ⟼ + X
 
 julia&gt; sHadamard(2)*S&quot;XXX&quot;
 + XZX
@@ -261,10 +260,11 @@ julia&gt; sCNOT(2,3)*S&quot;XYY&quot;
            +IZZ&quot;;
 
 julia&gt; d = Destabilizer(s)
+𝒟ℯ𝓈𝓉𝒶𝒷
 + Z__
 + _X_
 + __X
-━━━━━
+𝒮𝓉𝒶𝒷━
 - XXX
 - ZZ_
 - Z_Z</code></pre><p>They have convenience methods to extract only the stabilizer and destabilizer pieces:</p><pre><code class="language-julia-repl hljs">julia&gt; stabilizerview(d)
@@ -276,24 +276,27 @@ julia&gt; destabilizerview(d)
 + Z__
 + _X_
 + __X</code></pre><p>Importantly commuting projections are much faster when tracking the destabilizer as canonicalization is not necessary (an <span>$\mathcal{O}(n^2)$</span> complexity because it avoids the expensive <span>$\mathcal{O}(n^3)$</span> canonicalization operation).</p><pre><code class="language-julia-repl hljs">julia&gt; project!(d,P&quot;ZZI&quot;)
-(+ Z__
+(𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
 + _X_
 + __X
-━━━━━
+𝒮𝓉𝒶𝒷━
 - XXX
 - ZZ_
 - Z_Z, 0, 0x02)</code></pre><p>Non-commuting projections are just as fast as when using only stabilizers.</p><pre><code class="language-julia-repl hljs">julia&gt; project!(d,P&quot;ZZZ&quot;)
-(- XXX
+(𝒟ℯ𝓈𝓉𝒶𝒷
+- XXX
 + X_X
 + XX_
-━━━━━
+𝒮𝓉𝒶𝒷━
 + ZZZ
 - ZZ_
 - Z_Z, 1, nothing)</code></pre><p>Clifford operations can be applied the same way they are applied to stabilizers.</p><pre><code class="language-julia-repl hljs">julia&gt; apply!(d,tCNOT⊗tHadamard)
+𝒟ℯ𝓈𝓉𝒶𝒷
 - X_Z
 + XXZ
 + X__
-━━━━━
+𝒮𝓉𝒶𝒷━
 + _ZX
 - _Z_
-- Z_X</code></pre><h1 id="Mixed-States"><a class="docs-heading-anchor" href="#Mixed-States">Mixed States</a><a id="Mixed-States-1"></a><a class="docs-heading-anchor-permalink" href="#Mixed-States" title="Permalink"></a></h1><p>Both the <code>Stabilizer</code> and <code>Destabilizer</code> structures have more general forms that enable work with mixed stabilizer states. They are the <a href="../API/#QuantumClifford.MixedStabilizer"><code>MixedStabilizer</code></a> and <a href="../API/#QuantumClifford.MixedDestabilizer"><code>MixedDestabilizer</code></a> structures, described in <a href="../mixed/#Mixed-Stabilizer-States">Mixed States</a>. More information that can be seen in the <a href="../datastructures/#Choosing-Appropriate-Data-Structure">data structures page</a>, which expands upon the algorithms available for each structure.</p><h1 id="Random-States-and-Circuits"><a class="docs-heading-anchor" href="#Random-States-and-Circuits">Random States and Circuits</a><a id="Random-States-and-Circuits-1"></a><a class="docs-heading-anchor-permalink" href="#Random-States-and-Circuits" title="Permalink"></a></h1><p><a href="@ref">random_clifford</a>, <a href="@ref">random_stabilizer</a>, and <a href="../API/#QuantumClifford.enumerate_cliffords-Tuple{Any, Any}"><code>enumerate_cliffords</code></a> can be used for the generation of random states.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« QuantumClifford.jl</a><a class="docs-footer-nextpage" href="../canonicalization/">Canonicalization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Saturday 1 April 2023 03:35">Saturday 1 April 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+- Z_X</code></pre><h1 id="Mixed-States"><a class="docs-heading-anchor" href="#Mixed-States">Mixed States</a><a id="Mixed-States-1"></a><a class="docs-heading-anchor-permalink" href="#Mixed-States" title="Permalink"></a></h1><p>Both the <code>Stabilizer</code> and <code>Destabilizer</code> structures have more general forms that enable work with mixed stabilizer states. They are the <a href="../API/#QuantumClifford.MixedStabilizer"><code>MixedStabilizer</code></a> and <a href="../API/#QuantumClifford.MixedDestabilizer"><code>MixedDestabilizer</code></a> structures, described in <a href="../mixed/#Mixed-Stabilizer-States">Mixed States</a>. More information that can be seen in the <a href="../datastructures/#Choosing-Appropriate-Data-Structure">data structures page</a>, which expands upon the algorithms available for each structure.</p><h1 id="Random-States-and-Circuits"><a class="docs-heading-anchor" href="#Random-States-and-Circuits">Random States and Circuits</a><a id="Random-States-and-Circuits-1"></a><a class="docs-heading-anchor-permalink" href="#Random-States-and-Circuits" title="Permalink"></a></h1><p><a href="@ref">random_clifford</a>, <a href="@ref">random_stabilizer</a>, and <a href="../API/#QuantumClifford.enumerate_cliffords-Tuple{Any, Any}"><code>enumerate_cliffords</code></a> can be used for the generation of random states.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« QuantumClifford.jl</a><a class="docs-footer-nextpage" href="../canonicalization/">Canonicalization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Saturday 8 April 2023 20:06">Saturday 8 April 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
