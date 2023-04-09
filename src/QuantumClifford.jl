@@ -181,7 +181,7 @@ function _P_str(a)
 end
 
 macro P_str(a)
-    _P_str(a)
+    quote _P_str($a) end
 end
 
 Base.getindex(p::PauliOperator{Tz,Tv}, i::Int) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = (p.xz[_div(Tve, i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0, (p.xz[end÷2+_div(Tve,i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0
@@ -296,7 +296,7 @@ function _T_str(a) # TODO this can be optimized by not creating intermediary Pau
 end
 
 macro T_str(a)
-    _T_str(a)
+    quote _T_str($a) end
 end
 
 Base.getindex(tab::Tableau, i::Int) = PauliOperator(tab.phases[i], nqubits(tab), tab.xzs[:,i])
@@ -521,7 +521,7 @@ Stabilizer(xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tabl
 Stabilizer(xzs::AbstractMatrix{Bool}) = Stabilizer(Tableau(xzs))
 Stabilizer(s::Stabilizer) = s
 macro S_str(a)
-    Stabilizer(_T_str(a))
+    quote Stabilizer(_T_str($a)) end
 end
 Base.getindex(stab::Stabilizer, i::Int) = tab(stab)[i]
 Base.getindex(stab::Stabilizer, i) = Stabilizer(tab(stab)[i])

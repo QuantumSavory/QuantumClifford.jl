@@ -55,7 +55,7 @@ end
 
 macro C_str(a)
     tab = _T_str(a)
-    CliffordOperator(tab)
+    quote CliffordOperator($tab) end
 end
 
 CliffordOperator(op::CliffordOperator) = op
