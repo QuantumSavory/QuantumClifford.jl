@@ -5,6 +5,10 @@
 
 # News
 
+## v0.7.1 - 2023-04-08
+
+- Better printing of tableaux and operators.
+
 ## v0.7.0 - 2023-03-31
 
 - **(breaking)** Switched the convention for results from `apply!(Register(...), sMX)` (and corresponding for `sMY` and `sMZ`). Previously the +1 eigenvector and -1 eigenvector were mapped to 1 and 0 as measurement results. This is inconvenient for boolean math and contrary to typical convection. Moving to standard convention now (+1 eigenvector corresponds to result 0). Most convenient because `eigenvalue = (-1)^measurement result`.
