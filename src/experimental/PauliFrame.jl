@@ -11,7 +11,7 @@
 # If the first index is 1, then it refers to an X component, if 2 then Z. For Y, use both i.e. [1:2]
 # The value of [(X or Z), frame] is equal to a binary number that represents whether the provided index for X or Z is "on"
 #   Example: say we want to represent ZZ_Z_ . First convert to a binary string, treating the leftmost qubit as our 0 place
-#            ZZ_Z_ -> 01011 = 11 (in decimal). So to set this on frame f, do frames[2,f] = 11
+#            ZZ_Z_ -> 01011 = 11 (in decimal). So to set this on frame f, do frames.tab.xzs[2,f] = 11
 # Using this, most of the manipulations of the frames were programming, specifically related to injecting Pauli error channel errors
 #
 # By using this data structure from QuantumClifford.jl, the conjugations of the pauli errors in the frames are done by using QuantumClifford.apply!()
@@ -62,7 +62,7 @@ function pauli_frames(qubits, circuit,ref_m, numframes=1, p=0.25, showFrame=true
             bit_t = op[2][1]
             # There's probably a faster way to do this than a for loop?
             # The difficulty is that I need to randomly choose indices for each frame
-            # Not sure if XOR correctly represents multiplying paulis into the frame? 
+            # Not 100% sure if XOR correctly represents multiplying paulis into the frame? 
             xyz_error = [(1,1), (1,2), (2,2)]
             frame_error = zeros(numframes)
             rand!(frame_error)
@@ -97,7 +97,7 @@ function pauli_frames(qubits, circuit,ref_m, numframes=1, p=0.25, showFrame=true
     end
     
     if showFrame
-       println("\nPauli frame after at end of circuit\n", frame)
+       println("\nPauli frame at end of circuit\n", frame)
     end
  
     #  return matrix: each row is a frame, each column is a measurement. The measurements refer to 
