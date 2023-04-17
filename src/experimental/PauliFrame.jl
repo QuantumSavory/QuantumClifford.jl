@@ -1,8 +1,25 @@
 # Runs any number of  pauli frames on a given circuit
+# Inputs: Number of qubits, a circuit (refer to examples at the bottom of this file), number of frames desired,
+#         a probalitiy p, and a boolean flag that supresses some print states when turned to false
+#
 # p is the probability that a pauli error channel will produce a non identity error
 #      -> Then after this, the three Pauli operators are all equally likely.
+
+# # # # # # # Notes about the xzs matrix manipulations # # # # # # # 
+# For most of the operations, I manipulated the Stabilizer.tab.xzs matrix from the QuantumClifford.jl library.
+# It's a 2 x f matrtix, where f is the number of frames
+# If the first index is 1, then it refers to an X component, if 2 then Z. For Y, use both i.e. [1:2]
+# The value of [(X or Z), frame] is equal to a binary number that represents whether the provided index for X or Z is "on"
+#   Example: say we want to represent ZZ_Z_ . First convert to a binary string, treating the leftmost qubit as our 0 place
+#            ZZ_Z_ -> 01011 = 11 (in decimal). So to set this on frame f, do frames[2,f] = 11
+# Using this, most of the manipulations of the frames were programming, specifically related to injecting Pauli error channel errors
+#
+# By using this data structure from QuantumClifford.jl, the conjugations of the pauli errors in the frames are done by using QuantumClifford.apply!()
+
 using Random
 using QuantumClifford
+
+runTests = true
 function pauli_frames(qubits, circuit,ref_m, numframes=1, p=0.25, showFrame=true)
     # Copying these because these variables will be modified later
     circuit = deepcopy(circuit)
@@ -13,7 +30,9 @@ function pauli_frames(qubits, circuit,ref_m, numframes=1, p=0.25, showFrame=true
     # Declaration of the frame data structure
     frame = zero(Stabilizer, numframes, qubits)
     # Randomly apply Z error with prob 1/2 on init
-    frame.tab.xzs[2,:] = rand(0:2^(qubits)-1,qubits,1)
+    # This generates a random vector of values from 0 to the maximum binary number for the number of qubits.
+    # For example, with 2 qubits: this will be 0 through 3 or 00 01 10 11. The vector length is numframes.
+    frame.tab.xzs[2,:] = rand(0:2^(qubits)-1,numframes,1)
     
     if showFrame
         println("\nInitial Pauli frame\n", frame)
@@ -90,8 +109,29 @@ function pauli_frames(qubits, circuit,ref_m, numframes=1, p=0.25, showFrame=true
     return reshape(sim_m, (numframes, num_m)), frame
 end
 
-circuit = [(:"CNOT", [1,4]), (:"PE", [2]),(:"CNOT", [2,4]),(:"CNOT", [2,5]),(:"CNOT", [3,5]), (:"MZ", [4]),(:"MZ", [5])]
-ref = [0,0];
 
-m, f = pauli_frames(5,circuit,ref,5, 0.1)
-print(m)
+if runTests
+    if true
+        # 3 bit repetition code example - general demonstration
+        println("\3 qubit rep code Circuit")
+        circuit = [(:"CNOT", [1,4]), (:"PE", [2]),(:"CNOT", [2,4]),(:"CNOT", [2,5]),(:"CNOT", [3,5]), (:"MZ", [4]),(:"MZ", [5])]
+        ref = [0,0];
+
+        m, f = pauli_frames(5,circuit,ref,5, 0.1)
+        print(m)
+    end
+
+    if true
+        # Showing the random Z errors model non-deterministic circuits.
+        println("\nGHZ Circuit")
+        ghz_circuit = [(:"H",[1]), (:"CNOT",[1,2]),(:"CNOT",[1,3]), (:"MZ", [1]), (:"MZ", [2]), (:"MZ", [3])]
+        ref = [0,0,0]
+
+        m, f = pauli_frames(3,ghz_circuit,ref,10^6, 0.1,false);
+        println("First 10 frames measurements out 10^6 frames: ", m[1:10,:])
+        println("Ratio of 000 measurements to 111 measurements: ", (sum(m)/3)/(10^6))
+    end
+end
+
+
+
