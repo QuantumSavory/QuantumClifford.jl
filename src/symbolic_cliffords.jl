@@ -263,7 +263,7 @@ end
 @qubitop2 ZCY    (x1      , x2⊻z1⊻z2 , x2⊻x1 , z2⊻x1   , ~iszero( (x1 & (x2 ⊻ z1) & (x2 ⊻ z2)) ))
 
 @qubitop2 XCX    (z2⊻x1   , z1       , x2⊻z1 , z2      , ~iszero( (z1 & z2) & (x1 ⊻ x2) ))
-@qubitop2 XCY    (x1⊻x2⊻z2, z1       , z1⊻x2 , z2⊻z1   , ~iszero( ~iszero( z1 & (x2 ⊻ z2) & ~(x2 ⊻ x1)) ))
+@qubitop2 XCY    (x1⊻x2⊻z2, z1       , z1⊻x2 , z2⊻z1   , ~iszero( (z1 & (x2 ⊻ z2) & ~(x2 ⊻ x1)) ))
 @qubitop2 XCZ    (x1⊻x2   , z1       , x2    , z2⊻z1   , ~iszero( (x2 & z1) & (x1 ⊻ z2 ⊻ 1) ))
 
 
