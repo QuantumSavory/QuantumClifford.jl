@@ -316,6 +316,27 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
             @test tab(apply!(copy(s),sMZ(r))).xzs == tab(sz).xzs == tab(ssz).xzs == tab(rssz).xzs
         end
     end
+    @testset "project! projectrand! apply!(...,sM*) consistency" begin
+        s = S"XII -IZI IIY"
+        _,_, r1 = project!(MixedDestabilizer(copy(s)), sMX(1))
+        _,_, r2 = project!(copy(s), P"XII")
+        _,_, r3 = project!(MixedDestabilizer(copy(s)), sMX(1))
+        _, r4 = projectrand!(copy(s), P"XII")
+        r5 = bitview(apply!(Register(copy(s), [0]),sMX(1)))[1]
+        @test r1 == r2 == r3 == r4 == r5
+        _,_, r1 = project!(MixedDestabilizer(copy(s)), sMZ(2))
+        _,_, r2 = project!(copy(s), P"IZI")
+        _,_, r3 = project!(MixedDestabilizer(copy(s)), sMZ(2))
+        _, r4 = projectrand!(copy(s), P"IZI")
+        r5 = bitview(apply!(Register(copy(s), [0]),sMZ(2)))[1]
+        @test r1%2 == r2%2 == r3%2 == r4%2 == r5
+        _,_, r1 = project!(MixedDestabilizer(copy(s)), sMY(3))
+        _,_, r2 = project!(copy(s), P"IIY")
+        _,_, r3 = project!(MixedDestabilizer(copy(s)), sMY(3))
+        _, r4 = projectrand!(copy(s), P"IIY")
+        r5 = bitview(apply!(Register(copy(s), [0]),sMY(3)))[1]
+        @test r1 == r2 == r3 == r4 == r5
+    end
     @testset "projectremoverand!" begin
         for n in test_sizes
             n > 3 || continue

@@ -96,26 +96,26 @@ end
 ```jldoctest
 julia> op = SingleQubitOperator(2, true, true, true, false, true, true) # Tableau components and phases
 Symbolic single-qubit gate on qubit 2
-X ⟼ - Y
-Z ⟼ - X
+X₁ ⟼ - Y
+Z₁ ⟼ - X
 
 julia> typeof(op)
 SingleQubitOperator
 
 julia> t_op = CliffordOperator(op, 3) # Transforming it back into an explicit tableau representation (specifying the size)
-X__ ⟼ + X__
-_X_ ⟼ - _Y_
-__X ⟼ + __X
-Z__ ⟼ + Z__
-_Z_ ⟼ - _X_
-__Z ⟼ + __Z
+X₁ ⟼ + X__
+X₂ ⟼ - _Y_
+X₃ ⟼ + __X
+Z₁ ⟼ + Z__
+Z₂ ⟼ - _X_
+Z₃ ⟼ + __Z
 
 julia> typeof(t_op)
 CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}
 
 julia> CliffordOperator(op, 1, compact=true) # You can also extract just the non-trivial part of the tableau
-X ⟼ - Y
-Z ⟼ - X
+X₁ ⟼ - Y
+Z₁ ⟼ - X
 ```
 
 See also: [`sHadamard`](@ref), [`sPhase`](@ref), [`sId1`](@ref), [`sX`](@ref), [`sY`](@ref), [`sZ`](@ref), [`CliffordOperator`](@ref)

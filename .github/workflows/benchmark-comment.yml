@@ -22,13 +22,13 @@ jobs:
       ${{ github.event.workflow_run.event == 'pull_request' &&
           github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # restore records from the artifacts
       - uses: dawidd6/action-download-artifact@v2
         with:
           workflow: benchmark.yml
-          name: perforamance-tracking
+          name: performance-tracking
           workflow_conclusion: success
       - name: output benchmark result
         id: output-result-markdown
@@ -41,7 +41,7 @@ jobs:
 
       # check if the previous comment exists
       - name: find comment
-        uses: peter-evans/find-comment@v1
+        uses: peter-evans/find-comment@v2
         id: fc
         with:
           issue-number: ${{ steps.output-pull-request-number.outputs.body }}
@@ -51,13 +51,13 @@ jobs:
       # create/update comment
       - name: create comment
         if: ${{ steps.fc.outputs.comment-id == 0 }}
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ steps.output-pull-request-number.outputs.body }}
           body: ${{ steps.output-result-markdown.outputs.body }}
       - name: update comment
         if: ${{ steps.fc.outputs.comment-id != 0 }}
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v3
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           body: ${{ steps.output-result-markdown.outputs.body }}

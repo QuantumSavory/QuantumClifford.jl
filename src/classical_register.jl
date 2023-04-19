@@ -39,22 +39,22 @@ end
 
 function apply!(r::Register, m::sMX{T}) where T
     _, res = projectXrand!(r,m.qubit)
-    T==Int && (bitview(r)[m.bit] = iszero(res))
+    T==Int && (bitview(r)[m.bit] = !iszero(res))
     r
 end
 function apply!(r::Register, m::sMY{T}) where T
     _, res = projectYrand!(r,m.qubit)
-    T==Int && (bitview(r)[m.bit] = iszero(res))
+    T==Int && (bitview(r)[m.bit] = !iszero(res))
     r
 end
 function apply!(r::Register, m::sMZ{T}) where T
     _, res = projectZrand!(r,m.qubit)
-    T==Int && (bitview(r)[m.bit] = iszero(res))
+    T==Int && (bitview(r)[m.bit] = !iszero(res))
     r
 end
 function apply!(r::Register, m::PauliMeasurement{A,B,T}) where {A,B,T}
     _, res = projectrand!(r,m.pauli)
-    T==Int && (bitview(r)[m.storagebit] = iszero(res))
+    T==Int && (bitview(r)[m.storagebit] = !iszero(res))
     r
 end
 function projectXrand!(r::Register, m)

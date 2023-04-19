@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # setup
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: julia-actions/setup-julia@latest
         with:
           version: 'nightly'
@@ -48,7 +48,7 @@ jobs:
         run: echo ${{ github.event.pull_request.number }} > ./pull-request-number.artifact
 
       # save as artifacts (performance tracking (comment) workflow will use it)
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
-          name: perforamance-tracking
+          name: performance-tracking
           path: ./*.artifact

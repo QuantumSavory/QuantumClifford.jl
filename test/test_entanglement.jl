@@ -1,3 +1,5 @@
+using Test
+
 using Graphs
 using QuantumClifford
 
@@ -19,21 +21,21 @@ using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good
     end
 end
 
-@testset "Entanglement calculated from clipped" begin
+@testset "Entanglement calculated from clipped/rref for mixed states" begin
     for n in test_sizes
-        s = random_stabilizer(n)
+        s = random_destabilizer(rand(1:n), n)
         endpoints = rand(1:n, 2)
         subsystem_range = min(endpoints...):max(endpoints...)
-        @test entanglement_entropy(copy(s), subsystem_range, Val(:clip))==entanglement_entropy(s, subsystem_range, Val(:graph))
+        @test entanglement_entropy(copy(s), subsystem_range, Val(:clip)) == entanglement_entropy(copy(s), subsystem_range, Val(:rref))
     end
 end
 
-@testset "Entanglement calculated from graph" begin
+@testset "Entanglement calculated from clipped/graph/rref for pure states" begin
     for n in test_sizes
         s = random_stabilizer(n)
         endpoints = rand(1:n, 2)
         subsystem_range = min(endpoints...):max(endpoints...)
-        @test entanglement_entropy(copy(s), subsystem_range, Val(:graph))==entanglement_entropy(s, subsystem_range, Val(:rref))
+        @test entanglement_entropy(copy(s), subsystem_range, Val(:clip)) == entanglement_entropy(copy(s), subsystem_range, Val(:graph)) == entanglement_entropy(copy(s), subsystem_range, Val(:rref))
     end
 end
 
