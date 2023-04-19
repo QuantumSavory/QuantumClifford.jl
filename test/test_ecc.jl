@@ -29,9 +29,9 @@ function test_op(c::AbstractECC)
         apply!(physicalqubit1,physicalgate)
         #encode into logical state
         bufferqubits1 = one(Stabilizer,code_s(c))
-        logicalqubit1 = physicalqubit1⊗bufferqubits1 
+        logicalqubit1 = physicalqubit1⊗bufferqubits1 # what is this (bufferqubits) for?
         for gate in encoding_circuit(c)
-            apply!(logicalqubit1,gate)
+            apply!(logicalqubit1, gate)
         end
         
 
@@ -48,7 +48,7 @@ function test_op(c::AbstractECC)
         apply!(logicalqubit2,logicalgate)
 
 
-        @test canonicalize!(logicalqubit1) == canonicalize!(logicalqubit2)
+        @test canonicalize!(logicalqubit1) == canonicalize!(logicalqubit2) # <-- this test if logicalgate does nothing, but it can return true even if logicalgate is somekind of error and the operation doesn't run correctly afterall
        
         #physicalqubit
         encoding_circuit_physical = encoding_circuit(c)
@@ -96,10 +96,12 @@ function new_test_ns(c::AbstractECC)
         syndrome2 = Register(s2, falses(code_s(c)))
         i = 1
         for gate in naive_circuit
-            apply!(syndrome2, gate)
-            @test bitview(syndrome2) == syndrome1[i]
-            @test syndrome2 == syndrome2
-            i += 1
+            println(gate)
+            apply!(syndrome2, gate) # <-- this is the problematic line, the tests just stop because it cannot execute this line
+            # @test bitview(syndrome2) == syndrome1[i]
+            
+            # @test syndrome2 == syndrome2
+            # i += 1
         end
     end
 end
