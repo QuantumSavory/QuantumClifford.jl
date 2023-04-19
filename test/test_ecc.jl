@@ -1,6 +1,5 @@
 using QuantumClifford
-include("../src/ecc/ECC.jl")
-using .ECC: AbstractECC, Steane5, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, isdegenerate
+using QuantumClifford.ECC: AbstractECC, Steane5, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, isdegenerate
 
 function test_op(c::AbstractECC)
     @testset "Physical and Logical qubit" begin
@@ -85,6 +84,26 @@ function test_op(c::AbstractECC)
     end
 end
 
+function new_test_ns(c::AbstractECC)
+    @testset "New naive syndrome circuits" begin
+        #create a random state
+        s = MixedDestabilizer(parity_checks(c))
+        # s = random_stabilizer(code_k(c))
+        s1, s2 = copy(s), copy(s)
+        syndrome1 = [project!(s1, check) for check in parity_checks(c)]
+        
+        naive_circuit = naive_syndrome_circuit(c)
+        syndrome2 = Register(s2, falses(code_s(c)))
+        i = 1
+        for gate in naive_circuit
+            apply!(syndrome2, gate)
+            @test bitview(syndrome2) == syndrome1[i]
+            @test syndrome2 == syndrome2
+            i += 1
+        end
+    end
+end
+
 
 function test_ns(c::AbstractECC)
 
@@ -94,7 +113,6 @@ function test_ns(c::AbstractECC)
         #obtain syndrome circuit
         nc = naive_syndrome_circuit(c)
         convert(Vector{AbstractSymbolicOperator}, nc)
-
         s = []
         # h = []
         for check in parity_checks(c)
@@ -129,7 +147,7 @@ codes = [Steane5(),Steane7(),Shor9()]
     
 for c in codes
     test_op(c)
-    test_ns(c)
+    new_test_ns(c)
 end
     
     
