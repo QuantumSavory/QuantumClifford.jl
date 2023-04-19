@@ -259,13 +259,15 @@ end
 @qubitop2 XNOR   (x1 , z1⊻z2 , x2⊻x1 , z2    , ~iszero( ((z2) ⊻ (x1 & z2) & (x2 ⊻ z1 ⊻ 1))))
 
 @qubitop2 ZCX    (x1      , z1⊻z2    , x2⊻x1 , z2      , ~iszero( ((x1 & z2) &~(z1 ⊻ x2)) )) # equiv of CNOT[1, 2]
-@qubitop2 ZCZ    (x1      , z1⊻x2    , x2    , z2⊻x1   , ~iszero( ((z1 ⊻ z2) & (x1 & x2)) ))
 @qubitop2 ZCY    (x1      , x2⊻z1⊻z2 , x2⊻x1 , z2⊻x1   , ~iszero( (x1 & (x2 ⊻ z1) & (x2 ⊻ z2)) ))
+@qubitop2 ZCZ    (x1      , z1⊻x2    , x2    , z2⊻x1   , ~iszero( ((z1 ⊻ z2) & (x1 & x2)) ))
 
 @qubitop2 XCX    (z2⊻x1   , z1       , x2⊻z1 , z2      , ~iszero( (z1 & z2) & (x1 ⊻ x2) ))
 @qubitop2 XCY    (x1⊻x2⊻z2, z1       , z1⊻x2 , z2⊻z1   , ~iszero( (z1 & (x2 ⊻ z2) & ~(x2 ⊻ x1)) ))
-@qubitop2 XCZ    (x1⊻x2   , z1       , x2    , z2⊻z1   , ~iszero( (x2 & z1) & (x1 ⊻ z2 ⊻ 1) ))
+@qubitop2 XCZ    (x1⊻x2   , z1       , x2    , z2⊻z1   , ~iszero( (x2 & z1) & ~(x1 ⊻ z2) )) # equiv to CNOT[2, 1]
 
+@qubitop2 YCX    (x1⊻z2   , z2⊻z1    , x1⊻z1⊻x2, z2    , ~iszero( (z2 & (x1 ⊻ z1) & ~(x2 ⊻ x1)) ))
+@qubitop2 YCZ    (x1⊻x2   , x2⊻z1    , x2    , z2⊻x1⊻z1, ~iszero( (x2 & (x1 ⊻ z1) & (z2 ⊻ x1)) ))
 
 function CliffordOperator(op::AbstractTwoQubitOperator, n; compact=false)
     if compact
