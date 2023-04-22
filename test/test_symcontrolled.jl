@@ -5,12 +5,6 @@ using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good
 using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
 using InteractiveUtils
 
-# the following lines are for local testing purposes and can be deleted when merged
-include("../src/QuantumClifford.jl")
-using Test
-using .QuantumClifford: random_stabilizer, random_destabilizer, @P_str,  @S_str, tCNOT, sCNOT, apply!, sDCNOT, random_pauli, sSWAP, sXNOR, sX, X, sZCX, sZCZ, sHadamard, sInvPhase, tHadamard, sZCY, sPhase, tPhase, sXCY, sYCZ, sYCX, sYCY, sXCX, sXCY, sXCZ
-
-
 test_size = 10
 
 function transform_Zbasis(qubit)
