@@ -14,9 +14,6 @@
 #            ZZ_Z_ -> 01011 = 11 (in decimal). So to set this on frame f, do frames.tab.xzs[2,f] = 11
 # Using this, most of the manipulations of the frames were programmed, especially the injection of Pauli error channel errors.
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-module PauliFrames
-
 using Random
 using QuantumClifford
 
@@ -34,13 +31,8 @@ function initZ(f::PauliFrame)
     f.frame.tab.xzs[2,:] = rand(0:2^(f.qubits)-1,f.numframes,1)
 end
 
-# applies a gate like tCNOT
-function apply!(f::PauliFrame, op::QuantumClifford.CliffordOperator, args) 
-    QuantumClifford.apply!(f.frame, op, args)
-end
-
 # applies a gates like sX, sCNOT
-function apply!(f::PauliFrame, op::DataType, args::Vector{Int}) 
+function apply!(f::PauliFrame, op, args::Vector{Int}) 
     if length(args)==1
         QuantumClifford.apply!(f.frame, op(args[1]))
     else
@@ -78,7 +70,7 @@ end
 # Simulates an entire circuit for the user. Here is sample input:
 #   circuit = [(sCNOT, [1,4]), (PE, [2]),(tCNOT, [2,4]),(tCNOT, [2,5]),(tCNOT, [3,5]), (MZ, [4]),(MZ, [5])]
 #   ref = [0,0]; numqubits = 5; numframes = 10;
-#   measurements, frames = PauliFrames.pauliFrameCircuitHandler(numqubits,circuit,ref,numframes) 
+#   measurements, frames = pauliFrameCircuitHandler(numqubits,circuit,ref,numframes) 
 #
 # Inputs: Number of qubits, a circuit (refer to examples at the bottom of this file), number of frames desired,
 #         and optionally a probability p.
@@ -96,8 +88,8 @@ end
 #          at the end of the circuit, it represents the pauli frame values right before measurement starts.
 function pauliFrameCircuitHandler(qubits, circuit, ref_m,  numframes=1, p=0.75)
     num_m = length(ref_m)
-    frame = PauliFrames.PauliFrame(numframes, qubits)
-    PauliFrames.initZ(frame)
+    frame = PauliFrame(numframes, qubits)
+    initZ(frame)
 
     # This is the returnable
     sim_m = []
@@ -106,11 +98,11 @@ function pauliFrameCircuitHandler(qubits, circuit, ref_m,  numframes=1, p=0.75)
     for op in circuit
         # op wasn't measure or pauli error channel
         if (op[1] != :MZ) && (op[1] != :PE)
-            PauliFrames.apply!(frame, op[1], op[2])
+            apply!(frame, op[1], op[2])
         
         # op was Pauli error channel
         elseif op[1]==:PE
-            PauliFrames.pauliError!(frame, p, op[2][1])
+            pauliError!(frame, p, op[2][1])
             
         # op was measurement in Z basis
         elseif op[1]==:MZ
@@ -118,10 +110,8 @@ function pauliFrameCircuitHandler(qubits, circuit, ref_m,  numframes=1, p=0.75)
             bit_t = op[2][1]
             
             # add the simulated measurement to the returnable
-            append!(sim_m, PauliFrames.pauliFrameMZ!(frame, ref, bit_t))
+            append!(sim_m, pauliFrameMZ!(frame, ref, bit_t))
         end
     end
     return reshape(sim_m, (numframes, num_m)), frame.frame
-end
-
 end
