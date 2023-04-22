@@ -255,9 +255,6 @@ end
 @qubitop2 CNOT   (x1 , z1⊻z2 , x2⊻x1 , z2    , ~iszero( (x1 & z1 & x2 & z2)  | (x1 & z2 &~(z1|x2)) ))
 @qubitop2 CPHASE (x1 , z1⊻x2 , x2    , z2⊻x1 , ~iszero( (x1 & z1 & x2 &~z2)  | (x1 &~z1 & x2 & z2) ))
 
-@qubitop2 DCNOT  (x2 , z1⊻z2 , x2⊻x1 , z1    , ~iszero( (x1 & z2 &~(x1&z2))  | (x1 & z2 & (x1|z2)) ))
-@qubitop2 XNOR   (x1 , z1⊻z2 , x2⊻x1 , z2    , ~iszero( ((z2) ⊻ (x1 & z2) & (x2 ⊻ z1 ⊻ 1))))
-
 @qubitop2 ZCX    (x1      , z1⊻z2    , x2⊻x1 , z2      , ~iszero( ((x1 & z2) &~(z1 ⊻ x2)) )) # equiv of CNOT[1, 2]
 @qubitop2 ZCY    (x1      , x2⊻z1⊻z2 , x2⊻x1 , z2⊻x1   , ~iszero( (x1 & (x2 ⊻ z1) & (x2 ⊻ z2)) ))
 @qubitop2 ZCZ    (x1      , z1⊻x2    , x2    , z2⊻x1   , ~iszero( ((z1 ⊻ z2) & (x1 & x2)) ))
