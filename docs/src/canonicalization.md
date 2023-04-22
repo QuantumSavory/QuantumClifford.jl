@@ -13,11 +13,12 @@ The final tableaux, if square should look like the following
 
 If the tableaux is shorter than a square, the diagonals might not reach all the way to the right.
 
-```julia
-julia> plot(canonicalize!(random_stabilizer(20,30)));
+```@example
+using QuantumClifford, CairoMakie
+f=Figure()
+stabilizerplot_axis(f[1,1], canonicalize!(random_stabilizer(20,30)))
+f
 ```
-
-![](plot-canostab.png)
 
 ## [`canonicalize_rref!`](@ref)
 
@@ -30,11 +31,12 @@ and you can specify as a second argument which columns to be canonicalized
 The tableau canonicalization is done in recursive steps, each one of which results in something akin to one of these three options
 ![](canonicalize_rref.png)
 
-```julia
-julia> plot(canonicalize_rref!(random_stabilizer(20,30),1:30)[1]; xzcomponents=:together);
+```@example
+using QuantumClifford, CairoMakie
+f=Figure()
+stabilizerplot_axis(f[1,1], canonicalize_rref!(random_stabilizer(20,30),1:30)[1])
+f
 ```
-
-![](plot-rref-together.png)
 
 ## [`canonicalize_gott!`](@ref)
 
@@ -52,22 +54,23 @@ A canonicalized tableau would look like the following (the right-most block does
 not exist for square tableaux).
 ![](canonicalize_gott.png)
 
-```julia
-julia> plot(canonicalize_gott!(random_stabilizer(30))[1]; xzcomponents=:together);
+```@example
+using QuantumClifford, CairoMakie
+f=Figure()
+stabilizerplot_axis(f[1,1], canonicalize_gott!(random_stabilizer(30))[1])
+f
 ```
-
-![](plot-gottstab-together.png)
 
 ## [`canonicalize_clip!`](@ref)
 
 Convert to the "clipped" gauge of a stabilizer state resulting in a "river" of non-identity operators around the diagonal.
 
-```@eval
-using Random; Random.seed!(1); using QuantumClifford, QuantumCliffordPlots, Plots
-plot(canonicalize_clip!(random_stabilizer(30)); xzcomponents=:together)
-savefig("plot-clip-together.png"); nothing
+```@example
+using QuantumClifford, CairoMakie
+f=Figure()
+stabilizerplot_axis(f[1,1], canonicalize_clip!(random_stabilizer(30)))
+f
 ```
-![](plot-clip-together.png)
 
 The properties of the clipped gauge are:
 

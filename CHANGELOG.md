@@ -5,6 +5,11 @@
 
 # News
 
+## v0.8.0
+
+- **(breaking)** Deprecated the `QuantumCliffordPlots` library and moved that functionality to 3 package extensions, one for each of `Quantikz`, `Plots`, and `Makie` visualizations.
+- **(breaking)** Set minimum requirements to Julia 1.9
+
 ## v0.7.1 - 2023-04-08
 
 - Better printing of tableaux and operators.

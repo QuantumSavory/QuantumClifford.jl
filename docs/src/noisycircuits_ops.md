@@ -4,7 +4,7 @@
 DocTestSetup = quote
     using QuantumClifford
     using QuantumClifford.Experimental.NoisyCircuits
-    using QuantumCliffordPlots
+    using Quantikz
 end
 CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
@@ -25,7 +25,7 @@ Predefined unitary gates are available, like [`sCNOT`](@ref), [`sHadamard`](@ref
 ```@example 1
 using QuantumClifford # hide
 using QuantumClifford.Experimental.NoisyCircuits # hide
-using QuantumCliffordPlots # hide
+using Quantikz # hide
 [sCNOT(2,4),sHadamard(2),sCPHASE(1,3),sSWAP(2,4)]
 ```
 
@@ -37,7 +37,7 @@ They can be specified by giving a Clifford operator tableaux and the indices on 
 ```@example 1
 using QuantumClifford # hide
 using QuantumClifford.Experimental.NoisyCircuits # hide
-using QuantumCliffordPlots # hide
+using Quantikz # hide
 SparseGate(tCNOT, [2,4])
 ```
 
