@@ -31,13 +31,9 @@ function initZ(f::PauliFrame)
     f.frame.tab.xzs[2,:] = rand(0:2^(f.qubits)-1,f.numframes,1)
 end
 
-# applies a gates like sX, sCNOT
-function apply!(f::PauliFrame, op, args::Vector{Int}) 
-    if length(args)==1
-        QuantumClifford.apply!(f.frame, op(args[1]))
-    else
-        QuantumClifford.apply!(f.frame, op(args[1],args[2]))
-    end
+# applies a symbolic gate from QuantumClifford
+function apply!(f::PauliFrame, op) 
+    QuantumClifford.apply!(f.frame, op)
 end
 
 # Inserts a random pauli error into all frames in frame with probabiltiy p, on bit bit_t
@@ -68,7 +64,7 @@ function pauliFrameMZ!(frame::PauliFrame, ref, bit_t::Int)
 end
 
 # Simulates an entire circuit for the user. Here is sample input:
-#   circuit = [(sCNOT, [1,4]), (PE, [2]),(tCNOT, [2,4]),(tCNOT, [2,5]),(tCNOT, [3,5]), (MZ, [4]),(MZ, [5])]
+#   circuit = [sX(1), sX(1), sCNOT(1,4), (PE, [2]), sCNOT(2,4), sCNOT(2,5), sCNOT(3,5), (MZ, [4]), (MZ, [5])]
 #   ref = [0,0]; numqubits = 5; numframes = 10;
 #   measurements, frames = pauliFrameCircuitHandler(numqubits,circuit,ref,numframes) 
 #
@@ -88,22 +84,19 @@ end
 #          at the end of the circuit, it represents the pauli frame values right before measurement starts.
 function pauliFrameCircuitHandler(qubits, circuit, ref_m,  numframes=1, p=0.75)
     num_m = length(ref_m)
-    frame = PauliFrame(numframes, qubits)
-    initZ(frame)
-
-    # This is the returnable
-    sim_m = []
+    frame = PauliFrame(numframes, qubits); initZ(frame)
+    sim_m = [] # this will hold the measurements to return
 
     # Process the circuit
     for op in circuit
         # op wasn't measure or pauli error channel
-        if (op[1] != :MZ) && (op[1] != :PE)
-            apply!(frame, op[1], op[2])
-        
+        if (typeof(op) != Tuple{Symbol, Vector{Int64}})
+            apply!(frame, op)      
+
         # op was Pauli error channel
         elseif op[1]==:PE
             pauliError!(frame, p, op[2][1])
-            
+
         # op was measurement in Z basis
         elseif op[1]==:MZ
             ref = popfirst!(ref_m)
