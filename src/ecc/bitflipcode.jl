@@ -8,10 +8,8 @@ code_n(c::Bitflip3) = 3
 
 """Parity check tableau of a code."""
 
-parity_checks(c::Bitflip3) = S"___
-                               _ZZ
-                               Z_Z
-                               ZZ_"
+parity_checks(c::Bitflip3) = S"_ZZ
+                               Z_Z"
 
 #Enconding circuit ----------------------------------
 function encoding_circuit(c::Bitflip3)

@@ -87,8 +87,8 @@ end
 function new_test_ns(c::AbstractECC)
     @testset "New naive syndrome circuits" begin
         #create a random state
-        s = MixedDestabilizer(parity_checks(c))
-        # s = random_stabilizer(code_k(c))
+        # s = MixedDestabilizer(parity_checks(c))
+        s = random_stabilizer(code_k(c))
         s1, s2 = copy(s), copy(s)
         syndrome1 = [project!(s1, check) for check in parity_checks(c)]
         
