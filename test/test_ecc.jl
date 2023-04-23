@@ -94,14 +94,12 @@ function new_test_ns(c::AbstractECC)
         
         naive_circuit = naive_syndrome_circuit(c)
         syndrome2 = Register(s2, falses(code_s(c)))
-        i = 1
+        
         for gate in naive_circuit
-            println(gate)
-            apply!(syndrome2, gate) # <-- this is the problematic line, the tests just stop because it cannot execute this line
-            # @test bitview(syndrome2) == syndrome1[i]
-            
-            # @test syndrome2 == syndrome2
-            # i += 1
+            apply!(syndrome2, gate)      
+        end
+        for i in 1:code_s(c)
+            @test bitview(syndrome2)[i] == syndrome1[i][2]
         end
     end
 end

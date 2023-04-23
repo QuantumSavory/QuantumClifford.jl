@@ -44,7 +44,7 @@ module ECC
         tracking1 = dim_encondingc 
     
         #iterating through all the steps of the encoding circuit
-        for qubit in 0:tracking1
+        for qubit in 1:tracking1+1
             tracking2 = qubit+1
             if qubit < dim_encondingc
                 push!(naive_sc, sCNOT(qubit,ancilla_qubit)) 
