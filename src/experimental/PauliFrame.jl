@@ -40,7 +40,7 @@ end
 
 # applies a symbolic gate from QuantumClifford
 function apply!(f::PauliFrame, op) 
-    QuantumClifford.apply!(f.frame, op)
+    QuantumClifford._apply!(f.frame, op; phases=Val(false))
 end
 
 # Measure in the Z basis. ref is the reference measurement and has value 0 or 1. bit_t is the qubit being measured.
@@ -59,6 +59,7 @@ function apply!(frame::PauliFrame, op::sMZ)
     # apply flips to the reference measurement
     ref = frame.ref[op.bit]
     frame.measurements[:,op.bit] = x_flips  .⊻ ref
+    frame
 end
 
 # Inserts a random pauli error into all frames in frame with probabiltiy p, on bit bit_t
@@ -74,6 +75,7 @@ function apply!(frame::PauliFrame, op::PauliError)
             frame.frame.tab.xzs[error[1]:error[2],f] .= frame.frame.tab.xzs[error[1]:error[2],f] .⊻ (2)^(bit_t-1)
         end
     end
+    frame
 end
 
 # Simulates an entire circuit for the user. Here is sample input:
