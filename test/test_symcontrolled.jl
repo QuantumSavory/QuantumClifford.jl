@@ -37,7 +37,7 @@ end
                 tr, inv = get_gates(control, target)
                 # print(tr, inv)
                 test_gates = [tr..., sCNOT(1,2), inv...]
-                @test apply!(copy(random_state), implemented_gate) == mctrajectory!(copy(random_state), test_gates)
+                @test apply!(copy(random_state), implemented_gate) == mctrajectory!(copy(random_state), test_gates)[1]
             end
         end
     end
