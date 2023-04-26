@@ -23,7 +23,7 @@ end
 function get_gates(control, target)
     transform1, inverse1 = transform_Zbasis(1) # get gates which swith control from Z basis to specified
     transform2, inverse2 = transform_Xbasis(2) # get gates which swith control from X basis to specified
-    return cat(transform1[control], transform2[target], dims=(1)), cat(inverse2[target] , inverse1[control], dims=(1))
+    return [transform1[control]..., transform2[target]...], [inverse2[target]..., inverse1[control]...]
 end
 
 function walk(gates, state)
@@ -44,7 +44,7 @@ end
 
                 tr, inv = get_gates(control, target)
                 # print(tr, inv)
-                test_gates = cat(cat(tr, sCNOT(1,2), dims=(1)), inv, dims=(1))
+                test_gates = [tr..., sCNOT(1,2), inv...]
                 @test apply!(copy(random_state), implemented_gate) == walk(test_gates, copy(random_state))
             end
         end
