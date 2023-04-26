@@ -54,8 +54,8 @@ end
 transforms = Dict(:X => transform_Xbasis(1), :Z => transform_Zbasis(1))
 
 @testset "Change of basis" begin
-    for from_basis in (:X, :Z)
-        for to_basis in (:X, :Y, :Z)
+    for to_basis in (:X, :Z)
+        for from_basis in (:X, :Y, :Z)
             start_state = Stabilizer(QuantumClifford._T_str(string(from_basis)))
             forward, backward = [t[to_basis] for t in transforms[from_basis]]
             mid_state = walk(forward, start_state)
