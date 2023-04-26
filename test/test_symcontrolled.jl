@@ -49,11 +49,12 @@ transforms = Dict(:X => transform_Xbasis(1), :Z => transform_Zbasis(1))
     for to_basis in (:X, :Y, :Z)
         for from_basis in (:X, :Z)
             start_state = Stabilizer(QuantumClifford._T_str(string(from_basis)))
-            forward, backward = [t[to_basis] for t in transforms[from_basis]]
-            mid_state = mctrajectory!(start_state, forward)[1]
-            end_state = mctrajectory!(mid_state, backward)[1]
+            forward, backward = transforms[from_basis][1][to_basis], transforms[from_basis][2][to_basis]
+            mid_state = mctrajectory!(start_state, backward)[1]
+            copy_mid_state = copy(mid_state)
+            end_state = mctrajectory!(mid_state, forward)[1]
             @test start_state == end_state
-            @test mid_state == Stabilizer(QuantumClifford._T_str(string(to_basis)))
+            @test copy_mid_state == Stabilizer(QuantumClifford._T_str(string(to_basis)))
         end
     end
 end
