@@ -26,14 +26,6 @@ function get_gates(control, target)
     return [transform1[control]..., transform2[target]...], [inverse2[target]..., inverse1[control]...]
 end
 
-function walk(gates, state)
-    cstate = copy(state)
-    for gate in gates
-        cstate = apply!(cstate, gate)
-    end
-    return cstate
-end
-
 @testset "Controlled gates" begin
     # test ten time for each
     for i in 1:test_size
@@ -45,7 +37,7 @@ end
                 tr, inv = get_gates(control, target)
                 # print(tr, inv)
                 test_gates = [tr..., sCNOT(1,2), inv...]
-                @test apply!(copy(random_state), implemented_gate) == walk(test_gates, copy(random_state))
+                @test apply!(copy(random_state), implemented_gate) == mctrajectory!(copy(random_state), test_gates)
             end
         end
     end
@@ -58,8 +50,8 @@ transforms = Dict(:X => transform_Xbasis(1), :Z => transform_Zbasis(1))
         for from_basis in (:X, :Z)
             start_state = Stabilizer(QuantumClifford._T_str(string(from_basis)))
             forward, backward = [t[to_basis] for t in transforms[from_basis]]
-            mid_state = walk(forward, start_state)
-            end_state = walk(backward, mid_state)
+            mid_state = mctrajectory!(start_state, forward)[1]
+            end_state = mctrajectory!(mid_state, backward)[1]
             @test start_state == end_state
             @test mid_state == Stabilizer(QuantumClifford._T_str(string(to_basis)))
         end
