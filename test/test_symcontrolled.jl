@@ -61,8 +61,8 @@ end
             state0 = Stabilizer(QuantumClifford._T_str(string(state0str)))
             state1 = Stabilizer(QuantumClifford._T_str(string(state1str)))
             @show control, target
-            @test twoqgate*state0 == state0
-            @test twoqgate*state1 == oneqgate*state1
+            @test canonicalize!(twoqgate*state0) == canonicalize!(state0)
+            @test canonicalize!(twoqgate*state1) == canonicalize!(oneqgate*state1)
         end
     end
 end
