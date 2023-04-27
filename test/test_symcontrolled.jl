@@ -48,3 +48,21 @@ transforms = Dict(:X => transform_Xbasis(1), :Z => transform_Zbasis(1))
         end
     end
 end
+
+@testset "Explicit control" begin
+    @test sZCX(1,2) * S"ZI IZ" == S"ZI IZ"
+    @test sZCX(1,2) * S"ZI IZ" == sX(2) * S"ZI IZ"
+    for control in (:X, :Z, :Y)
+        for target in (:X, :Z, :Y)
+            twoqgate = eval(Symbol(:s,control,:C,target))(1,2)
+            oneqgate = eval(Symbol(:s,target))(2)
+            state0str = string(control)*"I I"*string(target)
+            state1str = "-"*string(control)*"I I"*string(target)
+            state0 = Stabilizer(QuantumClifford._T_str(string(state0str)))
+            state1 = Stabilizer(QuantumClifford._T_str(string(state1str)))
+            @show control, target
+            @test twoqgate*state0 == state0
+            @test twoqgate*state1 == oneqgate*state1
+        end
+    end
+end
