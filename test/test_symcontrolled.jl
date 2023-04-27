@@ -1,12 +1,5 @@
-using Random
-using QuantumClifford
-
-using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
-using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
-using InteractiveUtils
 using Test
-
-test_size = 10
+using QuantumClifford
 
 function transform_Zbasis(qubit)
     transformations = Dict(:X => [sHadamard(qubit),], :Y => [sInvPhase(qubit),sHadamard(qubit)], :Z => [sHadamard(qubit), sHadamard(qubit)])
@@ -27,15 +20,13 @@ function get_gates(control, target)
 end
 
 @testset "Controlled gates" begin
-    # test ten time for each
-    for i in 1:test_size
+    for i in 1:10
         for control in (:X, :Y, :Z)
             for target in (:X, :Y, :Z)
                 random_state = random_destabilizer(2)
                 implemented_gate = eval(Symbol(:s,control,:C,target))(1,2)
 
                 tr, inv = get_gates(control, target)
-                # print(tr, inv)
                 test_gates = [tr..., sCNOT(1,2), inv...]
                 @test apply!(copy(random_state), implemented_gate) == mctrajectory!(copy(random_state), test_gates)[1]
             end
@@ -50,11 +41,10 @@ transforms = Dict(:X => transform_Xbasis(1), :Z => transform_Zbasis(1))
         for from_basis in (:X, :Z)
             start_state = Stabilizer(QuantumClifford._T_str(string(from_basis)))
             forward, backward = transforms[from_basis][1][to_basis], transforms[from_basis][2][to_basis]
-            mid_state = mctrajectory!(start_state, backward)[1]
-            copy_mid_state = copy(mid_state)
-            end_state = mctrajectory!(mid_state, forward)[1]
+            mid_state = mctrajectory!(copy(start_state), backward)[1]
+            end_state = mctrajectory!(copy(mid_state), forward)[1]
             @test start_state == end_state
-            @test copy_mid_state == Stabilizer(QuantumClifford._T_str(string(to_basis)))
+            @test mid_state == Stabilizer(QuantumClifford._T_str(string(to_basis)))
         end
     end
 end
