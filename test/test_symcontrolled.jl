@@ -52,14 +52,16 @@ end
 @testset "Explicit control" begin
     for control in (:X, :Z, :Y)
         for target in (:X, :Z, :Y)
-            twoqgate = eval(Symbol(:s,control,:C,target))(1,2)
-            oneqgate = eval(Symbol(:s,target))(2)
-            state0str = string(control)*"I I"*string(target)
-            state1str = "-"*string(control)*"I I"*string(target)
-            state0 = Stabilizer(QuantumClifford._T_str(string(state0str)))
-            state1 = Stabilizer(QuantumClifford._T_str(string(state1str)))
-            @test canonicalize!(twoqgate*state0) == canonicalize!(state0)
-            @test canonicalize!(twoqgate*state1) == canonicalize!(oneqgate*state1)
+            for targetstate in ("X","Y","Z")
+                twoqgate = eval(Symbol(:s,control,:C,target))(1,2)
+                oneqgate = eval(Symbol(:s,target))(2)
+                state0str = string(control)*"I I"*targetstate
+                state1str = "-"*string(control)*"I I"*targetstate
+                state0 = Stabilizer(QuantumClifford._T_str(string(state0str)))
+                state1 = Stabilizer(QuantumClifford._T_str(string(state1str)))
+                @test canonicalize!(twoqgate*state0) == canonicalize!(state0)
+                @test canonicalize!(twoqgate*state1) == canonicalize!(oneqgate*state1)
+            end
         end
     end
 end
