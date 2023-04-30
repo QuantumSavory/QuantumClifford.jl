@@ -333,6 +333,16 @@ function apply_single_y!(stab::AbstractStabilizer, i)
     stab
 end
 
+"""Apply a right Hadamard on a CliffordOperator"""
+function apply_right!(op::CliffordOperator, H::sHadamard)
+    s = tab(op).xzs
+    n = nqubits(op)
+    @inbounds @simd for k = 1:size(s,1)
+        s[k, H.q], s[k, H.q + n] = s[k, H.q + n], s[k, H.q] # Swap column X(i) with Z(i)
+    end
+    op
+end
+
 ##############################
 # Measurements
 ##############################
