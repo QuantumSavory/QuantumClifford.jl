@@ -713,7 +713,7 @@ end
 # Added a lot of type assertions to help Julia infer types
 function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true) where {T}
     rows,n = size(stab)
-    stab, r, s, permx, permz = canonicalize_gott!(copy(stab))
+    stab, r, s, permx, permz, ops = canonicalize_gott!(copy(stab))
     t = zero(T, n*2, n)
     vstab = @view tab(stab)[1:r+s] # this view is necessary for cases of tableaux with redundant rows
     t[n+1:n+r+s] = vstab # The Stabilizer part of the tableau
@@ -747,7 +747,22 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true) where {T}
         t[n+r+s+1:end] = sZ # The other logical set in the tableau
     end
     if undoperm
-        t = t[:,invperm(permx[permz])]::T
+        for op in reverse(ops)
+            # print("Performing: ", op)
+            if op[1] == 1
+                rowswap!(t, op[2], op[3]; phases=Val(true))
+                rowswap!(t, op[2] + s, op[3] + s; phases=Val(true))
+
+            elseif op[1] == 2
+                mul_left!(t, op[2], op[3]; phases=Val(true))
+                mul_left!(t, op[2] + s, op[3] + s; phases=Val(true))
+
+            elseif op[1] == 3
+                t = t[:,invperm(permx)]::T
+            elseif op[1] == 4
+                t = t[:,invperm(permz)]::T
+            end
+        end
     end
     MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
 end
