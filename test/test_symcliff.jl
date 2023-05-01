@@ -4,7 +4,7 @@ using QuantumClifford
 using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
 using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
 using InteractiveUtils
-
+using Test
 test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
 @testset "Small symbolic operators" begin

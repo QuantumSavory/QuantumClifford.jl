@@ -4,20 +4,20 @@
     <tr>
         <td>Documentation</td>
         <td>
-            <a href="https://krastanov.github.io/QuantumClifford.jl/stable"><img src="https://img.shields.io/badge/docs-stable-blue.svg" alt="Documentation of latest stable version"></a>
-            <a href="https://krastanov.github.io/QuantumClifford.jl/dev"><img src="https://img.shields.io/badge/docs-dev-blue.svg" alt="Documentation of dev version"></a>
+            <a href="https://quantumsavory.github.io/QuantumClifford.jl/stable"><img src="https://img.shields.io/badge/docs-stable-blue.svg" alt="Documentation of latest stable version"></a>
+            <a href="https://quantumsavory.github.io/QuantumClifford.jl/dev"><img src="https://img.shields.io/badge/docs-dev-blue.svg" alt="Documentation of dev version"></a>
         </td>
     </tr><tr></tr>
     <tr>
         <td>Continuous integration</td>
         <td>
-            <a href="https://github.com/Krastanov/QuantumClifford.jl/actions?query=workflow%3ACI+branch%3Amaster"><img src="https://img.shields.io/github/actions/workflow/status/Krastanov/QuantumClifford.jl/ci.yml?branch=master" alt="GitHub Workflow Status"></a>
+            <a href="https://github.com/QuantumSavory/QuantumClifford.jl/actions?query=workflow%3ACI+branch%3Amaster"><img src="https://img.shields.io/github/actions/workflow/status/QuantumSavory/QuantumClifford.jl/ci.yml?branch=master" alt="GitHub Workflow Status"></a>
         </td>
     </tr><tr></tr>
     <tr>
         <td>Code coverage</td>
         <td>
-            <a href="https://codecov.io/gh/Krastanov/QuantumClifford.jl"><img src="https://img.shields.io/codecov/c/gh/Krastanov/QuantumClifford.jl?label=codecov" alt="Test coverage from codecov"></a>
+            <a href="https://codecov.io/gh/QuantumSavory/QuantumClifford.jl"><img src="https://img.shields.io/codecov/c/gh/QuantumSavory/QuantumClifford.jl?label=codecov" alt="Test coverage from codecov"></a>
         </td>
     </tr><tr></tr>
     <tr>
@@ -31,7 +31,7 @@
 
 
 A Julia package for working with quantum stabilizer states and Clifford circuits
-that act on them. Graphs states are also supported. The package is already very fast for the majority of common operations, but there are still many low-hanging fruits performance-wise. See the detailed [suggested readings & references page](https://krastanov.github.io/QuantumClifford.jl/dev/references/#Suggested-reading) for background on the various algorithms.
+that act on them. Graphs states are also supported. The package is already very fast for the majority of common operations, but there are still many low-hanging fruits performance-wise. See the detailed [suggested readings & references page](https://quantumsavory.github.io/QuantumClifford.jl/dev/references/#Suggested-reading) for background on the various algorithms.
 
 To install it use:
 
@@ -40,19 +40,19 @@ To install it use:
 ```
 
 Works efficiently with
-[pure](https://krastanov.github.io/QuantumClifford.jl/dev/manual/#Stabilizers-1) and
-[mixed stabilizer](https://krastanov.github.io/QuantumClifford.jl/dev/mixed/#Mixed-Stabilizer-States-1)
+[pure](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Stabilizers-1) and
+[mixed stabilizer](https://quantumsavory.github.io/QuantumClifford.jl/dev/mixed/#Mixed-Stabilizer-States-1)
 states of thousands of qubits
 as well as
-[sparse or dense Clifford operations](https://krastanov.github.io/QuantumClifford.jl/dev/manual/#Clifford-Operators-1)
+[sparse or dense Clifford operations](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Clifford-Operators-1)
 acting upon them.
 
 Provides
-[canonicalization](https://krastanov.github.io/QuantumClifford.jl/dev/manual/#Canonicalization-of-Stabilizers-1),
-[projection](https://krastanov.github.io/QuantumClifford.jl/dev/manual/#Projective-Measurements-1), and
-[generation](https://krastanov.github.io/QuantumClifford.jl/dev/manual/#Generating-a-Pauli-Operator-with-Stabilizer-Generators-1) operations,
+[canonicalization](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Canonicalization-of-Stabilizers-1),
+[projection](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Projective-Measurements-1), and
+[generation](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Generating-a-Pauli-Operator-with-Stabilizer-Generators-1) operations,
 as well as
-[partial traces](https://krastanov.github.io/QuantumClifford.jl/dev/manual/#Partial-Traces-1).
+[partial traces](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Partial-Traces-1).
 
 ```jldoctest
 julia> P"X" * P"Z"
@@ -191,5 +191,5 @@ BenchmarkTools.Trial: 10000 samples with 1 evaluation.
 
 Benchmarks executed on a Ryzen Zen1 8-core CPU.
 
-More detailed benchmarks can be seen at [github.com/Krastanov/QuantumCliffordBenchmarksLog](https://github.com/Krastanov/QuantumCliffordBenchmarksLog).
+More detailed benchmarks can be seen at [github.com/QuantumSavory/QuantumCliffordBenchmarksLog](https://github.com/QuantumSavory/QuantumCliffordBenchmarksLog).
 </details>
