@@ -54,7 +54,7 @@ This type is used to be able to write Pauli Error Channel gates like PauliError(
 In this case, a pauli error is applied on qubit 2 with probability 0.75.\n
 See also [`pauliFrameCircuitHandler`](@ref), [`circuitSim`](@ref) for examples. 
 """
-struct PauliError <: AbstractSingleQubitOperator
+struct PauliError
     qubit::Int
     p::Float16 
 end
