@@ -105,42 +105,7 @@ function new_test_ns(c::AbstractECC)
 end
 
 
-function test_ns(c::AbstractECC)
 
-    @testset "Naive syndrome circuits" begin
-        #initiate physical qubit
-        physicalqubit = random_stabilizer(code_k(c))
-        #obtain syndrome circuit
-        nc = naive_syndrome_circuit(c)
-        convert(Vector{AbstractSymbolicOperator}, nc)
-        s = []
-        # h = []
-        for check in parity_checks(c)
-            append!(s,project!(physicalqubit,check))
-        end
-
-        i = 1
-        for gate in nc
-            try
-                apply!(physicalqubit,gate)
-
-                a = s[i]
-                b = Register(physicalqubit)
-                # append!(h,project!(b,check))
-
-                @test a == physicalqubit
-                
-
-            catch
-                0
-            end
-            i += 3
-        end
-
-        
-    end
-    
-end
 
 # codes = [Steane5()]
 codes = [Steane5(),Steane7(),Shor9()]
