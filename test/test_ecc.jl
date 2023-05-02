@@ -88,7 +88,7 @@ function new_test_ns(c::AbstractECC)
     @testset "New naive syndrome circuits" begin
         #create a random state
         # s = MixedDestabilizer(parity_checks(c))
-        s = random_stabilizer(code_k(c))
+        s = random_stabilizer(code_n(c))
         s1, s2 = copy(s), copy(s)
         syndrome1 = [project!(s1, check) for check in parity_checks(c)]
         
@@ -99,7 +99,7 @@ function new_test_ns(c::AbstractECC)
             apply!(syndrome2, gate)      
         end
         for i in 1:code_s(c)
-            @test bitview(syndrome2)[i] == syndrome1[i][2]
+            @test bitview(syndrome2)[i] == syndrome1[i][3]
         end
     end
 end

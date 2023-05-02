@@ -36,28 +36,45 @@ module ECC
     end
     
     """Naive syndrome circuit""" 
-    function naive_syndrome_circuit(c::AbstractECC)
-        naive_sc = []
-        dim_encondingc = code_n(c) -1
-    
-        ancilla_qubit = dim_encondingc
-        tracking1 = dim_encondingc 
-    
-        #iterating through all the steps of the encoding circuit
-        for qubit in 1:tracking1+1
-            tracking2 = qubit+1
-            if qubit < dim_encondingc
-                push!(naive_sc, sCNOT(qubit,ancilla_qubit)) 
-                push!(naive_sc, sCNOT(tracking2,ancilla_qubit)) 
-                ancilla_qubit = ancilla_qubit + 1
-                tracking2 = tracking2 + 1
+    function new_naive_syndrome_circuit(c:: AbstractECC)
+        naive_sc = []        
+        ancilla_qubit = code_n(c) + 1        
+        pc = parity_checks(c)
+        for check in pc
+            for qubit in 1: code_n(c)+1
+                if check[qubit] == S"X" || check[qubit] == S"Z"
+                    push!(naive_sc, sCNOT(qubit,ancilla_qubit))
+                end
+                
             end
+            push!(naive_sc, sMX(ancilla_qubit)) # I don't know if this is measuring in the X or Z basis so I'm just leaving it as X here
+            ancilla_qubit = ancilla_qubit + 1 
         end
-
-        convert(Vector{AbstractSymbolicOperator},naive_sc)
-
-        return naive_sc
     end
+
+    # function naive_syndrome_circuit(c::AbstractECC)
+    #     naive_sc = []
+    #     dim_encondingc = code_s(c) #previously code_n(c)-1?
+    
+    #     ancilla_qubit = dim_encondingc +1
+    #     tracking1 = dim_encondingc 
+    
+    #     #iterating through all the steps of the encoding circuit
+    #     for qubit in 1:tracking1+1
+    #         tracking2 = qubit+1
+    #         if qubit < dim_encondingc
+    #             push!(naive_sc, sCNOT(qubit,ancilla_qubit)) 
+    #             push!(naive_sc, sCNOT(tracking2,ancilla_qubit)) 
+    #             push!(naive_sc, sMX(ancilla_qubit))
+    #             ancilla_qubit = ancilla_qubit + 1
+    #             tracking2 = tracking2 + 1
+    #         end
+    #     end
+
+    #     convert(Vector{AbstractSymbolicOperator},naive_sc)
+
+    #     return naive_sc
+    # end
 
     """The distance of a code."""
     function distance end
