@@ -747,15 +747,38 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true) where {T}
         t[n+r+s+1:end] = sZ # The other logical set in the tableau
     end
     if undoperm
+        # print("s, r = ", s, r)
         for op in reverse(ops)
-            # print("Performing: ", op)
+            # print("\n\nPerforming: ", op, '\n')
             if op[1] == 1
+                # show(IOContext(stdout::IO, :limit => true), t)   
+                # print('\n')
+                # print("=>\n")
+
                 rowswap!(t, op[2], op[3]; phases=Val(true))
-                rowswap!(t, op[2] + s, op[3] + s; phases=Val(true))
+                rowswap!(t, op[2] + r + s, op[3] + r + s; phases=Val(true))
+                # show(IOContext(stdout::IO, :limit => true), t)   
+                # print('\n')
 
             elseif op[1] == 2
-                mul_left!(t, op[2], op[3]; phases=Val(true))
-                mul_left!(t, op[2] + s, op[3] + s; phases=Val(true))
+                # if the mul_left ops do not need be reversed (to keep linear independence),
+                # i will take the old approach of just modifying permx, permz
+
+                # show(IOContext(stdout::IO, :limit => true), t)   
+                # print('\n')
+                # print("=>\n")
+
+                # mul_left!(t, op[2], op[3]; phases=Val(true))
+                # mul_left!(t, op[2] + r + s, op[3] + r + s; phases=Val(true))
+
+                # mul_left!(t, op[2], op[3]; phases=Val(true))
+                # mul_left!(t, op[2] + r + s, op[3] + r + s; phases=Val(true))
+
+                # mul_left!(t, op[2], op[3]; phases=Val(true))
+                # mul_left!(t, op[2] + r + s, op[3] + r + s; phases=Val(true))
+
+                # show(IOContext(stdout::IO, :limit => true), t)   
+                # print('\n')
 
             elseif op[1] == 3
                 t = t[:,invperm(permx)]::T
