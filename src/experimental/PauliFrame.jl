@@ -6,6 +6,7 @@
 # Another current assumption about measurement is that all measurements happen at the end of the circuit. 
 #
 # # # # # # # Notes about the xzs matrix manipulations # # # # # # # 
+# TODO NOTES ONLY APPLY FOR LESS THAN 64 QUBITS
 # For most of the operations, I manipulated the Stabilizer.tab.xzs matrix from the QuantumClifford.jl library.
 # It's a 2 by f matrtix, where f is the number of frames
 # If the first index is 1, then it refers to an X component, if 2 then Z. For Y, use both i.e. [1:2]
@@ -113,13 +114,30 @@ See also [`PauliError`](@ref)
 function apply!(frame::PauliFrame, op::PauliError)
     p = op.p; bit_t = op.qubit
     # TODO Not 100% sure if XOR correctly represents multiplying paulis into the frame?
-    xyz_error = [(1,1), (1,2), (2,2)]
+    xz_error = [(1,1+frame.qubits÷65), (2+frame.qubits÷65, 2*(1+frame.qubits÷65))] 
     frame_error = zeros(frame.numframes)
     rand!(frame_error)
+ 
+    # logic for more than 64 qubits
+    error_bit = zeros(Int64, 1+frame.qubits÷65)
+    index = 1+bit_t÷65
+    error_bit[index] = 2^(bit_t - 1 - 64*(index-1)) 
+    
     for f in 1:frame.numframes    
         if frame_error[f] < p
-            error = rand(xyz_error)
-            frame.frame.tab.xzs[error[1]:error[2],f] .= frame.frame.tab.xzs[error[1]:error[2],f] .⊻ (2)^(bit_t-1)
+            xyz = rand([1,2,3])
+            if xyz == 1 # X error
+                error = xz_error[1]
+                frame.frame.tab.xzs[error[1]:error[2],f] .= frame.frame.tab.xzs[error[1]:error[2],f] .⊻  error_bit
+            elseif xyz == 2 # Z error 
+                error = xz_error[2]
+                frame.frame.tab.xzs[error[1]:error[2],f] .= frame.frame.tab.xzs[error[1]:error[2],f] .⊻  error_bit
+            else # Y error
+                error = xz_error[1]
+                frame.frame.tab.xzs[error[1]:error[2],f] .= frame.frame.tab.xzs[error[1]:error[2],f] .⊻  error_bit
+                error = xz_error[2]
+                frame.frame.tab.xzs[error[1]:error[2],f] .= frame.frame.tab.xzs[error[1]:error[2],f] .⊻  error_bit
+            end
         end
     end
     return frame
