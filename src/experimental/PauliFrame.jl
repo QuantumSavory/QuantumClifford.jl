@@ -73,9 +73,17 @@ julia> frame = PauliFrame(numframes, qubits, ref_measurements)
 julia> initZ(frame)
 ```
 """
-function initZ(f::PauliFrame)
-    f.frame.tab.xzs[2,:] = rand(0:2^(f.qubits)-1,f.numframes,1)
-    return f
+function initZ(frame::PauliFrame)
+    z_index = (2+frame.qubits÷65, 2*(1+frame.qubits÷65))
+    for f in 1:frame.numframes 
+        frame.frame.tab.xzs[z_index[1]:z_index[2],f] = rand(UInt64, 1 + frame.qubits÷65, 1)
+        # This line removes garbage values from the the bit spill over. For example if we had 68 qubits,
+        # then we want a random 64bit number in the first cell and a random  4 bit number in the second. Not two 64 bit numbers. 
+        # TODO make this line more readable if possible
+        frame.frame.tab.xzs[2*(1+frame.qubits÷65),f] = (frame.frame.tab.xzs[2*(1+frame.qubits÷65),f] >>> ((64-(frame.qubits%64))%64))
+    end
+
+    return frame
 end
 
 """ Applies a symbolic gate from QuantumClifford to the frames of the provided PauliFrame instance."""
