@@ -215,17 +215,17 @@ Based on [gottesman1997stabilizer](@cite).
 
 See also: [`canonicalize!`](@ref), [`canonicalize_rref!`](@ref)
 """
-function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true)
-    @valbooldispatch _canonicalize_gott!(stabilizer; phases=Val(phases)) phases
+function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true, recordops::Bool=false)
+    @valbooldispatch _canonicalize_gott!(stabilizer; phases=Val(phases), recordops=Val(recordops)) phases
 end
 
-function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) where {B}
+function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true), recordops::Val{R}=Val{false}) where {B, R}
     xzs = tab(stabilizer).xzs
     rows, columns = size(stabilizer)
-    ops = []
-    retxperm = collect(1:rows)
-    retzperm = collect(1:rows)
-
+    xswaps = []
+    zswaps = []
+    xmul = []
+    zmul = []
     i = 1
     for j in 1:columns
         # find first row with X or Y in col `j`
@@ -233,20 +233,11 @@ function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) w
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases)
-            # push!(ops, (1, k, i))
-            # show(IOContext(stdout::IO, :limit => true), stabilizer)   
-            # print('\n')
-            # print('\n')
-
+            push!(xswaps, (k, i))
             for m in 1:rows
                 if stabilizer[m,j][1] && m!=i # if X or Y
                     mul_left!(stabilizer, m, i; phases)
-                    push!(ops, (2, m, i))
-                    # show(IOContext(stdout::IO, :limit => true), stabilizer)   
-                    # print('\n')
-                    # print('\n')
-
-
+                    push!(xmul, (m, i))
                 end
             end
             i += 1
@@ -254,7 +245,7 @@ function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) w
     end
     xperm, r = gott_standard_form_indices((@view xzs[1:end÷2,:]),rows,columns)
     permute!(stabilizer,xperm)
-    push!(ops, (3, 0, 0))
+
     i = r+1
     for j in r+1:columns
         # find first row with Z in col `j`
@@ -262,19 +253,12 @@ function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) w
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases)
-            push!(ops, (1, k, i))
-            # show(IOContext(stdout::IO, :limit => true), stabilizer)   
-            # print('\n')
-            # print('\n')
+            push!(zswaps, (k, i))
 
             for m in 1:rows
                 if stabilizer[m,j][2] && m!=i # if Z or Y
                     mul_left!(stabilizer, m, i; phases)
-                    push!(ops, (2, m , i))
-                    # show(IOContext(stdout::IO, :limit => true), stabilizer)   
-                    # print('\n')
-                    # print('\n')
-
+                    push!(zmul, (m, i))
                 end
             end
             i += 1
@@ -283,12 +267,10 @@ function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) w
 
     zperm, s = gott_standard_form_indices((@view xzs[end÷2+1:end,:]),rows,columns,skip=r)
     permute!(stabilizer,zperm)
-    push!(ops, (4, 0, 0))
-    # print("\n-------------\n")
-    # print('\n', ops, '\n')
-    # 1-swap, 2-mul, 3-permx, 4-permz
-    # print(xperm, '\n', zperm, '\n')
-    # There must be a cleaner implementation by iteratively creating the
-    # inverse of the gaussian elimination matrix
-    stabilizer, r, s, xperm, zperm, ops
+
+    if R
+        stabilizer, r, s, xperm, zperm, xswaps, zswaps, xmul, zmul
+    else
+        stabilizer, r, s, xperm, zperm
+    end
 end

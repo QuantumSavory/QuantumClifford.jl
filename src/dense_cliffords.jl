@@ -62,6 +62,11 @@ CliffordOperator(op::CliffordOperator) = op
 CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Tableau(paulis))
 CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
 
+function CliffordOperator(stab::Stabilizer)
+    md = MixedDestabilizer(copy(stab); trackoperations=true)
+    return CliffordOperator(tab(md))
+end
+
 Base.:(==)(l::CliffordOperator, r::CliffordOperator) = l.tab == r.tab
 Base.hash(c::T, h::UInt) where {T<:CliffordOperator} = hash(T, hash(tab(c), h))
 

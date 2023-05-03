@@ -711,9 +711,10 @@ mutable struct MixedDestabilizer{T<:Tableau} <: AbstractStabilizer
 end
 
 # Added a lot of type assertions to help Julia infer types
-function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true) where {T}
+function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, trackoperations=false) where {T}
     rows,n = size(stab)
-    stab, r, s, permx, permz, ops = canonicalize_gott!(copy(stab))
+    stab, r, s, permx, permz, xswaps, zswaps, xmul, zmul = canonicalize_gott!(copy(stab); recordops=true)
+    
     t = zero(T, n*2, n)
     vstab = @view tab(stab)[1:r+s] # this view is necessary for cases of tableaux with redundant rows
     t[n+1:n+r+s] = vstab # The Stabilizer part of the tableau
@@ -747,45 +748,51 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true) where {T}
         t[n+r+s+1:end] = sZ # The other logical set in the tableau
     end
     if undoperm
-        # print("s, r = ", s, r)
-        for op in reverse(ops)
-            # print("\n\nPerforming: ", op, '\n')
-            if op[1] == 1
-                # show(IOContext(stdout::IO, :limit => true), t)   
-                # print('\n')
-                # print("=>\n")
+        t = t[:,invperm(permz)]::T
 
-                rowswap!(t, op[2], op[3]; phases=Val(true))
-                rowswap!(t, op[2] + r + s, op[3] + r + s; phases=Val(true))
-                # show(IOContext(stdout::IO, :limit => true), t)   
-                # print('\n')
+        if trackoperations
+            i = length(zmul)
+            for zsw in reverse(zswaps)
 
-            elseif op[1] == 2
-                # if the mul_left ops do not need be reversed (to keep linear independence),
-                # i will take the old approach of just modifying permx, permz
+                while i > 0 && zmul[i][2] == zsw[2]
+                    # Undo mul_left
+                    mul_left!(t, zmul[i][1], zmul[i][2]; phases=Val(true))
+                    mul_left!(t, zmul[i][1] + r + s, zmul[i][2] + r + s; phases=Val(true))
+                    mul_left!(t, zmul[i][1], zmul[i][2]; phases=Val(true))
+                    mul_left!(t, zmul[i][1] + r + s, zmul[i][2] + r + s; phases=Val(true))
+                    mul_left!(t, zmul[i][1], zmul[i][2]; phases=Val(true))
+                    mul_left!(t, zmul[i][1] + r + s, zmul[i][2] + r + s; phases=Val(true))
+                    i = i - 1
+                end
 
-                # show(IOContext(stdout::IO, :limit => true), t)   
-                # print('\n')
-                # print("=>\n")
-
-                # mul_left!(t, op[2], op[3]; phases=Val(true))
-                # mul_left!(t, op[2] + r + s, op[3] + r + s; phases=Val(true))
-
-                # mul_left!(t, op[2], op[3]; phases=Val(true))
-                # mul_left!(t, op[2] + r + s, op[3] + r + s; phases=Val(true))
-
-                # mul_left!(t, op[2], op[3]; phases=Val(true))
-                # mul_left!(t, op[2] + r + s, op[3] + r + s; phases=Val(true))
-
-                # show(IOContext(stdout::IO, :limit => true), t)   
-                # print('\n')
-
-            elseif op[1] == 3
-                t = t[:,invperm(permx)]::T
-            elseif op[1] == 4
-                t = t[:,invperm(permz)]::T
+                # Undo swap
+                rowswap!(t, zsw[1], zsw[2]; phases=Val(true))
+                rowswap!(t, zsw[1] + r + s, zsw[2] + r + s; phases=Val(true))
             end
         end
+        
+
+        t = t[:,invperm(permx)]::T
+        if trackoperations
+            i = length(xmul)
+            for xsw in reverse(xswaps)
+                while i > 0 && xmul[i][2] == xsw[2]
+                    # Undo mul_left
+                    mul_left!(t, xmul[i][1], xmul[i][2]; phases=Val(true))
+                    mul_left!(t, xmul[i][1] + r + s, xmul[i][2] + r + s; phases=Val(true))
+                    mul_left!(t, xmul[i][1], xmul[i][2]; phases=Val(true))
+                    mul_left!(t, xmul[i][1] + r + s, xmul[i][2] + r + s; phases=Val(true))
+                    mul_left!(t, xmul[i][1], xmul[i][2]; phases=Val(true))
+                    mul_left!(t, xmul[i][1] + r + s, xmul[i][2] + r + s; phases=Val(true))
+                    i = i - 1
+                end
+
+                # Undo swap
+                rowswap!(t, xsw[1], xsw[2]; phases=Val(true))
+                rowswap!(t, xsw[1] + r + s, xsw[2] + r + s; phases=Val(true))
+            end
+        end
+        
     end
     MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
 end
