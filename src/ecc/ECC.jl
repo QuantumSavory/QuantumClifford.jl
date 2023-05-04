@@ -36,20 +36,34 @@ module ECC
     end
     
     """Naive syndrome circuit""" 
-    function new_naive_syndrome_circuit(c:: AbstractECC)
+    function naive_syndrome_circuit(c:: AbstractECC)
         naive_sc = []        
-        ancilla_qubit = code_n(c) + 1        
+         
+        ancilla_bit = 1  
+        # ancilla_qubit = code_n(c) + ancilla_bit    
         pc = parity_checks(c)
         for check in pc
-            for qubit in 1: code_n(c)+1
-                if check[qubit] == S"X" || check[qubit] == S"Z"
-                    push!(naive_sc, sCNOT(qubit,ancilla_qubit))
+            ancilla_qubit = code_n(c) + ancilla_bit
+            for qubit in 1: code_n(c)
+                if check[qubit] == (1,0)
+                    h1 = sHadamard(qubit, ancilla_qubit)
+                    c1 = sCNOT(qubit, ancilla_qubit)
+                    h2 = sHadamard(qubit, ancilla_qubit)
+                    push!(naive_sc, h1)
+                    push!(naive_sc, c1)
+                    push!(naive_sc, h2)
+                else if check[qubit] == (0,1)
+                    c1 = sCNOT(qubit, ancilla_qubit)
+                    push!(naive_sc, c1)
                 end
                 
             end
-            push!(naive_sc, sMX(ancilla_qubit)) # I don't know if this is measuring in the X or Z basis so I'm just leaving it as X here
-            ancilla_qubit = ancilla_qubit + 1 
+            mz = sMZ(ancilla_qubit, ancilla_bit)
+            push!(naive_sc, mz)
+            ancilla_bit +=1             
         end
+
+        return naive_sc
     end
 
     # function naive_syndrome_circuit(c::AbstractECC)
