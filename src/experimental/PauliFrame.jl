@@ -75,12 +75,13 @@ julia> initZ(frame)
 """
 function initZ(frame::PauliFrame)
     z_index = (2+(frame.qubits-1)÷64, 2*(1+(frame.qubits-1)÷64))
-    for f in 1:frame.numframes 
+    
+    @inbounds @simd for f in 1:frame.numframes 
         frame.frame.tab.xzs[z_index[1]:z_index[2],f] = rand(UInt64, 1 + (frame.qubits-1)÷64, 1)
-        # This line removes garbage values from the the bit spill over. For example if we had 68 qubits,
+        # The following line removes garbage values from the the bit spill over. For example if we had 68 qubits,
         # then we want a random 64bit number in the first cell and a random  4 bit number in the second. Not two 64 bit numbers. 
-        # TODO make this line more readable if possible
-        frame.frame.tab.xzs[2*(1+(frame.qubits-1)÷64),f] = (frame.frame.tab.xzs[2*(1+(frame.qubits-1)÷64),f] >>> ((64-(frame.qubits%64))%64))
+        # [Commented out becuase it seems for now to be unnecessary ]
+        #frame.frame.tab.xzs[2*(1+(frame.qubits-1)÷64),f] = (frame.frame.tab.xzs[2*(1+(frame.qubits-1)÷64),f] >>> ((64-(frame.qubits%64))%64))
     end
 
     return frame
