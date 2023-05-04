@@ -74,13 +74,13 @@ julia> initZ(frame)
 ```
 """
 function initZ(frame::PauliFrame)
-    z_index = (2+frame.qubits÷65, 2*(1+frame.qubits÷65))
+    z_index = (2+(frame.qubits-1)÷64, 2*(1+(frame.qubits-1)÷64))
     for f in 1:frame.numframes 
-        frame.frame.tab.xzs[z_index[1]:z_index[2],f] = rand(UInt64, 1 + frame.qubits÷65, 1)
+        frame.frame.tab.xzs[z_index[1]:z_index[2],f] = rand(UInt64, 1 + (frame.qubits-1)÷64, 1)
         # This line removes garbage values from the the bit spill over. For example if we had 68 qubits,
         # then we want a random 64bit number in the first cell and a random  4 bit number in the second. Not two 64 bit numbers. 
         # TODO make this line more readable if possible
-        frame.frame.tab.xzs[2*(1+frame.qubits÷65),f] = (frame.frame.tab.xzs[2*(1+frame.qubits÷65),f] >>> ((64-(frame.qubits%64))%64))
+        frame.frame.tab.xzs[2*(1+(frame.qubits-1)÷64),f] = (frame.frame.tab.xzs[2*(1+(frame.qubits-1)÷64),f] >>> ((64-(frame.qubits%64))%64))
     end
 
     return frame
@@ -105,8 +105,10 @@ See also [`pauliFrameCircuitHandler`](@ref), [`circuitSim`](@ref) for examples, 
 """
 function apply!(frame::PauliFrame, op::sMZ)
     bit_t = op.qubit
+    x_index = (bit_t-1)÷64 +1
+
     # Vector that represents, for each frame, whether there was an X flip on bit_t
-    x_flips = .!iszero.(frame.frame.tab.xzs[1,:] .& 2^(bit_t-1))
+    x_flips = .!iszero.(frame.frame.tab.xzs[x_index,:] .& 2^((bit_t-1)%64))
 
     ref = frame.ref[op.bit]
     frame.measurements[:,op.bit] = x_flips  .⊻ ref
@@ -122,13 +124,13 @@ See also [`PauliError`](@ref)
 function apply!(frame::PauliFrame, op::PauliError)
     p = op.p; bit_t = op.qubit
     # TODO Not 100% sure if XOR correctly represents multiplying paulis into the frame?
-    xz_error = [(1,1+frame.qubits÷65), (2+frame.qubits÷65, 2*(1+frame.qubits÷65))] 
+    xz_error = [(1,1+(frame.qubits-1)÷64), (2+(frame.qubits-1)÷64, 2*(1+(frame.qubits-1)÷64))] 
     frame_error = zeros(frame.numframes)
     rand!(frame_error)
  
     # logic for more than 64 qubits
-    error_bit = zeros(Int64, 1+frame.qubits÷65)
-    index = 1+bit_t÷65
+    error_bit = zeros(Int64, 1+(frame.qubits-1)÷64)
+    index = 1+(bit_t-1)÷64
     error_bit[index] = 2^(bit_t - 1 - 64*(index-1)) 
     
     for f in 1:frame.numframes    
