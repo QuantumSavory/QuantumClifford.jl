@@ -40,7 +40,7 @@ The first ['sMZ']@ref measured qubit 5 and treated 0 as its reference measuremen
 The second ['sMZ']@ref measured qubit 1 and treated 1 as its reference measurement.
 ```
 """
-struct PauliFrame
+struct PauliFrame{T}
     numframes::Int
     qubits::Int
     ref::Vector{Bool}
@@ -61,7 +61,7 @@ struct PauliError
 end
 
 """
-    initZ(f::PauliFrame)
+    initZ!(f::PauliFrame)
 
 Inject random Z errors over all frames and qubits for the supplied PauliFrame with probability 0.5.
 
@@ -70,10 +70,10 @@ Calling this after initialization is essential for simulating any non-determinis
 # Examples
 ```julia-repl
 julia> frame = PauliFrame(numframes, qubits, ref_measurements)
-julia> initZ(frame)
+julia> initZ!(frame)
 ```
 """
-function initZ(frame::PauliFrame)
+function initZ!(frame::PauliFrame)
     z_index = (2+(frame.qubits-1)÷64, 2*(1+(frame.qubits-1)÷64))
     
     @inbounds @simd for f in 1:frame.numframes 
@@ -83,7 +83,6 @@ function initZ(frame::PauliFrame)
         # [Commented out becuase it seems for now to be unnecessary ]
         #frame.frame.tab.xzs[2*(1+(frame.qubits-1)÷64),f] = (frame.frame.tab.xzs[2*(1+(frame.qubits-1)÷64),f] >>> ((64-(frame.qubits%64))%64))
     end
-
     return frame
 end
 
@@ -157,7 +156,7 @@ end
 """
     pauliFrameCircuitHandler(qubits, circuit, ref_m,  numframes=1)
 
-Simulates an entire circuit for the user. 
+Simulates an entire circuit for the user, including constructing the PauliFrame object, and calling the initZ!() funtion. 
 
 # Inputs: 
     - Number of qubits, a circuit (refer above), a vector of reference measurements, and the number of frames desired.
@@ -179,27 +178,28 @@ julia> m, f = QuantumClifford.pauliFrameCircuitHandler(5,circuit,ref,10)
 ```
 """
 function pauliFrameCircuitHandler(qubits, circuit, ref_m,  numframes=1)
-    frame = PauliFrame(numframes, qubits, ref_m); initZ(frame)
+    frame = PauliFrame(numframes, qubits, ref_m); initZ!(frame)
     for op in circuit
         apply!(frame, op)      
     end
     return  frame.measurements, frame.frame
 end
 """ 
-    circuitSim(state::PauliFrame, circuit)
+mctrajectory!(state::PauliFrame, circuit)
 
-Alternative to  [`pauliFrameCircuitHandler`](@ref). The difference is that this takes a PauliFrame instance, and
-    returns the modified instance.
+Alternative to  [`pauliFrameCircuitHandler`](@ref). The difference is that this takes a PauliFrame object and then
+    returns the modified instance after processing the ciruict. In this function, the user must first create the PauliFrame,
+    and call initZ!() if they want the random Z errors on initialization. Calling initZ!() is recommended in all "real" applications.
 
 # Examples
 ```julia-repl
 julia> ghz_circuit = [sHadamard(1), sCNOT(1,2), sCNOT(1,3), sMZ(1,1), sMZ(2,2), sMZ(3,3)]
 julia> ref = [0,0,0]
-julia> frame = QuantumClifford.PauliFrame(10^6, 3, ref); QuantumClifford.initZ(frame)
+julia> frame = QuantumClifford.PauliFrame(10^6, 3, ref); QuantumClifford.initZ!(frame)
 julia> f = QuantumClifford.circuitSim(frame, ghz_circuit); m = f.measurements; frame = f.frame 
 ```
 """
-function circuitSim(state::PauliFrame, circuit)
+function mctrajectory!(state::PauliFrame, circuit)
     for op in circuit
         apply!(state, op)      
     end
