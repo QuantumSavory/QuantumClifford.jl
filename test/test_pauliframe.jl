@@ -28,13 +28,13 @@ testSizes = [0, 59, 125, 256, 10^4]
         @test ((total_1s/3)/(10^6) > 0.49) && ((total_1s/3)/(10^6) < 0.51) # ratio to 0 to 1 should be about 0.5
     end
 end
-# same as above but uses the circuitSim() method from PauliFrame.jl instead of pauliFrameCircuitHandler()
+# same as above but uses the mctrajectory!() method from PauliFrame.jl instead of pauliFrameCircuitHandler()
 @testset "Pauli Frame Cicuit Sim" begin 
     @testset "3 qubit repetition code" begin        
         circuit = [sX(1), sX(1), sCNOT(1,4), QuantumClifford.PauliError(2,0.75), sCNOT(2,4), sCNOT(2,5), sCNOT(3,5), sMZ(4,1), sMZ(5,2)]
         ref = [0,0]
         frame = QuantumClifford.PauliFrame(100, 5, ref); QuantumClifford.initZ!(frame)
-        result = QuantumClifford.circuitSim(frame, circuit); f = result.frame; m = result.measurements
+        result = QuantumClifford.mctrajectory!(frame, circuit); f = result.frame; m = result.measurements
         frame_index = 1
         for frame in f
             if frame[2][1]
@@ -50,7 +50,7 @@ end
         ref = [0,0,0]
         frame = QuantumClifford.PauliFrame(10^6, 3, ref); QuantumClifford.initZ!(frame)
 
-        f = QuantumClifford.circuitSim(frame, ghz_circuit); m = f.measurements
+        f = QuantumClifford.mctrajectory!(frame, ghz_circuit); m = f.measurements
         total_1s = sum(m)
         @test total_1s%3 == 0 
         @test ((total_1s/3)/(10^6) > 0.49) && ((total_1s/3)/(10^6) < 0.51) 

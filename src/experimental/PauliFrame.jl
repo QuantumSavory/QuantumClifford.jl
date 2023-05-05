@@ -40,7 +40,7 @@ The first ['sMZ']@ref measured qubit 5 and treated 0 as its reference measuremen
 The second ['sMZ']@ref measured qubit 1 and treated 1 as its reference measurement.
 ```
 """
-struct PauliFrame{T}
+struct PauliFrame
     numframes::Int
     qubits::Int
     ref::Vector{Bool}
