@@ -36,6 +36,7 @@ println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREA
 @doset "cliff"
 @doset "symcliff"
 @doset "symcontrolled"
+@doset "stabtocliff"
 @doset "classicalreg"
 @doset "random"
 @doset "noisycircuits"
