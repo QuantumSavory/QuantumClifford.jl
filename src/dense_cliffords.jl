@@ -64,7 +64,9 @@ CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
 
 function CliffordOperator(stab::Stabilizer)
     md = MixedDestabilizer(copy(stab); trackoperations=true)
-    return CliffordOperator(tab(md))
+    cltab = tab(md)
+    # cltab = vcat(cltab[1+length(cltab)÷2:length(cltab)], cltab[1:length(cltab)÷2])
+    return CliffordOperator(cltab)
 end
 
 Base.:(==)(l::CliffordOperator, r::CliffordOperator) = l.tab == r.tab
