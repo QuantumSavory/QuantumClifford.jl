@@ -63,7 +63,7 @@ CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Tab
 CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
 
 function CliffordOperator(stab::Stabilizer)
-    md = MixedDestabilizer(copy(stab); trackoperations=true)
+    md = MixedDestabilizer(copy(stab); undorowops=true)
     cltab = tab(md)
     # cltab = vcat(cltab[1+length(cltab)÷2:length(cltab)], cltab[1:length(cltab)÷2])
     return CliffordOperator(cltab)

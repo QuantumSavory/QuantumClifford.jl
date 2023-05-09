@@ -211,6 +211,12 @@ It returns the (in place) modified state, the indices of the last pivot
 of both Gaussian elimination steps, and the permutations that have been used
 to put the X and Z tableaux in standard form.
 
+If `recordops` is true, the function also returns the rowswaps and mul_left operation
+each in its own array: 
+    => | stabilizer, r, s, xperm, zperm, xswaps, zswaps, xmul, zmul
+If `recordops` is false, it will not return or record them
+    => | stabilizer, r, s, xperm, zperm
+
 Based on [gottesman1997stabilizer](@cite).
 
 See also: [`canonicalize!`](@ref), [`canonicalize_rref!`](@ref)
@@ -233,11 +239,11 @@ function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true), r
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases)
-            push!(xswaps, (k, i))
+            R && push!(xswaps, (k, i))
             for m in 1:rows
                 if stabilizer[m,j][1] && m!=i # if X or Y
                     mul_left!(stabilizer, m, i; phases)
-                    push!(xmul, (m, i))
+                    R && push!(xmul, (m, i))
                 end
             end
             i += 1
@@ -253,12 +259,12 @@ function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true), r
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases)
-            push!(zswaps, (k, i))
+            R && push!(zswaps, (k, i))
 
             for m in 1:rows
                 if stabilizer[m,j][2] && m!=i # if Z or Y
                     mul_left!(stabilizer, m, i; phases)
-                    push!(zmul, (m, i))
+                    R && push!(zmul, (m, i))
                 end
             end
             i += 1

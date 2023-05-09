@@ -703,6 +703,9 @@ When the constructor is called on an incomplete [`Stabilizer`](@ref) it
 automatically calculates the destabilizers and logical operators, following
 chapter 4 of [gottesman1997stabilizer](@cite).
 
+If `undorowops` is specified, the constructor will track and undo the row operations
+performed for gaussian elimination.
+
 See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
 """
 mutable struct MixedDestabilizer{T<:Tableau} <: AbstractStabilizer
@@ -711,7 +714,7 @@ mutable struct MixedDestabilizer{T<:Tableau} <: AbstractStabilizer
 end
 
 # Added a lot of type assertions to help Julia infer types
-function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, trackoperations=false) where {T}
+function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, undorowops=false) where {T}
     rows,n = size(stab)
     stab, r, s, permx, permz, xswaps, zswaps, xmul, zmul = canonicalize_gott!(copy(stab); recordops=true)
     
@@ -750,7 +753,7 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, trackoperations=f
     if undoperm
         t = t[:,invperm(permz)]::T
 
-        if trackoperations
+        if undorowops
             i = length(zmul)
             for zsw in reverse(zswaps)
 
@@ -773,7 +776,7 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, trackoperations=f
         
 
         t = t[:,invperm(permx)]::T
-        if trackoperations
+        if undorowops
             i = length(xmul)
             for xsw in reverse(xswaps)
                 while i > 0 && xmul[i][2] == xsw[2]
