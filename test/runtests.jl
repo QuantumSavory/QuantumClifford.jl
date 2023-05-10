@@ -25,7 +25,6 @@ end
 
 println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREADS = $(Sys.CPU_THREADS)`...")
 
-@doset "pauliframe"
 @doset "paulis"
 @doset "stabs"
 @doset "stabcanon"
@@ -47,6 +46,7 @@ println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREA
 @doset "entanglement"
 @doset "enumerate"
 @doset "precompile"
+@doset "pauliframe" 
 VERSION >= v"1.7" && @doset "allocations"
 VERSION >= v"1.8" && @doset "doctests"
 get(ENV,"QUANTUMCLIFFORD_JET_TEST","")=="true" && @doset "jet"

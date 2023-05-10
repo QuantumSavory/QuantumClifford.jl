@@ -1,20 +1,3 @@
-# A Pauli Frame simulation can be created by interacting directly with the struct and its methods, or by calling the 
-# pauliFrameCircuitHandler or circuitSim function, which will run an entire circuit for you, calling the appropiate methods
-# and initalizing a PauliFrame struct.
-#
-# Currently, all 1 and 2 qubit gates from QuantumClifford work. However, only Z basis measurement is available.
-# Another current assumption about measurement is that all measurements happen at the end of the circuit. 
-#
-# # # # # # # Notes about the xzs matrix manipulations # # # # # # # 
-# TODO NOTES ONLY APPLY FOR LESS THAN 64 QUBITS
-# For most of the operations, I manipulated the Stabilizer.tab.xzs matrix from the QuantumClifford.jl library.
-# It's a 2 by f matrtix, where f is the number of frames
-# If the first index is 1, then it refers to an X component, if 2 then Z. For Y, use both i.e. [1:2]
-# The value of [(X or Z), frame_number] is equal to a binary number that represents whether the provided index for X or Z is "on"
-#   Example: say we want to represent ZZ_Z_ . First convert to a binary string, treating the leftmost qubit as our 0 place
-#            ZZ_Z_ -> 01011 = 11 (in decimal). So to set this on frame f, do frames.tab.xzs[2,f] = 11
-# Using this, most of the manipulations of the frames were programmed, especially the injection of Pauli error channel errors.
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 using Random
 using QuantumClifford
 
@@ -40,14 +23,20 @@ The first ['sMZ']@ref measured qubit 5 and treated 0 as its reference measuremen
 The second ['sMZ']@ref measured qubit 1 and treated 1 as its reference measurement.
 ```
 """
-struct PauliFrame
+struct PauliFrame{T <: AbstractStabilizer}
     numframes::Int
     qubits::Int
     ref::Vector{Bool}
-    frame::QuantumClifford.Stabilizer # each row is one frame, each column is a qubit
+    frame::T 
     measurements::Matrix{Bool}
 
-    PauliFrame(numframes, qubits, ref) = new(numframes, qubits, ref, zero(Stabilizer, numframes, qubits), zeros(Bool, numframes, length(ref)))
+    function PauliFrame(numframes, qubits, ref)
+        new{Stabilizer}(numframes, qubits, ref, zero(Stabilizer, numframes, qubits), zeros(Bool, numframes, length(ref)))
+    end
+
+    function PauliFrame(numframes, qubits, ref, T)
+        new{T}(numframes, qubits, ref, zero(T, numframes, qubits), zeros(Bool, numframes, length(ref)))
+    end
 end
 
 """
@@ -78,10 +67,6 @@ function initZ!(frame::PauliFrame)
     
     @inbounds @simd for f in 1:frame.numframes 
         frame.frame.tab.xzs[z_index[1]:z_index[2],f] = rand(UInt64, 1 + (frame.qubits-1)÷64, 1)
-        # The following line removes garbage values from the the bit spill over. For example if we had 68 qubits,
-        # then we want a random 64bit number in the first cell and a random  4 bit number in the second. Not two 64 bit numbers. 
-        # [Commented out becuase it seems for now to be unnecessary ]
-        #frame.frame.tab.xzs[2*(1+(frame.qubits-1)÷64),f] = (frame.frame.tab.xzs[2*(1+(frame.qubits-1)÷64),f] >>> ((64-(frame.qubits%64))%64))
     end
     return frame
 end
@@ -92,15 +77,14 @@ function apply!(f::PauliFrame, op)
     return f
 end
 
-# TODO Currently, this assumes that after measurement, that qubit will not be used. 
-#   - to fix this, we could reset the measured qubit to I or Z, but what about entanglement?
 """
     apply!(frame::PauliFrame, op::sMZ)
 
 Applies [`sMZ`](@ref) to the PauliFrame instance. 
 
 On initialization of the PauliFrame instance, a set of reference measurements must be given. 
-The sMZ gate here must be of the form sMZ(measure_this_qubit, index_of_reference_provided).
+The sMZ gate here must be of the form sMZ(measure_this_qubit, index_of_reference_provided). This method assumes all measurements are
+at the end of the circuit.
 See also [`pauliFrameCircuitHandler`](@ref), [`circuitSim`](@ref) for examples, and [`PauliFrame`](@ref) for more info.
 """
 function apply!(frame::PauliFrame, op::sMZ)
@@ -123,7 +107,6 @@ See also [`PauliError`](@ref)
 """
 function apply!(frame::PauliFrame, op::PauliError)
     p = op.p; bit_t = op.qubit
-    # TODO Not 100% sure if XOR correctly represents multiplying paulis into the frame?
     xz_error = [(1,1+(frame.qubits-1)÷64), (2+(frame.qubits-1)÷64, 2*(1+(frame.qubits-1)÷64))] 
     frame_error = zeros(frame.numframes)
     rand!(frame_error)
