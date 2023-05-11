@@ -161,16 +161,7 @@ julia> circuit = [sX(1), sX(1), sCNOT(1,4), QuantumClifford.PauliError(2,0.75), 
 julia> ref = [0,0]
 julia> m, f = QuantumClifford.pauliFrameCircuitHandler(5,circuit,ref,10)
 ```
-"""
-function pauliFrameCircuitHandler(qubits, circuit, ref_m,  numframes=1)
-    frame = PauliFrame(numframes, qubits, ref_m); initZ!(frame)
-    for op in circuit
-        apply!(frame, op)
-    end
-    return  frame.measurements, frame.frame
-end
 
-"""
 mctrajectory!(state::PauliFrame, circuit)
 
 Alternative to  [`pauliFrameCircuitHandler`](@ref). The difference is that this takes a PauliFrame object and then
