@@ -61,6 +61,7 @@ export
     random_pauli, random_stabilizer, random_destabilizer, random_clifford,
     # Noise
     applynoise!, UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, NoisyGate,
+    PauliNoise, PauliError,
     # Useful States
     bell, ghz,
     single_z, single_x, single_y,

@@ -16,6 +16,8 @@ destabilizerview(r::Register) = destabilizerview(quantumstate(r))
 logicalxview(r::Register) = logicalxview(quantumstate(r))
 logicalzview(r::Register) = logicalzview(quantumstate(r))
 
+nqubits(r::Register) = nqubits(r.stab)
+
 """A view of the classical bits stored with the state"""
 function bitview end
 bitview(s::AbstractStabilizer) = ()
@@ -28,12 +30,8 @@ quantumstate(r::Register) = r.stab
 
 tab(r::Register) = tab(quantumstate(r))
 
-function apply!(r::Register, args...; kwargs...)
-    apply!(quantumstate(r), args...; kwargs...)
-    r
-end
-function apply!(r::Register, op::AbstractCliffordOperator, indices; kwargs...)
-    apply!(quantumstate(r), op, indices; kwargs...)
+function apply!(r::Register, op, args...; kwargs...)
+    apply!(quantumstate(r), op, args...; kwargs...)
     r
 end
 
