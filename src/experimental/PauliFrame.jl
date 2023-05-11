@@ -65,10 +65,12 @@ julia> initZ!(frame)
 ```
 """
 function initZ!(frame::PauliFrame)
-    z_index = (2+(frame.qubits-1)÷64, 2*(1+(frame.qubits-1)÷64))
+    T = eltype(frame.frame.tab.xzs)
 
     @inbounds @simd for f in 1:frame.numframes
-        frame.frame.tab.xzs[z_index[1]:z_index[2],f] = rand(UInt64, 1 + (frame.qubits-1)÷64, 1)
+        @simd for row in 1:size(frame.frame.tab.xzs,1)÷2
+            frame.frame.tab.xzs[end÷2+row,f] = rand(T)
+        end
     end
     return frame
 end
