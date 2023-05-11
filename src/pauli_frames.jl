@@ -1,5 +1,5 @@
 """
-    PauliFrame(numframes, numqubits, reference_measurements)
+$(TYPEDEF)
 
 The frame field holds a tableau. This tableau is not to be viewed as a normal stabilizer tableau, although
 it does conjugate the same under Clifford operations. Each row in the tableau refers to a single frame. Each column a qubit.
@@ -8,17 +8,6 @@ The values stored are X,Y,Z,_ and indicate whether the corresponding pauli opera
 The provided reference measurements will be used to create the measurements field of this struct. They will also be
 used when performing measurement. The indices of the provided measurements must match the secondary value of future measurements
 when doing sMZ(measure_this_qubit, index_of_reference_provided). See also [`apply!(frame::PauliFrame, op:sMZ)`](@ref)
-
-# Examples
-```julia-repl
-julia> frame = PauliFrame(numframes, numqubits, [0,1]])
-
-julia> apply!(frame, sMZ(5,1))
-julia> apply!(frame, sMZ(1,2))
-
-The first ['sMZ']@ref measured qubit 5 and treated 0 as its reference measurement.
-The second ['sMZ']@ref measured qubit 1 and treated 1 as its reference measurement.
-```
 """
 struct PauliFrame{T} <: AbstractQCState
     frame::T # TODO this should really be a Tableau
@@ -29,7 +18,11 @@ nqubits(f::PauliFrame) = nqubits(f.frame)
 Base.length(f::PauliFrame) = size(f.measurements, 1)
 Base.eachindex(f::PauliFrame) = 1:length(f)
 
-"""Prepare an empty set of Pauli frames with the given number of `frames` and `qubits`. Preallocates spaces for `measurement` number of measurements."""
+"""
+$(TYPEDSIGNATURES)
+
+Prepare an empty set of Pauli frames with the given number of `frames` and `qubits`. Preallocates spaces for `measurement` number of measurements.
+"""
 function PauliFrame(frames, qubits, measurements)
     stab = zero(Stabilizer, frames, qubits) # TODO this should really be a Tableau
     frame = PauliFrame(stab, zeros(Bool, frames, measurements))
@@ -38,17 +31,12 @@ function PauliFrame(frames, qubits, measurements)
 end
 
 """
-    initZ!(f::PauliFrame)
+$(TYPEDSIGNATURES)
 
 Inject random Z errors over all frames and qubits for the supplied PauliFrame with probability 0.5.
 
 Calling this after initialization is essential for simulating any non-deterministic circuit.
-
-# Examples
-```julia-repl
-julia> frame = PauliFrame(numframes, qubits, ref_measurements)
-julia> initZ!(frame)
-```
+It is done automatically by most [`PauliFrame`](@ref) constructors.
 """
 function initZ!(frame::PauliFrame)
     T = eltype(frame.frame.tab.xzs)
@@ -66,16 +54,6 @@ function apply!(f::PauliFrame, op::AbstractCliffordOperator)
     return f
 end
 
-"""
-    apply!(frame::PauliFrame, op::sMZ)
-
-Applies [`sMZ`](@ref) to the PauliFrame instance.
-
-On initialization of the PauliFrame instance, a set of reference measurements must be given.
-The sMZ gate here must be of the form sMZ(measure_this_qubit, index_of_reference_provided). This method assumes all measurements are
-at the end of the circuit.
-See also [`pauliFrameCircuitHandler`](@ref), [`circuitSim`](@ref) for examples, and [`PauliFrame`](@ref) for more info.
-"""
 function apply!(frame::PauliFrame, op::sMZ)
     i = op.qubit
     xzs = frame.frame.tab.xzs
@@ -117,42 +95,14 @@ function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
 end
 
 """
-    pauliFrameCircuitHandler(qubits, circuit, ref_m,  numframes=1)
+Perform a "Pauli frame" style simulation of a quantum circuit.
+"""
+function pftrajectories end
 
-Simulates an entire circuit for the user, including constructing the PauliFrame object, and calling the initZ!() funtion.
+"""
+$(TYPEDSIGNATURES)
 
-# Inputs:
-    - Number of qubits, a circuit (refer above), a vector of reference measurements, and the number of frames desired.
-
-# Output 1:
-    A matrix where each row is a frame, each column is a measurement.
-           M1     M2
-     F1[ M1,F1  M2,F1]
-     F1[ M1,F2  M2,F2]
-
-# Output 2:
-    Another output is the the Stabilizer data structure from QuantumClifford.
-    Assuming all measurements happen at the end of the circuit, it represents the pauli frame values right before measurement starts.
-# Examples
-```julia-repl
-julia> circuit = [sX(1), sX(1), sCNOT(1,4), QuantumClifford.PauliError(2,0.75), sCNOT(2,4), sCNOT(2,5), sCNOT(3,5), sMZ(4,1), sMZ(5,2)]
-julia> ref = [0,0]
-julia> m, f = QuantumClifford.pauliFrameCircuitHandler(5,circuit,ref,10)
-```
-
-mctrajectory!(state::PauliFrame, circuit)
-
-Alternative to  [`pauliFrameCircuitHandler`](@ref). The difference is that this takes a PauliFrame object and then
-    returns the modified instance after processing the ciruict. In this function, the user must first create the PauliFrame,
-    and call initZ!() if they want the random Z errors on initialization. Calling initZ!() is recommended in all "real" applications.
-
-# Examples
-```julia-repl
-julia> ghz_circuit = [sHadamard(1), sCNOT(1,2), sCNOT(1,3), sMZ(1,1), sMZ(2,2), sMZ(3,3)]
-julia> ref = [0,0,0]
-julia> frame = QuantumClifford.PauliFrame(10^6, 3, ref); QuantumClifford.initZ!(frame)
-julia> f = QuantumClifford.circuitSim(frame, ghz_circuit); m = f.measurements; frame = f.frame
-```
+Evolve each frame stored in [`PauliFrame`](@ref) by the given circuit.
 """
 function pftrajectories(state::PauliFrame, circuit)
     for op in circuit
@@ -161,6 +111,15 @@ function pftrajectories(state::PauliFrame, circuit)
     return state
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+For a given [`Register`](@ref) and circuit, simulates the reference circuit acting on the
+register and then also simulate numerous [`PauliFrame`](@ref) trajectories.
+Returns the register and the [`PauliFrame`](@ref) instance.
+
+Use [`pfmeasurements`](@ref) to get the measurement results.
+"""
 function pftrajectories(register::Register, circuit; trajectories=500)
     for op in circuit
         apply!(register, op)
@@ -170,6 +129,34 @@ function pftrajectories(register::Register, circuit; trajectories=500)
     register, frame
 end
 
-pfmeasurements(register) = bitview(register)
-pfmeasurements(frame) = frame.measurements
-pfmeasurements(register, frame) = pfmeasurements(register) .⊻ pfmeasurements(frame)
+"""
+For a given simulated state, e.g. a [`PauliFrame`](@ref) instance, returns the measurement results.
+"""
+function pfmeasurement end
+
+"""
+$(TYPEDSIGNATURES)
+
+Returns the measurements stored in the bits of the given [`Register`](@ref).
+"""
+pfmeasurements(register::Register) = bitview(register)
+
+"""
+$(TYPEDSIGNATURES)
+
+Returns the measurement results for each frame in the [`PauliFrame`](@ref) instance.
+
+!!! warning "Relative mesurements"
+    The return measurements are relative to the reference measurements, i.e. they only say
+    whether the reference measurements have been flipped in the given frame.
+"""
+pfmeasurements(frame::PauliFrame) = frame.measurements
+
+"""
+$(TYPEDSIGNATURES)
+
+Takes the references measurements from the given [`Register`](@ref) and applies the flips
+as prescribed by the [`PauliFrame`](@ref) relative measurements. The result is the actual
+(non-relative) measurement results for each frame.
+"""
+pfmeasurements(register::Register, frame::PauliFrame) = pfmeasurements(register) .⊻ pfmeasurements(frame)
