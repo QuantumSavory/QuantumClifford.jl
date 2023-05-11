@@ -93,14 +93,18 @@ at the end of the circuit.
 See also [`pauliFrameCircuitHandler`](@ref), [`circuitSim`](@ref) for examples, and [`PauliFrame`](@ref) for more info.
 """
 function apply!(frame::PauliFrame, op::sMZ)
-    bit_t = op.qubit
-    x_index = (bit_t-1)÷64 +1
+    i = op.qubit
+    T = eltype(frame.frame.tab.xzs)
+    lowbit = T(1)
+    ibig = _div(T,i-1)+1
+    ismall = _mod(T,i-1)
+    ismallm = lowbit<<(ismall)
+    ref = frame.ref[op.bit]
 
     # Vector that represents, for each frame, whether there was an X flip on bit_t
-    x_flips = .!iszero.(frame.frame.tab.xzs[x_index,:] .& 2^((bit_t-1)%64))
+    x_flips = .!iszero.(frame.frame.tab.xzs[ibig,:] .& ismallm)
 
-    ref = frame.ref[op.bit]
-    frame.measurements[:,op.bit] = x_flips  .⊻ ref
+    frame.measurements[:,op.bit] = x_flips .⊻ ref
     return frame
 end
 
