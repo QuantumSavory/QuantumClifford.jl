@@ -21,8 +21,7 @@ The second ['sMZ']@ref measured qubit 1 and treated 1 as its reference measureme
 ```
 """
 struct PauliFrame{T} <: AbstractQCState
-    ref::BitVector
-    frame::T
+    frame::T # TODO this should really be a Tableau
     measurements::Matrix{Bool}
 end
 
@@ -30,9 +29,10 @@ nqubits(f::PauliFrame) = nqubits(f.frame)
 Base.length(f::PauliFrame) = size(f.measurements, 1)
 Base.eachindex(f::PauliFrame) = 1:length(f)
 
-function PauliFrame(numframes, qubits, ref)
-    stab = zero(Stabilizer, numframes, qubits)
-    frame = PauliFrame(Bool.(ref), stab, zeros(Bool, numframes, length(ref)))
+"""Prepare an empty set of Pauli frames with the given number of `frames` and `qubits`. Preallocates spaces for `measurement` number of measurements."""
+function PauliFrame(frames, qubits, measurements)
+    stab = zero(Stabilizer, frames, qubits) # TODO this should really be a Tableau
+    frame = PauliFrame(stab, zeros(Bool, frames, measurements))
     initZ!(frame)
     return frame
 end
@@ -84,11 +84,10 @@ function apply!(frame::PauliFrame, op::sMZ)
     ibig = _div(T,i-1)+1
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
-    ref = frame.ref[op.bit]
 
     @inbounds @simd for f in eachindex(frame)
         should_flip = !iszero(xzs[ibig,f] & ismallm)
-        frame.measurements[f,op.bit] = should_flip ⊻ ref
+        frame.measurements[f,op.bit] = should_flip
     end
 
     return frame
@@ -161,3 +160,16 @@ function pftrajectories(state::PauliFrame, circuit)
     end
     return state
 end
+
+function pftrajectories(register::Register, circuit; trajectories=500)
+    for op in circuit
+        apply!(register, op)
+    end
+    frame = PauliFrame(trajectories, nqubits(register), length(bitview(register)))
+    pftrajectories(frame, circuit)
+    register, frame
+end
+
+pfmeasurements(register) = bitview(register)
+pfmeasurements(frame) = frame.measurements
+pfmeasurements(register, frame) = pfmeasurements(register) .⊻ pfmeasurements(frame)
