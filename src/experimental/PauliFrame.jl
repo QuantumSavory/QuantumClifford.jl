@@ -1,6 +1,8 @@
 using Random
 using QuantumClifford
 
+export PauliFrame
+
 """
     PauliFrame(numframes, numqubits, reference_measurements)
 
