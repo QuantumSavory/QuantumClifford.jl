@@ -126,7 +126,7 @@ function apply!(frame::PauliFrame, op::PauliError)
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
 
-    @inline @simd for f in 1:frame.numframes
+    @inbounds @simd for f in 1:frame.numframes
         r = rand()
         if  r < p/3 # X error
             frame.frame.tab.xzs[ibig,f] ⊻= ismallm
