@@ -2,7 +2,7 @@ using QuantumClifford
 
 testSizes = [0, 59, 125, 256, 10^4]
 # tests pauliFrameCircuitHandler() from PauliFrame.jl
-@testset "Pauli Frame Cicuit Handler" begin 
+@testset "Pauli Frame Cicuit Handler" begin
     @testset "3 qubit repetition code" begin
         for offset in testSizes
             circuit = [sCNOT(1,4+offset), QuantumClifford.PauliError(2,0.75), sCNOT(2,4+offset), sCNOT(2,5+offset), sCNOT(3,5+offset), sMZ(4+offset,1), sMZ(5+offset,2)]
@@ -29,8 +29,8 @@ testSizes = [0, 59, 125, 256, 10^4]
     end
 end
 # same as above but uses the mctrajectory!() method from PauliFrame.jl instead of pauliFrameCircuitHandler()
-@testset "Pauli Frame Cicuit Sim" begin 
-    @testset "3 qubit repetition code" begin        
+@testset "Pauli Frame Cicuit Sim" begin
+    @testset "3 qubit repetition code" begin
         circuit = [sX(1), sX(1), sCNOT(1,4), QuantumClifford.PauliError(2,0.75), sCNOT(2,4), sCNOT(2,5), sCNOT(3,5), sMZ(4,1), sMZ(5,2)]
         ref = [0,0]
         frame = QuantumClifford.PauliFrame(100, 5, ref); QuantumClifford.initZ!(frame)
@@ -39,10 +39,10 @@ end
         for frame in f
             if frame[2][1]
                 @test frame[4][1] && frame[5][1]
-                @test sum(m[frame_index,:]) == 2 
+                @test sum(m[frame_index,:]) == 2
             end
             frame_index += 1
-        end     
+        end
     end
 
     @testset "GHZ Circuit" begin
@@ -52,7 +52,7 @@ end
 
         f = QuantumClifford.mctrajectory!(frame, ghz_circuit); m = f.measurements
         total_1s = sum(m)
-        @test total_1s%3 == 0 
-        @test ((total_1s/3)/(10^6) > 0.49) && ((total_1s/3)/(10^6) < 0.51) 
+        @test total_1s%3 == 0
+        @test ((total_1s/3)/(10^6) > 0.49) && ((total_1s/3)/(10^6) < 0.51)
     end
 end

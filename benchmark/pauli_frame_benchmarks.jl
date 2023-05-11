@@ -19,7 +19,7 @@ function x_diag_circuit(CIRCUIT_SIZE)
 end
 
 # Run pauliframe simulation
-const ref_m = [0] 
+const ref_m = [0]
 
 SUITE["pauliframe"] = BenchmarkGroup(["pauliframe"])
 
