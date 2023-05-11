@@ -104,7 +104,7 @@ function apply!(frame::PauliFrame, op::sMZ)
     # Vector that represents, for each frame, whether there was an X flip on bit_t
     x_flips = .!iszero.(frame.frame.tab.xzs[ibig,:] .& ismallm)
 
-    frame.measurements[:,op.bit] = x_flips .⊻ ref
+    frame.measurements[:,op.bit] .= x_flips .⊻ ref
     return frame
 end
 
