@@ -23,21 +23,21 @@ The first ['sMZ']@ref measured qubit 5 and treated 0 as its reference measuremen
 The second ['sMZ']@ref measured qubit 1 and treated 1 as its reference measurement.
 ```
 """
-struct PauliFrame{T <: AbstractStabilizer}
+struct PauliFrame{T}
     numframes::Int
     qubits::Int
-    ref::Vector{Bool}
-    frame::T 
+    ref::BitVector
+    frame::T
     measurements::Matrix{Bool}
-
-    function PauliFrame(numframes, qubits, ref)
-        new{Stabilizer}(numframes, qubits, ref, zero(Stabilizer, numframes, qubits), zeros(Bool, numframes, length(ref)))
-    end
-
-    function PauliFrame(numframes, qubits, ref, T)
-        new{T}(numframes, qubits, ref, zero(T, numframes, qubits), zeros(Bool, numframes, length(ref)))
-    end
 end
+
+function PauliFrame(numframes, qubits, ref)
+    stab = zero(Stabilizer, numframes, qubits)
+    frame = PauliFrame(numframes, qubits, Bool.(ref), stab, zeros(Bool, numframes, length(ref)))
+    initZ!(frame)
+    return frame
+end
+
 
 """
 This type is used to be able to write Pauli Error Channel gates like PauliError(2, 0.75).\n
