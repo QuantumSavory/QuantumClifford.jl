@@ -6,7 +6,7 @@ using QuantumClifford
         circuit = [sX(1), sX(1), sCNOT(1,4), PauliError(2,0.75), sCNOT(2,4), sCNOT(2,5), sCNOT(3,5), sMZ(4,1), sMZ(5,2)]
         ref = [0,0]
         frame = PauliFrame(100, 5, ref)
-        result = mctrajectory!(frame, circuit)
+        result = pftrajectories(frame, circuit)
         f = result.frame; m = result.measurements
         frame_index = 1
         for frame in f
@@ -23,7 +23,7 @@ using QuantumClifford
         ref = [0,0,0]
         frame = PauliFrame(10^6, 3, ref)
 
-        f = mctrajectory!(frame, ghz_circuit)
+        f = pftrajectories(frame, ghz_circuit)
         m = f.measurements
         total_1s = sum(m)
         @test total_1s%3 == 0

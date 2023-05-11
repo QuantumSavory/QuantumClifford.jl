@@ -155,7 +155,7 @@ julia> frame = QuantumClifford.PauliFrame(10^6, 3, ref); QuantumClifford.initZ!(
 julia> f = QuantumClifford.circuitSim(frame, ghz_circuit); m = f.measurements; frame = f.frame
 ```
 """
-function mctrajectory!(state::PauliFrame, circuit)
+function pftrajectories(state::PauliFrame, circuit)
     for op in circuit
         apply!(state, op)
     end

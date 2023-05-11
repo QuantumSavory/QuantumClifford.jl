@@ -63,7 +63,7 @@ export
     applynoise!, UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, NoisyGate,
     PauliNoise, PauliError,
     # Pauli frames
-    PauliFrame,
+    PauliFrame, pftrajectories,
     # Useful States
     bell, ghz,
     single_z, single_x, single_y,
