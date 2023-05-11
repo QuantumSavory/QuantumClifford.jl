@@ -1,6 +1,7 @@
 using Random
 using QuantumClifford
-import QuantumClifford: apply!, mctrajectory!, _div, _mod
+import QuantumClifford: apply!, applynoise!, mctrajectory!, _div, _mod,
+    AbstractQCState, AbstractCliffordOperator
 
 export PauliFrame
 
@@ -26,7 +27,7 @@ The first ['sMZ']@ref measured qubit 5 and treated 0 as its reference measuremen
 The second ['sMZ']@ref measured qubit 1 and treated 1 as its reference measurement.
 ```
 """
-struct PauliFrame{T}
+struct PauliFrame{T} <: AbstractQCState
     numframes::Int
     qubits::Int
     ref::BitVector
@@ -39,17 +40,6 @@ function PauliFrame(numframes, qubits, ref)
     frame = PauliFrame(numframes, qubits, Bool.(ref), stab, zeros(Bool, numframes, length(ref)))
     initZ!(frame)
     return frame
-end
-
-
-"""
-This type is used to be able to write Pauli Error Channel gates like PauliError(2, 0.75).\n
-In this case, a pauli error is applied on qubit 2 with probability 0.75.\n
-See also [`pauliFrameCircuitHandler`](@ref), [`circuitSim`](@ref) for examples.
-"""
-struct PauliError
-    qubit::Int
-    p::Float64
 end
 
 """
@@ -76,8 +66,7 @@ function initZ!(frame::PauliFrame)
     return frame
 end
 
-""" Applies a symbolic gate from QuantumClifford to the frames of the provided PauliFrame instance."""
-function apply!(f::PauliFrame, op)
+function apply!(f::PauliFrame, op::AbstractCliffordOperator)
     QuantumClifford._apply!(f.frame, op; phases=Val(false))
     return f
 end
@@ -110,15 +99,8 @@ function apply!(frame::PauliFrame, op::sMZ)
     return frame
 end
 
-"""
-    apply!(frame::PauliFrame, op::PauliError)
-
-Inserts a random pauli error into all frames in the provided PauliFrame instance with probabiltiy p, on bit bit_t.
-See also [`PauliError`](@ref)
-"""
-function apply!(frame::PauliFrame, op::PauliError)
-    p = op.p
-    i = op.qubit
+function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
+    p = noise.errprobthird
     T = eltype(frame.frame.tab.xzs)
 
     lowbit = T(1)
@@ -128,11 +110,11 @@ function apply!(frame::PauliFrame, op::PauliError)
 
     @inbounds @simd for f in 1:frame.numframes
         r = rand()
-        if  r < p/3 # X error
+        if  r < p # X error
             frame.frame.tab.xzs[ibig,f] ⊻= ismallm
-        elseif r < 2p/3 # Z error
+        elseif r < 2p # Z error
             frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
-        elseif r < p # Y error
+        elseif r < 3p # Y error
             frame.frame.tab.xzs[ibig,f] ⊻= ismallm
             frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
         end

@@ -1,6 +1,5 @@
 using QuantumClifford
 using QuantumClifford.Experimental
-using QuantumClifford.Experimental: PauliError
 
 # same as above but uses the mctrajectory!() method from PauliFrame.jl instead of pauliFrameCircuitHandler()
 @testset "Pauli Frame Cicuit Sim" begin
