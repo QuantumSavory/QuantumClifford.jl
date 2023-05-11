@@ -1,6 +1,6 @@
 using Random
 using QuantumClifford
-import QuantumClifford: apply!, mctrajectory!
+import QuantumClifford: apply!, mctrajectory!, _div, _mod
 
 export PauliFrame
 
@@ -49,7 +49,7 @@ See also [`pauliFrameCircuitHandler`](@ref), [`circuitSim`](@ref) for examples.
 """
 struct PauliError
     qubit::Int
-    p::Float16
+    p::Float64
 end
 
 """
@@ -111,31 +111,24 @@ Inserts a random pauli error into all frames in the provided PauliFrame instance
 See also [`PauliError`](@ref)
 """
 function apply!(frame::PauliFrame, op::PauliError)
-    p = op.p; bit_t = op.qubit
-    xz_error = [(1,1+(frame.qubits-1)÷64), (2+(frame.qubits-1)÷64, 2*(1+(frame.qubits-1)÷64))]
-    frame_error = zeros(frame.numframes)
-    rand!(frame_error)
+    p = op.p
+    i = op.qubit
+    T = eltype(frame.frame.tab.xzs)
 
-    # logic for more than 64 qubits
-    error_bit = zeros(Int64, 1+(frame.qubits-1)÷64)
-    index = 1+(bit_t-1)÷64
-    error_bit[index] = 2^(bit_t - 1 - 64*(index-1))
+    lowbit = T(1)
+    ibig = _div(T,i-1)+1
+    ismall = _mod(T,i-1)
+    ismallm = lowbit<<(ismall)
 
-    for f in 1:frame.numframes
-        if frame_error[f] < p
-            xyz = rand([1,2,3])
-            if xyz == 1 # X error
-                error = xz_error[1]
-                frame.frame.tab.xzs[error[1]:error[2],f] .= frame.frame.tab.xzs[error[1]:error[2],f] .⊻  error_bit
-            elseif xyz == 2 # Z error
-                error = xz_error[2]
-                frame.frame.tab.xzs[error[1]:error[2],f] .= frame.frame.tab.xzs[error[1]:error[2],f] .⊻  error_bit
-            else # Y error
-                error = xz_error[1]
-                frame.frame.tab.xzs[error[1]:error[2],f] .= frame.frame.tab.xzs[error[1]:error[2],f] .⊻  error_bit
-                error = xz_error[2]
-                frame.frame.tab.xzs[error[1]:error[2],f] .= frame.frame.tab.xzs[error[1]:error[2],f] .⊻  error_bit
-            end
+    @inline @simd for f in 1:frame.numframes
+        r = rand()
+        if  r < p/3 # X error
+            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
+        elseif r < 2p/3 # Z error
+            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
+        elseif r < p # Y error
+            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
+            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
         end
     end
     return frame
