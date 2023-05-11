@@ -21,16 +21,18 @@ The second ['sMZ']@ref measured qubit 1 and treated 1 as its reference measureme
 ```
 """
 struct PauliFrame{T} <: AbstractQCState
-    numframes::Int
-    qubits::Int
     ref::BitVector
     frame::T
     measurements::Matrix{Bool}
 end
 
+nqubits(f::PauliFrame) = nqubits(f.frame)
+Base.length(f::PauliFrame) = size(f.measurements, 1)
+Base.eachindex(f::PauliFrame) = 1:length(f)
+
 function PauliFrame(numframes, qubits, ref)
     stab = zero(Stabilizer, numframes, qubits)
-    frame = PauliFrame(numframes, qubits, Bool.(ref), stab, zeros(Bool, numframes, length(ref)))
+    frame = PauliFrame(Bool.(ref), stab, zeros(Bool, numframes, length(ref)))
     initZ!(frame)
     return frame
 end
@@ -51,7 +53,7 @@ julia> initZ!(frame)
 function initZ!(frame::PauliFrame)
     T = eltype(frame.frame.tab.xzs)
 
-    @inbounds @simd for f in 1:frame.numframes
+    @inbounds @simd for f in eachindex(frame)
         @simd for row in 1:size(frame.frame.tab.xzs,1)÷2
             frame.frame.tab.xzs[end÷2+row,f] = rand(T)
         end
@@ -84,7 +86,7 @@ function apply!(frame::PauliFrame, op::sMZ)
     ismallm = lowbit<<(ismall)
     ref = frame.ref[op.bit]
 
-    @inbounds @simd for f in 1:frame.numframes
+    @inbounds @simd for f in eachindex(frame)
         should_flip = !iszero(xzs[ibig,f] & ismallm)
         frame.measurements[f,op.bit] = should_flip ⊻ ref
     end
@@ -101,7 +103,7 @@ function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
 
-    @inbounds @simd for f in 1:frame.numframes
+    @inbounds @simd for f in eachindex(frame)
         r = rand()
         if  r < p # X error
             frame.frame.tab.xzs[ibig,f] ⊻= ismallm
