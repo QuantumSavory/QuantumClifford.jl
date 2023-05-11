@@ -1,10 +1,3 @@
-using Random
-using QuantumClifford
-import QuantumClifford: apply!, applynoise!, mctrajectory!, _div, _mod,
-    AbstractQCState, AbstractCliffordOperator
-
-export PauliFrame
-
 """
     PauliFrame(numframes, numqubits, reference_measurements)
 
