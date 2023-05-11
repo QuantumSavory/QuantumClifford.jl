@@ -1,5 +1,6 @@
 using Random
 using QuantumClifford
+import QuantumClifford: apply!, mctrajectory!
 
 export PauliFrame
 
