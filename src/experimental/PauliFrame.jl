@@ -94,16 +94,19 @@ See also [`pauliFrameCircuitHandler`](@ref), [`circuitSim`](@ref) for examples, 
 """
 function apply!(frame::PauliFrame, op::sMZ)
     i = op.qubit
-    T = eltype(frame.frame.tab.xzs)
+    xzs = frame.frame.tab.xzs
+    T = eltype(xzs)
     lowbit = T(1)
     ibig = _div(T,i-1)+1
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
     ref = frame.ref[op.bit]
 
-    rowview = @view frame.frame.tab.xzs[ibig,:]
+    @inbounds @simd for f in 1:frame.numframes
+        should_flip = !iszero(xzs[ibig,f] & ismallm)
+        frame.measurements[f,op.bit] = should_flip ⊻ ref
+    end
 
-    frame.measurements[:,op.bit] .= (.!iszero.(rowview .& ismallm)) .⊻ ref
     return frame
 end
 
