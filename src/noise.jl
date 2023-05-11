@@ -1,12 +1,24 @@
 abstract type AbstractNoise end
 
+abstract type AbstractNoiseOp <: AbstractOperation end
+
 """A method modifying a given state by applying the corresponding noise model. It is non-deterministic, part of the Noise interface."""
 function applynoise! end
 
-function applynoise!(state, noise, indices)
+function applynoise!(state, noise, indices::Base.AbstractVecOrTuple)
     @inbounds @simd for i in indices
         @inline applynoise!(state, noise, i)
     end
+end
+
+# Implementations for Register
+function applynoise!(r::Register, n, i::Int)
+    apply!(quantumstate(r), n, i)
+    return r
+end
+function applynoise!(r::Register, n, indices::Base.AbstractVecOrTuple)
+    apply!(quantumstate(r), n, indices)
+    return r
 end
 
 """Depolarization noise model with total probability of error `3*errprobthird`."""
@@ -38,7 +50,7 @@ function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,i::I
 end
 
 """An operator that applies the given `noise` model to the qubits at the selected `indices`."""
-struct NoiseOp <: AbstractOperation
+struct NoiseOp <: AbstractNoiseOp
     noise::AbstractNoise
     indices::AbstractVector{Int}
 end
@@ -59,17 +71,17 @@ function PauliError(qubits,p)
 end
 
 """An operator that applies the given `noise` model to all qubits."""
-struct NoiseOpAll <: AbstractOperation
+struct NoiseOpAll <: AbstractNoiseOp
     noise::AbstractNoise
 end
 
 """A gate consisting of the given `noise` applied after the given perfect Clifford `gate`."""
-struct NoisyGate <: AbstractOperation
+struct NoisyGate <: AbstractNoiseOp
     gate::AbstractOperation
     noise::AbstractNoise
 end
 
-function apply!(s::AbstractStabilizer, g::NoisyGate)
+function apply!(s::AbstractQCState, g::NoisyGate)
     s = applynoise!(
             apply!(s,g.gate),
             g.noise,
@@ -77,11 +89,26 @@ function apply!(s::AbstractStabilizer, g::NoisyGate)
     return s
 end
 
-function apply!(s::AbstractStabilizer, mr::NoiseOpAll)
+function apply!(s::AbstractQCState, mr::NoiseOpAll)
     n = nqubits(s)
     return applynoise!(s, mr.noise, 1:n)
 end
 
-function apply!(s::AbstractStabilizer, mr::NoiseOp)
+function apply!(s::AbstractQCState, mr::NoiseOp)
     return applynoise!(s, mr.noise, affectedqubits(mr))
+end
+
+# XXX necessary to resolve ambiguitiy between apply!(s::AbstractQCState, mr::Noise) and apply!(r::Register, op)
+# TODO resolve them in a neater fashion with less repetition
+function apply!(r::Register, n::NoisyGate)
+    apply!(quantumstate(r), n)
+    return r
+end
+function apply!(r::Register, n::NoiseOpAll)
+    apply!(quantumstate(r), n)
+    return r
+end
+function apply!(r::Register, n::NoiseOp)
+    apply!(quantumstate(r), n)
+    return r
 end
