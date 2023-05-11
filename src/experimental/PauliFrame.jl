@@ -101,7 +101,9 @@ function apply!(frame::PauliFrame, op::sMZ)
     ismallm = lowbit<<(ismall)
     ref = frame.ref[op.bit]
 
-    frame.measurements[:,op.bit] .= (.!iszero.(frame.frame.tab.xzs[ibig,:] .& ismallm)) .⊻ ref
+    rowview = @view frame.frame.tab.xzs[ibig,:]
+
+    frame.measurements[:,op.bit] .= (.!iszero.(rowview .& ismallm)) .⊻ ref
     return frame
 end
 
