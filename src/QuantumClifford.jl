@@ -61,6 +61,9 @@ export
     random_pauli, random_stabilizer, random_destabilizer, random_clifford,
     # Noise
     applynoise!, UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, NoisyGate,
+    PauliNoise, PauliError,
+    # Pauli frames
+    PauliFrame, pftrajectories, pfmeasurements,
     # Useful States
     bell, ghz,
     single_z, single_x, single_y,
@@ -1486,6 +1489,7 @@ include("randoms.jl")
 include("useful_states.jl")
 include("noise.jl")
 include("affectedqubits.jl")
+include("pauli_frames.jl")
 include("experimental/Experimental.jl")
 include("graphs.jl")
 include("entanglement.jl")
