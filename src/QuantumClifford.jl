@@ -680,7 +680,7 @@ MixedStabilizer(s::Stabilizer,rank::Int) = MixedStabilizer(tab(s),rank)
 
 function Base.show(io::IO, s::MixedStabilizer)
     if get(io, :compact, false)
-        r,q = size(s)
+        r,q = size(stabilizerview(s))
         print(io, "MixedStabilizer $r×$q")
     else
         show(io, stabilizerview(s))
