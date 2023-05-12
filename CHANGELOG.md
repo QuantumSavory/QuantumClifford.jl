@@ -5,6 +5,10 @@
 
 # News
 
+## v0.7.3
+
+- Initial implementation of Pauli frame simulations (with `pftrajectories` and `PauliFrame`)
+
 ## v0.7.2 - 2023-04-09
 
 - Non-standard string literals `P`, `T`, `S`, and `C` (e.g. `P"X"` used to create a Pauli operator) are now not cached at compile time. Before this version `f() = P"X"` would have resulted in `f() === f()`, while now that statement would return false. Change made given that the objects created by these literals are mutable which can lead to bugs where a local variable seems to "remember" how it is being modified at each execution of a function.
