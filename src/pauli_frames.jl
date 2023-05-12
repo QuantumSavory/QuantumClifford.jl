@@ -50,7 +50,7 @@ function initZ!(frame::PauliFrame)
 end
 
 function apply!(f::PauliFrame, op::AbstractCliffordOperator)
-    QuantumClifford._apply!(f.frame, op; phases=Val(false))
+    _apply!(f.frame, op; phases=Val(false))
     return f
 end
 

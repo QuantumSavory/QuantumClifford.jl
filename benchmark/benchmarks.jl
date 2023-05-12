@@ -91,3 +91,22 @@ SUITE["clifford"]["symbolic"]["cnot250_on_dense500_stab"]   = @benchmarkable for
 SUITE["clifford"]["symbolic"]["cnot250_on_dense500_destab"] = @benchmarkable for i in 1:250 apply!(s,sCNOT(2i-1,2i)) end setup=(s=copy(md500)) evals=1
 SUITE["clifford"]["symbolic"]["cnot250_on_diag500_stab"]   = @benchmarkable for i in 1:250 apply!(s,sCNOT(2i-1,2i)) end setup=(s=one(Stabilizer,500)) evals=1
 SUITE["clifford"]["symbolic"]["cnot250_on_diag500_destab"] = @benchmarkable for i in 1:250 apply!(s,sCNOT(2i-1,2i)) end setup=(s=MixedDestabilizer(one(Destabilizer,500),250)) evals=1
+
+SUITE["circuitsim"] = BenchmarkGroup(["circuitsim"])
+function x_diag_circuit(csize)
+    circuit = Vector{Union{sHadamard,sCNOT,sMZ}}() # XXX this Union type is needed to avoid runtime dispatch
+    for i in 1:csize
+        push!(circuit, sHadamard(i))
+        push!(circuit, sCNOT(i, csize+1))
+    end
+    push!(circuit, sMZ(csize+1,1))
+    return circuit
+end
+SUITE["circuitsim"]["pftrajectories"] = BenchmarkGroup(["pftrajectories"])
+SUITE["circuitsim"]["pftrajectories"]["q101_r1"]      = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame(   1,  101, 1); circuit=x_diag_circuit( 100)) evals=1
+SUITE["circuitsim"]["pftrajectories"]["q1001_r1"]     = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame(   1, 1001, 1); circuit=x_diag_circuit(1000)) evals=1
+SUITE["circuitsim"]["pftrajectories"]["q1001_r100"]   = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame( 100, 1001, 1); circuit=x_diag_circuit(1000)) evals=1
+SUITE["circuitsim"]["pftrajectories"]["q1001_r10000"] = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame(1000, 1001, 1); circuit=x_diag_circuit(1000)) evals=1
+SUITE["circuitsim"]["mctrajectories"] = BenchmarkGroup(["mctrajectories"])
+SUITE["circuitsim"]["mctrajectories"]["q101_r1"]    = @benchmarkable mctrajectory!(state, circuit) setup=(state=Register(one(Stabilizer,  101), [false]); circuit=x_diag_circuit( 100)) evals=1
+SUITE["circuitsim"]["mctrajectories"]["q1001_r1"]   = @benchmarkable mctrajectory!(state, circuit) setup=(state=Register(one(Stabilizer, 1001), [false]); circuit=x_diag_circuit(1000)) evals=1
