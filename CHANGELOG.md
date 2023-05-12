@@ -10,6 +10,7 @@
 - **(breaking)** Deprecated the `QuantumCliffordPlots` library and moved that functionality to 3 package extensions, one for each of `Quantikz`, `Plots`, and `Makie` visualizations.
 - **(breaking)** Set minimum requirements to Julia 1.9
 - Initial implementation of Pauli frame simulations (with `pftrajectories` and `PauliFrame`)
+- Fixes to print/show formatting.
 
 ## v0.7.2 - 2023-04-09
 
