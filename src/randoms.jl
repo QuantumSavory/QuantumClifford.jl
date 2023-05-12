@@ -167,7 +167,7 @@ function precise_inv(a)::Matrix{UInt8}
 end
 
 function nemo_inv(a, n)::Matrix{UInt8}
-    binaryring = Nemo.ResidueRing(Nemo.ZZ, 2) # TODO should I use GF(2) instead of ResidueRing(ZZ, 2)?
+    binaryring = Nemo.residue_ring(Nemo.ZZ, 2) # TODO should I use GF(2) instead of ResidueRing(ZZ, 2)?
     M = Nemo.MatrixSpace(binaryring, n, n)
     inverted = inv(M(Matrix{Int}(a))) # Nemo is very picky about input data types
     return (x->mod(UInt8(x.data),0x2)).(inverted)
