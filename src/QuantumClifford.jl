@@ -219,18 +219,6 @@ Base.length(pauli::PauliOperator) = pauli.nqubits
 
 nqubits(pauli::PauliOperator) = pauli.nqubits
 
-xz2str(x,z) = join(toletter[e] for e in zip(x,z))
-
-function xz2str_limited(x,z, limit=50)
-    tupl = collect(zip(x,z))
-    n = length(tupl)
-    if (limit >= n || limit == -1)
-        return xz2str(x, z)
-    end
-    padding = limit÷2
-    return join(toletter[tupl[i]] for i in 1:padding) * "…" * join(toletter[tupl[i]] for i in (n-padding):n)
-end
-
 Base.:(==)(l::PauliOperator, r::PauliOperator) = r.phase==l.phase && r.nqubits==l.nqubits && r.xz==l.xz
 
 Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.xz, h)))
