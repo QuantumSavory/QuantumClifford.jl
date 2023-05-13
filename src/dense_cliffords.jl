@@ -22,20 +22,21 @@ julia> entangled = tCNOT*stab
 + ZZ
 
 julia> CliffordOperator(T"YY")
-ERROR: DimensionMismatch("Input tableau should be square (in which case the destabilizers are calculated) or of size 2n×n (in which case it is used directly).")
+ERROR: DimensionMismatch: Input tableau should be square (in which case the destabilizers are calculated) or of size 2n×n (in which case it is used directly).
 [...]
 ```
 
 [`Destabilizer`](@ref) can also be converted.
 ```jldoctest
 julia> d = Destabilizer(S"Y")
+𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
-━━━
+𝒮𝓉𝒶𝒷
 + Y
 
 julia> CliffordOperator(d)
-X ⟼ + Z
-Z ⟼ + Y
+X₁ ⟼ + Z
+Z₁ ⟼ + Y
 ```
 """
 struct CliffordOperator{T<:Tableau} <: AbstractCliffordOperator
