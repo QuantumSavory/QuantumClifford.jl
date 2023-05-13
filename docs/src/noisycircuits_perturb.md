@@ -59,4 +59,4 @@ The `Symbol` is the status of the operation, the `Real` is the probability for t
 
 There is also `applynoise_branches!` which is convenient for use in `NoisyGate`, but you can also just make up your own noise operator simply by implementing `applyop_branches!` for it.
 
-You can also consult the [list of implemented operators](@ref noisycircuit_ops).
+You can also consult the [list of implemented operators](@ref noisycircuits_ops).

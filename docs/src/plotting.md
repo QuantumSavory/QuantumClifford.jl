@@ -1,4 +1,4 @@
-# Plotting
+# [Visualizations](@id Visualizations)
 
 Stabilizers have a plot recipe that can be used with `Plots.jl` or `Makie.jl`. It simply displays the corresponding parity check matrix (extracted with [`stab_to_gf2`](@ref)) as a bitmap image. Circuits can be visualized with `Quantikz.jl`.
 

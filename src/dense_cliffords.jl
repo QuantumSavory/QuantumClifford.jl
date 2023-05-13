@@ -20,7 +20,6 @@ julia> stab = S"XI
 julia> entangled = tCNOT*stab
 + XX
 + ZZ
-```
 
 julia> CliffordOperator(T"YY")
 ERROR: DimensionMismatch("Input tableau should be square (in which case the destabilizers are calculated) or of size 2n×n (in which case it is used directly).")

@@ -1,10 +1,12 @@
-# [Manual](@id Manual)
+# [Stabilizer Tableau Algebra Manual](@id Stabilizer-Tableau-Algebra-Manual)
 
 ```@meta
 DocTestSetup = quote
     using QuantumClifford
 end
 ```
+
+The library consists of two main parts: Tools for working with the algebra of Stabilizer tableaux and tools specifically for efficient Circuit Simulation. This chapter discusses the former "lower level" Stabilizer tableau algebra tools.
 
 # Pauli Operators
 
@@ -579,17 +581,14 @@ Much faster implementations for a number of common Clifford operators are availa
 named structs, instead of as a full tableau. These are the subtypes of `AbstractSingleQubitOperator` and
 `AbstractTwoQubitOperator`. Currently these are:
 
-```julia
-sHadamard
-sId1
-sPhase
-sInvPhase
-sX
-sY
-sZ
-sCNOT
-sCPHASE
-sSWAP
+```@example subtypes
+using QuantumClifford # hide
+using InteractiveUtils # hide
+subtypes(QuantumClifford.AbstractSingleQubitOperator)
+```
+
+```@example subtypes
+subtypes(QuantumClifford.AbstractTwoQubitOperator)
 ```
 
 Generally, they have the prefix `s` for symbolic/small/sparse.
@@ -705,4 +704,4 @@ which expands upon the algorithms available for each structure.
 
 # Random States and Circuits
 
-[random_clifford](@ref), [random_stabilizer](@ref), and [`enumerate_cliffords`](@ref) can be used for the generation of random states.
+[`random_clifford`](@ref), [`random_stabilizer`](@ref), and [`enumerate_cliffords`](@ref) can be used for the generation of random states.

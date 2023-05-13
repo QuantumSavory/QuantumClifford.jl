@@ -1,13 +1,10 @@
 """
 $(TYPEDEF)
 
-The frame field holds a tableau. This tableau is not to be viewed as a normal stabilizer tableau, although
-it does conjugate the same under Clifford operations. Each row in the tableau refers to a single frame. Each column a qubit.
-The values stored are X,Y,Z,_ and indicate whether the corresponding pauli operation is waiting to be applied to that qubit.
-
-The provided reference measurements will be used to create the measurements field of this struct. They will also be
-used when performing measurement. The indices of the provided measurements must match the secondary value of future measurements
-when doing sMZ(measure_this_qubit, index_of_reference_provided). See also [`apply!(frame::PauliFrame, op:sMZ)`](@ref)
+This is a wrapper around a tableau. This "frame" tableau is not to be viewed as a normal stabilizer tableau,
+although it does conjugate the same under Clifford operations.
+Each row in the tableau refers to a single frame.
+The row represents the Pauli operation by which the frame and the reference differ.
 """
 struct PauliFrame{T} <: AbstractQCState
     frame::T # TODO this should really be a Tableau
