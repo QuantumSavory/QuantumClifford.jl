@@ -52,7 +52,7 @@ export
     # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset,
-    BellMeasurement, NoisyBellMeasurement,
+    BellMeasurement,
     VerifyOp,
     Register,
     # Enumeration and Randoms
