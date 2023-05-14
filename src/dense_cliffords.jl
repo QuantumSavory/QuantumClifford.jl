@@ -22,7 +22,7 @@ julia> entangled = tCNOT*stab
 + ZZ
 
 julia> CliffordOperator(T"YY")
-ERROR: DimensionMismatch: Input tableau should be square (in which case the destabilizers are calculated) or of size 2n×n (in which case it is used directly).
+ERROR: DimensionMismatch: Input tableau should be of size 2n×n (top half is the X mappings and the bottom half are the Z mappings).
 [...]
 ```
 
