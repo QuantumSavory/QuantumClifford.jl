@@ -1,13 +1,17 @@
 using BenchmarkTools
-using QuantumClifford
+using Pkg
 using StableRNGs
+using QuantumClifford
 using Nemo
 
 const SUITE = BenchmarkGroup()
 
 rng = StableRNG(42)
 
-# Due to breacking changes in v0.5.0
+M = Pkg.Operations.Context().env.manifest
+V = M[findfirst(v -> v.name == "QuantumClifford", M)].version
+
+# Due to breaking changes in v0.5.0
 const tableauCNOT = C"XX
                       IX
                       ZI
@@ -92,6 +96,9 @@ SUITE["clifford"]["symbolic"]["cnot250_on_dense500_destab"] = @benchmarkable for
 SUITE["clifford"]["symbolic"]["cnot250_on_diag500_stab"]   = @benchmarkable for i in 1:250 apply!(s,sCNOT(2i-1,2i)) end setup=(s=one(Stabilizer,500)) evals=1
 SUITE["clifford"]["symbolic"]["cnot250_on_diag500_destab"] = @benchmarkable for i in 1:250 apply!(s,sCNOT(2i-1,2i)) end setup=(s=MixedDestabilizer(one(Destabilizer,500),250)) evals=1
 
+
+if V >= v"0.8.0"
+
 SUITE["circuitsim"] = BenchmarkGroup(["circuitsim"])
 function x_diag_circuit(csize)
     circuit = Vector{Union{sHadamard,sCNOT,sMZ}}() # XXX this Union type is needed to avoid runtime dispatch
@@ -110,3 +117,5 @@ SUITE["circuitsim"]["pftrajectories"]["q1001_r10000"] = @benchmarkable pftraject
 SUITE["circuitsim"]["mctrajectories"] = BenchmarkGroup(["mctrajectories"])
 SUITE["circuitsim"]["mctrajectories"]["q101_r1"]    = @benchmarkable mctrajectory!(state, circuit) setup=(state=Register(one(Stabilizer,  101), [false]); circuit=x_diag_circuit( 100)) evals=1
 SUITE["circuitsim"]["mctrajectories"]["q1001_r1"]   = @benchmarkable mctrajectory!(state, circuit) setup=(state=Register(one(Stabilizer, 1001), [false]); circuit=x_diag_circuit(1000)) evals=1
+
+end
