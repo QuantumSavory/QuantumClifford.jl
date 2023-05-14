@@ -9,6 +9,7 @@ function applynoise!(state, noise, indices::Base.AbstractVecOrTuple)
     @inbounds @simd for i in indices
         @inline applynoise!(state, noise, i)
     end
+    return state
 end
 
 # Implementations for Register

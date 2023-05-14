@@ -53,6 +53,7 @@ export
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset,
     BellMeasurement,
+    VerifyOp,
     Register,
     # Enumeration and Randoms
     enumerate_single_qubit_gates, random_clifford1,
@@ -241,6 +242,9 @@ end
 # Generic Tableaux
 ##############################
 
+"""Internal Tableau type for storing a list of Pauli operators in a compact form.
+No special semantic meaning is attached to this type, it is just a convenient way to store a list of Pauli operators.
+E.g. it is not used to represent a stabilizer state, or a stabilizer group, or a Clifford circuit."""
 struct Tableau{Tzv<:AbstractVector{UInt8}, Tm<:AbstractMatrix{<:Unsigned}}
     phases::Tzv
     nqubits::Int
@@ -1117,6 +1121,11 @@ Base.vcat(stabs::Stabilizer...) = Stabilizer(vcat((tab(s) for s in stabs)...))
 ##############################
 # Unitary Clifford Operations
 ##############################
+
+"""In `QuantumClifford` the `apply!` function is used to apply any quantum operation to a stabilizer state,
+including unitary Clifford operations, Pauli measurements, and noise.
+Thus, this function may result in a random/stochastic result (e.g. with measurements or noise)."""
+function apply! end
 
 function Base.:(*)(p::AbstractCliffordOperator, s::AbstractStabilizer; phases::Bool=true)
     s = copy(s)

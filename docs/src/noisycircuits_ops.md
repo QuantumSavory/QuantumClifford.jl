@@ -1,4 +1,4 @@
-# [Operators in Circuit Simulations](@id noisycircuit_ops)
+# [Operators in Circuit Simulations](@id noisycircuits_ops)
 
 ```@meta
 DocTestSetup = quote

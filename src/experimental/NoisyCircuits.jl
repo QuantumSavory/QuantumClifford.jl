@@ -10,8 +10,7 @@ using Combinatorics: combinations
 using Base.Cartesian
 
 export AbstractOperation,
-       UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, VerifyOp,
-       NoisyGate,
+       UnbiasedUncorrelatedNoise,
        NoisyBellMeasurement,
        DecisionGate, ConditionalGate,
        affectedqubits, applynoise!,# TODO rename applyop to apply_mc
@@ -29,13 +28,6 @@ struct NoisyBellMeasurement{T} <: AbstractOperation
     flipprob::T
 end
 NoisyBellMeasurement(p,i,fp) = NoisyBellMeasurement(BellMeasurement(p,i),fp)
-
-"""A "probe" to verify that the state of the qubits corresponds to a desired `good_state`, e.g. at the end of the execution of a circuit."""
-struct VerifyOp <: AbstractOperation
-    good_state::Stabilizer
-    indices::AbstractVector{Int}
-    VerifyOp(s,indices) = new(canonicalize_rref!(copy(stabilizerview(s)))[1],indices)
-end
 
 """A conditional gate that either performs `truegate` or `falsegate`, depending on the value of `controlbit`."""
 struct ConditionalGate <: AbstractOperation
@@ -59,21 +51,6 @@ function applywstatus!(s::AbstractQCState, m::NoisyBellMeasurement)
     else
         return state, status
     end
-end
-
-# TODO this one needs more testing
-function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
-    # TODO QuantumClifford should implement some submatrix comparison
-    canonicalize_rref!(quantumstate(s),v.indices) # Document why rref is used
-    sv = tab(s)
-    good_state = tab(v.good_state)
-    for i in eachindex(good_state)
-        (sv.phases[end-i+1]==good_state.phases[end-i+1]) || return s, false_success_stat
-        for (j,q) in zip(eachindex(good_state),v.indices)
-            (sv[end-i+1,q]==good_state[end-i+1,j]) || return s, false_success_stat
-        end
-    end
-    return s, true_success_stat
 end
 
 """Compute all possible new states after the application of the given operator. Reports the probability of each one of them. Deterministic, part of the Perturbative Expansion interface."""
@@ -174,7 +151,7 @@ function _applybranches_measurement(branches, measurements, n)
     otherpaulis = measurements[2:end]
 
     for (s,r0,p) in branches
-        s,anticom,r = project!(s,pauli)
+        _,anticom,r = project!(quantumstate(s),pauli)
         if isnothing(r) # TODO anticom could be zero if there was a rank change
             s1 = s
             s2 = copy(s)
@@ -221,7 +198,7 @@ end
 
 function applynoise_branches(state::Register, noise, indices; max_order=1)
     [(Register(newstate,copy(state.bits)), prob, order)
-     for (newstate, prob, order) in applynoise_branches(state, noise, indices; max_order=max_order)]
+     for (newstate, prob, order) in applynoise_branches(quantumstate(state), noise, indices; max_order=max_order)]
 end
 
 # TODO tests for this

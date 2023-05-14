@@ -83,12 +83,14 @@ trusted_rank(s::Destabilizer) = length(s)
 trusted_rank(s::MixedStabilizer) = LinearAlgebra.rank(s)
 trusted_rank(s::MixedDestabilizer) = LinearAlgebra.rank(s)
 
-"""Tensor product between operators or tableaux. See also [`tensor`](@ref) and [`tensor_pow`](@ref)."""
-function ⊗(ops::AbstractStabilizer...) # TODO optimize this by doing conversion to common type to enable preallocation
+"""Tensor product between operators or tableaux. See also [`tensor_pow`](@ref)."""
+function tensor end
+
+function tensor(ops::AbstractStabilizer...) # TODO optimize this by doing conversion to common type to enable preallocation
     foldl(⊗, ops[2:end], init=ops[1])
 end
 
-"""Repeated tensor product of an operators or a tableau. See also [`⊗`](@ref) and [`tensor_pow`](@ref)."""
+"""Repeated tensor product of an operators or a tableau. See also [`tensor`](@ref)."""
 function tensor_pow(op::Union{<:AbstractStabilizer,<:AbstractCliffordOperator},power)
     if power==1
         return op
@@ -97,7 +99,7 @@ function tensor_pow(op::Union{<:AbstractStabilizer,<:AbstractCliffordOperator},p
     end
 end
 
-function ⊗(ops::Stabilizer...)
+function tensor(ops::Stabilizer...)
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)
     rtot = sum(length, ops)
@@ -110,7 +112,7 @@ function ⊗(ops::Stabilizer...)
     tab
 end
 
-function ⊗(ops::MixedDestabilizer...)
+function tensor(ops::MixedDestabilizer...)
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)
     rtot = sum(LinearAlgebra.rank, ops)
@@ -129,9 +131,9 @@ function ⊗(ops::MixedDestabilizer...)
     MixedDestabilizer(tab, rtot)
 end
 
-⊗(ops::AbstractCliffordOperator...) = ⊗(CliffordOperator.(ops)...)
+tensor(ops::AbstractCliffordOperator...) = ⊗(CliffordOperator.(ops)...)
 
-function ⊗(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here
+function tensor(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)
     tab = zero(Tableau, 2*ntot, ntot)
