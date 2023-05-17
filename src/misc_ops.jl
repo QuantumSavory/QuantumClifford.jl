@@ -4,12 +4,13 @@
 Particularly useful when acting on [`Register`](@ref).
 
 See also: [`apply!`](@ref), [`projectrand!`](@ref)."""
-struct PauliMeasurement{Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}, T<:Union{Int,Nothing}} <: AbstractMeasurement
+struct PauliMeasurement{Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} <: AbstractMeasurement
     pauli::PauliOperator{Tz,Tv}
-    storagebit::T
+    storagebit::Int
 end
 
-PauliMeasurement(pauli) = PauliMeasurement(pauli,nothing)
+PauliMeasurement(pauli) = PauliMeasurement(pauli,0)
+PauliMeasurement(pauli,::Nothing) = PauliMeasurement(pauli,0)
 
 function apply!(state::AbstractStabilizer, m::PauliMeasurement)
     projectrand!(state,m.pauli)
@@ -43,7 +44,7 @@ end
 
 """A Bell measurement performing the correlation measurement corresponding to the given `pauli` projections on the qubits at the selected indices."""
 struct BellMeasurement <: AbstractOperation
-    measurements::Vector{Union{sMX{Nothing},sMY{Nothing},sMZ{Nothing}}}
+    measurements::Vector{Union{sMX,sMY,sMZ}}
     parity::Bool
 end
 BellMeasurement(meas) = BellMeasurement(meas,false)

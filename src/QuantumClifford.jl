@@ -76,7 +76,9 @@ export
     CircuitStatus, continue_stat, true_success_stat, false_success_stat, failure_stat,
     mctrajectory!, mctrajectories, applywstatus!,
     # makie plotting -- defined only when extension is loaded
-    stabilizerplot, stabilizerplot_axis
+    stabilizerplot, stabilizerplot_axis,
+    # sum types
+    compactify_circuit
 
 
 const BIG_INT_MINUS_ONE = Ref{BigInt}()
@@ -1372,6 +1374,7 @@ include("experimental/Experimental.jl")
 include("graphs.jl")
 include("entanglement.jl")
 include("tableau_show.jl")
+include("sumtypes.jl")
 include("precompiles.jl")
 include("plotting_extensions.jl")
 
