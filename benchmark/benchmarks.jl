@@ -97,11 +97,11 @@ SUITE["clifford"]["symbolic"]["cnot250_on_diag500_stab"]   = @benchmarkable for 
 SUITE["clifford"]["symbolic"]["cnot250_on_diag500_destab"] = @benchmarkable for i in 1:250 apply!(s,sCNOT(2i-1,2i)) end setup=(s=MixedDestabilizer(one(Destabilizer,500),250)) evals=1
 
 
-if V >= v"0.8.0"
+if V > v"0.7.0"
 
 SUITE["circuitsim"] = BenchmarkGroup(["circuitsim"])
 function x_diag_circuit(csize)
-    circuit = Vector{Union{sHadamard,sCNOT,sMZ}}() # XXX this Union type is needed to avoid runtime dispatch
+    circuit = []
     for i in 1:csize
         push!(circuit, sHadamard(i))
         push!(circuit, sCNOT(i, csize+1))
@@ -117,5 +117,24 @@ SUITE["circuitsim"]["pftrajectories"]["q1001_r10000"] = @benchmarkable pftraject
 SUITE["circuitsim"]["mctrajectories"] = BenchmarkGroup(["mctrajectories"])
 SUITE["circuitsim"]["mctrajectories"]["q101_r1"]    = @benchmarkable mctrajectory!(state, circuit) setup=(state=Register(one(Stabilizer,  101), [false]); circuit=x_diag_circuit( 100)) evals=1
 SUITE["circuitsim"]["mctrajectories"]["q1001_r1"]   = @benchmarkable mctrajectory!(state, circuit) setup=(state=Register(one(Stabilizer, 1001), [false]); circuit=x_diag_circuit(1000)) evals=1
+
+SUITE["circuitsim"]["pftrajectories_union"] = BenchmarkGroup(["pftrajectories_union"])
+veccirc = Vector{Union{sHadamard,sCNOT,sMZ}}
+SUITE["circuitsim"]["pftrajectories_union"]["q101_r1"]      = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame(   1,  101, 1); circuit=veccirc(x_diag_circuit( 100))) evals=1
+SUITE["circuitsim"]["pftrajectories_union"]["q1001_r1"]     = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame(   1, 1001, 1); circuit=veccirc(x_diag_circuit(1000))) evals=1
+SUITE["circuitsim"]["pftrajectories_union"]["q1001_r100"]   = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame( 100, 1001, 1); circuit=veccirc(x_diag_circuit(1000))) evals=1
+SUITE["circuitsim"]["pftrajectories_union"]["q1001_r10000"] = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame(1000, 1001, 1); circuit=veccirc(x_diag_circuit(1000))) evals=1
+SUITE["circuitsim"]["mctrajectories_union"] = BenchmarkGroup(["mctrajectories_union"])
+SUITE["circuitsim"]["mctrajectories_union"]["q101_r1"]    = @benchmarkable mctrajectory!(state, circuit) setup=(state=Register(one(Stabilizer,  101), [false]); circuit=veccirc(x_diag_circuit( 100))) evals=1
+SUITE["circuitsim"]["mctrajectories_union"]["q1001_r1"]   = @benchmarkable mctrajectory!(state, circuit) setup=(state=Register(one(Stabilizer, 1001), [false]); circuit=veccirc(x_diag_circuit(1000))) evals=1
+
+SUITE["circuitsim"]["pftrajectories_sumtype"] = BenchmarkGroup(["pftrajectories_sumtype"])
+SUITE["circuitsim"]["pftrajectories_sumtype"]["q101_r1"]      = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame(   1,  101, 1); circuit=compactify_circuit(x_diag_circuit( 100))) evals=1
+SUITE["circuitsim"]["pftrajectories_sumtype"]["q1001_r1"]     = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame(   1, 1001, 1); circuit=compactify_circuit(x_diag_circuit(1000))) evals=1
+SUITE["circuitsim"]["pftrajectories_sumtype"]["q1001_r100"]   = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame( 100, 1001, 1); circuit=compactify_circuit(x_diag_circuit(1000))) evals=1
+SUITE["circuitsim"]["pftrajectories_sumtype"]["q1001_r10000"] = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame(1000, 1001, 1); circuit=compactify_circuit(x_diag_circuit(1000))) evals=1
+SUITE["circuitsim"]["mctrajectories_sumtype"] = BenchmarkGroup(["mctrajectories_sumtype"])
+SUITE["circuitsim"]["mctrajectories_sumtype"]["q101_r1"]    = @benchmarkable mctrajectory!(state, circuit) setup=(state=Register(one(Stabilizer,  101), [false]); circuit=compactify_circuit(x_diag_circuit( 100))) evals=1
+SUITE["circuitsim"]["mctrajectories_sumtype"]["q1001_r1"]   = @benchmarkable mctrajectory!(state, circuit) setup=(state=Register(one(Stabilizer, 1001), [false]); circuit=compactify_circuit(x_diag_circuit(1000))) evals=1
 
 end

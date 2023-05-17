@@ -352,26 +352,29 @@ end
 ##############################
 
 """Symbolic single qubit X measurement. See also [`Register`](@ref), [`projectXrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref)"""
-struct sMX{T<:Union{Int,Nothing}} <: AbstractMeasurement
+struct sMX <: AbstractMeasurement
     qubit::Int
-    bit::T
+    bit::Int
 end
 
 """Symbolic single qubit Y measurement. See also [`Register`](@ref), [`projectYrand!`](@ref), [`sMX`](@ref), [`sMZ`](@ref)"""
-struct sMY{T<:Union{Int,Nothing}} <: AbstractMeasurement
+struct sMY <: AbstractMeasurement
     qubit::Int
-    bit::T
+    bit::Int
 end
 
 """Symbolic single qubit Z measurement. See also [`Register`](@ref), [`projectZrand!`](@ref), [`sMX`](@ref), [`sMY`](@ref)"""
-struct sMZ{T<:Union{Int,Nothing}} <: AbstractMeasurement
+struct sMZ <: AbstractMeasurement
     qubit::Int
-    bit::T
+    bit::Int
 end
 
-sMX(i) = sMX(i,nothing)
-sMY(i) = sMY(i,nothing)
-sMZ(i) = sMZ(i,nothing)
+sMX(i) = sMX(i,0)
+sMY(i) = sMY(i,0)
+sMZ(i) = sMZ(i,0)
+sMX(i,::Nothing) = sMX(i,0)
+sMY(i,::Nothing) = sMY(i,0)
+sMZ(i,::Nothing) = sMZ(i,0)
 
 function apply!(state::AbstractStabilizer, m::sMX)
     projectXrand!(state,m.qubit)

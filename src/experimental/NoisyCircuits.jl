@@ -232,14 +232,14 @@ function applybranches(s::Register, op::PauliMeasurement; max_order=1)
     if isnothing(r)
         s1 = s
         phases(stabilizerview(s1.stab))[anticom] = 0x00
-        s1.bits[op.storagebit] = false
+        s1.bits[op.bit] = false
         s2 = copy(s)
         phases(stabilizerview(s2.stab))[anticom] = 0x02
-        s2.bits[op.storagebit] = true
+        s2.bits[op.bit] = true
         push!(new_branches, (s1,continue_stat,1/2,0))
         push!(new_branches, (s2,continue_stat,1/2,0))
     else
-        s.bits[op.storagebit] = r==0x02
+        s.bits[op.bit] = r==0x02
         push!(new_branches, (s,continue_stat,1,0))
     end
     new_branches
@@ -252,7 +252,7 @@ function applybranches(state::Register, op::SparseMeasurement; max_order=1)
     for (ii,i) in enumerate(op.indices)
         p[i] = op.pauli[ii]
     end
-    dm = PauliMeasurement(p,op.storagebit)
+    dm = PauliMeasurement(p,op.bit)
     applybranches(state,dm, max_order=max_order)
 end
 =#
