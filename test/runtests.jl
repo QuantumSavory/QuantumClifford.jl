@@ -53,5 +53,5 @@ get(ENV,"JET_TEST","")=="true" && @doset "jet"
 
 using Aqua
 VERSION >= v"1.9" && doset("aqua") && begin
-    Aqua.test_all(QuantumClifford)
+    Aqua.test_all(QuantumClifford, project_toml_formatting=false) # TODO: remove project_toml_formatting=false when Aqua is updated
 end
