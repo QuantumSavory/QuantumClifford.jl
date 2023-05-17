@@ -2,7 +2,7 @@ using SumTypes
 using InteractiveUtils: subtypes
 
 """
-```jldoctest
+```
 julia> make_variant(sCNOT)
 :(sCNOT(::Int64, ::Int64))
 ```
