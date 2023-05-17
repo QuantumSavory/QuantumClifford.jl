@@ -6,7 +6,7 @@ Particularly useful when acting on [`Register`](@ref).
 See also: [`apply!`](@ref), [`projectrand!`](@ref)."""
 struct PauliMeasurement{Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} <: AbstractMeasurement
     pauli::PauliOperator{Tz,Tv}
-    storagebit::Int
+    bit::Int
 end
 
 PauliMeasurement(pauli) = PauliMeasurement(pauli,0)

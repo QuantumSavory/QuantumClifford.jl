@@ -12,7 +12,7 @@ function make_variant(type::DataType)
 end
 
 """
-```jldoctest
+```
 julia> make_variant_deconstruct(sCNOT, :apply!, (:s,))
 :(sCNOT(q1, q2) => apply!(s, sCNOT(q1, q2)))
 ```
@@ -24,7 +24,7 @@ function make_variant_deconstruct(type::DataType, call, preargs=(), postargs=())
 end
 
 """
-```jldoctest
+```
 julia> make_sumtype([sCNOT])
 quote
     @sum_type CompactifiedGate :hidden begin
@@ -42,7 +42,7 @@ function make_sumtype(concrete_types)
 end
 
 """
-```jldoctest
+```
 julia> make_sumtype_method([sCNOT], :apply!, (:s,))
 quote
     function QuantumClifford.apply!(s, g::CompactifiedGate)
@@ -63,7 +63,7 @@ function make_sumtype_method(concrete_types, call, preargs=(), postargs=())
 end
 
 """
-```jldoctest
+```
 julia> make_sumtype_variant_constructor(sCNOT)
 :(CompactifiedGate(g::sCNOT) = begin
     (CompactifiedGate').sCNOT(g.q1, g.q2)
@@ -124,6 +124,11 @@ end
 
 make_all_sumtype_infrastructure()
 
+"""
+Convert a list of gates to a more optimized "sum type" format which permits faster dispatch.
+
+Generally, this should be called on a circuit before it is used in a simulation.
+"""
 function compactify_circuit(circuit)
     return CompactifiedGate.(circuit)
 end

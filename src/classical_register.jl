@@ -54,7 +54,7 @@ function apply!(r::Register, m::sMZ)
 end
 function apply!(r::Register, m::PauliMeasurement{A,B}) where {A,B}
     _, res = projectrand!(r,m.pauli)
-    m.bit!=0 && (bitview(r)[m.storagebit] = !iszero(res))
+    m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
 function projectXrand!(r::Register, m)
