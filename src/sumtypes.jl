@@ -83,10 +83,6 @@ function make_all_sumtype_infrastructure_expr(concrete_types, callsigs)
     sumtype = make_sumtype(concrete_types)
     constructors = make_sumtype_variant_constructor.(concrete_types)
     methods = [make_sumtype_method(concrete_types, call, preargs, postargs) for (call, preargs, postargs) in callsigs]
-    println( sumtype)
-    println( constructors[1])
-    println( methods[1])
-    println( methods[2])
     return quote
         $(sumtype.args...)
         $(constructors...)
