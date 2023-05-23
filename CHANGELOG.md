@@ -5,6 +5,10 @@
 
 # News
 
+## v0.8.2 - 2023-05-22
+
+- Initial, experimental, unexported helper functions for work with error correcting codes. Might change at any time.
+
 ## v0.8.1 - 2023-05-17
 
 - **(fix)** Fix to Quantikz circuit plotting functions.
