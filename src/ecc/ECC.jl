@@ -41,16 +41,12 @@ function naive_syndrome_circuit(c::AbstractECC)
         ancilla_qubit = code_n(c) + ancilla_bit
         for qubit in 1: code_n(c)
             if check[qubit] == (1,0) # TODO simplify this branch using sXCX and similar gates
-                h1 = sHadamard(qubit)
-                c1 = sCNOT(qubit, ancilla_qubit)
-                h2 = sHadamard(qubit)
-                push!(naive_sc, h1)
-                push!(naive_sc, c1)
-                push!(naive_sc, h2)
+                push!(naive_sc, sXCX(qubit, ancilla_qubit))
             elseif check[qubit] == (0,1)
-                c1 = sCNOT(qubit, ancilla_qubit)
-                push!(naive_sc, c1)
-            end # TODO make sure it works if you have a Y check
+                push!(naive_sc, sCNOT(qubit, ancilla_qubit))
+            elseif check[qubit] == (1,1)
+                push!(naive_sc, sYCX(qubit, ancilla_qubit))
+            end
         end
         mz = sMZ(ancilla_qubit, ancilla_bit)
         push!(naive_sc, mz)
