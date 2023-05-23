@@ -4,7 +4,6 @@ using QuantumClifford.ECC: AbstractECC, Steane5, Steane7, Shor9, Bitflip3, naive
 
 codes = [
     Bitflip3(),
-    #Steane5(), # TODO test_naive_syndrome fails
     Steane7(),
     Shor9(),
 ]
@@ -63,9 +62,7 @@ function test_naive_syndrome(c::AbstractECC)
     mctrajectory!(logicalqubits, encoding_circuit(c))
     # measure using `project!`
     s1 = copy(logicalqubits)
-    @show s1
     syndrome1 = [project!(s1, check)[3] for check in parity_checks(c)]
-    @show syndrome1
     # measure using `naive_syndrome_circuit`
     naive_circuit = naive_syndrome_circuit(c)
     ancillaryqubits = one(Stabilizer,code_s(c))

@@ -1,38 +1,4 @@
-struct Steane5 <: AbstractECC end
-
-parity_checks(c::Steane5) = S"XZZX_
-                              _XZZX
-                              X_XZZ
-                              ZX_XZ"
-
-code_n(c::Steane5) = 5
-
-#https://www.researchgate.net/figure/Encoding-circuit-for-the-five-qubit-code-a-Circuit-to-encode-the-logical-minus-state_fig1_337273308
-function encoding_circuit(c::Steane5) #black, white
-    z1 = sZ(1)
-    h1 = sHadamard(3)
-    h2 = sHadamard(4)
-    is1 = sInvPhase(1)
-    c1 = sCNOT(3,5)
-    c2 = sCNOT(4,2)
-    h3 = sHadamard(2)
-    c3 = sCNOT(4,5)
-    c4 = sCNOT(2,1)
-    is2 = sInvPhase(3)
-    s2 = sPhase(4)
-    is3 = sInvPhase(5)
-    s2 = sPhase(1)
-    s3 = sPhase(2)
-    z2 = sZ(3)
-    c5 = sCNOT(5,1)
-    h4 = sHadamard(5)
-    c6 = sCNOT(5,2)
-    return  [z1,h1,h2,is1,c1,c2,h3,c3,c4,is2,s2,is3,s2,s3,z2,c5,h4,c6]
-end
-
-distance(c::Steane5) = 3
-
-isdegenerate(c::Steane5) = false
+# TODO Steane5 qubit code
 
 struct Steane7 <: AbstractECC end
 
