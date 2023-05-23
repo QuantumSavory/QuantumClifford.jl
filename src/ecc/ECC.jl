@@ -81,18 +81,7 @@ function logz_ops(c::AbstractECC)
     logicalzview(MixedDest)
 end
 
-"""Is the code degenerate"""
-function isdegenerate(c::AbstractECC, errors) # TODO test
-    syndromes = Set()
-    for e in errors
-        s = parity_matrix(c) * e
-        if s in syndromes
-            return true
-        end
-        syndromes.add(s)
-    end
-    return false
-end
+# TODO implement isdegenerate
 
 include("./bitflipcode.jl")
 include("./shorcode.jl")
