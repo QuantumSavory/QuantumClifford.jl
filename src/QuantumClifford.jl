@@ -1376,6 +1376,7 @@ include("entanglement.jl")
 include("tableau_show.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
+include("ecc/ECC.jl")
 include("plotting_extensions.jl")
 
 end #module

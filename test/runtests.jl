@@ -45,6 +45,7 @@ println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREA
 @doset "hash"
 @doset "entanglement"
 @doset "enumerate"
+@doset "ecc"
 @doset "precompile"
 @doset "pauliframe"
 @doset "allocations"
