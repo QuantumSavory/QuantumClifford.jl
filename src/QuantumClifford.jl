@@ -78,7 +78,9 @@ export
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
-    compactify_circuit
+    compactify_circuit,
+    # qoptics
+    stab_to_ket
 
 
 const BIG_INT_MINUS_ONE = Ref{BigInt}()
@@ -1378,5 +1380,6 @@ include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
 include("plotting_extensions.jl")
+include("qoptics_extensions.jl")
 
 end #module

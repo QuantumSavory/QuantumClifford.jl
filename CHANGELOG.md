@@ -5,6 +5,10 @@
 
 # News
 
+## v0.8.3 - 2023-05-24
+
+- Relax dependency Nemo.jl version constraints.
+
 ## v0.8.2 - 2023-05-22
 
 - Initial, experimental, unexported helper functions for work with error correcting codes. Might change at any time.
