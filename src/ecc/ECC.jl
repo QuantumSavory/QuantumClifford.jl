@@ -30,16 +30,25 @@ function rate(c::AbstractECC)
     return rate
 end
 
+"""Number of physical qubits for a given parity check tableau"""
+function code_n(parity_check_tableau)
+    return size(parity_check_tableau)[2]
+end
+
+"""Wrapper function for codes of type AbstractECC"""
+function naive_syndrome_circuit(code_type::AbstractECC)
+    naive_syndrome_circuit(parity_checks(code_type))
+end
+
 """Naive syndrome circuit"""
-function naive_syndrome_circuit(c::AbstractECC)
+function naive_syndrome_circuit(parity_check_tableau)
     naive_sc = []
 
     ancilla_bit = 1
     # ancilla_qubit = code_n(c) + ancilla_bit
-    pc = parity_checks(c)
-    for check in pc
-        ancilla_qubit = code_n(c) + ancilla_bit
-        for qubit in 1: code_n(c)
+    for check in parity_check_tableau
+        ancilla_qubit = code_n(parity_check_tableau) + ancilla_bit
+        for qubit in 1: code_n(parity_check_tableau)
             if check[qubit] == (1,0) # TODO simplify this branch using sXCX and similar gates
                 push!(naive_sc, sXCX(qubit, ancilla_qubit))
             elseif check[qubit] == (0,1)
