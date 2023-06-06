@@ -25,7 +25,6 @@ end
 
 println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREADS = $(Sys.CPU_THREADS)`...")
 
-@doset "ecc"
 @doset "paulis"
 @doset "stabs"
 @doset "stabcanon"

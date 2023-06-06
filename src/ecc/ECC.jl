@@ -92,4 +92,37 @@ include("./bitflipcode.jl")
 include("./shorcode.jl")
 include("./steanecode.jl")
 
+function is_degenerate(c:: AbstractECC)
+    cols = Set()
+    n = code_n(c)
+    s = code_s(c)
+    pc = parity_checks(c)
+    for i in 1:n
+        col1 = zeros(s)
+        col2 = zeros(s)
+        for j in 1:s
+            if pc[j][i] == s"Z"
+                col1[j] = 0
+                col2[j] = 1
+            elseif pc[j][i] == s"X"
+                col1[j], col2[j] = 1,0
+            elseif pc[j][i] == s"Y"
+                col1[j], col2[j] = 1,1
+            else
+                col1[j], col2[j] = 0,0
+            end
+        end
+        if col1 in cols return false
+        elseif col2 in cols return false
+        else cols.add(col1, col2)
+        end
+    end
+    
+    
+    # TODO implement isdegenerate
+    return true
+
+end
+
+
 end #module
