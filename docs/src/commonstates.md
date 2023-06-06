@@ -117,7 +117,7 @@ julia> one(MixedDestabilizer, 2, 3)
 ## Enumerating all Clifford Operations
 
 The algorithm from [koenig2014efficiently](@cite) can be used to enumerate all Clifford operations on a given number of qubits through [`enumerate_cliffords`](@ref).
-Or one can use [random_clifford](@ref), [random_stabilizer](@ref) to directly sample from that set.
+Or one can use [`random_clifford`](@ref), [`random_stabilizer`](@ref) to directly sample from that set.
 
 ```jldoctest
 julia> length(enumerate_cliffords(1))

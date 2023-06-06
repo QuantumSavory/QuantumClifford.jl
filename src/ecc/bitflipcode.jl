@@ -1,19 +1,12 @@
-import .ECC
-using .ECC
-
 struct Bitflip3 <: AbstractECC end
 
-"""The number of physical qubits in a code."""
 code_n(c::Bitflip3) = 3
-
-"""Parity check tableau of a code."""
 
 parity_checks(c::Bitflip3) = S"_ZZ
                                Z_Z"
 
-#Enconding circuit ----------------------------------
 function encoding_circuit(c::Bitflip3)
-    c1 = sCNOT(0,1)
-    c2 = sCNOT(0,3)
+    c1 = sCNOT(1,2)
+    c2 = sCNOT(1,3)
     return [c1,c2]
 end

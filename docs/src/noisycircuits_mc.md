@@ -4,7 +4,7 @@
 DocTestSetup = quote
     using QuantumClifford
     using QuantumClifford.Experimental.NoisyCircuits
-    using QuantumCliffordPlots
+    using Quantikz
 end
 CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
@@ -21,7 +21,7 @@ Below is an example of a purification circuit. We first prepare the circuit we d
 ```@example 1
 using QuantumClifford # hide
 using QuantumClifford.Experimental.NoisyCircuits # hide
-using QuantumCliffordPlots # hide
+using Quantikz # hide
 good_bell_state = S"XX
                     ZZ"
 initial_state = MixedDestabilizer(good_bell_state⊗good_bell_state)
@@ -52,16 +52,12 @@ For more examples, see the [notebook comparing the Monte Carlo and Perturbative 
 
 If you want to create a custom gate type (e.g. calling it `Operation`), you need to definite the following methods.
 
-`applyop!(s::T, g::Operation)::Tuple{T,Symbol}` where `T` is a tableaux type like [`Stabilizer`](@ref) or a [`Register`](@ref).
-The `Symbol` is the status of the operation. Predefined statuses are kept in the `statuses` list, but you can add more:
-```julia
-const statuses = [:continue, :detected_failure, :undetected_failure, :true_success]
-```
-
+`applywstatus!(s::T, g::Operation)::Tuple{T,Symbol}` where `T` is a tableaux type like [`Stabilizer`](@ref) or a [`Register`](@ref).
+The `Symbol` is the status of the operation. Predefined statuses are kept in the `registered_statuses` list, but you can add more.
 Be sure to expand this list if you want the trajectory simulators using your custom statuses to output all trajectories.
 
 There is also [`applynoise!`](@ref) which is convenient wait to create a noise model that can then be plugged into the [`NoisyGate`](@ref) struct,
 letting you reuse the predefined perfect gates and measurements.
-However, you can also just make up your own noise operator simply by implementing [`applyop!`](@ref) for it.
+However, you can also just make up your own noise operator simply by implementing [`applywstatus!`](@ref) for it.
 
-You can also consult the [list of implemented operators](@ref noisycircuit_ops).
+You can also consult the [list of implemented operators](@ref noisycircuits_ops).

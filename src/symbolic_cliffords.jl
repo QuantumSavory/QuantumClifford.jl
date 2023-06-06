@@ -250,10 +250,24 @@ macro qubitop2(name, kernel)
         @inline $(esc(:qubit_kernel))(::$prefixname, x1, z1, x2, z2) = $kernel
     end
 end
-
+#                 x1   z1      x2      z2
 @qubitop2 SWAP   (x2 , z2    , x1    , z1    , false)
 @qubitop2 CNOT   (x1 , z1⊻z2 , x2⊻x1 , z2    , ~iszero( (x1 & z1 & x2 & z2)  | (x1 & z2 &~(z1|x2)) ))
 @qubitop2 CPHASE (x1 , z1⊻x2 , x2    , z2⊻x1 , ~iszero( (x1 & z1 & x2 &~z2)  | (x1 &~z1 & x2 & z2) ))
+
+@qubitop2 ZCX    (x1      , z1⊻z2    , x2⊻x1 , z2      , ~iszero( ((x1 & z2) &~(z1 ⊻ x2)) )) # equiv of CNOT[1, 2]
+@qubitop2 ZCY    (x1      , x2⊻z1⊻z2 , x2⊻x1 , z2⊻x1   , ~iszero( (x1 & (x2 ⊻ z1) & (x2 ⊻ z2)) ))
+@qubitop2 ZCZ    (x1      , z1⊻x2    , x2    , z2⊻x1   , ~iszero( ((z1 ⊻ z2) & (x1 & x2)) ))
+
+@qubitop2 XCX    (z2⊻x1   , z1       , x2⊻z1 , z2      , ~iszero( (z1 & z2) & (x1 ⊻ x2) ))
+@qubitop2 XCY    (x1⊻x2⊻z2, z1       , z1⊻x2 , z2⊻z1   , ~iszero( (z1 & (x2 ⊻ z2) & ~(x2 ⊻ x1)) ))
+@qubitop2 XCZ    (x1⊻x2   , z1       , x2    , z2⊻z1   , ~iszero( (x2 & z1) & ~(x1 ⊻ z2) )) # equiv to CNOT[2, 1]
+
+@qubitop2 YCX    (x1⊻z2   , z2⊻z1    , x1⊻z1⊻x2 , z2    , ~iszero( (z2 & (x1 ⊻ z1) & ~(x2 ⊻ x1)) ))
+@qubitop2 YCY    (x1⊻z2⊻x2, z1⊻x2⊻z2 , x1⊻x2⊻z1 , x1⊻z1⊻z2, ~iszero( (x1 & ~z1 & ~x2 & z2) | (~x1 & z1 & x2 & ~z2)))
+@qubitop2 YCZ    (x1⊻x2   , x2⊻z1    , x2        , z2⊻x1⊻z1, ~iszero( (x2 & (x1 ⊻ z1) & (z2 ⊻ x1)) ))
+
+
 
 function CliffordOperator(op::AbstractTwoQubitOperator, n; compact=false)
     if compact
@@ -338,26 +352,29 @@ end
 ##############################
 
 """Symbolic single qubit X measurement. See also [`Register`](@ref), [`projectXrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref)"""
-struct sMX{T<:Union{Int,Nothing}} <: AbstractMeasurement
+struct sMX <: AbstractMeasurement
     qubit::Int
-    bit::T
+    bit::Int
 end
 
 """Symbolic single qubit Y measurement. See also [`Register`](@ref), [`projectYrand!`](@ref), [`sMX`](@ref), [`sMZ`](@ref)"""
-struct sMY{T<:Union{Int,Nothing}} <: AbstractMeasurement
+struct sMY <: AbstractMeasurement
     qubit::Int
-    bit::T
+    bit::Int
 end
 
 """Symbolic single qubit Z measurement. See also [`Register`](@ref), [`projectZrand!`](@ref), [`sMX`](@ref), [`sMY`](@ref)"""
-struct sMZ{T<:Union{Int,Nothing}} <: AbstractMeasurement
+struct sMZ <: AbstractMeasurement
     qubit::Int
-    bit::T
+    bit::Int
 end
 
-sMX(i) = sMX(i,nothing)
-sMY(i) = sMY(i,nothing)
-sMZ(i) = sMZ(i,nothing)
+sMX(i) = sMX(i,0)
+sMY(i) = sMY(i,0)
+sMZ(i) = sMZ(i,0)
+sMX(i,::Nothing) = sMX(i,0)
+sMY(i,::Nothing) = sMY(i,0)
+sMZ(i,::Nothing) = sMZ(i,0)
 
 function apply!(state::AbstractStabilizer, m::sMX)
     projectXrand!(state,m.qubit)

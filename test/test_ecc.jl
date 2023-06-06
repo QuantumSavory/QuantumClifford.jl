@@ -1,118 +1,83 @@
+using Test
 using QuantumClifford
-using QuantumClifford.ECC: AbstractECC, Steane5, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, isdegenerate
+using QuantumClifford.ECC: AbstractECC, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops
 
-function test_op(c::AbstractECC)
-    @testset "Physical and Logical qubit" begin
+codes = [
+    Bitflip3(),
+    Steane7(),
+    Shor9(),
+]
 
-        physicalqubit = random_stabilizer(code_k(c))
+function test_phys_log_op_encoding(c::AbstractECC)
+    # encode k physical qubits into n physical qubits (turning them into k logical qubits)
+    # apply operations in an encoded or unencoded fashion
+    # compare results
+    physicalqubit = random_stabilizer(code_k(c))
 
-        gate = rand((:x,:z))
+    gate = rand((:x,:z))
+    target = rand(1:code_k(c))
 
-        if isdegenerate(c) == true
-            physicalgate, logicalgate = if gate==:x
-                P"X",logz_ops(c)[1]
-            elseif gate == :z
-                P"Z",logx_ops(c)[1]
-            end
-        else
-            physicalgate, logicalgate = if gate==:x
-                P"X",logx_ops(c)[1]
-            elseif gate == :z
-                P"Z",logz_ops(c)[1]
-            end
-        end
-
-        #run 1
-        #start physical state
-        physicalqubit1 = copy(physicalqubit)
-        #perform physical gate
-        apply!(physicalqubit1,physicalgate)
-        #encode into logical state
-        bufferqubits1 = one(Stabilizer,code_s(c))
-        logicalqubit1 = physicalqubit1⊗bufferqubits1 # what is this (bufferqubits) for?
-        for gate in encoding_circuit(c)
-            apply!(logicalqubit1, gate)
-        end
-        
-
-        #run 2
-        #start same physical state
-        physicalqubit2 = copy(physicalqubit)
-        #encode logical state
-        bufferqubits2 = one(Stabilizer,code_s(c))
-        logicalqubit2 = physicalqubit2⊗bufferqubits2 
-        for gate in encoding_circuit(c)
-            apply!(logicalqubit2,gate)
-        end
-        #apply logical gate
-        apply!(logicalqubit2,logicalgate)
-
-
-        @test canonicalize!(logicalqubit1) == canonicalize!(logicalqubit2) # <-- this test if logicalgate does nothing, but it can return true even if logicalgate is somekind of error and the operation doesn't run correctly afterall
-       
-        #physicalqubit
-        encoding_circuit_physical = encoding_circuit(c)
-        physicalqubit = S"X"
-        apply!(physicalqubit,P"X")
-
-        #logicalqubit
-        encoding_circuit_logical = encoding_circuit(c)
-
-        if c == Steane5()
-            ancillary_qubit_count = 3
-        elseif c == Steane7()
-            ancillary_qubit_count = 4
-        elseif c == Shor9()
-            ancillary_qubit_count = 8
-        elseif c == Bitflip3()
-            ancillary_qubit_count = 2
-        end
-        
-
-        bufferqubits = one(Stabilizer,ancillary_qubit_count)
-        logicalqubit = physicalqubit⊗bufferqubits 
-        for gate in encoding_circuit_logical
-            apply!(logicalqubit,gate)
-        end
-
-        canonicalize!(logicalqubit)
-
-        for gate in encoding_circuit(c)
-            @test encoding_circuit_physical == encoding_circuit_logical
-        end
-
+    physicalgate, logicalgate =
+    if gate==:x
+        P"X",logx_ops(c)[target]
+    elseif gate == :z
+        P"Z",logz_ops(c)[target]
     end
+
+    #run 1
+    #start physical state
+    physicalqubit1 = copy(physicalqubit)
+    #apply physical gate
+    apply!(physicalqubit1,physicalgate)
+    #encode into logical state
+    bufferqubits1 = one(Stabilizer,code_s(c))
+    logicalqubit1 = physicalqubit1⊗bufferqubits1 # pad up the k physical qubits into a state of n physical qubits
+    mctrajectory!(logicalqubit1, encoding_circuit(c))
+
+    #run 2
+    #start same physical state
+    physicalqubit2 = copy(physicalqubit)
+    #encode logical state
+    bufferqubits2 = one(Stabilizer,code_s(c))
+    logicalqubit2 = physicalqubit2⊗bufferqubits2
+    mctrajectory!(logicalqubit2, encoding_circuit(c))
+    #apply logical gate
+    apply!(logicalqubit2,logicalgate)
+
+    @test canonicalize!(logicalqubit1) == canonicalize!(logicalqubit2)
 end
 
-function new_test_ns(c::AbstractECC)
-    @testset "New naive syndrome circuits" begin
-        #create a random state
-        # s = MixedDestabilizer(parity_checks(c))
-        s = random_stabilizer(code_n(c))
-        s1, s2 = copy(s), copy(s)
-        syndrome1 = [project!(s1, check) for check in parity_checks(c)]
-        
-        naive_circuit = naive_syndrome_circuit(c)
-        syndrome2 = Register(s2, falses(code_s(c)))
-        
-        for gate in naive_circuit
-            apply!(syndrome2, gate)      
-        end
-        for i in 1:code_s(c)
-            @test bitview(syndrome2)[i] == syndrome1[i][3]
-        end
+@testset "physical vs optical operators - check of encoding circuit" begin
+    for c in codes, _ in 1:2
+        test_phys_log_op_encoding(c)
     end
 end
 
 
+function test_naive_syndrome(c::AbstractECC)
+    # create a random logical state
+    unencoded_qubits = random_stabilizer(code_k(c))
+    bufferqubits = one(Stabilizer,code_s(c))
+    logicalqubits = unencoded_qubits⊗bufferqubits
+    mctrajectory!(logicalqubits, encoding_circuit(c))
+    # measure using `project!`
+    s1 = copy(logicalqubits)
+    syndrome1 = [project!(s1, check)[3] for check in parity_checks(c)]
+    # measure using `naive_syndrome_circuit`
+    naive_circuit = naive_syndrome_circuit(c)
+    ancillaryqubits = one(Stabilizer,code_s(c))
+    s2 = copy(logicalqubits)
+    syndrome2 = Register(s2⊗ancillaryqubits, falses(code_s(c)))
+    mctrajectory!(syndrome2, naive_circuit)
+    @test all(syndrome1 .== 0)
+    @test all(bitview(syndrome2) .== 0)
+    @test bitview(syndrome2) == syndrome1.÷2
 
-
-# codes = [Steane5()]
-codes = [Steane5(),Steane7(),Shor9()]
-    
-for c in codes
-    test_op(c)
-    new_test_ns(c)
+    # TODO test when there is potential for errors / non-commuting operators
 end
-    
-    
+
+@testset "naive syndrome circuits - zero syndrome for logical states" begin
+    for c in codes, _ in 1:2
+        test_naive_syndrome(c)
+    end
+end

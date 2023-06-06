@@ -8,17 +8,17 @@ const continue_stat = CircuitStatus(0)
 
 """Returned by [`applywstatus!`](@ref) if the circuit reports a success and there is no undetected error.
 
-See also: [`VerifyOp`](@ref), [`BellMeasure`](@ref)."""
+See also: [`VerifyOp`](@ref), [`BellMeasurement`](@ref)."""
 const true_success_stat = CircuitStatus(1)
 
 """Returned by [`applywstatus!`](@ref) if the circuit reports a success, but it is a false positive (i.e., there was an undetected error).
 
-See also: [`VerifyOp`](@ref), [`BellMeasure`](@ref)."""
+See also: [`VerifyOp`](@ref), [`BellMeasurement`](@ref)."""
 const false_success_stat = CircuitStatus(2)
 
 """Returned by [`applywstatus!`](@ref) if the circuit reports a failure.
 
-See also: [`VerifyOp`](@ref), [`BellMeasure`](@ref)."""
+See also: [`VerifyOp`](@ref), [`BellMeasurement`](@ref)."""
 const failure_stat = CircuitStatus(3)
 
 const registered_statuses = ["continue",
@@ -51,9 +51,9 @@ end
 function countmap(samples::Vector{CircuitStatus}) # A simpler faster version of StatsBase.countmap
     counts = zeros(length(registered_statuses))
     for s in samples
-        counts[s.status] += 1
+        counts[s.status+1] += 1
     end
-    Dict(CircuitStatus(i)=>counts[i] for i in eachindex(counts))
+    Dict(CircuitStatus(i-1)=>counts[i] for i in eachindex(counts))
 end
 
 """Run multiple Monte Carlo trajectories and report the aggregate final statuses of each."""

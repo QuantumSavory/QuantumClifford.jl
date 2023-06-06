@@ -8,12 +8,12 @@ DocTestSetup = quote
 end
 ```
 
-## [Operations](@id all-operations)
+## Operations
 
 Acting on quantum states can be performed either:
 
-- In a "linear algebra" language, where the operators are [Clifford operators](@ref CliffordOperator) represented as tableaux. This is an explicitly deterministic lower-level interface, which provides a great deal of control over how tableaux are manipulated.
-- Or in a "circuit" language, where the operators (and measurements and noise) are represented as circuit gates. This is a higher-level interface in which the outcome of an operation can be stochastic. Particularly useful for [Monte Carlo simulations](@ref noisycircuits_mc) and [Perturbative Expansion Symbolic Results](@ref noisycircuits_perturb)
+- In a "linear algebra" language where unitaries, measurements, and other operations have separate interfaces. This is an explicitly deterministic lower-level interface, which provides a great deal of control over how tableaux are manipulated. See the [Stabilizer Tableau Algebra Manual](@ref Stabilizer-Tableau-Algebra-Manual) as a primer on these approaches.
+- Or in a "circuit" language, where the operators (and measurements and noise) are represented as circuit gates. This is a higher-level interface in which the outcome of an operation can be stochastic. The API for it is centered around the `apply!` function. Particularly useful for [Monte Carlo simulations](@ref noisycircuits_mc) and [Perturbative Expansion Symbolic Results](@ref noisycircuits_perturb).
 
 In the circuit language, all operations can be applied on a state with the [`apply!`](@ref) function. Whether they are deterministic and their computational complexity is listed in the table below. A list of lower-level "linear algebra style" functions for more control over how an operation is performed is also given.
 
@@ -21,6 +21,9 @@ In the circuit language, all operations can be applied on a state with the [`app
 <style>
 td > code {
     white-space: pre;
+}
+.content table td, .content table th {
+	padding: 0 1em;
 }
 </style>
 ```
@@ -70,7 +73,7 @@ Predefined unitary gates are available, like [`sCNOT`](@ref), [`sHadamard`](@ref
 ```@example 1
 using QuantumClifford # hide
 using QuantumClifford.Experimental.NoisyCircuits # hide
-using QuantumCliffordPlots # hide
+using Quantikz # hide
 [sCNOT(2,4),sHadamard(2),sCPHASE(1,3),sSWAP(2,4)]
 ```
 
@@ -82,7 +85,7 @@ They can be specified by giving a Clifford operator tableaux and the indices on 
 ```@example 1
 using QuantumClifford # hide
 using QuantumClifford.Experimental.NoisyCircuits # hide
-using QuantumCliffordPlots # hide
+using Quantikz # hide
 SparseGate(tCNOT, [2,4])
 ```
 

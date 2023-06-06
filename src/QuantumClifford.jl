@@ -48,10 +48,12 @@ export
     AbstractSymbolicOperator, AbstractSingleQubitOperator, AbstractTwoQubitOperator,
     sHadamard, sPhase, sInvPhase, SingleQubitOperator, sId1, sX, sY, sZ,
     sCNOT, sCPHASE, sSWAP,
+    sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZCX, sZCY, sZCZ,
     # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset,
     BellMeasurement,
+    VerifyOp,
     Register,
     # Enumeration and Randoms
     enumerate_single_qubit_gates, random_clifford1,
@@ -60,6 +62,9 @@ export
     random_pauli, random_stabilizer, random_destabilizer, random_clifford,
     # Noise
     applynoise!, UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, NoisyGate,
+    PauliNoise, PauliError,
+    # Pauli frames
+    PauliFrame, pftrajectories, pfmeasurements,
     # Useful States
     bell, ghz,
     single_z, single_x, single_y,
@@ -69,7 +74,11 @@ export
     canonicalize_clip!, bigram, entanglement_entropy,
     # mctrajectories
     CircuitStatus, continue_stat, true_success_stat, false_success_stat, failure_stat,
-    mctrajectory!, mctrajectories, applywstatus!
+    mctrajectory!, mctrajectories, applywstatus!,
+    # makie plotting -- defined only when extension is loaded
+    stabilizerplot, stabilizerplot_axis,
+    # sum types
+    compactify_circuit
 
 
 const BIG_INT_MINUS_ONE = Ref{BigInt}()
@@ -181,7 +190,7 @@ function _P_str(a)
 end
 
 macro P_str(a)
-    _P_str(a)
+    quote _P_str($a) end
 end
 
 Base.getindex(p::PauliOperator{Tz,Tv}, i::Int) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = (p.xz[_div(Tve, i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0, (p.xz[end÷2+_div(Tve,i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0
@@ -213,31 +222,6 @@ Base.length(pauli::PauliOperator) = pauli.nqubits
 
 nqubits(pauli::PauliOperator) = pauli.nqubits
 
-xz2str(x,z) = join(toletter[e] for e in zip(x,z))
-
-function xz2str_limited(x,z, limit=50)
-    tupl = collect(zip(x,z))
-    n = length(tupl)
-    if (limit >= n || limit == -1)
-        return xz2str(x, z)
-    end
-    padding = limit÷2
-    return join(toletter[tupl[i]] for i in 1:padding) * "…" * join(toletter[tupl[i]] for i in (n-padding):n)
-end
-
-_show(io::IO, p::PauliOperator, limit=50) = print(io, ["+ ","+i","- ","-i"][p.phase[]+1]*xz2str_limited(xbit(p),zbit(p), limit))
-
-function Base.show(io::IO, p::PauliOperator)
-    if get(io, :compact, false)
-        _show(io, p, 10)
-    elseif get(io, :limit, false)
-        sz = displaysize(io)
-        _show(io, p, sz[2]-7)
-    else
-        _show(io, p, -1)
-    end
-end
-
 Base.:(==)(l::PauliOperator, r::PauliOperator) = r.phase==l.phase && r.nqubits==l.nqubits && r.xz==l.xz
 
 Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.xz, h)))
@@ -260,6 +244,9 @@ end
 # Generic Tableaux
 ##############################
 
+"""Internal Tableau type for storing a list of Pauli operators in a compact form.
+No special semantic meaning is attached to this type, it is just a convenient way to store a list of Pauli operators.
+E.g. it is not used to represent a stabilizer state, or a stabilizer group, or a Clifford circuit."""
 struct Tableau{Tzv<:AbstractVector{UInt8}, Tm<:AbstractMatrix{<:Unsigned}}
     phases::Tzv
     nqubits::Int
@@ -296,7 +283,7 @@ function _T_str(a) # TODO this can be optimized by not creating intermediary Pau
 end
 
 macro T_str(a)
-    _T_str(a)
+    quote _T_str($a) end
 end
 
 Base.getindex(tab::Tableau, i::Int) = PauliOperator(tab.phases[i], nqubits(tab), tab.xzs[:,i])
@@ -358,35 +345,6 @@ Base.size(tab::Tableau) = (length(tab.phases),nqubits(tab))
 Base.size(tab::Tableau,i) = size(tab)[i]
 
 Base.length(tab::Tableau) = length(tab.phases)
-
-function _show(io::IO, t::Tableau, limit=50, limit_vertical=20)
-    padding = limit_vertical÷2-3
-    n = size(t,1)
-    range = 1:n
-    if (limit_vertical < n && limit_vertical != -1)
-        range = [1:padding; -1; (n-padding):n]
-    end
-    for i in range
-        if (i == -1)
-            print(io," ⋮\n")
-            continue
-        end
-        _show(io, t[i], limit-7)
-        i!=n && println(io)
-    end
-end
-
-function Base.show(io::IO, t::Tableau)
-    if get(io, :compact, false)
-        r,q = size(t)
-        print(io, "Tableaux $r×$q")
-    elseif get(io, :limit, false)
-        sz = displaysize(io)
-        _show(io, t, sz[2], sz[1])
-    else
-        _show(io, t, -1, -1)
-    end
-end
 
 Base.:(==)(l::Tableau, r::Tableau) = r.nqubits==l.nqubits && r.phases==l.phases && r.xzs==l.xzs
 
@@ -521,7 +479,7 @@ Stabilizer(xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tabl
 Stabilizer(xzs::AbstractMatrix{Bool}) = Stabilizer(Tableau(xzs))
 Stabilizer(s::Stabilizer) = s
 macro S_str(a)
-    Stabilizer(_T_str(a))
+    quote Stabilizer(_T_str($a)) end
 end
 Base.getindex(stab::Stabilizer, i::Int) = tab(stab)[i]
 Base.getindex(stab::Stabilizer, i) = Stabilizer(tab(stab)[i])
@@ -550,15 +508,6 @@ Base.zero(::Type{Stabilizer{T}}, r, q) where {T<:Tableau} = Stabilizer(zero(T, r
 Base.zero(::Type{Stabilizer}, r, q) = zero(Stabilizer{Tableau{Vector{UInt8},Matrix{UInt}}}, r, q)
 Base.zero(s::S) where {S<:Stabilizer} = zero(S, length(s), nqubits(s))
 @inline zero!(s::Stabilizer,i) = zero!(tab(s),i)
-
-function Base.show(io::IO, s::Stabilizer)
-    if get(io, :compact, false)
-        r,q = size(s)
-        print(io, "Stabilizer $r×$q")
-    else
-        show(io, tab(s))
-    end
-end
 
 ##############################
 # Helpers for subclasses of AbstractStabilizer that use Stabilizer as a tableau internally.
@@ -627,24 +576,6 @@ function Destabilizer(s::Stabilizer)
     Destabilizer(t)
 end
 
-function Base.show(io::IO, d::Destabilizer)
-    if get(io, :compact, false)
-        r,q = size(stabilizerview(d))
-        print(io, "Destablizer $r×$q")
-    elseif get(io, :limit, false)
-        h,w = displaysize(io)
-        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(min(w-9,size(d.tab,2)-4),0))
-        _show(io, destabilizerview(d).tab, w, h÷2)
-        println(io, "\n𝒮𝓉𝒶𝒷" * "━"^max(min(w-7,size(d.tab,2)-2),0))
-        _show(io, stabilizerview(d).tab, w, h÷2)
-    else
-        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-4,0))
-        _show(io, destabilizerview(d).tab, -1, -1)
-        println(io, "\n𝒮𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-2,0))
-        _show(io, stabilizerview(d).tab, -1, -1)
-    end
-end
-
 Base.length(d::Destabilizer) = length(tab(d))÷2
 
 Base.copy(d::Destabilizer) = Destabilizer(copy(tab(d)))
@@ -671,15 +602,6 @@ function MixedStabilizer(s::Stabilizer{T}) where {T}
 end
 
 MixedStabilizer(s::Stabilizer,rank::Int) = MixedStabilizer(tab(s),rank)
-
-function Base.show(io::IO, s::MixedStabilizer)
-    if get(io, :compact, false)
-        r,q = size(s)
-        print(io, "MixedStabilizer $r×$q")
-    else
-        show(io, stabilizerview(s))
-    end
-end
 
 Base.length(d::MixedStabilizer) = length(d.tab)
 
@@ -769,47 +691,6 @@ function MixedDestabilizer(d::Destabilizer)
 end
 
 function MixedDestabilizer(d::MixedStabilizer) MixedDestabilizer(stabilizerview(d)) end
-
-function Base.show(io::IO, d::MixedDestabilizer)
-    r = rank(d)
-    q = nqubits(d)
-    if get(io, :compact, false)
-        print(io, "MixedDestablizer $r×$q")
-    elseif get(io, :limit, false)
-        h,w = displaysize(io)
-        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(min(w-9,size(d.tab,2)-4),0))
-        _show(io, destabilizerview(d).tab, w, h÷4)
-        if r != q
-            println(io)
-            println(io, "𝒳ₗ" * "━"^max(min(w-5,size(d.tab,2)),0))
-            _show(io, logicalxview(d).tab, w, h÷4)
-        end
-        println(io)
-        println(io, "𝒮𝓉𝒶𝒷" * "━"^max(min(w-7,size(d.tab,2)-2),0))
-        _show(io, stabilizerview(d).tab, w, h÷4)
-        if r != q
-            println(io)
-            println(io, "𝒵ₗ" * "━"^max(min(w-5,size(d.tab,2)),0))
-            _show(io, logicalzview(d).tab, w, h÷4)
-        end
-    else
-        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-4,0))
-        _show(io, destabilizerview(d).tab, -1, -1)
-        if r != q
-            println(io)
-            println(io, "𝒳ₗ" * "━"^max(size(d.tab,2),0))
-            _show(io, logicalxview(d).tab, -1, -1)
-        end
-        println(io)
-        println(io, "𝒮𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-2,0))
-        _show(io, stabilizerview(d).tab, -1, -1)
-        if r != q
-            println(io)
-            println(io, "𝒵ₗ" * "━"^max(size(d.tab,2)),0)
-            _show(io, logicalzview(d).tab, -1, -1)
-        end
-    end
-end
 
 Base.length(d::MixedDestabilizer) = length(d.tab)÷2
 
@@ -1243,6 +1124,11 @@ Base.vcat(stabs::Stabilizer...) = Stabilizer(vcat((tab(s) for s in stabs)...))
 # Unitary Clifford Operations
 ##############################
 
+"""In `QuantumClifford` the `apply!` function is used to apply any quantum operation to a stabilizer state,
+including unitary Clifford operations, Pauli measurements, and noise.
+Thus, this function may result in a random/stochastic result (e.g. with measurements or noise)."""
+function apply! end
+
 function Base.:(*)(p::AbstractCliffordOperator, s::AbstractStabilizer; phases::Bool=true)
     s = copy(s)
     @valbooldispatch _apply!(s,p; phases=Val(phases)) phases
@@ -1483,10 +1369,15 @@ include("randoms.jl")
 include("useful_states.jl")
 include("noise.jl")
 include("affectedqubits.jl")
+include("pauli_frames.jl")
 include("experimental/Experimental.jl")
 include("graphs.jl")
 include("entanglement.jl")
+include("tableau_show.jl")
+include("sumtypes.jl")
 include("precompiles.jl")
+include("ecc/ECC.jl")
+include("plotting_extensions.jl")
 include("ecc/ECC.jl")
 
 

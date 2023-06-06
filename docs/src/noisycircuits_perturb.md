@@ -4,7 +4,7 @@
 DocTestSetup = quote
     using QuantumClifford
     using QuantumClifford.Experimental.NoisyCircuits
-    using QuantumCliffordPlots
+    using Quantikz
 end
 CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
@@ -22,7 +22,7 @@ Here is an example of a purification circuit (the same circuit seen in the [Mont
 ```@example
 using QuantumClifford # hide
 using QuantumClifford.Experimental.NoisyCircuits # hide
-using QuantumCliffordPlots # hide
+using Quantikz # hide
 good_bell_state = S"XX
                     ZZ"
 canonicalize_rref!(good_bell_state)
@@ -59,4 +59,4 @@ The `Symbol` is the status of the operation, the `Real` is the probability for t
 
 There is also `applynoise_branches!` which is convenient for use in `NoisyGate`, but you can also just make up your own noise operator simply by implementing `applyop_branches!` for it.
 
-You can also consult the [list of implemented operators](@ref noisycircuit_ops).
+You can also consult the [list of implemented operators](@ref noisycircuits_ops).

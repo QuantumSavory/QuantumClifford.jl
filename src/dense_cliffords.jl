@@ -20,23 +20,23 @@ julia> stab = S"XI
 julia> entangled = tCNOT*stab
 + XX
 + ZZ
-```
 
 julia> CliffordOperator(T"YY")
-ERROR: DimensionMismatch("Input tableau should be square (in which case the destabilizers are calculated) or of size 2n×n (in which case it is used directly).")
+ERROR: DimensionMismatch: Input tableau should be of size 2n×n (top half is the X mappings and the bottom half are the Z mappings).
 [...]
 ```
 
 [`Destabilizer`](@ref) can also be converted.
 ```jldoctest
 julia> d = Destabilizer(S"Y")
+𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
-━━━
+𝒮𝓉𝒶𝒷
 + Y
 
 julia> CliffordOperator(d)
-X ⟼ + Z
-Z ⟼ + Y
+X₁ ⟼ + Z
+Z₁ ⟼ + Y
 ```
 """
 struct CliffordOperator{T<:Tableau} <: AbstractCliffordOperator
@@ -55,7 +55,7 @@ end
 
 macro C_str(a)
     tab = _T_str(a)
-    CliffordOperator(tab)
+    quote CliffordOperator($tab) end
 end
 
 CliffordOperator(op::CliffordOperator) = op
@@ -83,47 +83,6 @@ end
 
 digits_subchars = collect("₀₁₂₃₄₅₆₇₈₉")
 digits_substr(n,nwidth) = join(([digits_subchars[d+1] for d in reverse(digits(n, pad=nwidth))]))
-
-function _show(io::IO, c::CliffordOperator, limit=50, limit_vertical=20)
-    n = nqubits(c)
-    nwidth = Int(ceil(log10(n+1)))
-    _limit = limit==-1 ? -1 : limit-nwidth-10
-    range = 1:n
-    if (limit_vertical < n && limit_vertical != -1)
-        padding = limit_vertical÷4
-        range = [1:padding-1; -1; (n-padding+2):n]
-    end
-    for i in range
-        if (i == -1)
-            print(" ⋮\n")
-            continue
-        end
-        print(io, "X"*digits_substr(i,nwidth)*" ⟼ ")
-        _show(io, c.tab[i], _limit)
-        println(io)
-    end
-    for i in range
-        if (i == -1)
-            print(" ⋮\n")
-            continue
-        end
-        print(io, "Z"*digits_substr(i,nwidth)*" ⟼ ")
-        _show(io, c.tab[i+n], _limit)
-        i!=n && println(io)
-    end
-end
-
-function Base.show(io::IO, c::CliffordOperator)
-    if get(io, :compact, false)
-        q = nqubits(c)
-        print(io, "Clifford $q qubits")
-    elseif get(io, :limit, false)
-        sz = displaysize(io)
-        _show(io, c, sz[2], sz[1])
-    else
-        _show(io, c, -1, -1)
-    end
-end
 
 function Base.copy(c::CliffordOperator)
     CliffordOperator(copy(c.tab))

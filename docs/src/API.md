@@ -15,16 +15,16 @@ Stabilizer states can be represented with the [`Stabilizer`](@ref), [`Destabiliz
 
 Moreover, a [`MixedDestabilizer`](@ref) can be stored inside a [`Register`](@ref) together with a set of classical bits in which measurement results can be written.
 
+Lastly, for Pauli frame simulations there is the [`PauliFrame`](@ref) type, a tableau in which each row represents a different Pauli frame.
+
 There are [convenience constructors for common types of states and operators](@ref Useful-States-and-Operators).
 
 ## Operations
 
 Acting on quantum states can be performed either:
 
-- In a "linear algebra" language, where the operators are [Clifford operators](@ref CliffordOperator) represented as tableaux. This is an explicitly deterministic lower-level interface, which provides a great deal of control over how tableaux are manipulated.
-- Or in a "circuit" language, where the operators (and measurements and noise) are represented as circuit gates. This is a higher-level interface in which the outcome of an operation can be stochastic. Particularly useful for [Monte Carlo simulations](@ref noisycircuits_mc) and [Perturbative Expansion Symbolic Results](@ref noisycircuits_perturb).
-
-See the [manual](@ref Manual) as a primer on these approaches.
+- In a "linear algebra" language where unitaries, measurements, and other operations have separate interfaces. This is an explicitly deterministic lower-level interface, which provides a great deal of control over how tableaux are manipulated. See the [Stabilizer Tableau Algebra Manual](@ref Stabilizer-Tableau-Algebra-Manual) as a primer on these approaches.
+- Or in a "circuit" language, where the operators (and measurements and noise) are represented as circuit gates. This is a higher-level interface in which the outcome of an operation can be stochastic. The API for it is centered around the `apply!` function. Particularly useful for [Monte Carlo simulations](@ref noisycircuits_mc) and [Perturbative Expansion Symbolic Results](@ref noisycircuits_perturb).
 
 See the [full list of operations](@ref all-operations) for a list of implemented operations.
 
@@ -33,4 +33,15 @@ See the [full list of operations](@ref all-operations) for a list of implemented
 ```@autodocs
 Modules = [QuantumClifford]
 Private = false
+```
+
+## Private API
+
+!!! danger "Private Implementation Details"
+    These functions are used internally by the library and might be drastically modified or deleted without warning or deprecation.
+
+```@autodocs
+Modules = [QuantumClifford]
+Private = true
+Public = false
 ```

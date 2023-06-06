@@ -5,6 +5,26 @@
 
 # News
 
+## v0.8.2 - 2023-05-22
+
+- Initial, experimental, unexported helper functions for work with error correcting codes. Might change at any time.
+
+## v0.8.1 - 2023-05-17
+
+- **(fix)** Fix to Quantikz circuit plotting functions.
+
+## v0.8.0 - 2023-05-16
+
+- **(breaking)** Deprecated the `QuantumCliffordPlots` library and moved that functionality to 3 package extensions, one for each of `Quantikz`, `Plots`, and `Makie` visualizations.
+- **(breaking)** Set minimum requirements to Julia 1.9
+- Initial implementation of Pauli frame simulations (with `pftrajectories` and `PauliFrame`)
+- Initial support for "sum type" gates for much faster dispatch (with `compactify_circuit`)
+- **(fix)** Fixes to print/show formatting.
+
+## v0.7.2 - 2023-04-09
+
+- Non-standard string literals `P`, `T`, `S`, and `C` (e.g. `P"X"` used to create a Pauli operator) are now not cached at compile time. Before this version `f() = P"X"` would have resulted in `f() === f()`, while now that statement would return false. Change made given that the objects created by these literals are mutable which can lead to bugs where a local variable seems to "remember" how it is being modified at each execution of a function.
+
 ## v0.7.1 - 2023-04-08
 
 - Better printing of tableaux and operators.

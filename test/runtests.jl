@@ -36,6 +36,7 @@ println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREA
 @doset "trace"
 @doset "cliff"
 @doset "symcliff"
+@doset "symcontrolled"
 @doset "classicalreg"
 @doset "random"
 @doset "noisycircuits"
@@ -45,14 +46,14 @@ println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREA
 @doset "hash"
 @doset "entanglement"
 @doset "enumerate"
+@doset "ecc"
 @doset "precompile"
-
-
-VERSION >= v"1.7" && @doset "allocations"
-VERSION >= v"1.8" && @doset "doctests"
-get(ENV,"QUANTUMCLIFFORD_JET_TEST","")=="true" && @doset "jet"
+@doset "pauliframe"
+@doset "allocations"
+VERSION >= v"1.9" && @doset "doctests"
+get(ENV,"JET_TEST","")=="true" && @doset "jet"
 
 using Aqua
-VERSION >= v"1.8" && doset("aqua") && begin
-    Aqua.test_all(QuantumClifford)
+VERSION >= v"1.9" && doset("aqua") && begin
+    Aqua.test_all(QuantumClifford, project_toml_formatting=false) # TODO: remove project_toml_formatting=false when Aqua is updated
 end
