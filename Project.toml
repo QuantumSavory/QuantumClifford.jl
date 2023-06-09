@@ -33,6 +33,7 @@ QuantumCliffordQuantikzExt = "Quantikz"
 
 [compat]
 Combinatorics = "1.0"
+DataStructures = "0.18"
 DocStringExtensions = "0.8, 0.9"
 Graphs = "1.4.1"
 HostCPUFeatures = "0.1.6"
