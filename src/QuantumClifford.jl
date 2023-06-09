@@ -690,7 +690,9 @@ function MixedDestabilizer(d::Destabilizer)
     end
 end
 
-function MixedDestabilizer(d::MixedStabilizer) MixedDestabilizer(stabilizerview(d)) end
+MixedDestabilizer(d::MixedStabilizer) = MixedDestabilizer(stabilizerview(d))
+
+MixedDestabilizer(s::MixedDestabilizer) = s
 
 Base.length(d::MixedDestabilizer) = length(d.tab)÷2
 
@@ -1377,6 +1379,7 @@ include("tableau_show.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
+include("nonclifford.jl")
 include("plotting_extensions.jl")
 
 end #module
