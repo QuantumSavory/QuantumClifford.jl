@@ -1,1 +1,1 @@
-These benchmark results are tracked at [github.com/Krastanov/QuantumCliffordBenchmarksLog](https://github.com/Krastanov/QuantumCliffordBenchmarksLog).
+These benchmark results are tracked at [github.com/QuantumSavory/QuantumCliffordBenchmarksLog](https://github.com/QuantumSavory/QuantumCliffordBenchmarksLog).
