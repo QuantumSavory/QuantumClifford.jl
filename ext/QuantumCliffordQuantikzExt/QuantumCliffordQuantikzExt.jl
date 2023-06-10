@@ -20,9 +20,36 @@ function Quantikz.QuantikzOp(op::SparseGate)
     end
 end
 Quantikz.QuantikzOp(op::AbstractOperation) = Quantikz.MultiControlU(affectedqubits(op))
+Quantikz.QuantikzOp(op::sId1) = Quantikz.Id(affectedqubits(op)...)
+function Quantikz.QuantikzOp(op::AbstractSingleQubitOperator)
+    T = typeof(op)
+    str = if T in (sHadamard, sPhase, sX, sY, sZ)
+        string(T)[2:2]
+    elseif T == sInvPhase
+        "P^{-1}"
+    else
+        "U"
+    end
+    str = "{"*str*"}"
+    return Quantikz.U(str,affectedqubits(op)...)
+end
 Quantikz.QuantikzOp(op::sCNOT) = Quantikz.CNOT(affectedqubits(op)...)
+Quantikz.QuantikzOp(op::sZCX) = Quantikz.CNOT(affectedqubits(op)...)
+Quantikz.QuantikzOp(op::sXCZ) = Quantikz.CNOT(reverse(affectedqubits(op))...)
 Quantikz.QuantikzOp(op::sCPHASE) = Quantikz.CPHASE(affectedqubits(op)...)
 Quantikz.QuantikzOp(op::sSWAP) = Quantikz.SWAP(affectedqubits(op)...)
+Quantikz.QuantikzOp(op::sZCZ) = Quantikz.CPHASE(affectedqubits(op)...)
+Quantikz.QuantikzOp(op::sXCX) = Quantikz.MultiControl([],[],affectedqubits(op),[])
+Quantikz.QuantikzOp(op::sZCY) = Quantikz.MultiControlU("Y",affectedqubits(op)...)
+Quantikz.QuantikzOp(op::sYCZ) = Quantikz.MultiControlU("Y",reverse(affectedqubits(op))...)
+function Quantikz.QuantikzOp(op::AbstractTwoQubitOperator)
+    T = typeof(op)
+    if T in (sXCY,sYCX,sYCY,sYCZ,sZCY)
+        return Quantikz.U(string(T),affectedqubits(op))
+    else
+        return Quantikz.U("{U}",affectedqubits(op)...)
+    end
+end
 Quantikz.QuantikzOp(op::BellMeasurement) = Quantikz.ParityMeasurement(["\\mathtt{$(string(typeof(o))[3])}" for o in op.measurements], affectedqubits(op))
 Quantikz.QuantikzOp(op::NoisyBellMeasurement) = Quantikz.QuantikzOp(op.meas)
 Quantikz.QuantikzOp(op::ConditionalGate) = Quantikz.ClassicalDecision(affectedqubits(op),op.controlbit)
