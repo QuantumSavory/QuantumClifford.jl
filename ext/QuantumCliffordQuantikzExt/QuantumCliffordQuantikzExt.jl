@@ -3,6 +3,7 @@ module QuantumCliffordQuantikzExt
 import Quantikz
 using QuantumClifford
 using QuantumClifford.Experimental.NoisyCircuits
+using QuantumClifford: AbstractOperation
 
 function Quantikz.QuantikzOp(op::SparseGate)
     g = op.cliff
