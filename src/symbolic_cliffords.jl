@@ -95,7 +95,7 @@ end
 
 ```jldoctest
 julia> op = SingleQubitOperator(2, true, true, true, false, true, true) # Tableau components and phases
-Symbolic single-qubit gate on qubit 2
+SingleQubitOperator on qubit 2
 X₁ ⟼ - Y
 Z₁ ⟼ - X
 
@@ -196,8 +196,12 @@ end
 CliffordOperator(::Type{O}) where {O<:AbstractSingleQubitOperator} = CliffordOperator(apply!(one(Destabilizer,1),O(1)))
 
 function Base.show(io::IO, op::AbstractSingleQubitOperator)
-    print(io, "Symbolic single-qubit gate on qubit $(op.q)\n")
-    show(io, CliffordOperator(op,1;compact=true))
+    if get(io, :compact, false) | haskey(io, :typeinfo)
+        print(io, "$(string(typeof(op)))($(op.q))")
+    else
+        print(io, "$(string(typeof(op))) on qubit $(op.q)\n")
+        show(io, CliffordOperator(op,1;compact=true))
+    end
 end
 
 """Random symbolic single-qubit Clifford applied to qubit at index `qubit`.
@@ -292,8 +296,12 @@ end
 CliffordOperator(::Type{O}) where {O<:AbstractTwoQubitOperator} = CliffordOperator(apply!(one(Destabilizer,2),O(1,2)))
 
 function Base.show(io::IO, op::AbstractTwoQubitOperator)
-    print(io, "Symbolic two-qubit gate on qubit $(op.q1) and $(op.q2)\n")
-    show(io, CliffordOperator(typeof(op)))
+    if get(io, :compact, false) | haskey(io, :typeinfo)
+        print(io, "$(string(typeof(op)))($(op.q1),$(op.q2))")
+    else
+        print(io, "$(string(typeof(op))) on qubit1 ($(op.q1),$(op.q2))\n")
+        show(io, CliffordOperator(op,2;compact=true))
+    end
 end
 
 ##############################

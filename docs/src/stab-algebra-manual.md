@@ -300,10 +300,10 @@ an undetermined result). For instance here we project on an operator that does
 not commute with all stabilizer generators.
 
 ```jldoctest proj
-julia> project!(copy(s), P"ZII")
-(+ Z__
+julia> project!(copy(s), P"ZII")[1]
++ Z__
 + ZZ_
-- _ZZ, 1, nothing)
+- _ZZ
 ```
 
 Importantly, when there is an undetermined result, we return `nothing` **and
@@ -325,9 +325,7 @@ to represent the phase, 0x2).
 
 ```jldoctest proj
 julia> project!(copy(s), P"-ZZI")
-(- XXX
-- Z_Z
-- _ZZ, 0, 0x02)
+(Stabilizer 3×3, 0, 0x02)
 ```
 
 When the projection is consistent with the stabilizer (i.e. the measurement
@@ -340,9 +338,7 @@ canonicalization and calculation of the result.
 
 ```jldoctest proj
 julia> project!(copy(s), P"-ZZI", keep_result=false)
-(- XXX
-+ ZZ_
-- _ZZ, 0, nothing)
+(Stabilizer 3×3, 0, nothing)
 ```
 
 Lastly, in either case, you can skip the calculation of the phases as well, if
@@ -350,9 +346,7 @@ they are unimportant.
 
 ```jldoctest proj
 julia> project!(copy(s), P"ZZI", phases=false)
-(- XXX
-+ Z_Z
-- _ZZ, 0, 0x00)
+(Stabilizer 3×3, 0, 0x00)
 ```
 
 ## Sparse single-qubit measurements
@@ -596,7 +590,7 @@ They are used slightly differently, as one needs to specify the qubits on which 
 
 ```jldoctest
 julia> sHadamard(2)
-Symbolic single-qubit gate on qubit 2
+sHadamard on qubit 2
 X₁ ⟼ + Z
 Z₁ ⟼ + X
 
@@ -655,28 +649,14 @@ the expensive ``\mathcal{O}(n^3)`` canonicalization operation).
 
 ```jldoctest destab
 julia> project!(d,P"ZZI")
-(𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z__
-+ _X_
-+ __X
-𝒮𝓉𝒶𝒷━
-- XXX
-- ZZ_
-- Z_Z, 0, 0x02)
+(Destablizer 3×3, 0, 0x02)
 ```
 
 Non-commuting projections are just as fast as when using only stabilizers.
 
 ```jldoctest destab
 julia> project!(d,P"ZZZ")
-(𝒟ℯ𝓈𝓉𝒶𝒷
-- XXX
-+ X_X
-+ XX_
-𝒮𝓉𝒶𝒷━
-+ ZZZ
-- ZZ_
-- Z_Z, 1, nothing)
+(Destablizer 3×3, 1, nothing)
 ```
 
 Clifford operations can be applied the same way they are applied to stabilizers.
