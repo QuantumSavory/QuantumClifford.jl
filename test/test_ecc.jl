@@ -8,6 +8,8 @@ codes = [
     Shor9(),
 ]
 
+##
+
 function test_phys_log_op_encoding(c::AbstractECC)
     # encode k physical qubits into n physical qubits (turning them into k logical qubits)
     # apply operations in an encoded or unencoded fashion
@@ -53,6 +55,7 @@ end
     end
 end
 
+##
 
 function test_naive_syndrome(c::AbstractECC)
     # create a random logical state
@@ -79,5 +82,26 @@ end
 @testset "naive syndrome circuits - zero syndrome for logical states" begin
     for c in codes, _ in 1:2
         test_naive_syndrome(c)
+    end
+end
+
+##
+
+function test_with_pframes(code)
+    ecirc = encoding_circuit(code)
+    scirc = naive_syndrome_circuit(code)
+    nframes = 10
+    dataqubits = code_n(code)
+    ancqubits = code_s(code)
+    regbits = ancqubits
+    frames = PauliFrame(nframes, dataqubits+ancqubits, regbits)
+    circuit = [ecirc..., scirc...]
+    pftrajectories(frames, circuit)
+    @test sum(pfmeasurements(frames)) == 0
+end
+
+@testset "naive syndrome circuits - zero syndrome for logical states" begin
+    for c in codes, _ in 1:2
+        test_with_pframes(c)
     end
 end
