@@ -1,6 +1,8 @@
 module ECC
 
 using QuantumClifford
+using QuantumClifford: AbstractOperation
+
 abstract type AbstractECC end
 
 """The encoding circuit of a given code."""
@@ -42,7 +44,7 @@ end
 
 """Naive syndrome circuit"""
 function naive_syndrome_circuit(parity_check_tableau)
-    naive_sc = []
+    naive_sc = AbstractOperation[]
 
     ancilla_bit = 1
     # ancilla_qubit = code_n(c) + ancilla_bit
