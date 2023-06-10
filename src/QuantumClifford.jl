@@ -1378,5 +1378,7 @@ include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
 include("plotting_extensions.jl")
+include("ecc/ECC.jl")
+
 
 end #module
