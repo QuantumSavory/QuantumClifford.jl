@@ -180,9 +180,9 @@ julia> s = S"XZI
              IZI";
 
 
-julia> project!(s, P"IIX")
-(+ X__
-+ _Z_, 3, nothing)
+julia> project!(s, P"IIX")[1]
++ X__
++ _Z_
 ```
 
 If we had used [`MixedStabilizer`](@ref) we would have added the projector
@@ -193,10 +193,10 @@ julia> s = one(MixedStabilizer, 2, 3)
 + Z__
 + _Z_
 
-julia> project!(s, P"IIX")
-(+ Z__
+julia> project!(s, P"IIX")[1]
++ Z__
 + _Z_
-+ __X, 3, nothing)
++ __X
 ```
 
 However, [`MixedDestabilizer`](@ref) would
@@ -216,15 +216,15 @@ julia> s = one(MixedDestabilizer, 2, 3)
 𝒵ₗ━━━
 + __Z
 
-julia> project!(s, P"IIX")
-(𝒟ℯ𝓈𝓉𝒶𝒷
+julia> project!(s, P"IIX")[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
 + X__
 + _X_
 + __Z
 𝒮𝓉𝒶𝒷━
 + Z__
 + _Z_
-+ __X, 3, nothing)
++ __X
 ```
 
 See the "Datastructure Choice" section in the documentation for more details.
@@ -253,10 +253,10 @@ julia> ms = MixedStabilizer(s)
 + X__
 + _Z_
 
-julia> project!(ms, P"IIY")
-(+ X__
+julia> project!(ms, P"IIY")[1]
++ X__
 + _Z_
-+ __Y, 3, nothing)
++ __Y
 ```
 
 Similarly to [`project!`](@ref) on [`Stabilizer`](@ref), this function has cubic

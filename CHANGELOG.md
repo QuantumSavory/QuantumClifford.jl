@@ -5,6 +5,14 @@
 
 # News
 
+## v0.8.4 - 2023-06-11
+
+- Bump `QuantumInterface` to 0.2.0
+
+## v0.8.3 - 2023-06-10
+
+- Improvements to printing and documentation.
+
 ## v0.8.2 - 2023-05-22
 
 - Initial, experimental, unexported helper functions for work with error correcting codes. Might change at any time.

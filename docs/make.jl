@@ -34,6 +34,7 @@ pages = [
     "Simulation of Noisy Circuits" => "noisycircuits.md",
     "Monte Carlo" => "noisycircuits_mc.md",
     "Perturbative Expansions" => "noisycircuits_perturb.md",
+    "ECC example" => "ecc_example_sim.md",
     "Circuit Operations" => "noisycircuits_ops.md",
     "API" => "noisycircuits_API.md"
 ],
@@ -46,5 +47,5 @@ pages = [
 )
 
 deploydocs(
-    repo = "github.com/Krastanov/QuantumClifford.jl.git"
+    repo = "github.com/QuantumSavory/QuantumClifford.jl.git"
 )

@@ -38,7 +38,7 @@ It is done automatically by most [`PauliFrame`](@ref) constructors.
 function initZ!(frame::PauliFrame)
     T = eltype(frame.frame.tab.xzs)
 
-    @inbounds @simd for f in eachindex(frame)
+    @inbounds @simd for f in eachindex(frame) # TODO thread this
         @simd for row in 1:size(frame.frame.tab.xzs,1)÷2
             frame.frame.tab.xzs[end÷2+row,f] = rand(T)
         end
@@ -60,7 +60,7 @@ function apply!(frame::PauliFrame, op::sMZ)
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
 
-    @inbounds @simd for f in eachindex(frame)
+    @inbounds @simd for f in eachindex(frame) # TODO thread this
         should_flip = !iszero(xzs[ibig,f] & ismallm)
         frame.measurements[f,op.bit] = should_flip
     end
@@ -77,7 +77,7 @@ function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
 
-    @inbounds @simd for f in eachindex(frame)
+    @inbounds @simd for f in eachindex(frame) # TODO thread this
         r = rand()
         if  r < p # X error
             frame.frame.tab.xzs[ibig,f] ⊻= ismallm
