@@ -28,6 +28,7 @@ println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREA
 @doset "paulis"
 @doset "stabs"
 @doset "stabcanon"
+@doset "mul_leftright"
 @doset "inner"
 @doset "gf2"
 @doset "projections"
