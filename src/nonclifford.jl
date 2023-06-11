@@ -13,6 +13,20 @@ end
 
 StabMixture(s::StabMixture) = s
 
+function MixedDestabilizer(s::StabMixture)
+    if length(s.destabweights) != 1
+        throw(DomainError("Trying to convert a non-Clifford state (instance of type StabMixture with more than one term in its sum representation) to a Clifford state (of type MixedDestabilizer). This is not possible. Consider whether you have performed some (unforeseen) non-Clifford operation on the state."))
+    else
+        ((dᵢ, dⱼ), χ) = first(s.destabweights) # TODO phases/order seem wrong here
+        dᵢ = _stabmixdestab(s.stab, dᵢ)
+        dⱼ = _stabmixdestab(s.stab, dⱼ)
+        stab = copy(s.stab)
+        apply!(stab, dᵢ)
+        apply!(stab, dⱼ)
+        return stab
+    end
+end
+
 function Base.show(io::IO, s::StabMixture)
     println(io, "A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is")
     show(io,s.stab)
