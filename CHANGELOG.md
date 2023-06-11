@@ -5,9 +5,13 @@
 
 # News
 
+## v0.8.5 - dev
+
+- Internal helper method `mul_right!` is now available for right Pauli inplace multiplication.
+
 ## v0.8.4 - 2023-06-11
 
-- Bump `QuantumInterface` to 0.2.0
+- Bump `QuantumInterface` to 0.2.0.
 
 ## v0.8.3 - 2023-06-10
 
