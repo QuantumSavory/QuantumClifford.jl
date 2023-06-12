@@ -17,12 +17,12 @@ function MixedDestabilizer(s::StabMixture)
     if length(s.destabweights) != 1
         throw(DomainError("Trying to convert a non-Clifford state (instance of type StabMixture with more than one term in its sum representation) to a Clifford state (of type MixedDestabilizer). This is not possible. Consider whether you have performed some (unforeseen) non-Clifford operation on the state."))
     else
-        ((dᵢ, dⱼ), χ) = first(s.destabweights) # TODO phases/order seem wrong here
-        dᵢ = _stabmixdestab(s.stab, dᵢ)
-        dⱼ = _stabmixdestab(s.stab, dⱼ)
-        stab = copy(s.stab)
-        apply!(stab, dᵢ)
-        apply!(stab, dⱼ)
+        ((dᵢ, dⱼ), χ) = first(s.destabweights)
+        dᵢ = _stabmixdestab(s.stab, dᵢ) # TODO
+        dⱼ = _stabmixdestab(s.stab, dⱼ) # make
+        stab = copy(s.stab)             # a faster
+        mul_left!(stab, dᵢ)             # in-place
+        mul_right!(stab, dⱼ)            # version
         return stab
     end
 end
@@ -70,8 +70,8 @@ function apply!(state::StabMixture, gate::PauliChannel)
     newdict = typeof(dict)(zero(eltype(dict).parameters[2])) # TODO jeez, this is ugly
     for ((dᵢ,dⱼ), χ) in dict
         for ((Pₗ,Pᵣ), w) in zip(gate.paulis,gate.weights)
-            phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ,stab) # TODO this should be cached?
-            phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ,stab) # TODO this should be cached?
+            phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ,stab)
+            phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ,stab)
             c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ))*2
             dᵢ′ = dₗ .⊻ dᵢ
             dⱼ′ = dᵣ .⊻ dⱼ
