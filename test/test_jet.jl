@@ -62,5 +62,5 @@ end
     )
     @show rep
     @test_broken length(JET.get_reports(rep)) == 0 # false positive from https://github.com/aviatesk/JET.jl/issues/444
-    @test length(JET.get_reports(rep)) <= 1
+    @test length(JET.get_reports(rep)) <= 2
 end

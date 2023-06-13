@@ -36,7 +36,7 @@ end
 Be careful, this operation implies first tracing out the qubits, which can lead to mixed states
 if these qubits were entangled with the rest of the system.
 
-See also: [`sMZR`](@ref)"""
+See also: [`sMRZ`](@ref)"""
 struct Reset{T<:Tableau} <: AbstractOperation # TODO simplify type parameters (remove nesting)
     resetto::Stabilizer{T}
     indices::Vector{Int}

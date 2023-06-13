@@ -467,7 +467,7 @@ julia> apply!(Register(copy(s)), sMRZ(1)) |> quantumstate # |000⟩ or |011⟩, 
 - Z_Z
 ```
 
-See also: [`Reset`](@ref), [`MZ`](@ref)"""
+See also: [`Reset`](@ref), [`sMZ`](@ref)"""
 struct sMRZ <: AbstractOperation
     qubit::Int
     bit::Int
@@ -475,7 +475,7 @@ end
 
 """Measure a qubit in the X basis and reset to the |+⟩ state.
 
-See also: [`MRZ`](@ref), [`Reset`](@ref), [`MZ`](@ref)"""
+See also: [`sMRZ`](@ref), [`Reset`](@ref), [`sMZ`](@ref)"""
 struct sMRX <: AbstractOperation
     qubit::Int
     bit::Int
@@ -483,7 +483,7 @@ end
 
 """Measure a qubit in the Y basis and reset to the |i₊⟩ state.
 
-See also: [`MRZ`](@ref), [`Reset`](@ref), [`MZ`](@ref)"""
+See also: [`sMRZ`](@ref), [`Reset`](@ref), [`sMZ`](@ref)"""
 struct sMRY <: AbstractOperation
     qubit::Int
     bit::Int

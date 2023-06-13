@@ -56,4 +56,12 @@ end
     mf2 = pfmeasurements(pftrajectories(copy(frame), ghz_circuit2))
     @test all(0.25.*[1 1 1 0 1 1] .<= sum(ms2, dims=1)./100 .<= 0.75.*[1 1 1 0 1 1])
     @test all(0.25.*[1 1 1 0 1 1] .<= sum(mf2, dims=1)./100 .<= 0.75.*[1 1 1 0 1 1])
+
+    noncom_circuit = [
+        sHadamard(1), sMRZ(1,1), sX(1), sMZ(1,2), sMRZ(1,3), sMRZ(1,4), sHadamard(1), sMZ(1,5)
+    ]
+    ms3 = stack([bitview(mctrajectory!(copy(state), noncom_circuit)[1]) for i in 1:100], dims=1)
+    mf3 = pfmeasurements(pftrajectories(copy(frame), noncom_circuit))
+    @test all(0.25.*[1 4 4 0 1 0] .<= sum(ms3, dims=1)./100 .<= 0.75.*[1 2 2 0 1 0])
+    @test all(0.25.*[1 0 0 0 1 0] .<= sum(mf3, dims=1)./100 .<= 0.75.*[1 0 0 0 1 0])
 end
