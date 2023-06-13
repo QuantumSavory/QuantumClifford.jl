@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Mixed States · QuantumClifford.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">QuantumClifford.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">QuantumClifford.jl</a></li><li><span class="tocitem">Stabilizer Tableau Algebra</span><ul><li><a class="tocitem" href="../stab-algebra-manual/">Manual</a></li><li><a class="tocitem" href="../canonicalization/">Canonicalization</a></li><li class="is-active"><a class="tocitem" href>Mixed States</a><ul class="internal"><li class="toplevel"><a class="tocitem" href="#Gottesman-Canonicalization"><span>Gottesman Canonicalization</span></a></li></ul></li><li><a class="tocitem" href="../graphs/">Graph States</a></li><li><a class="tocitem" href="../datastructures/">Datastructure Choice</a></li><li><a class="tocitem" href="../commonstates/">Useful States</a></li></ul></li><li><span class="tocitem">Noisy Circuits</span><ul><li><a class="tocitem" href="../noisycircuits/">Simulation of Noisy Circuits</a></li><li><a class="tocitem" href="../noisycircuits_mc/">Monte Carlo</a></li><li><a class="tocitem" href="../noisycircuits_perturb/">Perturbative Expansions</a></li><li><a class="tocitem" href="../ecc_example_sim/">ECC example</a></li><li><a class="tocitem" href="../noisycircuits_ops/">Circuit Operations</a></li><li><a class="tocitem" href="../noisycircuits_API/">API</a></li></ul></li><li><a class="tocitem" href="../allops/">All Gates</a></li><li><a class="tocitem" href="../plotting/">Visualizations</a></li><li><a class="tocitem" href="../API/">API</a></li><li><a class="tocitem" href="../tutandpub/">Tutorials and Publications</a></li><li><a class="tocitem" href="../references/">Suggested Readings &amp; References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Stabilizer Tableau Algebra</a></li><li class="is-active"><a href>Mixed States</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Mixed States</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/QuantumSavory/QuantumClifford.jl/blob/master/docs/src/mixed.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Mixed-Stabilizer-States"><a class="docs-heading-anchor" href="#Mixed-Stabilizer-States">Mixed Stabilizer States</a><a id="Mixed-Stabilizer-States-1"></a><a class="docs-heading-anchor-permalink" href="#Mixed-Stabilizer-States" title="Permalink"></a></h1><p>The <a href="../API/#QuantumClifford.Stabilizer"><code>Stabilizer</code></a> and <a href="../API/#QuantumClifford.Destabilizer"><code>Destabilizer</code></a> have some support for mixed states (by being initialized with an incomplete list of stabilizer generators), but for most purposes one would use the <code>Mixed*</code> data structures.</p><p>Mixed stabilizer states are implemented with <a href="../API/#QuantumClifford.MixedStabilizer"><code>MixedStabilizer</code></a> and <a href="../API/#QuantumClifford.MixedDestabilizer"><code>MixedDestabilizer</code></a>, the latter of which is the preferred data structure for most tasks as it is much faster by virtue of tracking the destabilizer generators.</p><pre><code class="language-julia-repl hljs">julia&gt; s = S&quot;XXX
+             IZZ&quot;;
+
+julia&gt; Destabilizer(s)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
++ _X_
+𝒮𝓉𝒶𝒷━
++ XXX
++ _ZZ</code></pre><p>Unlike <code>Destabilizer</code>, <code>MixedDestabilizer</code> also tracks the logical operation generators.</p><pre><code class="language-julia-repl hljs">julia&gt; m = MixedDestabilizer(s)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
++ _X_
+𝒳ₗ━━━
++ _XX
+𝒮𝓉𝒶𝒷━
++ XXX
++ _ZZ
+𝒵ₗ━━━
++ Z_Z
+
+julia&gt; stabilizerview(m)
++ XXX
++ _ZZ
+
+julia&gt; destabilizerview(m)
++ Z__
++ _X_
+
+julia&gt; logicalxview(m)
++ _XX
+
+julia&gt; logicalzview(m)
++ Z_Z</code></pre><h1 id="Gottesman-Canonicalization"><a class="docs-heading-anchor" href="#Gottesman-Canonicalization">Gottesman Canonicalization</a><a id="Gottesman-Canonicalization-1"></a><a class="docs-heading-anchor-permalink" href="#Gottesman-Canonicalization" title="Permalink"></a></h1><p>To obtain the logical operators we perform a different type of canonicalization, described in Gottesman&#39;s thesis and implemented in <a href="../API/#QuantumClifford.canonicalize_gott!-Tuple{Stabilizer}"><code>canonicalize_gott!</code></a>. Unlike <a href="../API/#QuantumClifford.canonicalize!-Tuple{QuantumClifford.AbstractStabilizer}"><code>canonicalize!</code></a> which uses only row operations, <code>canonicalize_gott!</code> performs column swaps as well. <code>MixedDestabilizer</code> undoes those swaps by default when instantiated, but that behavior can be turned off, if you prefer to work with the canonicalized tableau.</p><pre><code class="language-julia-repl hljs">julia&gt; s = S&quot;XXX
+             ZIZ&quot;;
+
+julia&gt; MixedDestabilizer(s)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
++ __X
+𝒳ₗ━━━
++ _X_
+𝒮𝓉𝒶𝒷━
++ XXX
++ Z_Z
+𝒵ₗ━━━
++ ZZ_
+
+julia&gt; MixedDestabilizer(s; undoperm=false)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
++ _X_
+𝒳ₗ━━━
++ __X
+𝒮𝓉𝒶𝒷━
++ XXX
++ ZZ_
+𝒵ₗ━━━
++ Z_Z</code></pre><p><code>Destabilizer</code> and <code>MixedStabilizer</code> do not use any column swaps on instantiation as they do not track the logical operators.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../canonicalization/">« Canonicalization</a><a class="docs-footer-nextpage" href="../graphs/">Graph States »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Tuesday 13 June 2023 21:15">Tuesday 13 June 2023</span>. Using Julia version 1.9.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
