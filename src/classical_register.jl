@@ -7,6 +7,7 @@ end
 
 Register(s,bits) = Register(MixedDestabilizer(s), bits)
 Register(s) = Register(s, Bool[])
+Register(s::MixedDestabilizer,nbits::Int) = Register(s, falses(nbits))
 
 Base.copy(r::Register) = Register(copy(r.stab),copy(r.bits))
 Base.:(==)(l::Register,r::Register) = l.stab==r.stab && l.bits==r.bits
@@ -50,6 +51,36 @@ end
 function apply!(r::Register, m::sMZ)
     _, res = projectZrand!(r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
+    r
+end
+function apply!(r::Register, m::sMRX) # TODO sMRY
+    _, anticom, res = projectX!(quantumstate(r),m.qubit)
+    mres = if isnothing(res)
+        mres = rand((0x0, 0x2))
+        phases(stabilizerview(r))[anticom] = mres
+        mres
+    else
+        res
+    end
+    m.bit!=0 && (bitview(r)[m.bit] = !iszero(mres))
+    if mres==0x2
+        apply!(r, sZ(m.qubit))
+    end
+    r
+end
+function apply!(r::Register, m::sMRZ) # TODO sMRY
+    _, anticom, res = projectZ!(quantumstate(r),m.qubit)
+    mres = if isnothing(res)
+        mres = rand(Bool)
+        phases(stabilizerview(r))[anticom] = 0x2*mres
+        mres
+    else
+        !iszero(res)
+    end
+    m.bit!=0 && (bitview(r)[m.bit] = mres)
+    if mres
+        apply!(r, sX(m.qubit))
+    end
     r
 end
 function apply!(r::Register, m::PauliMeasurement{A,B}) where {A,B}

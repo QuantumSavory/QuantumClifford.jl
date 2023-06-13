@@ -14,6 +14,7 @@ end
 nqubits(f::PauliFrame) = nqubits(f.frame)
 Base.length(f::PauliFrame) = size(f.measurements, 1)
 Base.eachindex(f::PauliFrame) = 1:length(f)
+Base.copy(f::PauliFrame) = PauliFrame(copy(f.frame), copy(f.measurements))
 
 """
 $(TYPEDSIGNATURES)
@@ -51,7 +52,8 @@ function apply!(f::PauliFrame, op::AbstractCliffordOperator)
     return f
 end
 
-function apply!(frame::PauliFrame, op::sMZ)
+function apply!(frame::PauliFrame, op::sMZ) # TODO sMX, sMY
+    op.bit == 0 && return frame
     i = op.qubit
     xzs = frame.frame.tab.xzs
     T = eltype(xzs)
@@ -63,6 +65,29 @@ function apply!(frame::PauliFrame, op::sMZ)
     @inbounds @simd for f in eachindex(frame) # TODO thread this
         should_flip = !iszero(xzs[ibig,f] & ismallm)
         frame.measurements[f,op.bit] = should_flip
+    end
+
+    return frame
+end
+
+function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRX, sMRY
+    i = op.qubit
+    xzs = frame.frame.tab.xzs
+    T = eltype(xzs)
+    lowbit = T(1)
+    ibig = _div(T,i-1)+1
+    ismall = _mod(T,i-1)
+    ismallm = lowbit<<(ismall)
+
+    if op.bit != 0
+        @inbounds @simd for f in eachindex(frame) # TODO thread this
+            should_flip = !iszero(xzs[ibig,f] & ismallm)
+            frame.measurements[f,op.bit] = should_flip
+        end
+    end
+    @inbounds @simd for f in eachindex(frame) # TODO thread this
+        xzs[ibig,f] &= ~ismallm
+        rand(Bool) && (xzs[end÷2+ibig,f] ⊻= ismallm)
     end
 
     return frame

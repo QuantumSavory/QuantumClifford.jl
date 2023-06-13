@@ -31,7 +31,12 @@ function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
     apply!(state, g.cliff, g.indices; kwargs...)
 end
 
-"""Reset the specified qubits to the given state."""
+"""Reset the specified qubits to the given state.
+
+Be careful, this operation implies first tracing out the qubits, which can lead to mixed states
+if these qubits were entangled with the rest of the system.
+
+See also: [`sMZR`](@ref)"""
 struct Reset{T<:Tableau} <: AbstractOperation # TODO simplify type parameters (remove nesting)
     resetto::Stabilizer{T}
     indices::Vector{Int}
