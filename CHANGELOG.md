@@ -8,6 +8,7 @@
 ## v0.8.5 - dev
 
 - Internal helper method `mul_right!` is now available for right Pauli inplace multiplication.
+- Implemented `sMRZ` to reset single qubits to the |0⟩ (and respectively `sMRX` and `sMRY`).
 
 ## v0.8.4 - 2023-06-11
 

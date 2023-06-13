@@ -51,7 +51,7 @@ export
     sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZCX, sZCY, sZCZ,
     # Misc Ops
     SparseGate,
-    sMX, sMY, sMZ, PauliMeasurement, Reset,
+    sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
     BellMeasurement,
     VerifyOp,
     Register,
@@ -690,7 +690,8 @@ function MixedDestabilizer(d::Destabilizer)
     end
 end
 
-function MixedDestabilizer(d::MixedStabilizer) MixedDestabilizer(stabilizerview(d)) end
+MixedDestabilizer(d::MixedStabilizer) = MixedDestabilizer(stabilizerview(d))
+MixedDestabilizer(d::MixedDestabilizer) = d
 
 Base.length(d::MixedDestabilizer) = length(d.tab)÷2
 

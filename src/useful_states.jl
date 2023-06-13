@@ -43,6 +43,7 @@ function Base.one(::Type{<:MixedDestabilizer}, r, n)
     s = one(Tableau, n; basis=:Z)
     MixedDestabilizer(vcat(d,s),r)
 end
+Base.one(T::Type{<:MixedDestabilizer}, n) = one(T, n, n)
 function Base.one(c::CliffordOperator)
     n = nqubits(c)
     one(typeof(c),n)
