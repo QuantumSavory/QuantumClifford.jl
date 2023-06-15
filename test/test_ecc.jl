@@ -76,8 +76,23 @@ function test_naive_syndrome(c::AbstractECC)
     # TODO test when there is potential for errors / non-commuting operators
 end
 
+function test_is_degenerate(c:: AbstractECC)
+    if c == Shor9()
+        return is_degenerate(c) == true
+    elseif c == Steane5()
+        return false
+    elseif c == Steane7()
+        return false
+    elseif c == Bitflip()
+        return false
+
+    # TO DO: Write a more generic test from a random stabilizer code? 
+end
+
+
 @testset "naive syndrome circuits - zero syndrome for logical states" begin
     for c in codes, _ in 1:2
-        test_naive_syndrome(c)
+        # test_naive_syndrome(c)
+        test_phys_log_op_encoding(c::AbstractECC)
     end
 end

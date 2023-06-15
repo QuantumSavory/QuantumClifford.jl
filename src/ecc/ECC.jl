@@ -105,7 +105,7 @@ function is_degenerate(c:: AbstractECC)
                 col1[j] = 0
                 col2[j] = 1
             elseif pc[j][i] == s"X"
-                col1[j], col2[j] = 1,0
+                col1[j], col2[j] = 1,0 # TODO: 1. double check the value of the gates and 2. check if s"X" is the correct notation for the gate I think not
             elseif pc[j][i] == s"Y"
                 col1[j], col2[j] = 1,1
             else
