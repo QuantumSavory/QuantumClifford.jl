@@ -8,4 +8,5 @@ affectedqubits(b::BellMeasurement) = [m.qubit for m in b.measurements]
 affectedqubits(r::Reset) = r.indices
 affectedqubits(n::NoiseOp) = n.indices
 affectedqubits(g::PauliMeasurement) = 1:length(g.pauli)
+affectedqubits(p::PauliOperator) = 1:length(p)
 affectedqubits(m::AbstractMeasurement) = [m.qubit]

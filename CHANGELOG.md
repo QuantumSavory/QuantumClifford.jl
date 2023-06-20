@@ -5,7 +5,11 @@
 
 # News
 
-## v0.8.5 - dev
+## v0.8.6 - 2023-06-20
+
+- Fixes to Quantikz circuit plotting of empty circuits and `PauliOperator`
+
+## v0.8.5 - 2023-06-13
 
 - Internal helper method `mul_right!` is now available for right Pauli inplace multiplication.
 - Implemented `sMRZ` to reset single qubits to the |0⟩ (and respectively `sMRX` and `sMRY`).

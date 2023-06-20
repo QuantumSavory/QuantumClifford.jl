@@ -20,6 +20,7 @@ function Quantikz.QuantikzOp(op::SparseGate)
     end
 end
 Quantikz.QuantikzOp(op::AbstractOperation) = Quantikz.MultiControlU(affectedqubits(op))
+Quantikz.QuantikzOp(op::PauliOperator) = Quantikz.MultiControlU("\\begin{array}{c}$(lstring(op))\\end{array}", affectedqubits(op))
 Quantikz.QuantikzOp(op::sId1) = Quantikz.Id(affectedqubits(op)...)
 function Quantikz.QuantikzOp(op::AbstractSingleQubitOperator)
     T = typeof(op)
@@ -83,8 +84,13 @@ function lstring(stab::Stabilizer)
     v = join(("\\mathtt{$(replace(string(p),"_"=>"I"))}" for p in stab),"\\\\")
 end
 
-Base.show(io::IO, mime::MIME"image/png", circuit::AbstractVector{<:AbstractOperation}; scale=1, kw...) =
-    show(io, mime, [Quantikz.QuantikzOp(c) for c in circuit]; scale=scale, kw...)
+function Base.show(io::IO, mime::MIME"image/png", circuit::AbstractVector{<:AbstractOperation}; scale=1, kw...)
+    if length(circuit)==0
+        show(io, mime, [Quantikz.Id(1)]; scale=scale, kw...)
+    else
+        show(io, mime, [Quantikz.QuantikzOp(c) for c in circuit]; scale=scale, kw...)
+    end
+end
 Base.show(io::IO, mime::MIME"image/png", gate::T; scale=1, kw...) where T<:AbstractOperation =
     show(io, mime, Quantikz.QuantikzOp(gate); scale=scale, kw...)
 
