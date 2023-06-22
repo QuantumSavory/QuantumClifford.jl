@@ -6,15 +6,16 @@ although it does conjugate the same under Clifford operations.
 Each row in the tableau refers to a single frame.
 The row represents the Pauli operation by which the frame and the reference differ.
 """
-struct PauliFrame{T} <: AbstractQCState
-    frame::T # TODO this should really be a Tableau
-    measurements::Matrix{Bool}
+struct PauliFrame{T,S} <: AbstractQCState
+    frame::T # TODO this should really be a Tableau, but now most of the code seems to be assuming a Stabilizer
+    measurements::S # TODO check if when looping over this we are actually looping over the fast axis
 end
 
 nqubits(f::PauliFrame) = nqubits(f.frame)
 Base.length(f::PauliFrame) = size(f.measurements, 1)
 Base.eachindex(f::PauliFrame) = 1:length(f)
 Base.copy(f::PauliFrame) = PauliFrame(copy(f.frame), copy(f.measurements))
+Base.view(frame::PauliFrame, r) = PauliFrame(view(frame.frame, r), view(frame.measurements, r, :))
 
 """
 $(TYPEDSIGNATURES)
@@ -120,6 +121,50 @@ end
 Perform a "Pauli frame" style simulation of a quantum circuit.
 """
 function pftrajectories end
+
+"""
+$(TYPEDSIGNATURES)
+
+The main method for running Pauli frame simulations of circuits.
+See the other methods for lower level access.
+
+Multithreading is enabled by default, but can be disabled by setting `threads=false`.
+Do not forget to launch Julia with multiple threads enabled, e.g. `julia -t4`, if you want
+to use multithreading.
+
+Note for advanced users: Much of the underlying QuantumClifford.jl functionaly is capable of
+using Polyester.jl threads, but they are fully dissabled here as this is an embarassingly
+parallel problem. If you want to use Polyester.jl threads, use the lower level methods.
+The `threads` keyword argument controls whether standard Julia threads are used.
+"""
+function pftrajectories(circuit;trajectories=5000,threads=true)
+    Polyester.disable_polyester_threads() do
+        _pftrajectories(circuit;trajectories,threads)
+    end
+end
+
+function _pftrajectories(circuit;trajectories=5000,threads=true)
+    ccircuit = if eltype(circuit) <: CompactifiedGate
+        circuit
+    else
+        compactify_circuit(circuit)
+    end
+    qmax=maximum((maximum(affectedqubits(g)) for g in ccircuit))
+    bmax=maximum((maximum(affectedbits(g),init=1) for g in ccircuit))
+    frames = PauliFrame(trajectories, qmax, bmax)
+    nthr = min(Threads.nthreads(),trajectories÷(MINBATCH1Q))
+    if threads && nthr>1
+        batchsize = trajectories÷nthr
+        Threads.@threads for i in 1:nthr
+            b = (i-1)*batchsize+1
+            e = i==nthr ? trajectories : i*batchsize
+            pftrajectories((@view frames[b:e]), ccircuit)
+        end
+    else
+        pftrajectories(frames, ccircuit)
+    end
+    return frames
+end
 
 """
 $(TYPEDSIGNATURES)

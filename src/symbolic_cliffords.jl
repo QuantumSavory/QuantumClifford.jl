@@ -9,9 +9,6 @@ abstract type AbstractTwoQubitOperator <: AbstractSymbolicOperator end
 """Supertype of all symbolic single-qubit measurements."""
 abstract type AbstractMeasurement <: AbstractOperation end
 
-const MINBATCH1Q = 100
-const MINBATCH2Q = 100
-
 # Stim has a good list of specialized single and two qubit operations at https://github.com/quantumlib/Stim/blob/e51ea66d213b25920e72c08e53266ec56fd14db4/src/stim/stabilizers/tableau_specialized_prepend.cc
 # Note that their specialized operations are for prepends (right multiplications), while we implement append (left multiplication) operations.
 
@@ -67,6 +64,7 @@ macro qubitop1(name, kernel)
     quote
         struct $(esc(prefixname)) <: AbstractSingleQubitOperator
             q::Int
+            $(esc(prefixname))(q) = if q<=0 throw(NoZeroQubit) else new(q) end
         end
         @doc $docstring $prefixname
         @inline $(esc(:qubit_kernel))(::$prefixname, x, z) = $kernel
@@ -132,6 +130,7 @@ struct SingleQubitOperator <: AbstractSingleQubitOperator
     zz::Bool
     px::Bool
     pz::Bool
+    SingleQubitOperator(q,args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{B}=Val(true)) where B # TODO Generated functions that simplify the whole `if phases` branch might be a good optimization, but a quick benchmakr comparing sHadamard to SingleQubitOperator(sHadamard) did not show a worthwhile difference.
     s = tab(stab)
@@ -249,6 +248,7 @@ macro qubitop2(name, kernel)
         struct $(esc(prefixname)) <: AbstractTwoQubitOperator
             q1::Int
             q2::Int
+            $(esc(prefixname))(q1,q2) = if q1<=0 || q2<=0 throw(NoZeroQubit) else new(q1,q2) end
         end
         @doc $docstring $prefixname
         @inline $(esc(:qubit_kernel))(::$prefixname, x1, z1, x2, z2) = $kernel
@@ -363,18 +363,21 @@ end
 struct sMX <: AbstractMeasurement
     qubit::Int
     bit::Int
+    sMX(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
 """Symbolic single qubit Y measurement. See also [`Register`](@ref), [`projectYrand!`](@ref), [`sMX`](@ref), [`sMZ`](@ref)"""
 struct sMY <: AbstractMeasurement
     qubit::Int
     bit::Int
+    sMY(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
 """Symbolic single qubit Z measurement. See also [`Register`](@ref), [`projectZrand!`](@ref), [`sMX`](@ref), [`sMY`](@ref)"""
 struct sMZ <: AbstractMeasurement
     qubit::Int
     bit::Int
+    sMZ(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
 sMX(i) = sMX(i,0)
@@ -471,6 +474,7 @@ See also: [`Reset`](@ref), [`sMZ`](@ref)"""
 struct sMRZ <: AbstractOperation
     qubit::Int
     bit::Int
+    sMRZ(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
 """Measure a qubit in the X basis and reset to the |+⟩ state.
@@ -479,6 +483,7 @@ See also: [`sMRZ`](@ref), [`Reset`](@ref), [`sMZ`](@ref)"""
 struct sMRX <: AbstractOperation
     qubit::Int
     bit::Int
+    sMRX(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
 """Measure a qubit in the Y basis and reset to the |i₊⟩ state.
@@ -487,6 +492,7 @@ See also: [`sMRZ`](@ref), [`Reset`](@ref), [`sMZ`](@ref)"""
 struct sMRY <: AbstractOperation
     qubit::Int
     bit::Int
+    sMRY(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
 sMRX(i) = sMRX(i,0)

@@ -32,24 +32,15 @@ scirc = naive_syndrome_circuit(code)
 The most straightforward way to start sampling syndromes is to set up a table of Pauli frames.
 
 ```@example 1
-nframes = 4
-dataqubits = code_n(code)
-ancqubits = code_s(code)
-regbits = ancqubits
-frames = PauliFrame(nframes, dataqubits+ancqubits, regbits)
 circuit = [ecirc..., scirc...]
-pftrajectories(frames, circuit) # run the sims
-pfmeasurements(frames)          # extract the measurements
+nframes = 4
+frames = pftrajectories(circuit; trajectories=nframes) # run the sims
+pfmeasurements(frames)                                 # extract the measurements
 ```
 
-To avoid runtime dispatch, it is a good practice to compactify the circuit:
-
-```@example 1
-frames = PauliFrame(nframes, dataqubits+ancqubits, regbits)
-ccircuit = compactify_circuit(circuit)
-pftrajectories(frames, ccircuit)
-pfmeasurements(frames)
-```
+The [`pftrajectories`](@ref) function is multithreaded.
+If you want more low-level control over these Pauli frame simulations, check out the [`PauliFrame`](@ref) structure,
+the other methods of [`pftrajectories`](@ref), and the circuit compactifaction function [`compactify_circuit`](@ref).
 
 If you want to model Pauli errors, use:
 
@@ -58,13 +49,12 @@ If you want to model Pauli errors, use:
 
 ```@example 1
 errprob = 0.1
-errors = [PauliError(i,errprob) for i in 1:dataqubits]
+errors = [PauliError(i,errprob) for i in 1:code_n(code)]
 fullcircuit = [ecirc..., errors..., scirc...]
 ```
 
 And running this noisy simulation:
 ```@example 1
-frames = PauliFrame(nframes, dataqubits+ancqubits, regbits)
-pftrajectories(frames, fullcircuit)
+frames = pftrajectories(fullcircuit; trajectories=nframes)
 pfmeasurements(frames)
 ```

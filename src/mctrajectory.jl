@@ -56,7 +56,9 @@ function countmap(samples::Vector{CircuitStatus}) # A simpler faster version of 
     Dict(CircuitStatus(i-1)=>counts[i] for i in eachindex(counts))
 end
 
-"""Run multiple Monte Carlo trajectories and report the aggregate final statuses of each."""
+"""Run multiple Monte Carlo trajectories and report the aggregate final statuses of each.
+
+See also: [`pftrajectories`](@ref), `petrajectories`"""
 function mctrajectories(initialstate,circuit;trajectories=500)
     counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator, but without breaking Polyester
     return counts

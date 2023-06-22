@@ -27,7 +27,7 @@ export
     stabilizerview, destabilizerview, logicalxview, logicalzview, phases,
     bitview, quantumstate, tab,
     BadDataStructure,
-    affectedqubits,
+    affectedqubits, #TODO move to QuantumInterface?
     # GF2
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     # Canonicalization
@@ -90,6 +90,12 @@ function __init__()
     BIG_INT_TWO[] = BigInt(2)
     BIG_INT_FOUR[] = BigInt(4)
 end
+
+const MINBATCH1Q = 100
+const MINBATCH2Q = 100
+const MINBATCHDENSE = 25
+
+const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you attempting are creating a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
