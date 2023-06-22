@@ -5,6 +5,12 @@
 
 # News
 
+## v0.8.7 - 2023-06-22
+
+- Better UX and threading support for `pftrajectories`.
+- `affectedqubits` now more consistently returns tuples instead of vectors.
+- Private `affectedbits` is now implemented.
+- Many operation constructors now throw an error if they are given negative qubit indices.
 ## v0.8.6 - 2023-06-20
 
 - Fixes to Quantikz circuit plotting of empty circuits and `PauliOperator`

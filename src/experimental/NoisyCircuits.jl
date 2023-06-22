@@ -64,7 +64,7 @@ end
 """Compute all possible new states after the application of the given noise model. Reports the probability of each one of them. Deterministic, part of the Noise interface."""
 function applynoise_branches end
 
-function applynoise_branches(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,indices::AbstractVector{Int}; max_order=1)
+function applynoise_branches(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,indices; max_order=1)
     n = nqubits(s)
     l = length(indices)
     infid = noise.errprobthird
