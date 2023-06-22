@@ -49,7 +49,7 @@ If you want to model Pauli errors, use:
 
 ```@example 1
 errprob = 0.1
-errors = [PauliError(i,errprob) for i in 1:dataqubits]
+errors = [PauliError(i,errprob) for i in 1:code_n(code)]
 fullcircuit = [ecirc..., errors..., scirc...]
 ```
 
