@@ -5,6 +5,13 @@
 
 # News
 
+## v0.8.9 - 2023-06-27
+
+- In the unexported experimental ECC module:
+    - we now implement `fault_matrix` which gives the mapping between single-qubit physical errors and logical observables.
+    - `MixedDestabilizer` and `Stabilizer` now have constructors when acting on an ECC object.
+- `stab_to_gf2` now works with Pauli operators as well.
+
 ## v0.8.8 - 2023-06-23
 
 - Bump `QuantumInterface` compat.

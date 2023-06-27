@@ -1063,13 +1063,21 @@ end
 ##############################
 
 """The F(2,2) matrix of a given tableau, represented as the concatenation of two binary matrices, one for X and one for Z."""
-function stab_to_gf2(s::Tableau)::Matrix{Bool}
+function stab_to_gf2(s::Tableau)
     r, n = size(s)
     H = zeros(Bool,r,2n)
     for iᵣ in 1:r
         @inbounds @simd for iₙ in 1:n
             H[iᵣ,iₙ], H[iᵣ,iₙ+n] = s[iᵣ,iₙ]
         end
+    end
+    H
+end
+function stab_to_gf2(p::PauliOperator)
+    n = nqubits(p)
+    H = zeros(Bool,2n)
+    @inbounds @simd for i in 1:n
+        H[i], H[i+n] = p[i]
     end
     H
 end
