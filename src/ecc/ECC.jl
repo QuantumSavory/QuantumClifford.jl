@@ -2,6 +2,7 @@ module ECC
 
 using QuantumClifford
 using QuantumClifford: AbstractOperation
+import QuantumClifford: Stabilizer, MixedDestabilizer
 
 abstract type AbstractECC end
 
@@ -81,14 +82,14 @@ end
 
 """Logical X operations of a code."""
 function logx_ops(c::AbstractECC)
-    MixedDest = MixedDestabilizer(parity_checks(c))
-    logicalxview(MixedDest)
+    md = MixedDestabilizer(parity_checks(c))
+    logicalxview(md)
 end
 
 """Logical Z operations of a code."""
 function logz_ops(c::AbstractECC)
-    MixedDest = MixedDestabilizer(parity_checks(c))
-    logicalzview(MixedDest)
+    md = MixedDestabilizer(parity_checks(c))
+    logicalzview(md)
 end
 
 """Error-to-logical-observable map (a.k.a. fault matrix) of a code.
@@ -199,6 +200,9 @@ julia> cor_Z₂ * err_Z₁ * state # we are back to a good code state
 + _______ZZ
 𝒵ₗ━━━━━━━━━
 + Z__Z____Z
+
+julia> bad_Z₆Z₉ = single_z(9,6) * single_z(9,9) # a different "correction" operation
++ _____Z__Z
 
 julia> bad_Z₆Z₉ * err_Z₁ * state # the syndrome is trivial, but now we have a logical error
 𝒟ℯ𝓈𝓉𝒶𝒷━━━━━

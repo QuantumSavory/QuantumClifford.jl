@@ -5,7 +5,7 @@
 
 # News
 
-## v0.8.9 - 2023-06-27
+## v0.8.9 - 2023-07-04
 
 - In the unexported experimental ECC module:
     - we now implement `fault_matrix` which gives the mapping between single-qubit physical errors and logical observables.
