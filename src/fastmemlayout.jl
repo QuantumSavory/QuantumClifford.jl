@@ -1,20 +1,16 @@
-"""Convert a tableau to a memory layout that is fast for row operations (e.g. canonicalization or multiplication with a dense `CliffordOperator`).
+"""Convert a tableau to a memory layout that is fast for row operations.
 
-```jldoctest
-julia> s, c = random_stabilizer(300), random_clifford(300);
-
-julia> sc, sr = fastcolumn(copy(s)), fastrow(copy(s));
-
-julia> tc, tr = (@benchmark apply!(sc,c)), (@benchmark apply!(sr,c));
-
-julia> minimum(tc).time > minimum(tr).time
-true
-```
+In this layout a Pauli string (a row of the tableau) is stored contiguously in memory.
 
 See also: [`fastrow`](@ref)"""
 function fastrow end
 
-"""Convert a tableau to a memory layout that is fast for column operations (e.g. sparse gate application).
+"""Convert a tableau to a memory layout that is fast for column operations.
+
+In this layout a column of the tableau is stored (mostly) contiguously in memory.
+Due to bitpacking, e.g., packing 64 bits into a single `UInt64`,
+the memory layout is not perfectly contiguous,
+but it is still optimal given that some bitwrangling is required to extract a given bit.
 
 See also: [`fastrow`](@ref)"""
 function fastcolumn end
