@@ -8,12 +8,9 @@ module QuantumClifford
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
 import LinearAlgebra
-using LinearAlgebra: inv, mul!, rank
+using LinearAlgebra: inv, mul!, rank, Adjoint
 using DocStringExtensions
 using Polyester
-#using LoopVectorization
-using HostCPUFeatures: pick_vector_width
-import SIMD
 
 import QuantumInterface: tensor, ⊗, tensor_pow, apply!, nqubits, expect, project!, reset_qubits!, traceout!, ptrace, apply!, projectX!, projectY!, projectZ!, entanglement_entropy
 
@@ -25,6 +22,7 @@ export
     prodphase, comm,
     nqubits,
     stabilizerview, destabilizerview, logicalxview, logicalzview, phases,
+    fastcolumn, fastrow,
     bitview, quantumstate, tab,
     BadDataStructure,
     affectedqubits, #TODO move to QuantumInterface?
@@ -1276,6 +1274,7 @@ include("experimental/Experimental.jl")
 include("graphs.jl")
 include("entanglement.jl")
 include("tableau_show.jl")
+include("fastmemlayout.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
