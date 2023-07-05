@@ -16,28 +16,26 @@ abstract type AbstractMeasurement <: AbstractOperation end
 @inline getmask(::Type{Tme},col::Int) where {Tme} = Tme(0x1)<<getshift(Tme,col)
 @inline getbigindex(::Type{Tme},col::Int) where {Tme} = _div(Tme,col-1)+1
 
-Base.@propagate_inbounds function getxbit(s, r, c)
-    Tme = eltype(s.xzs)
+TableauType{Tzv, Tme} = Tableau{Tzv, Tm} where {Tm <: AbstractMatrix{Tme}}
+
+Base.@propagate_inbounds function getxbit(s::TableauType{Tzv, Tme}, r::Int, c::Int) where {Tzv, Tme}
     s.xzs[getbigindex(Tme,c),r]&getmask(Tme,c)
 end
-Base.@propagate_inbounds function getzbit(s, r, c)
-    Tme = eltype(s.xzs)
+Base.@propagate_inbounds function getzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int) where {Tzv, Tme}
     s.xzs[end÷2+getbigindex(Tme,c),r]&getmask(Tme,c)
 end
-Base.@propagate_inbounds function setxbit(s, r, c, x)
-    Tme = eltype(s.xzs)
+Base.@propagate_inbounds function setxbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, x::Tme) where {Tzv, Tme}
     cbig = getbigindex(Tme,c)
     s.xzs[cbig,r] &= ~getmask(Tme,c)
     s.xzs[cbig,r] |= x
 end
-Base.@propagate_inbounds function setzbit(s, r, c, z)
-    Tme = eltype(s.xzs)
+Base.@propagate_inbounds function setzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, z::Tme) where {Tzv, Tme}
     cbig = getbigindex(Tme,c)
     s.xzs[end÷2+cbig,r] &= ~getmask(Tme,c)
     s.xzs[end÷2+cbig,r] |= z
 end
-Base.@propagate_inbounds setxbit(s, r, c, x, shift) = setxbit(s, r, c, x<<shift)
-Base.@propagate_inbounds setzbit(s, r, c, z, shift) = setzbit(s, r, c, z<<shift)
+Base.@propagate_inbounds setxbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, x::Tme, shift::Int) where {Tzv, Tme} = setxbit(s, r, c, x<<shift)
+Base.@propagate_inbounds setzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, z::Tme, shift::Int) where {Tzv, Tme} = setzbit(s, r, c, z<<shift)
 
 ##############################
 # Single-qubit gates
