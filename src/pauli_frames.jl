@@ -41,7 +41,7 @@ It is done automatically by most [`PauliFrame`](@ref) constructors.
 function initZ!(frame::PauliFrame)
     T = eltype(frame.frame.tab.xzs)
 
-    @inbounds @simd for f in eachindex(frame) # TODO thread this
+    @inbounds @simd for f in eachindex(frame)
         @simd for row in 1:size(frame.frame.tab.xzs,1)÷2
             frame.frame.tab.xzs[end÷2+row,f] = rand(T)
         end
@@ -64,7 +64,7 @@ function apply!(frame::PauliFrame, op::sMZ) # TODO sMX, sMY
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
 
-    @inbounds @simd for f in eachindex(frame) # TODO thread this
+    @inbounds @simd for f in eachindex(frame)
         should_flip = !iszero(xzs[ibig,f] & ismallm)
         frame.measurements[f,op.bit] = should_flip
     end
@@ -82,12 +82,12 @@ function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRX, sMRY
     ismallm = lowbit<<(ismall)
 
     if op.bit != 0
-        @inbounds @simd for f in eachindex(frame) # TODO thread this
+        @inbounds @simd for f in eachindex(frame)
             should_flip = !iszero(xzs[ibig,f] & ismallm)
             frame.measurements[f,op.bit] = should_flip
         end
     end
-    @inbounds @simd for f in eachindex(frame) # TODO thread this
+    @inbounds @simd for f in eachindex(frame)
         xzs[ibig,f] &= ~ismallm
         rand(Bool) && (xzs[end÷2+ibig,f] ⊻= ismallm)
     end
@@ -104,7 +104,7 @@ function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
 
-    @inbounds @simd for f in eachindex(frame) # TODO thread this
+    @inbounds @simd for f in eachindex(frame)
         r = rand()
         if  r < p # X error
             frame.frame.tab.xzs[ibig,f] ⊻= ismallm
@@ -146,7 +146,7 @@ function _pftrajectories(circuit;trajectories=5000,threads=true)
     qmax=maximum((maximum(affectedqubits(g)) for g in ccircuit))
     bmax=maximum((maximum(affectedbits(g),init=1) for g in ccircuit))
     frames = PauliFrame(trajectories, qmax, bmax)
-    nthr = min(Threads.nthreads(),trajectories÷(1000))
+    nthr = min(Threads.nthreads(),trajectories÷(100))
     if threads && nthr>1
         batchsize = trajectories÷nthr
         Threads.@threads for i in 1:nthr

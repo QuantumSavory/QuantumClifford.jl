@@ -4,7 +4,6 @@ using ArrayInterface
 using Static
 using Graphs
 using LinearAlgebra
-using Polyester
 
 using JET: ReportPass, BasicPass, InferenceErrorReport, UncaughtExceptionReport
 
@@ -31,7 +30,6 @@ end
             AnyFrameModule(ArrayInterface),
             AnyFrameModule(Static),
             AnyFrameModule(LinearAlgebra),
-            AnyFrameModule(Polyester)
         )
     )
     @show rep
