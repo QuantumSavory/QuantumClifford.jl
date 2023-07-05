@@ -132,16 +132,9 @@ See the other methods for lower level access.
 Multithreading is enabled by default, but can be disabled by setting `threads=false`.
 Do not forget to launch Julia with multiple threads enabled, e.g. `julia -t4`, if you want
 to use multithreading.
-
-Note for advanced users: Much of the underlying QuantumClifford.jl functionaly is capable of
-using Polyester.jl threads, but they are fully dissabled here as this is an embarassingly
-parallel problem. If you want to use Polyester.jl threads, use the lower level methods.
-The `threads` keyword argument controls whether standard Julia threads are used.
 """
 function pftrajectories(circuit;trajectories=5000,threads=true)
-    Polyester.disable_polyester_threads() do
-        _pftrajectories(circuit;trajectories,threads)
-    end
+    _pftrajectories(circuit;trajectories,threads)
 end
 
 function _pftrajectories(circuit;trajectories=5000,threads=true)
@@ -153,7 +146,7 @@ function _pftrajectories(circuit;trajectories=5000,threads=true)
     qmax=maximum((maximum(affectedqubits(g)) for g in ccircuit))
     bmax=maximum((maximum(affectedbits(g),init=1) for g in ccircuit))
     frames = PauliFrame(trajectories, qmax, bmax)
-    nthr = min(Threads.nthreads(),trajectories÷(MINBATCH1Q))
+    nthr = min(Threads.nthreads(),trajectories÷(1000))
     if threads && nthr>1
         batchsize = trajectories÷nthr
         Threads.@threads for i in 1:nthr
