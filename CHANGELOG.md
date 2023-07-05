@@ -5,6 +5,11 @@
 
 # News
 
+## v0.8.10 - 2023-07-05
+
+- Remove Polyester.jl multithreading, leading to simpler and better compiled single-thread code. Now single-thread performance is much higher. Multithreading was generally not useful at the inner loops where it was deployed.
+- Implement `fastcolumn` and `fastrow`, which transform a tableau into a memory layout optimized for column or row operations.
+
 ## v0.8.9 - 2023-07-04
 
 - In the unexported experimental ECC module:

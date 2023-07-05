@@ -44,7 +44,7 @@ Base.@propagate_inbounds setzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, z::Tm
 function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) where {B, G<:AbstractSingleQubitOperator}
     s = tab(stab)
     c = gate.q
-    @batch per=core minbatch=MINBATCH1Q for r in eachindex(s)
+    @inbounds @simd for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
         x,z,phase = qubit_kernel(gate,x,z)
@@ -137,7 +137,7 @@ function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{
     sh = getshift(Tme, c)
     xx,zx,xz,zz = Tme.((op.xx,op.zx,op.xz,op.zz)) .<< sh
     anticom = ~iszero((~zz & xz & ~xx & zx) | ( zz & ~xz & xx & zx) | (zz &  xz & xx & ~zx))
-    @batch per=core minbatch=MINBATCH1Q for r in eachindex(s)
+    @inbounds @simd for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
         setxbit(s, r, c, (x&xx)⊻(z&zx))
@@ -220,7 +220,8 @@ function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) wh
     q2 = gate.q2
     Tme = eltype(s.xzs)
     shift = getshift(Tme, q1) - getshift(Tme, q2)
-    @batch per=core minbatch=MINBATCH2Q for r in eachindex(s)
+    @inbounds @simd for r in eachindex(s)
+#    for r in eachindex(s)
         x1 = getxbit(s, r, q1)
         z1 = getzbit(s, r, q1)
         x2 = getxbit(s, r, q2)<<shift
