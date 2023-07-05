@@ -12,9 +12,9 @@ abstract type AbstractMeasurement <: AbstractOperation end
 # Stim has a good list of specialized single and two qubit operations at https://github.com/quantumlib/Stim/blob/e51ea66d213b25920e72c08e53266ec56fd14db4/src/stim/stabilizers/tableau_specialized_prepend.cc
 # Note that their specialized operations are for prepends (right multiplications), while we implement append (left multiplication) operations.
 
-@inline getshift(Tme::Type,col::Int) = _mod(Tme,col-1)
-@inline getmask(Tme::Type,col::Int) = Tme(0x1)<<getshift(Tme,col)
-@inline getbigindex(Tme::Type,col::Int) = _div(Tme,col-1)+1
+@inline getshift(::Type{Tme},col::Int) where {Tme} = _mod(Tme,col-1)
+@inline getmask(::Type{Tme},col::Int) where {Tme} = Tme(0x1)<<getshift(Tme,col)
+@inline getbigindex(::Type{Tme},col::Int) where {Tme} = _div(Tme,col-1)+1
 
 Base.@propagate_inbounds function getxbit(s, r, c)
     Tme = eltype(s.xzs)
