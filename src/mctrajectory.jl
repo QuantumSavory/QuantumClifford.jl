@@ -60,6 +60,6 @@ end
 
 See also: [`pftrajectories`](@ref), `petrajectories`"""
 function mctrajectories(initialstate,circuit;trajectories=500)
-    counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator, but without breaking Polyester
+    counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator
     return counts
 end

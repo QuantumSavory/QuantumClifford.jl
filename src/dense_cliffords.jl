@@ -127,7 +127,8 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=V
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
     s_tab = tab(stab)
     c_tab = tab(c)
-    @batch minbatch=MINBATCHDENSE threadlocal=zero(c_tab[1]) for row_stab in eachindex(s_tab)
+    threadlocal=zero(c_tab[1])
+    @inbounds @simd for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, phases=phases)
     end
@@ -172,7 +173,8 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_appli
     #max(indices_of_application)<=nqubits(s) || throw(DimensionMismatch("")) # Too expensive to check every time
     s_tab = tab(stab)
     c_tab = tab(c)
-    @batch minbatch=25 threadlocal=zero(c_tab[1]) for row_stab in eachindex(s_tab)
+    threadlocal=zero(c_tab[1])
+    @inbounds @simd for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, indices_of_application, phases=phases)
     end
