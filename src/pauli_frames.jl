@@ -23,8 +23,9 @@ $(TYPEDSIGNATURES)
 Prepare an empty set of Pauli frames with the given number of `frames` and `qubits`. Preallocates spaces for `measurement` number of measurements.
 """
 function PauliFrame(frames, qubits, measurements)
-    stab = zero(Stabilizer, frames, qubits) # TODO this should really be a Tableau
-    frame = PauliFrame(stab, zeros(Bool, frames, measurements))
+    stab = fastcolumn(zero(Stabilizer, frames, qubits)) # TODO this should really be a Tableau
+    bits = zeros(Bool, frames, measurements)
+    frame = PauliFrame(stab, bits)
     initZ!(frame)
     return frame
 end
