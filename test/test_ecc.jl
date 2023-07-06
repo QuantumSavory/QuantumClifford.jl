@@ -1,6 +1,7 @@
 using Test
 using QuantumClifford
 using QuantumClifford.ECC: AbstractECC, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops
+include("../src/ecc/ECC.jl")
 
 codes = [
     Bitflip3(),
@@ -103,5 +104,25 @@ end
 @testset "naive syndrome circuits - zero syndrome for logical states" begin
     for c in codes, _ in 1:2
         test_with_pframes(c)
+    end
+end
+
+
+##
+
+
+function test_is_degenerate(c::AbstractECC)
+    if c == Shor9()
+        @test is_degenerate(c) == true
+    elseif c == Steane7()
+        @test is_degenerate(c) == false
+    elseif c== Bitflip3()
+        @test is_degenerate(c) == true
+    end
+end
+
+@testset "is degenerate function - test on popular codes" begin
+    for c in codes
+        test_is_degenerate(c)
     end
 end
