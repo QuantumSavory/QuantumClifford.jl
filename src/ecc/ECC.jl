@@ -101,6 +101,7 @@ function tableau_representation(c::AbstractECC)
 
     return tableau
 end
+
 """ Check if the code is degenerate or not """
 function is_degenerate(c::AbstractECC)
     tableau = tableau_representation(c)
@@ -117,7 +118,7 @@ function is_degenerate(c::AbstractECC)
     return false
 end
 
-""" Canonicalize the logicals x operators of a code by @gottesman1997 https://arxiv.org/pdf/quant-ph/9705052.pdf """ # TODO: Implement the same code for the Z operators
+""" Canonicalize the logicals x operators of a code by @gottesman1997 arxiv:quant-ph/9705052 """ # TODO: Implement the same code for the Z operators
 function canonicalize_logicals(c::AbstractECC)
     n, s, k = code_n(c), code_s(c), code_k(c)
     logx = logx_ops(c)
@@ -168,15 +169,24 @@ function naive_encoding_circuit(c::AbstractECC)
     # The standard form is 
     # I A1 A2 | B C1 C2
     # 0  0 0  | D  I  E  
-
     # and we augment the following third line (for logical qubits)
-
     # 0 E^T I | 0  0  0
-
     # Then we apply the gates line by line bottom up in accordance with the formalisms here: arXiv:quant-ph/9607030
     standard_tab = canonicalize_gott!(parity_checks(c))
-    push!(standard_tab, the_augmented_part) # can we use canonicalize_gott for the entire mixedDestabilizer? (i.e. the stab + log parts = n rows)
-    for i in n: -1: 1
+    for i in 1: k
+        # can we use canonicalize_gott for the entire mixedDestabilizer? (i.e. the stab + log parts = n rows)
+        augment = zeros(2*n)
+        for j in 1:n
+            if j > r && j <= n - k
+                augment[j] = standard_tab[r+j, 2*n-k+i] # the corresponding column of E in E^T
+            elseif j == n-k+i 
+                augment[j] = 1
+            end
+        end
+        push!(standard_tab, augment)
+    end
+
+    for i in n: -1: 1 # implement the decoder from the augmented bimatrix bottom up and from right to left
         if standard_tab[i, i] ==1
             for j in n: -1: 1
                 if j == i continue end
@@ -194,8 +204,6 @@ function naive_encoding_circuit(c::AbstractECC)
     return naive_ec
 end 
 
-
-# TODO implement isdegenerate
 
 include("./bitflipcode.jl")
 include("./shorcode.jl")
