@@ -87,109 +87,98 @@ The "low level" functionality is of similar performance in Stim and QuantumCliff
 
 Of note is that Stim achieved this performance through high-quality C++ SIMD code of significant sophistication, while QuantumClifford.jl is implemented in pure Julia.
 
-#### Multiplying two 1 gigaqubit Paulis in 32 ms
+#### Multiplying two 1 gigaqubit Paulis in 13 ms
 
 ```jldoctest
 julia> a = random_pauli(1_000_000_000);
 julia> b = random_pauli(1_000_000_000);
 julia> @benchmark QuantumClifford.mul_left!(a,b)
-BenchmarkTools.Trial: 155 samples with 1 evaluation.
- Range (min … max):  32.074 ms … 32.425 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     32.246 ms              ┊ GC (median):    0.00%
- Time  (mean ± σ):   32.247 ms ± 63.427 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
-
-                  ▃  ▃▃ ▄ ▆▄▄▄██▃ ▃▄▁▆█▃▃ ▃      ▁             
-  ▄▁▁▄▁▁▄▆▁▁▄▆▄▆▇▇█▄▄██▄█▆███████▇███████▆█▆▄▄▄▁▄█▁▄▄▁▄▁▁▁▁▁▄ ▄
-  32.1 ms         Histogram: frequency by time        32.4 ms <
+BenchmarkTools.Trial: 373 samples with 1 evaluation.
+ Range (min … max):  13.209 ms …  14.304 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     13.355 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   13.427 ms ± 173.503 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
  Memory estimate: 0 bytes, allocs estimate: 0.
 ```
 
-#### Canonicalization of a random 1000-qubit stabilizer in 22 ms
+#### Canonicalization of a random 1000-qubit stabilizer in 9 ms
 
 ```jldoctest
 julia> @benchmark canonicalize!(s) setup=(s=random_stabilizer(1000))
-BenchmarkTools.Trial: 226 samples with 1 evaluation.
- Range (min … max):  21.938 ms …  22.680 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     22.025 ms               ┊ GC (median):    0.00%
- Time  (mean ± σ):   22.057 ms ± 115.247 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+BenchmarkTools.Trial: 6 samples with 1 evaluation.
+ Range (min … max):  8.516 ms …  8.614 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     8.536 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   8.550 ms ± 35.883 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-    ▂▂ █▃▃▂                                                     
-  ▄▇███████▆▇▆█▆▄▄▄▄▄▅▄▃▃▁▄▃▃▃▃▃▃▁▁▁▁▁▃▁▁▁▁▁▃▁▃▁▁▁▁▃▁▁▁▁▁▁▁▁▃▃ ▃
-  21.9 ms         Histogram: frequency by time         22.6 ms <
-
- Memory estimate: 32 bytes, allocs estimate: 1.
+ Memory estimate: 0 bytes, allocs estimate: 0.
 ```
 
-#### Gate application (500 CNOT gates on 1000 qubits) in 5 ms
+#### Dense tableaux multiplication (tensor product of 500 CNOT gates acting 1000 qubits) in 17 ms
 
 ```jldoctest
 julia> @benchmark apply!(s, gate) setup=(s=random_stabilizer(1000); gate=tensor_pow(tCNOT,500))
-BenchmarkTools.Trial: 931 samples with 1 evaluation.
- Range (min … max):  4.902 ms …   9.070 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     5.097 ms               ┊ GC (median):    0.00%
- Time  (mean ± σ):   5.172 ms ± 319.591 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+BenchmarkTools.Trial: 6 samples with 1 evaluation.
+ Range (min … max):  16.879 ms … 17.064 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     17.010 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   16.997 ms ± 63.050 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-    ▃▇█▄▁▂▁▃▁                                                  
-  ▃▇█████████▆▆▃▆▄▄▃▃▂▃▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▁▂▂▁▂▂▁▁▁▁▁▁▁▃▁▁▂▁▁▁▁▂ ▃
-  4.9 ms          Histogram: frequency by time         6.6 ms <
-
- Memory estimate: 6.89 KiB, allocs estimate: 49.
+ Memory estimate: 800 bytes, allocs estimate: 4.
 ```
 
 #### Sparse gate application to only specified qubits in a 1000 qubit tableau in 3 μs
 
 ```jldoctest
 julia> @benchmark apply!(s, sCNOT(32,504)) setup=(s=random_stabilizer(1000))
-BenchmarkTools.Trial: 10000 samples with 9 evaluations.
- Range (min … max):  2.602 μs …  12.860 μs  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     2.934 μs               ┊ GC (median):    0.00%
- Time  (mean ± σ):   3.048 μs ± 595.358 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+BenchmarkTools.Trial: 6 samples with 8 evaluations.
+ Range (min … max):  2.867 μs …   3.228 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     3.043 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   3.049 μs ± 119.106 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-      ▂▆█▅                                                     
-  ▁▁▂▅█████▅▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ ▂
-  2.6 μs          Histogram: frequency by time        5.53 μs <
-
- Memory estimate: 112 bytes, allocs estimate: 2.
+ Memory estimate: 0 bytes, allocs estimate: 0.
 ```
 
-#### Measuring a dense 1000 qubit Pauli operator in 70 μs
+#### Measuring a dense 1000 qubit Pauli operator in 18 μs
 
 ```jldoctest
 julia> s=random_destabilizer(1000); p=random_pauli(1000);
 
 julia> @benchmark project!(_s,_p) setup=(_s=copy(s);_p=copy(p)) evals=1
 BenchmarkTools.Trial: 10000 samples with 1 evaluation.
- Range (min … max):  52.930 μs … 112.682 μs  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     67.628 μs               ┊ GC (median):    0.00%
- Time  (mean ± σ):   67.100 μs ±   5.624 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
-
-  ▂▁      ▃▄       ▆▆▄▁▁▂▃▃▃▄█▇▃▂▂▂▁▁▃▃▁         ▁          ▁▂ ▂
-  ██▆▅▅▇▆▄██▇▅▅▄▄▄▆██████████████████████▇▇▇▇▇▆▇███▇▇█▇▇▇▆▇▇██ █
-  52.9 μs       Histogram: log(frequency) by time        85 μs <
+ Range (min … max):  17.753 μs … 39.444 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     21.971 μs              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   21.893 μs ±  2.234 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
  Memory estimate: 480 bytes, allocs estimate: 4.
 ```
 
-#### Measuring a single qubit in a 1000 qubit tableau in 50 μs
+#### Measuring a single qubit in a 1000 qubit tableau in 15 μs
 
 ```jldoctest
 julia> s=MixedDestabilizer(random_destabilizer(1000));
 
 julia> @benchmark projectY!(_s,42) setup=(_s=copy(s)) evals=1
 BenchmarkTools.Trial: 10000 samples with 1 evaluation.
- Range (min … max):  40.356 μs … 151.946 μs  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     49.203 μs               ┊ GC (median):    0.00%
- Time  (mean ± σ):   49.992 μs ±   6.442 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+ Range (min … max):  15.379 μs … 37.630 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     16.912 μs              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   17.120 μs ±  1.335 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-  ▃▁▄▄        ▄▇▅██▄▄▃▃▄▂           ▁ ▁▂▁                      ▂
-  ████▇▅▅▄▅▄▅▅█████████████▇▇█▇▇▇████████▆▇▅▆▆▆▆▅▄▄▅▄▄▅▅▄▆▆▄▅▆ █
-  40.4 μs       Histogram: log(frequency) by time      73.8 μs <
-
- Memory estimate: 432 bytes, allocs estimate: 3.
+ Memory estimate: 464 bytes, allocs estimate: 5.
 ```
 
-Benchmarks executed on a Ryzen Zen1 8-core CPU.
+Benchmarks executed on a single thread on Ryzen Zen4 16-core CPU:
+
+```
+julia> versioninfo()
+Julia Version 1.9.1
+Commit 147bdf428cd (2023-06-07 08:27 UTC)
+Platform Info:
+  OS: Linux (x86_64-linux-gnu)
+  CPU: 32 × AMD Ryzen 9 7950X 16-Core Processor
+  WORD_SIZE: 64
+  LIBM: libopenlibm
+  LLVM: libLLVM-14.0.6 (ORCJIT, znver3)
+  Threads: 1 on 32 virtual cores
+```
 
 More detailed benchmarks can be seen at [github.com/QuantumSavory/QuantumCliffordBenchmarksLog](https://github.com/QuantumSavory/QuantumCliffordBenchmarksLog).
 </details>
