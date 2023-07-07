@@ -47,6 +47,8 @@ as well as
 [sparse or dense Clifford operations](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Clifford-Operators-1)
 acting upon them.
 
+Implements [Pauli frames](https://quantumsavory.github.io/QuantumClifford.jl/dev/ecc_example_sim/) for fast sampling.
+
 Provides
 [canonicalization](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Canonicalization-of-Stabilizers-1),
 [projection](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Projective-Measurements-1), and
@@ -81,11 +83,11 @@ Fast, in-place, allocation free implementations.
 
 #### Comparison against other Clifford simulators
 
-The only other simulator of similar performance I know of is [Stim](https://github.com/quantumlib/Stim). In particular, Stim implements convenient tracking of Pauli frames, that makes simulating the performance of error correcting codes blazingly fast (which are possible in QuantumClifford.jl, but no convenient interface is provided for that yet).
+The only other simulator of similar performance I know of is [Stim](https://github.com/quantumlib/Stim).
 
-The "low level" functionality is of similar performance in Stim and QuantumClifford but different tradeoffs are made at the higher levels: to multiply in-place 1M-qubit Pauli operators Stim needs 16μs while QuantumClifford.jl needs 14μs. The difference is inconsequential and depends on compilers and hardware.
+The "low level" functionality is of similar performance in Stim and QuantumClifford but different tradeoffs are made at the higher levels: to multiply in-place 1M-qubit Pauli operators Stim and QuantumClifford.jl both need around 15μs. The difference is inconsequential and depends on compilers and hardware.
 
-Of note is that Stim achieved this performance through high-quality C++ SIMD code of significant sophistication, while QuantumClifford.jl is implemented in pure Julia.
+Of note is that Stim achieved this performance through high-quality C++ SIMD code of significant sophistication, while QuantumClifford.jl is implemented in pure and simple Julia.
 
 #### Multiplying two 1 gigaqubit Paulis in 13 ms
 
