@@ -8,12 +8,12 @@ module QuantumClifford
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
 import LinearAlgebra
-using LinearAlgebra: inv, mul!, rank
+using LinearAlgebra: inv, mul!, rank, Adjoint
+import DataStructures
+using DataStructures: DefaultDict, Accumulator
+using Combinatorics: combinations
+using Base.Cartesian
 using DocStringExtensions
-using Polyester
-#using LoopVectorization
-using HostCPUFeatures: pick_vector_width
-import SIMD
 
 import QuantumInterface: tensor, ⊗, tensor_pow, apply!, nqubits, expect, project!, reset_qubits!, traceout!, ptrace, apply!, projectX!, projectY!, projectZ!, entanglement_entropy
 
@@ -25,9 +25,10 @@ export
     prodphase, comm,
     nqubits,
     stabilizerview, destabilizerview, logicalxview, logicalzview, phases,
+    fastcolumn, fastrow,
     bitview, quantumstate, tab,
     BadDataStructure,
-    affectedqubits,
+    affectedqubits, #TODO move to QuantumInterface?
     # GF2
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     # Canonicalization
@@ -51,7 +52,7 @@ export
     sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZCX, sZCY, sZCZ,
     # Misc Ops
     SparseGate,
-    sMX, sMY, sMZ, PauliMeasurement, Reset,
+    sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
     BellMeasurement,
     VerifyOp,
     Register,
@@ -75,6 +76,7 @@ export
     # mctrajectories
     CircuitStatus, continue_stat, true_success_stat, false_success_stat, failure_stat,
     mctrajectory!, mctrajectories, applywstatus!,
+    petrajectories, applybranches,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
@@ -90,6 +92,8 @@ function __init__()
     BIG_INT_TWO[] = BigInt(2)
     BIG_INT_FOUR[] = BigInt(4)
 end
+
+const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you attempting are creating a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -691,8 +695,7 @@ function MixedDestabilizer(d::Destabilizer)
 end
 
 MixedDestabilizer(d::MixedStabilizer) = MixedDestabilizer(stabilizerview(d))
-
-MixedDestabilizer(s::MixedDestabilizer) = s
+MixedDestabilizer(d::MixedDestabilizer) = d
 
 Base.length(d::MixedDestabilizer) = length(d.tab)÷2
 
@@ -1058,13 +1061,21 @@ end
 ##############################
 
 """The F(2,2) matrix of a given tableau, represented as the concatenation of two binary matrices, one for X and one for Z."""
-function stab_to_gf2(s::Tableau)::Matrix{Bool}
+function stab_to_gf2(s::Tableau)
     r, n = size(s)
     H = zeros(Bool,r,2n)
     for iᵣ in 1:r
         @inbounds @simd for iₙ in 1:n
             H[iᵣ,iₙ], H[iᵣ,iₙ+n] = s[iᵣ,iₙ]
         end
+    end
+    H
+end
+function stab_to_gf2(p::PauliOperator)
+    n = nqubits(p)
+    H = zeros(Bool,2n)
+    @inbounds @simd for i in 1:n
+        H[i], H[i+n] = p[i]
     end
     H
 end
@@ -1244,24 +1255,36 @@ function mixed_destab_looks_good(destabilizer)
     return true
 end
 
+# base tableaux handling
 include("mul_leftright.jl")
 include("canonicalization.jl")
-include("dense_cliffords.jl")
 include("project_trace_reset.jl")
-include("linalg.jl")
+include("fastmemlayout.jl")
+# dense clifford operator tableaux
+include("dense_cliffords.jl")
+# special one- and two- qubit operators
 include("symbolic_cliffords.jl")
+include("linalg.jl")
+# circuits
+include("operator_traits.jl")
 include("mctrajectory.jl")
+include("petrajectory.jl")
 include("misc_ops.jl")
 include("classical_register.jl")
-include("enumeration.jl")
-include("randoms.jl")
-include("useful_states.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
+# common states and operators
+include("enumeration.jl")
+include("randoms.jl")
+include("useful_states.jl")
+#
 include("experimental/Experimental.jl")
+#
 include("graphs.jl")
+#
 include("entanglement.jl")
+#
 include("tableau_show.jl")
 include("sumtypes.jl")
 include("precompiles.jl")

@@ -9,38 +9,33 @@ abstract type AbstractTwoQubitOperator <: AbstractSymbolicOperator end
 """Supertype of all symbolic single-qubit measurements."""
 abstract type AbstractMeasurement <: AbstractOperation end
 
-const MINBATCH1Q = 100
-const MINBATCH2Q = 100
-
 # Stim has a good list of specialized single and two qubit operations at https://github.com/quantumlib/Stim/blob/e51ea66d213b25920e72c08e53266ec56fd14db4/src/stim/stabilizers/tableau_specialized_prepend.cc
 # Note that their specialized operations are for prepends (right multiplications), while we implement append (left multiplication) operations.
 
-@inline getshift(Tme::Type,col::Int) = _mod(Tme,col-1)
-@inline getmask(Tme::Type,col::Int) = Tme(0x1)<<getshift(Tme,col)
-@inline getbigindex(Tme::Type,col::Int) = _div(Tme,col-1)+1
+@inline getshift(::Type{Tme},col::Int) where {Tme} = _mod(Tme,col-1)
+@inline getmask(::Type{Tme},col::Int) where {Tme} = Tme(0x1)<<getshift(Tme,col)
+@inline getbigindex(::Type{Tme},col::Int) where {Tme} = _div(Tme,col-1)+1
 
-Base.@propagate_inbounds function getxbit(s, r, c)
-    Tme = eltype(s.xzs)
+TableauType{Tzv, Tme} = Tableau{Tzv, Tm} where {Tm <: AbstractMatrix{Tme}}
+
+Base.@propagate_inbounds function getxbit(s::TableauType{Tzv, Tme}, r::Int, c::Int) where {Tzv, Tme}
     s.xzs[getbigindex(Tme,c),r]&getmask(Tme,c)
 end
-Base.@propagate_inbounds function getzbit(s, r, c)
-    Tme = eltype(s.xzs)
+Base.@propagate_inbounds function getzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int) where {Tzv, Tme}
     s.xzs[end÷2+getbigindex(Tme,c),r]&getmask(Tme,c)
 end
-Base.@propagate_inbounds function setxbit(s, r, c, x)
-    Tme = eltype(s.xzs)
+Base.@propagate_inbounds function setxbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, x::Tme) where {Tzv, Tme}
     cbig = getbigindex(Tme,c)
     s.xzs[cbig,r] &= ~getmask(Tme,c)
     s.xzs[cbig,r] |= x
 end
-Base.@propagate_inbounds function setzbit(s, r, c, z)
-    Tme = eltype(s.xzs)
+Base.@propagate_inbounds function setzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, z::Tme) where {Tzv, Tme}
     cbig = getbigindex(Tme,c)
     s.xzs[end÷2+cbig,r] &= ~getmask(Tme,c)
     s.xzs[end÷2+cbig,r] |= z
 end
-Base.@propagate_inbounds setxbit(s, r, c, x, shift) = setxbit(s, r, c, x<<shift)
-Base.@propagate_inbounds setzbit(s, r, c, z, shift) = setzbit(s, r, c, z<<shift)
+Base.@propagate_inbounds setxbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, x::Tme, shift::Int) where {Tzv, Tme} = setxbit(s, r, c, x<<shift)
+Base.@propagate_inbounds setzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, z::Tme, shift::Int) where {Tzv, Tme} = setzbit(s, r, c, z<<shift)
 
 ##############################
 # Single-qubit gates
@@ -49,7 +44,7 @@ Base.@propagate_inbounds setzbit(s, r, c, z, shift) = setzbit(s, r, c, z<<shift)
 function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) where {B, G<:AbstractSingleQubitOperator}
     s = tab(stab)
     c = gate.q
-    @batch per=core minbatch=MINBATCH1Q for r in eachindex(s)
+    @inbounds @simd for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
         x,z,phase = qubit_kernel(gate,x,z)
@@ -67,6 +62,7 @@ macro qubitop1(name, kernel)
     quote
         struct $(esc(prefixname)) <: AbstractSingleQubitOperator
             q::Int
+            $(esc(prefixname))(q) = if q<=0 throw(NoZeroQubit) else new(q) end
         end
         @doc $docstring $prefixname
         @inline $(esc(:qubit_kernel))(::$prefixname, x, z) = $kernel
@@ -132,6 +128,7 @@ struct SingleQubitOperator <: AbstractSingleQubitOperator
     zz::Bool
     px::Bool
     pz::Bool
+    SingleQubitOperator(q,args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{B}=Val(true)) where B # TODO Generated functions that simplify the whole `if phases` branch might be a good optimization, but a quick benchmakr comparing sHadamard to SingleQubitOperator(sHadamard) did not show a worthwhile difference.
     s = tab(stab)
@@ -140,7 +137,7 @@ function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{
     sh = getshift(Tme, c)
     xx,zx,xz,zz = Tme.((op.xx,op.zx,op.xz,op.zz)) .<< sh
     anticom = ~iszero((~zz & xz & ~xx & zx) | ( zz & ~xz & xx & zx) | (zz &  xz & xx & ~zx))
-    @batch per=core minbatch=MINBATCH1Q for r in eachindex(s)
+    @inbounds @simd for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
         setxbit(s, r, c, (x&xx)⊻(z&zx))
@@ -223,7 +220,8 @@ function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) wh
     q2 = gate.q2
     Tme = eltype(s.xzs)
     shift = getshift(Tme, q1) - getshift(Tme, q2)
-    @batch per=core minbatch=MINBATCH2Q for r in eachindex(s)
+    @inbounds @simd for r in eachindex(s)
+#    for r in eachindex(s)
         x1 = getxbit(s, r, q1)
         z1 = getzbit(s, r, q1)
         x2 = getxbit(s, r, q2)<<shift
@@ -249,6 +247,7 @@ macro qubitop2(name, kernel)
         struct $(esc(prefixname)) <: AbstractTwoQubitOperator
             q1::Int
             q2::Int
+            $(esc(prefixname))(q1,q2) = if q1<=0 || q2<=0 throw(NoZeroQubit) else new(q1,q2) end
         end
         @doc $docstring $prefixname
         @inline $(esc(:qubit_kernel))(::$prefixname, x1, z1, x2, z2) = $kernel
@@ -363,18 +362,21 @@ end
 struct sMX <: AbstractMeasurement
     qubit::Int
     bit::Int
+    sMX(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
 """Symbolic single qubit Y measurement. See also [`Register`](@ref), [`projectYrand!`](@ref), [`sMX`](@ref), [`sMZ`](@ref)"""
 struct sMY <: AbstractMeasurement
     qubit::Int
     bit::Int
+    sMY(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
 """Symbolic single qubit Z measurement. See also [`Register`](@ref), [`projectZrand!`](@ref), [`sMX`](@ref), [`sMY`](@ref)"""
 struct sMZ <: AbstractMeasurement
     qubit::Int
     bit::Int
+    sMZ(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
 sMX(i) = sMX(i,0)
@@ -402,3 +404,99 @@ project!(state::AbstractStabilizer, m::sMZ) = projectZ!(state, m.qubit)
 projectrand!(state::AbstractStabilizer, m::sMX) = projectXrand!(state, m.qubit)
 projectrand!(state::AbstractStabilizer, m::sMY) = projectYrand!(state, m.qubit)
 projectrand!(state::AbstractStabilizer, m::sMZ) = projectZrand!(state, m.qubit)
+
+"""Measure a qubit in the Z basis and reset to the |0⟩ state.
+
+!!! warning "It does not trace out the qubit!"
+    As described below there is a difference between measuring the qubit (followed by setting it to a given known state)
+    and "tracing out" the qubit. By reset here we mean "measuring and setting to a known state", not "tracing out".
+
+```jldoctest
+julia> s = MixedDestabilizer(S"XXX ZZI IZZ") # |000⟩+|111⟩
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
++ _X_
++ __X
+𝒮𝓉𝒶𝒷━
++ XXX
++ ZZ_
++ Z_Z
+
+julia> traceout!(copy(s), 1) # = I⊗(|00⟩⟨00| + |11⟩⟨11|)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ _X_
+𝒳ₗ━━━
++ _XX
++ Z__
+𝒮𝓉𝒶𝒷━
++ _ZZ
+𝒵ₗ━━━
++ Z_Z
++ XXX
+
+julia> projectZ!(traceout!(copy(s), 1), 1)[1] # = |000⟩⟨000|+|011⟩⟨011| or |100⟩⟨100|+|111⟩⟨111| (use projectZrand! to actually get a random result)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ _X_
++ XXX
+𝒳ₗ━━━
++ _XX
+𝒮𝓉𝒶𝒷━
++ _ZZ
++ Z__
+𝒵ₗ━━━
++ Z_Z
+
+julia> projectZ!(copy(s), 1)[1] # = |000⟩ or |111⟩ (use projectZrand! to actually get a random result)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ XXX
++ _X_
++ __X
+𝒮𝓉𝒶𝒷━
++ Z__
++ ZZ_
++ Z_Z
+```
+
+```julia-repl
+julia> apply!(Register(copy(s)), sMRZ(1)) |> quantumstate # |000⟩ or |011⟩, depending on randomization
+𝒟ℯ𝓈𝓉𝒶𝒷
++ XXX
++ _X_
++ __X
+𝒮𝓉𝒶𝒷━
++ Z__
+- ZZ_
+- Z_Z
+```
+
+See also: [`Reset`](@ref), [`sMZ`](@ref)"""
+struct sMRZ <: AbstractOperation
+    qubit::Int
+    bit::Int
+    sMRZ(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
+end
+
+"""Measure a qubit in the X basis and reset to the |+⟩ state.
+
+See also: [`sMRZ`](@ref), [`Reset`](@ref), [`sMZ`](@ref)"""
+struct sMRX <: AbstractOperation
+    qubit::Int
+    bit::Int
+    sMRX(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
+end
+
+"""Measure a qubit in the Y basis and reset to the |i₊⟩ state.
+
+See also: [`sMRZ`](@ref), [`Reset`](@ref), [`sMZ`](@ref)"""
+struct sMRY <: AbstractOperation
+    qubit::Int
+    bit::Int
+    sMRY(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
+end
+
+sMRX(i) = sMRX(i,0)
+sMRY(i) = sMRY(i,0)
+sMRZ(i) = sMRZ(i,0)
+sMRX(i,::Nothing) = sMRX(i,0)
+sMRY(i,::Nothing) = sMRY(i,0)
+sMRZ(i,::Nothing) = sMRZ(i,0)

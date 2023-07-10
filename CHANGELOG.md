@@ -2,12 +2,47 @@
 
 - `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
+- some support for T gates and other non-clifford behavior
 
 # News
 
-## v0.8.5 - dev
+## v0.8.11 - 2023-07-10
+
+- `petrajectories`, for (potentially symbolic) perturbative expansions of the result of a circuit, is moved out of `Experimental` into the public part of the interface. The underlying `petrajectory` is not made public yet due to the ad-hoc low-level return conventions for it.
+- `mctrajectory` and `petrajectory` can now optionally report the end state of each trajectory, not just the circuit status (i.e. "success", "detected failure", etc).
+- Internally we now use a trait system to distinguish deterministic from non-deterministic operations. Not part of the public API yet.
+
+## v0.8.10 - 2023-07-05
+
+- Remove Polyester.jl multithreading, leading to simpler and better compiled single-thread code. Now single-thread performance is much higher. Multithreading was generally not useful at the inner loops where it was deployed.
+- Implement `fastcolumn` and `fastrow`, which transform a tableau into a memory layout optimized for column or row operations.
+
+## v0.8.9 - 2023-07-04
+
+- In the unexported experimental ECC module:
+    - we now implement `fault_matrix` which gives the mapping between single-qubit physical errors and logical observables.
+    - `MixedDestabilizer` and `Stabilizer` now have constructors when acting on an ECC object.
+- `stab_to_gf2` now works with Pauli operators as well.
+
+## v0.8.8 - 2023-06-23
+
+- Bump `QuantumInterface` compat.
+
+## v0.8.7 - 2023-06-22
+
+- Better UX and threading support for `pftrajectories`.
+- `affectedqubits` now more consistently returns tuples instead of vectors.
+- Private `affectedbits` is now implemented.
+- Many operation constructors now throw an error if they are given negative qubit indices.
+
+## v0.8.6 - 2023-06-20
+
+- Fixes to Quantikz circuit plotting of empty circuits and `PauliOperator`
+
+## v0.8.5 - 2023-06-13
 
 - Internal helper method `mul_right!` is now available for right Pauli inplace multiplication.
+- Implemented `sMRZ` to reset single qubits to the |0⟩ (and respectively `sMRX` and `sMRY`).
 
 ## v0.8.4 - 2023-06-11
 

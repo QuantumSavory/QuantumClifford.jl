@@ -42,6 +42,7 @@ println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREA
 @doset "noisycircuits"
 @doset "syndromemeas"
 @doset "bitpack"
+@doset "memorylayout"
 @doset "graphs"
 @doset "hash"
 @doset "entanglement"

@@ -114,6 +114,8 @@ function make_all_sumtype_infrastructure()
             (:applywstatus!, (:(s::Register),), ()),
             (:apply!, (:(s::PauliFrame),), ()),
             (:applywstatus!, (:(s::PauliFrame),), ()),
+            (:affectedqubits, (), ()),
+            (:affectedbits, (), ()),
         ]
     ) |> eval
 end

@@ -6,14 +6,19 @@ although it does conjugate the same under Clifford operations.
 Each row in the tableau refers to a single frame.
 The row represents the Pauli operation by which the frame and the reference differ.
 """
-struct PauliFrame{T} <: AbstractQCState
-    frame::T # TODO this should really be a Tableau
-    measurements::Matrix{Bool}
+struct PauliFrame{T,S} <: AbstractQCState
+    frame::T # TODO this should really be a Tableau, but now most of the code seems to be assuming a Stabilizer
+    measurements::S # TODO check if when looping over this we are actually looping over the fast axis
 end
 
 nqubits(f::PauliFrame) = nqubits(f.frame)
 Base.length(f::PauliFrame) = size(f.measurements, 1)
 Base.eachindex(f::PauliFrame) = 1:length(f)
+Base.copy(f::PauliFrame) = PauliFrame(copy(f.frame), copy(f.measurements))
+Base.view(frame::PauliFrame, r) = PauliFrame(view(frame.frame, r), view(frame.measurements, r, :))
+
+fastrow(s::PauliFrame) = PauliFrame(fastrow(s.frame), s.measurements)
+fastcolumn(s::PauliFrame) = PauliFrame(fastcolumn(s.frame), s.measurements)
 
 """
 $(TYPEDSIGNATURES)
@@ -21,8 +26,9 @@ $(TYPEDSIGNATURES)
 Prepare an empty set of Pauli frames with the given number of `frames` and `qubits`. Preallocates spaces for `measurement` number of measurements.
 """
 function PauliFrame(frames, qubits, measurements)
-    stab = zero(Stabilizer, frames, qubits) # TODO this should really be a Tableau
-    frame = PauliFrame(stab, zeros(Bool, frames, measurements))
+    stab = fastcolumn(zero(Stabilizer, frames, qubits)) # TODO this should really be a Tableau
+    bits = zeros(Bool, frames, measurements)
+    frame = PauliFrame(stab, bits)
     initZ!(frame)
     return frame
 end
@@ -38,7 +44,7 @@ It is done automatically by most [`PauliFrame`](@ref) constructors.
 function initZ!(frame::PauliFrame)
     T = eltype(frame.frame.tab.xzs)
 
-    @inbounds @simd for f in eachindex(frame) # TODO thread this
+    @inbounds @simd for f in eachindex(frame)
         @simd for row in 1:size(frame.frame.tab.xzs,1)÷2
             frame.frame.tab.xzs[end÷2+row,f] = rand(T)
         end
@@ -51,7 +57,8 @@ function apply!(f::PauliFrame, op::AbstractCliffordOperator)
     return f
 end
 
-function apply!(frame::PauliFrame, op::sMZ)
+function apply!(frame::PauliFrame, op::sMZ) # TODO sMX, sMY
+    op.bit == 0 && return frame
     i = op.qubit
     xzs = frame.frame.tab.xzs
     T = eltype(xzs)
@@ -60,9 +67,32 @@ function apply!(frame::PauliFrame, op::sMZ)
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
 
-    @inbounds @simd for f in eachindex(frame) # TODO thread this
+    @inbounds @simd for f in eachindex(frame)
         should_flip = !iszero(xzs[ibig,f] & ismallm)
         frame.measurements[f,op.bit] = should_flip
+    end
+
+    return frame
+end
+
+function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRX, sMRY
+    i = op.qubit
+    xzs = frame.frame.tab.xzs
+    T = eltype(xzs)
+    lowbit = T(1)
+    ibig = _div(T,i-1)+1
+    ismall = _mod(T,i-1)
+    ismallm = lowbit<<(ismall)
+
+    if op.bit != 0
+        @inbounds @simd for f in eachindex(frame)
+            should_flip = !iszero(xzs[ibig,f] & ismallm)
+            frame.measurements[f,op.bit] = should_flip
+        end
+    end
+    @inbounds @simd for f in eachindex(frame)
+        xzs[ibig,f] &= ~ismallm
+        rand(Bool) && (xzs[end÷2+ibig,f] ⊻= ismallm)
     end
 
     return frame
@@ -77,7 +107,7 @@ function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
 
-    @inbounds @simd for f in eachindex(frame) # TODO thread this
+    @inbounds @simd for f in eachindex(frame)
         r = rand()
         if  r < p # X error
             frame.frame.tab.xzs[ibig,f] ⊻= ismallm
@@ -95,6 +125,45 @@ end
 Perform a "Pauli frame" style simulation of a quantum circuit.
 """
 function pftrajectories end
+
+"""
+$(TYPEDSIGNATURES)
+
+The main method for running Pauli frame simulations of circuits.
+See the other methods for lower level access.
+
+Multithreading is enabled by default, but can be disabled by setting `threads=false`.
+Do not forget to launch Julia with multiple threads enabled, e.g. `julia -t4`, if you want
+to use multithreading.
+
+See also: [`mctrajectories`](@ref), [`petrajectories`](@ref)
+"""
+function pftrajectories(circuit;trajectories=5000,threads=true)
+    _pftrajectories(circuit;trajectories,threads)
+end
+
+function _pftrajectories(circuit;trajectories=5000,threads=true)
+    ccircuit = if eltype(circuit) <: CompactifiedGate
+        circuit
+    else
+        compactify_circuit(circuit)
+    end
+    qmax=maximum((maximum(affectedqubits(g)) for g in ccircuit))
+    bmax=maximum((maximum(affectedbits(g),init=1) for g in ccircuit))
+    frames = PauliFrame(trajectories, qmax, bmax)
+    nthr = min(Threads.nthreads(),trajectories÷(100))
+    if threads && nthr>1
+        batchsize = trajectories÷nthr
+        Threads.@threads for i in 1:nthr
+            b = (i-1)*batchsize+1
+            e = i==nthr ? trajectories : i*batchsize
+            pftrajectories((@view frames[b:e]), ccircuit)
+        end
+    else
+        pftrajectories(frames, ccircuit)
+    end
+    return frames
+end
 
 """
 $(TYPEDSIGNATURES)
