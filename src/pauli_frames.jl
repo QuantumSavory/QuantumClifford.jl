@@ -17,6 +17,9 @@ Base.eachindex(f::PauliFrame) = 1:length(f)
 Base.copy(f::PauliFrame) = PauliFrame(copy(f.frame), copy(f.measurements))
 Base.view(frame::PauliFrame, r) = PauliFrame(view(frame.frame, r), view(frame.measurements, r, :))
 
+fastrow(s::PauliFrame) = PauliFrame(fastrow(s.frame), s.measurements)
+fastcolumn(s::PauliFrame) = PauliFrame(fastcolumn(s.frame), s.measurements)
+
 """
 $(TYPEDSIGNATURES)
 

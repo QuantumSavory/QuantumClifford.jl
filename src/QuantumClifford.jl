@@ -9,6 +9,10 @@ module QuantumClifford
 
 import LinearAlgebra
 using LinearAlgebra: inv, mul!, rank, Adjoint
+import DataStructures
+using DataStructures: DefaultDict, Accumulator
+using Combinatorics: combinations
+using Base.Cartesian
 using DocStringExtensions
 
 import QuantumInterface: tensor, ⊗, tensor_pow, apply!, nqubits, expect, project!, reset_qubits!, traceout!, ptrace, apply!, projectX!, projectY!, projectZ!, entanglement_entropy
@@ -72,6 +76,7 @@ export
     # mctrajectories
     CircuitStatus, continue_stat, true_success_stat, false_success_stat, failure_stat,
     mctrajectory!, mctrajectories, applywstatus!,
+    petrajectory, petrajectories, applybranches,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
@@ -1250,26 +1255,37 @@ function mixed_destab_looks_good(destabilizer)
     return true
 end
 
+# base tableaux handling
 include("mul_leftright.jl")
 include("canonicalization.jl")
-include("dense_cliffords.jl")
 include("project_trace_reset.jl")
-include("linalg.jl")
+include("fastmemlayout.jl")
+# dense clifford operator tableaux
+include("dense_cliffords.jl")
+# special one- and two- qubit operators
 include("symbolic_cliffords.jl")
+include("linalg.jl")
+# circuits
+include("operator_traits.jl")
 include("mctrajectory.jl")
+include("petrajectory.jl")
 include("misc_ops.jl")
 include("classical_register.jl")
-include("enumeration.jl")
-include("randoms.jl")
-include("useful_states.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
+# common states and operators
+include("enumeration.jl")
+include("randoms.jl")
+include("useful_states.jl")
+#
 include("experimental/Experimental.jl")
+#
 include("graphs.jl")
+#
 include("entanglement.jl")
+#
 include("tableau_show.jl")
-include("fastmemlayout.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
