@@ -58,7 +58,7 @@ end
 
 """Run multiple Monte Carlo trajectories and report the aggregate final statuses of each.
 
-See also: [`pftrajectories`](@ref), `petrajectories`"""
+See also: [`pftrajectories`](@ref), [`petrajectories`](@ref)"""
 mctrajectories(initialstate,circuit;trajectories=500,keepstates::Bool=false) = _mctrajectories(initialstate,circuit;trajectories,keepstates=Val(keepstates))
 
 function _mctrajectories(initialstate,circuit;trajectories=500,keepstates::Val{B}) where {B}

@@ -135,6 +135,8 @@ See the other methods for lower level access.
 Multithreading is enabled by default, but can be disabled by setting `threads=false`.
 Do not forget to launch Julia with multiple threads enabled, e.g. `julia -t4`, if you want
 to use multithreading.
+
+See also: [`mctrajectories`](@ref), [`petrajectories`](@ref)
 """
 function pftrajectories(circuit;trajectories=5000,threads=true)
     _pftrajectories(circuit;trajectories,threads)

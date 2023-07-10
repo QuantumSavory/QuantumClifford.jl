@@ -76,7 +76,7 @@ export
     # mctrajectories
     CircuitStatus, continue_stat, true_success_stat, false_success_stat, failure_stat,
     mctrajectory!, mctrajectories, applywstatus!,
-    petrajectory, petrajectories, applybranches,
+    petrajectories, applybranches,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types

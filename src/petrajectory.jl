@@ -21,7 +21,6 @@ function applybranches(::NondeterministicOperatorTrait, state, op; max_order=1)
     """))
 end
 
-"""Run a perturbative expansion to a given order. Uses applybranches under the hood."""
 function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_order=1)
     if size(circuit)[1] == 0
         return fill(zero(branch_weight), length(registered_statuses)-1)
@@ -44,8 +43,37 @@ function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_or
     return status_probs
 end
 
-"""Run a perturbative expansion to a given order. This is the main public fuction for the perturbative expansion approach."""
-function petrajectories(initialstate, circuit; branch_weight=1.0, max_order=1)
-    status_probs = petrajectory(initialstate, circuit; branch_weight=branch_weight, current_order=0, max_order=max_order)
-    Dict([CircuitStatus(i)=>status_probs[i] for i in eachindex(status_probs)])
+function petrajectory_keep(state, circuit; branch_weight=1.0, current_order=0, max_order=1) # TODO a lot of repetition with petrajectory - dry out
+    A = Accumulator{Tuple{typeof(state),CircuitStatus},typeof(branch_weight)}
+    if size(circuit)[1] == 0
+        return A()
+    end
+    next_op = circuit[1]
+    rest_of_circuit = circuit[2:end]
+
+    dict = A()
+
+    for (i,(newstate, status, prob, order)) in enumerate(applybranches(state, next_op, max_order=max_order-current_order))
+        if status==continue_stat # TODO is the copy below necessary?
+            out_dict = petrajectory_keep(copy(newstate), rest_of_circuit,
+                branch_weight=branch_weight*prob, current_order=current_order+order, max_order=max_order)
+            DataStructures.merge!(dict, out_dict)
+        else
+            DataStructures.inc!(dict, (newstate,status), prob*branch_weight)
+        end
+    end
+
+    return dict
+end
+
+"""Run a perturbative expansion to a given order. This is the main public fuction for the perturbative expansion approach.
+
+See also: [`pftrajectories`](@ref), [`mctrajectories`](@ref)"""
+function petrajectories(initialstate, circuit; branch_weight=1.0, max_order=1, keepstates::Bool=false)
+    if keepstates
+        return petrajectory_keep(initialstate, circuit; branch_weight=branch_weight, current_order=0, max_order=max_order)
+    else
+        status_probs = petrajectory(initialstate, circuit; branch_weight=branch_weight, current_order=0, max_order=max_order)
+        return Dict([CircuitStatus(i)=>status_probs[i] for i in eachindex(status_probs)])
+    end
 end
