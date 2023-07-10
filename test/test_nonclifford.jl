@@ -1,25 +1,25 @@
 using QuantumClifford
-using QuantumClifford: StabMixture, rowdecompose, PauliChannel
+using QuantumClifford: StabMixture, rowdecompose, PauliChannel, mul_left!, mul_right!
 using Test
 using InteractiveUtils
 using Random
 
 ##
 
+
 @testset "Pauli decomposition into destabilizers" begin
-    for n in [1,2,63,64,65,66]
-        n = 6
+    for n in [1,2,63,64,65,66,300]
         p = random_pauli(n; nophase=true)
         s = random_destabilizer(n)
         phase, b, c = rowdecompose(p,s)
         p0 = zero(p)
         for (i,f) in pairs(b)
-            f && mul_left!(p0, destabilizerview(s), i)
+            f && mul_right!(p0, destabilizerview(s), i)
         end
         for (i,f) in pairs(c)
-            f && mul_left!(p0, stabilizerview(s), i)
+            f && mul_right!(p0, stabilizerview(s), i)
         end
-        @test (-im)^phase*p0 == p
+        @test (im)^phase*p0 == p
     end
 end
 
@@ -31,7 +31,7 @@ end
     [cos(π/8)^2, -im*sin(π/8)*cos(π/8),  im*sin(π/8)*cos(π/8), sin(π/8)^2]
     )
 
-    state = StabMixture(S"-Z")
+    state = StabMixture(S"X")
 
     apply!(state, tgate)
     apply!(state, tgate)

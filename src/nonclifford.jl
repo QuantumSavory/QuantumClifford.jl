@@ -1,10 +1,27 @@
-using LinearAlgebra: dot
-using DataStructures: DefaultDict
+#=
+1. adding tests for basic correctness
+2. single qubit gates / channels (and tests)
+3. embedding single qubit gates - Stefan
+4. pretty printing - Stefan
+5. good docstrings
+6. some superficial documentation
+7. picking names
+8. conversion into density matrices (QuantumOptics.jl) - Stefan
+9. special small gates
+10. make an overleaf for a paper
+=#
+
 
 mutable struct StabMixture{T,F}
     stab::T
     destabweights::DefaultDict{Tuple{BitVector, BitVector}, F, F}
 end
+
+# TODO: figure out a way to compute whether a StabMixture instance is pure or mixed
+# TODO which hane of these (and others)
+# GeneralizedStabilizer
+# StabilizerFrame
+# GenStabFrame
 
 function StabMixture(state)
     n = nqubits(state)
@@ -42,7 +59,7 @@ function _stabmixdestab(mixeddestab, d)
     p = zero(PauliOperator, nqubits(mixeddestab))
     for i in eachindex(d)
         if d[i]
-            mul_left!(p, destab, i) # TODO check whether you are screwing up the ordering
+            mul_right!(p, destab, i) # TODO check whether you are screwing up the ordering
         end
     end
     p
@@ -67,15 +84,17 @@ end
 function apply!(state::StabMixture, gate::PauliChannel)
     dict = state.destabweights
     stab = state.stab
-    newdict = typeof(dict)(zero(eltype(dict).parameters[2])) # TODO jeez, this is ugly
-    for ((dᵢ,dⱼ), χ) in dict
-        for ((Pₗ,Pᵣ), w) in zip(gate.paulis,gate.weights)
+    tzero = zero(eltype(dict).parameters[2])
+    tone = one(eltype(dict).parameters[2])
+    newdict = typeof(dict)(tzero) # TODO jeez, this is ugly
+    for ((dᵢ,dⱼ), χ) in dict # the state
+        for ((Pₗ,Pᵣ), w) in zip(gate.paulis,gate.weights) # the channel
             phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ,stab)
             phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ,stab)
             c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ))*2
             dᵢ′ = dₗ .⊻ dᵢ
             dⱼ′ = dᵣ .⊻ dⱼ
-            χ′ = χ * w * (-1)^c * (1im)^(phaseₗ-phaseᵣ)
+            χ′ = χ * w * (-tone)^c * (tone*im)^(-phaseₗ+phaseᵣ+4)
             newdict[(dᵢ′,dⱼ′)] += χ′
         end
     end
@@ -88,6 +107,24 @@ function apply!(state::StabMixture, gate::PauliChannel)
     state
 end
 
+"""Decompose a Pauli ``P`` in terms of stabilizer and destabilizer rows from a given tableaux.
+
+For given tableaux of rows destabilizer rows ``\\{d_i\\}`` and stabilizer rows ``\\{s_i\\}``,
+there are boolean vectors ``b`` and ``c`` such that
+``P = i^p \\prod_i d_i^{b_i} \\prod_i s_i^{c_i}``.
+
+This function returns `p`, `b`, `c`.
+
+```
+julia> s = MixedDestabilizer(ghz(2));
+
+julia> rowdecompose(P"XY", s)
+(3, Bool[1, 0], Bool[1, 1])
+
+julia> -im * P"Z_" * P"XX" * P"ZZ"
++ XY
+```
+"""
 function rowdecompose(pauli,state::Union{MixedDestabilizer, Destabilizer})
     n = nqubits(pauli)
     stab = stabilizerview(state)
@@ -98,14 +135,15 @@ function rowdecompose(pauli,state::Union{MixedDestabilizer, Destabilizer})
     for i in 1:n
         if comm(pauli, stab, i) != 0
             b[i] = true
-            mul_left!(Pₜ, dest, i)
+            mul_right!(Pₜ, dest, i)
         end
     end
     for i in 1:n
         if comm(pauli, dest, i) != 0
             c[i] = true
-            mul_left!(Pₜ, stab, i) # ?
+            mul_right!(Pₜ, stab, i)
         end
     end
-    return Pₜ.phase[], b, c
+    p = mod(-Pₜ.phase[],4) # complex conjugate
+    return p, b, c
 end
