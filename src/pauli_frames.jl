@@ -17,6 +17,9 @@ Base.eachindex(f::PauliFrame) = 1:length(f)
 Base.copy(f::PauliFrame) = PauliFrame(copy(f.frame), copy(f.measurements))
 Base.view(frame::PauliFrame, r) = PauliFrame(view(frame.frame, r), view(frame.measurements, r, :))
 
+fastrow(s::PauliFrame) = PauliFrame(fastrow(s.frame), s.measurements)
+fastcolumn(s::PauliFrame) = PauliFrame(fastcolumn(s.frame), s.measurements)
+
 """
 $(TYPEDSIGNATURES)
 
@@ -132,6 +135,8 @@ See the other methods for lower level access.
 Multithreading is enabled by default, but can be disabled by setting `threads=false`.
 Do not forget to launch Julia with multiple threads enabled, e.g. `julia -t4`, if you want
 to use multithreading.
+
+See also: [`mctrajectories`](@ref), [`petrajectories`](@ref)
 """
 function pftrajectories(circuit;trajectories=5000,threads=true)
     _pftrajectories(circuit;trajectories,threads)

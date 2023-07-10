@@ -31,6 +31,3 @@ fastcolumn(s::MixedStabilizer) = MixedStabilizer(fastcolumn(s.tab), s.rank)
 
 fastrow(s::MixedDestabilizer) = MixedDestabilizer(fastrow(s.tab), s.rank)
 fastcolumn(s::MixedDestabilizer) = MixedDestabilizer(fastcolumn(s.tab), s.rank)
-
-fastrow(s::PauliFrame) = PauliFrame(fastrow(s.frame), s.measurements)
-fastcolumn(s::PauliFrame) = PauliFrame(fastcolumn(s.frame), s.measurements)
