@@ -6,6 +6,10 @@
 
 # News
 
+## v0.8.12 - dev
+
+- Initial implementation of non-Clifford simulation (mainly for circuits that are slightly non-Clifford, e.g. containing T gates). See `StabMixture`, `PauliChannel`, and `tT`.
+
 ## v0.8.11 - 2023-07-10
 
 - `petrajectories`, for (potentially symbolic) perturbative expansions of the result of a circuit, is moved out of `Experimental` into the public part of the interface. The underlying `petrajectory` is not made public yet due to the ad-hoc low-level return conventions for it.

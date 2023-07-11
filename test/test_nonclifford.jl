@@ -1,5 +1,5 @@
 using QuantumClifford
-using QuantumClifford: StabMixture, rowdecompose, PauliChannel, mul_left!, mul_right!
+using QuantumClifford: StabMixture, rowdecompose, PauliChannel, mul_left!, mul_right!, tT
 using Test
 using InteractiveUtils
 using Random
@@ -26,11 +26,7 @@ end
 ##
 
 @testset "PauliChannel T gate ^4 = Id" begin
-    tgate = PauliChannel(
-    [(I, I), (I, Z), (Z, I), (Z, Z)],
-    [cos(π/8)^2, -im*sin(π/8)*cos(π/8),  im*sin(π/8)*cos(π/8), sin(π/8)^2]
-    )
-
+    tgate = tT
     state = StabMixture(S"X")
 
     apply!(state, tgate)

@@ -11,17 +11,48 @@
 10. make an overleaf for a paper
 =#
 
+"""
+$(TYPEDEF)
 
+Represents mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is a pure stabilizer state.
+
+```jldoctest
+julia> StabMixture(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> tT
+Pauli channel ρ ↦ ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† with the following branches:
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.853553+0.0im | + _ | + _
+ 0.0-0.353553im | + _ | + Z
+ 0.0+0.353553im | + Z | + _
+ 0.146447+0.0im | + Z | + Z
+
+julia> apply!(StabMixture(S"-X"), tT)
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0-0.353553im | + _ | + Z
+ 0.0+0.353553im | + Z | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
+```
+
+See also: [`PauliChannel`](@ref)
+"""
 mutable struct StabMixture{T,F}
     stab::T
     destabweights::DefaultDict{Tuple{BitVector, BitVector}, F, F}
 end
-
-# TODO: figure out a way to compute whether a StabMixture instance is pure or mixed
-# TODO which hane of these (and others)
-# GeneralizedStabilizer
-# StabilizerFrame
-# GenStabFrame
 
 function StabMixture(state)
     n = nqubits(state)
@@ -50,7 +81,9 @@ function Base.show(io::IO, s::StabMixture)
     println(io)
     println(io, "with ϕᵢⱼ | Pᵢ | Pⱼ:")
     for ((di,dj), χ) in s.destabweights
-        println(io, "  ", χ, " | ", string(_stabmixdestab(s.stab, di)), " | ", string(_stabmixdestab(s.stab, dj)))
+        print(io, " ")
+        print(IOContext(io, :compact => true), χ)
+        println(" | ", string(_stabmixdestab(s.stab, di)), " | ", string(_stabmixdestab(s.stab, dj)))
     end
 end
 
@@ -79,7 +112,35 @@ end
 struct PauliChannel{T,S} <: AbstractPauliChannel
     paulis::T
     weights::S
+    function PauliChannel(paulis, weights)
+        n = nqubits(paulis[1][1])
+        for p in paulis
+            n == nqubits(p[1]) == nqubits(p[2]) || throw(ArgumentError(lazy"""
+            You are attempting to construct a `PauliChannel` but have provided Pauli operators
+            $(p[1]) and $(p[2])
+            that are not all of the same size (same number of qubits).
+            Please ensure that all of the Pauli operators being provided of of the same size.
+            """))
+        end
+        new{typeof(paulis),typeof(weights)}(paulis,weights)
+    end
 end
+
+function Base.show(io::IO, pc::PauliChannel)
+    println(io, "Pauli channel ρ ↦ ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† with the following branches:")
+    println(io, "with ϕᵢⱼ | Pᵢ | Pⱼ:")
+    for ((di,dj), χ) in zip(pc.paulis, pc.weights)
+        print(io, " ")
+        print(IOContext(io, :compact => true), χ)
+        println(io, " | ", di, " | ", dj)
+    end
+end
+
+function embed(n,idx,pc::PauliChannel)
+    PauliChannel(map(p->(embed(n,idx,p[1]),embed(n,idx,p[2])),pc.paulis), pc.weights)
+end
+
+nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 
 function apply!(state::StabMixture, gate::PauliChannel)
     dict = state.destabweights
@@ -116,12 +177,18 @@ there are boolean vectors ``b`` and ``c`` such that
 This function returns `p`, `b`, `c`.
 
 ```
-julia> s = MixedDestabilizer(ghz(2));
+julia> s = MixedDestabilizer(ghz(2))
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ ZZ
 
-julia> rowdecompose(P"XY", s)
+julia> phase, destab_rows, stab_rows = QuantumClifford.rowdecompose(P"XY", s)
 (3, Bool[1, 0], Bool[1, 1])
 
-julia> -im * P"Z_" * P"XX" * P"ZZ"
+julia> im^3 * P"Z_" * P"XX" * P"ZZ"
 + XY
 ```
 """
@@ -147,3 +214,12 @@ function rowdecompose(pauli,state::Union{MixedDestabilizer, Destabilizer})
     p = mod(-Pₜ.phase[],4) # complex conjugate
     return p, b, c
 end
+
+##
+# Predefined Pauli Channels
+##
+
+const tT = PauliChannel(
+    [(I, I), (I, Z), (Z, I), (Z, Z)],
+    [cos(π/8)^2, -im*sin(π/8)*cos(π/8),  im*sin(π/8)*cos(π/8), sin(π/8)^2]
+    )
