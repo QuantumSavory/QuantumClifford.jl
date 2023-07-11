@@ -139,7 +139,7 @@ function Base.show(io::IO, pc::PauliChannel)
     end
 end
 
-function embed(n,idx,pc::PauliChannel)
+function embed(n::Int,idx,pc::PauliChannel)
     PauliChannel(map(p->(embed(n,idx,p[1]),embed(n,idx,p[2])),pc.paulis), pc.weights)
 end
 
