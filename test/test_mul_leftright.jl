@@ -17,6 +17,8 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
             @test mul_left!(copy(p2), p1) == (-1)^comm(p1,p2) * mul_right!(copy(p2), p1)
             @test mul_left!(copy(p2), s[i]) == mul_left!(copy(p2), s, i) == s[i]*p2
             @test mul_right!(copy(p2), s[i]) == mul_right!(copy(p2), s, i) == p2*s[i]
+            @test mul_left!(copy(s), p2)[i] == p2*s[i]
+            @test mul_right!(copy(s), p2)[i] == s[i]*p2
         end
     end
 end

@@ -185,3 +185,29 @@ end
     n = nqubits(t)
     mul_left!(t, i+n, j+n; phases=phases)
 end
+
+@inline function mul_left!(s::Tableau, p::PauliOperator; phases::Val{B}=Val(true)) where B # TODO multithread
+    @inbounds @simd for m in eachindex(s)
+        extra_phase = mul_left!((@view s.xzs[:,m]), p.xz; phases=phases)
+        B && (s.phases[m] = (extra_phase+s.phases[m]+p.phase[])&0x3)
+    end
+    s
+end
+
+@inline function mul_left!(s::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
+    mul_left!(tab(s), p; phases=phases)
+    s
+end
+
+@inline function mul_right!(s::Tableau, p::PauliOperator; phases::Val{B}=Val(true)) where B # TODO multithread
+    @inbounds @simd for m in eachindex(s)
+        extra_phase = mul_right!((@view s.xzs[:,m]), p.xz; phases=phases)
+        B && (s.phases[m] = (extra_phase+s.phases[m]+p.phase[])&0x3)
+    end
+    s
+end
+
+@inline function mul_right!(s::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
+    mul_right!(tab(s), p; phases=phases)
+    s
+end
