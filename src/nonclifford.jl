@@ -79,11 +79,12 @@ function Base.show(io::IO, s::StabMixture)
     println(io, "A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is")
     show(io,s.stab)
     println(io)
-    println(io, "with ϕᵢⱼ | Pᵢ | Pⱼ:")
+    print(io, "with ϕᵢⱼ | Pᵢ | Pⱼ:")
     for ((di,dj), χ) in s.destabweights
+        println(io)
         print(io, " ")
         print(IOContext(io, :compact => true), χ)
-        println(" | ", string(_stabmixdestab(s.stab, di)), " | ", string(_stabmixdestab(s.stab, dj)))
+        print(io, " | ", string(_stabmixdestab(s.stab, di)), " | ", string(_stabmixdestab(s.stab, dj)))
     end
 end
 
@@ -109,6 +110,7 @@ struct TGate <: AbstractPauliChannel
     qubit::Int
 end
 
+"""A Pauli channel datastructure, mainly for use with [`StabMixture`](@ref)"""
 struct PauliChannel{T,S} <: AbstractPauliChannel
     paulis::T
     weights::S
@@ -128,11 +130,12 @@ end
 
 function Base.show(io::IO, pc::PauliChannel)
     println(io, "Pauli channel ρ ↦ ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† with the following branches:")
-    println(io, "with ϕᵢⱼ | Pᵢ | Pⱼ:")
+    print(io, "with ϕᵢⱼ | Pᵢ | Pⱼ:")
     for ((di,dj), χ) in zip(pc.paulis, pc.weights)
+        println(io)
         print(io, " ")
         print(IOContext(io, :compact => true), χ)
-        println(io, " | ", di, " | ", dj)
+        print(io, " | ", di, " | ", dj)
     end
 end
 

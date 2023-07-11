@@ -9,6 +9,7 @@
 ## v0.8.12 - dev
 
 - Initial implementation of non-Clifford simulation (mainly for circuits that are slightly non-Clifford, e.g. containing T gates). See `StabMixture`, `PauliChannel`, and `tT`.
+- `embed` implemented for `PauliOperator` and `PauliChannel`
 
 ## v0.8.11 - 2023-07-10
 
