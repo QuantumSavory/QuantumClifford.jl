@@ -17,6 +17,7 @@ function apply!(state::AbstractStabilizer, m::PauliMeasurement)
     state
 end
 
+
 """A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`.
 
 `apply!(state, cliff, indices)` and `apply!(state, SparseGate(cliff, indices))` give the same result."""
@@ -31,7 +32,12 @@ function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
     apply!(state, g.cliff, g.indices; kwargs...)
 end
 
-"""Reset the specified qubits to the given state."""
+"""Reset the specified qubits to the given state.
+
+Be careful, this operation implies first tracing out the qubits, which can lead to mixed states
+if these qubits were entangled with the rest of the system.
+
+See also: [`sMRZ`](@ref)"""
 struct Reset{T<:Tableau} <: AbstractOperation # TODO simplify type parameters (remove nesting)
     resetto::Stabilizer{T}
     indices::Vector{Int}
@@ -63,6 +69,40 @@ function applywstatus!(s::AbstractQCState, m::BellMeasurement)
     end
 end
 
+function applybranches(s::AbstractQCState, m::BellMeasurement; max_order=1)
+    n = nqubits(s)
+    [(ns,iseven(r>>1 + m.parity) ? continue_stat : failure_stat, p,0)
+     for (ns,r,p) in _applybranches_measurement([(s,0x0,1.0)],m.measurements,n)]
+end
+
+# TODO XXX THIS IS PARTICULARLY INEFFICIENT recurrent implementation
+function _applybranches_measurement(branches, measurements, n)
+    if length(measurements) == 0
+        return branches
+    end
+
+    new_branches = []
+    pauli = measurements[1]
+    otherpaulis = measurements[2:end]
+
+    for (s,r0,p) in branches
+        _,anticom,r = project!(quantumstate(s),pauli)
+        if isnothing(r) # TODO anticom could be zero if there was a rank change
+            s1 = s
+            s2 = copy(s)
+            r1 = phases(stabilizerview(s1))[anticom] = 0x00
+            r2 = phases(stabilizerview(s2))[anticom] = 0x02
+            push!(new_branches, (s1,r0+r1,p/2))
+            push!(new_branches, (s2,r0+r2,p/2))
+        else
+            push!(new_branches, (s,r0+r,p))
+        end
+    end
+
+    return _applybranches_measurement(new_branches, otherpaulis, n)
+end
+
+
 """A "probe" to verify that the state of the qubits corresponds to a desired `good_state`, e.g. at the end of the execution of a circuit."""
 struct VerifyOp <: AbstractOperation
     good_state::Stabilizer
@@ -84,3 +124,5 @@ function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the oth
     end
     return s, true_success_stat
 end
+
+operatordeterminism(::Type{VerifyOp}) = DeterministicOperatorTrait()

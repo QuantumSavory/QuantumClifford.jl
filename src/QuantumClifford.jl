@@ -8,14 +8,14 @@ module QuantumClifford
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
 import LinearAlgebra
-using LinearAlgebra: inv, mul!, rank
+using LinearAlgebra: inv, mul!, rank, Adjoint, dot
+import DataStructures
+using DataStructures: DefaultDict, Accumulator
+using Combinatorics: combinations
+using Base.Cartesian
 using DocStringExtensions
-using Polyester
-#using LoopVectorization
-using HostCPUFeatures: pick_vector_width
-import SIMD
 
-import QuantumInterface: tensor, ⊗, tensor_pow, apply!, nqubits, expect, project!, reset_qubits!, traceout!, ptrace, apply!, projectX!, projectY!, projectZ!, entanglement_entropy
+import QuantumInterface: tensor, ⊗, tensor_pow, apply!, nqubits, expect, project!, reset_qubits!, traceout!, ptrace, apply!, projectX!, projectY!, projectZ!, entanglement_entropy, embed
 
 export
     @P_str, PauliOperator, ⊗, I, X, Y, Z,
@@ -25,9 +25,10 @@ export
     prodphase, comm,
     nqubits,
     stabilizerview, destabilizerview, logicalxview, logicalzview, phases,
+    fastcolumn, fastrow,
     bitview, quantumstate, tab,
     BadDataStructure,
-    affectedqubits,
+    affectedqubits, #TODO move to QuantumInterface?
     # GF2
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     # Canonicalization
@@ -40,7 +41,7 @@ export
     generate!, project!, reset_qubits!, traceout!,
     projectX!, projectY!, projectZ!,
     projectrand!, projectXrand!, projectYrand!, projectZrand!,
-    puttableau!,
+    puttableau!, embed,
     # Clifford Ops
     CliffordOperator, @C_str, permute,
     tCNOT, tCPHASE, tSWAP, tHadamard, tPhase, tId1,
@@ -51,7 +52,7 @@ export
     sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZCX, sZCY, sZCZ,
     # Misc Ops
     SparseGate,
-    sMX, sMY, sMZ, PauliMeasurement, Reset,
+    sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
     BellMeasurement,
     VerifyOp,
     Register,
@@ -75,6 +76,10 @@ export
     # mctrajectories
     CircuitStatus, continue_stat, true_success_stat, false_success_stat, failure_stat,
     mctrajectory!, mctrajectories, applywstatus!,
+    # petrajectories
+    petrajectories, applybranches,
+    # nonclifford
+    StabMixture, PauliChannel, tT,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
@@ -92,6 +97,8 @@ function __init__()
     BIG_INT_TWO[] = BigInt(2)
     BIG_INT_FOUR[] = BigInt(4)
 end
+
+const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you attempting are creating a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -112,135 +119,7 @@ include("macrotools.jl")
 abstract type AbstractOperation end
 abstract type AbstractCliffordOperator <: AbstractOperation end
 
-"""
-A multi-qubit Pauli operator (``±\\{1,i\\}\\{I,Z,X,Y\\}^{\\otimes n}``).
-
-A Pauli can be constructed with the `P` custom string macro or by building
-up one through products and tensor products of smaller operators.
-
-```jldoctest
-julia> pauli3 = P"-iXYZ"
--iXYZ
-
-julia> pauli4 = 1im * pauli3 ⊗ X
-+ XYZX
-
-julia> Z*X
-+iY
-```
-
-We use a typical F(2,2) encoding internally. The X and Z bits are stored
-in a single concatenated padded array of UInt chunks of a bit array.
-
-```jldoctest
-julia> p = P"-IZXY";
-
-
-julia> p.xz
-2-element Vector{UInt64}:
- 0x000000000000000c
- 0x000000000000000a
-```
-
-You can access the X and Z bits through getters and setters or through the
-`xview`, `zview`, `xbit`, and `zbit` functions.
-
-```jldoctest
-julia> p = P"XYZ"; p[1]
-(true, false)
-
-julia> p[1] = (true, true); p
-+ YYZ
-```
-"""
-struct PauliOperator{Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} <: AbstractCliffordOperator
-    phase::Tz
-    nqubits::Int
-    xz::Tv
-end
-
-PauliOperator(phase::UInt8, nqubits::Int, xz::Tv) where Tv<:AbstractVector{<:Unsigned} = PauliOperator(fill(UInt8(phase),()), nqubits, xz)
-PauliOperator(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator(fill(UInt8(phase),()), length(x), vcat(reinterpret(UInt,BitVector(x).chunks),reinterpret(UInt,BitVector(z).chunks)))
-PauliOperator(x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator(0x0, x, z)
-PauliOperator(xz::AbstractVector{Bool}) = PauliOperator(0x0, (@view xz[1:end÷2]), (@view xz[end÷2+1:end]))
-
-"""Get a view of the X part of the `UInt` array of packed qubits of a given Pauli operator."""
-function xview(p::PauliOperator)
-    @view p.xz[1:end÷2]
-end
-"""Get a view of the Y part of the `UInt` array of packed qubits of a given Pauli operator."""
-function zview(p::PauliOperator)
-    @view p.xz[end÷2+1:end]
-end
-"""Extract as a new bit array the X part of the `UInt` array of packed qubits of a given Pauli operator."""
-function xbit(p::PauliOperator)
-    one = eltype(p.xz)(1)
-    size = sizeof(eltype(p.xz))*8
-    [(word>>s)&one==one for word in xview(p) for s in 0:size-1][begin:p.nqubits]
-end
-"""Extract as a new bit array the Z part of the `UInt` array of packed qubits of a given Pauli operator."""
-function zbit(p::PauliOperator)
-    one = eltype(p.xz)(1)
-    size = sizeof(eltype(p.xz))*8
-    [(word>>s)&one==one for word in zview(p) for s in 0:size-1][begin:p.nqubits]
-end
-
-function _P_str(a)
-    letters = filter(x->occursin(x,"_IZXY"),a)
-    phase = phasedict[strip(filter(x->!occursin(x,"_IZXY"),a))]
-    PauliOperator(phase, [l=='X'||l=='Y' for l in letters], [l=='Z'||l=='Y' for l in letters])
-end
-
-macro P_str(a)
-    quote _P_str($a) end
-end
-
-Base.getindex(p::PauliOperator{Tz,Tv}, i::Int) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = (p.xz[_div(Tve, i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0, (p.xz[end÷2+_div(Tve,i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0
-Base.getindex(p::PauliOperator{Tz,Tv}, r) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = PauliOperator(p.phase[], xbit(p)[r], zbit(p)[r])
-
-function Base.setindex!(p::PauliOperator{Tz,Tv}, (x,z)::Tuple{Bool,Bool}, i) where {Tz, Tve, Tv<:AbstractVector{Tve}}
-    if x
-        p.xz[_div(Tve,i-1)+1] |= Tve(0x1)<<_mod(Tve,i-1)
-    else
-        p.xz[_div(Tve,i-1)+1] &= ~(Tve(0x1)<<_mod(Tve,i-1))
-    end
-    if z
-        p.xz[end÷2+_div(Tve,i-1)+1] |= Tve(0x1)<<_mod(Tve,i-1)
-    else
-        p.xz[end÷2+_div(Tve,i-1)+1] &= ~(Tve(0x1)<<_mod(Tve,i-1))
-    end
-    p
-end
-
-Base.firstindex(p::PauliOperator) = 1
-
-Base.lastindex(p::PauliOperator) = p.nqubits
-
-Base.eachindex(p::PauliOperator) = 1:p.nqubits
-
-Base.size(pauli::PauliOperator) = (pauli.nqubits,)
-
-Base.length(pauli::PauliOperator) = pauli.nqubits
-
-nqubits(pauli::PauliOperator) = pauli.nqubits
-
-Base.:(==)(l::PauliOperator, r::PauliOperator) = r.phase==l.phase && r.nqubits==l.nqubits && r.xz==l.xz
-
-Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.xz, h)))
-
-Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
-
-_nchunks(i::Int,T::Type{<:Unsigned}) = 2*( (i-1) ÷ (8*sizeof(T)) + 1 )
-Base.zero(::Type{PauliOperator{Tz, Tv}}, q) where {Tz,T<:Unsigned,Tv<:AbstractVector{T}} = PauliOperator(zeros(UInt8), q, zeros(T, _nchunks(q,T)))
-Base.zero(::Type{PauliOperator}, q) = zero(PauliOperator{Array{UInt8, 0}, Vector{UInt}}, q)
-Base.zero(p::P) where {P<:PauliOperator} = zero(P, nqubits(p))
-
-"""Zero-out the phases and single-qubit operators in a [`PauliOperator`](@ref)"""
-@inline function zero!(p::PauliOperator{Tz,Tv}) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}}
-    fill!(p.xz, zero(Tve))
-    p.phase[] = 0x0
-    p
-end
+include("pauli_operator.jl")
 
 ##############################
 # Generic Tableaux
@@ -692,7 +571,8 @@ function MixedDestabilizer(d::Destabilizer)
     end
 end
 
-function MixedDestabilizer(d::MixedStabilizer) MixedDestabilizer(stabilizerview(d)) end
+MixedDestabilizer(d::MixedStabilizer) = MixedDestabilizer(stabilizerview(d))
+MixedDestabilizer(d::MixedDestabilizer) = d
 
 Base.length(d::MixedDestabilizer) = length(d.tab)÷2
 
@@ -850,92 +730,6 @@ comm(l::Tableau, r::PauliOperator) = comm(r, l)
 
 Base.:(*)(l::PauliOperator, r::PauliOperator) = mul_left!(copy(r),l)
 
-"""Nonvectorized version of `mul_left!` used for unit tests."""
-function _mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
-    if !phases
-        r .⊻= l
-        return zero(T)
-    end
-    cnt1 = zero(T)
-    cnt2 = zero(T)
-    len = length(l)÷2
-    @inbounds @simd for i in 1:len
-        x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
-        r[i] = newx1 = x1 ⊻ x2
-        r[i+len] = newz1 = z1 ⊻ z2
-        x1z2 = x1 & z2
-        anti_comm = (x2 & z1) ⊻ x1z2
-        cnt2 ⊻= (cnt1 ⊻ newx1 ⊻ newz1 ⊻ x1z2) & anti_comm
-        cnt1 ⊻= anti_comm
-    end
-    s = count_ones(cnt1)
-    s ⊻= count_ones(cnt2) << 1
-    s
-end
-
-function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}=Val(true))::UInt8 where {T<:Unsigned, B}
-    if !B
-        r .⊻= l
-        return UInt8(0x0)
-    end
-    len = length(l)÷2
-    veclen = Int(pick_vector_width(T)) # TODO remove the Int cast
-    rcnt1 = 0
-    rcnt2 = 0
-    packs = len÷veclen
-    VT = SIMD.Vec{veclen,T}
-    if packs>0
-        cnt1 = zero(VT)
-        cnt2 = zero(VT)
-        lane = SIMD.VecRange{veclen}(0)
-        @inbounds for i in 1:veclen:(len-veclen+1)
-            # JET-XXX The ::VT should not be necessary, but they help with inference
-            x1::VT, x2::VT, z1::VT, z2::VT = l[i+lane], r[i+lane], l[i+len+lane], r[i+len+lane]
-            r[i+lane] = newx1 = x1 ⊻ x2
-            r[i+len+lane] = newz1 = z1 ⊻ z2
-            x1z2 = x1 & z2
-            anti_comm = (x2 & z1) ⊻ x1z2
-            cnt2 ⊻= (newx1 ⊻ newz1 ⊻ x1z2) & anti_comm
-            cnt1 ⊻= anti_comm
-        end
-        for i in 1:length(cnt1)
-            rcnt1 += count_ones(cnt1[i])
-        end
-        for i in 1:length(cnt2)
-            rcnt2 += count_ones(cnt2[i])
-        end
-    end
-    scnt1 = zero(T)
-    scnt2 = zero(T)
-    @inbounds for i in (packs*veclen+1):len # same code for the pieces that do not fit in a vector at the end (TODO padding would simplify the code)
-        x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
-        r[i] = newx1 = x1 ⊻ x2
-        r[i+len] = newz1 = z1 ⊻ z2
-        x1z2 = x1 & z2
-        anti_comm = (x2 & z1) ⊻ x1z2
-        scnt2 ⊻= (scnt1 ⊻ newx1 ⊻ newz1 ⊻ x1z2) & anti_comm
-        scnt1 ⊻= anti_comm
-    end
-    rcnt1 += count_ones(scnt1)
-    rcnt2 += count_ones(scnt2)
-    UInt8((rcnt1 ⊻ (rcnt2<<1))&0x3)
-end
-
-@inline function mul_left!(r::PauliOperator, l::PauliOperator; phases::Val{B}=Val(true)) where B
-    nqubits(l)==nqubits(r) || throw(DimensionMismatch("The two Pauli operators should have the same length!")) # TODO skip this when @inbounds is set
-    s = mul_left!(r.xz, l.xz, phases=phases)
-    B && (r.phase[] = (s+r.phase[]+l.phase[])&0x3)
-    r
-end
-
-@inline function mul_left!(r::PauliOperator, l::Tableau, i::Int; phases::Val{B}=Val(true)) where B
-    s = mul_left!(r.xz, (@view l.xzs[:,i]), phases=phases)
-    B && (r.phase[] = (s+r.phase[]+l.phases[i])&0x3)
-    r
-end
-
-@inline mul_left!(r::PauliOperator, l::Stabilizer, i::Int; phases::Val{B}=Val(true)) where B = mul_left!(r, tab(l), i; phases=phases)
-
 (⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator((l.phase[]+r.phase[])&0x3, vcat(xbit(l),xbit(r)), vcat(zbit(l),zbit(r)))
 
 function Base.:(*)(l::Number, r::PauliOperator)
@@ -999,34 +793,6 @@ end
     rowswap!(t, i, j; phases)
     n = nqubits(s)
     rowswap!(t, i+n, j+n; phases)
-end
-
-@inline function mul_left!(s::Tableau, m, i; phases::Val{B}=Val(true)) where B
-    extra_phase = mul_left!((@view s.xzs[:,m]), (@view s.xzs[:,i]); phases=phases)
-    B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
-    s
-end
-
-@inline function mul_left!(s::Stabilizer, m, i; phases::Val{B}=Val(true)) where B
-    mul_left!(tab(s), m, i; phases)
-end
-
-@inline function mul_left!(s::Destabilizer, i, j; phases::Val{B}=Val(true)) where B
-    t = tab(s)
-    mul_left!(t, j, i; phases=Val(false)) # Indices are flipped to preserve commutation constraints
-    n = size(t,1)÷2
-    mul_left!(t, i+n, j+n; phases=phases)
-end
-
-@inline function mul_left!(s::MixedStabilizer, i, j; phases::Val{B}=Val(true)) where B
-    mul_left!(tab(s), i, j; phases=phases)
-end
-
-@inline function mul_left!(s::MixedDestabilizer, i, j; phases::Val{B}=Val(true)) where B
-    t = tab(s)
-    mul_left!(t, j, i; phases=Val(false)) # Indices are flipped to preserve commutation constraints
-    n = nqubits(t)
-    mul_left!(t, i+n, j+n; phases=phases)
 end
 
 # TODO is this used anywhere?
@@ -1172,13 +938,21 @@ end
 ##############################
 
 """The F(2,2) matrix of a given tableau, represented as the concatenation of two binary matrices, one for X and one for Z."""
-function stab_to_gf2(s::Tableau)::Matrix{Bool}
+function stab_to_gf2(s::Tableau)
     r, n = size(s)
     H = zeros(Bool,r,2n)
     for iᵣ in 1:r
         @inbounds @simd for iₙ in 1:n
             H[iᵣ,iₙ], H[iᵣ,iₙ+n] = s[iᵣ,iₙ]
         end
+    end
+    H
+end
+function stab_to_gf2(p::PauliOperator)
+    n = nqubits(p)
+    H = zeros(Bool,2n)
+    @inbounds @simd for i in 1:n
+        H[i], H[i+n] = p[i]
     end
     H
 end
@@ -1358,27 +1132,41 @@ function mixed_destab_looks_good(destabilizer)
     return true
 end
 
+# base tableaux handling
+include("mul_leftright.jl")
 include("canonicalization.jl")
-include("dense_cliffords.jl")
 include("project_trace_reset.jl")
-include("linalg.jl")
+include("fastmemlayout.jl")
+# dense clifford operator tableaux
+include("dense_cliffords.jl")
+# special one- and two- qubit operators
 include("symbolic_cliffords.jl")
+include("linalg.jl")
+# circuits
+include("operator_traits.jl")
 include("mctrajectory.jl")
+include("petrajectory.jl")
 include("misc_ops.jl")
 include("classical_register.jl")
-include("enumeration.jl")
-include("randoms.jl")
-include("useful_states.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
+# common states and operators
+include("enumeration.jl")
+include("randoms.jl")
+include("useful_states.jl")
+#
 include("experimental/Experimental.jl")
+#
 include("graphs.jl")
+#
 include("entanglement.jl")
+#
 include("tableau_show.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
+include("nonclifford.jl")
 include("plotting_extensions.jl")
 include("qoptics_extensions.jl")
 

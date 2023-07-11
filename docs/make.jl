@@ -9,6 +9,9 @@ using QuantumInterface
 
 #DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
 
+ENV["LINES"] = 80    # for forcing `displaysize(io)` to be big enough
+ENV["COLUMNS"] = 80
+
 bib = CitationBibliography(joinpath(@__DIR__,"src/references.bib"))
 
 makedocs(
@@ -34,6 +37,7 @@ pages = [
     "Simulation of Noisy Circuits" => "noisycircuits.md",
     "Monte Carlo" => "noisycircuits_mc.md",
     "Perturbative Expansions" => "noisycircuits_perturb.md",
+    "ECC example" => "ecc_example_sim.md",
     "Circuit Operations" => "noisycircuits_ops.md",
     "API" => "noisycircuits_API.md"
 ],
@@ -46,5 +50,5 @@ pages = [
 )
 
 deploydocs(
-    repo = "github.com/Krastanov/QuantumClifford.jl.git"
+    repo = "github.com/QuantumSavory/QuantumClifford.jl.git"
 )

@@ -133,6 +133,7 @@ SUITE["circuitsim"]["pftrajectories_sumtype"]["q101_r1"]      = @benchmarkable p
 SUITE["circuitsim"]["pftrajectories_sumtype"]["q1001_r1"]     = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame(   1, 1001, 1); circuit=compactify_circuit(x_diag_circuit(1000))) evals=1
 SUITE["circuitsim"]["pftrajectories_sumtype"]["q1001_r100"]   = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame( 100, 1001, 1); circuit=compactify_circuit(x_diag_circuit(1000))) evals=1
 SUITE["circuitsim"]["pftrajectories_sumtype"]["q1001_r10000"] = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame(1000, 1001, 1); circuit=compactify_circuit(x_diag_circuit(1000))) evals=1
+SUITE["circuitsim"]["pftrajectories_sumtype"]["q1001_r10000_fastrow"] = @benchmarkable pftrajectories(state,circuit) setup=(state=fastrow(PauliFrame(1000, 1001, 1)); circuit=compactify_circuit(x_diag_circuit(1000))) evals=1
 SUITE["circuitsim"]["mctrajectories_sumtype"] = BenchmarkGroup(["mctrajectories_sumtype"])
 SUITE["circuitsim"]["mctrajectories_sumtype"]["q101_r1"]    = @benchmarkable mctrajectory!(state, circuit) setup=(state=Register(one(Stabilizer,  101), [false]); circuit=compactify_circuit(x_diag_circuit( 100))) evals=1
 SUITE["circuitsim"]["mctrajectories_sumtype"]["q1001_r1"]   = @benchmarkable mctrajectory!(state, circuit) setup=(state=Register(one(Stabilizer, 1001), [false]); circuit=compactify_circuit(x_diag_circuit(1000))) evals=1

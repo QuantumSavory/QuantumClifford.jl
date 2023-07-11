@@ -13,7 +13,7 @@ end
 _show(io::IO, p::PauliOperator, limit=50) = print(io, ["+ ","+i","- ","-i"][p.phase[]+1]*xz2str_limited(xbit(p),zbit(p), limit))
 
 function Base.show(io::IO, p::PauliOperator)
-    if get(io, :compact, false)
+    if get(io, :compact, false) | haskey(io, :typeinfo)
         _show(io, p, 10)
     elseif get(io, :limit, false)
         sz = displaysize(io)
@@ -41,7 +41,7 @@ function _show(io::IO, t::Tableau, limit=50, limit_vertical=20)
 end
 
 function Base.show(io::IO, t::Tableau)
-    if get(io, :compact, false)
+    if get(io, :compact, false) | haskey(io, :typeinfo)
         r,q = size(t)
         print(io, "Tableaux $r×$q")
     elseif get(io, :limit, false)
@@ -53,7 +53,7 @@ function Base.show(io::IO, t::Tableau)
 end
 
 function Base.show(io::IO, s::Stabilizer)
-    if get(io, :compact, false)
+    if get(io, :compact, false) | haskey(io, :typeinfo)
         r,q = size(s)
         print(io, "Stabilizer $r×$q")
     else
@@ -62,7 +62,7 @@ function Base.show(io::IO, s::Stabilizer)
 end
 
 function Base.show(io::IO, s::MixedStabilizer)
-    if get(io, :compact, false)
+    if get(io, :compact, false) | haskey(io, :typeinfo)
         r,q = size(stabilizerview(s))
         print(io, "MixedStabilizer $r×$q")
     else
@@ -71,7 +71,7 @@ function Base.show(io::IO, s::MixedStabilizer)
 end
 
 function Base.show(io::IO, d::Destabilizer)
-    if get(io, :compact, false)
+    if get(io, :compact, false) | haskey(io, :typeinfo)
         r,q = size(stabilizerview(d))
         print(io, "Destablizer $r×$q")
     elseif get(io, :limit, false)
@@ -91,7 +91,7 @@ end
 function Base.show(io::IO, d::MixedDestabilizer)
     r = rank(d)
     q = nqubits(d)
-    if get(io, :compact, false)
+    if get(io, :compact, false) | haskey(io, :typeinfo)
         print(io, "MixedDestablizer $r×$q")
     elseif get(io, :limit, false)
         h,w = displaysize(io)
@@ -159,9 +159,9 @@ function _show(io::IO, c::CliffordOperator, limit=50, limit_vertical=20)
 end
 
 function Base.show(io::IO, c::CliffordOperator)
-    if get(io, :compact, false)
+    if get(io, :compact, false) | haskey(io, :typeinfo)
         q = nqubits(c)
-        print(io, "Clifford $q qubits")
+        print(io, "CliffordOperator on $q qubits")
     elseif get(io, :limit, false)
         sz = displaysize(io)
         _show(io, c, sz[2], sz[1])

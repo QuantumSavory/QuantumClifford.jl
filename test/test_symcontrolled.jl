@@ -65,3 +65,34 @@ end
         end
     end
 end
+
+@testset "Control-Target swap" begin
+    for control in (:X, :Z, :Y)
+        for target in (:X, :Z, :Y)
+            forwgate = eval(Symbol(:s,control,:C,target))(1,2)
+            backgate = eval(Symbol(:s,target,:C,control))(1,2)
+            forwgatedense = CliffordOperator(forwgate, 2)
+            backgatedense = CliffordOperator(backgate, 2)
+            @test forwgatedense == tSWAP*backgatedense*tSWAP
+        end
+    end
+
+    for control in (:X, :Z, :Y)
+        for target in (:X, :Z, :Y)
+            forwgate = eval(Symbol(:s,control,:C,target))(1,2)
+            backgate = eval(Symbol(:s,target,:C,control))(2,1)
+            forwgatedense = CliffordOperator(forwgate, 2)
+            backgatedense = CliffordOperator(backgate, 2)
+            @test forwgatedense == backgatedense
+        end
+    end
+
+    for (gate1,gate2) in (
+        (sCNOT(1,2), sZCX(1,2)),
+        (sCPHASE(1,2), sZCZ(1,2)),
+    )
+        gate1dense = CliffordOperator(gate1, 2)
+        gate2dense = CliffordOperator(gate2, 2)
+        @test gate1dense == gate2dense
+    end
+end

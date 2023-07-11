@@ -75,11 +75,14 @@ julia> s = S"XXXX
              ZIIZ";
 
 
-julia> canonicalize!(s, ranks=true)
-(+ XXXX
+julia> _, ix, iz = canonicalize!(s, ranks=true); ix, iz
+(1, 3)
+
+julia> s
++ XXXX
 + Z__Z
 + _Z_Z
-+ ____, 1, 3)
++ ____
 ```
 
 Based on [garcia2012efficient](@cite).
