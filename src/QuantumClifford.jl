@@ -80,7 +80,9 @@ export
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
-    compactify_circuit
+    compactify_circuit,
+    # gpu gpu_adapters
+    to_cpu, to_gpu
 
 
 const BIG_INT_MINUS_ONE = Ref{BigInt}()
