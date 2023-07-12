@@ -31,6 +31,22 @@ const _i₋ = qo._i₋
     end
 end
 
+@testset "conversion from CliffordOperator to Operator" begin
+    for n in 1:3
+        for _c in 1:5
+            cliff = random_clifford(n)
+            U = Operator(cliff)
+            for _c in 1:5
+                stab = random_stabilizer(n)
+                ψ₁ = Ket(stab)
+                ψ₂ = Ket(apply!(stab,cliff))
+                # test they are equal up to a phase
+                @test all(x->isnan(x)||abs(x)≈1/sqrt(2^n) , (U*ψ₁).data ./ ψ₂.data)
+            end
+        end
+    end
+end
+
 @testset "conversion from StabMixture to Operator" begin
     for n in 1:5
         stab = random_stabilizer(n)

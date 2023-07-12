@@ -146,22 +146,87 @@ function Operator(p::UnitaryPauliChannel)
     return sum(w*Operator(p) for (p,w) in zip(p.paulis,p.weights))
 end
 
-
-# TODO you need to decide on big or small endian -- what would make it match QuantumOpticsBase?
-function bitstring_to_stabilizer(bitstring::Integer, n::Int)
-    s = one(Stabilizer,n)
-    for i in 1:n
-        if bitstring & (1<<(n-i)) != 0
-            s.tab.phases[i] = 0x2
-        end
-    end
-    s
-end
-
-# TODO this is not yet functional as it misses the phase
 function cliff_to_unitary(cliff)
-    basis = [bitstring_to_stabilizer(b,nqubits(cliff)) for b in 0:2^nqubits(cliff)-1]
-    sum((projector(stab_to_ket(b),stab_to_ket(cliff*b)') for b in basis))
+    n = nqubits(cliff)
+    b = bell(n, localorder=true)
+    apply!(b, cliff, 1:n)
+    ψ = Ket(b)
+    Operator(SpinBasis(1//2)^n,reshape(ψ.data, (2^n,2^n)))
+end
+
+"""
+$TYPEDSIGNATURES
+
+Convert a `QuantumClifford.CliffordOperator` to `QuantumOptics.Operator`.
+
+```jldoctest
+julia> Operator(tHadamard)
+Operator(dim=2x2)
+  basis: Spin(1/2)
+ 0.5+0.0im   0.5+0.0im
+ 0.5+0.0im  -0.5+0.0im
+
+julia> Operator(tId1⊗tHadamard)
+Operator(dim=4x4)
+  basis: [Spin(1/2) ⊗ Spin(1/2)]
+ 0.353553+0.0im       0.0+0.0im   0.353553+0.0im        0.0+0.0im
+      0.0+0.0im  0.353553+0.0im        0.0+0.0im   0.353553+0.0im
+ 0.353553+0.0im       0.0+0.0im  -0.353553+0.0im        0.0+0.0im
+      0.0+0.0im  0.353553+0.0im        0.0+0.0im  -0.353553+0.0im
+
+julia> Operator(tCNOT)
+Operator(dim=4x4)
+  basis: [Spin(1/2) ⊗ Spin(1/2)]
+ 0.5+0.0im  0.0+0.0im  0.0+0.0im  0.0+0.0im
+ 0.0+0.0im  0.0+0.0im  0.0+0.0im  0.5+0.0im
+ 0.0+0.0im  0.0+0.0im  0.5+0.0im  0.0+0.0im
+ 0.0+0.0im  0.5+0.0im  0.0+0.0im  0.0+0.0im
+```
+
+This conversion expects a dense tableau of type [`CliffordOperator`](@ref) as input.
+If you are working with some of the implicit (a.k.a. small/sparse/symbolic) types of gates
+(e.g. [`sCNOT`](@ref)), you need to first convert them to `CliffordOperator`.
+
+```jldoctest
+julia> Operator(CliffordOperator(sHadamard))
+Operator(dim=2x2)
+  basis: Spin(1/2)
+ 0.5+0.0im   0.5+0.0im
+ 0.5+0.0im  -0.5+0.0im
+
+julia> Operator(CliffordOperator(sHadamard(1), 1))
+Operator(dim=2x2)
+  basis: Spin(1/2)
+ 0.5+0.0im   0.5+0.0im
+ 0.5+0.0im  -0.5+0.0im
+
+julia> Operator(CliffordOperator(sHadamard(1), 2))
+Operator(dim=4x4)
+  basis: [Spin(1/2) ⊗ Spin(1/2)]
+ 0.353553+0.0im   0.353553+0.0im       0.0+0.0im        0.0+0.0im
+ 0.353553+0.0im  -0.353553+0.0im       0.0+0.0im        0.0+0.0im
+      0.0+0.0im        0.0+0.0im  0.353553+0.0im   0.353553+0.0im
+      0.0+0.0im        0.0+0.0im  0.353553+0.0im  -0.353553+0.0im
+
+julia> Operator(CliffordOperator(sHadamard(2), 2))
+Operator(dim=4x4)
+  basis: [Spin(1/2) ⊗ Spin(1/2)]
+ 0.353553+0.0im       0.0+0.0im   0.353553+0.0im        0.0+0.0im
+      0.0+0.0im  0.353553+0.0im        0.0+0.0im   0.353553+0.0im
+ 0.353553+0.0im       0.0+0.0im  -0.353553+0.0im        0.0+0.0im
+      0.0+0.0im  0.353553+0.0im        0.0+0.0im  -0.353553+0.0im
+
+julia> Operator(CliffordOperator(sHadamard(2), 1, compact=true))
+Operator(dim=2x2)
+  basis: Spin(1/2)
+ 0.5+0.0im   0.5+0.0im
+ 0.5+0.0im  -0.5+0.0im
+```
+"""
+function Operator(c::CliffordOperator)
+    cliff_to_unitary(c)
 end
 
 end
+
+##
