@@ -24,10 +24,12 @@ SumTypes = "8e1ec7a9-0e02-4297-b0fe-6433085c89f2"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Quantikz = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
+QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
 
 [extensions]
 QuantumCliffordMakieExt = "Makie"
 QuantumCliffordPlotsExt = "Plots"
+QuantumCliffordQOpticsExt = "QuantumOpticsBase"
 QuantumCliffordQuantikzExt = "Quantikz"
 
 [compat]
@@ -44,6 +46,7 @@ Plots = "1.38.0"
 PrecompileTools = "1"
 Quantikz = "1.2"
 QuantumInterface = "0.3.0"
+QuantumOpticsBase = "0.4"
 SIMD = "3.4.0"
 SumTypes = "0.4.4, 0.5"
 julia = "1.9"

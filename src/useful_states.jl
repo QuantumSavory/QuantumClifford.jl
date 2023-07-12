@@ -81,8 +81,21 @@ function bell()
            ZZ")
 end
 
-function bell(n::Int)
-    tensor_pow(bell(), n)
+function bell(n::Int; localorder=false)
+    if localorder
+        return bell_local(n)
+    else
+        return tensor_pow(bell(), n)
+    end
+end
+
+function bell_local(n)
+    s = zero(Stabilizer, 2n)
+    for i in 1:n
+        s[i,i] = s[i,i+n] = (true, false)
+        s[i+n,i] = s[i+n,i+n] = (false, true)
+    end
+    s
 end
 
 function bell(phase::Tuple{Bool, Bool})
