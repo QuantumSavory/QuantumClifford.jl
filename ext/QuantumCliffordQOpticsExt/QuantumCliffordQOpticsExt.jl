@@ -75,21 +75,77 @@ Ket(s::QuantumClifford.AbstractStabilizer) = stab_to_ket(s)
 function stabmix_to_densityop(s::StabMixture)
     ρ₀ = zero(dm(Ket(s.stab)))
     for ((Pₗᵇⁱᵗˢ,Pᵣᵇⁱᵗˢ), χ) in s.destabweights
-        branch_state = copy(s.stab)
+        ρ̃ = dm(Ket(s.stab))
         destab = destabilizerview(s.stab)
         p = zero(destab[1])
         for (i,b) in enumerate(Pₗᵇⁱᵗˢ)
             b && mul_left!(p, destab, i)
         end
+        ρ̃ = Operator(p)*ρ̃
+        p = zero(destab[1])
         for (i,b) in enumerate(Pᵣᵇⁱᵗˢ)
-            b && mul_right!(p, destab, i)
+            b && mul_left!(p, destab, i)
         end
-        ρ₀ += dm(Ket(branch_state))
+        ρ̃ = ρ̃*Operator(p)
+        ρ₀ += χ*ρ̃
     end
     return ρ₀
 end
 
+"""
+$TYPEDSIGNATURES
+
+"""
 Operator(s::StabMixture) = stabmix_to_densityop(s)
+
+
+"""
+$TYPEDSIGNATURES
+
+Convert a `QuantumClifford.PauliOperator` to `QuantumOptics.Operator`.
+
+```jldoctest
+julia> Operator(P"Y") |> dense
+Operator(dim=2x2)
+  basis: Spin(1/2)
+ 0.0+0.0im  0.0-1.0im
+ 0.0+1.0im  0.0+0.0im
+
+julia> Operator(P"-I") |> dense
+Operator(dim=2x2)
+  basis: Spin(1/2)
+ -1.0+0.0im   0.0+0.0im
+  0.0+0.0im  -1.0+0.0im
+```
+"""
+function Operator(p::PauliOperator)
+    toop = Dict((false,false)=>_Id,(true,false)=>_x,(false,true)=>_z,(true,true)=>_y)
+    return (im)^p.phase[] * ⊗((toop[p[i]] for i in eachindex(p))...)
+end
+
+"""
+$TYPEDSIGNATURES
+
+Convert a `QuantumClifford.UnitaryPauliChannel` to `QuantumOptics.Operator`.
+
+```jldoctest
+julia> pcT
+A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
+with ϕᵢ | Pᵢ
+ 0.853553+0.353553im | + _
+ 0.146447-0.353553im | + Z
+
+julia> Operator(pcT) |> dense
+Operator(dim=2x2)
+  basis: Spin(1/2)
+ 1.0+0.0im       0.0+0.0im
+ 0.0+0.0im  0.707107+0.707107im
+```
+"""
+function Operator(p::UnitaryPauliChannel)
+    return sum(w*Operator(p) for (p,w) in zip(p.paulis,p.weights))
+end
+
 
 # TODO you need to decide on big or small endian -- what would make it match QuantumOpticsBase?
 function bitstring_to_stabilizer(bitstring::Integer, n::Int)

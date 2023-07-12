@@ -56,24 +56,16 @@ end
 
 function StabMixture(state)
     n = nqubits(state)
-    StabMixture(MixedDestabilizer(state), DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im)) # TODO maybe it should default to Destabilizer, not MixedDestabilizer
+    md = MixedDestabilizer(state)
+    rank(md)==n || throw(ArgumentError(lazy"""
+        Attempting to convert a `Stabilizer`-like object to `StabMixture` object failed,
+        because the initial state does not represent a pure state.
+        Currently only pure states can be used to initialize a `StabMixture` mixture of stabilizer states.
+    """))
+    StabMixture(md, DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im)) # TODO maybe it should default to Destabilizer, not MixedDestabilizer
 end
 
 StabMixture(s::StabMixture) = s
-
-function MixedDestabilizer(s::StabMixture)
-    if length(s.destabweights) != 1
-        throw(DomainError("Trying to convert a non-Clifford state (instance of type StabMixture with more than one term in its sum representation) to a Clifford state (of type MixedDestabilizer). This is not possible. Consider whether you have performed some (unforeseen) non-Clifford operation on the state."))
-    else
-        ((dᵢ, dⱼ), χ) = first(s.destabweights)
-        dᵢ = _stabmixdestab(s.stab, dᵢ) # TODO
-        dⱼ = _stabmixdestab(s.stab, dⱼ) # make
-        stab = copy(s.stab)             # a faster
-        mul_left!(stab, dᵢ)             # in-place
-        mul_right!(stab, dⱼ)            # version
-        return stab
-    end
-end
 
 function Base.show(io::IO, s::StabMixture)
     println(io, "A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is")
@@ -106,20 +98,22 @@ end
 
 abstract type AbstractPauliChannel <: AbstractOperation end
 
-struct TGate <: AbstractPauliChannel
-    qubit::Int
-end
+"""A Pauli channel datastructure, mainly for use with [`StabMixture`](@ref)
 
-"""A Pauli channel datastructure, mainly for use with [`StabMixture`](@ref)"""
+See also: [`UnitaryPauliChannel`](@ref)"""
 struct PauliChannel{T,S} <: AbstractPauliChannel
     paulis::T
     weights::S
     function PauliChannel(paulis, weights)
+        length(paulis) == length(weights) || throw(ArgumentError(lazy"""
+        Attempting to construct a `PauliChannel` failed.
+        The length of the vectors of weights and of Pauli operator pairs differs
+        ($(length(weights)) and $(length(paulis)) respectively).
+        """))
         n = nqubits(paulis[1][1])
         for p in paulis
             n == nqubits(p[1]) == nqubits(p[2]) || throw(ArgumentError(lazy"""
             You are attempting to construct a `PauliChannel` but have provided Pauli operators
-            $(p[1]) and $(p[2])
             that are not all of the same size (same number of qubits).
             Please ensure that all of the Pauli operators being provided of of the same size.
             """))
@@ -158,7 +152,7 @@ function apply!(state::StabMixture, gate::PauliChannel)
             c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ))*2
             dᵢ′ = dₗ .⊻ dᵢ
             dⱼ′ = dᵣ .⊻ dⱼ
-            χ′ = χ * w * (-tone)^c * (tone*im)^(-phaseₗ+phaseᵣ+4)
+            χ′ = χ * w * (-tone)^c * (im)^(-phaseₗ+phaseᵣ+4)
             newdict[(dᵢ′,dⱼ′)] += χ′
         end
     end
@@ -218,11 +212,68 @@ function rowdecompose(pauli,state::Union{MixedDestabilizer, Destabilizer})
     return p, b, c
 end
 
+"""A Pauli channel datastructure, mainly for use with [`StabMixture`](@ref).
+
+More convenient to use than [`PauliChannel`](@ref) when you know your Pauli channel is unitary.
+
+```jldoctest
+julia> Tgate = UnitaryPauliChannel(
+           (I, Z),
+           ((1+exp(im*π/4))/2, (1-exp(im*π/4))/2)
+       )
+A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
+with ϕᵢ | Pᵢ
+ 0.853553+0.353553im | + _
+ 0.146447-0.353553im | + Z
+
+julia> PauliChannel(Tgate)
+Pauli channel ρ ↦ ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† with the following branches:
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.853553+0.0im | + _ | + _
+ 0.0+0.353553im | + _ | + Z
+ 0.0-0.353553im | + Z | + _
+ 0.146447+0.0im | + Z | + Z
+```
+"""
+struct UnitaryPauliChannel{T,S,P} <: AbstractPauliChannel
+    paulis::T
+    weights::S
+    paulichannel::P # caching the conversion the more general non-unitary type of PauliChannel
+    function UnitaryPauliChannel(paulis, weights)
+        n = nqubits(paulis[1])
+        ws = [w₁*w₂' for w₁ in weights for w₂ in weights]
+        ps = [(p₁,p₂) for p₁ in paulis for p₂ in paulis]
+        pc = PauliChannel(ps,ws)
+        new{typeof(paulis),typeof(weights),typeof(pc)}(paulis,weights,pc)
+    end
+end
+
+PauliChannel(p::UnitaryPauliChannel) = p.paulichannel
+
+function Base.show(io::IO, pc::UnitaryPauliChannel)
+    println(io, "A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:")
+    print(io, "with ϕᵢ | Pᵢ")
+    for (p, χ) in zip(pc.paulis, pc.weights)
+        println(io)
+        print(io, " ")
+        print(IOContext(io, :compact => true), χ)
+        print(io, " | ", p)
+    end
+end
+
+function embed(n::Int,idx,pc::UnitaryPauliChannel)
+    UnitaryPauliChannel(map(p->embed(n,idx,p),pc.paulis), pc.weights)
+end
+
+nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
+
+apply!(state::StabMixture, gate::UnitaryPauliChannel) = apply!(state, gate.paulichannel)
+
 ##
 # Predefined Pauli Channels
 ##
 
-const tT = PauliChannel(
-    [(I, I), (I, Z), (Z, I), (Z, Z)],
-    [cos(π/8)^2, -im*sin(π/8)*cos(π/8),  im*sin(π/8)*cos(π/8), sin(π/8)^2]
-    )
+const pcT = UnitaryPauliChannel(
+    (I, Z),
+    ((1+exp(im*π/4))/2, (1-exp(im*π/4))/2)
+)
