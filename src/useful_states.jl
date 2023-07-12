@@ -81,7 +81,7 @@ function bell()
            ZZ")
 end
 
-function bell(n::Int; localorder=true)
+function bell(n::Int; localorder=false)
     if localorder
         return bell_local(n)
     else

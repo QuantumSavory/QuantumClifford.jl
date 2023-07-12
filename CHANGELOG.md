@@ -2,15 +2,14 @@
 
 - `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
-- some support for T gates and other non-clifford behavior
 
 # News
 
-## v0.8.12 - dev
+## v0.8.12 - 2023-07-12
 
-- Initial implementation of non-Clifford simulation (mainly for circuits that are slightly non-Clifford, e.g. containing T gates). See `StabMixture`, `PauliChannel`, and `pcT`.
+- Initial implementation of non-Clifford simulation (mainly for circuits that are slightly non-Clifford, e.g. containing T gates). See `StabMixture`, `PauliChannel`, `UnitaryPauliChannel`, and `pcT`.
 - `embed` implemented for `PauliOperator` and `PauliChannel`.
-- Various convenience constructors that transform a tableaux or an operator into a `Ket` or `Operator` from `QuantumOptics.jl`. Use the constructors directly like `Ket(::Stabilizer)`, etc.
+- Various convenience constructors that transform a tableaux or an operator into a `Ket` or `Operator` from `QuantumOptics.jl`. Use the constructors directly like `Ket(::Stabilizer)`, `Operator(::CliffordOperator)`, etc.
 
 ## v0.8.11 - 2023-07-10
 
