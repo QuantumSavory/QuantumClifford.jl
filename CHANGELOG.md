@@ -8,7 +8,7 @@
 
 ## v0.8.12 - dev
 
-- Initial implementation of non-Clifford simulation (mainly for circuits that are slightly non-Clifford, e.g. containing T gates). See `StabMixture`, `PauliChannel`, and `tT`.
+- Initial implementation of non-Clifford simulation (mainly for circuits that are slightly non-Clifford, e.g. containing T gates). See `StabMixture`, `PauliChannel`, and `pcT`.
 - `embed` implemented for `PauliOperator` and `PauliChannel`.
 - Various convenience constructors that transform a tableaux or an operator into a `Ket` or `Operator` from `QuantumOptics.jl`. Use the constructors directly like `Ket(::Stabilizer)`, etc.
 

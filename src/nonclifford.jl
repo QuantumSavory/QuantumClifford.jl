@@ -26,7 +26,7 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 with ϕᵢⱼ | Pᵢ | Pⱼ:
  1.0+0.0im | + _ | + _
 
-julia> tT
+julia> pcT
 Pauli channel ρ ↦ ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† with the following branches:
 with ϕᵢⱼ | Pᵢ | Pⱼ:
  0.853553+0.0im | + _ | + _
@@ -34,7 +34,7 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
  0.0+0.353553im | + Z | + _
  0.146447+0.0im | + Z | + Z
 
-julia> apply!(StabMixture(S"-X"), tT)
+julia> apply!(StabMixture(S"-X"), pcT)
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
