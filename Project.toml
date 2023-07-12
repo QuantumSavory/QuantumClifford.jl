@@ -24,11 +24,13 @@ SumTypes = "8e1ec7a9-0e02-4297-b0fe-6433085c89f2"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Quantikz = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 
 [extensions]
 QuantumCliffordMakieExt = "Makie"
 QuantumCliffordPlotsExt = "Plots"
 QuantumCliffordQuantikzExt = "Quantikz"
+QuantumCliffordGPUExt = "CUDA"
 
 [compat]
 Combinatorics = "1.0"
