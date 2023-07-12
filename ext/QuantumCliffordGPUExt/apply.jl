@@ -61,9 +61,9 @@ function single_qubit_gpu_kernel(xzs::CuDeviceMatrix{Tme, 1},
     return nothing
 end
 
-function _apply!(stab::QuantumClifford.Stabilizer{QuantumClifford.Tableau{Tz, Tm}},
+function _apply!(stab::StabilizerGPU{T},
     op::QuantumClifford.SingleQubitOperator;
-    phases::Val{B}=Val(true)) where {B, Tz<:CuArray{<:Unsigned, 1}, Tm<:CuArray{<:Unsigned, 2}}
+    phases::Val{B}=Val(true)) where {B, T <: Unsigned}
     # todo how to use phases similar to before in kernel functions??!
     threads_count = 1024 # Change this later
     rows::Unsigned = size(stab, 1)
@@ -105,9 +105,9 @@ function two_qubit_gpu_kernel(xzs::CuDeviceMatrix{Tme, 1},
 end
 
 
-function _apply!(stab::QuantumClifford.Stabilizer, 
+function _apply!(stab::StabilizerGPU{T}, 
                  gate::G; 
-                 phases::Val{B}=Val(true)) where {B, G<:QuantumClifford.AbstractTwoQubitOperator}
+                 phases::Val{B}=Val(true)) where {B, G<:QuantumClifford.AbstractTwoQubitOperator, T <: Unsigned}
     threads_count = 1024 # Change this later
     rows::Unsigned = size(stab, 1)
     blocks_count = ceil(Int, rows/threads_count)

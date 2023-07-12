@@ -1,4 +1,4 @@
-function apply!(f::QuantumClifford.PauliFrame, op::QuantumClifford.AbstractCliffordOperator)
+function apply!(f::PauliFrameGPU{T}, op::QuantumClifford.AbstractCliffordOperator) where {T <: Unsigned}
     _apply!(f.frame, op; phases=Val(false))
     return f
 end
@@ -18,11 +18,10 @@ function apply_sMZ_kernel!(xzs::CuDeviceMatrix{Tme, 1},
     return nothing
 end
 
-function apply!(frame::QuantumClifford.PauliFrame, op::QuantumClifford.sMZ) # TODO sMX, sMY
+function apply!(frame::PauliFrameGPU{T}, op::QuantumClifford.sMZ) where {T <: Unsigned} # TODO sMX, sMY
     op.bit == 0 && return frame
     i = op.qubit
     xzs = frame.frame.tab.xzs
-    T = eltype(xzs)
     lowbit = T(1)
     ibig = QuantumClifford._div(T,i-1)+1
     ismall = QuantumClifford._mod(T,i-1)
@@ -56,10 +55,9 @@ function apply_sMRZ_kernel!(xzs::CuDeviceMatrix{Tme, 1},
     return nothing
 end
 
-function apply!(frame::QuantumClifford.PauliFrame, op::QuantumClifford.sMRZ) # TODO sMRX, sMRY
+function apply!(frame::PauliFrame{T}, op::QuantumClifford.sMRZ) where {T <: Unsigned} # TODO sMRX, sMRY
     i = op.qubit
     xzs = frame.frame.tab.xzs
-    T = eltype(xzs)
     lowbit = T(1)
     ibig = QuantumClifford._div(T,i-1)+1
     ismall = QuantumClifford._mod(T,i-1)
@@ -73,27 +71,27 @@ function apply!(frame::QuantumClifford.PauliFrame, op::QuantumClifford.sMRZ) # T
 end
 
 # todo remove this function later after adding support for CompactifiedCircuit
-function pftrajectories(circuit;trajectories=5000)
-    ccircuit = if eltype(circuit) <: QuantumClifford.CompactifiedGate
-        circuit
-    else
-        circuit
-        ################
-        # Apply Compactify after adding apply! support for it...
-        # QuantumClifford.compactify_circuit(circuit)
-    end
+# function pftrajectories(circuit;trajectories=5000)
+#     ccircuit = if eltype(circuit) <: QuantumClifford.CompactifiedGate
+#         circuit
+#     else
+#         circuit
+#         ################
+#         # Apply Compactify after adding apply! support for it...
+#         # QuantumClifford.compactify_circuit(circuit)
+#     end
 
-    ccircuit = map(normalize_gate, ccircuit); # todo. remove this. there should be something like this embedded in QuantumClifford
+#     ccircuit = map(normalize_gate, ccircuit); # todo. remove this. there should be something like this embedded in QuantumClifford
 
-    qmax=maximum((maximum(QuantumClifford.affectedqubits(g)) for g in ccircuit))
-    bmax=maximum((maximum(QuantumClifford.affectedbits(g),init=1) for g in ccircuit))
-    frames = QuantumClifford.PauliFrame(trajectories, qmax, bmax)
-    frames = to_gpu(frames) # todo we can construct this on gpu in the first place. not moving it later...
-    pftrajectories(frames, ccircuit)
-    return frames
-end
+#     qmax=maximum((maximum(QuantumClifford.affectedqubits(g)) for g in ccircuit))
+#     bmax=maximum((maximum(QuantumClifford.affectedbits(g),init=1) for g in ccircuit))
+#     frames = QuantumClifford.PauliFrame(trajectories, qmax, bmax)
+#     frames = to_gpu(frames) # todo we can construct this on gpu in the first place. not moving it later...
+#     pftrajectories(frames, ccircuit)
+#     return frames
+# end
 
-function pftrajectories(state::QuantumClifford.PauliFrame, circuit)
+function pftrajectories(state::PauliFrameGPU{T}, circuit) where {T <: Unsigned}
     for op in circuit
         apply!(state, op)
     end

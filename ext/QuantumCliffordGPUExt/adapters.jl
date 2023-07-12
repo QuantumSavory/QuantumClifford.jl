@@ -12,6 +12,7 @@ to_cpu(array::CuArray{T, 2}) where{T} = Matrix(array);
 
 # maybe change the format of storing the data in gpu array 
 # so that it is more convinient to work with them on gpu?
+# todo later add some type checking to avoid copying (or throw error) if the data is already on gpu/cpu
 to_gpu(tab::QuantumClifford.Tableau) =
     QuantumClifford.Tableau(to_gpu(tab.phases), tab.nqubits, to_gpu(tab.xzs))
 
