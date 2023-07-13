@@ -142,15 +142,19 @@ function pftrajectories(circuit;trajectories=5000,threads=true)
     _pftrajectories(circuit;trajectories,threads)
 end
 
+function _create_pauliframe(ccircuit; trajectories=5000)
+    qmax=maximum((maximum(affectedqubits(g)) for g in ccircuit))
+    bmax=maximum((maximum(affectedbits(g),init=1) for g in ccircuit))
+    return PauliFrame(trajectories, qmax, bmax)
+end
+
 function _pftrajectories(circuit;trajectories=5000,threads=true)
     ccircuit = if eltype(circuit) <: CompactifiedGate
         circuit
     else
         compactify_circuit(circuit)
     end
-    qmax=maximum((maximum(affectedqubits(g)) for g in ccircuit))
-    bmax=maximum((maximum(affectedbits(g),init=1) for g in ccircuit))
-    frames = PauliFrame(trajectories, qmax, bmax)
+    frames = _create_pauliframe(ccircuit; trajectories)
     nthr = min(Threads.nthreads(),trajectories÷(100))
     if threads && nthr>1
         batchsize = trajectories÷nthr

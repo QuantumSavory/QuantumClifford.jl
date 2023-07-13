@@ -55,7 +55,7 @@ function apply_sMRZ_kernel!(xzs::CuDeviceMatrix{Tme, 1},
     return nothing
 end
 
-function apply!(frame::PauliFrame{T}, op::QuantumClifford.sMRZ) where {T <: Unsigned} # TODO sMRX, sMRY
+function apply!(frame::PauliFrameGPU{T}, op::QuantumClifford.sMRZ) where {T <: Unsigned} # TODO sMRX, sMRY
     i = op.qubit
     xzs = frame.frame.tab.xzs
     lowbit = T(1)
@@ -69,41 +69,3 @@ function apply!(frame::PauliFrame{T}, op::QuantumClifford.sMRZ) where {T <: Unsi
     CUDA.@sync @cuda threads=threads_count blocks=blocks_count apply_sMRZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame))
     return frame
 end
-
-# todo remove this function later after adding support for CompactifiedCircuit
-# function pftrajectories(circuit;trajectories=5000)
-#     ccircuit = if eltype(circuit) <: QuantumClifford.CompactifiedGate
-#         circuit
-#     else
-#         circuit
-#         ################
-#         # Apply Compactify after adding apply! support for it...
-#         # QuantumClifford.compactify_circuit(circuit)
-#     end
-
-#     ccircuit = map(normalize_gate, ccircuit); # todo. remove this. there should be something like this embedded in QuantumClifford
-
-#     qmax=maximum((maximum(QuantumClifford.affectedqubits(g)) for g in ccircuit))
-#     bmax=maximum((maximum(QuantumClifford.affectedbits(g),init=1) for g in ccircuit))
-#     frames = QuantumClifford.PauliFrame(trajectories, qmax, bmax)
-#     frames = to_gpu(frames) # todo we can construct this on gpu in the first place. not moving it later...
-#     pftrajectories(frames, ccircuit)
-#     return frames
-# end
-
-function pftrajectories(state::PauliFrameGPU{T}, circuit) where {T <: Unsigned}
-    for op in circuit
-        apply!(state, op)
-    end
-    return state
-end
-
-# todo this is just a patch. remove it in the future...
-normalize_gate(gate::QuantumClifford.AbstractOperation) = gate
-normalize_gate(gate::sHadamard) = SingleQubitOperator(gate)
-normalize_gate(gate::sPhase) = SingleQubitOperator(gate)
-normalize_gate(gate::sInvPhase) = SingleQubitOperator(gate)
-normalize_gate(gate::sId1) = SingleQubitOperator(gate)
-normalize_gate(gate::sX) = SingleQubitOperator(gate)
-normalize_gate(gate::sY) = SingleQubitOperator(gate)
-normalize_gate(gate::sZ) = SingleQubitOperator(gate)

@@ -42,9 +42,21 @@ using CUDA
     end
 
     @test begin
-        # todo add this tests when we add GPU flag to pftrajectories function
-        # circuite = [sHadamard(2), sHadamard(5), sCNOT(1, 2), sCNOT(2, 5), sMRZ(1), sMRZ(2), sMZ(4), sMZ(5)]
-        # QuantumCliffordGPU.pftrajectories(circuite; trajectories=10_000)
-        true
+        # todo test MRZ and other random gates statistically
+        circuit = [sHadamard(2), sHadamard(5), sCNOT(1, 2), sCNOT(2, 5), sMZ(1), sMZ(2), sMZ(4), sMZ(5)]
+        ccircuit = if eltype(circuit) <: QuantumClifford.CompactifiedGate
+            circuit
+        else
+            compactify_circuit(circuit)
+        end
+
+        CUDA.allowscalar(false) # todo how to add this to all tests.
+
+        frames = QuantumClifford._create_pauliframe(ccircuit; trajectories=10)
+        cpu_frames = to_cpu(frames)
+        gpu_frames = to_gpu(frames)
+        cpu_result = pftrajectories(cpu_frames, ccircuit)
+        gpu_result = pftrajectories(gpu_frames, ccircuit)
+        (cpu_result.frame == to_cpu(gpu_result.frame)) && (cpu_result.measurements == to_cpu(gpu_result.measurements))
     end
 end

@@ -8,4 +8,5 @@ const PauliOperatorGPU{T} = QuantumClifford.PauliOperator{Tz, Tv} where {T <: Un
 # todo. type definition here is stronger than the code in pauliframes.jl  this will cause serious problems
 # especially because its not obvious whether TFrame is Tableau or Stabilizer in pauliframes.jl
 # and we are assuming that TMeasurement is made of booleans
-const PauliFrameGPU{T} = QuantumClifford.PauliOperator{TFrame, TMeasurement} where {TFrame <: StabilizerGPU{T}, TMeasurement <: CuArray{Bool, 2}}
+const PauliFrameGPU{T} = QuantumClifford.PauliFrame{TFrame, TMeasurement} where {TFrame <: StabilizerGPU{T}, TMeasurement <: CuArray{Bool, 2}}
+

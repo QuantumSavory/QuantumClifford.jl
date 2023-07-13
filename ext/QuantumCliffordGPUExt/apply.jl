@@ -71,11 +71,19 @@ function _apply!(stab::StabilizerGPU{T},
     tab = QuantumClifford.tab(stab)
     # todo. why can't I pass phases=compute_phases normally without function call?
     CUDA.@sync @cuda threads=threads_count blocks=blocks_count single_qubit_gpu_kernel(tab.xzs, tab.phases, op, rows, B)
+    return stab
+end
+
+function _apply!(stab::StabilizerGPU{T},
+    op::QuantumClifford.AbstractSingleQubitOperator;
+    phases::Val{B}=Val(true)) where {B, T <: Unsigned}
+    @warn "optimized gpu operator version of $op is not implemented. falling back to using single qubit operator" # todo remove this
+    return _apply!(stab, SingleQubitOperator(op); phases=phases)
 end
 
 function two_qubit_gpu_kernel(xzs::CuDeviceMatrix{Tme, 1},
                               phases::CuDeviceVector{Tze, 1},
-                              gate::QuantumClifford.AbstractTwoQubitOperator,
+                              gate::QuantumClifford.AbstractTwoQubitOperator, # todo. change to two qubit operator instead os abstract version
                               rows::Unsigned,
                               compute_phases::Bool=true) where {Tme <: Unsigned, Tze <: Unsigned}
     idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
@@ -107,7 +115,7 @@ end
 
 function _apply!(stab::StabilizerGPU{T}, 
                  gate::G; 
-                 phases::Val{B}=Val(true)) where {B, G<:QuantumClifford.AbstractTwoQubitOperator, T <: Unsigned}
+                 phases::Val{B}=Val(true)) where {B, G<:QuantumClifford.AbstractTwoQubitOperator, T <: Unsigned} # todo. change to two qubit operator instead os abstract version
     threads_count = 1024 # Change this later
     rows::Unsigned = size(stab, 1)
     blocks_count = ceil(Int, rows/threads_count)
@@ -116,4 +124,5 @@ function _apply!(stab::StabilizerGPU{T},
     CUDA.@sync @cuda threads=threads_count blocks=blocks_count two_qubit_gpu_kernel(tab.xzs, tab.phases, gate, rows, B)
 
     # todo dry this out...!
+    return stab
 end
