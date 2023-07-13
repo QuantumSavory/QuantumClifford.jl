@@ -1,3 +1,4 @@
+using Test
 using QuantumClifford
 using CUDA
 
@@ -17,7 +18,7 @@ using CUDA
     @test begin
         s = to_gpu(S"XX XZ")
         op = SingleQubitOperator(sHadamard(1))
-        QuantumClifford._apply!(s, op) # todo rewrite this with normal apply not _apply
+        apply!(s, op) # todo rewrite this with normal apply not _apply
         correct = S"ZX ZZ"
         to_cpu(s) == correct
     end
@@ -26,8 +27,8 @@ using CUDA
         s = random_stabilizer(10, 10)
         s_gpu = to_gpu(s)
         op = SingleQubitOperator(sHadamard(5))
-        QuantumClifford._apply!(s_gpu, op) # todo rewrite this with normal apply not _apply
-        QuantumClifford._apply!(s, op)
+        apply!(s_gpu, op) # todo rewrite this with normal apply not _apply
+        apply!(s, op)
         to_cpu(s_gpu) == s
     end
 
@@ -35,8 +36,8 @@ using CUDA
         s = random_stabilizer(10, 10)
         s_gpu = to_gpu(s)
         op = sCNOT(2, 3)
-        QuantumClifford._apply!(s_gpu, op) # todo rewrite this with normal apply not _apply 
-        QuantumClifford._apply!(s, op)
+        apply!(s_gpu, op) # todo rewrite this with normal apply not _apply 
+        apply!(s, op)
         to_cpu(s_gpu) == s
     end
 
