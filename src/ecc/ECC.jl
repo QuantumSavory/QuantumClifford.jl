@@ -88,10 +88,8 @@ function logz_ops(c::AbstractECC)
     logicalzview(MixedDest)
 end
 
-""" The bimatrix representation of a code"""
-# stab_to_gf2(parity_checks(c))
 
-""" Check if the code is degenerate or not """
+""" Check if the code is degenerate or not."""
 function is_degenerate(c::AbstractECC)
     tableau = stab_to_gf2(parity_checks(c))
     n = code_n(c)
@@ -107,91 +105,77 @@ function is_degenerate(c::AbstractECC)
     return false
 end
 
-""" Canonicalize the logicals x operators of a code by @gottesman1997 arxiv:quant-ph/9705052 """ # TODO: Implement the same code for the Z operators
-#MixedDestabilizer(parity_checks(c), undoperm=false)
-#getx: logicalxview
-#gety: logicalzview
-#getstab: stabilizerview
-#getdestab: destabilizerview
-# function canonicalize_logicals(c::AbstractECC)
-#     n, s, k = code_n(c), code_s(c), code_k(c)
-#     logx = logx_ops(c)
-#     tabx = tableau_representation(logx)
-#     tab = tableau_representation(canonicalize_gott!(parity_checks(c)))
-#     # Finding the rank r of the logical  X
-#     r =0
-#     for i in 1: n 
-#         pivot =findfirst(tab[:, i])
-#         if pivot !== nothing
-#             r += 1
-#         end
-#     end
-#     # standardize u1 and v2 for each element of logX (u1u2u3|v1v2v3)    
-#     for i in 1:k
-#         op = tabx[i, :]
-#         # standardize the first n-k qubits (the u1 and v2 component)
-#         for j in 1:n-k
-#             if (j <= r && op[j] == 1) || (j >= r+1 && op[j+n] ==1)
-#                 tabx[i] += tab[j] # TODO: fix this xor plus                 
-#             end
-#         end
-#     end
-#     # setting u3 = I and v3 = 0
-#     for i in 1:k
-#         op = tabx[i, :]
-#         for j in n-k+1:n
-#             if j - (n-k) == i
-#                 op[j]=1
-#             else
-#                 op[j]=0
-#             end
-#             op[j+n] = 0            
-#         end
-#     end
-
-#     return tabx
-# end
-
-""" The naive implementation of the encoding circuit by arXiv:quant-ph/9607030 """
-function naive_encoding_circuit(c::AbstractECC)
-    n, k, s = code_n(c), code_k(c), code_s(c)
-    r = 
-    naive_ec = AbstractOperation[]
-    # Applying the hadamard gate to the last r qubits
-    for i in n: -1: n-r+1
-        push!(naive_ec, sHadamard(i))
+"""The rank of the bimatrix of a code."""
+function rank(c::AbstractECC)
+    destab_gott = MixedDestabilizer(parity_checks(c), undoperm=false)
+    bimat = stab_to_gf2(stabilizerview(destab_gott))
+    rank = 0
+    for i in 1:code_s(c)
+        if bimat[i, i] == 1
+            rank +=1
+        end
     end
+    return rank
+end
+
+"""The standardized logical tableau of a code by [PhysRevA.56.76](@cite)"""
+function standard_tab_gott(c::AbstractECC)
+    n, s, k, r = code_n(c), code_s(c), code_k(c), rank(c)
     # The standard form is 
     # I A1 A2 | B C1 C2
     # 0  0 0  | D  I  E  
     # and we augment the following third line (for logical qubits)
     # 0 E^T I | 0  0  0
     # Then we apply the gates line by line bottom up in accordance with the formalisms here: arXiv:quant-ph/9607030
-    standard_tab = stab_to_gf2(canonicalize_gott!(parity_checks(c))[1])
+    standard_tab = stab_to_gf2(stabilizerview(MixedDestabilizer(parity_checks(c), undoperm=false)))
     for i in 1: k
         # can we use canonicalize_gott for the entire mixedDestabilizer? (i.e. the stab + log parts = n rows)
-        augment = zeros(2*n)
+        augment = zeros(Int8, (1, 2*n))
         for j in 1:n
             if j > r && j <= n - k
-                augment[j] = standard_tab[r+j, 2*n-k+i] # the corresponding column of E in E^T
+                augment[j] = standard_tab[j, 2*n-k+i] # the corresponding column of E in E^T 
             elseif j == n-k+i 
                 augment[j] = 1
             end
         end
-        push!(standard_tab, augment)
+        standard_tab = vcat(standard_tab, augment)
+    end
+    # Flipping the table so it has the same format as the papercode
+    res = zeros(Int8, (n, 2n))
+    for i in 1:n
+        for j in 1:n
+            res[i, j] = standard_tab[n+1-j, n+1-i]
+        end
+        for j in n+1:2*n
+            res[i,j] = standard_tab[2*n+1-j, n+1-i]
+        end
+    end
+    return res
+end
+
+
+""" The naive implementation of the encoding circuit by arXiv:quant-ph/9607030 """
+function naive_encoding_circuit(c::AbstractECC)
+    n, k, s, r = code_n(c), code_k(c), code_s(c), rank(c)
+    naive_ec = AbstractOperation[]
+    # Applying the hadamard gate to the last r qubits
+    for i in n: -1: n-r+1
+        push!(naive_ec, sHadamard(i))
     end
 
-    for i in n: -1: 1 # implement the decoder from the augmented bimatrix bottom up and from right to left
+    standard_tab = standard_tab_gott(c)
+    
+    for i in 1 : n
         if standard_tab[i, i] ==1
-            for j in n: -1: 1
+            for j in 1:n
                 if j == i continue end
-                gate = (standard_tab[i,j], standard_tab[i,j+n])
+                gate = (standard_tab[j, i], standard_tab[j, i+n])
                 if gate == (1,0)
-                    push!(naive_ec, sXCX(j, i))
-                elseif gate == (0,1)
                     push!(naive_ec, sCNOT(j, i))
+                elseif gate == (0,1)
+                    push!(naive_ec, sXCZ(j, i))
                 elseif gate == (1,1)
-                    push!(naive_ec, sYCX(j, i))
+                    push!(naive_ec, sXCY(j, i))
                 end
             end
         end        
@@ -203,5 +187,6 @@ end
 include("./bitflipcode.jl")
 include("./shorcode.jl")
 include("./steanecode.jl")
+include("./papercode.jl")
 
 end #module

@@ -1,7 +1,6 @@
 using Test
 using QuantumClifford
-using QuantumClifford.ECC: AbstractECC, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops
-include("../src/ecc/ECC.jl")
+using QuantumClifford.ECC: AbstractECC, Paper8, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, naive_encoding_circuit, is_degenerate, rank
 
 codes = [
     Bitflip3(),
@@ -58,12 +57,17 @@ end
 
 ##
 
-function test_naive_syndrome(c::AbstractECC)
+function test_naive_syndrome(c::AbstractECC, e::Bool=false)
     # create a random logical state
     unencoded_qubits = random_stabilizer(code_k(c))
     bufferqubits = one(Stabilizer,code_s(c))
     logicalqubits = unencoded_qubits⊗bufferqubits
     mctrajectory!(logicalqubits, encoding_circuit(c))
+    if e
+        #add some noise to logicalqubits
+        apply!(logicalqubits, P"X", rand(1:code_n(c)))
+        apply!(logicalqubits, P"Z", rand(1:code_n(c)))
+    end
     # measure using `project!`
     s1 = copy(logicalqubits)
     syndrome1 = [project!(s1, check)[3] for check in parity_checks(c)]
@@ -73,8 +77,10 @@ function test_naive_syndrome(c::AbstractECC)
     s2 = copy(logicalqubits)
     syndrome2 = Register(s2⊗ancillaryqubits, falses(code_s(c)))
     mctrajectory!(syndrome2, naive_circuit)
-    @test all(syndrome1 .== 0)
-    @test all(bitview(syndrome2) .== 0)
+    if !e
+        @test all(syndrome1 .== 0)
+        @test all(bitview(syndrome2) .== 0)
+    end    
     @test bitview(syndrome2) == syndrome1.÷2
 
     # TODO test when there is potential for errors / non-commuting operators
@@ -83,6 +89,7 @@ end
 @testset "naive syndrome circuits - zero syndrome for logical states" begin
     for c in codes, _ in 1:2
         test_naive_syndrome(c)
+        test_naive_syndrome(c, true)
     end
 end
 
@@ -126,3 +133,6 @@ end
         test_is_degenerate(c)
     end
 end
+
+## 
+
