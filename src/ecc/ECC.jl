@@ -42,30 +42,38 @@ function code_n(parity_check_tableau)
 end
 
 """Wrapper function for codes of type AbstractECC"""
-function naive_syndrome_circuit(code_type::AbstractECC)
-    naive_syndrome_circuit(parity_checks(code_type))
+function naive_syndrome_circuit(code_type::AbstractECC, ancillary_index=1, bit_index=1)
+    naive_syndrome_circuit(parity_checks(code_type), ancillary_index, bit_index)
+end
+
+"""Circuit that measures the corresponding PauliOperator by using conditional gates into an ancillary 
+qubit at index nqubits(p)+ancillary_index and stores the measurement result into classical bit bit_index."""
+function naive_ancillary_paulimeasurement(p::PauliOperator, ancillary_index=1, bit_index=1)
+    circuit = AbstractOperation[]
+    numQubits = nqubits(p)
+    for qubit in 1:numQubits
+        if p[qubit] == (1,0) 
+            push!(circuit, sXCX(qubit, numQubits + ancillary_index))
+        elseif p[qubit] == (0,1)
+            push!(circuit, sCNOT(qubit, numQubits + ancillary_index))
+        elseif p[qubit] == (1,1)
+            push!(circuit, sYCX(qubit, numQubits + ancillary_index))
+        end
+    end
+    mz = sMZ(numQubits + ancillary_index, bit_index)
+    push!(circuit, mz)
+
+    return circuit
 end
 
 """Naive syndrome circuit"""
-function naive_syndrome_circuit(parity_check_tableau)
+function naive_syndrome_circuit(parity_check_tableau, ancillary_index=1, bit_index=1)
     naive_sc = AbstractOperation[]
 
-    ancilla_bit = 1
-    # ancilla_qubit = code_n(c) + ancilla_bit
     for check in parity_check_tableau
-        ancilla_qubit = code_n(parity_check_tableau) + ancilla_bit
-        for qubit in 1: code_n(parity_check_tableau)
-            if check[qubit] == (1,0) # TODO simplify this branch using sXCX and similar gates
-                push!(naive_sc, sXCX(qubit, ancilla_qubit))
-            elseif check[qubit] == (0,1)
-                push!(naive_sc, sCNOT(qubit, ancilla_qubit))
-            elseif check[qubit] == (1,1)
-                push!(naive_sc, sYCX(qubit, ancilla_qubit))
-            end
-        end
-        mz = sMZ(ancilla_qubit, ancilla_bit)
-        push!(naive_sc, mz)
-        ancilla_bit +=1
+        naive_sc = vcat(naive_sc,naive_ancillary_paulimeasurement(check, ancillary_index, bit_index))
+        ancillary_index +=1
+        bit_index +=1
     end
 
     return naive_sc
