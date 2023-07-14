@@ -60,7 +60,7 @@ function naive_ancillary_paulimeasurement(p::PauliOperator, ancillary_index=1, b
             push!(circuit, sYCX(qubit, numQubits + ancillary_index))
         end
     end
-    mz = sMZ(numQubits + ancillary_index, bit_index)
+    mz = sMRZ(numQubits + ancillary_index, bit_index)
     push!(circuit, mz)
 
     return circuit
