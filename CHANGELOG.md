@@ -5,6 +5,10 @@
 
 # News
 
+## v0.8.13 - dev
+
+- A few more features to the `ECC` module's circuit generation routines.
+
 ## v0.8.12 - 2023-07-12
 
 - Initial implementation of non-Clifford simulation (mainly for circuits that are slightly non-Clifford, e.g. containing T gates). See `StabMixture`, `PauliChannel`, `UnitaryPauliChannel`, and `pcT`.
