@@ -152,6 +152,22 @@ function standard_tab_gott(c::AbstractECC)
     return res
 end
 
+function standard_code_tab(c::AbstractECC)
+    n, s, k = code_n(c), code_s(c), code_k(c)
+    standard_tab = stab_to_gf2(stabilizerview(MixedDestabilizer(parity_checks(c), undoperm=false)))
+    md = MixedDestabilizer(parity_checks(c), undoperm=false)
+    XZᵗ = stab_to_gf2(stabilizerview(md))
+    X₂ = reverse(XZᵗ[1:s,1:n]', dims=(1,2))
+    Z₂ = reverse(XZᵗ[1:s,n+1:2n]', dims=(1,2))
+    X = falses(n, n)
+    Z = falses(n, n)
+    X[:, k+1:end] .= X₂
+    Z[:, k+1:end] .= Z₂
+    X[:, 1:k] .= Xˡ
+    return X, Z
+    # TODO The permutations need to be reverted at some point, otherwise the generated circuit will have permuted qubits. It is not clear to me whether it is more convenient to revert the permutation here or in naive_encoding_circuit
+    # TODO This function does not seem to actually be necessary. It seems like iterating over the `MixedDestabilizer` object is enough. Out of convenience, let's keep if for the moment, but also keep this TODO
+end
 
 """ The naive implementation of the encoding circuit by arXiv:quant-ph/9607030 """
 function naive_encoding_circuit(c::AbstractECC)
