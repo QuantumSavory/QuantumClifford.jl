@@ -88,13 +88,12 @@ function logz_ops(c::AbstractECC)
     logicalzview(MixedDest)
 end
 
-
-""" Check if the code is degenerate or not."""
+"""Check if the code is degenerate with respect to single-qubit physical errors."""
 function is_degenerate(c::AbstractECC)
     tableau = stab_to_gf2(parity_checks(c))
     n = code_n(c)
     dictionary = Set()
-    for column in 1:2*n 
+    for column in 1:2*n
         temp = tableau[:, column]
         if temp in dictionary
               return true
