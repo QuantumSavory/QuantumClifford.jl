@@ -51,13 +51,13 @@ function naive_syndrome_circuit(code_type::AbstractECC, ancillary_index=1, bit_i
     naive_syndrome_circuit(parity_checks(code_type), ancillary_index, bit_index)
 end
 
-"""Circuit that measures the corresponding PauliOperator by using conditional gates into an ancillary 
+"""Circuit that measures the corresponding PauliOperator by using conditional gates into an ancillary
 qubit at index `nqubits(p)+ancillary_index` and stores the measurement result into classical bit `bit_index`."""
 function naive_ancillary_paulimeasurement(p::PauliOperator, ancillary_index=1, bit_index=1)
     circuit = AbstractOperation[]
     numQubits = nqubits(p)
     for qubit in 1:numQubits
-        if p[qubit] == (1,0) 
+        if p[qubit] == (1,0)
             push!(circuit, sXCX(qubit, numQubits + ancillary_index))
         elseif p[qubit] == (0,1)
             push!(circuit, sCNOT(qubit, numQubits + ancillary_index))
@@ -280,7 +280,7 @@ function faults_matrix(c::AbstractECC)
     logviews = [logicalxview(md); logicalzview(md)]
     errors = [one(Stabilizer,n; basis=:X);one(Stabilizer,n)]
     for i in 1:2k
-        O[i, :] = comm(logviews[i], errors)
+        O[i, :] = comm(logviews[i]::PauliOperator, errors) # typeassert for JET
     end
     return O
 end

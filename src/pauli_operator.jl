@@ -46,7 +46,13 @@ struct PauliOperator{Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}}
 end
 
 PauliOperator(phase::UInt8, nqubits::Int, xz::Tv) where Tv<:AbstractVector{<:Unsigned} = PauliOperator(fill(UInt8(phase),()), nqubits, xz)
-PauliOperator(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator(fill(UInt8(phase),()), length(x), vcat(reinterpret(UInt,BitVector(x).chunks),reinterpret(UInt,BitVector(z).chunks)))
+function PauliOperator(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{Bool})
+    phase = fill(UInt8(phase),())
+    xs = reinterpret(UInt,BitVector(x).chunks)::Vector{UInt}
+    zs = reinterpret(UInt,BitVector(z).chunks)::Vector{UInt}
+    xzs = cat(xs, zs, dims=1)
+    PauliOperator(phase, length(x), xzs)
+end
 PauliOperator(x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator(0x0, x, z)
 PauliOperator(xz::AbstractVector{Bool}) = PauliOperator(0x0, (@view xz[1:end÷2]), (@view xz[end÷2+1:end]))
 
