@@ -135,9 +135,9 @@ end
 function Tableau(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tve<:Unsigned,Tv<:AbstractVector{Tve}}
     r = length(paulis)
     n = nqubits(paulis[1])
-    tab = zero(Tableau{Vector{UInt8},Matrix{Tve}},r,n)
+    tab = zero(Tableau{Vector{UInt8},Matrix{Tve}},r,n)::Tableau{Vector{UInt8},Matrix{Tve}} # typeassert for JET
     for i in eachindex(paulis)
-        tab[i] = paulis[i]
+        tab[i] = paulis[i]::PauliOperator{Tz,Tv} # typeassert for JET
     end
     tab
 end
