@@ -41,7 +41,8 @@ end
                 ψ₁ = Ket(stab)
                 ψ₂ = Ket(apply!(stab,cliff))
                 # test they are equal up to a phase
-                @test all(x->isnan(x)||abs(x)≈1/sqrt(2^n) , (U*ψ₁).data ./ ψ₂.data)
+                @test all(x->isnan(x)||abs(x)≈1 , (U*ψ₁).data ./ ψ₂.data)
+                @test abs(det(U.data))≈1
             end
         end
     end

@@ -151,7 +151,7 @@ function cliff_to_unitary(cliff)
     b = bell(n, localorder=true)
     apply!(b, cliff, 1:n)
     ψ = Ket(b)
-    Operator(SpinBasis(1//2)^n,reshape(ψ.data, (2^n,2^n)))
+    Operator(SpinBasis(1//2)^n,reshape(ψ.data * sqrt(2)^n, (2^n,2^n)))
 end
 
 """

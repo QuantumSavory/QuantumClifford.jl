@@ -1,5 +1,6 @@
 using Test
 using QuantumClifford
+using QuantumOptics
 
 function transform_Zbasis(qubit)
     transformations = Dict(:X => [sHadamard(qubit),], :Y => [sInvPhase(qubit),sHadamard(qubit)], :Z => [sHadamard(qubit), sHadamard(qubit)])
@@ -94,5 +95,34 @@ end
         gate1dense = CliffordOperator(gate1, 2)
         gate2dense = CliffordOperator(gate2, 2)
         @test gate1dense == gate2dense
+    end
+end
+
+@testset "Ket-based definition" begin
+    for control in (:X, :Y, :Z)
+        for target in (:X, :Y, :Z)
+            s = Stabilizer(QuantumClifford._T_str(string(control)))
+            k1 = Ket(s)
+            s.tab.phases[1] = 0x2
+            k2 = Ket(s)
+            i = Operator(tId1)
+            o = Operator(CliffordOperator(eval(Symbol(:s,target,))(1),1))
+            gate = projector(k1)⊗i + (target==:Y ? -im : 1) * projector(k2)⊗o
+            implemented_gate = Operator(CliffordOperator(eval(Symbol(:s,control,:C,target))(1,2),2))
+            @test gate≈implemented_gate
+
+            target, control = control, target
+            s = Stabilizer(QuantumClifford._T_str(string(control)))
+            k1 = Ket(s)
+            s.tab.phases[1] = 0x2
+            k2 = Ket(s)
+            i = Operator(tId1)
+            o = Operator(CliffordOperator(eval(Symbol(:s,target,))(1),1))
+            gate_perm = projector(k1)⊗i + (target==:Y ? -im : 1) * projector(k2)⊗o
+            implemented_gate_perm = Operator(CliffordOperator(eval(Symbol(:s,control,:C,target))(1,2),2))
+            @test gate_perm≈implemented_gate_perm
+
+            @test permutesystems(gate_perm,[2,1])≈gate
+        end
     end
 end
