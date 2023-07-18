@@ -1,6 +1,6 @@
 using Test
 using QuantumClifford
-using QuantumOptics
+using QuantumOpticsBase
 
 function transform_Zbasis(qubit)
     transformations = Dict(:X => [sHadamard(qubit),], :Y => [sInvPhase(qubit),sHadamard(qubit)], :Z => [sHadamard(qubit), sHadamard(qubit)])
