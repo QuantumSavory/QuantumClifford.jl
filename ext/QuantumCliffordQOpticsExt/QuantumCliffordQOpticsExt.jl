@@ -151,7 +151,7 @@ function cliff_to_unitary(cliff)
     b = bell(n, localorder=true)
     apply!(b, cliff, 1:n)
     ψ = Ket(b)
-    Operator(SpinBasis(1//2)^n,reshape(ψ.data, (2^n,2^n)))
+    Operator(SpinBasis(1//2)^n,reshape(ψ.data * sqrt(2)^n, (2^n,2^n)))
 end
 
 """
@@ -163,24 +163,24 @@ Convert a `QuantumClifford.CliffordOperator` to `QuantumOptics.Operator`.
 julia> Operator(tHadamard)
 Operator(dim=2x2)
   basis: Spin(1/2)
- 0.5+0.0im   0.5+0.0im
- 0.5+0.0im  -0.5+0.0im
+ 0.707107+0.0im   0.707107+0.0im
+ 0.707107+0.0im  -0.707107+0.0im
 
 julia> Operator(tId1⊗tHadamard)
 Operator(dim=4x4)
   basis: [Spin(1/2) ⊗ Spin(1/2)]
- 0.353553+0.0im       0.0+0.0im   0.353553+0.0im        0.0+0.0im
-      0.0+0.0im  0.353553+0.0im        0.0+0.0im   0.353553+0.0im
- 0.353553+0.0im       0.0+0.0im  -0.353553+0.0im        0.0+0.0im
-      0.0+0.0im  0.353553+0.0im        0.0+0.0im  -0.353553+0.0im
+ 0.707107+0.0im       0.0+0.0im   0.707107+0.0im        0.0+0.0im
+      0.0+0.0im  0.707107+0.0im        0.0+0.0im   0.707107+0.0im
+ 0.707107+0.0im       0.0+0.0im  -0.707107+0.0im        0.0+0.0im
+      0.0+0.0im  0.707107+0.0im        0.0+0.0im  -0.707107+0.0im
 
 julia> Operator(tCNOT)
 Operator(dim=4x4)
   basis: [Spin(1/2) ⊗ Spin(1/2)]
- 0.5+0.0im  0.0+0.0im  0.0+0.0im  0.0+0.0im
- 0.0+0.0im  0.0+0.0im  0.0+0.0im  0.5+0.0im
- 0.0+0.0im  0.0+0.0im  0.5+0.0im  0.0+0.0im
- 0.0+0.0im  0.5+0.0im  0.0+0.0im  0.0+0.0im
+ 1.0+0.0im  0.0+0.0im  0.0+0.0im  0.0+0.0im
+ 0.0+0.0im  0.0+0.0im  0.0+0.0im  1.0+0.0im
+ 0.0+0.0im  0.0+0.0im  1.0+0.0im  0.0+0.0im
+ 0.0+0.0im  1.0+0.0im  0.0+0.0im  0.0+0.0im
 ```
 
 This conversion expects a dense tableau of type [`CliffordOperator`](@ref) as input.
@@ -191,36 +191,36 @@ If you are working with some of the implicit (a.k.a. small/sparse/symbolic) type
 julia> Operator(CliffordOperator(sHadamard))
 Operator(dim=2x2)
   basis: Spin(1/2)
- 0.5+0.0im   0.5+0.0im
- 0.5+0.0im  -0.5+0.0im
+ 0.707107+0.0im   0.707107+0.0im
+ 0.707107+0.0im  -0.707107+0.0im
 
 julia> Operator(CliffordOperator(sHadamard(1), 1))
 Operator(dim=2x2)
   basis: Spin(1/2)
- 0.5+0.0im   0.5+0.0im
- 0.5+0.0im  -0.5+0.0im
+ 0.707107+0.0im   0.707107+0.0im
+ 0.707107+0.0im  -0.707107+0.0im
 
 julia> Operator(CliffordOperator(sHadamard(1), 2))
 Operator(dim=4x4)
   basis: [Spin(1/2) ⊗ Spin(1/2)]
- 0.353553+0.0im   0.353553+0.0im       0.0+0.0im        0.0+0.0im
- 0.353553+0.0im  -0.353553+0.0im       0.0+0.0im        0.0+0.0im
-      0.0+0.0im        0.0+0.0im  0.353553+0.0im   0.353553+0.0im
-      0.0+0.0im        0.0+0.0im  0.353553+0.0im  -0.353553+0.0im
+ 0.707107+0.0im   0.707107+0.0im       0.0+0.0im        0.0+0.0im
+ 0.707107+0.0im  -0.707107+0.0im       0.0+0.0im        0.0+0.0im
+      0.0+0.0im        0.0+0.0im  0.707107+0.0im   0.707107+0.0im
+      0.0+0.0im        0.0+0.0im  0.707107+0.0im  -0.707107+0.0im
 
 julia> Operator(CliffordOperator(sHadamard(2), 2))
 Operator(dim=4x4)
   basis: [Spin(1/2) ⊗ Spin(1/2)]
- 0.353553+0.0im       0.0+0.0im   0.353553+0.0im        0.0+0.0im
-      0.0+0.0im  0.353553+0.0im        0.0+0.0im   0.353553+0.0im
- 0.353553+0.0im       0.0+0.0im  -0.353553+0.0im        0.0+0.0im
-      0.0+0.0im  0.353553+0.0im        0.0+0.0im  -0.353553+0.0im
+ 0.707107+0.0im       0.0+0.0im   0.707107+0.0im        0.0+0.0im
+      0.0+0.0im  0.707107+0.0im        0.0+0.0im   0.707107+0.0im
+ 0.707107+0.0im       0.0+0.0im  -0.707107+0.0im        0.0+0.0im
+      0.0+0.0im  0.707107+0.0im        0.0+0.0im  -0.707107+0.0im
 
 julia> Operator(CliffordOperator(sHadamard(2), 1, compact=true))
 Operator(dim=2x2)
   basis: Spin(1/2)
- 0.5+0.0im   0.5+0.0im
- 0.5+0.0im  -0.5+0.0im
+ 0.707107+0.0im   0.707107+0.0im
+ 0.707107+0.0im  -0.707107+0.0im
 ```
 """
 function Operator(c::CliffordOperator)

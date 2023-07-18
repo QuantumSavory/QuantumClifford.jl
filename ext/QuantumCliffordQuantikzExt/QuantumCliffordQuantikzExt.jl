@@ -41,15 +41,12 @@ Quantikz.QuantikzOp(op::sCPHASE) = Quantikz.CPHASE(affectedqubits(op)...)
 Quantikz.QuantikzOp(op::sSWAP) = Quantikz.SWAP(affectedqubits(op)...)
 Quantikz.QuantikzOp(op::sZCZ) = Quantikz.CPHASE(affectedqubits(op)...)
 Quantikz.QuantikzOp(op::sXCX) = Quantikz.MultiControl([],[],collect(affectedqubits(op)),[]) # TODO make Quantikz work with tuples and remove the collect
-Quantikz.QuantikzOp(op::sZCY) = Quantikz.MultiControlU("Y",affectedqubits(op)...)
+Quantikz.QuantikzOp(op::sZCY) = Quantikz.MultiControlU("-iY",affectedqubits(op)...)
 Quantikz.QuantikzOp(op::sYCZ) = Quantikz.MultiControlU("Y",reverse(affectedqubits(op))...)
+Quantikz.QuantikzOp(op::sXCY) = Quantikz.MultiControlU("-iY",[],[],[affectedqubits(op)[2]],[affectedqubits(op)[1]])
+Quantikz.QuantikzOp(op::sYCX) = Quantikz.MultiControlU("Y",[],[],[affectedqubits(op)[1]],[affectedqubits(op)[2]])
 function Quantikz.QuantikzOp(op::AbstractTwoQubitOperator)
-    T = typeof(op)
-    if T in (sXCY,sYCX,sYCY,sYCZ,sZCY)
-        return Quantikz.U(string(T),collect(affectedqubits(op))) # TODO make Quantikz work with tuples and remove the collect
-    else
-        return Quantikz.U("{U}",collect(affectedqubits(op))) # TODO make Quantikz work with tuples and remove the collect
-    end
+    return Quantikz.U("{U}",collect(affectedqubits(op))) # TODO make Quantikz work with tuples and remove the collect
 end
 Quantikz.QuantikzOp(op::BellMeasurement) = Quantikz.ParityMeasurement(["\\mathtt{$(string(typeof(o))[3])}" for o in op.measurements], collect(affectedqubits(op))) # TODO make Quantikz work with tuples and remove the collect
 Quantikz.QuantikzOp(op::NoisyBellMeasurement) = Quantikz.QuantikzOp(op.meas)

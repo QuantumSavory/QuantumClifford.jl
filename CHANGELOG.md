@@ -5,9 +5,11 @@
 
 # News
 
-## v0.8.13 - dev
+## v0.8.13
 
+- **(fix)** There was a bug with incorrect scaling for `Operator(::CliffordOperator)` conversions.
 - A few more features to the `ECC` module's circuit generation routines.
+- Quantikz circuit plotting improvements to `CliffordOperator` and `s*CY` and `sYC*`.
 
 ## v0.8.12 - 2023-07-12
 
