@@ -25,7 +25,7 @@ Quantikz.QuantikzOp(op::sId1) = Quantikz.Id(affectedqubits(op)...)
 function Quantikz.QuantikzOp(op::AbstractSingleQubitOperator)
     T = typeof(op)
     str = if T in (sHadamard, sPhase, sX, sY, sZ)
-        string(T)[2:2]
+        string(nameof(T))[2:2]
     elseif T == sInvPhase
         "P^{-1}"
     else
@@ -48,7 +48,7 @@ Quantikz.QuantikzOp(op::sYCX) = Quantikz.MultiControlU("Y",[],[],[affectedqubits
 function Quantikz.QuantikzOp(op::AbstractTwoQubitOperator)
     return Quantikz.U("{U}",collect(affectedqubits(op))) # TODO make Quantikz work with tuples and remove the collect
 end
-Quantikz.QuantikzOp(op::BellMeasurement) = Quantikz.ParityMeasurement(["\\mathtt{$(string(typeof(o))[3])}" for o in op.measurements], collect(affectedqubits(op))) # TODO make Quantikz work with tuples and remove the collect
+Quantikz.QuantikzOp(op::BellMeasurement) = Quantikz.ParityMeasurement(["\\mathtt{$(string(nameof(typeof(o)))[3])}" for o in op.measurements], collect(affectedqubits(op))) # TODO make Quantikz work with tuples and remove the collect
 Quantikz.QuantikzOp(op::NoisyBellMeasurement) = Quantikz.QuantikzOp(op.meas)
 Quantikz.QuantikzOp(op::ConditionalGate) = Quantikz.ClassicalDecision(affectedqubits(op),op.controlbit) # TODO make Quantikz work with tuples and remove the collect
 Quantikz.QuantikzOp(op::DecisionGate) = Quantikz.ClassicalDecision(affectedqubits(op),Quantikz.ibegin:Quantikz.iend) # TODO make Quantikz work with tuples and remove the collect

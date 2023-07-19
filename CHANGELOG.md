@@ -5,7 +5,11 @@
 
 # News
 
-## v0.8.13
+## v0.8.14 - 2023-07-19
+
+- Circuit plotting with Quantikz from inside other modules (common with Pluto) showed wrong names for gates due to how we were serializing the names. It is now fixed.
+
+## v0.8.13 - 2023-07-18
 
 - **(fix)** There was a bug with incorrect scaling for `Operator(::CliffordOperator)` conversions.
 - A few more features to the `ECC` module's circuit generation routines.
