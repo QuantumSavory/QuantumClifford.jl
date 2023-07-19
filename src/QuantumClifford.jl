@@ -96,7 +96,7 @@ function __init__()
     BIG_INT_FOUR[] = BigInt(4)
 end
 
-const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you attempting are creating a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
+const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you are attempting to create a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.

@@ -28,7 +28,7 @@ function Base.one(::Type{T}, n; basis=:Z) where {T<:Tableau}# TODO support `basi
     elseif basis==:Z
         T(falses(n,n),LinearAlgebra.I(n))
     else
-        throw(ErrorException("`basis` should be one of :X, :Y, or :Z"))
+        throw(ArgumentError("`basis` should be one of :X, :Y, or :Z"))
     end
 end
 Base.one(::Type{<:Stabilizer}, n; basis=:Z) = Stabilizer(one(Tableau,n; basis)) # TODO make it type preserving

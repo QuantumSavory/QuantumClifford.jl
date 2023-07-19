@@ -82,6 +82,7 @@ See also: [`SingleQubitOperator`](@ref)
 """
 struct sId1 <: AbstractSingleQubitOperator
     q::Int
+    sId1(q) = if q<=0 throw(NoZeroQubit) else new(q) end
 end
 function _apply!(stab::AbstractStabilizer, ::sId1; phases::Val{B}=Val(true)) where B
     stab
@@ -247,7 +248,7 @@ macro qubitop2(name, kernel)
         struct $(esc(prefixname)) <: AbstractTwoQubitOperator
             q1::Int
             q2::Int
-            $(esc(prefixname))(q1,q2) = if q1<=0 || q2<=0 throw(NoZeroQubit) else new(q1,q2) end
+            $(esc(prefixname))(q1,q2) = if q1<=0 || q2<=0 throw(NoZeroQubit) elseif q1==q2 throw(ArgumentError("Failed to create a two qubit gate because the two qubits it acts on have the same index. The qubit indices have to be different.")) else new(q1,q2) end
         end
         @doc $docstring $prefixname
         @inline $(esc(:qubit_kernel))(::$prefixname, x1, z1, x2, z2) = $kernel
