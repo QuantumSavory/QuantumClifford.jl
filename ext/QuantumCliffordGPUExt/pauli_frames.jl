@@ -3,8 +3,8 @@ function apply!(f::PauliFrameGPU{T}, op::QuantumClifford.AbstractCliffordOperato
     return f
 end
 
-function apply_sMZ_kernel!(xzs::CuDeviceMatrix{Tme, 1},
-                          measurements::CuDeviceMatrix{Bool, 1},
+function apply_sMZ_kernel!(xzs::DeviceMatrix{Tme},
+                          measurements::DeviceMatrix{Bool},
                           op::sMZ,
                           ibig::Int,
                           ismallm::Tme,
@@ -36,8 +36,8 @@ function apply!(frame::PauliFrameGPU{T}, op::QuantumClifford.sMZ) where {T <: Un
     return frame
 end
 
-function apply_sMRZ_kernel!(xzs::CuDeviceMatrix{Tme, 1},
-                          measurements::CuDeviceMatrix{Bool, 1},
+function apply_sMRZ_kernel!(xzs::DeviceMatrix{Tme},
+                          measurements::DeviceMatrix{Bool},
                           op::QuantumClifford.sMRZ,
                           ibig::Int, # todo change to Int
                           ismallm::Tme,

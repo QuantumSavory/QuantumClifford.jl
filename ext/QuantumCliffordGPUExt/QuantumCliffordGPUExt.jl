@@ -2,7 +2,7 @@ module QuantumCliffordGPUExt
 
 using CUDA
 using QuantumClifford
-import QuantumClifford: to_cpu, to_gpu, _apply!, apply!, pftrajectories
+import QuantumClifford: to_cpu, to_gpu, _apply!, apply!, pftrajectories, fastcolumn, fastrow
 
 include("types.jl")
 include("adapters.jl")

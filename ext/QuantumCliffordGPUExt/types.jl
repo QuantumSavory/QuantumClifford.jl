@@ -3,15 +3,21 @@ using LinearAlgebra: Adjoint
 # todo is there anyway to do this automatically so that if the code in QuantumClifford changes, we don't have to change this?!
 # especially with UInt8 types
 
-CUDAValue{T} = CuArray{T, 0} where {T}
-CUDAVector{T} = CuArray{T, 1} where {T}
-CUDAMatrix{T} = CuArray{T, 2} where {T}
+CUDAValue{T} = CuArray{T, 0, CUDA.Mem.DeviceBuffer} where {T}
+CUDAVector{T} = CuArray{T, 1, CUDA.Mem.DeviceBuffer} where {T}
+CUDAMatrix{T} = CuArray{T, 2, CUDA.Mem.DeviceBuffer} where {T}
 CUDAParams = [CUDAValue, CUDAVector, CUDAMatrix]
 
-AdjCUDAValue{T} = Adjoint{T, CuArray{T, 0}} where {T}
-AdjCUDAVector{T} = Adjoint{T, CuArray{T, 1}} where {T}
-AdjCUDAMatrix{T} = Adjoint{T, CuArray{T, 2}} where {T}
+AdjCUDAValue{T} = CuArray{T, 0, CUDA.Mem.DeviceBuffer} where {T} # do not adjoint value
+AdjCUDAVector{T} = CuArray{T, 1, CUDA.Mem.DeviceBuffer} where {T} # do not adjoint vector
+AdjCUDAMatrix{T} = Adjoint{T, CuArray{T, 2, CUDA.Mem.DeviceBuffer}} where {T}
 AdjCUDAParams = [AdjCUDAValue, AdjCUDAVector, AdjCUDAMatrix]
+
+# what is CuDeviceArray?
+DeviceValue{T} = Union{CuDeviceArray{T, 0, 1}, Adjoint{T, CuDeviceArray{T, 0, 1}}} where {T}
+DeviceVector{T} = Union{CuDeviceArray{T, 1, 1}, Adjoint{T, CuDeviceArray{T, 1, 1}}} where {T}
+DeviceMatrix{T} = Union{CuDeviceArray{T, 2, 1}, Adjoint{T, CuDeviceArray{T, 2, 1}}} where {T}
+
 
 function getTableauGPU(GPUValue, GPUVector, GPUMatrix)
     TableauGPU{T} = QuantumClifford.Tableau{Tzv, Tm} where {T <: Unsigned, Tzv <: GPUVector{UInt8}, Tm <: GPUMatrix{T}}

@@ -1,21 +1,21 @@
-Base.@propagate_inbounds function getxbit(xzs::CuDeviceMatrix{T, 1}, r::Int, c::Int)::T where {T <: Unsigned}
+Base.@propagate_inbounds function getxbit(xzs::DeviceMatrix{T}, r::Int, c::Int)::T where {T <: Unsigned}
     xzs[QuantumClifford.getbigindex(T, c),r] & QuantumClifford.getmask(T, c)
 end
-Base.@propagate_inbounds function getzbit(xzs::CuDeviceMatrix{T, 1}, r::Int, c::Int)::T where {T <: Unsigned}
+Base.@propagate_inbounds function getzbit(xzs::DeviceMatrix{T}, r::Int, c::Int)::T where {T <: Unsigned}
     xzs[end÷2+QuantumClifford.getbigindex(T, c),r]& QuantumClifford.getmask(T, c)
 end
-Base.@propagate_inbounds function setxbit(xzs::CuDeviceMatrix{T, 1}, r::Int, c::Int, x::T) where {T <: Unsigned}
+Base.@propagate_inbounds function setxbit(xzs::DeviceMatrix{T}, r::Int, c::Int, x::T) where {T <: Unsigned}
     cbig = QuantumClifford.getbigindex(T, c)
     xzs[cbig,r] &= ~QuantumClifford.getmask(T, c)
     xzs[cbig,r] |= x
 end
-Base.@propagate_inbounds function setzbit(xzs::CuDeviceMatrix{T, 1}, r::Int, c::Int, z::T) where {T <: Unsigned}
+Base.@propagate_inbounds function setzbit(xzs::DeviceMatrix{T}, r::Int, c::Int, z::T) where {T <: Unsigned}
     cbig = QuantumClifford.getbigindex(T, c)
     xzs[end÷2+cbig,r] &= ~QuantumClifford.getmask(T, c)
     xzs[end÷2+cbig,r] |= z
 end
-Base.@propagate_inbounds setxbit(xzs::CuDeviceMatrix{T, 1}, r::Int, c::Int, x::T, shift::Int) where {T <: Unsigned} = setxbit(xzs, r, c, x<<shift)
-Base.@propagate_inbounds setzbit(xzs::CuDeviceMatrix{T, 1}, r::Int, c::Int, z::T, shift::Int) where {T <: Unsigned} = setzbit(xzs, r, c, z<<shift)
+Base.@propagate_inbounds setxbit(xzs::DeviceMatrix{T}, r::Int, c::Int, x::T, shift::Int) where {T <: Unsigned} = setxbit(xzs, r, c, x<<shift)
+Base.@propagate_inbounds setzbit(xzs::DeviceMatrix{T}, r::Int, c::Int, z::T, shift::Int) where {T <: Unsigned} = setzbit(xzs, r, c, z<<shift)
 
 # todo put back the generic types later
 # Questions:
@@ -23,8 +23,8 @@ Base.@propagate_inbounds setzbit(xzs::CuDeviceMatrix{T, 1}, r::Int, c::Int, z::T
 # 2- doesn't support multimodal so I had to write functions one by one
 # 3- how to use the getxbit, setxbit functions that are in QuantumClifford? (without having to copy)
 # 4- CuArray becomes CuDeviceMatrix in kernel!
-function single_qubit_gpu_kernel(xzs::CuDeviceMatrix{Tme, 1},
-                                 phases::CuDeviceVector{Tmz, 1},
+function single_qubit_gpu_kernel(xzs::DeviceMatrix{Tme},
+                                 phases::DeviceVector{Tmz},
                                  op::SingleQubitOperator,
                                  rows::Unsigned,
                                  compute_phases::Bool) where {Tme <: Unsigned, Tmz <: Unsigned}
@@ -61,8 +61,8 @@ function single_qubit_gpu_kernel(xzs::CuDeviceMatrix{Tme, 1},
     return nothing
 end
 
-function abstract_single_qubit_gpu_kernel(xzs::CuDeviceMatrix{Tme, 1},
-                                 phases::CuDeviceVector{Tmz, 1},
+function abstract_single_qubit_gpu_kernel(xzs::DeviceMatrix{Tme},
+                                 phases::DeviceVector{Tmz},
                                  gate::QuantumClifford.AbstractSingleQubitOperator,
                                  rows::Unsigned,
                                  compute_phases::Bool) where {Tme <: Unsigned, Tmz <: Unsigned}
@@ -108,8 +108,8 @@ function _apply!(stab::StabilizerGPU{T},
     return stab
 end
 
-function two_qubit_gpu_kernel(xzs::CuDeviceMatrix{Tme, 1},
-                              phases::CuDeviceVector{Tze, 1},
+function two_qubit_gpu_kernel(xzs::DeviceMatrix{Tme},
+                              phases::DeviceVector{Tze},
                               gate::QuantumClifford.AbstractTwoQubitOperator, # todo. change to two qubit operator instead os abstract version
                               rows::Unsigned,
                               compute_phases::Bool=true) where {Tme <: Unsigned, Tze <: Unsigned}
