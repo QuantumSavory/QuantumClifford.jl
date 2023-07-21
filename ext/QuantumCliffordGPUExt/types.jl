@@ -1,12 +1,48 @@
+using LinearAlgebra: Adjoint
+
 # todo is there anyway to do this automatically so that if the code in QuantumClifford changes, we don't have to change this?!
 # especially with UInt8 types
 
-const TableauGPU{T} = QuantumClifford.Tableau{Tzv, Tm} where {T <: Unsigned, Tzv <: CuArray{UInt8, 1}, Tm <: CuArray{T, 2}}
-const StabilizerGPU{T} = QuantumClifford.Stabilizer{<:TableauGPU{T}} where {T <: Unsigned}
-const PauliOperatorGPU{T} = QuantumClifford.PauliOperator{Tz, Tv} where {T <: Unsigned, Tz<:CuArray{UInt8,0}, Tv<:CuArray{T, 1}}
+CUDAValue{T} = CuArray{T, 0} where {T}
+CUDAVector{T} = CuArray{T, 1} where {T}
+CUDAMatrix{T} = CuArray{T, 2} where {T}
+CUDAParams = [CUDAValue, CUDAVector, CUDAMatrix]
+
+AdjCUDAValue{T} = Adjoint{T, CuArray{T, 0}} where {T}
+AdjCUDAVector{T} = Adjoint{T, CuArray{T, 1}} where {T}
+AdjCUDAMatrix{T} = Adjoint{T, CuArray{T, 2}} where {T}
+AdjCUDAParams = [AdjCUDAValue, AdjCUDAVector, AdjCUDAMatrix]
+
+function getTableauGPU(GPUValue, GPUVector, GPUMatrix)
+    TableauGPU{T} = QuantumClifford.Tableau{Tzv, Tm} where {T <: Unsigned, Tzv <: GPUVector{UInt8}, Tm <: GPUMatrix{T}}
+end
+function getStabilizerGPU(GPUValue, GPUVector, GPUMatrix)
+    TableauGPU{T} = getTableauGPU(GPUValue, GPUVector, GPUMatrix){T} where {T <: Unsigned}
+    StabilizerGPU{T} = QuantumClifford.Stabilizer{<:TableauGPU{T}} where {T <: Unsigned}
+end
+function getPauliOperatorGPU(GPUValue, GPUVector, GPUMatrix)
+    PauliOperatorGPU{T} = QuantumClifford.PauliOperator{Tz, Tv} where {T <: Unsigned, Tz<:GPUValue{UInt8}, Tv<:GPUVector{T}}
+end
 
 # todo. type definition here is stronger than the code in pauliframes.jl  this will cause serious problems
 # especially because its not obvious whether TFrame is Tableau or Stabilizer in pauliframes.jl
 # and we are assuming that TMeasurement is made of booleans
-const PauliFrameGPU{T} = QuantumClifford.PauliFrame{TFrame, TMeasurement} where {TFrame <: StabilizerGPU{T}, TMeasurement <: CuArray{Bool, 2}}
+function getPauliFrameGPU(GPUValue, GPUVector, GPUMatrix)
+    StabilizerGPU{T} = getStabilizerGPU(GPUValue, GPUVector, GPUMatrix){T} where {T <: Unsigned}
+    PauliFrameGPU{T} = QuantumClifford.PauliFrame{TFrame, TMeasurement} where {T <: Unsigned, TFrame <: StabilizerGPU{T}, TMeasurement <: GPUMatrix{Bool}}
+end
 
+const TableauCUDA{T} = getTableauGPU(CUDAParams...){T} where {T <: Unsigned}
+const StabilizerCUDA{T} = getStabilizerGPU(CUDAParams...){T} where {T <: Unsigned}
+const PauliOperatorCUDA{T} = getPauliOperatorGPU(CUDAParams...){T} where {T <: Unsigned}
+const PauliFrameCUDA{T} = getPauliFrameGPU(CUDAParams...){T} where {T <: Unsigned}
+
+const TableauAdj{T} = getTableauGPU(AdjCUDAParams...){T} where {T <: Unsigned}
+const StabilizerAdj{T} = getStabilizerGPU(AdjCUDAParams...){T} where {T <: Unsigned}
+const PauliOperatorAdj{T} = getPauliOperatorGPU(AdjCUDAParams...){T} where {T <: Unsigned}
+const PauliFrameAdj{T} = getPauliFrameGPU(AdjCUDAParams...){T} where {T <: Unsigned}
+
+const TableauGPU{T} = Union{TableauCUDA{T}, TableauAdj{T}} where {T <: Unsigned}
+const StabilizerGPU{T} = Union{StabilizerCUDA{T}, StabilizerAdj{T}} where {T <: Unsigned}
+const PauliOperatorGPU{T} = Union{PauliOperatorCUDA{T}, PauliOperatorAdj{T}} where {T <: Unsigned}
+const PauliFrameGPU{T} = Union{PauliFrameCUDA{T}, PauliFrameAdj{T}} where {T <: Unsigned}
