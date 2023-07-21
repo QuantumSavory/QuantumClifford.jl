@@ -1,11 +1,12 @@
 using Test
 using QuantumClifford
-using QuantumClifford.ECC: AbstractECC, Paper8, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, naive_encoding_circuit, is_degenerate, rank
+using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, naive_encoding_circuit, is_degenerate, rank, standard_tab_gott
 
 codes = [
     Bitflip3(),
     Steane7(),
     Shor9(),
+    # Cleve8(),
 ]
 
 ##
@@ -80,7 +81,7 @@ function test_naive_syndrome(c::AbstractECC, e::Bool=false)
     if !e
         @test all(syndrome1 .== 0)
         @test all(bitview(syndrome2) .== 0)
-    end    
+    end
     @test bitview(syndrome2) == syndrome1.÷2
 
     # TODO test when there is potential for errors / non-commuting operators
@@ -134,5 +135,5 @@ end
     end
 end
 
-## 
+##
 

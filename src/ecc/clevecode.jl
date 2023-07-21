@@ -1,8 +1,8 @@
-struct Paper8 <: AbstractECC end
+struct Cleve8 <: AbstractECC end
 
-code_n(c::Paper8) = 8
+code_n(c::Cleve8) = 8
 
-parity_checks(c::Paper8) = S"XXXXXXXX
+parity_checks(c::Cleve8) = S"XXXXXXXX
                             ZZZZZZZZ
                             XIXIZYZY
                             XIYZXIYZ

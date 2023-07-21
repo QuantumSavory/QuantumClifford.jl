@@ -1,5 +1,6 @@
 module ECC
 
+using LinearAlgebra
 using QuantumClifford
 using QuantumClifford: AbstractOperation
 import QuantumClifford: Stabilizer, MixedDestabilizer
@@ -288,10 +289,11 @@ end
 
 """ Check if the code is degenerate or not."""
 function is_degenerate(c::AbstractECC)
+    # By quantum stackexchange: https://quantumcomputing.stackexchange.com/questions/27279
     tableau = stab_to_gf2(parity_checks(c))
     n = code_n(c)
     dictionary = Set()
-    for column in 1:2*n 
+    for column in 1:2*n
         temp = tableau[:, column]
         if temp in dictionary
               return true
@@ -315,38 +317,28 @@ function rank(c::AbstractECC)
     return rank
 end
 
-"""The standardized logical tableau of a code by [PhysRevA.56.76](@cite)"""
+"""The standardized logical tableau of a code by [PhysRevA.56.76](@cleve1997efficient)"""
 function standard_tab_gott(c::AbstractECC)
     n, s, k, r = code_n(c), code_s(c), code_k(c), rank(c)
-    # The standard form is 
+
+    # The standard form is
     # I A1 A2 | B C1 C2
-    # 0  0 0  | D  I  E  
+    # 0  0 0  | D  I  E
     # and we augment the following third line (for logical qubits)
     # 0 E^T I | 0  0  0
     # Then we apply the gates line by line bottom up in accordance with the formalisms here: arXiv:quant-ph/9607030
+
     standard_tab = stab_to_gf2(stabilizerview(MixedDestabilizer(parity_checks(c), undoperm=false)))
-    for i in 1: k
-        # can we use canonicalize_gott for the entire mixedDestabilizer? (i.e. the stab + log parts = n rows)
-        augment = zeros(Int8, (1, 2*n))
-        for j in 1:n
-            if j > r && j <= n - k
-                augment[j] = standard_tab[j, 2*n-k+i] # the corresponding column of E in E^T 
-            elseif j == n-k+i 
-                augment[j] = 1
-            end
-        end
-        standard_tab = vcat(standard_tab, augment)
-    end
+
+    # Initialize augment to be E^T, then pad the zeros to the left, then pad the identity matrix to the mul_right
+    augment = transpose(standard_tab[r+1:s, 2*n-k+1:2*n])
+    zero_left = zeros(Int8, (k, r))
+    identity = Matrix(1I, k, k)
+    zero_right = zeros(Int8, (k, n)) # padding all zeros to the right
+    augment = hcat(zero_left, augment, identity, zero_right)
+    standard_tab = vcat(standard_tab, augment)
     # Flipping the table so it has the same format as the papercode
-    res = zeros(Int8, (n, 2n))
-    for i in 1:n
-        for j in 1:n
-            res[i, j] = standard_tab[n+1-j, n+1-i]
-        end
-        for j in n+1:2*n
-            res[i,j] = standard_tab[2*n+1-j, n+1-i]
-        end
-    end
+    res = hcat(transpose(reverse(standard_tab[1:n, 1:n])), transpose(reverse(standard_tab[1:n, n+1:2*n])))
     return res
 end
 
@@ -361,7 +353,7 @@ function naive_encoding_circuit(c::AbstractECC)
     end
 
     standard_tab = standard_tab_gott(c)
-    
+
     for i in 1 : n
         if standard_tab[i, i] ==1
             for j in 1:n
@@ -375,15 +367,15 @@ function naive_encoding_circuit(c::AbstractECC)
                     push!(naive_ec, sXCY(j, i))
                 end
             end
-        end        
+        end
     end
     return naive_ec
-end 
+end
 
 
 include("./bitflipcode.jl")
 include("./shorcode.jl")
 include("./steanecode.jl")
-include("./papercode.jl")
+include("./clevecode.jl")
 
 end #module
