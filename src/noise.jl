@@ -113,3 +113,58 @@ function apply!(r::Register, n::NoiseOp)
     apply!(quantumstate(r), n)
     return r
 end
+
+##
+# petrajectories
+##
+
+function applynoise_branches(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,indices; max_order=1)
+    n = nqubits(s)
+    l = length(indices)
+    infid = noise.errprobthird
+    if l==0
+        return [s,one(infid)]
+    end
+    error1 = 3*infid
+    no_error1 = 1-error1
+    no_error = no_error1^l
+    results = [(copy(s),no_error,0)] # state, prob, order
+    for order in 1:min(max_order,l)
+        error_prob = no_error1^(l-order)*infid^order
+        for error_indices in combinations(indices, order)
+            _applynoise_branches_unbiased_uncorrelated(Val(order),s,error_indices,results,error_prob)
+        end
+    end
+    results
+end
+
+@generated function _applynoise_branches_unbiased_uncorrelated(::Val{order},s,error_indices,results,error_prob) where {order}
+    error_calls = Expr(:block)
+    for i in 1:order
+        call = quote (apply_single_x!,apply_single_y!,apply_single_z!)[$(Symbol(:i_,i))](new_state,error_indices[$i]) end
+        push!(error_calls.args, call)
+    end
+    # n nested loops, one for each affected qubit, each loop dedicated to the 3 possible errors (X, Y, or Z)
+    quote
+        @nloops $order i d->1:3 begin
+            new_state = copy(s)
+            $error_calls
+            push!(results,(new_state, error_prob, order))
+        end
+        results
+    end
+end
+
+function applybranches(s::AbstractQCState, nop::NoiseOpAll; max_order=1)
+    n = nqubits(s)
+    return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
+end
+
+function applybranches(s::AbstractQCState, nop::NoiseOp; max_order=1)
+    return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, affectedqubits(nop), max_order=max_order)]
+end
+
+function applybranches(s::AbstractQCState, g::NoisyGate; max_order=1)
+    news, _,_,_ = applybranches(s,g.gate,max_order=max_order)[1] # TODO this assumes only one always successful branch for the gate
+    return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
+end

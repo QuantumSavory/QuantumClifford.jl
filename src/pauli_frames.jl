@@ -17,14 +17,18 @@ Base.eachindex(f::PauliFrame) = 1:length(f)
 Base.copy(f::PauliFrame) = PauliFrame(copy(f.frame), copy(f.measurements))
 Base.view(frame::PauliFrame, r) = PauliFrame(view(frame.frame, r), view(frame.measurements, r, :))
 
+fastrow(s::PauliFrame) = PauliFrame(fastrow(s.frame), s.measurements)
+fastcolumn(s::PauliFrame) = PauliFrame(fastcolumn(s.frame), s.measurements)
+
 """
 $(TYPEDSIGNATURES)
 
 Prepare an empty set of Pauli frames with the given number of `frames` and `qubits`. Preallocates spaces for `measurement` number of measurements.
 """
 function PauliFrame(frames, qubits, measurements)
-    stab = zero(Stabilizer, frames, qubits) # TODO this should really be a Tableau
-    frame = PauliFrame(stab, zeros(Bool, frames, measurements))
+    stab = fastcolumn(zero(Stabilizer, frames, qubits)) # TODO this should really be a Tableau
+    bits = zeros(Bool, frames, measurements)
+    frame = PauliFrame(stab, bits)
     initZ!(frame)
     return frame
 end
@@ -40,7 +44,7 @@ It is done automatically by most [`PauliFrame`](@ref) constructors.
 function initZ!(frame::PauliFrame)
     T = eltype(frame.frame.tab.xzs)
 
-    @inbounds @simd for f in eachindex(frame) # TODO thread this
+    @inbounds @simd for f in eachindex(frame)
         @simd for row in 1:size(frame.frame.tab.xzs,1)÷2
             frame.frame.tab.xzs[end÷2+row,f] = rand(T)
         end
@@ -63,7 +67,7 @@ function apply!(frame::PauliFrame, op::sMZ) # TODO sMX, sMY
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
 
-    @inbounds @simd for f in eachindex(frame) # TODO thread this
+    @inbounds @simd for f in eachindex(frame)
         should_flip = !iszero(xzs[ibig,f] & ismallm)
         frame.measurements[f,op.bit] = should_flip
     end
@@ -81,12 +85,12 @@ function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRX, sMRY
     ismallm = lowbit<<(ismall)
 
     if op.bit != 0
-        @inbounds @simd for f in eachindex(frame) # TODO thread this
+        @inbounds @simd for f in eachindex(frame)
             should_flip = !iszero(xzs[ibig,f] & ismallm)
             frame.measurements[f,op.bit] = should_flip
         end
     end
-    @inbounds @simd for f in eachindex(frame) # TODO thread this
+    @inbounds @simd for f in eachindex(frame)
         xzs[ibig,f] &= ~ismallm
         rand(Bool) && (xzs[end÷2+ibig,f] ⊻= ismallm)
     end
@@ -103,7 +107,7 @@ function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
 
-    @inbounds @simd for f in eachindex(frame) # TODO thread this
+    @inbounds @simd for f in eachindex(frame)
         r = rand()
         if  r < p # X error
             frame.frame.tab.xzs[ibig,f] ⊻= ismallm
@@ -132,15 +136,10 @@ Multithreading is enabled by default, but can be disabled by setting `threads=fa
 Do not forget to launch Julia with multiple threads enabled, e.g. `julia -t4`, if you want
 to use multithreading.
 
-Note for advanced users: Much of the underlying QuantumClifford.jl functionaly is capable of
-using Polyester.jl threads, but they are fully dissabled here as this is an embarassingly
-parallel problem. If you want to use Polyester.jl threads, use the lower level methods.
-The `threads` keyword argument controls whether standard Julia threads are used.
+See also: [`mctrajectories`](@ref), [`petrajectories`](@ref)
 """
 function pftrajectories(circuit;trajectories=5000,threads=true)
-    Polyester.disable_polyester_threads() do
-        _pftrajectories(circuit;trajectories,threads)
-    end
+    _pftrajectories(circuit;trajectories,threads)
 end
 
 function _pftrajectories(circuit;trajectories=5000,threads=true)
@@ -152,7 +151,7 @@ function _pftrajectories(circuit;trajectories=5000,threads=true)
     qmax=maximum((maximum(affectedqubits(g)) for g in ccircuit))
     bmax=maximum((maximum(affectedbits(g),init=1) for g in ccircuit))
     frames = PauliFrame(trajectories, qmax, bmax)
-    nthr = min(Threads.nthreads(),trajectories÷(MINBATCH1Q))
+    nthr = min(Threads.nthreads(),trajectories÷(100))
     if threads && nthr>1
         batchsize = trajectories÷nthr
         Threads.@threads for i in 1:nthr

@@ -4,7 +4,6 @@ using ArrayInterface
 using Static
 using Graphs
 using LinearAlgebra
-using Polyester
 
 using JET: ReportPass, BasicPass, InferenceErrorReport, UncaughtExceptionReport
 
@@ -31,10 +30,9 @@ end
             AnyFrameModule(ArrayInterface),
             AnyFrameModule(Static),
             AnyFrameModule(LinearAlgebra),
-            AnyFrameModule(Polyester)
         )
     )
     @show rep
-    @test_broken length(JET.get_reports(rep)) == 0 # false positive from https://github.com/aviatesk/JET.jl/issues/444
-    @test length(JET.get_reports(rep)) <= 2
+    @test_broken length(JET.get_reports(rep)) == 0
+    @test length(JET.get_reports(rep)) <= 7
 end

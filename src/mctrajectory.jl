@@ -48,7 +48,7 @@ function mctrajectory!(state,circuit)
     return state, continue_stat
 end
 
-function countmap(samples::Vector{CircuitStatus}) # A simpler faster version of StatsBase.countmap
+function countmap(samples) # A simpler faster version of StatsBase.countmap that only works for CircuitStatus
     counts = zeros(length(registered_statuses))
     for s in samples
         counts[s.status+1] += 1
@@ -58,8 +58,16 @@ end
 
 """Run multiple Monte Carlo trajectories and report the aggregate final statuses of each.
 
-See also: [`pftrajectories`](@ref), `petrajectories`"""
-function mctrajectories(initialstate,circuit;trajectories=500)
-    counts = countmap([mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories]) # TODO use threads or at least a generator, but without breaking Polyester
-    return counts
+See also: [`pftrajectories`](@ref), [`petrajectories`](@ref)"""
+mctrajectories(initialstate,circuit;trajectories=500,keepstates::Bool=false) = _mctrajectories(initialstate,circuit;trajectories,keepstates=Val(keepstates))
+
+function _mctrajectories(initialstate,circuit;trajectories=500,keepstates::Val{B}=Val(false)) where {B}
+    if B
+        counter = DefaultDict{Tuple{typeof(initialstate),CircuitStatus},Int}
+        counts = counter((mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories)) # TODO use threads or at least a generator
+        return counts
+    else
+        counts = countmap((mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories)) # TODO use threads or at least a generator
+        return counts
+    end
 end

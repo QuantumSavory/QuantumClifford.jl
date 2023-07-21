@@ -5,6 +5,40 @@
 
 # News
 
+## v0.8.14 - 2023-07-19
+
+- Circuit plotting with Quantikz from inside other modules (common with Pluto) showed wrong names for gates due to how we were serializing the names. It is now fixed.
+
+## v0.8.13 - 2023-07-18
+
+- **(fix)** There was a bug with incorrect scaling for `Operator(::CliffordOperator)` conversions.
+- A few more features to the `ECC` module's circuit generation routines.
+- Quantikz circuit plotting improvements to `CliffordOperator` and `s*CY` and `sYC*`.
+
+## v0.8.12 - 2023-07-12
+
+- Initial implementation of non-Clifford simulation (mainly for circuits that are slightly non-Clifford, e.g. containing T gates). See `StabMixture`, `PauliChannel`, `UnitaryPauliChannel`, and `pcT`.
+- `embed` implemented for `PauliOperator` and `PauliChannel`.
+- Various convenience constructors that transform a tableaux or an operator into a `Ket` or `Operator` from `QuantumOptics.jl`. Use the constructors directly like `Ket(::Stabilizer)`, `Operator(::CliffordOperator)`, etc.
+
+## v0.8.11 - 2023-07-10
+
+- `petrajectories`, for (potentially symbolic) perturbative expansions of the result of a circuit, is moved out of `Experimental` into the public part of the interface. The underlying `petrajectory` is not made public yet due to the ad-hoc low-level return conventions for it.
+- `mctrajectory` and `petrajectory` can now optionally report the end state of each trajectory, not just the circuit status (i.e. "success", "detected failure", etc).
+- Internally we now use a trait system to distinguish deterministic from non-deterministic operations. Not part of the public API yet.
+
+## v0.8.10 - 2023-07-05
+
+- Remove Polyester.jl multithreading, leading to simpler and better compiled single-thread code. Now single-thread performance is much higher. Multithreading was generally not useful at the inner loops where it was deployed.
+- Implement `fastcolumn` and `fastrow`, which transform a tableau into a memory layout optimized for column or row operations.
+
+## v0.8.9 - 2023-07-04
+
+- In the unexported experimental ECC module:
+    - we now implement `fault_matrix` which gives the mapping between single-qubit physical errors and logical observables.
+    - `MixedDestabilizer` and `Stabilizer` now have constructors when acting on an ECC object.
+- `stab_to_gf2` now works with Pauli operators as well.
+
 ## v0.8.8 - 2023-06-23
 
 - Bump `QuantumInterface` compat.

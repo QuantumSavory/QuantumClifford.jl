@@ -1,17 +1,13 @@
 using QuantumClifford
+using QuantumClifford: AbstractOperation
 
-test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
-
-using QuantumClifford.Experimental.NoisyCircuits
-import AbstractAlgebra
-
-@testset "Syndrome Measurements" begin
+@testset "Syndrome Measurements with mctrajectory!" begin # TODO this is a rather old test that is now done in a few other places, e.g. the ECC module -- double check and consider deleting
     codeˢᵗᵉᵃⁿᵉ = S"Z__Z_ZZ
-                    _Z_ZZ_Z
-                    __Z_ZZZ
-                    X__X_XX
-                    _X_XX_X
-                    __X_XXX";
+                   _Z_ZZ_Z
+                   __Z_ZZZ
+                   X__X_XX
+                   _X_XX_X
+                   __X_XXX";
     function get_check(code,index) # TODO a fairly ugly piece of code that should just be part of the library
         s,n = size(code)
         @assert index<=s

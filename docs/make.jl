@@ -9,7 +9,10 @@ using QuantumInterface
 
 #DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
 
-bib = CitationBibliography(joinpath(@__DIR__,"src/references.bib"))
+ENV["LINES"] = 80    # for forcing `displaysize(io)` to be big enough
+ENV["COLUMNS"] = 80
+
+bib = CitationBibliography(joinpath(@__DIR__,"src/references.bib"),style=:authoryear)
 
 makedocs(
 bib,

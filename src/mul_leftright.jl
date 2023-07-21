@@ -1,8 +1,17 @@
+# using LoopVectorization
+using HostCPUFeatures: pick_vector_width
+import SIMD
+
 """Nonvectorized version of `mul_left!` used for unit tests."""
 function _mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
+    rcnt1, rcnt2 = _mul_ordered_nonvec!(r,l; phases)
+    rcnt1 ⊻ (rcnt2 << 1)
+end
+
+function _mul_ordered_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
     if !phases
         r .⊻= l
-        return zero(T)
+        return (0, 0)
     end
     cnt1 = zero(T)
     cnt2 = zero(T)
@@ -16,9 +25,41 @@ function _mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::B
         cnt2 ⊻= (cnt1 ⊻ newx1 ⊻ newz1 ⊻ x1z2) & anti_comm
         cnt1 ⊻= anti_comm
     end
-    s = count_ones(cnt1)
-    s ⊻= count_ones(cnt2) << 1
-    s
+    rcnt1 = count_ones(cnt1)
+    rcnt2 = count_ones(cnt2)
+    rcnt1, rcnt2
+end
+
+#= # LoopVectorization does not support the necessary bit operations
+function mul_ordered_lv!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B}
+    if !B
+        r .⊻= l
+        return (0, 0)
+    end
+    cnt1 = zero(T)
+    cnt2 = zero(T)
+    len = length(l)÷2
+    @turbo for i in 1:len
+        x1, x2, z1, z2 = l[i], r[i], l[i+len], r[i+len]
+        newx1 = x1 ⊻ x2
+        r[i] = newx1
+        newz1 = z1 ⊻ z2
+        r[i+len] = newz1
+        x1z2 = x1 & z2
+        anti_comm = (x2 & z1) ⊻ x1z2
+        cnt2 ⊻= (newx1 ⊻ newz1 ⊻ x1z2) & anti_comm
+        cnt1 ⊻= anti_comm
+    end
+    rcnt1 = count_ones(cnt1)
+    rcnt2 = count_ones(cnt2)
+    rcnt1, rcnt2
+end
+=#
+
+function mul_ordered!(r::SubArray{T,1,P,I1,L1}, l::SubArray{T,1,P,I2,L2}; phases::Val{B}=Val(true)) where {T<:Unsigned, B, I1, I2, L1, L2, P<:Adjoint}
+    # This method exists because SIMD.jl does not play well with Adjoint
+    # Delete it and try `QuantumClifford.mul_left!(fastcolumn(random_stabilizer(194)), 2, 1)` # works fine for 192
+    _mul_ordered_nonvec!(r,l; phases=B)
 end
 
 function mul_ordered!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B}
@@ -143,4 +184,30 @@ end
     mul_left!(t, j, i; phases=Val(false)) # Indices are flipped to preserve commutation constraints
     n = nqubits(t)
     mul_left!(t, i+n, j+n; phases=phases)
+end
+
+@inline function mul_left!(s::Tableau, p::PauliOperator; phases::Val{B}=Val(true)) where B # TODO multithread
+    @inbounds @simd for m in eachindex(s)
+        extra_phase = mul_left!((@view s.xzs[:,m]), p.xz; phases=phases)
+        B && (s.phases[m] = (extra_phase+s.phases[m]+p.phase[])&0x3)
+    end
+    s
+end
+
+@inline function mul_left!(s::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
+    mul_left!(tab(s), p; phases=phases)
+    s
+end
+
+@inline function mul_right!(s::Tableau, p::PauliOperator; phases::Val{B}=Val(true)) where B # TODO multithread
+    @inbounds @simd for m in eachindex(s)
+        extra_phase = mul_right!((@view s.xzs[:,m]), p.xz; phases=phases)
+        B && (s.phases[m] = (extra_phase+s.phases[m]+p.phase[])&0x3)
+    end
+    s
+end
+
+@inline function mul_right!(s::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
+    mul_right!(tab(s), p; phases=phases)
+    s
 end
