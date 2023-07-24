@@ -75,12 +75,18 @@ end
             compactify_circuit(circuit)
         end
 
-        frames = QuantumClifford._create_pauliframe(ccircuit; trajectories=10)
-        cpu_frames = to_cpu(frames)
-        gpu_frames = to_gpu(frames)
-        cpu_result = pftrajectories(cpu_frames, ccircuit)
-        gpu_result = pftrajectories(gpu_frames, ccircuit)
-        (cpu_result.frame == to_cpu(gpu_result.frame)) && (cpu_result.measurements == to_cpu(gpu_result.measurements))
+        for func in [identity, fastcolumn, fastrow]
+            frames = QuantumClifford._create_pauliframe(ccircuit; trajectories=10)
+            cpu_frames = func(to_cpu(frames))
+            gpu_frames = func(to_gpu(frames))
+            cpu_result = pftrajectories(cpu_frames, ccircuit)
+            gpu_result = pftrajectories(gpu_frames, ccircuit)
+            check = (cpu_result.frame == to_cpu(gpu_result.frame)) && (cpu_result.measurements == to_cpu(gpu_result.measurements))
+            if !check
+                throw("pftrajectories produce wrong result after applying $func")
+            end
+        end
+        true
     end
 
     @test begin
