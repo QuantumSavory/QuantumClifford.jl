@@ -272,9 +272,9 @@ when running large scale simulations in which we want a separate fast error samp
 We just gather all our syndrome measurement **and logical observables** from the Pauli frame simulations,
 and then use them with the fault matrix in the syndrome decoding simulation.
 """
-function faults_matrix(c::AbstractECC)
-    n = code_n(c)
-    k = code_k(c)
+function faults_matrix(c::Stabilizer)
+    s, n = size(c)
+    k = n-s
     O = falses(2k, 2n)
     md = MixedDestabilizer(c)
     logviews = [logicalxview(md); logicalzview(md)]
@@ -283,6 +283,10 @@ function faults_matrix(c::AbstractECC)
         O[i, :] = comm(logviews[i]::PauliOperator, errors) # typeassert for JET
     end
     return O
+end
+
+function faults_matrix(c::AbstractECC)
+    return faults_matrix(parity_checks(c))
 end
 
 # TODO implement isdegenerate
