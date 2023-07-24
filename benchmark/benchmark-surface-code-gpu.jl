@@ -66,16 +66,23 @@ function save_stats(df)
 end
 
 function plot_result(df)
-    cpu_row_col = plot(df.n_values, [df.cpu_row_times, df.cpu_column_times], marker=:circle, label=["row" "column"], xlabel="n", ylabel="Execution Time (s)", title="cpu: row vs column", xticks=df.n_values[1:2:end], xscale=:log2, yticks=[0.001, 0.01, 0.1, 0.5, 1, 2, 4, 8, df.cpu_row_times[end]], yscale=:log10, legend=:topleft)
-    gpu_row_col = plot(df.n_values, [df.gpu_row_times, df.gpu_column_times], marker=:circle, label=["row" "column"], xlabel="n", ylabel="Execution Time (s)", title="gpu: row vs column", xticks=df.n_values[1:2:end], xscale=:log2, yticks=[0.001, 0.01, 0.1, 0.5, 1, 2, 4, 8, df.gpu_row_times[end]], yscale=:log10, legend=:topleft)
-    gpu_vs_cpu_row = plot(df.n_values, [df.gpu_row_times, df.cpu_row_times], marker=:circle, label=["gpu row" "cpu row"], xlabel="n", ylabel="Execution Time (s)", title="gpu vs cpu (both )", xticks=df.n_values[1:2:end], xscale=:log2, yticks=[0.001, 0.01, 0.1, 0.5, 1, 2, 4, 8, df.gpu_row_times[end]], yscale=:log10, legend=:topleft)
+    my_y_axis(a, b) = begin
+        arr = [a..., b...]
+        logarr = log.(arr)
+        exp.(range(min(logarr...), stop=max(logarr...), length=8))
+    end
 
-    plot(cpu_row_col, gpu_row_col, gpu_vs_cpu_row, layout=(3, 1))
-    savefig("benchmark_surface_code_d5.png")
+    cpu_row_col = plot(df.n_values, [df.cpu_row_times, df.cpu_column_times], marker=:circle, label=["row" "column"], xlabel="n", ylabel="Execution Time (s)", title="cpu: row vs column", xticks=df.n_values[1:2:end], xscale=:log2, yticks=my_y_axis(df.cpu_row_times, df.cpu_column_times), yscale=:log10, legend=:topleft)
+    gpu_row_col = plot(df.n_values, [df.gpu_row_times, df.gpu_column_times], marker=:circle, label=["row" "column"], xlabel="n", ylabel="Execution Time (s)", title="gpu: row vs column", xticks=df.n_values[1:2:end], xscale=:log2, yticks=my_y_axis(df.gpu_row_times, df.gpu_column_times), yscale=:log10, legend=:topleft)
+    gpu_vs_cpu_row = plot(df.n_values, [df.gpu_row_times, df.cpu_row_times], marker=:circle, label=["gpu row" "cpu row"], xlabel="n", ylabel="Execution Time (s)", title="gpu vs cpu (row)", xticks=df.n_values[1:2:end], xscale=:log2, yticks=my_y_axis(df.gpu_row_times, df.cpu_row_times), yscale=:log10, legend=:topleft)
+    gpu_vs_cpu_column = plot(df.n_values, [df.gpu_column_times, df.cpu_column_times], marker=:circle, label=["gpu column" "cpu column"], xlabel="n", ylabel="Execution Time (s)", title="gpu vs cpu (column)", xticks=df.n_values[1:2:end], xscale=:log2, yticks=my_y_axis(df.gpu_column_times, df.cpu_column_times), yscale=:log10, legend=:topleft)
+
+    plot(cpu_row_col, gpu_row_col, gpu_vs_cpu_row, gpu_vs_cpu_column, layout=(2, 2), size=(1200, 800))
 end
 
 function main()
     df = load_stats()
     save_stats(df)
     plot_result(df)
+    savefig("benchmark_surface_code_d5.png")
 end
