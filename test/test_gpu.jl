@@ -1,5 +1,6 @@
 using Test
 using QuantumClifford
+using QuantumClifford: to_cpu, to_gpu
 using CUDA
 
 function apply_single_qubit_and_compare(n, s, s_gpu)
