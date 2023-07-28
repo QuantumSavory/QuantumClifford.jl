@@ -17,12 +17,6 @@ end
 Base.@propagate_inbounds setxbit(xzs::DeviceMatrix{T}, r::Int, c::Int, x::T, shift::Int) where {T <: Unsigned} = setxbit(xzs, r, c, x<<shift)
 Base.@propagate_inbounds setzbit(xzs::DeviceMatrix{T}, r::Int, c::Int, z::T, shift::Int) where {T <: Unsigned} = setzbit(xzs, r, c, z<<shift)
 
-# todo put back the generic types later
-# Questions:
-# 1- couldn't input tabeulu to gpu kernel
-# 2- doesn't support multimodal so I had to write functions one by one
-# 3- how to use the getxbit, setxbit functions that are in QuantumClifford? (without having to copy)
-# 4- CuArray becomes CuDeviceMatrix in kernel!
 function single_qubit_gpu_kernel(xzs::DeviceMatrix{Tme},
                                  phases::DeviceVector{Tmz},
                                  op::SingleQubitOperator,
@@ -86,12 +80,10 @@ function _apply!(stab::StabilizerGPU{T},
     op::QuantumClifford.SingleQubitOperator;
     phases::Val{B}=Val(true)) where {B, T <: Unsigned}
     # todo how to use phases similar to before in kernel functions??!
-    threads_count = 1024 # Change this later
     rows::Unsigned = size(stab, 1)
-    blocks_count = ceil(Int, rows/threads_count)
     tab = QuantumClifford.tab(stab)
     # todo. why can't I pass phases=compute_phases normally without function call?
-    CUDA.@sync @cuda threads=threads_count blocks=blocks_count single_qubit_gpu_kernel(tab.xzs, tab.phases, op, rows, B)
+    CUDA.@sync @run_cuda single_qubit_gpu_kernel(tab.xzs, tab.phases, op, rows, B) rows
     return stab
 end
 
@@ -99,12 +91,10 @@ function _apply!(stab::StabilizerGPU{T},
     op::QuantumClifford.AbstractSingleQubitOperator;
     phases::Val{B}=Val(true)) where {B, T <: Unsigned}
 
-    threads_count = 1024 # Change this later
     rows::Unsigned = size(stab, 1)
-    blocks_count = ceil(Int, rows/threads_count)
     tab = QuantumClifford.tab(stab)
     # todo. why can't I pass phases=compute_phases normally without function call?
-    CUDA.@sync @cuda threads=threads_count blocks=blocks_count abstract_single_qubit_gpu_kernel(tab.xzs, tab.phases, op, rows, B)
+    CUDA.@sync @run_cuda abstract_single_qubit_gpu_kernel(tab.xzs, tab.phases, op, rows, B) rows
     return stab
 end
 
@@ -143,13 +133,9 @@ end
 function _apply!(stab::StabilizerGPU{T}, 
                  gate::G; 
                  phases::Val{B}=Val(true)) where {B, G<:QuantumClifford.AbstractTwoQubitOperator, T <: Unsigned} # todo. change to two qubit operator instead os abstract version
-    threads_count = 1024 # Change this later
     rows::Unsigned = size(stab, 1)
-    blocks_count = ceil(Int, rows/threads_count)
     tab = QuantumClifford.tab(stab)
     # todo. why can't I pass compute_phases=compute_phases normally without function call?
-    CUDA.@sync @cuda threads=threads_count blocks=blocks_count two_qubit_gpu_kernel(tab.xzs, tab.phases, gate, rows, B)
-
-    # todo dry this out...!
+    CUDA.@sync @run_cuda two_qubit_gpu_kernel(tab.xzs, tab.phases, gate, rows, B)
     return stab
 end

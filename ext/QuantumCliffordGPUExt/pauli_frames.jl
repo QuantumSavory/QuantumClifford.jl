@@ -26,13 +26,7 @@ function apply!(frame::PauliFrameGPU{T}, op::QuantumClifford.sMZ) where {T <: Un
     ibig = QuantumClifford._div(T,i-1)+1
     ismall = QuantumClifford._mod(T,i-1)
     ismallm = lowbit<<(ismall)
-
-
-    threads_count = 1024 # todo choose this wiser
-    blocks_count = ceil(Int, length(frame)/threads_count)
-    # todo make this some kind of macro so that we don't need to write this all the time?!
-    CUDA.@sync @cuda threads=threads_count blocks=blocks_count apply_sMZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame))
-
+    CUDA.@sync @run_cuda apply_sMZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame)) length(frame)
     return frame
 end
 
@@ -62,10 +56,6 @@ function apply!(frame::PauliFrameGPU{T}, op::QuantumClifford.sMRZ) where {T <: U
     ibig = QuantumClifford._div(T,i-1)+1
     ismall = QuantumClifford._mod(T,i-1)
     ismallm = lowbit<<(ismall)
-
-    threads_count = 1024 # todo choose this wiser
-    blocks_count = ceil(Int, length(frame)/threads_count)
-    # todo make this some kind of macro so that we don't need to write this all the time?!
-    CUDA.@sync @cuda threads=threads_count blocks=blocks_count apply_sMRZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame))
+    CUDA.@sync @run_cuda apply_sMRZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame)) length(frame)
     return frame
 end
