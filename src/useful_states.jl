@@ -28,7 +28,7 @@ function Base.one(::Type{T}, n; basis=:Z) where {T<:Tableau}# TODO support `basi
     elseif basis==:Z
         T(falses(n,n),LinearAlgebra.I(n))
     else
-        throw(ErrorException("`basis` should be one of :X, :Y, or :Z"))
+        throw(ArgumentError("`basis` should be one of :X, :Y, or :Z"))
     end
 end
 Base.one(::Type{<:Stabilizer}, n; basis=:Z) = Stabilizer(one(Tableau,n; basis)) # TODO make it type preserving
@@ -81,8 +81,21 @@ function bell()
            ZZ")
 end
 
-function bell(n::Int)
-    tensor_pow(bell(), n)
+function bell(n::Int; localorder=false)
+    if localorder
+        return bell_local(n)
+    else
+        return tensor_pow(bell(), n)
+    end
+end
+
+function bell_local(n)
+    s = zero(Stabilizer, 2n)
+    for i in 1:n
+        s[i,i] = s[i,i+n] = (true, false)
+        s[i+n,i] = s[i+n,i+n] = (false, true)
+    end
+    s
 end
 
 function bell(phase::Tuple{Bool, Bool})

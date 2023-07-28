@@ -357,7 +357,7 @@ function _project!(d::Destabilizer,pauli::PauliOperator;keep_result::Val{Bkr}=Va
                                    :Destabilizer))
         end
         if Bkr
-            new_pauli = zero(pauli)
+            new_pauli = zero(pauli)::PauliOperator # typeassert for JET
             new_pauli.phase[] = pauli.phase[]
             for i in 1:r
                 comm(pauli,destabilizer,i)!=0 && mul_left!(new_pauli, stabilizer, i, phases=phases)
@@ -422,7 +422,7 @@ function _project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Val{Bk
             result = nothing
         else
             if Bkr
-                new_pauli = zero(pauli)
+                new_pauli = zero(pauli)::PauliOperator # typeassert for JET
                 new_pauli.phase[] = pauli.phase[]
                 for i in 1:r
                     comm(pauli,destabilizer,i)!=0 && mul_left!(new_pauli, stabilizer, i, phases=phases)

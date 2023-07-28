@@ -41,31 +41,43 @@ function code_n(parity_check_tableau)
     return size(parity_check_tableau)[2]
 end
 
-"""Wrapper function for codes of type AbstractECC"""
-function naive_syndrome_circuit(code_type::AbstractECC)
-    naive_syndrome_circuit(parity_checks(code_type))
+"""Generate the non-fault-tolerant stabilizer measurement cicuit for a given code instance or parity check tableau.
+
+Use the `ancillary_index` and `bit_index` arguments to offset where the corresponding part the circuit starts.
+"""
+function naive_syndrome_circuit end
+
+function naive_syndrome_circuit(code_type::AbstractECC, ancillary_index=1, bit_index=1)
+    naive_syndrome_circuit(parity_checks(code_type), ancillary_index, bit_index)
 end
 
-"""Naive syndrome circuit"""
-function naive_syndrome_circuit(parity_check_tableau)
+"""Circuit that measures the corresponding PauliOperator by using conditional gates into an ancillary
+qubit at index `nqubits(p)+ancillary_index` and stores the measurement result into classical bit `bit_index`."""
+function naive_ancillary_paulimeasurement(p::PauliOperator, ancillary_index=1, bit_index=1)
+    circuit = AbstractOperation[]
+    numQubits = nqubits(p)
+    for qubit in 1:numQubits
+        if p[qubit] == (1,0)
+            push!(circuit, sXCX(qubit, numQubits + ancillary_index))
+        elseif p[qubit] == (0,1)
+            push!(circuit, sCNOT(qubit, numQubits + ancillary_index))
+        elseif p[qubit] == (1,1)
+            push!(circuit, sYCX(qubit, numQubits + ancillary_index))
+        end
+    end
+    mz = sMRZ(numQubits + ancillary_index, bit_index)
+    push!(circuit, mz)
+
+    return circuit
+end
+
+function naive_syndrome_circuit(parity_check_tableau, ancillary_index=1, bit_index=1)
     naive_sc = AbstractOperation[]
 
-    ancilla_bit = 1
-    # ancilla_qubit = code_n(c) + ancilla_bit
     for check in parity_check_tableau
-        ancilla_qubit = code_n(parity_check_tableau) + ancilla_bit
-        for qubit in 1: code_n(parity_check_tableau)
-            if check[qubit] == (1,0) # TODO simplify this branch using sXCX and similar gates
-                push!(naive_sc, sXCX(qubit, ancilla_qubit))
-            elseif check[qubit] == (0,1)
-                push!(naive_sc, sCNOT(qubit, ancilla_qubit))
-            elseif check[qubit] == (1,1)
-                push!(naive_sc, sYCX(qubit, ancilla_qubit))
-            end
-        end
-        mz = sMZ(ancilla_qubit, ancilla_bit)
-        push!(naive_sc, mz)
-        ancilla_bit +=1
+        naive_sc = append!(naive_sc,naive_ancillary_paulimeasurement(check, ancillary_index, bit_index))
+        ancillary_index +=1
+        bit_index +=1
     end
 
     return naive_sc
@@ -260,17 +272,21 @@ when running large scale simulations in which we want a separate fast error samp
 We just gather all our syndrome measurement **and logical observables** from the Pauli frame simulations,
 and then use them with the fault matrix in the syndrome decoding simulation.
 """
-function faults_matrix(c::AbstractECC)
-    n = code_n(c)
-    k = code_k(c)
+function faults_matrix(c::Stabilizer)
+    s, n = size(c)
+    k = n-s
     O = falses(2k, 2n)
     md = MixedDestabilizer(c)
     logviews = [logicalxview(md); logicalzview(md)]
     errors = [one(Stabilizer,n; basis=:X);one(Stabilizer,n)]
     for i in 1:2k
-        O[i, :] = comm(logviews[i], errors)
+        O[i, :] = comm(logviews[i]::PauliOperator, errors) # typeassert for JET
     end
     return O
+end
+
+function faults_matrix(c::AbstractECC)
+    return faults_matrix(parity_checks(c))
 end
 
 # TODO implement isdegenerate

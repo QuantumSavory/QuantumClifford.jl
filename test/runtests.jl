@@ -34,6 +34,7 @@ else
     println("skipping gpu tests (set GPU_TESTS=true to test gpu)")
 end
 
+@doset "throws"
 @doset "paulis"
 @doset "stabs"
 @doset "stabcanon"
@@ -57,6 +58,7 @@ end
 @doset "hash"
 @doset "entanglement"
 @doset "enumerate"
+@doset "quantumoptics"
 @doset "ecc"
 @doset "precompile"
 @doset "pauliframe"

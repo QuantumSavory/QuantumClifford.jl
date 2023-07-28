@@ -1,11 +1,10 @@
 using QuantumClifford
-using QuantumClifford: StabMixture, rowdecompose, PauliChannel, mul_left!, mul_right!, tT
+using QuantumClifford: StabMixture, rowdecompose, PauliChannel, mul_left!, mul_right!
 using Test
 using InteractiveUtils
 using Random
 
 ##
-
 
 @testset "Pauli decomposition into destabilizers" begin
     for n in [1,2,63,64,65,66,300]
@@ -26,7 +25,7 @@ end
 ##
 
 @testset "PauliChannel T gate ^4 = Id" begin
-    tgate = tT
+    tgate = pcT
     state = StabMixture(S"X")
 
     apply!(state, tgate)
@@ -37,3 +36,11 @@ end
     @test state.destabweights |> values |> collect == [1]
     @test state.destabweights |> keys |> collect == [([1],[1])]
 end
+
+##
+
+@test_throws ArgumentError StabMixture(S"XX")
+@test_throws ArgumentError PauliChannel(((P"X", P"Z"), (P"X", P"ZZ")), (1,2))
+@test_throws ArgumentError PauliChannel(((P"X", P"Z"), (P"X", P"Z")), (1,))
+@test_throws ArgumentError UnitaryPauliChannel((P"X", P"ZZ"), (1,2))
+@test_throws ArgumentError UnitaryPauliChannel((P"X", P"Z"), (1,))

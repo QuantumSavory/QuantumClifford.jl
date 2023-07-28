@@ -2,14 +2,24 @@
 
 - `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
-- some support for T gates and other non-clifford behavior
 
 # News
 
-## v0.8.12 - dev
+## v0.8.14 - 2023-07-19
 
-- Initial implementation of non-Clifford simulation (mainly for circuits that are slightly non-Clifford, e.g. containing T gates). See `StabMixture`, `PauliChannel`, and `tT`.
-- `embed` implemented for `PauliOperator` and `PauliChannel`
+- Circuit plotting with Quantikz from inside other modules (common with Pluto) showed wrong names for gates due to how we were serializing the names. It is now fixed.
+
+## v0.8.13 - 2023-07-18
+
+- **(fix)** There was a bug with incorrect scaling for `Operator(::CliffordOperator)` conversions.
+- A few more features to the `ECC` module's circuit generation routines.
+- Quantikz circuit plotting improvements to `CliffordOperator` and `s*CY` and `sYC*`.
+
+## v0.8.12 - 2023-07-12
+
+- Initial implementation of non-Clifford simulation (mainly for circuits that are slightly non-Clifford, e.g. containing T gates). See `StabMixture`, `PauliChannel`, `UnitaryPauliChannel`, and `pcT`.
+- `embed` implemented for `PauliOperator` and `PauliChannel`.
+- Various convenience constructors that transform a tableaux or an operator into a `Ket` or `Operator` from `QuantumOptics.jl`. Use the constructors directly like `Ket(::Stabilizer)`, `Operator(::CliffordOperator)`, etc.
 
 ## v0.8.11 - 2023-07-10
 

@@ -11,6 +11,7 @@ affectedqubits(g::PauliMeasurement) = 1:length(g.pauli)
 affectedqubits(p::PauliOperator) = 1:length(p)
 affectedqubits(m::Union{AbstractMeasurement,sMRX,sMRY,sMRZ}) = (m.qubit,)
 affectedqubits(v::VerifyOp) = v.indices
+affectedqubits(c::CliffordOperator) = 1:nqubits(c)
 
 affectedbits(o) = ()
 affectedbits(m::sMRZ) = (m.bit,)

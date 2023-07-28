@@ -79,7 +79,7 @@ export
     # petrajectories
     petrajectories, applybranches,
     # nonclifford
-    StabMixture, PauliChannel, tT,
+    StabMixture, UnitaryPauliChannel, PauliChannel, pcT,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
@@ -98,7 +98,7 @@ function __init__()
     BIG_INT_FOUR[] = BigInt(4)
 end
 
-const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you attempting are creating a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
+const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you are attempting to create a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -137,9 +137,9 @@ end
 function Tableau(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tve<:Unsigned,Tv<:AbstractVector{Tve}}
     r = length(paulis)
     n = nqubits(paulis[1])
-    tab = zero(Tableau{Vector{UInt8},Matrix{Tve}},r,n)
+    tab = zero(Tableau{Vector{UInt8},Matrix{Tve}},r,n)::Tableau{Vector{UInt8},Matrix{Tve}} # typeassert for JET
     for i in eachindex(paulis)
-        tab[i] = paulis[i]
+        tab[i] = paulis[i]::PauliOperator{Tz,Tv} # typeassert for JET
     end
     tab
 end
