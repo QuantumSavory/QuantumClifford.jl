@@ -5,6 +5,10 @@
 
 # News
 
+## v0.8.15 - dev
+
+- Initial support for GPU accelerated circuit simulation (with CUDA).
+
 ## v0.8.14 - 2023-07-19
 
 - Circuit plotting with Quantikz from inside other modules (common with Pluto) showed wrong names for gates due to how we were serializing the names. It is now fixed.

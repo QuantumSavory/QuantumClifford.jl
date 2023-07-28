@@ -1,5 +1,6 @@
 using Revise
 using QuantumClifford
+using QuantumClifford: to_cpu, to_gpu
 using CUDA
 using BenchmarkTools
 using Plots

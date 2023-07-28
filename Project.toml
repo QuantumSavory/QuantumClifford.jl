@@ -35,6 +35,7 @@ QuantumCliffordQOpticsExt = "QuantumOpticsBase"
 QuantumCliffordQuantikzExt = "Quantikz"
 
 [compat]
+CUDA = "4.4.0"
 Combinatorics = "1.0"
 DataStructures = "0.18"
 DocStringExtensions = "0.8, 0.9"
