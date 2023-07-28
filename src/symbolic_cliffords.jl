@@ -37,6 +37,26 @@ end
 Base.@propagate_inbounds setxbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, x::Tme, shift::Int) where {Tzv, Tme} = setxbit(s, r, c, x<<shift)
 Base.@propagate_inbounds setzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, z::Tme, shift::Int) where {Tzv, Tme} = setzbit(s, r, c, z<<shift)
 
+
+Base.@propagate_inbounds function getxbit(xzs::AbstractMatrix{T}, r::Int, c::Int)::T where {T <: Unsigned}
+    xzs[QuantumClifford.getbigindex(T, c),r] & QuantumClifford.getmask(T, c)
+end
+Base.@propagate_inbounds function getzbit(xzs::AbstractMatrix{T}, r::Int, c::Int)::T where {T <: Unsigned}
+    xzs[end÷2+QuantumClifford.getbigindex(T, c),r]& QuantumClifford.getmask(T, c)
+end
+Base.@propagate_inbounds function setxbit(xzs::AbstractMatrix{T}, r::Int, c::Int, x::T) where {T <: Unsigned}
+    cbig = QuantumClifford.getbigindex(T, c)
+    xzs[cbig,r] &= ~QuantumClifford.getmask(T, c)
+    xzs[cbig,r] |= x
+end
+Base.@propagate_inbounds function setzbit(xzs::AbstractMatrix{T}, r::Int, c::Int, z::T) where {T <: Unsigned}
+    cbig = QuantumClifford.getbigindex(T, c)
+    xzs[end÷2+cbig,r] &= ~QuantumClifford.getmask(T, c)
+    xzs[end÷2+cbig,r] |= z
+end
+Base.@propagate_inbounds setxbit(xzs::AbstractMatrix{T}, r::Int, c::Int, x::T, shift::Int) where {T <: Unsigned} = setxbit(xzs, r, c, x<<shift)
+Base.@propagate_inbounds setzbit(xzs::AbstractMatrix{T}, r::Int, c::Int, z::T, shift::Int) where {T <: Unsigned} = setzbit(xzs, r, c, z<<shift)
+
 ##############################
 # Single-qubit gates
 ##############################

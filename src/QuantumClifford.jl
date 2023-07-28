@@ -84,6 +84,8 @@ export
     stabilizerplot, stabilizerplot_axis,
     # sum types
     compactify_circuit
+    # gpu support
+    # to_cpu, to_gpu
 
 
 const BIG_INT_MINUS_ONE = Ref{BigInt}()
@@ -1166,5 +1168,7 @@ include("precompiles.jl")
 include("ecc/ECC.jl")
 include("nonclifford.jl")
 include("plotting_extensions.jl")
+#
+include("gpu_adapters.jl")
 
 end #module
