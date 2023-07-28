@@ -26,7 +26,7 @@ function apply!(frame::PauliFrameGPU{T}, op::QuantumClifford.sMZ) where {T <: Un
     ibig = QuantumClifford._div(T,i-1)+1
     ismall = QuantumClifford._mod(T,i-1)
     ismallm = lowbit<<(ismall)
-    CUDA.@sync @run_cuda apply_sMZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame)) length(frame)
+    CUDA.@sync (@run_cuda apply_sMZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame)) length(frame))
     return frame
 end
 
@@ -56,6 +56,6 @@ function apply!(frame::PauliFrameGPU{T}, op::QuantumClifford.sMRZ) where {T <: U
     ibig = QuantumClifford._div(T,i-1)+1
     ismall = QuantumClifford._mod(T,i-1)
     ismallm = lowbit<<(ismall)
-    CUDA.@sync @run_cuda apply_sMRZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame)) length(frame)
+    CUDA.@sync (@run_cuda apply_sMRZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame)) length(frame))
     return frame
 end

@@ -83,7 +83,7 @@ function _apply!(stab::StabilizerGPU{T},
     rows::Unsigned = size(stab, 1)
     tab = QuantumClifford.tab(stab)
     # todo. why can't I pass phases=compute_phases normally without function call?
-    CUDA.@sync @run_cuda single_qubit_gpu_kernel(tab.xzs, tab.phases, op, rows, B) rows
+    CUDA.@sync (@run_cuda single_qubit_gpu_kernel(tab.xzs, tab.phases, op, rows, B) rows)
     return stab
 end
 
@@ -94,7 +94,7 @@ function _apply!(stab::StabilizerGPU{T},
     rows::Unsigned = size(stab, 1)
     tab = QuantumClifford.tab(stab)
     # todo. why can't I pass phases=compute_phases normally without function call?
-    CUDA.@sync @run_cuda abstract_single_qubit_gpu_kernel(tab.xzs, tab.phases, op, rows, B) rows
+    CUDA.@sync (@run_cuda abstract_single_qubit_gpu_kernel(tab.xzs, tab.phases, op, rows, B) rows)
     return stab
 end
 
@@ -136,6 +136,6 @@ function _apply!(stab::StabilizerGPU{T},
     rows::Unsigned = size(stab, 1)
     tab = QuantumClifford.tab(stab)
     # todo. why can't I pass compute_phases=compute_phases normally without function call?
-    CUDA.@sync @run_cuda two_qubit_gpu_kernel(tab.xzs, tab.phases, gate, rows, B)
+    CUDA.@sync (@run_cuda two_qubit_gpu_kernel(tab.xzs, tab.phases, gate, rows, B) rows)
     return stab
 end
