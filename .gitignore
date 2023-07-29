@@ -4,3 +4,4 @@ LocalPreferences.toml
 */.*swp
 scratch/
 *.cov
+**/.DS_Store
