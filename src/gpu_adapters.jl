@@ -1,5 +1,3 @@
-GPU_DEPENDENCIES = ["CUDA"]
-
 """
 copies the memory content of the object to GPU
 """

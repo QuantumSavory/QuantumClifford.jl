@@ -19,20 +19,16 @@ abstract type AbstractMeasurement <: AbstractOperation end
 TableauType{Tzv, Tme} = Tableau{Tzv, Tm} where {Tm <: AbstractMatrix{Tme}}
 
 Base.@propagate_inbounds function getxbit(s::TableauType{Tzv, Tme}, r::Int, c::Int) where {Tzv, Tme}
-    s.xzs[getbigindex(Tme,c),r]&getmask(Tme,c)
+    getxbit(s.xzs, r, c)
 end
 Base.@propagate_inbounds function getzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int) where {Tzv, Tme}
-    s.xzs[end÷2+getbigindex(Tme,c),r]&getmask(Tme,c)
+    getzbit(s.xzs, r, c)
 end
 Base.@propagate_inbounds function setxbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, x::Tme) where {Tzv, Tme}
-    cbig = getbigindex(Tme,c)
-    s.xzs[cbig,r] &= ~getmask(Tme,c)
-    s.xzs[cbig,r] |= x
+    setxbit(s.xzs, r, c, x)
 end
 Base.@propagate_inbounds function setzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, z::Tme) where {Tzv, Tme}
-    cbig = getbigindex(Tme,c)
-    s.xzs[end÷2+cbig,r] &= ~getmask(Tme,c)
-    s.xzs[end÷2+cbig,r] |= z
+    setzbit(s.xzs, r, c, z)
 end
 Base.@propagate_inbounds setxbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, x::Tme, shift::Int) where {Tzv, Tme} = setxbit(s, r, c, x<<shift)
 Base.@propagate_inbounds setzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, z::Tme, shift::Int) where {Tzv, Tme} = setzbit(s, r, c, z<<shift)
