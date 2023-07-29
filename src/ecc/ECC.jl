@@ -303,42 +303,18 @@ function is_degenerate(c::AbstractECC)
     return false
 end
 
-"""The rank of the bimatrix of a code."""
-function rank(c::AbstractECC)
-    destab_gott = MixedDestabilizer(parity_checks(c), undoperm=false)
-    bimat = stab_to_gf2(stabilizerview(destab_gott))
-    rank = 0
-    for i in 1:code_s(c)
-        if bimat[i, i] == 1
-            rank +=1
-        end
-    end
-    return rank
-end
 
 """The standardized logical tableau of a code by [PhysRevA.56.76](@cleve1997efficient)"""
-function standard_tab_gott(c::AbstractECC)
-    n, s, k, r = code_n(c), code_s(c), code_k(c), rank(c)
-
-    # The standard form is
-    # I A1 A2 | B C1 C2
-    # 0  0 0  | D  I  E
-    # and we augment the following third line (for logical qubits)
-    # 0 E^T I | 0  0  0
-    # Then we apply the gates line by line bottom up in accordance with the formalisms here: arXiv:quant-ph/9607030
-
-    standard_tab = stab_to_gf2(stabilizerview(MixedDestabilizer(parity_checks(c), undoperm=false)))
-
-    # Initialize augment to be E^T, then pad the zeros to the left, then pad the identity matrix to the mul_right
-    augment = transpose(standard_tab[r+1:s, 2*n-k+1:2*n])
-    zero_left = zeros(Int8, (k, r))
-    identity = Matrix(1I, k, k)
-    zero_right = zeros(Int8, (k, n)) # padding all zeros to the right
-    augment = hcat(zero_left, augment, identity, zero_right)
-    standard_tab = vcat(standard_tab, augment)
-    # Flipping the table so it has the same format as the papercode
-    res = hcat(transpose(reverse(standard_tab[1:n, 1:n])), transpose(reverse(standard_tab[1:n, n+1:2*n])))
-    return res
+function standard_tab_gott(c::AbstractECC; undoperm= true)
+    r, permx, permz, destab = MixedDestabilizer(parity_checks(c); undoperm=undoperm, reportperm=true) # originally undoperm here = false and the comment below is uncommented
+    n, k = code_n(c),code_k(c)
+    standard_tab = vcat(stabilizerview(destab), logicalxview(destab))
+    # if undoperm
+    #     standard_tab = standard_tab[:,invperm(permx[permz])]
+    # end
+    standard_tab = stab_to_gf2(standard_tab)
+    standard_tab = hcat(transpose(reverse(standard_tab[1:n, 1:n])), transpose(reverse(standard_tab[1:n, n+1:2*n])))
+    return r, standard_tab
 end
 
 function standard_code_tab(c::AbstractECC)
@@ -360,15 +336,14 @@ end
 
 """ The naive implementation of the encoding circuit by arXiv:quant-ph/9607030 """
 function naive_encoding_circuit(c::AbstractECC)
-    n, k, s, r = code_n(c), code_k(c), code_s(c), rank(c)
+    n= code_n(c)
+    r, standard_tab = standard_tab_gott(c)
+
     naive_ec = AbstractOperation[]
     # Applying the hadamard gate to the last r qubits
     for i in n: -1: n-r+1
         push!(naive_ec, sHadamard(i))
     end
-
-    standard_tab = standard_tab_gott(c)
-
     for i in 1 : n
         if standard_tab[i, i] ==1
             for j in 1:n

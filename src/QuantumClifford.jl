@@ -556,7 +556,7 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false)
         return MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
     end
     if reportperm
-        return (permx, permz, MixedDestabilizer(t, r+s)::MixedDestabilizer{T})
+        return (r, permx, permz, MixedDestabilizer(t, r+s)::MixedDestabilizer{T})
     else
         return MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
     end
