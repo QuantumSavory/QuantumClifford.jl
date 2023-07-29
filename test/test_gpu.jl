@@ -22,6 +22,9 @@ function apply_single_or_double_qubit_and_compare(n, s, s_gpu)
         # can we use random_clifford(2) with this function?
         qbitidx1 = (((rand(Int) % n) + n) %n) + 1
         qbitidx2 = (((rand(Int) % n) + n) %n) + 1
+        if qbitidx1 == qbitidx2
+            qbitidx2 = (qbitidx1 % n) + 1
+        end
         sCNOT(qbitidx1, qbitidx2)
     end
     apply!(s_gpu, op)
