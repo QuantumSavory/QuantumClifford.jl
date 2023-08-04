@@ -63,7 +63,7 @@ function test_naive_syndrome(c::AbstractECC, e::Bool=false)
     unencoded_qubits = random_stabilizer(code_k(c))
     bufferqubits = one(Stabilizer,code_s(c))
     logicalqubits = unencoded_qubits⊗bufferqubits
-    mctrajectory!(logicalqubits, encoding_circuit(c))
+    mctrajectory!(logicalqubits, naive_encoding_circuit(c))
     if e
         #add some noise to logicalqubits
         apply!(logicalqubits, P"X", rand(1:code_n(c)))

@@ -305,16 +305,13 @@ end
 
 
 """The standardized logical tableau of a code by [PhysRevA.56.76](@cleve1997efficient)"""
-function standard_tab_gott(c::AbstractECC; undoperm= true)
-    r, permx, permz, destab = MixedDestabilizer(parity_checks(c); undoperm=undoperm, reportperm=true) # originally undoperm here = false and the comment below is uncommented
-    n, k = code_n(c),code_k(c)
+function standard_tab_gott(c::AbstractECC)
+    r, permx, permz, destab = MixedDestabilizer(parity_checks(c); undoperm=false, reportperm=true) # originally undoperm here = false and the comment below is uncommented
+    n = code_n(c)
     standard_tab = vcat(stabilizerview(destab), logicalxview(destab))
-    # if undoperm
-    #     standard_tab = standard_tab[:,invperm(permx[permz])]
-    # end
     standard_tab = stab_to_gf2(standard_tab)
     standard_tab = hcat(transpose(reverse(standard_tab[1:n, 1:n])), transpose(reverse(standard_tab[1:n, n+1:2*n])))
-    return r, standard_tab
+    return r, permx, permz, standard_tab
 end
 
 function standard_code_tab(c::AbstractECC)
@@ -335,9 +332,9 @@ function standard_code_tab(c::AbstractECC)
 end
 
 """ The naive implementation of the encoding circuit by arXiv:quant-ph/9607030 """
-function naive_encoding_circuit(c::AbstractECC)
+function naive_encoding_circuit(c::AbstractECC, undoperm = true)
     n= code_n(c)
-    r, standard_tab = standard_tab_gott(c)
+    r, permx, permz, standard_tab = standard_tab_gott(c)
 
     naive_ec = AbstractOperation[]
     # Applying the hadamard gate to the last r qubits
@@ -359,6 +356,9 @@ function naive_encoding_circuit(c::AbstractECC)
             end
         end
     end
+    # if undoperm
+    #     standard_tab = standard_tab[:,invperm(permx[permz])]
+    # end
     return naive_ec
 end
 
