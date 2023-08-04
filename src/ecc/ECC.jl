@@ -2,10 +2,17 @@ module ECC
 
 using LinearAlgebra
 using QuantumClifford
-using QuantumClifford: AbstractOperation
+using QuantumClifford: AbstractOperation, AbstractStabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer
+using DocStringExtensions
+using Combinatorics: combinations
 
 abstract type AbstractECC end
+
+export Shor9, Steane7, Steane5, Cleve8,
+    parity_checks, naive_syndrome_circuit, encoding_circuit,
+    code_n, code_s, code_k, rate, distance,
+    isdegenerate, faults_matrix
 
 """The encoding circuit of a given code."""
 function encoding_circuit end
@@ -290,26 +297,49 @@ function faults_matrix(c::AbstractECC)
     return faults_matrix(parity_checks(c))
 end
 
-"""Check if the code is degenerate with respect to single-qubit physical errors."""
-function is_degenerate(c::AbstractECC)
-    # By quantum stackexchange: https://quantumcomputing.stackexchange.com/questions/27279
-    tableau = stab_to_gf2(parity_checks(c))
-    n = code_n(c)
-    dictionary = Set()
-    for column in 1:2*n
-        temp = tableau[:, column]
-        if temp in dictionary
-              return true
-        else
-              push!(dictionary, temp)
-        end
-    end
-    return false
+"""
+$TYPEDSIGNATURES
+
+Check if the code is degenerate with respect to a given set of error or with respect to all
+"up to d physical-qubit" errors (defaulting to d=1).
+
+```jldoctest
+julia> using QuantumClifford.ECC
+
+julia> isdegenerate(Shor9(), [single_z(9,1), single_z(9,2)])
+true
+
+julia> isdegenerate(Shor9(), [single_z(9,1), single_x(9,1)])
+false
+
+julia> isdegenerate(Steane7(), 1)
+false
+
+julia> isdegenerate(Steane7(), 2)
+true
+```
+"""
+function isdegenerate end
+
+isdegenerate(c::AbstractECC, args...) = isdegenerate(parity_checks(c), args...)
+isdegenerate(c::AbstractStabilizer, args...) = isdegenerate(stabilizerview(c), args...)
+
+function isdegenerate(H::Stabilizer, errors) # Described in https://quantumcomputing.stackexchange.com/questions/27279
+    syndromes = comm.((H,), errors) # TODO This can be optimized by having something that always returns bitvectors
+    return length(Set(syndromes)) != length(errors)
+end
+
+function isdegenerate(H::Stabilizer, d::Int=1)
+    n = nqubits(H)
+    errors = [begin p=zero(PauliOperator,n); for i in bits; p[i]=op; end; p end for bits in combinations(1:n, d) for op in ((true,false), (false,true))]
+    return isdegenerate(H, errors)
 end
 
 """The standardized logical tableau of a code by [PhysRevA.56.76](@cleve1997efficient)"""
-function standard_tab_gott(c::AbstractECC; undoperm= true)
-    r, permx, permz, destab = MixedDestabilizer(parity_checks(c); undoperm=undoperm, reportperm=true) # originally undoperm here = false and the comment below is uncommented
+function standard_tab_gott(c::AbstractECC)
+    r, permx, permz, destab = MixedDestabilizer(parity_checks(c); undoperm=false, reportperm=true) # originally undoperm here = false and the comment below is uncommented
+    @show permx
+    @show permz
     n, k = code_n(c),code_k(c)
     standard_tab = vcat(stabilizerview(destab), logicalxview(destab))
     # if undoperm
@@ -317,37 +347,20 @@ function standard_tab_gott(c::AbstractECC; undoperm= true)
     # end
     standard_tab = stab_to_gf2(standard_tab)
     standard_tab = hcat(transpose(reverse(standard_tab[1:n, 1:n])), transpose(reverse(standard_tab[1:n, n+1:2*n])))
-    return r, standard_tab
-end
-
-function standard_code_tab(c::AbstractECC)
-    n, s, k = code_n(c), code_s(c), code_k(c)
-    standard_tab = stab_to_gf2(stabilizerview(MixedDestabilizer(parity_checks(c), undoperm=false)))
-    md = MixedDestabilizer(parity_checks(c), undoperm=false)
-    XZᵗ = stab_to_gf2(stabilizerview(md))
-    X₂ = reverse(XZᵗ[1:s,1:n]', dims=(1,2))
-    Z₂ = reverse(XZᵗ[1:s,n+1:2n]', dims=(1,2))
-    X = falses(n, n)
-    Z = falses(n, n)
-    X[:, k+1:end] .= X₂
-    Z[:, k+1:end] .= Z₂
-    X[:, 1:k] .= Xˡ
-    return X, Z
-    # TODO The permutations need to be reverted at some point, otherwise the generated circuit will have permuted qubits. It is not clear to me whether it is more convenient to revert the permutation here or in naive_encoding_circuit
-    # TODO This function does not seem to actually be necessary. It seems like iterating over the `MixedDestabilizer` object is enough. Out of convenience, let's keep if for the moment, but also keep this TODO
+    return r, standard_tab, permx[permz]
 end
 
 """ The naive implementation of the encoding circuit by arXiv:quant-ph/9607030 """
-function naive_encoding_circuit(c::AbstractECC)
-    n= code_n(c)
-    r, standard_tab = standard_tab_gott(c)
+function encoding_circuit(c::AbstractECC)
+    n = code_n(c)
+    r, standard_tab, perm = standard_tab_gott(c)
 
     naive_ec = AbstractOperation[]
     # Applying the hadamard gate to the last r qubits
-    for i in n: -1: n-r+1
+    for i in n:-1:n-r+1
         push!(naive_ec, sHadamard(i))
     end
-    for i in 1 : n
+    for i in 1:n
         if standard_tab[i, i] ==1
             for j in 1:n
                 if j == i continue end

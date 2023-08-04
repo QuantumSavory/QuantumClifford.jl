@@ -1,6 +1,6 @@
 using Test
 using QuantumClifford
-using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, naive_encoding_circuit, is_degenerate, rank, standard_tab_gott
+using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, isdegenerate, rank, standard_tab_gott
 
 codes = [
     Bitflip3(),
@@ -8,6 +8,70 @@ codes = [
     Shor9(),
     # Cleve8(),
 ]
+
+##
+
+# These are the old, manually written encoding circuits. They are used to test whether the new algorithmically constructed encoding circuit function works.
+
+function manual_encoding_circuit(c::Bitflip3)
+    c1 = sCNOT(1,2)
+    c2 = sCNOT(1,3)
+    return [c1,c2]
+end
+
+function manual_encoding_circuit(c::Shor9)
+    c1 = sCNOT(1,4)
+    c2 = sCNOT(1,7)
+
+    h1 = sHadamard(1)
+    h2 = sHadamard(4)
+    h3 = sHadamard(7)
+
+    c3 = sCNOT(1,2)
+    c4 = sCNOT(4,5)
+    c5 = sCNOT(7,8)
+
+    c6 = sCNOT(1,3)
+    c7 = sCNOT(4,6)
+    c8 = sCNOT(7,9)
+
+    # XXX: The extra sHadamard(1) at the start is due to a popular mismatch in
+    # conventions for which logical operator is the X one and which is the Z one
+    return [sHadamard(1),c1,c2,h1,h2,h3,c3,c4,c5,c6,c7,c8]
+end
+
+function manual_encoding_circuit(c::Steane7)
+    sc1 = sCNOT(1,2)
+    sc2 = sCNOT(1,3)
+
+    sh1 = sHadamard(5)
+    sh2 = sHadamard(6)
+    sh3 = sHadamard(7)
+
+    sc3 = sCNOT(7,4)
+    sc4 = sCNOT(7,2)
+    sc5 = sCNOT(7,1)
+    sc6 = sCNOT(6,4)
+    sc7 = sCNOT(6,3)
+    sc8 = sCNOT(6,1)
+    sc9 = sCNOT(5,4)
+    sc10 = sCNOT(5,3)
+    sc11 = sCNOT(5,2)
+
+    return [sc1,sc2,sh1,sh2,sh3,sc3,sc4,sc5,sc6,sc7,sc8,sc9,sc10,sc11]
+end
+
+@testset "encoding circuits - manual vs algorithmic" begin
+    for c in codes
+        manual = manual_encoding_circuit(c)
+        algorithmic, perm = encoding_circuit(c)
+        # init = random_stabilizer(code_k(c))⊗one(Stabilizer,code_s(c))
+        init = one(Stabilizer, code_k(c))⊗one(Stabilizer,code_s(c))
+        fin_m = mctrajectory!(copy(init), manual)[1] |> canonicalize!
+        fin_a = mctrajectory!(copy(init), algorithmic)[1] |> canonicalize!
+        @test fin_m == fin_a
+    end
+end
 
 ##
 
@@ -115,25 +179,11 @@ end
     end
 end
 
-
 ##
-
-
-function test_is_degenerate(c::AbstractECC)
-    if c == Shor9()
-        @test is_degenerate(c) == true
-    elseif c == Steane7()
-        @test is_degenerate(c) == false
-    elseif c== Bitflip3()
-        @test is_degenerate(c) == true
-    end
-end
 
 @testset "is degenerate function - test on popular codes" begin
-    for c in codes
-        test_is_degenerate(c)
-    end
+    @test isdegenerate(Shor9()) == true
+    @test isdegenerate(Steane7()) == false
+    @test isdegenerate(Steane7(), 2) == true
+    @test isdegenerate(Bitflip3()) == true
 end
-
-##
-
