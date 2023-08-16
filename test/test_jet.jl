@@ -3,6 +3,7 @@ using JET
 using ArrayInterface
 using Static
 using Graphs
+using StridedViews
 using LinearAlgebra
 
 using JET: ReportPass, BasicPass, InferenceErrorReport, UncaughtExceptionReport
@@ -29,6 +30,7 @@ end
             AnyFrameModule(Graphs.SimpleGraphs),
             AnyFrameModule(ArrayInterface),
             AnyFrameModule(Static),
+            AnyFrameModule(StridedViews),
             AnyFrameModule(LinearAlgebra),
         )
     )
