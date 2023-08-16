@@ -312,11 +312,12 @@ operator**. If you want to perform a Monte Carlo simulation, you need to
 randomize the phase of the stabilizer at the anticommuting index yourself. For
 instance, one can do:
 
-```jldoctest
+```jldoctest proj
 newstate, anticomindex, result = project!(state, projector)
 if isnothing(result)
     phases(newstate)[anticomindex] = rand([0x0,0x2])
 end;
+# output
 ```
 
 Of course, this is a rather cumbersome way to run a simulation, so we also provide
