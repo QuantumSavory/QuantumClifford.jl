@@ -5,9 +5,10 @@
 
 # News
 
-## v0.8.15 - dev
+## v0.8.15 - 2023-08-16
 
 - Initial support for GPU accelerated circuit simulation (with CUDA).
+- Minor documentation fixes around `phases` and a workaround for Makie plotting regression.
 
 ## v0.8.14 - 2023-07-19
 

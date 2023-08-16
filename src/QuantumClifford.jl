@@ -601,9 +601,9 @@ Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 @inline nqubits(s::AbstractStabilizer) = nqubits(tab(s))
 @inline nqubits(t::Tableau) = t.nqubits
 
-"""The phases of a given tableau."""
+"""The phases of a given tableau. It is a view, i.e. if you modify this array, the original tableau caries these changes."""
 @inline phases(t::Tableau) = t.phases
-@inline phases(s::Stabilizer) = phases(tab(s))
+@inline phases(s::AbstractStabilizer) = phases(tab(stabilizerview(s)))
 
 ##############################
 # Pauli Operator Helpers
