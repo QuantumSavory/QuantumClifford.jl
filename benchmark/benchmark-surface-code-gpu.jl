@@ -21,7 +21,7 @@ function get_stats()
     gpu_column_times = Float64[]
 
     ccircuit = if eltype(circ) <: QuantumClifford.CompactifiedGate
-        circuit
+        circ
     else
         compactify_circuit(circ)
     end
