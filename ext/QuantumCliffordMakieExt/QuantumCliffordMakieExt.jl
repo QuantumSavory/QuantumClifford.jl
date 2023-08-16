@@ -36,10 +36,13 @@ function Makie.plot!(myplot::StabilizerPlot)
         throw(ErrorException("`xzcomponents` should be `:split` or `:together`"))
     end
     r = r[end:-1:1,:]'
-    Makie.heatmap!(myplot, r;
+    hm = Makie.heatmap!(myplot, r;
         colorrange = (0, 3),
         colormap=myplot.colormap
     )
+    for k in [:colorscale, :highclip, :lowclip]
+        myplot[k] = hm[k]
+    end
     myplot
 end
 

@@ -312,12 +312,18 @@ operator**. If you want to perform a Monte Carlo simulation, you need to
 randomize the phase of the stabilizer at the anticommuting index yourself. For
 instance, one can do:
 
-```julia
+```jldoctest
 newstate, anticomindex, result = project!(state, projector)
 if isnothing(result)
-    newstate.phases[anticomindex] = rand([0x0,0x2])
-end
+    phases(newstate)[anticomindex] = rand([0x0,0x2])
+end;
 ```
+
+Of course, this is a rather cumbersome way to run a simulation, so we also provide
+[`projectrand!`](@ref) which does the necessary randomization automatically,
+for cases where you do not need the fine grained control of `project!`.
+There is also [`projectZ!`](@ref), [`projectZrand!`](@ref) and corresponding X and Y methods
+if you want to measure single qubit Paulis.
 
 Or we can project on a commuting operator, hence no anticommuting terms (the
 index is zero), and the result is perfectly determined (-1, or in our convention
