@@ -126,3 +126,10 @@ function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the oth
 end
 
 operatordeterminism(::Type{VerifyOp}) = DeterministicOperatorTrait()
+
+"""Applies an XOR gate to classical bits. Currently only implemented for funcitonality with pauli frames."""
+struct ClassicalXOR <: AbstractOperation
+    bits::Vector{Int}  # the indices of the classical bits to be xored
+    store::Int # the index of the classical bit that will store the results
+end
+ClassicalXOR(bits::NTuple, store::Int) = ClassicalXOR(collect(bits),store)
