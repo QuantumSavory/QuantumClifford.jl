@@ -312,14 +312,20 @@ operator**. If you want to perform a Monte Carlo simulation, you need to
 randomize the phase of the stabilizer at the anticommuting index yourself. For
 instance, one can do:
 
-```julia
-newstate, anticomindex, result = project!(state, projector)
-if isnothing(result)
-    newstate.phases[anticomindex] = rand([0x0,0x2])
-end
+```jldoctest proj
+julia> newstate, anticomindex, result = project!(copy(s), P"XII")
+       if isnothing(result)
+           phases(newstate)[anticomindex] = rand([0x0,0x2])
+       end
+       result, anticomindex
+(nothing, 2)
 ```
 
-Or we can project on a commuting operator, hence no anticommuting terms (the
+Of course, this is a rather cumbersome way to run a simulation, so we also provide
+[`projectrand!`](@ref) which does the necessary randomization automatically,
+for cases where you do not need the fine grained control of `project!`.
+
+We can project on a commuting operator, hence no anticommuting terms (the
 index is zero), and the result is perfectly determined (-1, or in our convention
 to represent the phase, 0x2).
 
@@ -352,6 +358,7 @@ julia> project!(copy(s), P"ZZI", phases=false)
 ## Sparse single-qubit measurements
 
 In many circumstances only a single-qubit operator is being measured. In that case one should use the [`projectX!`](@ref), [`projectY!`](@ref), and [`projectZ!`](@ref) functions as they are much faster thanks to tracking only a single qubit.
+They have versions that randomize the phase as necessary as well:  [`projectXrand!`](@ref), [`projectYrand!`](@ref), and [`projectZrand!`](@ref).
 
 ## Gate-like interface
 
