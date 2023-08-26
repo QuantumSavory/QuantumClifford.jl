@@ -86,7 +86,7 @@ end
 """Circuit that measures the corresponding PauliOperator by Shor-style syndrome extraction, using qubits starting
 at the `ancillary_index` and storing measurement results into classical bits starting at `bit_index`. The number
 of ancillary and classical bits in the circuit returned is equal to the weight of the provided PauliOperator"""
-function shor_ancillary_paulimeasurement(p::PauliOperator, ancillary_index=1, bit_index=1, cat=true)
+function shor_ancillary_paulimeasurement(p::PauliOperator, ancillary_index=1, bit_index=1)
     init_ancil_index = ancillary_index
     circuit = AbstractOperation[]
     measurements = AbstractOperation[]
@@ -107,27 +107,27 @@ function shor_ancillary_paulimeasurement(p::PauliOperator, ancillary_index=1, bi
     end
     circuit = vcat(circuit,measurements)
 
-    if cat
-        cat_state_circuit = AbstractOperation[]
-        push!(cat_state_circuit, sHadamard(numQubits + init_ancil_index))
-        for i in (init_ancil_index+1):(ancillary_index -1)
-            push!(cat_state_circuit, sCNOT(numQubits + (i - 1), numQubits + i))
-        end
-        circuit = vcat(cat_state_circuit,circuit)
+    cat_state_circuit = AbstractOperation[]
+    push!(cat_state_circuit, sHadamard(numQubits + init_ancil_index))
+    for i in (init_ancil_index+1):(ancillary_index -1)
+        push!(cat_state_circuit, sCNOT(numQubits + (i - 1), numQubits + i))
     end
 
-    return circuit, ancillary_index, bit_index
+    return cat_state_circuit, circuit, ancillary_index, bit_index
 end
 
-function shor_syndrome_circuit(parity_check_tableau, ancillary_index=1, bit_index=1, cat=true)
+function shor_syndrome_circuit(parity_check_tableau, ancillary_index=1, bit_index=1)
     shor_sc = AbstractOperation[]
     xor_indices = []
+    cat_circuit = AbstractOperation[]
 
     for check in parity_check_tableau
-        circ, new_ancillary_index, new_bit_index = shor_ancillary_paulimeasurement(check, ancillary_index, bit_index, cat)
+        cat_circ, circ, new_ancillary_index, new_bit_index = shor_ancillary_paulimeasurement(check, ancillary_index, bit_index)
         push!(xor_indices, collect(bit_index:new_bit_index-1))
 
         append!(shor_sc, circ)
+        append!(cat_circuit, cat_circ)
+
         ancillary_index = new_ancillary_index
         bit_index = new_bit_index
     end
@@ -137,7 +137,7 @@ function shor_syndrome_circuit(parity_check_tableau, ancillary_index=1, bit_inde
         bit_index += 1
     end
 
-    return shor_sc
+    return cat_circuit, shor_sc
 end
 
 """The distance of a code."""
