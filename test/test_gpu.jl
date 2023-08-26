@@ -75,7 +75,6 @@ end
         true
     end
 
-    # todo add a test with a bigger circuit that covers the partitioning idea
     @test begin
         # todo test MRZ and other random gates statistically
         circuit = [sHadamard(2), sHadamard(5), sCNOT(1, 2), sCNOT(2, 5), sMZ(1), sMZ(2), sMZ(4), sMZ(5)]
