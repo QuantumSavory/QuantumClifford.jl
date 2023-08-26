@@ -70,11 +70,6 @@ function plot_result(df)
         logarr = log.(arr)
         exp.(range(min(logarr...), stop=max(logarr...), length=8))
     end
-
-    my_plots = []
-    for col in names
-        push!(my_plots, plot(df.n_values, df[!, col]))
-    end
     plot(df.n_values, [df[!, col] for col in names], marker=:circle, label=reshape(["times $col" for col in names], (1, length(names))), xlabel="n", ylabel="Execution Time (s)", title="gpu inner type comparison (fast column)", xticks=df.n_values[1:2:end], xscale=:log2, yticks=my_y_axis([df[!, col] for col in names]), yscale=:log10, legend=:topleft, size=(1200, 800))
 end
 
