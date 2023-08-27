@@ -1,19 +1,38 @@
 const InnerGPUType = UInt32;
 const InnerCPUType = UInt64;
-# todo. make the conversion types consiting with this...
-# also define a cpu default type?!
+
+"""
+converts data to gpu representation without changing the element types
+"""
+to_gpu(data);
+
+
+"""
+converts data to cpu representation without changing the element types
+"""
+to_cpu(data);
+
+
+"""
+converts data to gpu representation and reinterprets the element types
+"""
+to_gpu(data, tp::Type{T}) where {T <: Unsigned};
+
+
+"""
+converts data to cpu representation and reinterprets the element types
+"""
+to_cpu(data) where {T <: Unsigned};
+
 
 to_gpu(array::AbstractArray) = CuArray(array)
 to_cpu(array::AbstractArray) = Array(array);
 
-# changes the type to InnerGPUType or InnerCPUType as well as copying to cpu/gpu
 to_gpu(array::AbstractArray, tp::Type{T}) where {T <: Unsigned} = 
     CuArray(reinterpret(T, collect(array)))
 to_cpu(array::AbstractArray, tp::Type{T}) where {T <: Unsigned} = 
     Array(reinterpret(T, collect(array)))
 
-# maybe change the format of storing the data in gpu array 
-# so that it is more convinient to work with them on gpu?
 # todo later add some type checking to avoid copying (or throw error) if the data is already on gpu/cpu
 to_gpu(tab::QuantumClifford.Tableau, tp::Type{T}=InnerGPUType) where {T <: Unsigned} =
     QuantumClifford.Tableau(to_gpu(tab.phases), tab.nqubits, to_gpu(tab.xzs, tp))
