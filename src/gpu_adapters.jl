@@ -9,7 +9,7 @@ For example based on your CPU architecture, if working with matrices of UInt32 i
 
 
 
-```jldoctest
+```julia-repl
 julia> using QuantumClifford: to_cpu, to_gpu
 
 julia> using CUDA # without this import, to_cpu, to_gpu are just function
@@ -29,7 +29,7 @@ julia> stab_result_cpu = to_cpu(stab_gpu)
 + __Z
 ```
 
-```jldoctest
+```julia-repl
 julia> using QuantumClifford: to_cpu, to_gpu
 
 julia> using CUDA # without this import, to_cpu, to_gpu are just function
@@ -56,7 +56,7 @@ For example based on your GPU architecture, if working with matrices of UInt64 i
 
 
 
-```jldoctest
+```julia-repl
 julia> using QuantumClifford: to_cpu, to_gpu
 
 julia> using CUDA # without this import, to_cpu, to_gpu are just function
@@ -76,7 +76,7 @@ julia> stab_result_cpu = to_cpu(stab_gpu)
 + __Z
 ```
 
-```jldoctest
+```julia-repl
 julia> using QuantumClifford: to_cpu, to_gpu
 
 julia> using CUDA # without this import, to_cpu, to_gpu are just function
