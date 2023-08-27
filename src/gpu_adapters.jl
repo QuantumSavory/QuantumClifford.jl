@@ -14,7 +14,7 @@ julia> using QuantumClifford: to_cpu, to_gpu
 
 julia> using CUDA # without this import, to_cpu, to_gpu are just function
 
-julia> stab = random_stabilizer(3)
+julia> stab = S"- X_Z\\n+ _ZZ\\n+ __Z"
 - X_Z
 + _ZZ
 + __Z
@@ -38,9 +38,6 @@ julia> pf_gpu = to_gpu(PauliFrame(1000, 2, 2));
 julia> circuit = [sMZ(1, 1), sHadamard(2), sMZ(2, 2)];
 julia> pftrajectories(pf_gpu, circuit);
 julia> measurements = to_cpu(pf_gpu.measurements);
-julia> sum(measurements, dims=1)
-1×2 Matrix{Int64}:
- 0  492
 ```
 
 See also: [`to_gpu`](@ref)
@@ -64,7 +61,7 @@ julia> using QuantumClifford: to_cpu, to_gpu
 
 julia> using CUDA # without this import, to_cpu, to_gpu are just function
 
-julia> stab = random_stabilizer(3)
+julia> stab = S"- X_Z\\n+ _ZZ\\n+ __Z"
 - X_Z
 + _ZZ
 + __Z
@@ -88,9 +85,6 @@ julia> pf_gpu = to_gpu(PauliFrame(1000, 2, 2));
 julia> circuit = [sMZ(1, 1), sHadamard(2), sMZ(2, 2)];
 julia> pftrajectories(pf_gpu, circuit);
 julia> measurements = to_cpu(pf_gpu.measurements);
-julia> sum(measurements, dims=1)
-1×2 Matrix{Int64}:
- 0  492
 ```
 
 See also: [`to_cpu`](@ref)
