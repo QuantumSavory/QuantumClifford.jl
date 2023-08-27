@@ -3,7 +3,7 @@ using QuantumClifford: getxbit, getzbit, setxbit, setzbit
 function single_qubit_gpu_kernel(xzs::DeviceMatrix{Tme},
                                  phases::DeviceVector{Tmz},
                                  op::SingleQubitOperator,
-                                 rows::Unsigned,
+                                 rows::Int,
                                  compute_phases::Bool) where {Tme <: Unsigned, Tmz <: Unsigned}
     idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     if idx > rows
@@ -41,7 +41,7 @@ end
 function abstract_single_qubit_gpu_kernel(xzs::DeviceMatrix{Tme},
                                  phases::DeviceVector{Tmz},
                                  gate::QuantumClifford.AbstractSingleQubitOperator,
-                                 rows::Unsigned,
+                                 rows::Int,
                                  compute_phases::Bool) where {Tme <: Unsigned, Tmz <: Unsigned}
     idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     if idx > rows
@@ -63,7 +63,7 @@ function _apply!(stab::StabilizerGPU{T},
     op::QuantumClifford.SingleQubitOperator;
     phases::Val{B}=Val(true)) where {B, T <: Unsigned}
     # todo how to use phases similar to before in kernel functions??!
-    rows::Unsigned = size(stab, 1)
+    rows = size(stab, 1)
     tab = QuantumClifford.tab(stab)
     # todo. why can't I pass phases=compute_phases normally without function call?
     (@run_cuda single_qubit_gpu_kernel(tab.xzs, tab.phases, op, rows, B) rows)
@@ -74,7 +74,7 @@ function _apply!(stab::StabilizerGPU{T},
     op::QuantumClifford.AbstractSingleQubitOperator;
     phases::Val{B}=Val(true)) where {B, T <: Unsigned}
 
-    rows::Unsigned = size(stab, 1)
+    rows = size(stab, 1)
     tab = QuantumClifford.tab(stab)
     # todo. why can't I pass phases=compute_phases normally without function call?
     (@run_cuda abstract_single_qubit_gpu_kernel(tab.xzs, tab.phases, op, rows, B) rows)
@@ -84,7 +84,7 @@ end
 function two_qubit_gpu_kernel(xzs::DeviceMatrix{Tme},
                               phases::DeviceVector{Tze},
                               gate::QuantumClifford.AbstractTwoQubitOperator, # todo. change to two qubit operator instead os abstract version
-                              rows::Unsigned,
+                              rows::Int,
                               compute_phases::Bool=true) where {Tme <: Unsigned, Tze <: Unsigned}
     idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     if idx > rows
@@ -116,7 +116,7 @@ end
 function _apply!(stab::StabilizerGPU{T}, 
                  gate::G; 
                  phases::Val{B}=Val(true)) where {B, G<:QuantumClifford.AbstractTwoQubitOperator, T <: Unsigned} # todo. change to two qubit operator instead os abstract version
-    rows::Unsigned = size(stab, 1)
+    rows = size(stab, 1)
     tab = QuantumClifford.tab(stab)
     # todo. why can't I pass compute_phases=compute_phases normally without function call?
     (@run_cuda two_qubit_gpu_kernel(tab.xzs, tab.phases, gate, rows, B) rows)
