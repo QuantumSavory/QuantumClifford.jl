@@ -9,7 +9,6 @@ macro run_cuda(call, ndrange)
         local config = CUDA.launch_configuration(kernel.fun)
         local threads = min($(esc(ndrange)), config.threads)
         local blocks = cld($(esc(ndrange)), threads)
-        # @show threads blocks
         kernel($(args...); threads=threads, blocks=blocks)
     end
 end
