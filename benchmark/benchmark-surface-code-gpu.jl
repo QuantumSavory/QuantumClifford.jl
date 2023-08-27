@@ -10,7 +10,25 @@ using CSV
 
 include("surface-code-circuit.jl")
 
+function pftrajectories_threads(frames, ccircuit)
+    trajectories = size(frames.frame, 1)
+    nthr = min(Threads.nthreads(),trajectories÷(100))
+    if nthr>1
+        batchsize = trajectories÷nthr
+        Threads.@threads for i in 1:nthr
+            b = (i-1)*batchsize+1
+            e = i==nthr ? trajectories : i*batchsize
+            pftrajectories((@view frames[b:e]), ccircuit)
+        end
+    else
+        pftrajectories(frames, ccircuit)
+    end
+    return frames
+end
+
 function get_stats()
+    println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREADS = $(Sys.CPU_THREADS)`...")
+
     # Powers of 2 to benchmark
     powers = reverse(3:19) # start from the hardest one first! (fail fast)
     n_values = 2 .^ powers
@@ -33,10 +51,10 @@ function get_stats()
         cpu_frames() = to_cpu(QuantumClifford._create_pauliframe(ccircuit; trajectories=n))
         gpu_frames() = to_gpu(QuantumClifford._create_pauliframe(ccircuit; trajectories=n))
         
-        cpu_row() = pftrajectories(fastrow(cpu_frames()), ccircuit)
-        cpu_column() = pftrajectories(fastcolumn(cpu_frames()), ccircuit)
-        gpu_row() = pftrajectories(fastrow(gpu_frames()), ccircuit)
-        gpu_column() = pftrajectories(fastcolumn(gpu_frames()), ccircuit)
+        cpu_row() = pftrajectories_threads(fastrow(cpu_frames()), ccircuit)
+        cpu_column() = pftrajectories_threads(fastcolumn(cpu_frames()), ccircuit)
+        gpu_row() = pftrajectories(fastrow(gpu_frames()), ccircuit), synchronize()
+        gpu_column() = pftrajectories(fastcolumn(gpu_frames()), ccircuit), synchronize()
 
         push!(cpu_row_times, @belapsed $cpu_row())
         push!(cpu_column_times, @belapsed $cpu_column())
