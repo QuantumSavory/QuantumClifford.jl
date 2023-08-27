@@ -1,32 +1,9 @@
 const InnerGPUType = UInt32;
 const InnerCPUType = UInt64;
 
-"""
-converts data to gpu representation without changing the element types
-"""
-to_gpu(data);
-
-
-"""
-converts data to cpu representation without changing the element types
-"""
-to_cpu(data);
-
-
-"""
-converts data to gpu representation and reinterprets the element types
-"""
-to_gpu(data, tp::Type{T}) where {T <: Unsigned};
-
-
-"""
-converts data to cpu representation and reinterprets the element types
-"""
-to_cpu(data) where {T <: Unsigned};
-
 
 to_gpu(array::AbstractArray) = CuArray(array)
-to_cpu(array::AbstractArray) = Array(array);
+to_cpu(array::AbstractArray) = Array(array)
 
 to_gpu(array::AbstractArray, tp::Type{T}) where {T <: Unsigned} = 
     CuArray(reinterpret(T, collect(array)))
