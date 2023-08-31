@@ -26,7 +26,7 @@ ecirc = encoding_circuit(code)
 
 ... and the corresponding syndrome measurement circuit (the non-fault tolerant one)
 ```@example 1
-scirc = naive_syndrome_circuit(code)
+scirc, _ = naive_syndrome_circuit(code)
 ```
 
 The most straightforward way to start sampling syndromes is to set up a table of Pauli frames.
