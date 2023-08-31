@@ -57,7 +57,28 @@ function apply!(f::PauliFrame, op::AbstractCliffordOperator)
     return f
 end
 
-function apply!(frame::PauliFrame, op::sMZ) # TODO sMX, sMY
+function apply!(frame::PauliFrame, xor::ClassicalXOR)
+    for f in eachindex(frame)
+        value = frame.measurements[f,xor.bits[1]]
+        for i in xor.bits[2:end]
+            value ⊻= frame.measurements[f,i]
+        end
+        frame.measurements[f, xor.store] = value
+    end
+end
+
+function apply!(frame::PauliFrame, op::sMX) # TODO implement a faster direct version
+    op.bit == 0 && return frame
+    apply!(frame, sHadamard(op.qubit))
+    apply!(frame, sMZ(op.qubit, op.bit))
+end
+
+function apply!(frame::PauliFrame, op::sMRX) # TODO implement a faster direct version
+    apply!(frame, sHadamard(op.qubit))
+    apply!(frame, sMRZ(op.qubit, op.bit))
+end
+
+function apply!(frame::PauliFrame, op::sMZ) # TODO sMY, and faster sMX
     op.bit == 0 && return frame
     i = op.qubit
     xzs = frame.frame.tab.xzs
@@ -75,7 +96,7 @@ function apply!(frame::PauliFrame, op::sMZ) # TODO sMX, sMY
     return frame
 end
 
-function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRX, sMRY
+function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRY, and faster sMRX
     i = op.qubit
     xzs = frame.frame.tab.xzs
     T = eltype(xzs)
