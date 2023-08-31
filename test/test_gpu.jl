@@ -34,8 +34,13 @@ function apply_single_or_double_qubit_and_compare(n, s, s_gpu)
     end
 end
 
+function approx(a, b, threshold)
+    maximum(abs.(a - b)) <= threshold
+end
+
+
 @testset "GPU" begin
-    CUDA.allowscalar(false) # todo how to add this to all tests.
+    CUDA.allowscalar(false) # make sure we are using GPU kernels and not iterating on indices
 
     @test begin
         p = random_pauli(3)
@@ -117,5 +122,26 @@ end
             end
         end
         true
+    end
+
+    @test begin
+        # test applynoise
+        N = 4
+        trajectories = 10000
+        f = PauliFrame(trajectories, N, N);
+        f = to_gpu(f)
+        p = 0.1
+        measurements = pftrajectories(f, [
+            sMZ(1, 1),
+            sHadamard(2),
+            sMZ(2, 2),
+            NoiseOp(UnbiasedUncorrelatedNoise(p), [3, 4]),
+            sMZ(3, 3),
+            sHadamard(4),
+            sMZ(4, 4)
+        ]).measurements
+        avg_result = to_cpu(sum(measurements, dims=1) / trajectories)
+        error_threshold = 0.02
+        approx(vec(avg_result), [0, .5, 2p, .5], error_threshold)
     end
 end
