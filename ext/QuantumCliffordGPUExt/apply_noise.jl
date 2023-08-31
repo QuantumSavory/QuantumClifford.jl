@@ -18,8 +18,8 @@ end
 
 function applynoise_kernel(xzs::DeviceMatrix{Tme},
     p::Real,
-    ibig::Int, # todo why is this Int and others Tme?
-    ismallm::Tme, # why is rows Unsigned sometimes and sometimes Int?
+    ibig::Int,
+    ismallm::Tme,
     rows::Unsigned) where {Tme <: Unsigned} 
 
     f = (blockIdx().x - 1) * blockDim().x + threadIdx().x;
@@ -27,7 +27,7 @@ function applynoise_kernel(xzs::DeviceMatrix{Tme},
         return nothing
     end
 
-    r = rand() # todo add type to it? is it uniform?
+    r = rand()
     if  r < p # X error
         xzs[ibig,f] ⊻= ismallm
     elseif r < 2p # Z error
