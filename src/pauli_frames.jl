@@ -59,7 +59,10 @@ end
 
 function apply!(frame::PauliFrame, xor::ClassicalXOR)
     for f in eachindex(frame)
-        value = reduce(⊻,frame.measurements[f,xor.bits])
+        value = frame.measurements[f,xor.bits[1]]
+        for i in xor.bits[2:end]
+            value ⊻= frame.measurements[f,i]
+        end
         frame.measurements[f, xor.store] = value
     end
 end
