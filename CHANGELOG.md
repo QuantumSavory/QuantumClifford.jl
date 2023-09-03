@@ -2,8 +2,14 @@
 
 - `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
+- `random_pauli(...; realphase=true)` should be the default
 
 # News
+
+## v0.8.16 - 2023-08-31
+
+- **(breaking)** Changes to the circuit generation in the non-public ECC module. Adding a Shor syndrome measurement circuit.
+- Added a `ClassicalXOR` gate, for now supporting only `PauliFrame`s.
 
 ## v0.8.15 - 2023-08-16
 
