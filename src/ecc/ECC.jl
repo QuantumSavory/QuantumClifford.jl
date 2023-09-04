@@ -3,6 +3,7 @@ module ECC
 using QuantumClifford
 using QuantumClifford: AbstractOperation
 using LinearAlgebra
+using Nemo
 import QuantumClifford: Stabilizer, MixedDestabilizer
 
 abstract type AbstractECC end
@@ -416,7 +417,9 @@ function canonicalize_cleve97(checks::Stabilizer)
     Z0 = (checks |> stab_to_gf2)[:,n+1:2n]'
 
     # Now let's work on getting X1 and Z1
-    b = rank(X0)
+    Z2field = Nemo.ResidueRing(ZZ, 2)
+    b = rank(Nemo.matrix(Z2field, X0))
+
     r = d-b
     k = n-d
 
@@ -452,7 +455,6 @@ function canonicalize_cleve97(checks::Stabilizer)
                 STOP = true
             end
         end
-        println(i)
         push!(bank, i)
         for a in (r+1):(r+b)
             if a == j
@@ -472,22 +474,73 @@ function canonicalize_cleve97(checks::Stabilizer)
         end
     end
     append!(qubit_order, bank)
-    println(qubit_order)
-
     X1 = X0_5[qubit_order, :]
     Z1 = Z0_5[qubit_order, :]
 
     # Now begins the march towards X2 and Z2, starting with B'
-    r1 = rank(Z1[1:r+k,1:r])
+    r1 = rank(Nemo.matrix(Z2field, Z1[1:r+k,1:r]))
     r2 = r - r1
-    println("WARN: If r2 is greater than 0, this will not work. r2: ", r2)
 
-    # TODO implement calculation of B' using the same alogirthm as above
-    # For the Cleve8 code r2 = 0, so X1= X2 and Z1 = Z2
-    X2 = X1; Z2 = Z1; # TODO this is generally wrong - see above comment.
+    # First let's move the 0 columns of B to the left:
+    nullColumns = []
+    notNullColumns = []
+    for j in 1:r
+        if count(Z1[:,j])==0 # TODO make sure this is condition <-> null generator
+            push!(nullColumns, j)
+        else
+            push!(notNullColumns, j)
+        end
+    end
+    for j in r+1:d
+        push!(notNullColumns, j)
+    end
+
+    # Reorder the generators/columns so 0 vectors are in front of B:
+    column_order = vcat(nullColumns, notNullColumns)
+    Z1_5 = Z1[:, column_order]
+
+    # Now Gaussian elimination again, this time over B'
+    bank = []
+    for j in (r2+1):(r2+r1)
+        i = 1
+        STOP = false
+        while !STOP 
+            if Z1_5[i, j] != 1
+                i+=1 
+                if i > n
+                    print("ERROR")
+                    STOP = true
+                end
+            else
+                STOP = true
+            end
+        end
+        push!(bank, i)
+        for a in (r2+1):(r2+r1)
+            if a == j
+                continue
+            end
+            if Z1_5[i,a] == 1
+                Z1_5[:,a] = (Z1_5[:,j]+Z1_5[:,a]).%2
+            end
+        end
+    end
+
+    qubit_order = []
+    for i in 1:n
+        if i ∉ bank && i<= k+r
+            push!(qubit_order, i)
+        end
+    end
+    for i in k+r+1:n # rows not in B
+        push!(bank, i)
+    end
+    append!(qubit_order, bank)
+    Z2 = Z1_5[qubit_order, :]
+    X2 = X1[qubit_order, :] # X is unchanged by operations on b, except for reindexing of qubits
 
     # Now time for the final steps before arriving at Xstar Zstar
-    B1 = Z2[1:k,1:r2+r1]
+    B1 = Z2[1:k,1+r2:r2+r1]
 
     XI = zeros(Bool, k , k)
     for i in 1:k
@@ -496,16 +549,20 @@ function canonicalize_cleve97(checks::Stabilizer)
     Xs = (vcat(XI, zeros(Bool,r2, k), B1', zeros(Bool, b, k)))
     Zs = zeros(Bool, n, k)
 
+    println("k, r2, r1, b: ", k, " ", r2, " ", r1, " ", b)
     Xstar = hcat(Xs,X2)
     Zstar = hcat(Zs,Z2)
-    return Xstar, Zstar, Stabilizer(X2',Z2') # TODO at some point unreorder the qubits
+    return Xstar, Zstar, Stabilizer(X2',Z2')# TODO at some point unreorder the qubits? Recall they get reordered twice.
 end
 
 """ The naive implementation of the encoding circuit by arXiv:quant-ph/9607030 """
 function naive_encoding_circuit(checks::Stabilizer)
     d, n = size(checks)
     X0 = (checks |> stab_to_gf2)[:,1:n]'
-    b = rank(X0)
+
+    Z2field = Nemo.ResidueRing(ZZ, 2)
+    b = rank(Nemo.matrix(Z2field, X0))
+
     r = d-b
     k = n-d
 
