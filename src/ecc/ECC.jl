@@ -2,6 +2,7 @@ module ECC
 
 using QuantumClifford
 using QuantumClifford: AbstractOperation
+using LinearAlgebra
 import QuantumClifford: Stabilizer, MixedDestabilizer
 
 abstract type AbstractECC end
@@ -397,5 +398,147 @@ end
 include("./bitflipcode.jl")
 include("./shorcode.jl")
 include("./steanecode.jl")
+
+"""A pedagogical example of a quantum error correcting [8,3] code used in [cleve1997efficient](@cite)."""
+struct Cleve8 <: AbstractECC end
+
+code_n(c::Cleve8) = 8
+
+parity_checks(c::Cleve8) = S"XXXXXXXX
+                             ZZZZZZZZ
+                             XIXIZYZY
+                             XIYZXIYZ
+                             XZIYIYXZ"
+                             
+function canonicalize_cleve97(checks::Stabilizer)
+    d, n = size(checks)
+    X0 = (checks |> stab_to_gf2)[:,1:n]'
+    Z0 = (checks |> stab_to_gf2)[:,n+1:2n]'
+
+    # Now let's work on getting X1 and Z1
+    b = rank(X0)
+    r = d-b
+    k = n-d
+
+    # First let's move the 0 columns to the left:
+    nullColumns = []
+    notNullColumns = []
+    for j in 1:d
+        if count(X0[:,j])==0 # TODO make sure this is condition -> null generator
+            push!(nullColumns, j)
+        else
+            push!(notNullColumns, j)
+        end
+    end
+
+    # Reorder the generators/columns so 0 vectors are in front of X0:
+    column_order = vcat(nullColumns, notNullColumns)
+    X0_5 = X0[:, column_order]
+    Z0_5 = Z0[:, column_order]
+
+    # Second let's perform Gaussian elimination to arrive at X1 and Z1
+    bank = []
+    for j in (r+1):(r+b)
+        i = 1
+        STOP = false
+        while !STOP 
+            if X0_5[i, j] != 1
+                i+=1 
+                if i > n
+                    print("ERROR")
+                    STOP = true
+                end
+            else
+                STOP = true
+            end
+        end
+        println(i)
+        push!(bank, i)
+        for a in (r+1):(r+b)
+            if a == j
+                continue
+            end
+            if X0_5[i,a] == 1
+                X0_5[:,a] = (X0_5[:,j]+X0_5[:,a]).%2
+                Z0_5[:,a] = (Z0_5[:,j]+Z0_5[:,a]).%2
+            end
+        end
+    end
+
+    qubit_order = []
+    for i in 1:n
+        if i ∉ bank
+            push!(qubit_order, i)
+        end
+    end
+    append!(qubit_order, bank)
+    println(qubit_order)
+
+    X1 = X0_5[qubit_order, :]
+    Z1 = Z0_5[qubit_order, :]
+
+    # Now begins the march towards X2 and Z2, starting with B'
+    r1 = rank(Z1[1:r+k,1:r])
+    r2 = r - r1
+    println("WARN: If r2 is greater than 0, this will not work. r2: ", r2)
+
+    # TODO implement calculation of B' using the same alogirthm as above
+    # For the Cleve8 code r2 = 0, so X1= X2 and Z1 = Z2
+    X2 = X1; Z2 = Z1; # TODO this is generally wrong - see above comment.
+
+    # Now time for the final steps before arriving at Xstar Zstar
+    B1 = Z2[1:k,1:r2+r1]
+
+    XI = zeros(Bool, k , k)
+    for i in 1:k
+        XI[i,i] = 1
+    end
+    Xs = (vcat(XI, zeros(Bool,r2, k), B1', zeros(Bool, b, k)))
+    Zs = zeros(Bool, n, k)
+
+    Xstar = hcat(Xs,X2)
+    Zstar = hcat(Zs,Z2)
+    return Xstar, Zstar, Stabilizer(X2',Z2') # TODO at some point unreorder the qubits
+end
+
+""" The naive implementation of the encoding circuit by arXiv:quant-ph/9607030 """
+function naive_encoding_circuit(checks::Stabilizer)
+    d, n = size(checks)
+    X0 = (checks |> stab_to_gf2)[:,1:n]'
+    b = rank(X0)
+    r = d-b
+    k = n-d
+
+    Xstar, Zstar, standard_tab = canonicalize_cleve97(checks)
+    println(standard_tab)
+
+    naive_ec = AbstractOperation[]
+    for i in (r+k+1):(r+k+b)
+        push!(naive_ec, sHadamard(i))
+    end
+
+    for j in 1:n
+        if count(Xstar[:,j]) == 0 # Secondary generators are ignored
+            continue
+        end
+        if Zstar[j,j]==1
+            push!(naive_ec, sZ(j))
+        end
+        for i in 1:n
+            if i == j
+                continue
+            end
+            if Xstar[i,j] == 1 && Zstar[i,j] == 0
+                push!(naive_ec, sZCX(j,i))
+            elseif Xstar[i,j] == 0 && Zstar[i,j] == 1
+                push!(naive_ec, sZCZ(j,i))
+            elseif Xstar[i,j] == 1 && Zstar[i,j] == 1
+                push!(naive_ec, sZCY(j,i))   
+            end
+        end
+    end
+
+    return naive_ec, standard_tab
+end
 
 end #module
