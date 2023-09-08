@@ -27,6 +27,7 @@ function applynoise_kernel(xzs::DeviceMatrix{Tme},
         return nothing
     end
 
+
     r = rand()
     if  r < p # X error
         xzs[ibig,f] ⊻= ismallm
