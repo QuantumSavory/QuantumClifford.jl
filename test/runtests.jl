@@ -61,6 +61,7 @@ end
 @doset "enumerate"
 @doset "quantumoptics"
 @doset "ecc"
+@doset "ecc_syndromes"
 @doset "precompile"
 @doset "pauliframe"
 @doset "allocations"

@@ -67,7 +67,7 @@ function test_naive_syndrome(c::AbstractECC)
     s1 = copy(logicalqubits)
     syndrome1 = [project!(s1, check)[3] for check in parity_checks(c)]
     # measure using `naive_syndrome_circuit`
-    naive_circuit = naive_syndrome_circuit(c)
+    naive_circuit, _ = naive_syndrome_circuit(c)
     ancillaryqubits = one(Stabilizer,code_s(c))
     s2 = copy(logicalqubits)
     syndrome2 = Register(s2⊗ancillaryqubits, falses(code_s(c)))
@@ -89,7 +89,7 @@ end
 
 function test_with_pframes(code)
     ecirc = encoding_circuit(code)
-    scirc = naive_syndrome_circuit(code)
+    scirc, _ = naive_syndrome_circuit(code)
     nframes = 10
     dataqubits = code_n(code)
     ancqubits = code_s(code)

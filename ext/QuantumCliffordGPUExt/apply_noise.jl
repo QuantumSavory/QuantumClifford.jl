@@ -1,11 +1,7 @@
 using QuantumClifford: _div, _mod
 
-"""
-according to this:
-   https://github.com/JuliaGPU/CUDA.jl/blob/ac1bc29a118e7be56d9edb084a4dea4224c1d707/test/core/device/random.jl#L33
-CUDA.jl supports calling rand() inside kernel
-"""
-
+#according to https://github.com/JuliaGPU/CUDA.jl/blob/ac1bc29a118e7be56d9edb084a4dea4224c1d707/test/core/device/random.jl#L33
+#CUDA.jl supports calling rand() inside kernel
 function applynoise!(frame::PauliFrameGPU{T},noise::UnbiasedUncorrelatedNoise,i::Int) where {T <: Unsigned}
     p = noise.errprobthird
     lowbit = T(1)
