@@ -1,5 +1,6 @@
 const InnerGPUType = UInt32;
 const InnerCPUType = UInt64;
+
 # todo. make the conversion types consiting with this...
 # also define a cpu default type?!
 

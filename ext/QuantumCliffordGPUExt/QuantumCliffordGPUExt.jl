@@ -12,5 +12,4 @@ include("pauli_frames.jl")
 include("fastmemlayout.jl")
 include("apply_noise.jl")
 
-# todo hide _apply function later. only for internal use
 end
