@@ -399,18 +399,10 @@ end
 include("./bitflipcode.jl")
 include("./shorcode.jl")
 include("./steanecode.jl")
+include("./cleavecode.jl")
+include("./fiveonethreecode.jl")
+include("./fivetwotwocode.jl")
 
-"""A pedagogical example of a quantum error correcting [8,3] code used in [cleve1997efficient](@cite)."""
-struct Cleve8 <: AbstractECC end
-
-code_n(c::Cleve8) = 8
-
-parity_checks(c::Cleve8) = S"XXXXXXXX
-                             ZZZZZZZZ
-                             XIXIZYZY
-                             XIYZXIYZ
-                             XZIYIYXZ"
-                             
 function canonicalize_cleve97(checks::Stabilizer)
     d, n = size(checks)
     X0 = (checks |> stab_to_gf2)[:,1:n]'
@@ -476,6 +468,8 @@ function canonicalize_cleve97(checks::Stabilizer)
     append!(qubit_order, bank)
     X1 = X0_5[qubit_order, :]
     Z1 = Z0_5[qubit_order, :]
+    println("Qubit order 1", qubit_order)
+    checks = checks[:, qubit_order]
 
     # Now begins the march towards X2 and Z2, starting with B'
     r1 = rank(Nemo.matrix(Z2field, Z1[1:r+k,1:r]))
@@ -538,6 +532,8 @@ function canonicalize_cleve97(checks::Stabilizer)
     append!(qubit_order, bank)
     Z2 = Z1_5[qubit_order, :]
     X2 = X1[qubit_order, :] # X is unchanged by operations on b, except for reindexing of qubits
+    println("Qubit order 2", qubit_order)
+    checks = checks[:, qubit_order]
 
     # Now time for the final steps before arriving at Xstar Zstar
     B1 = Z2[1:k,1+r2:r2+r1]
@@ -552,7 +548,9 @@ function canonicalize_cleve97(checks::Stabilizer)
     println("k, r2, r1, b: ", k, " ", r2, " ", r1, " ", b)
     Xstar = hcat(Xs,X2)
     Zstar = hcat(Zs,Z2)
-    return Xstar, Zstar, Stabilizer(X2',Z2')# TODO at some point unreorder the qubits? Recall they get reordered twice.
+
+    #return X0, X0_5, X1, X2, Xstar, Z0, Z0_5, Z1, Z1_5, Z2, Zstar
+    return Xstar, Zstar, Stabilizer(X2', Z2')# TODO Return reordered checks or Stab(X2', Z2')?
 end
 
 """ The naive implementation of the encoding circuit by arXiv:quant-ph/9607030 """
@@ -567,7 +565,6 @@ function naive_encoding_circuit(checks::Stabilizer)
     k = n-d
 
     Xstar, Zstar, standard_tab = canonicalize_cleve97(checks)
-    println(standard_tab)
 
     naive_ec = AbstractOperation[]
     for i in (r+k+1):(r+k+b)
