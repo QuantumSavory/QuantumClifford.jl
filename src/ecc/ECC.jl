@@ -20,75 +20,30 @@ function encoding_circuit end
 """Parity check tableau of a code."""
 function parity_checks end
 
+parity_checks(s::Stabilizer) = s
 Stabilizer(c::AbstractECC) = parity_checks(c)
-MixedDestabilizer(c::AbstractECC) = MixedDestabilizer(Stabilizer(c))
+MixedDestabilizer(c::AbstractECC; kwarg...) = MixedDestabilizer(Stabilizer(c); kwarg...)
 
 """The number of physical qubits in a code."""
 function code_n end
 
+code_n(c::AbstractECC) = code_n(parity_checks(c))
+
+code_n(s::Stabilizer) = nqubits(s)
+
 """The number of stabilizer checks in a code."""
-function code_s(c::AbstractECC)
-    s = length(parity_checks(c))
-    return s
-end
+function code_s end
+
+code_s(c::AbstractECC) = code_s(parity_checks(c))
+code_s(s::Stabilizer) = length(s)
 
 """The number of logical qubits in a code."""
-function code_k(c::AbstractECC)
-    k = code_n(c) - code_s(c)
-    return k
-end
+code_k(c) = code_n(c) - code_s(c)
 
 """The rate of a code."""
-function rate(c::AbstractECC)
-    rate = code_k(c)//code_s(c)
+function rate(c)
+    rate = code_k(c)//code_n(c)
     return rate
-end
-
-"""Number of physical qubits for a given parity check tableau"""
-function code_n(parity_check_tableau)
-    return size(parity_check_tableau)[2]
-end
-
-"""Generate the non-fault-tolerant stabilizer measurement cicuit for a given code instance or parity check tableau.
-
-Use the `ancillary_index` and `bit_index` arguments to offset where the corresponding part the circuit starts.
-"""
-function naive_syndrome_circuit end
-
-function naive_syndrome_circuit(code_type::AbstractECC, ancillary_index=1, bit_index=1)
-    naive_syndrome_circuit(parity_checks(code_type), ancillary_index, bit_index)
-end
-
-"""Circuit that measures the corresponding PauliOperator by using conditional gates into an ancillary
-qubit at index `nqubits(p)+ancillary_index` and stores the measurement result into classical bit `bit_index`."""
-function naive_ancillary_paulimeasurement(p::PauliOperator, ancillary_index=1, bit_index=1)
-    circuit = AbstractOperation[]
-    numQubits = nqubits(p)
-    for qubit in 1:numQubits
-        if p[qubit] == (1,0)
-            push!(circuit, sXCX(qubit, numQubits + ancillary_index))
-        elseif p[qubit] == (0,1)
-            push!(circuit, sCNOT(qubit, numQubits + ancillary_index))
-        elseif p[qubit] == (1,1)
-            push!(circuit, sYCX(qubit, numQubits + ancillary_index))
-        end
-    end
-    mz = sMRZ(numQubits + ancillary_index, bit_index)
-    push!(circuit, mz)
-
-    return circuit
-end
-
-function naive_syndrome_circuit(parity_check_tableau, ancillary_index=1, bit_index=1)
-    naive_sc = AbstractOperation[]
-
-    for check in parity_check_tableau
-        naive_sc = append!(naive_sc,naive_ancillary_paulimeasurement(check, ancillary_index, bit_index))
-        ancillary_index +=1
-        bit_index +=1
-    end
-
-    return naive_sc
 end
 
 """The distance of a code."""
@@ -101,13 +56,13 @@ function parity_matrix(c::AbstractECC)
 end
 
 """Logical X operations of a code."""
-function logx_ops(c::AbstractECC)
+function logx_ops(c)
     md = MixedDestabilizer(parity_checks(c))
     logicalxview(md)
 end
 
 """Logical Z operations of a code."""
-function logz_ops(c::AbstractECC)
+function logz_ops(c)
     md = MixedDestabilizer(parity_checks(c))
     logicalzview(md)
 end
@@ -335,67 +290,12 @@ function isdegenerate(H::Stabilizer, d::Int=1)
     return isdegenerate(H, errors)
 end
 
-"""The standardized logical tableau of a code by [PhysRevA.56.76](@cleve1997efficient)"""
-function standard_tab_gott(c::AbstractECC; undoperm= true)
-    r, permx, permz, destab = MixedDestabilizer(parity_checks(c); undoperm=undoperm, reportperm=true) # originally undoperm here = false and the comment below is uncommented
-    n, k = code_n(c),code_k(c)
-    standard_tab = vcat(stabilizerview(destab), logicalxview(destab))
-    standard_tab = stab_to_gf2(standard_tab)
-    standard_tab = hcat(transpose(reverse(standard_tab[1:n, 1:n])), transpose(reverse(standard_tab[1:n, n+1:2*n])))
-    return r, standard_tab
-end
+include("circuits.jl")
 
-function standard_code_tab(c::AbstractECC)
-    n, s, k = code_n(c), code_s(c), code_k(c)
-    standard_tab = stab_to_gf2(stabilizerview(MixedDestabilizer(parity_checks(c), undoperm=false)))
-    md = MixedDestabilizer(parity_checks(c), undoperm=false)
-    XZᵗ = stab_to_gf2(stabilizerview(md))
-    X₂ = reverse(XZᵗ[1:s,1:n]', dims=(1,2))
-    Z₂ = reverse(XZᵗ[1:s,n+1:2n]', dims=(1,2))
-    X = falses(n, n)
-    Z = falses(n, n)
-    X[:, k+1:end] .= X₂
-    Z[:, k+1:end] .= Z₂
-    X[:, 1:k] .= Xˡ
-    return X, Z
-    # TODO The permutations need to be reverted at some point, otherwise the generated circuit will have permuted qubits. It is not clear to me whether it is more convenient to revert the permutation here or in naive_encoding_circuit
-    # TODO This function does not seem to actually be necessary. It seems like iterating over the `MixedDestabilizer` object is enough. Out of convenience, let's keep if for the moment, but also keep this TODO
-end
-
-""" The naive implementation of the encoding circuit by arXiv:quant-ph/9607030 """
-function naive_encoding_circuit(c::AbstractECC)
-    n= code_n(c)
-    r, standard_tab = standard_tab_gott(c)
-
-    naive_ec = AbstractOperation[]
-    # Applying the hadamard gate to the last r qubits
-    for i in n:-1:n-r+1
-        push!(naive_ec, sHadamard(i))
-    end
-    for i in 1:n
-        if standard_tab[i, i] ==1
-            for j in 1:n
-                if j == i continue end
-                gate = (standard_tab[j, i], standard_tab[j, i+n])
-                if gate == (1,0)
-                    push!(naive_ec, sCNOT(j, i))
-                elseif gate == (0,1)
-                    push!(naive_ec, sXCZ(j, i))
-                elseif gate == (1,1)
-                    push!(naive_ec, sXCY(j, i))
-                end
-            end
-        end
-    end
-    # if undoperm
-    #     standard_tab = standard_tab[:,invperm(permx[permz])]
-    # end
-    return naive_ec
-end
-
-include("./bitflipcode.jl")
-include("./shorcode.jl")
-include("./steanecode.jl")
-include("./clevecode.jl")
+include("codes/bitflipcode.jl")
+include("codes/fivequbit.jl")
+include("codes/steanecode.jl")
+include("codes/shorcode.jl")
+include("codes/clevecode.jl")
 
 end #module

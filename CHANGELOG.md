@@ -8,6 +8,8 @@
 ## v0.8.15 - dev
 
 - Initial support for GPU accelerated circuit simulation (with CUDA).
+- **(fix)** Some `affectedqubits` methods were returning single integers instead of a one-tuple.
+- The non-public `ECC` module has seen a few improvements (a `naive_encoding_circuit` implementation and a few new codes), as well as some breaking changes to API.
 
 ## v0.8.14 - 2023-07-19
 
