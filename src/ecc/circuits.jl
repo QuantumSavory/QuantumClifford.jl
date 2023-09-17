@@ -12,8 +12,8 @@ That permutation is corrected for with SWAP gates by default (controlled by the 
 
 Based on [gottesman1997stabilizer](@cite) and [cleve1997efficient](@cite),
 however it seems the published algorithm has some errors.
-Consult the erratum, and be aware that this implementation also uses H instead of Z gates.
-
+Consult the erratum, as well as the more recent [grassl2002algorithmic](@cite) and [grassl2011variations](@cite),
+and be aware that this implementation also uses H instead of Z gates.
 """
 function naive_encoding_circuit(code; undoperm=true)
     n = code_n(code)
