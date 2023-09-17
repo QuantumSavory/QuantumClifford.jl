@@ -14,7 +14,6 @@ codes = [
 ##
 
 function pframe_naive_vs_shor_syndrome(code)
-    code = canonicalize_gott!(parity_checks(code))[1] # TODO - this line is there to make sure we do not permute qubits - remove it when we fix the naive_encoding_circuit function
     ecirc = naive_encoding_circuit(code)
     naive_scirc, naive_ancillaries = naive_syndrome_circuit(code)
     shor_cat_scirc, shor_scirc, shor_ancillaries, shor_bits = shor_syndrome_circuit(code)

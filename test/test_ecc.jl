@@ -12,8 +12,7 @@ codes = [
 
 ##
 
-function test_naive_syndrome(code::AbstractECC, e::Bool)
-    c = canonicalize_gott!(parity_checks(code))[1] # TODO - this line is there to make sure we do not permute qubits - remove it when we fix the naive_encoding_circuit function
+function test_naive_syndrome(c::AbstractECC, e::Bool)
     # create a random logical state
     unencoded_qubits = random_stabilizer(code_k(c))
     bufferqubits = one(Stabilizer,code_s(c))
@@ -50,7 +49,6 @@ end
 ##
 
 function test_with_pframes(code)
-    code = canonicalize_gott!(parity_checks(code))[1] # TODO - this line is there to make sure we do not permute qubits - remove it when we fix the naive_encoding_circuit function
     ecirc = naive_encoding_circuit(code)
     scirc, _ = naive_syndrome_circuit(code)
     nframes = 10

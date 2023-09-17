@@ -7,20 +7,18 @@ The initial physical qubits to be encoded have to be at indices `n-k+1:n`.
     Instead, you should measure the stabilizers of the code and the logical observables,
     thus projecting into the code space (which can be fault-tolerant).
 
-!!! warning "Implicit permutation of qubits"
-    The canonicalization operation performed on the code may permute the qubits.
-    You might need to correct other parts of your code to account for this or
-    set `undoperm=true` to add the necessary SWAP gates to undo the permutation.
+The canonicalization operation performed on the code may permute the qubits (see [canonicalize_gott!](@ref)).
+That permutation is corrected for with SWAP gates by default (controlled by the `undoperm` keyword argument).
 
 Based on [gottesman1997stabilizer](@cite) and [cleve1997efficient](@cite),
 however it seems the published algorithm has some errors.
 Consult the erratum, and be aware that this implementation also uses H instead of Z gates.
 
 """
-function naive_encoding_circuit(code; undoperm=false, reportperm=false)
+function naive_encoding_circuit(code; undoperm=true)
     n = code_n(code)
     k = code_k(code)
-    r, permx, permz, md = MixedDestabilizer(code, undoperm=false, reportperm=true);
+    md, r, permx, permz = MixedDestabilizer(code, undoperm=false, reportperm=true);
     circ = QuantumClifford.AbstractOperation[]
     X = logicalxview(md)
     Z = logicalzview(md)
@@ -60,11 +58,27 @@ function naive_encoding_circuit(code; undoperm=false, reportperm=false)
             end
         end
     end
-    if reportperm
-        return circ, permx, permz
-    else
-        return circ
+    if undoperm
+        perm = permx[permz]
+        transpositions = perm_to_transpositions(perm)
+        for (i,j) in transpositions
+            push!(circ, sSWAP(i,j))
+        end
     end
+    circ
+end
+
+function perm_to_transpositions(perm)
+    n = length(perm)
+    transpositions = Tuple{Int, Int}[]
+    for i in n:-1:1
+        if perm[i]!=i
+            j = findfirst(==(i), perm)
+            push!(transpositions, (i, j))
+            perm[j] = perm[i]
+        end
+    end
+    return transpositions
 end
 
 """Generate the non-fault-tolerant stabilizer measurement cicuit for a given code instance or parity check tableau.

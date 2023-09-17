@@ -9,7 +9,8 @@ using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, Perfec
     # This test verifies that logical measurements on an encoded state match the physical pre-encoded state.
     # This test skips verifying the permutations of qubits during canonicalization are properly undone,
     # i.e. we modify the code we are testing so that the canonicalization does not need any permutations.
-    for codeexpr in [
+    for undoperm in [true, false],
+        codeexpr in [
         :(Cleve8()),
         :(Steane7()),
         :(Shor9()),
@@ -21,12 +22,15 @@ using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, Perfec
         fill(:(random_stabilizer(5,7)), 100)...
         ]
 
-        # pre-process the tableau to remove permutations and negative phases
         code = eval(codeexpr)
-        stab, r, s, xperm, zperm = canonicalize_gott!(parity_checks(code))
-        code = stab # using this tableau guarantees we do not need to worry about permutations of the qubits
+        if undoperm==false
+            # Pre-process the tableau to remove permutations and negative phases.
+            # Usually that is handled by `naive_encoding_circuit`, but we just want to check both branches for its `undoperm` kwarg.
+            stab, r, s, xperm, zperm = canonicalize_gott!(parity_checks(code))
+            code = stab # using this tableau guarantees we do not need to worry about permutations of the qubits
+        end
 
-        circ = naive_encoding_circuit(code)
+        circ = naive_encoding_circuit(code; undoperm=true)
         #display(circ)
 
         # the state to be encoded (k physical qubits)
