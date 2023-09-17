@@ -1,7 +1,5 @@
 """Encoding physical qubits into a larger logical code.
 
-Based on [gottesman1997stabilizer](@cite) and [cleve1997efficient](@cite).
-
 The initial physical qubits to be encoded have to be at indices `n-k+1:n`.
 
 !!! info "Encoding circuits are not fault-tolerant"
@@ -13,6 +11,11 @@ The initial physical qubits to be encoded have to be at indices `n-k+1:n`.
     The canonicalization operation performed on the code may permute the qubits.
     You might need to correct other parts of your code to account for this or
     set `undoperm=true` to add the necessary SWAP gates to undo the permutation.
+
+Based on [gottesman1997stabilizer](@cite) and [cleve1997efficient](@cite),
+however it seems the published algorithm has some errors.
+Consult the erratum, and be aware that this implementation also uses H instead of Z gates.
+
 """
 function naive_encoding_circuit(code; undoperm=false, reportperm=false)
     n = code_n(code)
@@ -89,17 +92,18 @@ into classical bit `bit_index`.
 See also: [`naive_syndrome_circuit`](@ref), [`shor_ancillary_paulimeasurement`](@ref)"""
 function naive_ancillary_paulimeasurement(p::PauliOperator, ancillary_index=1, bit_index=1)
     circuit = AbstractOperation[]
-    numQubits = nqubits(p)
-    for qubit in 1:numQubits
+    n = nqubits(p)
+    for qubit in 1:n
         if p[qubit] == (1,0)
-            push!(circuit, sXCX(qubit, numQubits + ancillary_index))
+            push!(circuit, sXCX(qubit, n + ancillary_index))
         elseif p[qubit] == (0,1)
-            push!(circuit, sCNOT(qubit, numQubits + ancillary_index))
+            push!(circuit, sCNOT(qubit, n + ancillary_index))
         elseif p[qubit] == (1,1)
-            push!(circuit, sYCX(qubit, numQubits + ancillary_index))
+            push!(circuit, sYCX(qubit, n + ancillary_index))
         end
     end
-    mz = sMRZ(numQubits + ancillary_index, bit_index)
+    p.phase[] == 0 || push!(circuit, sX(n + ancillary_index))
+    mz = sMRZ(n + ancillary_index, bit_index)
     push!(circuit, mz)
 
     return circuit

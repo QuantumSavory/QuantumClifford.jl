@@ -9,13 +9,10 @@ using Combinatorics: combinations
 
 abstract type AbstractECC end
 
-export Shor9, Steane7, Steane5, Cleve8,
-    parity_checks, naive_syndrome_circuit, encoding_circuit,
+export Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
+    parity_checks, naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix
-
-"""The encoding circuit of a given code."""
-function encoding_circuit end
 
 """Parity check tableau of a code."""
 function parity_checks end

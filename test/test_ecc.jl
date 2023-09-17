@@ -1,21 +1,23 @@
 using Test
 using QuantumClifford
-using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, code_n, parity_checks, encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, isdegenerate, rank, standard_tab_gott
+using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, Perfect5, naive_syndrome_circuit, code_n, parity_checks, naive_encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, isdegenerate
 
 codes = [
     Bitflip3(),
     Steane7(),
     Shor9(),
+    Perfect5(),
     Cleve8(),
 ]
 
 ##
 
-function test_naive_syndrome(c::AbstractECC, e::Bool=false)
+function test_naive_syndrome(code::AbstractECC, e::Bool)
+    c = canonicalize_gott!(parity_checks(code))[1] # TODO - this line is there to make sure we do not permute qubits - remove it when we fix the naive_encoding_circuit function
     # create a random logical state
     unencoded_qubits = random_stabilizer(code_k(c))
     bufferqubits = one(Stabilizer,code_s(c))
-    logicalqubits = unencoded_qubits⊗bufferqubits
+    logicalqubits = bufferqubits⊗unencoded_qubits
     mctrajectory!(logicalqubits, naive_encoding_circuit(c))
     if e
         #add some noise to logicalqubits
@@ -36,13 +38,11 @@ function test_naive_syndrome(c::AbstractECC, e::Bool=false)
         @test all(bitview(syndrome2) .== 0)
     end
     @test bitview(syndrome2) == syndrome1.÷2
-
-    # TODO test when there is potential for errors / non-commuting operators
 end
 
 @testset "naive syndrome circuits - zero syndrome for logical states" begin
-    for c in codes, _ in 1:2
-        test_naive_syndrome(c)
+    for c in codes, _ in 1:10
+        test_naive_syndrome(c, false)
         test_naive_syndrome(c, true)
     end
 end
@@ -50,7 +50,8 @@ end
 ##
 
 function test_with_pframes(code)
-    ecirc = encoding_circuit(code)
+    code = canonicalize_gott!(parity_checks(code))[1] # TODO - this line is there to make sure we do not permute qubits - remove it when we fix the naive_encoding_circuit function
+    ecirc = naive_encoding_circuit(code)
     scirc, _ = naive_syndrome_circuit(code)
     nframes = 10
     dataqubits = code_n(code)

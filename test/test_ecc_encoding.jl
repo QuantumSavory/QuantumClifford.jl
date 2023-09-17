@@ -45,8 +45,6 @@ using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, Perfec
 
         @test (encodedₙ == algebraicₙ)
 
-        @show affectedqubits.(circ)
-        @show circ
         #println("$codeexpr, $(encodedₙ == algebraicₙ)")
     end
 end
