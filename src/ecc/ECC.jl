@@ -46,6 +46,7 @@ function rate(c)
     return rate
 end
 
+
 """The distance of a code."""
 function distance end
 

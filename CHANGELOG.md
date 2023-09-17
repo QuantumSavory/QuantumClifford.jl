@@ -2,14 +2,23 @@
 
 - `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
+- `random_pauli(...; realphase=true)` should be the default
 
 # News
 
-## v0.8.15 - dev
-
-- Initial support for GPU accelerated circuit simulation (with CUDA).
+## v0.8.17 - dev
 - **(fix)** Some `affectedqubits` methods were returning single integers instead of a one-tuple.
 - The non-public `ECC` module has seen a few improvements (a `naive_encoding_circuit` implementation and a few new codes), as well as some breaking changes to API.
+
+## v0.8.16 - 2023-08-31
+
+- **(breaking)** Changes to the circuit generation in the non-public ECC module. Adding a Shor syndrome measurement circuit.
+- Added a `ClassicalXOR` gate, for now supporting only `PauliFrame`s.
+
+## v0.8.15 - 2023-08-16
+
+- Initial support for GPU accelerated circuit simulation (with CUDA).
+- Minor documentation fixes around `phases` and a workaround for Makie plotting regression.
 
 ## v0.8.14 - 2023-07-19
 

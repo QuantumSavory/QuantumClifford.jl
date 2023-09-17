@@ -28,6 +28,7 @@ end
 
 println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREADS = $(Sys.CPU_THREADS)`...")
 
+# in order to run the gpu tests automatically set GPU_TESTS to true in the .env file
 if ENV["GPU_TESTS"] == "true"
     @doset "gpu"
 else
@@ -60,6 +61,7 @@ end
 @doset "enumerate"
 @doset "quantumoptics"
 @doset "ecc"
+@doset "ecc_syndromes"
 @doset "precompile"
 @doset "pauliframe"
 @doset "allocations"

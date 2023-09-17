@@ -1,7 +1,6 @@
-function apply!(f::PauliFrameGPU{T}, op::QuantumClifford.AbstractCliffordOperator) where {T <: Unsigned}
-    _apply!(f.frame, op; phases=Val(false))
-    return f
-end
+##############################
+# sMZ
+##############################
 
 function apply_sMZ_kernel!(xzs::DeviceMatrix{Tme},
                           measurements::DeviceMatrix{Bool},
@@ -18,7 +17,7 @@ function apply_sMZ_kernel!(xzs::DeviceMatrix{Tme},
     return nothing
 end
 
-function apply!(frame::PauliFrameGPU{T}, op::QuantumClifford.sMZ) where {T <: Unsigned} # TODO sMX, sMY
+function apply!(frame::PauliFrameGPU{T}, op::QuantumClifford.sMZ) where {T <: Unsigned}
     op.bit == 0 && return frame
     i = op.qubit
     xzs = frame.frame.tab.xzs
@@ -26,9 +25,13 @@ function apply!(frame::PauliFrameGPU{T}, op::QuantumClifford.sMZ) where {T <: Un
     ibig = QuantumClifford._div(T,i-1)+1
     ismall = QuantumClifford._mod(T,i-1)
     ismallm = lowbit<<(ismall)
-    CUDA.@sync (@run_cuda apply_sMZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame)) length(frame))
+    (@run_cuda apply_sMZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame)) length(frame))
     return frame
 end
+
+##############################
+# sMRZ
+##############################
 
 function apply_sMRZ_kernel!(xzs::DeviceMatrix{Tme},
                           measurements::DeviceMatrix{Bool},
@@ -56,6 +59,6 @@ function apply!(frame::PauliFrameGPU{T}, op::QuantumClifford.sMRZ) where {T <: U
     ibig = QuantumClifford._div(T,i-1)+1
     ismall = QuantumClifford._mod(T,i-1)
     ismallm = lowbit<<(ismall)
-    CUDA.@sync (@run_cuda apply_sMRZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame)) length(frame))
+    (@run_cuda apply_sMRZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame)) length(frame))
     return frame
 end

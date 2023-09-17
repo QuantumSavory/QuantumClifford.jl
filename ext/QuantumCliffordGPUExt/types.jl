@@ -1,7 +1,8 @@
 using LinearAlgebra: Adjoint
 
-# todo is there anyway to do this automatically so that if the code in QuantumClifford changes, we don't have to change this?!
-# especially with UInt8 types
+
+const PhaseInnerType = UInt8
+const MeasurementInnerType = Bool
 
 CUDAValue{T} = CuArray{T, 0, CUDA.Mem.DeviceBuffer} where {T}
 CUDAVector{T} = CuArray{T, 1, CUDA.Mem.DeviceBuffer} where {T}
@@ -13,20 +14,19 @@ AdjCUDAVector{T} = CuArray{T, 1, CUDA.Mem.DeviceBuffer} where {T} # do not adjoi
 AdjCUDAMatrix{T} = Adjoint{T, CuArray{T, 2, CUDA.Mem.DeviceBuffer}} where {T}
 AdjCUDAParams = [AdjCUDAValue, AdjCUDAVector, AdjCUDAMatrix]
 
-# what is CuDeviceArray?
 DeviceValue{T} = Union{CuDeviceArray{T, 0, 1}, Adjoint{T, CuDeviceArray{T, 0, 1}}} where {T}
 DeviceVector{T} = Union{CuDeviceArray{T, 1, 1}, Adjoint{T, CuDeviceArray{T, 1, 1}}} where {T}
 DeviceMatrix{T} = Union{CuDeviceArray{T, 2, 1}, Adjoint{T, CuDeviceArray{T, 2, 1}}} where {T}
 
 
 function getTableauGPU(GPUValue, GPUVector, GPUMatrix)
-    TableauGPU{T} = QuantumClifford.Tableau{Tzv, Tm} where {T <: Unsigned, Tzv <: GPUVector{UInt8}, Tm <: GPUMatrix{T}}
+    TableauGPU{T} = QuantumClifford.Tableau{Tzv, Tm} where {T <: Unsigned, Tzv <: GPUVector{PhaseInnerType}, Tm <: GPUMatrix{T}}
 end
 function getStabilizerGPU(GPUValue, GPUVector, GPUMatrix, GPUTableau)
     StabilizerGPU{T} = QuantumClifford.Stabilizer{<:GPUTableau{T}} where {T <: Unsigned}
 end
 function getPauliOperatorGPU(GPUValue, GPUVector, GPUMatrix, GPUTableau)
-    PauliOperatorGPU{T} = QuantumClifford.PauliOperator{Tz, Tv} where {T <: Unsigned, Tz<:GPUValue{UInt8}, Tv<:GPUVector{T}}
+    PauliOperatorGPU{T} = QuantumClifford.PauliOperator{Tz, Tv} where {T <: Unsigned, Tz<:GPUValue{PhaseInnerType}, Tv<:GPUVector{T}}
 end
 
 # todo. type definition here is stronger than the code in pauliframes.jl  this will cause serious problems
@@ -34,7 +34,7 @@ end
 # and we are assuming that TMeasurement is made of booleans
 function getPauliFrameGPU(GPUValue, GPUVector, GPUMatrix, GPUTableau)
     StabilizerGPU{T} = getStabilizerGPU(GPUValue, GPUVector, GPUMatrix, GPUTableau){T} where {T <: Unsigned}
-    PauliFrameGPU{T} = QuantumClifford.PauliFrame{TFrame, TMeasurement} where {T <: Unsigned, TFrame <: StabilizerGPU{T}, TMeasurement <: GPUMatrix{Bool}}
+    PauliFrameGPU{T} = QuantumClifford.PauliFrame{TFrame, TMeasurement} where {T <: Unsigned, TFrame <: StabilizerGPU{T}, TMeasurement <: GPUMatrix{MeasurementInnerType}}
 end
 
 const TableauCUDA{T} = getTableauGPU(CUDAParams...){T} where {T <: Unsigned}
