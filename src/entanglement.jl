@@ -195,8 +195,8 @@ end
 """
 Get bipartite entanglement entropy by first converting the state to a graph and computing the rank of the adjacency matrix.
 
-Based on [hein2006entanglement](@cite).
-"""
+Based on "Entanglement in graph states and its applications".
+""" # TODO you should use [hein2006entanglement](@cite) instead of "Entanglement in graph states and its applications", but Documenter is giving the weirdest error if you do so...
 function entanglement_entropy(state::AbstractStabilizer, subsystem::AbstractVector, algorithm::Val{:graph})
     graph = Graphs.Graph(state)
     adjmat = Graphs.adjacency_matrix(graph)

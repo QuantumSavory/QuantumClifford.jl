@@ -1,18 +1,20 @@
 using Test
 using QuantumClifford
 using QuantumClifford: mul_left!
-using QuantumClifford.ECC: AbstractECC, Steane7, Shor9, Bitflip3, naive_syndrome_circuit, encoding_circuit, shor_syndrome_circuit, code_n, code_s
+using QuantumClifford.ECC: AbstractECC, Steane7, Shor9, Perfect5, Bitflip3, Cleve8, naive_syndrome_circuit, naive_encoding_circuit, shor_syndrome_circuit, code_n, code_s, parity_checks
 
 codes = [
     Bitflip3(),
     Steane7(),
     Shor9(),
+    Perfect5(),
+    Cleve8()
 ]
 
 ##
 
 function pframe_naive_vs_shor_syndrome(code)
-    ecirc = encoding_circuit(code)
+    ecirc = naive_encoding_circuit(code)
     naive_scirc, naive_ancillaries = naive_syndrome_circuit(code)
     shor_cat_scirc, shor_scirc, shor_ancillaries, shor_bits = shor_syndrome_circuit(code)
     nframes = 10

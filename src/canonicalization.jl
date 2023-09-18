@@ -258,5 +258,6 @@ function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) w
     end
     zperm, s = gott_standard_form_indices((@view xzs[end÷2+1:end,:]),rows,columns,skip=r)
     permute!(stabilizer,zperm)
+    # we have r+s==rows (or we have trailing rows that are zeroed)
     stabilizer, r, s, xperm, zperm
 end

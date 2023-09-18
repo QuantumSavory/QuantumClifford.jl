@@ -283,11 +283,24 @@ end
 @qubitop2 XCY    (x1⊻x2⊻z2, z1       , z1⊻x2 , z2⊻z1   , ~iszero( (z1 & (x2 ⊻ z2) & ~(x2 ⊻ x1)) ))
 @qubitop2 XCZ    (x1⊻x2   , z1       , x2    , z2⊻z1   , ~iszero( (x2 & z1) & ~(x1 ⊻ z2) )) # equiv to CNOT[2, 1]
 
-@qubitop2 YCX    (x1⊻z2   , z2⊻z1    , x1⊻z1⊻x2 , z2    , ~iszero( (z2 & (x1 ⊻ z1) & ~(x2 ⊻ x1)) ))
+@qubitop2 YCX    (x1⊻z2   , z2⊻z1    , x1⊻z1⊻x2 , z2      , ~iszero( (z2 & (x1 ⊻ z1) & ~(x2 ⊻ x1)) ))
 @qubitop2 YCY    (x1⊻z2⊻x2, z1⊻x2⊻z2 , x1⊻x2⊻z1 , x1⊻z1⊻z2, ~iszero( (x1 & ~z1 & ~x2 & z2) | (~x1 & z1 & x2 & ~z2)))
-@qubitop2 YCZ    (x1⊻x2   , x2⊻z1    , x2        , z2⊻x1⊻z1, ~iszero( (x2 & (x1 ⊻ z1) & (z2 ⊻ x1)) ))
+@qubitop2 YCZ    (x1⊻x2   , x2⊻z1    , x2       , z2⊻x1⊻z1, ~iszero( (x2 & (x1 ⊻ z1) & (z2 ⊻ x1)) ))
 
+@qubitop2 ZCrY  (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & ~z1 & x2) | (x1 & ~z1 & ~z2) | (x1 & x2 & ~z2)))
 
+#=
+To get the boolean formulas for the phase, it is easiest to first write down the truth table for the phase:
+for i in 0:15
+    s=S"__"
+    d=tuple(Bool.(digits(i,base=2,pad=4))...)
+    s[1,1]=d[1:2]
+    s[1,2]=d[3:4]
+    println("$(Int.(d)) $(phases(explicit_tableaux*s)[1]÷2)")
+end
+Then we can use a truth-table to boolean formula converter, e.g. https://www.dcode.fr/boolean-expressions-calculator
+(by just writing the initial unsimplified formula as the OR of all true rows of the table)
+=#
 
 function CliffordOperator(op::AbstractTwoQubitOperator, n; compact=false)
     if compact

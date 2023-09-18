@@ -12,7 +12,7 @@ Consider Steane 7-qubit code:
 
 ```@example 1
 using QuantumClifford
-using QuantumClifford.ECC: Steane7, naive_syndrome_circuit, encoding_circuit, parity_checks, code_s, code_n
+using QuantumClifford.ECC: Steane7, naive_syndrome_circuit, naive_encoding_circuit, parity_checks, code_s, code_n
 using Quantikz
 
 code = Steane7()
@@ -21,7 +21,7 @@ H = parity_checks(code)
 
 ... and the corresponding encoding circuit
 ```@example 1
-ecirc = encoding_circuit(code)
+ecirc = naive_encoding_circuit(code)
 ```
 
 ... and the corresponding syndrome measurement circuit (the non-fault tolerant one)

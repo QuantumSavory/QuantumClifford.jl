@@ -15,13 +15,13 @@ ENV["COLUMNS"] = 80
 bib = CitationBibliography(joinpath(@__DIR__,"src/references.bib"),style=:authoryear)
 
 makedocs(
-bib,
+plugins = [bib],
 doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
-format = Documenter.HTML(),
+format = Documenter.HTML(size_threshold_ignore = ["API.md"]),
 modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumInterface],
-strict = Documenter.except(:missing_docs),
+warnonly = [:missing_docs],
 authors = "Stefan Krastanov",
 pages = [
 "QuantumClifford.jl" => "index.md",

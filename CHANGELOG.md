@@ -6,6 +6,10 @@
 
 # News
 
+## v0.8.17 - dev
+- **(fix)** Some `affectedqubits` methods were returning single integers instead of a one-tuple.
+- The non-public `ECC` module has seen a few improvements (a `naive_encoding_circuit` implementation and a few new codes), as well as some breaking changes to API.
+
 ## v0.8.16 - 2023-08-31
 
 - **(breaking)** Changes to the circuit generation in the non-public ECC module. Adding a Shor syndrome measurement circuit.

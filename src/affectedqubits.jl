@@ -1,8 +1,8 @@
 """A method giving the qubits acted upon by a given operation. Part of the Noise interface."""
 function affectedqubits end
-affectedqubits(g::AbstractSingleQubitOperator) = (g.q)
+affectedqubits(g::AbstractSingleQubitOperator) = (g.q,)
 affectedqubits(g::AbstractTwoQubitOperator) = (g.q1, g.q2)
-affectedqubits(g::NoisyGate) = affectedqubits(g.gate)
+affectedqubits(g::NoisyGate) = affectedqubits(g.gate,)
 affectedqubits(g::SparseGate) = g.indices
 affectedqubits(b::BellMeasurement) = map(m->m.qubit, b.measurements)
 affectedqubits(r::Reset) = r.indices

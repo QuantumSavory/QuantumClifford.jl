@@ -50,6 +50,7 @@ export
     sHadamard, sPhase, sInvPhase, SingleQubitOperator, sId1, sX, sY, sZ,
     sCNOT, sCPHASE, sSWAP,
     sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZCX, sZCY, sZCZ,
+    sZCrY,
     # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
@@ -504,6 +505,11 @@ operators are tracked as well.
 When the constructor is called on an incomplete [`Stabilizer`](@ref) it
 automatically calculates the destabilizers and logical operators, following
 chapter 4 of [gottesman1997stabilizer](@cite).
+Under the hood the conversion uses the [`canonicalize_gott!`](@ref) canonicalization.
+That canonicalization permutes the columns of the tableau, but we automatically undo the
+column permutation in the preparation of a `MixedDestabilizer` so that qubits are not reindexed.
+The boolean keyword arguments `undoperm` and `reportperm` can be used to control this behavior
+and to report the permutations explicitly.
 
 See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
 """
@@ -513,7 +519,7 @@ mutable struct MixedDestabilizer{T<:Tableau} <: AbstractStabilizer
 end
 
 # Added a lot of type assertions to help Julia infer types
-function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true) where {T}
+function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false) where {T}
     rows,n = size(stab)
     stab, r, s, permx, permz = canonicalize_gott!(copy(stab))
     t = zero(T, n*2, n)
@@ -550,8 +556,13 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true) where {T}
     end
     if undoperm
         t = t[:,invperm(permx[permz])]::T
+        return MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
     end
-    MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
+    if reportperm
+        return (MixedDestabilizer(t, r+s)::MixedDestabilizer{T}, r, permx, permz)
+    else
+        return MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
+    end
 end
 
 function MixedDestabilizer(d::Destabilizer, r::Int)
