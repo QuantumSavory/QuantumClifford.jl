@@ -1,18 +1,25 @@
 module ECC
 
 using LinearAlgebra
-using QuantumClifford
-using QuantumClifford: AbstractOperation, AbstractStabilizer
+using QuantumClifford, CairoMakie, SparseArrays, LDPCDecoders
+using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer
+import QuantumClifford.ECC: parity_checks
 using DocStringExtensions
 using Combinatorics: combinations
+using Statistics: std
+using LinearAlgebra: rank
 
 abstract type AbstractECC end
 
 export Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     parity_checks, naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     code_n, code_s, code_k, rate, distance,
-    isdegenerate, faults_matrix
+    isdegenerate, faults_matrix, CSS_Code, Bicycle_Code, Unicycle_Code, Circ2BicycleH0, 
+    Circ2UnicycleH0, AssembleCSS, BicycleSetGen, BicycleSetGenRand, GetCodeTableau, 
+    GetXTableau, GetZTableau, parity_checks, ReduceBicycle, ReduceUnicycle, 
+    create_lookup_table, evaluate_code_decoder_w_ecirc_pf, plot_code_performance, pf_encoding_plot
+    
 
 """Parity check tableau of a code."""
 function parity_checks end
@@ -289,6 +296,8 @@ function isdegenerate(H::Stabilizer, d::Int=1)
 end
 
 include("circuits.jl")
+include("code_generation.jl")
+include("code_evaluation.jl")
 
 include("codes/bitflipcode.jl")
 include("codes/fivequbit.jl")
