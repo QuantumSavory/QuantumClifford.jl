@@ -8,6 +8,11 @@ end
 CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
 
+!!! warning "The documentation is incomplete"
+    Waiting for a better documentation than the small example below.
+    Check out also the page on [ECC performance evaluators](@ref ecc_evaluating)
+
+
 Consider Steane 7-qubit code:
 
 ```@example 1

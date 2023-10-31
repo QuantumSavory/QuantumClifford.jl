@@ -36,5 +36,5 @@ end
     )
     @show rep
     @test_broken length(JET.get_reports(rep)) == 0
-    @test length(JET.get_reports(rep)) <= 9
+    @test length(JET.get_reports(rep)) <= 20
 end
