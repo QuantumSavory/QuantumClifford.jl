@@ -1,14 +1,20 @@
 using Test
 using QuantumClifford
 using QuantumClifford: mul_left!
-using QuantumClifford.ECC: AbstractECC, Steane7, Shor9, Perfect5, Bitflip3, Cleve8, naive_syndrome_circuit, naive_encoding_circuit, shor_syndrome_circuit, code_n, code_s, parity_checks
+using QuantumClifford.ECC
+using QuantumClifford.ECC: AbstractECC
 
 codes = [
     Bitflip3(),
     Steane7(),
     Shor9(),
     Perfect5(),
-    Cleve8()
+    Cleve8(),
+    CSS([0 1 1 0; 1 1 0 0], [1 1 1 1]),
+    Toric(3,3),
+    Toric(3,6),
+    Toric(6,4),
+    Toric(8,8),
 ]
 
 ##

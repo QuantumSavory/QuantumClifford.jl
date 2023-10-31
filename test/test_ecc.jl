@@ -1,6 +1,7 @@
 using Test
 using QuantumClifford
-using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, Perfect5, naive_syndrome_circuit, code_n, parity_checks, naive_encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, isdegenerate
+using QuantumClifford.ECC
+using QuantumClifford.ECC: AbstractECC
 
 codes = [
     Bitflip3(),
@@ -8,6 +9,7 @@ codes = [
     Shor9(),
     Perfect5(),
     Cleve8(),
+    CSS([0 1 1 0; 1 1 0 0], [1 1 1 1]),
 ]
 
 ##

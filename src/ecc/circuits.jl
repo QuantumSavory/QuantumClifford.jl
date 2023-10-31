@@ -142,7 +142,7 @@ Use the `ancillary_index` and `bit_index` arguments to offset where the correspo
 Ancillary qubits
 
 Returns:
-  - The cat state preparation circuit.
+  - The ancillary cat state preparation circuit.
   - The Shor syndrome measurement circuit.
   - The number of ancillary qubits that were added.
   - The list of bit indices that store the final measurement results.
@@ -165,7 +165,7 @@ and stores the measurement result into classical bits starting at `bit_index`.
 The final measurement result is the XOR of all the bits.
 
 Returns:
-  - The cat state preparation circuit.
+  - The ancillary cat state preparation circuit.
   - The Shor syndrome measurement circuit.
   - One more than the index of the last added ancillary qubit.
   - One more than the index of the last added classical bit.

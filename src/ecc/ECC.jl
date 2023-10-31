@@ -2,20 +2,52 @@ module ECC
 
 using LinearAlgebra
 using QuantumClifford
-using QuantumClifford: AbstractOperation, AbstractStabilizer
+using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer
 using DocStringExtensions
 using Combinatorics: combinations
+using SparseArrays: sparse
+using Statistics: std
+using Nemo: ZZ, residue_ring, matrix
 
 abstract type AbstractECC end
 
-export Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
-    parity_checks, naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
+export parity_checks, parity_checks_x, parity_checks_z,
     code_n, code_s, code_k, rate, distance,
-    isdegenerate, faults_matrix
+    isdegenerate, faults_matrix,
+    naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
+    RepCode,
+    CSS,
+    Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
+    Toric,
+    evaluate_decoder,
+    CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
+    TableDecoder,
+    BeliefPropDecoder,
+    PyBeliefPropDecoder, PyMatchingDecoder
 
-"""Parity check tableau of a code."""
+"""Parity check tableau of a code.
+
+See also: [`parity_checks_x`](@ref) and [`parity_checks_z`](@ref)"""
 function parity_checks end
+
+"""Parity check boolean matrix of a code (only the X entries in the tableau, i.e. the checks for Z errors).
+
+Only CSS codes have this method.
+
+See also: [`parity_checks`](@ref)"""
+function parity_checks_x(code::AbstractECC)
+    throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
+end
+
+"""Parity check boolean matrix of a code (only the Z entries in the tableau, i.e. the checks for X errors).
+
+Only CSS codes have this method.
+
+See also: [`parity_checks`](@ref)"""
+function parity_checks_z(code::AbstractECC)
+    throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
+end
 
 parity_checks(s::Stabilizer) = s
 Stabilizer(c::AbstractECC) = parity_checks(c)
@@ -73,10 +105,10 @@ a 2k × 2n binary matrix O such that
 is flipped by the single physical qubit error of index `j`.
 Indexing is such that:
 
-- `O[1:k,:]` is the error-to-logical-X map
-- `O[k+1:2k,:]` is the error-to-logical-Z map
-- `O[:,1:n]` is the X-physical-error-to-logical map
-- `O[n+1:2n,:]` is the Z-physical-error-to-logical map
+- `O[1:k,:]` is the error-to-logical-X-observable map (logical X observable, i.e. triggered by logical Z errors)
+- `O[k+1:2k,:]` is the error-to-logical-Z-observable map
+- `O[:,1:n]` is the X-physical-error-to-logical-observable map
+- `O[n+1:2n,:]` is the Z-physical-error-to-logical-observable map
 
 E.g. for `k=1`, `n=10`, then
 if `O[2,5]` is true, then the logical Z observable is flipped by a X₅ error;
@@ -291,11 +323,16 @@ function isdegenerate(H::Stabilizer, d::Int=1)
 end
 
 include("circuits.jl")
+include("decoder_pipeline.jl")
 
+include("codes/util.jl")
+include("codes/classical_codes.jl")
+include("codes/css.jl")
 include("codes/bitflipcode.jl")
 include("codes/fivequbit.jl")
 include("codes/steanecode.jl")
 include("codes/shorcode.jl")
 include("codes/clevecode.jl")
+include("codes/toric.jl")
 
 end #module

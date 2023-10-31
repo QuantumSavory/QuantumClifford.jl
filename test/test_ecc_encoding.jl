@@ -1,7 +1,6 @@
 using Test
 using QuantumClifford
-using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, Perfect5,
-    naive_syndrome_circuit, naive_encoding_circuit, code_n, parity_checks, code_s, code_k
+using QuantumClifford.ECC
 
 ##
 
@@ -19,6 +18,11 @@ using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, Perfec
         :(S"Y_"),
         :(S"Z_"),
         :(S"X_"),
+        :(CSS([0 1 1 0; 1 1 0 0], [1 1 1 1])),
+        :(Toric(3,3)),
+        :(Toric(3,6)),
+        :(Toric(6,4)),
+        :(Toric(8,8)),
         fill(:(random_stabilizer(5,7)), 100)...
         ]
 
