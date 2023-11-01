@@ -4,7 +4,6 @@ using LinearAlgebra
 using QuantumClifford, CairoMakie, SparseArrays, LDPCDecoders
 using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer
-import QuantumClifford.ECC: parity_checks
 using DocStringExtensions
 using Combinatorics: combinations
 using Statistics: std
