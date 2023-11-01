@@ -1,7 +1,7 @@
 module ECC
 
 using LinearAlgebra
-using QuantumClifford, CairoMakie, SparseArrays, LDPCDecoders
+using QuantumClifford, SparseArrays, LDPCDecoders
 using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer
 using DocStringExtensions
@@ -296,7 +296,6 @@ end
 
 include("circuits.jl")
 include("code_generation.jl")
-include("code_evaluation.jl")
 
 include("codes/bitflipcode.jl")
 include("codes/fivequbit.jl")
