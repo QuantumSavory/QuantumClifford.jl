@@ -14,10 +14,11 @@ abstract type AbstractECC end
 export Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     parity_checks, naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     code_n, code_s, code_k, rate, distance,
-    isdegenerate, faults_matrix, CSS_Code, Bicycle_Code, Unicycle_Code, Circ2BicycleH0, 
-    Circ2UnicycleH0, AssembleCSS, BicycleSetGen, BicycleSetGenRand, GetCodeTableau, 
-    GetXTableau, GetZTableau, parity_checks, ReduceBicycle, ReduceUnicycle, 
-    create_lookup_table, evaluate_code_decoder_w_ecirc_pf, plot_code_performance, pf_encoding_plot
+    Unicycle, Bicycle,
+    CSS, get_xzs
+    # is_degenerate, faults_matrix, CSSCode, BicycleCode, UnicycleCode, circ_to_bicycle_h0, 
+    # circ_to_unicycle_h0, assemble_css, bicycle_set_gen, bicycle_set_gen_rand, 
+    # get_x_tableau, get_z_tableau, parity_checks, reduce_bicycle, reduce_unicycle
     
 
 """Parity check tableau of a code."""
@@ -295,7 +296,8 @@ function isdegenerate(H::Stabilizer, d::Int=1)
 end
 
 include("circuits.jl")
-include("code_generation.jl")
+include("css.jl")
+include("simple_sparse_codes.jl")
 
 include("codes/bitflipcode.jl")
 include("codes/fivequbit.jl")

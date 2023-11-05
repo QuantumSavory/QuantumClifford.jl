@@ -1,21 +1,34 @@
-# using QuantumClifford: Stabilizer
-# using QuantumClifford.ECC: AbstractECC
-# import QuantumClifford.ECC: parity_checks
-# using Statistics:std
-# using Nemo: residue_ring, matrix
-# using LinearAlgebra: rank
+# Currently just has Bicycle and Unicycle codes, but open to all types of rudimentary sparse codes
 
-"""Struct for arbitrary CSS error correcting codes.
+"""Takes a height and width of matrix and generates a bicycle code to the specified height and width.
 
-This struct holds:
-    - tab: Boolean matrix with the X part taking up the left side and the Z part taking up the right side
-    - stab: Stabilizer of the parity check matrix
-    - n: Block length
-    - d: Code distance"""
-struct CSS <: AbstractECC
-    tab::Matrix{Bool}
-    stab::Stabilizer
-    n::Int
+Parameters:
+- n: width of array, should be >= 2
+- m: height of array, should be >= 2 and a multiple of 2"""
+function Bicycle(n::Integer, m::Integer)
+    if m%2 == 1
+        throw(DomainError(m, " M should be a multiple for 2 for bicycle codes."))
+    end
+    if m < 2
+        throw(DomainError(m, " M is too small, make it greater than 1."))
+    end
+    bs = bicycle_set_gen(n/2)
+    bsc = circ_to_bicycle_h0(bs, n/2)
+    while size(bsc)[2] > m/2
+        bsc = reduce_bicycle(bsc)
+    end
+    return assemble_css(bsc, bsc)
+end
+
+"""Takes a height and width of matrix and generates a bicycle code to the specified height and width.
+
+Parameters:
+- n: width of array, should be >= 1
+- set: array of indices that are 'active' checks in the circulant code"""
+function Unicycle(n::Integer, set::Array{Integer})
+    usc = circ_to_unicycle_h0(bs, n)
+    usc = reduce_bicycle(usc)
+    return assemble_css(usc, usc)
 end
 
 """Takes an untrimmed bicycle matrix and removes the row which keeps the spread of the column weights minimal.
@@ -24,7 +37,7 @@ Required before the bicycle code can be used.
 
 Typical usage:
 ReduceBicycle(Circ2BicycleH0(array_indices, (block length / 2) ) )"""
-function ReduceBicycle(H0::Matrix{Bool})
+function reduce_bicycle(H0::Matrix{Bool})
     m, n = size(H0)
     r_i = 0
     std_min = Inf
@@ -45,7 +58,7 @@ For example:
 Circ2BicycleH0([1, 2, 4], 7)
 
 See https://arxiv.org/abs/quant-ph/0304161 for more details"""
-function Circ2BicycleH0(circ_indices::Array{Int}, n::Int)
+function circ_to_bicycle_h0(circ_indices::Array{Int}, n::Int)
     circ_arr = Array{Bool}(undef, n)
     circ_matrix = Matrix{Bool}(undef, n, n)
     comp_matrix = Matrix{Bool}(undef, n, 2*n)
@@ -73,7 +86,7 @@ Required before the unicycle code can be used.
 
 Typical usage:
 ReduceUnicycle(Circ2UnicycleH0(array_indices, block length) )"""
-function ReduceUnicycle(m::Matrix{Bool})
+function reduce_unicycle(m::Matrix{Bool})
     r = LinearAlgebra.rank(nm7)
     rrzz = Nemo.residue_ring(Nemo.ZZ, 2)
     for i in 1:size(u7)[1]
@@ -96,7 +109,7 @@ For example:
 Circ2UnicycleH0([1, 2, 4], 7)
 
 See https://arxiv.org/abs/quant-ph/0304161 for more details"""
-function Circ2UnicycleH0(circ_indices::Array{Int}, n::Int)
+function circ_to_unicycleH0(circ_indices::Array{Int}, n::Int)
     circ_arr = fill(false, n)
     one_col = transpose(fill(true, n))
     circ_matrix = Matrix{Bool}(undef, n, n)
@@ -119,28 +132,8 @@ function Circ2UnicycleH0(circ_indices::Array{Int}, n::Int)
     return comp_matrix
 end
 
-function AssembleCSS end
-
-"""Creates a CSS code using the two provided matrices where H contains the X checks and G contains the Z checks."""
-function AssembleCSS(H::Matrix{Bool}, G::Matrix{Bool})::CSS
-    Hy, Hx = size(H)
-    Gy, Gx = size(G)
-    comp_matrix = fill(false, (Hy + Gy, Hx + Gx))
-    # comp_matrix = Matrix{Bool}(undef, Hy + Gy, Hx + Gx)
-    comp_matrix[1:Hy, 1:Hx] = H
-    comp_matrix[Hy+1:end, Hx+1:end] = G
-    pcm_stab = Stabilizer(fill(0x0, Hy+Gy), GetXTableau(comp_matrix), GetZTableau(comp_matrix))
-    return CSS(comp_matrix, pcm_stab, Hx)
-    # return comp_matrix
-end
-
-"""Creates a CSS code using the provided matrix for the X and Z checks."""
-function AssembleCSS(H::Matrix{Bool})::CSS
-    return AssembleCSS(H, H)
-end
-
 """Attempts to generate a list of indices to be used in a bicycle code using a search method"""
-function BicycleSetGen(N::Int)
+function bicycle_set_gen(N::Int)
     circ_arr::Array{Int} = [0]
     diff_arr::Array{Int} = []
     circ_arr[1] = 0
@@ -185,7 +178,7 @@ end
 """Attempts to generate a list of indices to be used in a bicycle code using a randomized check method
 
 Note: This is very slow for large N"""
-function BicycleSetGenRand(N::Int, d::Int)
+function bicycle_set_gen_rand(N::Int, d::Int)
     circ_arr::Array{Int} = [0]
     diff_arr::Array{Int} = []
     atmp_add::Array{Int} = [0]
@@ -235,64 +228,3 @@ function BicycleSetGenRand(N::Int, d::Int)
     end
     return circ_arr
 end
-
-"""Takes in a boolean Matrix and returns the parity check tableau as a string of characters.
-
-Note: Only works when the block length for the X and Z checks are the same!"""
-function GetCodeTableau(ecc::Matrix{Bool})
-    eccx = size(ecc)[2]
-    eccy = size(ecc)[1]
-    ps::String = ""
-    for i = 1:size(ecc)[1]
-        for j = 1:(Int(size(ecc)[2]/2))
-            if (ecc[i, j] == 0) && (ecc[i, j + Int(eccx / 2)] == 0)
-                ps = string(ps, "I")
-            elseif (ecc[i, j] == 1) && (ecc[i, j + Int(eccx / 2)] == 0)
-                ps = string(ps, "X")
-            elseif (ecc[i, j] == 1) && (ecc[i, j + Int(eccx / 2)] == 1)
-                ps = string(ps, "Y")
-            else
-                ps = string(ps, "Z")
-           end
-        end
-        ps = string(ps,"\n")
-    end
-    return ps
-end
-
-"""Takes in a matrix and returns just the X checks portion while keeping the full height of the matrix.
-
-Note: Only works when the block length for the X and Z checks are the same!"""
-function GetXTableau(ecc::Matrix{Bool})
-   return ecc[1:size(ecc)[1], 1:Int(size(ecc)[2]/2)]
-end
-
-"""Takes in a matrix and returns just the Z checks portion while keeping the full height of the matrix.
-
-Note: Only works when the block length for the X and Z checks are the same!"""
-function GetZTableau(ecc::Matrix{Bool})
-   return ecc[1:size(ecc)[1], Int(size(ecc)[2]/2) + 1:end]
-end
-
-"""Takes in a matrix and returns just the X checks portion while keeping the full height of the matrix.
-
-Note: Only works when the block length for the X and Z checks are the same!"""
-function GetXTableau(ecc::CSS)
-   return GetXTableau(ecc.tab)
-end
-
-"""Takes in a matrix and returns just the Z checks portion while keeping the full height of the matrix.
-
-Note: Only works when the block length for the X and Z checks are the same!"""
-function GetZTableau(ecc::CSS)
-   return GetZTableau(ecc.tab)
-end
-
-"""Returns the matrix form of the X and Z checks."""
-tableau(c::CSS) = c.tab
-
-"""Returns the stabilizer making up the parity check tableau."""
-parity_checks(c::CSS) = c.stab
-
-"""Returns the block length of the code."""
-code_n(c::CSS) = c.n
