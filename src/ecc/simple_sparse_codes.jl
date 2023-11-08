@@ -5,7 +5,7 @@
 Parameters:
 - n: width of array, should be >= 2
 - m: height of array, should be >= 2 and a multiple of 2"""
-function Bicycle(n::Integer, m::Integer)
+function Bicycle(n::Int, m::Int)
     if m%2 == 1
         throw(DomainError(m, " M should be a multiple for 2 for bicycle codes."))
     end
@@ -25,7 +25,7 @@ end
 Parameters:
 - n: width of array, should be >= 1
 - set: array of indices that are 'active' checks in the circulant code"""
-function Unicycle(n::Integer, set::Array{Integer})
+function Unicycle(n::Int, set)
     usc = circ_to_unicycle_h0(bs, n)
     usc = reduce_bicycle(usc)
     return assemble_css(usc, usc)
