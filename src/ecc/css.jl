@@ -1,5 +1,5 @@
 """An arbitrary CSS error correcting code defined by its X and Z checks."""
-struct CSS <: ECC
+struct CSS <: AbstractECC
     tab
 end
 

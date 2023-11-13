@@ -12,12 +12,12 @@ function Bicycle(n::Int, m::Int)
     if m < 2
         throw(DomainError(m, " M is too small, make it greater than 1."))
     end
-    bs = bicycle_set_gen(n/2)
-    bsc = circ_to_bicycle_h0(bs, n/2)
-    while size(bsc)[2] > m/2
+    bs = bicycle_set_gen(Int(n/2))
+    bsc = circ_to_bicycle_h0(bs, Int(n/2))
+    while size(bsc)[1] > m/2
         bsc = reduce_bicycle(bsc)
     end
-    return assemble_css(bsc, bsc)
+    return CSS(bsc, bsc)
 end
 
 """Takes a height and width of matrix and generates a bicycle code to the specified height and width.
@@ -26,9 +26,9 @@ Parameters:
 - n: width of array, should be >= 1
 - set: array of indices that are 'active' checks in the circulant code"""
 function Unicycle(n::Int, set)
-    usc = circ_to_unicycle_h0(bs, n)
-    usc = reduce_bicycle(usc)
-    return assemble_css(usc, usc)
+    usc = circ_to_unicycle_h0(set, n)
+    rusc = reduce_unicycle(usc)
+    return CSS(rusc, rusc)
 end
 
 """Takes an untrimmed bicycle matrix and removes the row which keeps the spread of the column weights minimal.
@@ -87,11 +87,12 @@ Required before the unicycle code can be used.
 Typical usage:
 ReduceUnicycle(Circ2UnicycleH0(array_indices, block length) )"""
 function reduce_unicycle(m::Matrix{Bool})
-    r = LinearAlgebra.rank(nm7)
-    rrzz = Nemo.residue_ring(Nemo.ZZ, 2)
-    for i in 1:size(u7)[1]
+    rrzz = residue_ring(ZZ, 2)
+    nm = matrix(rrzz, m)
+    r = LinearAlgebra.rank(nm)
+    for i in 1:size(m)[1]
         tm = vcat(m[1:i-1,:], m[i+1:end,:])
-        tr = LinearAlgebra.rank(Nemo.matrix(rrzz, tm))
+        tr = LinearAlgebra.rank(matrix(rrzz, tm))
         if(tr == r)
             m = tm
             i -= 1
@@ -109,7 +110,7 @@ For example:
 Circ2UnicycleH0([1, 2, 4], 7)
 
 See https://arxiv.org/abs/quant-ph/0304161 for more details"""
-function circ_to_unicycleH0(circ_indices::Array{Int}, n::Int)
+function circ_to_unicycle_h0(circ_indices::Array{Int}, n::Int)
     circ_arr = fill(false, n)
     one_col = transpose(fill(true, n))
     circ_matrix = Matrix{Bool}(undef, n, n)
