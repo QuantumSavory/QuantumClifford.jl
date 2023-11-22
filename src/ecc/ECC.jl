@@ -234,10 +234,13 @@ We just gather all our syndrome measurement **and logical observables** from the
 and then use them with the fault matrix in the syndrome decoding simulation.
 """
 function faults_matrix(c::Stabilizer)
-    s, n = size(c)
-    k = n-s
-    O = falses(2k, 2n)
     md = MixedDestabilizer(c)
+    s, n = size(c)
+    r = rank(md)
+    k = n - r
+    k == n-s || @warn "`faults_matrix` was called on an ECC that has redundant rows (is rank-deficient). `faults_matrix` corrected for that, however this is a frequent source of mistakes and inefficiencies. We advise you remove redundant rows from your ECC."
+    O = falses(2k, 2n)
+
     logviews = [logicalxview(md); logicalzview(md)]
     errors = [one(Stabilizer,n; basis=:X);one(Stabilizer,n)]
     for i in 1:2k
