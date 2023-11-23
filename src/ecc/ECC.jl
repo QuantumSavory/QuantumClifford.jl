@@ -240,7 +240,6 @@ function faults_matrix(c::Stabilizer)
     k = n - r
     k == n-s || @warn "`faults_matrix` was called on an ECC that has redundant rows (is rank-deficient). `faults_matrix` corrected for that, however this is a frequent source of mistakes and inefficiencies. We advise you remove redundant rows from your ECC."
     O = falses(2k, 2n)
-
     logviews = [logicalxview(md); logicalzview(md)]
     errors = [one(Stabilizer,n; basis=:X);one(Stabilizer,n)]
     for i in 1:2k
