@@ -6,7 +6,12 @@
 
 # News
 
-## v0.8.17 - dev
+## v0.8.18 - 2023-11-22
+
+- `ECC.faults_matrix` detects and warns when encountery codes with redundant checks.
+
+## v0.8.17 - 2023-10-17
+
 - **(fix)** Some `affectedqubits` methods were returning single integers instead of a one-tuple.
 - The non-public `ECC` module has seen a few improvements (a `naive_encoding_circuit` implementation and a few new codes), as well as some breaking changes to API.
 
