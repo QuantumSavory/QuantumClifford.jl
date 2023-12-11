@@ -6,6 +6,8 @@ using QuantumClifford: AbstractOperation, AbstractStabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer
 using DocStringExtensions
 using Combinatorics: combinations
+using LDPCDecoders
+using SparseArrays
 
 abstract type AbstractECC end
 
@@ -291,6 +293,7 @@ function isdegenerate(H::Stabilizer, d::Int=1)
 end
 
 include("circuits.jl")
+include("pipelines.jl")
 
 include("codes/bitflipcode.jl")
 include("codes/fivequbit.jl")
