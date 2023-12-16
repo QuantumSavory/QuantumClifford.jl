@@ -6,6 +6,10 @@
 
 # News
 
+## v0.8.19 - 2023-12-16
+
+- Bumping up the lower bounds of many dependencies and adding lower-bound compatibility checks to CI.
+
 ## v0.8.18 - 2023-11-22
 
 - `ECC.faults_matrix` detects and warns when encountery codes with redundant checks.
