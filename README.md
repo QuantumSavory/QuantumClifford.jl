@@ -11,7 +11,8 @@
     <tr>
         <td>Continuous integration</td>
         <td>
-            <a href="https://github.com/QuantumSavory/QuantumClifford.jl/actions?query=workflow%3ACI+branch%3Amaster"><img src="https://img.shields.io/github/actions/workflow/status/QuantumSavory/QuantumClifford.jl/ci.yml?branch=master" alt="GitHub Workflow Status"></a>
+            <a href="https://github.com/QuantumSavory/QuantumClifford.jl/actions?query=workflow%3ACI+branch%3Amaster"><img src="https://github.com/QuantumSavory/QuantumSavory.jl/actions/workflows/ci.yml/badge.svg" alt="GitHub Workflow Status"></a>
+            <a href="https://buildkite.com/quantumsavory/quantumclifford"><img src="https://badge.buildkite.com/8ef137151415f29c03544c5b7963f6bc6afc1022f29cfc072a.svg" alt="Buildkite Workflow Status"></a>
         </td>
     </tr><tr></tr>
     <tr>
