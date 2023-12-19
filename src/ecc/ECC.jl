@@ -1,7 +1,7 @@
 module ECC
 
 using LinearAlgebra
-using QuantumClifford, SparseArrays, LDPCDecoders
+using QuantumClifford, SparseArrays
 using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer
 using DocStringExtensions
