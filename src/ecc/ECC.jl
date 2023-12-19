@@ -293,13 +293,14 @@ function isdegenerate(H::Stabilizer, d::Int=1)
 end
 
 include("circuits.jl")
-include("css.jl")
-include("simple_sparse_codes.jl")
 
 include("codes/bitflipcode.jl")
 include("codes/fivequbit.jl")
 include("codes/steanecode.jl")
 include("codes/shorcode.jl")
 include("codes/clevecode.jl")
+
+include("codes/css.jl")
+include("codes/simple_sparse_codes.jl")
 
 end #module
