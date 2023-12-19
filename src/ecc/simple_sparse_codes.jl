@@ -85,7 +85,7 @@ end
 Required before the unicycle code can be used.
 
 Typical usage:
-ReduceUnicycle(Circ2UnicycleH0(array_indices, block length) )"""
+`ReduceUnicycle(Circ2UnicycleH0(array_indices, block length) )`"""
 function reduce_unicycle(m::Matrix{Bool})
     rrzz = residue_ring(ZZ, 2)
     nm = matrix(rrzz, m)
