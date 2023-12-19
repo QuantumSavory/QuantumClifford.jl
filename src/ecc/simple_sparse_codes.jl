@@ -107,7 +107,7 @@ end
 """Takes a list of indices and creates the base of the unicycle matrix.
 
 For example:
-Circ2UnicycleH0([1, 2, 4], 7)
+`Circ2UnicycleH0([1, 2, 4], 7)`
 
 See https://arxiv.org/abs/quant-ph/0304161 for more details"""
 function circ_to_unicycle_h0(circ_indices::Array{Int}, n::Int)
