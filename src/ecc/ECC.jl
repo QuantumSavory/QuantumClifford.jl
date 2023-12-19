@@ -7,7 +7,6 @@ import QuantumClifford: Stabilizer, MixedDestabilizer
 using DocStringExtensions
 using Combinatorics: combinations
 using Statistics: std
-using LinearAlgebra: rank
 using Nemo: ZZ, residue_ring, matrix
 
 abstract type AbstractECC end
