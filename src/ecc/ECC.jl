@@ -293,6 +293,7 @@ function isdegenerate(H::Stabilizer, d::Int=1)
 end
 
 include("circuits.jl")
+include("decoder_pipeline.jl")
 
 include("codes/bitflipcode.jl")
 include("codes/fivequbit.jl")
