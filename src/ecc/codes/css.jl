@@ -24,7 +24,7 @@ end
 function parity_checks(c::CSS)
     extended_Hx = Matrix{Bool}(vcat(c.Hx, zeros(size(c.Hz))))
     extended_Hz = Matrix{Bool}(vcat(zeros(size(c.Hx)), c.Hz))
-    Stabilizer(fill(0x0, size(c.Hx, 2) + size(c.Hz, 2)), extended_Hx, extended_Hz)
+    Stabilizer(fill(0x0, size(c.Hx, 1) + size(c.Hz, 1)), extended_Hx, extended_Hz)
 end
 
 """Returns the block length of the code."""
