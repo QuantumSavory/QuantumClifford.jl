@@ -1,11 +1,11 @@
 name: Performance tracking
-
 on:
   pull_request:
 
 jobs:
   performance-tracking:
     runs-on: ubuntu-latest
+    #runs-on: self-hosted
     steps:
       # setup
       - uses: actions/checkout@v4
