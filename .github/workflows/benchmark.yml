@@ -4,8 +4,8 @@ on:
 
 jobs:
   performance-tracking:
-    #runs-on: ubuntu-latest
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    #runs-on: self-hosted
     steps:
       # setup
       - uses: actions/checkout@v4
