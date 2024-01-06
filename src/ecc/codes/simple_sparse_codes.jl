@@ -20,8 +20,14 @@ julia> Bicycle(6,4).Hx
  1  1  0  1  0  1
  1  0  1  0  1  1
 
- julia> typeof(Bicycle(6, 4))
- CSS
+julia> typeof(Bicycle(6, 4))
+CSS
+
+julia> QuantumClifford.stab_looks_good(parity_checks(Bicycle(6, 4)))
+true
+
+julia> QuantumClifford.stab_looks_good(parity_checks(Bicycle(10, 6)))
+true
 ```
 """
 function Bicycle(n::Int, m::Int)
