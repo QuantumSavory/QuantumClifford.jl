@@ -61,6 +61,15 @@ julia> Unicycle(7, [1, 2, 4])
  0  0  0  1  1  0  1  1
  0  1  0  0  0  1  1  1
  1  0  1  0  0  0  1  1
+
+julia> Stabilizer(Unicycle(7, [1, 2, 4]))
++ ZXXZ
++ Z_ZY
++ _YZZ
++ X_YZ
+
+julia> QuantumClifford.stab_looks_good(Stabilizer(Unicycle(7, [1, 2, 4])))
+false
 ```
 """
 function Unicycle(n::Int, set)
