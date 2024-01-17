@@ -4,4 +4,4 @@ LocalPreferences.toml
 */.*swp
 scratch/
 *.cov
-.vscode/settings.json
+.vscode

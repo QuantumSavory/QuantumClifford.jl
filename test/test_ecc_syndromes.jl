@@ -8,7 +8,8 @@ codes = [
     Steane7(),
     Shor9(),
     Perfect5(),
-    Cleve8()
+    Cleve8(),
+    CSS([0 1 1 0; 1 1 0 0], [1 1 1 1])
 ]
 
 ##

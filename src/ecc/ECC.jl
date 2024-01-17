@@ -1,22 +1,22 @@
 module ECC
 
 using LinearAlgebra
-using QuantumClifford, SparseArrays
+using QuantumClifford
 using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer
 using DocStringExtensions
 using Combinatorics: combinations
+using SparseArrays
 using Statistics: std
 using Nemo: ZZ, residue_ring, matrix
 
 abstract type AbstractECC end
 
-export Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
-    parity_checks, naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
-    code_n, code_s, code_k, rate, distance,
+export parity_checks, code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix,
-    Unicycle, Bicycle,
-    CSS
+    naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
+    CSS, Unicycle, Bicycle,
+    Shor9, Steane7, Cleve8, Perfect5, Bitflip3
 
 """Parity check tableau of a code."""
 function parity_checks end
@@ -295,13 +295,12 @@ end
 include("circuits.jl")
 include("decoder_pipeline.jl")
 
+include("codes/css.jl")
 include("codes/bitflipcode.jl")
 include("codes/fivequbit.jl")
 include("codes/steanecode.jl")
 include("codes/shorcode.jl")
 include("codes/clevecode.jl")
-
-include("codes/css.jl")
 include("codes/simple_sparse_codes.jl")
 
 end #module

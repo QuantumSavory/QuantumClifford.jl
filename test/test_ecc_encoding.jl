@@ -19,6 +19,7 @@ using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, Perfec
         :(S"Y_"),
         :(S"Z_"),
         :(S"X_"),
+        :(CSS([0 1 1 0; 1 1 0 0], [1 1 1 1])),
         fill(:(random_stabilizer(5,7)), 100)...
         ]
 

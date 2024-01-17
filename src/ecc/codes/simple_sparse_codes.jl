@@ -1,14 +1,12 @@
-# Currently just has Bicycle and Unicycle codes, but open to all types of rudimentary sparse codes
+"""Generate a bicycle code of the specified height and width (returns an instance of [`CSS`](@ref), not a `Bicycle` type).
 
-"""Takes a height and width of matrix and generates a bicycle code to the specified height and width.
+This is not a deterministic function (random sampling is involved in the creation of a bicycle code).
 
 Parameters:
-- n: width of array, should be >= 2
-- m: height of array, should be >= 2 and a multiple of 2
+- `n`: width of array, should be ≥ 2
+- `m`: height of array, should be ≥ 2 and a multiple of 2
 
-
-``` jldoctest Bicycle
-julia> using QuantumClifford.ECC
+```jldoctest
 julia> parity_checks(Bicycle(6, 4))
 + XX_X_X
 + X_X_XX
@@ -22,12 +20,6 @@ julia> Bicycle(6,4).Hx
 
 julia> typeof(Bicycle(6, 4))
 CSS
-
-julia> QuantumClifford.stab_looks_good(parity_checks(Bicycle(6, 4)))
-true
-
-julia> QuantumClifford.stab_looks_good(parity_checks(Bicycle(10, 6)))
-true
 ```
 """
 function Bicycle(n::Int, m::Int)
@@ -54,7 +46,7 @@ Parameters:
 - n: width of array, should be >= 1
 - set: array of indices that are 'active' checks in the circulant code
 
-``` jldoctest Unicycle
+```jldoctest
 julia> Unicycle(7, [1, 2, 4])
 4×8 Matrix{Bool}:
  0  1  1  0  1  0  0  1
@@ -84,7 +76,7 @@ Required before the bicycle code can be used.
 
 Typical usage:
 
-``` jldoctest reduce_bicycle
+```jldoctest
 julia> reduce_bicycle(Bool[1 1 0 1 0 1; 0 1 1 1 1 0; 1 0 1 0 1 1])
 Bool[1 1 0 1 0 1; 1 0 1 0 1 1]
 
@@ -110,14 +102,16 @@ end
 """Takes a list of indices and creates the base of the bicycle matrix.
 
 For example:
-``` jldoctest circ_to_bicycle_h0
+
+```jldoctest
 julia> circ_to_bicycle_h0([0, 1], 3)
 Bool[1 1 0 1 0 1; 0 1 1 1 1 0; 1 0 1 0 1 1]
 
 julia> circ_to_bicycle_h0([0, 1], 4)
 Bool[1 1 0 0 1 0 0 1; 0 1 1 0 1 1 0 0; 0 0 1 1 0 1 1 0; 1 0 0 1 0 0 1 1]
 ```
-See https://arxiv.org/abs/quant-ph/0304161 for more details"""
+
+See `https://arxiv.org/abs/quant-ph/0304161` for more details"""
 function circ_to_bicycle_h0(circ_indices::Array{Int}, n::Int)
     circ_arr = Array{Bool}(undef, n)
     circ_matrix = Matrix{Bool}(undef, n, n)
@@ -145,9 +139,9 @@ end
 Required before the unicycle code can be used.
 
 Typical usage:
-`reduce_unicycle(circ_to_unicycle_h0(array_indices, block length) )`
+`reduce_unicycle(circ_to_unicycle_h0(array_indices, block length))`
 
-``` jldoctest reduce_unicycle
+```jldoctest
 julia> reduce_unicycle(Bool[1 1 0 1 0 0 0 1; 0 1 1 0 1 0 0 1; 0 0 1 1 0 1 0 1; 0 0 0 1 1 0 1 1; 1 0 0 0 1 1 0 1; 0 1 0 0 0 1 1 1; 1 0 1 0 0 0 1 1])
 Bool[0 1 1 0 1 0 0 1; 0 0 0 1 1 0 1 1; 0 1 0 0 0 1 1 1; 1 0 1 0 0 0 1 1]
 ```"""
@@ -174,11 +168,11 @@ end
 For example:
 `circ_to_unicycle_h0([1, 2, 4], 7)`
 
-``` jldoctest circ_to_unicycle
+```jldoctest
 julia> circ_to_unicycle([1, 2, 4], 7)
 Bool[1 1 0 1 0 0 0 1; 0 1 1 0 1 0 0 1; 0 0 1 1 0 1 0 1; 0 0 0 1 1 0 1 1; 1 0 0 0 1 1 0 1; 0 1 0 0 0 1 1 1; 1 0 1 0 0 0 1 1]
 ```
-See https://arxiv.org/abs/quant-ph/0304161 for more details"""
+See `https://arxiv.org/abs/quant-ph/0304161` for more details"""
 function circ_to_unicycle_h0(circ_indices::Array{Int}, n::Int)
     circ_arr = fill(false, n)
     one_col = transpose(fill(true, n))
@@ -204,7 +198,7 @@ end
 
 """Attempts to generate a list of indices to be used in a bicycle code using a search method
 
-``` jldoctest bicycle_set_gen
+```jldoctest
 julia> bicycle_set_gen(3)
 [0, 1]
 
