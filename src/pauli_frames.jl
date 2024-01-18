@@ -164,7 +164,7 @@ function pftrajectories(circuit;trajectories=5000,threads=true)
 end
 
 function _create_pauliframe(ccircuit; trajectories=5000)
-    qmax=maximum((maximum(affectedqubits(g)) for g in ccircuit))
+    qmax=maximum((maximum(affectedqubits(g),init=1) for g in ccircuit))
     bmax=maximum((maximum(affectedbits(g),init=1) for g in ccircuit))
     return PauliFrame(trajectories, qmax, bmax)
 end

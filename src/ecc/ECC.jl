@@ -16,7 +16,8 @@ export parity_checks, code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     CSS, Unicycle, Bicycle,
-    Shor9, Steane7, Cleve8, Perfect5, Bitflip3
+    Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
+    evaluate_decoder, TableDecoder
 
 """Parity check tableau of a code."""
 function parity_checks end
