@@ -21,8 +21,7 @@ clean = true,
 sitename = "QuantumClifford.jl",
 format = Documenter.HTML(size_threshold_ignore = ["API.md"]),
 modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface],
-warnonly = true, # uncomment if you are having trouble building the docs and are debugging
-#warnonly = [:missing_docs],
+warnonly = [:missing_docs],
 authors = "Stefan Krastanov",
 pages = [
 "QuantumClifford.jl" => "index.md",
