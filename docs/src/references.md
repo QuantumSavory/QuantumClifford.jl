@@ -22,6 +22,12 @@ These publications describe the uniform sampling of random stabilizer states:
 - [berg2020simple](@cite)
 - [li2019measurement](@cite)
 
+For circuit construction routines (for stabilizer measurements for a given code):
+- [cleve1997efficient](@cite)
+- [gottesman1997stabilizer](@cite) (and its erratum)
+- [grassl2002algorithmic](@cite)
+- [grassl2011variations](@cite)
+
 # References
 
 ```@bibliography

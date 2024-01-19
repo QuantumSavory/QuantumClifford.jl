@@ -1,5 +1,13 @@
 # [Evaluating an ECC code and decoders](@id ecc_evaluating)
 
+```@meta
+DocTestSetup = quote
+    using QuantumClifford
+    using QuantumClifford.ECC
+end
+CurrentModule = QuantumClifford.ECC
+```
+
 !!! warning "The documentation is incomplete"
     While waiting for a better documentation than the small example below, consider looking into [`evaluate_decoder`](@ref), [`TableDecoder`](@ref), [`BeliefPropDecoder`](@ref), [`PyBeliefPropDecoder`](@ref), [`PyMatchingDecoder`](@ref), [`CommutationCheckECCSetup`](@ref), [`NaiveSyndromeECCSetup`](@ref), [`ShorSyndromeECCSetup`](@ref)
 
