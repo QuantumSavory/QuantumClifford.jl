@@ -139,3 +139,22 @@ SUITE["circuitsim"]["mctrajectories_sumtype"]["q101_r1"]    = @benchmarkable mct
 SUITE["circuitsim"]["mctrajectories_sumtype"]["q1001_r1"]   = @benchmarkable mctrajectory!(state, circuit) setup=(state=Register(one(Stabilizer, 1001), [false]); circuit=compactify_circuit(x_diag_circuit(1000))) evals=1
 
 end
+
+
+if V >= v"0.8.20"
+
+using QuantumClifford.ECC
+
+SUITE["ecc"] = BenchmarkGroup(["ecc"])
+SUITE["ecc"]["evaluate_decoder"] = BenchmarkGroup(["evaluate_decoder"])
+for (cs, c) in [("shor",Shor9()), ("toric8",Toric(8,8))]
+    for (ds, d) in [
+        [("table",TableDecoder(c)), ("bp",BeliefPropDecoder(c)), ("pybp",PyBeliefPropDecoder(c))]...,
+        (isa(c,Toric) ? [("pymatch",PyMatchingDecoder(c))] : [])...]
+        for (ss, s) in [("comm",CommutationCheckECCSetup(0.01)), ("naivesyn",NaiveSyndromeECCSetup(0.01,0)), ("shorsyn",ShorSyndromeECCSetup(0.01,0))]
+            SUITE["ecc"]["evaluate_decoder"]["$(cs)_$(ds)_$(ss)"] = @benchmark evaluate_decoder($d, $s, 1000)
+        end
+    end
+end
+
+end
