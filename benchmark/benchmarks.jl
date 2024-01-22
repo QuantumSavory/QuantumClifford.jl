@@ -144,6 +144,7 @@ end
 if V >= v"0.8.20"
 
 using QuantumClifford.ECC
+import PyQDecoders, LDPCDecoders
 
 SUITE["ecc"] = BenchmarkGroup(["ecc"])
 SUITE["ecc"]["evaluate_decoder"] = BenchmarkGroup(["evaluate_decoder"])
