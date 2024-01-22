@@ -8,6 +8,8 @@ on:
     branches: [master, main]
     paths-ignore:
       - 'docs/**'
+env:
+  PYTHON: ~
 jobs:
   test:
     runs-on: ubuntu-latest
