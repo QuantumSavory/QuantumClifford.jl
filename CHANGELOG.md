@@ -6,6 +6,10 @@
 
 # News
 
+## v0.8.20 - 2024-01-22
+
+- Significant additions to the `ECC` submodule, with constructors for a few new codes (`Toric` and  generic `CSS`); incorporating many syndrome decoding algorithms (thanks to the `PyQDecoders.jl` and `LDPCDecoders.jl` packages); and providing a convenient API for evaluating code performance in different settings through the new `evaluate_decoder` function.
+
 ## v0.8.19 - 2023-12-16
 
 - Bumping up the lower bounds of many dependencies and adding lower-bound compatibility checks to CI.
