@@ -27,6 +27,7 @@ macro doset(descr)
 end
 
 println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREADS = $(Sys.CPU_THREADS)`...")
+println("ENV[\"PYTHON\"] = \"$(get(ENV,"PYTHON",nothing))\"")
 
 # in order to run the gpu tests automatically set GPU_TESTS to true in the .env file
 if ENV["GPU_TESTS"] == "true"

@@ -4,6 +4,8 @@ on:
     branches: [master, main]
     tags: ["*"]
   pull_request:
+env:
+  PYTHON: ~
 jobs:
   test:
     name: Julia ${{ matrix.version }} - t=${{ matrix.threads }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
