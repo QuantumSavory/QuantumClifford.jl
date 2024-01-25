@@ -167,10 +167,8 @@ function precise_inv(a)::Matrix{UInt8}
 end
 
 function nemo_inv(a, n)::Matrix{UInt8}
-    binaryring = Nemo.residue_ring(Nemo.ZZ, 2) # TODO should I use GF(2) instead of ResidueRing(ZZ, 2)?
-    M = Nemo.matrix_space(binaryring, n, n)
-    inverted = inv(M(Matrix{Int}(a))) # Nemo is very picky about input data types
-    return (x->mod(UInt8(x.data),0x2)).(inverted)
+    inverted = inv(Nemo.matrix(Nemo.GF(2),a))
+    return UInt8.(inverted.==1) # maybe there is a better way to do the conversion
 end
 
 """Sample (h, S) from the distribution P_n(h, S) from Bravyi and Maslov Algorithm 1."""
