@@ -153,7 +153,7 @@ for (cs, c) in [("shor",Shor9()), ("toric8",Toric(8,8))]
         [("table",TableDecoder(c)), ("bp",BeliefPropDecoder(c)), ("pybp",PyBeliefPropDecoder(c))]...,
         (isa(c,Toric) ? [("pymatch",PyMatchingDecoder(c))] : [])...]
         for (ss, s) in [("comm",CommutationCheckECCSetup(0.01)), ("naivesyn",NaiveSyndromeECCSetup(0.01,0)), ("shorsyn",ShorSyndromeECCSetup(0.01,0))]
-            SUITE["ecc"]["evaluate_decoder"]["$(cs)_$(ds)_$(ss)"] = @benchmark evaluate_decoder($d, $s, 1000)
+            SUITE["ecc"]["evaluate_decoder"]["$(cs)_$(ds)_$(ss)"] = @benchmarkable evaluate_decoder($d, $s, 1000)
         end
     end
 end
