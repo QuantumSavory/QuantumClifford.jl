@@ -13,12 +13,12 @@ steps:
       - JuliaCI/julia-test#v1: ~
       - JuliaCI/julia-coverage#v1:
           codecov: true
-#    command: |
-#      julia -e '
-#        using Pkg
-#        Pkg.add("QuantumSavory")
-#        Pkg.build("QuantumSavory")
-#        Pkg.test("QuantumSavory")
-#        Pkg.add("BPGates")
-#        Pkg.build("BPGates")
-#        Pkg.test("BPGates")'
+    command: |
+      julia -e --project='.' '
+        using Pkg
+        Pkg.add("QuantumSavory")
+        Pkg.build("QuantumSavory")
+        Pkg.test("QuantumSavory")
+        Pkg.add("BPGates")
+        Pkg.build("BPGates")
+        Pkg.test("BPGates")'
