@@ -16,10 +16,10 @@ steps:
     command:
       - mkdir -p '$${JULIA_DEPOT_PATH}/conda/3/x86_64'
       - julia --project='.' -e '
-        using Pkg
-        Pkg.add("QuantumSavory")
-        Pkg.build("QuantumSavory")
-        Pkg.test("QuantumSavory")
-        Pkg.add("BPGates")
-        Pkg.build("BPGates")
-        Pkg.test("BPGates")'
+        using Pkg;
+        Pkg.add("QuantumSavory");
+        Pkg.build("QuantumSavory");
+        Pkg.test("QuantumSavory");
+        Pkg.add("BPGates");
+        Pkg.build("BPGates");
+        Pkg.test("BPGates");'
