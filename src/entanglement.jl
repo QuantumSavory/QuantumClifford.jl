@@ -201,7 +201,7 @@ function entanglement_entropy(state::AbstractStabilizer, subsystem::AbstractVect
     graph = Graphs.Graph(state)
     adjmat = Graphs.adjacency_matrix(graph)
     other_subsystem = filter(i->!(i in collect(subsystem)), 1:Graphs.nv(graph))
-    subadjmat = Nemo.matrix(Nemo.residue_ring(Nemo.ZZ, 2), collect(adjmat[subsystem,other_subsystem]))
+    subadjmat = Nemo.matrix(Nemo.GF(2), collect(adjmat[subsystem,other_subsystem]))
     LinearAlgebra.rank(subadjmat)
 end
 
