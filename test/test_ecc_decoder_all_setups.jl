@@ -1,8 +1,15 @@
 using Test
 using QuantumClifford
 using QuantumClifford.ECC
-import PyQDecoders
 
+@testset "is Conda ok" begin
+    # Trigger Python install if required. Required for Buildkite CI!
+    import Conda
+    Conda.list()
+end
+
+# Run this only after checking Conda works
+import PyQDecoders
 
 @testset "table decoder" begin
     codes = [
