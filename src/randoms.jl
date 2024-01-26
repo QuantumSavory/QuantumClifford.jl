@@ -168,7 +168,7 @@ end
 
 function nemo_inv(a, n)::Matrix{UInt8}
     inverted = inv(Nemo.matrix(Nemo.GF(2),a))
-    return UInt8.(inverted.==1) # maybe there is a better way to do the conversion
+    return collect(UInt8.(inverted.==1)) # maybe there is a better way to do the conversion
 end
 
 """Sample (h, S) from the distribution P_n(h, S) from Bravyi and Maslov Algorithm 1."""
