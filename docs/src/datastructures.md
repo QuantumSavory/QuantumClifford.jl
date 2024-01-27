@@ -69,7 +69,7 @@ Notice the results when the projection operator commutes with the state but is n
 
 ## [Bit Packing in Integers and Array Order](@id Bit-Packing-in-Integers-and-Array-Order)
 
-We do not use boolean arrays to store information about the qubits as this would be wasteful (7 out of 8 bits in the boolean would be unused). Instead, we use all 8 qubits in a byte and peform bitwise logical operations as necessary. Implementation details of the object in RAM can matter for performance. The library permits any of the standard `UInt` types to be used for packing the bits, and larger `UInt` types (like `UInt64`) are usually faster as they permit working on 64 qubits at a time (instead of 1 if we used a boolean, or 8 if we used a byte).
+We do not use boolean arrays to store information about the qubits as this would be wasteful (7 out of 8 bits in the boolean would be unused). Instead, we use all 8 qubits in a byte and perform bitwise logical operations as necessary. Implementation details of the object in RAM can matter for performance. The library permits any of the standard `UInt` types to be used for packing the bits, and larger `UInt` types (like `UInt64`) are usually faster as they permit working on 64 qubits at a time (instead of 1 if we used a boolean, or 8 if we used a byte).
 
 Moreover, how a tableau is stored in memory can affect performance, as a row-major storage
 usually permits more efficient use of the CPU cache (for the particular algorithms we use).

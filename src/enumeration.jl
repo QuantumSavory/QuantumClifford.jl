@@ -59,7 +59,7 @@ end
     for i in padded_n+δn+start:2padded_n+1
         comm(basis, δn+start, i)==0x1 && return i
     end
-    # the following hapens only if the input is P"X___..."
+    # the following happens only if the input is P"X___..."
     rowswap!(basis, δn+start, 2padded_n+1; phases=Val(false))
     _findanticommGS(basis, start, n, padded_n, δn)
 end

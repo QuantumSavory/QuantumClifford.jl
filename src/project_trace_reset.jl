@@ -668,7 +668,7 @@ function reset_qubits!(s::Stabilizer, newstate, qubits; phases=true)
     s, x, z = canonicalize!(s,ranks=true) # TODO this is unnecessary, but it provides for nicely formatted tableaux; consider removing it for speed reasons
     _, rref_i = canonicalize_rref!((@view s[1:z]),qubits,phases=phases)
     for row in 1:length(newstate)
-        s[row+rref_i] = _expand_pauli(newstate[row], qubits, n) # TODO do something that does not alocate temporary arrays
+        s[row+rref_i] = _expand_pauli(newstate[row], qubits, n) # TODO do something that does not allocate temporary arrays
     end
     for row in rref_i+length(newstate)+1:z
         zero!(s,row)
@@ -686,7 +686,7 @@ function reset_qubits!(s::MixedStabilizer, newstate, qubits; phases=true) # TODO
     sv = stabilizerview(s)
     sv, rref_i = canonicalize_rref!(sv,qubits,phases=phases)
     for row in 1:length(newstate)
-        s.tab[row+rref_i] = _expand_pauli(newstate[row], qubits, n) # TODO do something that does not alocate temporary arrays
+        s.tab[row+rref_i] = _expand_pauli(newstate[row], qubits, n) # TODO do something that does not allocate temporary arrays
     end
     s.rank = rref_i+length(newstate)
     s

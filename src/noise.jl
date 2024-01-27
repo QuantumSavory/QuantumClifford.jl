@@ -99,7 +99,7 @@ function apply!(s::AbstractQCState, mr::NoiseOp)
     return applynoise!(s, mr.noise, affectedqubits(mr))
 end
 
-# XXX necessary to resolve ambiguitiy between apply!(s::AbstractQCState, mr::Noise) and apply!(r::Register, op)
+# XXX necessary to resolve ambiguity between apply!(s::AbstractQCState, mr::Noise) and apply!(r::Register, op)
 # TODO resolve them in a neater fashion with less repetition
 function apply!(r::Register, n::NoisyGate)
     apply!(quantumstate(r), n)
