@@ -14,10 +14,10 @@ steps:
       - JuliaCI/julia-coverage#v1:
           codecov: true
     command:
-      - echo 'Julia version $${JULIA_VERSION}'
-      - echo 'Julia executable $${JULIA_EXECUTABLE}'
-      - echo 'Julia depot path $${JULIA_DEPOT_PATH}'
-      - mkdir -p '$${JULIA_DEPOT_PATH}/conda/3/x86_64'
+      - echo "Julia version $${JULIA_VERSION}"
+      - echo "Julia executable $${JULIA_EXECUTABLE}"
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - mkdir -p "$${JULIA_DEPOT_PATH}/conda/3/x86_64"
       - julia --project='.' -e '
         using Pkg;
         Pkg.add("QuantumSavory");
