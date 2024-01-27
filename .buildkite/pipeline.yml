@@ -24,6 +24,22 @@ steps:
         Pkg.build("PyCall");
         println("and now we dev the current package");
         pkg"dev .";'
+  - label: "CI Downstream Breakage Buildkite"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - mkdir -p "$${JULIA_DEPOT_PATH}/conda/3/x86_64"
+      - julia --project='~' -e '
+        using Pkg;
+        ENV["PYTHON"] = "";
+        Pkg.add("Conda");
+        Pkg.add("PyCall");
+        Pkg.build("PyCall");
+        println("and now we dev the current package");
+        pkg"dev .";'
       - julia --project='~' -e '
         using Pkg;
         ENV["PYTHON"] = "";
