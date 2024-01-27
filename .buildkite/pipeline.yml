@@ -5,7 +5,7 @@ env:
   PYCALL_DEBUG_BUILD: yes
   
 steps:
-  - label: "CI Buildkite"
+  - label: "Package Tests CI on Buildkite"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -24,7 +24,7 @@ steps:
         Pkg.build("PyCall");
         println("and now we dev the current package");
         pkg"dev .";'
-  - label: "CI Downstream Breakage Buildkite"
+  - label: "Downstream Breakage CI on Buildkite"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
