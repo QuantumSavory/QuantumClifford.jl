@@ -13,12 +13,23 @@ steps:
       - JuliaCI/julia-test#v1: ~
       - JuliaCI/julia-coverage#v1:
           codecov: true
-#    command: |
-#      julia -e '
-#        using Pkg
-#        Pkg.add("QuantumSavory")
-#        Pkg.build("QuantumSavory")
-#        Pkg.test("QuantumSavory")
-#        Pkg.add("BPGates")
-#        Pkg.build("BPGates")
-#        Pkg.test("BPGates")'
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - mkdir -p "$${JULIA_DEPOT_PATH}/conda/3/x86_64"
+      - julia --project='~' -e '
+        using Pkg;
+        ENV["PYTHON"] = "";
+        Pkg.add("Conda");
+        Pkg.add("PyCall");
+        Pkg.build("PyCall");
+        println("and now we dev the current package");
+        pkg"dev .";'
+      - julia --project='~' -e '
+        using Pkg;
+        ENV["PYTHON"] = "";
+        Pkg.add("QuantumSavory");
+        Pkg.build("QuantumSavory");
+        Pkg.test("QuantumSavory");
+        Pkg.add("BPGates");
+        Pkg.build("BPGates");
+        Pkg.test("BPGates");'
