@@ -18,6 +18,13 @@ steps:
       - mkdir -p "$${JULIA_DEPOT_PATH}/conda/3/x86_64"
       - julia --project='.' -e '
         using Pkg;
+        ENV[\"PYTHON\"] = "";
+        Pkg.add("Conda");
+        Pkg.add("PyCall");
+        Pkg.build("PyCall");'
+      - julia --project='.' -e '
+        using Pkg;
+        ENV[\"PYTHON\"] = "";
         Pkg.add("QuantumSavory");
         Pkg.build("QuantumSavory");
         Pkg.test("QuantumSavory");
