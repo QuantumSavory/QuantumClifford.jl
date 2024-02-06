@@ -69,7 +69,7 @@ julia> z_idx
 ```
 
 The `Graphs.jl` library provides many graph-theory tools and the
-`MakieGraphs.jl` library provides plotting utilies for graphs.
+`MakieGraphs.jl` library provides plotting utilities for graphs.
 
 You can directly call the graph constructor on a stabilizer,
 if you just want the graph and do not care about the Clifford

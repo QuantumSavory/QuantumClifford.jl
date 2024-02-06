@@ -186,7 +186,7 @@ Base.iterate(tab::Tableau, state::Int=1) = state>length(tab) ? nothing : (tab[st
 
 function Base.setindex!(tab::Tableau, pauli::PauliOperator, i)
     tab.phases[i] = pauli.phase[]
-    #tab.xzs[:,i] = pauli.xz # TODO why is this assigment causing allocations
+    #tab.xzs[:,i] = pauli.xz # TODO why is this assignment causing allocations
     for j in 1:length(pauli.xz)
         tab.xzs[j,i] = pauli.xz[j]
     end

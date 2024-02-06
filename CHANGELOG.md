@@ -194,7 +194,7 @@
 
 ## v0.5.5 - 2022-07-05
 
-- **(breaking fix)** `CliffordOperator` constructor called on a square tableau occasionally resulted in incorrect results due to row-reordering during cannonicalization.
+- **(breaking fix)** `CliffordOperator` constructor called on a square tableau occasionally resulted in incorrect results due to row-reordering during canonicalization.
 - Continuing static analysis fixes thanks to JET.
 - Optimization of `canonicalize_clip!`, now resulting in much fewer allocations.
 

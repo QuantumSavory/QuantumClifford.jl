@@ -128,7 +128,7 @@ end
 operatordeterminism(::Type{VerifyOp}) = DeterministicOperatorTrait()
 
 abstract type ClassicalXORConcreteWorkaround <: AbstractOperation end  # See below for more of this abomination - replace everywhere by ClassicalXOR when compactification is fixed
-"""Applies an XOR gate to classical bits. Currently only implemented for funcitonality with pauli frames."""
+"""Applies an XOR gate to classical bits. Currently only implemented for functionality with pauli frames."""
 struct ClassicalXOR{N} <: ClassicalXORConcreteWorkaround
     "The indices of the classical bits to be xor-ed"
     bits::NTuple{N,Int}

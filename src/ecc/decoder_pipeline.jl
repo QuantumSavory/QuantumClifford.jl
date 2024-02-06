@@ -14,7 +14,7 @@ function physical_ECC_circuit end # XXX Do not export! This might need to be ref
 
 """Configuration for ECC evaluator that does not simulate any ECC circuits, rather it simply checks the commutation of the parity check and the Pauli error.
 
-This is much faster than any other simulation method, but it is incapable of noisy-circuit simulations and thus useless for fault-tollerance studies.
+This is much faster than any other simulation method, but it is incapable of noisy-circuit simulations and thus useless for fault-tolerance studies.
 
 See also: [`NaiveSyndromeECCSetup`](@ref), [`ShorSyndromeECCSetup`](@ref)"""
 struct CommutationCheckECCSetup <: AbstractECCSetup

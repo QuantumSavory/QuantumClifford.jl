@@ -76,7 +76,7 @@ LinearAlgebra.rank(s::Destabilizer) = throw(BadDataStructure("Using a `Destabili
 LinearAlgebra.rank(s::MixedStabilizer) = s.rank
 LinearAlgebra.rank(s::MixedDestabilizer) = s.rank
 
-"""A "trusted" `rank` which returns `rank(state)` for `Mixed[De]Stabilizer` and `lenght(state)` for `[De]Stabilizer`."""
+"""A "trusted" `rank` which returns `rank(state)` for `Mixed[De]Stabilizer` and `length(state)` for `[De]Stabilizer`."""
 function trusted_rank end
 trusted_rank(s::Stabilizer) = length(s)
 trusted_rank(s::Destabilizer) = length(s)
