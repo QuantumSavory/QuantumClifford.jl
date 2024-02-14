@@ -80,7 +80,7 @@ end
         @test compare(mc,pe,true_success_stat)
     end
     @testset "Symbolic" begin
-        R, (e,) = AbstractAlgebra.PolynomialRing(AbstractAlgebra.RealField, ["e"])
+        R, (e,) = AbstractAlgebra.polynomial_ring(AbstractAlgebra.RealField, ["e"])
         unity = R(1);
         good_bell_state = Register(MixedDestabilizer(S"XX ZZ"))
         initial_state = good_bell_state⊗good_bell_state
