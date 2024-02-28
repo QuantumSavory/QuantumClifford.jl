@@ -28,6 +28,16 @@ For circuit construction routines (for stabilizer measurements for a given code)
 - [grassl2002algorithmic](@cite)
 - [grassl2011variations](@cite)
 
+Quantum Error Corecting Codes:
+- 2D Color Code [Fowler_2011](@cite)
+- 3D Color Code [bombin2015gauge](@cite)
+- 2D Surface Code [bravyi1998quantum](@cite)
+- 3D Surface Code[Vasmer_2019](@cite)
+- Floquent Code [fahimniya2023faulttolerant](@cite) 
+- Quantum Low-Density Parity Check (QLDPC) Code [Breuckmann_2021](@cite)
+- Hypergraph Product Code [Krishna_2021](@cite)
+- Bias-tailored Quantum LDPC Codes [Roffe_2023](@cite)
+
 # References
 
 ```@bibliography
