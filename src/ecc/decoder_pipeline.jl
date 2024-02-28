@@ -285,3 +285,18 @@ function decode(decoder::IterativeDecoder, syndrome_sample)
     # Return the final error estimate vector
     return error_estimate
 end
+
+function test_iterative_decoder()
+    # Create an instance of the decoder
+    decoder = IterativeDecoder(H)
+
+    # Generate a random syndrome sample 
+    n = size(H, 1)  # Number of qubits based on H
+    syndrome = rand(Bool, n)
+
+    # Decode the syndrome
+    decoded_errors = decode(decoder, syndrome)
+
+    # Define a test assertion: Check if all decoded errors are zeros (perfect decoding)
+    @test isall(decoded_errors == 0)
+end
