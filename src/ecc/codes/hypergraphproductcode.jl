@@ -1,8 +1,4 @@
-#The [[n,k,d]] CSS code's constuction is based on two binary linear seeds codes, i element of {1,2} C sub i with parameters [n sub i, k sub i, d sub i] defined as the kernel of r sub i x n sub i check matrices H sub i of rank n sub i - k sub i. The hypergraph product yields two classical codes C sub x,z with parity-check matrices
 
-#H sub x = (H sub 1 ⊗ I sub n2   I sub r1 ⊗ (H sub 2)^T) (1)
-#H sub z =( I sub n1 ⊗ H sub 2    (H sub 1)^T ⊗ I sub r2) (2)
-#where I sub m is the m-dimensional identity matrix. These two codes then yied a hypergraph product code via the CSS construction
 
 struct HypergraphProduct <: AbstractECC
   n_i::Vector{Int}      # Vector of n_i values
@@ -77,6 +73,3 @@ function IMatrix(n)
   return eye(n, n)
 end
 
-
-#println("Full parity checks:")
-#println(parity_checks(code))
