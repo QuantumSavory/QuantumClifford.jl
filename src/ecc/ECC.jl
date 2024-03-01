@@ -20,6 +20,7 @@ export parity_checks, parity_checks_x, parity_checks_z,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric,
+    QHamming,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -324,7 +325,6 @@ end
 
 include("circuits.jl")
 include("decoder_pipeline.jl")
-
 include("codes/util.jl")
 include("codes/classical_codes.jl")
 include("codes/css.jl")
