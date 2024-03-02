@@ -1,4 +1,4 @@
-struct QHamming
+struct QHamming <:AbstractECC
     r::Int
 end
 
