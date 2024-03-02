@@ -1,25 +1,29 @@
 struct QHamming
-  r::Int
+    r::Int
 end
 
-function parity_checks(code::QHamming)
-  r = code.r
-  n = 2^r
+struct InvalidRError <: Exception end  # Define a custom exception type
 
-  # Construct the K matrix (refer to Gottesman-Chuang codes for details)
-  K = zeros(Int, (n - r - 2), r)
-  for i in 1:n-r-2
-    j = i + 1
-    while j <= n
-      K[i, bit2int(Integer.tobits(j - 1)[end])] = 1
-      j += 1
+function parity_checks(c::QHamming)
+    if !(3 <= c.r < 15)
+        throw(InvalidRError())  # Throw the exception if r is out of bounds
     end
-  end
-
-  # Parity check matrix
-  H = [[diagm(ones(Int, r)), K, -diagm(ones(Int, r))]
-       [K', diagm(ones(Int, n - r - 2)), zeros(Int, n - r - 2)]
-       [zeros(Int, n - r - 2), -K, diagm(ones(Int, r))]]
-
-  return CSS(H)
+    n = 2^c.r
+    k = 2^c.r - c.r - 2
+   
+    # Initialize parity check matrix
+    H = zeros(Int, k, n)
+   
+    # Generate parity checks for the quantum Hamming code
+    for i in 1:k
+        for j in 1:n
+            if j & (1 << (i - 1)) != 0
+                H[i, j] = 1
+            end
+        end
+    end
+   
+    return H
 end
+
+code_n(c::QHamming) = 2^c.r
