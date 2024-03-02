@@ -9,6 +9,7 @@ codes = [
     Steane7(),
     Shor9(),
     Perfect5(),
+    QHamming(),
     Cleve8(),
     CSS([0 1 1 0; 1 1 0 0], [1 1 1 1]),
     Toric(3,3),
