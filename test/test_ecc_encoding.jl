@@ -14,6 +14,7 @@ using QuantumClifford.ECC
         :(Steane7()),
         :(Shor9()),
         :(Perfect5()),
+        :QHamming(),
         :(Bitflip3()),
         :(S"Y_"),
         :(S"Z_"),
