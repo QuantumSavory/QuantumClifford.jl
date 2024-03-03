@@ -17,8 +17,7 @@ import PyQDecoders
         Shor9(),
         Perfect5(),
         QHamming(),
-        Cleve8(),
-        
+        Cleve8(), 
     ]
 
     noise = 0.001
