@@ -1,5 +1,6 @@
 using Test
-include("src/ecc/codes/qhammingcode.jl") 
+using QuantumClifford
+using QuantumClifford.ECC: QHamming
 
 # Define test cases
 @testset "QHamming Code Tests" begin
