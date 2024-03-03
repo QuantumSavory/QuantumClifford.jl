@@ -1,6 +1,7 @@
 using Test
 using QuantumClifford
 using QuantumClifford: rank, mul_left!, mul_right!
+using QuantumClifford.ECC: QHamming
 using InteractiveUtils: subtypes
 
 
@@ -65,3 +66,5 @@ for m in [sMX,sMZ,sMY,sMRX,sMRZ,sMRY]
     @test_throws ArgumentError m(0,1)
     @test_throws ArgumentError m(-1,0)
 end
+
+@test_throws ArgumentError parity_checks(QHamming(2))
