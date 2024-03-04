@@ -2,6 +2,9 @@ struct QHamming <:AbstractECC
     r::Int
 end
 
+code_n(c::QHamming) =  2^c.r
+code_s(c::QHamming) =  c.r 
+
 function parity_checks(c::QHamming)
     if (3 <= c.r <= 15) || error("The r parameter in QHamming has to be between 3 and 15, in order to create a valid code of tractable size")
     end
@@ -22,5 +25,3 @@ function parity_checks(c::QHamming)
    
     return H
 end
-
-code_n(c::QHamming) = 2^c.r
