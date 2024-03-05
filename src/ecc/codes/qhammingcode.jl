@@ -2,26 +2,30 @@ struct QHamming <:AbstractECC
     r::Int
 end
 
-code_n(c::QHamming) =  2^c.r
-code_s(c::QHamming) =  c.r 
-
 function parity_checks(c::QHamming)
-    if (3 <= c.r <= 15) || error("The r parameter in QHamming has to be between 3 and 15, in order to create a valid code of tractable size")
-    end
-    n = 2^c.r
-    k = 2^c.r - c.r - 2
-   
+    r = c.r
+    n = 2^r
+    k = 2^r - r - 2  # Calculate number of checks
+
     # Initialize parity check matrix
-    H = zeros(Int, k, n)
-   
+    H = zeros(Bool, k, n)
+
     # Generate parity checks for the quantum Hamming code
     for i in 1:k
         for j in 1:n
             if j & (1 << (i - 1)) != 0
-                H[i, j] = 1
+                H[i, j] = true
             end
         end
     end
+
    
-    return H
+    # Extract Hx and Hz from H
+    Hx = H[:, 1:end-r]
+    Hz = H[:, end-r+1:end]
+
+    # Construct the Stabilizer object using the built-in constructor
+    Stabilizer(fill(0x0, 2k), Hx, Hz)
 end
+
+
