@@ -1,8 +1,5 @@
 using SafeTestsets
 using QuantumClifford
-using DotEnv
-
-DotEnv.config(path = ".env")
 
 function doset(descr)
     if length(ARGS) == 0
@@ -30,7 +27,7 @@ println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREA
 println("ENV[\"PYTHON\"] = \"$(get(ENV,"PYTHON",nothing))\"")
 
 # in order to run the gpu tests automatically set GPU_TESTS to true in the .env file
-if ENV["GPU_TESTS"] == "true"
+if get(ENV, "GPU_TESTS", "") == "true"
     @doset "gpu"
 else
     println("skipping gpu tests (set GPU_TESTS=true to test gpu)")
