@@ -16,7 +16,7 @@ import PyQDecoders
         Steane7(),
         Shor9(),
         Perfect5(),
-        QHamming(),
+        EightQubit(),
         Cleve8(), 
     ]
 
