@@ -17,34 +17,14 @@ struct BeliefPropDecoder <: AbstractSyndromeDecoder
     s
     """The number of encoded qubits"""
     k
-    """Empty array to hold temporary values in belief decoding"""
-    log_probabs
-    """Error probabilities of each channel"""
-    channel_probs
-    """Number of X checks, used to get the syndrome corresponding to the X checks"""
-    numchecks_X
-    """Empty matrix used to hold error probabilities for the X channels"""
-    b2c_X
-    """Empty matrix used to temporary belief propagation values"""
-    c2b_X
-    """Number of X checks, used to get the syndrome corresponding to the X checks"""
-    numchecks_Z
-    """Empty matrix used to hold error probabilities for the Z channels"""
-    b2c_Z
-    """Empty matrix used to temporary belief propagation values"""
-    c2b_Z
-    """The measured error syndrome"""
-    err
-    """Sparse array of Cx matrix"""
-    sparse_Cx
-    """Sparse array of the transpose of the Cx matrix"""
-    sparse_CxT
-    """Sparse array of Cz matrix"""
-    sparse_Cz
-    """Sparse array of the transpose of the Cx matrix"""
-    sparse_CzT
-    """Maximum number of iterations before giving up"""
-    max_iters
+    """Number of X checks"""
+    cx
+    """Number of X checks"""
+    cz
+    """The classical BP decoder for Hx"""
+    bpdecoderx
+    """The classical BP decoder for Hz"""
+    bpdecoderz
 end
 
 function BeliefPropDecoder(c, p_init=0, max_iters=10)
@@ -54,35 +34,28 @@ function BeliefPropDecoder(c, p_init=0, max_iters=10)
     s, n = size(H)
     _, _, r = canonicalize!(Base.copy(H), ranks=true)
     k = n - r
+    cx = size(Hx, 1)
+    cz = size(Hx, 1)
     fm = faults_matrix(H)
-    log_probabs = zeros(n)
-    channel_probs = fill(p_init, n)
 
-    numchecks_X = size(Hx, 1)
-    b2c_X = zeros(numchecks_X, n)
-    c2b_X = zeros(numchecks_X, n)
+    bpx = LDPCDecoders.BeliefPropagationDecoder(Hx, p_init, max_iters)
+    bpz = LDPCDecoders.BeliefPropagationDecoder(Hz, p_init, max_iters)
 
-    numchecks_Z = size(Hz, 1)
-    b2c_Z = zeros(numchecks_Z, n)
-    c2b_Z = zeros(numchecks_Z, n)
-    err = zeros(n)
-
-    sparse_Cx = sparse(Hx)
-    sparse_CxT = sparse(Hx')
-    sparse_Cz = sparse(Hz)
-    sparse_CzT = sparse(Hz')
-    return BeliefPropDecoder(H, fm, n, s, k, log_probabs, channel_probs, numchecks_X, b2c_X, c2b_X, numchecks_Z, b2c_Z, c2b_Z, err, sparse_Cx, sparse_CxT, sparse_Cz, sparse_CzT, max_iters)
+    return BeliefPropDecoder(H, fm, n, s, k, cx, cz, bpx, bpz)
 end
 
 parity_checks(d::BeliefPropDecoder) = d.H
 
 function decode(d::BeliefPropDecoder, syndrome_sample)
-    row_x = syndrome_sample[1:d.numchecks_X]
-    row_z = syndrome_sample[d.numchecks_X+1:d.numchecks_X+d.numchecks_Z]
+    row_x = syndrome_sample[1:d.cx]
+    row_z = syndrome_sample[d.cx+1:d.cx+d.cz]
 
-    KguessX, success = LDPCDecoders.syndrome_decode(d.sparse_Cx, d.sparse_CxT, row_x, d.max_iters, d.channel_probs, d.b2c_X, d.c2b_X, d.log_probabs, Base.copy(d.err))
-    KguessZ, success = LDPCDecoders.syndrome_decode(d.sparse_Cz, d.sparse_CzT, row_z, d.max_iters, d.channel_probs, d.b2c_Z, d.c2b_Z, d.log_probabs, Base.copy(d.err))
-    guess = vcat(KguessZ, KguessX)
+    guess_x = falses(d.n)
+    guess_z = falses(d.n)
+
+    success = LDPCDecoders.decode!(d.bpx, row_x, guess_x)
+    success = LDPCDecoders.decode!(d.bpz, row_z, guess_z)
+    return vcat(guess_z, guess_x)
 end
 
 end
