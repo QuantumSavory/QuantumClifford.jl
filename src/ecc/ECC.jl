@@ -19,7 +19,7 @@ export parity_checks, parity_checks_x, parity_checks_z,
     RepCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
-    EightQubit, SixteenQubit
+    N8_K3_D3, N16_K10_D3,
     Toric,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
@@ -334,6 +334,6 @@ include("codes/steanecode.jl")
 include("codes/shorcode.jl")
 include("codes/clevecode.jl")
 include("codes/toric.jl")
-include("codes/eightqubit.jl")
-include("codes/sixteenqubit.jl")
+include("codes/n8_k3_d3.jl")
+include("codes/n16_k10_d3.jl")
 end #module

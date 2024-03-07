@@ -9,6 +9,8 @@ codes = [
     Shor9(),
     Perfect5(),
     Cleve8(),
+    N8_K3_D3(),
+    N16_K10_D3(),
     CSS([0 1 1 0; 1 1 0 0], [1 1 1 1]),
 ]
 
