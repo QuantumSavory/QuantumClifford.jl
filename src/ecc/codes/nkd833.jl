@@ -1,6 +1,6 @@
-struct N8K3D3 <: AbstractECC end
+struct NKD833 <: AbstractECC end
 
-parity_checks(c::N8K3D3) = S"XXXXXXXX
+parity_checks(c::NKD833) =S"XXXXXXXX
                             ZZZZZZZZ
                             _X_XYZYZ
                             _XZY_XZY
