@@ -16,8 +16,8 @@ import PyQDecoders
         Steane7(),
         Shor9(),
         Perfect5(),
-        N8_K3_D3(),
-        N16_K10_D3(),
+        N8K3D3(),
+        N16K10D3(),
         Cleve8(), 
     ]
 
