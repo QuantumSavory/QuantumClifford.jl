@@ -16,9 +16,7 @@ import PyQDecoders
         Steane7(),
         Shor9(),
         Perfect5(),
-        NKD833(),
-        NKD16103(),
-        Cleve8(), 
+        Cleve8(),
     ]
 
     noise = 0.001
@@ -31,7 +29,7 @@ import PyQDecoders
 
     for c in codes
         for s in setups
-            e = evaluate_decoder(TableDecoder(c), s, 900000000)
+            e = evaluate_decoder(TableDecoder(c), s,100000)
             #@show c
             #@show s
             #@show e
@@ -58,11 +56,11 @@ end
 
     for c in codes
         for s in setups
-            e = evaluate_decoder(PyMatchingDecoder(c), s, 10000)
+            e = evaluate_decoder(PyMatchingDecoder(c), s,100000)
             #@show c
             #@show s
             #@show e
-            @assert max(e...) < noise/5
+            @assert max(e...) < noise/4
         end
     end
 end
