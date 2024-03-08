@@ -60,7 +60,7 @@ end
             #@show c
             #@show s
             #@show e
-            @assert max(e...) < noise/4
+            @assert max(e...) < noise/5
         end
     end
 end
