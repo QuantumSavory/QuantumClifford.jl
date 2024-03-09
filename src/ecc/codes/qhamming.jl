@@ -1,7 +1,9 @@
+"""This class implements the Gottesman codes [[2^j, 2^j-j-2,3], also known as quantum Hamming codes, as described in Gottesman's 1997 paper on stabilizer codes [gottesman1997stabilizer](@cite)."""
+
 struct QHamming <: AbstractECC
     j::Int
     function QHamming(j)
-        (j >= 3 && j < 16) || error("In `QHamming(j)`, `j` must be ≥  3 in order to obtain a valid code and `j` must be < 16 to remain tractable")
+        (j >= 3 && j < 21) || error("In `QHamming(j)`, `j` must be ≥  3 in order to obtain a valid code and `j` must be < 21 to remain tractable")
         new(j)
     end
 end

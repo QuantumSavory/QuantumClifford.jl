@@ -3,7 +3,6 @@ using QuantumClifford
 using QuantumClifford.ECC
 
 ##
-
 @testset "encoding circuits - compare to algebraic construction of encoded state" begin
     # This test verifies that logical measurements on an encoded state match the physical pre-encoded state.
     # This test skips verifying the permutations of qubits during canonicalization are properly undone,
@@ -16,6 +15,7 @@ using QuantumClifford.ECC
         :(Perfect5()),
         :(Bitflip3()),
         :(QHamming(3)),
+        :(QHamming(5)),
         :(S"Y_"),
         :(S"Z_"),
         :(S"X_"),
@@ -26,7 +26,6 @@ using QuantumClifford.ECC
         :(Toric(8,8)),
         fill(:(random_stabilizer(5,7)), 100)...
         ]
-
         code = eval(codeexpr)
         if undoperm==false
             # Pre-process the tableau to remove permutations and negative phases.

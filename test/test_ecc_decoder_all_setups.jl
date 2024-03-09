@@ -17,6 +17,7 @@ import PyQDecoders
         Shor9(),
         Perfect5(),
         Cleve8(),
+        QHamming(3), QHamming(5),
     ]
 
     noise = 0.001
@@ -39,7 +40,6 @@ import PyQDecoders
 end
 
 ##
-
 @testset "matching decoder" begin
     codes = [
         Toric(8,8),
@@ -62,5 +62,5 @@ end
             #@show e
             @assert max(e...) < noise/5
         end
-    end
+    end 
 end
