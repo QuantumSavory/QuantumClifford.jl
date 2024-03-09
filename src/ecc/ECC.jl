@@ -324,6 +324,7 @@ end
 
 include("circuits.jl")
 include("decoder_pipeline.jl")
+
 include("codes/util.jl")
 include("codes/classical_codes.jl")
 include("codes/css.jl")
@@ -334,5 +335,4 @@ include("codes/shorcode.jl")
 include("codes/clevecode.jl")
 include("codes/toric.jl")
 include("codes/qhamming.jl")
-
 end #module
