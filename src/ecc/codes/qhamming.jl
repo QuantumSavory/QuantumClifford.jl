@@ -8,7 +8,7 @@ struct QHamming <: AbstractECC
     end
 end
 
-code_n(c::QHamming)= 2^c.j
+code_n(c::QHamming) = 2^c.j
 
 function parity_checks(c::QHamming)
     rows = c.j + 2
@@ -21,7 +21,7 @@ function parity_checks(c::QHamming)
     
     Hx[2, :] .= false
 
-    for i in 3:(rows-1)
+    for i in 3:(rows - 1)
         for a in 1:cols
             Hx[i, a] = (a==0) || (a % 2 ==0)
         end
@@ -37,7 +37,7 @@ function parity_checks(c::QHamming)
     for i in 3:rows
         period = 2^(rows - i)
         for a in 1:cols
-            Hz[i,a]=div(a-1,period) % 2 == 1
+            Hz[i, a] = div(a - 1, period) % 2 == 1
         end
     end
     extended_Hx = Matrix{Bool}(Hz)
