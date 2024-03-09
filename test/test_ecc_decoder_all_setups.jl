@@ -30,7 +30,7 @@ import PyQDecoders
 
     for c in codes
         for s in setups
-            e = evaluate_decoder(TableDecoder(c), s,100000)
+            e = evaluate_decoder(TableDecoder(c), s, 100000)
             #@show c
             #@show s
             #@show e
