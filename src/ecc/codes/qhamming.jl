@@ -11,9 +11,8 @@ end
 code_n(c::QHamming)= 2^c.j
 
 function parity_checks(c::QHamming)
-    a=c.j
-    rows = a + 2
-    cols = 2^a
+    rows = c.j + 2
+    cols = 2^c.j
     
     Hx = falses(rows,cols)
     Hz = falses(rows,cols)
