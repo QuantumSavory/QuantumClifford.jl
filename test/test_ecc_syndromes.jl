@@ -9,8 +9,7 @@ codes = [
     Steane7(),
     Shor9(),
     Perfect5(),
-    Cleve8(),
-    QHamming(3), QHamming(5),
+    Cleve8(), QHamming(3), QHamming(5),
     CSS([0 1 1 0; 1 1 0 0], [1 1 1 1]),
     Toric(3,3),
     Toric(3,6),
@@ -19,6 +18,7 @@ codes = [
 ]
 
 ##
+
 function pframe_naive_vs_shor_syndrome(code)
     ecirc = naive_encoding_circuit(code)
     naive_scirc, naive_ancillaries = naive_syndrome_circuit(code)
