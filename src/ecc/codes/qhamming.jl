@@ -1,4 +1,4 @@
-"""This class implements the Gottesman codes [[2^j, 2^j-j-2,3]], also known as quantum Hamming codes, as described in Gottesman's 1997 paper on stabilizer codes [gottesman1997stabilizer](@cite)."""
+"""This class implements the Gottesman codes [[2^j, 2^j-j-2,3]], also known as quantum Hamming codes, as described in Gottesman's 1997 thesis on stabilizer codes [gottesman1997stabilizer](@cite)."""
 
 struct QHamming <: AbstractECC
     j::Int
