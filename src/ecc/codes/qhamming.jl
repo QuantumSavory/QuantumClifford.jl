@@ -23,7 +23,7 @@ function parity_checks(c::QHamming)
 
     for i in 3:(rows - 1)
         for a in 1:cols
-            Hx[i, a] = (a==0) || (a % 2 ==0)
+            Hx[i, a] = (a == 0) || (a % 2 == 0)
         end
     end
    
