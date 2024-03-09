@@ -1,9 +1,7 @@
 struct QHamming <: AbstractECC
     j::Int
     function QHamming(j)
-        if j < 3
-            error("j must be greater than or equal to 3 in order to create a valid code of tractable size")
-        end
+        (j >= 3 && j < 16) || error("In `QHamming(j)`, `j` must be ≥  3 in order to obtain a valid code and `j` must be < 16 to remain tractable")
         new(j)
     end
 end
