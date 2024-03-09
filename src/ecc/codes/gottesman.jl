@@ -16,7 +16,7 @@ function parity_checks(c::QHamming)
     cols = 2^a
     
     Hx = falses(rows,cols)
-    Hz =falses(rows,cols)
+    Hz = falses(rows,cols)
     
     Hx[1, :] .= true
     
