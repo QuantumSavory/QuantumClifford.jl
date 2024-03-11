@@ -28,7 +28,7 @@ function parity_checks(c::QHamming)
     end
    
     for a in 1:cols
-        Hx[rows, a] = (a % 4 == 1) || (a % 4 == 2) ? 0 : 1
+        Hx[rows, a] = (a % 4 == 0) || (a % 4 == 1) ? 0 : 1
     end
    
     Hz[1, :] .= false
