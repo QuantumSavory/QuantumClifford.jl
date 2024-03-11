@@ -21,12 +21,31 @@ function parity_checks(c::QHamming)
     
     Hx[2, :] .= false
 
-    for i in 3:(rows - 1)
-        for a in 1:cols
-            Hx[i, a] = (a == 0) || (a % 2 == 0)
+    for a in 1:cols
+        Hx[3, a] = (a == 0) || (a % 2 == 0)
+    end
+
+    for row in 4:rows
+        for col in 1:cols
+            k = row - 3
+            m = 2^(c.j - k)
+            n = 2^(c.j - k)
+            if (col - 1) % (m + n) < m
+                if col % 2 == 0
+                    Hx[row, col] = 1
+                else
+                    Hx[row, col] = 0
+                end
+            else
+                if col % 2 == 0
+                    Hx[row, col] = 0
+                else
+                    Hx[row, col] = 1
+                end
+            end
         end
     end
-   
+    
     for a in 1:cols
         Hx[rows, a] = (a % 4 == 0) || (a % 4 == 1) ? 0 : 1
     end
