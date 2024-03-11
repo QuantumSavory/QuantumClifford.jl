@@ -25,7 +25,7 @@ function parity_checks(c::QHamming)
         Hx[3, a] = (a == 0) || (a % 2 == 0)
     end
 
-    for row in 4:rows
+    for row in 4:rows-1
         for col in 1:cols
             k = row - 3
             m = 2^(c.j - k)
