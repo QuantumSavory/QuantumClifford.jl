@@ -32,14 +32,14 @@ function parity_checks(c::QHamming)
 
     if c.j == 3 
         for col in 1:cols
-             Hx[3, col] = (col % 8 == 1 || col % 8 == 3 || col % 8 == 6) ? 0 : 1
+            Hx[3, col] = (col % 8 == 1 || col % 8 == 3 || col % 8 == 6) ? 0 : 1
         end
         Hx[3, cols] = Hx[3, cols] == 0 ? 1 : 0
         for col in 1:cols
-             Hx[4, col] = (col % 4 == 1) || (col % 4 == 3) ? 0 : 1
+            Hx[4, col] = (col % 4 == 1) || (col % 4 == 3) ? 0 : 1
         end
         for a in 1:cols
-            Hx[rows, a] =((a % 4 == 0) || (a % 4 == 1) ? 0 : 1) ⊻ ((a % 8 == 5) || (a % 8 == 6))
+            Hx[rows, a] = ((a % 4 == 0) || (a % 4 == 1) ? 0 : 1) ⊻ ((a % 8 == 5) || (a % 8 == 6))
         end
         Hx[end, [end-1, end]] .= [0, 1]
 
