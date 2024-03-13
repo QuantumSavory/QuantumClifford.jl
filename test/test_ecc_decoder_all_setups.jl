@@ -16,7 +16,7 @@ import PyQDecoders
         Steane7(),
         Shor9(),
         Perfect5(),
-        Cleve8(), QHamming(3), QHamming(5),
+        Cleve8(), Gottesman(3), Gottesman(5),
     ]
 
     noise = 0.001
