@@ -313,10 +313,10 @@ function CliffordOperator(op::AbstractTwoQubitOperator, n; compact=false)
         for (i,q) in ((1,op.q1),(2,op.q2))
             for (ii,qq) in ((1,op.q1),(2,op.q2))
                 c[q,qq] = _c[i,ii] # TODO define an `embed` helper function
-                c[n+q,qq] = _c[n+i,ii]
+                c[n+q,qq] = _c[2+i,ii]
             end
             c.tab.phases[q] = _c.tab.phases[i] # TODO define a `phasesview` or `phases` helper function
-            c.tab.phases[n+q] = _c.tab.phases[n+i]
+            c.tab.phases[n+q] = _c.tab.phases[2+i]
         end
         return c
     end

@@ -2,16 +2,10 @@ using Test
 using QuantumClifford
 using QuantumClifford.ECC
 
-@testset "is Conda ok" begin
-    # Trigger Python install if required. Required for Buildkite CI!
-    import Conda
-    Conda.list()
-end
-
-# Run this only after checking Conda works
 import PyQDecoders
+import LDPCDecoders
 
-@testset "table decoder" begin
+@testset "table decoder, good for small codes" begin
     codes = [
         Steane7(),
         Shor9(),
@@ -29,18 +23,47 @@ import PyQDecoders
 
     for c in codes
         for s in setups
-            e = evaluate_decoder(TableDecoder(c), s, 100000)
-            #@show c
-            #@show s
-            #@show e
-            @assert max(e...) < noise/4
+            for d in [TableDecoder]
+                e = evaluate_decoder(d(c), s, 100000)
+                #@show c
+                #@show s
+                #@show e
+                @assert max(e...) < noise/4
+            end
         end
     end
 end
 
 ##
 
-@testset "matching decoder" begin
+@testset "belief prop decoders, good for small codes" begin
+    codes = [
+    ]
+
+    noise = 0.001
+
+    setups = [
+        CommutationCheckECCSetup(noise/2),
+        NaiveSyndromeECCSetup(noise, 0),
+        ShorSyndromeECCSetup(noise, 0),
+    ]
+
+    for c in codes
+        for s in setups
+            for d in [c->PyBeliefPropOSDecoder(c, maxiter=10)]
+                e = evaluate_decoder(d(c), s, 100000)
+                @show c
+                @show s
+                @show e
+                @assert max(e...) < noise/4
+            end
+        end
+    end
+end
+
+##
+
+@testset "matching decoder, good as long as column weight of the code is limited" begin
     codes = [
         Toric(8,8),
         Toric(9,9)
