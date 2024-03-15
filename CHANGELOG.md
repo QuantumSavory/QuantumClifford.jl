@@ -6,6 +6,10 @@
 
 # News
 
+## v0.8.22 - 2024-03-15
+
+- Bump the `PyQDecoders` dependency, switching to `PythonCall` behind the scenes for reliability.
+
 ## v0.8.21 - 2024-03-05
 
 - Bump the `LDPCDecoders` dependency.
