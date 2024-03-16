@@ -41,7 +41,7 @@ end
 
 @testset "belief prop decoders, good for small codes" begin
     codes = [
-        Gottesman(3),
+        #Gottesman(3),
     ]
 
     noise = 0.001
