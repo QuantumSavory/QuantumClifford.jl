@@ -11,10 +11,8 @@ Notes:
 
 struct Gottesman <: AbstractECC
     j::Int
-    rows = c.j + 2
-    cols = 2^c.j
-    Hx = Matrix{Bool}(undef, rows, cols)
-    Hz = Matrix{Bool}(undef, rows, cols)
+    Hx = Matrix{Bool}
+    Hz = Matrix{Bool}
     function Gottesman(j)
         (j >= 3 && j < 21) || error("In `Gottesman(j)`, `j` must be ≥  3 in order to obtain a valid code and `j` must be < 21 to remain tractable")
         new(j)
@@ -24,6 +22,9 @@ end
 code_n(c::Gottesman) = 2^c.j
 
 function parity_checks(c::Gottesman)
+    rows = c.j + 2
+    cols = 2^c.j
+
     extended_Hx = c.Hx
     extended_Hz = c.Hz
 
