@@ -41,7 +41,7 @@ end
 
 @testset "belief prop decoders, good for small codes" begin
     codes = [
-        #Gottesman(3),
+        #Gottesman(3), Gottesman is a non-CSS code. BP works for CSS codes.
     ]
 
     noise = 0.001
