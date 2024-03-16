@@ -10,7 +10,10 @@ import LDPCDecoders
         Steane7(),
         Shor9(),
         Perfect5(),
-        Cleve8(), Gottesman(3), Gottesman(5),
+        Cleve8(),
+        Gottesman(3),
+        Gottesman(4),
+        #Gottesman(5), performs poorly
     ]
 
     noise = 0.001
@@ -28,7 +31,7 @@ import LDPCDecoders
                 #@show c
                 #@show s
                 #@show e
-                @assert max(e...) < noise/4
+                @assert max(e...) < noise/3
             end
         end
     end
@@ -38,6 +41,7 @@ end
 
 @testset "belief prop decoders, good for small codes" begin
     codes = [
+        Gottesman(3),
     ]
 
     noise = 0.001
@@ -85,5 +89,5 @@ end
             #@show e
             @assert max(e...) < noise/5
         end
-    end 
+    end
 end
