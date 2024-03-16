@@ -19,8 +19,6 @@ codes = [
     Toric(8,8),
 ]
 
-##
-
 function pframe_naive_vs_shor_syndrome(code)
     ecirc = naive_encoding_circuit(code)
     naive_scirc, naive_ancillaries = naive_syndrome_circuit(code)
