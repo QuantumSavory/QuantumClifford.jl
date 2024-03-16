@@ -11,8 +11,6 @@ Notes:
 
 struct Gottesman <: AbstractECC
     j::Int
-    Hx::Matrix{Bool}
-    Hz::Matrix{Bool}
     function Gottesman(j)
         (j >= 3 && j < 21) || error("In `Gottesman(j)`, `j` must be ≥  3 in order to obtain a valid code and `j` must be < 21 to remain tractable")
         new(j)
@@ -25,28 +23,28 @@ function parity_checks(c::Gottesman)
     rows = c.j + 2
     cols = 2^c.j
 
-    extended_Hx = c.Hx
-    extended_Hz = c.Hz
+    Hx = falses(rows, cols)
+    Hz = falses(rows, cols)
 
-    extended_Hx[1, :] .= true
-    extended_Hx[2, :] .= false
+    Hx[1, :] .= true
+    Hx[2, :] .= false
 
     if c.j == 3
         for col in 1:cols
-            extended_Hx[3, col] = (col % 8 == 1 || col % 8 == 3 || col % 8 == 6) ? 0 : 1
+            Hx[3, col] = (col % 8 == 1 || col % 8 == 3 || col % 8 == 6) ? 0 : 1
         end
-        extended_Hx[3, cols] = extended_Hx[3, cols] == 0 ? 1 : 0
+        Hx[3, cols] = Hx[3, cols] == 0 ? 1 : 0
         for col in 1:cols
-            extended_Hx[4, col] = (col % 4 == 1) || (col % 4 == 3) ? 0 : 1
+            Hx[4, col] = (col % 4 == 1) || (col % 4 == 3) ? 0 : 1
         end
         for a in 1:cols
-            extended_Hx[rows, a] = ((a % 4 == 0) || (a % 4 == 1) ? 0 : 1) ⊻ ((a % 8 == 5) || (a % 8 == 6))
+            Hx[rows, a] = ((a % 4 == 0) || (a % 4 == 1) ? 0 : 1) ⊻ ((a % 8 == 5) || (a % 8 == 6))
         end
-        extended_Hx[end, [end-1, end]] .= [0, 1]
+        Hx[end, [end-1, end]] .= [0, 1]
 
     else
         for a in 1:cols
-            extended_Hx[3, a] = (a == 0) || (a % 2 == 0)
+            Hx[3, a] = (a == 0) || (a % 2 == 0)
         end
         for row in 4:rows - 1
             for col in 1:cols
@@ -55,41 +53,43 @@ function parity_checks(c::Gottesman)
                 n = 2^(c.j - k)
                 if (col - 1) % (m + n) < m
                     if col % 2 == 0
-                        extended_Hx[row, col] = 1
+                        Hx[row, col] = 1
                     else
-                        extended_Hx[row, col] = 0
+                        Hx[row, col] = 0
                     end
                 else
                     if col % 2 == 0
-                        extended_Hx[row, col] = 0
+                        Hx[row, col] = 0
                     else
-                        extended_Hx[row, col] = 1
+                        Hx[row, col] = 1
                     end
                 end
             end
         end
 
         for a in 1:cols
-            extended_Hx[rows, a] = (a % 4 == 0) || (a % 4 == 1) ? 0 : 1
+            Hx[rows, a] = (a % 4 == 0) || (a % 4 == 1) ? 0 : 1
         end
     end
 
-    extended_Hz[1, :] .= false
-    extended_Hz[2, :] .= true
+    Hz[1, :] .= false
+    Hz[2, :] .= true
 
     for i in 3:rows
         period = 2^(rows - i)
         for a in 1:cols
-            extended_Hz[i, a] = div(a - 1, period) % 2 == 1
+            Hz[i, a] = div(a - 1, period) % 2 == 1
         end
     end
 
-    num_rows = size(extended_Hx, 1)
+    extended_Hx = Matrix{Bool}(Hz)
+    extended_Hz = Matrix{Bool}(Hx)
+
+    num_rows = size(Hx, 1)
 
     fill_array = fill(UInt8(0), num_rows)
     Stabilizer(fill_array, extended_Hz, extended_Hx)
 end
 
-parity_checks_x(c::Gottesman) = c.Hx
-
-parity_checks_z(c::Gottesman) = c.Hz
+parity_checks_x(c::Gottesman) = stab_to_gf2(parity_checks(Gottesman()))[1:end:1,1:end÷2]
+parity_checks_z(c::Gottesman) = stab_to_gf2(parity_checks(Gottesman()))[1:end,end÷2+1:end]
