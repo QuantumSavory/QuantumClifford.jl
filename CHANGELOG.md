@@ -11,11 +11,10 @@
 - Implemented the first family of non-CSS [[2^j, 2^j - j - 2, 3]] Gottesman codes, also known as [[2^j, 2^j - j - 2, 3]] quantum Hamming codes
 
 ## v0.8.22 - 2024-03-15
+** (Add details from remote branch changes for v0.8.21)**
+## v0.8.21 - 2024-03-15
 
 - Bump the `PyQDecoders` dependency, switching to `PythonCall` behind the scenes for reliability.
-
-## v0.8.21 - 2024-03-05
-
 - Bump the `LDPCDecoders` dependency.
 
 ## v0.8.20 - 2024-01-22
