@@ -47,9 +47,6 @@ jobs:
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1'
-      - name: "Manually add Conda.jl folder due to bug in its build step"
-        run: |
-          mkdir -p "/home/runner/.julia/conda/3/x86_64"
       - uses: julia-actions/cache@v1
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-docdeploy@v1

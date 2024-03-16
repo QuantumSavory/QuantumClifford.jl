@@ -59,4 +59,10 @@ end
         s = random_destabilizer(2)
         @test sop*s == cop*s == tcop*s == ccop*s
     end
+    for op in subtypes(QuantumClifford.AbstractTwoQubitOperator)
+        sop = op(1,10)
+        op1 = CliffordOperator(sop,20)
+        op2 = sSWAP(2,10)*(CliffordOperator(sop,2; compact=true)⊗tensor_pow(tId1, 18))*CliffordOperator(sSWAP(2,10),20)
+        @test op1 == op2
+    end
 end
