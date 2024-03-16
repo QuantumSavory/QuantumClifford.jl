@@ -6,6 +6,10 @@
 
 # News
 
+## v0.8.23 - 2024-03-16
+
+- Implemented the family of [[2^j, 2^j - j - 2, 3]] Gottesman codes, also known as [[2^j, 2^j - j - 2, 3]] quantum Hamming codes.
+
 ## v0.8.22 - 2024-03-15
 
 - Bump the `PyQDecoders` dependency, switching to `PythonCall` behind the scenes for reliability.
