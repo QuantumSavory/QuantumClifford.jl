@@ -212,21 +212,30 @@ end
 # From extensions:
 
 """A simple Belief Propagation decoder built around tools from `LDPCDecoders.jl`."""
-function BeliefPropDecoder(args...)
+function BeliefPropDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordLDPCDecodersExt)
     if isnothing(ext)
         throw("The `BeliefPropDecoder` depends on the package `LDPCDecoders` but you have not installed or imported `LDPCDecoders` yet. Immediately after you import `LDPCDecoders`, the `BeliefPropDecoder` will be available.")
     end
-    return ext.BeliefPropDecoder(args...)
+    return ext.BeliefPropDecoder(args...; kwargs...)
 end
 
 """A Belief Propagation decoder built around tools from the python package `ldpc` available from the julia package `PyQDecoders.jl`."""
-function PyBeliefPropDecoder(args...)
+function PyBeliefPropDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyQDecodersExt)
     if isnothing(ext)
         throw("The `PyBeliefPropDecoder` depends on the package `PyQDecoders` but you have not installed or imported `PyQDecoders` yet. Immediately after you import `PyQDecoders`, the `PyBeliefPropDecoder` will be available.")
     end
-    return ext.PyBeliefPropDecoder(args...)
+    return ext.PyBeliefPropDecoder(args...; kwargs...)
+end
+
+"""A Belief Propagation decoder with ordered statistics decoding, built around tools from the python package `ldpc` available from the julia package `PyQDecoders.jl`."""
+function PyBeliefPropOSDecoder(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyQDecodersExt)
+    if isnothing(ext)
+        throw("The `PyBeliefPropOSDecoder` depends on the package `PyQDecoders` but you have not installed or imported `PyQDecoders` yet. Immediately after you import `PyQDecoders`, the `PyBeliefPropOSDecoder` will be available.")
+    end
+    return ext.PyBeliefPropOSDecoder(args...; kwargs...)
 end
 
 """A perfect matching decoder built around tools from the python package `pymatching` available from the julia package `PyQDecoders.jl`."""
