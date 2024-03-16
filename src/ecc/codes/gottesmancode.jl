@@ -90,6 +90,3 @@ function parity_checks(c::Gottesman)
     fill_array = fill(UInt8(0), num_rows)
     Stabilizer(fill_array, extended_Hz, extended_Hx)
 end
-
-parity_checks_x(c::Gottesman) = stab_to_gf2(parity_checks(Gottesman(c.j)))[1:end:1,1:end÷2]
-parity_checks_z(c::Gottesman) = stab_to_gf2(parity_checks(Gottesman(c.j)))[1:end,end÷2+1:end]
