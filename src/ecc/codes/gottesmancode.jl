@@ -7,7 +7,6 @@ Key details for the [[8, 3, 3]] code when j = 3 using Stabilizer Formalism:
 Notes:
 - This implementation adopts the Gottesman Notation for the [[8, 3, 3]] stabilizer code as depicted in Table 3.3 on Page 22 on the Gottesman's PhD thesis. Additionally, for j = 4, our [[16, 10, 3]] stabilizer code stemming from QHamming(4) can be cross-verified from Table 8.1 on Page 91 as well [Gottesman1997](@cite).
 - The differences between [6506105](@cite), [Chao2017QuantumEC](@cite), and [Gottesman1997](@cite) primarily lie in the choice of stabilizer generators and their permutations for the [[8, 3, 3]] stabilizer code.
-- The discrepancy in stabilizer generator representations underscores the flexibility within the stabilizer formalism, allowing for various valid choices and permutations, albeit with different notations and implementation details.
 """
 
 struct Gottesman <: AbstractECC
