@@ -11,8 +11,8 @@ Notes:
 
 struct Gottesman <: AbstractECC
     j::Int
-    Hx = Matrix{Bool}
-    Hz = Matrix{Bool}
+    Hx::Matrix{Bool}
+    Hz::Matrix{Bool}
     function Gottesman(j)
         (j >= 3 && j < 21) || error("In `Gottesman(j)`, `j` must be ≥  3 in order to obtain a valid code and `j` must be < 21 to remain tractable")
         new(j)
