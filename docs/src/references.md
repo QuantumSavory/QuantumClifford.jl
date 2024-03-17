@@ -31,7 +31,7 @@ For circuit construction routines (for stabilizer measurements for a given code)
 For code construction routines:
 - [cleve1997efficient](@cite)
 - [gottesman1996class](@cite)
-- [Gottesman1997](@cite)
+- [gottesman1997stabilizer](@cite)
 - [yu2013all](@cite)
 - [chao2018quantum](@cite)
 
