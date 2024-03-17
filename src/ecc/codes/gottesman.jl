@@ -69,7 +69,7 @@ function parity_checks(c::Gottesman)
                for a in 1:div(cols, 8)
                    ci = 8 * a
                    if ci <= cols
-                       Hx[rows, ci] = 1 -Hx[rows, ci]
+                       Hx[rows, ci] = 1 - Hx[rows, ci]
                    end
                end
         else
