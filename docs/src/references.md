@@ -28,6 +28,13 @@ For circuit construction routines (for stabilizer measurements for a given code)
 - [grassl2002algorithmic](@cite)
 - [grassl2011variations](@cite)
 
+For code construction routines:
+- [cleve1997efficient](@cite)
+- [gottesman1996class](@cite)
+- [Gottesman1997](@cite)
+- [yu2013all](@cite)
+- [chao2018quantum](@cite)
+
 # References
 
 ```@bibliography
