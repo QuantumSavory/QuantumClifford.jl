@@ -67,8 +67,20 @@ function parity_checks(c::Gottesman)
             end
         end
 
-        for a in 1:cols
-            Hx[rows, a] = (a % 4 == 0) || (a % 4 == 1) ? 0 : 1
+        if rows % 2 == 1
+            for a in 1:cols
+                Hx[rows, a] = ((a % 4 == 0) || (a % 4 == 1) ? 0 : 1) ⊻ ((a % 8 == 5) || (a % 8 == 6) || (a % 8 == 7))
+            end
+               for a in 1:div(cols, 8)
+                   ci = 8 * a
+                   if ci <= cols
+                       Hx[rows, ci] = 1 -Hx[rows, ci]
+                   end
+               end
+        else
+            for a in 1:cols
+                Hx[rows, a] = (a % 4 == 0) || (a % 4 == 1) ? 0 : 1
+            end
         end
     end
 

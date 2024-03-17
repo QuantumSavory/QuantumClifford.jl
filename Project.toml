@@ -1,7 +1,7 @@
 name = "QuantumClifford"
 uuid = "0525e862-1e90-11e9-3e4d-1b39d7109de1"
 authors = ["Stefan Krastanov <stefan@krastanov.org>"]
-version = "0.8.21"
+version = "0.8.23"
 
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
