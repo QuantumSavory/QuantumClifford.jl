@@ -12,8 +12,8 @@ import LDPCDecoders
         Perfect5(),
         Cleve8(),
         Gottesman(3),
-        Gottesman(4),
-        #Gottesman(5), performs poorly
+        #Gottesman(4), bad threshold
+        #Gottesman(5), bad threshold
     ]
 
     noise = 0.001
@@ -31,7 +31,7 @@ import LDPCDecoders
                 #@show c
                 #@show s
                 #@show e
-                @assert max(e...) < noise/3
+                @assert max(e...) < noise/4
             end
         end
     end
@@ -41,7 +41,6 @@ end
 
 @testset "belief prop decoders, good for small codes" begin
     codes = [
-        #Gottesman(3), Gottesman is a non-CSS code. BP works for CSS codes.
     ]
 
     noise = 0.001
