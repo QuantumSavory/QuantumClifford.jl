@@ -1,4 +1,4 @@
-"""The family of `[[2ʲ, 2ʲ - j - 2, 3]]` Gottesman codes, also known as quantum Hamming codes, as described in [Gottesman's 1997 PhD thesis](@cite Gottesman1997) and in [gottesman1996class](@cite).
+"""The family of `[[2ʲ, 2ʲ - j - 2, 3]]` Gottesman codes, also known as quantum Hamming codes, as described in [Gottesman's 1997 PhD thesis](@cite gottesman1997stabilizer) and in [gottesman1996class](@cite).
 
 You might be interested in consulting [yu2013all](@cite) and [chao2018quantum](@cite) as well.
 
