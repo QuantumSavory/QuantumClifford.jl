@@ -62,6 +62,7 @@ end
 @doset "ecc_decoder_all_setups"
 @doset "ecc_encoding"
 @doset "ecc_syndromes"
+@doset "ecc_gottesman"
 @doset "precompile"
 @doset "pauliframe"
 @doset "allocations"

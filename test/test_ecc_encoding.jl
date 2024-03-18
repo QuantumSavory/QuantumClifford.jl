@@ -15,6 +15,8 @@ using QuantumClifford.ECC
         :(Shor9()),
         :(Perfect5()),
         :(Bitflip3()),
+        :(Gottesman(3)),
+        :(Gottesman(5)),
         :(S"Y_"),
         :(S"Z_"),
         :(S"X_"),

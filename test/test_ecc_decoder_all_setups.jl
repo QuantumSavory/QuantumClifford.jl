@@ -11,6 +11,9 @@ import LDPCDecoders
         Shor9(),
         Perfect5(),
         Cleve8(),
+        Gottesman(3),
+        #Gottesman(4), bad threshold
+        #Gottesman(5), bad threshold
     ]
 
     noise = 0.001
