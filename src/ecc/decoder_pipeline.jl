@@ -6,6 +6,24 @@ All `AbstractSyndromeDecoder` types are expected to:
 - have an `evaluate_decoder` method which runs a full simulation but it supports only a small number of ECC protocols"""
 abstract type AbstractSyndromeDecoder end
 
+"""Decode a syndrome using a given decoding algorithm."""
+function decode end
+
+"""Decode a batch of syndromes using a given decoding algorithm."""
+function batchdecode(d::AbstractSyndromeDecoder, syndrome_samples)
+    H = parity_checks(d)
+    s, n = size(H)
+    samples, _s = size(syndrome_samples)
+    s == _s || throw(ArgumentError(lazy"The syndromes given to `batchdecode` have the wrong dimensions. The syndrome length is $(_s) while it should be $(s)"))
+    results = falses(samples, 2n)
+    for (i,syndrome_sample) in enumerate(eachrow(syndrome_samples))
+        guess = decode(d, syndrome_sample)# TODO use `decode!`
+        isnothing(guess) || (results[i,:] = guess)
+    end
+    return results
+end
+
+
 """An abstract type mostly used by [`evaluate_decoder`](@ref) to specify in what context to evaluate an ECC."""
 abstract type AbstractECCSetup end
 
@@ -119,37 +137,37 @@ function evaluate_decoder(d::AbstractSyndromeDecoder, nsamples, circuit, syndrom
 
     syndromes = @view pfmeasurements(frames)[:, syndrome_bits]
     measured_faults = @view pfmeasurements(frames)[:, logical_bits]
-    decoded = 0
-    for i in 1:nsamples
-        guess = decode(d, @view syndromes[i,:])
-        isnothing(guess) && continue
-        guess_faults = faults_submatrix * guess .% 2
-        if guess_faults == @view measured_faults[i,:]
-            decoded += 1
-        end
-    end
+    guesses = batchdecode(d, syndromes)
+    evaluate_guesses(measured_faults, guesses, faults_submatrix)
+end
 
+function evaluate_guesses(measured_faults, guesses, faults_matrix)
+    nsamples = size(guesses, 1)
+    guess_faults = (faults_matrix * guesses') .% 2 # TODO this can be faster and non-allocating by turning it into a loop
+    decoded = 0
+    for i in 1:nsamples # TODO this can be faster and non-allocating by having the loop and the matrix multiplication on the line above work together and not store anything
+        (@view guess_faults[:,i]) == (@view measured_faults[i,:]) && (decoded += 1)
+    end
     return (nsamples - decoded) / nsamples
 end
 
 function evaluate_decoder(d::AbstractSyndromeDecoder, setup::CommutationCheckECCSetup, nsamples::Int)
     H = parity_checks(d)
     fm = faults_matrix(H)
+    fmtab = QuantumClifford.Tableau(fm[:,end÷2+1:end],fm[:,1:end÷2]) # TODO there should be a special method for this
+    k, s = size(fm)
     n = nqubits(H)
-    decoded = 0
-    for i in 1:nsamples # TODO fix all this casting and allocation
-        err = random_pauli(n, setup.xz_noise, nophase=true)
-        syndrome = Bool.(comm(H,err))
-        guess = decode(d, syndrome)
-        isnothing(guess) && continue
-        guess_faults = fm * guess .% 2
-        measured_faults = fm * stab_to_gf2(err) .% 2
-        if guess_faults == measured_faults
-            decoded += 1
-        end
+    err = zero(PauliOperator, n)
+    syndromes = zeros(Bool, nsamples, length(H)) # TODO will this be better and faster if we use bitmatrices
+    measured_faults = zeros(UInt8, nsamples, k)
+    for i in 1:nsamples
+        err = random_pauli!(err, setup.xz_noise, nophase=true)
+        comm!((@view syndromes[i,:]), H,err)
+        comm!((@view measured_faults[i,:]), fmtab,err)
     end
-
-    return (nsamples - decoded) / nsamples
+    measured_faults .%= 2
+    guesses = batchdecode(d, syndromes)
+    evaluate_guesses(measured_faults, guesses, fm)
 end
 
 """A simple look-up table decoder for error correcting codes.
@@ -164,13 +182,15 @@ struct TableDecoder <: AbstractSyndromeDecoder
     """Faults matrix corresponding to the code"""
     faults_matrix
     """The number of qubits in the code"""
-    n
+    n::Int
     """The depth of the code"""
-    s
+    s::Int
     """The number of encoded qubits"""
-    k
+    k::Int
     """The lookup table corresponding to the code, slow to create"""
-    lookup_table
+    lookup_table::Dict{Vector{Bool},Vector{Bool}}
+    lookup_buffer::Vector{Bool}
+    TableDecoder(H, faults_matrix, n, s, k, lookup_table) = new(H, faults_matrix, n, s, k, lookup_table, fill(false, s))
 end
 
 function TableDecoder(c)
@@ -180,13 +200,13 @@ function TableDecoder(c)
     k = n - r
     lookup_table = create_lookup_table(H)
     fm = faults_matrix(H)
-    return TableDecoder(H, n, s, k, fm, lookup_table)
+    return TableDecoder(H, fm, n, s, k, lookup_table)
 end
 
 parity_checks(d::TableDecoder) = d.H
 
 function create_lookup_table(code::Stabilizer)
-    lookup_table = Dict()
+    lookup_table = Dict{Vector{Bool},Vector{Bool}}()
     constraints, qubits = size(code)
     # In the case of no errors
     lookup_table[ zeros(UInt8, constraints) ] = stab_to_gf2(zero(PauliOperator, qubits))
@@ -206,7 +226,8 @@ function create_lookup_table(code::Stabilizer)
 end;
 
 function decode(d::TableDecoder, syndrome_sample)
-    return get(d.lookup_table, syndrome_sample, nothing)
+    d.lookup_buffer .= syndrome_sample # TODO have this work without data copying, by supporting the correct types, especially in the batch decode case
+    return get(d.lookup_table, d.lookup_buffer, nothing)
 end
 
 # From extensions:

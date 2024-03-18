@@ -3,7 +3,7 @@ module ECC
 using LinearAlgebra
 using QuantumClifford
 using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
-import QuantumClifford: Stabilizer, MixedDestabilizer
+import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
 using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
@@ -55,6 +55,8 @@ MixedDestabilizer(c::AbstractECC; kwarg...) = MixedDestabilizer(Stabilizer(c); k
 
 """The number of physical qubits in a code."""
 function code_n end
+
+nqubits(c::AbstractECC) = code_n(c::AbstractECC)
 
 code_n(c::AbstractECC) = code_n(parity_checks(c))
 

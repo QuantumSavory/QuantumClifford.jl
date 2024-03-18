@@ -13,27 +13,37 @@ Use `realphase=true` to get operators with phase ±1 (excluding ±i).
 
 Optionally, a "flip" probability `p` can be provided specified,
 in which case each bit is set to I with probability `1-p` and to
-X, Y, or Z, each with probability `p`. Useful for simulating Pauli noise."""
-random_pauli(rnd::AbstractRNG, n::Int; nophase=false, realphase=false) = PauliOperator(nophase ? 0x0 : (realphase ? rand(rnd,[0x0,0x2]) : rand(rnd,0x0:0x3)), rand(rnd,Bool,n), rand(rnd,Bool,n))
-random_pauli(n::Int; nophase=false, realphase=false) = random_pauli(GLOBAL_RNG, n, nophase=nophase, realphase=realphase)
-function random_pauli(rng::AbstractRNG,n::Int,p; nophase=false,nonidbranch=false)
-    x = falses(n)
-    z = falses(n)
-    if nonidbranch
-        definite = rand(1:n)
-        p=(p/(1-(1-2p)^n) - 1/n/3)*n/(n-1)
+X, Y, or Z, each with probability `p`. Useful for simulating Pauli noise.
+
+See also [`random_pauli!`](@ref)"""
+function random_pauli end
+"""An in-place version of [`random_pauli`](@ref)"""
+function random_pauli! end
+
+function random_pauli!(rng::AbstractRNG, P::PauliOperator; nophase=false, realphase=false)
+    n = nqubits(P)
+    for i in 1:n
+        P[i] = rand(rng, (true, false)), rand(rng, (true,false))
     end
+    P.phase[] = nophase ? 0x0 : (realphase ? rand(rng,(0x0,0x2)) : rand(rng,0x0:0x3))
+    P
+end
+random_pauli!(P::PauliOperator; kwargs...) = random_pauli!(GLOBAL_RNG,P; kwargs...)
+function random_pauli!(rng::AbstractRNG,P::PauliOperator,p; nophase=false, realphase=false)
+    n = nqubits(P)
     for i in 1:n
         r = rand(rng)
-        if nonidbranch && definite==i
-            r *= 3p
-        end
-        if (r<=2p) x[i]=true end
-        if (p<r<=3p) z[i]=true end
+        P[i] = (r<=2p), (p<r<=3p)
     end
-    PauliOperator(nophase ? 0x0 : rand(rng,0x0:0x3), x, z)
+    P.phase[] = nophase ? 0x0 : (realphase ? rand(rng,(0x0,0x2)) : rand(rng,0x0:0x3))
+    P
 end
-random_pauli(n::Int, p; nophase=false, nonidbranch=false) = random_pauli(GLOBAL_RNG,n,p; nophase=nophase,nonidbranch=nonidbranch)
+random_pauli!(P::PauliOperator, p; kwargs...) = random_pauli!(GLOBAL_RNG,P,p; kwargs...)
+
+random_pauli(rng::AbstractRNG,n::Int; kwargs...) = random_pauli!(rng, zero(PauliOperator, n); kwargs...)
+random_pauli(n::Int; kwargs...) = random_pauli(GLOBAL_RNG, n; kwargs...)
+random_pauli(rng::AbstractRNG,n::Int,p; kwargs...) = random_pauli!(rng, zero(PauliOperator, n); kwargs...)
+random_pauli(n::Int, p; kwargs...) = random_pauli(GLOBAL_RNG,n,p; kwargs...)
 
 ##############################
 # Random Binary Matrices

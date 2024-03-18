@@ -66,6 +66,13 @@ end
 
 ##
 
+using Test
+using QuantumClifford
+using QuantumClifford.ECC
+
+import PyQDecoders
+import LDPCDecoders
+
 @testset "matching decoder, good as long as column weight of the code is limited" begin
     codes = [
         Toric(8,8),
