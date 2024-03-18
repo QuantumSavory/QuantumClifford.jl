@@ -2,7 +2,9 @@
 
 struct Steane7 <: AbstractECC end
 
-iscss(c::Steane7) = true
+function iscss(::Type{Steane7})
+    return true
+end
 
 parity_checks(c::Steane7) = S"___XXXX
                               _XX__XX
