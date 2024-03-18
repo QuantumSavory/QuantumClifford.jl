@@ -7,7 +7,7 @@
 # News
 
 ## v0.8.21 - 2024-03-17
-
+- adding iscss function
 - Implemented the Gottesman code family, also known as [[2^j, 2^j - j - 2, 3]] quantum Hamming codes.
 - Bump the `PyQDecoders` dependency, switching to `PythonCall` behind the scenes for reliability.
 - Bump the `LDPCDecoders` dependency.
