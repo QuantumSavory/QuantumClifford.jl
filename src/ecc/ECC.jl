@@ -37,11 +37,7 @@ Only CSS codes have this method.
 
 See also: [`parity_checks`](@ref)"""
 function parity_checks_x(code::AbstractECC)
-    if iscss(code)
-    # Existing implementation for CSS codes
-    else
-    throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
-    end
+throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
 end
 
 """Parity check boolean matrix of a code (only the Z entries in the tableau, i.e. the checks for X errors).
@@ -50,15 +46,12 @@ Only CSS codes have this method.
 
 See also: [`parity_checks`](@ref)"""
 function parity_checks_z(code::AbstractECC)
-    if iscss(code)
-    # Existing implementation for CSS codes
-    else
-    throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
-    end
+throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
 end
 
-function iscss(code::AbstractECC)
-    return true  # Default: CSS
+# Define a default method
+function iscss(::Type{T}) where T<:AbstractECC
+    return true
 end
 
 parity_checks(s::Stabilizer) = s
