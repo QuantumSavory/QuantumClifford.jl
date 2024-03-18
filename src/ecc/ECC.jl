@@ -1,4 +1,4 @@
-zmodule ECC
+module ECC
 
 using LinearAlgebra
 using QuantumClifford
