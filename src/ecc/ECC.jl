@@ -58,7 +58,7 @@ function parity_checks_z(code::AbstractECC)
 end
 
 function iscss(code::AbstractECC)
-    return false  # Default: not CSS
+    return true  # Default: CSS
 end
 
 parity_checks(s::Stabilizer) = s

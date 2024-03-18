@@ -2,6 +2,8 @@
 
 struct Steane7 <: AbstractECC end
 
+iscss(c::Steane7) = true
+
 parity_checks(c::Steane7) = S"___XXXX
                               _XX__XX
                               X_X_X_X
