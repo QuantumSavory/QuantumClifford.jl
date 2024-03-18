@@ -12,7 +12,7 @@ using Nemo: ZZ, residue_ring, matrix
 
 abstract type AbstractECC end
 
-export parity_checks, parity_checks_x, parity_checks_z,
+export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
@@ -37,7 +37,10 @@ Only CSS codes have this method.
 
 See also: [`parity_checks`](@ref)"""
 function parity_checks_x(code::AbstractECC)
-    throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
+    # Check if code is CSS using iscss
+    if !iscss(code)
+        throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
+     end
 end
 
 """Parity check boolean matrix of a code (only the Z entries in the tableau, i.e. the checks for X errors).
@@ -46,7 +49,15 @@ Only CSS codes have this method.
 
 See also: [`parity_checks`](@ref)"""
 function parity_checks_z(code::AbstractECC)
-    throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
+    if !iscss(code)
+        throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
+    end
+end
+
+function iscss(code::AbstractECC)
+    # Check for known CSS structures directly
+    if isa(code, CSS) || isa(code, Toric) || isa(code, Shor9) || isa(code, Steane7) || isa(code, Perfect5) || isa(code, Cleve8)
+        return true
 end
 
 parity_checks(s::Stabilizer) = s
