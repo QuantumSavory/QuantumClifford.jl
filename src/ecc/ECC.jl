@@ -58,6 +58,7 @@ function iscss(code::AbstractECC)
     # Check for known CSS structures directly
     if isa(code, CSS) || isa(code, Toric) || isa(code, Shor9) || isa(code, Steane7) || isa(code, Perfect5) || isa(code, Cleve8)
         return true
+    end
 end
 
 parity_checks(s::Stabilizer) = s
