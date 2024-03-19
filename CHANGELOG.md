@@ -7,7 +7,8 @@
 
 ## v0.8.22 - 2024-03-19
 
-- Added `iscss` function to determine whether a given code is a CSS (Calderbank-Shor-Steane) code and to verify if its parity check matrix is indeed in CSS form.
+- Implemented `iscss` function to rapidly identify whether a given code adheres to CSS (Calderbank-Shor-Steane) code criteria.
+ 
 ## v0.9.0 - 2024-03-19
 
 - **(breaking)** The defaults in `random_pauli` are now `realphase=true` and `nophase=true`.
