@@ -4,10 +4,11 @@ using QuantumClifford.ECC
 using QuantumClifford.ECC: AbstractECC
 
 function is_css_matrix(H)
-    for i in 1:size(H, 1)
+    nrows, ncols = size(H)
+    for i in 1:nrows
         has_x = false
         has_z = false
-        for j in 1:size(H, 2)
+        for j in 1:ncols
             e = H[i, j]
             if e == (true, false)
                 has_x = true
