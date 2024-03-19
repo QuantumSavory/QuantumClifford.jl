@@ -5,11 +5,18 @@ using QuantumClifford.ECC: AbstractECC
 
 function is_css_matrix(H)
     for i in 1:size(H, 1)
+        has_x = false
+        has_z = false
         for j in 1:size(H, 2)
             e = H[i, j]
-                if all(x ∈ [(true, false), (false, true)] for x in e) 
-                    return false
-                end
+            if e == (true, false)
+                has_x = true
+            elseif e == (false, true)
+                has_z = true
+            end
+            if has_x && has_z
+                return false
+            end
         end
     end
     return true
