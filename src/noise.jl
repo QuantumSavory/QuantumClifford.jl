@@ -22,10 +22,11 @@ function applynoise!(r::Register, n, indices::Base.AbstractVecOrTuple)
     return r
 end
 
-"""Depolarization noise model with total probability of error `3*errprobthird`."""
+"""Depolarization noise model with total probability of error `p`."""
 struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
-    errprobthird::T
+    p::T
 end
+UnbiasedUncorrelatedNoise(p::Integer) = UnbiasedUncorrelatedNoise(float(p))
 
 """A convenient constructor for various types of Pauli noise models.
 Returns more specific types when necessary."""
@@ -33,12 +34,12 @@ function PauliNoise end
 
 """Constructs an unbiased Pauli noise model with total probability of error `p`."""
 function PauliNoise(p)
-    UnbiasedUncorrelatedNoise(p/3)
+    UnbiasedUncorrelatedNoise(p)
 end
 
 function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,i::Int)
     n = nqubits(s)
-    infid = noise.errprobthird
+    infid = noise.p/3
     r = rand()
     if r<infid
         apply_single_x!(s,i)
@@ -121,11 +122,11 @@ end
 function applynoise_branches(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,indices; max_order=1)
     n = nqubits(s)
     l = length(indices)
-    infid = noise.errprobthird
+    infid = noise.p/3
     if l==0
         return [s,one(infid)]
     end
-    error1 = 3*infid
+    error1 = noise.p
     no_error1 = 1-error1
     no_error = no_error1^l
     results = [(copy(s),no_error,0)] # state, prob, order

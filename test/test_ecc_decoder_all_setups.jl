@@ -19,7 +19,7 @@ import LDPCDecoders
     noise = 0.001
 
     setups = [
-        CommutationCheckECCSetup(noise/2),
+        CommutationCheckECCSetup(noise),
         NaiveSyndromeECCSetup(noise, 0),
         ShorSyndromeECCSetup(noise, 0),
     ]
@@ -46,7 +46,7 @@ end
     noise = 0.001
 
     setups = [
-        CommutationCheckECCSetup(noise/2),
+        CommutationCheckECCSetup(noise),
         NaiveSyndromeECCSetup(noise, 0),
         ShorSyndromeECCSetup(noise, 0),
     ]
@@ -66,6 +66,13 @@ end
 
 ##
 
+using Test
+using QuantumClifford
+using QuantumClifford.ECC
+
+import PyQDecoders
+import LDPCDecoders
+
 @testset "matching decoder, good as long as column weight of the code is limited" begin
     codes = [
         Toric(8,8),
@@ -75,7 +82,7 @@ end
     noise = 0.01
 
     setups = [
-        CommutationCheckECCSetup(noise/2),
+        CommutationCheckECCSetup(noise),
         NaiveSyndromeECCSetup(noise, 0),
         ShorSyndromeECCSetup(noise, 0),
     ]

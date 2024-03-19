@@ -142,6 +142,6 @@ end
         ]).measurements
         avg_result = to_cpu(sum(measurements, dims=1) / trajectories)
         error_threshold = 0.02
-        approx(vec(avg_result), [0, .5, 2p, .5], error_threshold)
+        approx(vec(avg_result), [0, .5, 2p/3, .5], error_threshold)
     end
 end
