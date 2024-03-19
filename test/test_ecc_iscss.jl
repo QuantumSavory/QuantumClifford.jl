@@ -22,22 +22,20 @@ function test_code(code)
     is_css = iscss(code)
     H = parity_checks(code)
     is_css_matrix_result = is_css_matrix(H)
-    println("Is CSS: ", is_css)
-    println("Is parity check matrix in CSS form: ", is_css_matrix_result)
 end
 
-@testset "Test code and parity check matrix" begin
-    @testset "Shor9" begin
-        test_code(Shor9())
-    end
-    
-    # Test Steane7
-    @testset "Steane7" begin
-        test_code(Steane7())
-    end
+known_all_codes = [Shor9(), Steane7(), Gottesman(3), Cleve8(), Perfect5(), Toric(8,8), CSS([0 1 1 0; 1 1 0 0], [1 1 1 1]), Bitflip3()]
 
-    # Test Gottesman(3)
-    @testset "Gottesman" begin
-        test_code(Gottesman(3))
+for code in known_all_codes
+    @test iscss(code) == is_css_matrix(parity_checks(code))
+end
+
+@testset "Test is css and parity check matrix" begin
+    @testset "Known Codes" begin
+        for code in known_all_codes
+            @testset string(code) begin
+                test_code(code)
+            end
+        end
     end
 end
