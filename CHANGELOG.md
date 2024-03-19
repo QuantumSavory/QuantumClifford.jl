@@ -8,7 +8,7 @@
 
 ## v0.8.22 - 2024-03-19
 
-- Added `iscss` function to determine whether a given code is a CSS (Calderbank-Shor-Steane) code and check whether their parity check matrix is indeed in CSS form.
+- Added `iscss` function to determine whether a given code is a CSS (Calderbank-Shor-Steane) code and to verify if its parity check matrix is indeed in CSS form.
 
 ## v0.8.21 - 2024-03-17
 
