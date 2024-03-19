@@ -30,12 +30,10 @@ for code in known_all_codes
     @test iscss(code) == is_css_matrix(parity_checks(code))
 end
 
-@testset "Test is css and parity check matrix" begin
-    @testset "Known Codes" begin
+@testset "Test iscss and parity check matrix" begin
+    @testset "known codes" begin
         for code in known_all_codes
-            @testset string(code) begin
-                test_code(code)
-            end
+            test_code(code)
         end
     end
 end
