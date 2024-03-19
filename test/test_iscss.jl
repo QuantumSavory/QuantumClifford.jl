@@ -10,14 +10,9 @@ function is_css_matrix(H)
         has_z = false
         for j in 1:ncols
             e = H[i, j]
-            if e == (true, false)
-                has_x = true
-            elseif e == (false, true)
-                has_z = true
-            end
-            if has_x && has_z
-                return false
-            end
+            has_x |= H[i,j][1]
+            has_z |= H[i,j][2]
+            has_x && has_z && return false
         end
     end
     return true
