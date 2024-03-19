@@ -5,7 +5,7 @@
 
 # News
 
-## v0.8.22 - 2024-03-19
+## v0.9.1 - 2024-03-20
 
 - Implemented `iscss` function to rapidly identify whether a given code adheres to CSS (Calderbank-Shor-Steane) code criteria.
  
