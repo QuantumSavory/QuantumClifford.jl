@@ -28,8 +28,13 @@ end
         test_code(Shor9())
     end
     
-    # Test Perfect5
+    # Test Steane7
     @testset "Steane7" begin
         test_code(Steane7())
+    end
+
+    # Test Gottesman(3)
+    @testset "Gottesman" begin
+        test_code(Gottesman(3))
     end
 end
