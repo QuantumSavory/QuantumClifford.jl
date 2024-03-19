@@ -44,10 +44,10 @@ Random Pauli operators are implemented as well (with or without a random phase).
 julia> using StableRNGs; rng = StableRNG(42);
 
 julia> random_pauli(rng, 4)
-+i_ZZ_
++ ZYY_
 
-julia> random_pauli(rng, 4; nophase=true)
-+ ZXZY
+julia> random_pauli(rng, 4; nophase=false)
+- YZ_X
 ```
 
 ## Stabilizer States

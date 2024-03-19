@@ -120,13 +120,14 @@ function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRY, and faster sMRX
 end
 
 function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
-    p = noise.errprobthird
+    p = noise.p
     T = eltype(frame.frame.tab.xzs)
 
     lowbit = T(1)
     ibig = _div(T,i-1)+1
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
+    p = p/3
 
     @inbounds @simd for f in eachindex(frame)
         r = rand()

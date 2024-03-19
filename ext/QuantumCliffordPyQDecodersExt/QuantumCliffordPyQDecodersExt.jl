@@ -4,7 +4,7 @@ using PyQDecoders: np, sps, ldpc, pm, PythonCall
 using SparseArrays
 using QuantumClifford
 using QuantumClifford.ECC
-import QuantumClifford.ECC: AbstractSyndromeDecoder, decode, parity_checks
+import QuantumClifford.ECC: AbstractSyndromeDecoder, decode, batchdecode, parity_checks
 
 abstract type PyBP <: AbstractSyndromeDecoder end
 
@@ -100,6 +100,14 @@ function decode(d::PyMatchingDecoder, syndrome_sample)
     guess_z_errors = PythonCall.PyArray(d.pyx.decode(row_x))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode(row_z))
     vcat(guess_x_errors, guess_z_errors)
+end
+
+function batchdecode(d::PyMatchingDecoder, syndrome_samples)
+    row_x = syndrome_samples[:,1:d.nx] # TODO This copy is costly!
+    row_z = syndrome_samples[:,d.nx+1:end]
+    guess_z_errors = PythonCall.PyArray(d.pyx.decode_batch(row_x))
+    guess_x_errors = PythonCall.PyArray(d.pyz.decode_batch(row_z))
+    hcat(guess_x_errors, guess_z_errors)
 end
 
 end
