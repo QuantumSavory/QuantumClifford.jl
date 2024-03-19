@@ -26,7 +26,7 @@ end
     end
     
     # Test Perfect5
-    @testset "Perfect5" begin
-        test_code(Perfect5())
+    @testset "Steane7" begin
+        test_code(Steane7()
     end
 end
