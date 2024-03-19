@@ -7,7 +7,7 @@ function is_css_matrix(H)
     for i in 1:size(H, 1)
         for j in 1:size(H, 2)
             e = H[i, j]
-                if all(x ∈ [(true, false), (false, true)] for x in H) 
+                if all(x ∈ [(true, false), (false, true)] for x in e) 
                     return false
                 end
         end
