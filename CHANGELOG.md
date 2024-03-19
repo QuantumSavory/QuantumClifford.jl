@@ -2,9 +2,17 @@
 
 - `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
-- `random_pauli(...; realphase=true)` should be the default
 
 # News
+
+## v0.9.0 - 2024-03-19
+
+- **(breaking)** The defaults in `random_pauli` are now `realphase=true` and `nophase=true`.
+- **(breaking)** The convention for for flip probability in `random_pauli`.
+- **(breaking)** The convention for noise probability in `UnbiasedUncorrelatedNoise` changed. The input number is the total probability for an error to occur.
+- Implement an inplace `random_pauli!`, a non-allocating alternative to `random_pauli`.
+- Significant improvement in the performance of the ECC decoder pipeline (but many low-hanging fruits still remain).
+
 
 ## v0.8.21 - 2024-03-17
 
