@@ -4,9 +4,10 @@ using QuantumClifford.ECC
 using QuantumClifford.ECC: AbstractECC
 
 function is_css_matrix(H)
-    for row in eachrow(H)
-        if all(x ∈ [(true, false), (false, true)] for x in row)
-            return false
+    for i in 1:size(H, 1)
+        row = H[i, :]
+            if all(x ∈ [(true, false), (false, true)] for x in row)
+                return false
         end
     end
     return true
