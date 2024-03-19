@@ -5,10 +5,13 @@
 - `random_pauli(...; realphase=true)` should be the default
 
 # News
+
 ## v0.8.22 - 2024-03-19
+
 - adding iscss function
 
 ## v0.8.21 - 2024-03-17
+
 - Implemented the Gottesman code family, also known as [[2^j, 2^j - j - 2, 3]] quantum Hamming codes.
 - Bump the `PyQDecoders` dependency, switching to `PythonCall` behind the scenes for reliability.
 - Bump the `LDPCDecoders` dependency.

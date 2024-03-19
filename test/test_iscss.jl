@@ -12,7 +12,6 @@ function is_css_matrix(H)
     return true
 end
 
-
 function test_code(code)
     is_css = iscss(code)
     H = parity_checks(code)
