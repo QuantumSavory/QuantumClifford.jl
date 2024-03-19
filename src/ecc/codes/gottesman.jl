@@ -12,10 +12,6 @@ struct Gottesman <: AbstractECC
     end
 end
 
-function iscss(::Type{Gottesman})
-    return false
-end
-
 code_n(c::Gottesman) = 2^c.j
 
 function parity_checks(c::Gottesman)
