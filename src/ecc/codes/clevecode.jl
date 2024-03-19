@@ -3,10 +3,6 @@ struct Cleve8 <: AbstractECC end
 
 code_n(c::Cleve8) = 8
 
-function iscss(::Type{Cleve8})
-    return false
-end
-
 parity_checks(c::Cleve8) = S"XXXXXXXX
                              ZZZZZZZZ
                              XIXIZYZY
