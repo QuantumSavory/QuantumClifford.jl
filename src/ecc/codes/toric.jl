@@ -4,7 +4,7 @@ struct Toric <: AbstractECC
     dz::Int
 end
 
-function iscss(c::Toric)
+function iscss(::Type{Toric})
     return true
 end
 
