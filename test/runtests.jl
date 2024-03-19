@@ -63,6 +63,7 @@ end
 @doset "ecc_encoding"
 @doset "ecc_syndromes"
 @doset "ecc_gottesman"
+@doset "iscss"
 @doset "precompile"
 @doset "pauliframe"
 @doset "allocations"

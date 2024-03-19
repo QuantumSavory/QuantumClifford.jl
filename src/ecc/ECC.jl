@@ -49,9 +49,10 @@ function parity_checks_z(code::AbstractECC)
     throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
 end
 
-# default CSS method
 function iscss(::Type{T}) where T<:AbstractECC
-    return true
+
+function iscss(c::AbstractECC)
+    return iscss(typeof(c))
 end
 
 parity_checks(s::Stabilizer) = s

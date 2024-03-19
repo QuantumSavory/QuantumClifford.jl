@@ -2,6 +2,10 @@ struct Shor9 <: AbstractECC end
 
 code_n(c::Shor9) = 9
 
+function iscss(::Type{Shor9})
+    return true
+end
+
 parity_checks(c::Shor9) = S"ZZ_______
                             _ZZ______
                             ___ZZ____
