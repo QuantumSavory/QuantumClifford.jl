@@ -8,19 +8,20 @@ import Nemo
 
 """A random Pauli operator on n qubits.
 
-Use `realphase=true` to get operators with phase ±1 (excluding ±i).
-`nophase=true` sets the phase to +1.
+Use `nophase=false` to randomize the phase.
+Use `realphase=false` to get operators with phases including ±i.
+
 
 Optionally, a "flip" probability `p` can be provided specified,
 in which case each bit is set to I with probability `1-p` and to
-X, Y, or Z, each with probability `p`. Useful for simulating Pauli noise.
+X or Y or Z with probability `p`. Useful for simulating unbiased Pauli noise.
 
 See also [`random_pauli!`](@ref)"""
 function random_pauli end
 """An in-place version of [`random_pauli`](@ref)"""
 function random_pauli! end
 
-function random_pauli!(rng::AbstractRNG, P::PauliOperator; nophase=false, realphase=false)
+function random_pauli!(rng::AbstractRNG, P::PauliOperator; nophase=true, realphase=true)
     n = nqubits(P)
     for i in 1:n
         P[i] = rand(rng, (true, false)), rand(rng, (true,false))
@@ -31,6 +32,7 @@ end
 random_pauli!(P::PauliOperator; kwargs...) = random_pauli!(GLOBAL_RNG,P; kwargs...)
 function random_pauli!(rng::AbstractRNG,P::PauliOperator,p; nophase=false, realphase=false)
     n = nqubits(P)
+    p = p/3
     for i in 1:n
         r = rand(rng)
         P[i] = (r<=2p), (p<r<=3p)

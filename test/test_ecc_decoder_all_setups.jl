@@ -19,7 +19,7 @@ import LDPCDecoders
     noise = 0.001
 
     setups = [
-        CommutationCheckECCSetup(noise/2),
+        CommutationCheckECCSetup(noise),
         NaiveSyndromeECCSetup(noise, 0),
         ShorSyndromeECCSetup(noise, 0),
     ]
@@ -46,7 +46,7 @@ end
     noise = 0.001
 
     setups = [
-        CommutationCheckECCSetup(noise/2),
+        CommutationCheckECCSetup(noise),
         NaiveSyndromeECCSetup(noise, 0),
         ShorSyndromeECCSetup(noise, 0),
     ]
@@ -82,7 +82,7 @@ import LDPCDecoders
     noise = 0.01
 
     setups = [
-        CommutationCheckECCSetup(noise/2),
+        CommutationCheckECCSetup(noise),
         NaiveSyndromeECCSetup(noise, 0),
         ShorSyndromeECCSetup(noise, 0),
     ]
