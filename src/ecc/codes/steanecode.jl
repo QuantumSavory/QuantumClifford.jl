@@ -2,7 +2,7 @@
 
 struct Steane7 <: AbstractECC end
 
-function iscss(::Type{Steane7})
+function iscss(c::Steane7)
     return true
 end
 

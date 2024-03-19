@@ -22,11 +22,11 @@ end
 
 @testset "Test code and parity check matrix" begin
     @testset "Shor9" begin
-        test_code(Shor9)
+        test_code(Shor9())
     end
     
     # Test Perfect5
     @testset "Perfect5" begin
-        test_code(Perfect5)
+        test_code(Perfect5())
     end
 end

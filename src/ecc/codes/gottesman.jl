@@ -12,7 +12,7 @@ struct Gottesman <: AbstractECC
     end
 end
 
-function iscss(::Type{Gottesman})
+function iscss(c::Gottesman)
     return false
 end
 

@@ -2,7 +2,7 @@ struct Shor9 <: AbstractECC end
 
 code_n(c::Shor9) = 9
 
-function iscss(::Type{Shor9})
+function iscss(c::Shor9)
     return true
 end
 
