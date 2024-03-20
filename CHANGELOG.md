@@ -7,7 +7,7 @@
 
 ## v0.9.1 - 2024-03-20
 
-- Implemented `iscss` function to rapidly identify whether a given code adheres to CSS (Calderbank-Shor-Steane) code criteria.
+- Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.
  
 ## v0.9.0 - 2024-03-19
 
