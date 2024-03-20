@@ -22,7 +22,7 @@ function test_code(code)
     H = parity_checks(code)
     @test iscss(code) == is_css_matrix(H)
     if iscss(code)
-        @test is_css_matrix(H) == true "Parity check matrix for CSS code should be in CSS form."
+        @test is_css_matrix(H) == true
     end
 end
 
