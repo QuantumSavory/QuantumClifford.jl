@@ -17,6 +17,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode,
+    ReedMuller,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman,
@@ -345,4 +346,5 @@ include("codes/shorcode.jl")
 include("codes/clevecode.jl")
 include("codes/toric.jl")
 include("codes/gottesman.jl")
+include("codes/reedmullercode.jl")
 end #module
