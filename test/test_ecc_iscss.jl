@@ -29,6 +29,8 @@ end
 
 known_all_codes = [Shor9(), Steane7(), Gottesman(3), Cleve8(), Perfect5(), Toric(8,8), CSS([0 1 1 0; 1 1 0 0], [1 1 1 1]), Bitflip3()]
 
-for code in known_all_codes
-    @test iscss(code) == is_css_matrix(parity_checks(code))
+@testset "is CSS" begin
+    for code in known_all_codes
+        @test iscss(code) == is_css_matrix(parity_checks(code))
+    end
 end
