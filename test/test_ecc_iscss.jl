@@ -19,11 +19,10 @@ function is_css_matrix(H)
 end
 
 function test_code(code)
-    is_css = iscss(code)
     H = parity_checks(code)
-    is_css_matrix_result = is_css_matrix(H)
-    if is_css
-        @test is_css_matrix_result == true "If code is CSS, then parity_check_matrix must be in CSS form."
+    @test iscss(code) == is_css_matrix(H)
+    if iscss(code)
+        @test is_css_matrix(H) == true "Parity check matrix for CSS code should be in CSS form."
     end
 end
 
@@ -31,6 +30,6 @@ known_all_codes = [Shor9(), Steane7(), Gottesman(3), Cleve8(), Perfect5(), Toric
 
 @testset "is CSS" begin
     for code in known_all_codes
-        @test iscss(code) == is_css_matrix(parity_checks(code))
+        test_code(code)
     end
 end
