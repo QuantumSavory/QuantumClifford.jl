@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.1 - 2024-03-20
+
+- Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.
+ 
 ## v0.9.0 - 2024-03-19
 
 - **(breaking)** The defaults in `random_pauli` are now `realphase=true` and `nophase=true`.
@@ -12,7 +16,6 @@
 - **(breaking)** The convention for noise probability in `UnbiasedUncorrelatedNoise` changed. The input number is the total probability for an error to occur.
 - Implement an inplace `random_pauli!`, a non-allocating alternative to `random_pauli`.
 - Significant improvement in the performance of the ECC decoder pipeline (but many low-hanging fruits still remain).
-
 
 ## v0.8.21 - 2024-03-17
 

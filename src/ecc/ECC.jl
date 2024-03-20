@@ -12,7 +12,7 @@ using Nemo: ZZ, residue_ring, matrix
 
 abstract type AbstractECC end
 
-export parity_checks, parity_checks_x, parity_checks_z,
+export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
@@ -47,6 +47,14 @@ Only CSS codes have this method.
 See also: [`parity_checks`](@ref)"""
 function parity_checks_z(code::AbstractECC)
     throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
+end
+
+function iscss(::Type{T}) where T<:AbstractECC
+    return false
+end
+
+function iscss(c::AbstractECC)
+    return iscss(typeof(c))
 end
 
 parity_checks(s::Stabilizer) = s

@@ -17,6 +17,10 @@ struct CSS <: AbstractECC
     end
 end
 
+function iscss(::Type{CSS})
+    return true
+end
+
 function parity_checks(c::CSS)
     extended_Hx = Matrix{Bool}(vcat(c.Hx, zeros(size(c.Hz))))
     extended_Hz = Matrix{Bool}(vcat(zeros(size(c.Hx)), c.Hz))

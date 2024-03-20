@@ -2,6 +2,10 @@
 
 struct Steane7 <: AbstractECC end
 
+function iscss(::Type{Steane7})
+    return true
+end
+
 parity_checks(c::Steane7) = S"___XXXX
                               _XX__XX
                               X_X_X_X

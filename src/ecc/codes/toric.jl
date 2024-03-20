@@ -4,6 +4,10 @@ struct Toric <: AbstractECC
     dz::Int
 end
 
+function iscss(::Type{Toric})
+    return true
+end
+
 code_n(c::Toric) = 2*c.dx*c.dz
 
 function parity_checks_xz(c::Toric)
