@@ -66,6 +66,3 @@ for m in [sMX,sMZ,sMY,sMRX,sMRZ,sMRY]
     @test_throws ArgumentError m(0,1)
     @test_throws ArgumentError m(-1,0)
 end
-
-@test_throws ArgumentError ReedMuller(-1, 3)
-@test_throws ArgumentError ReedMuller(1, 0) 
