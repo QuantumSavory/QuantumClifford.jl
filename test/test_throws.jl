@@ -1,6 +1,5 @@
 using Test
 using QuantumClifford
-using QuantumClifford.ECC
 using QuantumClifford: rank, mul_left!, mul_right!
 using InteractiveUtils: subtypes
 
