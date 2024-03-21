@@ -1,6 +1,6 @@
-"""The family of `[[2ᵐ, ∑ⱼ₌₀ʳ ᵐC₍ⱼ₎, 2ᵐ⁻ʳ`]] Reed-Muller codes, as described in [Raaphorst's 2003 paper](@cite raaphorst2003reed).
+"""The family of Reed-Muller codes, as discovered by Muller in his 1954 paper [muller1954application](@cite) and Reed who proposed the first efficient decoding algorihm [reed1954class](@cite).
 
-You might be interested in consulting [abbe2020reed](@cite) and [DJORDJEVIC2021193](@cite) as well.
+You might be interested in consulting [raaphorst2003reed](@cite), [abbe2020reed](@cite), and [djordjevic2021quantum](@cite) as well.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed_muller)
 """
