@@ -1,6 +1,7 @@
 using Test
 using Nemo
 using Combinatorics
+using LinearAlgebra
 using QuantumClifford
 using QuantumClifford.ECC
 using QuantumClifford.ECC: AbstractECC, ReedMuller
