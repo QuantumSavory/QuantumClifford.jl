@@ -36,7 +36,7 @@ For quantum code construction routines:
 - [chao2018quantum](@cite)
 
 For classical code construction routines:
-- [muller1954application](cite)
+- [muller1954application](@cite)
 - [reed1954class](@cite)
 - [raaphorst2003reed](@cite)
 - [abbe2020reed](@cite)
