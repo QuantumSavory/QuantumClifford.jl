@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.2 - 2024-03-22
+
+- Implemented the classical Reed-Muller code
+
 ## v0.9.1 - 2024-03-20
 
 - Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.

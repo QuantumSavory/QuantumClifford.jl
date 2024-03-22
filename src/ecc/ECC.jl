@@ -345,4 +345,5 @@ include("codes/shorcode.jl")
 include("codes/clevecode.jl")
 include("codes/toric.jl")
 include("codes/gottesman.jl")
+include("codes/classical/reedmuller.jl")
 end #module
