@@ -12,6 +12,7 @@ import LDPCDecoders
         Perfect5(),
         Cleve8(),
         Gottesman(3),
+        Surface9()
         #Gottesman(4), bad threshold
         #Gottesman(5), bad threshold
     ]
@@ -76,7 +77,9 @@ import LDPCDecoders
 @testset "matching decoder, good as long as column weight of the code is limited" begin
     codes = [
         Toric(8,8),
-        Toric(9,9)
+        Toric(9,9),
+        Surface(8,8),
+        Surface(9,9)
     ]
 
     noise = 0.01
