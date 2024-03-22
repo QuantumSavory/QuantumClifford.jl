@@ -1,4 +1,30 @@
-"""The surface code."""
+"""The surface code [fowler2012surface](@cite), which is a tailored toric code with only the nearest neighboring connections in a 2D plane.
+
+Illustration of a 3x2 surface code, where qubits are located on the edges:
+
+|---1--(Z)--2---|---3---|
+|  (X)  7       8       o
+|---4---|---5---|---6---|
+|       o       o       o
+|       |       |       |
+
+The surface code has an open boundary condition compared to the toric code. To this end, we remove qubits (denoted by "o") and parity checks on the right and bottom sides.
+
+Faces like (1,4,7) have X checks, and crosses like (1,2,7) have Z checks. Due to the removal of the bottom and right sides, we have some 3-qubit checks on the boundaries.
+
+```julia
+julia> parity_checks(Surface(3,2))
++ X__X__X_
++ _X__X_XX
++ __X__X_X
++ ZZ____Z_
++ _ZZ____Z
++ ___ZZ_Z_
++ ____ZZ_Z
+```
+
+A 9-qubit surface code, specially tailored to be more compact, with a distance of three: [tomita2014low-distance](@cite).
+"""
 struct Surface <: AbstractECC
     dx::Int
     dz::Int

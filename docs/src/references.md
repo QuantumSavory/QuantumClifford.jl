@@ -34,6 +34,9 @@ For code construction routines:
 - [gottesman1997stabilizer](@cite)
 - [yu2013all](@cite)
 - [chao2018quantum](@cite)
+- [kitaev_fault-tolerant_2003](@cite)
+- [fowler2012surface](@cite)
+- [tomita2014low-distance](@cite)
 
 # References
 
