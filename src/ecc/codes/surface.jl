@@ -59,7 +59,7 @@ parity_checks(c::Surface) = parity_checks(CSS(parity_checks_xz(c)...))
 
 struct Surface9 <: AbstractECC end
 
-function iscss(::Type{Surface})
+function iscss(::Type{Surface9})
     return true
 end
 
