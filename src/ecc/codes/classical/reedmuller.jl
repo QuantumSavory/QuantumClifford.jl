@@ -12,8 +12,8 @@ struct ReedMuller <: ClassicalCode
     m::Int
 
     function ReedMuller(r, m)
-        if r < 0 || m < 1
-            throw(ArgumentError("Invalid parameters: r must be non-negative and m must be positive"))
+        if r < 0 || (m < 1 || m >= 11)
+            throw(ArgumentError("Invalid parameters: r must be non-negative and m must be positive and < 11 in order to obtain a valid code and to remain tractable"))
         end
         new(r, m)
     end
