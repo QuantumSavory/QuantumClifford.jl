@@ -9,7 +9,7 @@ using QuantumClifford.ECC: AbstractECC, ReedMuller
 function binomial_coeff_sum(r, m)
     total = 0
     for i in 0:r
-        total += length(collect(combinations(1:m, i)))
+        total += length(combinations(1:m, i))
     end
     return total
 end
