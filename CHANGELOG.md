@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.3 - 2024-03-24
+
+- Implemented the quantum Reed-Muller code
+
 ## v0.9.2 - 2024-03-22
 
 - Implemented the classical Reed-Muller code

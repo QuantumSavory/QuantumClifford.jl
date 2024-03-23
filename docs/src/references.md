@@ -34,6 +34,7 @@ For quantum code construction routines:
 - [gottesman1997stabilizer](@cite)
 - [yu2013all](@cite)
 - [chao2018quantum](@cite)
+- [steane1999quantum](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)

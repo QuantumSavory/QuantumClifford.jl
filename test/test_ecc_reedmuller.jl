@@ -14,7 +14,7 @@ function binomial_coeff_sum(r, m)
     return total
 end
 
-@testset "Test RM(r, m) Matrix Rank" begin
+@testset "Test RM(m, r) Matrix Rank" begin
     for m in 2:5
         for r in 0:m - 1
             H = parity_checks(ReedMuller(r, m))
@@ -26,7 +26,7 @@ end
     end
 end
 
-@testset "Testing common examples of RM(r,m) codes [raaphorst2003reed](@cite), [djordjevic2021quantum](@cite), [abbe2020reed](@cite)" begin
+@testset "Testing common examples of RM(m, r) codes [raaphorst2003reed](@cite), [djordjevic2021quantum](@cite), [abbe2020reed](@cite)" begin
     
     #RM(0,3)  
     @test parity_checks(ReedMuller(0,3)) == [1 1 1 1 1 1 1 1]
