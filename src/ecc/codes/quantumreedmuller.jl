@@ -9,9 +9,12 @@ struct QuantumReedMuller <: AbstractECC
         if t == 1 && r == 2 
             throw(ArgumentError("Invalid parameters: t = 1, r = 2 is not quantum code as it does not satisfy Hx.Hz' + Hz.Hx' = 0 [steane1999quantum](@cite)."))
         elseif t < 0 || t > 10 || r < 1 || r > 10
-            throw(ArgumentError("Invalid parameters: r must be positive and < 10 and t >= 0 and < 10 in order to obtain a valid code and to remain tractable"))
-        end
+            throw(ArgumentError("Invalid parameters: r must be positive and < 10 and t >= 0 and < 10 in order to obtain a valid code and to remain tractable."))
+        elseif 2^t + 2^(t + 1) > 2^r
+            throw(ArgumentError("Invalid parameters: The minimum Hamming distance (2^t + 2^(t + 1)) must be < 2^r to obtain a valid code and to remain tractable."))
+        else
         new(t, r)
+        end
     end
 end
 
@@ -32,7 +35,7 @@ function generate_Dx(dx_rows, row_len, hdist)
             comb[k] = 1
         end
         push!(combs, comb)
-        rows +=1
+        rows += 1
     end
     r = length(combs)
     c = length(combs[1])
@@ -54,27 +57,29 @@ function parity_checks(c::QuantumReedMuller)
     
     G1 = parity_checks(ReedMuller(t, r))
     pad_zeros = zeros(Int64, size(G1, 1), size(G1, 2))
-   
-    if (trows(t, r) - 2^r) == 0
+
+    total_rows = trows(t, r)
+    if (total_rows - 2^r) == 0
         Dx_rows = r + t
         k = k0(t, r)
         G1 = G1[1:k, :]
         pad_zeros = zeros(Int64, size(G1, 1), size(G1, 2))     
     else
-        Dx_rows = abs(trows(t, r) - 2^r)
+        Dx_rows = abs(total_rows - 2^r)
     end
    
     Dx_cols = size(G1, 2)
     Dx = generate_Dx(Dx_rows, Dx_cols, 2^t)
-    Dx_cols = size(G1, 2)
+   
     m = sum(binomial.(r, 0:t)) - sum(binomial.(r, 0:t - 1))
-    Dz = similar(Dx)
+    Dz = zeros(Int64, size(Dx, 1), size(Dx, 2))
     for i in 1:m - 1
         Dz[i, :] = Dx[i + 1, :]
     end
     Dz[m, :] = circshift(Dx[1, :], -m) 
-    Hx = vcat(G1, pad_zeros, Dx)    
-    Hz = vcat(pad_zeros, G1, Dz)    
+    
+    Hx = vcat(G1, pad_zeros, Dx)
+    Hz = vcat(pad_zeros, G1, Dz)  
 
     extended_Hx = Matrix{Bool}(Hx)
     extended_Hz = Matrix{Bool}(Hz)
