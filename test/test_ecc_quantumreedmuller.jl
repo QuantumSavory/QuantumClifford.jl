@@ -23,9 +23,7 @@ function min_distance(Hx::Matrix{Bool}, Hz::Matrix{Bool})
 end
 
 @testset "Test QRM(t, r) Matrix Minimum Distance" begin
-    # Prepare tests for different parameters
     for (t, r) in [(1, 3), (2, 4)]
-        # Generate the parity check matrix
         stab = parity_checks(QuantumReedMuller(t, r))
         H = stab_to_gf2(stab)
         Hx, Hz = split(H)
