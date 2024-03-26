@@ -3,6 +3,18 @@ using QuantumClifford
 using QuantumClifford.ECC
 using QuantumClifford.ECC: AbstractECC
 
+known_all_codes = [
+    Shor9(),
+    Steane7(),
+    Gottesman(3),
+    Cleve8(),
+    Perfect5(),
+    Toric(8,8),
+    Surface(8,8),
+    CSS([0 1 1 0; 1 1 0 0], [1 1 1 1]),
+    Bitflip3()
+]
+
 function is_css_matrix(H)
     nrows, ncols = size(H)
     for i in 1:nrows
@@ -16,8 +28,6 @@ function is_css_matrix(H)
     end
     return true
 end
-
-known_all_codes = [Shor9(), Steane7(), Gottesman(3), Cleve8(), Perfect5(), Toric(8,8), Surface(8,8), CSS([0 1 1 0; 1 1 0 0], [1 1 1 1]), Bitflip3()]
 
 @testset "is CSS" begin
     for code in known_all_codes

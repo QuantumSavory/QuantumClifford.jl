@@ -1,12 +1,14 @@
-"""The Toric code [kitaev_fault-tolerant_2003](@cite).
+"""The Toric code [kitaev2003fault](@cite).
 
 Illustration of a 2x2 toric code, where qubits are located on the edges:
 
+```
 |--1-(Z)-2--|
 | (X) 5     6
 |--3--|--4--|
 |     7     8
 |     |     |
+```
 
 It's important to note that the toric code has periodic boundary conditions, which means that the top and bottom sides are essentially glued together, as are the left and right sides.
 

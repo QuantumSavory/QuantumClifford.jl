@@ -34,9 +34,8 @@ For quantum code construction routines:
 - [gottesman1997stabilizer](@cite)
 - [yu2013all](@cite)
 - [chao2018quantum](@cite)
-- [kitaev_fault-tolerant_2003](@cite)
+- [kitaev2003fault](@cite)
 - [fowler2012surface](@cite)
-- [tomita2014low-distance](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)
