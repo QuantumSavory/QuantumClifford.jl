@@ -1,6 +1,6 @@
-"""The planar surface code refers to the toric code [kitaev2003fault](@cite) in a 2D lattice with open boundaries.
+"""The planar surface code refers to the code [kitaev2003fault](@cite) in a 2D lattice with open boundaries.
 
-Illustration of a 3x2 surface code, where qubits are located on the edges:
+Illustration of a 3×2 surface code, where qubits are located on the edges:
 
 ```
 |---1--(Z)--2---|---3---|
@@ -10,9 +10,9 @@ Illustration of a 3x2 surface code, where qubits are located on the edges:
 |       |       |       |
 ```
 
-The surface code has open boundary conditions compared to the toric code. To this end, we remove qubits (denoted by "o") and parity checks on the right and bottom sides.
+The surface code has open boundary conditions, unlike the toric code. To this end, we remove qubits (denoted by "o") and parity checks on the right and bottom sides.
 
-Faces like (1,4,7) have X checks, and crosses like (1,2,7) have Z checks. Due to the removal of the bottom and right sides, we have some 3-qubit checks on the boundaries.
+Faces like `(1,4,7)` have X checks, and crosses like `(1,2,7)` have Z checks. Due to the removal of the bottom and right sides, we have some 3-qubit checks on the boundaries.
 
 ```julia
 julia> parity_checks(Surface(3,2))

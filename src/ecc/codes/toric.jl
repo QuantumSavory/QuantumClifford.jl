@@ -10,9 +10,9 @@ Illustration of a 2x2 toric code, where qubits are located on the edges:
 |     |     |
 ```
 
-It's important to note that the toric code has periodic boundary conditions, which means that the top and bottom sides are essentially glued together, as are the left and right sides.
+It is important to note that the toric code has periodic boundary conditions, which means that the top and bottom sides are essentially glued together, as are the left and right sides.
 
-Faces like (1,3,5,6) have X checks, and crosses like (1,2,5,7) have Z checks.
+Faces like `(1,3,5,6)` have X checks, and crosses like `(1,2,5,7)` have Z checks.
 
 ```
 > parity_checks(Toric(2,2))
