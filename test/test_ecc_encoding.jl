@@ -25,6 +25,10 @@ using QuantumClifford.ECC
         :(Toric(3,6)),
         :(Toric(6,4)),
         :(Toric(8,8)),
+        :(Surface(3,3)),
+        :(Surface(3,6)),
+        :(Surface(6,4)),
+        :(Surface(8,8)),
         fill(:(random_stabilizer(5,7)), 100)...
         ]
 

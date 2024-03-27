@@ -17,6 +17,8 @@ codes = [
     Toric(3,6),
     Toric(6,4),
     Toric(8,8),
+    Surface(4,6),
+    Surface(8,8)
 ]
 
 ##
