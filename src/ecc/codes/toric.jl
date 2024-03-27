@@ -14,8 +14,8 @@ It is important to note that the toric code has periodic boundary conditions, wh
 
 Faces like `(1,3,5,6)` have X checks, and crosses like `(1,2,5,7)` have Z checks.
 
-```
-> parity_checks(Toric(2,2))
+```jldoctest
+julia> parity_checks(Toric(2,2))
 + X_X_XX__
 + _X_XXX__
 + X_X___XX

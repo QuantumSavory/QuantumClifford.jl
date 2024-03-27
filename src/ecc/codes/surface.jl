@@ -14,7 +14,7 @@ The surface code has open boundary conditions, unlike the toric code. To this en
 
 Faces like `(1,4,7)` have X checks, and crosses like `(1,2,7)` have Z checks. Due to the removal of the bottom and right sides, we have some 3-qubit checks on the boundaries.
 
-```julia
+```jldoctest
 julia> parity_checks(Surface(3,2))
 + X__X__X_
 + _X__X_XX
