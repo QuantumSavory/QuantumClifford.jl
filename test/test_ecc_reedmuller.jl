@@ -26,7 +26,7 @@ end
     end
 end
 
-@testset "Testing common examples of RM(r, m) codes [raaphorst2003reed](@cite), [djordjevic2021quantum](@cite), [abbe2020reed](@cite)" begin
+@testset "Testing common examples of RM(r,m) codes [raaphorst2003reed](@cite), [djordjevic2021quantum](@cite), [abbe2020reed](@cite)" begin
     
     #RM(0,3)  
     @test parity_checks(ReedMuller(0,3)) == [1 1 1 1 1 1 1 1]
