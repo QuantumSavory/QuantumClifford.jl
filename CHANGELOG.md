@@ -5,9 +5,10 @@
 
 # News
 
-## v0.9.2 - 2024-03-22
+## v0.9.2 - dev
 
 - Implemented the classical Reed-Muller code
+- Added the surface code to the ECC module.
 
 ## v0.9.1 - 2024-03-20
 
