@@ -5,17 +5,12 @@
 
 # News
 
-## v0.9.3 - 2024-03-24
-
-- Implemented the quantum Reed-Muller code
-
-## v0.9.2 - 2024-03-22
-
-- Implemented the classical Reed-Muller code
-
-## v0.9.1 - 2024-03-20
+## v0.9.1 - dev
 
 - Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.
+- Implemented the classical Reed-Muller code
+- Added the surface code to the ECC module.
+- Implemented the quantum Reed-Muller code
  
 ## v0.9.0 - 2024-03-19
 
