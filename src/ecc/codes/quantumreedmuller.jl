@@ -9,7 +9,7 @@ struct QuantumReedMuller <: AbstractECC
     r::Int  
     function QuantumReedMuller(t, r)
         if t == 1 && r == 2 
-            throw(ArgumentError("Invalid parameters: t = 1, r = 2 is not quantum code as it does not satisfy Hx.Hz' + Hz.Hx' = 0 [steane1999quantum](@cite)."))
+            throw(ArgumentError("Invalid parameters when attempting to construct a quantum Reed-Muller code. t = 1, r = 2 is not quantum code as it does not satisfy commutativity requirements."))
         elseif t < 0 || t > 7 || r < 1 || r > 7
             throw(ArgumentError("Invalid parameters: r must be positive and < 7 and t >= 0 and < 7 in order to obtain a valid code and to remain tractable."))
         else
