@@ -34,6 +34,8 @@ For quantum code construction routines:
 - [gottesman1997stabilizer](@cite)
 - [yu2013all](@cite)
 - [chao2018quantum](@cite)
+- [kitaev2003fault](@cite)
+- [fowler2012surface](@cite)
 - [steane1999quantum](@cite)
 - [zhang1997quantum](@cite)
 - [quan2018fault](@cite)
