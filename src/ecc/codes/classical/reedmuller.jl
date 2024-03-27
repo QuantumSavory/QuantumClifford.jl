@@ -8,14 +8,14 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed
 abstract type ClassicalCode end
 
 struct ReedMuller <: ClassicalCode
-    m::Int
     r::Int
+    m::Int
 
-    function ReedMuller(m, r)
+    function ReedMuller(r, m)
         if r < 0 || m < 1 || m >= 11
             throw(ArgumentError("Invalid parameters: r must be non-negative and m must be positive and < 11 in order to obtain a valid code and to remain tractable"))
         end
-        new(m, r)
+        new(r, m)
     end
 end
 

@@ -18,11 +18,11 @@ struct QuantumReedMuller <: AbstractECC
     end
 end
 
-function codesize(t, r)
+function _codesize_qrm(t, r)
     return 2^r - sum(binomial.(r, 0:t)) 
 end 
 
-function nplusk(t, r)
+function _nplusk_qrm(t, r)
     return (2^r + 2^r) - sum(binomial.(r, 0:t)) -  sum(binomial.(r, 0:t - 1)) 
 end 
 
@@ -32,24 +32,24 @@ function parity_checks(c::QuantumReedMuller)
     
     G1 = parity_checks(ReedMuller(t, r))
     
-    Dx_rows = codesize(t - 1, r) - codesize(t, r)
+    Dx_rows = _codesize_qrm(t - 1, r) - _codesize_qrm(t, r)
     if Dx_rows - r == 0
         J = parity_checks(ReedMuller(t + 1, r))
         Dx = J[end-r+1:end, :]
-    elseif nplusk(t, r) - 2^r == 0
-        G1 = G1[1:codesize(t, r), :]
+    elseif _nplusk_qrm(t, r) - 2^r == 0
+        G1 = G1[1:_codesize_qrm(t, r), :]
         K = parity_checks(ReedMuller(t, r))
         Dx = K[end-Dx_rows+1:end, :]
     else
         Dx = G1[end-Dx_rows+1:end, :]
     end
-    
-    m = codesize(t - 1, r) - codesize(t, r)
+   
+    m = _codesize_qrm(t - 1, r) - _codesize_qrm(t, r)
     Dz = zeros(Int64, size(Dx, 1), size(Dx, 2))
     for i in 1:m - 1
         Dz[i, :] = Dx[i + 1, :]
     end
-    e = (codesize(t, r) - Dx_rows - t) == 0 || (codesize(t, r) - Dx_rows - t) < 0 ? t : codesize(t, r) - Dx_rows - t
+    e = (_codesize_qrm(t, r) - Dx_rows - t) == 0 || (_codesize_qrm(t, r) - Dx_rows - t) < 0 ? t : _codesize_qrm(t, r) - Dx_rows - t
     
     Dz[m, :] = circshift(Dx[1, :], e) 
    
@@ -59,7 +59,5 @@ function parity_checks(c::QuantumReedMuller)
     extended_Hx = Matrix{Bool}(Hx)
     extended_Hz = Matrix{Bool}(Hz)
 
-    num_rows = size(Hx, 1)
-    fill_array = fill(UInt8(0), num_rows)
-    Stabilizer(fill_array, extended_Hx, extended_Hz)
+    Stabilizer(extended_Hx, extended_Hz)
 end
