@@ -1201,6 +1201,7 @@ include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
 include("nonclifford.jl")
+include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
