@@ -64,6 +64,7 @@ end
 @doset "ecc_syndromes"
 @doset "ecc_gottesman"
 @doset "ecc_reedmuller"
+@doset "ecc_steanereedmuller"
 @doset "ecc_iscss"
 @doset "precompile"
 @doset "pauliframe"
