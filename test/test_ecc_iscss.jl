@@ -11,6 +11,7 @@ known_all_codes = [
     Perfect5(),
     Toric(8,8),
     Surface(8,8),
+    SteaneReedMuller(1, 3),
     CSS([0 1 1 0; 1 1 0 0], [1 1 1 1]),
     Bitflip3()
 ]
