@@ -5,15 +5,11 @@ using QuantumClifford.ECC
 import PyQDecoders
 import LDPCDecoders
 
+include("test_ecc_base.jl")
+
 @testset "table decoder, good for small codes" begin
     codes = [
-        Steane7(),
-        Shor9(),
-        Perfect5(),
-        Cleve8(),
-        Gottesman(3)
-        #Gottesman(4), bad threshold
-        #Gottesman(5), bad threshold
+        all_testablable_code_instances(;maxn=10)...
     ]
 
     noise = 0.001
@@ -39,8 +35,9 @@ end
 
 ##
 
-@testset "belief prop decoders, good for small codes" begin
+@testset "belief prop decoders, good for sparse codes" begin
     codes = [
+        # TODO
     ]
 
     noise = 0.001
