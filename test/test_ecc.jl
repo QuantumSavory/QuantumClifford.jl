@@ -3,18 +3,9 @@ using QuantumClifford
 using QuantumClifford.ECC
 using QuantumClifford.ECC: AbstractECC
 
-codes = [
-    Bitflip3(),
-    Steane7(),
-    Shor9(),
-    Perfect5(),
-    Cleve8(),
-    Gottesman(3),
-    Gottesman(5),
-    CSS([0 1 1 0; 1 1 0 0], [1 1 1 1]),
-]
+include("test_ecc_base.jl")
 
-##
+codes = all_testablable_code_instances()
 
 function test_naive_syndrome(c::AbstractECC, e::Bool)
     # create a random logical state
