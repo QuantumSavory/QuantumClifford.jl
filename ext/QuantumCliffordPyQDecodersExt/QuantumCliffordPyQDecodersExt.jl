@@ -59,11 +59,10 @@ parity_checks(d::PyBP) = d.H
 function decode(d::PyBP, syndrome_sample)
     row_x = syndrome_sample[1:d.nx] # TODO These copies and indirections might be costly!
     row_z = syndrome_sample[d.nx+1:end]
-    guess_x = PythonCall.PyArray(d.pyx.decode(np.array(row_x)))
-    guess_z = PythonCall.PyArray(d.pyz.decode(np.array(row_z)))
-    vcat(guess_z, guess_x)
+    guess_z_errors = PythonCall.PyArray(d.pyx.decode(np.array(row_x)))
+    guess_x_errors = PythonCall.PyArray(d.pyz.decode(np.array(row_z)))
+    vcat(guess_x_errors, guess_z_errors)
 end
-
 
 struct PyMatchingDecoder <: AbstractSyndromeDecoder
     code

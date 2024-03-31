@@ -5,10 +5,10 @@
 
 # News
 
-## v0.9.1 - dev
+## v0.9.1 - 2024-03-31
 
 - Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.
-- Implemented the classical Reed-Muller code
+- Added the classical Reed-Muller code in the ECC module.
 - Added the surface code to the ECC module.
  
 ## v0.9.0 - 2024-03-19
