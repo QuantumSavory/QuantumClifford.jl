@@ -18,10 +18,12 @@ struct SteaneReedMuller <: AbstractECC
     end
 end
 
+#Equation 10 [steane1999quantum](@cite)
 function _codesize_qrm(t, r)
     return 2^r - sum(binomial.(r, 0:t)) 
 end 
 
+#Equation 11 [steane1999quantum](@cite)
 function _nplusk_qrm(t, r)
     return (2^r + 2^r) - sum(binomial.(r, 0:t)) -  sum(binomial.(r, 0:t - 1)) 
 end 
@@ -34,7 +36,11 @@ function _steane_convention_qrm(mat)
     return inv_mat
 end
 
+#Equation 2 [steane1999quantum](@cite)
 code_n(c::SteaneReedMuller) = 2^c.r
+
+#Equation 2 [steane1999quantum](@cite)
+code_k(c::SteaneReedMuller) = 2^c.r - binomial(c.r, c.t) -  2*sum(binomial.(c.r, 0:c.t - 1)) 
 
 function parity_checks(c::SteaneReedMuller)
     r = c.r
@@ -77,10 +83,16 @@ function parity_checks(c::SteaneReedMuller)
     end
     e = (_codesize_qrm(t, r) - Dx_rows - t) == 0 || (_codesize_qrm(t, r) - Dx_rows - t) < 0 ? t : _codesize_qrm(t, r) - Dx_rows - t
     Dz[m, :] = circshift(Dx[1, :], -e) 
-    
-    Hx = vcat(G1, zeros(Int64, size(G1, 1), size(G1, 2)), Dx)
-    Hz = vcat(zeros(Int64, size(G1, 1), size(G1, 2)), G1, Dz)
+
+    pad_zeros = zeros(Int64, size(G1, 1), size(G1, 2))
+    Hz = zeros(Int64, _nplusk_qrm(t, r), size(G1, 2)) 
+    Hx = zeros(Int64, _nplusk_qrm(t, r), size(G1, 2))
+
+    Hx = vcat(G1, pad_zeros, Dx)
+    Hz = vcat(pad_zeros, G1, Dz) 
+ 
     extended_Hx = Matrix{Bool}(Hx)
     extended_Hz = Matrix{Bool}(Hz)
+   
     Stabilizer(extended_Hx, extended_Hz)
 end
