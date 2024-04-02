@@ -352,15 +352,9 @@ include("codes/fivequbit.jl")
 include("codes/steanecode.jl")
 include("codes/shorcode.jl")
 include("codes/clevecode.jl")
-<<<<<<< HEAD
-
-include("codes/css.jl")
-include("codes/simple_sparse_codes.jl")
-
-=======
 include("codes/toric.jl")
 include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/classical/reedmuller.jl")
->>>>>>> 11ae38c7342c76a75ad9201b609b352d38117256
+include("codes/simple_sparse_codes.jl")
 end #module
