@@ -32,25 +32,33 @@ struct PyBeliefPropOSDecoder <: PyBP
     pyz
 end
 
-function PyBeliefPropDecoder(c; maxiter=nothing)
+function PyBeliefPropDecoder(c; maxiter=nothing, bpmethod=nothing, errorrate=nothing)
     Hx = parity_checks_x(c) |> collect # TODO should be sparse
     Hz = parity_checks_z(c) |> collect # TODO should be sparse
     H = parity_checks(c)
     fm = faults_matrix(c)
     max_iter=isnothing(maxiter) ? 0 : maxiter
-    pyx = ldpc.bp_decoder(np.array(Hx); max_iter) # TODO should be sparse
-    pyz = ldpc.bp_decoder(np.array(Hz); max_iter) # TODO should be sparse
+    bpmethod ∈ (nothing, :productsum, :minsum, :minsumlog) || error(lazy"PyBeliefPropDecoder got an unknown belief propagation method argument. `bpmethod` must be one of :productsum, :minsum, :minsumlog.")
+    bp_method = get(Dict(:productsum => 0, :minsum => 1, :minsumlog => 2), bpmethod, 0)
+    isnothing(errorrate) || 0≤errorrate≤1 || error(lazy"PyBeliefPropDecoder got an invalid error rate argument. `errorrate` must be in the range [0, 1].")
+    error_rate = isnothing(errorrate) ? PythonCall.Py(nothing) : errorrate
+    pyx = ldpc.bp_decoder(np.array(Hx); max_iter, bp_method, error_rate) # TODO should be sparse
+    pyz = ldpc.bp_decoder(np.array(Hz); max_iter, bp_method, error_rate) # TODO should be sparse
     return PyBeliefPropDecoder(c, H, Hx, Hz, size(Hx, 1), size(Hz, 1), fm, pyx, pyz)
 end
 
-function PyBeliefPropOSDecoder(c; maxiter=nothing)
+function PyBeliefPropOSDecoder(c; maxiter=nothing, bpmethod=nothing, errorrate=nothing)
     Hx = parity_checks_x(c) |> collect # TODO should be sparse
     Hz = parity_checks_z(c) |> collect # TODO should be sparse
     H = parity_checks(c)
     fm = faults_matrix(c)
     max_iter=isnothing(maxiter) ? 0 : maxiter
-    pyx = ldpc.bposd_decoder(np.array(Hx); max_iter) # TODO should be sparse
-    pyz = ldpc.bposd_decoder(np.array(Hz); max_iter) # TODO should be sparse
+    bpmethod ∈ (nothing, :productsum, :minsum, :minsumlog) || error(lazy"PyBeliefPropDecoder got an unknown belief propagation method argument. `bpmethod` must be one of :productsum, :minsum, :minsumlog.")
+    bp_method = get(Dict(:productsum => 0, :minsum => 1, :minsumlog => 2), bpmethod, 0)
+    isnothing(errorrate) || 0≤errorrate≤1 || error(lazy"PyBeliefPropDecoder got an invalid error rate argument. `errorrate` must be in the range [0, 1].")
+    error_rate = isnothing(errorrate) ? PythonCall.Py(nothing) : errorrate
+    pyx = ldpc.bposd_decoder(np.array(Hx); max_iter, bp_method, error_rate) # TODO should be sparse
+    pyz = ldpc.bposd_decoder(np.array(Hz); max_iter, bp_method, error_rate) # TODO should be sparse
     return PyBeliefPropOSDecoder(c, H, Hx, Hz, size(Hx, 1), size(Hz, 1), fm, pyx, pyz)
 end
 

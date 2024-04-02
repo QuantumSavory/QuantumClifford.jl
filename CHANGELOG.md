@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.2 - 2024-04-02
+
+- Provide more configuration options in the `PyBeliefProp` decoders.
+
 ## v0.9.1 - 2024-03-31
 
 - Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.
