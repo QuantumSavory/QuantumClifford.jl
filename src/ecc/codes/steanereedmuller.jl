@@ -13,7 +13,7 @@ struct SteaneReedMuller <: AbstractECC
         if t == 1 && r == 2 
             throw(ArgumentError("Invalid parameters when attempting to construct a Steane-Reed-Muller code. t = 1, r = 2 is not quantum code as it does not satisfy commutativity requirements."))
         elseif t < 0 || t > 7 || r < 1 || r > 7
-            throw(ArgumentError("Invalid parameters when attempting to construct a Steane-Reed-Muller code. We need  0<r<7 and 0≤t<7 in order to obtain a valid code and to remain tractable."))
+            throw(ArgumentError("Invalid parameters when attempting to construct a Steane-Reed-Muller code. We need  0<r≤7 and 0≤t≤7 in order to obtain a valid code and to remain tractable."))
         elseif _k_qrm(t, r) < 0
              throw(ArgumentError("Invalid parameters when attempting to construct a Steane-Reed-Muller code. The method to construct Steane-Reed-Muller code fails when k < 0."))  
         else
