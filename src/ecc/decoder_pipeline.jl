@@ -85,7 +85,7 @@ function physical_ECC_circuit(H, setup::NaiveSyndromeECCSetup)
         new_circuit = []
         for op in circuit
             push!(new_circuit, op)
-            if typeof(op) in [sCNOT, sCPHASE, sSWAP]
+            if isa(op, AbstractTwoQubitOperator)
                 noise_op = PauliError(affectedqubits(op), gate_error)
                 push!(new_circuit, noise_op)
             end
