@@ -8,7 +8,10 @@ codes = [
     Steane7(),
     Shor9(),
     Perfect5(),
-    Cleve8()
+    Cleve8(),
+    :(Bicycle(6, 4)),
+    :(Bicycle(10, 6)),
+    :(Unicycle(21, [1, 3, 8, 9, 12])),
 ]
 
 ##

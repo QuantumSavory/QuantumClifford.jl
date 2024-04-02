@@ -13,7 +13,7 @@ end
 
 function boolean_tableau(c::CSS)
     Hx_height, Hx_width = size(c.Hx)
-    Hz_height, Hz_width = size(x.Hz)
+    Hz_height, Hz_width = size(c.Hz)
     checks_matrix = falses(Hx_height + Hz_height, Hx_width + Hz_width)
     checks_matrix[1:Hx_height, 1:Hx_width] = c.Hx
     checks_matrix[Hx_height+1:end, Hx_width+1:end] = c.Hz
@@ -24,7 +24,7 @@ end
 function parity_checks(c::CSS)
     extended_Hx = Matrix{Bool}(vcat(c.Hx, zeros(size(c.Hz))))
     extended_Hz = Matrix{Bool}(vcat(zeros(size(c.Hx)), c.Hz))
-    Stabilizer(fill(0x0, size(c.Hx, 2) + size(c.Hz, 2)), extended_Hx, extended_Hz)
+    Stabilizer(fill(0x0, size(c.Hx, 1) + size(c.Hz, 1)), extended_Hx, extended_Hz)
 end
 
 """Returns the block length of the code."""

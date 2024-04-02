@@ -1,16 +1,42 @@
 # Currently just has Bicycle and Unicycle codes, but open to all types of rudimentary sparse codes
 
 """Takes a height and width of matrix and generates a bicycle code to the specified height and width.
+Based on codes from this paper: https://ieeexplore.ieee.org/document/1337106
 
 Parameters:
 - n: width of array, should be >= 2
-- m: height of array, should be >= 2 and a multiple of 2"""
+- m: height of array, should be >= 2 and a multiple of 2
+
+```jldoctest Bicycle
+julia> O = typeof(Bicycle(4, 2))
+CSS
+
+julia> O = parity_checks(Bicycle(4, 2))
++ XXXX
++ ZZZZ
+
+julia> O = parity_checks(Bicycle(6, 4))
++ XX_X_X
++ X_X_XX
++ ZZ_Z_Z
++ Z_Z_ZZ
+
+julia> stab_looks_good(parity_checks(Bicycle(200, 120)))
+true
+```
+"""
 function Bicycle(n::Int, m::Int)
     if m%2 == 1
         throw(DomainError(m, " M should be a multiple for 2 for bicycle codes."))
     end
     if m < 2
         throw(DomainError(m, " M is too small, make it greater than 1."))
+    end
+    if n%2 == 1
+        throw(DomainError(m, " N should be a multiple for 2 for bicycle codes."))
+    end
+    if n < 2
+        throw(DomainError(m, " N is too small, make it greater than 1."))
     end
     bs = bicycle_set_gen(Int(n/2))
     bsc = circ_to_bicycle_h0(bs, Int(n/2))
@@ -21,14 +47,37 @@ function Bicycle(n::Int, m::Int)
 end
 
 """Takes a height and width of matrix and generates a bicycle code to the specified height and width.
+Based on codes from this paper: https://ieeexplore.ieee.org/document/1337106
 
 Parameters:
-- n: width of array, should be >= 1
-- set: array of indices that are 'active' checks in the circulant code"""
-function Unicycle(n::Int, set)
+- n: Size of parity check matrix, also max size of generated set array, should be >= 1. 
+- set: array of indices that are 'active' checks in the circulant code
+
+Reference paper to find good sizes of perfect difference sets to use.
+
+```jldoctest Unicycle
+julia> parity_checks(Unicycle(21, [1, 3, 8, 9, 12]))
++ _X_________X_X____XX_X
++ __X_________X_X____XXX
++ X__X_________X_X____XX
++ XX__X_________X_X____X
+ ⋮
++ ____ZZ__Z_________Z_ZZ
++ Z____ZZ__Z_________Z_Z
++ _Z____ZZ__Z_________ZZ
+```
+"""
+struct Unicycle
+    N::Int
+    set::Vector{Int}
+end
+
+function parity_checks(u::Unicycle)
+    n = u.N
+    set = u.set
     usc = circ_to_unicycle_h0(set, n)
-    rusc = reduce_unicycle(usc)
-    return CSS(rusc, rusc)
+    rusc = reduce_unicycle(usc) # reduced unicycle code
+    return parity_checks(CSS(rusc, rusc))
 end
 
 """Takes an untrimmed bicycle matrix and removes the row which keeps the spread of the column weights minimal.
@@ -90,15 +139,17 @@ function reduce_unicycle(m::Matrix{Bool})
     rrzz = residue_ring(ZZ, 2)
     nm = matrix(rrzz, m)
     r = LinearAlgebra.rank(nm)
-    for i in 1:size(m)[1]
+    i = 1
+    while size(m)[1] > r
         tm = vcat(m[1:i-1,:], m[i+1:end,:])
         tr = LinearAlgebra.rank(matrix(rrzz, tm))
         if(tr == r)
             m = tm
-            i -= 1
             if(size(m)[1] == r)
                 break
             end
+        else
+            i += 1
         end
     end
     return m
