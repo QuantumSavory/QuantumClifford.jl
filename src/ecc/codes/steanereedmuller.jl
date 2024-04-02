@@ -1,5 +1,8 @@
 """The family of non-CSS Steane-Reed-Muller codes, as discovered by Steane in his 1999 paper [steane1999quantum](@cite).
 
+Steane-Reed-Mullercodes demonstrates the satisfaction of the "self dual" condition, which is expressed as  Hₓ · Hᵀz + Hz · Hᵀₓ = 0 (1) 
+To establish this, it is noted that the stabilizer H of a code [[n, k, d]] constructed is equivalent to the generator G of a [[n, −k, d′]] code produced using the same method. Here, d′ = 2d, (4d) for odd, (even) r respectively.  Essentially, the stabilizer matrix H is constructed using classical Reed-Muller matrices by the same procedure. Leveraging  the fact that classical Reed-Muller codes encompass their duals, it becomes evident that whenever the number of rows in the  stabilizer is less than n (i.e., k > 0), Hₓ · Hᵀz = 0, thereby satisfying equation (1). Conversely, when the stabilizer or generator matrix has n rows, Dₓ · Dᵀz ≠ 0. This, coupled with the remainder of Hₓ · Hᵀz being zero,  implies asymmetry in Hₓ · Hᵀz, thereby violating (1). In essence, the approach is effective for k > 0, and generators G for k < 0 serve  as stabilizers H for k > 0 codes.
+
 You might be interested in consulting [zhang1997quantum](@cite), [quan2018fault](@cite) and [campbell2012magic](@cite) as well.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/quantum_reed_muller)
@@ -12,6 +15,8 @@ struct SteaneReedMuller <: AbstractECC
             throw(ArgumentError("Invalid parameters when attempting to construct a Steane-Reed-Muller code. t = 1, r = 2 is not quantum code as it does not satisfy commutativity requirements."))
         elseif t < 0 || t > 7 || r < 1 || r > 7
             throw(ArgumentError("Invalid parameters when attempting to construct a Steane-Reed-Muller code. We need  0<r<7 and 0≤t<7 in order to obtain a valid code and to remain tractable."))
+        elseif _k_qrm(t, r) < 0
+             throw(ArgumentError("Invalid parameters when attempting to construct a Steane-Reed-Muller code. The method to construct Steane-Reed-Muller code fails when k < 0."))  
         else
             new(t, r)
         end
@@ -28,6 +33,11 @@ function _nplusk_qrm(t, r)
     return (2^r + 2^r) - sum(binomial.(r, 0:t)) -  sum(binomial.(r, 0:t - 1)) 
 end 
 
+#Equation 11 [steane1999quantum](@cite)
+function _k_qrm(t, r)
+    return 2^r - binomial(r, t) - 2*sum(binomial.(r, 0:t - 1)) 
+end 
+
 function _steane_convention_qrm(mat)
     inv_mat = copy(mat)
     for r in 1:size(mat, 1)
@@ -35,12 +45,6 @@ function _steane_convention_qrm(mat)
     end
     return inv_mat
 end
-
-#Equation 2 [steane1999quantum](@cite)
-code_n(c::SteaneReedMuller) = 2^c.r
-
-#Equation 2 [steane1999quantum](@cite)
-code_k(c::SteaneReedMuller) = 2^c.r - binomial(c.r, c.t) -  2*sum(binomial.(c.r, 0:c.t - 1)) 
 
 function parity_checks(c::SteaneReedMuller)
     r = c.r
@@ -73,6 +77,7 @@ function parity_checks(c::SteaneReedMuller)
         K = _steane_convention_qrm(K)
         Dx = K[end-Dx_rows+1:end, :]
     else
+        Dx = zeros(Int64, Dx_rows, size(G1, 2))
         Dx = G1[end-Dx_rows+1:end, :]
     end
     #Dz
