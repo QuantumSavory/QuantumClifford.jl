@@ -10,7 +10,7 @@ The library consists of two main parts: Tools for working with the algebra of St
 
 # Pauli Operators
 
-The [`PauliOperator`](@ref) object representes multi-qubit Pauli operator
+The [`PauliOperator`](@ref) object represents multi-qubit Pauli operator
 (``±\{1,i\}\{I,Z,X,Y\}^{\otimes n}``). It is stored in memory as a phase (a
 single byte where `0x0,0x1,0x2,0x3` corresponds to $1,i,-1,-i$) and two
 bit-arrays, for X and for Z components.

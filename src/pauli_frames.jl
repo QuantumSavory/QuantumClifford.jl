@@ -57,7 +57,7 @@ function apply!(f::PauliFrame, op::AbstractCliffordOperator)
     return f
 end
 
-function apply!(frame::PauliFrame, xor::ClassicalXOR)
+function apply!(frame::PauliFrame, xor::ClassicalXORConcreteWorkaround)
     for f in eachindex(frame)
         value = frame.measurements[f,xor.bits[1]]
         for i in xor.bits[2:end]
@@ -120,13 +120,14 @@ function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRY, and faster sMRX
 end
 
 function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
-    p = noise.errprobthird
+    p = noise.p
     T = eltype(frame.frame.tab.xzs)
 
     lowbit = T(1)
     ibig = _div(T,i-1)+1
     ismall = _mod(T,i-1)
     ismallm = lowbit<<(ismall)
+    p = p/3
 
     @inbounds @simd for f in eachindex(frame)
         r = rand()
@@ -164,7 +165,7 @@ function pftrajectories(circuit;trajectories=5000,threads=true)
 end
 
 function _create_pauliframe(ccircuit; trajectories=5000)
-    qmax=maximum((maximum(affectedqubits(g)) for g in ccircuit))
+    qmax=maximum((maximum(affectedqubits(g),init=1) for g in ccircuit))
     bmax=maximum((maximum(affectedbits(g),init=1) for g in ccircuit))
     return PauliFrame(trajectories, qmax, bmax)
 end
@@ -237,7 +238,7 @@ $(TYPEDSIGNATURES)
 
 Returns the measurement results for each frame in the [`PauliFrame`](@ref) instance.
 
-!!! warning "Relative mesurements"
+!!! warning "Relative measurements"
     The return measurements are relative to the reference measurements, i.e. they only say
     whether the reference measurements have been flipped in the given frame.
 """

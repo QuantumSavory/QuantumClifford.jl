@@ -1,19 +1,11 @@
 using Test
 using QuantumClifford
-using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, Perfect5, naive_syndrome_circuit, code_n, parity_checks, naive_encoding_circuit, code_s, code_k, rate, distance,logx_ops, logz_ops, isdegenerate
+using QuantumClifford.ECC
+using QuantumClifford.ECC: AbstractECC
 
-codes = [
-    Bitflip3(),
-    Steane7(),
-    Shor9(),
-    Perfect5(),
-    Cleve8(),
-    Bicycle(6, 4),
-    Bicycle(10, 6),
-    Unicycle(21, [1, 3, 8, 9, 12]),
-]
+include("test_ecc_base.jl")
 
-##
+codes = all_testablable_code_instances()
 
 function test_naive_syndrome(c::AbstractECC, e::Bool)
     # create a random logical state

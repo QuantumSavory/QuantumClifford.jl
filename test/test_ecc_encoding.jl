@@ -1,15 +1,15 @@
 using Test
 using QuantumClifford
-using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, Perfect5,
-    naive_syndrome_circuit, naive_encoding_circuit, code_n, parity_checks, code_s, code_k
+using QuantumClifford.ECC
 
-##
+include("test_ecc_base.jl")
 
 @testset "encoding circuits - compare to algebraic construction of encoded state" begin
     # This test verifies that logical measurements on an encoded state match the physical pre-encoded state.
     # This test skips verifying the permutations of qubits during canonicalization are properly undone,
     # i.e. we modify the code we are testing so that the canonicalization does not need any permutations.
     for undoperm in [true, false],
+<<<<<<< HEAD
         codeexpr in [
         :(Cleve8()),
         :(Steane7()),
@@ -23,9 +23,16 @@ using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, Perfec
         :(S"Z_"),
         :(S"X_"),
         fill(:(random_stabilizer(5,7)), 100)...
+=======
+        code in [
+            all_testablable_code_instances()...,
+            S"Y_",
+            S"Z_",
+            S"X_",
+            [random_stabilizer(5,7) for _ in 1:100]...
+>>>>>>> 11ae38c7342c76a75ad9201b609b352d38117256
         ]
 
-        code = eval(codeexpr)
         if undoperm==false
             # Pre-process the tableau to remove permutations and negative phases.
             # Usually that is handled by `naive_encoding_circuit`, but we just want to check both branches for its `undoperm` kwarg.
@@ -51,7 +58,5 @@ using QuantumClifford.ECC: AbstractECC, Cleve8, Steane7, Shor9, Bitflip3, Perfec
         algebraicₙ = stabilizerview(algebraicₙ) |> canonicalize!
 
         @test (encodedₙ == algebraicₙ)
-
-        #println("$codeexpr, $(encodedₙ == algebraicₙ)")
     end
 end

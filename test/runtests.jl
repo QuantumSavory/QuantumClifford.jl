@@ -1,8 +1,5 @@
 using SafeTestsets
 using QuantumClifford
-using DotEnv
-
-DotEnv.config(path = ".env")
 
 function doset(descr)
     if length(ARGS) == 0
@@ -28,8 +25,9 @@ end
 
 println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREADS = $(Sys.CPU_THREADS)`...")
 
+
 # in order to run the gpu tests automatically set GPU_TESTS to true in the .env file
-if ENV["GPU_TESTS"] == "true"
+if get(ENV, "GPU_TESTS", "") == "true"
     @doset "gpu"
 else
     println("skipping gpu tests (set GPU_TESTS=true to test gpu)")
@@ -61,11 +59,16 @@ end
 @doset "enumerate"
 @doset "quantumoptics"
 @doset "ecc"
+@doset "ecc_codeproperties"
+@doset "ecc_decoder_all_setups"
 @doset "ecc_encoding"
+@doset "ecc_gottesman"
+@doset "ecc_reedmuller"
 @doset "ecc_syndromes"
+@doset "ecc_throws"
 @doset "precompile"
 @doset "pauliframe"
 @doset "allocations"
-VERSION >= v"1.9" && @doset "doctests"
+VERSION >= v"1.10" && @doset "doctests"
 get(ENV,"JET_TEST","")=="true" && @doset "jet"
-VERSION >= v"1.9" && @doset "aqua"
+VERSION >= v"1.10" && @doset "aqua"

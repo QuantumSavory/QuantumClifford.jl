@@ -4,6 +4,7 @@ import Quantikz
 using QuantumClifford
 using QuantumClifford.Experimental.NoisyCircuits
 using QuantumClifford: AbstractOperation
+using QuantumClifford: ClassicalXORConcreteWorkaround
 
 function Quantikz.QuantikzOp(op::SparseGate)
     g = op.cliff
@@ -72,7 +73,7 @@ function Quantikz.QuantikzOp(op::Reset) # TODO This is complicated because quant
 end
 Quantikz.QuantikzOp(op::NoiseOp) = Quantikz.Noise(op.indices)
 Quantikz.QuantikzOp(op::NoiseOpAll) = Quantikz.NoiseAll()
-Quantikz.QuantikzOp(op::ClassicalXOR) = Quantikz.ClassicalDecision(sort([op.store, op.bits...]))
+Quantikz.QuantikzOp(op::ClassicalXORConcreteWorkaround) = Quantikz.ClassicalDecision(sort([op.store, op.bits...]))
 
 function lstring(pauli::PauliOperator)
     v = join(("\\mathtt{$(o)}" for o in replace(string(pauli)[3:end],"_"=>"I")),"\\\\")

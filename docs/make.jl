@@ -20,7 +20,7 @@ doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
 format = Documenter.HTML(size_threshold_ignore = ["API.md"]),
-modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumInterface],
+modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface],
 warnonly = [:missing_docs],
 authors = "Stefan Krastanov",
 pages = [
@@ -40,6 +40,10 @@ pages = [
     "ECC example" => "ecc_example_sim.md",
     "Circuit Operations" => "noisycircuits_ops.md",
     "API" => "noisycircuits_API.md"
+],
+"ECC compendium" => [
+    "Evaluating codes and decoders" => "ECC_evaluating.md"
+    "API" => "ECC_API.md"
 ],
 "All Gates" => "allops.md",
 "Visualizations" => "plotting.md",

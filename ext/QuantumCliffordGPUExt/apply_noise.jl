@@ -3,7 +3,7 @@ using QuantumClifford: _div, _mod
 #according to https://github.com/JuliaGPU/CUDA.jl/blob/ac1bc29a118e7be56d9edb084a4dea4224c1d707/test/core/device/random.jl#L33
 #CUDA.jl supports calling rand() inside kernel
 function applynoise!(frame::PauliFrameGPU{T},noise::UnbiasedUncorrelatedNoise,i::Int) where {T <: Unsigned}
-    p = noise.errprobthird
+    p = noise.p
     lowbit = T(1)
     ibig = _div(T,i-1)+1
     ismall = _mod(T,i-1)
@@ -22,7 +22,7 @@ function applynoise_kernel(xzs::DeviceMatrix{Tme},
     p::Real,
     ibig::Int,
     ismallm::Tme,
-    rows::Int) where {Tme <: Unsigned} 
+    rows::Int) where {Tme <: Unsigned}
 
     f = (blockIdx().x - 1) * blockDim().x + threadIdx().x;
     if f > rows
@@ -30,6 +30,7 @@ function applynoise_kernel(xzs::DeviceMatrix{Tme},
     end
 
     r = rand()
+    p = p/3
     if  r < p # X error
         xzs[ibig,f] ⊻= ismallm
     elseif r < 2p # Z error

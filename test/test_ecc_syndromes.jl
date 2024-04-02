@@ -1,20 +1,10 @@
 using Test
 using QuantumClifford
-using QuantumClifford: mul_left!
-using QuantumClifford.ECC: AbstractECC, Steane7, Shor9, Perfect5, Bitflip3, Cleve8, naive_syndrome_circuit, naive_encoding_circuit, shor_syndrome_circuit, code_n, code_s, parity_checks
+using QuantumClifford: mul_left!, embed
+using QuantumClifford.ECC
+using QuantumClifford.ECC: AbstractECC
 
-codes = [
-    Bitflip3(),
-    Steane7(),
-    Shor9(),
-    Perfect5(),
-    Cleve8(),
-    Bicycle(6, 4),
-    Bicycle(10, 6),
-    Unicycle(21, [1, 3, 8, 9, 12]),
-]
-
-##
+include("test_ecc_base.jl")
 
 function pframe_naive_vs_shor_syndrome(code)
     ecirc = naive_encoding_circuit(code)
@@ -53,7 +43,7 @@ function pframe_naive_vs_shor_syndrome(code)
 end
 
 @testset "naive and shor measurement circuits" begin
-    for c in codes
+    for c in all_testablable_code_instances()
         pframe_naive_vs_shor_syndrome(c)
     end
 end

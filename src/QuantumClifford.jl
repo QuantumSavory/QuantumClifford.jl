@@ -22,7 +22,7 @@ export
     @T_str, xbit, zbit, xview, zview,
     @S_str, Stabilizer,
     Destabilizer, MixedStabilizer, MixedDestabilizer,
-    prodphase, comm,
+    prodphase, comm, comm!,
     nqubits,
     stabilizerview, destabilizerview, logicalxview, logicalzview, phases,
     fastcolumn, fastrow,
@@ -61,7 +61,8 @@ export
     enumerate_single_qubit_gates, random_clifford1,
     enumerate_cliffords, symplecticGS, clifford_cardinality, enumerate_phases,
     random_invertible_gf2,
-    random_pauli, random_stabilizer, random_destabilizer, random_clifford,
+    random_pauli, random_pauli!,
+    random_stabilizer, random_destabilizer, random_clifford,
     # Noise
     applynoise!, UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, NoisyGate,
     PauliNoise, PauliError,
@@ -186,7 +187,7 @@ Base.iterate(tab::Tableau, state::Int=1) = state>length(tab) ? nothing : (tab[st
 
 function Base.setindex!(tab::Tableau, pauli::PauliOperator, i)
     tab.phases[i] = pauli.phase[]
-    #tab.xzs[:,i] = pauli.xz # TODO why is this assigment causing allocations
+    #tab.xzs[:,i] = pauli.xz # TODO why is this assignment causing allocations
     for j in 1:length(pauli.xz)
         tab.xzs[j,i] = pauli.xz[j]
     end
@@ -701,7 +702,11 @@ julia> comm(P"ZZ", P"XX")
 julia> comm(P"IZ", P"XX")
 0x01
 ```
+
+See also: [`comm!`](@ref)
 """
+function comm end
+
 @inline function comm(l::AbstractVector{T}, r::AbstractVector{T})::UInt8 where T<:Unsigned
     res = T(0)
     len = length(l)÷2
@@ -738,6 +743,24 @@ comm(l::Tableau, r::PauliOperator) = comm(r, l)
 @inline comm(l::PauliOperator, r::Stabilizer) = comm(l, tab(r))
 @inline comm(l::Stabilizer, r::PauliOperator) = comm(tab(l), r)
 @inline comm(s::Stabilizer, l::Int, r::Int) = comm(tab(s), l, r)
+
+"""An in-place version of [`comm`](@ref), storing its output in the given buffer."""
+function comm! end
+function comm!(v, l::PauliOperator, r::Tableau)
+    length(v) == length(r) || throw(DimensionMismatch(lazy"The dimensions of the output buffer and the input tableau have to match in `comm!`"))
+    nqubits(l) == nqubits(r) || throw(DimensionMismatch(lazy"The number of qubits of the input Pauli operator and the input tableau have to match in `comm!`"))
+    for i in 1:length(r)
+        v[i] = comm(l,r,i)
+    end
+    v
+end
+comm!(v, l::Tableau, r::PauliOperator) = comm!(v, r, l)
+@inline comm!(v, l::PauliOperator, r::Stabilizer, i::Int) = comm!(v, l, tab(r), i)
+@inline comm!(v, l::Stabilizer, r::PauliOperator, i::Int) = comm!(v, tab(l), r, i)
+@inline comm!(v, l::PauliOperator, r::Stabilizer) = comm!(v, l, tab(r))
+@inline comm!(v, l::Stabilizer, r::PauliOperator) = comm!(v, tab(l), r)
+@inline comm!(v, s::Stabilizer, l::Int, r::Int) = comm!(v, tab(s), l, r)
+
 
 Base.:(*)(l::PauliOperator, r::PauliOperator) = mul_left!(copy(r),l)
 

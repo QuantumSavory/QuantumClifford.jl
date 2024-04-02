@@ -66,7 +66,7 @@ function petrajectory_keep(state, circuit; branch_weight=1.0, current_order=0, m
     return dict
 end
 
-"""Run a perturbative expansion to a given order. This is the main public fuction for the perturbative expansion approach.
+"""Run a perturbative expansion to a given order. This is the main public function for the perturbative expansion approach.
 
 See also: [`pftrajectories`](@ref), [`mctrajectories`](@ref)"""
 function petrajectories(initialstate, circuit; branch_weight=1.0, max_order=1, keepstates::Bool=false)

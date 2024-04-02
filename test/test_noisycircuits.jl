@@ -1,4 +1,5 @@
 # TODO split in separate files
+using Test
 using Random
 using QuantumClifford
 
@@ -12,7 +13,7 @@ import AbstractAlgebra
     g2 = SparseGate(tCNOT, [2,3])
     g3 = sCNOT(4,5)
     g4 = sHadamard(6)
-    n = UnbiasedUncorrelatedNoise(1/3)
+    n = UnbiasedUncorrelatedNoise(1)
     ng1 = NoisyGate(g1, n)
     ng2 = NoisyGate(g2, n)
     ng3 = NoisyGate(g3, n)
@@ -33,7 +34,7 @@ end
                         ZZ"
     canonicalize_rref!(good_bell_state)
     v = VerifyOp(good_bell_state,[1,2])
-    n = NoiseOpAll(UnbiasedUncorrelatedNoise(0.01))
+    n = NoiseOpAll(UnbiasedUncorrelatedNoise(0.03))
     init = Register(MixedDestabilizer(good_bell_state⊗good_bell_state))
     with_purification = mctrajectories(init, [n,g1,g2,m,v], trajectories=500)
     @test with_purification[failure_stat] > 5
@@ -61,7 +62,7 @@ end
                             ZZ"
         canonicalize_rref!(good_bell_state)
         v = VerifyOp(good_bell_state,[1,2])
-        n = NoiseOpAll(UnbiasedUncorrelatedNoise(0.01))
+        n = NoiseOpAll(UnbiasedUncorrelatedNoise(0.03))
         init = Register(MixedDestabilizer(good_bell_state⊗good_bell_state))
         mc = mctrajectories(init, [n,g1,g2,m,v], trajectories=500)
         pe = petrajectories(init, [n,g1,g2,m,v])
@@ -80,7 +81,7 @@ end
         @test compare(mc,pe,true_success_stat)
     end
     @testset "Symbolic" begin
-        R, (e,) = AbstractAlgebra.PolynomialRing(AbstractAlgebra.RealField, ["e"])
+        R, (e,) = AbstractAlgebra.polynomial_ring(AbstractAlgebra.RealField, ["e"])
         unity = R(1);
         good_bell_state = Register(MixedDestabilizer(S"XX ZZ"))
         initial_state = good_bell_state⊗good_bell_state
@@ -88,8 +89,8 @@ end
         g2 = SparseGate(tCNOT, [2,4]) # CNOT between qubit 2 and qubit 4 (both with Bob)
         m = BellMeasurement([sMX(3),sMX(4)]) # Bell measurement on qubit 3 and 4
         v = VerifyOp(good_bell_state,[1,2]) # Verify that qubit 1 and 2 indeed form a good Bell pair
-        epsilon = e # The error rate
-        n = NoiseOpAll(UnbiasedUncorrelatedNoise(epsilon))
+        epsilon = e # The X or Y or Z error rate
+        n = NoiseOpAll(UnbiasedUncorrelatedNoise(3epsilon))
         circuit = [n,g1,g2,m,v]
         pe_symbolic = petrajectories(initial_state, circuit, branch_weight=unity) # perturbative expansion
         @test pe_symbolic[false_success_stat] == -162.0*e^4 + 162.0*e^3 + -54.0*e^2 + 6.0*e

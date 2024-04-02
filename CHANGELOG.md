@@ -2,9 +2,32 @@
 
 - `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
-- `random_pauli(...; realphase=true)` should be the default
 
 # News
+
+## v0.9.1 - 2024-03-31
+
+- Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.
+- Added the classical Reed-Muller code in the ECC module.
+- Added the surface code to the ECC module.
+ 
+## v0.9.0 - 2024-03-19
+
+- **(breaking)** The defaults in `random_pauli` are now `realphase=true` and `nophase=true`.
+- **(breaking)** The convention for for flip probability in `random_pauli`.
+- **(breaking)** The convention for noise probability in `UnbiasedUncorrelatedNoise` changed. The input number is the total probability for an error to occur.
+- Implement an inplace `random_pauli!`, a non-allocating alternative to `random_pauli`.
+- Significant improvement in the performance of the ECC decoder pipeline (but many low-hanging fruits still remain).
+
+## v0.8.21 - 2024-03-17
+
+- Implemented the Gottesman code family, also known as [[2^j, 2^j - j - 2, 3]] quantum Hamming codes.
+- Bump the `PyQDecoders` dependency, switching to `PythonCall` behind the scenes for reliability.
+- Bump the `LDPCDecoders` dependency.
+
+## v0.8.20 - 2024-01-22
+
+- Significant additions to the `ECC` submodule, with constructors for a few new codes (`Toric` and  generic `CSS`); incorporating many syndrome decoding algorithms (thanks to the `PyQDecoders.jl` and `LDPCDecoders.jl` packages); and providing a convenient API for evaluating code performance in different settings through the new `evaluate_decoder` function.
 
 ## v0.8.19 - 2023-12-16
 
@@ -190,7 +213,7 @@
 
 ## v0.5.5 - 2022-07-05
 
-- **(breaking fix)** `CliffordOperator` constructor called on a square tableau occasionally resulted in incorrect results due to row-reordering during cannonicalization.
+- **(breaking fix)** `CliffordOperator` constructor called on a square tableau occasionally resulted in incorrect results due to row-reordering during canonicalization.
 - Continuing static analysis fixes thanks to JET.
 - Optimization of `canonicalize_clip!`, now resulting in much fewer allocations.
 

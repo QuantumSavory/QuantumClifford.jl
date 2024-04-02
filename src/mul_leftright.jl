@@ -62,6 +62,11 @@ function mul_ordered!(r::SubArray{T,1,P,I1,L1}, l::SubArray{T,1,P,I2,L2}; phases
     _mul_ordered_nonvec!(r,l; phases=B)
 end
 
+function mul_ordered!(r::SubArray{T,1,P,I2,L2}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B, I2, L2, P<:Adjoint}
+    # This method exists because SIMD.jl does not play well with Adjoint
+    _mul_ordered_nonvec!(r,l; phases=B)
+end
+
 function mul_ordered!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B}
     if !B
         r .⊻= l

@@ -7,10 +7,10 @@ The initial physical qubits to be encoded have to be at indices `n-k+1:n`.
     Instead, you should measure the stabilizers of the code and the logical observables,
     thus projecting into the code space (which can be fault-tolerant).
 
-The canonicalization operation performed on the code may permute the qubits (see [canonicalize_gott!](@ref)).
+The canonicalization operation performed on the code may permute the qubits (see [`canonicalize_gott!`](@ref)).
 That permutation is corrected for with SWAP gates by default (controlled by the `undoperm` keyword argument).
 
-Based on [gottesman1997stabilizer](@cite) and [cleve1997efficient](@cite),
+Based on [cleve1997efficient](@cite) and [gottesman1997stabilizer](@cite),
 however it seems the published algorithm has some errors.
 Consult the erratum, as well as the more recent [grassl2002algorithmic](@cite) and [grassl2011variations](@cite),
 and be aware that this implementation also uses H instead of Z gates.
@@ -142,7 +142,7 @@ Use the `ancillary_index` and `bit_index` arguments to offset where the correspo
 Ancillary qubits
 
 Returns:
-  - The cat state preparation circuit.
+  - The ancillary cat state preparation circuit.
   - The Shor syndrome measurement circuit.
   - The number of ancillary qubits that were added.
   - The list of bit indices that store the final measurement results.
@@ -165,7 +165,7 @@ and stores the measurement result into classical bits starting at `bit_index`.
 The final measurement result is the XOR of all the bits.
 
 Returns:
-  - The cat state preparation circuit.
+  - The ancillary cat state preparation circuit.
   - The Shor syndrome measurement circuit.
   - One more than the index of the last added ancillary qubit.
   - One more than the index of the last added classical bit.

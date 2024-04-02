@@ -15,8 +15,8 @@ function transform_Xbasis(qubit)
 end
 
 function get_gates(control, target)
-    transform1, inverse1 = transform_Zbasis(1) # get gates which swith control from Z basis to specified
-    transform2, inverse2 = transform_Xbasis(2) # get gates which swith control from X basis to specified
+    transform1, inverse1 = transform_Zbasis(1)
+    transform2, inverse2 = transform_Xbasis(2)
     return [transform1[control]..., transform2[target]...], [inverse2[target]..., inverse1[control]...]
 end
 
