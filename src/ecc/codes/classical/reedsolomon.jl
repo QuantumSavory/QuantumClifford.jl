@@ -223,6 +223,7 @@ function generator_matrix(rs::ReedSolomon)
         xi = polynomial_xn(UInt8, i-1, rs.m) << rs.e
         G[:, i] = (xi + xi % g).coeff
     end
+    G = G[end:-1:1, end:-1:1]
     G = map(x -> x == 0 ? 0 : 1, G)
     return G
 end
