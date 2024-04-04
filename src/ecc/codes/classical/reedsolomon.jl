@@ -1,7 +1,10 @@
 import Base: length, iterate, ==, <<, +, *, ÷, %, copy, zero, eltype
 
 # Define a structure for Reed-Solomon code
-struct ReedSolomon{T<:Integer}
+
+abstract type ClassicalCode end
+
+struct ReedSolomon{T<:Integer} <: ClassicalCode
     m::Int
     e::Int
 end
@@ -213,7 +216,7 @@ function G256multmat(A::AbstractMatrix{T}, b::AbstractVector{T}) where T
 end
 
 # Generate generator matrix for Reed-Solomon code
-function generator(rs::ReedSolomon)
+function generator_matrix(rs::ReedSolomon)
     G = Array{UInt8}(undef, rs.m + rs.e, rs.m)
     g = generator(UInt8, rs.e)
     @inbounds for i in 1:rs.m
