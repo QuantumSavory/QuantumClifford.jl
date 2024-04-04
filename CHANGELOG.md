@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.3 - 2024-04-04
+
+- Added the classical Reed-Solomon code in the ECC module
+
 ## v0.9.2 - 2024-04-02
 
 - Provide more configuration options in the `PyBeliefProp` decoders.
