@@ -57,7 +57,7 @@ function iscss(c::AbstractECC)
     return iscss(typeof(c))
 end
 
-function generator_matrix end
+function generator_polynomial end
 
 parity_checks(s::Stabilizer) = s
 Stabilizer(c::AbstractECC) = parity_checks(c)

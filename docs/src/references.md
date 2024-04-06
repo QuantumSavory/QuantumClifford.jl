@@ -44,6 +44,7 @@ For classical code construction routines:
 - [abbe2020reed](@cite)
 - [djordjevic2021quantum](@cite)
 - [reed1960polynomial](@cite)
+- [geisel1990tutorial](@cite)
 - [berlekamp1978readable](@cite)
 - [wicker1999reed](cite)
 - [sklar2001reed](cite)
