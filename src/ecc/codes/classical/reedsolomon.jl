@@ -7,13 +7,12 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed
 struct ReedSolomon <: ClassicalCode
     n::Int
     k::Int
-    j::Int
 
-    function ReedSolomon(n, k, j)
-        if n < 0 || k < 0 || j < 0 || n >= 500
-            throw(ArgumentError("Invalid parameters: n, k, j must be non-negative and n >= 500 in order to obtain a valid code and to remain tractable"))
+    function ReedSolomon(n, k)
+        if n < 0 || k < 0 || n > 500
+            throw(ArgumentError("Invalid parameters: n and k must be non-negative and n > 500 in order to obtain a valid code and to remain tractable"))
         end
-            new(n, k, j)
+            new(n, k)
     end
 end
 
@@ -48,9 +47,10 @@ function generator_polynomial(rs::ReedSolomon)
     t = div(rs.n - rs.k, 2)
     GF2ͬ, a = finite_field(2, r, "a")
     P, x = GF2ͬ[:x]
-    gx = x - a^rs.j
-    for i in 1:(2*t - 1)
-       gx *= (x - a^(rs.j + i))
+    poly_zeros = 2*t
+    gx = x - a^poly_zeros
+    for i in poly_zeros:(poly_zeros + 2*t - 1)
+       gx *= (x - a^(poly_zeros + i))
     end
     return gx
 end
