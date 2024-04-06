@@ -47,10 +47,10 @@ function generator_polynomial(rs::ReedSolomon)
     t = div(rs.n - rs.k, 2)
     GF2ͬ, a = finite_field(2, r, "a")
     P, x = GF2ͬ[:x]
-    poly_zeros = 2*t
-    gx = x - a^poly_zeros
-    for i in poly_zeros:(poly_zeros + 2*t - 1)
-       gx *= (x - a^(poly_zeros + i))
+    pzeros = 2*t
+    gx = x - a^pzeros
+    for i in 1:(2*t - 1)
+       gx *= (x - a^(pzeros + i))
     end
     return gx
 end

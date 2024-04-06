@@ -12,11 +12,11 @@ using QuantumClifford.ECC: AbstractECC, ReedSolomon
         t = div(n - k, 2)
         GF2ͬ, a = finite_field(2, deg, "a")
         P, x = GF2ͬ[:x]
-        poly_zeros = 2*t
-        poly = x - a^poly_zeros
-        for i in poly_zeros:(poly_zeros + 2*t - 1)
-           poly *= (x - a^(poly_zeros + i))
+        pzeros = 2*t
+        poly = x - a^pzeros
+        for i in 1:(2*t - 1)
+           poly *= (x - a^(pzeros + i))
         end
-        @test degree(poly) == n - k + 1
+        @test degree(poly) == n - k
     end
 end
