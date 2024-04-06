@@ -12,7 +12,7 @@ using Nemo: ZZ, residue_ring, matrix
 
 abstract type AbstractECC end
 
-export parity_checks, parity_checks_x, parity_checks_z, iscss, generator_matrix,
+export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,

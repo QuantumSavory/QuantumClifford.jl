@@ -43,6 +43,10 @@ For classical code construction routines:
 - [raaphorst2003reed](@cite)
 - [abbe2020reed](@cite)
 - [djordjevic2021quantum](@cite)
+- [reed1960polynomial](@cite)
+- [berlekamp1978readable](@cite)
+- [wicker1999reed](cite)
+- [sklar2001reed](cite)
 
 # References
 

@@ -1,4 +1,9 @@
+"""The family of Reed-Solomon codes, as discovered by Reed and Solomon in their 1960 paper [reed1960polynomial](@cite). 
 
+You might be interested in consulting [wicker1999reed](@cite), [sklar2001reed](@cite), [berlekamp1978readable](cite) and [https://youtu.be/K26Ssr8H3ec?si=QOeohq_6I0Oyd8qu](@cite) as well.
+
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed_solomon)
+"""
 struct ReedSolomon <: ClassicalCode
     n::Int
     k::Int
