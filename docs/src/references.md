@@ -46,8 +46,11 @@ For classical code construction routines:
 - [reed1960polynomial](@cite)
 - [geisel1990tutorial](@cite)
 - [berlekamp1978readable](@cite)
-- [wicker1999reed](cite)
-- [sklar2001reed](cite)
+- [wicker1999reed](@cite)
+- [sklar2001reed](@cite)
+- [hocquenghem1959codes](@cite)
+- [bose1960class](@cite)
+- [bose1960further](@cite)
 
 # References
 
