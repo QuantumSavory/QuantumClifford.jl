@@ -1,4 +1,4 @@
-"""The family of Bose–Chaudhuri–Hocquenghem (BCH) codes discovered in 1959 by Alexis Hocquenghem [hocquenghem1959codes](@cite), and independently in 1960 by Raj Chandra Bose and D.K. Ray-Chaudhuri [bose1960class](@cite).
+"""The family of Bose–Chaudhuri–Hocquenghem (BCH) codes, as discovered in 1959 by Alexis Hocquenghem [hocquenghem1959codes](@cite), and independently in 1960 by Raj Chandra Bose and D.K. Ray-Chaudhuri [bose1960class](@cite).
 
 You might be interested in consulting [bose1960further](@cite) as well.
 
@@ -18,8 +18,8 @@ end
 
 function generator_polynomial(rs::BCH)
     r = ceil(Int, log2(rs.n + 1))
-    GF2同, a = finite_field(2, r, "a")
-    GF2x, x = GF(2)["x"];
+    GF2ͬ, a = finite_field(2, r, "a")
+    GF2x, x = GF(2)["x"]
     minimal_poly = FqPolyRingElem[]
     for i in 1:(2*rs.t - 1)
         if i % 2 != 0

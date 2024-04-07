@@ -9,7 +9,7 @@ using QuantumClifford.ECC: AbstractECC
     for n in n_cases
         for t in 1:20
             r = ceil(Int, log2(n + 1))
-            GF2同, a = finite_field(2, r, "a")
+            GF2ͬ, a = finite_field(2, r, "a")
             GF2x, x = GF(2)["x"] 
             mx = FqPolyRingElem[]
             for i in 1:(2*t - 1)
