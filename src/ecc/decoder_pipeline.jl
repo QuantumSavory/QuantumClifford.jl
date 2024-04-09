@@ -241,7 +241,7 @@ function BeliefPropDecoder(args...; kwargs...)
     return ext.BeliefPropDecoder(args...; kwargs...)
 end
 
-"""An Itterative Bitflip decoder built around tools from `LDPCDecoders.jl`."""
+"""An Iterative Bitflip decoder built around tools from `LDPCDecoders.jl`."""
 function BitFlipDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordLDPCDecodersExt)
     if isnothing(ext)
