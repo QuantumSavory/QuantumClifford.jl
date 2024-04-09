@@ -241,6 +241,16 @@ function BeliefPropDecoder(args...; kwargs...)
     return ext.BeliefPropDecoder(args...; kwargs...)
 end
 
+"""An Itterative Bitflip decoder built around tools from `LDPCDecoders.jl`."""
+function BitFlipDecoder(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordLDPCDecodersExt)
+    if isnothing(ext)
+        throw("The `BitFlipDecoder` depends on the package `LDPCDecoders` but you have not installed or imported `LDPCDecoders` yet. Immediately after you import `LDPCDecoders`, the `BitFlipDecoder` will be available.")
+    end
+    return ext.BitFlipDecoder(args...; kwargs...)
+end
+
+
 """A Belief Propagation decoder built around tools from the python package `ldpc` available from the julia package `PyQDecoders.jl`."""
 function PyBeliefPropDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyQDecodersExt)
