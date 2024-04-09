@@ -43,6 +43,11 @@ For classical code construction routines:
 - [raaphorst2003reed](@cite)
 - [abbe2020reed](@cite)
 - [djordjevic2021quantum](@cite)
+- [caldwell1955processing](@cite)
+- [lieb2021convolutional](@cite)
+- [viterbi1967error](@cite)
+- [forney1970convolutional](@cite)
+- [forney1974convolutional](@cite)
 
 # References
 
