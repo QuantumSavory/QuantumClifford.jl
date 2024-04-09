@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.2 - 2024-04-09
+
+- Added the classical convolutional code to the ECC module
+
 ## v0.9.2 - 2024-04-02
 
 - Provide more configuration options in the `PyBeliefProp` decoders.
