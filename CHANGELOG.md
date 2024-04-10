@@ -5,7 +5,11 @@
 
 # News
 
-## v0.9.3 - 2024-04-08
+## v0.9.3 - 2024-04-10
+
+- **(fix)** One of `random_pauli`'s methods was disregarding the error probability and had incorrect kwarg defaults.
+
+## v0.9.2 - 2024-04-08
 
 - The ECC module now has access to an iterative bitflip decoder thanks to `LDPCDecoders.jl`.
 - Provide more configuration options in the `PyBeliefProp` decoders.
