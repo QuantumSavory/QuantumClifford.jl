@@ -91,28 +91,36 @@ end
 
 function physical_ECC_circuit(H, setup::NaiveSyndromeECCSetup)
     syndrome_circ, n_anc, syndrome_bits = naive_syndrome_circuit(H)
-    new_circuit = []
+    noisy_syndrome_circ = []
 
     for op in syndrome_circ
-        push!(new_circuit, op)
+        push!(noisy_syndrome_circ, op)
         
         for noise_op in add_two_qubit_gate_noise(op, setup.two_qubit_gate_noise)
-            push!(new_circuit, noise_op)
+            push!(noisy_syndrome_circ, noise_op)
         end
     end
 
     mem_error_circ = [PauliError(i, setup.mem_noise) for i in 1:nqubits(H)]
 
-
-    circ = vcat(mem_error_circ, new_circuit)
+    circ = vcat(mem_error_circ, noisy_syndrome_circ)
     return circ, syndrome_bits, n_anc
 end
 
 
 function physical_ECC_circuit(H, setup::ShorSyndromeECCSetup)
     prep_anc, syndrome_circ, n_anc, syndrome_bits = shor_syndrome_circuit(H)
-    noisy_syndrome_circ = syndrome_circ # add_two_qubit_gate_noise(syndrome_circ, gate_error)
+    noisy_syndrome_circ = []
+
+    for op in syndrome_circ
+        push!(noisy_syndrome_circ, op)
+        for noise_op in add_two_qubit_gate_noise(op, setup.two_qubit_gate_noise)
+            push!(noisy_syndrome_circ, noise_op)
+        end
+    end
+
     mem_error_circ = [PauliError(i, setup.mem_noise) for i in 1:nqubits(H)];
+    
     circ = [prep_anc..., mem_error_circ..., noisy_syndrome_circ...]
     circ, syndrome_bits, n_anc
 end
