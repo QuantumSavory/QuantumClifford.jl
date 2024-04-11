@@ -6,7 +6,38 @@
 
 # News
 
-## v0.8.21 - 2024-03-16
+## v0.10.0 - dev
+
+- Constructing a `Destabilizer` out of a full-rank `Stabilizer` does not require a canonicalization anymore, i.e. `stabilizerview(Destabilizer(s))==s` is guaranteed.
+- The `maximally_mixed` function is now available for creating maximally mixed multi-qubit states.
+- Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
+- Remove printing of spurious debug info from the PyBP decoder. 
+
+## v0.9.3 - 2024-04-10
+
+- **(fix)** One of `random_pauli`'s methods was disregarding the error probability and had incorrect kwarg defaults.
+
+## v0.9.2 - 2024-04-08
+
+- The ECC module now has access to an iterative bitflip decoder thanks to `LDPCDecoders.jl`.
+- Provide more configuration options in the `PyBeliefProp` decoders.
+- **(fix)** The belief prop decoder from LDPCDecoders was counting iterations incorrectly.
+
+## v0.9.1 - 2024-03-31
+
+- Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.
+- Added the classical Reed-Muller code in the ECC module.
+- Added the surface code to the ECC module.
+ 
+## v0.9.0 - 2024-03-19
+
+- **(breaking)** The defaults in `random_pauli` are now `realphase=true` and `nophase=true`.
+- **(breaking)** The convention for for flip probability in `random_pauli`.
+- **(breaking)** The convention for noise probability in `UnbiasedUncorrelatedNoise` changed. The input number is the total probability for an error to occur.
+- Implement an inplace `random_pauli!`, a non-allocating alternative to `random_pauli`.
+- Significant improvement in the performance of the ECC decoder pipeline (but many low-hanging fruits still remain).
+
+## v0.8.21 - 2024-03-17
 
 - Implemented the Gottesman code family, also known as [[2^j, 2^j - j - 2, 3]] quantum Hamming codes.
 - Bump the `PyQDecoders` dependency, switching to `PythonCall` behind the scenes for reliability.

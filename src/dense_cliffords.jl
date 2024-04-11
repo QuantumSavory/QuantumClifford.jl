@@ -30,12 +30,12 @@ ERROR: DimensionMismatch: Input tableau should be of size 2n×n (top half is the
 ```jldoctest
 julia> d = Destabilizer(S"Y")
 𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z
++ X
 𝒮𝓉𝒶𝒷
 + Y
 
 julia> CliffordOperator(d)
-X₁ ⟼ + Z
+X₁ ⟼ + X
 Z₁ ⟼ + Y
 ```
 """

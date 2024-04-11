@@ -43,6 +43,7 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         end
     end
 end
+
 @testset "Tensor products over stabilizers" begin
     for n in test_sizes
         n<10 && continue
@@ -59,6 +60,7 @@ end
         @test canonicalize!(⊗(stabs...)) == canonicalize!(stabilizerview(⊗(mdstabs...)))
     end
 end
+
 @testset "Stabilizer indexing" begin
     s = random_stabilizer(9,10)
     @test s[1,1] == s[[1,3,4],[1,3,5]][1,1]
@@ -89,5 +91,13 @@ end
         s2b = copy(s)[:,ri2]
         @test stab_to_gf2(s1a) == stab_to_gf2(s1b)
         @test stab_to_gf2(s2a) == stab_to_gf2(s2b)
+    end
+end
+
+@testset "Consistency between Destabilizer and MixedDestabilizer" begin # They have different construction algorithms so a consistency check is in order
+    for n in test_sizes
+        s = random_stabilizer(n)
+        @test stabilizerview(Destabilizer(s))==s # Destabilizer is supposed to guarantee same stabilizer generators
+        @test canonicalize!(stabilizerview(MixedDestabilizer(s)))==canonicalize!(stabilizerview(Destabilizer(s)))
     end
 end
