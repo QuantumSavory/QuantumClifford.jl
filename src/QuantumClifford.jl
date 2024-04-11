@@ -80,7 +80,7 @@ export
     # petrajectories
     petrajectories, applybranches,
     # nonclifford
-    StabMixture, UnitaryPauliChannel, PauliChannel, pcT,
+    GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types

@@ -72,7 +72,7 @@ Ket(dim=4)
 ```"""
 Ket(s::QuantumClifford.AbstractStabilizer) = stab_to_ket(s)
 
-function stabmix_to_densityop(s::StabMixture)
+function stabmix_to_densityop(s::GeneralizedStabilizer)
     ρ₀ = zero(dm(Ket(s.stab)))
     for ((Pₗᵇⁱᵗˢ,Pᵣᵇⁱᵗˢ), χ) in s.destabweights
         ρ̃ = dm(Ket(s.stab))
@@ -96,7 +96,7 @@ end
 $TYPEDSIGNATURES
 
 """
-Operator(s::StabMixture) = stabmix_to_densityop(s)
+Operator(s::GeneralizedStabilizer) = stabmix_to_densityop(s)
 
 
 """
