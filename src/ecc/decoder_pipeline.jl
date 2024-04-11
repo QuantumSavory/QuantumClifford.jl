@@ -30,7 +30,9 @@ end
 
 """Applies gate_error to a given two-qubit gate g."""
 function add_two_qubit_gate_noise(g::AbstractTwoQubitOperator, gate_error)
-    return (PauliError(affectedqubits(g), gate_error), )
+    qubits = affectedqubits(g)
+    qubits_vec = isa(qubits, Tuple) ? collect(qubits) : qubits
+    return (PauliError(qubits_vec, gate_error), )
 end
 
 
