@@ -8,7 +8,7 @@ using Random
 
 @testset "Pauli decomposition into destabilizers" begin
     for n in [1,2,63,64,65,66,300]
-        p = random_pauli(n; nophase=true)
+        p = random_pauli(n; nophase=false, realphase=true)
         s = random_destabilizer(n)
         phase, b, c = rowdecompose(p,s)
         p0 = zero(p)
