@@ -94,6 +94,31 @@ function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator) # 
     state
 end
 
+"""$(TYPEDSIGNATURES)
+
+Expectation value for the [PauliOperator](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`."""
+function expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
+    e = zero(_dictvaltype(s.destabweights))
+    phase, b, c = rowdecompose(p, s.stab)
+    for ((dᵢ,dⱼ), χ) in s.destabweights
+        _allthreesumtozero(dᵢ,dⱼ,b) || continue
+        e += χ * (-1)^(dᵢ'*c)
+    end
+    return (-1)^(phase÷2) * e
+end
+
+"""Same as `all(==(0), (a.+b.+c) .% 2)`"""
+function _allthreesumtozero(a,b,c) # TODO consider using bitpacking and SIMD xor with less eager shortcircuiting -- probably would be much faster
+    @inbounds @simd for i in 1:length(a)
+        iseven(a[i]+b[i]+c[i]) || return false
+    end
+    true
+end
+
+function _dictvaltype(dict)
+    return eltype(dict).parameters[2] # TODO there must be a cleaner way to do this
+end
+
 abstract type AbstractPauliChannel <: AbstractOperation end
 
 """A Pauli channel datastructure, mainly for use with [`GeneralizedStabilizer`](@ref)
@@ -140,8 +165,9 @@ nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 function apply!(state::GeneralizedStabilizer, gate::PauliChannel)
     dict = state.destabweights
     stab = state.stab
-    tzero = zero(eltype(dict).parameters[2])
-    tone = one(eltype(dict).parameters[2])
+    dtype = _dictvaltype(dict)
+    tzero = zero(dtype)
+    tone = one(dtype)
     newdict = typeof(dict)(tzero) # TODO jeez, this is ugly
     for ((dᵢ,dⱼ), χ) in dict # the state
         for ((Pₗ,Pᵣ), w) in zip(gate.paulis,gate.weights) # the channel
