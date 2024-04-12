@@ -119,6 +119,17 @@ function _dictvaltype(dict)
     return eltype(dict).parameters[2] # TODO there must be a cleaner way to do this
 end
 
+function project!(sm::GeneralizedStabilizer, p::PauliOperator)
+    eval = expect(p, sm)
+    prob₁ = (real(eval)+1)/2
+    error("This functionality is not implemented yet")
+end
+
+function _proj₋(sm::GeneralizedStabilizer, p::PauliOperator)
+end
+function _proj₊(sm::GeneralizedStabilizer, p::PauliOperator)
+end
+
 abstract type AbstractPauliChannel <: AbstractOperation end
 
 """A Pauli channel datastructure, mainly for use with [`GeneralizedStabilizer`](@ref)
