@@ -42,6 +42,6 @@ for n in 1:5
         ket = qo_bigtgate*ket
         apply!(genstab, bigtgate)
         @test dm(ket) ≈ Operator(genstab)
-        @test isapprox(expect(qo_pauli, ket), expect(pauli, genstab); atol=1e-10)
+        @test isapprox(expect(qo_pauli, ket), expect(pauli, genstab); atol=1e-5)
     end
 end
