@@ -207,7 +207,7 @@ function rowdecompose(pauli,state::Union{MixedDestabilizer, Destabilizer})
         end
     end
     p = mod(-Pₜ.phase[],4) # complex conjugate
-    return p, b, c
+    return p+pauli.phase[], b, c
 end
 
 """A Pauli channel datastructure, mainly for use with [`GeneralizedStabilizer`](@ref).
