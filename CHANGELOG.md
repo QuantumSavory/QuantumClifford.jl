@@ -5,13 +5,16 @@
 
 # News
 
+## v0.9.4 - 2024-04-14
+
+- Added the Steane-Reed-Muller code to the ECC module.
+ 
 ## v0.9.1 - dev
 
 - Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.
 - Implemented the classical Reed-Muller code
 - Added the surface code to the ECC module.
-- Added the Steane-Reed-Muller code to the ECC module.
- 
+
 ## v0.9.0 - 2024-03-19
 
 - **(breaking)** The defaults in `random_pauli` are now `realphase=true` and `nophase=true`.
