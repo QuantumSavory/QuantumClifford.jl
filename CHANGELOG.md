@@ -5,7 +5,7 @@
 
 # News
 
-## v0.9.3 - 2024-04-07
+## v0.9.3 - 2024-04-14
 
 - Added the classical Reed-Solomon code to the ECC module
 - Added the classical Bose–Chaudhuri–Hocquenghem (BCH) code to the ECC module

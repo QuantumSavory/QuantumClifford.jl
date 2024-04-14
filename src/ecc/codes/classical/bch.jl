@@ -5,12 +5,13 @@ You might be interested in consulting [bose1960further](@cite) as well.
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/q-ary_bch)
 """
 struct BCH <: ClassicalCode
-    n::Int
-    t::Int
+    n::Int 
+    t::Int #Error correction capability; t bits can be corrected
 
     function BCH(n, t)
-        if n < 0 || t < 1 || n > 500 || t > 500 
-            throw(ArgumentError("Invalid parameters: n and t must be non-negative and < 500 in order to obtain a valid code and to remain tractable"))
+        if n < 6 || n > 500 || t < 0 || t > 2^(ceil(Int, log2(n + 1)) - 1)
+            throw(ArgumentError("Invalid parameters: 'n' and 't' must be positive, and 'r' must be >= to 3. Additionally, 'n' is >= to 7 since n = 2ͬ - 1 and 't' < 2^(r - 1), to obtain a valid code and to tractable."))
+
         end
             new(n, t)
     end
