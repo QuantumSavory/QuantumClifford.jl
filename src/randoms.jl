@@ -30,7 +30,7 @@ function random_pauli!(rng::AbstractRNG, P::PauliOperator; nophase=true, realpha
     P
 end
 random_pauli!(P::PauliOperator; kwargs...) = random_pauli!(GLOBAL_RNG,P; kwargs...)
-function random_pauli!(rng::AbstractRNG,P::PauliOperator,p; nophase=false, realphase=false)
+function random_pauli!(rng::AbstractRNG,P::PauliOperator,p; nophase=true, realphase=true)
     n = nqubits(P)
     p = p/3
     for i in 1:n
@@ -44,7 +44,7 @@ random_pauli!(P::PauliOperator, p; kwargs...) = random_pauli!(GLOBAL_RNG,P,p; kw
 
 random_pauli(rng::AbstractRNG,n::Int; kwargs...) = random_pauli!(rng, zero(PauliOperator, n); kwargs...)
 random_pauli(n::Int; kwargs...) = random_pauli(GLOBAL_RNG, n; kwargs...)
-random_pauli(rng::AbstractRNG,n::Int,p; kwargs...) = random_pauli!(rng, zero(PauliOperator, n); kwargs...)
+random_pauli(rng::AbstractRNG,n::Int,p; kwargs...) = random_pauli!(rng, zero(PauliOperator, n),p; kwargs...)
 random_pauli(n::Int, p; kwargs...) = random_pauli(GLOBAL_RNG,n,p; kwargs...)
 
 ##############################
