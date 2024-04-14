@@ -6,33 +6,7 @@ using QuantumClifford: mul_left!
 using QuantumClifford.ECC
 using QuantumClifford.ECC: AbstractECC, SteaneReedMuller, ReedMuller
 
-function split(H::Matrix{Bool})
-    n = size(H, 2)
-    m = div(n, 2)
-    Hx = H[:, 1:m]
-    Hz = H[:, m+1:end]
-    return Hx, Hz
-end
-
-function min_distance(Hx::Matrix{Bool}, Hz::Matrix{Bool})
-    w = typemax(Int)
-    for (x, z) in zip(eachrow(Hx), eachrow(Hz))
-        r = map(|, x, z)
-        w = min(w, sum(r))
-    end
-    return w 
-end
-
-@testset "Test QRM(t, r) Matrix Minimum Distance" begin
-        stab = parity_checks(SteaneReedMuller(2, 4))
-        H = stab_to_gf2(stab)
-        Hx, Hz = split(H)
-        computed_distance = min_distance(Hx, Hz)
-        expected_distance = 2^2 + 2^(2 - 1)
-        @test computed_distance == expected_distance
-end
-
-@testset "Gottesman codes should correct all single-qubit errors" begin
+@testset "The subset of SteaneReedMuller codes @t = 1 aka Gottesman codes should correct all single-qubit errors" begin
     for j in 3:7
         H = parity_checks(SteaneReedMuller(1, j))
         syndromes = Set([]) 

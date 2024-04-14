@@ -26,11 +26,6 @@ function _codesize_qrm(t, r)
 end 
 
 #Equation 11 [steane1999quantum](@cite)
-function _nplusk_qrm(t, r)
-    return (2^r + 2^r) - sum(binomial.(r, 0:t)) -  sum(binomial.(r, 0:t - 1)) 
-end 
-
-#Equation 11 [steane1999quantum](@cite)
 function _k_qrm(t, r)
     return 2^r - binomial(r, t) - 2*sum(binomial.(r, 0:t - 1)) 
 end 
@@ -81,8 +76,8 @@ function parity_checks(c::SteaneReedMuller)
     Dz[m, :] = circshift(Dx[1, :], -t^2) 
 
     pad_zeros = zeros(Int64, size(G1, 1), size(G1, 2))
-    Hz = zeros(Int64, _nplusk_qrm(t, r), size(G1, 2)) 
-    Hx = zeros(Int64, _nplusk_qrm(t, r), size(G1, 2))
+    Hx = zeros(Int64, size(G1, 1) + size(pad_zeros, 1) + size(Dx, 1), size(G1, 2))
+    Hz = zeros(Int64, size(G1, 1) + size(pad_zeros, 1) + size(Dz, 1), size(G1, 2)) 
 
     Hx = vcat(G1, pad_zeros, Dx)
     Hz = vcat(pad_zeros, G1, Dz) 
