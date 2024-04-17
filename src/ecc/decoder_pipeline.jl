@@ -24,18 +24,6 @@ function batchdecode(d::AbstractSyndromeDecoder, syndrome_samples)
 end
 
 
-function add_two_qubit_gate_noise(g, gate_error)
-    return ()
-end
-
-"""Applies gate_error to a given two-qubit gate g."""
-function add_two_qubit_gate_noise(g::AbstractTwoQubitOperator, gate_error)
-    qubits = affectedqubits(g)
-    qubits_vec = isa(qubits, Tuple) ? collect(qubits) : qubits
-    return (PauliError(qubits_vec, gate_error), )
-end
-
-
 """An abstract type mostly used by [`evaluate_decoder`](@ref) to specify in what context to evaluate an ECC."""
 abstract type AbstractECCSetup end
 
@@ -91,21 +79,29 @@ struct ShorSyndromeECCSetup <: AbstractECCSetup
     end
 end
 
+function add_two_qubit_gate_noise(g, gate_error)
+    return ()
+end
+
+"""Applies gate_error to a given two-qubit gate g."""
+function add_two_qubit_gate_noise(g::AbstractTwoQubitOperator, gate_error)
+    qubits = affectedqubits(g)
+    return (PauliError(qubits, gate_error), )
+end
+
 function physical_ECC_circuit(H, setup::NaiveSyndromeECCSetup)
     syndrome_circ, n_anc, syndrome_bits = naive_syndrome_circuit(H)
     noisy_syndrome_circ = []
 
     for op in syndrome_circ
         push!(noisy_syndrome_circ, op)
-        
         for noise_op in add_two_qubit_gate_noise(op, setup.two_qubit_gate_noise)
             push!(noisy_syndrome_circ, noise_op)
         end
     end
 
     mem_error_circ = [PauliError(i, setup.mem_noise) for i in 1:nqubits(H)]
-
-    circ = vcat(mem_error_circ, noisy_syndrome_circ)
+    circ = [mem_error_circ..., noisy_syndrome_circ...]
     return circ, syndrome_bits, n_anc
 end
 
@@ -122,7 +118,7 @@ function physical_ECC_circuit(H, setup::ShorSyndromeECCSetup)
     end
 
     mem_error_circ = [PauliError(i, setup.mem_noise) for i in 1:nqubits(H)];
-    
+
     circ = [prep_anc..., mem_error_circ..., noisy_syndrome_circ...]
     circ, syndrome_bits, n_anc
 end
