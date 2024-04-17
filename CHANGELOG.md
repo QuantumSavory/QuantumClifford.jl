@@ -7,6 +7,7 @@
 
 ## v0.9.4 - dev
 
+- Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
 - Remove printing of spurious debug info from the PyBP decoder. 
 
 ## v0.9.3 - 2024-04-10
