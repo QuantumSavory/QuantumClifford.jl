@@ -71,7 +71,6 @@ parity_checks(d::PyBP) = d.H
 function decode(d::PyBP, syndrome_sample)
     row_x = syndrome_sample[1:d.nx] # TODO These copies and indirections might be costly!
     row_z = syndrome_sample[d.nx+1:end]
-    @show (size(row_x), size(row_z))
     guess_z_errors = PythonCall.PyArray(d.pyx.decode(np.array(row_x)))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode(np.array(row_z)))
     vcat(guess_x_errors, guess_z_errors)

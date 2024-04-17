@@ -57,8 +57,8 @@ function stabilizerplot_axis(subfig, s; colorbar=true, args...)
     Makie.hidedecorations!(ax)
     Makie.hidespines!(ax)
     ax.aspect = Makie.DataAspect()
-    colorbar && Makie.Colorbar(subfig[2, 1], p, ticks = (0:3, ["I", "X", "Z", "Y"]), vertical = false, flipaxis = false)
-    Makie.colsize!(subfig.layout, 1, Makie.Aspect(1, min(1,size(s,2)/size(s,1))))
+    colorbar && Makie.Colorbar(subfig[1, 2], p, ticks = ((0.5:3.51)*3/4, ["I", "X", "Z", "Y"]), vertical = true, flipaxis = true)
+    #Makie.colsize!(subfig.layout, 1, Makie.Aspect(1, min(1,size(s,2)/size(s,1))))
     subfig,ax,p
 end
 
