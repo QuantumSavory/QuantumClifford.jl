@@ -4,7 +4,7 @@ The construction method is effective for k > 0, and generators G  = (G_x | G_z) 
 
 You might be interested in consulting [zhang1997quantum](@cite), [quan2018fault](@cite), and [campbell2012magic](@cite) as well.
 
-The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/quantum_reed_muller)
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/quantum_reed_muller).
 """
 struct SteaneReedMuller <: AbstractECC
     t::Int  
