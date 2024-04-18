@@ -11,7 +11,6 @@ struct BCH <: ClassicalCode
     function BCH(n, t)
         if n < 6 || n > 500 || t < 0 || t > 2^(ceil(Int, log2(n + 1)) - 1)
             throw(ArgumentError("Invalid parameters: 'n' and 't' must be positive, and 'r' must be >= to 3. Additionally, 'n' is >= to 7 since n = 2ͬ - 1 and 't' < 2^(r - 1), to obtain a valid code and to tractable."))
-
         end
         new(n, t)
     end
