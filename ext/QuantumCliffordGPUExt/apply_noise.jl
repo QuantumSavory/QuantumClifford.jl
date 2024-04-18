@@ -18,11 +18,11 @@ function applynoise!(frame::PauliFrameGPU{T},noise::UnbiasedUncorrelatedNoise,i:
 end
 
 
-function applynoise_kernel(xzs::DeviceMatrix{Tme},
+function applynoise_kernel(xzs::DeviceMatrix{Tₘₑ},
     p::Real,
     ibig::Int,
-    ismallm::Tme,
-    rows::Int) where {Tme <: Unsigned}
+    ismallm::Tₘₑ,
+    rows::Int) where {Tₘₑ <: Unsigned}
 
     f = (blockIdx().x - 1) * blockDim().x + threadIdx().x;
     if f > rows

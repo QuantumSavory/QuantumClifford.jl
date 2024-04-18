@@ -4,8 +4,8 @@
 Particularly useful when acting on [`Register`](@ref).
 
 See also: [`apply!`](@ref), [`projectrand!`](@ref)."""
-struct PauliMeasurement{Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} <: AbstractMeasurement
-    pauli::PauliOperator{Tz,Tv}
+struct PauliMeasurement{Tₚ<:AbstractArray{UInt8,0}, Tᵥ<:AbstractVector{<:Unsigned}} <: AbstractMeasurement
+    pauli::PauliOperator{Tₚ,Tᵥ}
     bit::Int
 end
 

@@ -39,13 +39,13 @@ julia> p[1] = (true, true); p
 + YYZ
 ```
 """
-struct PauliOperator{Tz<:AbstractArray{UInt8,0}, Tv<:AbstractVector{<:Unsigned}} <: AbstractCliffordOperator
-    phase::Tz
+struct PauliOperator{Tₚ<:AbstractArray{UInt8,0}, Tᵥ<:AbstractVector{<:Unsigned}} <: AbstractCliffordOperator
+    phase::Tₚ
     nqubits::Int
-    xz::Tv
+    xz::Tᵥ
 end
 
-PauliOperator(phase::UInt8, nqubits::Int, xz::Tv) where Tv<:AbstractVector{<:Unsigned} = PauliOperator(fill(UInt8(phase),()), nqubits, xz)
+PauliOperator(phase::UInt8, nqubits::Int, xz::Tᵥ) where Tᵥ<:AbstractVector{<:Unsigned} = PauliOperator(fill(UInt8(phase),()), nqubits, xz)
 function PauliOperator(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{Bool})
     phase = fill(UInt8(phase),())
     xs = reinterpret(UInt,BitVector(x).chunks)::Vector{UInt}
@@ -87,19 +87,19 @@ macro P_str(a)
     quote _P_str($a) end
 end
 
-Base.getindex(p::PauliOperator{Tz,Tv}, i::Int) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = (p.xz[_div(Tve, i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0, (p.xz[end÷2+_div(Tve,i-1)+1] & Tve(0x1)<<_mod(Tve,i-1))!=0x0
-Base.getindex(p::PauliOperator{Tz,Tv}, r) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}} = PauliOperator(p.phase[], xbit(p)[r], zbit(p)[r])
+Base.getindex(p::PauliOperator{Tₚ,Tᵥ}, i::Int) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}} = (p.xz[_div(Tᵥₑ, i-1)+1] & Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1))!=0x0, (p.xz[end÷2+_div(Tᵥₑ,i-1)+1] & Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1))!=0x0
+Base.getindex(p::PauliOperator{Tₚ,Tᵥ}, r) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}} = PauliOperator(p.phase[], xbit(p)[r], zbit(p)[r])
 
-function Base.setindex!(p::PauliOperator{Tz,Tv}, (x,z)::Tuple{Bool,Bool}, i) where {Tz, Tve, Tv<:AbstractVector{Tve}}
+function Base.setindex!(p::PauliOperator{Tₚ,Tᵥ}, (x,z)::Tuple{Bool,Bool}, i) where {Tₚ, Tᵥₑ, Tᵥ<:AbstractVector{Tᵥₑ}}
     if x
-        p.xz[_div(Tve,i-1)+1] |= Tve(0x1)<<_mod(Tve,i-1)
+        p.xz[_div(Tᵥₑ,i-1)+1] |= Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1)
     else
-        p.xz[_div(Tve,i-1)+1] &= ~(Tve(0x1)<<_mod(Tve,i-1))
+        p.xz[_div(Tᵥₑ,i-1)+1] &= ~(Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1))
     end
     if z
-        p.xz[end÷2+_div(Tve,i-1)+1] |= Tve(0x1)<<_mod(Tve,i-1)
+        p.xz[end÷2+_div(Tᵥₑ,i-1)+1] |= Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1)
     else
-        p.xz[end÷2+_div(Tve,i-1)+1] &= ~(Tve(0x1)<<_mod(Tve,i-1))
+        p.xz[end÷2+_div(Tᵥₑ,i-1)+1] &= ~(Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1))
     end
     p
 end
@@ -123,13 +123,13 @@ Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.xz, h)
 Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
 
 _nchunks(i::Int,T::Type{<:Unsigned}) = 2*( (i-1) ÷ (8*sizeof(T)) + 1 )
-Base.zero(::Type{PauliOperator{Tz, Tv}}, q) where {Tz,T<:Unsigned,Tv<:AbstractVector{T}} = PauliOperator(zeros(UInt8), q, zeros(T, _nchunks(q,T)))
+Base.zero(::Type{PauliOperator{Tₚ, Tᵥ}}, q) where {Tₚ,T<:Unsigned,Tᵥ<:AbstractVector{T}} = PauliOperator(zeros(UInt8), q, zeros(T, _nchunks(q,T)))
 Base.zero(::Type{PauliOperator}, q) = zero(PauliOperator{Array{UInt8, 0}, Vector{UInt}}, q)
 Base.zero(p::P) where {P<:PauliOperator} = zero(P, nqubits(p))
 
 """Zero-out the phases and single-qubit operators in a [`PauliOperator`](@ref)"""
-@inline function zero!(p::PauliOperator{Tz,Tv}) where {Tz, Tve<:Unsigned, Tv<:AbstractVector{Tve}}
-    fill!(p.xz, zero(Tve))
+@inline function zero!(p::PauliOperator{Tₚ,Tᵥ}) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}}
+    fill!(p.xz, zero(Tᵥₑ))
     p.phase[] = 0x0
     p
 end
