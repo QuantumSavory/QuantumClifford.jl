@@ -20,7 +20,7 @@ graphstate(ghz(4))[1]
 
 ```@eval
 using Random; Random.seed!(1); using QuantumClifford, GraphMakie, CairoMakie;
-f = Figure(resolution=(200,200))
+f = Figure(size=(200,200))
 a = Axis(f[1,1])
 graphplot!(a,graphstate(ghz(4))[1])
 hidedecorations!(a); hidespines!(a)
