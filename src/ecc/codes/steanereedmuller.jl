@@ -2,7 +2,7 @@
 
 The construction method is effective for k > 0, and generators G  = (G_x | G_z) for k < 0 serve as stabilizers (parity check matrices) H = (H_x | H_z) for k > 0 codes.
 
-You might be interested in consulting [zhang1997quantum](@cite), [quan2018fault](@cite) and [campbell2012magic](@cite) as well.
+You might be interested in consulting [zhang1997quantum](@cite), [quan2018fault](@cite), and [campbell2012magic](@cite) as well.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/quantum_reed_muller)
 """
