@@ -130,18 +130,18 @@ include("pauli_operator.jl")
 """Internal Tableau type for storing a list of Pauli operators in a compact form.
 No special semantic meaning is attached to this type, it is just a convenient way to store a list of Pauli operators.
 E.g. it is not used to represent a stabilizer state, or a stabilizer group, or a Clifford circuit."""
-struct Tableau{Tzv<:AbstractVector{UInt8}, Tm<:AbstractMatrix{<:Unsigned}}
-    phases::Tzv
+struct Tableau{Tₚᵥ<:AbstractVector{UInt8}, Tₘ<:AbstractMatrix{<:Unsigned}}
+    phases::Tₚᵥ
     nqubits::Int
-    xzs::Tm
+    xzs::Tₘ
 end
 
-function Tableau(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz<:AbstractArray{UInt8,0},Tve<:Unsigned,Tv<:AbstractVector{Tve}}
+function Tableau(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ<:AbstractArray{UInt8,0},Tᵥₑ<:Unsigned,Tᵥ<:AbstractVector{Tᵥₑ}}
     r = length(paulis)
     n = nqubits(paulis[1])
-    tab = zero(Tableau{Vector{UInt8},Matrix{Tve}},r,n)::Tableau{Vector{UInt8},Matrix{Tve}} # typeassert for JET
+    tab = zero(Tableau{Vector{UInt8},Matrix{Tᵥₑ}},r,n)::Tableau{Vector{UInt8},Matrix{Tᵥₑ}} # typeassert for JET
     for i in eachindex(paulis)
-        tab[i] = paulis[i]::PauliOperator{Tz,Tv} # typeassert for JET
+        tab[i] = paulis[i]::PauliOperator{Tₚ,Tᵥ} # typeassert for JET
     end
     tab
 end
@@ -172,9 +172,9 @@ end
 Base.getindex(tab::Tableau, i::Int) = PauliOperator(tab.phases[i], nqubits(tab), tab.xzs[:,i])
 @inline function Base.getindex(tab::Tableau, r::Int, c::Int)
      # TODO this has code repetition with the Pauli getindex
-     Tme = eltype(tab.xzs)
-     x = (tab.xzs[_div(Tme,c-1)+1,r] & Tme(0x1)<<_mod(Tme,c-1))!=0x0
-     z = (tab.xzs[end÷2+_div(Tme,c-1)+1,r] & Tme(0x1)<<_mod(Tme,c-1))!=0x0
+     Tₘₑ = eltype(tab.xzs)
+     x = (tab.xzs[_div(Tₘₑ,c-1)+1,r] & Tₘₑ(0x1)<<_mod(Tₘₑ,c-1))!=0x0
+     z = (tab.xzs[end÷2+_div(Tₘₑ,c-1)+1,r] & Tₘₑ(0x1)<<_mod(Tₘₑ,c-1))!=0x0
      return (x,z)
 end
 Base.getindex(tab::Tableau, r) = Tableau(tab.phases[r], nqubits(tab), tab.xzs[:,r])
@@ -200,16 +200,16 @@ function Base.setindex!(tab::Tableau, t::Tableau, i)
     tab
 end
 
-function Base.setindex!(tab::Tableau{Tzv,Tm}, (x,z)::Tuple{Bool,Bool}, i, j) where {Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tm<:AbstractMatrix{Tme}} # TODO this has code repetitions with the Pauli setindex
+function Base.setindex!(tab::Tableau{Tₚᵥ,Tₘ}, (x,z)::Tuple{Bool,Bool}, i, j) where {Tₚᵥ<:AbstractVector{UInt8}, Tₘₑ<:Unsigned, Tₘ<:AbstractMatrix{Tₘₑ}} # TODO this has code repetitions with the Pauli setindex
     if x
-        tab.xzs[_div(Tme,j-1)+1,        i] |= Tme(0x1)<<_mod(Tme,j-1)
+        tab.xzs[_div(Tₘₑ,j-1)+1,        i] |= Tₘₑ(0x1)<<_mod(Tₘₑ,j-1)
     else
-        tab.xzs[_div(Tme,j-1)+1,        i] &= ~(Tme(0x1)<<_mod(Tme,j-1))
+        tab.xzs[_div(Tₘₑ,j-1)+1,        i] &= ~(Tₘₑ(0x1)<<_mod(Tₘₑ,j-1))
     end
     if z
-        tab.xzs[end÷2+_div(Tme,j-1)+1, i] |= Tme(0x1)<<_mod(Tme,j-1)
+        tab.xzs[end÷2+_div(Tₘₑ,j-1)+1, i] |= Tₘₑ(0x1)<<_mod(Tₘₑ,j-1)
     else
-        tab.xzs[end÷2+_div(Tme,j-1)+1, i] &= ~(Tme(0x1)<<_mod(Tme,j-1))
+        tab.xzs[end÷2+_div(Tₘₑ,j-1)+1, i] &= ~(Tₘₑ(0x1)<<_mod(Tₘₑ,j-1))
     end
     tab
 end
@@ -235,7 +235,7 @@ Base.hash(t::Tableau, h::UInt) = hash(t.nqubits, hash(t.phases, hash(t.xzs, h)))
 
 Base.copy(t::Tableau) = Tableau(copy(t.phases), t.nqubits, copy(t.xzs))
 
-function Base.zero(::Type{Tableau{Tzv, Tm}}, r, q) where {Tzv,T<:Unsigned,Tm<:AbstractMatrix{T}}
+function Base.zero(::Type{Tableau{Tₚᵥ, Tₘ}}, r, q) where {Tₚᵥ,T<:Unsigned,Tₘ<:AbstractMatrix{T}}
     phases = zeros(UInt8,r)
     xzs = zeros(UInt, _nchunks(q,T), r)
     Tableau(phases, q, xzs)::Tableau{Vector{UInt8},Matrix{UInt}}
@@ -354,8 +354,8 @@ struct Stabilizer{T<:Tableau} <: AbstractStabilizer
     tab::T
 end
 
-Stabilizer(phases::Tzv, nqubits::Int, xzs::Tm) where {Tzv<:AbstractVector{UInt8}, Tm<:AbstractMatrix{<:Unsigned}} = Stabilizer(Tableau(phases, nqubits, xzs))
-Stabilizer(paulis::AbstractVector{PauliOperator{Tz,Tv}}) where {Tz,Tv} = Stabilizer(Tableau(paulis))
+Stabilizer(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ<:AbstractVector{UInt8}, Tₘ<:AbstractMatrix{<:Unsigned}} = Stabilizer(Tableau(phases, nqubits, xzs))
+Stabilizer(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = Stabilizer(Tableau(paulis))
 Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xs, zs))
 Stabilizer(phases::AbstractVector{UInt8}, xzs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xzs))
 Stabilizer(xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tableau(xs,zs))
@@ -832,13 +832,13 @@ end
 # TODO is this used anywhere?
 """Swap two columns of a stabilizer in place."""
 @inline function colswap!(s::Tableau, i, j)
-    Tme = eltype(s.xzs)
-    lowbit = Tme(1)
-    ibig = _div(Tme,i-1)+1
-    ismall = _mod(Tme,i-1)
+    Tₘₑ = eltype(s.xzs)
+    lowbit = Tₘₑ(1)
+    ibig = _div(Tₘₑ,i-1)+1
+    ismall = _mod(Tₘₑ,i-1)
     ismallm = lowbit<<(ismall)
-    jbig = _div(Tme,j-1)+1
-    jsmall = _mod(Tme,j-1)
+    jbig = _div(Tₘₑ,j-1)+1
+    jsmall = _mod(Tₘₑ,j-1)
     jsmallm = lowbit<<(jsmall)
     for off in [0,size(s.xzs,2)÷2]
         ibig += off
