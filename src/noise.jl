@@ -52,10 +52,12 @@ function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,i::I
 end
 
 """An operator that applies the given `noise` model to the qubits at the selected `indices`."""
-struct NoiseOp <: AbstractNoiseOp
-    noise::AbstractNoise
-    indices::AbstractVector{Int}
+struct NoiseOp{N, Q} <: AbstractNoiseOp where {N, Q}
+    noise::N #<:AbstractNoise
+    indices::NTuple{Q, Int}
 end
+
+NoiseOp(noise, indices::AbstractVector{Int}) = NoiseOp(noise, tuple(indices...))
 
 """A convenient constructor for various types of Pauli errors,
 that can be used as circuit gates in simulations.
