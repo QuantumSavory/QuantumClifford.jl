@@ -13,7 +13,7 @@ struct SteaneReedMuller <: AbstractECC
         if t < 0 || t > 7 || r < 1 || r > 7
             throw(ArgumentError("Invalid parameters when attempting to construct a Steane-Reed-Muller code. We need  0<r≤7 and 0≤t≤7 in order to obtain a valid code and to remain tractable."))
         elseif (2^r - binomial(r, t) - 2*sum(binomial.(r, 0:t - 1)))  < 0 || (2^r - binomial(r, t) - 2*sum(binomial.(r, 0:t - 1)))  == 0
-             throw(ArgumentError("Invalid parameters when attempting to construct a Steane-Reed-Muller code. The method to construct Steane-Reed-Muller code fails when k < 0."))  
+            throw(ArgumentError("Invalid parameters when attempting to construct a Steane-Reed-Muller code. The method to construct Steane-Reed-Muller code fails when k < 0."))  
         else
             new(t, r)
         end
