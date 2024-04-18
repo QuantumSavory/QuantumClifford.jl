@@ -13,7 +13,7 @@ struct BCH <: ClassicalCode
             throw(ArgumentError("Invalid parameters: 'n' and 't' must be positive, and 'r' must be >= to 3. Additionally, 'n' is >= to 7 since n = 2ͬ - 1 and 't' < 2^(r - 1), to obtain a valid code and to tractable."))
 
         end
-            new(n, t)
+        new(n, t)
     end
 end
 
