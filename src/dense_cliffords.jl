@@ -136,7 +136,6 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=V
 end
 
 # TODO Added a lot of type assertions to help Julia infer types, but they are much too strict for cases where bitpacking varies (check tests)
-#@inline function apply_row_kernel!(new_stabrow::PauliOperator{Array{UInt8,0},Vector{Tme}}, row::Int, s_tab::Stabilizer{Tv,Tm}, c_tab::Stabilizer{Tv,Tm}; phases=true) where {Tme,Tv<:AbstractVector{UInt8},Tm<:AbstractMatrix{Tme}}
 @inline function apply_row_kernel!(new_stabrow, row, s_tab, c_tab; phases::Val{B}=Val(true)) where B
     B && (new_stabrow.phase[] = s_tab.phases[row])
     n = nqubits(c_tab)

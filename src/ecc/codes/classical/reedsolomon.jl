@@ -12,7 +12,7 @@ struct ReedSolomon <: ClassicalCode
         if n < 0 || k < 0 || n > 500
             throw(ArgumentError("Invalid parameters: n and k must be non-negative and n > 500 in order to obtain a valid code and to remain tractable"))
         end
-            new(n, k)
+        new(n, k)
     end
 end
 

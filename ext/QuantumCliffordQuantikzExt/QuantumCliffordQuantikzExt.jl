@@ -71,7 +71,7 @@ function Quantikz.QuantikzOp(op::Reset) # TODO This is complicated because quant
         Quantikz.Initialize("$str",affectedqubits(op)) # TODO make Quantikz work with tuples and remove the collect
     end
 end
-Quantikz.QuantikzOp(op::NoiseOp) = Quantikz.Noise(op.indices)
+Quantikz.QuantikzOp(op::NoiseOp) = Quantikz.Noise(collect(op.indices))
 Quantikz.QuantikzOp(op::NoiseOpAll) = Quantikz.NoiseAll()
 Quantikz.QuantikzOp(op::ClassicalXORConcreteWorkaround) = Quantikz.ClassicalDecision(sort([op.store, op.bits...]))
 

@@ -15,10 +15,10 @@ but it is still optimal given that some bitwrangling is required to extract a gi
 See also: [`fastrow`](@ref)"""
 function fastcolumn end
 
-fastrow(t::Tableau{Tzv,Tm}) where {Tzv, Tm} = t
-fastrow(t::Tableau{Tzv,Tm}) where {Tzv, Tm<:Adjoint} = Tableau(t.phases, t.nqubits, collect(t.xzs))
-fastcolumn(t::Tableau{Tzv,Tm}) where {Tzv, Tm} = Tableau(t.phases, t.nqubits, collect(t.xzs')')
-fastcolumn(t::Tableau{Tzv,Tm}) where {Tzv, Tm<:Adjoint} = t
+fastrow(t::Tableau{Tₚᵥ,Tₘ}) where {Tₚᵥ, Tₘ} = t
+fastrow(t::Tableau{Tₚᵥ,Tₘ}) where {Tₚᵥ, Tₘ<:Adjoint} = Tableau(t.phases, t.nqubits, collect(t.xzs))
+fastcolumn(t::Tableau{Tₚᵥ,Tₘ}) where {Tₚᵥ, Tₘ} = Tableau(t.phases, t.nqubits, collect(t.xzs')')
+fastcolumn(t::Tableau{Tₚᵥ,Tₘ}) where {Tₚᵥ, Tₘ<:Adjoint} = t
 
 fastrow(s::Stabilizer) = Stabilizer(fastrow(s.tab))
 fastcolumn(s::Stabilizer) = Stabilizer(fastcolumn(s.tab))

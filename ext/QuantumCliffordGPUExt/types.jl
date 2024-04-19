@@ -20,13 +20,13 @@ DeviceMatrix{T} = Union{CuDeviceArray{T, 2, 1}, Adjoint{T, CuDeviceArray{T, 2, 1
 
 
 function getTableauGPU(GPUValue, GPUVector, GPUMatrix)
-    TableauGPU{T} = QuantumClifford.Tableau{Tzv, Tm} where {T <: Unsigned, Tzv <: GPUVector{PhaseInnerType}, Tm <: GPUMatrix{T}}
+    TableauGPU{T} = QuantumClifford.Tableau{Tₚᵥ, Tₘ} where {T <: Unsigned, Tₚᵥ <: GPUVector{PhaseInnerType}, Tₘ <: GPUMatrix{T}}
 end
 function getStabilizerGPU(GPUValue, GPUVector, GPUMatrix, GPUTableau)
     StabilizerGPU{T} = QuantumClifford.Stabilizer{<:GPUTableau{T}} where {T <: Unsigned}
 end
 function getPauliOperatorGPU(GPUValue, GPUVector, GPUMatrix, GPUTableau)
-    PauliOperatorGPU{T} = QuantumClifford.PauliOperator{Tz, Tv} where {T <: Unsigned, Tz<:GPUValue{PhaseInnerType}, Tv<:GPUVector{T}}
+    PauliOperatorGPU{T} = QuantumClifford.PauliOperator{Tₚ, Tᵥ} where {T <: Unsigned, Tₚ<:GPUValue{PhaseInnerType}, Tᵥ<:GPUVector{T}}
 end
 
 # todo. type definition here is stronger than the code in pauliframes.jl  this will cause serious problems
