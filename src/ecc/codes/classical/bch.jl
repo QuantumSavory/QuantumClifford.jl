@@ -16,6 +16,31 @@ struct BCH <: ClassicalCode
     end
 end
 
+"""
+Generator Polynomial of BCH Codes
+
+This function calculates the generator polynomial `g(x)` of a t-bit error-correcting BCH code of length `2^m - 1` over the finite Galois field GF(2).
+
+Input Arguments:
+- `m` (Integer): The positive integer defining the code length (`2^m - 1`).
+- `t` (Integer): The positive integer specifying the number of correctable errors (`t`).
+
+Description:
+
+The generator polynomial `g(x)` is the fundamental polynomial used for encoding and decoding BCH codes. It has the following properties:
+
+1. Roots: It has `α`, `α^2`, `α^3`, ..., `α^(2^t)` as its roots, where `α` is a primitive element of the Galois Field GF(2^m).
+2. Error Correction: A BCH code with generator polynomial `g(x)` can correct up to `t` errors in a codeword of length `2^m - 1`.
+3. Minimal Polynomials: `g(x)` is the least common multiple (LCM) of the minimal polynomials `φ_i(x)` of `α^i` for `i = 1` to `2^t`.
+
+Minimal Polynomial:
+
+- The minimal polynomial of a field element `α` in GF(2^m) is the polynomial of the lowest degree over GF(2) that has `α` as a root. It represents the simplest polynomial relationship between `α` and the elements of GF(2).
+
+Least Common Multiple (LCM):
+
+- The LCM of two or more polynomials `f_i(x)` is the polynomial with the lowest degree that is a multiple of all `f_i(x)`. It ensures that `g(x)` has all the roots of `φ_i(x)` for `i = 1` to `2^t`.
+"""
 function generator_polynomial(rs::BCH)
     r = ceil(Int, log2(rs.n + 1))
     GF2ͬ, a = finite_field(2, r, "a")
@@ -37,7 +62,7 @@ function parity_checks(rs::BCH)
     for i in 1:rs.t
         for j in 1:rs.n
             base = 2*i - 1  
-            HField[i, j] = base^(j-1) * a^(j-1)
+            HField[i, j] = (a^base)^(j - 1)
         end
     end
     H = Matrix{Bool}(undef, r*rs.t, rs.n)
@@ -49,7 +74,7 @@ function parity_checks(rs::BCH)
             for k in 0:r - 1
                 t_tuple = [t_tuple; !is_zero(coeff(HField[i, j], k))]
             end 
-            H[row_start:row_end, :] .=  vec(t_tuple')
+            H[row_start:row_end, j] .=  vec(t_tuple')
         end
     end 
     return H
