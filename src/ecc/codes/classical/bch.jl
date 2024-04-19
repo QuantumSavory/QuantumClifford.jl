@@ -1,5 +1,17 @@
 """The family of Bose–Chaudhuri–Hocquenghem (BCH) codes, as discovered in 1959 by Alexis Hocquenghem [hocquenghem1959codes](@cite), and independently in 1960 by Raj Chandra Bose and D.K. Ray-Chaudhuri [bose1960class](@cite).
 
+The binary parity check matrix can be obtained from the following matrix over field elements, after each field element is expressed as a binary column vector over GF(2).
+
+1            a^1             a^2                a^3               ...          a^(n - 1)
+1         (a^3)^1          (a^3)^2            (a^3)^3             ...       (a^3)^(n - 1)
+1         (a^5)^1          (a^5)^2            (a^5)^3             ...       (a^5)^(n - 1)
+.            .               .                   .                                  .
+.            .               .                   .                                  .
+.            .               .                   .                                  .
+1       a^(2*t - 1)     a^(2*t - 1)^2      a^(2*t - 1)^3          ...      a^(2*t - 1)^(n -1) 
+
+Note: The entries of matrix over field elements are in GF(2^m). Each element in GF(2^m) can be represented by a m-tuple/binary column of length m over GF(2). If each entry of H is replaced by its corresponding m-tuple/binary column of length m over GF(2) arranged in column form, we obtain a binary parity check matrix for the code.
+
 You might be interested in consulting [bose1960further](@cite) as well.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/q-ary_bch)
