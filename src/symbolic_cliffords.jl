@@ -12,26 +12,26 @@ abstract type AbstractMeasurement <: AbstractOperation end
 # Stim has a good list of specialized single and two qubit operations at https://github.com/quantumlib/Stim/blob/e51ea66d213b25920e72c08e53266ec56fd14db4/src/stim/stabilizers/tableau_specialized_prepend.cc
 # Note that their specialized operations are for prepends (right multiplications), while we implement append (left multiplication) operations.
 
-@inline getshift(::Type{Tme},col::Int) where {Tme} = _mod(Tme,col-1)
-@inline getmask(::Type{Tme},col::Int) where {Tme} = Tme(0x1)<<getshift(Tme,col)
-@inline getbigindex(::Type{Tme},col::Int) where {Tme} = _div(Tme,col-1)+1
+@inline getshift(::Type{Tₘₑ},col::Int) where {Tₘₑ} = _mod(Tₘₑ,col-1)
+@inline getmask(::Type{Tₘₑ},col::Int) where {Tₘₑ} = Tₘₑ(0x1)<<getshift(Tₘₑ,col)
+@inline getbigindex(::Type{Tₘₑ},col::Int) where {Tₘₑ} = _div(Tₘₑ,col-1)+1
 
-TableauType{Tzv, Tme} = Tableau{Tzv, Tm} where {Tm <: AbstractMatrix{Tme}}
+TableauType{Tₚᵥ, Tₘₑ} = Tableau{Tₚᵥ, Tₘ} where {Tₘ <: AbstractMatrix{Tₘₑ}}
 
-Base.@propagate_inbounds function getxbit(s::TableauType{Tzv, Tme}, r::Int, c::Int) where {Tzv, Tme}
+Base.@propagate_inbounds function getxbit(s::TableauType{Tₚᵥ, Tₘₑ}, r::Int, c::Int) where {Tₚᵥ, Tₘₑ}
     getxbit(s.xzs, r, c)
 end
-Base.@propagate_inbounds function getzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int) where {Tzv, Tme}
+Base.@propagate_inbounds function getzbit(s::TableauType{Tₚᵥ, Tₘₑ}, r::Int, c::Int) where {Tₚᵥ, Tₘₑ}
     getzbit(s.xzs, r, c)
 end
-Base.@propagate_inbounds function setxbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, x::Tme) where {Tzv, Tme}
+Base.@propagate_inbounds function setxbit(s::TableauType{Tₚᵥ, Tₘₑ}, r::Int, c::Int, x::Tₘₑ) where {Tₚᵥ, Tₘₑ}
     setxbit(s.xzs, r, c, x)
 end
-Base.@propagate_inbounds function setzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, z::Tme) where {Tzv, Tme}
+Base.@propagate_inbounds function setzbit(s::TableauType{Tₚᵥ, Tₘₑ}, r::Int, c::Int, z::Tₘₑ) where {Tₚᵥ, Tₘₑ}
     setzbit(s.xzs, r, c, z)
 end
-Base.@propagate_inbounds setxbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, x::Tme, shift::Int) where {Tzv, Tme} = setxbit(s, r, c, x<<shift)
-Base.@propagate_inbounds setzbit(s::TableauType{Tzv, Tme}, r::Int, c::Int, z::Tme, shift::Int) where {Tzv, Tme} = setzbit(s, r, c, z<<shift)
+Base.@propagate_inbounds setxbit(s::TableauType{Tₚᵥ, Tₘₑ}, r::Int, c::Int, x::Tₘₑ, shift::Int) where {Tₚᵥ, Tₘₑ} = setxbit(s, r, c, x<<shift)
+Base.@propagate_inbounds setzbit(s::TableauType{Tₚᵥ, Tₘₑ}, r::Int, c::Int, z::Tₘₑ, shift::Int) where {Tₚᵥ, Tₘₑ} = setzbit(s, r, c, z<<shift)
 
 
 Base.@propagate_inbounds function getxbit(xzs::AbstractMatrix{T}, r::Int, c::Int)::T where {T <: Unsigned}
@@ -150,9 +150,9 @@ end
 function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{B}=Val(true)) where B # TODO Generated functions that simplify the whole `if phases` branch might be a good optimization, but a quick benchmakr comparing sHadamard to SingleQubitOperator(sHadamard) did not show a worthwhile difference.
     s = tab(stab)
     c = op.q
-    Tme = eltype(s.xzs)
-    sh = getshift(Tme, c)
-    xx,zx,xz,zz = Tme.((op.xx,op.zx,op.xz,op.zz)) .<< sh
+    Tₘₑ = eltype(s.xzs)
+    sh = getshift(Tₘₑ, c)
+    xx,zx,xz,zz = Tₘₑ.((op.xx,op.zx,op.xz,op.zz)) .<< sh
     anticom = ~iszero((~zz & xz & ~xx & zx) | ( zz & ~xz & xx & zx) | (zz &  xz & xx & ~zx))
     @inbounds @simd for r in eachindex(s)
         x = getxbit(s, r, c)
@@ -235,8 +235,8 @@ function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) wh
     s = tab(stab)
     q1 = gate.q1
     q2 = gate.q2
-    Tme = eltype(s.xzs)
-    shift = getshift(Tme, q1) - getshift(Tme, q2)
+    Tₘₑ = eltype(s.xzs)
+    shift = getshift(Tₘₑ, q1) - getshift(Tₘₑ, q2)
     @inbounds @simd for r in eachindex(s)
 #    for r in eachindex(s)
         x1 = getxbit(s, r, q1)
@@ -342,10 +342,10 @@ end
 """Apply a Pauli Z to the `i`-th qubit of state `s`. You should use `apply!(stab,sZ(i))` instead of this."""
 function apply_single_z!(stab::AbstractStabilizer, i)
     s = tab(stab)
-    Tme = eltype(s.xzs)
-    bigi = _div(Tme,i-1)+1
-    smalli = _mod(Tme,i-1)
-    mask = Tme(0x1)<<smalli
+    Tₘₑ = eltype(s.xzs)
+    bigi = _div(Tₘₑ,i-1)+1
+    smalli = _mod(Tₘₑ,i-1)
+    mask = Tₘₑ(0x1)<<smalli
     @inbounds @simd for row in 1:size(s.xzs,2)
         if !iszero(s.xzs[bigi,row] & mask)
             s.phases[row] = (s.phases[row]+0x2)&0x3
@@ -357,10 +357,10 @@ end
 """Apply a Pauli X to the `i`-th qubit of state `s`. You should use `apply!(stab,sX(i))` instead of this."""
 function apply_single_x!(stab::AbstractStabilizer, i)
     s = tab(stab)
-    Tme = eltype(s.xzs)
-    bigi = _div(Tme,i-1)+1
-    smalli = _mod(Tme,i-1)
-    mask = Tme(0x1)<<smalli
+    Tₘₑ = eltype(s.xzs)
+    bigi = _div(Tₘₑ,i-1)+1
+    smalli = _mod(Tₘₑ,i-1)
+    mask = Tₘₑ(0x1)<<smalli
     @inbounds @simd for row in 1:size(s.xzs,2)
         if !iszero(s.xzs[end÷2+bigi,row] & mask)
             s.phases[row] = (s.phases[row]+0x2)&0x3
@@ -372,10 +372,10 @@ end
 """Apply a Pauli Y to the `i`-th qubit of state `s`. You should use `apply!(stab,sY(i))` instead of this."""
 function apply_single_y!(stab::AbstractStabilizer, i)
     s = tab(stab)
-    Tme = eltype(s.xzs)
-    bigi = _div(Tme,i-1)+1
-    smalli = _mod(Tme,i-1)
-    mask = Tme(0x1)<<smalli
+    Tₘₑ = eltype(s.xzs)
+    bigi = _div(Tₘₑ,i-1)+1
+    smalli = _mod(Tₘₑ,i-1)
+    mask = Tₘₑ(0x1)<<smalli
     @inbounds @simd for row in 1:size(s.xzs,2)
         if !iszero((s.xzs[bigi,row] & mask) ⊻ (s.xzs[end÷2+bigi,row] & mask))
             s.phases[row] = (s.phases[row]+0x2)&0x3
