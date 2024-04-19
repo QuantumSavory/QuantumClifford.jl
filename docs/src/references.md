@@ -43,6 +43,9 @@ For classical code construction routines:
 - [raaphorst2003reed](@cite)
 - [abbe2020reed](@cite)
 - [djordjevic2021quantum](@cite)
+- [hocquenghem1959codes](@cite)
+- [bose1960class](@cite)
+- [bose1960further](@cite)
 
 # References
 

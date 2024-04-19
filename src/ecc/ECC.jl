@@ -57,6 +57,20 @@ function iscss(c::AbstractECC)
     return iscss(typeof(c))
 end
 
+"""
+Generator Polynomial
+
+In a polynomial code, the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field F. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
+
+Description
+
+- Defines the valid codewords in a polynomial code.
+- Has minimal degree among polynomials with this property.
+- Coefficients belong to a finite field (e.g., GF(2) for binary codes).
+
+"""
+function generator_polynomial end
+
 parity_checks(s::Stabilizer) = s
 Stabilizer(c::AbstractECC) = parity_checks(c)
 MixedDestabilizer(c::AbstractECC; kwarg...) = MixedDestabilizer(Stabilizer(c); kwarg...)
@@ -347,4 +361,5 @@ include("codes/toric.jl")
 include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/classical/reedmuller.jl")
+include("codes/classical/bch.jl")
 end #module
