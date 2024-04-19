@@ -5,10 +5,12 @@
 
 # News
 
-## v0.9.4 - 2024-04-14
+## v0.9.4 - dev
 
 - Added the classical Reed-Solomon code to the ECC module
 - Added the classical Bose–Chaudhuri–Hocquenghem (BCH) code to the ECC module
+- Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
+- Remove printing of spurious debug info from the PyBP decoder. 
 
 ## v0.9.3 - 2024-04-10
 

@@ -18,7 +18,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode,
     CSS,
-    Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
+    Shor9, Steane7, Cleve8, Perfect5, Bitflip3, SteaneReedMuller,
     Toric, Gottesman, Surface,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
@@ -351,4 +351,5 @@ include("codes/surface.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/reedsolomon.jl")
 include("codes/classical/bch.jl")
+include("codes/steanereedmuller.jl")
 end #module

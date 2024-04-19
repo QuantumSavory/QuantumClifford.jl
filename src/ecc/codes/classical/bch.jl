@@ -30,3 +30,28 @@ function generator_polynomial(rs::BCH)
     gx = lcm(minimal_poly)
     return gx
 end
+
+function parity_checks(rs::BCH)
+    r = ceil(Int, log2(rs.n + 1))
+    GF2ͬ, a = finite_field(2, r, "a")
+    HField = Matrix{FqFieldElem}(undef, rs.t, rs.n)
+    for i in 1:rs.t
+        for j in 1:rs.n
+            base = 2*i - 1  
+            HField[i, j] = base^(j-1) * a^(j-1)
+        end
+    end
+    H = Matrix{Bool}(undef, r*rs.t, rs.n)
+    for i in 1:rs.t
+        row_start = (i - 1) * r + 1
+        row_end = row_start + r - 1
+        for j in 1:rs.n
+            t_tuple = Bool[]
+            for k in 0:r - 1
+                t_tuple = [t_tuple; !is_zero(coeff(HField[i, j], k))]
+            end 
+            H[row_start:row_end, :] .=  vec(t_tuple')
+        end
+    end 
+    return H
+end
