@@ -48,9 +48,6 @@ For classical code construction routines:
 - [berlekamp1978readable](@cite)
 - [wicker1999reed](@cite)
 - [sklar2001reed](@cite)
-- [hocquenghem1959codes](@cite)
-- [bose1960class](@cite)
-- [bose1960further](@cite)
 
 # References
 
