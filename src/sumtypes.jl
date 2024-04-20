@@ -9,6 +9,7 @@ struct SymbolicDataType
     types#::Core.SimpleVector
     fieldnames
     originaltype
+    originaltype_parameterized
 end
 _header(s) = s
 _header(s::SymbolicDataType) = s.name
@@ -19,6 +20,8 @@ _fieldnames(s) = fieldnames(s)
 _fieldnames(s::SymbolicDataType) = s.fieldnames
 _originaltype(s) = s
 _originaltype(s::SymbolicDataType) = s.originaltype
+_originaltype_parameterized(s) = s
+_originaltype_parameterized(s::SymbolicDataType) = s.originaltype_parameterized
 
 """
 ```
@@ -38,7 +41,8 @@ julia> make_variant_deconstruct(sCNOT, :apply!, (:s,))
 """
 function make_variant_deconstruct(type::Union{DataType,SymbolicDataType}, call, preargs=(), postargs=())
     variant = Expr(:call, _symbol(type), _fieldnames(type)...)
-    original = :(($(_originaltype(type)))($(_fieldnames(type)...)))
+    original = :(($(_originaltype_parameterized(type)))($(_fieldnames(type)...)))
+    #:($variant => begin $(Expr(:call, call, preargs..., original, postargs...)); nothing end) # useful when you are searching for type instabilities due to inconsistent output types for a method (usually also pointing to a method not following the conventions of the API)
     :($variant => $(Expr(:call, call, preargs..., original, postargs...)))
 end
 
@@ -94,8 +98,7 @@ function make_sumtype_variant_constructor(type)
     if isa(type, DataType) || isa(type, SymbolicDataType)
         return :( CompactifiedGate(g::$(_header(type))) = CompactifiedGate'.$(_symbol(type))($([:(g.$n) for n in _fieldnames(type)]...)) )
     else
-        #return :( CompactifiedGate(g::$(_header(type))) = (@warn "The operation is of a type that can not be unified, defaulting to slower runtime dispatch" typeof(g); return g) )
-        return :()
+        return :() # this is taken care of by a default constructor that also warns about the failure to compactify
     end
 end
 
@@ -135,15 +138,21 @@ function make_all_sumtype_infrastructure_expr(t::DataType, callsigs)
         push!(concrete_types, ut) # fallback
     end
     sumtype = make_sumtype(concrete_types)
+    @debug "compiling a total of $(length(concrete_types)) concrete types"
     constructors = make_sumtype_variant_constructor.(concrete_types)
     methods = [make_sumtype_method(concrete_types, call, preargs, postargs) for (call, preargs, postargs) in callsigs]
+    modulename = gensym(:CompactifiedGate)
     return quote
+        #module $(modulename)
+        #using QuantumClifford
+        #import QuantumClifford: CompactifiedGate, # todo
         $(concretifier_workarounds_types...)
         $(sumtype.args...) # defining the sum type
         $(constructors...) # creating constructors for the sumtype which turn our concrete types into instance of the sum type
         $(concretifier_additional_constructors...) # creating constructors for the newly generated "workaround" concrete types
-        :( CompactifiedGate(g::AbstractOperation) = (@warn "The operation is of a type that can not be unified, defaulting to slower runtime dispatch" typeof(g); return g) )
+        :(CompactifiedGate(g::AbstractOperation) = (@warn "The operation is of a type that can not be unified, defaulting to slower runtime dispatch" typeof(g); return g) )
         $(methods...)
+        #end
     end
 end
 
@@ -161,7 +170,7 @@ function concretifier(t)
         parameterized_type = t{typeparams...}
         ftypes = parameterized_type.types
         fnames = fieldnames(t)
-        push!(names, SymbolicDataType(name, ftypes, fnames, t))
+        push!(names, SymbolicDataType(name, ftypes, fnames, t, parameterized_type))
         push!(generated_concretetypes, :(
             struct $(name)
                 $([:($n::$t) for (n,t) in zip(fnames,ftypes)]...)

@@ -133,9 +133,6 @@ struct ClassicalXOR{N} <: AbstractOperation
     bits::NTuple{N,Int}
     "The index of the classical bit that will store the results"
     store::Int
-    function ClassicalXOR(bits, store)
-        tbits = tuple(bits...)
-        n = length(tbits)
-        return new{n}(tbits, store)
-    end
 end
+
+ClassicalXOR(bits,store) = ClassicalXOR{length(bits)}(tuple(bits...),store)
