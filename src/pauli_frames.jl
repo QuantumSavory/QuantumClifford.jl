@@ -65,6 +65,7 @@ function apply!(frame::PauliFrame, xor::ClassicalXOR)
         end
         frame.measurements[f, xor.store] = value
     end
+    return frame
 end
 
 function apply!(frame::PauliFrame, op::sMX) # TODO implement a faster direct version
