@@ -9,6 +9,7 @@
 
 - Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
 - Remove printing of spurious debug info from the PyBP decoder. 
+- Significant improvements to the low-level circuit compiler (the sumtype compactifier), leading to faster Pauli frame simulation of noisy circuits.
 
 ## v0.9.3 - 2024-04-10
 
