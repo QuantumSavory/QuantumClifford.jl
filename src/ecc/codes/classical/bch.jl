@@ -73,8 +73,8 @@ function parity_checks(rs::BCH)
     HField = Matrix{FqFieldElem}(undef, rs.t, rs.n)
     for i in 1:rs.t
         for j in 1:rs.n
-            base = 2*i - 1  
-            HField[i, j] = (a^base)^(j - 1)
+            base = 2 * i - 1  
+            HField[i, j] = (a ^ base) ^ (j - 1)
         end
     end
     H = Matrix{Bool}(undef, r*rs.t, rs.n)
