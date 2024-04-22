@@ -128,7 +128,7 @@ Cyclic Code Construction:
 - Using the first q - 1 columns of the field parity-check matrix (HField), using j = 0, and setting α_0, α_1, α_2, ..., α_q - 1 to  α ^ 0, α ^ 1, α ^ 2, ..., α ^ q - 1 in the parity-check matrix are set equal to the powers of a primitive element α of the Galois Field GF(q), a cyclic code can be constructed for efficient encoding and decoding. The resulting matrix is represented by `HSeed`.
 
 - `HSeed` Matrix element expansion: 
-    1. Row expansion: Each row of in the `HField` matrix is replaced with an `m`-by-`m` Field matrix defined over the base field GF (2 ^ m). This expansion is repesented by `HFieldExpanded`.
+    1. Row expansion: Each row of in the `HField` matrix is replaced with an `m`-by-`m` Field matrix defined over the base field GF (2 ^ m). This expansion is represented by `HFieldExpanded`.
     2. Column expansion: The elements in each column of `HFieldExpanded` matrix are converted to binary representations by substituting powers of a primitive element (`α`) in the Galois Field GF(2 ^ m) with their corresponding m-tuples over the Boolean/Binary Field GF(2).
 """
 function parity_checks(rs::ReedSolomon)
