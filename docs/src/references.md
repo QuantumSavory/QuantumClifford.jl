@@ -48,6 +48,7 @@ For classical code construction routines:
 - [berlekamp1978readable](@cite)
 - [wicker1999reed](@cite)
 - [sklar2001reed](@cite)
+- [tomlinson2017error](@cite)
 
 # References
 
