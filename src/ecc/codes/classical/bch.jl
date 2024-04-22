@@ -2,13 +2,13 @@
 
 The binary parity check matrix can be obtained from the following matrix over field elements, after each field element is expressed as a binary column vector over GF(2).
 
-1               a ^ 1                   a ^ 2                    a ^ 3                ...                  a ^ (n - 1)
-1            (a ^ 3) ^ 1            (a ^ 3) ^ 2               (a ^ 3) ^ 3             ...              (a ^ 3) ^ (n - 1)
-1            (a ^ 5) ^ 1            (a ^ 5) ^ 2               (a ^ 5) ^ 3             ...              (a ^ 5) ^ (n - 1)
-.                .                       .                         .                                           .
-.                .                       .                         .                                           .
-.                .                       .                         .                                           .
-1          a ^ (2*t - 1)         a ^ (2*t - 1) ^ 2         a ^ (2*t - 1) ^ 3          ...             a ^ (2*t - 1) ^ (n - 1) 
+1             α ^ 1                     α ^ 2                     α ^ 3                  ...               α ^ (n - 1)
+1            (α ^ 3) ^ 1               (α ^ 3) ^ 2               (α ^ 3) ^ 3             ...              (α ^ 3) ^ (n - 1)
+1            (α ^ 5) ^ 1               (α ^ 5) ^ 2               (α ^ 5) ^ 3             ...              (α ^ 5) ^ (n - 1)
+.                  .                         .                         .                                           .
+.                  .                         .                         .                                           .
+.                  .                         .                         .                                           .
+1            (α ^ (2*t - 1)) ^ 1       (α ^ (2*t - 1)) ^ 2       (α ^ (2*t - 1)) ^ 3     ...              (α ^ (2*t - 1)) ^ (n - 1) 
 
 Note: The entries of matrix over field elements are in GF(2^m). Each element in GF(2^m) can be represented by a m-tuple/binary column of length m over GF(2). If each entry of H is replaced by its corresponding m-tuple/binary column of length m over GF(2) arranged in column form, we obtain a binary parity check matrix for the code.
 
