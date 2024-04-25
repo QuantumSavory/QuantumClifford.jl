@@ -8,7 +8,7 @@ using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix
+using Nemo: ZZ, residue_ring, matrix, polynomial_ring, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, is_irreducible
 
 abstract type AbstractECC end
 
@@ -18,6 +18,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode,
     CSS,
+    Goppa,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface,
     evaluate_decoder,
@@ -347,4 +348,5 @@ include("codes/toric.jl")
 include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/classical/reedmuller.jl")
+include("codes/classical/goppa.jl")
 end #module
