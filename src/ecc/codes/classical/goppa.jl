@@ -40,7 +40,9 @@ The parity-check matrix `(H)` of an irreducible binary Goppa code can be express
 
 You might be interested in consulting [berlekamp1973goppa](@cite), [mceliece1978public](@cite), [patterson1975algebraic](@cite), [sugiyama1975method](@cite), [van1988classical](@cite), [bernstein2008attacking](@cite), [wirtz1988parameters](@cite) and [singh2019code](@cite) an as well.
 
-The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/goppa)
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/gappa)
+
+Nemo Note: In Nemo, taking a random monic poly of degree `n`, this poly is irreducible with probability `1/n`. One in `n` monic polynomials is, on average irreducible. To increase probability of success of getting irreducible polynomial, use more iterations.
 """
 struct Goppa <: ClassicalCode
     n::Int 
@@ -54,52 +56,51 @@ struct Goppa <: ClassicalCode
     end
 end
 
-function parity_checks(rs::Goppa)
-    r = ceil(Int, log2(rs.n))
-    GF2ͬ, o = finite_field(2, r, "o")
+function parity_checks(ga::Goppa)
+    r = ceil(Int, log2(ga.n))
+    GF2同, o = finite_field(2, r, "o")
     k = GF(2, r)
     po, b = polynomial_ring(k)
     gx = FqPolyRingElem
-    #In Nemo, taking a random monic poly of degree n, this poly is irreducible with probability 1/n. One in n monic polynomials is, on average irreducible. To increase probability of success of getting irreducible polynomial, use more iterations.
     for i in 1:20
-        if is_irreducible(rand(po, 1:rs.t - 1) + b^(rs.t - 1)) == true
-            gx = rand(po, 1:rs.t - 1) + b^(rs.t - 1)
+        if is_irreducible(rand(po, 1:ga.t) + b^ga.t) == true
+            gx = rand(po, 1:ga.t) + b^ga.t
         end
     end
     L = FqFieldElem[]
     i = 0 
-    while length(L) != rs.n
+    while length(L) != ga.n
         if evaluate(gx, o^i) != 0
             L = [L; evaluate(gx, o^i)]
         end
         i += 1
     end
-    V = Matrix{FqFieldElem}(undef, rs.t - 1, rs.n)
-    for j in 1:rs.n
+    V = Matrix{FqFieldElem}(undef, ga.t - 1, ga.n)
+    for j in 1:ga.n
         V[1, j] = o ^ 0
     end
-    for i in 2:rs.t - 1
-        for j in 1:rs.n
+    for i in 2:ga.t - 1
+        for j in 1:ga.n
             V[i, j] = L[j] ^ (i - 1)
         end
     end
-    M = identity_matrix(GF2ͬ, rs.n)
-    for i in 1:rs.t - 1
-        for j in 1:rs.n
+    M = identity_matrix(GF2同, ga.n)
+    for i in 1:ga.t - 1
+        for j in 1:ga.n
             M[i, j] = getindex(M, i, j)*1/evaluate(gx, L[i])
         end
     end
-    HField = Matrix{FqFieldElem}(undef, rs.t - 1, rs.n)
-    for i in 1:rs.t - 1
-        for j in 1:rs.n
+    HField = Matrix{FqFieldElem}(undef, ga.t - 1, ga.n)
+    for i in 1:ga.t - 1
+        for j in 1:ga.n
             HField[i, j] = V[i, j]*M[i, j]
         end
     end
-    H = Matrix{Bool}(undef, r*(rs.t), rs.n)
-    for i in 1:rs.t - 1
+    H = Matrix{Bool}(undef, r*(ga.t - 1), ga.n)
+    for i in 1:ga.t - 1
         row_start = (i - 1) * r + 1
         row_end = row_start + r - 1
-        for j in 1:rs.n
+        for j in 1:ga.n
             t_tuple = Bool[]
             for k in 0:r - 1
                 t_tuple = [t_tuple; !is_zero(coeff(HField[i, j], k))]
