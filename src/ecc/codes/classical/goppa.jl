@@ -2,9 +2,9 @@
 
 An irreducible binary Goppa code is characterized by two key elements:
 
-- Goppa Polynomial `(g(x))`: A polynomial of degree `t` defined over the finite field `GF(2^m)`. This polynomial must have no repeated roots.
+- Goppa Polynomial `(g(x))`: A polynomial of degree `t` defined over the finite field `GF(2^m)`. This polynomial must have no repeated roots. In other words, Let g(x) be a monic polynomial over the F_q ^ m and let L={γ_0, ..., γ_(n − 1)} be a set of n elements of F_q ^ m such that g(γ_i) ≠ 0 for 0 ≤ i < n.
 
-- Support List `(L)`: A list containing `n` distinct elements from the finite field `GF(2^m)`. These elements must not be roots of the Goppa polynomial g(x).
+- Support List `(L)`: A list containing `n` distinct elements from the finite field `GF(2^m)`. These elements must not be roots of the Goppa polynomial g(x). 
 
 The sequence L plays a crucial role in defining the structure of an irreducible binary Goppa code. The steps involved in forming L are as follows:
 
@@ -41,6 +41,7 @@ The parity-check matrix `(H)` of an irreducible binary Goppa code can be express
 
      g_t                   0                       0              ...            0
   g_(t - 1)               g_t                      0              ...            0 
+  g_(t - 2)            g_(t - 1)                  g_t             ...            0 
       .                    .                       .              ...            .
       .                    .                       .              ...            .
       .                    .                       .              ...            .
@@ -57,29 +58,35 @@ struct Goppa <: ClassicalCode
     t::Int 
 
     function Goppa(n, t)
-        if n < 6 || n > 500 || t < 2 || t > 20
-            throw(ArgumentError("Invalid parameters: 'n' and 't' must be positive. Additionally, 'n' is >= to 7 and t >= 2 to obtain a valid code and to tractable."))
+        if n < 7 || n > 500 || t < 2 || t > n
+            throw(ArgumentError("Invalid parameters: 'n' and 't' must be positive. Additionally, 'n' is >= to 7 and t >= 2 and t < n to obtain a valid code and to tractable."))
         end
         new(n, t)
     end
 end
 
-function parity_checks(ga::Goppa)
+function generator_polynomial(ga::Goppa)
     r = ceil(Int, log2(ga.n))
     GF2ͬ, o = finite_field(2, r, "o")
     k = GF(2, r)
     po, b = polynomial_ring(k)
     gx = FqPolyRingElem
     for i in 1:100
-        gx = rand(po, 1:ga.t) + b^ga.t
+        gx = rand(po, 1:ga.t) + b ^ ga.t
         if is_irreducible(gx) == true
-            break
+            return gx  
         end
     end
+end
+
+function parity_checks(ga::Goppa)
+    r = ceil(Int, log2(ga.n))
+    GF2ͬ, o = finite_field(2, r, "o")
+    gx = generator_polynomial(ga)
     L = FqFieldElem[]
     i = 0 
     while length(L) != ga.n
-        if evaluate(gx, o^i) != 0
+        if evaluate(gx, o ^ i) != 0
             L = [L; evaluate(gx, o^i)]
         end
         i += 1
@@ -96,7 +103,7 @@ function parity_checks(ga::Goppa)
     M = identity_matrix(GF2ͬ, ga.n)
     for i in 1:ga.n
         for j in 1:ga.n
-            M[i, j] = getindex(M, i, j)*1/evaluate(gx, L[j])
+            M[i, j] = getindex(M, i, j)*inv(evaluate(gx, L[j]))
         end
     end
     HField = Matrix{FqFieldElem}(undef, ga.t, ga.n)
