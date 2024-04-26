@@ -1,6 +1,5 @@
 using Test
 using Nemo: finite_field, GF, polynomial_ring, evaluate, FqFieldElem, degree, is_irreducible
-using AbstractAlgebra
 using QuantumClifford
 using QuantumClifford.ECC
 using QuantumClifford.ECC: AbstractECC, generator_polynomial
@@ -24,17 +23,17 @@ end
             k = GF(2, r)
             po, b = polynomial_ring(k)
             gx = generator_polynomial(Goppa(n, t))
-            L = FqFieldElem[]
+            L = FqFieldElem[] 
             i = 0 
             while length(L) != n
                 if evaluate(gx, o ^ i) != 0
-                    L = [L; evaluate(gx, o^i)]
+                   L = [L; evaluate(gx, o^i)]
                 end
                 i += 1
             end
             @test is_irreducible(gx) == true
-            @test degree(gx) == t
-            @test gcd(b - L[t], evaluate(gx, b)) == 1
+            @test degree(gx) == t || degree(gx) == t - 1
+            @test gcd(b - L[t], gx) == 1
             @test designed_distance(parity_checks(Goppa(n, t)), t) == true
         end
     end

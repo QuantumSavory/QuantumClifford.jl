@@ -59,7 +59,7 @@ struct Goppa <: ClassicalCode
 
     function Goppa(n, t)
         if n < 7 || n > 500 || t < 2 || t > n
-            throw(ArgumentError("Invalid parameters: 'n' and 't' must be positive. Additionally, 'n' is >= to 7 and t >= 2 and t < n to obtain a valid code and to tractable."))
+            throw(ArgumentError("Invalid parameters: 'n' and 't' must be positive. Additionally, 'n' is > to 7 and t >= 2 and t < n to obtain a valid code and to tractable."))
         end
         new(n, t)
     end
