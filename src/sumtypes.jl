@@ -113,17 +113,21 @@ function get_all_subtypes(type)
         elseif isa(type, UnionAll)
             return [], [type]
         else
-            @error "The gate compiler has encountered a type that it can not handle: $type. The QuantumClifford library should continue functioning, but potentially at degraded performance. Please report this as a performance bug."
+            @error "The gate compiler has encountered a type that it can not handle: $type. The QuantumClifford library should continue functioning if this is a valid gate, but potentially at degraded performance. Please verify your circuit is valid and if this message persists, report as a performance bug."
         end
     else
-        return Iterators.flatten.(zip(get_all_subtypes.(subtypes(type))...))
+        return get_all_subtypes(subtypes(type))
     end
+end
+
+function get_all_subtypes(types::Base.AbstractVecOrTuple)
+    return Iterators.flatten.(zip(get_all_subtypes.(types)...))
 end
 
 module_of_type(t::UnionAll) = genericsupertypeparams(t).name.module
 module_of_type(t::DataType) = t.name.module
 
-function make_all_sumtype_infrastructure_expr(t::DataType, callsigs)
+function make_all_sumtype_infrastructure_expr(t, callsigs)
     concrete_types, unionall_types = get_all_subtypes(t)
     concrete_types = collect(Any, concrete_types)
     concrete_types = Any[t for t in concrete_types if module_of_type(t)==QuantumClifford]
@@ -143,16 +147,12 @@ function make_all_sumtype_infrastructure_expr(t::DataType, callsigs)
     methods = [make_sumtype_method(concrete_types, call, preargs, postargs) for (call, preargs, postargs) in callsigs]
     modulename = gensym(:CompactifiedGate)
     return quote
-        #module $(modulename)
-        #using QuantumClifford
-        #import QuantumClifford: CompactifiedGate, # todo
         $(concretifier_workarounds_types...)
         $(sumtype.args...) # defining the sum type
         $(constructors...) # creating constructors for the sumtype which turn our concrete types into instance of the sum type
         $(concretifier_additional_constructors...) # creating constructors for the newly generated "workaround" concrete types
         :(CompactifiedGate(g::AbstractOperation) = (@warn "The operation is of a type that can not be unified, defaulting to slower runtime dispatch" typeof(g); return g) )
         $(methods...)
-        #end
     end
 end
 
@@ -185,26 +185,47 @@ function make_concretifier_sumtype_variant_constructor(parameterized_type, varia
     return :( CompactifiedGate(g::$(parameterized_type)) = CompactifiedGate'.$(variant_name)($([:(g.$n) for n in _fieldnames(parameterized_type)]...)) )
 end
 
-function make_all_sumtype_infrastructure()
-    make_all_sumtype_infrastructure_expr(AbstractOperation,
-        [
-            (:apply!, (:(s::Register),), ()),
-            (:applywstatus!, (:(s::Register),), ()),
-            (:apply!, (:(s::PauliFrame),), ()),
-            (:applywstatus!, (:(s::PauliFrame),), ()),
-            (:affectedqubits, (), ()),
-            (:affectedbits, (), ()),
-        ]
-    ) |> eval
+function make_all_sumtype_infrastructure(type; newmodule=false)
+    api =         [
+        (:apply!, (:(s::Register),), ()),
+        (:applywstatus!, (:(s::Register),), ()),
+        (:apply!, (:(s::PauliFrame),), ()),
+        (:applywstatus!, (:(s::PauliFrame),), ()),
+        (:affectedqubits, (), ()),
+        (:affectedbits, (), ()),
+    ]
+    expr = make_all_sumtype_infrastructure_expr(type, api)
+    if newmodule
+        mod = Module(gensym(:CompactifactionModule))
+        expr = quote
+            using QuantumClifford
+            import SumTypes
+            $expr
+        end
+        expr = macroexpand(QuantumClifford, expr)
+        Base.eval(mod, expr)
+        return mod
+    else
+        eval(expr)
+        return nothing
+    end
 end
 
 """
 Convert a list of gates to a more optimized "sum type" format which permits faster dispatch.
 
 Generally, this should be called on a circuit before it is used in a simulation.
+This function has compiler overhead as it is generating new types and methods dynamically,
+however it is a one-time cost and the resulting circuit will be much faster to simulate.
 """
-function compactify_circuit(circuit)
-    return CompactifiedGate.(circuit)
+function compactify_circuit(circuit; subspecialize=true)
+    if subspecialize
+        types = unique(typeof.(circuit))
+        mod = make_all_sumtype_infrastructure(types; newmodule=true) # create a cache of modules
+        return [invokelatest(mod.CompactifiedGate, g) for g in circuit]
+    else
+        return CompactifiedGate.(circuit)
+    end
 end
 
 
@@ -223,4 +244,4 @@ end
 
 # XXX This has to happen after defining all the `concrete_typeparams` methods
 
-make_all_sumtype_infrastructure()
+make_all_sumtype_infrastructure(AbstractOperation)
