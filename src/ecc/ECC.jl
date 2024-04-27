@@ -8,7 +8,7 @@ using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, FqFieldElem, coeff, is_zero
 
 abstract type AbstractECC end
 
@@ -20,6 +20,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface,
+    ReedSolomon,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,

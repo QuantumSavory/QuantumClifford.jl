@@ -156,6 +156,9 @@ function parity_checks(rs::ReedSolomon)
             for p in 1:r
                 HTemp2[p:p, :] = reshape(HSeed[i, :].*a ^ (p - 1) , 1, :)
             end
+        if g > r * rs.k
+           break
+        end
         HFieldExpanded[g:g + r - 1, :] .=  HTemp2
         g = g + r
         end
