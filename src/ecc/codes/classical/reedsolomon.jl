@@ -14,7 +14,7 @@ the shortened Field parity-check matrix (`HSeed`) is given by
 (α ^ 0) ^ (j + q - k - 1)      (α ^ 1) ^ (j + q - k - 1)        (α ^ 2) ^ (j + q - k - 1)        ...        (α ^ (q - 1)) ^ (j + q - k - 1)    
 (α ^ 0) ^ (j + q - k)          (α ^ 1) ^ (j + q - k)            (α ^ 2) ^ (j + q - k)            ...        (α ^ (q - 1)) ^ (j + q - k)        
 
-You might be interested in consulting [geisel1990tutorial](cite), [wicker1999reed](@cite), [sklar2001reed](@cite), [berlekamp1978readable](cite), [tomlinson2017error](@cite) and [https://youtu.be/K26Ssr8H3ec?si=QOeohq_6I0Oyd8qu](@cite) as well.
+You might be interested in consulting [geisel1990tutorial](cite), [wicker1999reed](@cite), [sklar2001reed](@cite), [berlekamp1978readable](cite), [tomlinson2017error](@cite), [macwilliams1977theory](@cite) and [https://youtu.be/K26Ssr8H3ec?si=QOeohq_6I0Oyd8qu](@cite) as well.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed_solomon)
 """

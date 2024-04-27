@@ -6,10 +6,16 @@ using QuantumClifford
 using QuantumClifford.ECC
 using QuantumClifford.ECC: AbstractECC, ReedSolomon
 
+""" 
+Employing `3-level` quantization of the channel bits and erasing entire symbols if any of their constituent bits are erased can improve the performance of RS codes.
+
+Shortened Maximum Distance Separable (MDS) codes have the following parameters - code length `(n)`, codesize `(k)` and minimum Hamming distance `(d)` represented by [[n, k, d]] as follows: [[2 ^ (m) + 1 - s, k, 2 ^ (m + 1) - s - k]]. Thus, the designed distance `d` = is 2 ^ (m + 1) - s - k. Refer to chapter: 07, section: 03, pages: 172 to 175 [tomlinson2017error](@cite).
+
+The designed distance for binary expanded parity check matrix remains same as symbol based parity check matrix. According to [macwilliams1977theory](@cite), changing the basis `j` can increase the designed distance `(dmin)` of the resulting binary code.
+"""
 function designed_distance(matrix, k, n, r)
     for row in eachrow(matrix)
         count = sum(row)
-        # Employing 3-level quantization of the channel bits and erasing entire symbols if any of their constituent bits are erased can improve the performance of RS codes. Refer to chapter: 07, section: 03, pages: 172 to 175 [tomlinson2017error](@cite).
         if count >= 2 ^ (r + 1) - 3 - k
             return true
         end
