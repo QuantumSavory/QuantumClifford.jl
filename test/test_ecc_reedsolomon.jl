@@ -1,7 +1,7 @@
 using Test
 using LinearAlgebra
 using Combinatorics
-using Nemo: finite_field, GF, FqFieldElem, coeff, is_zero, degree
+using Nemo: finite_field, GF, FqFieldElem, FqPolyRingElem, coeff, is_zero, degree
 using QuantumClifford
 using QuantumClifford.ECC
 using QuantumClifford.ECC: AbstractECC, ReedSolomon

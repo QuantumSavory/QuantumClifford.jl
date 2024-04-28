@@ -9,6 +9,7 @@
 
 - Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
 - Remove printing of spurious debug info from the PyBP decoder. 
+- Adding classical Reed-Solomon code to the ECC module.
 
 ## v0.9.3 - 2024-04-10
 

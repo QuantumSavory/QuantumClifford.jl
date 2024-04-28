@@ -14,7 +14,7 @@ the shortened Field parity-check matrix (`HSeed`) is given by
 (α ^ 0) ^ (j + q - k - 1)      (α ^ 1) ^ (j + q - k - 1)        (α ^ 2) ^ (j + q - k - 1)        ...        (α ^ (q - 1)) ^ (j + q - k - 1)    
 (α ^ 0) ^ (j + q - k)          (α ^ 1) ^ (j + q - k)            (α ^ 2) ^ (j + q - k)            ...        (α ^ (q - 1)) ^ (j + q - k)        
 
-You might be interested in consulting [geisel1990tutorial](cite), [wicker1999reed](@cite), [sklar2001reed](@cite), [berlekamp1978readable](cite), [tomlinson2017error](@cite), [macwilliams1977theory](@cite) and [https://youtu.be/K26Ssr8H3ec?si=QOeohq_6I0Oyd8qu](@cite) as well.
+You might be interested in consulting [geisel1990tutorial](@cite), [wicker1999reed](@cite), [sklar2001reed](@cite), [berlekamp1978readable](@cite), [tomlinson2017error](@cite), [macwilliams1977theory](@cite) and [https://youtu.be/K26Ssr8H3ec?si=QOeohq_6I0Oyd8qu] as well.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed_solomon)
 """
@@ -23,7 +23,7 @@ struct ReedSolomon <: ClassicalCode
     k::Int
 
     function ReedSolomon(n, k)
-        if n < 0 || k < 0 || n > 500
+        if n < 0 || k < 0 || n > 500 || k > n
             throw(ArgumentError("Invalid parameters: n and k must be non-negative and n > 500 in order to obtain a valid code and to remain tractable"))
         end
         new(n, k)
@@ -109,7 +109,6 @@ Field Parity-Check Matrix (`HField`) Properties:
        .                            .                                .                    ...                   .                       .   .
 (α_0) ^ (j + q - k - 1)      (α_1) ^ (j + q - k - 1)        (α_2) ^ (j + q - k - 1)       ...          (α_(q - 2)) ^ (j + q - k - 1)    0   0
 (α_0) ^ (j + q - k)          (α_1) ^ (j + q - k)            (α_2) ^ (j + q - k)           ...          (α_(q - 2)) ^ (j + q - k)        0   1
-
 
 - The matrix has q - k + 1 rows corresponding to the code's parity symbols.
 - Any q - k + 1 columns form a Vandermonde matrix (non-singular).
