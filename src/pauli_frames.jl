@@ -57,7 +57,7 @@ function apply!(f::PauliFrame, op::AbstractCliffordOperator)
     return f
 end
 
-function apply!(frame::PauliFrame, xor::ClassicalXORConcreteWorkaround)
+function apply!(frame::PauliFrame, xor::ClassicalXOR)
     for f in eachindex(frame)
         value = frame.measurements[f,xor.bits[1]]
         for i in xor.bits[2:end]
@@ -65,6 +65,7 @@ function apply!(frame::PauliFrame, xor::ClassicalXORConcreteWorkaround)
         end
         frame.measurements[f, xor.store] = value
     end
+    return frame
 end
 
 function apply!(frame::PauliFrame, op::sMX) # TODO implement a faster direct version
