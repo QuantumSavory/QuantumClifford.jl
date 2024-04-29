@@ -1,6 +1,6 @@
 # Here be dragons...
 
-using SumTypes
+import SumTypes
 using InteractiveUtils: subtypes
 
 """An intermediary when we want to create a new concrete type in a macro."""
@@ -58,7 +58,7 @@ end
 """
 function make_sumtype(concrete_types)
     return quote
-        @sum_type CompactifiedGate :hidden begin
+        SumTypes.@sum_type CompactifiedGate :hidden begin
             $([make_variant(t) for t in concrete_types if isa(t, DataType) || isa(t, SymbolicDataType)]...)
         end
     end
@@ -78,7 +78,7 @@ end
 function make_sumtype_method(concrete_types, call, preargs=(), postargs=())
     return quote
         function QuantumClifford.$call($(preargs...), g::CompactifiedGate, $(postargs...))
-            @cases g begin
+            SumTypes.@cases g begin
                 $([make_variant_deconstruct(t, call, preargs, postargs) for t in concrete_types if isa(t, DataType) || isa(t, SymbolicDataType)]...)
                 #_ => @error "something wrong is happening when working with $(g) -- you are probably getting wrong results, please report this as a bug" # this being present ruins some safety guarantees, but it is useful for debugging
             end
@@ -198,11 +198,16 @@ function make_all_sumtype_infrastructure(type; newmodule=false)
     if newmodule
         mod = Module(gensym(:CompactifactionModule))
         expr = quote
+            println("1=================================")
             using QuantumClifford
-            import SumTypes
+            println("2=================================")
+            const SumTypes = QuantumClifford.SumTypes # using SumTypes does not seem to work...
+            println("3=================================")
+            println(SumTypes)
+            println("4=================================")
             $expr
         end
-        expr = macroexpand(QuantumClifford, expr)
+        @show expr
         Base.eval(mod, expr)
         return mod
     else
