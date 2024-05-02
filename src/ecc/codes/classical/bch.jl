@@ -26,8 +26,8 @@ abstract type AbstractPolynomialCode <: ClassicalCode end
 
 """
 BCH(m, t):
-- m: degree of the finite (Galois) field, GF(2ᵐ)
-- t: Error correction capability; t bits can be corrected
+- `m` (Integer): The positive integer defining the degree of the finite (Galois) field, GF(2ᵐ).
+- `t` (Integer): The positive integer specifying the number of correctable errors (`t`).
 """
 struct BCH <: AbstractPolynomialCode
     m::Int 
@@ -46,7 +46,7 @@ Generator Polynomial of BCH Codes
 This function calculates the generator polynomial `g(x)` of a t-bit error-correcting BCH code of length `(n)` of `2ᵐ - 1` over the finite Galois field GF(2).
 
 generator_polynomia(BCH(m, t)):
-- `m` (Integer): The positive integer defining the code length (`2ᵐ - 1`).
+- `m` (Integer): The positive integer defining the degree of the finite (Galois) field, GF(2ᵐ).
 - `t` (Integer): The positive integer specifying the number of correctable errors (`t`).
 
 Description:
