@@ -20,7 +20,6 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface,
-    BCH,
     generator_polynomial,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
@@ -60,16 +59,9 @@ function iscss(c::AbstractECC)
 end
 
 """
-Generator Polynomial
+Generator Polynomial `g(x)`
 
-In a polynomial code, the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field F. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
-
-Description
-
-- Defines the valid codewords in a polynomial code.
-- Has minimal degree among polynomials with this property.
-- Coefficients belong to a finite field (e.g., GF(2) for binary codes).
-
+In a polynomial code[https://en.wikipedia.org/wiki/Polynomial_code], the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field F. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
 """
 function generator_polynomial end
 

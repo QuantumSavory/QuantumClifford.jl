@@ -7,7 +7,6 @@
 
 ## v0.9.4 - dev
 
-- Added the classical Bose–Chaudhuri–Hocquenghem (BCH) code to the ECC module
 - Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
 - Remove printing of spurious debug info from the PyBP decoder. 
 
