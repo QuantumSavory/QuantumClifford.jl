@@ -65,11 +65,11 @@ Least Common Multiple (LCM):
 
 - The LCM of two or more polynomials `f_i(x)` is the polynomial with the lowest degree that is a multiple of all `f_i(x)`. It ensures that `g(x)` has all the roots of `φ_i(x)` for `i = 1` to `2ᵗ`.
 """
-function generator_polynomial(rs::BCH)
-    GF2ͬ, a = finite_field(2, rs.m, "a")
+function generator_polynomial(b::BCH)
+    GF2ͬ, a = finite_field(2, b.m, "a")
     GF2x, x = GF(2)["x"]
     minimal_poly = FqPolyRingElem[]
-    for i in 1:(2*rs.t - 1)
+    for i in 1:(2 * b.t - 1)
         if i % 2 != 0
             push!(minimal_poly, minpoly(GF2x, a^i))
         end 
@@ -78,22 +78,22 @@ function generator_polynomial(rs::BCH)
     return gx
 end
 
-function parity_checks(rs::BCH)
-    GF2ͬ, a = finite_field(2, rs.m, "a")
-    HField = Matrix{FqFieldElem}(undef, rs.t, 2^rs.m - 1)
-    for i in 1:rs.t
-        for j in 1:2^rs.m - 1
+function parity_checks(b::BCH)
+    GF2ͬ, a = finite_field(2, b.m, "a")
+    HField = Matrix{FqFieldElem}(undef, b.t, 2 ^ b.m - 1)
+    for i in 1:b.t
+        for j in 1:2 ^ b.m - 1
             base = 2 * i - 1  
             HField[i, j] = (a ^ base) ^ (j - 1)
         end
     end
-    H = Matrix{Bool}(undef, rs.m*rs.t, 2^rs.m - 1)
-    for i in 1:rs.t
-        row_start = (i - 1) * rs.m + 1
-        row_end = row_start + rs.m - 1
-        for j in 1:2^rs.m - 1
+    H = Matrix{Bool}(undef, b.m * b.t, 2 ^ b.m - 1)
+    for i in 1:b.t
+        row_start = (i - 1) * b.m + 1
+        row_end = row_start + b.m - 1
+        for j in 1:2 ^ b.m - 1
             t_tuple = Bool[]
-            for k in 0:rs.m - 1
+            for k in 0:b.m - 1
                 push!(t_tuple, !is_zero(coeff(HField[i, j], k)))
             end 
             H[row_start:row_end, j] .=  vec(t_tuple')
@@ -101,3 +101,6 @@ function parity_checks(rs::BCH)
     end 
     return H
 end
+
+code_n(b::BCH) = 2 ^ b.m - 1
+code_k(b::BCH) = 2 ^ b.m - 1 - degree(generator_polynomial(BCH(b.m, b.t)))
