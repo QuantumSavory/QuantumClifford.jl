@@ -36,7 +36,7 @@ end
         end
     end
 
-    #example taken from [https://web.ntpu.edu.tw/~yshan/BCH_code.pdf]    
+    #example taken from [https://personal.oss.unist.hr/~mnizetic/ZASTITNO%20LINIJSKI%20KODIRANJE/SEMINARSKI%20RADOVI/CH06.pdf]    
     @test parity_checks(BCH(4, 2))  ==    [1  0  0  0  1  0  0  1  1  0  1  0  1  1  1;
                                            0  1  0  0  1  1  0  1  0  1  1  1  1  0  0;
                                            0  0  1  0  0  1  1  0  1  0  1  1  1  1  0;
