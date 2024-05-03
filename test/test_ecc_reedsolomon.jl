@@ -24,6 +24,27 @@ function designed_distance(matrix, k, n, r)
     return false
 end
 
+function generate_examplepage175()
+    GF2ʳ, a = finite_field(2, 5, "a") 
+    q = 30
+    k = 15 
+    HField = Matrix{FqFieldElem}(undef, q - k + 1, q)
+    for j in 1: q
+        HField[1, j] = a ^ 0
+    end
+    HTemp2 = Matrix{FqFieldElem}(undef, 5, q)
+    for i in 1: q - k + 1
+        HField[i, 1] = a ^ 0
+    end
+    for i in 2:q - k + 1
+        for j in 2: q
+            HField[i, j] = (a ^ (j - 1)) ^ (i - 2)
+        end
+    end
+    HSeed = vcat(HField[1:1, :], HField[3:end, :])
+    return HSeed
+end
+
 @testset "Testing Shortened and Expanded Maximum Distance Separable (MDS) Reed Solomon codes's binary parity check matrices" begin
     n_cases = [31, 63, 127, 255]
     for n in n_cases
@@ -46,7 +67,29 @@ end
     P, x = GF2ʳ[:x]
     @test generator_polynomial(ReedSolomon(7, 2)) == x ^ 4 + (a ^ 2 + 1) * x ^ 3 + (a ^ 2 + 1) * x ^ 2 + (a + 1) * x + a
     
-    #example taken from page 175 of [tomlinson2017error](@cite).
+    #example taken from page 173 of [tomlinson2017error](@cite).
+    GF2ʳ, a = finite_field(2, 5, "a")
+    HF = Matrix{FqFieldElem}(undef, 15, 30)
+    HF = generate_examplepage175()
+    @test reshape(HF[1,:], 1, 30) == [1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1]
+    @test reshape(HF[:,1], 1, 15) == [ 1  1  1  1  1  1  1  1  1  1  1  1  1  1  1]
+    @test HF[2,2]   == a
+    @test HF[2,3]   == a ^ 2
+    @test HF[2,30]  == a ^ 3 + 1				== a ^ 29
+    @test HF[3,2]   == a ^ 2
+    @test HF[3,3]   == a ^ 4
+    @test HF[3,30]  == a ^ 3 + a + 1				== a ^ 27
+    @test HF[4,2]   == a ^ 3
+    @test HF[4,3]   == a ^ 3 + a				== a ^ 6
+    @test HF[4,30]  == a ^ 4 + a ^ 3 + 1			== a ^ 25
+    @test HF[14,2]  == a ^ 4 + a ^ 3 + a ^ 2		== a ^ 13
+    @test HF[14,3]  == a ^ 4 + a ^ 2 + a + 1		== a ^ 26
+    @test HF[14,30] == a ^ 2 + 1				== a ^ 5
+    @test HF[15,2]  == a ^ 4 + a ^ 3 + a ^ 2 + 1	== a ^ 14 
+    @test HF[15,3]  == a ^ 4 + a ^ 2 + a			== a ^ 28
+    @test HF[15,30] == a ^ 3
+ 
+    #example taken from page 175 of [tomlinson2017error](@cite)
     @test size(parity_checks(ReedSolomon(31, 15))) == (75, 150)
     @test parity_checks(ReedSolomon(31, 15))  == [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0;
                                                   0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0;

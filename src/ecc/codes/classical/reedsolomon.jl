@@ -5,14 +5,14 @@ Reed Solomon codes are maximum distance separable (MDS) codes and have the highe
 They are not binary codes but frequently are used with x = 2ᵐ, and so there is a mapping of residue classes of a primitive polynomial with binary coefficients and each element of GF(2ᵐ) is represented as a binary m-tuple. Denoting the x field elements as 0, α⁰, α¹, α²,... αˣ ⁻ ¹, the shortened Field parity-check matrix (`HSeed`) is given by
 
 ```
-(α⁰)ʲ               (α¹)ʲ              (α²)ʲ              ...        (αˣ ⁻ ¹)ʲ          
-(α⁰)ʲ ⁺ ¹           (α¹)ʲ ⁺ ¹           (α²)ʲ ⁺ ¹          ...        (αˣ ⁻ ¹)ʲ ⁺ ¹           
-(α⁰)ʲ ⁺ ²           (α¹)ʲ ⁺ ²           (α²)ʲ ⁺ ²          ...        (αˣ ⁻ ¹)ʲ ⁺ ²                       
-(α⁰)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹     (α¹)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹     (α²)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹   ...        (αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹
-    .                  .                   .           ...               .
-    .                  .                   .           ...               .
-    .                  .                   .           ...               .
-(α⁰)ʲ ⁺ ˣ ⁻ ᵏ         (α¹)ʲ ⁺ ˣ ⁻ ᵏ        (α²)ʲ ⁺ ˣ ⁻ ᵏ                  (αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ    
+(α⁰)ʲ			(α¹)ʲ			(α²)ʲ			...		(αˣ ⁻ ¹)ʲ          
+(α⁰)ʲ ⁺ ¹		(α¹)ʲ ⁺ ¹		(α²)ʲ ⁺ ¹		...		(αˣ ⁻ ¹)ʲ ⁺ ¹           
+(α⁰)ʲ ⁺ ²		(α¹)ʲ ⁺ ²		(α²)ʲ ⁺ ²		...		(αˣ ⁻ ¹)ʲ ⁺ ²                       
+(α⁰)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹	(α¹)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹	(α²)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹	...		(αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹
+    .                .             .                         .
+    .                .             .                         .
+    .                .             .                         .
+(α⁰)ʲ ⁺ ˣ ⁻ ᵏ		(α¹)ʲ ⁺ ˣ ⁻ ᵏ	(α²)ʲ ⁺ ˣ ⁻ ᵏ			...		(αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ    
 ```
 
 You might be interested in consulting [geisel1990tutorial](@cite), [wicker1999reed](@cite), [sklar2001reed](@cite), [berlekamp1978readable](@cite), [tomlinson2017error](@cite), [macwilliams1977theory](@cite) and [https://youtu.be/K26Ssr8H3ec?si=QOeohq_6I0Oyd8qu] as well.
@@ -28,7 +28,7 @@ struct ReedSolomon <: AbstractPolynomialCode
 
     function ReedSolomon(n, k)
         if n < 0 || k < 2 || n > 500 || k > n 
-            throw(ArgumentError("Invalid parameters: n and k must be non-negative. Also, 1 < k < n / 2 and n < 500 in order to obtain a valid code and to remain tractable"))
+            throw(ArgumentError("Invalid parameters: n and k must be non-negative. Also, 2 ≤ k ≤ n and n < 500 in order to obtain a valid code and to remain tractable"))
         end
         new(n, k)
     end
@@ -47,7 +47,6 @@ function generator_polynomial(rs::ReedSolomon)
     return gx
 end
 
-# Reed-Solomon Codes and Binary Transmission with soft decisions
 """
 This function applies Reed-Solomon (RS) codes with soft decision decoding for binary transmission channels.
 
@@ -80,14 +79,14 @@ Augmented Extended RS Codes:
 Field Parity-Check Matrix (`HField`) Properties:
 
 ```
-(α₀)ʲ                  (α₁)ʲ                  (α₂)ʲ           ...       (αₓ₋₂)ʲ               1   0 
-(α₀)ʲ ⁺ ¹              (α₁)ʲ ⁺ ¹             (α₂)ʲ ⁺ ¹         ...       (αₓ₋₂)ʲ ⁺ ¹            0   0
-(α₀)ʲ ⁺ ²              (α₁)ʲ ⁺ ²             (α₂)ʲ ⁺ ²         ...       (αₓ₋₂)ʲ ⁺ ²            0   0 
-     .                   .                     .          ...            .               .   .
-     .                   .                     .          ...            .               .   .
-     .                   .                     .          ...            .               .   .
-(α₀)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹     (α₁)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹        (α₂)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹    ...      (αₓ₋₂)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹       0   0
-(α₀)ʲ ⁺ ˣ ⁻ ᵏ           (α₁)ʲ ⁺ ˣ ⁻ ᵏ           (α₂)ʲ ⁺ ˣ ⁻ ᵏ      ...       (αₓ₋₂)ʲ ⁺ ˣ ⁻ ᵏ         0   1
+(α₀)ʲ				(α₁)ʲ				(α₂)ʲ			...		(αₓ₋₂)ʲ				1	0 
+(α₀)ʲ ⁺ ¹			(α₁)ʲ ⁺ ¹			(α₂)ʲ ⁺ ¹		...		(αₓ₋₂)ʲ ⁺ ¹			0	0
+(α₀)ʲ ⁺ ²			(α₁)ʲ ⁺ ²			(α₂)ʲ ⁺ ²		...		(αₓ₋₂)ʲ ⁺ ²			0	0 
+.				  .				  .					   .
+.				  .				  .					   .
+.				  . 				  .					   .
+(α₀)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹		(α₁)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹		(α₂)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹	...		(αₓ₋₂)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹		0	0
+(α₀)ʲ ⁺ ˣ ⁻ ᵏ			(α₁)ʲ ⁺ ˣ ⁻ ᵏ			(α₂)ʲ ⁺ ˣ ⁻ ᵏ		...		(αₓ₋₂)ʲ ⁺ ˣ ⁻ ᵏ		0	1
 ```
 
 - The matrix has x - k + 1 rows corresponding to the code's parity symbols.
@@ -106,7 +105,8 @@ Cyclic Code Construction:
 
 - Using the first x - 1 columns of the field parity-check matrix (HField), using j = 0, and setting α₀, α₁, α₂, ..., αₓ ₋ ₁ to  α⁰, α¹, α², ..., αˣ ⁻ ¹ in the parity-check matrix are set equal to the powers of a primitive element α of the Galois Field GF(q), a cyclic code can be constructed for efficient encoding and decoding. The resulting matrix is represented by `HSeed`.
 
-- `HSeed` Matrix element expansion: 
+`HSeed` Matrix element expansion: 
+
     1. Row expansion: Each row of in the `HField` matrix is replaced with an `m`-by-`m` Field matrix defined over the base field GF (2ᵐ). This expansion is represented by `HFieldExpanded`.
     2. Column expansion: The elements in each column of `HFieldExpanded` matrix are converted to binary representations by substituting powers of a primitive element (`α`) in the Galois Field GF(2ᵐ) with their corresponding m-tuples over the Boolean/Binary Field GF(2).
 """
