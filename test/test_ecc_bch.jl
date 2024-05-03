@@ -27,6 +27,7 @@ end
             mat = matrix(GF(2), parity_checks(BCH(m, t)))
             computed_rank = rank(mat)
             @test computed_rank == degree(generator_polynomial(BCH(m, t)))
+            @test code_k(BCH(m, t)) == n - degree(generator_polynomial(BCH(m, t)))
         end
         # BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x))` = 0.
         for t in 1:2
