@@ -73,21 +73,21 @@ end
     HF = generate_examplepage175()
     @test reshape(HF[1,:], 1, 30) == [1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1]
     @test reshape(HF[:,1], 1, 15) == [ 1  1  1  1  1  1  1  1  1  1  1  1  1  1  1]
-    @test HF[2,2]   == a
-    @test HF[2,3]   == a ^ 2
-    @test HF[2,30]  == a ^ 3 + 1				== a ^ 29
-    @test HF[3,2]   == a ^ 2
-    @test HF[3,3]   == a ^ 4
-    @test HF[3,30]  == a ^ 3 + a + 1				== a ^ 27
-    @test HF[4,2]   == a ^ 3
-    @test HF[4,3]   == a ^ 3 + a				== a ^ 6
-    @test HF[4,30]  == a ^ 4 + a ^ 3 + 1			== a ^ 25
-    @test HF[14,2]  == a ^ 4 + a ^ 3 + a ^ 2		== a ^ 13
-    @test HF[14,3]  == a ^ 4 + a ^ 2 + a + 1		== a ^ 26
-    @test HF[14,30] == a ^ 2 + 1				== a ^ 5
-    @test HF[15,2]  == a ^ 4 + a ^ 3 + a ^ 2 + 1	== a ^ 14 
-    @test HF[15,3]  == a ^ 4 + a ^ 2 + a			== a ^ 28
-    @test HF[15,30] == a ^ 3
+    @test HF[2, 2]	== a
+    @test HF[2, 3]	== a ^ 2
+    @test HF[2, 30]	== a ^ 3 + 1				== a ^ 29
+    @test HF[3, 2]	== a ^ 2
+    @test HF[3, 3]	== a ^ 4
+    @test HF[3, 30]	== a ^ 3 + a + 1			== a ^ 27
+    @test HF[4, 2]	== a ^ 3
+    @test HF[4, 3]	== a ^ 3 + a				== a ^ 6
+    @test HF[4, 30]	== a ^ 4 + a ^ 3 + 1			== a ^ 25
+    @test HF[14, 2]	== a ^ 4 + a ^ 3 + a ^ 2		== a ^ 13
+    @test HF[14, 3]	== a ^ 4 + a ^ 2 + a + 1		== a ^ 26
+    @test HF[14, 30]	== a ^ 2 + 1				== a ^ 5
+    @test HF[15, 2]	== a ^ 4 + a ^ 3 + a ^ 2 + 1	== a ^ 14 
+    @test HF[15, 3]	== a ^ 4 + a ^ 2 + a			== a ^ 28
+    @test HF[15, 30]	== a ^ 3
  
     #example taken from page 175 of [tomlinson2017error](@cite)
     @test size(parity_checks(ReedSolomon(31, 15))) == (75, 150)
