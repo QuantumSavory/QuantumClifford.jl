@@ -65,7 +65,7 @@ Least Common Multiple (LCM):
 - The LCM of two or more polynomials `fᵢ(x)` is the polynomial with the lowest degree that is a multiple of all `fᵢ(x)`. It ensures that `g(x)` has all the roots of `φᵢ(x)` for `i = 1` to `2ᵗ`.
 """
 function generator_polynomial(b::BCH)
-    GF2ͬ, a = finite_field(2, b.m, "a")
+    GF2ʳ, a = finite_field(2, b.m, "a")
     GF2x, x = GF(2)["x"]
     minimal_poly = FqPolyRingElem[]
     for i in 1:(2 * b.t - 1)
@@ -78,7 +78,7 @@ function generator_polynomial(b::BCH)
 end
 
 function parity_checks(b::BCH)
-    GF2ͬ, a = finite_field(2, b.m, "a")
+    GF2ʳ, a = finite_field(2, b.m, "a")
     HField = Matrix{FqFieldElem}(undef, b.t, 2 ^ b.m - 1)
     for i in 1:b.t
         for j in 1:2 ^ b.m - 1

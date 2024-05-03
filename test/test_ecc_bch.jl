@@ -33,7 +33,7 @@ end
         for t in 1:2
             gx = generator_polynomial(BCH(m, t))
             GF2x, x = GF(2)["x"] 
-            @test mod(x^n - 1, gx) == 0
+            @test mod(x ^ n - 1, gx) == 0
         end
     end
 
@@ -46,11 +46,8 @@ end
                                            0  0  0  1  1  0  0  0  1  1  0  0  0  1  1;
                                            0  0  1  0  1  0  0  1  0  1  0  0  1  0  1;
                                            0  1  1  1  1  0  1  1  1  1  0  1  1  1  1]
-
-    GF2ͬ, a = finite_field(2, 4, "a")
     GF2x, x = GF(2)["x"]
     #examples taken from [https://web.ntpu.edu.tw/~yshan/BCH_code.pdf].
     @test generator_polynomial(BCH(4, 2)) == x ^ 8 + x ^ 7 +  x ^ 6 +  x ^ 4 + 1
     @test generator_polynomial(BCH(4, 3)) == x ^ 10 + x ^ 8 +  x ^ 5 +  x ^ 4 +  x ^ 2 + x + 1
-
 end
