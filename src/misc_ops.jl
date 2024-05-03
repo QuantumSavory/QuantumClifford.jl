@@ -127,34 +127,12 @@ end
 
 operatordeterminism(::Type{VerifyOp}) = DeterministicOperatorTrait()
 
-abstract type ClassicalXORConcreteWorkaround <: AbstractOperation end  # See below for more of this abomination - replace everywhere by ClassicalXOR when compactification is fixed
 """Applies an XOR gate to classical bits. Currently only implemented for functionality with pauli frames."""
-struct ClassicalXOR{N} <: ClassicalXORConcreteWorkaround
+struct ClassicalXOR{N} <: AbstractOperation
     "The indices of the classical bits to be xor-ed"
     bits::NTuple{N,Int}
     "The index of the classical bit that will store the results"
     store::Int
-    function ClassicalXOR(bits, store) # See below for more of this abomination
-        tbits = tuple(bits...)
-        n = length(bits)
-        if n <= 15
-            return eval(Symbol("ClassicalXOR",string(n)))(tbits, store)
-        else
-            return new{n}(tbits, store)
-        end
-    end
 end
-#ClassicalXOR(bits::Vector, store::Int) = ClassicalXOR(tuple(bits...),store)
-# XXX TODO remove this abomination
-# Workaround for not being able to compactify non-concrete types
-for n in 2:15
-    name = Symbol("ClassicalXOR",string(n))
-    eval(
-        quote
-            struct $name <: ClassicalXORConcreteWorkaround
-                bits::NTuple{$n,Int}
-                store::Int
-            end
-        end
-    )
-end
+
+ClassicalXOR(bits,store) = ClassicalXOR{length(bits)}(tuple(bits...),store)
