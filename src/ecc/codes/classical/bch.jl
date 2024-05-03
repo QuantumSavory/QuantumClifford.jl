@@ -10,12 +10,11 @@ The binary parity check matrix can be obtained from the following matrix over fi
 .               .               .               .                        .
 .               .               .               .                        .
 1            (α²ᵗ ⁻ ¹)¹       (α²ᵗ ⁻ ¹)²      (α²ᵗ ⁻ ¹)³      ...        (α²ᵗ ⁻ ¹)ⁿ ⁻ ¹
-
 ```
 
-BCH code is cyclic code as its generator polynomial, `gx` divides `xⁿ - 1`, so `mod (xⁿ - 1, gx)` = 0 
+BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x))` = 0.
 
-Note: The entries of matrix over field elements are in GF(2ᵐ). Each element in GF(2ᵐ) can be represented by a m-tuple/binary column of length m over GF(2). If each entry of H is replaced by its corresponding m-tuple/binary column of length m over GF(2) arranged in column form, we obtain a binary parity check matrix for the code.
+Note: The entries of matrix over field elements are in GF(2ᵐ). Each element in GF(2ᵐ) can be represented by a `m`-tuple/binary column of length m over GF(2). If each entry of H is replaced by its corresponding `m`-tuple/binary column of length m over GF(2) arranged in column form, we obtain a binary parity check matrix for the code.
 
 You might be interested in consulting [bose1960further](@cite) as well.
 
@@ -34,7 +33,7 @@ struct BCH <: AbstractPolynomialCode
     t::Int 
     function BCH(m, t)
         if m < 3 || m > 10 || t < 0 || t >= 2^(m - 1)
-            throw(ArgumentError("Invalid parameters: 'm' and 't' must be positive. Additionally, 't' < 2ᵐ ⁻ ¹ to obtain a valid code and to tractable."))
+            throw(ArgumentError("Invalid parameters: 'm' and 't' must be positive. Additionally, 3 ≤ 'm' ≤ 10 and 't' < 2ᵐ ⁻ ¹ to obtain a valid code and to tractable."))
         end
         new(m, t)
     end
@@ -55,7 +54,7 @@ The generator polynomial `g(x)` is the fundamental polynomial used for encoding 
 
 1. Roots: It has `α`, `α²`, `α³`, ..., `α²ᵗ` as its roots, where `α` is a primitive element of the Galois Field GF(2ᵐ).
 2. Error Correction: A BCH code with generator polynomial `g(x)` can correct up to `t` errors in a codeword of length `2ᵐ - 1`.
-3. Minimal Polynomials: `g(x)` is the least common multiple (LCM) of the minimal polynomials `φ_i(x)` of `αⁱ` for `i = 1` to `2ᵗ`.
+3. Minimal Polynomials: `g(x)` is the least common multiple (LCM) of the minimal polynomials `φᵢ(x)` of `αⁱ` for `i = 1` to `2ᵗ`.
 
 Minimal Polynomial:
 
@@ -63,7 +62,7 @@ Minimal Polynomial:
 
 Least Common Multiple (LCM):
 
-- The LCM of two or more polynomials `f_i(x)` is the polynomial with the lowest degree that is a multiple of all `f_i(x)`. It ensures that `g(x)` has all the roots of `φ_i(x)` for `i = 1` to `2ᵗ`.
+- The LCM of two or more polynomials `fᵢ(x)` is the polynomial with the lowest degree that is a multiple of all `fᵢ(x)`. It ensures that `g(x)` has all the roots of `φᵢ(x)` for `i = 1` to `2ᵗ`.
 """
 function generator_polynomial(b::BCH)
     GF2ͬ, a = finite_field(2, b.m, "a")
