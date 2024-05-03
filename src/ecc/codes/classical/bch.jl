@@ -3,13 +3,13 @@
 The binary parity check matrix can be obtained from the following matrix over field elements, after each field element is expressed as a binary column vector over GF(2).
 
 ```
-1            (α¹)¹            (α¹)²          (α¹)³         ...        (α¹)ⁿ ⁻ ¹
-1            (α³)¹            (α³)²          (α³)³         ...        (α³)ⁿ ⁻ ¹
-1            (α⁵)¹            (α⁵)²           (α⁵)³         ...        (α⁵)ⁿ ⁻ ¹
-.               .               .               .                        .
-.               .               .               .                        .
-.               .               .               .                        .
-1            (α²ᵗ ⁻ ¹)¹       (α²ᵗ ⁻ ¹)²      (α²ᵗ ⁻ ¹)³      ...        (α²ᵗ ⁻ ¹)ⁿ ⁻ ¹
+1		(α¹)¹			(α¹)²			(α¹)³			...		(α¹)ⁿ ⁻ ¹
+1		(α³)¹			(α³)²			(α³)³			...		(α³)ⁿ ⁻ ¹
+1		(α⁵)¹			(α⁵)²			(α⁵)³			...		(α⁵)ⁿ ⁻ ¹
+.		  .			  .			  .			...		   .
+.		  .			  .			  .			...		   .
+.		  .			  .			  .			...		   .
+1		(α²ᵗ ⁻ ¹)¹		(α²ᵗ ⁻ ¹)²		(α²ᵗ ⁻ ¹)³		...		(α²ᵗ ⁻ ¹)ⁿ ⁻ ¹
 ```
 
 BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x))` = 0.
