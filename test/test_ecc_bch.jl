@@ -17,7 +17,7 @@ function designed_distance(matrix)
 end
 
 @testset "Testing properties of BCH codes for all its instances" begin
-    m_cases = [3, 4, 5, 6, 7, 8, 9, 10]
+    m_cases = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     for m in m_cases
         n = 2 ^ m - 1
         for t in 1:2
@@ -28,9 +28,7 @@ end
             computed_rank = rank(mat)
             @test computed_rank == degree(generator_polynomial(BCH(m, t)))
             @test code_k(BCH(m, t)) == n - degree(generator_polynomial(BCH(m, t)))
-        end
-        # BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x))` = 0.
-        for t in 1:2
+            # BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x))` = 0.
             gx = generator_polynomial(BCH(m, t))
             GF2x, x = GF(2)["x"] 
             @test mod(x ^ n - 1, gx) == 0

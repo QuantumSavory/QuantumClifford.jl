@@ -12,9 +12,9 @@ The binary parity check matrix can be obtained from the following matrix over fi
 1		(α²ᵗ ⁻ ¹)¹		(α²ᵗ ⁻ ¹)²		(α²ᵗ ⁻ ¹)³		...		(α²ᵗ ⁻ ¹)ⁿ ⁻ ¹
 ```
 
-BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x))` = 0.
+Note: The entries of matrix over field elements are in GF(2ᵐ). Each element in GF(2ᵐ) can be represented by a `m`-tuple/binary column vector of length `m` over GF(2). If each entry of `H` is replaced by its corresponding `m`-tuple/binary column vector of length `m` over GF(2), we obtain a binary parity check matrix for the code.
 
-Note: The entries of matrix over field elements are in GF(2ᵐ). Each element in GF(2ᵐ) can be represented by a `m`-tuple/binary column of length m over GF(2). If each entry of H is replaced by its corresponding `m`-tuple/binary column of length m over GF(2) arranged in column form, we obtain a binary parity check matrix for the code.
+BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x)) = 0`.
 
 You might be interested in consulting [bose1960further](@cite) as well.
 
@@ -32,8 +32,8 @@ struct BCH <: AbstractPolynomialCode
     m::Int 
     t::Int 
     function BCH(m, t)
-        if m < 3 || m > 10 || t < 0 || t >= 2^(m - 1)
-            throw(ArgumentError("Invalid parameters: 'm' and 't' must be positive. Additionally, 3 ≤ 'm' ≤ 10 and 't' < 2ᵐ ⁻ ¹ to obtain a valid code and to tractable."))
+        if m < 3 || t < 0 || t >= 2^(m - 1)
+            throw(ArgumentError("Invalid parameters: 'm' and 't' must be positive. Additionally, 'm' ≥ 3 and 't' < 2ᵐ ⁻ ¹ to obtain a valid code and to tractable."))
         end
         new(m, t)
     end
@@ -42,9 +42,9 @@ end
 """
 Generator Polynomial of BCH Codes
 
-This function calculates the generator polynomial `g(x)` of a t-bit error-correcting BCH code of length `(n)` of `2ᵐ - 1` over the finite Galois field GF(2).
+This function calculates the generator polynomial `g(x)` of a `t`-bit error-correcting BCH code of length `(n)` of `2ᵐ - 1` over the finite Galois field GF(2).
 
-generator_polynomia(BCH(m, t)):
+generator_polynomial(BCH(m, t)):
 - `m` (Integer): The positive integer defining the degree of the finite (Galois) field, GF(2ᵐ).
 - `t` (Integer): The positive integer specifying the number of correctable errors (`t`).
 
@@ -70,7 +70,7 @@ function generator_polynomial(b::BCH)
     minimal_poly = FqPolyRingElem[]
     for i in 1:(2 * b.t - 1)
         if i % 2 != 0
-            push!(minimal_poly, minpoly(GF2x, a^i))
+            push!(minimal_poly, minpoly(GF2x, a ^ i))
         end 
     end
     gx = lcm(minimal_poly)
