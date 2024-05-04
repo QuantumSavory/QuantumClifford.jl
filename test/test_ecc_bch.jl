@@ -23,7 +23,7 @@ end
         for t in 1:2
             H = parity_checks(BCH(m, t))
             @test designed_distance(H) >= 2 * t
-            # n - k == degree of generator polynomial, `g(x)`.
+            # n - k == degree of generator polynomial, `g(x)` == rank of binary parity check matrix, `H`.
             mat = matrix(GF(2), parity_checks(BCH(m, t)))
             computed_rank = rank(mat)
             @test computed_rank == degree(generator_polynomial(BCH(m, t)))
