@@ -32,7 +32,7 @@ struct BCH <: AbstractPolynomialCode
     m::Int 
     t::Int 
     function BCH(m, t)
-        if m < 3 || t < 0 || t >= 2^(m - 1)
+        if m < 3 || t < 0 || t >= 2 ^ (m - 1)
             throw(ArgumentError("Invalid parameters: 'm' and 't' must be positive. Additionally, 'm' ≥ 3 and 't' < 2ᵐ ⁻ ¹ to obtain a valid code and to tractable."))
         end
         new(m, t)
