@@ -5,14 +5,14 @@ Reed Solomon codes are maximum distance separable (MDS) codes and have the highe
 They are not binary codes but frequently are used with x = 2ᵐ, and so there is a mapping of residue classes of a primitive polynomial with binary coefficients and each element of GF(2ᵐ) is represented as a binary m-tuple. Denoting the x field elements as 0, α⁰, α¹, α²,... αˣ ⁻ ¹, the shortened Field parity-check matrix (`HSeed`) is given by
 
 ```
-(α⁰)ʲ			(α¹)ʲ			(α²)ʲ				...		(αˣ ⁻ ¹)ʲ          
-(α⁰)ʲ ⁺ ¹		(α¹)ʲ ⁺ ¹		(α²)ʲ ⁺ ¹			...		(αˣ ⁻ ¹)ʲ ⁺ ¹          
-(α⁰)ʲ ⁺ ²		(α¹)ʲ ⁺ ²		(α²)ʲ ⁺ ²			...		(αˣ ⁻ ¹)ʲ ⁺ ²                      
+(α⁰)ʲ			(α¹)ʲ			(α²)ʲ				...		(αˣ ⁻ ¹)ʲ
+(α⁰)ʲ ⁺ ¹		(α¹)ʲ ⁺ ¹		(α²)ʲ ⁺ ¹			...		(αˣ ⁻ ¹)ʲ ⁺ ¹
+(α⁰)ʲ ⁺ ²		(α¹)ʲ ⁺ ²		(α²)ʲ ⁺ ²			...		(αˣ ⁻ ¹)ʲ ⁺ ²
 (α⁰)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹	(α¹)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹	(α²)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹		...		(αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹
 	.			.			.			...			.
 	.			.			.			...			.
 	.			.			.			...			.
-(α⁰)ʲ ⁺ ˣ ⁻ ᵏ		(α¹)ʲ ⁺ ˣ ⁻ ᵏ		(α²)ʲ ⁺ ˣ ⁻ ᵏ			...		(αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ    
+(α⁰)ʲ ⁺ ˣ ⁻ ᵏ		(α¹)ʲ ⁺ ˣ ⁻ ᵏ		(α²)ʲ ⁺ ˣ ⁻ ᵏ			...		(αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ
 ```
 
 You might be interested in consulting [geisel1990tutorial](@cite), [wicker1999reed](@cite), [sklar2001reed](@cite), [berlekamp1978readable](@cite), [tomlinson2017error](@cite), [macwilliams1977theory](@cite) and [https://youtu.be/K26Ssr8H3ec?si=QOeohq_6I0Oyd8qu] as well.
@@ -79,9 +79,9 @@ Augmented Extended RS Codes:
 Field Parity-Check Matrix (`HField`) Properties:
 
 ```
-(α₀)ʲ				(α₁)ʲ				(α₂)ʲ			...		(αₓ₋₂)ʲ				1	0 
+(α₀)ʲ				(α₁)ʲ				(α₂)ʲ			...		(αₓ₋₂)ʲ				1	0
 (α₀)ʲ ⁺ ¹			(α₁)ʲ ⁺ ¹			(α₂)ʲ ⁺ ¹		...		(αₓ₋₂)ʲ ⁺ ¹			0	0
-(α₀)ʲ ⁺ ²			(α₁)ʲ ⁺ ²			(α₂)ʲ ⁺ ²		...		(αₓ₋₂)ʲ ⁺ ²			0	0 
+(α₀)ʲ ⁺ ²			(α₁)ʲ ⁺ ²			(α₂)ʲ ⁺ ²		...		(αₓ₋₂)ʲ ⁺ ²			0	0
 (α₀)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹		(α₁)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹		(α₂)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹	...		(αₓ₋₂)ʲ ⁺ ˣ ⁻ ᵏ ⁻ ¹		0	0
 	.				.				.		...			.			.	.
 	.				.				.		...			.			.	.
@@ -155,5 +155,5 @@ function parity_checks(rs::ReedSolomon)
             H[i, col_start:col_end] .=  vec(t_tuple)
         end
     end
-    return H 
+    return H
 end
