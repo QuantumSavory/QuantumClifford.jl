@@ -60,7 +60,7 @@ Improved Binary Codes through Concatenation:
 
 - This method enhances RS codes for binary channels through code concatenation.
 - It adds a single overall binary parity check to each m-tuple representing a symbol.
-- This approach transforms the original RS code [[n, k, n - k - 1]] into a new binary code with parameters [[n[m + 1], k*m, 2[n - k -1]]].
+- This approach transforms the original RS code [[n, k, n - k - 1]] into a new binary code with parameters [[n[m + 1], k * m, 2[n - k -1]]].
 - The resulting binary code boasts a minimum symbol weight of 2, effectively doubling the minimum Hamming distance compared to the original RS code.
 
 Key Points:
@@ -86,7 +86,7 @@ Field Parity-Check Matrix (`HField`) Properties:
 	.				.				.		...			.			.	.
 	.				.				.		...			.			.	.
 	.				.				.		...			.			.	.
-(α₀)ʲ ⁺ ˣ ⁻ ᵏ			(α₁)ʲ ⁺ ˣ ⁻ ᵏ			(α₂)ʲ ⁺ ˣ ⁻ ᵏ		...		(αₓ₋₂)ʲ ⁺ ˣ ⁻ ᵏ		0	1
+(α₀)ʲ ⁺ ˣ ⁻ ᵏ			(α₁)ʲ ⁺ ˣ ⁻ ᵏ			(α₂)ʲ ⁺ ˣ ⁻ ᵏ		...		(αₓ₋₂)ʲ ⁺ ˣ ⁻ ᵏ			0	1
 ```
 
 - The matrix has x - k + 1 rows corresponding to the code's parity symbols.
