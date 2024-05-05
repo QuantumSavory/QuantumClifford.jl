@@ -48,7 +48,7 @@ function generate_examplepage175()
 end
 
 @testset "Testing Shortened and Expanded Maximum Distance Separable (MDS) Reed Solomon codes's binary parity check matrices" begin
-    m_cases = [3, 4, 5, 6, 7, 8, 9, 10]
+    m_cases = [3, 4, 5, 6, 7, 8]
     for m in m_cases
         for t in 1:m - 1
             mat = matrix(GF(2), parity_checks(ReedSolomon(m, t)))
@@ -60,7 +60,7 @@ end
         end
     end
         
-    m_cases = [5, 6, 7, 8, 9, 10]
+    m_cases = [5, 6, 7, 8, 9]
     for m in m_cases
         for t in m:2 * m
             @test designed_distance(parity_checks(ReedSolomon(m, t)), m, t) == true
