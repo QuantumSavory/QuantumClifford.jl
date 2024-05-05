@@ -14,10 +14,11 @@ Shortened Maximum Distance Separable (MDS) codes have the following parameters -
 
 The designed distance for binary expanded parity check matrix remains same as symbol based parity check matrix. According to [macwilliams1977theory](@cite), changing the basis `j` can increase the designed distance `(dmin)` of the resulting binary code.
 """
-function designed_distance(matrix, k, n, r)
+function designed_distance(matrix, m, t)
+    k = 2 ^ m -  1 - 2 * t
     for row in eachrow(matrix)
         count = sum(row)
-        if count >= 2 ^ (r + 1) - 3 - k
+        if count >= 2 ^ (m + 1) - 3 - k
             return true
         end
     end
@@ -47,26 +48,36 @@ function generate_examplepage175()
 end
 
 @testset "Testing Shortened and Expanded Maximum Distance Separable (MDS) Reed Solomon codes's binary parity check matrices" begin
-    n_cases = [31, 63, 127, 255]
-    for n in n_cases
-        r = ilog2(n + 1)
-        for k in 2:15
-        mat = matrix(GF(2), parity_checks(ReedSolomon(n, k)))
-        computed_rank = rank(mat)
-        @test computed_rank == r * k
-        @test designed_distance(parity_checks(ReedSolomon(n, k)), k, n, r) == true
+    m_cases = [3, 4, 5, 6, 7, 8]
+    for m in m_cases
+        for t in 1:m - 1
+            mat = matrix(GF(2), parity_checks(ReedSolomon(m, t)))
+            computed_rank = rank(mat)
+            k = (2 ^ m -  1 - 2 * t) * m
+            n = (2 ^ m + 1 - 3) * m
+            @test computed_rank == n - k
+        end
+    end
+        
+    m_cases = [5, 6, 7, 8, 9]
+    for m in m_cases
+        for t in m:2*m
+            @test designed_distance(parity_checks(ReedSolomon(m, t)), m, t) == true
         end
     end
 
     # RS(7, 3), RS(15, 9), RS(255, 223), RS(160, 128), RS(255, 251), (255, 239) and (255, 249) codes.
     test_cases = [(7, 3), (15, 9), (225, 223), (160, 128), (255, 251), (255, 239), (255, 249)]
     for (n, k) in test_cases
-        @test degree(generator_polynomial(ReedSolomon(n, k))) == n - k
+        m = ilog2(n + 1)
+        t = div(n - k, 2)
+        # Using fixed generator polynomial construction scheme for defining generator polynomial, `g(x)`, of RS codes, `degree(g(x))` == 2 * t == n - k. 
+        @test degree(generator_polynomial(ReedSolomon(m, t))) == 2 * t == n - k
     end
-    #examples taken from [https://www.youtube.com/watch?v=K26Ssr8H3ec].
+    #Examples taken from [http://hscc.cs.nthu.edu.tw/~sheujp/lecture_note/rs.pdf].
     GF2ʳ, a = finite_field(2, 3, "a")
     P, x = GF2ʳ[:x]
-    @test generator_polynomial(ReedSolomon(7, 2)) == x ^ 4 + (a ^ 2 + 1) * x ^ 3 + (a ^ 2 + 1) * x ^ 2 + (a + 1) * x + a
+    @test generator_polynomial(ReedSolomon(3, 2)) == x^4 + (a + 1)*x^3 + x^2 + a*x + a + 1
     
     #Example taken from page 173 of [tomlinson2017error](@cite).
     GF2ʳ, a = finite_field(2, 5, "a")
@@ -91,9 +102,9 @@ end
     @test HF[15, 30]	== a ^ 3
  
     #Example taken from page 175 of [tomlinson2017error](@cite).
-    @test size(parity_checks(ReedSolomon(31, 15))) == (75, 150)
+    @test size(parity_checks(ReedSolomon(5, 8))) == (75, 150)
     H = Matrix{Bool}(undef, 75, 150)
-    H = parity_checks(ReedSolomon(31, 15))
+    H = parity_checks(ReedSolomon(5, 8))
     @test H[1:20, 1:15]  == [1  0  0  0  0  1  0  0  0  0  1  0  0  0  0;
 		             0  1  0  0  0  0  1  0  0  0  0  1  0  0  0;
  			     0  0  1  0  0  0  0  1  0  0  0  0  1  0  0;

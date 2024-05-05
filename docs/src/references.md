@@ -50,6 +50,7 @@ For classical code construction routines:
 - [sklar2001reed](@cite)
 - [tomlinson2017error](@cite)
 - [macwilliams1977theory](@cite)
+- [peterson1972error](@cite)
 
 # References
 

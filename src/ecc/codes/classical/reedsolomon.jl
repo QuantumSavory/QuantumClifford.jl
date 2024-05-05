@@ -15,7 +15,7 @@ They are not binary codes but frequently are used with x = 2ᵐ, and so there is
 (α⁰)ʲ ⁺ ˣ ⁻ ᵏ		(α¹)ʲ ⁺ ˣ ⁻ ᵏ		(α²)ʲ ⁺ ˣ ⁻ ᵏ			...		(αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ
 ```
 
-You might be interested in consulting [geisel1990tutorial](@cite), [wicker1999reed](@cite), [sklar2001reed](@cite), [berlekamp1978readable](@cite), [tomlinson2017error](@cite), [macwilliams1977theory](@cite) and [https://youtu.be/K26Ssr8H3ec?si=QOeohq_6I0Oyd8qu] as well.
+You might be interested in consulting [geisel1990tutorial](@cite), [wicker1999reed](@cite), [sklar2001reed](@cite), [berlekamp1978readable](@cite), [tomlinson2017error](@cite), [macwilliams1977theory](@cite), [https://youtu.be/K26Ssr8H3ec?si=QOeohq_6I0Oyd8qu] and [peterson1972error](@cite) as well.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed_solomon)
 """
@@ -23,26 +23,61 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed
 abstract type AbstractPolynomialCode <: ClassicalCode end
 
 struct ReedSolomon <: AbstractPolynomialCode
-    n::Int
-    k::Int
+    m::Int
+    t::Int
 
-    function ReedSolomon(n, k)
-        if n < 0 || k < 2 || n > 500 || k > n 
-            throw(ArgumentError("Invalid parameters: n and k must be non-negative. Also, 2 ≤ k ≤ n and n < 500 in order to obtain a valid code and to remain tractable"))
+    function ReedSolomon(m, t)
+        if m < 3 || t < 0 || t >= 2 ^ (m - 1) 
+            throw(ArgumentError("Invalid parameters: m and t must be non-negative. Also, m > 3 and t < 2 ^ (m - 1) in order to obtain a valid code and to remain tractable."))
         end
-        new(n, k)
+        new(m, t)
     end
 end
 
+"""
+generator_polynomial(ReedSolomon(m, t)):
+- `m` (Integer): The positive integer defining the degree of the finite (Galois) field, GF(2ᵐ).
+- `t` (Integer): The positive integer specifying the number of correctable errors (`t`).
+
+The generator polynomial for an RS code takes the following form:
+
+```
+g(X) = g₀ + g₁X¹ + g₂X² + ... + g₂ₜ₋₁X²ᵗ⁻¹ + X²ᵗ
+```
+
+where:
+- `X` is the indeterminate variable.
+- `gᵢ` are the coefficients of the polynomial.
+- `t` is the number of correctable symbol errors.
+
+We describe the generator polynomial in terms of its 2 * `t`  = `n` - `k` roots, as follows:
+
+``` 
+g(X) = (X - α¹)(X - α²)(X - α³) ... (X - α²ᵗ)
+```
+
+Degree and Parity Symbols:
+
+- The degree of the generator polynomial is equal to 2 * `t`, which is also the number of parity symbols added to the original data (`k` symbols) to create a codeword of length `n` (`n` = `k` + 2 * `t`).
+
+Roots of the Generator Polynomial:
+
+- The generator polynomial has 2 * `t` distinct roots, designated as `α¹, α², ... , α²ᵗ`. These roots are chosen from a Finite Galois Field.
+- Any power of α can be used as the starting root, not necessarily `α¹` itself.
+
+Notes:
+
+- Only in this construction scheme for defining the fixed generator polynomial, `g(x)`, RS codes are a subset of the Bose, Chaudhuri, and Hocquenghem (BCH) codes; hence, this relationship between the degree of the generator polynomial and the number of parity symbols holds, just as for BCH codes where degree of BCH generator polynomial, `degree(g(x)) == n - k`. This is proved via RS test suite as well.
+
+- Prior to 1963, RS codes employed a variable generator polynomial for encoding. This approach [peterson1972error](@cite) differed from the prevalent BCH scheme (used here), which utilizes a fixed generator polynomial. Consequently, these original RS codes weren't strictly categorized as BCH codes. Furthermore, depending on the chosen evaluation points, they might not even qualify as cyclic codes.
+
+"""
 function generator_polynomial(rs::ReedSolomon)
-    m = ilog2(rs.n + 1)
-    t = div(rs.n - rs.k, 2)
-    GF2ʳ, a = finite_field(2, m, "a")
+    GF2ʳ, a = finite_field(2, rs.m, "a")
     P, x = GF2ʳ[:x]
-    pzeros = 2*t
-    gx = x - a^pzeros
-    for i in 1:(2*t - 1)
-        gx *= (x - a ^ (pzeros + i))
+    gx = x - a ^ 1
+    for i in 2:2*rs.t
+        gx *= (x - a ^ i)
     end
     return gx
 end
@@ -111,45 +146,45 @@ Cyclic Code Construction:
     2. Column expansion: The elements in each column of `HFieldExpanded` matrix are converted to binary representations by substituting powers of a primitive element (`α`) in the Galois Field GF(2ᵐ) with their corresponding m-tuples over the Boolean/Binary Field GF(2).
 """
 function parity_checks(rs::ReedSolomon)
-    m = ilog2(rs.n + 1)
-    GF2ʳ, a = finite_field(2, m, "a") 
-    # 3-level quantization, q is same as x.
-    q = 2 ^ m + 1 - 3 
-    HField = Matrix{FqFieldElem}(undef, q - rs.k + 1, q)
-    for j in 1: q
+    GF2ʳ, a = finite_field(2, rs.m, "a")
+    s_symbols = 3 # 3-level quantization. 
+    x = 2 ^ rs.m + 1 - s_symbols
+    k = 2 ^ rs.m - 1 - 2 * rs.t
+    HField = Matrix{FqFieldElem}(undef, x - k + 1, x)
+    for j in 1:x
         HField[1, j] = a ^ 0
     end
-    HTemp2 = Matrix{FqFieldElem}(undef, m, q)
-    for i in 1: q - rs.k + 1
+    HTemp2 = Matrix{FqFieldElem}(undef, rs.m, x)
+    for i in 1: x - k + 1
         HField[i, 1] = a ^ 0
     end
-    for i in 2:q - rs.k + 1
-        for j in 2: q
+    for i in 2:x - k + 1
+        for j in 2:x
             HField[i, j] = (a ^ (j - 1)) ^ (i - 2)
         end
     end
     HSeed = vcat(HField[1:1, :], HField[3:end, :])
-    HFieldExpanded = Matrix{FqFieldElem}(undef, m * rs.k, q)
+    HFieldExpanded = Matrix{FqFieldElem}(undef, rs.m * k, x)
     g = 1
-    while g <= m * rs.k
-        for i in 1:q - rs.k
-            for p in 1:m
+    while g <= rs.m * k
+        for i in 1:x - k
+            for p in 1:rs.m
                 HTemp2[p:p, :] = reshape(HSeed[i, :].*a ^ (p - 1) , 1, :)
             end
-        if g > m * rs.k
+        if g > rs.m * k
            break
         end
-        HFieldExpanded[g:g + m - 1, :] .=  HTemp2
-        g = g + m
+        HFieldExpanded[g:g + rs.m - 1, :] .=  HTemp2
+        g = g + rs.m
         end
     end
-    H = Matrix{Bool}(undef, m * rs.k, m * q)
-    for i in 1:m * rs.k
-        for j in 1:q
-            col_start = (j - 1) * m + 1
-            col_end = col_start + m - 1
+    H = Matrix{Bool}(undef, rs.m * k, rs.m * x)
+    for i in 1:rs.m * k
+        for j in 1:x
+            col_start = (j - 1) * rs.m + 1
+            col_end = col_start + rs.m - 1
             t_tuple = Bool[]
-            for k in 0:m - 1
+            for k in 0:rs.m - 1
                 push!(t_tuple, !is_zero(coeff(HFieldExpanded[i, j], k)))
             end 
             H[i, col_start:col_end] .=  vec(t_tuple)
