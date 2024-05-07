@@ -125,7 +125,7 @@ Field Parity-Check Matrix (`HField`) Properties:
 	.				.				.		...			.			.	.
 	.				.				.		...			.			.	.
 	.				.				.		...			.			.	.
-(α₀)ʲ ⁺ ˣ ⁻ ᵏ			(α₁)ʲ ⁺ ˣ ⁻ ᵏ			(α₂)ʲ ⁺ ˣ ⁻ ᵏ		...		(αₓ₋₂)ʲ ⁺ ˣ ⁻ ᵏ			0	1
+(α₀)ʲ ⁺ ˣ ⁻ ᵏ			(α₁)ʲ ⁺ ˣ ⁻ ᵏ			(α₂)ʲ ⁺ ˣ ⁻ ᵏ		...		(αₓ₋₂)ʲ ⁺ ˣ ⁻ ᵏ		0	1
 ```
 
 - The matrix has x - k + 1 rows corresponding to the code's parity symbols.
