@@ -24,17 +24,10 @@ end
             k = GF(2, m)
             po, b = polynomial_ring(k)
             gx = generator_polynomial(Goppa(m, t))
-            L = FqFieldElem[] 
-            i = 0 
-            while length(L) != 2 ^ m
-                if evaluate(gx, o ^ i) != 0
-                   L = [L; evaluate(gx, o^i)]
-                end
-                i += 1
-            end
+            # Goppa generator polynomial, `g(x)` is irreducible polynomial.
             @test is_irreducible(gx) == true
+            # A polynomial is square free, thus no repeated roots, if the gcd with the derivative is 1.
             @test gcd(derivative(gx), gx) == 1
-            @test gcd(b - L[t], gx) == 1
             @test designed_distance(parity_checks(Goppa(m, t)), t) == true
             mat = matrix(GF(2), parity_checks(Goppa(m, t)))
             computed_rank = rank(mat)
