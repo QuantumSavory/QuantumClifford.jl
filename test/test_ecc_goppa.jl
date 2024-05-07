@@ -1,13 +1,15 @@
 using Test
-using Nemo: finite_field, GF, polynomial_ring, evaluate, FqFieldElem, degree, is_irreducible
+using LinearAlgebra
+using Nemo: finite_field, GF, polynomial_ring, evaluate, FqFieldElem, degree, is_irreducible, gcd, derivative, matrix, inv
 using QuantumClifford
 using QuantumClifford.ECC
-using QuantumClifford.ECC: AbstractECC, generator_polynomial
+using QuantumClifford.ECC: AbstractECC, generator_polynomial, Goppa
 
 function designed_distance(matrix, t)
     for row in eachrow(matrix)
         count = sum(row)
-        if count >= t || count >= t - 1 || count >= t - 2 || count >= t - 3
+        # The minimum Hamming distance of Goppa code, `d(Γ(L, g)) ≥ t + 1` [singh2019code](@cite).
+        if count >= t + 1
             return true
         end
     end
@@ -15,26 +17,29 @@ function designed_distance(matrix, t)
 end
 
 @testset "Testing Goppa codes properties" begin
-    n_cases = [8, 16, 32, 64, 128, 256]
-    for n in n_cases
-        for t in 3:7
-            r = ceil(Int, log2(n))
-            GF2ͬ, o = finite_field(2, r, "o")
-            k = GF(2, r)
+    m_cases = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    for m in m_cases
+        for t in 2:m
+            GF2ʳ, o = finite_field(2, m, "o")
+            k = GF(2, m)
             po, b = polynomial_ring(k)
-            gx = generator_polynomial(Goppa(n, t))
+            gx = generator_polynomial(Goppa(m, t))
             L = FqFieldElem[] 
             i = 0 
-            while length(L) != n
+            while length(L) != 2 ^ m
                 if evaluate(gx, o ^ i) != 0
                    L = [L; evaluate(gx, o^i)]
                 end
                 i += 1
             end
             @test is_irreducible(gx) == true
-            @test degree(gx) == t || degree(gx) == t - 1
+            @test gcd(derivative(gx), gx) == 1
             @test gcd(b - L[t], gx) == 1
-            @test designed_distance(parity_checks(Goppa(n, t)), t) == true
+            @test designed_distance(parity_checks(Goppa(m, t)), t) == true
+            mat = matrix(GF(2), parity_checks(Goppa(m, t)))
+            computed_rank = rank(mat)
+            # For parity check matrix matrix `H = XY` over `GF(2ᵐ)`, maximum of `m * t` rows are linearly independent, hence `Rank(XY) ≤ m * t`[singh2019code](@cite).
+            @test computed_rank <= m * t
         end
     end
 end
