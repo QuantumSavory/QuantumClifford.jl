@@ -73,7 +73,9 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/gapp
 
 Nemo Note: In Nemo, taking a random monic poly of degree `n`, this poly is irreducible with probability `1/n`. One in `n` monic polynomials is, on average irreducible. To increase probability of success of getting irreducible polynomial, use more iterations.
 """
-struct Goppa <: ClassicalCode
+abstract type AbstractPolynomialCode <: ClassicalCode end
+
+struct Goppa <: AbstractPolynomialCode
     m::Int 
     t::Int 
 
@@ -113,7 +115,7 @@ function parity_checks(ga::Goppa)
     HField = Matrix{FqFieldElem}(undef, ga.t, n)
     for i in 1:ga.t
         for j in 1:n
-            HField[i, j] = L[j] ^ (i - 1) *  inv(evaluate(gx, L[j]))
+            HField[i, j] = L[j] ^ (i - 1) * inv(evaluate(gx, L[j]))
         end
     end
     H = Matrix{Bool}(undef, ga.m * ga.t, n)
@@ -125,7 +127,7 @@ function parity_checks(ga::Goppa)
             for k in 0:ga.m - 1
                 push!(t_tuple, !is_zero(coeff(HField[i, j], k)))
             end 
-            H[row_start:row_end, j] .=  vec(t_tuple')
+            H[row_start:row_end, j] .= vec(t_tuple')
         end
     end 
     return H

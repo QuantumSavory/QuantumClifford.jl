@@ -23,7 +23,7 @@ end
             gx = generator_polynomial(Goppa(m, t))
             # Goppa generator polynomial, `g(x)` is an irreducible polynomial.
             @test is_irreducible(gx) == true
-            # A polynomial is square free, thus no repeated roots, if the gcd with the derivative is 1.
+            # The Goppa polynomial, `g(x)`, is square free, thus no repeated roots, if the gcd with the derivative is 1.
             @test gcd(derivative(gx), gx) == 1
             @test designed_distance(parity_checks(Goppa(m, t)), t) == true
             mat = matrix(GF(2), parity_checks(Goppa(m, t)))
