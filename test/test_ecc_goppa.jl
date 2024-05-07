@@ -20,11 +20,8 @@ end
     m_cases = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     for m in m_cases
         for t in 2:m
-            GF2ʳ, o = finite_field(2, m, "o")
-            k = GF(2, m)
-            po, b = polynomial_ring(k)
             gx = generator_polynomial(Goppa(m, t))
-            # Goppa generator polynomial, `g(x)` is irreducible polynomial.
+            # Goppa generator polynomial, `g(x)` is an irreducible polynomial.
             @test is_irreducible(gx) == true
             # A polynomial is square free, thus no repeated roots, if the gcd with the derivative is 1.
             @test gcd(derivative(gx), gx) == 1
