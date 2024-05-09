@@ -55,7 +55,7 @@ The generator polynomial `g(x)` is the fundamental polynomial used for encoding 
 
 1. Roots: It has `α`, `α²`, `α³`, ..., `α²ᵗ` as its roots, where `α` is a primitive element of the Galois Field GF(2ᵐ).
 2. Error Correction: A BCH code with generator polynomial `g(x)` can correct up to `t` errors in a codeword of length `2ᵐ - 1`.
-3. Minimal Polynomials: `g(x)` is the least common multiple (LCM) of the minimal polynomials `φᵢ(x)` of `αⁱ` for `i = 1` to `2ᵗ`.
+3. Minimal Polynomials: `g(x)` is the least common multiple (LCM) of the minimal polynomials `φᵢ(x)` of `αⁱ` for `i` from `1` to `2ᵗ`.
 
 Minimal Polynomial:
 
