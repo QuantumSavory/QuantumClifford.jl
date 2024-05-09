@@ -7,7 +7,7 @@ using QuantumClifford.ECC: AbstractECC, BCH, generator_polynomial
 
 """
 - To prove that `t`-bit error correcting BCH code indeed has minimum distance of at least `2 * t + 1`, it is shown that no `2 * t` or fewer columns of binary parity check matrix `H` sum to zero. A formal mathematical proof can be found on pages 202 and 203 of https://personal.oss.unist.hr/~mnizetic/ZASTITNO%20LINIJSKI%20KODIRANJE/SEMINARSKI%20RADOVI/CH06.pdf. 
-- The paramater `2 * t + 1` is usually called the designed distance of the `t`-bit error correcting BCH code.
+- The parameter `2 * t + 1` is usually called the designed distance of the `t`-bit error correcting BCH code.
 """
 function check_designed_distance(matrix, t)
     n_cols = size(matrix, 2)
@@ -61,8 +61,7 @@ end
     @test generator_polynomial(BCH(4, 3)) == x ^ 10 + x ^ 8 +  x ^ 5 +  x ^ 4 +  x ^ 2 + x + 1
     @test defining_polynomial(GF2x, GF2⁶) == x ^ 6 + x ^ 4 + x ^ 3 + x + 1
     @test is_irreducible(defining_polynomial(GF2x, GF2⁶)) == true
-    # GF(2ⁿ) can have multiple distinct primitive polynomials of the same degree due to existence of several irreducible polynomials of that degree, each generating the field through different roots.
-    # In Nemo, GF2⁶'s primitive polynomial is p(z) = z⁶ + z⁴ + z³ + z + 1 while in https://web.ntpu.edu.tw/~yshan/BCH_code.pdf, it's p(z) = z⁶ + z + 1, both are irreducible primitive polynomials.
+    # The Galois Field GF(2ᵐ) can have multiple distinct primitive polynomials of the same degree due to existence of several irreducible polynomials of that degree, each generating the field through different roots. Consider two examples: In Nemo, GF2⁶'s primitive polynomial is p(z) = z⁶ + z⁴ + z³ + z + 1. In contrast, the polynomial given in https://web.ntpu.edu.tw/~yshan/BCH_code.pdf is p(z) = z⁶ + z + 1. Since both polynomials are irreducible, they are also primitive polynomials.
     @test generator_polynomial(BCH(6, 1)) == x ^ 6 + x ^ 4 + x ^ 3 + x + 1
     @test generator_polynomial(BCH(6, 2)) == (x ^ 6 + x ^ 4 + x ^ 3 + x + 1) * (1 + x ^ 2 + x ^ 4 + x ^ 5 + x ^ 6)
     @test generator_polynomial(BCH(6, 3)) == generator_polynomial(BCH(6, 2)) * (1 + x + x ^ 6)

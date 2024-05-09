@@ -69,11 +69,11 @@ Leveraging Conjugates:
 
 - Even Power Factorization: Even powers `(i)` of an element `(α)` can be factored as `i = i' * 2ˡ`, where `i'` is odd and `l > 1`.
 
-- Conjugacy of Even Powers: `α` raised to the even power `(αⁱ)` is equivalent to `(αⁱ"'") * 2ˡ`, which is a conjugate of αⁱ.
+- Conjugacy of Even Powers: `α` raised to the even power `(αⁱ)` is equivalent to `(αⁱ"'") * 2ˡ`, which is a conjugate of `αⁱ`.
 
-- Minimal Polynomials and Conjugates: Multiplying by a constant (like `2ˡ)` doesn't affect the position of an element relative to its conjugates within the finite field. Therefore, the minimal polynomials `(φᵢ(x))` for even powers are identical to those for corresponding odd powers `(φᵢ"'"(x))`.
+- Minimal Polynomials and Conjugates: Multiplying by a constant (like `2ˡ`) doesn't affect the position of an element relative to its conjugates within the finite field. Therefore, the minimal polynomials `(φᵢ(x))` for even powers are identical to those for corresponding odd powers `(φᵢ"'"(x))`.
 
-- Efficiency via Odd Powers: By exploiting this conjugate relationship, BCH code constructions focus on odd power values of elements. This avoids redundant calculations and simplifies the process, leading to more efficient BCH code construction.
+- By exploiting this conjugate relationship, BCH code constructions focus on odd power values of elements. This avoids redundant calculations and simplifies the process, leading to more efficient BCH code construction.
 """
 function generator_polynomial(b::BCH)
     GF2ʳ, a = finite_field(2, b.m, "a")
