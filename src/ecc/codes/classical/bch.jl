@@ -12,9 +12,9 @@ The binary parity check matrix can be obtained from the following matrix over fi
 1		(α²ᵗ ⁻ ¹)¹		(α²ᵗ ⁻ ¹)²		(α²ᵗ ⁻ ¹)³		...		(α²ᵗ ⁻ ¹)ⁿ ⁻ ¹
 ```
 
-Note: The entries of matrix over field elements are in GF(2ᵐ). Each element in GF(2ᵐ) can be represented by a `m`-tuple/binary column vector of length `m` over GF(2). If each entry of `H` is replaced by its corresponding `m`-tuple/binary column vector of length `m` over GF(2), we obtain a binary parity check matrix for the code.
+The entries of the matrix are in GF(2ᵐ). Each element in GF(2ᵐ) can be represented by an `m`-tuple (a binary column vector of length `m`). If each entry of `H` is replaced by its corresponding `m`-tuple, we obtain a binary parity check matrix for the code.
 
-BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x)) = 0`.
+The BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x)) = 0`.
 
 You might be interested in consulting [bose1960further](@cite) as well.
 
