@@ -1,12 +1,20 @@
 module ECC
 
 using LinearAlgebra
+<<<<<<< HEAD
+using QuantumClifford, SparseArrays
+using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
+import QuantumClifford: Stabilizer, MixedDestabilizer
+using DocStringExtensions
+using Combinatorics: combinations
+=======
 using QuantumClifford
 using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
 using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
+>>>>>>> 11ae38c7342c76a75ad9201b609b352d38117256
 using Statistics: std
 using Nemo: ZZ, residue_ring, matrix
 
@@ -19,6 +27,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     RepCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
+    Unicycle, Bicycle,
     Toric, Gottesman, Surface,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
@@ -347,4 +356,5 @@ include("codes/toric.jl")
 include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/classical/reedmuller.jl")
+include("codes/simple_sparse_codes.jl")
 end #module
