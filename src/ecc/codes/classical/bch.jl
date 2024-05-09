@@ -24,9 +24,9 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/q-ar
 abstract type AbstractPolynomialCode <: ClassicalCode end
 
 """
-BCH(m, t):
-- `m` (Integer): The positive integer defining the degree of the finite (Galois) field, GF(2ᵐ).
-- `t` (Integer): The positive integer specifying the number of correctable errors (`t`).
+`BCH(m, t)`
+- `m`: The positive integer defining the degree of the finite (Galois) field, GF(2ᵐ).
+- `t`: The positive integer specifying the number of correctable errors.
 """
 struct BCH <: AbstractPolynomialCode
     m::Int 
