@@ -1,6 +1,6 @@
 """The family of Bose–Chaudhuri–Hocquenghem (BCH) codes, as discovered in 1959 by Alexis Hocquenghem [hocquenghem1959codes](@cite), and independently in 1960 by Raj Chandra Bose and D.K. Ray-Chaudhuri [bose1960class](@cite).
 
-The binary parity check matrix can be obtained from the following matrix over field elements, after each field element is expressed as a binary column vector over GF(2).
+The binary parity check matrix can be obtained from the following matrix over GF(2) field elements:
 
 ```
 1		(α¹)¹			(α¹)²			(α¹)³			...		(α¹)ⁿ ⁻ ¹
