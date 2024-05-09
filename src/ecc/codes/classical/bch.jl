@@ -1,6 +1,6 @@
 """The family of Bose–Chaudhuri–Hocquenghem (BCH) codes, as discovered in 1959 by Alexis Hocquenghem [hocquenghem1959codes](@cite), and independently in 1960 by Raj Chandra Bose and D.K. Ray-Chaudhuri [bose1960class](@cite).
 
-The binary parity check matrix can be obtained from the following matrix over field elements, after each field element is expressed as a binary column vector over GF(2).
+The binary parity check matrix can be obtained from the following matrix over GF(2) field elements:
 
 ```
 1		(α¹)¹			(α¹)²			(α¹)³			...		(α¹)ⁿ ⁻ ¹
@@ -12,9 +12,9 @@ The binary parity check matrix can be obtained from the following matrix over fi
 1		(α²ᵗ ⁻ ¹)¹		(α²ᵗ ⁻ ¹)²		(α²ᵗ ⁻ ¹)³		...		(α²ᵗ ⁻ ¹)ⁿ ⁻ ¹
 ```
 
-Note: The entries of matrix over field elements are in GF(2ᵐ). Each element in GF(2ᵐ) can be represented by a `m`-tuple/binary column vector of length `m` over GF(2). If each entry of `H` is replaced by its corresponding `m`-tuple/binary column vector of length `m` over GF(2), we obtain a binary parity check matrix for the code.
+The entries of the matrix are in GF(2ᵐ). Each element in GF(2ᵐ) can be represented by an `m`-tuple (a binary column vector of length `m`). If each entry of `H` is replaced by its corresponding `m`-tuple, we obtain a binary parity check matrix for the code.
 
-BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x)) = 0`.
+The BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x)) = 0`.
 
 You might be interested in consulting [bose1960further](@cite) as well.
 
@@ -24,16 +24,16 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/q-ar
 abstract type AbstractPolynomialCode <: ClassicalCode end
 
 """
-BCH(m, t):
-- `m` (Integer): The positive integer defining the degree of the finite (Galois) field, GF(2ᵐ).
-- `t` (Integer): The positive integer specifying the number of correctable errors (`t`).
+`BCH(m, t)`
+- `m`: The positive integer defining the degree of the finite (Galois) field, GF(2ᵐ).
+- `t`: The positive integer specifying the number of correctable errors.
 """
 struct BCH <: AbstractPolynomialCode
     m::Int 
     t::Int 
     function BCH(m, t)
         if m < 3 || t < 0 || t >= 2 ^ (m - 1)
-            throw(ArgumentError("Invalid parameters: 'm' and 't' must be positive. Additionally, 'm' ≥ 3 and 't' < 2ᵐ ⁻ ¹ to obtain a valid code and to tractable."))
+            throw(ArgumentError("Invalid parameters: `m` and `t` must be positive. Additionally, ensure `m ≥ 3` and `t < 2ᵐ ⁻ ¹` to obtain a valid code."))
         end
         new(m, t)
     end
@@ -42,11 +42,12 @@ end
 """
 Generator Polynomial of BCH Codes
 
-This function calculates the generator polynomial `g(x)` of a `t`-bit error-correcting BCH code of length `(n)` of `2ᵐ - 1` over the finite Galois field GF(2).
+This function calculates the generator polynomial `g(x)` of a `t`-bit error-correcting BCH code of binary length `n = 2ᵐ - 1`. The binary code is derived from a code over the finite Galois field GF(2).
 
-generator_polynomial(BCH(m, t)):
-- `m` (Integer): The positive integer defining the degree of the finite (Galois) field, GF(2ᵐ).
-- `t` (Integer): The positive integer specifying the number of correctable errors (`t`).
+`generator_polynomial(BCH(m, t))`
+
+- `m`: The positive integer defining the degree of the finite (Galois) field, GF(2ᵐ).
+- `t`: The positive integer specifying the number of correctable errors.
 
 Description:
 
@@ -54,7 +55,7 @@ The generator polynomial `g(x)` is the fundamental polynomial used for encoding 
 
 1. Roots: It has `α`, `α²`, `α³`, ..., `α²ᵗ` as its roots, where `α` is a primitive element of the Galois Field GF(2ᵐ).
 2. Error Correction: A BCH code with generator polynomial `g(x)` can correct up to `t` errors in a codeword of length `2ᵐ - 1`.
-3. Minimal Polynomials: `g(x)` is the least common multiple (LCM) of the minimal polynomials `φᵢ(x)` of `αⁱ` for `i = 1` to `2ᵗ`.
+3. Minimal Polynomials: `g(x)` is the least common multiple (LCM) of the minimal polynomials `φᵢ(x)` of `αⁱ` for `i` from `1` to `2ᵗ`.
 
 Minimal Polynomial:
 
