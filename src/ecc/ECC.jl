@@ -60,7 +60,7 @@ end
 """
 Generator Polynomial `g(x)`
 
-In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field F. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
+In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field `F`. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
 """
 function generator_polynomial end
 

@@ -1,18 +1,18 @@
 using Test
-using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible 
 using LinearAlgebra
 using QuantumClifford
 using QuantumClifford.ECC
 using QuantumClifford.ECC: AbstractECC, BCH, generator_polynomial
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible 
 
 """
-- To prove that `t`-bit error correcting BCH code indeed has minimum distance of at least `2 * t + 1`, it is shown that no `2 * t` or fewer columns of binary parity check matrix `H` sum to zero. A formal mathematical proof can be found on pages 202 and 203 of https://personal.oss.unist.hr/~mnizetic/ZASTITNO%20LINIJSKI%20KODIRANJE/SEMINARSKI%20RADOVI/CH06.pdf. 
+- To prove that `t`-bit error correcting BCH code indeed has minimum distance of at least `2 * t + 1`, it is shown that no `2 * t` or fewer columns of its binary parity check matrix `H` sum to zero. A formal mathematical proof can be found on pages 202 and 203 of https://personal.oss.unist.hr/~mnizetic/ZASTITNO%20LINIJSKI%20KODIRANJE/SEMINARSKI%20RADOVI/CH06.pdf. 
 - The parameter `2 * t + 1` is usually called the designed distance of the `t`-bit error correcting BCH code.
 """
 function check_designed_distance(matrix, t)
     n_cols = size(matrix, 2)
     for num_cols in 1:2 * t
-        for i in 1:(n_cols - num_cols + 1)
+        for i in 1:n_cols - num_cols + 1
             combo = matrix[:, i:(i + num_cols - 1)]
             sum_cols = sum(combo, dims = 2)
             if all(sum_cols .== 0)
@@ -61,12 +61,12 @@ end
     @test generator_polynomial(BCH(4, 2)) == x ^ 8 + x ^ 7 +  x ^ 6 +  x ^ 4 + 1
     @test generator_polynomial(BCH(4, 3)) == x ^ 10 + x ^ 8 +  x ^ 5 +  x ^ 4 +  x ^ 2 + x + 1
     # The Galois Field GF(2ᵐ) can have multiple distinct primitive polynomials of the same degree due to existence of several irreducible polynomials of that degree, each generating the field through different roots. 
-    # Consider two examples: In Nemo, GF2⁶'s primitive polynomial is p(z) = z⁶ + z⁴ + z³ + z + 1. In contrast, the polynomial given in https://web.ntpu.edu.tw/~yshan/BCH_code.pdf is p(z) = z⁶ + z + 1. Since both polynomials are irreducible, they are also primitive polynomials.
+    # Consider two examples: In Nemo, GF(2⁶)'s primitive polynomial is `p(z) = z⁶ + z⁴ + z³ + z + 1`. In contrast, the polynomial given in https://web.ntpu.edu.tw/~yshan/BCH_code.pdf is `p(z) = z⁶ + z + 1`. Since both polynomials are irreducible, they are also primitive polynomials for GF(2⁶).
     @test defining_polynomial(GF2x, GF2⁶) == x ^ 6 + x ^ 4 + x ^ 3 + x + 1
     @test is_irreducible(defining_polynomial(GF2x, GF2⁶)) == true
     
     @test generator_polynomial(BCH(6, 1)) == x ^ 6 + x ^ 4 + x ^ 3 + x + 1
-    @test generator_polynomial(BCH(6, 2)) == (x ^ 6 + x ^ 4 + x ^ 3 + x + 1) * (1 + x ^ 2 + x ^ 4 + x ^ 5 + x ^ 6)
+    @test generator_polynomial(BCH(6, 2)) == generator_polynomial(BCH(6, 1)) * (1 + x ^ 2 + x ^ 4 + x ^ 5 + x ^ 6)
     @test generator_polynomial(BCH(6, 3)) == generator_polynomial(BCH(6, 2)) * (1 + x + x ^ 6)
     @test generator_polynomial(BCH(6, 4)) == generator_polynomial(BCH(6, 3)) * (1 + x ^ 3 + x ^ 6)
     @test generator_polynomial(BCH(6, 5)) == generator_polynomial(BCH(6, 4)) * (1 + x + x ^ 3)
