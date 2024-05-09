@@ -42,7 +42,7 @@ end
 """
 Generator Polynomial of BCH Codes
 
-This function calculates the generator polynomial `g(x)` of a `t`-bit error-correcting BCH code of length `(n)` of `2ᵐ - 1` over the finite Galois field GF(2).
+This function calculates the generator polynomial `g(x)` of a `t`-bit error-correcting BCH code of binary length `n = 2ᵐ - 1`. The binary code is derived from a code over the finite Galois field GF(2).
 
 generator_polynomial(BCH(m, t)):
 - `m` (Integer): The positive integer defining the degree of the finite (Galois) field, GF(2ᵐ).
