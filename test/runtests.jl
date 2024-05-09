@@ -64,6 +64,7 @@ end
 @doset "ecc_encoding"
 @doset "ecc_gottesman"
 @doset "ecc_reedmuller"
+@doset "ecc_goppa"
 @doset "ecc_syndromes"
 @doset "ecc_throws"
 @doset "precompile"

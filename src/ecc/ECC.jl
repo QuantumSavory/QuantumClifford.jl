@@ -8,7 +8,7 @@ using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix
+using Nemo: ZZ, residue_ring, matrix, polynomial_ring, finite_field, GF, coeff, FqPolyRingElem, FqFieldElem, is_zero, is_irreducible, evaluate, identity_matrix, inv, derivative
 
 abstract type AbstractECC end
 
@@ -56,6 +56,8 @@ end
 function iscss(c::AbstractECC)
     return iscss(typeof(c))
 end
+
+function generator_polynomial end
 
 parity_checks(s::Stabilizer) = s
 Stabilizer(c::AbstractECC) = parity_checks(c)
@@ -347,4 +349,5 @@ include("codes/toric.jl")
 include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/classical/reedmuller.jl")
+include("codes/classical/goppa.jl")
 end #module
