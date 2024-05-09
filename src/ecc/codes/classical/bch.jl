@@ -58,17 +58,27 @@ The generator polynomial `g(x)` is the fundamental polynomial used for encoding 
 
 Minimal Polynomial:
 
-- The minimal polynomial of a field element `α` in GF(2ᵐ) is the polynomial of the lowest degree over GF(2) that has `α` as a root. It represents the simplest polynomial relationship between `α` and the elements of GF(2).
+- The minimal polynomial of a field element `α` in GF(2ᵐ) is the polynomial of the lowest degree over GF(2) that has `α` as a root.
 
 Least Common Multiple (LCM):
 
 - The LCM of two or more polynomials `fᵢ(x)` is the polynomial with the lowest degree that is a multiple of all `fᵢ(x)`. It ensures that `g(x)` has all the roots of `φᵢ(x)` for `i = 1` to `2ᵗ`.
+
+Leveraging Conjugates:
+
+- Even Power Factorization: Even powers `(i)` of an element `(α)` can be factored as `i = i' * 2ˡ`, where `i'` is odd and `l > 1`.
+
+- Conjugacy of Even Powers: `α` raised to the even power `(αⁱ)` is equivalent to `(αⁱ"'") * 2ˡ`, which is a conjugate of αⁱ.
+
+- Minimal Polynomials and Conjugates: Multiplying by a constant (like `2ˡ)` doesn't affect the position of an element relative to its conjugates within the finite field. Therefore, the minimal polynomials `(φᵢ(x))` for even powers are identical to those for corresponding odd powers `(φᵢ"'"(x))`.
+
+- Efficiency via Odd Powers: By exploiting this conjugate relationship, BCH code constructions focus on odd power values of elements. This avoids redundant calculations and simplifies the process, leading to more efficient BCH code construction.
 """
 function generator_polynomial(b::BCH)
     GF2ʳ, a = finite_field(2, b.m, "a")
     GF2x, x = GF(2)["x"]
     minimal_poly = FqPolyRingElem[]
-    for i in 1:(2 * b.t - 1)
+    for i in 1:2 * b.t
         if i % 2 != 0
             push!(minimal_poly, minpoly(GF2x, a ^ i))
         end 

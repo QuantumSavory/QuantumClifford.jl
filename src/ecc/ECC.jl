@@ -8,7 +8,7 @@ using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible 
 
 abstract type AbstractECC end
 
@@ -20,7 +20,6 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface,
-    generator_polynomial,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -61,7 +60,7 @@ end
 """
 Generator Polynomial `g(x)`
 
-In a polynomial code[https://en.wikipedia.org/wiki/Polynomial_code], the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field F. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
+In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field F. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
 """
 function generator_polynomial end
 
