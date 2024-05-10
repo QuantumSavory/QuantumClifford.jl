@@ -7,6 +7,7 @@
 
 ## v0.9.4 - dev
 
+- Added the Steane-Reed-Muller code to the ECC module.
 - Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
 - Remove printing of spurious debug info from the PyBP decoder. 
 - Significant improvements to the low-level circuit compiler (the sumtype compactifier), leading to faster Pauli frame simulation of noisy circuits.
@@ -26,7 +27,7 @@
 - Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.
 - Added the classical Reed-Muller code in the ECC module.
 - Added the surface code to the ECC module.
- 
+
 ## v0.9.0 - 2024-03-19
 
 - **(breaking)** The defaults in `random_pauli` are now `realphase=true` and `nophase=true`.
