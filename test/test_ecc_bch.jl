@@ -6,7 +6,7 @@ using QuantumClifford.ECC: AbstractECC, BCH, generator_polynomial
 using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible 
 
 """
-- To prove that `t`-bit error correcting BCH code indeed has minimum distance of at least `2 * t + 1`, it is shown that no `2 * t` or fewer columns of its binary parity check matrix `H` sum to zero. A formal mathematical proof can be found on pages 202 and 203 of https://personal.oss.unist.hr/~mnizetic/ZASTITNO%20LINIJSKI%20KODIRANJE/SEMINARSKI%20RADOVI/CH06.pdf. 
+- To prove that `t`-bit error correcting BCH code indeed has minimum distance of at least `2 * t + 1`, it is shown that no `2 * t` or fewer columns of its binary parity check matrix `H` sum to zero. A formal mathematical proof can be found on pages 202 and 203 of Ch6 of Error Control Coding by Lin, Shu and Costello, Daniel. 
 - The parameter `2 * t + 1` is usually called the designed distance of the `t`-bit error correcting BCH code.
 """
 function check_designed_distance(matrix, t)
@@ -27,7 +27,7 @@ end
     m_cases = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     for m in m_cases
         n = 2 ^ m - 1
-        for t in 1:m
+        for t in rand(1:m, 2)
             H = parity_checks(BCH(m, t))
             @test check_designed_distance(H, t) == true
             # n - k == degree of generator polynomial, `g(x)` == rank of binary parity check matrix, `H`.
@@ -42,7 +42,7 @@ end
         end
     end
 
-    #example taken from https://personal.oss.unist.hr/~mnizetic/ZASTITNO%20LINIJSKI%20KODIRANJE/SEMINARSKI%20RADOVI/CH06.pdf.
+    #example taken from Ch6 of Error Control Coding by Lin, Shu and Costello, Daniel
     @test parity_checks(BCH(4, 2))  ==    [1  0  0  0  1  0  0  1  1  0  1  0  1  1  1;
                                            0  1  0  0  1  1  0  1  0  1  1  1  1  0  0;
                                            0  0  1  0  0  1  1  0  1  0  1  1  1  1  0;
@@ -81,10 +81,8 @@ end
     
     test_cases = [(6, 1), (6, 2), (6, 3), (6, 4), (6, 5), (6, 6), (6, 7), (6, 10), (6, 11), (6, 13), (6, 15)]
     results = [57 51 45 39 36 30 24 18 16 10 7]
-    i = 0
-    for (m, t) in test_cases
-        i += 1
-        @test code_k(BCH(m, t)) == results[i]
+    for (result, (m, t)) in zip(results, test_cases)
+        @test code_k(BCH(m, t)) == result
         @test check_designed_distance(parity_checks(BCH(m, t)), t) == true
     end
 end

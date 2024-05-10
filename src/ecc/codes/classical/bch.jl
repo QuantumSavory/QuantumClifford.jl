@@ -16,7 +16,7 @@ The entries of the matrix are in GF(2ᵐ). Each element in GF(2ᵐ) can be repre
 
 The BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x)) = 0`.
 
-You might be interested in consulting [bose1960further](@cite) as well.
+You might be interested in consulting [bose1960further](@cite) and [error2024lin](@cite) as well.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/q-ary_bch).
 """
@@ -49,37 +49,19 @@ This function calculates the generator polynomial `g(x)` of a `t`-bit error-corr
 - `m`: The positive integer defining the degree of the finite (Galois) field, GF(2ᵐ).
 - `t`: The positive integer specifying the number of correctable errors.
 
-Description:
-
 The generator polynomial `g(x)` is the fundamental polynomial used for encoding and decoding BCH codes. It has the following properties:
 
 1. Roots: It has `α`, `α²`, `α³`, ..., `α²ᵗ` as its roots, where `α` is a primitive element of the Galois Field GF(2ᵐ).
 2. Error Correction: A BCH code with generator polynomial `g(x)` can correct up to `t` errors in a codeword of length `2ᵐ - 1`.
 3. Minimal Polynomials: `g(x)` is the least common multiple (LCM) of the minimal polynomials `φᵢ(x)` of `αⁱ` for `i` from `1` to `2ᵗ`.
 
-Minimal Polynomial:
+Useful definitions and background:
 
-- The minimal polynomial of a field element `α` in GF(2ᵐ) is the polynomial of the lowest degree over GF(2) that has `α` as a root.
+Minimal Polynomial: The minimal polynomial of a field element `α` in GF(2ᵐ) is the polynomial of the lowest degree over GF(2) that has `α` as a root.
 
-Least Common Multiple (LCM):
+Least Common Multiple (LCM): The LCM of two or more polynomials `fᵢ(x)` is the polynomial with the lowest degree that is a multiple of all `fᵢ(x)`. It ensures that `g(x)` has all the roots of `φᵢ(x)` for `i = 1` to `2ᵗ`.
 
-- The LCM of two or more polynomials `fᵢ(x)` is the polynomial with the lowest degree that is a multiple of all `fᵢ(x)`. It ensures that `g(x)` has all the roots of `φᵢ(x)` for `i = 1` to `2ᵗ`.
-
-Leveraging Conjugates:
-
-- Even Power Factorization: Even powers `(i)` of an element `(α)` can be factored as `i = i' * 2ˡ`, where `i'` is odd and `l > 1`.
-
-- Conjugacy of Even Powers: `α` raised to the even power `(αⁱ)` is equivalent to `(αⁱ"'") * 2ˡ`, which is a conjugate of `αⁱ`.
-
-- Minimal Polynomials and Conjugates: Multiplying by a constant (like `2ˡ`) doesn't affect the position of an element relative to its conjugates within the finite field. Therefore, the minimal polynomials `(φᵢ(x))` for even powers are identical to those for corresponding odd powers `(φᵢ"'"(x))`.
-
-- By exploiting this conjugate relationship, BCH code constructions focus on odd power values of elements. This avoids redundant calculations and simplifies the process, leading to more efficient BCH code construction.
-
-Conway polynomial:
-
-- The finite Galois field `GF(2ᵐ)` can have multiple distinct primitive polynomials of the same degree due to existence of several irreducible polynomials of that degree, each generating the field through different roots. 
-
-- Nemo.jl uses [Conway polynomial](https://en.wikipedia.org/wiki/Conway_polynomial_(finite_fields)), a standard way to represent the primitive polynomial for finite Galois fields `GF(pᵐ)` of degree `m`, where `p` is a prime number.
+Conway polynomial: The finite Galois field `GF(2ᵐ)` can have multiple distinct primitive polynomials of the same degree due to existence of several irreducible polynomials of that degree, each generating the field through different roots. Nemo.jl uses [Conway polynomial](https://en.wikipedia.org/wiki/Conway_polynomial_(finite_fields)), a standard way to represent the primitive polynomial for finite Galois fields `GF(pᵐ)` of degree `m`, where `p` is a prime number.
 """
 function generator_polynomial(b::BCH)
     GF2ʳ, a = finite_field(2, b.m, "a")

@@ -46,6 +46,7 @@ For classical code construction routines:
 - [hocquenghem1959codes](@cite)
 - [bose1960class](@cite)
 - [bose1960further](@cite)
+- [error2024lin](@cite)
 
 # References
 
