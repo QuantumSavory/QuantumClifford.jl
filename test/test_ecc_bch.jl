@@ -60,8 +60,10 @@ end
     @test is_irreducible(defining_polynomial(GF2x, GF2⁴)) == true
     @test generator_polynomial(BCH(4, 2)) == x ^ 8 + x ^ 7 +  x ^ 6 +  x ^ 4 + 1
     @test generator_polynomial(BCH(4, 3)) == x ^ 10 + x ^ 8 +  x ^ 5 +  x ^ 4 +  x ^ 2 + x + 1
-    # The Galois Field GF(2ᵐ) can have multiple distinct primitive polynomials of the same degree due to existence of several irreducible polynomials of that degree, each generating the field through different roots. 
-    # Consider two examples: In Nemo, GF(2⁶)'s primitive polynomial is `p(z) = z⁶ + z⁴ + z³ + z + 1`. In contrast, the polynomial given in https://web.ntpu.edu.tw/~yshan/BCH_code.pdf is `p(z) = z⁶ + z + 1`. Since both polynomials are irreducible, they are also primitive polynomials for GF(2⁶).
+ 
+    # Nemo.jl uses [Conway polynomial](https://en.wikipedia.org/wiki/Conway_polynomial_(finite_fields)), a standard way to represent the primitive polynomial for finite Galois fields `GF(pᵐ)` of degree `m`, where `p` is a prime number. 
+    # The `GF(2⁶)`'s Conway polynomial is `p(z) = z⁶ + z⁴ + z³ + z + 1`. In contrast, the polynomial given in https://web.ntpu.edu.tw/~yshan/BCH_code.pdf is `p(z) = z⁶ + z + 1`. Because both polynomials are irreducible, they are also primitive polynomials for `GF(2⁶)`.
+
     @test defining_polynomial(GF2x, GF2⁶) == x ^ 6 + x ^ 4 + x ^ 3 + x + 1
     @test is_irreducible(defining_polynomial(GF2x, GF2⁶)) == true
     

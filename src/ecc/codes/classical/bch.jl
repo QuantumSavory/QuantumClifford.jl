@@ -74,6 +74,12 @@ Leveraging Conjugates:
 - Minimal Polynomials and Conjugates: Multiplying by a constant (like `2ˡ`) doesn't affect the position of an element relative to its conjugates within the finite field. Therefore, the minimal polynomials `(φᵢ(x))` for even powers are identical to those for corresponding odd powers `(φᵢ"'"(x))`.
 
 - By exploiting this conjugate relationship, BCH code constructions focus on odd power values of elements. This avoids redundant calculations and simplifies the process, leading to more efficient BCH code construction.
+
+Conway polynomial:
+
+- The finite Galois field `GF(2ᵐ)` can have multiple distinct primitive polynomials of the same degree due to existence of several irreducible polynomials of that degree, each generating the field through different roots. 
+
+- Nemo.jl uses [Conway polynomial](https://en.wikipedia.org/wiki/Conway_polynomial_(finite_fields)), a standard way to represent the primitive polynomial for finite Galois fields `GF(pᵐ)` of degree `m`, where `p` is a prime number.
 """
 function generator_polynomial(b::BCH)
     GF2ʳ, a = finite_field(2, b.m, "a")
