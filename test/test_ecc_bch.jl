@@ -73,11 +73,7 @@ end
             @test generator_polynomial(BCH(m, t)) == defining_polynomial(GF2x, GF2⁶)
         else
             prev_t = test_cases[i - 1][2]
-            if t - prev_t == 1
-                @test generator_polynomial(BCH(m, t)) == generator_polynomial(BCH(m, prev_t)) * minpoly(GF2x, b ^ (t + prev_t))
-            else
-                @test generator_polynomial(BCH(m, t)) == generator_polynomial(BCH(m, prev_t)) * minpoly(GF2x, b ^ (t + prev_t - (t - prev_t - 1)))
-            end
+            @test generator_polynomial(BCH(m, t)) == generator_polynomial(BCH(m, prev_t)) * minpoly(GF2x, b ^ (t + prev_t - (t - prev_t - 1)))
         end
     end
     
