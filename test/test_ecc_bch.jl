@@ -63,23 +63,24 @@ end
  
     # Nemo.jl uses [Conway polynomial](https://en.wikipedia.org/wiki/Conway_polynomial_(finite_fields)), a standard way to represent the primitive polynomial for finite Galois fields `GF(pᵐ)` of degree `m`, where `p` is a prime number. 
     # The `GF(2⁶)`'s Conway polynomial is `p(z) = z⁶ + z⁴ + z³ + z + 1`. In contrast, the polynomial given in https://web.ntpu.edu.tw/~yshan/BCH_code.pdf is `p(z) = z⁶ + z + 1`. Because both polynomials are irreducible, they are also primitive polynomials for `GF(2⁶)`.
-
-    @test defining_polynomial(GF2x, GF2⁶) == x ^ 6 + x ^ 4 + x ^ 3 + x + 1
-    @test is_irreducible(defining_polynomial(GF2x, GF2⁶)) == true
-    
-    @test generator_polynomial(BCH(6, 1)) == x ^ 6 + x ^ 4 + x ^ 3 + x + 1
-    @test generator_polynomial(BCH(6, 2)) == generator_polynomial(BCH(6, 1)) * (1 + x ^ 2 + x ^ 4 + x ^ 5 + x ^ 6)
-    @test generator_polynomial(BCH(6, 3)) == generator_polynomial(BCH(6, 2)) * (1 + x + x ^ 6)
-    @test generator_polynomial(BCH(6, 4)) == generator_polynomial(BCH(6, 3)) * (1 + x ^ 3 + x ^ 6)
-    @test generator_polynomial(BCH(6, 5)) == generator_polynomial(BCH(6, 4)) * (1 + x + x ^ 3)
-    @test generator_polynomial(BCH(6, 6)) == generator_polynomial(BCH(6, 5)) * (1 + x + x ^ 2 + x ^ 5 + x ^ 6)
-    @test generator_polynomial(BCH(6, 7)) == generator_polynomial(BCH(6, 6)) * (1 + x + x ^ 4 + x ^ 5 + x ^ 6)
-    @test generator_polynomial(BCH(6, 10)) == generator_polynomial(BCH(6, 7)) * (1 + x + x ^ 2 + x ^ 4 + x ^ 6)
-    @test generator_polynomial(BCH(6, 11)) == generator_polynomial(BCH(6, 10)) * (1 + x + x ^ 2)
-    @test generator_polynomial(BCH(6, 13)) == generator_polynomial(BCH(6, 11)) * (1 + x ^ 5 + x ^ 6)  
-    @test generator_polynomial(BCH(6, 15)) == generator_polynomial(BCH(6, 13)) * (1 + x ^ 2 + x ^ 3)
     
     test_cases = [(6, 1), (6, 2), (6, 3), (6, 4), (6, 5), (6, 6), (6, 7), (6, 10), (6, 11), (6, 13), (6, 15)]
+    @test defining_polynomial(GF2x, GF2⁶) == x ^ 6 + x ^ 4 + x ^ 3 + x + 1
+    @test is_irreducible(defining_polynomial(GF2x, GF2⁶)) == true    
+    for i in 1:length(test_cases)
+        m, t = test_cases[i]
+        if t == 1
+            @test generator_polynomial(BCH(m, t)) == defining_polynomial(GF2x, GF2⁶)
+        else
+            prev_t = test_cases[i - 1][2]
+            if t - prev_t == 1
+                @test generator_polynomial(BCH(m, t)) == generator_polynomial(BCH(m, prev_t)) * minpoly(GF2x, b ^ (t + prev_t))
+            else
+                @test generator_polynomial(BCH(m, t)) == generator_polynomial(BCH(m, prev_t)) * minpoly(GF2x, b ^ (t + prev_t - (t - prev_t - 1)))
+            end
+        end
+    end
+    
     results = [57 51 45 39 36 30 24 18 16 10 7]
     for (result, (m, t)) in zip(results, test_cases)
         @test code_k(BCH(m, t)) == result
