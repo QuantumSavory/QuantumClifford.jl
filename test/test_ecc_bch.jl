@@ -6,7 +6,7 @@ using QuantumClifford.ECC: AbstractECC, BCH, generator_polynomial
 using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible 
 
 """
-- To prove that `t`-bit error correcting BCH code indeed has minimum distance of at least `2 * t + 1`, it is shown that no `2 * t` or fewer columns of its binary parity check matrix `H` sum to zero. A formal mathematical proof can be found on pages 202 and 203 of Ch6 of Error Control Coding by Lin, Shu and Costello, Daniel. 
+- To prove that `t`-bit error correcting BCH code indeed has minimum distance of at least `2 * t + 1`, it is shown that no `2 * t` or fewer columns of its binary parity check matrix `H` sum to zero. A formal mathematical proof can be found on pages 168 and 169 of Ch6 of Error Control Coding by Lin, Shu and Costello, Daniel. 
 - The parameter `2 * t + 1` is usually called the designed distance of the `t`-bit error correcting BCH code.
 """
 function check_designed_distance(matrix, t)
