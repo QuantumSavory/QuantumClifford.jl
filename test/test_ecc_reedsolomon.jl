@@ -11,37 +11,20 @@ using QuantumClifford.ECC: AbstractECC, ReedSolomon, generator_polynomial
 - Employing `3-level` quantization of the channel bits and erasing entire symbols if any of their constituent bits are erased can improve the performance of RS codes. Shortened Maximum Distance Separable (MDS) codes have the following parameters - code length `(n)`, codesize `(k)` and minimum Hamming distance `(d)` represented by [[n, k, d]] as follows: [[2 ^ (m) + 1 - s, k, 2 ^ (m + 1) - s - k]]. Thus, the designed minimum distance `d` is 2 ^ (m + 1) - s - k. Refer to chapter: 07, section: 03, pages: 172 to 175 [tomlinson2017error](@cite).
 - The designed distance for binary expanded parity check matrix remains same as symbol based parity check matrix. According to [macwilliams1977theory](@cite), changing the basis `j` can increase the designed distance `(dmin)` of the resulting binary code.
 """
-function designed_distance(matrix, m, t)
+function check_designed_distance(matrix, m, t)
     k = 2 ^ m -  1 - 2 * t
-    for row in eachrow(matrix)
-        count = sum(row)
-        if count >= 2 ^ (m + 1) - 3 - k
-            return true
+    s_symbols = 3
+    n_cols = size(matrix, 2)
+    for num_cols in 1:2 ^ (m + 1) - s_symbols - k
+        for i in 1:n_cols - num_cols + 1
+            combo = matrix[:, i:(i + num_cols - 1)]
+            sum_cols = sum(combo, dims = 2)
+            if all(sum_cols .== 0)
+                return false  # Minimum distance is not greater than `2 ^ (m + 1) - s_symbols - k`.
+            end
         end
     end
-    return false
-end
-
-#Example taken from page 173 of [tomlinson2017error](@cite).
-function generate_examplepage175()
-    GF2ʳ, a = finite_field(2, 5, "a") 
-    q = 30
-    k = 15 
-    HField = Matrix{FqFieldElem}(undef, q - k + 1, q)
-    for j in 1: q
-        HField[1, j] = a ^ 0
-    end
-    HTemp2 = Matrix{FqFieldElem}(undef, 5, q)
-    for i in 1: q - k + 1
-        HField[i, 1] = a ^ 0
-    end
-    for i in 2:q - k + 1
-        for j in 2: q
-            HField[i, j] = (a ^ (j - 1)) ^ (i - 2)
-        end
-    end
-    HSeed = vcat(HField[1:1, :], HField[3:end, :])
-    return HSeed
+    return true  # Minimum distance is at least `2 ^ (m + 1) - s_symbols - k`.
 end
 
 @testset "Testing Shortened and Expanded Maximum Distance Separable (MDS) Reed Solomon codes's binary parity check matrices" begin
@@ -54,13 +37,7 @@ end
             k = (2 ^ m -  1 - 2 * t) * m
             n = (2 ^ m + 1 - s_symbols) * m
             @test computed_rank == n - k
-        end
-    end
-        
-    m_cases = [5, 6, 7, 8, 9]
-    for m in m_cases
-        for t in rand(m:2 * m, 2)
-            @test designed_distance(parity_checks(ReedSolomon(m, t)), m, t) == true
+            @test check_designed_distance(parity_checks(ReedSolomon(m, t)), m, t) == true
         end
     end
 
@@ -78,6 +55,27 @@ end
     @test generator_polynomial(ReedSolomon(3, 2)) == x ^ 4 + (a + 1) * x ^ 3 + x ^ 2 + a * x + a + 1
     
     #Example taken from page 173 of [tomlinson2017error](@cite).
+    function generate_examplepage175()
+        GF2ʳ, a = finite_field(2, 5, "a") 
+        q = 30
+        k = 15 
+        HField = Matrix{FqFieldElem}(undef, q - k + 1, q)
+        for j in 1: q
+            HField[1, j] = a ^ 0
+        end
+        HTemp2 = Matrix{FqFieldElem}(undef, 5, q)
+        for i in 1: q - k + 1
+            HField[i, 1] = a ^ 0
+        end
+        for i in 2:q - k + 1
+            for j in 2: q
+                HField[i, j] = (a ^ (j - 1)) ^ (i - 2)
+            end
+        end
+        HSeed = vcat(HField[1:1, :], HField[3:end, :])
+        return HSeed
+    end
+
     GF2ʳ, a = finite_field(2, 5, "a")
     HF = Matrix{FqFieldElem}(undef, 15, 30)
     HF = generate_examplepage175()
@@ -85,18 +83,18 @@ end
     @test reshape(HF[:,1], 1, 15) == [ 1  1  1  1  1  1  1  1  1  1  1  1  1  1  1]
     @test HF[2, 2]	== a
     @test HF[2, 3]	== a ^ 2
-    @test HF[2, 30]	== a ^ 3 + 1				== a ^ 29
+    @test HF[2, 30]	== a ^ 29
     @test HF[3, 2]	== a ^ 2
     @test HF[3, 3]	== a ^ 4
-    @test HF[3, 30]	== a ^ 3 + a + 1				== a ^ 27
+    @test HF[3, 30]	== a ^ 27
     @test HF[4, 2]	== a ^ 3
-    @test HF[4, 3]	== a ^ 3 + a				== a ^ 6
-    @test HF[4, 30]	== a ^ 4 + a ^ 3 + 1			== a ^ 25
-    @test HF[14, 2]	== a ^ 4 + a ^ 3 + a ^ 2		== a ^ 13
-    @test HF[14, 3]	== a ^ 4 + a ^ 2 + a + 1		== a ^ 26
-    @test HF[14, 30]	== a ^ 2 + 1 				== a ^ 5
-    @test HF[15, 2]	== a ^ 4 + a ^ 3 + a ^ 2 + 1	== a ^ 14
-    @test HF[15, 3]	== a ^ 4 + a ^ 2 + a			== a ^ 28
+    @test HF[4, 3]	== a ^ 6
+    @test HF[4, 30]	== a ^ 25
+    @test HF[14, 2]	== a ^ 13
+    @test HF[14, 3]	== a ^ 26
+    @test HF[14, 30]	== a ^ 5
+    @test HF[15, 2]	== a ^ 14
+    @test HF[15, 3]	== a ^ 28
     @test HF[15, 30]	== a ^ 3
  
     #Example taken from page 175 of [tomlinson2017error](@cite).
