@@ -53,7 +53,7 @@ We describe the generator polynomial in terms of its `2 * t  = n - k` roots, as 
 g(X) = (X - α¹)(X - α²)(X - α³) ... (X - α²ᵗ)
 ```
 
-Degree and Parity Symbols: The degree of the generator polynomial is equal to 2 * `t`, which is also the number of parity symbols added to the original data (`k` symbols) to create a codeword of length `n` `(n = k + 2 * t)`.
+Degree and Parity Symbols: The degree of the generator polynomial is equal to `2 * t`, which is also the number of parity symbols added to the original data (`k` symbols) to create a codeword of length `n` `(n = k + 2 * t)`.
 
 Roots of the Generator Polynomial: The generator polynomial has `2 * t` distinct roots, designated as `α¹, α², ... , α²ᵗ`. These roots are chosen from a Finite Galois Field. Any power of α can be used as the starting root, not necessarily `α¹` itself.
 
@@ -75,15 +75,15 @@ parity_checks(ReedSolomon(m, t)):
 - `m`: The positive integer defining the degree of the finite (Galois) field, `GF(2ᵐ)`.
 - `t`: The positive integer specifying the number of correctable errors `(t)`.
 
-This function applies Reed-Solomon (RS) codes for binary transmission using soft decisions (see section 7.3)[tomlinson2017error](@cite). For significant coding gain, code length is typically restricted to less than 200 bits. Modified Dorsch decoder is recommended for near maximum likelihood decoding.
+This function applies Reed-Solomon codes for binary transmission using soft decisions (see section 7.3)[tomlinson2017error](@cite). For significant coding gain, code length is typically restricted to less than 200 bits. Modified Dorsch decoder is recommended for near maximum likelihood decoding.
 
-Soft Decision Decoding: In some communication systems, the received signal might not be a simple 0 or 1 but have a certain level of "softness" indicating the likelihood of being a 0 or 1. The 3-level quantization is used to represent these likelihoods (e.g., highly likely 0, likely 0, likely 1, highly likely 1) before feeding them into a Reed-Solomon decoder for error correction. 
+Soft Decision Decoding: In some communication systems, the received signal might not be a simple 0 or 1 but have a certain level of "softness" indicating the likelihood of being a 0 or 1. The benefit of using 3-level quantization with Reed-Solomon coding lies in exploiting the "soft information" present in the received signal. In traditional channels, bits are received as either 0 or 1 (hard decision). However, due to noise or other factors, the received signal might not be perfectly clear. The 3-level quantization captures this "softness" by assigning levels that represent the likelihood of a bit being 0 or 1 (e.g., highly likely 0, likely 0, likely 1, highly likely 1). Reed-Solomon decoding algorithms utilize this additional information to make better decisions about correcting errors, leading to a higher success rate compared to using just hard decisions. 
 
 Challenges of Standard RS Codes: While efficient as MDS codes, standard RS codes are not ideal for binary channels. As demonstrated in the results (see section 7.2)[tomlinson2017error](@cite), their performance suffers due to a mismatch between the code structure (symbol-based) and the channel (binary). A single bit error can lead to a symbol error, negating the code's benefits.
 
-Improved Binary Codes through Concatenation: This method enhances RS codes for binary channels through code concatenation. It adds a single overall binary parity check to each m-tuple representing a symbol. This approach transforms the original RS code [[n, k, n - k - 1]] into a new binary code with parameters [[n[m + 1], k * m, 2[n - k -1]]]. The resulting binary code boasts a minimum symbol weight of 2, effectively doubling the minimum Hamming distance compared to the original RS code.
+Improved Binary Codes through Concatenation: This method enhances RS codes for binary channels through code concatenation. It adds a single overall binary parity check to each `m`-tuple representing a symbol. This approach transforms the original RS code `[[n, k, n - k - 1]]` into a new binary code with parameters `[[n[m + 1], k * m, 2[n - k -1]]]`. The resulting binary code boasts a minimum symbol weight of 2, effectively doubling the minimum Hamming distance compared to the original RS code.
 
-Augmented Extended RS Codes: Constructed from Galois Field GF(2ᵐ). Length: 2ᵐ + 1 (Maximum Distance Separable (MDS) codes). Parameters: [[2ᵐ + 1, k, 2ᵐ ⁺ ¹ - k]]. Generalization: Applicable to any Galois Field GF(q) with parameters [[x + 1, k, x + 2 - k]].
+Augmented Extended RS Codes: Constructed from Galois Field `GF(2ᵐ)`. Length: `2ᵐ + 1` (Maximum Distance Separable (MDS) codes). Parameters: `[[2ᵐ + 1, k, 2ᵐ ⁺ ¹ - k]]`. Generalization: Applicable to any Galois Field `GF(x)` with parameters `[[x + 1, k, x + 2 - k]]`.
 
 Field Parity-Check Matrix (`HField`) Properties:
 
@@ -98,15 +98,15 @@ Field Parity-Check Matrix (`HField`) Properties:
 (α₀)ʲ ⁺ ˣ ⁻ ᵏ			(α₁)ʲ ⁺ ˣ ⁻ ᵏ			(α₂)ʲ ⁺ ˣ ⁻ ᵏ		...		(αₓ₋₂)ʲ ⁺ ˣ ⁻ ᵏ		0	1
 ```
 
-The matrix has x - k + 1 rows corresponding to the code's parity symbols. Any x - k + 1 columns form a Vandermonde matrix (non-singular). This ensures correction of up to x - k + 1 symbol erasures in a codeword. We can re-arrange the columns of the `HField` matrix in any desired order. Any set of `s` symbols within a codeword can be designated as parity symbols and permanently removed. This important property leads to construction of Shortened MDS codes.
+The matrix has `x - k + 1` rows corresponding to the code's parity symbols. Any `x - k + 1` columns form a Vandermonde matrix (non-singular). This ensures correction of up to `x - k + 1` symbol erasures in a codeword. We can re-arrange the columns of the `HField` matrix in any desired order. Any set of `s` symbols within a codeword can be designated as parity symbols and permanently removed. This important property leads to construction of Shortened MDS codes.
 
-Shortened MDS Codes: Corresponding columns of the field parity-check matrix `HField` can be deleted to form a shortened [[2ᵐ + 1 - s, k, 2ᵐ ⁺ ¹ - s - k]] MDS code. This is an important property of MDS codes, particularly for their practical realisation in the form of augmented, extended RS codes because it enables efficient implementation in applications such as incremental redundancy systems, and network coding. The 3 - level quantization of the received channel bits is utilized meaning 3 symbols are deleted.
+Shortened MDS Codes: Corresponding columns of the field parity-check matrix `HField` can be deleted to form a shortened `[[2ᵐ + 1 - s, k, 2ᵐ ⁺ ¹ - s - k]]` MDS code. This is an important property of MDS codes, particularly for their practical realisation in the form of augmented, extended RS codes because it enables efficient implementation in applications such as incremental redundancy systems, and network coding. The 3-level quantization of the received channel bits is utilized meaning 3 symbols are deleted. The Fig. 7.2 [tomlinson2017error](@cite) shows that with 3-level quantization, there is an improvement over the binary-transmission with hard decisions for Reed-Solomon coding.
 
-Cyclic Code Construction: Using the first x - 1 columns of the field parity-check matrix (HField), using j = 0, and setting α₀, α₁, α₂, ..., αₓ ₋ ₁ to  α⁰, α¹, α², ..., αˣ ⁻ ¹ in the parity-check matrix are set equal to the powers of a primitive element α of the Galois Field GF(q), a cyclic code can be constructed for efficient encoding and decoding. The resulting matrix is represented by `HSeed`.
+Cyclic Code Construction: Using the first `x - 1` columns of the field parity-check matrix (HField), using `j = 0`, and setting `α₀, α₁, α₂, ..., αₓ ₋ ₁` to  `α⁰, α¹, α², ..., αˣ ⁻ ¹` in the parity-check matrix are set equal to the powers of a primitive element α of the Galois Field `GF(x)`, a cyclic code can be constructed for efficient encoding and decoding. The resulting matrix is represented by `HSeed`.
 
 `HSeed` Matrix element expansion: 
-    1. Row expansion: Each row of in the `HField` matrix is replaced with an `m`-by-`m` Field matrix defined over the base field GF(2ᵐ). This expansion is represented by `HFieldExpanded`.
-    2. Column expansion: The elements in each column of `HFieldExpanded` matrix are converted to binary representations by substituting powers of a primitive element (`α`) in the Galois Field GF(2ᵐ) with their corresponding m-tuples over the Boolean Field GF(2).
+    1. Row expansion: Each row of in the `HField` matrix is replaced with an `m`-by-`m` Field matrix defined over the base field `GF(2ᵐ)`. This expansion is represented by `HFieldExpanded`.
+    2. Column expansion: The elements in each column of `HFieldExpanded` matrix are converted to binary representations by substituting powers of a primitive element (`α`) in the Galois Field `GF(2ᵐ)` with their corresponding `m`-tuples over the Boolean Field `GF(2)`.
 """
 function parity_checks(rs::ReedSolomon)
     GF2ʳ, a = finite_field(2, rs.m, "a")
