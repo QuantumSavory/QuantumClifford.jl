@@ -5,7 +5,7 @@ using Combinatorics
 using Nemo: finite_field, GF, FqFieldElem, FqPolyRingElem, coeff, is_zero, degree, matrix
 using QuantumClifford
 using QuantumClifford.ECC
-using QuantumClifford.ECC: AbstractECC, ReedSolomon
+using QuantumClifford.ECC: AbstractECC, ReedSolomon, generator_polynomial
 
 """ 
 Employing `3-level` quantization of the channel bits and erasing entire symbols if any of their constituent bits are erased can improve the performance of RS codes.
