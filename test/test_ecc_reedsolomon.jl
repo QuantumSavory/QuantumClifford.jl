@@ -48,9 +48,9 @@ function generate_examplepage175()
 end
 
 @testset "Testing Shortened and Expanded Maximum Distance Separable (MDS) Reed Solomon codes's binary parity check matrices" begin
-    m_cases = [3, 4, 5, 6, 7, 8]
+    m_cases = [3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15]
     for m in m_cases
-        for t in 1:m - 1
+        for t in rand(1:m - 1, 2)
             mat = matrix(GF(2), parity_checks(ReedSolomon(m, t)))
             computed_rank = rank(mat)
             s_symbols = 3
@@ -60,9 +60,9 @@ end
         end
     end
         
-    m_cases = [5, 6, 7, 8, 9]
+    m_cases = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     for m in m_cases
-        for t in m:2 * m
+        for t in rand(m:2 * m, 2)
             @test designed_distance(parity_checks(ReedSolomon(m, t)), m, t) == true
         end
     end
@@ -78,7 +78,7 @@ end
     #Examples taken from [http://hscc.cs.nthu.edu.tw/~sheujp/lecture_note/rs.pdf].
     GF2ʳ, a = finite_field(2, 3, "a")
     P, x = GF2ʳ[:x]
-    @test generator_polynomial(ReedSolomon(3, 2)) == x^4 + (a + 1)*x^3 + x^2 + a*x + a + 1
+    @test generator_polynomial(ReedSolomon(3, 2)) == x ^ 4 + (a + 1) * x ^ 3 + x ^ 2 + a * x + a + 1
     
     #Example taken from page 173 of [tomlinson2017error](@cite).
     GF2ʳ, a = finite_field(2, 5, "a")
