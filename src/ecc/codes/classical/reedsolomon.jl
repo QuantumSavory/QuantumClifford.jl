@@ -64,7 +64,7 @@ function generator_polynomial(rs::ReedSolomon)
     GF2ʳ, a = finite_field(2, rs.m, "a")
     P, x = GF2ʳ[:x]
     gx = x - a ^ 1
-    for i in 2:2*rs.t
+    for i in 2:2 * rs.t
         gx *= (x - a ^ i)
     end
     return gx

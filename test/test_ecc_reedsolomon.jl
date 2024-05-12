@@ -33,11 +33,14 @@ end
         for t in rand(1:m - 1, 2)
             mat = matrix(GF(2), parity_checks(ReedSolomon(m, t)))
             computed_rank = rank(mat)
-            s_symbols = 3
+            s_symbols = 3 
             k = (2 ^ m -  1 - 2 * t) * m
             n = (2 ^ m + 1 - s_symbols) * m
+            d = 2 ^ (m + 1) - s_symbols - k
             @test computed_rank == n - k
             @test check_designed_distance(parity_checks(ReedSolomon(m, t)), m, t) == true
+            # Reed-Solomon codes exactly meet the [Singleton Bound](https://en.wikipedia.org/wiki/Singleton_bound).
+            @test d <= n - k + 1 
         end
     end
 
@@ -49,12 +52,18 @@ end
         # Using fixed generator polynomial construction scheme for defining generator polynomial, `g(x)`, of RS codes, `degree(g(x))` == 2 * t == n - k. 
         @test degree(generator_polynomial(ReedSolomon(m, t))) == 2 * t == n - k
     end
-    #Examples taken from [http://hscc.cs.nthu.edu.tw/~sheujp/lecture_note/rs.pdf].
+    
+    # Examples taken from [http://hscc.cs.nthu.edu.tw/~sheujp/lecture_note/rs.pdf].
     GF2ʳ, a = finite_field(2, 3, "a")
     P, x = GF2ʳ[:x]
     @test generator_polynomial(ReedSolomon(3, 2)) == x ^ 4 + (a + 1) * x ^ 3 + x ^ 2 + a * x + a + 1
     
-    #Example taken from page 173 of [tomlinson2017error](@cite).
+    # Example taken from https://www.youtube.com/watch?v=dpxD8gwgbOc
+    GF2ʳ, a = finite_field(2, 4, "a")
+    P, x = GF2ʳ[:x]
+    @test generator_polynomial(ReedSolomon(4, 2)) == x ^ 4 + a ^ 13 * x ^ 3 + a ^ 6 * x ^ 2 + a ^ 3 * x + a ^ 10
+    
+    # Example taken from page 173 of [tomlinson2017error](@cite).
     function generate_examplepage175()
         GF2ʳ, a = finite_field(2, 5, "a") 
         q = 30
@@ -97,7 +106,7 @@ end
     @test HF[15, 3]	== a ^ 28
     @test HF[15, 30]	== a ^ 3
  
-    #Example taken from page 175 of [tomlinson2017error](@cite).
+    # Example taken from page 175 of [tomlinson2017error](@cite).
     @test size(parity_checks(ReedSolomon(5, 8))) == (75, 150)
     H = Matrix{Bool}(undef, 75, 150)
     H = parity_checks(ReedSolomon(5, 8))
