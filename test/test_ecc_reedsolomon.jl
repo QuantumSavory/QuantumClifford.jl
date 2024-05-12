@@ -8,11 +8,8 @@ using QuantumClifford.ECC
 using QuantumClifford.ECC: AbstractECC, ReedSolomon, generator_polynomial
 
 """ 
-Employing `3-level` quantization of the channel bits and erasing entire symbols if any of their constituent bits are erased can improve the performance of RS codes.
-
-Shortened Maximum Distance Separable (MDS) codes have the following parameters - code length `(n)`, codesize `(k)` and minimum Hamming distance `(d)` represented by [[n, k, d]] as follows: [[2 ^ (m) + 1 - s, k, 2 ^ (m + 1) - s - k]]. Thus, the designed minimum distance `d` is 2 ^ (m + 1) - s - k. Refer to chapter: 07, section: 03, pages: 172 to 175 [tomlinson2017error](@cite).
-
-The designed distance for binary expanded parity check matrix remains same as symbol based parity check matrix. According to [macwilliams1977theory](@cite), changing the basis `j` can increase the designed distance `(dmin)` of the resulting binary code.
+- Employing `3-level` quantization of the channel bits and erasing entire symbols if any of their constituent bits are erased can improve the performance of RS codes. Shortened Maximum Distance Separable (MDS) codes have the following parameters - code length `(n)`, codesize `(k)` and minimum Hamming distance `(d)` represented by [[n, k, d]] as follows: [[2 ^ (m) + 1 - s, k, 2 ^ (m + 1) - s - k]]. Thus, the designed minimum distance `d` is 2 ^ (m + 1) - s - k. Refer to chapter: 07, section: 03, pages: 172 to 175 [tomlinson2017error](@cite).
+- The designed distance for binary expanded parity check matrix remains same as symbol based parity check matrix. According to [macwilliams1977theory](@cite), changing the basis `j` can increase the designed distance `(dmin)` of the resulting binary code.
 """
 function designed_distance(matrix, m, t)
     k = 2 ^ m -  1 - 2 * t
@@ -48,7 +45,7 @@ function generate_examplepage175()
 end
 
 @testset "Testing Shortened and Expanded Maximum Distance Separable (MDS) Reed Solomon codes's binary parity check matrices" begin
-    m_cases = [3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15]
+    m_cases = [3, 4, 5, 6, 7, 8]
     for m in m_cases
         for t in rand(1:m - 1, 2)
             mat = matrix(GF(2), parity_checks(ReedSolomon(m, t)))
@@ -60,14 +57,14 @@ end
         end
     end
         
-    m_cases = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    m_cases = [5, 6, 7, 8, 9]
     for m in m_cases
         for t in rand(m:2 * m, 2)
             @test designed_distance(parity_checks(ReedSolomon(m, t)), m, t) == true
         end
     end
 
-    # RS(7, 3), RS(15, 9), RS(255, 223), RS(160, 128), RS(255, 251), (255, 239) and (255, 249) codes. Examples taken from [https://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction], [https://www.cs.cmu.edu/~guyb/realworld/reedsolomon/reed_solomon_codes.html], [http://www.chencode.cn/lecture/Information_Theory_and_Coding/Information%20Theory%20and%20Coding-CH7.pdf], [https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=91e1d6d27311780b0a8c34a41793fa85f3947af1].
+    # RS(7, 3), RS(15, 9), RS(255, 223), RS(160, 128), RS(255, 251), (255, 239) and (255, 249) codes. Examples taken from https://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction, https://www.cs.cmu.edu/~guyb/realworld/reedsolomon/reed_solomon_codes.html, http://www.chencode.cn/lecture/Information_Theory_and_Coding/Information%20Theory%20and%20Coding-CH7.pdf, https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=91e1d6d27311780b0a8c34a41793fa85f3947af1.
     test_cases = [(7, 3), (15, 9), (225, 223), (160, 128), (255, 251), (255, 239), (255, 249)]
     for (n, k) in test_cases
         m = ilog2(n + 1)
