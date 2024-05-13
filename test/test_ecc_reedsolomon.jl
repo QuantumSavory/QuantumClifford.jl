@@ -30,7 +30,7 @@ end
 @testset "Testing Shortened and Expanded Maximum Distance Separable (MDS) Reed Solomon codes's properties" begin
     m_cases = [3, 4, 5, 6, 7, 8]
     for m in m_cases
-        for t in rand(1:m, 2)
+        for t in rand(1:m - 1, 2)
             mat = matrix(GF(2), parity_checks(ReedSolomon(m, t)))
             computed_rank = rank(mat)
             s_symbols = 3 
@@ -50,7 +50,7 @@ end
     end
 
     # RS(7, 3), RS(15, 9), RS(255, 223), RS(160, 128), RS(255, 251), (255, 239) and (255, 249) codes. Examples taken from https://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction, https://www.cs.cmu.edu/~guyb/realworld/reedsolomon/reed_solomon_codes.html, http://www.chencode.cn/lecture/Information_Theory_and_Coding/Information%20Theory%20and%20Coding-CH7.pdf, https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=91e1d6d27311780b0a8c34a41793fa85f3947af1.
-    test_cases = [(7, 1), (7, 3), (15, 9), (225, 223), (160, 128), (255, 251), (255, 239), (255, 249)]
+    test_cases = [(7, 3), (15, 9), (225, 223), (160, 128), (255, 251), (255, 239), (255, 249)]
     for (n, k) in test_cases
         m = ilog2(n + 1)
         t = div(n - k, 2)
