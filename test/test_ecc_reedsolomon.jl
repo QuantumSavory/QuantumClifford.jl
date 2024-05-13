@@ -27,10 +27,10 @@ function check_designed_distance(matrix, m, t)
     return true  # Minimum distance is at least `2 ^ (m + 1) - s_symbols - k`.
 end
 
-@testset "Testing Shortened and Expanded Maximum Distance Separable (MDS) Reed Solomon codes's binary parity check matrices" begin
+@testset "Testing Shortened and Expanded Maximum Distance Separable (MDS) Reed Solomon codes's properties" begin
     m_cases = [3, 4, 5, 6, 7, 8]
     for m in m_cases
-        for t in rand(1:m - 1, 2)
+        for t in rand(1:m, 2)
             mat = matrix(GF(2), parity_checks(ReedSolomon(m, t)))
             computed_rank = rank(mat)
             s_symbols = 3 
@@ -41,18 +41,23 @@ end
             @test check_designed_distance(parity_checks(ReedSolomon(m, t)), m, t) == true
             # Reed-Solomon codes exactly meet the [Singleton Bound](https://en.wikipedia.org/wiki/Singleton_bound).
             @test d <= n - k + 1 
+            # Reed-Solomon code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x))` = 0.
+            n_gx = 2 ^ m - 1
+            GF2ʳ, a = finite_field(2, m, "a")
+            GF2x, x = GF2ʳ[:x]
+            mod(x ^ n_gx - 1, generator_polynomial(ReedSolomon(m, t))) == 0
         end
     end
 
     # RS(7, 3), RS(15, 9), RS(255, 223), RS(160, 128), RS(255, 251), (255, 239) and (255, 249) codes. Examples taken from https://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction, https://www.cs.cmu.edu/~guyb/realworld/reedsolomon/reed_solomon_codes.html, http://www.chencode.cn/lecture/Information_Theory_and_Coding/Information%20Theory%20and%20Coding-CH7.pdf, https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=91e1d6d27311780b0a8c34a41793fa85f3947af1.
-    test_cases = [(7, 3), (15, 9), (225, 223), (160, 128), (255, 251), (255, 239), (255, 249)]
+    test_cases = [(7, 1), (7, 3), (15, 9), (225, 223), (160, 128), (255, 251), (255, 239), (255, 249)]
     for (n, k) in test_cases
         m = ilog2(n + 1)
         t = div(n - k, 2)
         # Using fixed generator polynomial construction scheme for defining generator polynomial, `g(x)`, of RS codes, `degree(g(x))` == 2 * t == n - k. 
         @test degree(generator_polynomial(ReedSolomon(m, t))) == 2 * t == n - k
     end
-    
+
     # Examples taken from [http://hscc.cs.nthu.edu.tw/~sheujp/lecture_note/rs.pdf].
     GF2ʳ, a = finite_field(2, 3, "a")
     P, x = GF2ʳ[:x]
