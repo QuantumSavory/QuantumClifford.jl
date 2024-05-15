@@ -117,7 +117,6 @@ function parity_checks(rs::ReedSolomon)
     for j in 1:x
         HField[1, j] = a ^ 0
     end
-    HTemp2 = Matrix{FqFieldElem}(undef, rs.m, x)
     for i in 1: x - k + 1
         HField[i, 1] = a ^ 0
     end
@@ -127,6 +126,7 @@ function parity_checks(rs::ReedSolomon)
         end
     end
     HSeed = vcat(HField[1:1, :], HField[3:end, :])
+    HTemp2 = Matrix{FqFieldElem}(undef, rs.m, x)
     HFieldExpanded = Matrix{FqFieldElem}(undef, rs.m * k, x)
     g = 1
     while g <= rs.m * k

@@ -27,7 +27,7 @@ function check_designed_distance(matrix, m, t)
     return true  # Minimum distance is at least `2 ^ (m + 1) - s_symbols - k`.
 end
 
-@testset "Testing Shortened and Expanded Maximum Distance Separable (MDS) Reed Solomon codes's properties" begin
+@testset "Testing Shortened and Maximum Distance Separable (MDS) Reed Solomon codes's properties" begin
     m_cases = [3, 4, 5, 6, 7, 8]
     for m in m_cases
         for t in rand(1:m - 1, 2)
@@ -67,105 +67,64 @@ end
     GF2ʳ, a = finite_field(2, 4, "a")
     P, x = GF2ʳ[:x]
     @test generator_polynomial(ReedSolomon(4, 2)) == x ^ 4 + a ^ 13 * x ^ 3 + a ^ 6 * x ^ 2 + a ^ 3 * x + a ^ 10
-    
-    # Example taken from page 173 of [tomlinson2017error](@cite).
-    function generate_examplepage175()
-        GF2ʳ, a = finite_field(2, 5, "a") 
-        q = 30
-        k = 15 
-        HField = Matrix{FqFieldElem}(undef, q - k + 1, q)
-        for j in 1: q
-            HField[1, j] = a ^ 0
-        end
-        HTemp2 = Matrix{FqFieldElem}(undef, 5, q)
-        for i in 1: q - k + 1
-            HField[i, 1] = a ^ 0
-        end
-        for i in 2:q - k + 1
-            for j in 2: q
-                HField[i, j] = (a ^ (j - 1)) ^ (i - 2)
-            end
-        end
-        HSeed = vcat(HField[1:1, :], HField[3:end, :])
-        return HSeed
-    end
 
-    GF2ʳ, a = finite_field(2, 5, "a")
-    HF = Matrix{FqFieldElem}(undef, 15, 30)
-    HF = generate_examplepage175()
-    @test reshape(HF[1,:], 1, 30) == [1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1]
-    @test reshape(HF[:,1], 1, 15) == [ 1  1  1  1  1  1  1  1  1  1  1  1  1  1  1]
-    @test HF[2, 2]	== a
-    @test HF[2, 3]	== a ^ 2
-    @test HF[2, 30]	== a ^ 29
-    @test HF[3, 2]	== a ^ 2
-    @test HF[3, 3]	== a ^ 4
-    @test HF[3, 30]	== a ^ 27
-    @test HF[4, 2]	== a ^ 3
-    @test HF[4, 3]	== a ^ 6
-    @test HF[4, 30]	== a ^ 25
-    @test HF[14, 2]	== a ^ 13
-    @test HF[14, 3]	== a ^ 26
-    @test HF[14, 30]	== a ^ 5
-    @test HF[15, 2]	== a ^ 14
-    @test HF[15, 3]	== a ^ 28
-    @test HF[15, 30]	== a ^ 3
- 
-    # Example taken from page 175 of [tomlinson2017error](@cite).
+    # Example `(H₁₅₀₋₇₅`) taken from Eq. 7.9 of pg. 175 of [tomlinson2017error](@cite).
     @test size(parity_checks(ReedSolomon(5, 8))) == (75, 150)
     H = Matrix{Bool}(undef, 75, 150)
     H = parity_checks(ReedSolomon(5, 8))
-    @test H[1:20, 1:15]  == [1  0  0  0  0  1  0  0  0  0  1  0  0  0  0;
-                             0  1  0  0  0  0  1  0  0  0  0  1  0  0  0;
-                             0  0  1  0  0  0  0  1  0  0  0  0  1  0  0;
-                             0  0  0  1  0  0  0  0  1  0  0  0  0  1  0;
-                             0  0  0  0  1  0  0  0  0  1  0  0  0  0  1;
-                             1  0  0  0  0  0  1  0  0  0  0  0  1  0  0;
-                             0  1  0  0  0  0  0  1  0  0  0  0  0  1  0;
-                             0  0  1  0  0  0  0  0  1  0  0  0  0  0  1;
-                             0  0  0  1  0  0  0  0  0  1  1  0  1  0  0;
-                             0  0  0  0  1  1  0  1  0  0  0  1  0  1  0;
-                             1  0  0  0  0  0  0  1  0  0  0  0  0  0  1;
-                             0  1  0  0  0  0  0  0  1  0  1  0  1  0  0;
-                             0  0  1  0  0  0  0  0  0  1  0  1  0  1  0;
-                             0  0  0  1  0  1  0  1  0  0  0  0  1  0  1;
-                             0  0  0  0  1  0  1  0  1  0  1  0  1  1  0;
-                             1  0  0  0  0  0  0  0  1  0  0  1  0  1  0;
-                             0  1  0  0  0  0  0  0  0  1  0  0  1  0  1;
-                             0  0  1  0  0  1  0  1  0  0  1  0  1  1  0;
-                             0  0  0  1  0  0  1  0  1  0  0  1  0  1  1;
-                             0  0  0  0  1  0  0  1  0  1  1  0  0  0  1]
-    
-    @test H[71:75, 1:15] == [1  0  0  0  0  1  0  1  1  1  0  1  1  0  1;
- 			             0  1  0  0  0  1  1  1  1  1  1  0  0  1  0;
- 			             0  0  1  0  0  1  1  0  1  1  0  1  0  0  1;
- 			             0  0  0  1  0  1  1  0  0  1  1  0  0  0  0;
-			             0  0  0  0  1  1  1  0  0  0  0  1  0  0  0]
-    
-    @test H[1:20, 146:150] == [1  0  0  0  0;
- 			               0  1  0  0  0;
- 			               0  0  1  0  0;
- 			               0  0  0  1  0;
-			               0  0  0  0  1;
-			               1  0  0  1  0;
- 			               0  1  0  0  1;
- 			               1  0  0  0  0;
- 			               0  1  0  0  0;
-			               0  0  1  0  0;
-			               1  1  0  1  0;
- 			               0  1  1  0  1;
-			               1  0  0  1  0;
-			               0  1  0  0  1;
- 			               1  0  0  0  0;
-			               1  0  0  1  1;
- 			               1  1  1  0  1;
- 			               1  1  0  1  0;
- 			               0  1  1  0  1;
- 			               1  0  0  1  0]
+    example₁₋₁ = [1  0  0  0  0  1  0  0  0  0  1  0  0  0  0;	
+			 0  1  0  0  0  0  1  0  0  0  0  1  0  0  0;
+			 0  0  1  0  0  0  0  1  0  0  0  0  1  0  0;
+			 0  0  0  1  0  0  0  0  1  0  0  0  0  1  0;
+			 0  0  0  0  1  0  0  0  0  1  0  0  0  0  1;
+			 1  0  0  0  0  0  1  0  0  0  0  0  1  0  0;
+			 0  1  0  0  0  0  0  1  0  0  0  0  0  1  0;
+			 0  0  1  0  0  0  0  0  1  0  0  0  0  0  1;
+			 0  0  0  1  0  0  0  0  0  1  1  0  1  0  0;
+			 0  0  0  0  1  1  0  1  0  0  0  1  0  1  0;
+			 1  0  0  0  0  0  0  1  0  0  0  0  0  0  1;
+			 0  1  0  0  0  0  0  0  1  0  1  0  1  0  0;
+			 0  0  1  0  0  0  0  0  0  1  0  1  0  1  0;
+			 0  0  0  1  0  1  0  1  0  0  0  0  1  0  1;
+			 0  0  0  0  1  0  1  0  1  0  1  0  1  1  0;
+			 1  0  0  0  0  0  0  0  1  0  0  1  0  1  0;
+			 0  1  0  0  0  0  0  0  0  1  0  0  1  0  1;
+			 0  0  1  0  0  1  0  1  0  0  1  0  1  1  0;
+			 0  0  0  1  0  0  1  0  1  0  0  1  0  1  1;
+			 0  0  0  0  1  0  0  1  0  1  1  0  0  0  1]
+    example₁₋₂ = [1  0  0  0  0  1  0  1  1  1  0  1  1  0  1;
+			 0  1  0  0  0  1  1  1  1  1  1  0  0  1  0;
+			 0  0  1  0  0  1  1  0  1  1  0  1  0  0  1;
+			 0  0  0  1  0  1  1  0  0  1  1  0  0  0  0;
+			 0  0  0  0  1  1  1  0  0  0  0  1  0  0  0]
+    example₁₋₃ = [1  0  0  0  0;
+			 0  1  0  0  0; 
+			 0  0  1  0  0;
+			 0  0  0  1  0;
+			 0  0  0  0  1;
+			 1  0  0  1  0;
+			 0  1  0  0  1;
+			 1  0  0  0  0;
+			 0  1  0  0  0;
+			 0  0  1  0  0;
+			 1  1  0  1  0;
+			 0  1  1  0  1;
+			 1  0  0  1  0;
+			 0  1  0  0  1;
+			 1  0  0  0  0;
+			 1  0  0  1  1;
+			 1  1  1  0  1;
+			 1  1  0  1  0;
+			 0  1  1  0  1;
+			 1  0  0  1  0]
+    example₁₋₄ = [0  0  0  1  0; 
+			 0  0  0  0  1;
+			 1  0  1  0  0;
+			 0  1  0  1  0;
+			 0  0  1  0  1]
 
-    @test H[71:75, 146:150] == [0  0  0  1  0; 
-                                0  0  0  0  1;
-                                1  0  1  0  0;
-                                0  1  0  1  0;
-                                0  0  1  0  1]
+    @test H[1:20, 1:15] == example₁₋₁
+    @test H[71:75, 1:15] == example₁₋₂ 
+    @test H[1:20, 146:150] == example₁₋₃ 
+    @test H[71:75, 146:150] == example₁₋₄
 end
