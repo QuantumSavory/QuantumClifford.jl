@@ -123,7 +123,7 @@ function Griesmer_bound(c)
     k = code_k(c)
     d = distance(c)
     sum_val = 0
-    sum_val = sum(ceil(Int, d / 2 ^ i) for i in 0:k - 1)
+    sum_val = sum(d / 2 ^ i for i in 0:k - 1)
     return n >= sum_val
 end
 
