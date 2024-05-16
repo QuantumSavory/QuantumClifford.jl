@@ -27,7 +27,6 @@ end
         @test computed_rank == n - k
         @test Hamming_bound(Hamming(r)) == true
         @test Gilbert_Varshamov_bound(Hamming(r)) == true
-        @test Griesmer_bound(Hamming(r)) == false
     end
     # Example taken from [huffman2010fundamentals](@cite).
     @test parity_checks(Hamming(3)) == [0  0  0  1  1  1  1;

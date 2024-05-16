@@ -119,12 +119,16 @@ end
 
 """The [Griesmer bound](https://en.wikipedia.org/wiki/Griesmer_bound) on the length of linear binary codes of dimension k and minimum distance d."""
 function Griesmer_bound(c)
-    n = 0
+    n = code_n(c)
     k = code_k(c)
     d = distance(c)
     sum_val = 0
-    sum_val = sum(d / 2 ^ i for i in 0:k - 1)
-    return n >= sum_val
+    if isinf(d)
+        return false  # If d is infinite, Griesmer bound cannot be applied.
+    else
+        sum_val = sum(isinf(d / 2 ^ i) ? d : ceil(Int, d / 2 ^ i) for i in 0:k - 1) # apply ceiling function to d / 2 ^ i.
+        return n >= sum_val
+    end
 end
 
 """Parity matrix of a code, given as a stabilizer tableau."""
