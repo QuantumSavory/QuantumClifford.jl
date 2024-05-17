@@ -9,7 +9,7 @@ There are two binary Golay codes:
 
 Parity Check Matrix `(H)`: `H` is defined as follows: `H₂₄ = [I₁₂ | A']` where `I₁₂` is the 12 x 12 identity matrix and `A` is a bordered reverse circulant matrix.
 
-Construction method for `A` [huffman2010fundamentals](@cite): The columns of `A` are labeled by ∞, 0, 1, 2, ..., 10. The first row contains 0 in column ∞ and 1 elsewhere. To obtain the second row, a 1 is placed in column ∞ nd a 1 is placed in columns 0, 1, 3, 4, 5, and 9; these numbers are precisely the squares of the integers modulo 11. That is, 0² = 0, 1² ≡ 10² ≡ 1 (mod 11), 2² ≡ 2² ≡ 4 (mod 11), etc. The third row of `A` is obtained by putting a 1 in column ∞ and then shifting the components in the second row one place to the left and wrapping the entry in column 0 around to column 10. The fourth row is obtained from the third in the same manner, as are the remaining rows.
+Construction method for `A` [huffman2010fundamentals](@cite): The columns of `A` are labeled by ∞, 0, 1, 2, ..., 10. The first row contains 0 in column ∞ and 1 elsewhere. To obtain the second row, a 1 is placed in column ∞ and a 1 is placed in columns 0, 1, 3, 4, 5, and 9; these numbers are precisely the squares of the integers modulo 11. That is, 0² = 0, 1² ≡ 10² ≡ 1 (mod 11), 2² ≡ 2² ≡ 4 (mod 11), etc. The third row of `A` is obtained by putting a 1 in column ∞ and then shifting the components in the second row one place to the left and wrapping the entry in column 0 around to column 10. The fourth row is obtained from the third in the same manner, as are the remaining rows.
 
 Punctured Code: All punctured codes are equivalent. Adding an overall parity check to `H₂₃` recovers `H₂₄`.
 
@@ -64,3 +64,7 @@ function parity_checks(g::Golay)
         return H₂₃
     end
 end
+
+code_n(g::Golay) = g.n
+code_k(g::Golay) = 12
+distance(g::Golay) = code_n(g::Golay) - code_k(g::Golay) - 4
