@@ -7,7 +7,7 @@ There are two binary Golay codes:
 
 2. Extended Binary `[[24, 12, 8]]` Golay code: Obtained by adding a parity check bit to `[[23, 12, 7]]`. The bordered reverse circulant matrix `(A)` of `[[24, 12, 8]]` Golay code is self-dual, i.e., A₂₄ is same as A₂₄'. 
 
-Parity Check Matrix `(H)`: `H` is defined as follows: `H₂₄ = [ A' | I₁₂ ]` where `I₁₂` is the 12 x 12 identity matrix and `A` is a bordered reverse circulant matrix.
+Parity Check Matrix `(H)`: `H` is defined as follows: `H₂₄ = [I₁₂ | A']` where `I₁₂` is the 12 x 12 identity matrix and `A` is a bordered reverse circulant matrix.
 
 Construction method for `A` [huffman2010fundamentals](@cite): The columns of `A` are labeled by ∞, 0, 1, 2, ..., 10. The first row contains 0 in column ∞ and 1 elsewhere. To obtain the second row, a 1 is placed in column ∞ nd a 1 is placed in columns 0, 1, 3, 4, 5, and 9; these numbers are precisely the squares of the integers modulo 11. That is, 0² = 0, 1² ≡ 10² ≡ 1 (mod 11), 2² ≡ 2² ≡ 4 (mod 11), etc. The third row of `A` is obtained by putting a 1 in column ∞ and then shifting the components in the second row one place to the left and wrapping the entry in column 0 around to column 10. The fourth row is obtained from the third in the same manner, as are the remaining rows.
 
@@ -45,18 +45,18 @@ function _create_A₂₄_golay(n::Int)
     # Fill in the rest of the rows using the reverse circulant property.
     for i in 3:n ÷ 2
         A[i, 2:end] = _circshift_row_golay(A[i - 1, 2:end], -1, n ÷ 2)
-        A[i, 1] = 1  # Always put a 1 in the first column
+        A[i, 1] = 1 
     end
     return A
 end
 
 function parity_checks(g::Golay)
-    if g.n == 24 # Extented binary `[[24, 12, 8]]` Golay code.
+    if g.n == 24 
         A₂₄ = _create_A₂₄_golay(24)
         I₁₂ = Diagonal(ones(Int, g.n ÷ 2))
         H₂₄ = hcat(I₁₂, A₂₄')
         return H₂₄
-    else # Perfect binary `[[23, 12, 7]]` Golay code.
+    else 
         A₂₄ = _create_A₂₄_golay(24)
         A₂₃ = A₂₄[:, 1:end - 1]
         I₁₂ = Diagonal(ones(Int, g.n ÷ 2))
