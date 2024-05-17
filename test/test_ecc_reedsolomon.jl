@@ -45,7 +45,7 @@ end
             n_gx = 2 ^ m - 1
             GF2ʳ, a = finite_field(2, m, "a")
             GF2x, x = GF2ʳ[:x]
-            mod(x ^ n_gx - 1, generator_polynomial(ReedSolomon(m, t))) == 0
+            @test mod(x ^ n_gx - 1, generator_polynomial(ReedSolomon(m, t))) == 0
         end
     end
 
@@ -72,7 +72,7 @@ end
     @test size(parity_checks(ReedSolomon(5, 8))) == (75, 150)
     H = Matrix{Bool}(undef, 75, 150)
     H = parity_checks(ReedSolomon(5, 8))
-    example₁₋₁ = [1  0  0  0  0  1  0  0  0  0  1  0  0  0  0;	
+    example₁₋₁ =	[1  0  0  0  0  1  0  0  0  0  1  0  0  0  0;	
 			 0  1  0  0  0  0  1  0  0  0  0  1  0  0  0;
 			 0  0  1  0  0  0  0  1  0  0  0  0  1  0  0;
 			 0  0  0  1  0  0  0  0  1  0  0  0  0  1  0;
@@ -92,12 +92,12 @@ end
 			 0  0  1  0  0  1  0  1  0  0  1  0  1  1  0;
 			 0  0  0  1  0  0  1  0  1  0  0  1  0  1  1;
 			 0  0  0  0  1  0  0  1  0  1  1  0  0  0  1]
-    example₁₋₂ = [1  0  0  0  0  1  0  1  1  1  0  1  1  0  1;
+    example₁₋₂ =	[1  0  0  0  0  1  0  1  1  1  0  1  1  0  1;
 			 0  1  0  0  0  1  1  1  1  1  1  0  0  1  0;
 			 0  0  1  0  0  1  1  0  1  1  0  1  0  0  1;
 			 0  0  0  1  0  1  1  0  0  1  1  0  0  0  0;
 			 0  0  0  0  1  1  1  0  0  0  0  1  0  0  0]
-    example₁₋₃ = [1  0  0  0  0;
+    example₁₋₃ =	[1  0  0  0  0;
 			 0  1  0  0  0; 
 			 0  0  1  0  0;
 			 0  0  0  1  0;
@@ -117,7 +117,7 @@ end
 			 1  1  0  1  0;
 			 0  1  1  0  1;
 			 1  0  0  1  0]
-    example₁₋₄ = [0  0  0  1  0; 
+    example₁₋₄ =	[0  0  0  1  0; 
 			 0  0  0  0  1;
 			 1  0  1  0  0;
 			 0  1  0  1  0;
