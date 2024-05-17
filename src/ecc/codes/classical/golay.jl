@@ -1,17 +1,15 @@
 """
-The family of classical Golay binary codes were discovered by Edouard Golay in his 1949 paper [golay1949notes](@cite), where he described the binary `[[23, 12, 7]]` Golay code.
+The family of classical binary Golay codes were discovered by Edouard Golay in his 1949 paper [golay1949notes](@cite), where he described the binary `[[23, 12, 7]]` Golay code.
 
 There are two binary Golay codes:
 
-1. Binary `[[23, 12, 7]]` Golay Code: The perfect code with code length `(n)` 23 and dimension `(k)` 12. Minimum distance is 7, implying it can detect or correct up to 7 errors. By puncturing in any of the coordinates of parity check Matrix `H` = `[[24, 12, 8]]`, we obtain a `[[23, 12, 7]]` golay code.
+1. Binary `[[23, 12, 7]]` Golay code: The perfect code with code length `(n)` 23 and dimension `(k)` 12. Minimum distance is 7, implying it can detect or correct up to 7 errors. By puncturing in any of the coordinates of parity check Matrix `H` = `[[24, 12, 8]]`, we obtain a `[[23, 12, 7]]` golay code.
 
-2. Extended Binary [[24, 12, 8]] Golay Code: Obtained by adding a parity check bit to [[23, 12, 7]]. Thus, the binary codes can be obtained from each other by puncturing (shortening) or extending. 
+2. Extended Binary `[[24, 12, 8]]` Golay code: Obtained by adding a parity check bit to `[[23, 12, 7]]`. The bordered reverse circulant matrix `(A)` of `[[24, 12, 8]]` Golay code is self-dual, i.e., A₂₄ is same as A₂₄'. 
 
-Parity Check Matrix `(H)`: `H` is defined as follows: `H₂₄ = [ A' | I₁₂ ]` where I₁₂ is the 12 x 12 identity matrix and `A` is a bordered reverse circulant matrix.
+Parity Check Matrix `(H)`: `H` is defined as follows: `H₂₄ = [ A' | I₁₂ ]` where `I₁₂` is the 12 x 12 identity matrix and `A` is a bordered reverse circulant matrix.
 
-Construction method for `A` [huffman2010fundamentals](@cite): The columns of A are labeled by ∞, 0, 1, 2, ..., 10. The first row contains 0 in column ∞ and 1 elsewhere. To obtain the second row, a 1 is placed in column ∞ nd a 1 is placed in columns 0, 1, 3, 4, 5, and 9; these numbers are precisely the squares of the integers modulo 11. That is, 0² = 0, 1² ≡ 10² ≡ 1 (mod 11), 2² ≡ 2² ≡ 4 (mod 11), etc. The third row of A is obtained by putting a 1 in column ∞ and then shifting the components in the second row one place to the left and wrapping the entry in column 0 around to column 10. The fourth row is obtained from the third in the same manner, as are the remaining rows.
-
-Properties: The rows of `H₂₄` have weights 8 and 12. `H₂₄` is self-dual, meaning its codewords are also valid when their components are reversed. All codewords of `H₂₄` have weights divisible by four (`d` = 4 or 8). 
+Construction method for `A` [huffman2010fundamentals](@cite): The columns of `A` are labeled by ∞, 0, 1, 2, ..., 10. The first row contains 0 in column ∞ and 1 elsewhere. To obtain the second row, a 1 is placed in column ∞ nd a 1 is placed in columns 0, 1, 3, 4, 5, and 9; these numbers are precisely the squares of the integers modulo 11. That is, 0² = 0, 1² ≡ 10² ≡ 1 (mod 11), 2² ≡ 2² ≡ 4 (mod 11), etc. The third row of `A` is obtained by putting a 1 in column ∞ and then shifting the components in the second row one place to the left and wrapping the entry in column 0 around to column 10. The fourth row is obtained from the third in the same manner, as are the remaining rows.
 
 Punctured Code: All punctured codes are equivalent. Adding an overall parity check to `H₂₃` recovers `H₂₄`.
 

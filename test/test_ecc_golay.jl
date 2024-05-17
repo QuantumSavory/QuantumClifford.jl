@@ -13,6 +13,9 @@ using Nemo: matrix, GF
         computed_rank = rank(mat)
         @test computed_rank == n - k
     end
+    # [[24, 12, 8]] binary Golay code is a self-dual code [huffman2010fundamentals](@cite).
+    H = parity_checks(Golay(24))
+    @test H[:, (12 + 1):end]  == H[:, (12 + 1):end]'
     # Example taken from [huffman2010fundamentals](@cite).
     @test parity_checks(Golay(24)) == [1  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1  1  1  1;
                                        0  1  0  0  0  0  0  0  0  0  0  0  1  1  1  0  1  1  1  0  0  0  1  0;
