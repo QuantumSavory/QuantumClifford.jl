@@ -1,34 +1,34 @@
 using Test
 using Nemo
-using Combinatorics
 using LinearAlgebra
 using QuantumClifford
 using QuantumClifford.ECC
 using QuantumClifford.ECC: AbstractECC, ReedMuller
 
-function binomial_coeff_sum(r, m)
-    total = 0
-    for i in 0:r
-        total += length(combinations(1:m, i))
+function designed_distance(matrix, m, r)
+    for row in eachrow(matrix)
+        count = sum(row)
+        if count >= 2 ^ (m - r)
+            return true
+        end
     end
-    return total
+    return false
 end
 
 @testset "Test RM(r, m) Matrix Rank" begin
-    for m in 2:5
-        for r in 0:m - 1
+    for m in 3:10
+        for r in 0:m
             H = parity_checks(ReedMuller(r, m))
             mat = Nemo.matrix(Nemo.GF(2), H)
             computed_rank = LinearAlgebra.rank(mat)
-            expected_rank = binomial_coeff_sum(r, m)
+            expected_rank = sum(binomial.(m, 0:r))
             @test computed_rank == expected_rank
+            @test designed_distance(H, m, r) == true
         end
     end
-end
-
-@testset "Testing common examples of RM(r,m) codes [raaphorst2003reed](@cite), [djordjevic2021quantum](@cite), [abbe2020reed](@cite)" begin
-    
-    #RM(0,3)  
+   
+    # Testing common examples of RM(r,m) codes [raaphorst2003reed](@cite), [djordjevic2021quantum](@cite), [abbe2020reed](@cite).
+    # RM(0,3)  
     @test parity_checks(ReedMuller(0,3)) == [1 1 1 1 1 1 1 1]
     
     #RM(1,3) 
