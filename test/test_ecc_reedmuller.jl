@@ -24,6 +24,10 @@ end
             expected_rank = sum(binomial.(m, 0:r))
             @test computed_rank == expected_rank
             @test designed_distance(H, m, r) == true
+            @test rate(ReedMuller(r, m)) == sum(binomial.(m, 0:r)) / 2 ^ m
+            @test code_n(ReedMuller(r, m)) == 2 ^ m
+            @test code_k(ReedMuller(r, m)) == sum(binomial.(m, 0:r))
+            @test distance(ReedMuller(r, m)) == 2 ^ (m - r) 
         end
     end
    
