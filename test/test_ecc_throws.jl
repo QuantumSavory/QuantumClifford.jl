@@ -1,6 +1,6 @@
 using Test
 using QuantumClifford
-using QuantumClifford.ECC: ReedMuller, BCH, ReedSolomon
+using QuantumClifford.ECC: ReedMuller, BCH, ExtendedReedSolomonMDS
 
 @test_throws ArgumentError ReedMuller(-1, 3)
 @test_throws ArgumentError ReedMuller(1, 0)
