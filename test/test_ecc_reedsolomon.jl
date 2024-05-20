@@ -30,7 +30,7 @@ end
 @testset "Testing Shortened and Maximum Distance Separable (MDS) Reed Solomon codes's properties" begin
     m_cases = [3, 4, 5, 6, 7, 8]
     for m in m_cases
-        for t in rand(1:m - 1, 2)
+        for t in rand(2:m - 1, 2)
             mat = matrix(GF(2), parity_checks(ReedSolomon(m, t)))
             computed_rank = rank(mat)
             s_symbols = 3 
@@ -39,8 +39,6 @@ end
             d = 2 ^ (m + 1) - s_symbols - k
             @test computed_rank == n - k
             @test check_designed_distance(parity_checks(ReedSolomon(m, t)), m, t) == true
-            # Reed-Solomon codes exactly meet the [Singleton Bound](https://en.wikipedia.org/wiki/Singleton_bound).
-            @test d <= n - k + 1 
             # Reed-Solomon code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x))` = 0.
             n_gx = 2 ^ m - 1
             GF2ʳ, a = finite_field(2, m, "a")

@@ -155,3 +155,6 @@ function parity_checks(rs::ReedSolomon)
     end
     return H
 end
+
+code_n(rs::ReedSolomon) = (2 ^ rs.m + 1 - 3) * rs.m
+code_k(rs::ReedSolomon) = (2 ^ rs.m - 1 - 2 * rs.t) * rs.m
