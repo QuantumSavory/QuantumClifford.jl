@@ -35,7 +35,8 @@ struct ReedSolomon <: AbstractPolynomialCode
 end
 
 """
-generator_polynomial(ReedSolomon(m, t)):
+`generator_polynomial(ReedSolomon(m, t))`
+
 - `m`: The positive integer defining the degree of the finite (Galois) field, `GF(2ᵐ)`.
 - `t`: The positive integer specifying the number of correctable errors `(t)`.
 
