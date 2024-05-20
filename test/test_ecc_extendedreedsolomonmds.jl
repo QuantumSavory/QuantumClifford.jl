@@ -4,7 +4,7 @@ using LinearAlgebra
 using Combinatorics
 using QuantumClifford
 using QuantumClifford.ECC
-using QuantumClifford.ECC: AbstractECC, ReedSolomon, generator_polynomial
+using QuantumClifford.ECC: AbstractECC, ExtendedReedSolomonMDS, generator_polynomial
 using Nemo: finite_field, GF, FqFieldElem, FqPolyRingElem, coeff, is_zero, degree, matrix
 include("utils_test_ecc.jl")
 
@@ -13,50 +13,35 @@ include("utils_test_ecc.jl")
 - The designed distance for binary expanded parity check matrix remains same as symbol based parity check matrix. According to [macwilliams1977theory](@cite), changing the basis `j` can increase the designed distance `(dmin)` of the resulting binary code.
 """
 
-@testset "Testing designed distance of Shortened and Maximum Distance Separable (MDS) Reed-Solomon codes" begin
+@testset "Testing designed distance of ExtendedReedSolomonMDS codes" begin
     m_cases = [3, 4, 5, 6, 7, 8]
     for m in m_cases  
         for t in rand(1:m - 1, 2)
             s_symbols = 3 # Refer to chapter: 07, section: 03, pages: 172 to 175 [tomlinson2017error](@cite).
             k = (2 ^ m -  1 - 2 * t) * m
             d = 2 ^ (m + 1) - s_symbols - k
-            @test check_designed_distance(parity_checks(ReedSolomon(m, t)), m, t, d, 0, 0) == true
+            @test check_designed_distance(parity_checks(ExtendedReedSolomonMDS(m, t)), m, t, d, 0, 0) == true
         end
     end
 end
 
-@testset "Testing Shortened and Maximum Distance Separable (MDS) Reed Solomon codes's properties" begin
+@testset "Testing ExtendedReedSolomonMDS codes's properties" begin
     m_cases = [3, 4, 5, 6, 7, 8]
     for m in m_cases
         for t in rand(1:m - 1, 2)
-            mat = matrix(GF(2), parity_checks(ReedSolomon(m, t)))
+            mat = matrix(GF(2), parity_checks(ExtendedReedSolomonMDS(m, t)))
             computed_rank = rank(mat) 
             s_symbols = 3 # Refer to chapter: 07, section: 03, pages: 172 to 175 [tomlinson2017error](@cite).
             k = (2 ^ m -  1 - 2 * t) * m
             n = (2 ^ m + 1 - s_symbols) * m
             @test computed_rank == n - k            
-            n_gx = 2 ^ m - 1
-            GF2ʳ, a = finite_field(2, m, "a")
-            GF2x, x = GF2ʳ[:x]
-            # Reed-Solomon code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x))` = 0.
-            @test mod(x ^ n_gx - 1, generator_polynomial(ReedSolomon(m, t))) == 0
         end
     end
 
-    # Examples taken from pg. 18 of http://hscc.cs.nthu.edu.tw/~sheujp/lecture_note/rs.pdf.
-    GF2ʳ, a = finite_field(2, 3, "a")
-    P, x = GF2ʳ[:x]
-    @test generator_polynomial(ReedSolomon(3, 2)) == x ^ 4 + (a + 1) * x ^ 3 + x ^ 2 + a * x + a + 1
-    
-    # Example taken from https://www.youtube.com/watch?v=dpxD8gwgbOc.
-    GF2ʳ, a = finite_field(2, 4, "a")
-    P, x = GF2ʳ[:x]
-    @test generator_polynomial(ReedSolomon(4, 2)) == x ^ 4 + a ^ 13 * x ^ 3 + a ^ 6 * x ^ 2 + a ^ 3 * x + a ^ 10
-
     # Example `(H₁₅₀₋₇₅`) taken from Eq. 7.9 of pg. 175 of [tomlinson2017error](@cite).
-    @test size(parity_checks(ReedSolomon(5, 8))) == (75, 150)
+    @test size(parity_checks(ExtendedReedSolomonMDS(5, 8))) == (75, 150)
     H = Matrix{Bool}(undef, 75, 150)
-    H = parity_checks(ReedSolomon(5, 8))
+    H = parity_checks(ExtendedReedSolomonMDS(5, 8))
     example₁₋₁ =	[1  0  0  0  0  1  0  0  0  0  1  0  0  0  0;	
 			 0  1  0  0  0  0  1  0  0  0  0  1  0  0  0;
 			 0  0  1  0  0  0  0  1  0  0  0  0  1  0  0;

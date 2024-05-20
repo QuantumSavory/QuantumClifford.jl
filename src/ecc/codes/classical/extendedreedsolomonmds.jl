@@ -1,8 +1,6 @@
-"""The family of Reed-Solomon codes, as discovered by Reed and Solomon in their 1960 paper [reed1960polynomial](@cite). 
+"""Extended Reed-Solomon Maximum Distance Separable `(ExtendedReedSolomonMDS)` codes are constructed from the Galois Field `GF(2ᵐ)`. These codes are extensions of the family of Reed-Solomon codes, as discovered by Reed and Solomon in their 1960 paper [reed1960polynomial](@cite). 
 
-Reed Solomon codes are maximum distance separable (MDS) codes and have the highest possible minimum Hamming distance. The codes have symbols from finite Galois fields `GF(pᵐ)` of degree `m`, where `p` is a prime number, with parameters `[[x - 1, k, x - k]]`.
-
-They are not binary codes but frequently are used with `x = 2ᵐ`, and so there is a mapping of residue classes of a primitive polynomial with binary coefficients and each element of `GF(2ᵐ)` is represented as a binary `m`-tuple. Denoting the `x` field elements as `0, α⁰, α¹, α²,... αˣ ⁻ ¹`, the shortened field parity-check matrix (`HF`) is given as follows:
+These codes possess a code length `(n)` of `2ᵐ + 1` and are Maximum Distance Separable `(MDS)` codes with parameters `[[2ᵐ + 1, k, 2ᵐ⁺¹ − k]]`. These ExtendedReedSolomonMDS codes are not binary codes but frequently are used with `x = 2ᵐ`, and so there is a mapping of residue classes of a primitive polynomial with binary coefficients and each element of `GF(2ᵐ)` is represented as a binary `m`-tuple. Denoting the `x` field elements as `0, α⁰, α¹, α²,... αˣ ⁻ ¹`, the shortened field parity-check matrix (`HF`) is given as follows:
 
 ```
 (α⁰)ʲ			(α¹)ʲ			(α²)ʲ				...		(αˣ ⁻ ¹)ʲ
@@ -12,21 +10,21 @@ They are not binary codes but frequently are used with `x = 2ᵐ`, and so there 
 	.			.			.			...			.
 	.			.			.			...			.
 	.			.			.			...			.
-(α⁰)ʲ ⁺ ˣ ⁻ ᵏ		(α¹)ʲ ⁺ ˣ ⁻ ᵏ	(α²)ʲ ⁺ ˣ ⁻ ᵏ	     ...		(αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ
+(α⁰)ʲ ⁺ ˣ ⁻ ᵏ		(α¹)ʲ ⁺ ˣ ⁻ ᵏ	(α²)ʲ ⁺ ˣ ⁻ ᵏ		...		(αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ
 ```
 
-You might be interested in consulting [geisel1990tutorial](@cite), [wicker1999reed](@cite), [sklar2001reed](@cite), [berlekamp1978readable](@cite), [tomlinson2017error](@cite), [macwilliams1977theory](@cite), and [peterson1972error](@cite) as well.
+You might be interested in consulting [tomlinson2017error](@cite), [macwilliams1977theory](@cite), [peterson1972error](@cite), [seroussi1986mds](@cite), [dur1987automorphism](@cite) and [Extending MDS Codes](https://www.unb.ca/faculty-staff/directory/_resources/pdf/sase/alderson/mds-codes.pdf) as well.
 
-The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed_solomon).
+Extended RS codes may be constructed using any Galois Field `GF(x)`, resulting in parameters [[x + 1, k, x + 2 − k]] [macwilliams1977theory](@cite). The ECC Zoo has an [entry for Extended Generalized Reed-Solomon codes](https://errorcorrectionzoo.org/c/extended_reed_solomon).
 """
 
 abstract type AbstractPolynomialCode <: ClassicalCode end
 
-struct ReedSolomon <: AbstractPolynomialCode
+struct ExtendedReedSolomonMDS <: AbstractPolynomialCode
     m::Int
     t::Int
 
-    function ReedSolomon(m, t)
+    function ExtendedReedSolomonMDS(m, t)
         if m < 3 || t < 0 || t >= 2 ^ (m - 1) 
             throw(ArgumentError("Invalid parameters: m and t must be non-negative. Also, m > 3 and t < 2 ^ (m - 1) in order to obtain a valid code."))
         end
@@ -35,47 +33,11 @@ struct ReedSolomon <: AbstractPolynomialCode
 end
 
 """
-`generator_polynomial(ReedSolomon(m, t))`
-
+`parity_checks(ExtendedReedSolomonMDS(m, t))`
 - `m`: The positive integer defining the degree of the finite (Galois) field, `GF(2ᵐ)`.
 - `t`: The positive integer specifying the number of correctable errors.
 
-The generator polynomial for an RS code takes the following form:
-
-```
-g(X) = g₀ + g₁X¹ + g₂X² + ... + g₂ₜ₋₁X²ᵗ⁻¹ + X²ᵗ
-```
-
-where `X` is the indeterminate variable, `gᵢ` are the coefficients of the polynomial and `t` is the number of correctable symbol errors.
-
-We describe the generator polynomial in terms of its `2 * t  = n - k` roots, as follows:
-
-``` 
-g(X) = (X - α¹)(X - α²)(X - α³) ... (X - α²ᵗ)
-```
-
-Degree and Parity Symbols: The degree of the generator polynomial is equal to `2 * t`, which is also the number of parity symbols added to the original data (`k` symbols) to create a codeword of length `n` `(n = k + 2 * t)`.
-
-Roots of the Generator Polynomial: The generator polynomial has `2 * t` distinct roots, designated as `α¹, α², ... , α²ᵗ`. These roots are chosen from a Finite Galois Field. Any power of α can be used as the starting root, not necessarily `α¹` itself.
-
-Fixed generator polynomial scheme vs variable generator polynomial scheme: Only in this construction scheme using fixed generator polynomial `g(x)`, RS codes are a subset of the Bose, Chaudhuri, and Hocquenghem (BCH) codes; hence, this relationship between the degree of the generator polynomial and the number of parity symbols holds, just as for BCH codes where degree of BCH generator polynomial, `degree(g(x)) == n - k`. Prior to 1963, RS codes employed a variable generator polynomial for encoding. This approach [peterson1972error](@cite) differed from the prevalent BCH scheme (used here), which utilizes a fixed generator polynomial. Consequently, these original RS codes weren't strictly categorized as BCH codes. Furthermore, depending on the chosen evaluation points, they might not even qualify as cyclic codes.
-"""
-function generator_polynomial(rs::ReedSolomon)
-    GF2ʳ, a = finite_field(2, rs.m, "a")
-    P, x = GF2ʳ[:x]
-    gx = x - a ^ 1
-    for i in 2:2 * rs.t
-        gx *= (x - a ^ i)
-    end
-    return gx
-end
-
-"""
-`parity_checks(ReedSolomon(m, t))`
-- `m`: The positive integer defining the degree of the finite (Galois) field, `GF(2ᵐ)`.
-- `t`: The positive integer specifying the number of correctable errors.
-
-This function applies Reed-Solomon codes for binary transmission using soft decisions (see section 7.3)[tomlinson2017error](@cite). For significant coding gain, code length is typically restricted to less than 200 bits. Modified Dorsch decoder [dorsch1974decoding](@cite) is recommended for near maximum likelihood decoding.
+This function applies Extended Reed-Solomon Maximum Distance Separable `(ExtendedReedSolomonMDS)` codes for binary transmission using soft decisions (see section 7.3)[tomlinson2017error](@cite). For significant coding gain, code length is typically restricted to less than 200 bits. Modified Dorsch decoder [dorsch1974decoding](@cite) is recommended for near maximum likelihood decoding.
 
 Challenges of Standard RS Codes: While efficient as MDS codes, standard RS codes are not ideal for binary channels. As demonstrated in the results (see section 7.2)[tomlinson2017error](@cite), their performance suffers due to a mismatch between the code structure (symbol-based) and the channel (binary). A single bit error can lead to a symbol error, negating the code's benefits.
 
@@ -106,7 +68,7 @@ Shortened MDS (`HF`) Matrix element expansion:
     1. Row expansion: Each row of in the field parity-check matrix is replaced with an `m`-by-`m` field matrix defined over the base field `GF(2ᵐ)`.
     2. Column expansion: Consequently, the elements in each column of expanded field parity-check matrix are converted to binary representations by substituting powers of a primitive element (`α`) in the Galois Field `GF(2ᵐ)` with their corresponding `m`-tuples over the Boolean Field `GF(2)`.
 """
-function parity_checks(rs::ReedSolomon)
+function parity_checks(rs::ExtendedReedSolomonMDS)
     GF2ʳ, a = finite_field(2, rs.m, "a")
     s_symbols = 3 # 3-level quantization. 
     x = 2 ^ rs.m + 1 - s_symbols
@@ -154,5 +116,5 @@ function parity_checks(rs::ReedSolomon)
     return H
 end
 
-code_n(rs::ReedSolomon) = (2 ^ rs.m + 1 - 3) * rs.m
-code_k(rs::ReedSolomon) = (2 ^ rs.m - 1 - 2 * rs.t) * rs.m
+code_n(rs::ExtendedReedSolomonMDS) = (2 ^ rs.m + 1 - 3) * rs.m
+code_k(rs::ExtendedReedSolomonMDS) = (2 ^ rs.m - 1 - 2 * rs.t) * rs.m

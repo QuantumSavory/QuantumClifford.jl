@@ -56,6 +56,8 @@ For classical code construction routines:
 - [macwilliams1977theory](@cite)
 - [peterson1972error](@cite)
 - [dorsch1974decoding](@cite)
+- [seroussi1986mds](@cite)
+- [dur1987automorphism](@cite)
 
 # References
 
