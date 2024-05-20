@@ -28,7 +28,7 @@ struct ReedSolomon <: AbstractPolynomialCode
 
     function ReedSolomon(m, t)
         if m < 3 || t < 0 || t >= 2 ^ (m - 1) 
-            throw(ArgumentError("Invalid parameters: m and t must be non-negative. Also, m > 3 and t < 2 ^ (m - 1) in order to obtain a valid code and to remain tractable."))
+            throw(ArgumentError("Invalid parameters: m and t must be non-negative. Also, m > 3 and t < 2 ^ (m - 1) in order to obtain a valid code."))
         end
         new(m, t)
     end
