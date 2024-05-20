@@ -61,17 +61,6 @@ Roots of the Generator Polynomial: The generator polynomial has `2 * t` distinct
 Fixed generator polynomial scheme vs variable generator polynomial scheme: Only in this construction scheme using fixed generator polynomial `g(x)`, RS codes are a subset of the Bose, Chaudhuri, and Hocquenghem (BCH) codes; hence, this relationship between the degree of the generator polynomial and the number of parity symbols holds, just as for BCH codes where degree of BCH generator polynomial, `degree(g(x)) == n - k`. Prior to 1963, RS codes employed a variable generator polynomial for encoding. This approach [peterson1972error](@cite) differed from the prevalent BCH scheme (used here), which utilizes a fixed generator polynomial. Consequently, these original RS codes weren't strictly categorized as BCH codes. Furthermore, depending on the chosen evaluation points, they might not even qualify as cyclic codes.
 
 """
-# RS(7, 3), RS(15, 9), RS(255, 223), RS(160, 128), RS(255, 251), (255, 239) and (255, 249) codes. Examples taken from https://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction, https://www.cs.cmu.edu/~guyb/realworld/reedsolomon/reed_solomon_codes.html, http://www.chencode.cn/lecture/Information_Theory_and_Coding/Information%20Theory%20and%20Coding-CH7.pdf, https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=91e1d6d27311780b0a8c34a41793fa85f3947af1.
-
-```jldoctest
-julia> test_cases = [(7, 3), (15, 9), (225, 223), (160, 128), (255, 251), (255, 239), (255, 249)]; 
-julia> for (n, k) in test_cases
-           m = ilog2(n + 1)
-           t = div(n - k, 2)
-           degree(generator_polynomial(ReedSolomon(m, t))) == 2 * t == n - k
-       end
-```
-
 function generator_polynomial(rs::ReedSolomon)
     GF2ʳ, a = finite_field(2, rs.m, "a")
     P, x = GF2ʳ[:x]
