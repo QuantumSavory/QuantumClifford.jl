@@ -28,16 +28,17 @@ struct ReedSolomon <: AbstractPolynomialCode
 
     function ReedSolomon(m, t)
         if m < 3 || t < 0 || t >= 2 ^ (m - 1) 
-            throw(ArgumentError("Invalid parameters: m and t must be non-negative. Also, m > 3 and t < 2 ^ (m - 1) in order to obtain a valid code and to remain tractable."))
+            throw(ArgumentError("Invalid parameters: m and t must be non-negative. Also, m > 3 and t < 2 ^ (m - 1) in order to obtain a valid code."))
         end
         new(m, t)
     end
 end
 
 """
-generator_polynomial(ReedSolomon(m, t)):
+`generator_polynomial(ReedSolomon(m, t))`
+
 - `m`: The positive integer defining the degree of the finite (Galois) field, `GF(2ᵐ)`.
-- `t`: The positive integer specifying the number of correctable errors `(t)`.
+- `t`: The positive integer specifying the number of correctable errors.
 
 The generator polynomial for an RS code takes the following form:
 
@@ -57,7 +58,7 @@ Degree and Parity Symbols: The degree of the generator polynomial is equal to `2
 
 Roots of the Generator Polynomial: The generator polynomial has `2 * t` distinct roots, designated as `α¹, α², ... , α²ᵗ`. These roots are chosen from a Finite Galois Field. Any power of α can be used as the starting root, not necessarily `α¹` itself.
 
-Fixed generator polynomial scheme vs variable generator polynomial scheme: Only in this construction scheme using fixed generator polynomial `g(x)`, RS codes are a subset of the Bose, Chaudhuri, and Hocquenghem (BCH) codes; hence, this relationship between the degree of the generator polynomial and the number of parity symbols holds, just as for BCH codes where degree of BCH generator polynomial, `degree(g(x)) == n - k`. This is proved via RS test suite as well. Prior to 1963, RS codes employed a variable generator polynomial for encoding. This approach [peterson1972error](@cite) differed from the prevalent BCH scheme (used here), which utilizes a fixed generator polynomial. Consequently, these original RS codes weren't strictly categorized as BCH codes. Furthermore, depending on the chosen evaluation points, they might not even qualify as cyclic codes.
+Fixed generator polynomial scheme vs variable generator polynomial scheme: Only in this construction scheme using fixed generator polynomial `g(x)`, RS codes are a subset of the Bose, Chaudhuri, and Hocquenghem (BCH) codes; hence, this relationship between the degree of the generator polynomial and the number of parity symbols holds, just as for BCH codes where degree of BCH generator polynomial, `degree(g(x)) == n - k`. Prior to 1963, RS codes employed a variable generator polynomial for encoding. This approach [peterson1972error](@cite) differed from the prevalent BCH scheme (used here), which utilizes a fixed generator polynomial. Consequently, these original RS codes weren't strictly categorized as BCH codes. Furthermore, depending on the chosen evaluation points, they might not even qualify as cyclic codes.
 
 """
 function generator_polynomial(rs::ReedSolomon)
@@ -71,9 +72,9 @@ function generator_polynomial(rs::ReedSolomon)
 end
 
 """
-parity_checks(ReedSolomon(m, t)):
+`parity_checks(ReedSolomon(m, t))`
 - `m`: The positive integer defining the degree of the finite (Galois) field, `GF(2ᵐ)`.
-- `t`: The positive integer specifying the number of correctable errors `(t)`.
+- `t`: The positive integer specifying the number of correctable errors.
 
 This function applies Reed-Solomon codes for binary transmission using soft decisions (see section 7.3)[tomlinson2017error](@cite). For significant coding gain, code length is typically restricted to less than 200 bits. Modified Dorsch decoder is recommended for near maximum likelihood decoding.
 
@@ -102,7 +103,7 @@ The matrix has `x - k + 1` rows corresponding to the code's parity symbols. Any 
 
 Shortened MDS Codes: Corresponding columns of the field parity-check matrix `HField` can be deleted to form a shortened `[[2ᵐ + 1 - s, k, 2ᵐ ⁺ ¹ - s - k]]` MDS code. This is an important property of MDS codes, particularly for their practical realisation in the form of augmented, extended RS codes because it enables efficient implementation in applications such as incremental redundancy systems, and network coding. The 3-level quantization of the received channel bits is utilized meaning 3 symbols are deleted. The Fig. 7.2 [tomlinson2017error](@cite) shows that with 3-level quantization, there is an improvement over the binary-transmission with hard decisions for Reed-Solomon coding.
 
-Cyclic Code Construction: Using the first `x - 1` columns of the field parity-check matrix (HField), using `j = 0`, and setting `α₀, α₁, α₂, ..., αₓ ₋ ₁` to  `α⁰, α¹, α², ..., αˣ ⁻ ¹` in the parity-check matrix are set equal to the powers of a primitive element α of the Galois Field `GF(x)`, a cyclic code can be constructed for efficient encoding and decoding. The resulting matrix is represented by `HSeed`.
+Cyclic Code Construction: Using the first `x - 1` columns of the field parity-check matrix `HField`, using `j = 0`, and setting `α₀, α₁, α₂, ..., αₓ ₋ ₁` to  `α⁰, α¹, α², ..., αˣ ⁻ ¹` in the parity-check matrix are set equal to the powers of a primitive element α of the Galois Field `GF(x)`, a cyclic code can be constructed for efficient encoding and decoding.
 
 `HSeed` Matrix element expansion: 
     1. Row expansion: Each row of in the `HField` matrix is replaced with an `m`-by-`m` Field matrix defined over the base field `GF(2ᵐ)`. This expansion is represented by `HFieldExpanded`.
