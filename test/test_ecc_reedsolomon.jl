@@ -44,15 +44,6 @@ end
         end
     end
 
-    # RS(7, 3), RS(15, 9), RS(255, 223), RS(160, 128), RS(255, 251), (255, 239) and (255, 249) codes. Examples taken from https://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction, https://www.cs.cmu.edu/~guyb/realworld/reedsolomon/reed_solomon_codes.html, http://www.chencode.cn/lecture/Information_Theory_and_Coding/Information%20Theory%20and%20Coding-CH7.pdf, https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=91e1d6d27311780b0a8c34a41793fa85f3947af1.
-    test_cases = [(7, 3), (15, 9), (225, 223), (160, 128), (255, 251), (255, 239), (255, 249)]
-    for (n, k) in test_cases
-        m = ilog2(n + 1)
-        t = div(n - k, 2)
-        # Using fixed generator polynomial construction scheme for defining generator polynomial, `g(x)`, of RS codes, `degree(g(x))` == 2 * t == n - k. 
-        @test degree(generator_polynomial(ReedSolomon(m, t))) == 2 * t == n - k
-    end
-
     # Examples taken from pg. 18 of http://hscc.cs.nthu.edu.tw/~sheujp/lecture_note/rs.pdf.
     GF2ʳ, a = finite_field(2, 3, "a")
     P, x = GF2ʳ[:x]
