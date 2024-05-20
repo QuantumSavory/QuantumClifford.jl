@@ -55,6 +55,7 @@ For classical code construction routines:
 - [tomlinson2017error](@cite)
 - [macwilliams1977theory](@cite)
 - [peterson1972error](@cite)
+- [dorsch1974decoding](@cite)
 
 # References
 
