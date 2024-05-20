@@ -12,7 +12,7 @@ They are not binary codes but frequently are used with `x = 2ᵐ`, and so there 
 	.			.			.			...			.
 	.			.			.			...			.
 	.			.			.			...			.
-(α⁰)ʲ ⁺ ˣ ⁻ ᵏ		(α¹)ʲ ⁺ ˣ ⁻ ᵏ	(α²)ʲ ⁺ ˣ ⁻ ᵏ		...		(αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ
+(α⁰)ʲ ⁺ ˣ ⁻ ᵏ		(α¹)ʲ ⁺ ˣ ⁻ ᵏ	(α²)ʲ ⁺ ˣ ⁻ ᵏ	     ...		(αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ
 ```
 
 You might be interested in consulting [geisel1990tutorial](@cite), [wicker1999reed](@cite), [sklar2001reed](@cite), [berlekamp1978readable](@cite), [tomlinson2017error](@cite), [macwilliams1977theory](@cite), and [peterson1972error](@cite) as well.
@@ -59,7 +59,6 @@ Degree and Parity Symbols: The degree of the generator polynomial is equal to `2
 Roots of the Generator Polynomial: The generator polynomial has `2 * t` distinct roots, designated as `α¹, α², ... , α²ᵗ`. These roots are chosen from a Finite Galois Field. Any power of α can be used as the starting root, not necessarily `α¹` itself.
 
 Fixed generator polynomial scheme vs variable generator polynomial scheme: Only in this construction scheme using fixed generator polynomial `g(x)`, RS codes are a subset of the Bose, Chaudhuri, and Hocquenghem (BCH) codes; hence, this relationship between the degree of the generator polynomial and the number of parity symbols holds, just as for BCH codes where degree of BCH generator polynomial, `degree(g(x)) == n - k`. Prior to 1963, RS codes employed a variable generator polynomial for encoding. This approach [peterson1972error](@cite) differed from the prevalent BCH scheme (used here), which utilizes a fixed generator polynomial. Consequently, these original RS codes weren't strictly categorized as BCH codes. Furthermore, depending on the chosen evaluation points, they might not even qualify as cyclic codes.
-
 """
 function generator_polynomial(rs::ReedSolomon)
     GF2ʳ, a = finite_field(2, rs.m, "a")

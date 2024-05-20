@@ -17,8 +17,7 @@ include("utils_test_ecc.jl")
     m_cases = [3, 4, 5, 6, 7, 8]
     for m in m_cases  
         for t in rand(1:m - 1, 2)
-            # The variable s_symbols is set to 3 because the last three columns of the field parity check matrix `HF`​ are erased. By using the first `x − 1` columns of `HF`​, assigning `j = 0` and setting `α₀, α₁, α₂, ..., αₓ ₋ ₁` to `α⁰, α¹, α², ..., αˣ ⁻ ¹`, where `α` is a primitive element of `GF(x)`. This approach allows for the construction of a cyclic code, which offers advantages in the implementation of encoding and decoding.  
-            s_symbols = 3 
+            s_symbols = 3 # Refer to chapter: 07, section: 03, pages: 172 to 175 [tomlinson2017error](@cite).
             k = (2 ^ m -  1 - 2 * t) * m
             d = 2 ^ (m + 1) - s_symbols - k
             @test check_designed_distance(parity_checks(ReedSolomon(m, t)), m, t, d, 0, 0) == true
@@ -32,7 +31,7 @@ end
         for t in rand(1:m - 1, 2)
             mat = matrix(GF(2), parity_checks(ReedSolomon(m, t)))
             computed_rank = rank(mat) 
-            s_symbols = 3 
+            s_symbols = 3 # Refer to chapter: 07, section: 03, pages: 172 to 175 [tomlinson2017error](@cite).
             k = (2 ^ m -  1 - 2 * t) * m
             n = (2 ^ m + 1 - s_symbols) * m
             @test computed_rank == n - k            
