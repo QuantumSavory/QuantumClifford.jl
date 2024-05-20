@@ -74,7 +74,7 @@ end
 """
 `parity_checks(ReedSolomon(m, t))`
 - `m`: The positive integer defining the degree of the finite (Galois) field, `GF(2ᵐ)`.
-- `t`: The positive integer specifying the number of correctable errors `(t)`.
+- `t`: The positive integer specifying the number of correctable errors.
 
 This function applies Reed-Solomon codes for binary transmission using soft decisions (see section 7.3)[tomlinson2017error](@cite). For significant coding gain, code length is typically restricted to less than 200 bits. Modified Dorsch decoder is recommended for near maximum likelihood decoding.
 
