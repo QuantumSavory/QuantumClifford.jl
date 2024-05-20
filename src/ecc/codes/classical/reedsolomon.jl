@@ -72,7 +72,7 @@ function generator_polynomial(rs::ReedSolomon)
 end
 
 """
-parity_checks(ReedSolomon(m, t)):
+`parity_checks(ReedSolomon(m, t))`
 - `m`: The positive integer defining the degree of the finite (Galois) field, `GF(2ᵐ)`.
 - `t`: The positive integer specifying the number of correctable errors `(t)`.
 
