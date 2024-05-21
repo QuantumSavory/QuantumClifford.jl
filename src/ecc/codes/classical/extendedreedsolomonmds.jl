@@ -1,6 +1,6 @@
-"""Extended Reed-Solomon Maximum Distance Separable `(ExtendedReedSolomonMDS)` codes are constructed from the Galois Field `GF(2ᵐ)`. These codes are extensions of the family of Reed-Solomon codes, as discovered by Reed and Solomon in their 1960 paper [reed1960polynomial](@cite). 
+"""The family of `[[2ᵐ + 1, k, 2ᵐ⁺¹ − k]]` augmented, extended Reed-Solomon Maximum Distance Separable `(ExtendedReedSolomonMDS)` codes are constructed from the Galois Field `GF(2ᵐ)`. Extended Reed-Solomon codes were first described by Arne Dür in his 1987 paper [dur1987automorphism](@cite). 
 
-These codes possess a code length `(n)` of `2ᵐ + 1` and are Maximum Distance Separable `(MDS)` codes with parameters `[[2ᵐ + 1, k, 2ᵐ⁺¹ − k]]`. These ExtendedReedSolomonMDS codes are not binary codes but frequently are used with `x = 2ᵐ`, and so there is a mapping of residue classes of a primitive polynomial with binary coefficients and each element of `GF(2ᵐ)` is represented as a binary `m`-tuple. Denoting the `x` field elements as `0, α⁰, α¹, α²,... αˣ ⁻ ¹`, the shortened field parity-check matrix (`HF`) is given as follows:
+The `ExtendedReedSolomonMDS` codes possess a code length `(n)` of `2ᵐ + 1` and are Maximum Distance Separable `(MDS)` codes. Moreover, the general case is that augmented, extended RS codes may be constructed using any Galois Field `GF(x)` with parameters `[[x + 1, k, x + 2 − k ]]` [macwilliams1977theory](@cite). These codes are not binary codes but frequently are used with `x = 2ᵐ`, and so there is a mapping of residue classes of a primitive polynomial with binary coefficients and each element of `GF(2ᵐ)` is represented as a binary `m`-tuple. Denoting the `x` field elements as `0, α⁰, α¹, α²,... αˣ ⁻ ¹`, the shortened field parity-check matrix (`HF`) is given as follows:
 
 ```
 (α⁰)ʲ			(α¹)ʲ			(α²)ʲ				...		(αˣ ⁻ ¹)ʲ
@@ -10,12 +10,12 @@ These codes possess a code length `(n)` of `2ᵐ + 1` and are Maximum Distance S
 	.			.			.			...			.
 	.			.			.			...			.
 	.			.			.			...			.
-(α⁰)ʲ ⁺ ˣ ⁻ ᵏ		(α¹)ʲ ⁺ ˣ ⁻ ᵏ	(α²)ʲ ⁺ ˣ ⁻ ᵏ		...		(αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ
+(α⁰)ʲ ⁺ ˣ ⁻ ᵏ		(α¹)ʲ ⁺ ˣ ⁻ ᵏ		(α²)ʲ ⁺ ˣ ⁻ ᵏ			...		(αˣ ⁻ ¹)ʲ ⁺ ˣ ⁻ ᵏ
 ```
 
 You might be interested in consulting [tomlinson2017error](@cite), [macwilliams1977theory](@cite), [peterson1972error](@cite), [seroussi1986mds](@cite), [dur1987automorphism](@cite) and [Extending MDS Codes](https://www.unb.ca/faculty-staff/directory/_resources/pdf/sase/alderson/mds-codes.pdf) as well.
 
-Extended RS codes may be constructed using any Galois Field `GF(x)`, resulting in parameters [[x + 1, k, x + 2 − k]] [macwilliams1977theory](@cite). The ECC Zoo has an [entry for Extended Generalized Reed-Solomon codes](https://errorcorrectionzoo.org/c/extended_reed_solomon).
+The ECC Zoo has an [entry for Extended Generalized Reed-Solomon codes](https://errorcorrectionzoo.org/c/extended_reed_solomon).
 """
 
 abstract type AbstractPolynomialCode <: ClassicalCode end

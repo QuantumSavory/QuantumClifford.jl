@@ -47,13 +47,12 @@ For classical code construction routines:
 - [bose1960class](@cite)
 - [bose1960further](@cite)
 - [error2024lin](@cite)
-- [reed1960polynomial](@cite)
+- [dur1987automorphism](@cite)
 - [tomlinson2017error](@cite)
 - [macwilliams1977theory](@cite)
 - [peterson1972error](@cite)
 - [dorsch1974decoding](@cite)
 - [seroussi1986mds](@cite)
-- [dur1987automorphism](@cite)
 
 # References
 
