@@ -47,6 +47,11 @@ For classical code construction routines:
 - [bose1960class](@cite)
 - [bose1960further](@cite)
 - [error2024lin](@cite)
+- [reed1960polynomial](@cite)
+- [geisel1990tutorial](@cite)
+- [berlekamp1978readable](@cite)
+- [wicker1999reed](@cite)
+- [sklar2001reed](@cite)
 
 # References
 
