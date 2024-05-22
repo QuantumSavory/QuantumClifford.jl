@@ -1,5 +1,6 @@
 module ECC
 
+using Primes: isprime 
 using LinearAlgebra
 using QuantumClifford
 using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer

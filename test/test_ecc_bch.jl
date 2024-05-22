@@ -1,5 +1,6 @@
 using Test
 using LinearAlgebra
+using Primes: isprime
 using QuantumClifford
 using QuantumClifford.ECC
 using QuantumClifford.ECC: AbstractECC, BCH, generator_polynomial
@@ -28,29 +29,29 @@ end
     for m in m_cases
         n = 2 ^ m - 1
         for t in rand(1:m, 2)
-            H = parity_checks(BCH(m, t))
+            H = parity_checks(BCH(2, m, t))
             @test check_designed_distance(H, t) == true
             # n - k == degree of generator polynomial, `g(x)` == rank of binary parity check matrix, `H`.
-            mat = matrix(GF(2), parity_checks(BCH(m, t)))
+            mat = matrix(GF(2), parity_checks(BCH(2, m, t)))
             computed_rank = rank(mat)
-            @test computed_rank == degree(generator_polynomial(BCH(m, t)))
-            @test code_k(BCH(m, t)) == n - degree(generator_polynomial(BCH(m, t)))
+            @test computed_rank == degree(generator_polynomial(BCH(2, m, t)))
+            @test code_k(BCH(2, m, t)) == n - degree(generator_polynomial(BCH(2, m, t)))
             # BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x))` = 0.
-            gx = generator_polynomial(BCH(m, t))
+            gx = generator_polynomial(BCH(2, m, t))
             GF2x, x = GF(2)["x"] 
             @test mod(x ^ n - 1, gx) == 0
         end
     end
 
     #example taken from Ch6 of Error Control Coding by Lin, Shu and Costello, Daniel
-    @test parity_checks(BCH(4, 2))  ==    [1  0  0  0  1  0  0  1  1  0  1  0  1  1  1;
-                                           0  1  0  0  1  1  0  1  0  1  1  1  1  0  0;
-                                           0  0  1  0  0  1  1  0  1  0  1  1  1  1  0;
-                                           0  0  0  1  0  0  1  1  0  1  0  1  1  1  1;
-                                           1  0  0  0  1  1  0  0  0  1  1  0  0  0  1;
-                                           0  0  0  1  1  0  0  0  1  1  0  0  0  1  1;
-                                           0  0  1  0  1  0  0  1  0  1  0  0  1  0  1;
-                                           0  1  1  1  1  0  1  1  1  1  0  1  1  1  1]
+    @test parity_checks(BCH(2, 4, 2))  ==    [1  0  0  0  1  0  0  1  1  0  1  0  1  1  1;
+                                              0  1  0  0  1  1  0  1  0  1  1  1  1  0  0;
+                                              0  0  1  0  0  1  1  0  1  0  1  1  1  1  0;
+                                              0  0  0  1  0  0  1  1  0  1  0  1  1  1  1;
+                                              1  0  0  0  1  1  0  0  0  1  1  0  0  0  1;
+                                              0  0  0  1  1  0  0  0  1  1  0  0  0  1  1;
+                                              0  0  1  0  1  0  0  1  0  1  0  0  1  0  1;
+                                              0  1  1  1  1  0  1  1  1  1  0  1  1  1  1]
     
     # Examples taken from https://web.ntpu.edu.tw/~yshan/BCH_code.pdf.
     GF2x, x = GF(2)["x"]
@@ -58,8 +59,8 @@ end
     GF2⁶, b = finite_field(2, 6, "b")
     @test defining_polynomial(GF2x, GF2⁴) ==  x ^ 4 + x + 1
     @test is_irreducible(defining_polynomial(GF2x, GF2⁴)) == true
-    @test generator_polynomial(BCH(4, 2)) == x ^ 8 + x ^ 7 +  x ^ 6 +  x ^ 4 + 1
-    @test generator_polynomial(BCH(4, 3)) == x ^ 10 + x ^ 8 +  x ^ 5 +  x ^ 4 +  x ^ 2 + x + 1
+    @test generator_polynomial(BCH(2, 4, 2)) == x ^ 8 + x ^ 7 +  x ^ 6 +  x ^ 4 + 1
+    @test generator_polynomial(BCH(2, 4, 3)) == x ^ 10 + x ^ 8 +  x ^ 5 +  x ^ 4 +  x ^ 2 + x + 1
  
     # Nemo.jl uses [Conway polynomial](https://en.wikipedia.org/wiki/Conway_polynomial_(finite_fields)), a standard way to represent the primitive polynomial for finite Galois fields `GF(pᵐ)` of degree `m`, where `p` is a prime number. 
     # The `GF(2⁶)`'s Conway polynomial is `p(z) = z⁶ + z⁴ + z³ + z + 1`. In contrast, the polynomial given in https://web.ntpu.edu.tw/~yshan/BCH_code.pdf is `p(z) = z⁶ + z + 1`. Because both polynomials are irreducible, they are also primitive polynomials for `GF(2⁶)`.
@@ -70,16 +71,16 @@ end
     for i in 1:length(test_cases)
         m, t = test_cases[i]
         if t == 1
-            @test generator_polynomial(BCH(m, t)) == defining_polynomial(GF2x, GF2⁶)
+            @test generator_polynomial(BCH(2, m, t)) == defining_polynomial(GF2x, GF2⁶)
         else
             prev_t = test_cases[i - 1][2]
-            @test generator_polynomial(BCH(m, t)) == generator_polynomial(BCH(m, prev_t)) * minpoly(GF2x, b ^ (t + prev_t - (t - prev_t - 1)))
+            @test generator_polynomial(BCH(2, m, t)) == generator_polynomial(BCH(2, m, prev_t)) * minpoly(GF2x, b ^ (t + prev_t - (t - prev_t - 1)))
         end
     end
     
     results = [57 51 45 39 36 30 24 18 16 10 7]
     for (result, (m, t)) in zip(results, test_cases)
-        @test code_k(BCH(m, t)) == result
-        @test check_designed_distance(parity_checks(BCH(m, t)), t) == true
+        @test code_k(BCH(2, m, t)) == result
+        @test check_designed_distance(parity_checks(BCH(2, m, t)), t) == true
     end
 end
