@@ -1,9 +1,9 @@
-using QuantumClifford
-using GLMakie
-using GraphMakie
+#using QuantumClifford
+#= using GLMakie
+using GraphMakie =#
 using Graphs
 using LinearAlgebra
-using IterTools
+#using IterTools
 
 
 #
@@ -26,12 +26,18 @@ julia> groupify(S"XZ XZ")
 function groupify(s::Stabilizer) # add checks?
     n = length(s)
     group = zero(Stabilizer, 2^n, nqubits(s))
+    #println(group)
+    #println(enumerate([1,2,3]))
     for i in 0:2^n-1
+        #println(digits(i, base=2, pad=n))
+        #println(enumerate(digits(i, base=2, pad=n)))
         for (digit_order, j) in enumerate(digits(i, base=2, pad=n))
+            #print((digit_order, j))
             if j == 1
                 group[i+1] *= s[digit_order]
             end
         end
+        #println("")
     end
     return group # TODO use Tableau instead of Stabilizer
 end
@@ -45,7 +51,14 @@ function get_generating_set(s) # TODO potentially rename to `generator_tableau` 
     s, _, r = canonicalize!(copy(s), ranks=true)
     return s[1:r,:]
 end
-
+g =path_graph(3)
+s = Stabilizer(g)
+plot = graphplot(g)
+print(s)
+println("group")
+print(groupify(s))
+println(get_generating_set(groupify(s)))
+println("tested")
 """
 For a set of logical operators, rewrite in a set of logical x and logical z with the appropriate pairwise anticommutation
 """ # TODO unfinished, including docs
@@ -90,7 +103,7 @@ end
 # print(get_generating_set(s))
 # ##
 
-function pauligroup(n) # ignores phases
+function pauligroup(n) # ignores phases #TODO add arg to control whether phases are ignored
     s = zero(Stabilizer, 4^n, n)
     paulis = ((false, false), (true, false), (false, true), (true, true))
     for (i,P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
@@ -143,9 +156,9 @@ end
 # s = groupify(s)
 
 s = S"II YY"
-s = groupify(s)
+#s = groupify(s)
 
-println(normalize(s))
+#println(normalize(s))
 
 ##
 # Pgroup = pauligroup(2)
