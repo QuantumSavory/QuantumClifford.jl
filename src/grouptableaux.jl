@@ -51,14 +51,7 @@ function get_generating_set(s) # TODO potentially rename to `generator_tableau` 
     s, _, r = canonicalize!(copy(s), ranks=true)
     return s[1:r,:]
 end
-g =path_graph(3)
-s = Stabilizer(g)
-plot = graphplot(g)
-print(s)
-println("group")
-print(groupify(s))
-println(get_generating_set(groupify(s)))
-println("tested")
+
 """
 For a set of logical operators, rewrite in a set of logical x and logical z with the appropriate pairwise anticommutation
 """ # TODO unfinished, including docs
@@ -155,7 +148,7 @@ end
 # s = S"XXII IIXX ZIZI IZIZ"
 # s = groupify(s)
 
-s = S"II YY"
+#s = S"II YY"
 #s = groupify(s)
 
 #println(normalize(s))
