@@ -1,6 +1,6 @@
 using Test
 using QuantumClifford
-using QuantumClifford.ECC
+using QuantumClifford.ECC: GottesmanDistance4
 using InteractiveUtils
 
 # generate instances of all implemented codes to make sure nothing skips being checked
