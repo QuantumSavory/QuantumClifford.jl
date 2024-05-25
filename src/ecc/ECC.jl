@@ -355,5 +355,5 @@ include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/bch.jl")
-include("codes/gottesmandistance4.jl)
+include("codes/gottesmandistance4.jl")
 end #module
