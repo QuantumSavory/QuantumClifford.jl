@@ -162,6 +162,11 @@ julia> Stabilizer([0x2, 0x0],
                        1 1])
 - XX
 + ZZ
+
+julia> Stabilizer(Bool[1 1 0 0;
+                       0 0 1 1])
++ XX
++ ZZ
 ```
 
 Direct sums can be performed,
@@ -192,6 +197,39 @@ julia> s[[3,1]]
 julia> s[[3,1],[2]]
 + _
 - Y
+
+julia> s[3][3]
+(false, true)
+
+julia> getindex(s, 1)
+- XYZ
+
+julia> getindex(s, 3, 1)
+(true, false)
+
+julia> setindex!(s, P"Z", 1)
++ Z__
+- Z_X
++ X_Z
+
+julia> setindex!(s, P"ZYX", 1)
++ ZYX
+- Z_X
++ X_Z
+
+julia> setindex!(s, (true, true), 1, 1)
++ YYX
+- Z_X
++ X_Z
+
+julia> firstindex(s)
+1
+
+julia> lastindex(s)
+3
+
+julia> lastindex(s, 2)
+3
 ```
 
 Consistency at creation is not verified so nonsensical stabilizers can be
@@ -227,6 +265,14 @@ julia> stab_to_gf2(s)
  1  1  1  0  0  0
  0  0  0  1  1  0
  0  0  0  0  1  1
+```
+
+Stabilizer is copied and assigned.
+```jldoctest stabilizer
+julia> s₁ = copy(s)
+- XXX
++ ZZ_
+- _ZZ
 ```
 
 # [Canonicalization of Stabilizers](@id Canonicalization-of-Stabilizers)

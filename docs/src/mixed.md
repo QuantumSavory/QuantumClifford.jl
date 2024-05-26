@@ -65,8 +65,8 @@ julia> logicalzview(m)
 + Z_Z
 ```
 
-- **From `Destabilizer` with Optional Rank Specification:** Similar to the first 
-option, but with the added capability to specify the "rank." This rank 
+- **From `Destabilizer` with Optional Rank Specification:** Similar to the 
+first option, but with the added capability to specify the "rank." This rank 
 determines the number of rows associated with the `Stabilizer` and the number 
 corresponding to the logical operators.
 
@@ -88,10 +88,10 @@ julia> MixedDestabilizer(_T_str("ZI IX XX ZZ"), 2)
 + ZZ
 ```
 
-- **From `Stabilizer` (Canonicalization):** Given a `Stabilizer` object (which
-may have fewer rows than columns), perform the necessary canonicalization to 
-determine the corresponding destabilizer and logical operators, resulting
-in a complete MixedDestabilizer object.
+- **From `Stabilizer` (Canonicalization):** Given a `Stabilizer` object 
+(whichmay have fewer rows than columns), perform the necessary
+canonicalization to determine the corresponding destabilizer and 
+logical operators, resulting in a complete MixedDestabilizer object.
 
 ```jldoctest mix
 julia> s = S"-XXX
@@ -111,10 +111,9 @@ julia> MixedDestabilizer(s, undoperm=false, reportperm=false)
 + Z_Z
 ```
 
-When `undoperm` is set to `false`, the column permutations are not reversed. As a 
-result, the qubits may be reindexed according to the permutations made during the 
-canonicalization process.
-
+When `undoperm` is set to `false`, the column permutations are not reversed.
+As a result, the qubits may be reindexed according to the permutations
+made during the canonicalization process.
 
 ```jldoctest mix
 julia> MixedDestabilizer(s, undoperm=true, reportperm=false)
@@ -148,7 +147,7 @@ julia> MixedDestabilizer(canonicalize!(s))
 + ZZ_
 ```
 
-- **Low-Level [`Tableau`](@ref) Constructor (Internal Use):** A low-level 
+- **Low-Level `Tableau` Constructor (Internal Use):** A low-level 
 constructor that accepts a manually created `Tableau` object. Note that
 the `Tableau` object is not currently public. It serves as the underlying
 data structure for all related objects but does not assume commutativity 
