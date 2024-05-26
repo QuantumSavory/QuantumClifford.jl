@@ -6,9 +6,13 @@ DocTestSetup = quote
 end
 ```
 
-QuantumClifford.jl is a Julia library for simulation of Clifford circuits, which are a subclass of quantum circuits that can be efficiently simulated on a classical computer.
+QuantumClifford.jl is a Julia library for simulation of Clifford circuits, which are a subclass of quantum circuits that can be efficiently simulated on a classical computer as stipulated by the Gottesman-Knill theorem[^1]. This theorem states that a quantum computer using only Clifford group gates, measurements of Pauli group operators, and Clifford group operations conditioned on classical bits (including results of previous measurements) can be perfectly simulated in polynomial time on a probabilistic classical computer. The combination of the Clifford group and an appropriate extra gate such as such as a quantum version of the Toffoli gate, etc. generates a set of unitary operations in U(2ⁿ), thus forming a universal set. This implies that quantum computation only surpasses classical computation when it incorporates gates outside the Clifford group.
 
 This library uses the tableaux formalism[^1] with the destabilizer improvements[^2]. Pauli frames are supported for faster repeated simulation of noisy circuits. Various symbolic and algebraic tools for manipulating, converting, and visualizing states and circuits are also implemented. 
+
+## Why Tableaux Formalism?
+
+Tableaux Formalism, also known as, Stabilizer formalism, which focuses on the evolution of operators rather than states, has proven highly valuable in understanding certain quantum operations. Quantum error correction and specific communication protocols like quantum teleportation utilize states described by their stabilizer, which is a group of tensor products of Pauli matrices. This group structure is sufficiently robust to enable a wide range of quantum effects, despite not encompassing the full power of quantum computation. Constructing and analyzing even relatively small networks of quantum gates can be challenging due to the arbitrary states within a large Hilbert space that quantum computers handle. However, a subset of networks can be more easily described by tracking the evolution of operators acting on the computer, similar to the Heisenberg representation in quantum mechanics where operators evolve over time, as opposed to the Schrödinger picture where states evolve.
 
 [^1]: [gottesman1998heisenberg](@cite)
 

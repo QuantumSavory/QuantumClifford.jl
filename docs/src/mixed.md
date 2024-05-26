@@ -112,27 +112,9 @@ julia> MixedDestabilizer(s, undoperm=false, reportperm=false)
 ```
 
 When `undoperm` is set to `false`, the column permutations are not reversed. As a 
-result,the qubits may be reindexed according to the permutations made during the 
+result, the qubits may be reindexed according to the permutations made during the 
 canonicalization process.
 
-
-```jldoctest mix
-julia> MixedDestabilizer(s; undoperm=false)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z__
-+ _X_
-𝒳ₗ━━━
-+ __X
-𝒮𝓉𝒶𝒷━
-+ XXX
-+ ZZ_
-𝒵ₗ━━━
-+ Z_Z
-```
-
-When `undoperm` is set to `true`, the column permutations performed during 
-canonicalizationare automatically reversed before finalizing the 
-`MixedDestabilizer`.
 
 ```jldoctest mix
 julia> MixedDestabilizer(s, undoperm=true, reportperm=false)
@@ -146,7 +128,13 @@ julia> MixedDestabilizer(s, undoperm=true, reportperm=false)
 + ZZX
 𝒵ₗ━━━
 + ZZ_
+```
 
+When `undoperm` is set to `true`, the column permutations performed during 
+canonicalizationare automatically reversed before finalizing the 
+`MixedDestabilizer`.
+
+```jldoctest mix
 julia> MixedDestabilizer(canonicalize!(s))
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z__
@@ -200,6 +188,18 @@ julia> MixedDestabilizer(s)
 + Z_Z
 𝒵ₗ━━━
 + ZZ_
+
+julia> MixedDestabilizer(s; undoperm=false)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
++ _X_
+𝒳ₗ━━━
++ __X
+𝒮𝓉𝒶𝒷━
++ XXX
++ ZZ_
+𝒵ₗ━━━
++ Z_Z
 ```
 
 `Destabilizer` and `MixedStabilizer` do not use any column swaps on
