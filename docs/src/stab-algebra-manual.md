@@ -273,7 +273,8 @@ julia> stab_to_gf2(s)
  0  0  0  0  1  1
 ```
 
-Stabilizer is copied and assigned.
+Stabilizer can be copied and assigned.
+
 ```jldoctest stabilizer
 julia> s = S"-XXX
              +ZZI
@@ -283,6 +284,16 @@ julia> s₁ = copy(s)
 - XXX
 + ZZ_
 - _ZZ
+```
+
+`Length` and `size` of stabilizer can be determined.
+
+```jldoctest stabilizer
+julia> length(s)
+3
+
+julia> size(s)
+(3, 3)
 ```
 
 # [Canonicalization of Stabilizers](@id Canonicalization-of-Stabilizers)
