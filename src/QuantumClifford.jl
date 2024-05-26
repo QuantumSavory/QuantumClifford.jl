@@ -328,10 +328,16 @@ julia> Stabilizer([0x0, 0x2], a, b)
 + XY
 - ZZ
 
-julia> Stabilizer(Bool[1 1 0 0;
+julia> Stabilizer(Bool[1 1 0 1;
                        0 0 1 1])
-+ XX
++ XY
 + ZZ
+
+julia> Stabilizer([0x0, 0x2], 
+                   Bool[1 1 0 1;
+                        0 0 1 1])
++ XY
+- ZZ
 ```
 
 - initialize an empty Stabilizer and fill it through indexing
@@ -348,10 +354,14 @@ julia> s[1,1] = (true, false); s
 
 Stabilizer is copied and assigned.
 ```jldoctest stabilizer
+julia> s = S"-XXX
+             +ZZI
+             -IZZ";
+
 julia> s1 = copy(s)
-+ YYX
+- XXX
 + ZZ_
-+ _ZZ
+- _ZZ
 ```
 
 There are no automatic checks for correctness (i.e. independence of all rows,

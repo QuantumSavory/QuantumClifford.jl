@@ -167,6 +167,12 @@ julia> Stabilizer(Bool[1 1 0 0;
                        0 0 1 1])
 + XX
 + ZZ
+
+julia> Stabilizer([0x2, 0x0], 
+                  Bool[1 1 0 0;
+                       0 0 1 1])
+- XX
++ ZZ
 ```
 
 Direct sums can be performed,
@@ -269,6 +275,10 @@ julia> stab_to_gf2(s)
 
 Stabilizer is copied and assigned.
 ```jldoctest stabilizer
+julia> s = S"-XXX
+             +ZZI
+             -IZZ";
+
 julia> s₁ = copy(s)
 - XXX
 + ZZ_
