@@ -2,7 +2,7 @@
 
 ```@meta
 DocTestSetup = quote
-     using QuantumClifford: @S_str, Stabilizer, Destabilizer, MixedDestabilizer, MixedStabilizer, stabilizerview, destabilizerview, logicalxview, logicalzview, @T_str, _T_str, @P_str, PauliOperator, ⊗, comm, prodphase, xview, xbit, getindex, setindex!, firstindex, lastindex, stab_to_gf2, canonicalize!, project!, Register, apply!, bitview, sMX, traceout!, generate!, tHadamard, tPhase, tCNOT, permute, apply!, CliffordOperator, sHadamard, sCNOT, phases, tId1, @C_str, tab, Tableau
+    using QuantumClifford: @S_str, Stabilizer, Destabilizer, MixedDestabilizer, MixedStabilizer, stabilizerview, destabilizerview, logicalxview, logicalzview, @T_str, _T_str, @P_str, PauliOperator, ⊗, comm, prodphase, xview, xbit, getindex, setindex!, firstindex, lastindex, stab_to_gf2, canonicalize!, project!, Register, apply!, bitview, sMX, traceout!, generate!, tHadamard, tPhase, tCNOT, permute, apply!, CliffordOperator, sHadamard, sCNOT, phases, tId1, @C_str, tab, Tableau
 end
 ```
 
@@ -735,9 +735,7 @@ julia> destabilizerview(d)
 + Z__
 + _X_
 + __X
-```
 
-```@example destab
 julia> stabilizerview(d₁)
 + XX
 + _Z

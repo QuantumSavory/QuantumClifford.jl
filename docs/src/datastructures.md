@@ -2,6 +2,43 @@
 
 ## [Choosing Appropriate Tableau Data Structure](@id Choosing-Appropriate-Data-Structure)
 
+```@raw html
+<div class="mermaid">
+%%{ init: { 'flowchart': { 'curve': 'basis' } } }%%
+graph TB
+    A["<code>Choosing Appropriate Data Structure</code>"]
+    class A startEnd
+
+    A -->|<code>Are the states pure?</code>| B{ }
+    class A,B startEnd
+
+    B -->|<code>Yes</code>| C["<code>Stabilizer</code>"]
+    B -->|<code>No</code>| D{ }
+    class B decision
+
+    D -->|<code>Are the states mixed?</code>| E{ }
+    class D,E decision
+
+    C --> C_desc1["<code>Ensures pure stabilizer states</code>"]
+    C --> C_desc2["<code>Requires user to check for consistency</code>"]
+    C --> C_desc3["<code>Efficient project! operations</code>"]
+    class C_desc1,C_desc2,C_desc3 description
+
+    C --> G["<code>Destabilizer</code>"]
+    G --> G_desc1["<code>No stabilizer canonicalization needed</code>"]
+    class G_desc1 description
+
+    E -->|<code>Yes</code>| F["<code>MixedStabilizer</code>"]
+    F --> F_desc1["<code>Explicitly tracks rank of mixed states</code>"]
+    F --> F_desc2["<code>Project! on non-Stabilizer commuting operators</code>"]
+    class F_desc1,F_desc2 description
+
+    E -->|<code>No</code>| H["<code>MixedDestabilizer</code>"]
+    H --> H_desc1["<code>Tracks destabilizer and logical operators</code>"]
+    H --> H_desc2["<code>Efficient project! operations</code>"]
+</div>
+```
+
 There are four different data structures used to represent stabilizer states. If
 you will never need projective measurements you probably would want to use
 [`Stabilizer`](@ref). If you require projective measurements, but only on pure
