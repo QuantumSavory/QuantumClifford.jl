@@ -2,11 +2,17 @@
 
 ## [Choosing Appropriate Tableau Data Structure](@id Choosing-Appropriate-Data-Structure)
 
+There are four different data structures used to represent stabilizer states. If
+you will never need projective measurements you probably would want to use
+[`Stabilizer`](@ref). If you require projective measurements, but only on pure
+states, [`Destabilizer`](@ref) should be the appropriate data structure. If
+mixed stabilizer states are involved, [`MixedStabilizer`](@ref) would be
+necessary.
+
 ```@raw html
 <div class="mermaid">
-%%{ init: { 'flowchart': { 'curve': 'basis' } } }%%
-graph TB
-    A["<code>Choosing Appropriate Data Structure</code>"]
+flowchart TB
+    A["<code>Tableau Data Structure Selection</code>"]
     class A startEnd
 
     A -->|<code>Are the states pure?</code>| B{ }
@@ -38,13 +44,6 @@ graph TB
     H --> H_desc2["<code>Efficient project! operations</code>"]
 </div>
 ```
-
-There are four different data structures used to represent stabilizer states. If
-you will never need projective measurements you probably would want to use
-[`Stabilizer`](@ref). If you require projective measurements, but only on pure
-states, [`Destabilizer`](@ref) should be the appropriate data structure. If
-mixed stabilizer states are involved, [`MixedStabilizer`](@ref) would be
-necessary.
 
 [`Stabilizer`](@ref) is simply a list of Pauli operators in a tableau form. As a
 data structure it does not enforce the requirements for a pure stabilizer state
