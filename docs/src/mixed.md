@@ -2,7 +2,7 @@
 
 ```@meta
 DocTestSetup = quote
-    using QuantumClifford: @T_str, _T_str, @S_str, Tableau, canonicalize!, Destabilizer, MixedDestabilizer, stabilizerview, destabilizerview, logicalxview, logicalzview
+    using QuantumClifford
 end
 ```
 
@@ -78,7 +78,11 @@ julia> MixedDestabilizer(T"ZI IX XX ZZ", 2)
 𝒮𝓉𝒶𝒷
 + XX
 + ZZ
+```
 
+If the macro string `@T_str` is not convenient, use the normal strings `_T_str`.
+
+```@example mix
 julia> MixedDestabilizer(_T_str("ZI IX XX ZZ"), 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z_
@@ -152,7 +156,7 @@ Note that the `Tableau` object is not currently public. It serves as the
 underlying data structure for all related objects but does not assume
 commutativity or other properties.
 
-```@example 
+```@example mix
 julia> MixedDestabilizer(Tableau(Bool[0 0; 0 1; 1 1; 1 0], Bool[1 0; 0 0; 0 0; 1 1]), 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z_
