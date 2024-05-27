@@ -2,7 +2,7 @@
 
 ```@meta
 DocTestSetup = quote
-    using QuantumClifford
+    using QuantumClifford: @S_str, Destabilizer, MixedDestabilizer, MixedStabilizer, stabilizerview, destabilizerview, logicalxview, logicalzview, @T_str, _T_str, canonicalize!, Tableau
 end
 ```
 
@@ -15,7 +15,7 @@ Mixed stabilizer states are implemented with [`MixedStabilizer`](@ref) and
 for most tasks as it is much faster by virtue of tracking the destabilizer
 generators.
 
-# Options for Constructing with MixedDestabilizer
+# Options for constructing with MixedDestabilizer
 
 - Given a `Destabilizer` object (which  presumesfull rank), convert it
 into a `MixedDestabilizer` object. This allows for the possibility of 
@@ -80,10 +80,11 @@ julia> MixedDestabilizer(T"ZI IX XX ZZ", 2)
 + ZZ
 ```
 
-If the macro string `@T_str` is not convenient, use the normal strings `_T_str`.
+If the macro string `@T_str` is not convenient, use the normal strings 
+`_T_str`.
 
-```@example mix
-MixedDestabilizer(_T_str("ZI IX XX ZZ"), 2)
+```jldoctest mix
+julia> MixedDestabilizer(_T_str("ZI IX XX ZZ"), 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z_
 + _X
@@ -151,20 +152,70 @@ julia> MixedDestabilizer(canonicalize!(s))
 + ZZ_
 ```
 
-- A low-level constructor that accepts a manually created `Tableau` object. 
-Note that the `Tableau` object is not currently public. It serves as the 
-underlying data structure for all related objects but does not assume
-commutativity or other properties.
+- A low-level constructor that accepts a manually created `Tableau` object 
+and rank. Note that the `Tableau` object is not currently public. It 
+serves as the underlying data structure for all related objects but 
+does not assume commutativity or other properties.
 
-```@example mix
-MixedDestabilizer(Tableau(Bool[0 0; 0 1; 1 1; 1 0],
-                          Bool[1 0; 0 0; 0 0; 1 1]), 2)
+```jldoctest mix
+julia> MixedDestabilizer(Tableau(Bool[0 0; 0 1; 1 1; 1 0],
+                                 Bool[1 0; 0 0; 0 0; 1 1]), 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z_
 + _X
 𝒮𝓉𝒶𝒷
 + XX
 + YZ
+```
+
+# Options for constructing with MixedStabilizer
+
+- Given a `Stabilizer` object (which  presumesfull rank), convert it
+into a `MixedStabilizer` object. This allows for the possibility of 
+rank deficiency.
+
+```jldoctest mix
+julia> s = S"-XXX
+             -ZZI
+             +IZZ";
+
+julia> MixedStabilizer(s)
+- XXX
+- Z_Z
++ _ZZ
+
+julia> MixedStabilizer(s, 2)
+- XXX
+- Z_Z
+```
+
+- Similar to the first option, but with the added capability to
+specify the "rank." This rank determines the number of rows
+associated with the `Stabilizer` and the number corresponding 
+to the logical operators.
+
+```jldoctest mix
+julia> MixedStabilizer(S"-XXX -ZIZ IZZ")
+- XXX
+- Z_Z
++ _ZZ
+
+julia> MixedStabilizer(S"-XXX -ZIZ IZZ", 2)
+- XXX
+- Z_Z
+```
+
+- A low-level constructor that accepts a manually created `Tableau`
+object and rank. Note that the `Tableau` object is not currently
+public. It serves as the underlying data structure for all related 
+objects but does not assume commutativity or other properties.
+
+```jldoctest mix
+julia> MixedStabilizer(Tableau(Bool[1 1 1; 0 0 0; 0 0 0],
+                               Bool[0 0 0; 1 0 1; 0 1 1]), 3)
++ XXX
++ Z_Z
++ _ZZ
 ```
 
 # Gottesman Canonicalization

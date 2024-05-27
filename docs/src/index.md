@@ -12,11 +12,21 @@ This library uses the tableaux formalism[^1] with the destabilizer improvements[
 
 ## The Need For Tableaux Formalism
 
-Tableaux Formalism, also known as Stabilizer formalism, which focuses on the evolution of operators rather than states, has proven highly valuable in understanding certain quantum operations. Quantum error correction and specific communication protocols like quantum teleportation utilize states described by their stabilizer, which is a group of tensor products of Pauli matrices. This group structure is sufficiently robust to enable a wide range of quantum effects, despite not encompassing the full power of quantum computation. Constructing and analyzing even relatively small networks of quantum gates can be challenging due to the arbitrary states within a large Hilbert space that quantum computers handle. However, a subset of networks can be more easily described by tracking the evolution of operators acting on the computer, similar to the Heisenberg representation in quantum mechanics where operators evolve over time, as opposed to the Schrödinger picture where states evolve.
+Tableaux Formalism, also known as stabilizer formalism, focuses on the evolution of operators rather than states and has proven highly valuable in understanding certain quantum operations. It provides an efficient way to describe a large class of pure and mixed quantum states in `n`-qubit systems.
+
+An `n`-qubit stabilizer state is uniquely determined as the joint eigenvector with eigenvalue `+1` of a set of `n` tensor products of Pauli operators, resulting in a highly compact representation of the quantum state that requires only `Ο(n²)` parameters[^3]. This compact representation holds promise for a deeper understanding of entanglement structures. Despite this simplification, stabilizer states can still exhibit multi-particle entanglement and allow for the violation of local realism[^4]. 
+
+The stabilizer formalism is crucial in the realm of quantum error-correcting codes[^5], where mixed stabilizer states correspond directly to projectors on subspaces defined by stabilizer codes[^1]. Also, specific communication protocols like quantum teleportation utilize states described by their stabilizer. This group structure is robust enough to enable a wide range of quantum effects, even though it does not encompass the full power of quantum computation. Constructing and analyzing networks of quantum gates can be challenging due to the arbitrary states within the large Hilbert space that quantum computers handle. However, a subset of these networks can be more easily described by tracking the evolution of operators acting on the computer, similar to the Heisenberg representation in quantum mechanics where operators evolve over time.
 
 [^1]: [gottesman1998heisenberg](@cite)
 
 [^2]: [aaronson2004improved](@cite)
+
+[^3]: [audenaert2005entanglement](@cite)
+
+[^4]: [guhne2005bell](@cite)
+
+[^5]: [gottesman1997stabilizer](@cite)
 
 The library consists of two main parts: Tools for working with the algebra of Stabilizer Tableaux and tools specifically for efficient Circuit Simulation.
 

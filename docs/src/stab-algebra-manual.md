@@ -2,7 +2,7 @@
 
 ```@meta
 DocTestSetup = quote
-    using QuantumClifford
+     using QuantumClifford: @S_str, Stabilizer, Destabilizer, MixedDestabilizer, MixedStabilizer, stabilizerview, destabilizerview, logicalxview, logicalzview, @T_str, _T_str, @P_str, PauliOperator, ⊗, comm, prodphase, xview, xbit, getindex, setindex!, firstindex, lastindex, stab_to_gf2, canonicalize!, project!, Register, apply!, bitview, sMX, traceout!, generate!, tHadamard, tPhase, tCNOT, permute, apply!, CliffordOperator, sHadamard, sCNOT, phases, tId1, @C_str, tab, Tableau
 end
 ```
 
@@ -712,9 +712,8 @@ object. Note thatthe `Tableau` object is not currently public. It serves
 as the underlying data structure for all related objects but does not
 assume commutativity or other properties.
 
-```@example destab
-d₁ = Destabilizer(Tableau(Bool[0 0; 0 1; 1 1; 0 0],
-				    Bool[1 0; 0 0; 0 0; 0 1]))
+```jldoctest destab
+julia> d₁ = Destabilizer(Tableau(Bool[0 0; 0 1; 1 1; 0 0], Bool[1 0; 0 0; 0 0; 0 1]))
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z_
 + _X
