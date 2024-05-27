@@ -83,7 +83,7 @@ julia> MixedDestabilizer(T"ZI IX XX ZZ", 2)
 If the macro string `@T_str` is not convenient, use the normal strings `_T_str`.
 
 ```@example mix
-julia> MixedDestabilizer(_T_str("ZI IX XX ZZ"), 2)
+MixedDestabilizer(_T_str("ZI IX XX ZZ"), 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z_
 + _X
@@ -157,7 +157,8 @@ underlying data structure for all related objects but does not assume
 commutativity or other properties.
 
 ```@example mix
-julia> MixedDestabilizer(Tableau(Bool[0 0; 0 1; 1 1; 1 0], Bool[1 0; 0 0; 0 0; 1 1]), 2)
+MixedDestabilizer(Tableau(Bool[0 0; 0 1; 1 1; 1 0],
+                          Bool[1 0; 0 0; 0 0; 1 1]), 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z_
 + _X

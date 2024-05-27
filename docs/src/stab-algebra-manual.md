@@ -713,8 +713,8 @@ as the underlying data structure for all related objects but does not
 assume commutativity or other properties.
 
 ```@example destab
-julia> d₁ = Destabilizer(Tableau(Bool[0 0; 0 1; 1 1; 0 0], 
-				           Bool[1 0; 0 0; 0 0; 0 1]))
+d₁ = Destabilizer(Tableau(Bool[0 0; 0 1; 1 1; 0 0],
+				    Bool[1 0; 0 0; 0 0; 0 1]))
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z_
 + _X
