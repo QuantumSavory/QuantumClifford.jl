@@ -17,9 +17,9 @@ generators.
 
 # Options for Constructing with MixedDestabilizer
 
-- **From `Destabilizer` (full-rank):** Given a `Destabilizer` object (which 
-presumesfull rank), convert it into a `MixedDestabilizer` object. This allows 
-for the possibility of rank deficiency.
+- Given a `Destabilizer` object (which  presumesfull rank), convert it
+into a `MixedDestabilizer` object. This allows for the possibility of 
+rank deficiency.
 
 ```jldoctest mix
 julia> s = S"XXX
@@ -65,10 +65,10 @@ julia> logicalzview(m)
 + Z_Z
 ```
 
-- **From `Destabilizer` with Optional Rank Specification:** Similar to the 
-first option, but with the added capability to specify the "rank." This rank 
-determines the number of rows associated with the `Stabilizer` and the number 
-corresponding to the logical operators.
+- Similar to the first option, but with the added capability to
+specify the "rank." This rank determines the number of rows
+associated with the `Stabilizer` and the number corresponding 
+to the logical operators.
 
 ```jldoctest mix
 julia> MixedDestabilizer(T"ZI IX XX ZZ", 2)
@@ -88,10 +88,10 @@ julia> MixedDestabilizer(_T_str("ZI IX XX ZZ"), 2)
 + ZZ
 ```
 
-- **From `Stabilizer` (Canonicalization):** Given a `Stabilizer` object 
-(whichmay have fewer rows than columns), perform the necessary
-canonicalization to determine the corresponding destabilizer and 
-logical operators, resulting in a complete MixedDestabilizer object.
+- Given a `Stabilizer` object (whichmay have fewer rows than columns)
+, perform the necessary canonicalization to determine the 
+corresponding destabilizer and logical operators, resulting in a 
+complete MixedDestabilizer object.
 
 ```jldoctest mix
 julia> s = S"-XXX
@@ -147,13 +147,12 @@ julia> MixedDestabilizer(canonicalize!(s))
 + ZZ_
 ```
 
-- **Low-Level `Tableau` Constructor (Internal Use):** A low-level 
-constructor that accepts a manually created `Tableau` object. Note that
-the `Tableau` object is not currently public. It serves as the underlying
-data structure for all related objects but does not assume commutativity 
-or other properties.
+- A low-level constructor that accepts a manually created `Tableau` object. 
+Note that the `Tableau` object is not currently public. It serves as the 
+underlying data structure for all related objects but does not assume
+commutativity or other properties.
 
-```jldoctest mix
+```@example 
 julia> MixedDestabilizer(Tableau(Bool[0 0; 0 1; 1 1; 1 0], Bool[1 0; 0 0; 0 0; 1 1]), 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z_

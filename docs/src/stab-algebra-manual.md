@@ -686,6 +686,11 @@ Slightly abusing the name: What we call "destabilizers" here is a stabilizer and
 its destabilizing operators saved together. They are implemented with the
 [`Destabilizer`](@ref) object and are initialized from a stabilizer.
 
+The two ways of creating destabilizers are the following:
+
+- Given a `Stabilizer` object (which presumes full rank), convert it into a
+`Destabilizer`object. This allows  for the possibility of rank deficiency.
+
 ```jldoctest destab
 julia> s=S"-XXX
            -ZZI
@@ -702,6 +707,22 @@ julia> d = Destabilizer(s)
 - Z_Z
 ```
 
+- A low-level constructor that accepts a manually created `Tableau`
+object. Note thatthe `Tableau` object is not currently public. It serves
+as the underlying data structure for all related objects but does not
+assume commutativity or other properties.
+
+```@example destab
+julia> d₁ = Destabilizer(Tableau(Bool[0 0; 0 1; 1 1; 0 0], 
+				           Bool[1 0; 0 0; 0 0; 0 1]))
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ _Z
+```
+
 They have convenience methods to extract only the stabilizer and destabilizer
 pieces:
 
@@ -715,6 +736,16 @@ julia> destabilizerview(d)
 + Z__
 + _X_
 + __X
+```
+
+```@example destab
+julia> stabilizerview(d₁)
++ XX
++ _Z
+
+julia> destabilizerview(d₁)
++ Z_
++ _X
 ```
 
 Importantly commuting projections are much faster when tracking the destabilizer
