@@ -17,7 +17,7 @@ $(TYPEDEF)
 Represents mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is a pure stabilizer state.
 
 ```jldoctest
-julia> StabMixture(S"-X")
+julia> GeneralizedStabilizer(S"-X")
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
@@ -32,7 +32,7 @@ with ϕᵢ | Pᵢ
  0.853553+0.353553im | + _
  0.146447-0.353553im | + Z
 
-julia> apply!(StabMixture(S"-X"), pcT)
+julia> apply!(GeneralizedStabilizer(S"-X"), pcT)
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
@@ -47,25 +47,25 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
 
 See also: [`PauliChannel`](@ref)
 """
-mutable struct StabMixture{T,F}
+mutable struct GeneralizedStabilizer{T,F}
     stab::T
     destabweights::DefaultDict{Tuple{BitVector, BitVector}, F, F}
 end
 
-function StabMixture(state)
+function GeneralizedStabilizer(state)
     n = nqubits(state)
     md = MixedDestabilizer(state)
     rank(md)==n || throw(ArgumentError(lazy"""
-        Attempting to convert a `Stabilizer`-like object to `StabMixture` object failed,
+        Attempting to convert a `Stabilizer`-like object to `GeneralizedStabilizer` object failed,
         because the initial state does not represent a pure state.
-        Currently only pure states can be used to initialize a `StabMixture` mixture of stabilizer states.
+        Currently only pure states can be used to initialize a `GeneralizedStabilizer` mixture of stabilizer states.
     """))
-    StabMixture(md, DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im)) # TODO maybe it should default to Destabilizer, not MixedDestabilizer
+    GeneralizedStabilizer(md, DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im)) # TODO maybe it should default to Destabilizer, not MixedDestabilizer
 end
 
-StabMixture(s::StabMixture) = s
+GeneralizedStabilizer(s::GeneralizedStabilizer) = s
 
-function Base.show(io::IO, s::StabMixture)
+function Base.show(io::IO, s::GeneralizedStabilizer)
     println(io, "A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is")
     show(io,s.stab)
     println(io)
@@ -89,14 +89,50 @@ function _stabmixdestab(mixeddestab, d)
     p
 end
 
-function apply!(state::StabMixture, gate::AbstractCliffordOperator) # TODO conjugate also the destabs
+function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator) # TODO conjugate also the destabs
     apply!(state.stab, gate)
     state
 end
 
+"""$(TYPEDSIGNATURES)
+
+Expectation value for the [PauliOperator](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`."""
+function expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
+    e = zero(_dictvaltype(s.destabweights))
+    phase, b, c = rowdecompose(p, s.stab)
+    for ((dᵢ,dⱼ), χ) in s.destabweights
+        _allthreesumtozero(dᵢ,dⱼ,b) || continue
+        e += χ * (-1)^(dᵢ'*c)
+    end
+    return (-1)^(phase÷2) * e
+end
+
+"""Same as `all(==(0), (a.+b.+c) .% 2)`"""
+function _allthreesumtozero(a,b,c) # TODO consider using bitpacking and SIMD xor with less eager shortcircuiting -- probably would be much faster
+    @inbounds @simd for i in 1:length(a)
+        iseven(a[i]+b[i]+c[i]) || return false
+    end
+    true
+end
+
+function _dictvaltype(dict)
+    return eltype(dict).parameters[2] # TODO there must be a cleaner way to do this
+end
+
+function project!(sm::GeneralizedStabilizer, p::PauliOperator)
+    eval = expect(p, sm)
+    prob₁ = (real(eval)+1)/2
+    error("This functionality is not implemented yet")
+end
+
+function _proj₋(sm::GeneralizedStabilizer, p::PauliOperator)
+end
+function _proj₊(sm::GeneralizedStabilizer, p::PauliOperator)
+end
+
 abstract type AbstractPauliChannel <: AbstractOperation end
 
-"""A Pauli channel datastructure, mainly for use with [`StabMixture`](@ref)
+"""A Pauli channel datastructure, mainly for use with [`GeneralizedStabilizer`](@ref)
 
 See also: [`UnitaryPauliChannel`](@ref)"""
 struct PauliChannel{T,S} <: AbstractPauliChannel
@@ -137,11 +173,12 @@ end
 
 nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 
-function apply!(state::StabMixture, gate::PauliChannel)
+function apply!(state::GeneralizedStabilizer, gate::PauliChannel)
     dict = state.destabweights
     stab = state.stab
-    tzero = zero(eltype(dict).parameters[2])
-    tone = one(eltype(dict).parameters[2])
+    dtype = _dictvaltype(dict)
+    tzero = zero(dtype)
+    tone = one(dtype)
     newdict = typeof(dict)(tzero) # TODO jeez, this is ugly
     for ((dᵢ,dⱼ), χ) in dict # the state
         for ((Pₗ,Pᵣ), w) in zip(gate.paulis,gate.weights) # the channel
@@ -207,10 +244,10 @@ function rowdecompose(pauli,state::Union{MixedDestabilizer, Destabilizer})
         end
     end
     p = mod(-Pₜ.phase[],4) # complex conjugate
-    return p, b, c
+    return p+pauli.phase[], b, c
 end
 
-"""A Pauli channel datastructure, mainly for use with [`StabMixture`](@ref).
+"""A Pauli channel datastructure, mainly for use with [`GeneralizedStabilizer`](@ref).
 
 More convenient to use than [`PauliChannel`](@ref) when you know your Pauli channel is unitary.
 
@@ -265,7 +302,7 @@ end
 
 nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
-apply!(state::StabMixture, gate::UnitaryPauliChannel) = apply!(state, gate.paulichannel)
+apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel) = apply!(state, gate.paulichannel)
 
 ##
 # Predefined Pauli Channels

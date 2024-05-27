@@ -627,12 +627,12 @@ julia> s=S"-XXX
 julia> d = Destabilizer(s)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z__
-+ _X_
++ _XX
 + __X
 𝒮𝓉𝒶𝒷━
 - XXX
 - ZZ_
-- Z_Z
++ _ZZ
 ```
 
 They have convenience methods to extract only the stabilizer and destabilizer
@@ -642,11 +642,11 @@ pieces:
 julia> stabilizerview(d)
 - XXX
 - ZZ_
-- Z_Z
++ _ZZ
 
 julia> destabilizerview(d)
 + Z__
-+ _X_
++ _XX
 + __X
 ```
 
@@ -672,12 +672,12 @@ Clifford operations can be applied the same way they are applied to stabilizers.
 julia> apply!(d,tCNOT⊗tHadamard)
 𝒟ℯ𝓈𝓉𝒶𝒷
 - X_Z
-+ XXZ
++ _XZ
 + X__
 𝒮𝓉𝒶𝒷━
 + _ZX
 - _Z_
-- Z_X
++ ZZX
 ```
 
 # Mixed States
