@@ -25,9 +25,9 @@ small_test_sizes = [1,2,3,4,5,7,8] # Pauligroup slows around n =9
     #test get_generating_set
     for n in [1,test_sizes...]
         s = random_stabilizer(n)
-        group = QuantumClifford.groupify(s)
-        gen_set = QuantumClifford.get_generating_set(group)
-        new_group = QuantumClifford.groupify(gen_set)
+        group = groupify(s)
+        gen_set = get_generating_set(group)
+        new_group = groupify(gen_set)
         canonicalize!(group)
         canonicalize!(new_group)
         @test group == new_group
@@ -35,7 +35,7 @@ small_test_sizes = [1,2,3,4,5,7,8] # Pauligroup slows around n =9
     #test normalize
     for n in [1, small_test_sizes...] # pauligroup is very slow at n=14
         s = random_stabilizer(n)
-        normalized = QuantumClifford.normalize(s)
+        normalized = normalize(s)
         stabilizers = pauligroup(n, true)
         for n_stabilizer in normalized
             for stabilizer in s
