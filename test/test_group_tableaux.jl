@@ -1,9 +1,10 @@
 using Random
 using QuantumClifford
 
-test_sizes = [1,2,3,4,5,7,8,9,15,16,17] # Including sizes that would test off-by-one errors in the bit encoding.
-#zero function(in groupify) slows down around 2^30(n=30),eventually breaks
-
+# Including sizes that would test off-by-one errors in the bit encoding.
+test_sizes = [1,2,3,4,5,7,8,9,15,16,17] # Zero function(in groupify) slows down around 2^30(n=30),eventually breaks
+# Zero function(in groupify) slows down around 2^30(n=30),eventually breaks
+small_test_sizes = [1,2,3,4,5,7,8] # Pauligroup slows around n =9
 
 @test_set "Group Tableaux" begin 
     #test groupify
@@ -32,14 +33,23 @@ test_sizes = [1,2,3,4,5,7,8,9,15,16,17] # Including sizes that would test off-by
         @test group == new_group
     end
     #test normalize
-    for n in [1,test_sizes...]
+    for n in [1, small_test_sizes...] # pauligroup is very slow at n=14
         s = random_stabilizer(n)
         normalized = QuantumClifford.normalize(s)
+        stabilizers = pauligroup(n, true)
         for n_stabilizer in normalized
             for stabilizer in normalized
-                @test n_stabilizer * stabilizer == stabilzer *n_stabilizer
+               @test n_stabilizer * stabilizer == stabilizer *n_stabilizer 
             end
         end
     end
-
+    for st in stabilizers
+        commutes = true
+        for stabilizer in normalized
+            if !(st * stabilizer == stabilizer *st)
+                commutes = false
+            end
+        end
+        @test !commutes  || st in normalized
+    end
 end

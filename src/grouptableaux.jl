@@ -25,19 +25,13 @@ julia> groupify(S"XZ XZ")
 """
 function groupify(s::Stabilizer) # add checks?
     n = length(s)
-    group = zero(Stabilizer, 2^n, nqubits(s))
-    #println(group)
-    #println(enumerate([1,2,3]))
+    group = zero(Stabilizer, 2^n, nqubits(s)) 
     for i in 0:2^n-1
-        #println(digits(i, base=2, pad=n))
-        #println(enumerate(digits(i, base=2, pad=n)))
         for (digit_order, j) in enumerate(digits(i, base=2, pad=n))
-            #print((digit_order, j))
             if j == 1
                 group[i+1] *= s[digit_order]
             end
         end
-        #println("")
     end
     return group # TODO use Tableau instead of Stabilizer
 end
@@ -96,12 +90,17 @@ end
 # print(get_generating_set(s))
 # ##
 
-function pauligroup(n) # ignores phases #TODO add arg to control whether phases are ignored
-    s = zero(Stabilizer, 4^n, n)
+function pauligroup(n, phases = false) # ignores phases #TODO add arg to control whether phases are ignored
+    s = zero(Stabilizer, 4^(n+1), n)
     paulis = ((false, false), (true, false), (false, true), (true, true))
     for (i,P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
         for (j,p) in enumerate(P)
             s[i,j] = p
+        end
+    end
+    if phases
+        for i in 1:4^n
+            s[i+4^n] = -1* s[i]
         end
     end
     return s
