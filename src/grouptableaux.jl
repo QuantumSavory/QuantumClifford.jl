@@ -141,7 +141,13 @@ function center(s::Stabilizer)  # hilariously inefficient. centerify? centrify?
            push!(center, P)
         end
     end
-    return Stabilizer(center)
+    stabilizer = center[1]
+    for i in eachindex(center)
+        if (i != 1)
+        stabilizer = stabilizer + center[i]
+        end
+    end
+    return stabilizer
 end
 
 # s = S"XXII IIXX ZIZI IZIZ"

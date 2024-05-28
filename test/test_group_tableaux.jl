@@ -38,18 +38,36 @@ small_test_sizes = [1,2,3,4,5,7,8] # Pauligroup slows around n =9
         normalized = QuantumClifford.normalize(s)
         stabilizers = pauligroup(n, true)
         for n_stabilizer in normalized
-            for stabilizer in normalized
-               @test n_stabilizer * stabilizer == stabilizer *n_stabilizer 
+            for stabilizer in s
+               @test comm(n_stabilizer, stabilizer) == 0x0
             end
         end
     end
-    for st in stabilizers
+    for stabilizer in stabilizers
         commutes = true
-        for stabilizer in normalized
-            if !(st * stabilizer == stabilizer *st)
+        for n_stabilizer in normalized
+            if !(comm(n_stabilizer, stabilizer) == 0x0)
                 commutes = false
             end
         end
-        @test !commutes  || st in normalized
+        @test !commutes  || stabilizer in normalized
+    end
+    #test center
+    for n in [1, test_sizes...]
+        s = random_stabilizer(n)
+        c = center(s)
+        for c_stabilizer in c
+            for stabilizer in s
+               @test comm(c_stabilizer, stabilizer) == 0x0
+            end
+        end
+        for stabilizer in s
+            commutes = true
+            for c_stabilizer in c
+                @test comm(c_stabilizer, stabilizer) == 0x0
+            end
+            @test !commutes  || st in c
+        end
+            
     end
 end
