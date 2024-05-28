@@ -91,16 +91,31 @@ end
 # ##
 
 function pauligroup(n, phases = false) # ignores phases #TODO add arg to control whether phases are ignored
-    s = zero(Stabilizer, 4^(n+1), n)
-    paulis = ((false, false), (true, false), (false, true), (true, true))
-    for (i,P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
-        for (j,p) in enumerate(P)
-            s[i,j] = p
-        end
-    end
     if phases
+        s = zero(Stabilizer, 4^(n+1), n)
+        paulis = ((false, false), (true, false), (false, true), (true, true))
+        for (i,P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
+            for (j,p) in enumerate(P)
+            s[i,j] = p
+            end
+        end
         for i in 1:4^n
             s[i+4^n] = -1* s[i]
+        end
+        for i in 4^n: 2*4^n
+            s[i+4^n] = -1im* s[i]
+        end
+        for i in 2* 4^n: 3*4^n
+            s[i+4^n] = -1* s[i]
+        end
+    end
+    if !phases
+        s = zero(Stabilizer, 4^n, n)
+        paulis = ((false, false), (true, false), (false, true), (true, true))
+        for (i,P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
+            for (j,p) in enumerate(P)
+            s[i,j] = p
+            end
         end
     end
     return s
@@ -141,11 +156,11 @@ function center(s::Stabilizer)  # hilariously inefficient. centerify? centrify?
            push!(center, P)
         end
     end
-    stabilizer = center[1]
+    stabilizer = zero(Stabilizer, length(center), nqubits(s))
+    println(center)
     for i in eachindex(center)
-        if (i != 1)
-        stabilizer = stabilizer + center[i]
-        end
+        println(i)
+        stabilizer[i] = center[i]
     end
     return stabilizer
 end
