@@ -7,9 +7,9 @@
 
 ## v0.9.2(?)
 
--Added argument controlled phase inclusion in pauligroup
--Fixed error in center function
--Added unit tests for groupify, get_generating_set, normalize, and center
+-Added argument controlled phase inclusion in pauligroup.
+-Fixed error in center function.
+-Added unit tests for groupify, get_generating_set, normalize, and center.
 
 ## v0.9.1 - dev
 
