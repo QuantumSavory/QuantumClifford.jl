@@ -32,6 +32,35 @@ small_test_sizes = [1,2,3,4,5,7,8] # Pauligroup slows around n =9
         canonicalize!(new_group)
         @test group == new_group
     end
+    #test logical operator canonicalize
+    for n in [1, test_sizes...]
+        s = random_stabilizer(n)
+        loc, r = QuantumClifford.logical_operator_canonicalize(s)
+        #@test groupify(s) == groupify(loc) current groupify only works for fully commutative generating sets
+        index = 0
+        for i in range(1, length(loc)-1)
+            if comm(loc[i], loc[i+1]) == 0x0
+                index  = i # index to split loc into non-commuting pairs and commuting operators
+                break
+            end
+            i = i+1
+        end
+        for i in range(1, length(loc))
+            for j in range(1, length(loc))
+                if i % 2 == 1
+                    adj = j == i + 1
+                else
+                    adj = j == i - 1
+                end
+                if i < index && adj 
+                    @test comm(loc[i], loc[j]) == 0x0
+                else
+                    @test comm(loc[i], loc[j]) == 0x01
+                end
+    
+            end
+        end
+    end
     #test normalize
     for n in [1, small_test_sizes...] # pauligroup is very slow at n=14
         s = random_stabilizer(n)
