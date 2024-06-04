@@ -34,7 +34,8 @@ small_test_sizes = [1,2,3,4,5,7,8] # Pauligroup slows around n =9
     end
     #test logical operator canonicalize
     for n in [1, test_sizes...]
-        s = random_stabilizer(n)
+        s = random_stabilizer(n) #TODO more through testing
+        s[1] = random_pauli(n) #breaks commutativity sometimes
         loc, r = QuantumClifford.logical_operator_canonicalize(s)
         #@test groupify(s) == groupify(loc) current groupify only works for fully commutative generating sets
         index = 0
