@@ -65,7 +65,7 @@ end
 @doset "ecc_gottesman"
 @doset "ecc_reedmuller"
 @doset "ecc_bch"
-@doset "ecc_extendedreedsolomonmds"
+@doset "ecc_shortenedmds"
 @doset "ecc_syndromes"
 @doset "ecc_throws"
 @doset "precompile"

@@ -1,6 +1,6 @@
-"""The family of `[[2ᵐ + 1, k, 2ᵐ⁺¹ − k]]` augmented, extended Reed-Solomon Maximum Distance Separable `(ExtendedReedSolomonMDS)` codes are constructed from the Galois Field `GF(2ᵐ)`. Extended Reed-Solomon codes were first described by Arne Dür in his 1987 paper [dur1987automorphism](@cite). 
+"""The family of `[[2ᵐ + 1 - s, k, 2ᵐ ⁺ ¹ - s - k]]` Shortened Maximum Distance Separable `(ShortenedMDS)` codes are constructed from the `[[2ᵐ + 1, k, 2ᵐ ⁺ ¹ - k]]` Extended, Augmented Reed-Solomon codes from the corresponding first `x - 1` columns of latter's parity-check matrix, using `j = 0`, and setting `α₀, α₁, α₂, ..., αₓ ₋ ₁` to  `α⁰, α¹, α², ..., αˣ ⁻ ¹` in the parity-check matrix.
 
-The `ExtendedReedSolomonMDS` codes possess a code length `(n)` of `2ᵐ + 1` and are Maximum Distance Separable `(MDS)` codes. Moreover, the general case is that augmented, extended RS codes may be constructed using any Galois Field `GF(x)` with parameters `[[x + 1, k, x + 2 − k ]]` [macwilliams1977theory](@cite). These codes are not binary codes but frequently are used with `x = 2ᵐ`, and so there is a mapping of residue classes of a primitive polynomial with binary coefficients and each element of `GF(2ᵐ)` is represented as a binary `m`-tuple. Denoting the `x` field elements as `0, α⁰, α¹, α²,... αˣ ⁻ ¹`, the shortened field parity-check matrix (`HF`) is given as follows:
+Denoting the `x` field elements as `0, α⁰, α¹, α²,... αˣ ⁻ ¹`, the shortened field parity-check matrix (`HF`) is given as follows:
 
 ```
 (α⁰)ʲ			(α¹)ʲ			(α²)ʲ				...		(αˣ ⁻ ¹)ʲ
@@ -14,17 +14,15 @@ The `ExtendedReedSolomonMDS` codes possess a code length `(n)` of `2ᵐ + 1` and
 ```
 
 You might be interested in consulting [tomlinson2017error](@cite), [macwilliams1977theory](@cite), [peterson1972error](@cite), [seroussi1986mds](@cite), [dur1987automorphism](@cite) and [Extending MDS Codes](https://www.unb.ca/faculty-staff/directory/_resources/pdf/sase/alderson/mds-codes.pdf) as well.
-
-The ECC Zoo has an [entry for Extended Generalized Reed-Solomon codes](https://errorcorrectionzoo.org/c/extended_reed_solomon).
 """
 
 abstract type AbstractPolynomialCode <: ClassicalCode end
 
-struct ExtendedReedSolomonMDS <: AbstractPolynomialCode
+struct ShortenedMDS <: AbstractPolynomialCode
     m::Int
     t::Int
 
-    function ExtendedReedSolomonMDS(m, t)
+    function ShortenedMDS(m, t)
         if m < 3 || t < 0 || t >= 2 ^ (m - 1) 
             throw(ArgumentError("Invalid parameters: m and t must be non-negative. Also, m > 3 and t < 2 ^ (m - 1) in order to obtain a valid code."))
         end
@@ -33,11 +31,11 @@ struct ExtendedReedSolomonMDS <: AbstractPolynomialCode
 end
 
 """
-`parity_checks(ExtendedReedSolomonMDS(m, t))`
+`parity_checks(ShortenedMDS(m, t))`
 - `m`: The positive integer defining the degree of the finite (Galois) field, `GF(2ᵐ)`.
 - `t`: The positive integer specifying the number of correctable errors.
 
-This function applies Extended Reed-Solomon Maximum Distance Separable `(ExtendedReedSolomonMDS)` codes for binary transmission using soft decisions (see section 7.3)[tomlinson2017error](@cite). For significant coding gain, code length is typically restricted to less than 200 bits. Modified Dorsch decoder [dorsch1974decoding](@cite) is recommended for near maximum likelihood decoding.
+This function applies Extended Reed-Solomon Maximum Distance Separable `(ShortenedMDS)` codes for binary transmission using soft decisions (see section 7.3)[tomlinson2017error](@cite). For significant coding gain, code length is typically restricted to less than 200 bits. Modified Dorsch decoder [dorsch1974decoding](@cite) is recommended for near maximum likelihood decoding.
 
 Challenges of Standard RS Codes: While efficient as MDS codes, standard RS codes are not ideal for binary channels. As demonstrated in the results (see section 7.2)[tomlinson2017error](@cite), their performance suffers due to a mismatch between the code structure (symbol-based) and the channel (binary). A single bit error can lead to a symbol error, negating the code's benefits.
 
@@ -62,13 +60,11 @@ The matrix has `x - k + 1` rows corresponding to the code's parity symbols. Any 
 
 Shortened MDS Codes: Corresponding columns of the field parity-check matrix can be deleted to form a shortened `[[2ᵐ + 1 - s, k, 2ᵐ ⁺ ¹ - s - k]]` MDS code. This is an important property of MDS codes, particularly for their practical realisation in the form of augmented, extended RS codes because it enables efficient implementation in applications such as incremental redundancy systems, and network coding. The 3-level quantization of the received channel bits is utilized meaning 3 symbols are deleted. The Fig. 7.2 [tomlinson2017error](@cite) shows that with 3-level quantization, there is an improvement over the binary-transmission with hard decisions for Reed-Solomon coding. The designed distance for binary expanded parity check matrix remains same as symbol based parity check matrix. According to [macwilliams1977theory](@cite), changing the basis `j` can increase the designed distance `(dmin)` of the resulting binary code.
 
-Cyclic Code Construction: Using the first `x - 1` columns of the field parity-check matrix, using `j = 0`, and setting `α₀, α₁, α₂, ..., αₓ ₋ ₁` to  `α⁰, α¹, α², ..., αˣ ⁻ ¹` in the parity-check matrix are set equal to the powers of a primitive element α of the Galois Field `GF(x)`, a cyclic code can be constructed for efficient encoding and decoding.
-
 Shortened MDS (`HF`) Matrix element expansion: 
     1. Row expansion: Each row of in the field parity-check matrix is replaced with an `m`-by-`m` field matrix defined over the base field `GF(2ᵐ)`.
     2. Column expansion: Consequently, the elements in each column of expanded field parity-check matrix are converted to binary representations by substituting powers of a primitive element (`α`) in the Galois Field `GF(2ᵐ)` with their corresponding `m`-tuples over the Boolean Field `GF(2)`.
 """
-function parity_checks(rs::ExtendedReedSolomonMDS)
+function parity_checks(rs::ShortenedMDS)
     GF2ʳ, a = finite_field(2, rs.m, "a")
     s_symbols = 3 # 3-level quantization. 
     x = 2 ^ rs.m + 1 - s_symbols
@@ -116,5 +112,5 @@ function parity_checks(rs::ExtendedReedSolomonMDS)
     return H
 end
 
-code_n(rs::ExtendedReedSolomonMDS) = (2 ^ rs.m + 1 - 3) * rs.m
-code_k(rs::ExtendedReedSolomonMDS) = (2 ^ rs.m - 1 - 2 * rs.t) * rs.m
+code_n(rs::ShortenedMDS) = (2 ^ rs.m + 1 - 3) * rs.m
+code_k(rs::ShortenedMDS) = (2 ^ rs.m - 1 - 2 * rs.t) * rs.m
