@@ -1,6 +1,6 @@
 using Test
 using QuantumClifford
-using QuantumClifford.ECC
+using QuantumClifford.ECC: Gottesman4
 using InteractiveUtils
 
 # generate instances of all implemented codes to make sure nothing skips being checked
@@ -9,7 +9,8 @@ const code_instance_args = Dict(
     Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
     Surface => [(3,3), (4,4), (3,6), (4,3), (5,5)],
     Gottesman => [3, 4, 5],
-    CSS => (c -> (parity_checks_x(c), parity_checks_z(c))).([Shor9(), Steane7(), Toric(4,4)])
+    CSS => (c -> (parity_checks_x(c), parity_checks_z(c))).([Shor9(), Steane7(), Toric(4,4)]),
+    Gottesman4 => [4, 5, 6, 7, 8]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
