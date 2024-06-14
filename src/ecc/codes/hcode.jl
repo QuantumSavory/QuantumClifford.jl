@@ -17,6 +17,10 @@ struct HCode <: AbstractECC
     end
 end
 
+function iscss(::Type{HCode})
+    return true
+end
+
 code_n(c::HCode) = c.k + 4
 code_k(c::HCode) = c.k
 distance(c::HCode) = 2
