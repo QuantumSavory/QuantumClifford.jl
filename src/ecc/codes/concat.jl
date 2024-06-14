@@ -43,5 +43,5 @@ function iscss(c::Concat)
     if iscss(c.c₁) && iscss(c.c₂)
         true
     end
-    # return nothing if c.c₁ or c.c₂ are non-CSS; in this case, `Concat(c₁, c₂)` can still be CSS
+    return nothing # if c.c₁ or c.c₂ are non-CSS; in this case, `Concat(c₁, c₂)` can still be CSS
 end
