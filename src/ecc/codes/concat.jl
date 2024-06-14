@@ -1,15 +1,18 @@
 """
-Code concatenation of two quantum codes [concatenated1996knill](@cite)--the inner code c₁ and the outer code c₂.
+`Concat(c₁, c₂)` is a code concatenation of two quantum codes [concatenated1996knill](@cite).
+
+The inner code c₁ and the outer code c₂.
 The construction is the following: replace each qubit in code c₂ with logical qubits encoded by code c₁.
-The resulting code will have n = n₁ * n₂ qubits and k = k₁ * k₂ logical qubits.
+The resulting code will have `n = n₁ × n₂` qubits and `k = k₁ × k₂` logical qubits.
 """
 struct Concat <: AbstractECC
     c₁::AbstractECC
     c₂::AbstractECC
 end
 
-"""The function returns the parity checks of the concatenated code."""
-function concat(c₁, c₂)
+function parity_checks(c::Concat)
+    c₁ = c.c₁
+    c₂ = c.c₂
     k₁ = code_k(c₁)
     n₁ = code_n(c₁)
     n₂ = code_n(c₂)
@@ -36,10 +39,9 @@ code_n(c::Concat) = code_n(c.c₁) * code_n(c.c₂)
 
 code_k(c::Concat) = code_k(c.c₁) * code_k(c.c₂)
 
-function parity_checks(c::Concat)
-    concat(c.c₁, c.c₂)
-end
-
 function iscss(c::Concat)
-    iscss(c.c₁) && iscss(c.c₂) # but it is possible that c.c₁ and c.c₂ are non-css but c is css
+    if iscss(c.c₁) && iscss(c.c₂)
+        true
+    end
+    # return nothing if c.c₁ or c.c₂ are non-CSS; in this case, `Concat(c₁, c₂)` can still be CSS
 end
