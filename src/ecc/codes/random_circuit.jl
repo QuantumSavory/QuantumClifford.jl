@@ -51,7 +51,8 @@ function random_all_to_all_clifford_circuit(nqubits, ngates)
 end
 
 function parity_checks(c::RandomCircuitCode)
-    checks = one(Stabilizer, code_n(c))[c.encode_qubits]
+    n = code_n(c)
+    checks = one(Stabilizer, n)[setdiff(1:n, c.encode_qubits)]
     for op in c.circ
         apply!(checks, op)
     end
