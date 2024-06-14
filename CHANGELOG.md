@@ -5,8 +5,10 @@
 
 # News
 
-## v0.9.4 - dev
+## v0.9.4 - 2024-06-14
 
+- Addition of a constructor for concatenated quantum codes -- `Concat`.
+- Addition of multiple unexported classical code constructors.
 - Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
 - Remove printing of spurious debug info from the PyBP decoder. 
 - Significant improvements to the low-level circuit compiler (the sumtype compactifier), leading to faster Pauli frame simulation of noisy circuits.
