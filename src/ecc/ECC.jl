@@ -19,7 +19,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     RepCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
-    Toric, Gottesman, Surface,
+    Toric, Gottesman, Surface, HCode,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -355,4 +355,5 @@ include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/bch.jl")
+include("codes/hcode.jl")
 end #module
