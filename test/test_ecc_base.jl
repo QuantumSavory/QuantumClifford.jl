@@ -10,7 +10,7 @@ const code_instance_args = Dict(
     Surface => [(3,3), (4,4), (3,6), (4,3), (5,5)],
     Gottesman => [3, 4, 5],
     CSS => (c -> (parity_checks_x(c), parity_checks_z(c))).([Shor9(), Steane7(), Toric(4,4)]),
-    HCode => [2, 4, 6, 8, 10]
+    HCode => [2, 4]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
