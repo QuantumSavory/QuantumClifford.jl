@@ -1,5 +1,5 @@
 """
-`Concat(c₁, c₂)` is a code concatenation of two quantum codes [concatenated1996knill](@cite).
+`Concat(c₁, c₂)` is a code concatenation of two quantum codes [knill1996concatenated](@cite).
 
 The inner code c₁ and the outer code c₂.
 The construction is the following: replace each qubit in code c₂ with logical qubits encoded by code c₁.
