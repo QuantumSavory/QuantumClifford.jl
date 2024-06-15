@@ -28,7 +28,10 @@ end
             @test rate(ReedMuller(r, m)) == sum(binomial.(m, 0:r)) / 2 ^ m
             @test code_n(ReedMuller(r, m)) == 2 ^ m
             @test code_k(ReedMuller(r, m)) == sum(binomial.(m, 0:r))
-            @test distance(ReedMuller(r, m)) == 2 ^ (m - r) 
+            @test distance(ReedMuller(r, m)) == 2 ^ (m - r)
+            if m - r - 1 ≥ 0 
+                @test rref(parity_checks(ReedMuller(r, m))) == rref(parity_checks(RecursiveReedMuller(r, m)))
+            end
             @test rref(generator(ReedMuller(r, m))) == rref(generator(RecursiveReedMuller(r, m))) 
         end
     end

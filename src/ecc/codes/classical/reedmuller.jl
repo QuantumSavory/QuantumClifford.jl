@@ -8,6 +8,8 @@ Two special cases exist:
 
 You might be interested in consulting [raaphorst2003reed](@cite), [abbe2020reed](@cite), and [djordjevic2021quantum](@cite) as well.
 
+The dimension of `RM(m - r - 1, m)` equals the dimension of the dual of `RM(r, m)`. Thus, `RM(m - r - 1, m) = RM(r, m)^⊥` which indicates that the parity check matrix of `RM(r, m)` is the generator matrix for `RM(m - r - 1, m)`.
+
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed_muller).
 """
 
@@ -18,9 +20,7 @@ struct ReedMuller <: ClassicalCode
     m::Int
 
     function ReedMuller(r, m)
-        if r < 0 || r > m || m < 1 || m >= 11
-            throw(ArgumentError("Invalid parameters: r must be non-negative and r ≤ m. Additionally, m must be positive and < 11 in order to obtain a valid code and to remain tractable"))
-        end
+        0 ≤ r ≤ m || throw(ArgumentError("Invalid parameters: r must be non-negative and r ≤ m. Additionally, m must be positive and < 11 in order to obtain a valid code and to remain tractable"))
         new(r, m)
     end
 end
@@ -41,8 +41,8 @@ This function generates the generator matrix, `G`, for Reed-Muller `(RM(r, m))` 
 - `r`: Nonnegative integer less than or equal to `m`, specifying the code's order.
 """
 function generator(c::ReedMuller)
-    r=c.r
-    m=c.m
+    r = c.r
+    m = c.m
     xᵢ = [_variablesₓᵢ_rm(m, i) for i in 0:m - 1]
     row_matrices = [reduce(_vmult_rm, [xᵢ[i + 1] for i in S], init = ones(Int, 2 ^ m)) for s in 0:r for S in combinations(0:m - 1, s)]
     rows = length(row_matrices)
@@ -50,6 +50,18 @@ function generator(c::ReedMuller)
     G = reshape(vcat(row_matrices...), cols, rows)'
     G = Matrix{Bool}(G)
     return G 
+end
+
+"""
+This function generates the parity check matrix, `H`, for Reed-Muller `(RM(r, m))` error-correcting codes. 
+
+`parity_checks(ReedMuller(r, m))`:
+- `m`: Positive integer representing the message length.
+- `r`: Nonnegative integer less than or equal to `m`, specifying the code's order.
+"""
+function parity_checks(c::ReedMuller)
+    H = generator(ReedMuller(c.m - c.r - 1, c.m))
+    return H
 end
 
 code_n(c::ReedMuller) = 2 ^ c.m
