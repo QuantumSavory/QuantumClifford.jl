@@ -23,7 +23,7 @@ struct RecursiveReedMuller <: ClassicalCode
     m::Int
 
     function RecursiveReedMuller(r, m)
-        0 ≤ r ≤ m || throw(ArgumentError("Reed-Muller codes require 0 ≤ r ≤ m in order to obtain a valid code."))
+        0 ≤ r ≤ m || throw(ArgumentError("Invalid parameters: r must be non-negative and r ≤ m in order to obtain a valid code."))
         new(r, m)
     end
 end
