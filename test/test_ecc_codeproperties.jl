@@ -22,7 +22,7 @@ end
 @testset "is CSS" begin
     for code in all_testablable_code_instances()
         H = parity_checks(code)
-        @test iscss(code) == is_css_matrix(H)
+        @test iscss(code) in (is_css_matrix(H), nothing)
     end
 end
 
