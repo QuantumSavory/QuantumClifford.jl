@@ -34,22 +34,22 @@ function _vmult_rm(vecs...)
 end
 
 """
-This function generates the parity-check matrix, `H`, for Reed-Muller `(RM(r, m))` error-correcting codes. 
+This function generates the generator matrix, `G`, for Reed-Muller `(RM(r, m))` error-correcting codes. 
 
-`parity_checks(ReedMuller(r, m))`:
+`generator(ReedMuller(r, m))`:
 - `m`: Positive integer representing the message length.
 - `r`: Nonnegative integer less than or equal to `m`, specifying the code's order.
 """
-function parity_checks(c::ReedMuller)
+function generator(c::ReedMuller)
     r=c.r
     m=c.m
     xᵢ = [_variablesₓᵢ_rm(m, i) for i in 0:m - 1]
     row_matrices = [reduce(_vmult_rm, [xᵢ[i + 1] for i in S], init = ones(Int, 2 ^ m)) for s in 0:r for S in combinations(0:m - 1, s)]
     rows = length(row_matrices)
     cols = length(row_matrices[1])
-    H = reshape(vcat(row_matrices...), cols, rows)'
-    H = Matrix{Bool}(H)
-    return H 
+    G = reshape(vcat(row_matrices...), cols, rows)'
+    G = Matrix{Bool}(G)
+    return G 
 end
 
 code_n(c::ReedMuller) = 2 ^ c.m
