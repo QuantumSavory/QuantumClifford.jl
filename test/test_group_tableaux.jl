@@ -23,8 +23,11 @@ small_test_sizes = [1,2,3,4,5,7,8] # Pauligroup slows around n =9
         end 
     end
     #test get_generating_set
-    for n in [1,test_sizes...]
-        s = random_stabilizer(n)
+    for n in [1,small_test_sizes...]
+        s = zero(Stabilizer, rand(1:(2*n)), n)
+        for i in 1:length(s)
+            s[i] = random_pauli(n)
+        end
         group = groupify(s)
         gen_set = get_generating_set(group)
         new_group = groupify(gen_set)

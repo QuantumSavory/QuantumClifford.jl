@@ -43,7 +43,17 @@ return the minimal generating set.
 """
 function get_generating_set(s) # TODO potentially rename to `generator_tableau` or `generating_set`
     s, _, r = canonicalize!(copy(s), ranks=true)
-    return s[1:r,:]
+    if r == 0
+        gs = zero(Stabilizer, 1, nqubits(s))
+        if (1im * zero(Stabilizer, 1, nqubits(s))[1]) in s
+            gs[1] = 1im *gs[1] 
+        elseif (-1 * zero(Stabilizer, 1, nqubits(s))[1]) in s
+            gs[1] = -1 * gs[1]
+        end
+        return gs
+    else
+        return s[1:r,:]
+    end
 end
 
 """
