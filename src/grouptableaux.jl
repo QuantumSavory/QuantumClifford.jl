@@ -99,7 +99,9 @@ end
 # println("")
 # print(get_generating_set(s))
 # ##
-
+"""
+Returns the full pauli group of the given length. Phases besides + are ignored by default, but can be included by setting phases = true. 
+"""
 function pauligroup(n, phases = false) # ignores phases #TODO add arg to control whether phases are ignored
     if phases
         s = zero(Stabilizer, 4^(n+1), n)
@@ -131,6 +133,9 @@ function pauligroup(n, phases = false) # ignores phases #TODO add arg to control
     return s
 end
 
+"""
+For a given s, find all Pauli elements of the number of qubits that commute with all elements in s
+"""
 function normalize(s::Stabilizer)
     n = nqubits(s)
     pgroup = pauligroup(n)
@@ -152,6 +157,9 @@ function normalize(s::Stabilizer)
     return Stabilizer(normalizer)
 end
 
+"""
+For a given s, returns the subset of elements in s that commute with all elements in s.
+"""
 function center(s::Stabilizer)  # hilariously inefficient. centerify? centrify?
     center = []
     for P in s
