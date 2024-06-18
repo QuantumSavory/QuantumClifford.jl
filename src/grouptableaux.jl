@@ -25,7 +25,7 @@ julia> groupify(S"XZ XZ")
 """
 function groupify(s::Stabilizer) # add checks?
     n = length(s)
-    group = zero(Stabilizer, 2^n, nqubits(s)) 
+    group = zero(Stabilizer, 2^n, nqubits(s))
     for i in 0:2^n-1
         for (digit_order, j) in enumerate(digits(i, base=2, pad=n))
             if j == 1
@@ -46,20 +46,20 @@ function get_generating_set(s) # TODO potentially rename to `generator_tableau` 
     if r == 0
         gs = zero(Stabilizer, 1, nqubits(s))
         if (1im * zero(Stabilizer, 1, nqubits(s))[1]) in s
-            gs[1] = 1im *gs[1] 
+            gs[1] = 1im * gs[1]
         elseif (-1 * zero(Stabilizer, 1, nqubits(s))[1]) in s
             gs[1] = -1 * gs[1]
         end
         return gs
     else
-        return s[1:r,:]
+        return s[1:r, :]
     end
 end
 
 """
 For a set of logical operators, rewrite in a set of logical x and logical z with the appropriate pairwise anticommutation
 """ # TODO unfinished, including docs
-function logical_operator_canonicalize(s)
+#= function logical_operator_canonicalize(s)
     # TODO potentially use
     # julia> MixedDestabilizer(S"XXX") |> logicalxview
     # julia> MixedDestabilizer(S"XXX") |> logicalzview
@@ -67,7 +67,7 @@ function logical_operator_canonicalize(s)
     # @assert length(s) == length(get_generating_set(groupify(s)))
     mx = MixedDestabilizer(s)
     return vcat(logicalxview(mx), logicalzview(mx), s), rank(mx) # TODO use Tableau instead of Stabilizer
-end
+end =#
 
 
 ##
@@ -77,7 +77,7 @@ end
 # t = logical_operator_canonicalize(s)
 # ##
 
-function commutavise(s::Stabilizer) # TODO take a Tableau
+#= function commutavise(s::Stabilizer) # TODO take a Tableau
     @assert length(s) == length(groupify(s))
     embedding = []
     # currently this works only on generating sets for abelian groups
@@ -92,7 +92,7 @@ function commutavise(s::Stabilizer) # TODO take a Tableau
             end
         end
     end
-end
+end =#
 
 # s = S"XZ ZX IY"
 # s = groupify(s)
@@ -102,31 +102,31 @@ end
 """
 Returns the full pauli group of the given length. Phases besides + are ignored by default, but can be included by setting phases = true. 
 """
-function pauligroup(n, phases = false) # ignores phases #TODO add arg to control whether phases are ignored
+function pauligroup(n, phases=false)
     if phases
-        s = zero(Stabilizer, 4^(n+1), n)
+        s = zero(Stabilizer, 4^(n + 1), n)
         paulis = ((false, false), (true, false), (false, true), (true, true))
-        for (i,P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
-            for (j,p) in enumerate(P)
-            s[i,j] = p
+        for (i, P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
+            for (j, p) in enumerate(P)
+                s[i, j] = p
             end
         end
         for i in 1:4^n
-            s[i+4^n] = -1* s[i]
+            s[i+4^n] = -1 * s[i]
         end
-        for i in 4^n: 2*4^n
-            s[i+4^n] = -1im* s[i]
+        for i in 4^n:2*4^n
+            s[i+4^n] = -1im * s[i]
         end
-        for i in 2* 4^n: 3*4^n
-            s[i+4^n] = -1* s[i]
+        for i in 2*4^n:3*4^n
+            s[i+4^n] = -1 * s[i]
         end
     end
     if !phases
         s = zero(Stabilizer, 4^n, n)
         paulis = ((false, false), (true, false), (false, true), (true, true))
-        for (i,P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
-            for (j,p) in enumerate(P)
-            s[i,j] = p
+        for (i, P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
+            for (j, p) in enumerate(P)
+                s[i, j] = p
             end
         end
     end
@@ -171,7 +171,7 @@ function center(s::Stabilizer)  # hilariously inefficient. centerify? centrify?
             end
         end
         if commutes == 0
-           push!(center, P)
+            push!(center, P)
         end
     end
     stabilizer = zero(Stabilizer, length(center), nqubits(s))
@@ -214,10 +214,10 @@ function contract(s::PauliOperator, subset)
     end
 end
 
-function contract(𝒮::Stabilizer, subset)  # change mathcal notation since not a group?
+#= function contract(𝒮::Stabilizer, subset)  # change mathcal notation since not a group?
     # TODO: contraction on a generating set does not yield a generating set of the contraction of <generating set>!
     return Stabilizer([P for P in contract.(𝒮, (subset,)) if !isnothing(P)])  # make more efficient
-end
+end =#
 
 function delete(s::PauliOperator, subset)
     return s[setdiff(1:length(s), subset)]
