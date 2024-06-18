@@ -24,16 +24,22 @@ small_test_sizes = [1,2,3,4,5,7,8] # Pauligroup slows around n =9
     end
     #test get_generating_set
     for n in [1,small_test_sizes...]
-        s = zero(Stabilizer, rand(1:(2*n)), n)
-        for i in 1:length(s)
-            s[i] = random_pauli(n)
-        end
-        group = groupify(s)
-        gen_set = get_generating_set(group)
-        new_group = groupify(gen_set)
-        canonicalize!(group)
-        canonicalize!(new_group)
-        @test group == new_group
+        s = random_stabilizer(n)
+    group = groupify(s)
+    gen_set = get_generating_set(group)
+    new_group = groupify(gen_set)
+    canonicalize!(group)
+    canonicalize!(new_group)
+    @test group == new_group
+    s = zero(Stabilizer, rand(1:(2*n)), n)
+    for i in 1:length(s)
+        s[i] = random_pauli(n)  
+    end
+    gen_set = get_generating_set(s)
+    new_group = groupify(s)
+    for operator in s
+        @test operator in new_group
+    end
     end
     #test logical operator canonicalize
     for n in [1, test_sizes...]
@@ -98,8 +104,8 @@ small_test_sizes = [1,2,3,4,5,7,8] # Pauligroup slows around n =9
         end
         for stabilizer in s
             commutes = true
-            for c_stabilizer in c
-                @test comm(c_stabilizer, stabilizer) == 0x0
+            for stab in s
+                @test comm(stab, stabilizer) == 0x0
             end
             @test !commutes  || st in c
         end

@@ -175,9 +175,7 @@ function center(s::Stabilizer)  # hilariously inefficient. centerify? centrify?
         end
     end
     stabilizer = zero(Stabilizer, length(center), nqubits(s))
-    println(center)
     for i in eachindex(center)
-        println(i)
         stabilizer[i] = center[i]
     end
     return stabilizer
