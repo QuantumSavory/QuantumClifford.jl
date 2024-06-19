@@ -28,6 +28,14 @@ struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
 end
 UnbiasedUncorrelatedNoise(p::Integer) = UnbiasedUncorrelatedNoise(float(p))
 
+"""Pauli noise model with probabilities `px`, `py`, and `pz` respectively for the three types of Pauli errors."""
+struct PauliNoise{T} <: AbstractNoise
+    px::T
+    py::T
+    pz::T
+end
+PauliNoise(px::Integer,py::Integer,pz::Integer) = PauliNoise(float(px),float(py),float(pz))
+
 """A convenient constructor for various types of Pauli noise models.
 Returns more specific types when necessary."""
 function PauliNoise end
@@ -37,15 +45,9 @@ function PauliNoise(p)
     UnbiasedUncorrelatedNoise(p)
 end
 
-"""Constructs a biased Pauli noise model with total probabilities of error `px`, `py`, and `pz`."""
+"""Constructs a biased Pauli noise model with probabilities `px`, `py`, and `pz` respectively for the three types of Pauli errors."""
 function PauliNoise(px,py,pz)
-    BiasedPauliNoise(px,py,pz)
-end
-
-struct BiasedPauliNoise{px,py,pz} <: AbstractNoise
-    px::px
-    py::py
-    pz::pz
+    PauliNoise(px,py,pz)
 end
 
 function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,i::Int)
@@ -61,15 +63,13 @@ function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,i::I
     s
 end
 
-function applynoise!(s::AbstractStabilizer,noise::BiasedPauliNoise,i::Int)
-    rx = rand()
-    ry = rand()
-    rz = rand()
-    if rx<noise.px
+function applynoise!(s::AbstractStabilizer,noise::PauliNoise,i::Int)
+    r = rand()
+    if r<noise.px
         apply_single_x!(s,i)
-    elseif rz<noise.pz
+    elseif r<noise.px+noise.pz
         apply_single_z!(s,i)
-    elseif ry<noise.py
+    elseif r<noise.px+noise.pz+noise.py
         apply_single_y!(s,i)
     end
     s
