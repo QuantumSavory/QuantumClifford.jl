@@ -12,10 +12,11 @@ const code_instance_args = Dict(
     CSS => (c -> (parity_checks_x(c), parity_checks_z(c))).([Shor9(), Steane7(), Toric(4,4)]),
     Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2,2), Shor9())],
     RandomCircuitCode => repeat([
-            (10, Val(:alltoall), 30, 8), (10, Val(:alltoall), 30, 1:2:7),
-            ((7,), Val(:brickwork), 3, [1, 7]), ((20,), Val(:brickwork), 4, 1:4:20),
-            ((4, 6), Val(:brickwork), 4, 1:8)
-        ], 5), # repeat for more randomness
+            (20, Val(:alltoall), 200, 1), (40, Val(:alltoall), 200, [1,20]),
+            ((20,), Val(:brickwork), 50, [1]), ((20,), Val(:brickwork), 50, 1:2:20),
+            ((5, 5), Val(:brickwork), 50, [1]), ((3, 3, 3), Val(:brickwork), 50, [1])
+        ], 10), # repeat for more randomness
+    # Here, we does not include smaller random circuit code, because some of them has a bad distance and fails the TableDecoder test
 )
 
 function all_testablable_code_instances(;maxn=nothing)
