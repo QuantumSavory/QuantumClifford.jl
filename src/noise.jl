@@ -45,10 +45,6 @@ function PauliNoise(p)
     UnbiasedUncorrelatedNoise(p)
 end
 
-"""Constructs a biased Pauli noise model with probabilities `px`, `py`, and `pz` respectively for the three types of Pauli errors."""
-function PauliNoise(px,py,pz)
-    PauliNoise(px,py,pz)
-end
 
 function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,i::Int)
     infid = noise.p/3
