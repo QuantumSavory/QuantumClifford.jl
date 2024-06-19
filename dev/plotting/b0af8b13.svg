@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="400" viewBox="0 0 2400 1600">
 <defs>
-  <clipPath id="clip060">
+  <clipPath id="clip580">
     <rect x="0" y="0" width="2400" height="1600"/>
   </clipPath>
 </defs>
-<path clip-path="url(#clip060)" d="M0 1600 L2400 1600 L2400 0 L0 0  Z" fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<path clip-path="url(#clip580)" d="M0 1600 L2400 1600 L2400 0 L0 0  Z" fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
 <defs>
-  <clipPath id="clip061">
+  <clipPath id="clip581">
     <rect x="480" y="0" width="1681" height="1600"/>
   </clipPath>
 </defs>
-<path clip-path="url(#clip060)" d="M140.696 1486.45 L2352.76 1486.45 L2352.76 47.2441 L140.696 47.2441  Z" fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<path clip-path="url(#clip580)" d="M140.696 1486.45 L2352.76 1486.45 L2352.76 47.2441 L140.696 47.2441  Z" fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
 <defs>
-  <clipPath id="clip062">
+  <clipPath id="clip582">
     <rect x="140" y="47" width="2213" height="1440"/>
   </clipPath>
 </defs>
-<g clip-path="url(#clip062)">
+<g clip-path="url(#clip582)">
 <image width="2212" height="737" xlink:href="data:image/png;base64,
 iVBORw0KGgoAAAANSUhEUgAACKQAAALhCAYAAABrfO7yAAAgAElEQVR4nOzcwU0kQRZF0WKEGeUg
 i96XCXiAg/jB7GGkSrXudL5E51gQiv8jYXFVL7fb69cNYMzj/nb2EeD/6v3z4+wj8Bd8m45Z3G+z
