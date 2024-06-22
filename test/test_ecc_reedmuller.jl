@@ -37,18 +37,25 @@ end
             expected_rank = sum(binomial.(m, 0:r))
             @test computed_rank == expected_rank
             @test designed_distance(H, m, r) == true
-            @test rate(ReedMuller(r, m)) == sum(binomial.(m, 0:r)) / 2 ^ m
-            @test code_n(ReedMuller(r, m)) == 2 ^ m
-            @test code_k(ReedMuller(r, m)) == sum(binomial.(m, 0:r))
-            @test distance(ReedMuller(r, m)) == 2 ^ (m - r)
+            @test rate(ReedMuller(r, m)) == sum(binomial.(m, 0:r)) / 2 ^ m == rate(RecursiveReedMuller(r, m))
+            @test code_n(ReedMuller(r, m)) == 2 ^ m == code_n(RecursiveReedMuller(r, m))
+            @test code_k(ReedMuller(r, m)) == sum(binomial.(m, 0:r)) == code_k(RecursiveReedMuller(r, m))
+            @test distance(ReedMuller(r, m)) == 2 ^ (m - r) == distance(RecursiveReedMuller(r, m))
             H₁ = generator(RecursiveReedMuller(r, m))
             @test echelon_form(matrix(QQ, Matrix{Int64}(H))) == echelon_form(matrix(QQ, Matrix{Int64}(H₁)))
             H = parity_checks(ReedMuller(r, m))
             H₁ = parity_checks(RecursiveReedMuller(r, m))
             @test echelon_form(matrix(QQ, Matrix{Int64}(H))) == echelon_form(matrix(QQ, Matrix{Int64}(H₁)))
-            H₁ = generator(ReedMuller(m - r - 1, m))
-            H = parity_checks(ReedMuller(r, m))
-            @test size(H) == size(H₁) # dim(RM(m - r - 1, m)) = dim(RM(r, m)^⊥)
+            # dim(RM(m - r - 1, m)) = dim(RM(r, m)^⊥). 
+            # RM(m - r - 1, m) = RM(r, m)^⊥ ∴ parity check matrix (H) of `RM(r, m)` is the generator matrix (G) for `RM(m - r - 1, m)`.
+            H₁ = parity_checks(ReedMuller(m - r - 1, m))
+            G₂ = generator(ReedMuller(r, m))
+            @test size(H₁) == size(G₂)
+            @test echelon_form(matrix(QQ, Matrix{Int64}(H₁))) == echelon_form(matrix(QQ, Matrix{Int64}(G₂)))
+            G₃ = generator(ReedMuller(m - r - 1, m))
+            H₄ = parity_checks(ReedMuller(r, m))
+            @test size(G₃) == size(H₄)
+            @test echelon_form(matrix(QQ, Matrix{Int64}(H₄))) == echelon_form(matrix(QQ, Matrix{Int64}(G₃)))
         end
     end
 

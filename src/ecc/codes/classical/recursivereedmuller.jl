@@ -14,14 +14,16 @@ G(r, m - 1) & G(r, m - 1) \\
 
 Here, the matrix 0 denotes an all-zero matrix with dimensions matching `G(r - 1, m - 1)`. This recursive approach facilitates the construction of higher-order Reed-Muller codes based on the generator matrices of lower-order codes.
 
-The dimension of `RM(m - r - 1, m)` equals the dimension of the dual of `RM(r, m)`. Thus, `RM(m - r - 1, m) = RM(r, m)^⊥` which indicates that the parity check matrix of `RM(r, m)` is the generator matrix for `RM(m - r - 1, m)`.
+In addition, the dimension of `RM(m - r - 1, m)` equals the dimension of the dual of `RM(r, m)`. Thus, `RM(m - r - 1, m) = RM(r, m)^⊥` shows that the [dual code](https://en.wikipedia.org/wiki/Dual_code) of `RM(r, m)` is `RM(m − r − 1, m)`, indicating the parity check matrix of `RM(r, m)` is the generator matrix for `RM(m - r - 1, m)`.
 """
 struct RecursiveReedMuller <: ClassicalCode
     r::Int
     m::Int
 
     function RecursiveReedMuller(r, m)
-        0 ≤ r ≤ m && m - r - 1 ≥ 0 || m < 11 || throw(ArgumentError("Invalid parameters: r must be non-negative, r ≤ m and m - r - 1 ≥ 0. Additionally, m must be positive and < 11 in order to obtain a valid code and to remain tractable."))
+        if r < 0 || r > m || m > 11
+            throw(ArgumentError("Invalid parameters: r must be non-negative, r ≤ m and m - r - 1 ≥ 0. Additionally, m must be positive and < 11 in order to obtain a valid code and to remain tractable."))
+        end
         new(r, m)
     end
 end
