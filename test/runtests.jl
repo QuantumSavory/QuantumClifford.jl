@@ -33,6 +33,8 @@ else
     println("skipping gpu tests (set GPU_TESTS=true to test gpu)")
 end
 
+@doset "ecc_decoder_all_setups"
+
 @doset "throws"
 @doset "paulis"
 @doset "stabs"
@@ -60,7 +62,7 @@ end
 @doset "quantumoptics"
 @doset "ecc"
 @doset "ecc_codeproperties"
-@doset "ecc_decoder_all_setups"
+
 @doset "ecc_encoding"
 @doset "ecc_gottesman"
 @doset "ecc_reedmuller"
