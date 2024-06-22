@@ -16,25 +16,16 @@ Here, the matrix 0 denotes an all-zero matrix with dimensions matching `G(r - 1,
 
 The dimension of `RM(m - r - 1, m)` equals the dimension of the dual of `RM(r, m)`. Thus, `RM(m - r - 1, m) = RM(r, m)^⊥` which indicates that the parity check matrix of `RM(r, m)` is the generator matrix for `RM(m - r - 1, m)`.
 """
-abstract type ClassicalCode end
-
 struct RecursiveReedMuller <: ClassicalCode
     r::Int
     m::Int
 
     function RecursiveReedMuller(r, m)
-        0 ≤ r ≤ m || throw(ArgumentError("Invalid parameters: r must be non-negative, r ≤ m and m - r - 1 ≥ 0 in order to obtain a valid code."))
+        0 ≤ r ≤ m && m - r - 1 ≥ 0 || m < 11 || throw(ArgumentError("Invalid parameters: r must be non-negative, r ≤ m and m - r - 1 ≥ 0. Additionally, m must be positive and < 11 in order to obtain a valid code and to remain tractable."))
         new(r, m)
     end
 end
 
-"""
-This function generates the generator matrix, `G`, for RecursiveReedMuller`(RecursiveReedMuller(r, m))` error-correcting codes. 
-
-`generator(RecursiveReedMuller(r, m))`:
-- `m`: Positive integer representing the message length.
-- `r`: The order of the Reed-Muller code. Must satisfy `0 ≤ r ≤ m`.
-"""
 function _recursiveReedMuller(r::Int, m::Int)
     if r == 1 && m == 1
         return Matrix{Int}([1 1; 0 1])
@@ -53,13 +44,6 @@ function generator(c::RecursiveReedMuller)
     return _recursiveReedMuller(c.r, c.m)
 end
 
-"""
-This function generates the parity check matrix, `H`, for RecursiveReedMuller`(RecursiveReedMuller(r, m))` error-correcting codes. 
-
-`parity_checks(RecursiveReedMuller(r, m))`:
-- `m`: Positive integer representing the message length.
-- `r`: The order of the Reed-Muller code. Must satisfy `0 ≤ r ≤ m`.
-"""
 function parity_checks(c::RecursiveReedMuller)
     H = generator(RecursiveReedMuller(c.m - c.r - 1, c.m))
     return H

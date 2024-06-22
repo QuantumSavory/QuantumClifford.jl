@@ -2,9 +2,9 @@
 
 Let `m` be a positive integer and `r` a nonnegative integer with `r ≤ m`. These linear codes, denoted as `RM(r, m)`, have order `r` (where `0 ≤ r ≤ m`) and codeword length `n` of `2ᵐ`.
 
-Two special cases exist:
-    1. `RM(0, m)`: This is the `0ᵗʰ`-order `RM` code, similar to the binary repetition code with length `2ᵐ`. It's characterized by a single basis vector containing all ones.
-    2. `RM(m, m)`: This is the `mᵗʰ`-order `RM` code. It encompasses the entire field `F(2ᵐ)`, representing all possible binary strings of length `2ᵐ`.
+Two special cases of generator(RM(r, m)) exist:
+    1. `generator(RM(0, m))`: This is the `0ᵗʰ`-order `RM` code, similar to the binary repetition code with length `2ᵐ`. It's characterized by a single basis vector containing all ones.
+    2. `generator(RM(m, m))`: This is the `mᵗʰ`-order `RM` code. It encompasses the entire field `F(2ᵐ)`, representing all possible binary strings of length `2ᵐ`.
 
 You might be interested in consulting [raaphorst2003reed](@cite), [abbe2020reed](@cite), and [djordjevic2021quantum](@cite) as well.
 
@@ -20,7 +20,7 @@ struct ReedMuller <: ClassicalCode
     m::Int
 
     function ReedMuller(r, m)
-        0 ≤ r ≤ m || throw(ArgumentError("Invalid parameters: r must be non-negative and r ≤ m. Additionally, m must be positive and < 11 in order to obtain a valid code and to remain tractable"))
+        0 ≤ r ≤ m && m - r - 1 ≥ 0 || m < 11 || throw(ArgumentError("Invalid parameters: r must be non-negative and r ≤ m. Additionally, m must be positive and < 11 in order to obtain a valid code and to remain tractable"))
         new(r, m)
     end
 end
@@ -33,13 +33,6 @@ function _vmult_rm(vecs...)
     return [reduce(*, a, init=1) for a in zip(vecs...)]
 end
 
-"""
-This function generates the generator matrix, `G`, for Reed-Muller `(RM(r, m))` error-correcting codes. 
-
-`generator(ReedMuller(r, m))`:
-- `m`: Positive integer representing the message length.
-- `r`: Nonnegative integer less than or equal to `m`, specifying the code's order.
-"""
 function generator(c::ReedMuller)
     r = c.r
     m = c.m
@@ -52,13 +45,6 @@ function generator(c::ReedMuller)
     return G 
 end
 
-"""
-This function generates the parity check matrix, `H`, for Reed-Muller `(RM(r, m))` error-correcting codes. 
-
-`parity_checks(ReedMuller(r, m))`:
-- `m`: Positive integer representing the message length.
-- `r`: Nonnegative integer less than or equal to `m`, specifying the code's order.
-"""
 function parity_checks(c::ReedMuller)
     H = generator(ReedMuller(c.m - c.r - 1, c.m))
     return H
