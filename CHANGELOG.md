@@ -12,6 +12,7 @@
 - Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
 - Remove printing of spurious debug info from the PyBP decoder. 
 - Significant improvements to the low-level circuit compiler (the sumtype compactifier), leading to faster Pauli frame simulation of noisy circuits.
+- Bug fix to the `parity_checks(ReedMuller(r, m))` of classical `Reed-Muller` code along with `RecursiveReedMuller` code implementation for cross-reference.
 
 ## v0.9.3 - 2024-04-10
 

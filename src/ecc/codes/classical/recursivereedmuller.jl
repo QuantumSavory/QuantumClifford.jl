@@ -21,8 +21,8 @@ struct RecursiveReedMuller <: ClassicalCode
     m::Int
 
     function RecursiveReedMuller(r, m)
-        if r < 0 || r > m || m > 11
-            throw(ArgumentError("Invalid parameters: r must be non-negative, r ≤ m and m - r - 1 ≥ 0. Additionally, m must be positive and < 11 in order to obtain a valid code and to remain tractable."))
+        if r < 0 || r > m
+            throw(ArgumentError("Invalid parameters: r must be non-negative, r ≤ m in order to valid code."))
         end
         new(r, m)
     end
