@@ -175,7 +175,12 @@ function _pftrajectories(circuit;trajectories=5000,threads=true)
     ccircuit = if eltype(circuit) <: CompactifiedGate
         circuit
     else
-        compactify_circuit(circuit)
+        try
+            compactify_circuit(circuit)
+        catch err
+            @warn "Could not compactify the circuit, falling back to a slower version of the simulation. Consider reporting this issue to the package maintainers to improve performance. The offending gate was `$(err.args[2])`."
+            circuit
+        end
     end
     frames = _create_pauliframe(ccircuit; trajectories)
     nthr = min(Threads.nthreads(),trajectories÷(100))
