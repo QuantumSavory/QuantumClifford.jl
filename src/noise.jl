@@ -34,7 +34,12 @@ struct PauliNoise{T} <: AbstractNoise
     py::T
     pz::T
 end
-PauliNoise(px::Integer,py::Integer,pz::Integer) = PauliNoise(float(px),float(py),float(pz))
+function PauliNoise(px::Real, py::Real, pz::Real)
+    px, py, pz = float.((px, py, pz))
+    px, py, pz = promote(px, py, pz)
+    T = typeof(px)
+    return PauliNoise{T}(px, py, pz)
+end
 
 """A convenient constructor for various types of Pauli noise models.
 Returns more specific types when necessary."""
