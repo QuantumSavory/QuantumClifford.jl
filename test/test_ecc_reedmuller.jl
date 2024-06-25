@@ -1,5 +1,5 @@
 using Test
-using Nemo: echelon_form, QQ, matrix, GF
+using Nemo: echelon_form, matrix, GF
 using LinearAlgebra
 using QuantumClifford
 using QuantumClifford.ECC
@@ -42,20 +42,20 @@ end
             @test code_k(ReedMuller(r, m)) == sum(binomial.(m, 0:r)) == code_k(RecursiveReedMuller(r, m))
             @test distance(ReedMuller(r, m)) == 2 ^ (m - r) == distance(RecursiveReedMuller(r, m))
             H₁ = generator(RecursiveReedMuller(r, m))
-            @test echelon_form(matrix(QQ, Matrix{Int64}(H))) == echelon_form(matrix(QQ, Matrix{Int64}(H₁)))
+            @test echelon_form(matrix(GF(2), Matrix{Int64}(H))) == echelon_form(matrix(GF(2), Matrix{Int64}(H₁)))
             H = parity_checks(ReedMuller(r, m))
             H₁ = parity_checks(RecursiveReedMuller(r, m))
-            @test echelon_form(matrix(QQ, Matrix{Int64}(H))) == echelon_form(matrix(QQ, Matrix{Int64}(H₁)))
+            @test echelon_form(matrix(GF(2), Matrix{Int64}(H))) == echelon_form(matrix(GF(2), Matrix{Int64}(H₁)))
             # dim(RM(m - r - 1, m)) = dim(RM(r, m)^⊥). 
             # RM(m - r - 1, m) = RM(r, m)^⊥ ∴ parity check matrix (H) of `RM(r, m)` is the generator matrix (G) for `RM(m - r - 1, m)`.
             H₁ = parity_checks(ReedMuller(m - r - 1, m))
             G₂ = generator(ReedMuller(r, m))
             @test size(H₁) == size(G₂)
-            @test echelon_form(matrix(QQ, Matrix{Int64}(H₁))) == echelon_form(matrix(QQ, Matrix{Int64}(G₂)))
+            @test echelon_form(matrix(GF(2), Matrix{Int64}(H₁))) == echelon_form(matrix(GF(2), Matrix{Int64}(G₂)))
             G₃ = generator(ReedMuller(m - r - 1, m))
             H₄ = parity_checks(ReedMuller(r, m))
             @test size(G₃) == size(H₄)
-            @test echelon_form(matrix(QQ, Matrix{Int64}(H₄))) == echelon_form(matrix(QQ, Matrix{Int64}(G₃)))
+            @test echelon_form(matrix(GF(2), Matrix{Int64}(H₄))) == echelon_form(matrix(GF(2), Matrix{Int64}(G₃)))
         end
     end
 
@@ -70,7 +70,7 @@ end
     for m in 3:10
         H = generator(ReedMuller(m, m))
         expected = check_RM_m_m(m)
-        @test echelon_form(matrix(QQ, Matrix{Int64}(H))) == echelon_form(matrix(QQ, expected))
+        @test echelon_form(matrix(GF(2), Matrix{Int64}(H))) == echelon_form(matrix(GF(2), expected))
     end
     
     # Testing common examples of RM(r,m) codes [raaphorst2003reed](@cite), [djordjevic2021quantum](@cite), [abbe2020reed](@cite).

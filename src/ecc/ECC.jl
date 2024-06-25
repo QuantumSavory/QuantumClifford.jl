@@ -9,7 +9,7 @@ using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form, QQ
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 
 abstract type AbstractECC end
 
@@ -70,9 +70,7 @@ In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the gener
 """
 function generator_polynomial end
 
-"""
-This function generates the generator matrix, `G`, for error-correcting codes.
-"""
+"""The generator matrix of a code."""
 function generator end
 
 parity_checks(s::Stabilizer) = s
