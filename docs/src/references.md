@@ -49,6 +49,7 @@ For classical code construction routines:
 - [error2024lin](@cite)
 - [golay1949notes](@cite)
 - [huffman2010fundamentals](@cite)
+- [bhatia2018mceliece](@cite)
 
 # References
 

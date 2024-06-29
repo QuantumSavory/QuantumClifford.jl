@@ -64,6 +64,8 @@ In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the gener
 """
 function generator_polynomial end
 
+function generator end
+
 parity_checks(s::Stabilizer) = s
 Stabilizer(c::AbstractECC) = parity_checks(c)
 MixedDestabilizer(c::AbstractECC; kwarg...) = MixedDestabilizer(Stabilizer(c); kwarg...)
