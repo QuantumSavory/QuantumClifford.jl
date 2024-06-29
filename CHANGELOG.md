@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.5 - 2024-06-29
+
+- **(fix)** Bug fix to the `parity_checks(ReedMuller(r, m))` of classical `Reed-Muller` code along with `RecursiveReedMuller` code implementation for cross reference.
+
 ## v0.9.4 - 2024-06-28
 
 - Addition of a constructor for concatenated quantum codes -- `Concat`.
