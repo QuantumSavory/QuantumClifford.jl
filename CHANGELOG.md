@@ -5,18 +5,16 @@
 
 # News
 
-## v0.9.5 - 2024-06-25
+## v0.9.4 - 2024-06-29
 
 - **(fix)** Bug fix to the `parity_checks(ReedMuller(r, m))` of classical `Reed-Muller` code along with `RecursiveReedMuller` code implementation for cross reference.
-
-## v0.9.4 - 2024-06-19
-
 - Addition of a constructor for concatenated quantum codes -- `Concat`.
 - Addition of multiple unexported classical code constructors.
 - Failed compactification of gates now only raises a warning instead of throwing an error. Defaults to slower non-compactified gates.
 - Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
 - Remove printing of spurious debug info from the PyBP decoder. 
 - Significant improvements to the low-level circuit compiler (the sumtype compactifier), leading to faster Pauli frame simulation of noisy circuits.
+- Bump `QuantumOpticsBase.jl` package extension compat bound.
 
 ## v0.9.3 - 2024-04-10
 
