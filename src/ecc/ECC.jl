@@ -19,7 +19,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     RepCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
-    Toric, Gottesman, Surface,
+    Toric, Gottesman, Surface, Concat,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -49,6 +49,11 @@ function parity_checks_z(code::AbstractECC)
     throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
 end
 
+
+"""Check if the code is CSS.
+
+Return `nothing` if unknown from the type.
+"""
 function iscss(::Type{T}) where T<:AbstractECC
     return false
 end
@@ -353,6 +358,7 @@ include("codes/clevecode.jl")
 include("codes/toric.jl")
 include("codes/gottesman.jl")
 include("codes/surface.jl")
+include("codes/concat.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/bch.jl")
 include("codes/classical/shortenedmds.jl")
