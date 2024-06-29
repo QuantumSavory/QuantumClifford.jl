@@ -50,6 +50,9 @@ function parity_checks(c::ReedMuller)
 end
 
 code_n(c::ReedMuller) = 2 ^ c.m
+
 code_k(c::ReedMuller) = sum(binomial.(c.m, 0:c.r))
+
 distance(c::ReedMuller) = 2 ^ (c.m - c.r)
+
 rate(c::ReedMuller) = code_k(c::ReedMuller) / code_n(c::ReedMuller)

@@ -42,15 +42,26 @@ end
             @test code_k(ReedMuller(r, m)) == sum(binomial.(m, 0:r)) == code_k(RecursiveReedMuller(r, m))
             @test distance(ReedMuller(r, m)) == 2 ^ (m - r) == distance(RecursiveReedMuller(r, m))
             H₁ = generator(RecursiveReedMuller(r, m))
+            # generator(RecursiveReedMuller(r, m)) is canonically equivalent to the generator(ReedMuller(r, m)) under reduced row echelon form.
             @test echelon_form(matrix(GF(2), Matrix{Int64}(H))) == echelon_form(matrix(GF(2), Matrix{Int64}(H₁)))
             H = parity_checks(ReedMuller(r, m))
-            H₁ = parity_checks(RecursiveReedMuller(r, m))
+            H₁ = parity_checks(RecursiveReedMuller(r, m)) 
+            # parity_checks(RecursiveReedMuller(r, m)) is canonically equivalent to the parity_checks(ReedMuller(r, m)) under reduced row echelon form.
             @test echelon_form(matrix(GF(2), Matrix{Int64}(H))) == echelon_form(matrix(GF(2), Matrix{Int64}(H₁)))
-            # dim(RM(m - r - 1, m)) = dim(RM(r, m)^⊥). 
-            # RM(m - r - 1, m) = RM(r, m)^⊥ ∴ parity check matrix (H) of `RM(r, m)` is the generator matrix (G) for `RM(m - r - 1, m)`.
+            # dim(ReedMuller(m - r - 1, m)) = dim(ReedMuller(r, m)^⊥). 
+            # ReedMuller(m - r - 1, m) = ReedMuller(r, m)^⊥ ∴ parity check matrix (H) of ReedMuller(r, m) is the generator matrix (G) for ReedMuller(m - r - 1, m).
             H₁ = parity_checks(ReedMuller(m - r - 1, m))
             G₂ = generator(ReedMuller(r, m))
             @test size(H₁) == size(G₂)
+            @test echelon_form(matrix(GF(2), Matrix{Int64}(H₁))) == echelon_form(matrix(GF(2), Matrix{Int64}(G₂)))
+            G₃ = generator(ReedMuller(m - r - 1, m))
+            H₄ = parity_checks(ReedMuller(r, m))
+            @test size(G₃) == size(H₄)
+            # dim(RecursiveReedMuller(m - r - 1, m)) = dim(RecursiveReedMuller(r, m)^⊥). 
+            # RecursiveReedMuller(m - r - 1, m) = RecursiveReedMuller(r, m)^⊥ ∴ parity check matrix (H) of RecursiveReedMuller(r, m) is the generator matrix (G) for RecursiveReedMuller(m - r - 1, m).
+            H₁ = parity_checks(RecursiveReedMuller(m - r - 1, m))
+            G₂ = generator(RecursiveReedMuller(r, m))
+            @test echelon_form(matrix(GF(2), Matrix{Int64}(H₄))) == echelon_form(matrix(GF(2), Matrix{Int64}(G₃)))
             @test echelon_form(matrix(GF(2), Matrix{Int64}(H₁))) == echelon_form(matrix(GF(2), Matrix{Int64}(G₂)))
             G₃ = generator(ReedMuller(m - r - 1, m))
             H₄ = parity_checks(ReedMuller(r, m))

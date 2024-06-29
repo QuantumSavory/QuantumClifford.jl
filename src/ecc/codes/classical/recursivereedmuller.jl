@@ -52,6 +52,9 @@ function parity_checks(c::RecursiveReedMuller)
 end
 
 code_n(c::RecursiveReedMuller) = 2 ^ c.m
+
 code_k(c::RecursiveReedMuller) = sum(binomial.(c.m, 0:c.r))
+
 distance(c::RecursiveReedMuller) = 2 ^ (c.m - c.r)
+
 rate(c::RecursiveReedMuller) = code_k(c::RecursiveReedMuller) / code_n(c::RecursiveReedMuller)
