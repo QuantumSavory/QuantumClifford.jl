@@ -7,8 +7,10 @@ using QuantumClifford.ECC: AbstractECC, ShortenedMDS, generator_polynomial
 using Nemo: finite_field, GF, FqFieldElem, FqPolyRingElem, coeff, is_zero, degree, matrix
 include("utils_test_ecc.jl")
 
+@testset "Testing ShortenedMDS code" begin
+
 """ 
-- Employing `3-level` quantization of the channel bits and erasing entire symbols if any of their constituent bits are erased can improve the performance of RS codes. Shortened Maximum Distance Separable (MDS) codes have the following parameters - code length `(n)`, codesize `(k)` and minimum Hamming distance `(d)` represented by [n, k, d] as follows: [2 ^ (m) + 1 - s, k, 2 ^ (m + 1) - s - k]. Thus, the designed minimum distance `d` is 2 ^ (m + 1) - s - k. Refer to chapter: 07, section: 03, pages: 172 to 175 [tomlinson2017error](@cite).
+- Employing `3-level` quantization of the channel bits and erasing entire symbols if any of their constituent bits are erased can improve the performance of RS codes. Shortened Maximum Distance Separable (MDS) codes have the following parameters - code length `(n)`, codesize `(k)` and minimum Hamming distance `(d)` represented by [n, k, d] as follows: [2 ^ (m) + 1 - 3, k, 2 ^ (m + 1) - 3 - k]. Thus, the designed minimum distance `d` is 2 ^ (m + 1) - s - k. Refer to chapter: 07, section: 03, pages: 172 to 175 [tomlinson2017error](@cite).
 - The designed distance for binary expanded parity check matrix remains same as symbol based parity check matrix. According to [macwilliams1977theory](@cite), changing the basis `j` can increase the designed distance `(dmin)` of the resulting binary code.
 """
 
@@ -41,59 +43,61 @@ end
     @test size(parity_checks(ShortenedMDS(5, 8))) == (75, 150)
     H = Matrix{Bool}(undef, 75, 150)
     H = parity_checks(ShortenedMDS(5, 8))
-    example₁₋₁ =	[1  0  0  0  0  1  0  0  0  0  1  0  0  0  0;	
-			 0  1  0  0  0  0  1  0  0  0  0  1  0  0  0;
-			 0  0  1  0  0  0  0  1  0  0  0  0  1  0  0;
-			 0  0  0  1  0  0  0  0  1  0  0  0  0  1  0;
-			 0  0  0  0  1  0  0  0  0  1  0  0  0  0  1;
-			 1  0  0  0  0  0  1  0  0  0  0  0  1  0  0;
-			 0  1  0  0  0  0  0  1  0  0  0  0  0  1  0;
-			 0  0  1  0  0  0  0  0  1  0  0  0  0  0  1;
-			 0  0  0  1  0  0  0  0  0  1  1  0  1  0  0;
-			 0  0  0  0  1  1  0  1  0  0  0  1  0  1  0;
-			 1  0  0  0  0  0  0  1  0  0  0  0  0  0  1;
-			 0  1  0  0  0  0  0  0  1  0  1  0  1  0  0;
-			 0  0  1  0  0  0  0  0  0  1  0  1  0  1  0;
-			 0  0  0  1  0  1  0  1  0  0  0  0  1  0  1;
-			 0  0  0  0  1  0  1  0  1  0  1  0  1  1  0;
-			 1  0  0  0  0  0  0  0  1  0  0  1  0  1  0;
-			 0  1  0  0  0  0  0  0  0  1  0  0  1  0  1;
-			 0  0  1  0  0  1  0  1  0  0  1  0  1  1  0;
-			 0  0  0  1  0  0  1  0  1  0  0  1  0  1  1;
-			 0  0  0  0  1  0  0  1  0  1  1  0  0  0  1]
-    example₁₋₂ =	[1  0  0  0  0  1  0  1  1  1  0  1  1  0  1;
-			 0  1  0  0  0  1  1  1  1  1  1  0  0  1  0;
-			 0  0  1  0  0  1  1  0  1  1  0  1  0  0  1;
-			 0  0  0  1  0  1  1  0  0  1  1  0  0  0  0;
-			 0  0  0  0  1  1  1  0  0  0  0  1  0  0  0]
-    example₁₋₃ =	[1  0  0  0  0;
-			 0  1  0  0  0; 
-			 0  0  1  0  0;
-			 0  0  0  1  0;
-			 0  0  0  0  1;
-			 1  0  0  1  0;
-			 0  1  0  0  1;
-			 1  0  0  0  0;
-			 0  1  0  0  0;
-			 0  0  1  0  0;
-			 1  1  0  1  0;
-			 0  1  1  0  1;
-			 1  0  0  1  0;
-			 0  1  0  0  1;
-			 1  0  0  0  0;
-			 1  0  0  1  1;
-			 1  1  1  0  1;
-			 1  1  0  1  0;
-			 0  1  1  0  1;
-			 1  0  0  1  0]
-    example₁₋₄ =	[0  0  0  1  0; 
-			 0  0  0  0  1;
-			 1  0  1  0  0;
-			 0  1  0  1  0;
-			 0  0  1  0  1]
+    H₁₋₁ =	[1  0  0  0  0  1  0  0  0  0  1  0  0  0  0;	
+		 0  1  0  0  0  0  1  0  0  0  0  1  0  0  0;
+		 0  0  1  0  0  0  0  1  0  0  0  0  1  0  0;
+		 0  0  0  1  0  0  0  0  1  0  0  0  0  1  0;
+		 0  0  0  0  1  0  0  0  0  1  0  0  0  0  1;
+		 1  0  0  0  0  0  1  0  0  0  0  0  1  0  0;
+		 0  1  0  0  0  0  0  1  0  0  0  0  0  1  0;
+		 0  0  1  0  0  0  0  0  1  0  0  0  0  0  1;
+		 0  0  0  1  0  0  0  0  0  1  1  0  1  0  0;
+		 0  0  0  0  1  1  0  1  0  0  0  1  0  1  0;
+		 1  0  0  0  0  0  0  1  0  0  0  0  0  0  1;
+		 0  1  0  0  0  0  0  0  1  0  1  0  1  0  0;
+		 0  0  1  0  0  0  0  0  0  1  0  1  0  1  0;
+		 0  0  0  1  0  1  0  1  0  0  0  0  1  0  1;
+		 0  0  0  0  1  0  1  0  1  0  1  0  1  1  0;
+		 1  0  0  0  0  0  0  0  1  0  0  1  0  1  0;
+		 0  1  0  0  0  0  0  0  0  1  0  0  1  0  1;
+		 0  0  1  0  0  1  0  1  0  0  1  0  1  1  0;
+		 0  0  0  1  0  0  1  0  1  0  0  1  0  1  1;
+		 0  0  0  0  1  0  0  1  0  1  1  0  0  0  1]
+    H₁₋₂ =	[1  0  0  0  0  1  0  1  1  1  0  1  1  0  1;
+		 0  1  0  0  0  1  1  1  1  1  1  0  0  1  0;
+		 0  0  1  0  0  1  1  0  1  1  0  1  0  0  1;
+		 0  0  0  1  0  1  1  0  0  1  1  0  0  0  0;
+		 0  0  0  0  1  1  1  0  0  0  0  1  0  0  0]
+    H₁₋₃ =	[1  0  0  0  0;
+		 0  1  0  0  0; 
+		 0  0  1  0  0;
+		 0  0  0  1  0;
+		 0  0  0  0  1;
+		 1  0  0  1  0;
+		 0  1  0  0  1;
+		 1  0  0  0  0;
+		 0  1  0  0  0;
+		 0  0  1  0  0;
+		 1  1  0  1  0;
+		 0  1  1  0  1;
+		 1  0  0  1  0;
+		 0  1  0  0  1;
+		 1  0  0  0  0;
+		 1  0  0  1  1;
+		 1  1  1  0  1;
+		 1  1  0  1  0;
+		 0  1  1  0  1;
+		 1  0  0  1  0]
+    H₁₋₄ =	[0  0  0  1  0;
+		 0  0  0  0  1;
+		 1  0  1  0  0;
+		 0  1  0  1  0;
+		 0  0  1  0  1]
 
-    @test H[1:20, 1:15] == example₁₋₁
-    @test H[71:75, 1:15] == example₁₋₂ 
-    @test H[1:20, 146:150] == example₁₋₃ 
-    @test H[71:75, 146:150] == example₁₋₄
+    @test H[1:20, 1:15] == H₁₋₁
+    @test H[71:75, 1:15] == H₁₋₂ 
+    @test H[1:20, 146:150] == H₁₋₃ 
+    @test H[71:75, 146:150] == H₁₋₄
+end
+
 end

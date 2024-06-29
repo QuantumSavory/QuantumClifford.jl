@@ -1,4 +1,4 @@
-"""The family of `[2ᵐ + 1 - s, k, 2ᵐ ⁺ ¹ - s - k]` Shortened Maximum Distance Separable `(ShortenedMDS)` codes are constructed from the `[2ᵐ + 1, k, 2ᵐ ⁺ ¹ - k]` Extended, Augmented Reed-Solomon codes from the corresponding first `x - 1` columns of latter's parity-check matrix, using `j = 0`, and setting `α₀, α₁, α₂, ..., αₓ ₋ ₁` to  `α⁰, α¹, α², ..., αˣ ⁻ ¹` in the parity-check matrix.
+"""The family of `[2ᵐ + 1 - 3, k, 2ᵐ ⁺ ¹ - 3 - k]` Shortened Maximum Distance Separable `(ShortenedMDS)` codes are constructed from the `[2ᵐ + 1, k, 2ᵐ ⁺ ¹ - k]` Extended, Augmented Reed-Solomon codes from the corresponding first `x - 1` columns of latter's parity-check matrix, using `j = 0`, and setting `α₀, α₁, α₂, ..., αₓ ₋ ₁` to  `α⁰, α¹, α², ..., αˣ ⁻ ¹` in the parity-check matrix.
 
 Denoting the `x` field elements as `0, α⁰, α¹, α²,... αˣ ⁻ ¹`, the shortened field parity-check matrix (`HF`) is given as follows:
 
@@ -89,4 +89,5 @@ function parity_checks(rs::ShortenedMDS)
 end
 
 code_n(rs::ShortenedMDS) = (2 ^ rs.m + 1 - 3) * rs.m
+
 code_k(rs::ShortenedMDS) = (2 ^ rs.m - 1 - 2 * rs.t) * rs.m
