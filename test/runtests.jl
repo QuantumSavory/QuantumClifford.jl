@@ -70,6 +70,7 @@ end
 @doset "ecc_throws"
 @doset "precompile"
 @doset "pauliframe"
+@doset "sumtypecompactification"
 @doset "allocations"
 VERSION >= v"1.10" && @doset "doctests"
 get(ENV,"JET_TEST","")=="true" && @doset "jet"
