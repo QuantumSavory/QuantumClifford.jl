@@ -7,6 +7,7 @@
 
 ## v0.9.4 - 2024-06-28
 
+- Addition of classical Golay codes to ECC module
 - Addition of a constructor for concatenated quantum codes -- `Concat`.
 - Addition of multiple unexported classical code constructors.
 - Failed compactification of gates now only raises a warning instead of throwing an error. Defaults to slower non-compactified gates.
