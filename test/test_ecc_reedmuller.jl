@@ -63,8 +63,8 @@ end
             G₂ = generator(RecursiveReedMuller(r, m))
             @test echelon_form(matrix(GF(2), Matrix{Int64}(H₄))) == echelon_form(matrix(GF(2), Matrix{Int64}(G₃)))
             @test echelon_form(matrix(GF(2), Matrix{Int64}(H₁))) == echelon_form(matrix(GF(2), Matrix{Int64}(G₂)))
-            G₃ = generator(ReedMuller(m - r - 1, m))
-            H₄ = parity_checks(ReedMuller(r, m))
+            G₃ = generator(RecursiveReedMuller(m - r - 1, m))
+            H₄ = parity_checks(RecursiveReedMuller(r, m))
             @test size(G₃) == size(H₄)
             @test echelon_form(matrix(GF(2), Matrix{Int64}(H₄))) == echelon_form(matrix(GF(2), Matrix{Int64}(G₃)))
         end
