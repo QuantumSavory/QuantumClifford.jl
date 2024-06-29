@@ -20,7 +20,7 @@ include("utils_test_ecc.jl")
         end
     end
 end
-        
+
 @testset "Testing properties of BCH codes" begin
     m_cases = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     for m in m_cases
