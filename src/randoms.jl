@@ -234,7 +234,7 @@ end
 ##############################
 
 function random_brickwork_clifford_circuit(rng::AbstractRNG, arrange::NTuple{N,Int} where {N}, nlayers::Int)
-    circ = QuantumClifford.AbstractOperation[]
+    circ = QuantumClifford.SparseGate[]
     cartesian = CartesianIndices(arrange)
     dim = length(arrange)
     nqubits = prod(arrange)
@@ -258,7 +258,7 @@ end
 random_brickwork_clifford_circuit(arrange::NTuple{N,Int} where {N}, nlayers::Int) = random_brickwork_clifford_circuit(GLOBAL_RNG, arrange, nlayers)
 
 function random_all_to_all_clifford_circuit(rng::AbstractRNG, nqubits::Int, ngates::Int)
-    circ = QuantumClifford.AbstractOperation[]
+    circ = QuantumClifford.SparseGate[]
     for i in 1:ngates
         j = rand(1:nqubits)
         k = rand(1:nqubits-1)

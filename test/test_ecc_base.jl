@@ -16,8 +16,8 @@ const random_circuit_args = repeat([
 random_circuit_code_args = [map(f -> getfield(random_circuit_code(c...), f), fieldnames(CircuitCode)) for c in random_circuit_args]
 
 const code_instance_args = Dict(
-    Toric => [(3, 3), (4, 4), (3, 6), (4, 3), (5, 5)],
-    Surface => [(3, 3), (4, 4), (3, 6), (4, 3), (5, 5)],
+    Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
+    Surface => [(3,3), (4,4), (3,6), (4,3), (5,5)],
     Gottesman => [3, 4, 5],
     CSS => (c -> (parity_checks_x(c), parity_checks_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
     Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
