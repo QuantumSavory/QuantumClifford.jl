@@ -1,6 +1,7 @@
 module ECC
 
 using LinearAlgebra
+using LinearAlgebra: I
 using QuantumClifford
 using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
@@ -97,6 +98,7 @@ function rate(c)
     return rate
 end
 
+function generator end
 
 """The distance of a code."""
 function distance end
@@ -359,6 +361,8 @@ include("codes/toric.jl")
 include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/concat.jl")
+include("codes/quantumreedmuller.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/bch.jl")
+include("codes/classical/recursivereedmuller.jl")
 end #module
