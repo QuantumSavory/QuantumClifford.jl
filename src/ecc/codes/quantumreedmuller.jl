@@ -20,6 +20,10 @@ struct QuantumReedMuller <: AbstractECC
     end
 end
 
+function iscss(::Type{QuantumReedMuller})
+    return true
+end
+
 function parity_checks(c::QuantumReedMuller)
     RM₁₋ₘ = generator(RecursiveReedMuller(1, c.m))
     RM₍ₘ₋₂₎₋ₘ₎ = generator(RecursiveReedMuller(c.m - 2, c.m))
@@ -32,3 +36,9 @@ code_n(c::QuantumReedMuller) = 2 ^ c.m - 1
 code_k(c::QuantumReedMuller) = 1
 
 distance(c::QuantumReedMuller) = 3
+
+parity_checks_x(c::QuantumReedMuller) = stab_to_gf2(parity_checks(QuantumReedMuller(c.m)))[1:c.m, 1:end÷2]
+
+parity_checks_z(c::QuantumReedMuller) = stab_to_gf2(parity_checks(QuantumReedMuller(c.m)))[end-(code_n(c::QuantumReedMuller) - 2 - c.m):end, end÷2+1:end]
+
+

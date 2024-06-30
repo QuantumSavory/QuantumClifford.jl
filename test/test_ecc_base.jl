@@ -11,6 +11,7 @@ const code_instance_args = Dict(
     Gottesman => [3, 4, 5],
     CSS => (c -> (parity_checks_x(c), parity_checks_z(c))).([Shor9(), Steane7(), Toric(4,4)]),
     Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2,2), Shor9())],
+    QuantumReedMuller => [(3), (4), (5)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
