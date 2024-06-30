@@ -1,6 +1,7 @@
 module ECC
 
 using LinearAlgebra
+using LinearAlgebra: I
 using QuantumClifford
 using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
@@ -19,7 +20,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     RepCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
-    Toric, Gottesman, Surface, Concat,
+    Toric, Gottesman, Surface, Concat, QuantumReedMuller,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -97,6 +98,7 @@ function rate(c)
     return rate
 end
 
+function generator end
 
 """The distance of a code."""
 function distance end
@@ -359,6 +361,8 @@ include("codes/toric.jl")
 include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/concat.jl")
+include("codes/quantumreedmuller.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/bch.jl")
+include("codes/classical/recursivereedmuller.jl")
 end #module

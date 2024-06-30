@@ -1,0 +1,33 @@
+using Test
+using Nemo: echelon_form, matrix, GF
+using LinearAlgebra
+using QuantumClifford
+using QuantumClifford: canonicalize!, Stabilizer, stab_to_gf2
+using QuantumClifford.ECC
+using QuantumClifford.ECC: AbstractECC, QuantumReedMuller, Steane7
+
+function designed_distance(matrix)
+    distance = 3
+    for row in eachrow(matrix)
+        count = sum(row)
+        if count < distance 
+            return false
+        end
+    end
+    return true
+end
+
+@testset "Test QRM(r, m) properties" begin
+    for m in 3:10
+        stab = parity_checks(QuantumReedMuller(m))
+        H = stab_to_gf2(stab)
+        @test designed_distance(H) == true
+        # QuantumReedMuller(3) is the Steane7() code.
+        @test canonicalize!(parity_checks(Steane7())) == parity_checks(QuantumReedMuller(3))
+        @test code_n(QuantumReedMuller(m)) == 2 ^ m - 1
+        @test code_k(QuantumReedMuller(m)) == 1
+        @test distance(QuantumReedMuller(m)) == 3
+        @test parity_checks_x(QuantumReedMuller(m)) == H[1:m, 1: 1:end÷2]
+        @test parity_checks_z(QuantumReedMuller(m)) == H[end-(code_n(QuantumReedMuller(m)) - 2 - m):end, end÷2+1:end]
+    end
+end

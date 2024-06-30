@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.5 - 2024-06-30
+
+- quantum [[2ᵐ - 1, 1, 3]] CSS Reed-Muller code.
+
 ## v0.9.4 - 2024-06-28
 
 - Addition of a constructor for concatenated quantum codes -- `Concat`.
