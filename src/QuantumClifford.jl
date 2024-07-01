@@ -922,6 +922,20 @@ end
 
 Base.vcat(stabs::Stabilizer...) = Stabilizer(vcat((tab(s) for s in stabs)...))
 
+function Base.hcat(tabs::Tableau...)
+    # Ensure all Tableaus have the same number of rows
+    nqubits = tabs[1].nqubits
+    if !all(t -> t.nqubits == nqubits, tabs)
+        throw(ArgumentError("All Tableaus must have the same number of qubits for horizontal concatenation."))
+    end
+    Tableau(
+    tabs[1].phases, #does not make sense, better method needed for phases concatenation
+    tabs[1].nqubits,
+    hcat((s.xzs for s in tabs)...))
+end
+
+Base.hcat(stabs::Stabilizer...) = Stabilizer(hcat((tab(s) for s in stabs)...))
+
 ##############################
 # Unitary Clifford Operations
 ##############################
