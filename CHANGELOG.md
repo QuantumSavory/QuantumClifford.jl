@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.5 - dev
+
+- Addition of a horizontal concatenation for Tableaus -- `hcat`.
+
 ## v0.9.4 - 2024-06-28
 
 - Addition of a constructor for concatenated quantum codes -- `Concat`.
