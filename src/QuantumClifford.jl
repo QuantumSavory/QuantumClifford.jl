@@ -930,7 +930,7 @@ function Base.hcat(tabs::Tableau...)
     end
     Tableau(
     tabs[1].phases, #does not make sense, better method needed for phases concatenation
-    tabs[1].nqubits,
+    sum(s.nqubits for s in tabs),
     hcat((s.xzs for s in tabs)...))
 end
 
