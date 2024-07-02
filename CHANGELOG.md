@@ -5,6 +5,9 @@
 
 # News
 
+## v0.9.5 - 2024-07-02
+- Addition of `PauliError` objects that can express biased noise during Pauli frame simulation. Now one can simulate only X errors, or only Y errors, or only Z errors, or some weighted combination of these.
+
 ## v0.9.4 - 2024-06-19
 
 - Addition of a constructor for concatenated quantum codes -- `Concat`.
