@@ -5,15 +5,14 @@ using InteractiveUtils
 
 # generate instances of all implemented codes to make sure nothing skips being checked
 
-# we does not include smaller random circuit code, because some of them has a bad distance and fails the TableDecoder test
-const random_circuit_args = repeat([
-        (20, Val(:alltoall), 200, 1), (40, Val(:alltoall), 200, [1, 20]),
-        ((20,), Val(:brickwork), 50, [1]), ((20,), Val(:brickwork), 50, 1:2:20),
-        ((5, 5), Val(:brickwork), 50, [1]), ((3, 3, 3), Val(:brickwork), 50, [1])
-    ], 10) # repeat for more randomness
+# We do not include smaller random circuit code because some of them has a bad distance and fails the TableDecoder test
+const random_brickwork_circuit_args = repeat([((20,), 50, [1]), ((20,), 50, 1:2:20), ((5, 5), 50, [1]), ((3, 3, 3), 50, [1])], 10)
+const random_all_to_all_circuit_args = repeat([(20, 200, 1), (40, 200, [1, 20])], 10)
 
-
-random_circuit_code_args = [map(f -> getfield(random_circuit_code(c...), f), fieldnames(CircuitCode)) for c in random_circuit_args]
+random_circuit_code_args = vcat(
+    [map(f -> getfield(random_brickwork_circuit_code(c...), f), fieldnames(CircuitCode)) for c in random_brickwork_circuit_args],
+    [map(f -> getfield(random_all_to_all_circuit_code(c...), f), fieldnames(CircuitCode)) for c in random_all_to_all_circuit_args]
+)
 
 const code_instance_args = Dict(
     Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],

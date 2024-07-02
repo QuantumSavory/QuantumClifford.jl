@@ -233,14 +233,28 @@ end
 # Random circuit
 ##############################
 
-function random_brickwork_clifford_circuit(rng::AbstractRNG, arrange::NTuple{N,Int} where {N}, nlayers::Int)
+"""
+Random brickwork Clifford circuit.
+
+The connectivity of the random circuit is brickwork in some dimensions. Each gate in the circuit is a random 2-qubit Clifford gate.
+
+The brickwork is defined as follows: The qubits are arranged as a lattice, and `lattice_size` contains side length in each dimension.
+For example, a chain of length five will have `lattice_size = (5,)`, and a 5×5 lattice will have `lattice_size = (5, 5)`.
+
+In multi-dimensional cases, gate layers act alternatively along each direction.
+The nearest two layers along the same direction are offset by one qubit, forming a so-called brickwork.
+The boundary condition is chosen as open.
+
+See also: [random_brickwork_circuit_code](@ref)
+"""
+function random_brickwork_clifford_circuit(rng::AbstractRNG, lattice_size::NTuple{N,Int} where {N}, nlayers::Int)
     circ = QuantumClifford.SparseGate[]
-    cartesian = CartesianIndices(arrange)
-    dim = length(arrange)
-    nqubits = prod(arrange)
+    cartesian = CartesianIndices(lattice_size)
+    dim = length(lattice_size)
+    nqubits = prod(lattice_size)
     for i in 1:nlayers
         gate_direction = (i - 1) % dim + 1
-        l = arrange[gate_direction]
+        l = lattice_size[gate_direction]
         brickwise_parity = dim == 1 ? i % 2 : 1 - (i ÷ dim) % 2
         for j in 1:nqubits
             cardj = collect(cartesian[j].I)
@@ -255,8 +269,15 @@ function random_brickwork_clifford_circuit(rng::AbstractRNG, arrange::NTuple{N,I
     circ
 end
 
-random_brickwork_clifford_circuit(arrange::NTuple{N,Int} where {N}, nlayers::Int) = random_brickwork_clifford_circuit(GLOBAL_RNG, arrange, nlayers)
+random_brickwork_clifford_circuit(lattice_size::NTuple{N,Int} where {N}, nlayers::Int) = random_brickwork_clifford_circuit(GLOBAL_RNG, lattice_size, nlayers)
 
+"""
+Random all-to-all Clifford circuit.
+
+The circuit contains `nqubits` qubits and `ngates` gates. The connectivity is all to all. Each gate in the circuit is a random 2-qubit Clifford gate on randomly picked two qubits.
+
+See also: [random_all_to_all_circuit_code](@ref)
+"""
 function random_all_to_all_clifford_circuit(rng::AbstractRNG, nqubits::Int, ngates::Int)
     circ = QuantumClifford.SparseGate[]
     for i in 1:ngates
