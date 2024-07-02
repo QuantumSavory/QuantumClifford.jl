@@ -100,7 +100,7 @@ function PauliError(qubits,p)
 end
 
 function PauliError(q::Int, px, py, pz)
-    NoiseOp(PauliNoise(px,py,pz), [q])
+    NoiseOp(PauliNoise(px,py,pz), (q,))
 end
 
 function PauliError(qubits, px, py, pz)
