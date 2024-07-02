@@ -50,7 +50,6 @@ function PauliNoise(p)
     UnbiasedUncorrelatedNoise(p)
 end
 
-
 function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,i::Int)
     infid = noise.p/3
     r = rand()
