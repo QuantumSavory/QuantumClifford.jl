@@ -144,6 +144,28 @@ function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     return frame
 end
 
+function applynoise!(frame::PauliFrame,noise::PauliNoise,i::Int)
+    T = eltype(frame.frame.tab.xzs)
+
+    lowbit = T(1)
+    ibig = _div(T,i-1)+1
+    ismall = _mod(T,i-1)
+    ismallm = lowbit<<(ismall)
+
+    @inbounds @simd for f in eachindex(frame)
+        r = rand()
+        if  r < noise.px # X error
+            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
+        elseif r < noise.px+noise.pz # Z error
+            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
+        elseif r < noise.px+noise.pz+noise.py # Y error
+            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
+            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
+        end
+    end
+    return frame
+end
+
 """
 Perform a "Pauli frame" style simulation of a quantum circuit.
 """
