@@ -244,8 +244,6 @@ For example, a chain of length five will have `lattice_size = (5,)`, and a 5×5 
 In multi-dimensional cases, gate layers act alternatively along each direction.
 The nearest two layers along the same direction are offset by one qubit, forming a so-called brickwork.
 The boundary condition is chosen as open.
-
-See also: [random_brickwork_circuit_code](@ref)
 """
 function random_brickwork_clifford_circuit(rng::AbstractRNG, lattice_size::NTuple{N,Int} where {N}, nlayers::Int)
     circ = QuantumClifford.SparseGate[]
@@ -275,8 +273,6 @@ random_brickwork_clifford_circuit(lattice_size::NTuple{N,Int} where {N}, nlayers
 Random all-to-all Clifford circuit.
 
 The circuit contains `nqubits` qubits and `ngates` gates. The connectivity is all to all. Each gate in the circuit is a random 2-qubit Clifford gate on randomly picked two qubits.
-
-See also: [random_all_to_all_circuit_code](@ref)
 """
 function random_all_to_all_clifford_circuit(rng::AbstractRNG, nqubits::Int, ngates::Int)
     circ = QuantumClifford.SparseGate[]
