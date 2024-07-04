@@ -7,7 +7,7 @@
 
 ## v0.9.5 - 2024-07-04
 
-- Implementation of random all-to-all and brickwork Clifford circuits and correpsonding ECC codes.
+- Implementation of random all-to-all and brickwork Clifford circuits and corresponding ECC codes.
 
 ## v0.9.4 - 2024-06-28
 
