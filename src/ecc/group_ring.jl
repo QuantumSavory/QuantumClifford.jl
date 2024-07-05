@@ -1,12 +1,10 @@
-import AbstractAlgebra: Ring, RingElem, add!, addeq!, base_ring, base_ring_type,
-    canonical_unit, characteristic, divexact, elem_type, expressify, get_cached!,
-    is_domain_type, is_exact_type, is_unit, isequal, mul!, parent, parent_type, zero!
 import Base:
     *, +, -, ==, ^, deepcopy_internal, hash, inv, isone, iszero, one, rand, show, zero
 
-using AbstractAlgebra
-using Random: Random, GLOBAL_RNG, SamplerTrivial
-using RandomExtensions: RandomExtensions, AbstractRNG, Make2
+using Nemo
+import Nemo: Ring, RingElem, add!, addeq!, base_ring, base_ring_type,
+    canonical_unit, characteristic, divexact, elem_type, expressify, get_cached!,
+    is_domain_type, is_exact_type, is_unit, isequal, mul!, parent, parent_type, zero!
 
 @attributes mutable struct PermGroupRing{T<:RingElement} <: NCRing
     base_ring::Ring
@@ -19,7 +17,7 @@ using RandomExtensions: RandomExtensions, AbstractRNG, Make2
     end
 end
 
-const PermGroupRingElemID = AbstractAlgebra.CacheDictType{NCRing,PermGroupRing}()
+const PermGroupRingElemID = Nemo.CacheDictType{NCRing,PermGroupRing}()
 
 mutable struct PermGroupRingElem{T<:RingElement} <: NCRingElem
     coeffs::Dict{<:Perm,T}

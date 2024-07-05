@@ -1,0 +1,31 @@
+using Nemo
+import Base: zero
+
+struct LiftedCode{T} <: ClassicalCode
+    A::Union{MatrixElem{T}, Matrix{T}} where T<:NCRingElement
+    repr::Function
+
+    function LiftedCode(A::Union{MatrixElem{T}, Matrix{T}} where T<:NCRingElement , repr::Function)
+        new{T}(A, repr)
+    end
+
+    function LiftedCode(A::Union{MatrixElem{PermGroupRingElem{FqFieldElem}}, Matrix{PermGroupRingElem{FqFieldElem}}})
+        # permutation representation applies only to GF(2) group algebra
+        @assert characteristic(A.base_ring.base_ring) == 2
+        new{PermGroupRingElem{FqFieldElem}}(A, permutation_repr)
+    end
+end
+
+function permutation_repr(x::PermGroupRingElem)
+    return sum([x.coeffs[k] .* Array(matrix_repr(k)) for k in keys(x.coeffs)], init=zeros(GF(2), parent(x).l, parent(x).l))
+end
+
+function parity_checks(c::LiftedCode)
+    vcat([hcat([c.repr(c.A[i, j]) for j in 1:size(c.A, 2)]...) for i in 1:size(c.A, 1)]...)
+end
+
+code_n(c::LiftedCode) = nothing
+
+code_n(c::LiftedCode{PermGroupRingElem{FqFieldElem}}) = size(c.A, 1) * c.A.base_ring.l
+
+code_k(c::LiftedCode) = nothing

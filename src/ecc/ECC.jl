@@ -16,7 +16,8 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
-    RepCode,
+    PermGroupRing, PermutationGroupRing, PermGroupRingElem,
+    RepCode, LiftedCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface, Concat, CircuitCode,
@@ -347,6 +348,7 @@ end
 
 include("circuits.jl")
 include("decoder_pipeline.jl")
+include("group_ring.jl")
 
 include("codes/util.jl")
 include("codes/classical_codes.jl")
@@ -363,4 +365,6 @@ include("codes/concat.jl")
 include("codes/random_circuit.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/bch.jl")
+include("codes/classical/lifted.jl")
+
 end #module
