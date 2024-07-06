@@ -22,7 +22,7 @@ small_test_sizes = [1, 2, 3, 4, 5, 7, 8] # Pauligroup slows around n =9
             @test unchanged == true
         end
     end
-    #Test get_generating_set
+    #Test minimal_generating_set
     for n in [1, small_test_sizes...]
         s = random_stabilizer(n)
         group = groupify(s)
@@ -41,10 +41,11 @@ small_test_sizes = [1, 2, 3, 4, 5, 7, 8] # Pauligroup slows around n =9
             @test operator in new_group
         end
     end
-    #Test normalize
+
+    #Test normalizer
     for n in [1, small_test_sizes...] # pauligroup is very slow at n=14
         s = random_stabilizer(n)
-        normalized = normalize(s)
+        normalized = normalizer(s)
         stabilizers = pauligroup(n, true)
         for n_stabilizer in normalized
             for stabilizer in s
@@ -61,10 +62,10 @@ small_test_sizes = [1, 2, 3, 4, 5, 7, 8] # Pauligroup slows around n =9
         end
         @test !commutes || stabilizer in normalized
     end
-    #Test center
+    #Test centralizer
     for n in [1, test_sizes...]
         s = random_stabilizer(n)
-        c = center(s)
+        c = centeralizer(s)
         for c_stabilizer in c
             for stabilizer in s
                 @test comm(c_stabilizer, stabilizer) == 0x0
@@ -78,5 +79,35 @@ small_test_sizes = [1, 2, 3, 4, 5, 7, 8] # Pauligroup slows around n =9
             @test !commutes || st in c
         end
 
+    end
+    #Test contract
+    for n in [1, test_sizes...]
+        s = random_stabilizer(n)
+        g = QuantumClifford.groupify(s)
+        subset = []
+        for i in 1:nqubits(s) #create a random subset
+            if rand(1:2) == 1 push!(subset, i) end
+        end
+        c = QuantumClifford.contract(s, subset)
+        count = 0
+        for stabilizer in g 
+            contractable = true
+            for i in subset
+                if stabilizer[i] != (false, false) contractable = false end
+            end
+            if contractable count+=1 end
+        end
+        @test count = size(c)
+        for contracted in c
+            p = zero(PauliOperator, nqubits(s))
+            index = 0
+            for i in 1:nqubits(g)
+                if !(i in subset) 
+                    index+=1 
+                    p[i] = contracted[index] 
+                end
+            end
+            @test p in g 
+        end
     end
 end
