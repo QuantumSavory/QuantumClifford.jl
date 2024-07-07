@@ -2,14 +2,14 @@ struct LiftedCode{T} <: ClassicalCode
     A::Union{MatrixElem{T}, Matrix{T}} where T<:NCRingElement
     repr::Function
 
-    function LiftedCode(A::Union{MatrixElem{T}, Matrix{T}} where T<:NCRingElement , repr::Function)
+    function LiftedCode(A::Union{MatrixElem{T}, Matrix{T}}, repr::Function) where T<:NCRingElement
         new{T}(A, repr)
     end
+end
 
-    function LiftedCode(A::Union{MatrixElem{PermGroupRingElem{FqFieldElem}}, Matrix{PermGroupRingElem{FqFieldElem}}})
-        characteristic(A.base_ring.base_ring) == 2 && error("the default permutation representation applies only to GF(2) group algebra")
-        new{PermGroupRingElem{FqFieldElem}}(A, permutation_repr)
-    end
+function LiftedCode(A::Union{MatrixElem{PermGroupRingElem{FqFieldElem}}, Matrix{PermGroupRingElem{FqFieldElem}}})
+    !(characteristic(A.base_ring.base_ring) == 2) && error("The default permutation representation applies only to GF(2) group algebra")
+    LiftedCode(A, permutation_repr)
 end
 
 function permutation_repr(x::PermGroupRingElem{FqFieldElem})
