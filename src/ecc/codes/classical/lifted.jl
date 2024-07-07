@@ -1,5 +1,4 @@
 using Nemo
-import Base: zero
 
 struct LiftedCode{T} <: ClassicalCode
     A::Union{MatrixElem{T}, Matrix{T}} where T<:NCRingElement
@@ -16,8 +15,8 @@ struct LiftedCode{T} <: ClassicalCode
     end
 end
 
-function permutation_repr(x::PermGroupRingElem)
-    return sum([x.coeffs[k] .* Array(matrix_repr(k)) for k in keys(x.coeffs)], init=zeros(GF(2), parent(x).l, parent(x).l))
+function permutation_repr(x::PermGroupRingElem{FqFieldElem})
+    return sum([Int(lift(ZZ, x.coeffs[k])) .* Array(matrix_repr(k)) for k in keys(x.coeffs)], init=zeros(Bool, parent(x).l, parent(x).l))
 end
 
 function parity_checks(c::LiftedCode)
@@ -26,7 +25,7 @@ end
 
 code_n(c::LiftedCode) = size(parity_checks(c), 2)
 
-code_n(c::LiftedCode{PermGroupRingElem{FqFieldElem}}) = characteristic(A.base_ring.base_ring) == 2 ? size(c.A, 2) * c.A.base_ring.l : size(c.A, 2)
+code_n(c::LiftedCode{PermGroupRingElem{FqFieldElem}}) = characteristic(c.A.base_ring.base_ring) == 2 ? size(c.A, 2) * c.A.base_ring.l : size(c.A, 2)
 
 code_s(c::LiftedCode) = rank(parity_checks(c))
 
