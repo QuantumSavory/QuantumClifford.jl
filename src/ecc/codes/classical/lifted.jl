@@ -1,5 +1,3 @@
-using Nemo
-
 struct LiftedCode{T} <: ClassicalCode
     A::Union{MatrixElem{T}, Matrix{T}} where T<:NCRingElement
     repr::Function
@@ -9,8 +7,7 @@ struct LiftedCode{T} <: ClassicalCode
     end
 
     function LiftedCode(A::Union{MatrixElem{PermGroupRingElem{FqFieldElem}}, Matrix{PermGroupRingElem{FqFieldElem}}})
-        # permutation representation applies only to GF(2) group algebra
-        @assert characteristic(A.base_ring.base_ring) == 2
+        characteristic(A.base_ring.base_ring) == 2 && error("the default permutation representation applies only to GF(2) group algebra")
         new{PermGroupRingElem{FqFieldElem}}(A, permutation_repr)
     end
 end
