@@ -24,8 +24,10 @@ function parity_checks(c::LiftedCode)
     vcat([hcat([c.repr(c.A[i, j]) for j in 1:size(c.A, 2)]...) for i in 1:size(c.A, 1)]...)
 end
 
-code_n(c::LiftedCode) = nothing
+code_n(c::LiftedCode) = size(parity_checks(c), 2)
 
-code_n(c::LiftedCode{PermGroupRingElem{FqFieldElem}}) = size(c.A, 1) * c.A.base_ring.l
+code_n(c::LiftedCode{PermGroupRingElem{FqFieldElem}}) = characteristic(A.base_ring.base_ring) == 2 ? size(c.A, 2) * c.A.base_ring.l : size(c.A, 2)
 
-code_k(c::LiftedCode) = nothing
+code_s(c::LiftedCode) = rank(parity_checks(c))
+
+code_k(c::LiftedCode) = code_n(c) - code_s(c)
