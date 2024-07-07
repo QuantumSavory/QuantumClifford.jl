@@ -1,23 +1,22 @@
 import Base:
-    *, +, -, ==, ^, deepcopy_internal, hash, inv, isone, iszero, one, rand, show, zero
+    *, +, -, ==, deepcopy_internal, isone, iszero, one, zero
 
 using Nemo
-import Nemo: Ring, RingElem, add!, addeq!, base_ring, base_ring_type,
-    canonical_unit, characteristic, divexact, elem_type, expressify, get_cached!,
-    is_domain_type, is_exact_type, is_unit, isequal, mul!, parent, parent_type, zero!
+import Nemo: Ring, RingElem, base_ring, base_ring_type, elem_type, get_cached!,
+    is_domain_type, is_exact_type, parent, parent_type
 
 @attributes mutable struct PermGroupRing{T<:RingElement} <: NCRing
     base_ring::Ring
     l::Int
 
     function PermGroupRing{T}(R::Ring, l::Int, cached::Bool) where {T<:RingElement}
-        return get_cached!(PermGroupRingElemID, R, cached) do
+        return get_cached!(PermGroupRingElemID, (R, l), cached) do
             new{T}(R, l)
         end::PermGroupRing{T}
     end
 end
 
-const PermGroupRingElemID = Nemo.CacheDictType{NCRing,PermGroupRing}()
+const PermGroupRingElemID = Nemo.CacheDictType{Tuple{Ring, Int}, NCRing}()
 
 mutable struct PermGroupRingElem{T<:RingElement} <: NCRingElem
     coeffs::Dict{<:Perm,T}
@@ -61,11 +60,6 @@ parent(f::PermGroupRingElem) = f.parent
 is_domain_type(::Type{PermGroupRingElem{T}}) where {T<:RingElement} = is_domain_type(T)
 
 is_exact_type(::Type{PermGroupRingElem{T}}) where {T<:RingElement} = is_exact_type(T)
-
-function hash(f::PermGroupRingElem, h::UInt)
-    r = 0x65125ab8e0cd44ca # TODO: what to do with this?
-    return xor(r, hash(f.c, h))
-end
 
 function deepcopy_internal(f::PermGroupRingElem{T}, dict::IdDict) where {T<:RingElement}
     r = PermGroupRingElem{T}(deepcopy_internal(f.coeffs, dict))
@@ -171,11 +165,8 @@ end
 
 ==(p::Perm, a::PermGroupRingElem{T}) where {T<:RingElement} = a == p
 
-
-# TODO Some ring interfaces, which are not required in code construction
-# exact division, random generation
-
-# TODO Promotion rules
+# TODO Some functionality are expected by ring interfaces but not necessary for ECC construction,
+# including show, hash, exact division, random generation, promotion rules
 
 # Constructors by overloading the call syntax for parent objects
 
@@ -221,7 +212,7 @@ function (R::PermGroupRing{T})(f::PermGroupRingElem{T}) where {T<:RingElement}
     return f
 end
 
-# TODO We may need more constructors to remove ambiguities
+# TODO We may add more constructors to remove ambiguities
 
 # Parent constructor
 
