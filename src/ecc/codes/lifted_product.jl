@@ -27,5 +27,12 @@ parity_checks_z(c::LPCode) = parity_checks_xz(c)[2]
 
 parity_checks(c::LPCode) = parity_checks(CSS(parity_checks_xz(c)...))
 
+code_n(c::LPCode) = size(c.repr(parent(c.c₁.A[1, 1])(0)), 2) * (size(c.c₁.A, 2) * size(c.c₂.A, 2) + size(c.c₁.A, 1) * size(c.c₂.A, 1))
+
+function code_k(c::LPCode)
+    hx, hz = parity_checks_xz(c)
+    code_n(c) - rank(hx) - rank(hz) # redundant rows exist
+end
+
 # HGPCode = LPCode{Bool}
 # or from a trivial group ring, `R = PermutationGroupRing(GF(2), 1)`
