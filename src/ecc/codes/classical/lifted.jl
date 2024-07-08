@@ -1,3 +1,5 @@
+import Nemo: characteristic, lift, matrix_repr
+
 struct LiftedCode{T} <: ClassicalCode where T<:NCRingElement
     A::Matrix{T}
     repr::Function
@@ -16,7 +18,7 @@ end
 LiftedCode(A::Matrix{Bool}) = LiftedCode(A, x->x)
 
 function permutation_repr(x::PermGroupRingElem{FqFieldElem})
-    return sum([Int(Nemo.lift(ZZ, x.coeffs[k])) .* Array(matrix_repr(k)) for k in keys(x.coeffs)], init=zeros(Bool, parent(x).l, parent(x).l))
+    return sum([Int(lift(ZZ, x.coeffs[k])) .* Array(matrix_repr(k)) for k in keys(x.coeffs)], init=zeros(Bool, parent(x).l, parent(x).l))
 end
 
 function lift(repr::Function, mat::Matrix{T}) where T<:NCRingElement

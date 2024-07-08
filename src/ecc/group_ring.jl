@@ -1,7 +1,7 @@
 import Base: *, +, -, ==, deepcopy_internal, isone, iszero, one, zero, adjoint
 
-using Nemo
-import Nemo: Ring, RingElem, base_ring, base_ring_type, elem_type, get_cached!,
+import Nemo: Ring, RingElem, RingElement, NCRing, NCRingElem, NCRingElement, Perm, CacheDictType,
+    @attributes, base_ring, base_ring_type, elem_type, get_cached!,
     is_domain_type, is_exact_type, parent, parent_type
 
 @attributes mutable struct PermGroupRing{T<:RingElement} <: NCRing
@@ -15,7 +15,7 @@ import Nemo: Ring, RingElem, base_ring, base_ring_type, elem_type, get_cached!,
     end
 end
 
-const PermGroupRingElemID = Nemo.CacheDictType{Tuple{Ring, Int}, NCRing}()
+const PermGroupRingElemID = CacheDictType{Tuple{Ring, Int}, NCRing}()
 
 mutable struct PermGroupRingElem{T<:RingElement} <: NCRingElem
     coeffs::Dict{<:Perm,T}
@@ -222,3 +222,5 @@ function adjoint(a::PermGroupRingElem{T}) where {T<:FqFieldElem}
     end
     return r
 end
+
+cyclic_permutation(n::Int, l::Int) = Perm(vcat(n+1:l, 1:n))
