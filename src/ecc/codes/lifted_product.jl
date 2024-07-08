@@ -1,14 +1,10 @@
 struct LPCode{T} <: AbstractECC
     c₁::LiftedCode{T}
     c₂::LiftedCode{T}
-    repr::Union{Function, Nothing} # nothing means using repr from each code respectively
+    repr::Function
 
     function LPCode(c₁::LiftedCode{T}, c₂::LiftedCode{T}, repr::Function) where T
         new{T}(c₁, c₂, repr)
-    end
-
-    function LPCode(c₁::LiftedCode{T}, c₂::LiftedCode{T}) where T
-        new{T}(c₁, c₂, nothing)
     end
 end
 
@@ -16,22 +12,12 @@ function LPCode(c₁::LiftedCode{PermGroupRingElem{FqFieldElem}}, c₂::LiftedCo
     LPCode(c₁, c₂, permutation_repr)
 end
 
-iscss(::Type{LPCode{T}}) where {T <: RingElement} = true # TODO wrong
+iscss(::Type{LPCode{T}}) where {T <: NCRingElement} = true
 
-# In most cases, especially for `PermGroupRingElem`,
-# "first product then lift" will be much more efficient,
-# which requires the same matrix representation for both codes.
 function parity_checks_xz(c::LPCode)
-    if !isnothing(c.repr) # "first product then lift"
-        c.c₁.A[1,1].parent == c.c₂.A[1,1].parent || error("The base rings of the two codes must be the same")
-        hx, hz = hgp(c.c₁.A, c.c₂.A)
-        # @show hx, hz
-        hx, hz = lift(c.repr, hx), lift(c.repr, hz)
-    else # fall back to the slow "first lift then product"
-        h₁ = lift(c.c₁.repr, parity_checks(c.c₁))
-        h₂ = lift(c.c₂.repr, parity_checks(c.c₂))
-        hx, hz =  hgp(h₁, h₂)
-    end
+    c.c₁.A[1,1].parent == c.c₂.A[1,1].parent || error("The base rings of the two codes must be the same")
+    hx, hz = hgp(c.c₁.A, c.c₂.A)
+    hx, hz = lift(c.repr, hx), lift(c.repr, hz)
     return hx, hz
 end
 
