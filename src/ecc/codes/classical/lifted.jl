@@ -27,10 +27,8 @@ lift(A::Matrix{Bool}) = A
 
 parity_checks(c::LiftedCode) = lift(c.repr, c.A)
 
-code_n(c::LiftedCode) = size(parity_checks(c), 2)
+code_n(c::LiftedCode) = size(c.A, 2) * size(c.repr(parent(c.A[1,1])(0)), 2)
 
-code_n(c::LiftedCode{PermGroupRingElem{FqFieldElem}}) = characteristic(c.A.base_ring.base_ring) == 2 ? size(c.A, 2) * c.A.base_ring.l : size(c.A, 2)
-
-code_s(c::LiftedCode) = rank(parity_checks(c))
+code_s(c::LiftedCode) = rank(parity_checks(c)) # not that they are degenagate in general
 
 code_k(c::LiftedCode) = code_n(c) - code_s(c)
