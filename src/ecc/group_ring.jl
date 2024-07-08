@@ -1,5 +1,4 @@
-import Base:
-    *, +, -, ==, deepcopy_internal, isone, iszero, one, zero
+import Base: *, +, -, ==, deepcopy_internal, isone, iszero, one, zero, adjoint
 
 using Nemo
 import Nemo: Ring, RingElem, base_ring, base_ring_type, elem_type, get_cached!,
@@ -208,7 +207,7 @@ function (R::PermGroupRing{T})(p::Perm) where {T<:RingElement}
 end
 
 function (R::PermGroupRing{T})(f::PermGroupRingElem{T}) where {T<:RingElement}
-    parent(f) != R || error("Unable to coerce group ring")
+    parent(f) == R || error("Unable to coerce group ring")
     return f
 end
 
@@ -219,4 +218,14 @@ end
 function PermutationGroupRing(R::Ring, l::Int, cached::Bool=true)
     T = elem_type(R)
     return PermGroupRing{T}(R, l, cached)
+end
+
+# adjoint
+
+function adjoint(a::PermGroupRingElem{T}) where {T<:FqFieldElem}
+    r = parent(a)()
+    for (k, v) in a.coeffs
+        r.coeffs[inv(k)] = v
+    end
+    return r
 end
