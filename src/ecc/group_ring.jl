@@ -22,25 +22,12 @@ mutable struct PermGroupRingElem{T<:RingElement} <: NCRingElem
     parent::PermGroupRing{T}
 
     function PermGroupRingElem{T}(coeffs::Dict{<:Perm,T}) where {T<:RingElement}
-        filter!(x -> x[2] != 0, coeffs)
+        filter!(x -> !iszero(x[2]) , coeffs) # remove zeros
         return new{T}(coeffs)
     end
 
     function PermGroupRingElem{T}() where {T<:RingElement}
         return new{T}(Dict{Perm,T}())
-    end
-
-    function PermGroupRingElem{T}(n::T, l::Int) where {T<:RingElement}
-        if iszero(n)
-            coeffs = Dict{Perm,T}()
-        else
-            coeffs = Dict(Perm(l) => n)
-        end
-        return new{T}(coeffs)
-    end
-
-    function PermGroupRingElem{T}(p::Perm, base_ring::Ring) where {T<:RingElement}
-        return new{T}(Dict(p => one(base_ring)))
     end
 end
 
@@ -176,6 +163,10 @@ function (R::PermGroupRing{T})() where {T<:RingElement}
 end
 
 function (R::PermGroupRing{T})(coeffs::Dict{<:Perm,T}) where {T<:RingElement}
+    for (k,v) in coeffs
+        length(k.d) == R.l || error("Invalid permutation length")
+        parent(v) == R || error("Unable to coerce a group ring element")
+    end
     r = PermGroupRingElem{T}(coeffs)
     r.parent = R
     return r
@@ -188,26 +179,28 @@ function (R::PermGroupRing{T})(coeffs::Dict{<:Perm,<:Union{Integer,Rational,Abst
 end
 
 function (R::PermGroupRing{T})(n::Union{Integer,Rational,AbstractFloat}) where {T<:RingElement}
-    r = PermGroupRingElem{T}(base_ring(R)(n), R.l)
+    coeffs = iszero(n) ? Dict{Perm,T}() : Dict(Perm(R.l) => base_ring(R)(n))
+    r = PermGroupRingElem{T}(coeffs)
     r.parent = R
     return r
 end
 
 function (R::PermGroupRing{T})(n::T) where {T<:RingElement}
-    base_ring(R) != parent(n) && error("Unable to coerce group ring element")
-    r = PermGroupRingElem{T}(n, l)
+    base_ring(R) == parent(n) || error("Unable to coerce a group ring element")
+    r = PermGroupRingElem{T}(Dict(Perm(R.l) => n))
     r.parent = R
     return r
 end
 
 function (R::PermGroupRing{T})(p::Perm) where {T<:RingElement}
-    r = PermGroupRingElem{T}(p, base_ring(R))
+    length(p.d) == R.l || error("Invalid permutation length")
+    r = PermGroupRingElem{T}(Dict(p => one(base_ring(R))))
     r.parent = R
     return r
 end
 
 function (R::PermGroupRing{T})(f::PermGroupRingElem{T}) where {T<:RingElement}
-    parent(f) == R || error("Unable to coerce group ring")
+    parent(f) == R || error("Unable to coerce a group ring element")
     return f
 end
 
