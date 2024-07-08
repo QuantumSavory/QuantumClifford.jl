@@ -21,6 +21,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface, Concat, CircuitCode,
+    LPCode,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
@@ -365,6 +366,9 @@ include("codes/concat.jl")
 include("codes/random_circuit.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/bch.jl")
+
+# qLDPC
 include("codes/classical/lifted.jl")
+include("codes/lifted_product.jl")
 
 end #module
