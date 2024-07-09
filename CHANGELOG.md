@@ -5,7 +5,7 @@
 
 # News
 
-## v0.9.5 - 2024-07-10
+## v0.9.6 - 2024-07-10
 
 - **(fix)** Bug fix to the `parity_checks(ReedMuller(r, m))` of classical `Reed-Muller` code along with `RecursiveReedMuller` code implementation for cross reference.
 
