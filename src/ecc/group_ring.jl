@@ -172,7 +172,7 @@ function (R::PermGroupRing{T})(coeffs::Dict{<:Perm,T}) where {T<:RingElement}
     return r
 end
 
-function (R::PermGroupRing{T})(coeffs::Dict{<:Perm,<:Union{Integer,Rational,AbstractFloat}}) where {T<:RingElement}
+function (R::PermGroupRing{T})(coeffs::Dict{<:Perm,T}) where {T<:Union{Integer,Rational,AbstractFloat}}
     r = PermGroupRingElem{T}(Dict(k => base_ring(R)(v) for (k, v) in coeffs))
     r.parent = R
     return r
