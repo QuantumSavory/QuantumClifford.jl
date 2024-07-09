@@ -31,6 +31,12 @@ parity_checks(c::LiftedCode) = lift(c.repr, c.A)
 
 code_n(c::LiftedCode) = size(c.A, 2) * size(c.repr(parent(c.A[1,1])(0)), 2)
 
-code_s(c::LiftedCode) = rank(parity_checks(c)) # not that they are degenagate in general
+function mod2rank(h::Matrix{<:Integer})
+    Z2, _ = residue_ring(ZZ, 2)
+    S = matrix_space(Z2, size(h)...)
+    rank(S(h))
+end
+
+code_s(c::LiftedCode) = mod2rank(parity_checks(c)) # note that they are degenagate in general
 
 code_k(c::LiftedCode) = code_n(c) - code_s(c)

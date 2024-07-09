@@ -1,3 +1,5 @@
+import Nemo: matrix_space
+
 struct LPCode{T} <: AbstractECC
     c₁::LiftedCode{T}
     c₂::LiftedCode{T}
@@ -29,10 +31,12 @@ parity_checks(c::LPCode) = parity_checks(CSS(parity_checks_xz(c)...))
 
 code_n(c::LPCode) = size(c.repr(parent(c.c₁.A[1, 1])(0)), 2) * (size(c.c₁.A, 2) * size(c.c₂.A, 2) + size(c.c₁.A, 1) * size(c.c₂.A, 1))
 
-function code_k(c::LPCode)
+function code_s(c::LPCode)
     hx, hz = parity_checks_xz(c)
-    code_n(c) - rank(hx) - rank(hz) # redundant rows exist
+    mod2rank(hx) + mod2rank(hz)
 end
+
+code_k(c::LPCode) = code_n(c) - code_s(c)
 
 # HGPCode = LPCode{Bool}
 # or from a trivial group ring, `R = PermutationGroupRing(GF(2), 1)`
