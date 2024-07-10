@@ -11,18 +11,18 @@ Permutation [group ring](https://en.wikipedia.org/wiki/Group_ring) over a base r
 - `base_ring`: The base ring, whose elements are used as coefficients of permutations.
 - `l`: The length of permutations.
 
-To construct a permutation group ring, use [`PermutationGroupRing`](@ref).
+Basic usage:
+
+- To construct a permutation group ring, use [`PermutationGroupRing`](@ref).
+- To construct an element of a permutation group ring, use the call syntax of the parent object.
+- To perform arithmetic operations, use the standard arithmetic operators.
 
 ```jldoctest
 julia> ENV["NEMO_PRINT_BANNER"] = "false"; using Nemo: GF, Perm
 
 julia> R = PermutationGroupRing(GF(2), 3)
 Permutation group ring over Prime field of characteristic 2
-```
 
-To construct an element of a permutation group ring, use the call syntax of the parent object.
-
-```jldoctest
 julia> f0 = R(0)
 Dict{AbstractAlgebra.Perm, Nemo.FqFieldElem}()
 
@@ -34,11 +34,7 @@ Dict{Perm{Int64}, Nemo.FqFieldElem}((2,3) => 1)
 
 julia> f3 = R(Dict(Perm(3) => 1, Perm([3,1,2]) => 1))
 Dict{Perm{Int64}, Nemo.FqFieldElem}(() => 1, (1,3,2) => 1)
-```
 
-To perform arithmetic operations, use the standard arithmetic operators.
-
-```jldoctest
 julia> f1 + f2
 Dict{Perm, Nemo.FqFieldElem}(() => 1, (2,3) => 1)
 
