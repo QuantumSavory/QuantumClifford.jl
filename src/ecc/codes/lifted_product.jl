@@ -1,5 +1,24 @@
 import Nemo: matrix_space
 
+
+"""
+Lifted product codes [panteleev2021degenerate](@cite) [panteleev2022asymptotically](@cite)
+
+- `c₁::LiftedCode`: the first lifted code
+- `c₂::LiftedCode`: the second lifted code
+- `repr::Function`: a function that converts a permutation group ring element to a matrix;
+ default to be [`permutation_repr`](@ref) for GF(2)-algebra.
+
+A lifted product code is constructed by hypergraph product of the two lifted codes `c₁` and `c₂`.
+Here, the hypergraph product is taken over a group ring, which serves as the base ring for both lifted codes.
+After the hypergraph product, the parity-check matrices are lifted by `repr`.
+
+Children of code families:
+- Hypergraph product code: use trivial group ring `PermutationGroupRing(GF(2), 1)` in lifted codes.
+- Two-block group-algebra (2GBA) code: choose 1×1 base matrices for `c₁` and `c₂`.
+
+See also: [`LiftedCode`](@ref), [`PermGroupRing`](@ref).
+"""
 struct LPCode <: AbstractECC
     c₁::LiftedCode
     c₂::LiftedCode
@@ -37,6 +56,3 @@ function code_s(c::LPCode)
 end
 
 code_k(c::LPCode) = code_n(c) - code_s(c)
-
-# HGPCode = LPCode{Bool}
-# or from a trivial group ring, `R = PermutationGroupRing(GF(2), 1)`

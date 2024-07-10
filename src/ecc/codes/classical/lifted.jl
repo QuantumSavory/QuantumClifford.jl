@@ -1,10 +1,15 @@
 import Nemo: characteristic, lift, matrix_repr
 
 """
-Classical codes lifted over a permutation group ring.
+Classical codes lifted over a permutation group ring [panteleev2021degenerate](@cite) [panteleev2022asymptotically](@cite).
 
 - `A::Matrix`: the base matrix of the code, whose elements are in a permutation group ring.
-- `repr::Function`: a function that converts a permutation group ring element to a matrix; default to be `permutation_repr` for GF(2)-algebra.
+- `repr::Function`: a function that converts a permutation group ring element to a matrix;
+  default to be [`permutation_repr`](@ref) for GF(2)-algebra.
+
+The parity-check matrix is constructed by applying `repr` to elements of `A`, known as a lift.
+
+See also: [`LPCode`](@ref), [`PermGroupRing`](@ref).
 """
 struct LiftedCode <: ClassicalCode
     A::Matrix{PermGroupRingElem}
@@ -22,6 +27,9 @@ function LiftedCode(A::Matrix{PermGroupRingElem{FqFieldElem}})
     LiftedCode(A, permutation_repr)
 end
 
+"""
+Represent a permutation group ring element by mapping permutations to circulant matrices.
+"""
 function permutation_repr(x::PermGroupRingElem{FqFieldElem})
     return sum([Int(lift(ZZ, x.coeffs[k])) .* Array(matrix_repr(k)) for k in keys(x.coeffs)], init=zeros(Bool, parent(x).l, parent(x).l))
 end
@@ -40,6 +48,6 @@ function mod2rank(h::Matrix{<:Integer})
     rank(S(h))
 end
 
-code_s(c::LiftedCode) = mod2rank(parity_checks(c)) # note that they are degenagate in general
+code_s(c::LiftedCode) = mod2rank(parity_checks(c)) # note that redundant rows exist in general
 
 code_k(c::LiftedCode) = code_n(c) - code_s(c)
