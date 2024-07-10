@@ -24,10 +24,10 @@ julia> R = PermutationGroupRing(GF(2), 3)
 Permutation group ring over Prime field of characteristic 2
 
 julia> f0 = R(0)
-Dict{AbstractAlgebra.Perm, Nemo.FqFieldElem}()
+Dict{Perm, Nemo.FqFieldElem}()
 
 julia> f1 = R(1)
-Dict{AbstractAlgebra.Perm{Int64}, Nemo.FqFieldElem}(() => 1)
+Dict{Perm{Int64}, Nemo.FqFieldElem}(() => 1)
 
 julia> f2 = R(Perm([1,3,2]))
 Dict{Perm{Int64}, Nemo.FqFieldElem}((2,3) => 1)
@@ -123,7 +123,7 @@ function show(io::IO, R::PermGroupRing)
     print(io, "Permutation group ring over ")
     show(io, base_ring(R))
  end
- 
+
  function show(io::IO, f::PermGroupRingElem)
     print(io, f.coeffs)
  end
