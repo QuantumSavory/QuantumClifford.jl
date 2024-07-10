@@ -1,9 +1,59 @@
-import Base: *, +, -, ==, deepcopy_internal, isone, iszero, one, zero, adjoint
+import Base: *, +, -, ==, deepcopy_internal, show, isone, iszero, one, zero, adjoint
 
 import Nemo: Ring, RingElem, RingElement, NCRing, NCRingElem, NCRingElement, Perm, CacheDictType,
     @attributes, base_ring, base_ring_type, elem_type, get_cached!,
     is_domain_type, is_exact_type, parent, parent_type
 
+
+"""
+Permutation [group ring](https://en.wikipedia.org/wiki/Group_ring) over a base ring, also known as group algebra.
+
+- `base_ring`: The base ring, whose elements are used as coefficients of permutations.
+- `l`: The length of permutations.
+
+To construct a permutation group ring, use [`PermutationGroupRing`](@ref).
+
+```jldoctest
+julia> ENV["NEMO_PRINT_BANNER"] = "false"; using Nemo: GF, Perm
+
+julia> R = PermutationGroupRing(GF(2), 3)
+Permutation group ring over Prime field of characteristic 2
+```
+
+To construct an element of a permutation group ring, use the call syntax of the parent object.
+
+```jldoctest
+julia> f0 = R(0)
+Dict{AbstractAlgebra.Perm, Nemo.FqFieldElem}()
+
+julia> f1 = R(1)
+Dict{AbstractAlgebra.Perm{Int64}, Nemo.FqFieldElem}(() => 1)
+
+julia> f2 = R(Perm([1,3,2]))
+Dict{Perm{Int64}, Nemo.FqFieldElem}((2,3) => 1)
+
+julia> f3 = R(Dict(Perm(3) => 1, Perm([3,1,2]) => 1))
+Dict{Perm{Int64}, Nemo.FqFieldElem}(() => 1, (1,3,2) => 1)
+```
+
+To perform arithmetic operations, use the standard arithmetic operators.
+
+```jldoctest
+julia> f1 + f2
+Dict{Perm, Nemo.FqFieldElem}(() => 1, (2,3) => 1)
+
+julia> f2 * f3
+Dict{Perm, Nemo.FqFieldElem}((1,3) => 1, (2,3) => 1)
+
+julia> f3 * 1 + 1
+Dict{Perm, Nemo.FqFieldElem}((1,3,2) => 1)
+
+julia> f3'
+Dict{Perm, Nemo.FqFieldElem}(() => 1, (1,2,3) => 1)
+```
+
+See also: [`PermGroupRingElem`](@ref).
+"""
 @attributes mutable struct PermGroupRing{T<:RingElement} <: NCRing
     base_ring::Ring
     l::Int
@@ -17,6 +67,14 @@ end
 
 const PermGroupRingElemID = CacheDictType{Tuple{Ring, Int}, NCRing}()
 
+"""
+Element of a [`PermGroupRing`](@ref).
+
+- `coeffs`: A dictionary of permutations and their coefficients. Empty dictionary represents zero.
+- `parent`: The parent group ring in type `PermGroupRing`.
+
+See also: [`PermGroupRing`](@ref).
+"""
 mutable struct PermGroupRingElem{T<:RingElement} <: NCRingElem
     coeffs::Dict{<:Perm,T}
     parent::PermGroupRing{T}
@@ -62,6 +120,17 @@ one(R::PermGroupRing) = R(1)
 iszero(f::PermGroupRingElem) = f == 0
 
 isone(f::PermGroupRingElem) = f == 1
+
+# String I/O
+
+function show(io::IO, R::PermGroupRing)
+    print(io, "Permutation group ring over ")
+    show(io, base_ring(R))
+ end
+ 
+ function show(io::IO, f::PermGroupRingElem)
+    print(io, f.coeffs)
+ end
 
 # Arithmetic functions
 
@@ -152,7 +221,7 @@ end
 ==(p::Perm, a::PermGroupRingElem{T}) where {T<:RingElement} = a == p
 
 # TODO Some functionality are expected by ring interfaces but not necessary for ECC construction,
-# including show, hash, exact division, random generation, promotion rules
+# including hash, exact division, random generation, promotion rules
 
 # Constructors by overloading the call syntax for parent objects
 
@@ -172,7 +241,7 @@ function (R::PermGroupRing{T})(coeffs::Dict{<:Perm,T}) where {T<:RingElement}
     return r
 end
 
-function (R::PermGroupRing{T})(coeffs::Dict{<:Perm,T}) where {T<:Union{Integer,Rational,AbstractFloat}}
+function (R::PermGroupRing{T})(coeffs::Dict{<:Perm,<:Union{Integer,Rational,AbstractFloat}}) where {T<:RingElement}
     r = PermGroupRingElem{T}(Dict(k => base_ring(R)(v) for (k, v) in coeffs))
     r.parent = R
     return r
@@ -204,10 +273,11 @@ function (R::PermGroupRing{T})(f::PermGroupRingElem{T}) where {T<:RingElement}
     return f
 end
 
-# TODO We may add more constructors to remove ambiguities
+"""
+Permutation group ring constructor.
 
-# Parent constructor
-
+See also: [`PermutationGroupRing`](@ref).
+"""
 function PermutationGroupRing(R::Ring, l::Int, cached::Bool=true)
     T = elem_type(R)
     return PermGroupRing{T}(R, l, cached)
@@ -223,4 +293,7 @@ function adjoint(a::PermGroupRingElem{T}) where {T<:FqFieldElem}
     return r
 end
 
+"""
+Construct a cyclic permutation of length `l` with a shift `n`.
+"""
 cyclic_permutation(n::Int, l::Int) = Perm(vcat(n+1:l, 1:n))
