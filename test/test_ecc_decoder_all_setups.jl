@@ -101,13 +101,13 @@ push!(other_lifted_product_codes, LPCode(LiftedCode(A), LiftedCode(B)))
     for c in codes
         for s in setups
             for d in [c->PyBeliefPropOSDecoder(c, maxiter=10)]
-                nsamples = code_n(c)>400 ? 1000 : 10000
+                nsamples = code_n(c)>400 ? 1000 : 100000
                 # take fewer samples for larger codes to save time
                 e = evaluate_decoder(d(c), s, nsamples)
                 # @show c
                 # @show s
                 # @show e
-                @assert max(e...) < noise/4
+                @assert max(e...) < noise/4 (c, s, e)
             end
         end
     end
