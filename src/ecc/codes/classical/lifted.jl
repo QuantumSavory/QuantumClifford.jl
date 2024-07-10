@@ -1,11 +1,17 @@
 import Nemo: characteristic, lift, matrix_repr
 
-struct LiftedCode{T} <: ClassicalCode where T<:NCRingElement
-    A::Matrix{T}
+"""
+Classical codes lifted over a permutation group ring.
+
+- `A::Matrix`: the base matrix of the code, whose elements are in a permutation group ring.
+- `repr::Function`: a function that converts a permutation group ring element to a matrix; default to be `permutation_repr` for GF(2)-algebra.
+"""
+struct LiftedCode <: ClassicalCode
+    A::Matrix{PermGroupRingElem}
     repr::Function
 
-    function LiftedCode(A::Matrix{T}, repr::Function) where T<:NCRingElement
-        new{T}(A, repr)
+    function LiftedCode(A::Matrix{PermGroupRingElem{T}}, repr::Function) where T
+        new(A, repr)
     end
 end
 
@@ -20,7 +26,7 @@ function permutation_repr(x::PermGroupRingElem{FqFieldElem})
     return sum([Int(lift(ZZ, x.coeffs[k])) .* Array(matrix_repr(k)) for k in keys(x.coeffs)], init=zeros(Bool, parent(x).l, parent(x).l))
 end
 
-function lift(repr::Function, mat::Matrix{T}) where T<:NCRingElement
+function lift(repr::Function, mat::Matrix{PermGroupRingElem})
     vcat([hcat([repr(mat[i, j]) for j in axes(mat, 2)]...) for i in axes(mat, 1)]...)
 end
 

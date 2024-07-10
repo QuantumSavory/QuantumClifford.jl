@@ -1,20 +1,20 @@
 import Nemo: matrix_space
 
-struct LPCode{T} <: AbstractECC
-    c₁::LiftedCode{T}
-    c₂::LiftedCode{T}
+struct LPCode <: AbstractECC
+    c₁::LiftedCode
+    c₂::LiftedCode
     repr::Function
 
-    function LPCode(c₁::LiftedCode{T}, c₂::LiftedCode{T}, repr::Function) where T
-        new{T}(c₁, c₂, repr)
+    function LPCode(c₁::LiftedCode, c₂::LiftedCode, repr::Function)
+        new(c₁, c₂, repr)
     end
 end
 
-function LPCode(c₁::LiftedCode{PermGroupRingElem{FqFieldElem}}, c₂::LiftedCode{PermGroupRingElem{FqFieldElem}})
+function LPCode(c₁::LiftedCode, c₂::LiftedCode)
     LPCode(c₁, c₂, permutation_repr)
 end
 
-iscss(::Type{LPCode{T}}) where {T <: NCRingElement} = true
+iscss(::Type{LPCode}) = true
 
 function parity_checks_xz(c::LPCode)
     c.c₁.A[1,1].parent == c.c₂.A[1,1].parent || error("The base rings of the two codes must be the same")
