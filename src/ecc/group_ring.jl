@@ -227,18 +227,16 @@ function (R::PermGroupRing{T})() where {T<:RingElement}
     return r
 end
 
-function (R::PermGroupRing{T})(coeffs::Dict{<:Perm,T}) where {T<:RingElement}
-    for (k,v) in coeffs
-        length(k.d) == R.l || error("Invalid permutation length")
-        parent(v) == R || error("Unable to coerce a group ring element")
+function (R::PermGroupRing{T})(coeffs::Dict{<:Perm,<:Union{T,Integer,Rational,AbstractFloat}}) where {T<:RingElement}
+    if valtype(coeffs) == T
+        for (k,v) in coeffs
+            length(k.d) == R.l || error("Invalid permutation length")
+            parent(v) == R || error("Unable to coerce a group ring element")
+        end
+    else
+        coeffs = Dict(k => base_ring(R)(v) for (k, v) in coeffs)
     end
     r = PermGroupRingElem{T}(coeffs)
-    r.parent = R
-    return r
-end
-
-function (R::PermGroupRing{T})(coeffs::Dict{<:Perm,<:Union{Integer,Rational,AbstractFloat}}) where {T<:RingElement}
-    r = PermGroupRingElem{T}(Dict(k => base_ring(R)(v) for (k, v) in coeffs))
     r.parent = R
     return r
 end
