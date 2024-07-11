@@ -108,15 +108,14 @@ function expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
 end
 
 """Same as `all(==(0), (a.+b.+c) .% 2)`"""
-function _allthreesumtozero(a,b,c) # TODO consider using bitpacking and SIMD xor with less eager shortcircuiting -- probably would be much faster
-    @inbounds @simd for i in 1:length(a)
-        iseven(a[i]+b[i]+c[i]) || return false
-    end
-    true
+function _allthreesumtozero(a, b, c)
+    packed_sum = a .+ b .+ c
+    all_even = all(@. iseven(packed_sum))
+    return all_even
 end
 
 function _dictvaltype(dict)
-    return eltype(dict).parameters[2] # TODO there must be a cleaner way to do this
+    return Base.getindex(eltype(dict).parameters, 2)
 end
 
 function project!(sm::GeneralizedStabilizer, p::PauliOperator)
@@ -179,25 +178,29 @@ function apply!(state::GeneralizedStabilizer, gate::PauliChannel)
     dtype = _dictvaltype(dict)
     tzero = zero(dtype)
     tone = one(dtype)
-    newdict = typeof(dict)(tzero) # TODO jeez, this is ugly
-    for ((dᵢ,dⱼ), χ) in dict # the state
-        for ((Pₗ,Pᵣ), w) in zip(gate.paulis,gate.weights) # the channel
-            phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ,stab)
-            phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ,stab)
-            c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ))*2
+    newdict = DefaultDict{Tuple{BitVector, BitVector}, Complex{Float64}}(Complex{Float64}(0, 0))
+    for ((dᵢ,dⱼ), χ) in dict
+        for ((Pₗ,Pᵣ), w) in zip(gate.paulis, gate.weights)
+            phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ, stab)
+            phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ, stab)
+            c = (dot(dₗˢᵗᵃᵇ, dᵢ) + dot(dᵣˢᵗᵃᵇ, dⱼ)) * 2
             dᵢ′ = dₗ .⊻ dᵢ
             dⱼ′ = dᵣ .⊻ dⱼ
-            χ′ = χ * w * (-tone)^c * (im)^(-phaseₗ+phaseᵣ+4)
-            newdict[(dᵢ′,dⱼ′)] += χ′
+            χ′ = χ * w * (-tone)^c * (im)^(-phaseₗ + phaseᵣ + 4)
+            newdict[(dᵢ′, dⱼ′)] += χ′
         end
     end
-    for (k,v) in newdict # TODO is it safe to modify a dict while iterating over it?
-        if abs(v) < 1e-14 # TODO parameterize this pruning parameter
-            delete!(newdict, k)
+    keys_to_delete = Tuple[]
+    for (k, v) in newdict
+        if abs(v) < 1e-14
+            push!(keys_to_delete, k)
         end
+    end
+    for k in keys_to_delete
+        delete!(newdict, k)
     end
     state.destabweights = newdict
-    state
+    return state
 end
 
 """Decompose a Pauli ``P`` in terms of stabilizer and destabilizer rows from a given tableaux.
