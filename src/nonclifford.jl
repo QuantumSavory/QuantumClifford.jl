@@ -26,13 +26,17 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 with ϕᵢⱼ | Pᵢ | Pⱼ:
  1.0+0.0im | + _ | + _
 
+julia> GeneralizedStabilizer(S"-X").destabweights
+DataStructures.DefaultDict{Tuple{BitVector, BitVector}, ComplexF64, ComplexF64} with 1 entry:
+  ([0], [0]) => 1.0+0.0im
+
 julia> pcT
 A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
 with ϕᵢ | Pᵢ
  0.853553+0.353553im | + _
  0.146447-0.353553im | + Z
 
-julia> apply!(GeneralizedStabilizer(S"-X"), pcT)
+julia> gs = apply!(GeneralizedStabilizer(S"-X"), pcT)
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
@@ -43,6 +47,20 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
  0.0-0.353553im | + Z | + _
  0.853553+0.0im | + _ | + _
  0.146447+0.0im | + Z | + Z
+
+julia> gs.stab
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+
+julia> gs.destabweights
+DataStructures.DefaultDict{Tuple{BitVector, BitVector}, ComplexF64, ComplexF64} with 4 entries:
+  ([0], [1]) => 0.0+0.353553im
+  ([1], [0]) => 0.0-0.353553im
+  ([0], [0]) => 0.853553+0.0im
+  ([1], [1]) => 0.146447+0.0im
+
 ```
 
 See also: [`PauliChannel`](@ref)
@@ -108,14 +126,15 @@ function expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
 end
 
 """Same as `all(==(0), (a.+b.+c) .% 2)`"""
-function _allthreesumtozero(a, b, c)
-    packed_sum = a .+ b .+ c
-    all_even = all(@. iseven(packed_sum))
-    return all_even
+function _allthreesumtozero(a, b, c) # TODO consider using bitpacking and SIMD xor with less eager shortcircuiting -- probably would be much faster
+    @inbounds @simd for i in 1:length(a)
+        ((a[i] + b[i] + c[i]) & 1) == 0 || return false
+    end
+    true
 end
 
 function _dictvaltype(dict)
-    return Base.getindex(eltype(dict).parameters, 2)
+    return valtype(dict)
 end
 
 function project!(sm::GeneralizedStabilizer, p::PauliOperator)
@@ -172,36 +191,39 @@ end
 
 nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 
-function apply!(state::GeneralizedStabilizer, gate::PauliChannel)
+function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold::Union{Nothing, Float64}=nothing)
+    if prune_threshold === nothing
+        prune_threshold = 1e-14  # Default value
+    end
     dict = state.destabweights
     stab = state.stab
     dtype = _dictvaltype(dict)
     tzero = zero(dtype)
     tone = one(dtype)
-    newdict = DefaultDict{Tuple{BitVector, BitVector}, Complex{Float64}}(Complex{Float64}(0, 0))
-    for ((dᵢ,dⱼ), χ) in dict
-        for ((Pₗ,Pᵣ), w) in zip(gate.paulis, gate.weights)
+    newdict = typeof(dict)(tzero)
+    for ((dᵢ,dⱼ), χ) in dict # the state
+        for ((Pₗ,Pᵣ), w) in zip(gate.paulis, gate.weights) # the channel
             phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ, stab)
             phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ, stab)
             c = (dot(dₗˢᵗᵃᵇ, dᵢ) + dot(dᵣˢᵗᵃᵇ, dⱼ)) * 2
             dᵢ′ = dₗ .⊻ dᵢ
             dⱼ′ = dᵣ .⊻ dⱼ
             χ′ = χ * w * (-tone)^c * (im)^(-phaseₗ + phaseᵣ + 4)
-            newdict[(dᵢ′, dⱼ′)] += χ′
+            if abs(χ′) >= prune_threshold
+                if haskey(newdict, (dᵢ′, dⱼ′))
+                    newdict[(dᵢ′, dⱼ′)] += χ′
+                else
+                    newdict[(dᵢ′, dⱼ′)] = χ′
+                end
+            end
         end
     end
-    keys_to_delete = Tuple[]
-    for (k, v) in newdict
-        if abs(v) < 1e-14
-            push!(keys_to_delete, k)
-        end
-    end
-    for k in keys_to_delete
-        delete!(newdict, k)
-    end
+    # Filter newdict based on abs value using filter!
+    filter!(x -> abs(x[2]) >= prune_threshold, newdict)
     state.destabweights = newdict
-    return state
+    state
 end
+
 
 """Decompose a Pauli ``P`` in terms of stabilizer and destabilizer rows from a given tableaux.
 
@@ -305,7 +327,7 @@ end
 
 nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
-apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel) = apply!(state, gate.paulichannel)
+apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold::Union{Nothing, Float64}=nothing) = prune_threshold === nothing ? apply!(state, gate.paulichannel) : apply!(state, gate.paulichannel, prune_threshold)
 
 ##
 # Predefined Pauli Channels
