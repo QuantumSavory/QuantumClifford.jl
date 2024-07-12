@@ -68,7 +68,7 @@ end
     end
 end
 
-@testset "SingleQubitOperator Inv methods" begin
+@testset "SingleQubitOperator inv methods" begin
     @test CliffordOperator(inv(SingleQubitOperator(sHadamard(1))), 1) ==  inv(CliffordOperator(sHadamard))
     @test CliffordOperator(inv(SingleQubitOperator(sX(1))), 1) ==  inv(CliffordOperator(sX))
     @test CliffordOperator(inv(SingleQubitOperator(sY(1))), 1) ==  inv(CliffordOperator(sY))
@@ -78,4 +78,13 @@ end
     @test CliffordOperator(inv(SingleQubitOperator(sPhase(1))), 1) == CliffordOperator(sPhase(1),1) |> inv
     @test CliffordOperator(inv(SingleQubitOperator(sInvPhase(1))), 1) == inv(CliffordOperator(sInvPhase(1),1))
     @test CliffordOperator(inv(SingleQubitOperator(sInvPhase(1))), 1) == CliffordOperator(sInvPhase(1),1) |> inv
+    @test CliffordOperator(inv(sHadamard(1)), 1) ==  inv(CliffordOperator(sHadamard))
+    @test CliffordOperator(inv(sX(1)), 1) ==  inv(CliffordOperator(sX))
+    @test CliffordOperator(inv(sY(1)), 1) ==  inv(CliffordOperator(sY))
+    @test CliffordOperator(inv(sZ(1)), 1) ==  inv(CliffordOperator(sZ))
+    @test CliffordOperator(inv(sId1(1)), 1) ==  inv(CliffordOperator(sId1))
+    @test CliffordOperator(inv(sPhase(1)), 1) == inv(CliffordOperator(sPhase(1),1))
+    @test CliffordOperator(inv(sPhase(1)), 1) == CliffordOperator(sPhase(1),1) |> inv
+    @test CliffordOperator(inv(sInvPhase(1)), 1) == inv(CliffordOperator(sInvPhase(1),1))
+    @test CliffordOperator(inv(sInvPhase(1)), 1) == CliffordOperator(sInvPhase(1),1) |> inv
 end

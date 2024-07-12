@@ -7,7 +7,7 @@
 
 ## v0.9.6 - 2024-07-12
 
-- `inv` implementation for `SingleQubitOperator`.
+- `inv` implementation for the `SingleQubitOperator`.
 
 ## v0.9.5 - 2024-07-04
 
