@@ -227,6 +227,37 @@ function random_clifford1(rng::AbstractRNG, qubit)
 end
 random_clifford1(qubit) = random_clifford1(GLOBAL_RNG, qubit)
 
+
+inv(h::sHadamard) = sHadamard(h.q)
+inv(p::sPhase) = sInvPhase(p.q)
+inv(p::sInvPhase) = sPhase(p.q)
+inv(p::sId1) = sId1(p.q)
+inv(p::sX) = sX(p.q)
+inv(p::sY) = sY(p.q)
+inv(p::sZ) = sZ(p.q)
+
+function inv(op::SingleQubitOperator)
+    if !op.xx && op.xz && op.zx && !op.zz && !op.px && !op.pz
+        return sHadamard(op.q)
+    elseif op.xx && op.xz && !op.zx && op.zz && !op.px && !op.pz
+        return sInvPhase(op.q)
+    elseif op.xx && op.xz && !op.zx && op.zz && op.px && !op.pz
+        return sPhase(op.q)
+    elseif op.xx && !op.xz && !op.zx && op.zz && !op.px && !op.pz
+        return sId1(op.q)
+    elseif op.xx && !op.xz && !op.zx && op.zz && !op.px && op.pz
+        return sX(op.q)
+    elseif op.xx && !op.xz && !op.zx && op.zz && op.px && op.pz
+        return sY(op.q)
+    elseif op.xx && !op.xz && !op.zx && op.zz && op.px && !op.pz
+        return sZ(op.q)
+    else
+        throw(ArgumentError("Unknown SingleQubitOperator: cannot determine inverse"))
+    end
+end
+
+inv(op::AbstractSingleQubitOperator) = inv(SingleQubitOperator(op))
+
 ##############################
 # Two-qubit gates
 ##############################

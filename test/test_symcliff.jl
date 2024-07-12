@@ -66,3 +66,34 @@ end
         @test op1 == op2
     end
 end
+
+@testset "SingleQubitOperator Inv methods" begin
+    inv_op = inv(SingleQubitOperator(sHadamard(1)))
+    expected_inv_op = sHadamard(1)
+    @test inv_op == expected_inv_op
+    @test inv_op == inv(sHadamard(1))
+    inv_op = inv(SingleQubitOperator(sPhase(1)))
+    expected_inv_op = sInvPhase(1)
+    @test inv_op == expected_inv_op 
+    @test inv_op == inv(sPhase(1))
+    inv_op = inv(SingleQubitOperator(sInvPhase(1)))
+    expected_inv_op = sPhase(1)
+    @test inv_op == expected_inv_op
+    @test inv_op == inv(sInvPhase(1))
+    inv_op = inv(SingleQubitOperator(sX(1)))
+    expected_inv_op = sX(1)
+    @test inv_op == expected_inv_op
+    @test inv_op == inv(sX(1))
+    inv_op = inv(SingleQubitOperator(sY(1)))
+    expected_inv_op = sY(1)
+    @test inv_op == expected_inv_op
+    @test inv_op == inv(sY(1))
+    inv_op = inv(SingleQubitOperator(sZ(1)))
+    expected_inv_op = sZ(1)
+    @test inv_op == expected_inv_op
+    @test inv_op == inv(sZ(1))
+    inv_op = inv(SingleQubitOperator(sId1(1)))
+    expected_inv_op = sId1(1)
+    @test inv_op == expected_inv_op
+    @test inv_op == inv(sId1(1))
+end

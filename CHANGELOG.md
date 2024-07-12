@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.6 - 2024-07-12
+
+- `inv` implementation for all subtypes of `AbstractCliffordOperator`
+
 ## v0.9.5 - 2024-07-04
 
 - Implementation of random all-to-all and brickwork Clifford circuits and corresponding ECC codes.
