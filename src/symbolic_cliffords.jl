@@ -1,5 +1,4 @@
 using Random: AbstractRNG, GLOBAL_RNG
-import Base: inv
 
 """Supertype of all symbolic operators. Subtype of `AbstractCliffordOperator`"""
 abstract type AbstractSymbolicOperator <: AbstractCliffordOperator end
@@ -228,12 +227,12 @@ function random_clifford1(rng::AbstractRNG, qubit)
 end
 random_clifford1(qubit) = random_clifford1(GLOBAL_RNG, qubit)
 
-function inv(op::SingleQubitOperator)
-    c = LinearAlgebra.inv(CliffordOperator(SingleQubitOperator(op), op.q), phases = true)
+function LinearAlgebra.inv(op::SingleQubitOperator)
+    c = LinearAlgebra.inv(CliffordOperator(SingleQubitOperator(op), 1, compact=true))
     return SingleQubitOperator(c)
 end
 
-inv(op::AbstractSingleQubitOperator) = inv(SingleQubitOperator(op))
+LinearAlgebra.inv(op::AbstractSingleQubitOperator) = LinearAlgebra.inv(SingleQubitOperator(op))
 
 ##############################
 # Two-qubit gates
