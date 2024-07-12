@@ -1,4 +1,5 @@
 using Random: AbstractRNG, GLOBAL_RNG
+import Base: inv
 
 """Supertype of all symbolic operators. Subtype of `AbstractCliffordOperator`"""
 abstract type AbstractSymbolicOperator <: AbstractCliffordOperator end
@@ -226,7 +227,6 @@ function random_clifford1(rng::AbstractRNG, qubit)
     return enumerate_single_qubit_gates(rand(rng,1:6),qubit=qubit,phases=(rand(rng,Bool),rand(rng,Bool)))
 end
 random_clifford1(qubit) = random_clifford1(GLOBAL_RNG, qubit)
-
 
 inv(h::sHadamard) = sHadamard(h.q)
 inv(p::sPhase) = sInvPhase(p.q)
