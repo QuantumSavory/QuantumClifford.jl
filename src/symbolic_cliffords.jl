@@ -229,19 +229,9 @@ end
 random_clifford1(qubit) = random_clifford1(GLOBAL_RNG, qubit)
 
 function inv(op::SingleQubitOperator)
-    if op.xx && op.xz && !op.zx && op.zz && !op.px && !op.pz
-        return sInvPhase(op.q)
-    elseif op.xx && op.xz && !op.zx && op.zz && op.px && !op.pz
-        return sPhase(op.q)
-    else
-        c = LinearAlgebra.inv(CliffordOperator(SingleQubitOperator(op), op.q), phases = true)
-        return SingleQubitOperator(c)
-    end
+    c = LinearAlgebra.inv(CliffordOperator(SingleQubitOperator(op), op.q), phases = true)
+    return SingleQubitOperator(c)
 end
-
-inv(p::sPhase) = sInvPhase(p.q)
-
-inv(p::sInvPhase) = sPhase(p.q)
 
 inv(op::AbstractSingleQubitOperator) = inv(SingleQubitOperator(op))
 
