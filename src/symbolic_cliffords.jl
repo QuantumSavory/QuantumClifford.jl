@@ -234,7 +234,8 @@ function inv(op::SingleQubitOperator)
     elseif op.xx && op.xz && !op.zx && op.zz && op.px && !op.pz
         return sPhase(op.q)
     else
-        return SingleQubitOperator(op)
+        c = LinearAlgebra.inv(CliffordOperator(SingleQubitOperator(op), op.q), phases = true)
+        return SingleQubitOperator(c)
     end
 end
 
