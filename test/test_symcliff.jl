@@ -1,6 +1,7 @@
 using Random
 using QuantumClifford
 import Base: inv
+using QuantumClifford: CliffordOperator
 using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
 using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
 using InteractiveUtils
@@ -68,32 +69,13 @@ end
 end
 
 @testset "SingleQubitOperator Inv methods" begin
-    inv_op = inv(SingleQubitOperator(sHadamard(1)))
-    expected_inv_op = sHadamard(1)
-    @test inv_op == expected_inv_op
-    @test inv_op == inv(sHadamard(1))
-    inv_op = inv(SingleQubitOperator(sPhase(1)))
-    expected_inv_op = sInvPhase(1)
-    @test inv_op == expected_inv_op 
-    @test inv_op == inv(sPhase(1))
-    inv_op = inv(SingleQubitOperator(sInvPhase(1)))
-    expected_inv_op = sPhase(1)
-    @test inv_op == expected_inv_op
-    @test inv_op == inv(sInvPhase(1))
-    inv_op = inv(SingleQubitOperator(sX(1)))
-    expected_inv_op = sX(1)
-    @test inv_op == expected_inv_op
-    @test inv_op == inv(sX(1))
-    inv_op = inv(SingleQubitOperator(sY(1)))
-    expected_inv_op = sY(1)
-    @test inv_op == expected_inv_op
-    @test inv_op == inv(sY(1))
-    inv_op = inv(SingleQubitOperator(sZ(1)))
-    expected_inv_op = sZ(1)
-    @test inv_op == expected_inv_op
-    @test inv_op == inv(sZ(1))
-    inv_op = inv(SingleQubitOperator(sId1(1)))
-    expected_inv_op = sId1(1)
-    @test inv_op == expected_inv_op
-    @test inv_op == inv(sId1(1))
+    @test CliffordOperator(inv(SingleQubitOperator(sHadamard(1))), 1) ==  inv(CliffordOperator(sHadamard))
+    @test CliffordOperator(inv(SingleQubitOperator(sX(1))), 1) ==  inv(CliffordOperator(sX))
+    @test CliffordOperator(inv(SingleQubitOperator(sY(1))), 1) ==  inv(CliffordOperator(sY))
+    @test CliffordOperator(inv(SingleQubitOperator(sZ(1))), 1) ==  inv(CliffordOperator(sZ))
+    @test CliffordOperator(inv(SingleQubitOperator(sId1(1))), 1) ==  inv(CliffordOperator(sId1))
+    @test CliffordOperator(inv(SingleQubitOperator(sPhase(1))), 1) == inv(CliffordOperator(sPhase(1),1))
+    @test CliffordOperator(inv(SingleQubitOperator(sPhase(1))), 1) == CliffordOperator(sPhase(1),1) |> inv
+    @test CliffordOperator(inv(SingleQubitOperator(sInvPhase(1))), 1) == inv(CliffordOperator(sInvPhase(1),1))
+    @test CliffordOperator(inv(SingleQubitOperator(sInvPhase(1))), 1) == CliffordOperator(sInvPhase(1),1) |> inv
 end

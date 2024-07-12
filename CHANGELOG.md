@@ -7,7 +7,7 @@
 
 ## v0.9.6 - 2024-07-12
 
-- `inv` implementation for all subtypes of `AbstractCliffordOperator`
+- `inv` implementation for `SingleQubitOperator`.
 
 ## v0.9.5 - 2024-07-04
 
