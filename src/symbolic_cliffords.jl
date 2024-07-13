@@ -229,7 +229,7 @@ random_clifford1(qubit) = random_clifford1(GLOBAL_RNG, qubit)
 
 function LinearAlgebra.inv(op::SingleQubitOperator)
     c = LinearAlgebra.inv(CliffordOperator(SingleQubitOperator(op), 1, compact=true))
-    return SingleQubitOperator(c)
+    return SingleQubitOperator(c, op.q)
 end
 
 LinearAlgebra.inv(op::AbstractSingleQubitOperator) = LinearAlgebra.inv(SingleQubitOperator(op))
