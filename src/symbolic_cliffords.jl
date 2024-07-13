@@ -334,11 +334,6 @@ function Base.show(io::IO, op::AbstractTwoQubitOperator)
     end
 end
 
-function LinearAlgebra.inv(op::AbstractTwoQubitOperator)
-    c = LinearAlgebra.inv(CliffordOperator(AbstractTwoQubitOperator(op), 2, compact=true))
-    return AbstractTwoQubitOperator(c, op.q)
-end
-
 LinearAlgebra.inv(op::sSWAP) = sSWAP(op.q1, op.q2)
 LinearAlgebra.inv(op::sCNOT) = sCNOT(op.q1, op.q2)
 LinearAlgebra.inv(op::sCPHASE) = sCPHASE(op.q1, op.q2)
