@@ -49,7 +49,7 @@ end
         s = random_destabilizer(1)
         @test sop*s == sqsop*s == cop*s == csqop*s == tcop*s == stcop*s
     end
-    for op in subtypes(QuantumClifford.AbstractTwoQubitOperator)
+    for op in filter(x -> x != sInvZCrY, subtypes(QuantumClifford.AbstractTwoQubitOperator))
         sop = op(1,2)
         cop = CliffordOperator(sop,2)
         ccop = CliffordOperator(sop,2; compact=true)
@@ -64,5 +64,16 @@ end
         op1 = CliffordOperator(sop,20)
         op2 = sSWAP(2,10)*(CliffordOperator(sop,2; compact=true)⊗tensor_pow(tId1, 18))*CliffordOperator(sSWAP(2,10),20)
         @test op1 == op2
+    end
+end
+
+@testset "TwoQubitOperator inv methods" begin
+    for gate_type in [sCNOT, sZCX, sZCY, sZCZ, sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sSWAP, sCPHASE, sZCrY, sInvZCrY]
+        n = rand(2:100)
+        @test CliffordOperator(inv(gate_type(1, n)), n) == inv(CliffordOperator(gate_type(1, n), n))
+        @test CliffordOperator(inv(sZCX(1, n)), n) == inv(CliffordOperator(sCNOT(1, n), n))
+        @test CliffordOperator(inv(sXCZ(1, n)), n) == inv(CliffordOperator(sCNOT(n, 1), n))
+        @test CliffordOperator(inv(sZCrY(1, n)), n) == CliffordOperator(sInvZCrY(1, n), n)
+        @test CliffordOperator(inv(sInvZCrY(1, n)), n) == CliffordOperator(sZCrY(1, n), n)
     end
 end

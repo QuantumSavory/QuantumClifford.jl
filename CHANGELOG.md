@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.7 - 2024-07-13
+
+- `inv` implementation for the `TwoQubitOperator`.
+
 ## v0.9.5 - 2024-07-04
 
 - Implementation of random all-to-all and brickwork Clifford circuits and corresponding ECC codes.
