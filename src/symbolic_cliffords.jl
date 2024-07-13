@@ -232,7 +232,13 @@ function LinearAlgebra.inv(op::SingleQubitOperator)
     return SingleQubitOperator(c, op.q)
 end
 
-LinearAlgebra.inv(op::AbstractSingleQubitOperator) = LinearAlgebra.inv(SingleQubitOperator(op))
+LinearAlgebra.inv(h::sHadamard) = sHadamard(h.q)
+LinearAlgebra.inv(p::sPhase) = sInvPhase(p.q)
+LinearAlgebra.inv(p::sInvPhase) = sPhase(p.q)
+LinearAlgebra.inv(p::sId1) = sId1(p.q)
+LinearAlgebra.inv(p::sX) = sX(p.q)
+LinearAlgebra.inv(p::sY) = sY(p.q)
+LinearAlgebra.inv(p::sZ) = sZ(p.q)
 
 ##############################
 # Two-qubit gates

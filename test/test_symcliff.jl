@@ -78,4 +78,11 @@ end
         @test CliffordOperator(inv(random_op), 1) == inv(CliffordOperator(random_op, 1))
         @test CliffordOperator(inv(SingleQubitOperator(random_op)), 1) == inv(CliffordOperator(random_op, 1))
     end
+    @test inv(sHadamard(1)) == sHadamard(1)
+    @test inv(sX(1)) == sX(1)
+    @test inv(sY(1)) == sY(1)
+    @test inv(sZ(1)) == sZ(1)
+    @test inv(sId1(1)) == sId1(1)
+    @test inv(sPhase(1)) == sInvPhase(1)
+    @test inv(sInvPhase(1)) == sPhase(1)
 end
