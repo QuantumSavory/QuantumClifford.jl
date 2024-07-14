@@ -68,6 +68,7 @@ end
 @doset "precompile"
 @doset "pauliframe"
 @doset "allocations"
+@doset "group_tableaux"
 VERSION >= v"1.10" && @doset "doctests"
 get(ENV,"JET_TEST","")=="true" && @doset "jet"
 VERSION >= v"1.10" && @doset "aqua"
