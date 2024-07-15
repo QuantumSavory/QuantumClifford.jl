@@ -197,12 +197,12 @@ p has identity operators on all qubits corresponding to subset. If so, add p to 
 Return the vector convterted to Tableau.
 
 '''jldoctest
-julia> contract(S"_X X_", [1])
+julia> contractor(S"_X X_", [1])
 + _
 + X
 '''
 """
-function contracter(s::Stabilizer, subset)
+function contractor(s::Stabilizer, subset)
     result = typeof(s[1])[]
     for p in groupify(s)
         contractable = true
