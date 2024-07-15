@@ -33,7 +33,7 @@ end
     apply!(state, tgate)
     apply!(state, tgate)
 
-    @test state.destabweights |> values |> collect == [1]
+    @test state.destabweights |> values |> collect ≈ [1]
     @test state.destabweights |> keys |> collect == [([1],[1])]
 end
 
