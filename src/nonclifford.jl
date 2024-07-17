@@ -203,17 +203,17 @@ function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_
     newdict = typeof(dict)(tzero)
     for ((dᵢ,dⱼ), χ) in dict # the state
         for ((Pₗ,Pᵣ), w) in zip(gate.paulis, gate.weights) # the channel
-            phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ, stab)
-            phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ, stab)
-            c = (dot(dₗˢᵗᵃᵇ, dᵢ) + dot(dᵣˢᵗᵃᵇ, dⱼ)) * 2
+            phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ,stab)
+            phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ,stab)
+            c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ))*2
             dᵢ′ = dₗ .⊻ dᵢ
             dⱼ′ = dᵣ .⊻ dⱼ
-            χ′ = χ * w * (-tone)^c * (im)^(-phaseₗ + phaseᵣ + 4)
+            χ′ = χ * w * (-tone)^c * (im)^(-phaseₗ+phaseᵣ+4)
             if abs(χ′) >= prune_threshold
-                if haskey(newdict, (dᵢ′, dⱼ′))
-                    newdict[(dᵢ′, dⱼ′)] += χ′
+                if haskey(newdict, (dᵢ′,dⱼ′))
+                    newdict[(dᵢ′,dⱼ′)] += χ′
                 else
-                    newdict[(dᵢ′, dⱼ′)] = χ′
+                    newdict[(dᵢ′,dⱼ′)] += χ′
                 end
             end
         end
