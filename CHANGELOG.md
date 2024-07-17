@@ -7,7 +7,7 @@
 
 ## v0.9.6 - 2024-07-12
 
-- `inv` implementation for the `SingleQubitOperator`.
+- `inv` implementation for single-qubit "symbolic" Clifford operators (subtypes of `AbstractSingleQubitOperator`).
 
 ## v0.9.5 - 2024-07-04
 

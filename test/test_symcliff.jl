@@ -1,6 +1,5 @@
 using Random
 using QuantumClifford
-using QuantumClifford: CliffordOperator
 using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
 using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
 using InteractiveUtils
@@ -69,13 +68,13 @@ end
 
 @testset "SingleQubitOperator inv methods" begin
     for gate_type in [sHadamard, sX, sY, sZ, sId1 , sPhase, sInvPhase]
-        n = rand(1:100)
+        n = rand(1:10)
         @test CliffordOperator(inv(SingleQubitOperator(gate_type(n))), n) == inv(CliffordOperator(gate_type(n), n))
         @test CliffordOperator(inv(gate_type(n)), n) == inv(CliffordOperator(gate_type(n), n))
     end
     for i in 1:10
-        random_op = random_clifford1(Random.GLOBAL_RNG, 1)
-        @test CliffordOperator(inv(random_op), 1) == inv(CliffordOperator(random_op, 1))
-        @test CliffordOperator(inv(SingleQubitOperator(random_op)), 1) == inv(CliffordOperator(random_op, 1))
+        random_op = random_clifford1(i)
+        @test CliffordOperator(inv(random_op), i) == inv(CliffordOperator(random_op, i))
+        @test CliffordOperator(inv(SingleQubitOperator(random_op)), i) == inv(CliffordOperator(random_op, i))
     end
 end
