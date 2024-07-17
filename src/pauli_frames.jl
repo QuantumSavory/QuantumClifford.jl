@@ -57,7 +57,7 @@ function apply!(f::PauliFrame, op::AbstractCliffordOperator)
     return f
 end
 
-function apply!(frame::PauliFrame, xor::ClassicalXORConcreteWorkaround)
+function apply!(frame::PauliFrame, xor::ClassicalXOR)
     for f in eachindex(frame)
         value = frame.measurements[f,xor.bits[1]]
         for i in xor.bits[2:end]
@@ -65,6 +65,7 @@ function apply!(frame::PauliFrame, xor::ClassicalXORConcreteWorkaround)
         end
         frame.measurements[f, xor.store] = value
     end
+    return frame
 end
 
 function apply!(frame::PauliFrame, op::sMX) # TODO implement a faster direct version
@@ -174,7 +175,12 @@ function _pftrajectories(circuit;trajectories=5000,threads=true)
     ccircuit = if eltype(circuit) <: CompactifiedGate
         circuit
     else
-        compactify_circuit(circuit)
+        try
+            compactify_circuit(circuit)
+        catch err
+            @warn "Could not compactify the circuit, falling back to a slower version of the simulation. Consider reporting this issue to the package maintainers to improve performance. The offending gate was `$(err.args[2])`."
+            circuit
+        end
     end
     frames = _create_pauliframe(ccircuit; trajectories)
     nthr = min(Threads.nthreads(),trajectories÷(100))
