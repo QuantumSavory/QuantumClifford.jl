@@ -26,13 +26,17 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 with ϕᵢⱼ | Pᵢ | Pⱼ:
  1.0+0.0im | + _ | + _
 
+julia> GeneralizedStabilizer(S"-X").destabweights
+DataStructures.DefaultDict{Tuple{BitVector, BitVector}, ComplexF64, ComplexF64} with 1 entry:
+  ([0], [0]) => 1.0+0.0im
+
 julia> pcT
 A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
 with ϕᵢ | Pᵢ
  0.853553+0.353553im | + _
  0.146447-0.353553im | + Z
 
-julia> apply!(GeneralizedStabilizer(S"-X"), pcT)
+julia> gs = apply!(GeneralizedStabilizer(S"-X"), pcT)
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
@@ -43,6 +47,20 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
  0.0-0.353553im | + Z | + _
  0.853553+0.0im | + _ | + _
  0.146447+0.0im | + Z | + Z
+
+julia> gs.stab
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+
+julia> gs.destabweights
+DataStructures.DefaultDict{Tuple{BitVector, BitVector}, ComplexF64, ComplexF64} with 4 entries:
+  ([0], [1]) => 0.0+0.353553im
+  ([1], [0]) => 0.0-0.353553im
+  ([0], [0]) => 0.853553+0.0im
+  ([1], [1]) => 0.146447+0.0im
+
 ```
 
 See also: [`PauliChannel`](@ref)
@@ -210,6 +228,9 @@ end
 For given tableaux of rows destabilizer rows ``\\{d_i\\}`` and stabilizer rows ``\\{s_i\\}``,
 there are boolean vectors ``b`` and ``c`` such that
 ``P = i^p \\prod_i d_i^{b_i} \\prod_i s_i^{c_i}``.
+
+By examining the commutation of `P` with the stabilizer and destabilizer generators,
+this decomposition can be determined in `Ο(n²)` time.
 
 This function returns `p`, `b`, `c`.
 
