@@ -87,7 +87,7 @@ end
         @test CliffordOperator(inv(gate_type(n₂, n₁)), n₁) == inv(CliffordOperator(gate_type(n₂, n₁), n₁))
         @test CliffordOperator(inv(sZCX(n₁, n₂)), n₁) == inv(CliffordOperator(sCNOT(n₁, n₂), n₁))
         @test CliffordOperator(inv(sXCZ(n₁, n₂)), n₁) == inv(CliffordOperator(sCNOT(n₂, n₁), n₁))
-        @test CliffordOperator(inv(sZCrY(n₁, n₂)), n₁) == CliffordOperator(sInvZCrY(n₁, n₂), n₁)
-        @test CliffordOperator(inv(sInvZCrY(n₁, n₂)), n₁) == CliffordOperator(sZCrY(n₁, n₂), n₁)
+        @test CliffordOperator(inv(sZCrY(n₁, n₂)), n₁) == inv(CliffordOperator(sZCrY(n₁, n₂), n₁))
+        @test CliffordOperator(inv(sInvZCrY(n₁, n₂)), n₁) == inv(CliffordOperator(sInvZCrY(n₁, n₂), n₁))
     end
 end
