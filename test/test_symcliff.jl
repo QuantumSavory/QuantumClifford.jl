@@ -78,15 +78,16 @@ end
         @test CliffordOperator(inv(SingleQubitOperator(random_op)), i) == inv(CliffordOperator(random_op, i))
     end
 end
-      
+
 @testset "TwoQubitOperator inv methods" begin
     for gate_type in [sCNOT, sZCX, sZCY, sZCZ, sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sSWAP, sCPHASE, sZCrY, sInvZCrY]
-        n = rand(2:10)
-        @test CliffordOperator(inv(gate_type(1, n)), n) == inv(CliffordOperator(gate_type(1, n), n))
-        @test CliffordOperator(inv(sZCX(1, n)), n) == inv(CliffordOperator(sCNOT(1, n), n))
-        @test CliffordOperator(inv(sXCZ(1, n)), n) == inv(CliffordOperator(sCNOT(n, 1), n))
-        @test CliffordOperator(inv(sZCrY(1, n)), n) == CliffordOperator(sInvZCrY(1, n), n)
-        @test CliffordOperator(inv(sInvZCrY(1, n)), n) == CliffordOperator(sZCrY(1, n), n)
+        n₁ = rand(2: 10)
+        n₂ = rand(1:(n₁ - 1))
+        @test CliffordOperator(inv(gate_type(n₁, n₂)), n₁) == inv(CliffordOperator(gate_type(n₁, n₂), n₁))
+        @test CliffordOperator(inv(gate_type(n₂, n₁)), n₁) == inv(CliffordOperator(gate_type(n₂, n₁), n₁))
+        @test CliffordOperator(inv(sZCX(n₁, n₂)), n₁) == inv(CliffordOperator(sCNOT(n₁, n₂), n₁))
+        @test CliffordOperator(inv(sXCZ(n₁, n₂)), n₁) == inv(CliffordOperator(sCNOT(n₂, n₁), n₁))
+        @test CliffordOperator(inv(sZCrY(n₁, n₂)), n₁) == CliffordOperator(sInvZCrY(n₁, n₂), n₁)
+        @test CliffordOperator(inv(sInvZCrY(n₁, n₂)), n₁) == CliffordOperator(sZCrY(n₁, n₂), n₁)
     end
 end
-      
