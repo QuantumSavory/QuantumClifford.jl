@@ -13,6 +13,10 @@
 - Constructing a `Destabilizer` out of a full-rank `Stabilizer` does not require a canonicalization anymore, i.e. `stabilizerview(Destabilizer(s))==s` is guaranteed.
 - The `maximally_mixed` function is now available for creating maximally mixed multi-qubit states.
 
+## v0.9.6 - 2024-07-12
+
+- `inv` implementation for single-qubit "symbolic" Clifford operators (subtypes of `AbstractSingleQubitOperator`).
+
 ## v0.9.5 - 2024-07-04
 
 - Implementation of random all-to-all and brickwork Clifford circuits and corresponding ECC codes.
