@@ -5,9 +5,14 @@
 
 # News
 
+
 ## v0.9.7 - 2024-07-13
 
-- `inv` implementation for the `TwoQubitOperator`.
+- `inv` implementation for two-qubit "symbolic" Clifford operators (subtypes of `AbstractTwoQubitOperator`).
+
+## v0.9.6 - 2024-07-12
+
+- `inv` implementation for single-qubit "symbolic" Clifford operators (subtypes of `AbstractSingleQubitOperator`).
 
 ## v0.9.5 - 2024-07-04
 

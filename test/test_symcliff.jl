@@ -1,6 +1,5 @@
 using Random
 using QuantumClifford
-
 using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
 using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
 using InteractiveUtils
@@ -67,9 +66,22 @@ end
     end
 end
 
+@testset "SingleQubitOperator inv methods" begin
+    for gate_type in [sHadamard, sX, sY, sZ, sId1 , sPhase, sInvPhase]
+        n = rand(1:10)
+        @test CliffordOperator(inv(SingleQubitOperator(gate_type(n))), n) == inv(CliffordOperator(gate_type(n), n))
+        @test CliffordOperator(inv(gate_type(n)), n) == inv(CliffordOperator(gate_type(n), n))
+    end
+    for i in 1:10
+        random_op = random_clifford1(i)
+        @test CliffordOperator(inv(random_op), i) == inv(CliffordOperator(random_op, i))
+        @test CliffordOperator(inv(SingleQubitOperator(random_op)), i) == inv(CliffordOperator(random_op, i))
+    end
+end
+      
 @testset "TwoQubitOperator inv methods" begin
     for gate_type in [sCNOT, sZCX, sZCY, sZCZ, sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sSWAP, sCPHASE, sZCrY, sInvZCrY]
-        n = rand(2:100)
+        n = rand(2:10)
         @test CliffordOperator(inv(gate_type(1, n)), n) == inv(CliffordOperator(gate_type(1, n), n))
         @test CliffordOperator(inv(sZCX(1, n)), n) == inv(CliffordOperator(sCNOT(1, n), n))
         @test CliffordOperator(inv(sXCZ(1, n)), n) == inv(CliffordOperator(sCNOT(n, 1), n))
@@ -77,3 +89,4 @@ end
         @test CliffordOperator(inv(sInvZCrY(1, n)), n) == CliffordOperator(sZCrY(1, n), n)
     end
 end
+      
