@@ -209,7 +209,9 @@ function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_
             dᵢ′ = dₗ .⊻ dᵢ
             dⱼ′ = dᵣ .⊻ dⱼ
             χ′ = χ * w * (-tone)^c * (im)^(-phaseₗ+phaseᵣ+4)
-            newdict[(dᵢ′,dⱼ′)] = get!(newdict,(dᵢ′,dⱼ′),0)+χ′
+            if abs(χ′) >= prune_threshold
+                newdict[(dᵢ′,dⱼ′)] = get!(newdict,(dᵢ′,dⱼ′),0)+χ′
+            end
         end
     end
     filter!(x -> abs(x[2]) >= prune_threshold, newdict)
