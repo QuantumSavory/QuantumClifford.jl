@@ -228,3 +228,60 @@ function fill_tril(rng, matrix, n; symmetric::Bool=false)
     end
     matrix
 end
+
+##############################
+# Random circuit
+##############################
+
+"""
+Random brickwork Clifford circuit.
+
+The connectivity of the random circuit is brickwork in some dimensions. Each gate in the circuit is a random 2-qubit Clifford gate.
+
+The brickwork is defined as follows: The qubits are arranged as a lattice, and `lattice_size` contains side length in each dimension.
+For example, a chain of length five will have `lattice_size = (5,)`, and a 5×5 lattice will have `lattice_size = (5, 5)`.
+
+In multi-dimensional cases, gate layers act alternatively along each direction.
+The nearest two layers along the same direction are offset by one qubit, forming a so-called brickwork.
+The boundary condition is chosen as open.
+"""
+function random_brickwork_clifford_circuit(rng::AbstractRNG, lattice_size::NTuple{N,Int} where {N}, nlayers::Int)
+    circ = QuantumClifford.SparseGate[]
+    cartesian = CartesianIndices(lattice_size)
+    dim = length(lattice_size)
+    nqubits = prod(lattice_size)
+    for i in 1:nlayers
+        gate_direction = (i - 1) % dim + 1
+        l = lattice_size[gate_direction]
+        brickwise_parity = dim == 1 ? i % 2 : 1 - (i ÷ dim) % 2
+        for j in 1:nqubits
+            cardj = collect(cartesian[j].I)
+            if cardj[gate_direction] % 2 == brickwise_parity && cardj[gate_direction] != l # open boundary
+                cardk = cardj
+                cardk[gate_direction] = cardk[gate_direction] + 1
+                k = LinearIndices(cartesian)[cardk...]
+                push!(circ, SparseGate(random_clifford(rng, 2), [j, k]))
+            end
+        end
+    end
+    circ
+end
+
+random_brickwork_clifford_circuit(lattice_size::NTuple{N,Int} where {N}, nlayers::Int) = random_brickwork_clifford_circuit(GLOBAL_RNG, lattice_size, nlayers)
+
+"""
+Random all-to-all Clifford circuit.
+
+The circuit contains `nqubits` qubits and `ngates` gates. The connectivity is all to all. Each gate in the circuit is a random 2-qubit Clifford gate on randomly picked two qubits.
+"""
+function random_all_to_all_clifford_circuit(rng::AbstractRNG, nqubits::Int, ngates::Int)
+    circ = QuantumClifford.SparseGate[]
+    for i in 1:ngates
+        j = rand(1:nqubits)
+        k = rand(1:nqubits-1)
+        push!(circ, SparseGate(random_clifford(rng, 2), [j, (j + k - 1) % nqubits + 1]))
+    end
+    circ
+end
+
+random_all_to_all_clifford_circuit(nqubits::Int, ngates::Int) = random_all_to_all_clifford_circuit(GLOBAL_RNG, nqubits, ngates)

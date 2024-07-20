@@ -5,17 +5,27 @@
 
 # News
 
-## v0.9.5 - 2024-07-02
-- Addition of `PauliError` objects that can express biased noise during Pauli frame simulation. Now one can simulate only X errors, or only Y errors, or only Z errors, or some weighted combination of these.
+## v0.9.7 - 2024-07-20
 
-## v0.9.4 - 2024-06-19
+- `PauliError` can now encode biased noise during Pauli frame simulation, i.e. one can simulate only X errors, or only Y errors, or only Z errors, or some weighted combination of these.
 
-- Addition of a constructor for concatenated quantum codes -- `Concat`.
+## v0.9.6 - 2024-07-12
+
+- `inv` implementation for single-qubit "symbolic" Clifford operators (subtypes of `AbstractSingleQubitOperator`).
+
+## v0.9.5 - 2024-07-04
+
+- Implementation of random all-to-all and brickwork Clifford circuits and corresponding ECC codes.
+
+## v0.9.4 - 2024-06-28
+
+- Addition of a constructor for concatenated quantum codes `Concat`.
 - Addition of multiple unexported classical code constructors.
-- Failed compactification of gates now only raises a warning instead of throwing an error. Defaults to slower non-compactified gates.
 - Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
-- Remove printing of spurious debug info from the PyBP decoder. 
 - Significant improvements to the low-level circuit compiler (the sumtype compactifier), leading to faster Pauli frame simulation of noisy circuits.
+- Bump `QuantumOpticsBase.jl` package extension compat bound.
+- **(fix)** Remove printing of spurious debug info from the PyBP decoder. 
+- **(fix)** Failed compactification of gates now only raises a warning instead of throwing an error. Defaults to slower non-compactified gates.
 
 ## v0.9.3 - 2024-04-10
 
