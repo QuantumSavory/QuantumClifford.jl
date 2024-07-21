@@ -226,15 +226,16 @@ Constructs an iterable containing the remaining qubits by taking the difference
 between the given set of qubits and the qubits in the given `Stabilizer`. Then return 
 the part of the given `Stabilizer` with the remaining vertical indices.
 
-See also: [`traceout!`](@ref)
+
 
 ```jldoctest
-julia> delete(S"XYZ YZX ZXY", [1,3])
+julia> delete_columns(S"XYZ YZX ZXY", [1,3])
 + Y
 + Z
 + X
 ```
 
+See also: ['traceout!'](@ref)
 """
 
 function delete_columns(𝒮::Stabilizer, subset)
