@@ -53,7 +53,7 @@ small_test_sizes = [1, 2, 3, 4, 5, 7] # Pauligroup slows around n = 8
         t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
         for i in eachindex(t) t[i] = random_pauli(n) end
         normalized = normalizer(t)
-        paulis = QuantumClifford.pauligroup(n, phases=true)
+        paulis = QuantumClifford.pauligroup(n, phases=false)
         for n_pauli in normalized
             for t_pauli in t
                 @test comm(n_pauli, t_pauli) == 0x0

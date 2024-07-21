@@ -16,7 +16,7 @@ julia> groupify(S"XZ ZX")
 ```
 """
 function groupify(s::Stabilizer)
-    n = length(s)
+    n = length(s)::Int
     group = zero(Tableau, 2^n, nqubits(s))
     for i in 0:2^n-1
         for (digit_order, j) in enumerate(digits(i, base=2, pad=n))
@@ -67,29 +67,34 @@ For each element in the product, place it in a `Tableau`. If phases is set to tr
 by multiplying the + phase `PauliOperators` by phase factors. Finally, return the `Tableau`.
 
 ```jldoctest
-julia> pauligroup(2)
-+ __
-+ X_
-+ Z_
-+ Y_
- ⋮
-+ XY
-+ ZY
-+ YY
+julia> pauligroup(1)
++ _
++ X
++ Z
++ Y
 
-julia> pauligroup(2, phases = true)
-+ __
-+ X_
-+ Z_
-+ Y_
- ⋮
--iXY
--iZY
--iYY
+julia> pauligroup(1, phases = true)
++ _
++ X
++ Z
++ Y
+- _
+- X
+- Z
+- Y
++i_
++iX
++iZ
++iY
+-i_
+-iX
+-iZ
+-iY
+
 ```
 """
 function pauligroup(n::Int; phases=false)
-    if phases b
+    if phases
         s = zero(Tableau, 4^(n + 1), n)
         paulis = ((false, false), (true, false), (false, true), (true, true))
         for (i, P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
@@ -100,10 +105,10 @@ function pauligroup(n::Int; phases=false)
         for i in 1:4^n
             s[i+4^n] = -1 * s[i]
         end
-        for i in 4^n:2*4^n
+        for i in 4^n+1:2*4^n
             s[i+4^n] = -1im * s[i]
         end
-        for i in 2*4^n:3*4^n
+        for i in 2*4^n+1:3*4^n
             s[i+4^n] = -1 * s[i]
         end
     end
@@ -128,14 +133,14 @@ operator's commutivity with p. If they all commute, add p a vector of `PauliOper
 converted to `Tableau`.
 
 ```jldoctest
-julia>normalizer(QuantumClifford.`Tableau`([P"X"]))
+julia> normalizer(QuantumClifford.Tableau([P"X"]))
 + _
 + X
 ```
 """
 function normalizer(t::Tableau)
     n = nqubits(t)
-    pgroup = pauligroup(n, phases=true)
+    pgroup = pauligroup(n, phases=false)
     ptype = typeof(t[1])
     normalizer = ptype[]
     for p in pgroup
@@ -160,7 +165,7 @@ For each `PauliOperator` p in given `Tableau` t, iterate through t and check eac
 If they all commute with p, add p to a vector of `PauliOperators`. Return the vector converted to a `Tableau`.
 
 ```jldoctest
-julia>centralizer(QuantumClifford.Tableau([P"XX", P"ZZ", P"_Z"]))
+julia> centralizer(QuantumClifford.Tableau([P"XX", P"ZZ", P"_Z"]))
 + ZZ
 ```
 """
