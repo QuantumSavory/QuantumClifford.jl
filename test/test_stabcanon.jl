@@ -74,3 +74,16 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         end
     end
 end
+
+@testset "canonicalization invariants" begin
+    s = random_stabilizer(40,100)
+    ss = tensor_pow(s,20)
+    sa1 = canonicalize!(canonicalize_rref!(copy(ss))[1])
+    sa2 = canonicalize!(copy(ss))
+    @test sa1 == sa2
+    ms = MixedDestabilizer(s)
+    mss = tensor_pow(ms, 20)
+    msa1 = canonicalize!(canonicalize_rref!(copy(mss))[1])
+    msa2 = canonicalize!(copy(mss))
+    @test stabilizerview(msa1) == stabilizerview(msa2) == sa1
+end
