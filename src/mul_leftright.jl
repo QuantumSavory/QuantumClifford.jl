@@ -89,7 +89,7 @@ function mul_ordered!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}
             r[i+len+lane] = newz1 = z1 ⊻ z2
             x1z2 = x1 & z2
             anti_comm = (x2 & z1) ⊻ x1z2
-            cnt2 ⊻= (newx1 ⊻ newz1 ⊻ x1z2) & anti_comm
+            cnt2 ⊻= (cnt1 ⊻ newx1 ⊻ newz1 ⊻ x1z2) & anti_comm
             cnt1 ⊻= anti_comm
         end
         for i in 1:length(cnt1)
