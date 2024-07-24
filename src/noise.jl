@@ -100,16 +100,16 @@ end
 
 """"Construct a gate operation that applies a biased Pauli error on  qubit `q` with independent probabilities `px`, `py`, `pz`.
 Note that the probability of any error occurring is `px+py+pz`. Because of this, `PauliError(1, p)` is equivalent to `PauliError(1,p/3,p/3,p/3)`.
-Similiarly, if one wanted to exclude Z errors from `PauliError(1,p/3,p/3,p/3)` while mainting the same rate of X errors, one could write
-`PauliError(1, p*2/3, 0, 0)`."""
+Similarly, if one wanted to exclude Z errors from `PauliError(1,p/3,p/3,p/3)` while mainting the same rate of X errors, one could write
+`PauliError(1, p*2/3, 0, 0)` (in the sense that Y errors can be interpreted as an X and a Z happening at the same time)."""
 function PauliError(q::Int, px, py, pz)
     NoiseOp(PauliNoise(px,py,pz), (q,))
 end
 
 """"Construct a gate operation that applies a biased Pauli error on all `qubits` independently, each with  probabilities `px`, `py`, `pz`.
 Note that the probability of any error occurring is `px+py+pz`. Because of this, `PauliError(1, p)` is equivalent to `PauliError(1,p/3,p/3,p/3)`.
-Similiarly, if one wanted to exclude Z errors from `PauliError(1,p/3,p/3,p/3)` while mainting the same rate of X errors, one could write
-`PauliError(1, p*2/3, 0, 0)`."""
+Similarly, if one wanted to exclude Z errors from `PauliError(1,p/3,p/3,p/3)` while mainting the same rate of X errors, one could write
+`PauliError(1, p*2/3, 0, 0)` (in the sense that Y errors can be interpreted as an X and a Z happening at the same time)."""
 function PauliError(qubits, px, py, pz)
     NoiseOp(PauliNoise(px,py,pz), qubits)
 end
