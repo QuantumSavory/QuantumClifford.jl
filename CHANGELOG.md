@@ -5,14 +5,9 @@
 
 # News
 
-## v0.10.0 - dev
+## v0.9.7 - 2024-07-23
 
-- **(breaking)** `StabMixture` was renamed to `GeneralizedStabilizer`.
-- **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in nonclifford functionality.
-- `expect` is now implemented for `GeneralizedStabilizer`.
-- Constructing a `Destabilizer` out of a full-rank `Stabilizer` does not require a canonicalization anymore, i.e. `stabilizerview(Destabilizer(s))==s` is guaranteed.
-- The `maximally_mixed` function is now available for creating maximally mixed multi-qubit states.
-
+- **(fix `#320`)** Fix a serious correctness bug in the SIMD implementation of Pauli string multiplication (affects the correctness of canonicalization and traceout for tableaux bigger than ~500 qubits; does not affect symbolic gates or Pauli frame simulations of any scale)
 ## v0.9.6 - 2024-07-12
 
 - `inv` implementation for single-qubit "symbolic" Clifford operators (subtypes of `AbstractSingleQubitOperator`).
