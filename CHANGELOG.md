@@ -5,10 +5,9 @@
 
 # News
 
-## v0.9.7 - 2024-07-20
+## v0.9.7 - 2024-07-23
 
-- **(fix)** Bug fix to the `parity_checks(ReedMuller(r, m))` of classical `Reed-Muller` code along with `RecursiveReedMuller` code implementation for cross reference.
-
+- **(fix `#320`)** Fix a serious correctness bug in the SIMD implementation of Pauli string multiplication (affects the correctness of canonicalization and traceout for tableaux bigger than ~500 qubits; does not affect symbolic gates or Pauli frame simulations of any scale)
 ## v0.9.6 - 2024-07-12
 
 - `inv` implementation for single-qubit "symbolic" Clifford operators (subtypes of `AbstractSingleQubitOperator`).
