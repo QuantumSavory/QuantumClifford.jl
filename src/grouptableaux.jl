@@ -56,6 +56,7 @@ function minimal_generating_set(s::Stabilizer)
         return s[1:r, :]
     end
 end
+
 """
 Return the full Pauli group of a given length. Phases besides + are ignored by default, 
 but can be included by setting phases = true.
@@ -235,9 +236,8 @@ julia> delete_columns(S"XYZ YZX ZXY", [1,3])
 + X
 ```
 
-See also: ['traceout!'](@ref)
+See also: [`traceout!`](@ref)
 """
-
 function delete_columns(𝒮::Stabilizer, subset)
     return 𝒮[:, setdiff(1:nqubits(𝒮), subset)]
 end
