@@ -5,14 +5,6 @@
 
 # News
 
-[comment]: Implemented  `groupify` function to generate stabilizer group from generating set.
-[comment]: Implemented `minimal_generating_set` function to find the minimal generating set of a Stabilizer.
-[comment]: Implemented `pauligroup` function to generate the full Pauli group of a certain length.
-[comment]: Implemented `normalizer` function to generate all Paulis that commute with a set of Paulis
-[comment]: Implemented `centralizer` function to find a subset of a set of Paulis such that each element in the subset commutes with each element in the set. 
-[comment]: Implemented `contractor` function to find a subset of Paulis in a stabilizer that have an indentity operator on a certain qubit. 
-[comment]: Implemented `delete_columns` function to remove the operators corresponding to a certain qubit from all Paulis in a Stabilizer.
-
 ## v0.9.1 - dev
 
 - Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.
