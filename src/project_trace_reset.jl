@@ -628,7 +628,6 @@ $TYPEDSIGNATURES
 
 Trace out a qubit.
 
-
 See also: [`delete_columns`](@ref)
 """ # TODO all of these should raise an error if length(qubits)>rank
 function traceout!(s::Stabilizer, qubits; phases=true, rank=false)
