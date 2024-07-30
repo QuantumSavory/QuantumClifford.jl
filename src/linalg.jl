@@ -268,13 +268,13 @@ julia> S = random_stabilizer(2);
 
 julia> tensor_pow(S, 2);
 
-julia> gh₄ = ghz(4)
+julia> ghz₄ = ghz(4)
 + XXXX
 + ZZ__
 + _ZZ_
 + __ZZ
 
-julia> tensor_pow(ghz(4), 2)
+julia> tensor_pow(ghz₄, 2)
 + XXXX____
 + ZZ______
 + _ZZ_____
