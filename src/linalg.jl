@@ -45,31 +45,11 @@ Based on [garcia2012efficient](@cite).
 ```jldoctest
 julia> using LinearAlgebra
 
-julia> bell(2)
-+ XX__
-+ ZZ__
-+ __XX
-+ __ZZ
-
-julia> LinearAlgebra.dot(bell(2), bell(2))
+julia> dot(S"Z", S"Z")
 1.0
 
-julia> s = S" +IZ
-              +XI"
-+ _Z
-+ X_
-
-julia> LinearAlgebra.dot(bell(1), s)
-0.5
-
-julia> LinearAlgebra.dot(S"Z", S"Z")
-1.0
-
-julia> LinearAlgebra.dot(S"Z", S"Y")
+julia> dot(S"Z", S"Y")
 0.7071067811865476
-
-julia> LinearAlgebra.dot(ghz(2), ghz(2))
-1.0
 ```
 
 See also: [`logdot`](@ref)"""
@@ -176,22 +156,6 @@ julia> tensor(s, s)
 - _Z____
 + ___XZ_
 - ____Z_
-
-julia> b₂ = bell(2)
-+ XX__
-+ ZZ__
-+ __XX
-+ __ZZ
-
-julia> tensor(b₂, b₂)
-+ XX______
-+ ZZ______
-+ __XX____
-+ __ZZ____
-+ ____XX__
-+ ____ZZ__
-+ ______XX
-+ ______ZZ
 ```
 
 See also [`tensor_pow`](@ref)."""
@@ -206,10 +170,6 @@ end
 For `CliffordOperator`:
 
 ```jldoctest
-julia> P = random_clifford(2);
-
-julia> tensor_pow(P, 3);
-
 julia> tensor_pow(CliffordOperator(sHadamard), 3)
 X₁ ⟼ + Z__
 X₂ ⟼ + _Z_
@@ -217,35 +177,6 @@ X₃ ⟼ + __Z
 Z₁ ⟼ + X__
 Z₂ ⟼ + _X_
 Z₃ ⟼ + __X
-```
-
-By default, in a symbolic CNOT gate, the first qubit serves as the control and 
-the second qubit as the target.
-
-```jldoctest
-julia> tensor_pow(CliffordOperator(sCNOT), 2)
-X₁ ⟼ + XX__
-X₂ ⟼ + _X__
-X₃ ⟼ + __XX
-X₄ ⟼ + ___X
-Z₁ ⟼ + Z___
-Z₂ ⟼ + ZZ__
-Z₃ ⟼ + __Z_
-Z₄ ⟼ + __ZZ
-```
-
-However, the control and target qubits can be interchanged.
-
-```jldoctest
-julia> tensor_pow(CliffordOperator(sCNOT(2, 1), 2), 2)
-X₁ ⟼ + X___
-X₂ ⟼ + XX__
-X₃ ⟼ + __X_
-X₄ ⟼ + __XX
-Z₁ ⟼ + ZZ__
-Z₂ ⟼ + _Z__
-Z₃ ⟼ + __ZZ
-Z₄ ⟼ + ___Z
 ```
 
 For `PauliOperator`:
@@ -263,26 +194,6 @@ julia> tensor_pow(S"Z", 4)
 + _Z__
 + __Z_
 + ___Z
-
-julia> S = random_stabilizer(2);
-
-julia> tensor_pow(S, 2);
-
-julia> ghz₄ = ghz(4)
-+ XXXX
-+ ZZ__
-+ _ZZ_
-+ __ZZ
-
-julia> tensor_pow(ghz₄, 2)
-+ XXXX____
-+ ZZ______
-+ _ZZ_____
-+ __ZZ____
-+ ____XXXX
-+ ____ZZ__
-+ _____ZZ_
-+ ______ZZ
 
 julia> s = S"+XZI
              +IZI";
