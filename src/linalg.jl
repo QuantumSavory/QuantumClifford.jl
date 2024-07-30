@@ -2,6 +2,24 @@
 $TYPEDSIGNATURES
 
 Inverse of a `CliffordOperator`
+
+```jldoctest
+julia> inv(CliffordOperator(sCNOT))
+X₁ ⟼ + XX
+X₂ ⟼ + _X
+Z₁ ⟼ + Z_
+Z₂ ⟼ + ZZ
+
+julia> inv(CliffordOperator(sCNOT(2, 1), 2))
+X₁ ⟼ + X_
+X₂ ⟼ + XX
+Z₁ ⟼ + ZZ
+Z₂ ⟼ + _Z
+
+julia> inv(CliffordOperator(tHadamard))
+X₁ ⟼ + Z
+Z₁ ⟼ + X
+```
 """
 function LinearAlgebra.inv(c::CliffordOperator; phases=true)
     ci = zero(c)
@@ -23,6 +41,36 @@ end
 """The inner product of two Stabilizers.
 
 Based on [garcia2012efficient](@cite).
+
+```jldoctest
+julia> using LinearAlgebra
+
+julia> bell(2)
++ XX__
++ ZZ__
++ __XX
++ __ZZ
+
+julia> LinearAlgebra.dot(bell(2), bell(2))
+1.0
+
+julia> s = S" +IZ
+              +XI"
++ _Z
++ X_
+
+julia> LinearAlgebra.dot(bell(1), s)
+0.5
+
+julia> LinearAlgebra.dot(S"Z", S"Z")
+1.0
+
+julia> LinearAlgebra.dot(S"Z", S"Y")
+0.7071067811865476
+
+julia> LinearAlgebra.dot(ghz(2), ghz(2))
+1.0
+```
 
 See also: [`logdot`](@ref)"""
 function LinearAlgebra.dot(s1::AbstractStabilizer, s2::AbstractStabilizer)
@@ -83,14 +131,173 @@ trusted_rank(s::Destabilizer) = length(s)
 trusted_rank(s::MixedStabilizer) = LinearAlgebra.rank(s)
 trusted_rank(s::MixedDestabilizer) = LinearAlgebra.rank(s)
 
-"""Tensor product between operators or tableaux. See also [`tensor_pow`](@ref)."""
+"""Tensor product between operators or tableaux. 
+
+Tensor product between CiffordOperators:
+
+```jldoctest
+julia> tensor(CliffordOperator(sCNOT), CliffordOperator(sCNOT))
+X₁ ⟼ + XX__
+X₂ ⟼ + _X__
+X₃ ⟼ + __XX
+X₄ ⟼ + ___X
+Z₁ ⟼ + Z___
+Z₂ ⟼ + ZZ__
+Z₃ ⟼ + __Z_
+Z₄ ⟼ + __ZZ
+```
+
+Tensor product between PauliOperators:
+
+```jldoctest
+julia> tensor(P"-IXYZ", P"iIXYZ")
+-i_XYZ_XYZ
+```
+
+Tensor product between Tableaux:
+
+```jldoctest
+julia> s = S"-XX
+             +ZZ";
+
+julia> tensor(s, s, s)
+- XX____
++ ZZ____
+- __XX__
++ __ZZ__
+- ____XX
++ ____ZZ
+
+julia> s = S"+XZI
+             -IZI";
+
+julia> tensor(s, s)
++ XZ____
+- _Z____
++ ___XZ_
+- ____Z_
+
+julia> b₂ = bell(2)
++ XX__
++ ZZ__
++ __XX
++ __ZZ
+
+julia> tensor(b₂, b₂)
++ XX______
++ ZZ______
++ __XX____
++ __ZZ____
++ ____XX__
++ ____ZZ__
++ ______XX
++ ______ZZ
+```
+
+See also [`tensor_pow`](@ref)."""
 function tensor end
 
 function tensor(ops::AbstractStabilizer...) # TODO optimize this by doing conversion to common type to enable preallocation
     foldl(⊗, ops[2:end], init=ops[1])
 end
 
-"""Repeated tensor product of an operators or a tableau. See also [`tensor`](@ref)."""
+"""Repeated tensor product of an operators or a tableau.
+
+For `CliffordOperator`:
+
+```jldoctest
+julia> P = random_clifford(2);
+
+julia> tensor_pow(P, 3);
+
+julia> tensor_pow(CliffordOperator(sHadamard), 3)
+X₁ ⟼ + Z__
+X₂ ⟼ + _Z_
+X₃ ⟼ + __Z
+Z₁ ⟼ + X__
+Z₂ ⟼ + _X_
+Z₃ ⟼ + __X
+```
+
+By default, in a symbolic CNOT gate, the first qubit serves as the control and 
+the second qubit as the target.
+
+```jldoctest
+julia> tensor_pow(CliffordOperator(sCNOT), 2)
+X₁ ⟼ + XX__
+X₂ ⟼ + _X__
+X₃ ⟼ + __XX
+X₄ ⟼ + ___X
+Z₁ ⟼ + Z___
+Z₂ ⟼ + ZZ__
+Z₃ ⟼ + __Z_
+Z₄ ⟼ + __ZZ
+```
+
+However, the control and target qubits can be interchanged.
+
+```jldoctest
+julia> tensor_pow(CliffordOperator(sCNOT(2, 1), 2), 2)
+X₁ ⟼ + X___
+X₂ ⟼ + XX__
+X₃ ⟼ + __X_
+X₄ ⟼ + __XX
+Z₁ ⟼ + ZZ__
+Z₂ ⟼ + _Z__
+Z₃ ⟼ + __ZZ
+Z₄ ⟼ + ___Z
+```
+
+For `PauliOperator`:
+
+```jldoctest
+julia> tensor_pow(P"IXYZ", 2)
++ _XYZ_XYZ
+```
+
+Repeated tensor product of Stabilizer `Tableau`:
+
+```jldoctest
+julia> tensor_pow(S"Z", 4)
++ Z___
++ _Z__
++ __Z_
++ ___Z
+
+julia> S = random_stabilizer(2);
+
+julia> tensor_pow(S, 2);
+
+julia> gh₄ = ghz(4)
++ XXXX
++ ZZ__
++ _ZZ_
++ __ZZ
+
+julia> tensor_pow(ghz(4), 2)
++ XXXX____
++ ZZ______
++ _ZZ_____
++ __ZZ____
++ ____XXXX
++ ____ZZ__
++ _____ZZ_
++ ______ZZ
+
+julia> s = S"+XZI
+             +IZI";
+
+julia> tensor_pow(s, 3)
++ XZ_______
++ _Z_______
++ ___XZ____
++ ____Z____
++ ______XZ_
++ _______Z_
+```
+
+See also [`tensor`](@ref).
+"""
 function tensor_pow(op::Union{<:AbstractStabilizer,<:AbstractCliffordOperator},power)
     if power==1
         return op
