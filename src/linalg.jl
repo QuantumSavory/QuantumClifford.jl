@@ -255,7 +255,7 @@ julia> tensor_pow(P"IXYZ", 2)
 + _XYZ_XYZ
 ```
 
-Repeated tensor product of Stabilizer `Tableau`:
+For `Tableaux`:
 
 ```jldoctest
 julia> tensor_pow(S"Z", 4)
