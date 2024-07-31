@@ -89,7 +89,10 @@ code_n(s::Stabilizer) = nqubits(s)
 function code_s end
 
 code_s(c::AbstractECC) = code_s(parity_checks(c))
-code_s(s::Stabilizer) = length(s)
+function code_s(s::Stabilizer)
+    _, _, r = canonicalize!(Base.copy(s), ranks=true)
+    return r
+end
 
 """The number of logical qubits in a code."""
 code_k(c) = code_n(c) - code_s(c)

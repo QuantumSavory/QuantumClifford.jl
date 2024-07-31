@@ -93,8 +93,8 @@ push!(other_lifted_product_codes, LPCode(LiftedCode(A), LiftedCode(B)))
 
     setups = [
         CommutationCheckECCSetup(noise),
-        # NaiveSyndromeECCSetup(noise, 0),
-        # ShorSyndromeECCSetup(noise, 0),
+        NaiveSyndromeECCSetup(noise, 0),
+        ShorSyndromeECCSetup(noise, 0),
     ]
     # lifted product codes currently trigger errors in syndrome circuits
 
