@@ -49,7 +49,7 @@ function enumerate_single_qubit_gates(index; qubit=1, phases::Tuple{Bool,Bool}=(
     end
 end
 
-"""The size of the Clifford group 𝒞 over a given number of qubits, possibly modulo the phases.
+"""The size of the Clifford group `𝒞` over a given number of qubits, possibly modulo the phases.
 
 For n qubits, not accounting for phases is `2ᵏΠⱼ₌₁ⁿ(4ʲ-1)` where `k = 2ⁿ`. There are `4ⁿ` different phase configurations.
 
@@ -58,7 +58,7 @@ julia> clifford_cardinality(7)
 457620995529680351512370381586432000
 ```
 
-Calculate size of the Symplectic group `𝒞ₙ/𝒫ₙ ≡ Sp(2n)` over `n` qubits by setting the `phases = false`.
+Calculate the size of the Symplectic group `𝐒p(2n) ≡ 𝒞ₙ/𝒫ₙ`, where `𝒫ₙ` is the Pauli group over `n` qubits, by setting `phases = false`.
 
 ```jldoctest
 julia> clifford_cardinality(7, phases=false)
