@@ -51,7 +51,7 @@ end
 
 """The size of the Clifford group `𝒞` over a given number of qubits, possibly modulo the phases.
 
-For n qubits, not accounting for phases is `2ᵏΠⱼ₌₁ⁿ(4ʲ-1)` where `k = 2ⁿ`. There are `4ⁿ` different phase configurations.
+For n qubits, not accounting for phases is `2ᵏΠⱼ₌₁ⁿ(4ʲ-1)` where `k = n²`. There are `4ⁿ` different phase configurations.
 
 ```jldoctest
 julia> clifford_cardinality(7)
