@@ -1081,7 +1081,9 @@ end
 Check basic consistency requirements of a stabilizer. Used in tests.
 """
 function stab_looks_good(s)
-    c = tab(canonicalize!(copy(s)))
+    # first remove redundant rows
+    _, _, rank = canonicalize!(copy(s), ranks=true)
+    c = tab(s[1:rank])
     nrows, ncols = size(c)
     all((c.phases .== 0x0) .| (c.phases .== 0x2)) || return false
     H = stab_to_gf2(c)
