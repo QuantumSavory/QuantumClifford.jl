@@ -1,6 +1,4 @@
-using QuantumClifford
-
-@testset "Enumeration" begin
+@testitem "Enumeration" begin
     @test Set([copy(op) for op in enumerate_cliffords(1)]) == Set((random_clifford(1,phases=false) for i in 1:70))
     @test Set([copy(op) for op in enumerate_phases(enumerate_cliffords(1))]) == Set((random_clifford(1,phases=true) for i in 1:300))
     @test length(collect(enumerate_cliffords(2))) == length(collect(enumerate_phases(enumerate_cliffords(2))))/2^4 == 720

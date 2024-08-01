@@ -1,10 +1,6 @@
-using QuantumClifford
-
-using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
-
-test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
-
-@testset "Stabilizer canonicalization" begin
+@testitem "Stabilizer canonicalization" begin
+  using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
+  test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
     @testset "Default canonicalization" begin
         s = S"- XZZZZ_____
             - _YZY___YX_
@@ -75,7 +71,7 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
     end
 end
 
-@testset "canonicalization invariants" begin
+@testitem "canonicalization invariants" begin
     s = random_stabilizer(40,100)
     ss = tensor_pow(s,20)
     sa1 = canonicalize!(canonicalize_rref!(copy(ss))[1])
