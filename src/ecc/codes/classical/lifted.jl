@@ -20,9 +20,22 @@ struct LiftedCode <: ClassicalCode
         new(A, repr)
     end
 end
+
 function LiftedCode(A::Matrix{PermGroupRingElem{FqFieldElem}})
     !(characteristic(base_ring(A[1,1])) == 2) && error("The default permutation representation applies only to GF(2) group algebra")
     LiftedCode(A, permutation_repr)
+end
+
+function LiftedCode(perm_array::Matrix{<:Perm})
+    l = length(perm_array[1,1].d)
+    R = PermutationGroupRing(GF(2), l)
+    A = Matrix(matrix_space(R, size(perm_array)...)(perm_array)) # convert perms to group ring elements
+    LiftedCode(A)
+end
+
+function LiftedCode(shift_array::Matrix{Int}, l::Int)
+    perm_array = map(n->cyclic_permutation(n, l), shift_array)
+    LiftedCode(perm_array)
 end
 
 """
@@ -50,12 +63,12 @@ end
 
 code_n(c::LiftedCode) = size(c.A, 2) * size(c.repr(parent(c.A[1,1])(0)), 2)
 
-function mod2rank(h::Matrix{<:Integer})
+function mod2rank(h::Matrix{<:Integer}) # TODO move this mod2rank to a common place
     Z2, _ = residue_ring(ZZ, 2)
     S = matrix_space(Z2, size(h)...)
     rank(S(h))
 end
 
-code_s(c::LiftedCode) = mod2rank(parity_checks(c)) # TODO move this mod2rank to a common place
+code_s(c::LiftedCode) = mod2rank(parity_checks(c))
 
 code_k(c::LiftedCode) = code_n(c) - code_s(c)

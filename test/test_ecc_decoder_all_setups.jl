@@ -39,7 +39,7 @@ end
 # test codes LP04 and LP118 are from https://arxiv.org/pdf/2111.07029
 
 B04 = Dict(
-    7 => [ 0 0 0 0; 0 1 2 5; 0 6 3 1],
+    7 => [0 0 0 0; 0 1 2 5; 0 6 3 1],
     9 => [0 0 0 0; 0 1 6 7; 0 4 5 2],
     17 => [0 0 0 0; 0 1 2 11; 0 8 12 13],
     19 => [0 0 0 0; 0 2 6 9; 0 16 7 11]
@@ -51,21 +51,10 @@ B118 = Dict(
     30 => [0 0 0 0 0; 0 2 14 24 25; 0 16 11 14 13],
 )
 
-LP04 = []
-for l in keys(B04)
-    A = map(B04[l]) do x
-        (PermutationGroupRing(GF(2), l))(cyclic_permutation(x, l))
-    end
-    push!(LP04, LPCode(LiftedCode(A), LiftedCode(A)))
-end
+LP04 = [LPCode(base_matrix, base_matrix, l) for (l, base_matrix) in B04]
+LP118 = [LPCode(base_matrix, base_matrix, l) for (l, base_matrix) in B118]
 
-LP118 = []
-for l in keys(B118)
-    A = map(B118[l]) do x
-        (PermutationGroupRing(GF(2), l))(cyclic_permutation(x, l))
-    end
-    push!(LP118, LPCode(LiftedCode(A), LiftedCode(A)))
-end
+# TODO add generalized bicycle codes, after which maybe we should remove some of the above codes
 
 other_lifted_product_codes = []
 
@@ -73,18 +62,17 @@ other_lifted_product_codes = []
 
 l = 63
 R = PermutationGroupRing(GF(2), l)
-A = zeros(R, 7,7)
-A[LinearAlgebra.diagind(A)] .= R(cyclic_permutation(27, l))
-A[LinearAlgebra.diagind(A, -1)] .= R(cyclic_permutation(54, l))
-A[LinearAlgebra.diagind(A, 6)] .= R(cyclic_permutation(54, l))
+A = zeros(R, 7, 7)
+x = R(cyclic_permutation(1, l))
+A[LinearAlgebra.diagind(A)] .= x^27
+A[LinearAlgebra.diagind(A, -1)] .= x^54
+A[LinearAlgebra.diagind(A, 6)] .= x^54
 A[LinearAlgebra.diagind(A, -2)] .= R(1)
 A[LinearAlgebra.diagind(A, 5)] .= R(1)
 
-B = zeros(R, 1, 1)
-B[1,1] = (R(1) + R(cyclic_permutation(1, l)) + R(cyclic_permutation(6, l)))'
+B = reshape([(1 + x + x^6)'], (1, 1))
 
-push!(other_lifted_product_codes, LPCode(LiftedCode(A), LiftedCode(B)))
-
+push!(other_lifted_product_codes, LPCode(A, B))
 
 @testset "belief prop decoders, good for sparse codes" begin
     codes = vcat(LP04, LP118, other_lifted_product_codes)
@@ -100,14 +88,14 @@ push!(other_lifted_product_codes, LPCode(LiftedCode(A), LiftedCode(B)))
 
     for c in codes
         for s in setups
-            for d in [c->PyBeliefPropOSDecoder(c, maxiter=10)]
-                nsamples = code_n(c)>400 ? 1000 : 100000
+            for d in [c -> PyBeliefPropOSDecoder(c, maxiter=10)]
+                nsamples = code_n(c) > 400 ? 1000 : 100000
                 # take fewer samples for larger codes to save time
                 e = evaluate_decoder(d(c), s, nsamples)
                 # @show c
                 # @show s
                 # @show e
-                @assert max(e...) < noise/4 (c, s, e)
+                @assert max(e...) < noise / 4 (c, s, e)
             end
         end
     end
