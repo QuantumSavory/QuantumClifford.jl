@@ -1,4 +1,4 @@
-import Base: *, +, -, ==, deepcopy_internal, show, isone, iszero, one, zero, adjoint
+import Base: *, +, -, ^, ==, deepcopy_internal, show, isone, iszero, one, zero, adjoint
 
 import Nemo: Ring, RingElem, RingElement, NCRing, NCRingElem, NCRingElement, Perm, CacheDictType,
     @attributes, base_ring, base_ring_type, elem_type, get_cached!,
@@ -50,7 +50,7 @@ Dict{Perm, Nemo.FqFieldElem}(() => 1, (1,2,3) => 1)
 
 See also: [`PermGroupRingElem`](@ref).
 """
-@attributes mutable struct PermGroupRing{T<:RingElement} <: NCRing
+@attributes mutable struct PermGroupRing{T<:RingElement} <: NCRing # TODO if this is only used for ECC, maybe we should consider fixing the base ring to be Z2
     base_ring::Ring
     l::Int
 
@@ -171,6 +171,18 @@ function *(a::PermGroupRingElem{T}, b::PermGroupRingElem{T}) where {T<:RingEleme
         end
     end
     filter!(x -> x[2] != 0, r.coeffs)
+    return r
+end
+
+function ^(a::PermGroupRingElem{T}, n::Int) where {T<:RingElement}
+    if n == 0
+        return one(parent(a))
+    elseif n == 1
+        return a
+    elseif n < 0
+        DomainError(n)
+    end
+    r = *(repeat([a], n)...)
     return r
 end
 
