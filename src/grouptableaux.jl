@@ -201,13 +201,12 @@ Return the vector convterted to `Tableau`.
 
 ```jldoctest
 julia> contractor(S"_X X_", [1])
-+ _
 + X
 ```
 """
 function contractor(s::Stabilizer, subset)
     result = typeof(s[1])[]
-    for p in groupify(s)
+    for p in s
         contractable = true
         for i in subset
             if p[i] != (false, false) 
@@ -217,7 +216,11 @@ function contractor(s::Stabilizer, subset)
         end
         if contractable push!(result, p[setdiff(1:length(p), subset)]) end
     end
-    return Tableau(result)
+    if length(result) > 0
+        return Tableau(result)
+    else
+        return Tableau(zeros(Bool, 1,1))
+    end
 end   
 
 """

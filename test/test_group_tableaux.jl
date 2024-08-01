@@ -91,31 +91,34 @@ small_test_sizes = [1, 2, 3, 4, 5, 7] # Pauligroup slows around n = 8
     #Test contractor
     for n in [1, test_sizes...]
         s = random_stabilizer(n)
-        g = groupify(s)
         subset = []
         for i in 1:nqubits(s) #create a random subset
             if rand(1:2) == 1 push!(subset, i) end
         end
         c = contractor(s, subset)
         count = 0
-        for stabilizer in g 
+        for stabilizer in s 
             contractable = true
             for i in subset
                 if stabilizer[i] != (false, false) contractable = false end
             end
             if contractable count+=1 end
         end
+        if length(c[1]) > 0
         @test count == length(c)
-        for contracted in c
-            p = zero(PauliOperator, nqubits(s))
-            index = 0
-            for i in 1:nqubits(g)
-                if !(i in subset) 
-                    index+=1 
-                    p[i] = contracted[index] 
+            for contracted in c
+                p = zero(PauliOperator, nqubits(s))
+                index = 0
+                for i in 1:nqubits(s)
+                    if !(i in subset) 
+                        index+=1 
+                        p[i] = contracted[index] 
+                    end
                 end
+                @test p in s || -1* p in s || 1im * p in s || -1im * p in s
             end
-            @test p in g || -1* p in g || 1im * p in g || -1im * p in g
+        else
+            @test count ==0
         end
     end
 end
