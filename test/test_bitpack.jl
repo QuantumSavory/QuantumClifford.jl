@@ -2,7 +2,7 @@
     using Random
     using QuantumClifford: Tableau
 
-    @testitem "alternative bit packing" begin
+    @testset "alternative bit packing" begin
         for n in [1,3] # can not go higher than 4 (limitation from SIMD acting on transposed/strided arrays)
             N = 64*n-2
             s64 = random_stabilizer(N,N);

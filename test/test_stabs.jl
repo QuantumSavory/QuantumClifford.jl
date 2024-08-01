@@ -41,7 +41,7 @@
         end
     end
 
-    @testitem "Tensor products over stabilizers" begin
+    @testset "Tensor products over stabilizers" begin
         for n in test_sizes
             n<10 && continue
             l = random_stabilizer(rand(n÷2+1:n-2),n)
@@ -58,7 +58,7 @@
         end
     end
 
-    @testitem "Stabilizer indexing" begin
+    @testset "Stabilizer indexing" begin
         s = random_stabilizer(9,10)
         @test s[1,1] == s[[1,3,4],[1,3,5]][1,1]
         @test s[1,1] == s[:,[1,3,5]][1,1]

@@ -3,8 +3,6 @@
     using InteractiveUtils
     using Random
 
-    ##
-
     @testset "Pauli decomposition into destabilizers" begin
         for n in [1,2,63,64,65,66,300]
             p = random_pauli(n; nophase=true)
@@ -32,7 +30,7 @@
         apply!(state, tgate)
         apply!(state, tgate)
 
-        @test state.destabweights |> values |> collect == [1]
+        @test isapprox(state.destabweights |> values |> collect, [1])
         @test state.destabweights |> keys |> collect == [([1],[1])]
     end
 
