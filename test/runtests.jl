@@ -58,6 +58,8 @@ end
 @doset "entanglement"
 @doset "enumerate"
 @doset "quantumoptics"
+@doset "nonclifford"
+@doset "nonclifford_quantumoptics"
 @doset "ecc"
 @doset "ecc_codeproperties"
 @doset "ecc_decoder_all_setups"
