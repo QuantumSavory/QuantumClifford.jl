@@ -87,15 +87,24 @@ code_n(s::Stabilizer) = nqubits(s)
 
 """The number of stabilizer checks in a code."""
 function code_s end
-
+code_s(s::Stabilizer) = length(s)
 code_s(c::AbstractECC) = code_s(parity_checks(c))
-function code_s(s::Stabilizer)
+# function code_s(s::Stabilizer)
+#     _, _, r = canonicalize!(Base.copy(s), ranks=true)
+#     return r
+# end
+
+"""
+The number of logical qubits in a code.
+
+Note that when redundant rows exist in the parity check matrix, the number of logical qubits `code_k(c)` will be greater than `code_n(c) - code_s(c)`, where the difference equals the redundancy.
+"""
+function code_k(s::Stabilizer)
     _, _, r = canonicalize!(Base.copy(s), ranks=true)
-    return r
+    return code_n(s) - r
 end
 
-"""The number of logical qubits in a code."""
-code_k(c) = code_n(c) - code_s(c)
+code_k(c::AbstractECC) = code_k(parity_checks(c))
 
 """The rate of a code."""
 function rate(c)

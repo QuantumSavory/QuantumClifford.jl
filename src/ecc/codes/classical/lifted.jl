@@ -16,7 +16,7 @@ struct LiftedCode <: ClassicalCode
     A::Matrix{PermGroupRingElem}
     repr::Function
 
-    function LiftedCode(A::Matrix{PermGroupRingElem{T}}, repr::Function) where T
+    function LiftedCode(A::Matrix{<: PermGroupRingElem}, repr::Function)
         new(A, repr)
     end
 end

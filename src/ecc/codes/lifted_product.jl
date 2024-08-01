@@ -21,7 +21,7 @@ struct LPCode <: AbstractECC
     B::Matrix{PermGroupRingElem}
     repr::Function
 
-    function LPCode(A::Matrix{PermGroupRingElem{T}}, B::Matrix{PermGroupRingElem{T}}, repr::Function) where T
+    function LPCode(A::Matrix{<: PermGroupRingElem}, B::Matrix{<: PermGroupRingElem}, repr::Function)
         A[1, 1].parent == B[1, 1].parent || error("The base rings of the two codes must be the same")
         new(A, B, repr)
     end
@@ -32,7 +32,7 @@ struct LPCode <: AbstractECC
     end
 end
 
-function LPCode(A::Matrix{PermGroupRingElem{T}}, B::Matrix{PermGroupRingElem{T}}) where T
+function LPCode(A::Matrix{<: PermGroupRingElem}, B::Matrix{<: PermGroupRingElem})
     A[1, 1].parent == B[1, 1].parent || error("The base rings of the two codes must be the same")
     LPCode(A, B, permutation_repr)
 end
@@ -66,13 +66,7 @@ parity_checks(c::LPCode) = parity_checks(CSS(parity_checks_xz(c)...))
 
 code_n(c::LPCode) = size(c.repr(parent(c.A[1, 1])(0)), 2) * (size(c.A, 2) * size(c.B, 2) + size(c.A, 1) * size(c.B, 1))
 
-function code_s(c::LPCode)
-    hx, hz = parity_checks_xz(c)
-    mod2rank(hx) + mod2rank(hz)
-end
-
-code_k(c::LPCode) = code_n(c) - code_s(c)
-
+code_s(c::LPCode) = size(c.repr(parent(c.A[1, 1])(0)), 1) * (size(c.A, 1) * size(c.B, 2) + size(c.A, 2) * size(c.B, 1))
 
 """
 Two-block group algebra (2GBA) codes.
