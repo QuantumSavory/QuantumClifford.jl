@@ -445,6 +445,79 @@ end
 Measure a given qubit in the X basis.
 A faster special-case version of [`project!`](@ref).
 
+Create a `MixedDestabilizer` instance
+
+```jldoctest px!
+julia> s = MixedDestabilizer(T"ZI IX XX ZZ", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ ZZ
+```
+
+Define the qubit index `n` and measurement phase `r`
+
+```jldoctest px!
+julia> n = 2; r = 1;
+```
+
+Create single-qubit measurement operators for `X`
+
+```jldoctest px!
+julia> px = single_x(n, r)
++ X_
+```
+
+Compute measurement using `projectX!`
+
+```jldoctest px!
+julia> px! = projectX!(copy(s), r)
+(MixedDestablizer 2×2, 2, nothing)
+```
+
+The result from `project!` match those from `projectX!`
+
+```jldoctest px!
+julia> project!(copy(s), px) == px!
+true
+```
+
+Perform measurement using project! with operators `px`
+
+```jldoctest px!
+julia> sx = project!(copy(s), px)[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
++ _Z
++ ZZ
+𝒮𝓉𝒶𝒷
++ XX
++ X_
+```
+
+Measure with `sMX(r)` and compare to `project!` results.
+
+```jldoctest px!
+julia> ssx = project!(copy(s), sMX(r))[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
++ _Z
++ ZZ
+𝒮𝓉𝒶𝒷
++ XX
++ X_
+```
+
+Symbolic measurement is consistent with `projectX!`
+
+```jldoctest px!
+julia> sx! = projectX!(copy(sx), r)
+(MixedDestablizer 2×2, 0, 0x00)
+
+julia> project!(copy(sx), px) == sx!
+true
+```
+
 See also: [`project!`](@ref), [`projectXrand!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
 """
 function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
@@ -455,6 +528,79 @@ end
 Measure a given qubit in the Z basis.
 A faster special-case version of [`project!`](@ref).
 
+Create a `MixedDestabilizer` instance
+
+```jldoctest pz!
+julia> s = MixedDestabilizer(T"-ZI -IZ -YI IX", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
+- Z_
+- _Z
+𝒮𝓉𝒶𝒷
+- Y_
++ _X
+```
+
+Define the qubit index `n` and measurement phase `r`
+
+```jldoctest pz!
+julia> n = 2; r = 2;
+```
+
+Create single-qubit measurement operators for `Z`
+
+```jldoctest pz!
+julia> pz = single_z(n, r)
++ _Z
+```
+
+Compute measurement using `projectZ!`
+
+```jldoctest pz!
+julia> pz! = projectZ!(copy(s),r)
+(MixedDestablizer 2×2, 2, nothing)
+```
+
+The result from `project!` match those from `projectZ!`
+
+```jldoctest pz!
+julia> project!(copy(s),pz) == pz!
+true
+```
+
+Perform measurement using project! with operators `pz`
+
+```jldoctest pz!
+julia> sz = project!(copy(s), pz)[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
+- Z_
++ _X
+𝒮𝓉𝒶𝒷
+- Y_
++ _Z
+```
+
+Measure with `sMZ(r)` and compare to `project!` results.
+
+```jldoctest pz!
+julia> ssz = project!(copy(s), sMZ(r))[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
+- Z_
++ _X
+𝒮𝓉𝒶𝒷
+- Y_
++ _Z
+```
+
+Symbolic measurement is consistent with `projectZ!`
+
+```jldoctest pz!
+julia> sz! = projectZ!(copy(sz), r)
+(MixedDestablizer 2×2, 0, 0x00)
+
+julia> project!(copy(sz), pz) == sz!
+true
+```
+
 See also: [`project!`](@ref), [`projectZrand!`](@ref), [`projectY!`](@ref), [`projectX!`](@ref).
 """
 function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
@@ -464,6 +610,79 @@ end
 """
 Measure a given qubit in the Y basis.
 A faster special-case version of [`project!`](@ref).
+
+Create a `MixedDestabilizer` instance
+
+```jldoctest py!
+julia> s = MixedDestabilizer(T"-XZ -YY XX XI", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
+- XZ
+- YY
+𝒮𝓉𝒶𝒷
++ XX
++ X_
+```
+
+Define the qubit index `n` and measurement phase `r`
+
+```jldoctest py!
+julia> n = 2; r = 2;
+```
+
+Create single-qubit measurement operators for `Y`
+
+```jldoctest py!
+julia> py = single_y(n, r)
++ _Y
+```
+
+Compute measurement using `projectY!`
+
+```jldoctest py!
+julia> py! = projectY!(copy(s),r)
+(MixedDestablizer 2×2, 1, nothing)
+```
+
+The result from `project!` match those from `projectY!`
+
+```jldoctest py!
+julia> project!(copy(s),py) == py!
+true
+
+```
+Perform measurement using project! with operators `py`
+
+```jldoctest py!
+julia> sy = project!(copy(s), py)[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
++ XX
+- YY
+𝒮𝓉𝒶𝒷
++ _Y
++ X_
+```
+
+Measure with `sMY(r)` and compare to `project!` results.
+
+```jldoctest py!
+julia> ssy = project!(copy(s), sMY(r))[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
++ XX
+- YY
+𝒮𝓉𝒶𝒷
++ _Y
++ X_
+```
+
+Symbolic measurement is consistent with `projectY!`
+
+```jldoctest py!
+julia> sy! = projectY!(copy(sy), r)
+(MixedDestablizer 2×2, 0, 0x00)
+
+julia> project!(copy(sy), py) == sy!
+true
+```
 
 See also: [`project!`](@ref), [`projectYrand!`](@ref), [`projectX!`](@ref), [`projectZ!`](@ref).
 """
@@ -584,6 +803,7 @@ $TYPEDSIGNATURES
 Project `qubit` of `state` along the Z axis and randomize the phase if necessary.
 
 Lower boilerplate version of [`project!`](@ref).
+```
 
 See also: [`project!`](@ref), [`projectZ!`](@ref), [`projectXrand!`](@ref), [`projectYrand!`](@ref)
 """
@@ -600,6 +820,28 @@ Project `qubit` of `state` along the Y axis and randomize the phase if necessary
 
 Lower boilerplate version of [`project!`](@ref).
 
+```@example
+julia> s = MixedDestabilizer(T"-XZ -ZY IY XI", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
+- XZ
+- ZY
+𝒮𝓉𝒶𝒷
++ _Y
++ X_
+
+julia> pyrand! = projectYrand!(copy(s), 1)
+(MixedDestablizer 2×2, 0x00)
+
+julia> py! = projectY!(copy(s), 1)
+(MixedDestablizer 2×2, 2, nothing)
+
+julia> convert(UInt8, py![2])
+0x02
+
+julia> pyrand![2] == py![2]
+false
+```
+
 See also: [`project!`](@ref), [`projectY!`](@ref), [`projectXrand!`](@ref), [`projectZrand!`](@ref)
 """
 function projectYrand!(state, qubit)
@@ -614,6 +856,38 @@ $TYPEDSIGNATURES
 Measure `pauli` operator on `state` and randomize the phase if necessary.
 
 Lower boilerplate version of [`project!`](@ref).
+
+```@example
+julia> s = MixedDestabilizer(T"YX ZZ -IZ -YI", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ YX
++ ZZ
+𝒮𝓉𝒶𝒷
+- _Z
+- Y_
+
+julia> ssz = project!(copy(s),sMZ(r))[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
++ _X
+- Y_
+𝒮𝓉𝒶𝒷
+- _Z
++ Z_
+
+julia> rssz = projectrand!(copy(s),sMZ(r))[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
++ _X
+- Y_
+𝒮𝓉𝒶𝒷
+- _Z
+- Z_
+
+julia> tab(ssz).phases != tab(rssz).phases
+true
+
+julia> tab(ssz).xzs == tab(rssz).xzs
+true
+```
 
 See also: [`project!`](@ref), [`projectXrand!`](@ref), [`projectZrand!`](@ref), [`projectYrand!`](@ref)
 """
@@ -694,6 +968,30 @@ end
 
 """
 $TYPEDSIGNATURES
+
+```jldoctest
+julia> ghz(4)
++ XXXX
++ ZZ__
++ _ZZ_
++ __ZZ
+
+julia> ghz(2)
++ XX
++ ZZ
+
+julia> reset_qubits!(ghz(4), ghz(2), [1, 2])
++ __ZZ
++ XX__
++ ZZ__
++ ____
+
+julia> reset_qubits!(ghz(4), ghz(2), [3, 4])
++ ZZ__
++ __XX
++ __ZZ
++ ____
+```
 """
 function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubits; phases=true) # TODO this is really inefficient
     _phases = Val(phases)
@@ -725,10 +1023,27 @@ function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubit
 end
 
 """
-    expect(p::PauliOperator, st::AbstractStabilizer)
+$TYPEDSIGNATURES
 
 Compute the expectation value of a Pauli operator `p` on a stabilizer state `st`.
 This function will allocate a temporary copy of the stabilizer state `st`.
+
+```jldoctest
+julia> expect(P"X", S"Z")
+0
+
+julia> expect(P"X", S"-iX")
+0 - 1im
+
+julia> expect(P"Y", S"iY")
+im
+
+julia> expect(P"Z", S"Z")
+1
+
+julia> expect(P"-Y", S"Y")
+-1
+```
 """
 function expect(p::PauliOperator, s::AbstractStabilizer)
     nqubits(p) == nqubits(s) || error("The number of qubits does not match")
