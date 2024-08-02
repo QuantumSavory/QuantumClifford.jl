@@ -1,13 +1,13 @@
 """A register, representing the state of a computer including both a tableaux and an array of classical bits (e.g. for storing measurement results)
 
 ```jldoctest
-julia> s = MixedDestabilizer(T"-IY -YY -XZ XI", 2)
+julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
-- _Y
-- YY
++ YZ
+- XX
 𝒮𝓉𝒶𝒷
-- XZ
 + X_
++ _Z
 
 julia> reg = Register(s, [0,0])
 Register{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}(MixedDestablizer 2×2, Bool[0, 0])
@@ -17,26 +17,26 @@ julia> nqubits(reg)
 
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
-- _Y
-- YY
++ YZ
+- XX
 𝒮𝓉𝒶𝒷
-- XZ
 + X_
++ _Z
 
 julia> stabilizerview(reg)
-- XZ
 + X_
++ _Z
 
 julia> destabilizerview(reg)
-- _Y
-- YY
++ YZ
+- XX
 
 julia> bitview(reg)
 2-element Vector{Bool}:
  0
  0
 
-julia> apply!(reg, PauliMeasurement(P"XZ",2));
+julia> apply!(reg, PauliMeasurement(P"ZZ",2));
 
 julia> bitview(reg)
 2-element Vector{Bool}:
@@ -52,25 +52,25 @@ julia> bitview(reg)
 
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
-- _Y
-- YY
-𝒮𝓉𝒶𝒷
-- XZ
 + X_
+- XX
+𝒮𝓉𝒶𝒷
+- ZZ
++ _Z
 
 julia> tab(stabilizerview(reg)).xzs
 2×2 view(::Matrix{UInt64}, :, 3:4) with eltype UInt64:
- 0x0000000000000001  0x0000000000000001
- 0x0000000000000002  0x0000000000000000
+ 0x0000000000000000  0x0000000000000000
+ 0x0000000000000003  0x0000000000000002
 
 julia> tab(destabilizerview(reg)).xzs
 2×2 view(::Matrix{UInt64}, :, 1:2) with eltype UInt64:
- 0x0000000000000002  0x0000000000000003
- 0x0000000000000002  0x0000000000000003
+ 0x0000000000000001  0x0000000000000003
+ 0x0000000000000000  0x0000000000000000
 ```
 
-See also: [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`sMY`](@ref), [`SMZ!`](@ref),
-[`SMX!`](@ref), [`SMRZ!`](@ref), [`SMRX!`](@ref), [`traceout!`](@ref).
+See also: [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`sMY`](@ref), [`sMZ!`](@ref),
+[`sMX!`](@ref), [`sMRZ!`](@ref), [`sMRX!`](@ref), [`traceout!`](@ref).
 """
 struct Register{T<:Tableau} <: AbstractQCState # TODO simplify type parameters (remove nesting)
     stab::MixedDestabilizer{T}
@@ -165,25 +165,17 @@ end
 """
 Projective measurements with automatic phase randomization are available for the [`Register`](@ref) object.
 
-See also: [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`sMY`](@ref), [`SMZ!`](@ref),
-[`SMX!`](@ref), [`SMRZ!`](@ref), [`SMRX!`](@ref), [`traceout!`](@ref).
+See also: [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`sMY`](@ref), [`sMZ!`](@ref),
+[`sMX!`](@ref), [`sMRZ!`](@ref), [`sMRX!`](@ref), [`traceout!`](@ref).
 
 ```@example
-julia> s = MixedDestabilizer(random_destabilizer(2))
+julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z_
-- _Y
++ YZ
+- XX
 𝒮𝓉𝒶𝒷
-+ YY
-+ ZZ
-
-julia> s =MixedDestabilizer(T"ZI -IY YY ZZ", 2)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z_
-- _Y
-𝒮𝓉𝒶𝒷
-+ YY
-+ ZZ
++ X_
++ _Z
 
 julia> reg = Register(s, [0, 0])
 Register{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}(MixedDestablizer 2×2, Bool[0, 0])
@@ -192,31 +184,31 @@ julia> projectXrand!(reg, 2);
 
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
-+ YY
-- Y_
++ Y_
++ _Z
 𝒮𝓉𝒶𝒷
++ X_
 + _X
-- XX
 
 julia> projectYrand!(reg, 1);
 
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
-+ YY
-- XX
++ X_
++ _Z
 𝒮𝓉𝒶𝒷
-+ _X
 + Y_
++ _X
 
 julia> projectZrand!(reg, 2);
 
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
++ X_
 + _X
-- X_
 𝒮𝓉𝒶𝒷
-- _Z
 + Y_
++ _Z
 ```
 """
 function projectXrand!(r::Register, m)

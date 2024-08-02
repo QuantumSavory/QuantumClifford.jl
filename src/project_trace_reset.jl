@@ -821,22 +821,22 @@ Project `qubit` of `state` along the Y axis and randomize the phase if necessary
 Lower boilerplate version of [`project!`](@ref).
 
 ```@example
-julia> s = MixedDestabilizer(T"-XZ -ZY IY XI", 2)
+julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
-- XZ
-- ZY
++ YZ
+- XX
 𝒮𝓉𝒶𝒷
-+ _Y
 + X_
++ _Z
 
 julia> pyrand! = projectYrand!(copy(s), 1)
-(MixedDestablizer 2×2, 0x00)
+(MixedDestablizer 2×2, 0x02)
 
 julia> py! = projectY!(copy(s), 1)
-(MixedDestablizer 2×2, 2, nothing)
+(MixedDestablizer 2×2, 1, nothing)
 
 julia> convert(UInt8, py![2])
-0x02
+0x01
 
 julia> pyrand![2] == py![2]
 false
