@@ -692,3 +692,141 @@ which expands upon the algorithms available for each structure.
 # Random States and Circuits
 
 [`random_clifford`](@ref), [`random_stabilizer`](@ref), and [`enumerate_cliffords`](@ref) can be used for the generation of random states.
+
+# Classical Register
+
+A [`Register!`](@ref) encapsulates the state of a computer and includes both a tableaux and an array of classical bits, which can be used, for example, to store measurement outcomes. A [`MixedDestabilizer`](@ref) can be stored within the [`Register`](@ref), along with a set of classical bits for recording measurement results. 
+
+```jldoctest register
+julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ YZ
+- XX
+𝒮𝓉𝒶𝒷
++ X_
++ _Z
+
+julia> reg = Register(s, [0,0])
+Register{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}(MixedDestablizer 2×2, Bool[0, 0])
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ YZ
+- XX
+𝒮𝓉𝒶𝒷
++ X_
++ _Z
+
+julia> stabilizerview(reg)
++ X_
++ _Z
+
+julia> destabilizerview(reg)
++ YZ
+- XX
+
+julia> bitview(reg)
+2-element Vector{Bool}:
+ 0
+ 0
+```
+
+Measurement results can be obtained using symbolic measurement operations such as [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref), which can be applied with [`apply!`](@ref).
+
+```@example
+julia> apply!(reg, sMX(1, 1));
+
+julia> bitview(reg)
+2-element Vector{Bool}:
+ 0
+ 0
+
+julia> apply!(reg, sMRX(2, 2));
+
+julia> bitview(reg)
+2-element Vector{Bool}:
+ 0
+ 1
+
+julia> apply!(reg, PauliMeasurement(P"YX",2));
+
+julia> bitview(reg)
+2-element Vector{Bool}:
+ 0
+ 0
+
+julia> apply!(reg, NoiseOpAll(UnbiasedUncorrelatedNoise(0.01)));
+
+julia> bitview(reg)
+2-element Vector{Bool}:
+ 0
+ 0
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ X_
++ XZ
+𝒮𝓉𝒶𝒷
++ YX
++ _X
+
+julia> tab(reg).xzs
+2×4 Matrix{UInt64}:
+ 0x0000000000000001  0x0000000000000001  0x0000000000000003  0x0000000000000002
+ 0x0000000000000000  0x0000000000000002  0x0000000000000001  0x0000000000000000
+
+julia> tab(stabilizerview(reg)).xzs
+2×2 view(::Matrix{UInt64}, :, 3:4) with eltype UInt64:
+ 0x0000000000000003  0x0000000000000002
+ 0x0000000000000001  0x0000000000000000
+
+julia> tab(destabilizerview(reg)).xzs
+2×2 view(::Matrix{UInt64}, :, 1:2) with eltype UInt64:
+ 0x0000000000000001  0x0000000000000001
+ 0x0000000000000000  0x0000000000000002
+```
+
+Projective measurements with automatic phase randomization are available for the [`Register`](@ref) object.
+
+```@example
+julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ YZ
+- XX
+𝒮𝓉𝒶𝒷
++ X_
++ _Z
+
+julia> reg = Register(s, [0, 0])
+Register{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}(MixedDestablizer 2×2, Bool[0, 0])
+
+julia> projectXrand!(reg, 2);
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Y_
++ _Z
+𝒮𝓉𝒶𝒷
++ X_
++ _X
+
+julia> projectYrand!(reg, 1);
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ X_
++ _Z
+𝒮𝓉𝒶𝒷
++ Y_
++ _X
+
+julia> projectZrand!(reg, 2);
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ X_
++ _X
+𝒮𝓉𝒶𝒷
++ Y_
++ _Z
+```

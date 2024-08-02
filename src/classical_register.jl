@@ -12,9 +12,6 @@ julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
 julia> reg = Register(s, [0,0])
 Register{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}(MixedDestablizer 2×2, Bool[0, 0])
 
-julia> nqubits(reg)
-2
-
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + YZ
@@ -35,42 +32,65 @@ julia> bitview(reg)
 2-element Vector{Bool}:
  0
  0
+```
 
-julia> apply!(reg, PauliMeasurement(P"ZZ",2));
+Measurement results can be obtained using symbolic measurement operations such as [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref), which can be applied with [`apply!`](@ref).
+
+```@example
+julia> apply!(reg, sMX(1, 1));
+
+julia> bitview(reg)
+2-element Vector{Bool}:
+ 0
+ 0
+
+julia> apply!(reg, sMRX(2, 2));
 
 julia> bitview(reg)
 2-element Vector{Bool}:
  0
  1
+
+julia> apply!(reg, PauliMeasurement(P"YX",2));
+
+julia> bitview(reg)
+2-element Vector{Bool}:
+ 0
+ 0
 
 julia> apply!(reg, NoiseOpAll(UnbiasedUncorrelatedNoise(0.01)));
 
 julia> bitview(reg)
 2-element Vector{Bool}:
  0
- 1
+ 0
 
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + X_
-- XX
++ XZ
 𝒮𝓉𝒶𝒷
-- ZZ
-+ _Z
++ YX
++ _X
+
+julia> tab(reg).xzs
+2×4 Matrix{UInt64}:
+ 0x0000000000000001  0x0000000000000001  0x0000000000000003  0x0000000000000002
+ 0x0000000000000000  0x0000000000000002  0x0000000000000001  0x0000000000000000
 
 julia> tab(stabilizerview(reg)).xzs
 2×2 view(::Matrix{UInt64}, :, 3:4) with eltype UInt64:
- 0x0000000000000000  0x0000000000000000
  0x0000000000000003  0x0000000000000002
+ 0x0000000000000001  0x0000000000000000
 
 julia> tab(destabilizerview(reg)).xzs
 2×2 view(::Matrix{UInt64}, :, 1:2) with eltype UInt64:
- 0x0000000000000001  0x0000000000000003
- 0x0000000000000000  0x0000000000000000
+ 0x0000000000000001  0x0000000000000001
+ 0x0000000000000000  0x0000000000000002
 ```
 
-See also: [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`sMY`](@ref), [`sMZ!`](@ref),
-[`sMX!`](@ref), [`sMRZ!`](@ref), [`sMRX!`](@ref), [`traceout!`](@ref).
+See also: [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref),
+[`sMX`](@ref), [`sMRZ`](@ref), [`sMRX`](@ref), [`traceout!`](@ref).
 """
 struct Register{T<:Tableau} <: AbstractQCState # TODO simplify type parameters (remove nesting)
     stab::MixedDestabilizer{T}
@@ -165,9 +185,6 @@ end
 """
 Projective measurements with automatic phase randomization are available for the [`Register`](@ref) object.
 
-See also: [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`sMY`](@ref), [`sMZ!`](@ref),
-[`sMX!`](@ref), [`sMRZ!`](@ref), [`sMRX!`](@ref), [`traceout!`](@ref).
-
 ```@example
 julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
@@ -210,6 +227,9 @@ julia> quantumstate(reg)
 + Y_
 + _Z
 ```
+
+See also: [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref),
+[`sMX`](@ref), [`sMRZ`](@ref), [`sMRX`](@ref), [`traceout!`](@ref).
 """
 function projectXrand!(r::Register, m)
     q = quantumstate(r)
