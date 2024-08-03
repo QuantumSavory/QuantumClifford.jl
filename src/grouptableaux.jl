@@ -59,6 +59,51 @@ function minimal_generating_set(s::Stabilizer)
     end
 end
 
+function logical_operator_canonicalize(t:: QuantumClifford.Tableau)
+    loc = zero(QuantumClifford.Tableau, length(t), nqubits(t))
+    index = 1
+    for i in eachindex(t)
+        for j in eachindex(t)
+            if comm(t[i], t[j]) == 0x01
+                for k in eachindex(t)
+                    if k !=i && k != j
+                        if comm(t[k], t[i]) == 0x01
+                            t[k] = t[j] *t[k]
+                            if !(comm(t[k], t[i])==0x0) println(comm(t[k], t[i])==0x0) end
+                        end
+                        if comm(t[k], t[j]) == 0x01
+                            t[k] = t[i] *t[k]
+                            if !(comm(t[k], t[i])==0x0) println(comm(t[k], t[i])==0x0) end
+                            if !(comm(t[k], t[j])==0x0) println(comm(t[k], t[j])==0x0) end
+                        end
+                    end
+                end
+                for k in eachindex(t)
+                    if k != i && k != j
+                        if !(comm(t[k], t[i])==0x0) println(comm(t[k], t[i])==0x0) end
+                        if !(comm(t[k], t[j])==0x0) println(comm(t[k], t[j])==0x0) end
+                    end
+                end
+                if !(t[i] in loc)
+                    loc[index]= t[i]
+                    index+=1
+                end
+                if !(t[j] in loc)
+                    loc[index]= t[j]
+                    index+=1
+                end
+            end
+        end
+    end
+    for i in eachindex(t)
+        if !(t[i] in loc)
+            loc[index]= t[i]
+            index+=1
+        end
+    end
+    return loc
+end
+
 """
 Return the full Pauli group of a given length. Phases are ignored by default, 
 but can be included by setting `phases=true`.
