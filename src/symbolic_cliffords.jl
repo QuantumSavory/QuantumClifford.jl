@@ -85,12 +85,20 @@ macro qubitop1(name, kernel)
     end
 end
 
-@qubitop1 Hadamard (z , x   , x!=0 && z!=0)
-@qubitop1 Phase    (x , x⊻z , x!=0 && z!=0)
-@qubitop1 InvPhase (x , x⊻z , x!=0 && z==0)
-@qubitop1 X        (x , z   , z!=0)
-@qubitop1 Y        (x , z   , (x⊻z)!=0)
-@qubitop1 Z        (x , z   , x!=0)
+@qubitop1 Hadamard     (z   , x   , x!=0 && z!=0)
+@qubitop1 Phase        (x   , x⊻z , x!=0 && z!=0)
+@qubitop1 InvPhase     (x   , x⊻z , x!=0 && z==0)
+@qubitop1 X            (x   , z   , z!=0)
+@qubitop1 Y            (x   , z   , (x⊻z)!=0)
+@qubitop1 Z            (x   , z   , x!=0)
+@qubitop1 HadamardXY   (x⊻z , z   , z!=0)
+@qubitop1 HadamardYZ   (x   , x⊻z , x!=0)
+@qubitop1 V            (x   , x⊻z , z!=0)
+@qubitop1 InvV         (x   , x⊻z , x!=0 && z==0)
+@qubitop1 CXYZ         (x⊻z , x   , x!=0 && z!=0)
+@qubitop1 CZYX         (z   , x⊻z , x!=0 && z!=0)
+@qubitop1 SQRTY        (z   , x   , x!=0)
+@qubitop1 InvSQRTY     (z   , x   , z!=0)
 
 """A "symbolic" single-qubit Identity operation.
 
@@ -177,13 +185,21 @@ function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{
     stab
 end
 
-SingleQubitOperator(h::sHadamard) = SingleQubitOperator(h.q, false, true , true , false, false, false)
-SingleQubitOperator(p::sPhase)    = SingleQubitOperator(p.q, true , true , false, true , false, false)
-SingleQubitOperator(p::sInvPhase) = SingleQubitOperator(p.q, true , true , false, true , true , false)
-SingleQubitOperator(p::sId1)      = SingleQubitOperator(p.q, true , false, false, true , false, false)
-SingleQubitOperator(p::sX)        = SingleQubitOperator(p.q, true , false, false, true , false, true)
-SingleQubitOperator(p::sY)        = SingleQubitOperator(p.q, true , false, false, true , true , true)
-SingleQubitOperator(p::sZ)        = SingleQubitOperator(p.q, true , false, false, true , true , false)
+SingleQubitOperator(h::sHadamard)        = SingleQubitOperator(h.q, false, true , true , false, false, false)
+SingleQubitOperator(p::sPhase)           = SingleQubitOperator(p.q, true , true , false, true , false, false)
+SingleQubitOperator(p::sInvPhase)        = SingleQubitOperator(p.q, true , true , false, true , true , false)
+SingleQubitOperator(p::sId1)             = SingleQubitOperator(p.q, true , false, false, true , false, false)
+SingleQubitOperator(p::sX)               = SingleQubitOperator(p.q, true , false, false, true , false, true)
+SingleQubitOperator(p::sY)               = SingleQubitOperator(p.q, true , false, false, true , true , true)
+SingleQubitOperator(p::sZ)               = SingleQubitOperator(p.q, true , false, false, true , true , false)
+SingleQubitOperator(p::sCXYZ)            = SingleQubitOperator(p.q, true , true,  true, false , false , false)
+SingleQubitOperator(p::sCZYX)            = SingleQubitOperator(p.q, false, true,  true, true , false , false)
+SingleQubitOperator(p::sHadamardXY)      = SingleQubitOperator(p.q, true , true,  false, true , false , true)
+SingleQubitOperator(p::sHadamardYZ)      = SingleQubitOperator(p.q, true , false, true, true , true , false)
+SingleQubitOperator(p::sV)               = SingleQubitOperator(p.q, true , false, true, true , false, true)
+SingleQubitOperator(p::sInvV)            = SingleQubitOperator(p.q, true , false, true, true , false , false)
+SingleQubitOperator(p::sSQRTY)           = SingleQubitOperator(p.q, false , true, true, false , true , false)
+SingleQubitOperator(p::sInvSQRTY)        = SingleQubitOperator(p.q, false , true, true, false , false , true)
 SingleQubitOperator(o::SingleQubitOperator) = o
 function SingleQubitOperator(op::CliffordOperator, qubit)
     nqubits(op)==1 || throw(DimensionMismatch("You are trying to convert a multiqubit `CliffordOperator` into a symbolic `SingleQubitOperator`."))
@@ -239,6 +255,12 @@ LinearAlgebra.inv(p::sId1) = sId1(p.q)
 LinearAlgebra.inv(p::sX) = sX(p.q)
 LinearAlgebra.inv(p::sY) = sY(p.q)
 LinearAlgebra.inv(p::sZ) = sZ(p.q)
+LinearAlgebra.inv(p::sHadamardXY) = sHadamardXY(p.q)
+LinearAlgebra.inv(p::sHadamardYZ) = sHadamardYZ(p.q)
+LinearAlgebra.inv(p::sV) = sInvV(p.q)
+LinearAlgebra.inv(p::sInvV) = sV(p.q)
+LinearAlgebra.inv(p::sSQRTY) = sInvSQRTY(p.q)
+LinearAlgebra.inv(p::sInvSQRTY) = sSQRTY(p.q)
 
 ##############################
 # Two-qubit gates
