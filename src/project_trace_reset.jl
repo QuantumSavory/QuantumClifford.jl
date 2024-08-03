@@ -820,7 +820,11 @@ Project `qubit` of `state` along the Y axis and randomize the phase if necessary
 
 Lower boilerplate version of [`project!`](@ref).
 
-```@example
+```jldoctest
+julia> using Random
+
+julia> Random.seed!(1234);
+
 julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + YZ
@@ -857,7 +861,11 @@ Measure `pauli` operator on `state` and randomize the phase if necessary.
 
 Lower boilerplate version of [`project!`](@ref).
 
-```@example
+```jldoctest
+julia> using Random
+
+julia> Random.seed!(1234);
+
 julia> s = MixedDestabilizer(T"YX ZZ -IZ -YI", 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + YX
@@ -866,7 +874,7 @@ julia> s = MixedDestabilizer(T"YX ZZ -IZ -YI", 2)
 - _Z
 - Y_
 
-julia> ssz = project!(copy(s),sMZ(r))[1]
+julia> ssz = project!(copy(s),sMZ(1))[1]
 𝒟ℯ𝓈𝓉𝒶𝒷
 + _X
 - Y_
@@ -874,7 +882,7 @@ julia> ssz = project!(copy(s),sMZ(r))[1]
 - _Z
 + Z_
 
-julia> rssz = projectrand!(copy(s),sMZ(r))[1]
+julia> rssz = projectrand!(copy(s),sMZ(1))[1]
 𝒟ℯ𝓈𝓉𝒶𝒷
 + _X
 - Y_

@@ -3,6 +3,7 @@
 ```@meta
 DocTestSetup = quote
     using QuantumClifford
+    using Random
 end
 ```
 
@@ -691,7 +692,63 @@ which expands upon the algorithms available for each structure.
 
 # Random States and Circuits
 
-[`random_clifford`](@ref), [`random_stabilizer`](@ref), and [`enumerate_cliffords`](@ref) can be used for the generation of random states.
+[`random_clifford`](@ref), [`random_stabilizer`](@ref), [`random_destabilizer`](@ref), and [`enumerate_cliffords`](@ref) can be used for the generation of random states.
+
+```jldoctest
+julia> Random.seed!(1234);
+
+julia> random_clifford(2)
+X₁ ⟼ - _Y
+X₂ ⟼ - YY
+Z₁ ⟼ - XX
+Z₂ ⟼ + X_
+
+julia> random_stabilizer(2)
++ _Y
+- YY
+
+julia> random_destabilizer(2)
+𝒟ℯ𝓈𝓉𝒶𝒷
+- XY
+- X_
+𝒮𝓉𝒶𝒷
+- _Z
+- YZ
+
+julia> n = 7; i = 62345;
+
+julia> enumerate_cliffords(n, i)
+X₁ ⟼ + ZZYX_ZZ
+X₂ ⟼ + X_____X
+X₃ ⟼ + _____Z_
+X₄ ⟼ + ____Z__
+X₅ ⟼ + ___Z__X
+X₆ ⟼ + __Z___X
+X₇ ⟼ + _Z_____
+Z₁ ⟼ + ZZYX_ZY
+Z₂ ⟼ + Z______
+Z₃ ⟼ + _____XX
+Z₄ ⟼ + ____X__
+Z₅ ⟼ + ___X___
+Z₆ ⟼ + __X___X
+Z₇ ⟼ + _X____X
+
+julia> enumerate_cliffords(n, i, onlycoset=true)
+X₁ ⟼ + ZZYX_ZZ
+X₂ ⟼ + X_____X
+X₃ ⟼ + _X____X
+X₄ ⟼ + __X___X
+X₅ ⟼ + ___X___
+X₆ ⟼ + ____X__
+X₇ ⟼ + _____XX
+Z₁ ⟼ + ZZYX_ZY
+Z₂ ⟼ + Z______
+Z₃ ⟼ + _Z_____
+Z₄ ⟼ + __Z___X
+Z₅ ⟼ + ___Z__X
+Z₆ ⟼ + ____Z__
+Z₇ ⟼ + _____Z_
+```
 
 # Classical Register
 
@@ -754,7 +811,9 @@ julia> tab(destabilizerview(reg)).xzs
 
 Measurement results can be obtained using symbolic measurement operations such as [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref), which can be applied with [`apply!`](@ref). 
 
-```@example
+```jldoctest
+julia> Random.seed!(1234);
+
 julia> s = MixedDestabilizer(T"XY -ZZ -XX -YZ", 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + XY
@@ -792,7 +851,7 @@ julia> quantumstate(reg)
 - XX
 - ZY
 𝒮𝓉𝒶𝒷
-- YX
++ YX
 + _X
 
 julia> apply!(reg, NoiseOpAll(UnbiasedUncorrelatedNoise(0.2)));
@@ -802,13 +861,15 @@ julia> quantumstate(reg)
 - XX
 - ZY
 𝒮𝓉𝒶𝒷
-- YX
++ YX
 + _X
 ```
 
 Projective measurements with automatic phase randomization, including [`projectY!`](@ref), [`projectZ!`](@ref) and [`projectrand!`](@ref) are available for the [`Register`](@ref) object.
 
-```@example
+```jldoctest
+julia> Random.seed!(1234);
+
 julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + YZ
@@ -827,7 +888,7 @@ julia> quantumstate(reg)
 + _Z
 𝒮𝓉𝒶𝒷
 + X_
-+ _X
+- _X
 
 julia> projectYrand!(reg, 1);
 
@@ -836,16 +897,16 @@ julia> quantumstate(reg)
 + X_
 + _Z
 𝒮𝓉𝒶𝒷
-- Y_
-+ _X
++ Y_
+- _X
 
 julia> projectZrand!(reg, 2);
 
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + X_
-+ _X
+- _X
 𝒮𝓉𝒶𝒷
-- Y_
++ Y_
 - _Z
 ```

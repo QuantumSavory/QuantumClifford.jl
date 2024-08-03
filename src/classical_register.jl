@@ -132,7 +132,11 @@ end
 """
 Projective measurements with automatic phase randomization are available for the [`Register`](@ref) object.
 
-```@example
+```jldoctest
+julia> using Random
+
+julia> Random.seed!(1234);
+
 julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + YZ
@@ -152,7 +156,7 @@ julia> quantumstate(reg)
 + _Z
 𝒮𝓉𝒶𝒷
 + X_
-+ _X
+- _X
 
 julia> projectYrand!(reg, 1);
 
@@ -162,17 +166,17 @@ julia> quantumstate(reg)
 + _Z
 𝒮𝓉𝒶𝒷
 + Y_
-+ _X
+- _X
 
 julia> projectZrand!(reg, 2);
 
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + X_
-+ _X
+- _X
 𝒮𝓉𝒶𝒷
 + Y_
-+ _Z
+- _Z
 ```
 
 See also: [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref),
