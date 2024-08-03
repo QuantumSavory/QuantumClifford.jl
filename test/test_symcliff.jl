@@ -80,7 +80,7 @@
 end
 
 @testset "TwoQubitOperator inv methods" begin
-    for gate_type in [sCNOT, sZCX, sZCY, sZCZ, sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sSWAP, sCPHASE, sZCrY, sInvZCrY]
+    for gate_type in subtypes(QuantumClifford.AbstractTwoQubitOperator)
         n₁ = rand(2: 10)
         n₂ = rand(1:(n₁ - 1))
         @test CliffordOperator(inv(gate_type(n₁, n₂)), n₁) == inv(CliffordOperator(gate_type(n₁, n₂), n₁))
