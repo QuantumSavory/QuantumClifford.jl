@@ -78,3 +78,13 @@
         end
     end
 end
+
+@testset "TwoQubitOperator inv methods" begin
+    gate_types = [sCNOT, sCPHASE, sSWAP, sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZCX, sZCY, sZCZ, sZCrY, sZCrYinv]
+    for gate_type in gate_types
+        n = rand(2:10)
+        m = rand(1:n-1)
+        @test CliffordOperator(inv(gate_type(n, m)), n) == inv(CliffordOperator(gate_type(n, m), n))
+        @test CliffordOperator(inv(gate_type(m, n)), n) == inv(CliffordOperator(gate_type(m, n), n))
+    end
+end

@@ -301,6 +301,7 @@ end
 @qubitop2 YCZ    (x1⊻x2   , x2⊻z1    , x2       , z2⊻x1⊻z1, ~iszero( (x2 & (x1 ⊻ z1) & (z2 ⊻ x1)) ))
 
 @qubitop2 ZCrY  (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & ~z1 & x2) | (x1 & ~z1 & ~z2) | (x1 & x2 & ~z2)))
+@qubitop2 ZCrYinv  (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & z1 & ~ x2) | (x1 & z2)))
 
 #=
 To get the boolean formulas for the phase, it is easiest to first write down the truth table for the phase:
@@ -345,6 +346,21 @@ function Base.show(io::IO, op::AbstractTwoQubitOperator)
         show(io, CliffordOperator(op,2;compact=true))
     end
 end
+
+LinearAlgebra.inv(h::sCNOT) = sCNOT(h.q1, h.q2)
+LinearAlgebra.inv(p::sCPHASE) = sCPHASE(p.q1, p.q2)
+LinearAlgebra.inv(p::sSWAP) = sSWAP(p.q1, p.q2)
+LinearAlgebra.inv(p::sXCX) = sXCX(p.q1, p.q2)
+LinearAlgebra.inv(p::sXCY) = sXCY(p.q1, p.q2)
+LinearAlgebra.inv(p::sXCZ) = sXCZ(p.q1, p.q2)
+LinearAlgebra.inv(p::sYCX) = sYCX(p.q1, p.q2)
+LinearAlgebra.inv(p::sYCY) = sYCY(p.q1, p.q2)
+LinearAlgebra.inv(p::sYCZ) = sYCZ(p.q1, p.q2)
+LinearAlgebra.inv(p::sZCX) = sZCX(p.q1, p.q2)
+LinearAlgebra.inv(p::sZCY) = sZCY(p.q1, p.q2)
+LinearAlgebra.inv(p::sZCZ) = sZCZ(p.q1, p.q2)
+LinearAlgebra.inv(p::sZCrY) = sZCrYinv(p.q1, p.q2)
+LinearAlgebra.inv(p::sZCrYinv) = sZCrY(p.q1, p.q2)
 
 ##############################
 # Functions that perform direct application of common operators without needing an operator instance

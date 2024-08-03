@@ -37,6 +37,9 @@
         @test comm(P"XZ",P"YZ") == comm(S"II XZ",P"YZ", 2) == comm(P"XZ",S"II YZ", 2) == comm(S"II XZ",P"YZ")[2] == comm(P"XZ",S"II YZ")[2] == 0x1
         @test prodphase(P"XX",P"YY") == 0x2
         @test prodphase(P"ZZZ",P"XXX") == prodphase(S"III ZZZ",P"XXX",2) == prodphase(P"ZZZ",S"III XXX",2) == prodphase(S"III ZZZ",S"III XXX",2,2) == 0x3
+        for Pop in [P"X", P"iX", P"-iXYZ"]
+          @test Pop * inv(Pop) == zero(Pop)
+        end
     end
     @testset "Commutation implies real phase" begin
         for i in 1:10

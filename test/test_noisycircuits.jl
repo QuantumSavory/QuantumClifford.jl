@@ -5,7 +5,14 @@
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
     using QuantumClifford.Experimental.NoisyCircuits
+
     import AbstractAlgebra
+    @testset "SparseGat" begin
+      g = SparseGate(tCNOT, [1,2,3])
+      gi = inv(g)
+      c = random_stabilizer(2)
+      @assert apply!(apply!(copy(c), g), gi) == c
+    end
 
     @testset "Noisy Gates" begin
         g1 = SparseGate(tId1, [1])
@@ -25,6 +32,7 @@
         resp = petrajectories(copy(state), [ng1,ng2,ng3,ng4,ng5])
         @test all(values(resp).==0)
     end
+
     @testset "Monte Carlo Purification examples" begin
         g1 = SparseGate(tCNOT, [1,3])
         g2 = SparseGate(tCNOT, [2,4])
