@@ -8,7 +8,7 @@ end
 ```
 
 !!! warning "The documentation is incomplete"
-    While waiting for a better documentation than the small example below, consider looking into [`evaluate_decoder`](@ref), [`TableDecoder`](@ref), [`BeliefPropDecoder`](@ref), [`PyBeliefPropDecoder`](@ref), [`PyMatchingDecoder`](@ref), [`CommutationCheckECCSetup`](@ref), [`NaiveSyndromeECCSetup`](@ref), [`ShorSyndromeECCSetup`](@ref)
+    While waiting for a better documentation than the small example below, consider looking into [`ECC.evaluate_decoder`](@ref), [`ECC.TableDecoder`](@ref), [`ECC.BeliefPropDecoder`](@ref), [`ECC.PyBeliefPropDecoder`](@ref), [`ECC.PyMatchingDecoder`](@ref), [`ECC.CommutationCheckECCSetup`](@ref), [`ECC.NaiveSyndromeECCSetup`](@ref), [`ECC.ShorSyndromeECCSetup`](@ref)
 
 This is a quick and durty example on how to use some of the decoders.
 
