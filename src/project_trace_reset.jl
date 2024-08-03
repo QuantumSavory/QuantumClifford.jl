@@ -38,19 +38,19 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=tr
     @valbooldispatch _generate!(pauli, stabilizer; phases=Val(phases), saveindices=Val(saveindices)) phases saveindices
 end
 
-function _generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tableau{Tzv,Tm}}; phases::Val{PHASES}=Val(true), saveindices::Val{SAVEIDX}=Val(true)) where {Tz<:AbstractArray{UInt8,0}, Tzv<:AbstractVector{UInt8}, Tme<:Unsigned, Tv<:AbstractVector{Tme}, Tm<:AbstractMatrix{Tme}, PHASES, SAVEIDX} # TODO there is stuff that can be abstracted away here and in canonicalize!
+function _generate!(pauli::PauliOperator{Tₚ,Tᵥ}, stabilizer::Stabilizer{Tableau{Tₚᵥ,Tₘ}}; phases::Val{PHASES}=Val(true), saveindices::Val{SAVEIDX}=Val(true)) where {Tₚ<:AbstractArray{UInt8,0}, Tₚᵥ<:AbstractVector{UInt8}, Tₘₑ<:Unsigned, Tᵥ<:AbstractVector{Tₘₑ}, Tₘ<:AbstractMatrix{Tₘₑ}, PHASES, SAVEIDX} # TODO there is stuff that can be abstracted away here and in canonicalize!
     xzs = tab(stabilizer).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
-    lowbit = Tme(0x1)
-    zerobit = Tme(0x0)
+    lowbit = Tₘₑ(0x1)
+    zerobit = Tₘₑ(0x0)
     px,pz = xview(pauli), zview(pauli)
     used_indices = Int[]
     used = 0
     # remove Xs
     while (i=unsafe_bitfindnext_(px,1); i !== nothing) # TODO awkward notation due to https://github.com/JuliaLang/julia/issues/45499
-        jbig = _div(Tme,i-1)+1
-        jsmall = lowbit<<_mod(Tme,i-1)
+        jbig = _div(Tₘₑ,i-1)+1
+        jsmall = lowbit<<_mod(Tₘₑ,i-1)
         candidate = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
                               xs[jbig,used+1:end])
         if isnothing(candidate)
@@ -63,8 +63,8 @@ function _generate!(pauli::PauliOperator{Tz,Tv}, stabilizer::Stabilizer{Tableau{
     end
     # remove Zs
     while (i=unsafe_bitfindnext_(pz,1); i !== nothing) # TODO awkward notation due to https://github.com/JuliaLang/julia/issues/45499
-        jbig = _div(Tme,i-1)+1
-        jsmall = lowbit<<_mod(Tme,i-1)
+        jbig = _div(Tₘₑ,i-1)+1
+        jsmall = lowbit<<_mod(Tₘₑ,i-1)
         candidate = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
                               zs[jbig,used+1:end])
         if isnothing(candidate)

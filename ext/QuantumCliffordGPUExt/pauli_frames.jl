@@ -2,16 +2,16 @@
 # sMZ
 ##############################
 
-function apply_sMZ_kernel!(xzs::DeviceMatrix{Tme},
+function apply_sMZ_kernel!(xzs::DeviceMatrix{Tₘₑ},
                           measurements::DeviceMatrix{Bool},
                           op::sMZ,
                           ibig::Int,
-                          ismallm::Tme,
-                          rows::Int) where {Tme <: Unsigned} 
+                          ismallm::Tₘₑ,
+                          rows::Int) where {Tₘₑ <: Unsigned}
     f = (blockIdx().x - 1) * blockDim().x + threadIdx().x;
     if f > rows
         return nothing
-    end    
+    end
     should_flip = !iszero(xzs[ibig,f] & ismallm)
     measurements[f,op.bit] = should_flip
     return nothing
@@ -33,12 +33,12 @@ end
 # sMRZ
 ##############################
 
-function apply_sMRZ_kernel!(xzs::DeviceMatrix{Tme},
+function apply_sMRZ_kernel!(xzs::DeviceMatrix{Tₘₑ},
                           measurements::DeviceMatrix{Bool},
                           op::QuantumClifford.sMRZ,
                           ibig::Int, # todo change to Int
-                          ismallm::Tme,
-                          rows::Int) where {Tme <: Unsigned} 
+                          ismallm::Tₘₑ,
+                          rows::Int) where {Tₘₑ <: Unsigned}
     f = (blockIdx().x - 1) * blockDim().x + threadIdx().x;
     if f > rows
         return nothing

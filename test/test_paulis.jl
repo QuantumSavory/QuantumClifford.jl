@@ -1,10 +1,7 @@
-using QuantumClifford
+@testitem "Pauli Operators" begin
+  using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
+  test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
-using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
-
-test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
-
-@testset "Pauli Operators" begin
     @testset "Parsing, constructors, and properties" begin
         @test P"-iXYZ" == PauliOperator(0x3, 3, vcat(BitArray([1,1,0]).chunks, BitArray([0,1,1]).chunks))
         @test P"-iXYZ" == PauliOperator(0x3, Bool[1,1,0], Bool[0,1,1])
@@ -65,25 +62,25 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         for i in 1:3
             for n in test_sizes
                 for t in [Stabilizer, Destabilizer, MixedDestabilizer]
-                    ix, iy, iz = rand(1:n), rand(1:n), rand(1:n)
-                    px = single_x(n,ix)
-                    py = single_y(n,iy)
-                    pz = single_z(n,iz)
+                    x, y, z = rand(1:n), rand(1:n), rand(1:n)
+                    px = single_x(n,x)
+                    py = single_y(n,y)
+                    pz = single_z(n,z)
                     rstab = random_stabilizer(n)
                     s1 = t(rstab)
                     s2 = copy(s1)
                     s3 = copy(s1)
                     apply!(s1,px)
-                    apply_single_x!(s2,ix)
-                    apply!(s3,P"X",[ix])
+                    apply_single_x!(s2,x)
+                    apply!(s3,P"X",[x])
                     @test s1==s2==s3
                     apply!(s1,py)
-                    apply_single_y!(s2,iy)
-                    apply!(s3,P"Y",[iy])
+                    apply_single_y!(s2,y)
+                    apply!(s3,P"Y",[y])
                     @test s1==s2==s3
                     apply!(s1,pz)
-                    apply_single_z!(s2,iz)
-                    apply!(s3,P"Z",[iz])
+                    apply_single_z!(s2,z)
+                    apply!(s3,P"Z",[z])
                     @test s1==s2==s3
                 end
             end

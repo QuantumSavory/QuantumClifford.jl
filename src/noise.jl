@@ -28,6 +28,19 @@ struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
 end
 UnbiasedUncorrelatedNoise(p::Integer) = UnbiasedUncorrelatedNoise(float(p))
 
+"""Pauli noise model with probabilities `px`, `py`, and `pz` respectively for the three types of Pauli errors."""
+struct PauliNoise{T} <: AbstractNoise
+    px::T
+    py::T
+    pz::T
+end
+function PauliNoise(px::Real, py::Real, pz::Real)
+    px, py, pz = float.((px, py, pz))
+    px, py, pz = promote(px, py, pz)
+    T = typeof(px)
+    return PauliNoise{T}(px, py, pz)
+end
+
 """A convenient constructor for various types of Pauli noise models.
 Returns more specific types when necessary."""
 function PauliNoise end
@@ -38,7 +51,6 @@ function PauliNoise(p)
 end
 
 function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,i::Int)
-    n = nqubits(s)
     infid = noise.p/3
     r = rand()
     if r<infid
@@ -51,11 +63,25 @@ function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,i::I
     s
 end
 
-"""An operator that applies the given `noise` model to the qubits at the selected `indices`."""
-struct NoiseOp <: AbstractNoiseOp
-    noise::AbstractNoise
-    indices::AbstractVector{Int}
+function applynoise!(s::AbstractStabilizer,noise::PauliNoise,i::Int)
+    r = rand()
+    if r<noise.px
+        apply_single_x!(s,i)
+    elseif r<noise.px+noise.pz
+        apply_single_z!(s,i)
+    elseif r<noise.px+noise.pz+noise.py
+        apply_single_y!(s,i)
+    end
+    s
 end
+
+"""An operator that applies the given `noise` model to the qubits at the selected `indices`."""
+struct NoiseOp{N, Q} <: AbstractNoiseOp where {N, Q}
+    noise::N #<:AbstractNoise
+    indices::NTuple{Q, Int}
+end
+
+NoiseOp(noise, indices::AbstractVector{Int}) = NoiseOp(noise, tuple(indices...))
 
 """A convenient constructor for various types of Pauli errors,
 that can be used as circuit gates in simulations.
@@ -70,6 +96,22 @@ end
 """"Construct a gate operation that applies an unbiased Pauli error on all `qubits`, each with independent probability `p`."""
 function PauliError(qubits,p)
     NoiseOp(PauliNoise(p), qubits)
+end
+
+""""Construct a gate operation that applies a biased Pauli error on  qubit `q` with independent probabilities `px`, `py`, `pz`.
+Note that the probability of any error occurring is `px+py+pz`. Because of this, `PauliError(1, p)` is equivalent to `PauliError(1,p/3,p/3,p/3)`.
+Similarly, if one wanted to exclude Z errors from `PauliError(1,p/3,p/3,p/3)` while mainting the same rate of X errors, one could write
+`PauliError(1, p*2/3, 0, 0)` (in the sense that Y errors can be interpreted as an X and a Z happening at the same time)."""
+function PauliError(q::Int, px, py, pz)
+    NoiseOp(PauliNoise(px,py,pz), (q,))
+end
+
+""""Construct a gate operation that applies a biased Pauli error on all `qubits` independently, each with  probabilities `px`, `py`, `pz`.
+Note that the probability of any error occurring is `px+py+pz`. Because of this, `PauliError(1, p)` is equivalent to `PauliError(1,p/3,p/3,p/3)`.
+Similarly, if one wanted to exclude Z errors from `PauliError(1,p/3,p/3,p/3)` while mainting the same rate of X errors, one could write
+`PauliError(1, p*2/3, 0, 0)` (in the sense that Y errors can be interpreted as an X and a Z happening at the same time)."""
+function PauliError(qubits, px, py, pz)
+    NoiseOp(PauliNoise(px,py,pz), qubits)
 end
 
 """An operator that applies the given `noise` model to all qubits."""

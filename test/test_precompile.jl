@@ -1,3 +1,3 @@
-using QuantumClifford
-
-QuantumClifford._precompile_()
+@testitem "Precompile" begin
+    QuantumClifford._precompile_()
+end
