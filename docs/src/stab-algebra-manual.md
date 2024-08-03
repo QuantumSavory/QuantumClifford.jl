@@ -695,7 +695,7 @@ which expands upon the algorithms available for each structure.
 
 # Classical Register
 
-A [`Register!`](@ref) encapsulates the state of a computer and includes both a tableaux and an array of classical bits, which can be used, for example, to store measurement outcomes. A [`MixedDestabilizer`](@ref) can be stored within the [`Register`](@ref), along with a set of classical bits for recording measurement results. 
+A [`Register!`](@ref) encapsulates the state of a computer and includes both a tableaux and an array of classical bits, which can be used, for example, to store measurement outcomes. A [`MixedDestabilizer`](@ref) can be stored within the [`Register`](@ref), along with a set of classical bits for recording measurement results. The array of classical bits can be accessed through [`bitview`](@ref), while the tableaux can be examined using [`quantumstate`](@ref).
 
 ```jldoctest register
 julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
@@ -731,7 +731,28 @@ julia> bitview(reg)
  0
 ```
 
-Measurement results can be obtained using symbolic measurement operations such as [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref), which can be applied with [`apply!`](@ref).
+Analyzing the tableaux of the [`Register!`](@ref) more closely as follows
+
+```jldoctest register
+julia> tab(reg).phases
+4-element Vector{UInt8}:
+ 0x00
+ 0x02
+ 0x00
+ 0x00
+
+julia> tab(stabilizerview(reg)).xzs
+2×2 view(::Matrix{UInt64}, :, 3:4) with eltype UInt64:
+ 0x0000000000000001  0x0000000000000000
+ 0x0000000000000000  0x0000000000000002
+
+julia> tab(destabilizerview(reg)).xzs
+2×2 view(::Matrix{UInt64}, :, 1:2) with eltype UInt64:
+ 0x0000000000000001  0x0000000000000003
+ 0x0000000000000003  0x0000000000000000
+```
+
+Measurement results can be obtained using symbolic measurement operations such as [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref), which can be applied with [`apply!`](@ref). 
 
 ```@example
 julia> s = MixedDestabilizer(T"XY -ZZ -XX -YZ", 2)
@@ -746,11 +767,6 @@ julia> reg = Register(s, [0, 0]);
 
 julia> apply!(reg, sMX(1, 1));
 
-julia> bitview(reg)
-2-element Vector{Bool}:
- 1
- 0
-
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + XY
@@ -760,11 +776,6 @@ julia> quantumstate(reg)
 - X_
 
 julia> apply!(reg, sMRX(2, 2));
-
-julia> bitview(reg)
-2-element Vector{Bool}:
- 1
- 0
 
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
@@ -776,11 +787,6 @@ julia> quantumstate(reg)
 
 julia> apply!(reg, PauliMeasurement(P"YX",2));
 
-julia> bitview(reg)
-2-element Vector{Bool}:
- 1
- 1
-
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
 - XX
@@ -791,11 +797,6 @@ julia> quantumstate(reg)
 
 julia> apply!(reg, NoiseOpAll(UnbiasedUncorrelatedNoise(0.2)));
 
-julia> bitview(reg)
-2-element Vector{Bool}:
- 1
- 1
-
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
 - XX
@@ -803,24 +804,9 @@ julia> quantumstate(reg)
 𝒮𝓉𝒶𝒷
 - YX
 + _X
-
-julia> tab(reg).xzs
-2×4 Matrix{UInt64}:
- 0x0000000000000003  0x0000000000000002  0x0000000000000003  0x0000000000000002
- 0x0000000000000000  0x0000000000000003  0x0000000000000001  0x0000000000000000
-
-julia> tab(stabilizerview(reg)).xzs
-2×2 view(::Matrix{UInt64}, :, 3:4) with eltype UInt64:
- 0x0000000000000003  0x0000000000000002
- 0x0000000000000001  0x0000000000000000
-
-julia> tab(destabilizerview(reg)).xzs
-2×2 view(::Matrix{UInt64}, :, 1:2) with eltype UInt64:
- 0x0000000000000003  0x0000000000000002
- 0x0000000000000000  0x0000000000000003
 ```
 
-Projective measurements with automatic phase randomization are available for the [`Register`](@ref) object.
+Projective measurements with automatic phase randomization, including [`projectY!`](@ref), [`projectZ!`](@ref) and [`projectrand!`](@ref) are available for the [`Register`](@ref) object.
 
 ```@example
 julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
