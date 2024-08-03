@@ -5,7 +5,6 @@ DocTestSetup = quote
     using QuantumClifford
     using QuantumClifford.ECC
 end
-CurrentModule = QuantumClifford.ECC
 ```
 
 !!! warning "The documentation is incomplete"
