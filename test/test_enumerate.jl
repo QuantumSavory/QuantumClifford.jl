@@ -4,4 +4,8 @@
     @test length(collect(enumerate_cliffords(2))) == length(collect(enumerate_phases(enumerate_cliffords(2))))/2^4 == 720
     @test first(enumerate_cliffords(3)) == C"X__ __Z _Z_ Z__ __X _X_"
     @test first(enumerate_cliffords(5)) == C"X____ ____Z ___Z_ __Z__ _Z___ Z____ ____X ___X_ __X__ _X___"
+    for n in 1:10
+        symplectic_cardinality = clifford_cardinality(n, phases=false)
+        @test clifford_cardinality(n) == symplectic_cardinality*(2^(2n))
+    end
 end
