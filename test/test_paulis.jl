@@ -38,6 +38,11 @@
         @test prodphase(P"XX",P"YY") == 0x2
         @test prodphase(P"ZZZ",P"XXX") == prodphase(S"III ZZZ",P"XXX",2) == prodphase(P"ZZZ",S"III XXX",2) == prodphase(S"III ZZZ",S"III XXX",2,2) == 0x3
     end
+
+    for Pop in [P"X", P"iX", P"-iXYZ"]
+        @test Pop * inv(Pop) == zero(Pop)
+    end
+
     @testset "Commutation implies real phase" begin
         for i in 1:10
             for n in test_sizes

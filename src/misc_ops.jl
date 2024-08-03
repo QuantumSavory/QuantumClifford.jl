@@ -32,6 +32,10 @@ function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
     apply!(state, g.cliff, g.indices; kwargs...)
 end
 
+function LinearAlgebra.inv(g::SparseGate; phases=true)
+  return SparseGate(inv(g.cliff;phases=phases), g.indices)
+end
+
 """Reset the specified qubits to the given state.
 
 Be careful, this operation implies first tracing out the qubits, which can lead to mixed states
