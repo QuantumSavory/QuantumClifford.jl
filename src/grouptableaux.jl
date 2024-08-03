@@ -208,20 +208,4 @@ function contractor(s::Stabilizer, subset)
     else
         return Tableau(zeros(Bool, 1,1))
     end
-end   
-
-"""
-Return the given stabilizer without all the qubits in the given iterable.
-
-```jldoctest
-julia> delete_columns(S"XYZ YZX ZXY", [1,3])
-+ Y
-+ Z
-+ X
-```
-
-See also: [`traceout!`](@ref)
-"""
-function delete_columns(𝒮::Stabilizer, subset)
-    return 𝒮[:, setdiff(1:nqubits(𝒮), subset)]
 end

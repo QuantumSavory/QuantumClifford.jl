@@ -74,7 +74,7 @@ export
     single_z, single_x, single_y,
     # Graphs
     graphstate, graphstate!, graph_gatesequence, graph_gate,
-    # Group tableaux functions for error correction
+    # Group theory tools
     groupify, minimal_generating_set, pauligroup, normalizer, centralizer, contractor, delete_columns,
     # Clipped Gauge
     canonicalize_clip!, bigram, entanglement_entropy,
