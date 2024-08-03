@@ -695,7 +695,7 @@ which expands upon the algorithms available for each structure.
 
 # Classical Register
 
-A [`Register!`](@ref) encapsulates the state of a computer and includes both a tableaux and an array of classical bits, which can be used, for example, to store measurement outcomes. A [`MixedDestabilizer`](@ref) can be stored within the [`Register`](@ref), along with a set of classical bits for recording measurement results. The array of classical bits can be accessed through [`bitview`](@ref), while the tableaux can be examined using [`quantumstate`](@ref).
+A [`Register`](@ref) encapsulates the state of a computer and includes both a tableaux and an array of classical bits, which can be used, for example, to store measurement outcomes. A [`MixedDestabilizer`](@ref) can be stored within the [`Register`](@ref), along with a set of classical bits for recording measurement results. The array of classical bits can be accessed through [`bitview`](@ref), while the tableaux can be examined using [`quantumstate`](@ref).
 
 ```jldoctest register
 julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
@@ -731,7 +731,7 @@ julia> bitview(reg)
  0
 ```
 
-Analyzing the tableaux of the [`Register!`](@ref) more closely as follows
+Analyzing the tableaux of the [`Register`](@ref) more closely as follows
 
 ```jldoctest register
 julia> tab(reg).phases
