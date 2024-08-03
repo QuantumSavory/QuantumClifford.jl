@@ -734,46 +734,80 @@ julia> bitview(reg)
 Measurement results can be obtained using symbolic measurement operations such as [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref), which can be applied with [`apply!`](@ref).
 
 ```@example
+julia> s = MixedDestabilizer(T"XY -ZZ -XX -YZ", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ XY
+- ZZ
+𝒮𝓉𝒶𝒷
+- XX
+- YZ
+
+julia> reg = Register(s, [0, 0]);
+
 julia> apply!(reg, sMX(1, 1));
 
 julia> bitview(reg)
 2-element Vector{Bool}:
+ 1
  0
- 0
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ XY
+- YZ
+𝒮𝓉𝒶𝒷
+- XX
+- X_
 
 julia> apply!(reg, sMRX(2, 2));
 
 julia> bitview(reg)
 2-element Vector{Bool}:
- 0
  1
+ 0
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ XY
+- YZ
+𝒮𝓉𝒶𝒷
+- XX
+- X_
 
 julia> apply!(reg, PauliMeasurement(P"YX",2));
 
 julia> bitview(reg)
 2-element Vector{Bool}:
- 0
- 0
-
-julia> apply!(reg, NoiseOpAll(UnbiasedUncorrelatedNoise(0.01)));
-
-julia> bitview(reg)
-2-element Vector{Bool}:
- 0
- 0
+ 1
+ 1
 
 julia> quantumstate(reg)
 𝒟ℯ𝓈𝓉𝒶𝒷
-+ X_
-+ XZ
+- XX
+- ZY
 𝒮𝓉𝒶𝒷
-+ YX
+- YX
++ _X
+
+julia> apply!(reg, NoiseOpAll(UnbiasedUncorrelatedNoise(0.2)));
+
+julia> bitview(reg)
+2-element Vector{Bool}:
+ 1
+ 1
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
+- XX
+- ZY
+𝒮𝓉𝒶𝒷
+- YX
 + _X
 
 julia> tab(reg).xzs
 2×4 Matrix{UInt64}:
- 0x0000000000000001  0x0000000000000001  0x0000000000000003  0x0000000000000002
- 0x0000000000000000  0x0000000000000002  0x0000000000000001  0x0000000000000000
+ 0x0000000000000003  0x0000000000000002  0x0000000000000003  0x0000000000000002
+ 0x0000000000000000  0x0000000000000003  0x0000000000000001  0x0000000000000000
 
 julia> tab(stabilizerview(reg)).xzs
 2×2 view(::Matrix{UInt64}, :, 3:4) with eltype UInt64:
@@ -782,8 +816,8 @@ julia> tab(stabilizerview(reg)).xzs
 
 julia> tab(destabilizerview(reg)).xzs
 2×2 view(::Matrix{UInt64}, :, 1:2) with eltype UInt64:
- 0x0000000000000001  0x0000000000000001
- 0x0000000000000000  0x0000000000000002
+ 0x0000000000000003  0x0000000000000002
+ 0x0000000000000000  0x0000000000000003
 ```
 
 Projective measurements with automatic phase randomization are available for the [`Register`](@ref) object.
@@ -797,8 +831,7 @@ julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
 + X_
 + _Z
 
-julia> reg = Register(s, [0, 0])
-Register{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}(MixedDestablizer 2×2, Bool[0, 0])
+julia> reg = Register(s, [0, 0]);
 
 julia> projectXrand!(reg, 2);
 
@@ -817,7 +850,7 @@ julia> quantumstate(reg)
 + X_
 + _Z
 𝒮𝓉𝒶𝒷
-+ Y_
+- Y_
 + _X
 
 julia> projectZrand!(reg, 2);
@@ -827,6 +860,6 @@ julia> quantumstate(reg)
 + X_
 + _X
 𝒮𝓉𝒶𝒷
-+ Y_
-+ _Z
+- Y_
+- _Z
 ```

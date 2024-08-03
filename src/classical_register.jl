@@ -36,59 +36,6 @@ julia> bitview(reg)
 
 Measurement results can be obtained using symbolic measurement operations such as [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref), which can be applied with [`apply!`](@ref).
 
-```@example
-julia> apply!(reg, sMX(1, 1));
-
-julia> bitview(reg)
-2-element Vector{Bool}:
- 0
- 0
-
-julia> apply!(reg, sMRX(2, 2));
-
-julia> bitview(reg)
-2-element Vector{Bool}:
- 0
- 1
-
-julia> apply!(reg, PauliMeasurement(P"YX",2));
-
-julia> bitview(reg)
-2-element Vector{Bool}:
- 0
- 0
-
-julia> apply!(reg, NoiseOpAll(UnbiasedUncorrelatedNoise(0.01)));
-
-julia> bitview(reg)
-2-element Vector{Bool}:
- 0
- 0
-
-julia> quantumstate(reg)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ X_
-+ XZ
-𝒮𝓉𝒶𝒷
-+ YX
-+ _X
-
-julia> tab(reg).xzs
-2×4 Matrix{UInt64}:
- 0x0000000000000001  0x0000000000000001  0x0000000000000003  0x0000000000000002
- 0x0000000000000000  0x0000000000000002  0x0000000000000001  0x0000000000000000
-
-julia> tab(stabilizerview(reg)).xzs
-2×2 view(::Matrix{UInt64}, :, 3:4) with eltype UInt64:
- 0x0000000000000003  0x0000000000000002
- 0x0000000000000001  0x0000000000000000
-
-julia> tab(destabilizerview(reg)).xzs
-2×2 view(::Matrix{UInt64}, :, 1:2) with eltype UInt64:
- 0x0000000000000001  0x0000000000000001
- 0x0000000000000000  0x0000000000000002
-```
-
 See also: [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref),
 [`sMX`](@ref), [`sMRZ`](@ref), [`sMRX`](@ref), [`traceout!`](@ref).
 """
