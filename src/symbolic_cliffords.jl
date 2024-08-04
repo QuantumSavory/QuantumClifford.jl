@@ -301,7 +301,7 @@ end
 @qubitop2 YCZ    (x1⊻x2   , x2⊻z1    , x2       , z2⊻x1⊻z1, ~iszero( (x2 & (x1 ⊻ z1) & (z2 ⊻ x1)) ))
 
 @qubitop2 ZCrY  (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & ~z1 & x2) | (x1 & ~z1 & ~z2) | (x1 & x2 & ~z2)))
-@qubitop2 InvZCrY (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2,  ~iszero((x1 & z1 & ~x2 & ~z2) | (x1 & ~z1 & ~x2 & z2) | (x1 & z1 & ~x2 & z2) | (x1 & z1 & x2 & z2)))
+@qubitop2 InvZCrY (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & z1 & ~x2 & ~z2) | (x1 & ~z1 & ~x2 & z2) | (x1 & z1 & ~x2 & z2) | (x1 & z1 & x2 & z2)))
 
 #=
 To get the boolean formulas for the phase, it is easiest to first write down the truth table for the phase:
