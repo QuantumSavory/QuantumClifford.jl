@@ -1,9 +1,7 @@
-using LinearAlgebra
-using QuantumClifford
+@testitem "Inner product between stabilizer states" begin
+    using LinearAlgebra
+    test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
-test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
-
-@testset "Inner product between stabilizer states" begin
     for n in rand(test_sizes)
         s1 = one(Stabilizer, n, basis=:X)
         s2 = one(MixedDestabilizer, n, n)
@@ -14,11 +12,11 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         @test logdot(s3,s4)==logdot(c*s3,c*s4)
     end
     sa = S" XX
-            ZZ"
+    ZZ"
     sb = S" XZ
-            ZX"
+    ZX"
     sc = S" XX
-            -ZZ"
+    -ZZ"
     @test isnothing(logdot(sa,sb))
     @test isnothing(logdot(S"Y",S"-Y"))
     @test logdot(S"Z",S"X") == 1

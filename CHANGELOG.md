@@ -5,9 +5,22 @@
 
 # News
 
+## v0.9.8 - 2024-08-03
+
+- New group-theoretical tools:
+    - `groupify` to generate full stabilizer group from generating set
+    - `minimal_generating_set` function to find the minimal generating set of a set of operators
+    - `pauligroup` to generate the full Pauli group of a certain number of qubits
+    - `normalizer` to generate all Paulis that commute with a set of Paulis
+    - `centralizer` to find a subset of a set of Paulis such that each element in the subset commutes with each element in the set
+    - `contractor` to find a subset of Paulis in a tableau that have an identity operator on a certain qubit
+    - `delete_columns` to remove the operators corresponding to a certain qubit from all Paulis in a Stabilizer
+- `PauliError` can now encode biased noise during Pauli frame simulation, i.e. one can simulate only X errors, or only Y errors, or only Z errors, or some weighted combination of these.
+
 ## v0.9.7 - 2024-07-23
 
 - **(fix `#320`)** Fix a serious correctness bug in the SIMD implementation of Pauli string multiplication (affects the correctness of canonicalization and traceout for tableaux bigger than ~500 qubits; does not affect symbolic gates or Pauli frame simulations of any scale)
+
 ## v0.9.6 - 2024-07-12
 
 - `inv` implementation for single-qubit "symbolic" Clifford operators (subtypes of `AbstractSingleQubitOperator`).
