@@ -50,7 +50,7 @@
         ancqubits = code_s(code)
         regbits = ancqubits
         frames = PauliFrame(nframes, dataqubits+ancqubits, regbits)
-        circuit = [ecirc..., scirc...]
+        circuit = vcat(ecirc, scirc)
         pftrajectories(frames, circuit)
         @test sum(pfmeasurements(frames)) == 0
     end
