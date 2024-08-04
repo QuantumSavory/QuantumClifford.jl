@@ -33,7 +33,6 @@ tab(r::Register) = tab(quantumstate(r))
 
 tensor(regs::Register...) = Register(tensor((quantumstate(r) for r in regs)...), [bit for r in regs for bit in r.bits])
 
-apply!(r::Register, op, args::Tuple{}; kwargs...) = error()
 function apply!(r::Register, op, args...; kwargs...)
     apply!(quantumstate(r), op, args...; kwargs...)
     r
