@@ -227,6 +227,19 @@ function random_clifford1(rng::AbstractRNG, qubit)
 end
 random_clifford1(qubit) = random_clifford1(GLOBAL_RNG, qubit)
 
+function LinearAlgebra.inv(op::SingleQubitOperator)
+    c = LinearAlgebra.inv(CliffordOperator(SingleQubitOperator(op), 1, compact=true))
+    return SingleQubitOperator(c, op.q)
+end
+
+LinearAlgebra.inv(h::sHadamard) = sHadamard(h.q)
+LinearAlgebra.inv(p::sPhase) = sInvPhase(p.q)
+LinearAlgebra.inv(p::sInvPhase) = sPhase(p.q)
+LinearAlgebra.inv(p::sId1) = sId1(p.q)
+LinearAlgebra.inv(p::sX) = sX(p.q)
+LinearAlgebra.inv(p::sY) = sY(p.q)
+LinearAlgebra.inv(p::sZ) = sZ(p.q)
+
 ##############################
 # Two-qubit gates
 ##############################

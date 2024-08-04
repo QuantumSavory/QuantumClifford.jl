@@ -5,7 +5,6 @@ DocTestSetup = quote
     using QuantumClifford
     using Quantikz
 end
-CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
 
 !!! warning "The documentation is incomplete"
