@@ -19,6 +19,8 @@ function apply!(state::AbstractStabilizer, m::PauliMeasurement)
     state
 end
 
+apply!(state::MixedDestabilizer, indices, operation::Type{<:AbstractSymbolicOperator}) = apply!(state, operation(indices...))
+
 """A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`.
 
 `apply!(state, cliff, indices)` and `apply!(state, SparseGate(cliff, indices))` give the same result."""
