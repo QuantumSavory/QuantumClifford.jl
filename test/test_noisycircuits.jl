@@ -9,9 +9,9 @@
     import AbstractAlgebra
 
     @testset "SparseGate" begin
-        g = SparseGate(tCNOT, [1,2,3])
+        g = SparseGate(random_clifford(2), randperm(10)[1:2])
         gi = inv(g)
-        c = random_stabilizer(2)
+        c = random_stabilizer(10)
         @assert apply!(apply!(copy(c), g), gi) == c
     end
 

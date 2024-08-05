@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.9 - 2024-08-05
+
+- `inv` is implemented for all Clifford operator types (symbolic, dense, sparse).
+
 ## v0.9.8 - 2024-08-03
 
 - New group-theoretical tools:

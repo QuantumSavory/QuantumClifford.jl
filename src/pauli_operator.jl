@@ -128,7 +128,7 @@ function LinearAlgebra.inv(p::PauliOperator)
   return PauliOperator(phin, p.nqubits, copy(p.xz))
 end
 
-function Base.deleteat!(p::PauliOperator, subset) 
+function Base.deleteat!(p::PauliOperator, subset)
     p =p[setdiff(1:length(p), subset)]
     return p
 end
