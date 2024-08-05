@@ -1197,8 +1197,6 @@ include("graphs.jl")
 #
 include("entanglement.jl")
 #
-include("ambiguity_fix.jl")
-#
 include("tableau_show.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
