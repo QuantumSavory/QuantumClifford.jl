@@ -909,6 +909,8 @@ end
 $TYPEDSIGNATURES
 
 Trace out a qubit.
+
+See also: [`delete_columns`](@ref)
 """ # TODO all of these should raise an error if length(qubits)>rank
 function traceout!(s::Stabilizer, qubits; phases=true, rank=false)
     _,i = canonicalize_rref!(s,qubits;phases=phases)
@@ -1188,4 +1190,23 @@ end
 function traceoutremove!(s::MixedDestabilizer, qubit)
     traceout!(s,[qubit]) # TODO this can be optimized thanks to the information already known from projfunc
     s = _remove_rowcol!(s, nqubits(s), qubit)
+end
+
+
+"""
+Return the given stabilizer without all the qubits in the given iterable.
+
+The resulting tableaux is not guaranteed to be valid (to retain its commutation relationships).
+
+```jldoctest
+julia> delete_columns(S"XYZ YZX ZXY", [1,3])
++ Y
++ Z
++ X
+```
+
+See also: [`traceout!`](@ref)
+"""
+function delete_columns(𝒮::Stabilizer, subset)
+    return 𝒮[:, setdiff(1:nqubits(𝒮), subset)]
 end
