@@ -66,7 +66,7 @@
     end
 
     @testset "SingleQubitOperator inv methods" begin
-        for gate_type in [sHadamard, sX, sY, sZ, sId1, sPhase, sInvPhase, sHadamardXY, sHadamardYZ, sV, sInvV, sSQRTY, sInvSQRTY]
+        for gate_type in filter(gate_type -> gate_type != SingleQubitOperator, subtypes(AbstractSingleQubitOperator))
             n = rand(1:10)
             @test CliffordOperator(inv(SingleQubitOperator(gate_type(n))), n) == inv(CliffordOperator(gate_type(n), n))
             @test CliffordOperator(inv(gate_type(n)), n) == inv(CliffordOperator(gate_type(n), n))

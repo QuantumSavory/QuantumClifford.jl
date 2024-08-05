@@ -93,12 +93,12 @@ end
 @qubitop1 Z            (x   ,z   , x!=0)
 @qubitop1 HadamardXY   (x   ,x⊻z , x==0 && z!=0)
 @qubitop1 HadamardYZ   (x⊻z ,z   , x!=0 && z==0) 
-@qubitop1 V            (x⊻z ,z   , x==0 && z!=0)
-@qubitop1 InvV         (x⊻z ,z   , x!=0 && z!=0)
+@qubitop1 SQRTX        (x⊻z ,z   , x==0 && z!=0)
+@qubitop1 SQRTXDAG     (x⊻z ,z   , x!=0 && z!=0)
 @qubitop1 CXYZ         (x⊻z ,x   , z==0 && x==0)
 @qubitop1 CZYX         (z   ,x⊻z , z==0 && x==0)
 @qubitop1 SQRTY        (z   ,x   , z==0)
-@qubitop1 InvSQRTY     (z   ,x   , z!=0 && x==0)
+@qubitop1 SQRTYDAG     (z   ,x   , z!=0 && x==0)
 
 """A "symbolic" single-qubit Identity operation.
 
@@ -196,10 +196,10 @@ SingleQubitOperator(p::sCXYZ)               = SingleQubitOperator(p.q, true , tr
 SingleQubitOperator(p::sCZYX)               = SingleQubitOperator(p.q, false, true,  true, true , false , false)
 SingleQubitOperator(p::sHadamardXY)         = SingleQubitOperator(p.q, true , true,  false, true , false , true)
 SingleQubitOperator(p::sHadamardYZ)         = SingleQubitOperator(p.q, true , false, true, true , true , false)
-SingleQubitOperator(p::sV)                  = SingleQubitOperator(p.q, true , false, true, true , false, true)
-SingleQubitOperator(p::sInvV)               = SingleQubitOperator(p.q, true , false, true, true , false , false)
+SingleQubitOperator(p::sSQRTX)              = SingleQubitOperator(p.q, true , false, true, true , false, true)
+SingleQubitOperator(p::sSQRTXDAG)           = SingleQubitOperator(p.q, true , false, true, true , false , false)
 SingleQubitOperator(p::sSQRTY)              = SingleQubitOperator(p.q, false , true, true, false , true , false)
-SingleQubitOperator(p::sInvSQRTY)           = SingleQubitOperator(p.q, false , true, true, false , false , true)
+SingleQubitOperator(p::sSQRTYDAG)           = SingleQubitOperator(p.q, false , true, true, false , false , true)
 SingleQubitOperator(o::SingleQubitOperator) = o
 function SingleQubitOperator(op::CliffordOperator, qubit)
     nqubits(op)==1 || throw(DimensionMismatch("You are trying to convert a multiqubit `CliffordOperator` into a symbolic `SingleQubitOperator`."))
@@ -257,11 +257,12 @@ LinearAlgebra.inv(p::sY)          = sY(p.q)
 LinearAlgebra.inv(p::sZ)          = sZ(p.q)
 LinearAlgebra.inv(p::sHadamardXY) = sHadamardXY(p.q)
 LinearAlgebra.inv(p::sHadamardYZ) = sHadamardYZ(p.q)
-LinearAlgebra.inv(p::sV)          = sInvV(p.q)
-LinearAlgebra.inv(p::sInvV)       = sV(p.q)
-LinearAlgebra.inv(p::sSQRTY)      = sInvSQRTY(p.q)
-LinearAlgebra.inv(p::sInvSQRTY)   = sSQRTY(p.q)
-
+LinearAlgebra.inv(p::sSQRTX)      = sSQRTXDAG(p.q)
+LinearAlgebra.inv(p::sSQRTXDAG)   = sSQRTX(p.q)
+LinearAlgebra.inv(p::sSQRTY)      = sSQRTYDAG(p.q)
+LinearAlgebra.inv(p::sSQRTYDAG)   = sSQRTY(p.q)
+LinearAlgebra.inv(p::sCZYX)       = sCXYZ(p.q)
+LinearAlgebra.inv(p::sCXYZ)       = sCZYX(p.q)
 ##############################
 # Two-qubit gates
 ##############################
