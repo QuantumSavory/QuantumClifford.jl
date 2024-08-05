@@ -63,6 +63,7 @@ export
     random_invertible_gf2,
     random_pauli, random_pauli!,
     random_stabilizer, random_destabilizer, random_clifford,
+    random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
     # Noise
     applynoise!, UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, NoisyGate,
     PauliNoise, PauliError,
@@ -73,6 +74,8 @@ export
     single_z, single_x, single_y,
     # Graphs
     graphstate, graphstate!, graph_gatesequence, graph_gate,
+    # Group theory tools
+    groupify, minimal_generating_set, pauligroup, normalizer, centralizer, contractor, delete_columns,
     # Clipped Gauge
     canonicalize_clip!, bigram, entanglement_entropy,
     # mctrajectories
@@ -1201,6 +1204,7 @@ include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
 include("nonclifford.jl")
+include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")

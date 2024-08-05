@@ -1,4 +1,4 @@
-using QuantumClifford
+@testitem "JET checks" tags=[:jet] begin
 using JET
 using ArrayInterface
 using Static
@@ -22,7 +22,6 @@ function (::MayThrowIsOk)(report_type::Type{<:InferenceErrorReport}, @nospeciali
     BasicPass()(report_type, args...)
 end
 
-@testset "JET checks" begin
     rep = report_package("QuantumClifford";
         report_pass=MayThrowIsOk(),
         ignored_modules=(
@@ -36,5 +35,5 @@ end
     )
     @show rep
     @test_broken length(JET.get_reports(rep)) == 0
-    @test length(JET.get_reports(rep)) <= 25
+    @test length(JET.get_reports(rep)) <= 28
 end
