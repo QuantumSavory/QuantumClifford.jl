@@ -55,10 +55,6 @@ function PauliNoise(px::Real, py::Real, pz::Real)
     return PauliNoise{T}(px, py, pz)
 end
 
-"""A convenient constructor for various types of Pauli noise models.
-Returns more specific types when necessary."""
-function PauliNoise end
-
 """Constructs an unbiased Pauli noise model with total probability of error `p`."""
 function PauliNoise(p)
     UnbiasedUncorrelatedNoise(p)

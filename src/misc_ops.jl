@@ -46,6 +46,11 @@ function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
     apply!(state, g.cliff, g.indices; kwargs...)
 end
 
+"""$(TYPEDSIGNATURES)"""
+function LinearAlgebra.inv(g::SparseGate; phases=true)
+  return SparseGate(inv(g.cliff;phases=phases), g.indices)
+end
+
 """
 $(TYPEDEF)
 
