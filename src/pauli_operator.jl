@@ -1,4 +1,6 @@
 """
+$(TYPEDEF)
+
 A multi-qubit Pauli operator (``±\\{1,i\\}\\{I,Z,X,Y\\}^{\\otimes n}``).
 
 A Pauli can be constructed with the `P` custom string macro or by building
@@ -45,7 +47,10 @@ struct PauliOperator{Tₚ<:AbstractArray{UInt8,0}, Tᵥ<:AbstractVector{<:Unsign
     xz::Tᵥ
 end
 
+"""$(TYPEDSIGNATURES)"""
 PauliOperator(phase::UInt8, nqubits::Int, xz::Tᵥ) where Tᵥ<:AbstractVector{<:Unsigned} = PauliOperator(fill(UInt8(phase),()), nqubits, xz)
+
+"""$(TYPEDSIGNATURES)"""
 function PauliOperator(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{Bool})
     phase = fill(UInt8(phase),())
     xs = reinterpret(UInt,BitVector(x).chunks)::Vector{UInt}
@@ -53,24 +58,47 @@ function PauliOperator(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{
     xzs = cat(xs, zs, dims=1)
     PauliOperator(phase, length(x), xzs)
 end
+
+"""$(TYPEDSIGNATURES)"""
 PauliOperator(x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator(0x0, x, z)
+
+"""$(TYPEDSIGNATURES)"""
 PauliOperator(xz::AbstractVector{Bool}) = PauliOperator(0x0, (@view xz[1:end÷2]), (@view xz[end÷2+1:end]))
 
-"""Get a view of the X part of the `UInt` array of packed qubits of a given Pauli operator."""
+"""
+$(TYPEDSIGNATURES)
+
+Get a view of the X part of the `UInt` array of packed qubits of a given Pauli operator.
+"""
 function xview(p::PauliOperator)
     @view p.xz[1:end÷2]
 end
-"""Get a view of the Y part of the `UInt` array of packed qubits of a given Pauli operator."""
+
+"""
+$(TYPEDSIGNATURES)
+
+Get a view of the Y part of the `UInt` array of packed qubits of a given Pauli operator.
+"""
 function zview(p::PauliOperator)
     @view p.xz[end÷2+1:end]
 end
-"""Extract as a new bit array the X part of the `UInt` array of packed qubits of a given Pauli operator."""
+
+"""
+$(TYPEDSIGNATURES)
+
+Extract as a new bit array the X part of the `UInt` array of packed qubits of a given Pauli operator.
+"""
 function xbit(p::PauliOperator)
     one = eltype(p.xz)(1)
     size = sizeof(eltype(p.xz))*8
     [(word>>s)&one==one for word in xview(p) for s in 0:size-1][begin:p.nqubits]
 end
-"""Extract as a new bit array the Z part of the `UInt` array of packed qubits of a given Pauli operator."""
+
+"""
+$(TYPEDSIGNATURES)
+
+Extract as a new bit array the Z part of the `UInt` array of packed qubits of a given Pauli operator.
+"""
 function zbit(p::PauliOperator)
     one = eltype(p.xz)(1)
     size = sizeof(eltype(p.xz))*8
@@ -122,7 +150,8 @@ Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.xz, h)
 
 Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
 
-function Base.deleteat!(p::PauliOperator, subset) 
+"""$(TYPEDSIGNATURES)"""
+function Base.deleteat!(p::PauliOperator, subset)
     p =p[setdiff(1:length(p), subset)]
     return p
 end
@@ -132,7 +161,11 @@ Base.zero(::Type{PauliOperator{Tₚ, Tᵥ}}, q) where {Tₚ,T<:Unsigned,Tᵥ<:Ab
 Base.zero(::Type{PauliOperator}, q) = zero(PauliOperator{Array{UInt8, 0}, Vector{UInt}}, q)
 Base.zero(p::P) where {P<:PauliOperator} = zero(P, nqubits(p))
 
-"""Zero-out the phases and single-qubit operators in a [`PauliOperator`](@ref)"""
+"""
+$(TYPEDSIGNATURES)
+
+Zero-out the phases and single-qubit operators in a [`PauliOperator`](@ref).
+"""
 @inline function zero!(p::PauliOperator{Tₚ,Tᵥ}) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}}
     fill!(p.xz, zero(Tᵥₑ))
     p.phase[] = 0x0
@@ -140,6 +173,8 @@ Base.zero(p::P) where {P<:PauliOperator} = zero(P, nqubits(p))
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Embed a Pauli operator in a larger Pauli operator.
 
 ```jldoctest
@@ -167,6 +202,7 @@ function embed(n::Int, i::Int, p::PauliOperator)
     end
 end
 
+"""$(TYPEDSIGNATURES)"""
 function embed(n::Int, indices, p::PauliOperator)
     if nqubits(p) == length(indices)
         pout = zero(typeof(p), n)

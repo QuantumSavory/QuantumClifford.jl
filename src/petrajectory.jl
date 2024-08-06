@@ -6,12 +6,16 @@ function applynoise_branches end
 
 #TODO is the use of copy here necessary?
 #TODO `copy` does not preserve the `fastcolumn` vs `fastrow` effect
+
+"""$(TYPEDSIGNATURES)"""
 applybranches(state, op; max_order=1) = applybranches(operatordeterminism(typeof(op)), state, op; max_order=max_order)
 
+"""$(TYPEDSIGNATURES)"""
 function applybranches(::DeterministicOperatorTrait, state, op; max_order=1)
     [(applywstatus!(copy(state),op)...,1,0)]
 end
 
+"""$(TYPEDSIGNATURES)"""
 function applybranches(::NondeterministicOperatorTrait, state, op; max_order=1)
     throw(ArgumentError(lazy"""
         You are trying to apply a non-deterministic operator $(typeof(op)) in a perturbative expansion, but this particular operator does not have a `applybranches` method defined for it.
@@ -21,6 +25,7 @@ function applybranches(::NondeterministicOperatorTrait, state, op; max_order=1)
     """))
 end
 
+"""$(TYPEDSIGNATURES)"""
 function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_order=1)
     if size(circuit)[1] == 0
         return fill(zero(branch_weight), length(registered_statuses)-1)
@@ -43,6 +48,7 @@ function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_or
     return status_probs
 end
 
+"""$(TYPEDSIGNATURES)"""
 function petrajectory_keep(state, circuit; branch_weight=1.0, current_order=0, max_order=1) # TODO a lot of repetition with petrajectory - dry out
     A = Accumulator{Tuple{typeof(state),CircuitStatus},typeof(branch_weight)}
     if size(circuit)[1] == 0
@@ -66,9 +72,13 @@ function petrajectory_keep(state, circuit; branch_weight=1.0, current_order=0, m
     return dict
 end
 
-"""Run a perturbative expansion to a given order. This is the main public function for the perturbative expansion approach.
+"""
+$(TYPEDSIGNATURES)
 
-See also: [`pftrajectories`](@ref), [`mctrajectories`](@ref)"""
+Run a perturbative expansion to a given order. This is the main public function for the perturbative expansion approach.
+
+See also: [`pftrajectories`](@ref), [`mctrajectories`](@ref).
+"""
 function petrajectories(initialstate, circuit; branch_weight=1.0, max_order=1, keepstates::Bool=false)
     if keepstates
         return petrajectory_keep(initialstate, circuit; branch_weight=branch_weight, current_order=0, max_order=max_order)

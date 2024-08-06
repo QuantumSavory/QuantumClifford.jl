@@ -1,6 +1,7 @@
 @testitem "Projective measurements" begin
-    using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
+    using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good, ⊗
     using QuantumClifford: projectremoverand!
+    using StableRNGs
 
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
@@ -372,5 +373,16 @@
         @test mixed_destab_looks_good(t)
         project!(t,c[2])
         @test mixed_destab_looks_good(t) # This used to fail because anticomlog==rank+1 leading to a repeated row permutation
+    end
+    @testset "New RNG methods" begin
+        rng = StableRNG(42);
+        md = MixedDestabilizer(T"XY -ZZ -XX -YZ", 2)
+        reg = Register(md, [0, 0])
+        for i in 1:10
+            @test apply!(rng, reg, sMX(1, 1)) != md
+            @test apply!(rng, reg, sMRX(2, 2)) != md
+            @test QuantumClifford.dot(tab(stabilizerview(copy(md))).xzs, tab(stabilizerview(copy(apply!(rng, reg, sMX(1, 1))))).xzs) != 0
+            @test QuantumClifford.dot(tab(stabilizerview(copy(md))).xzs, tab(stabilizerview(copy(apply!(rng, reg, sMRX(2, 2))))).xzs) != 0
+        end
     end
 end

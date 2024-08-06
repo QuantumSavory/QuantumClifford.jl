@@ -92,7 +92,10 @@ end
 @qubitop1 Y        (x , z   , (x⊻z)!=0)
 @qubitop1 Z        (x , z   , x!=0)
 
-"""A "symbolic" single-qubit Identity operation.
+"""
+$(TYPEDEF)
+
+A "symbolic" single-qubit Identity operation.
 
 See also: [`SingleQubitOperator`](@ref)
 """
@@ -104,7 +107,10 @@ function _apply!(stab::AbstractStabilizer, ::sId1; phases::Val{B}=Val(true)) whe
     stab
 end
 
-"""A "symbolic" general single-qubit operator which permits faster multiplication than an operator expressed as an explicit tableau.
+"""
+$(TYPEDEF)
+
+A "symbolic" general single-qubit operator which permits faster multiplication than an operator expressed as an explicit tableau.
 
 ```jldoctest
 julia> op = SingleQubitOperator(2, true, true, true, false, true, true) # Tableau components and phases
@@ -185,13 +191,20 @@ SingleQubitOperator(p::sX)        = SingleQubitOperator(p.q, true , false, false
 SingleQubitOperator(p::sY)        = SingleQubitOperator(p.q, true , false, false, true , true , true)
 SingleQubitOperator(p::sZ)        = SingleQubitOperator(p.q, true , false, false, true , true , false)
 SingleQubitOperator(o::SingleQubitOperator) = o
+
+"""$(TYPEDSIGNATURES)"""
 function SingleQubitOperator(op::CliffordOperator, qubit)
     nqubits(op)==1 || throw(DimensionMismatch("You are trying to convert a multiqubit `CliffordOperator` into a symbolic `SingleQubitOperator`."))
     SingleQubitOperator(qubit,op.tab[1,1]...,op.tab[2,1]...,(~).(iszero.(op.tab.phases))...)
 end
+
+"""$(TYPEDSIGNATURES)"""
 SingleQubitOperator(op::CliffordOperator) = SingleQubitOperator(op, 1)
 
+"""$(TYPEDSIGNATURES)"""
 CliffordOperator(op::AbstractSingleQubitOperator, n; kw...) = CliffordOperator(SingleQubitOperator(op), n; kw...)
+
+"""$(TYPEDSIGNATURES)"""
 function CliffordOperator(op::SingleQubitOperator, n; compact=false)
     if compact
         n==1 || throw(ArgumentError("Set `n=1` as a `SingleQubitOperator` being compacted (`compact=true`) has to result in a 1×1 `CliffordOperator`."))
@@ -207,6 +220,7 @@ function CliffordOperator(op::SingleQubitOperator, n; compact=false)
     end
 end
 
+"""$(TYPEDSIGNATURES)"""
 CliffordOperator(::Type{O}) where {O<:AbstractSingleQubitOperator} = CliffordOperator(apply!(one(Destabilizer,1),O(1)))
 
 function Base.show(io::IO, op::AbstractSingleQubitOperator)
@@ -218,15 +232,21 @@ function Base.show(io::IO, op::AbstractSingleQubitOperator)
     end
 end
 
-"""Random symbolic single-qubit Clifford applied to qubit at index `qubit`.
+"""
+$(TYPEDSIGNATURES)
+
+Random symbolic single-qubit Clifford applied to qubit at index `qubit`.
 
 See also: [`SingleQubitOperator`](@ref), [`random_clifford`](@ref)
 """
 function random_clifford1(rng::AbstractRNG, qubit)
     return enumerate_single_qubit_gates(rand(rng,1:6),qubit=qubit,phases=(rand(rng,Bool),rand(rng,Bool)))
 end
+
+"""$(TYPEDSIGNATURES)"""
 random_clifford1(qubit) = random_clifford1(GLOBAL_RNG, qubit)
 
+"""$(TYPEDSIGNATURES)"""
 function LinearAlgebra.inv(op::SingleQubitOperator)
     c = LinearAlgebra.inv(CliffordOperator(SingleQubitOperator(op), 1, compact=true))
     return SingleQubitOperator(c, op.q)
@@ -315,6 +335,7 @@ Then we can use a truth-table to boolean formula converter, e.g. https://www.dco
 (by just writing the initial unsimplified formula as the OR of all true rows of the table)
 =#
 
+"""$(TYPEDSIGNATURES)"""
 function CliffordOperator(op::AbstractTwoQubitOperator, n; compact=false)
     if compact
         n==2 || throw(ArgumentError("Set `n=2` as a `TwoQubitOperator` being compacted (`compact=true`) has to result in a 2×2 `CliffordOperator`."))
@@ -335,8 +356,10 @@ function CliffordOperator(op::AbstractTwoQubitOperator, n; compact=false)
     end
 end
 
+"""$(TYPEDSIGNATURES)"""
 CliffordOperator(::Type{O}) where {O<:AbstractTwoQubitOperator} = CliffordOperator(apply!(one(Destabilizer,2),O(1,2)))
 
+"""$(TYPEDSIGNATURES)"""
 function Base.show(io::IO, op::AbstractTwoQubitOperator)
     if get(io, :compact, false) | haskey(io, :typeinfo)
         print(io, "$(string(typeof(op)))($(op.q1),$(op.q2))")
@@ -352,7 +375,10 @@ end
 # TODO is there a reason to keep these given that sZ/sX/sY exist?
 # TODO currently these are faster than sZ/sX/sY
 
-"""Apply a Pauli Z to the `i`-th qubit of state `s`. You should use `apply!(stab,sZ(i))` instead of this."""
+"""
+$(TYPEDSIGNATURES)
+
+Apply a Pauli Z to the `i`-th qubit of state `s`. You should use `apply!(stab,sZ(i))` instead of this."""
 function apply_single_z!(stab::AbstractStabilizer, i)
     s = tab(stab)
     Tₘₑ = eltype(s.xzs)
@@ -367,7 +393,10 @@ function apply_single_z!(stab::AbstractStabilizer, i)
     stab
 end
 
-"""Apply a Pauli X to the `i`-th qubit of state `s`. You should use `apply!(stab,sX(i))` instead of this."""
+"""
+$(TYPEDSIGNATURES)
+
+Apply a Pauli X to the `i`-th qubit of state `s`. You should use `apply!(stab,sX(i))` instead of this."""
 function apply_single_x!(stab::AbstractStabilizer, i)
     s = tab(stab)
     Tₘₑ = eltype(s.xzs)
@@ -382,7 +411,10 @@ function apply_single_x!(stab::AbstractStabilizer, i)
     stab
 end
 
-"""Apply a Pauli Y to the `i`-th qubit of state `s`. You should use `apply!(stab,sY(i))` instead of this."""
+"""
+$(TYPEDSIGNATURES)
+
+Apply a Pauli Y to the `i`-th qubit of state `s`. You should use `apply!(stab,sY(i))` instead of this."""
 function apply_single_y!(stab::AbstractStabilizer, i)
     s = tab(stab)
     Tₘₑ = eltype(s.xzs)
@@ -401,21 +433,30 @@ end
 # Measurements
 ##############################
 
-"""Symbolic single qubit X measurement. See also [`Register`](@ref), [`projectXrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref)"""
+"""
+$(TYPEDEF)
+
+Symbolic single qubit X measurement. See also [`Register`](@ref), [`projectXrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref)"""
 struct sMX <: AbstractMeasurement
     qubit::Int
     bit::Int
     sMX(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
-"""Symbolic single qubit Y measurement. See also [`Register`](@ref), [`projectYrand!`](@ref), [`sMX`](@ref), [`sMZ`](@ref)"""
+"""
+$(TYPEDEF)
+
+Symbolic single qubit Y measurement. See also [`Register`](@ref), [`projectYrand!`](@ref), [`sMX`](@ref), [`sMZ`](@ref)"""
 struct sMY <: AbstractMeasurement
     qubit::Int
     bit::Int
     sMY(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
-"""Symbolic single qubit Z measurement. See also [`Register`](@ref), [`projectZrand!`](@ref), [`sMX`](@ref), [`sMY`](@ref)"""
+"""
+$(TYPEDEF)
+
+Symbolic single qubit Z measurement. See also [`Register`](@ref), [`projectZrand!`](@ref), [`sMX`](@ref), [`sMY`](@ref)"""
 struct sMZ <: AbstractMeasurement
     qubit::Int
     bit::Int
@@ -429,18 +470,24 @@ sMX(i,::Nothing) = sMX(i,0)
 sMY(i,::Nothing) = sMY(i,0)
 sMZ(i,::Nothing) = sMZ(i,0)
 
+"""$(TYPEDSIGNATURES)"""
 function apply!(state::AbstractStabilizer, m::sMX)
     projectXrand!(state,m.qubit)
     state
 end
+
+"""$(TYPEDSIGNATURES)"""
 function apply!(state::AbstractStabilizer, m::sMY)
     projectYrand!(state,m.qubit)
     state
 end
+
+"""$(TYPEDSIGNATURES)"""
 function apply!(state::AbstractStabilizer, m::sMZ)
     projectZrand!(state,m.qubit)
     state
 end
+
 project!(state::AbstractStabilizer, m::sMX) = projectX!(state, m.qubit)
 project!(state::AbstractStabilizer, m::sMY) = projectY!(state, m.qubit)
 project!(state::AbstractStabilizer, m::sMZ) = projectZ!(state, m.qubit)
@@ -448,7 +495,10 @@ projectrand!(state::AbstractStabilizer, m::sMX) = projectXrand!(state, m.qubit)
 projectrand!(state::AbstractStabilizer, m::sMY) = projectYrand!(state, m.qubit)
 projectrand!(state::AbstractStabilizer, m::sMZ) = projectZrand!(state, m.qubit)
 
-"""Measure a qubit in the Z basis and reset to the |0⟩ state.
+"""
+$(TYPEDEF)
+
+Measure a qubit in the Z basis and reset to the |0⟩ state.
 
 !!! warning "It does not trace out the qubit!"
     As described below there is a difference between measuring the qubit (followed by setting it to a given known state)
@@ -519,7 +569,10 @@ struct sMRZ <: AbstractOperation
     sMRZ(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
-"""Measure a qubit in the X basis and reset to the |+⟩ state.
+"""
+$(TYPEDEF)
+
+Measure a qubit in the X basis and reset to the |+⟩ state.
 
 See also: [`sMRZ`](@ref), [`Reset`](@ref), [`sMZ`](@ref)"""
 struct sMRX <: AbstractOperation
@@ -528,7 +581,10 @@ struct sMRX <: AbstractOperation
     sMRX(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
-"""Measure a qubit in the Y basis and reset to the |i₊⟩ state.
+"""
+$(TYPEDEF)
+
+Measure a qubit in the Y basis and reset to the |i₊⟩ state.
 
 See also: [`sMRZ`](@ref), [`Reset`](@ref), [`sMZ`](@ref)"""
 struct sMRY <: AbstractOperation

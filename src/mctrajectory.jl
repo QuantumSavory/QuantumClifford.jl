@@ -1,4 +1,8 @@
-"""A convenience struct to represent the status of a circuit simulated by [`mctrajectories`](@ref)"""
+"""
+$(TYPEDEF)
+
+A convenience struct to represent the status of a circuit simulated by [`mctrajectories`](@ref).
+"""
 struct CircuitStatus
     status::Int
 end
@@ -8,7 +12,8 @@ const continue_stat = CircuitStatus(0)
 
 """Returned by [`applywstatus!`](@ref) if the circuit reports a success and there is no undetected error.
 
-See also: [`VerifyOp`](@ref), [`BellMeasurement`](@ref)."""
+See also: [`VerifyOp`](@ref), [`BellMeasurement`](@ref).
+"""
 const true_success_stat = CircuitStatus(1)
 
 """Returned by [`applywstatus!`](@ref) if the circuit reports a success, but it is a false positive (i.e., there was an undetected error).
@@ -32,12 +37,20 @@ function Base.show(io::IO, s::CircuitStatus)
     print(io, ":CircuitStatus($(s.status))")
 end
 
-"""Used for [`mctrajectories`](@ref)."""
+"""
+$(TYPEDSIGNATURES)
+
+Used for [`mctrajectories`](@ref).
+"""
 function applywstatus!(state, op)
     apply!(state,op), continue_stat
 end
 
-"""Run a single Monte Carlo sample, starting with (and modifying) `state` by applying the given `circuit`. Uses `apply!` under the hood."""
+"""
+$(TYPEDSIGNATURES)
+
+Run a single Monte Carlo sample, starting with (and modifying) `state` by applying the given `circuit`. Uses [`apply!`](@ref) under the hood.
+"""
 function mctrajectory!(state,circuit)
     for op in circuit
         state, cont = applywstatus!(state, op)
@@ -48,6 +61,7 @@ function mctrajectory!(state,circuit)
     return state, continue_stat
 end
 
+"""$(TYPEDSIGNATURES)"""
 function countmap(samples) # A simpler faster version of StatsBase.countmap that only works for CircuitStatus
     counts = zeros(length(registered_statuses))
     for s in samples
@@ -56,11 +70,16 @@ function countmap(samples) # A simpler faster version of StatsBase.countmap that
     Dict(CircuitStatus(i-1)=>counts[i] for i in eachindex(counts))
 end
 
-"""Run multiple Monte Carlo trajectories and report the aggregate final statuses of each.
+"""
+$(TYPEDSIGNATURES)
 
-See also: [`pftrajectories`](@ref), [`petrajectories`](@ref)"""
+Run multiple Monte Carlo trajectories and report the aggregate final statuses of each.
+
+See also: [`pftrajectories`](@ref), [`petrajectories`](@ref).
+"""
 mctrajectories(initialstate,circuit;trajectories=500,keepstates::Bool=false) = _mctrajectories(initialstate,circuit;trajectories,keepstates=Val(keepstates))
 
+"""$(TYPEDSIGNATURES)"""
 function _mctrajectories(initialstate,circuit;trajectories=500,keepstates::Val{B}=Val(false)) where {B}
     if B
         counter = DefaultDict{Tuple{typeof(initialstate),CircuitStatus},Int}

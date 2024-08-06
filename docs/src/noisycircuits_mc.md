@@ -6,6 +6,7 @@ DocTestSetup = quote
     using QuantumClifford.Experimental.NoisyCircuits
     using Quantikz
 end
+CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
 
 !!! warning "Unstable"
@@ -43,6 +44,31 @@ And we can run a Monte Carlo simulation of that circuit with [`mctrajectories`](
 
 ```@example 1
 mctrajectories(initial_state, circuit, trajectories=500)
+```
+... and without purification
+
+```@example 1
+mctrajectories(initial_state, [n, v], trajectories=500)
+```
+
+... and without noise
+
+```@example 1
+mctrajectories(initial_state, [g1,g2,m,v], trajectories=500)
+```
+
+... and use of [`Register`](@ref) and [`SparseGate`](@gate) for Monte Carlo simulation of that circuit with [`mctrajectories`](@ref).
+
+```@example 2
+g1 = SparseGate(tCNOT, [1,3])
+g2 = SparseGate(tCNOT, [2,4])
+m = BellMeasurement([sMX(3),sMX(4)])
+good_bell_state = ghz(2)
+canonicalize_rref!(good_bell_state)
+v = VerifyOp(good_bell_state,[1,2])
+n = NoiseOpAll(UnbiasedUncorrelatedNoise(0.03))
+init = Register(MixedDestabilizer(good_bell_state⊗good_bell_state))
+with_purification = mctrajectories(init, [n,g1,g2,m,v], trajectories=500)
 ```
 
 For more examples, see the [notebook comparing the Monte Carlo and Perturbative method](https://nbviewer.jupyter.org/github/QuantumSavory/QuantumClifford.jl/blob/master/docs/src/notebooks/Perturbative_Expansions_vs_Monte_Carlo_Simulations.ipynb) or this tutorial on [entanglement purification for many examples](https://github.com/QuantumSavory/QuantumClifford.jl/blob/master/docs/src/notebooks/Noisy_Circuits_Tutorial_with_Purification_Circuits.ipynb).

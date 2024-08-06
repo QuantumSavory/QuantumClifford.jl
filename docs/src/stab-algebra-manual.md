@@ -3,7 +3,8 @@
 ```@meta
 DocTestSetup = quote
     using QuantumClifford
-    using Random
+    using Quantikz
+    using StableRNGs
 end
 ```
 
@@ -692,221 +693,70 @@ which expands upon the algorithms available for each structure.
 
 # Random States and Circuits
 
-[`random_clifford`](@ref), [`random_stabilizer`](@ref), [`random_destabilizer`](@ref), and [`enumerate_cliffords`](@ref) can be used for the generation of random states.
+[`random_clifford`](@ref), [`random_stabilizer`](@ref), [`random_destabilizer`](@ref), [`random_pauli`](@ref) 
+and [`enumerate_cliffords`](@ref) can be used for the generation of random states.
 
 ```jldoctest
-julia> Random.seed!(1234);
+julia> rng = StableRNG(42); # hide
 
-julia> random_clifford(2)
-X₁ ⟼ - _Y
-X₂ ⟼ - YY
-Z₁ ⟼ - XX
-Z₂ ⟼ + X_
+julia> random_clifford(rng, 2)
+X₁ ⟼ - _X
+X₂ ⟼ + XX
+Z₁ ⟼ + ZZ
+Z₂ ⟼ - Z_
 
-julia> random_stabilizer(2)
+julia> random_stabilizer(rng, 2)
+- YX
++ XY
+
+julia> random_destabilizer(rng, 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ XY
++ YX
+𝒮𝓉𝒶𝒷
++ ZY
 + _Y
-- YY
 
-julia> random_destabilizer(2)
-𝒟ℯ𝓈𝓉𝒶𝒷
-- XY
-- X_
-𝒮𝓉𝒶𝒷
-- _Z
-- YZ
+julia> random_pauli(rng, 4)
++ X_X_
 
-julia> n = 7; i = 62345;
+julia> random_pauli(rng, 4; nophase=false)
++ ZXYX
 
-julia> enumerate_cliffords(n, i)
-X₁ ⟼ + ZZYX_ZZ
-X₂ ⟼ + X_____X
-X₃ ⟼ + _____Z_
-X₄ ⟼ + ____Z__
-X₅ ⟼ + ___Z__X
-X₆ ⟼ + __Z___X
-X₇ ⟼ + _Z_____
-Z₁ ⟼ + ZZYX_ZY
-Z₂ ⟼ + Z______
-Z₃ ⟼ + _____XX
-Z₄ ⟼ + ____X__
-Z₅ ⟼ + ___X___
-Z₆ ⟼ + __X___X
-Z₇ ⟼ + _X____X
+julia> enumerate_cliffords(2, clifford_cardinality(2))
+X₁ ⟼ + YY
+X₂ ⟼ + XZ
+Z₁ ⟼ + YX
+Z₂ ⟼ + Y_
 
-julia> enumerate_cliffords(n, i, onlycoset=true)
-X₁ ⟼ + ZZYX_ZZ
-X₂ ⟼ + X_____X
-X₃ ⟼ + _X____X
-X₄ ⟼ + __X___X
-X₅ ⟼ + ___X___
-X₆ ⟼ + ____X__
-X₇ ⟼ + _____XX
-Z₁ ⟼ + ZZYX_ZY
-Z₂ ⟼ + Z______
-Z₃ ⟼ + _Z_____
-Z₄ ⟼ + __Z___X
-Z₅ ⟼ + ___Z__X
-Z₆ ⟼ + ____Z__
-Z₇ ⟼ + _____Z_
+julia> enumerate_cliffords(2, clifford_cardinality(2), onlycoset=true)
+X₁ ⟼ + YY
+X₂ ⟼ + ZZ
+Z₁ ⟼ + YX
+Z₂ ⟼ + Y_
 ```
 
-# Classical Register
+Random circuits can be built using [`random_brickwork_clifford_circuit`](@ref) and [`random_all_to_all_clifford_circuit`](@ref).
 
-A [`Register`](@ref) encapsulates the state of a computer and includes both a tableaux and an array of classical bits, which can be used, for example, to store measurement outcomes. A [`MixedDestabilizer`](@ref) can be stored within the [`Register`](@ref), along with a set of classical bits for recording measurement results. The array of classical bits can be accessed through [`bitview`](@ref), while the tableaux can be examined using [`quantumstate`](@ref).
+The former features `brickwork` connectivity with each gate being a random `2-qubit` Clifford gate, 
+arranged in a lattice defined by `lattice_size`.
 
-```jldoctest register
-julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ YZ
-- XX
-𝒮𝓉𝒶𝒷
-+ X_
-+ _Z
-
-julia> reg = Register(s, [0,0])
-Register{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}(MixedDestablizer 2×2, Bool[0, 0])
-
-julia> quantumstate(reg)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ YZ
-- XX
-𝒮𝓉𝒶𝒷
-+ X_
-+ _Z
-
-julia> stabilizerview(reg)
-+ X_
-+ _Z
-
-julia> destabilizerview(reg)
-+ YZ
-- XX
-
-julia> bitview(reg)
-2-element Vector{Bool}:
- 0
- 0
+```@example 1
+using QuantumClifford # hide
+using QuantumClifford.Experimental.NoisyCircuits # hide
+using Quantikz # hide
+using StableRNGs # hide
+rng = StableRNG(42); # hide
+# lattice size =(2, 2), layers = 2
+random_brickwork_clifford_circuit(rng, (2, 2), 2) 
 ```
 
-Analyzing the tableaux of the [`Register`](@ref) more closely as follows
+The latter comprises `nqubits` qubits and `ngates` gates, with each gate being a random `2-qubit` Clifford 
+gate on randomly chosen qubits.
 
-```jldoctest register
-julia> tab(reg).phases
-4-element Vector{UInt8}:
- 0x00
- 0x02
- 0x00
- 0x00
-
-julia> tab(stabilizerview(reg)).xzs
-2×2 view(::Matrix{UInt64}, :, 3:4) with eltype UInt64:
- 0x0000000000000001  0x0000000000000000
- 0x0000000000000000  0x0000000000000002
-
-julia> tab(destabilizerview(reg)).xzs
-2×2 view(::Matrix{UInt64}, :, 1:2) with eltype UInt64:
- 0x0000000000000001  0x0000000000000003
- 0x0000000000000003  0x0000000000000000
+```@example 1
+# nqubits = 3, ngates = 3
+random_all_to_all_clifford_circuit(rng, 3, 3)
 ```
 
-Measurement results can be obtained using symbolic measurement operations such as [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref), which can be applied with [`apply!`](@ref). 
-
-```jldoctest
-julia> Random.seed!(1234);
-
-julia> s = MixedDestabilizer(T"XY -ZZ -XX -YZ", 2)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ XY
-- ZZ
-𝒮𝓉𝒶𝒷
-- XX
-- YZ
-
-julia> reg = Register(s, [0, 0]);
-
-julia> apply!(reg, sMX(1, 1));
-
-julia> quantumstate(reg)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ XY
-- YZ
-𝒮𝓉𝒶𝒷
-- XX
-- X_
-
-julia> apply!(reg, sMRX(2, 2));
-
-julia> quantumstate(reg)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ XY
-- YZ
-𝒮𝓉𝒶𝒷
-- XX
-- X_
-
-julia> apply!(reg, PauliMeasurement(P"YX",2));
-
-julia> quantumstate(reg)
-𝒟ℯ𝓈𝓉𝒶𝒷
-- XX
-- ZY
-𝒮𝓉𝒶𝒷
-+ YX
-+ _X
-
-julia> apply!(reg, NoiseOpAll(UnbiasedUncorrelatedNoise(0.2)));
-
-julia> quantumstate(reg)
-𝒟ℯ𝓈𝓉𝒶𝒷
-- XX
-- ZY
-𝒮𝓉𝒶𝒷
-+ YX
-+ _X
-```
-
-Projective measurements with automatic phase randomization, including [`projectY!`](@ref), [`projectZ!`](@ref) and [`projectrand!`](@ref) are available for the [`Register`](@ref) object.
-
-```jldoctest
-julia> Random.seed!(1234);
-
-julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ YZ
-- XX
-𝒮𝓉𝒶𝒷
-+ X_
-+ _Z
-
-julia> reg = Register(s, [0, 0]);
-
-julia> projectXrand!(reg, 2);
-
-julia> quantumstate(reg)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ Y_
-+ _Z
-𝒮𝓉𝒶𝒷
-+ X_
-- _X
-
-julia> projectYrand!(reg, 1);
-
-julia> quantumstate(reg)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ X_
-+ _Z
-𝒮𝓉𝒶𝒷
-+ Y_
-- _X
-
-julia> projectZrand!(reg, 2);
-
-julia> quantumstate(reg)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ X_
-- _X
-𝒮𝓉𝒶𝒷
-+ Y_
-- _Z
-```
+For more examples on random circuits, see the [notebook on Stabilizer Codes Based on Random Circuits](https://github.com/QuantumSavory/QuantumClifford.jl/blob/master/docs/src/notebooks/Stabilizer_Codes_Based_on_Random_Circuits.ipynb).

@@ -5,6 +5,7 @@ DocTestSetup = quote
     using QuantumClifford
     using Quantikz
 end
+CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
 
 !!! warning "The documentation is incomplete"
@@ -41,10 +42,32 @@ nframes = 4
 frames = pftrajectories(circuit; trajectories=nframes) # run the sims
 pfmeasurements(frames)                                 # extract the measurements
 ```
+... and the `sum(pftraj.measurements)` should be 0.
 
+```@example 1
+sum(frames.measurements)
+```
 The [`pftrajectories`](@ref) function is multithreaded.
 If you want more low-level control over these Pauli frame simulations, check out the [`PauliFrame`](@ref) structure,
 the other methods of [`pftrajectories`](@ref), and the circuit compactifaction function [`compactify_circuit`](@ref).
+
+
+```@example 1
+pfcircuit = eltype(circuit) <: QuantumClifford.CompactifiedGate ? circuit : compactify_circuit(circuit)
+frames = QuantumClifford._create_pauliframe(pfcircuit; trajectories=nframes)
+result = pftrajectories(pfcircuit)
+pfmeasurements(frames)
+```
+...and to view `frame`, use: 
+
+```@example 1
+result.frame
+```
+... and the `sum(pftraj.measurements)` should be 0.
+
+```@example 1
+sum(result.measurements)
+```
 
 If you want to model Pauli errors, use:
 

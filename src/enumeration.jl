@@ -7,19 +7,10 @@ const all_single_qubit_patterns = (
     (true, true, false, true)   # X, Z ↦ Y, Z - Phase
 )
 
-"""Generate a symbolic single-qubit gate given its index. Optionally, set non-trivial phases.
+"""
+$(TYPEDSIGNATURES)
 
-```jldoctest
-julia> enumerate_single_qubit_gates(6)
-sPhase on qubit 1
-X₁ ⟼ + Y
-Z₁ ⟼ + Z
-
-julia> enumerate_single_qubit_gates(6, qubit=2, phases=(true, true))
-SingleQubitOperator on qubit 2
-X₁ ⟼ - Y
-Z₁ ⟼ - Z
-```
+Generate a symbolic single-qubit gate given its index. Optionally, set non-trivial phases.
 
 See also: [`enumerate_cliffords`](@ref)."""
 function enumerate_single_qubit_gates(index; qubit=1, phases::Tuple{Bool,Bool}=(false,false))
@@ -49,21 +40,12 @@ function enumerate_single_qubit_gates(index; qubit=1, phases::Tuple{Bool,Bool}=(
     end
 end
 
-"""The size of the Clifford group `𝒞` over a given number of qubits, possibly modulo the phases.
+"""
+$(TYPEDSIGNATURES)
 
-For n qubits, not accounting for phases is `2ⁿⁿΠⱼ₌₁ⁿ(4ʲ-1)`. There are `4ⁿ` different phase configurations.
+The size of the Clifford group over a given number of qubits, possibly modulo the phases.
 
-```jldoctest
-julia> clifford_cardinality(7)
-457620995529680351512370381586432000
-```
-
-When not accounting for phases (`phases = false`) the result is the same as the size of the Symplectic group `Sp(2n) ≡ 𝒞ₙ/𝒫ₙ`, where `𝒫ₙ` is the Pauli group over `n` qubits.
-
-```jldoctest
-julia> clifford_cardinality(7, phases=false)
-27930968965434591767112450048000
-```
+For n qubits, not accounting for phases is 2ⁿⁿΠⱼ₌₁ⁿ(4ʲ-1). There are 4ⁿ different phase configurations.
 
 See also: [`enumerate_cliffords`](@ref).
 """
@@ -103,23 +85,12 @@ end
     end
 end
 
-"""Perform the Symplectic Gram-Schmidt procedure that gives a Clifford operator canonically related to a given Pauli operator.
+"""
+$(TYPEDSIGNATURES)
+
+Perform the Symplectic Gram-Schmidt procedure that gives a Clifford operator canonically related to a given Pauli operator.
 
 The algorithm is detailed in [koenig2014efficiently](@cite).
-
-```jldoctest
-julia> symplecticGS(P"X", padded_n=3)
-X₁ ⟼ + X__
-X₂ ⟼ + _X_
-X₃ ⟼ + __X
-Z₁ ⟼ + Z__
-Z₂ ⟼ + _Z_
-Z₃ ⟼ + __Z
-
-julia> symplecticGS(P"Z")
-X₁ ⟼ + Z
-Z₁ ⟼ + X
-```
 
 See also: [`enumerate_cliffords`](@ref), [`clifford_cardinality`](@ref)."""
 function symplecticGS(pauli::PauliOperator; padded_n=nqubits(pauli))
@@ -153,7 +124,10 @@ end
     Bool[i>>d&0x1 for d in 0:n-1]
 end
 
-"""Give the i-th n-qubit Clifford operation, where i∈{1..2ⁿⁿΠⱼ₌₁ⁿ(4ʲ-1)}
+"""
+$(TYPEDSIGNATURES)
+
+Give the i-th n-qubit Clifford operation, where i∈{1..2ⁿⁿΠⱼ₌₁ⁿ(4ʲ-1)}
 
 The algorithm is detailed in [koenig2014efficiently](@cite).
 
@@ -162,7 +136,10 @@ function enumerate_cliffords(n,i;padded_n=n,onlycoset=false)
     enumerate_cliffords_slow(n,i;padded_n,onlycoset)
 end
 
-"""The O(n^4) implementation from [koenig2014efficiently](@cite) -- their algorithm seems wrong as ⟨w'₁|wₗ⟩=bₗ which is not always zero."""
+"""
+$(TYPEDSIGNATURES)
+
+The O(n^4) implementation from [koenig2014efficiently](@cite) -- their algorithm seems wrong as ⟨w'₁|wₗ⟩=bₗ which is not always zero."""
 function enumerate_cliffords_slow(n,i;padded_n=n,onlycoset=false) # TODO implement the faster n^3 algorithm
     @assert n<32 # Assuming 64 bit system
     s = 2^(2n)-1
@@ -192,7 +169,10 @@ function enumerate_cliffords_slow(n,i;padded_n=n,onlycoset=false) # TODO impleme
     end
 end
 
-"""Give all n-qubit Clifford operations.
+"""
+$(TYPEDSIGNATURES)
+
+Give all n-qubit Clifford operations.
 
 The algorithm is detailed in [koenig2014efficiently](@cite).
 
@@ -211,7 +191,10 @@ end
     op
 end
 
-"""Given an operator, return all operators that have the same tableau but different phases.
+"""
+$(TYPEDSIGNATURES)
+
+Given an operator, return all operators that have the same tableau but different phases.
 
 ```jldoctest
 julia> length(collect(enumerate_phases(tCNOT)))
@@ -224,7 +207,10 @@ function enumerate_phases(op::CliffordOperator)
     (_change_phases!(copy(op), int_to_bits(2n,i)) for i in 0:2^(2n)-1)
 end
 
-"""Given a set of operators, return all operators that have the same tableaux but different phases.
+"""
+$(TYPEDSIGNATURES)
+
+Given a set of operators, return all operators that have the same tableaux but different phases.
 
 ```jldoctest
 julia> length(collect(enumerate_phases(enumerate_cliffords(2))))

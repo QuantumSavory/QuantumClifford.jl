@@ -5,6 +5,7 @@ abstract type AbstractNoiseOp <: AbstractOperation end
 """A method modifying a given state by applying the corresponding noise model. It is non-deterministic, part of the Noise interface."""
 function applynoise! end
 
+"""$(TYPEDSIGNATURES)"""
 function applynoise!(state, noise, indices::Base.AbstractVecOrTuple)
     @inbounds @simd for i in indices
         @inline applynoise!(state, noise, i)
@@ -13,27 +14,40 @@ function applynoise!(state, noise, indices::Base.AbstractVecOrTuple)
 end
 
 # Implementations for Register
+"""$(TYPEDSIGNATURES)"""
 function applynoise!(r::Register, n, i::Int)
     apply!(quantumstate(r), n, i)
     return r
 end
+
+"""$(TYPEDSIGNATURES)"""
 function applynoise!(r::Register, n, indices::Base.AbstractVecOrTuple)
     apply!(quantumstate(r), n, indices)
     return r
 end
 
-"""Depolarization noise model with total probability of error `p`."""
+"""
+$(TYPEDEF)
+
+Depolarization noise model with total probability of error `p`.
+"""
 struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
     p::T
 end
 UnbiasedUncorrelatedNoise(p::Integer) = UnbiasedUncorrelatedNoise(float(p))
 
-"""Pauli noise model with probabilities `px`, `py`, and `pz` respectively for the three types of Pauli errors."""
+"""
+$(TYPEDEF)
+
+Pauli noise model with probabilities `px`, `py`, and `pz` respectively for the three types of Pauli errors.
+"""
 struct PauliNoise{T} <: AbstractNoise
     px::T
     py::T
     pz::T
 end
+
+"""$(TYPEDSIGNATURES)"""
 function PauliNoise(px::Real, py::Real, pz::Real)
     px, py, pz = float.((px, py, pz))
     px, py, pz = promote(px, py, pz)
@@ -50,6 +64,7 @@ function PauliNoise(p)
     UnbiasedUncorrelatedNoise(p)
 end
 
+"""$(TYPEDSIGNATURES)"""
 function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,i::Int)
     infid = noise.p/3
     r = rand()
@@ -63,6 +78,7 @@ function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,i::I
     s
 end
 
+"""$(TYPEDSIGNATURES)"""
 function applynoise!(s::AbstractStabilizer,noise::PauliNoise,i::Int)
     r = rand()
     if r<noise.px
@@ -75,12 +91,17 @@ function applynoise!(s::AbstractStabilizer,noise::PauliNoise,i::Int)
     s
 end
 
-"""An operator that applies the given `noise` model to the qubits at the selected `indices`."""
+"""
+$(TYPEDEF)
+
+An operator that applies the given `noise` model to the qubits at the selected `indices`.
+"""
 struct NoiseOp{N, Q} <: AbstractNoiseOp where {N, Q}
     noise::N #<:AbstractNoise
     indices::NTuple{Q, Int}
 end
 
+"""$(TYPEDSIGNATURES)"""
 NoiseOp(noise, indices::AbstractVector{Int}) = NoiseOp(noise, tuple(indices...))
 
 """A convenient constructor for various types of Pauli errors,
@@ -88,43 +109,68 @@ that can be used as circuit gates in simulations.
 Returns more specific types when necessary."""
 function PauliError end
 
-""""Construct a gate operation that applies an unbiased Pauli error on qubit `q` with probability `p`."""
+"""
+$(TYPEDSIGNATURES)
+
+Construct a gate operation that applies an unbiased Pauli error on qubit `q` with probability `p`.
+"""
 function PauliError(q::Int,p)
     NoiseOp(PauliNoise(p), [q])
 end
 
-""""Construct a gate operation that applies an unbiased Pauli error on all `qubits`, each with independent probability `p`."""
+"""
+$(TYPEDSIGNATURES)
+
+Construct a gate operation that applies an unbiased Pauli error on all `qubits`, each with independent probability `p`.
+"""
 function PauliError(qubits,p)
     NoiseOp(PauliNoise(p), qubits)
 end
 
-""""Construct a gate operation that applies a biased Pauli error on  qubit `q` with independent probabilities `px`, `py`, `pz`.
+"""
+$(TYPEDSIGNATURES)
+
+Construct a gate operation that applies a biased Pauli error on  qubit `q` with independent probabilities `px`, `py`, `pz`.
 Note that the probability of any error occurring is `px+py+pz`. Because of this, `PauliError(1, p)` is equivalent to `PauliError(1,p/3,p/3,p/3)`.
 Similarly, if one wanted to exclude Z errors from `PauliError(1,p/3,p/3,p/3)` while mainting the same rate of X errors, one could write
-`PauliError(1, p*2/3, 0, 0)` (in the sense that Y errors can be interpreted as an X and a Z happening at the same time)."""
+`PauliError(1, p*2/3, 0, 0)` (in the sense that Y errors can be interpreted as an X and a Z happening at the same time).
+"""
 function PauliError(q::Int, px, py, pz)
     NoiseOp(PauliNoise(px,py,pz), (q,))
 end
 
-""""Construct a gate operation that applies a biased Pauli error on all `qubits` independently, each with  probabilities `px`, `py`, `pz`.
+"""
+$(TYPEDSIGNATURES)
+
+Construct a gate operation that applies a biased Pauli error on all `qubits` independently, each with  probabilities `px`, `py`, `pz`.
 Note that the probability of any error occurring is `px+py+pz`. Because of this, `PauliError(1, p)` is equivalent to `PauliError(1,p/3,p/3,p/3)`.
 Similarly, if one wanted to exclude Z errors from `PauliError(1,p/3,p/3,p/3)` while mainting the same rate of X errors, one could write
-`PauliError(1, p*2/3, 0, 0)` (in the sense that Y errors can be interpreted as an X and a Z happening at the same time)."""
+`PauliError(1, p*2/3, 0, 0)` (in the sense that Y errors can be interpreted as an X and a Z happening at the same time).
+"""
 function PauliError(qubits, px, py, pz)
     NoiseOp(PauliNoise(px,py,pz), qubits)
 end
 
-"""An operator that applies the given `noise` model to all qubits."""
+"""
+$(TYPEDEF)
+
+An operator that applies the given `noise` model to all qubits.
+"""
 struct NoiseOpAll <: AbstractNoiseOp
     noise::AbstractNoise
 end
 
-"""A gate consisting of the given `noise` applied after the given perfect Clifford `gate`."""
+"""
+$(TYPEDEF)
+
+A gate consisting of the given `noise` applied after the given perfect Clifford `gate`.
+"""
 struct NoisyGate <: AbstractNoiseOp
     gate::AbstractOperation
     noise::AbstractNoise
 end
 
+"""$(TYPEDSIGNATURES)"""
 function apply!(s::AbstractQCState, g::NoisyGate)
     s = applynoise!(
             apply!(s,g.gate),
@@ -133,25 +179,33 @@ function apply!(s::AbstractQCState, g::NoisyGate)
     return s
 end
 
+"""$(TYPEDSIGNATURES)"""
 function apply!(s::AbstractQCState, mr::NoiseOpAll)
     n = nqubits(s)
     return applynoise!(s, mr.noise, 1:n)
 end
 
+"""$(TYPEDSIGNATURES)"""
 function apply!(s::AbstractQCState, mr::NoiseOp)
     return applynoise!(s, mr.noise, affectedqubits(mr))
 end
 
 # XXX necessary to resolve ambiguity between apply!(s::AbstractQCState, mr::Noise) and apply!(r::Register, op)
 # TODO resolve them in a neater fashion with less repetition
+
+"""$(TYPEDSIGNATURES)"""
 function apply!(r::Register, n::NoisyGate)
     apply!(quantumstate(r), n)
     return r
 end
+
+"""$(TYPEDSIGNATURES)"""
 function apply!(r::Register, n::NoiseOpAll)
     apply!(quantumstate(r), n)
     return r
 end
+
+"""$(TYPEDSIGNATURES)"""
 function apply!(r::Register, n::NoiseOp)
     apply!(quantumstate(r), n)
     return r
@@ -161,6 +215,7 @@ end
 # petrajectories
 ##
 
+"""$(TYPEDSIGNATURES)"""
 function applynoise_branches(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,indices; max_order=1)
     n = nqubits(s)
     l = length(indices)
@@ -198,15 +253,18 @@ end
     end
 end
 
+"""$(TYPEDSIGNATURES)"""
 function applybranches(s::AbstractQCState, nop::NoiseOpAll; max_order=1)
     n = nqubits(s)
     return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, 1:n, max_order=max_order)]
 end
 
+"""$(TYPEDSIGNATURES)"""
 function applybranches(s::AbstractQCState, nop::NoiseOp; max_order=1)
     return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(s, nop.noise, affectedqubits(nop), max_order=max_order)]
 end
 
+"""$(TYPEDSIGNATURES)"""
 function applybranches(s::AbstractQCState, g::NoisyGate; max_order=1)
     news, _,_,_ = applybranches(s,g.gate,max_order=max_order)[1] # TODO this assumes only one always successful branch for the gate
     return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
