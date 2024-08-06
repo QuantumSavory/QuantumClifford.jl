@@ -57,7 +57,7 @@ mctrajectories(initial_state, [n, v], trajectories=500)
 mctrajectories(initial_state, [g1,g2,m,v], trajectories=500)
 ```
 
-We can use [`Register`](@ref) and [`SparseGate`](@gate) for Monte Carlo simulation on the above circuit with [`mctrajectories`](@ref).
+We can use [`Register`](@ref) and `SparseGate` for Monte Carlo simulation on the above circuit with [`mctrajectories`](@ref).
 
 ```@example 2
 using QuantumClifford # hide

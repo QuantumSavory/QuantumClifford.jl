@@ -120,10 +120,10 @@ end
 apply!(r::Register, m::sMZ) = apply!(GLOBAL_RNG, r, m)
 
 """$(TYPEDSIGNATURES)"""
-function apply!(rng::AbstractRNG, r::Register, m::sMRX) # TODO sMRY
+function apply!(r::Register, m::sMRX) # TODO sMRY
     _, anticom, res = projectX!(quantumstate(r),m.qubit)
     mres = if isnothing(res)
-        mres = rand(rng, (0x0, 0x2))
+        mres = rand((0x0, 0x2))
         phases(stabilizerview(r))[anticom] = mres
         mres
     else
@@ -137,13 +137,10 @@ function apply!(rng::AbstractRNG, r::Register, m::sMRX) # TODO sMRY
 end
 
 """$(TYPEDSIGNATURES)"""
-apply!(r::Register, m::sMRX) = apply!(GLOBAL_RNG, r, m)
-
-"""$(TYPEDSIGNATURES)"""
-function apply!(rng::AbstractRNG, r::Register, m::sMRZ) # TODO sMRY
+function apply!(r::Register, m::sMRZ) # TODO sMRY
     _, anticom, res = projectZ!(quantumstate(r),m.qubit)
     mres = if isnothing(res)
-        mres = rand(rng, Bool)
+        mres = rand(Bool)
         phases(stabilizerview(r))[anticom] = 0x2*mres
         mres
     else
@@ -155,9 +152,6 @@ function apply!(rng::AbstractRNG, r::Register, m::sMRZ) # TODO sMRY
     end
     r
 end
-
-"""$(TYPEDSIGNATURES)"""
-apply!(r::Register, m::sMRZ) = apply!(GLOBAL_RNG, r, m)
 
 """$(TYPEDSIGNATURES)"""
 function apply!(r::Register, m::PauliMeasurement{A,B}) where {A,B}

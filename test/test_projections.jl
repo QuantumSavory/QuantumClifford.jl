@@ -374,15 +374,23 @@
         project!(t,c[2])
         @test mixed_destab_looks_good(t) # This used to fail because anticomlog==rank+1 leading to a repeated row permutation
     end
-    @testset "New RNG methods" begin
-        rng = StableRNG(42);
-        md = MixedDestabilizer(T"XY -ZZ -XX -YZ", 2)
-        reg = Register(md, [0, 0])
-        for i in 1:10
-            @test apply!(rng, reg, sMX(1, 1)) != md
-            @test apply!(rng, reg, sMRX(2, 2)) != md
-            @test QuantumClifford.dot(tab(stabilizerview(copy(md))).xzs, tab(stabilizerview(copy(apply!(rng, reg, sMX(1, 1))))).xzs) != 0
-            @test QuantumClifford.dot(tab(stabilizerview(copy(md))).xzs, tab(stabilizerview(copy(apply!(rng, reg, sMRX(2, 2))))).xzs) != 0
+    @testset "New StableRNG streams for sMX, sMY, sMZ, projectXrand!, projectYrand!, projectZrand!" begin
+        for i in rand(1:10)
+            rng = StableRNG(120)
+            md = MixedDestabilizer(T"XY -ZZ -XX -YZ", 2)
+            reg = Register(md, [0, 0])
+            stabmx = apply!(rng, copy(reg), sMX(1, 1))
+            @test quantumstate(stabmx) == MixedDestabilizer(T"XY -YZ -XX XI", 2)
+            stabmz = apply!(rng, copy(reg), sMZ(1, 1))
+            @test quantumstate(stabmz) == MixedDestabilizer(T"-XX -ZZ ZI ZY", 2)
+            stabmy = apply!(rng, copy(reg), sMY(1, 1))
+            @test quantumstate(stabmy) == MixedDestabilizer(T"-XX -YY -YI -YZ", 2)
+            px = projectXrand!(rng, copy(reg), 2)
+            @test quantumstate(px[1]) == MixedDestabilizer(T"ZX -YZ -XX -IX", 2)
+            pz = projectZrand!(rng, copy(reg), 2)
+            @test quantumstate(pz[1]) == MixedDestabilizer(T"-XX -ZZ IZ -YZ", 2)
+            py = projectYrand!(rng, copy(reg), 1)
+            @test quantumstate(py[1]) == MixedDestabilizer(T"-XX -YY -YI -YZ", 2)
         end
     end
 end

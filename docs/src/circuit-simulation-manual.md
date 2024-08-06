@@ -52,7 +52,7 @@ Measurement results can be obtained using symbolic measurement operations such a
 ```jldoctest
 julia> rng = StableRNG(42); # hide
 
-julia> s = MixedDestabilizer(T"XY -ZZ -XX -YZ", 2)
+julia> md = MixedDestabilizer(T"XY -ZZ -XX -YZ", 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + XY
 - ZZ
@@ -60,11 +60,11 @@ julia> s = MixedDestabilizer(T"XY -ZZ -XX -YZ", 2)
 - XX
 - YZ
 
-julia> reg = Register(s, [0, 0]);
+julia> reg = Register(md, [0, 0]);
 
-julia> apply!(rng, reg, sMX(1, 1));
+julia> stabmx = apply!(rng, copy(reg), sMX(1, 1));
 
-julia> quantumstate(reg)
+julia> quantumstate(stabmx)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + XY
 - YZ
@@ -72,15 +72,25 @@ julia> quantumstate(reg)
 - XX
 - X_
 
-julia> apply!(rng, reg, sMRX(2, 2));
+julia> stabmz = apply!(rng, copy(reg), sMZ(1, 1));
 
-julia> quantumstate(reg)
+julia> quantumstate(stabmz)
 𝒟ℯ𝓈𝓉𝒶𝒷
-+ XY
-- YZ
-𝒮𝓉𝒶𝒷
 - XX
-- X_
+- ZZ
+𝒮𝓉𝒶𝒷
++ Z_
++ ZY
+
+julia> stabmy = apply!(rng, copy(reg), sMY(1, 1));
+
+julia> quantumstate(stabmy)
+𝒟ℯ𝓈𝓉𝒶𝒷
+- XX
+- YY
+𝒮𝓉𝒶𝒷
++ Y_
+- YZ
 ```
 
 Projective measurements with automatic phase randomization, including [`projectY!`](@ref), [`projectZ!`](@ref) and [`projectrand!`](@ref) are available for the [`Register`](@ref) object.
@@ -98,9 +108,9 @@ julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
 
 julia> reg = Register(s, [0, 0]);
 
-julia> projectXrand!(rng, reg, 2);
+julia> px = projectXrand!(rng, copy(reg), 2);
 
-julia> quantumstate(reg)
+julia> quantumstate(px[1])
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Y_
 + _Z
@@ -108,24 +118,24 @@ julia> quantumstate(reg)
 + X_
 - _X
 
-julia> projectYrand!(rng,reg, 1);
+julia> py = projectYrand!(rng, copy(reg), 1);
 
-julia> quantumstate(reg)
+julia> quantumstate(py[1])
 𝒟ℯ𝓈𝓉𝒶𝒷
 + X_
+- _X
+𝒮𝓉𝒶𝒷
++ Y_
 + _Z
-𝒮𝓉𝒶𝒷
-+ Y_
-- _X
 
-julia> projectZrand!(rng, reg, 2);
+julia> pz = projectZrand!(rng, copy(reg), 2);
 
-julia> quantumstate(reg)
+julia> quantumstate(pz[1])
 𝒟ℯ𝓈𝓉𝒶𝒷
-+ X_
-- _X
++ YZ
+- XX
 𝒮𝓉𝒶𝒷
-+ Y_
++ X_
 + _Z
 ```
 
