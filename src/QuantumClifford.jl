@@ -48,6 +48,7 @@ export
     # Symbolic Clifford Ops
     AbstractSymbolicOperator, AbstractSingleQubitOperator, AbstractTwoQubitOperator,
     sHadamard, sPhase, sInvPhase, SingleQubitOperator, sId1, sX, sY, sZ,
+    sHadamardXY, sHadamardYZ, sSQRTX, sSQRTXDAG, sSQRTY, sSQRTYDAG, sCXYZ, sCZYX,
     sCNOT, sCPHASE, sSWAP,
     sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZCX, sZCY, sZCZ,
     sZCrY, sInvZCrY,
