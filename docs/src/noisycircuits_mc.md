@@ -62,7 +62,9 @@ We can use [`Register`](@ref) and [`SparseGate`](@gate) for Monte Carlo simulati
 ```@example 2
 using QuantumClifford # hide
 using QuantumClifford.Experimental.NoisyCircuits # hide
+using QuantumClifford: compactify_circuit, SparseGate, tCNOT # hide
 using Quantikz # hide
+
 g1 = SparseGate(tCNOT, [1,3])
 g2 = SparseGate(tCNOT, [2,4])
 m = BellMeasurement([sMX(3),sMX(4)])

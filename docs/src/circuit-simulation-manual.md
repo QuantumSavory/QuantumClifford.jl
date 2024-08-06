@@ -162,7 +162,7 @@ julia> sum(pframe.measurements)
 0
 ```
 
-Perturbative expansion with compactifying the same circuit used above with ['compactify_circuit'](@ref) and
+Perturbative expansion with compactifying the same circuit used above with `compactify_circuit` and
 `QuantumClifford._create_pauliframe` to create the [`PauliFrame`](@ref).
 
 ```jldoctest frame
