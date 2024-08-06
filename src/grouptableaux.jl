@@ -104,6 +104,45 @@ function logical_operator_canonicalize(t:: QuantumClifford.Tableau)
     return loc
 end
 
+function commutavise(t)
+    loc = QuantumClifford.logical_operator_canonicalize(t)
+    # println(loc)
+    index = -1
+    for i in range(1, stop=length(loc), step=2)
+        if i + 1 > length(loc) 
+            break
+        end
+        if comm(loc[i], loc[i+1]) == 0x01 
+            index = i # index to split loc into non-commuting pairs and commuting operators
+        end
+    end
+    # println(index)
+    commutative = zero(Stabilizer, length(t), nqubits(t)+convert(Int64, (index+1)/2))
+    for i in eachindex(loc)
+        dummy = commutative[i]
+        for j in eachindex(loc[i]) dummy[j] = loc[i][j] end
+        commutative[i] = dummy
+        
+    end
+    for i in range(1, stop=length(loc), step=2)
+        if (i <= index) 
+            dummy = commutative[i]
+            dummy[nqubits(t)+convert(Int64, (i+1)/2)] = (true, false) 
+            commutative[i] = dummy
+            dummy = commutative[i+1]
+            dummy[nqubits(t)+convert(Int64, (i+1)/2)] = (false, true) 
+            commutative[i+1] = dummy
+        end
+    end
+    to_delete = []
+    i = nqubits(t)+1
+    while i <=nqubits(t)+convert(Int64, (index+1)/2)
+        push!(to_delete, i)
+        i+=1
+    end
+    return commutative, to_delete
+end
+
 """
 Return the full Pauli group of a given length. Phases are ignored by default, 
 but can be included by setting `phases=true`.
