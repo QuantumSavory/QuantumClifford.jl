@@ -7,7 +7,7 @@ DocTestSetup = quote
 end
 ```
 
-The library consists of two main parts: Tools for working with the algebra of Stabilizer tableaux and tools specifically for efficient Circuit Simulation. This chapter discusses the latter "higher level" circuit simulation  tools.
+The library consists of two main parts: Tools for working with the algebra of Stabilizer tableaux and tools specifically for efficient Circuit Simulation. This chapter discusses the latter "higher level" circuit simulation tools.
 
 # Classical Register
 

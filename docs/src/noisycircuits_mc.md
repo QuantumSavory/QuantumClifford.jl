@@ -40,7 +40,7 @@ n = NoiseOpAll(UnbiasedUncorrelatedNoise(epsilon))
 circuit = [n,g1,g2,m,v]
 ```
 
-And we can run a Monte Carlo simulation of that circuit with [`mctrajectories`](@ref).
+And we can run a Monte Carlo simulation on the above circuit with [`mctrajectories`](@ref).
 
 ```@example 1
 mctrajectories(initial_state, circuit, trajectories=500)
@@ -57,9 +57,12 @@ mctrajectories(initial_state, [n, v], trajectories=500)
 mctrajectories(initial_state, [g1,g2,m,v], trajectories=500)
 ```
 
-... and use of [`Register`](@ref) and [`SparseGate`](@gate) for Monte Carlo simulation of that circuit with [`mctrajectories`](@ref).
+We can use [`Register`](@ref) and [`SparseGate`](@gate) for Monte Carlo simulation on the above circuit with [`mctrajectories`](@ref).
 
 ```@example 2
+using QuantumClifford # hide
+using QuantumClifford.Experimental.NoisyCircuits # hide
+using Quantikz # hide
 g1 = SparseGate(tCNOT, [1,3])
 g2 = SparseGate(tCNOT, [2,4])
 m = BellMeasurement([sMX(3),sMX(4)])
