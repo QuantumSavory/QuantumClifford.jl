@@ -88,6 +88,7 @@
             @test CliffordOperator(inv(sXCZ(n₁, n₂)), n₁) == inv(CliffordOperator(sCNOT(n₂, n₁), n₁))
             @test CliffordOperator(inv(sZCrY(n₁, n₂)), n₁) == inv(CliffordOperator(sZCrY(n₁, n₂), n₁))
             @test CliffordOperator(inv(sInvZCrY(n₁, n₂)), n₁) == inv(CliffordOperator(sInvZCrY(n₁, n₂), n₁))
+            @test CliffordOperator(inv(sCXSWAP(n₁, n₂)), n₁) == inv(CliffordOperator(sSWAPCXDAG(n₁, n₂), n₁))
         end
     end
 end

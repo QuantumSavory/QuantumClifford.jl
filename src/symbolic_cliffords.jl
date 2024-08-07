@@ -285,6 +285,13 @@ macro qubitop2(name, kernel)
 end
 #                 x1   z1      x2      z2
 @qubitop2 SWAP   (x2 , z2    , x1    , z1    , false)
+
+@qubitop2 SWAPCX    (x2   , z2⊻z1,  x2⊻x1, z1    , ~iszero((x1 & z1 & x2 & z2) | (~x1 & z1 & x2 & ~z2)))
+@qubitop2 SWAPCXDAG (x2⊻x1, z2   ,  x1   , z2⊻z1 , ~iszero((x1 & z1 & x2 & z2) | (x1 & ~z1 & ~x2 & z2)))
+
+@qubitop2 CZSWAP (x2   , z2⊻x1, x1  , x2⊻z1 , ~iszero((x1 & ~z1 & x2 & z2) | (x1 & z1 & x2 & ~z2)))
+@qubitop2 CXSWAP (x2⊻x1, z2   , x1  , z2⊻z1 , ~iszero((x1 & ~z1 & ~x2 & z2) | (x1 & z1 & x2 & z2)))
+
 @qubitop2 CNOT   (x1 , z1⊻z2 , x2⊻x1 , z2    , ~iszero( (x1 & z1 & x2 & z2)  | (x1 & z2 &~(z1|x2)) ))
 @qubitop2 CPHASE (x1 , z1⊻x2 , x2    , z2⊻x1 , ~iszero( (x1 & z1 & x2 &~z2)  | (x1 &~z1 & x2 & z2) ))
 
@@ -361,6 +368,10 @@ LinearAlgebra.inv(op::sYCY) = sYCY(op.q1, op.q2)
 LinearAlgebra.inv(op::sYCZ) = sYCZ(op.q1, op.q2)
 LinearAlgebra.inv(op::sZCrY) = sInvZCrY(op.q1, op.q2)
 LinearAlgebra.inv(op::sInvZCrY) = sZCrY(op.q1, op.q2)
+LinearAlgebra.inv(op::sSWAPCX) = sSWAPCXDAG(op.q1, op.q2)
+LinearAlgebra.inv(op::sSWAPCXDAG) = sSWAPCX(op.q1, op.q2)
+LinearAlgebra.inv(op::sCZSWAP) = sCZSWAP(op.q1, op.q2)
+LinearAlgebra.inv(op::sCXSWAP) = sSWAPCX(op.q1, op.q2)
 
 ##############################
 # Functions that perform direct application of common operators without needing an operator instance
