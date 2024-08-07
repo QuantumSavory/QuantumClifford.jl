@@ -3,7 +3,6 @@
 
     using Random
     using QuantumClifford
-    using QuantumClifford: groupify
 
     # Including sizes that would test off-by-one errors in the bit encoding.
     test_sizes = [1, 2, 3, 4, 5, 7, 8, 9, 15, 16, 17] 
