@@ -1,3 +1,6 @@
+
+import QuantumInterface: nsubsystems
+
 """
 $(TYPEDEF)
 
@@ -25,6 +28,10 @@ function apply!(state::AbstractStabilizer, m::PauliMeasurement)
     state
 end
 
+"""$(TYPEDSIGNATURES)"""
+function apply!(state::MixedDestabilizer, indices::Base.AbstractVecOrTuple, operation::Type{<:AbstractSymbolicOperator})
+    apply!(state, operation(indices...))
+end
 
 """
 $(TYPEDEF)
@@ -179,3 +186,5 @@ end
 
 """$(TYPEDSIGNATURES)"""
 ClassicalXOR(bits,store) = ClassicalXOR{length(bits)}(tuple(bits...),store)
+
+nsubsystems(state::MixedDestabilizer) = nqubits(state)
