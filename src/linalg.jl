@@ -38,10 +38,7 @@ function LinearAlgebra.inv(c::CliffordOperator; phases=true)
     end
 end
 
-"""
-$TYPEDSIGNATURES
-
-The inner product of two Stabilizers.
+"""The inner product of two Stabilizers.
 
 Based on [garcia2012efficient](@cite).
 
@@ -77,7 +74,6 @@ function logdot(s1::AbstractStabilizer, s2::AbstractStabilizer) # TODO verify ra
     logdot(stabilizerview(s1),stabilizerview(s2))
 end
 
-"""$TYPEDSIGNATURES"""
 function logdot(s1::Stabilizer, s2::Stabilizer)
     if nqubits(s1)!=length(s1) || nqubits(s2)!=length(s2) # TODO implement this
         throw(DomainError("Only pure (not mixed) states are supported when calculating inner product."))
@@ -115,10 +111,7 @@ trusted_rank(s::Destabilizer) = length(s)
 trusted_rank(s::MixedStabilizer) = LinearAlgebra.rank(s)
 trusted_rank(s::MixedDestabilizer) = LinearAlgebra.rank(s)
 
-"""
-$TYPEDSIGNATURES
-
-Tensor product between operators or tableaux. 
+"""Tensor product between operators or tableaux. 
 
 Tensor product between CiffordOperators:
 
@@ -168,15 +161,11 @@ julia> tensor(s, s)
 See also [`tensor_pow`](@ref)."""
 function tensor end
 
-"""$TYPEDSIGNATURES"""
 function tensor(ops::AbstractStabilizer...) # TODO optimize this by doing conversion to common type to enable preallocation
     foldl(⊗, ops[2:end], init=ops[1])
 end
 
-"""
-$TYPEDSIGNATURES
-
-Repeated tensor product of an operators or a tableau.
+"""Repeated tensor product of an operators or a tableau.
 
 For `CliffordOperator`:
 
@@ -228,7 +217,6 @@ function tensor_pow(op::Union{<:AbstractStabilizer,<:AbstractCliffordOperator},p
     end
 end
 
-"""$TYPEDSIGNATURES"""
 function tensor(ops::Stabilizer...)
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)
@@ -242,7 +230,6 @@ function tensor(ops::Stabilizer...)
     tab
 end
 
-"""$TYPEDSIGNATURES"""
 function tensor(ops::MixedDestabilizer...)
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)
@@ -262,10 +249,8 @@ function tensor(ops::MixedDestabilizer...)
     MixedDestabilizer(tab, rtot)
 end
 
-"""$TYPEDSIGNATURES"""
 tensor(ops::AbstractCliffordOperator...) = ⊗(CliffordOperator.(ops)...)
 
-"""$TYPEDSIGNATURES"""
 function tensor(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)

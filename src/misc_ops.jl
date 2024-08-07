@@ -1,99 +1,70 @@
-
 import QuantumInterface: nsubsystems
 
-"""
-$(TYPEDEF)
-
-A Stabilizer measurement on the entirety of the quantum register.
+"""A Stabilizer measurement on the entirety of the quantum register.
 
 `projectrand!(state, pauli)` and `apply!(state, PauliMeasurement(pauli))` give the same (possibly non-deterministic) result.
 Particularly useful when acting on [`Register`](@ref).
 
-See also: [`apply!`](@ref), [`projectrand!`](@ref).
-"""
+See also: [`apply!`](@ref), [`projectrand!`](@ref)."""
 struct PauliMeasurement{Tₚ<:AbstractArray{UInt8,0}, Tᵥ<:AbstractVector{<:Unsigned}} <: AbstractMeasurement
     pauli::PauliOperator{Tₚ,Tᵥ}
     bit::Int
 end
 
-"""$(TYPEDSIGNATURES)"""
 PauliMeasurement(pauli) = PauliMeasurement(pauli,0)
-
-"""$(TYPEDSIGNATURES)"""
 PauliMeasurement(pauli,::Nothing) = PauliMeasurement(pauli,0)
 
-"""$(TYPEDSIGNATURES)"""
 function apply!(state::AbstractStabilizer, m::PauliMeasurement)
     projectrand!(state,m.pauli)
     state
 end
 
-"""$(TYPEDSIGNATURES)"""
 function apply!(state::MixedDestabilizer, indices::Base.AbstractVecOrTuple, operation::Type{<:AbstractSymbolicOperator})
     apply!(state, operation(indices...))
 end
 
-"""
-$(TYPEDEF)
+"""A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`.
 
-A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`.
-
-`apply!(state, cliff, indices)` and `apply!(state, SparseGate(cliff, indices))` give the same result.
-"""
+`apply!(state, cliff, indices)` and `apply!(state, SparseGate(cliff, indices))` give the same result."""
 struct SparseGate{T<:Tableau} <: AbstractCliffordOperator # TODO simplify type parameters (remove nesting)
     cliff::CliffordOperator{T}
     indices::Vector{Int}
 end
 
-"""$(TYPEDSIGNATURES)"""
 SparseGate(c,t::Tuple) = SparseGate(c,collect(t))
 
-"""$(TYPEDSIGNATURES)"""
 function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
     apply!(state, g.cliff, g.indices; kwargs...)
 end
 
-"""$(TYPEDSIGNATURES)"""
 function LinearAlgebra.inv(g::SparseGate; phases=true)
   return SparseGate(inv(g.cliff;phases=phases), g.indices)
 end
 
-"""
-$(TYPEDEF)
-
-Reset the specified qubits to the given state.
+"""Reset the specified qubits to the given state.
 
 Be careful, this operation implies first tracing out the qubits, which can lead to mixed states
 if these qubits were entangled with the rest of the system.
 
-See also: [`sMRZ`](@ref).
-"""
+See also: [`sMRZ`](@ref)"""
 struct Reset{T<:Tableau} <: AbstractOperation # TODO simplify type parameters (remove nesting)
     resetto::Stabilizer{T}
     indices::Vector{Int}
 end
 
-"""$(TYPEDSIGNATURES)"""
 function apply!(state::AbstractStabilizer, reset::Reset)
     reset_qubits!(state, reset.resetto, reset.indices)
     return state
 end
 
-"""
-$(TYPEDEF)
-
-A Bell measurement performing the correlation measurement corresponding to the given `pauli` projections on the qubits at the selected indices.
-"""
+"""A Bell measurement performing the correlation measurement corresponding to the given `pauli` projections on the qubits at the selected indices."""
 struct BellMeasurement <: AbstractOperation
     measurements::Vector{Union{sMX,sMY,sMZ}}
     parity::Bool
 end
-
-"""$(TYPEDSIGNATURES)"""
 BellMeasurement(meas) = BellMeasurement(meas,false)
 
 # TODO this seems unnecessarily complicated
-"""$(TYPEDSIGNATURES)"""
 function applywstatus!(s::AbstractQCState, m::BellMeasurement)
     res = 0x00
     for meas in m.measurements
@@ -107,7 +78,6 @@ function applywstatus!(s::AbstractQCState, m::BellMeasurement)
     end
 end
 
-"""$(TYPEDSIGNATURES)"""
 function applybranches(s::AbstractQCState, m::BellMeasurement; max_order=1)
     n = nqubits(s)
     [(ns,iseven(r>>1 + m.parity) ? continue_stat : failure_stat, p,0)
@@ -142,11 +112,7 @@ function _applybranches_measurement(branches, measurements, n)
 end
 
 
-"""
-$(TYPEDEF)
-
-A "probe" to verify that the state of the qubits corresponds to a desired `good_state`, e.g. at the end of the execution of a circuit.
-"""
+"""A "probe" to verify that the state of the qubits corresponds to a desired `good_state`, e.g. at the end of the execution of a circuit."""
 struct VerifyOp <: AbstractOperation
     good_state::Stabilizer
     indices::AbstractVector{Int}
@@ -154,7 +120,6 @@ struct VerifyOp <: AbstractOperation
 end
 
 # TODO this one needs more testing
-"""$(TYPEDSIGNATURES)"""
 function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
     # TODO QuantumClifford should implement some submatrix comparison
     canonicalize_rref!(quantumstate(s),v.indices) # Document why rref is used
@@ -169,14 +134,9 @@ function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the oth
     return s, true_success_stat
 end
 
-"""$(TYPEDSIGNATURES)"""
 operatordeterminism(::Type{VerifyOp}) = DeterministicOperatorTrait()
 
-"""
-$(TYPEDEF)
-
-Applies an XOR gate to classical bits. Currently only implemented for functionality with pauli frames.
-"""
+"""Applies an XOR gate to classical bits. Currently only implemented for functionality with pauli frames."""
 struct ClassicalXOR{N} <: AbstractOperation
     "The indices of the classical bits to be xor-ed"
     bits::NTuple{N,Int}
@@ -184,7 +144,6 @@ struct ClassicalXOR{N} <: AbstractOperation
     store::Int
 end
 
-"""$(TYPEDSIGNATURES)"""
 ClassicalXOR(bits,store) = ClassicalXOR{length(bits)}(tuple(bits...),store)
 
 nsubsystems(state::MixedDestabilizer) = nqubits(state)

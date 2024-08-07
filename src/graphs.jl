@@ -1,9 +1,6 @@
 import Graphs
 
-"""
-$(TYPEDSIGNATURES)
-
-An in-place version of [`graphstate`](@ref)."""
+"""An in-place version of [`graphstate`](@ref)."""
 function graphstate!(stab::Stabilizer)
     n = nqubits(stab)
     stab, r, s, permx, permz = canonicalize_gott!(stab)
@@ -94,10 +91,7 @@ graphstate(s::AbstractStabilizer) = graphstate!(copy(stabilizerview(s)))
 
 Graphs.Graph(s::AbstractStabilizer) = graphstate(s)[1]
 
-"""
-$(TYPEDSIGNATURES)
-
-Convert a graph representing a stabilizer state to an explicit Stabilizer.
+"""Convert a graph representing a stabilizer state to an explicit Stabilizer.
 
 See also: [`graphstate`](@ref)"""
 function Stabilizer(g::Graphs.Graph)
@@ -111,10 +105,7 @@ function Stabilizer(g::Graphs.Graph)
     return s
 end
 
-"""
-$(TYPEDSIGNATURES)
-
-A helper function converting the gate indices from [`graphstate`](@ref) into a sequence of gates.
+"""A helper function converting the gate indices from [`graphstate`](@ref) into a sequence of gates.
 
 ```jldoctest
 julia> s = S" XXX
@@ -146,10 +137,7 @@ function graph_gatesequence(h_idx::Vector{Int}, ip_idx::Vector{Int}, z_idx::Vect
     ([sHadamard(i) for i in h_idx], [sInvPhase(i) for i in ip_idx], [sZ(i) for i in z_idx])
 end
 
-"""
-$(TYPEDSIGNATURES)
-
-A helper function converting the gate indices from [`graphstate`](@ref) into a Clifford operator.
+"""A helper function converting the gate indices from [`graphstate`](@ref) into a Clifford operator.
 
 ```jldoctest
 julia> s = S" XXX

@@ -56,20 +56,17 @@ function mul_ordered_lv!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val
 end
 =#
 
-"""$(TYPEDSIGNATURES)"""
 function mul_ordered!(r::SubArray{T,1,P,I1,L1}, l::SubArray{T,1,P,I2,L2}; phases::Val{B}=Val(true)) where {T<:Unsigned, B, I1, I2, L1, L2, P<:Adjoint}
     # This method exists because SIMD.jl does not play well with Adjoint
     # Delete it and try `QuantumClifford.mul_left!(fastcolumn(random_stabilizer(194)), 2, 1)` # works fine for 192
     _mul_ordered_nonvec!(r,l; phases=B)
 end
 
-"""$(TYPEDSIGNATURES)"""
 function mul_ordered!(r::SubArray{T,1,P,I2,L2}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B, I2, L2, P<:Adjoint}
     # This method exists because SIMD.jl does not play well with Adjoint
     _mul_ordered_nonvec!(r,l; phases=B)
 end
 
-"""$(TYPEDSIGNATURES)"""
 function mul_ordered!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B}
     if !B
         r .⊻= l
@@ -118,13 +115,11 @@ function mul_ordered!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}
     rcnt1, rcnt2
 end
 
-"""$(TYPEDSIGNATURES)"""
 function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}=Val(true))::UInt8 where {T<:Unsigned, B}
     rcnt1, rcnt2 = mul_ordered!(r, l; phases=phases)
     return UInt8((rcnt1 ⊻ (rcnt2<<1))&0x3)
 end
 
-"""$(TYPEDSIGNATURES)"""
 function mul_right!(l::AbstractVector{T}, r::AbstractVector{T}; phases::Val{B}=Val(true))::UInt8 where {T<:Unsigned, B}
     rcnt1, rcnt2 = mul_ordered!(l, r; phases=phases)
     return UInt8(((rcnt1 ⊻ (rcnt2<<1)) + rcnt1*2)&0x3) # TODO simplify

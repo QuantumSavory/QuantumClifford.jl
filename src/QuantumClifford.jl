@@ -263,8 +263,6 @@ abstract type AbstractQCState end # This could include classical bits
 abstract type AbstractStabilizer <: AbstractQCState end # This includes only qubits in stabilizer states
 
 """
-$(TYPEDEF)
-
 Stabilizer `𝒮`, i.e. a list of commuting multi-qubit Hermitian Pauli operators.
 
 Instances can be created with the `S` custom string macro or
@@ -312,7 +310,7 @@ julia> P"YYY" * s
 
 There are a number of ways to create a Stabilizer, including:
 
-- generate Stabilizers from a list of `PauliOperator`s.
+- generate Stabilizers from a list of Pauli operators
 
 ```jldoctest stabilizer
 julia> Stabilizer([P"XX", P"ZZ"])
@@ -353,7 +351,8 @@ canonilization, projection, etc. continue working in that case. To great extent
 this library uses the `Stabilizer` data structure simply as a tableau. This
 might be properly abstracted away in future versions.
 
-See also: [`PauliOperator`](@ref), [`canonicalize!`](@ref)"""
+See also: [`PauliOperator`](@ref), [`canonicalize!`](@ref)
+"""
 struct Stabilizer{T<:Tableau} <: AbstractStabilizer
     tab::T
 end
@@ -400,7 +399,6 @@ Base.zero(s::S) where {S<:Stabilizer} = zero(S, length(s), nqubits(s))
 # Helpers for subclasses of AbstractStabilizer that use Stabilizer as a tableau internally.
 ##############################
 
-"""$(TYPEDSIGNATURES)"""
 function Base.:(==)(l::T, r::S; phases=true) where {T<:AbstractStabilizer, S<:AbstractStabilizer}
     if phases
         return T==S && tab(l)==tab(r)
@@ -409,13 +407,9 @@ function Base.:(==)(l::T, r::S; phases=true) where {T<:AbstractStabilizer, S<:Ab
     end
 end
 
-"""$(TYPEDSIGNATURES)"""
 Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, hash(tab(s), h))
 
-"""
-$TYPEDSIGNATURES
-
-Extract the underlying tableau structure.
+"""Extract the underlying tableau structure.
 
 ```jldoctest
 julia> s = S"X"
@@ -440,7 +434,8 @@ julia> typeof(tab(tHadamard))
 QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}
 ```
 
-See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
+See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
+"""
 tab(s::Stabilizer{T}) where {T} = s.tab
 tab(s::AbstractStabilizer) = s.tab
 
@@ -449,7 +444,6 @@ tab(s::AbstractStabilizer) = s.tab
 ##############################
 
 """
-$(TYPEDEF)
 
 A destabilizer `𝒟` associated with a stabilizer `𝒮 = ⟨𝓈₁, 𝓈₂,…,𝓈ᵣ⟩` is a subgroup of Pauli 
 group `𝒫ₙ`​. For `𝒟` to be a valid destabilizer, it must have the same number of generators 
@@ -466,7 +460,6 @@ struct Destabilizer{T<:Tableau} <: AbstractStabilizer
     tab::T
 end
 
-"""$(TYPEDSIGNATURES)"""
 function Destabilizer(s::Stabilizer)
     row, col = size(s)
     row>col && error(DomainError("The input stabilizer has more rows than columns, making it inconsistent or overdetermined."))
@@ -484,17 +477,15 @@ Base.copy(d::Destabilizer) = Destabilizer(copy(tab(d)))
 ##############################
 
 """
-$(TYPEDEF)
-
 A slight improvement of the [`Stabilizer`](@ref) data structure that enables
 more naturally and completely the treatment of mixed states, in particular when
-the [`project!`](@ref) function is used."""
+the [`project!`](@ref) function is used.
+"""
 mutable struct MixedStabilizer{T<:Tableau} <: AbstractStabilizer
     tab::T # TODO assert size on construction
     rank::Int
 end
 
-"""$(TYPEDSIGNATURES)"""
 function MixedStabilizer(s::Stabilizer{T}) where {T}
     s, xr, zr = canonicalize!(s,ranks=true)
     spadded = zero(Stabilizer, nqubits(s))
@@ -502,7 +493,6 @@ function MixedStabilizer(s::Stabilizer{T}) where {T}
     MixedStabilizer(spadded,zr)
 end
 
-"""$(TYPEDSIGNATURES)"""
 MixedStabilizer(s::Stabilizer,rank::Int) = MixedStabilizer(tab(s),rank)
 
 Base.length(d::MixedStabilizer) = length(d.tab)
@@ -514,8 +504,6 @@ Base.copy(ms::MixedStabilizer) = MixedStabilizer(copy(ms.tab),ms.rank)
 ##############################
 
 """
-$(TYPEDEF)
-
 A tableau representation for mixed stabilizer states that keeps track of the
 destabilizers in order to provide efficient projection operations.
 
@@ -533,14 +521,14 @@ column permutation in the preparation of a `MixedDestabilizer` so that qubits ar
 The boolean keyword arguments `undoperm` and `reportperm` can be used to control this behavior
 and to report the permutations explicitly.
 
-See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
+See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
+"""
 mutable struct MixedDestabilizer{T<:Tableau} <: AbstractStabilizer
     tab::T # TODO assert size on construction
     rank::Int
 end
 
 # Added a lot of type assertions to help Julia infer types
-"""$(TYPEDSIGNATURES)"""
 function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false) where {T}
     rows,n = size(stab)
     stab, r, s, permx, permz = canonicalize_gott!(copy(stab))
@@ -587,7 +575,6 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false)
     end
 end
 
-"""$(TYPEDSIGNATURES)"""
 function MixedDestabilizer(d::Destabilizer, r::Int)
     l,n = size(d.tab)
     if l==2n
@@ -596,8 +583,6 @@ function MixedDestabilizer(d::Destabilizer, r::Int)
         throw(DomainError("Only full-rank `Destabilizer` can be converted to `MixedDestabilizer` with specific rank. Try not specifying `r`."))
     end
 end
-
-"""$(TYPEDSIGNATURES)"""
 function MixedDestabilizer(d::Destabilizer)
     l,n = size(d.tab)
     if l==2n
@@ -607,10 +592,7 @@ function MixedDestabilizer(d::Destabilizer)
     end
 end
 
-"""$(TYPEDSIGNATURES)"""
 MixedDestabilizer(d::MixedStabilizer) = MixedDestabilizer(stabilizerview(d))
-
-"""$(TYPEDSIGNATURES)"""
 MixedDestabilizer(d::MixedDestabilizer) = d
 
 Base.length(d::MixedDestabilizer) = length(d.tab)÷2
@@ -649,8 +631,6 @@ Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 ##############################
 
 """
-$TYPEDSIGNATURES
-
 Get the phase of the product of two Pauli operators.
 
 Phase is encoded as F(4) in the low qubits of an UInt8.
@@ -717,8 +697,6 @@ end
 @inline prodphase(l::Stabilizer,r::Stabilizer,i,j) = prodphase(tab(l),tab(r),i,j)
 
 """
-$TYPEDSIGNATURES
-
 Check whether two operators commute.
 
 `0x0` if they commute, `0x1` if they anticommute.
@@ -734,7 +712,8 @@ julia> comm(P"IZ", P"XX")
 0x01
 ```
 
-See also: [`comm!`](@ref)"""
+See also: [`comm!`](@ref)
+"""
 function comm end
 
 @inline function comm(l::AbstractVector{T}, r::AbstractVector{T})::UInt8 where T<:Unsigned
@@ -762,12 +741,10 @@ end
     comm((@view s.xzs[:,l]),(@view s.xzs[:,r]))
 end
 
-"""$(TYPEDSIGNATURES)"""
 function comm(l::PauliOperator, r::Tableau)::Vector{UInt8}
     [comm(l,r,i) for i in 1:size(r,1)]
 end
 
-"""$(TYPEDSIGNATURES)"""
 comm(l::Tableau, r::PauliOperator) = comm(r, l)
 
 @inline comm(l::PauliOperator, r::Stabilizer, i::Int) = comm(l, tab(r), i)
@@ -778,8 +755,6 @@ comm(l::Tableau, r::PauliOperator) = comm(r, l)
 
 """An in-place version of [`comm`](@ref), storing its output in the given buffer."""
 function comm! end
-
-"""$(TYPEDSIGNATURES)"""
 function comm!(v, l::PauliOperator, r::Tableau)
     length(v) == length(r) || throw(DimensionMismatch(lazy"The dimensions of the output buffer and the input tableau have to match in `comm!`"))
     nqubits(l) == nqubits(r) || throw(DimensionMismatch(lazy"The number of qubits of the input Pauli operator and the input tableau have to match in `comm!`"))
@@ -788,8 +763,6 @@ function comm!(v, l::PauliOperator, r::Tableau)
     end
     v
 end
-
-"""$(TYPEDSIGNATURES)"""
 comm!(v, l::Tableau, r::PauliOperator) = comm!(v, r, l)
 @inline comm!(v, l::PauliOperator, r::Stabilizer, i::Int) = comm!(v, l, tab(r), i)
 @inline comm!(v, l::Stabilizer, r::PauliOperator, i::Int) = comm!(v, tab(l), r, i)
@@ -797,13 +770,11 @@ comm!(v, l::Tableau, r::PauliOperator) = comm!(v, r, l)
 @inline comm!(v, l::Stabilizer, r::PauliOperator) = comm!(v, tab(l), r)
 @inline comm!(v, s::Stabilizer, l::Int, r::Int) = comm!(v, tab(s), l, r)
 
-"""$(TYPEDSIGNATURES)"""
+
 Base.:(*)(l::PauliOperator, r::PauliOperator) = mul_left!(copy(r),l)
 
-"""$(TYPEDSIGNATURES)"""
 (⊗)(l::PauliOperator, r::PauliOperator) = PauliOperator((l.phase[]+r.phase[])&0x3, vcat(xbit(l),xbit(r)), vcat(zbit(l),zbit(r)))
 
-"""$(TYPEDSIGNATURES)"""
 function Base.:(*)(l::Number, r::PauliOperator)
     p = copy(r)
     if l==1
@@ -820,10 +791,8 @@ function Base.:(*)(l::Number, r::PauliOperator)
     p
 end
 
-"""$(TYPEDSIGNATURES)"""
 Base.:(+)(p::PauliOperator) = p
 
-"""$(TYPEDSIGNATURES)"""
 function Base.:(-)(p::PauliOperator)
     p = copy(p)
     p.phase[] = (p.phase[]+2)&0x3
@@ -928,11 +897,7 @@ function unsafe_bitfindnext_(chunks::AbstractVector{T}, start::Int) where T<:Uns
     return nothing
 end
 
-"""
-$TYPEDSIGNATURES
-
-Permute the qubits (i.e., columns) of the tableau in place.
-"""
+"""Permute the qubits (i.e., columns) of the tableau in place."""
 function Base.permute!(s::Tableau, perm::AbstractVector)
     for r in 1:size(s,1)
         s[r] = s[r][perm] # TODO make a local temporary buffer row instead of constantly allocating new rows
@@ -940,17 +905,12 @@ function Base.permute!(s::Tableau, perm::AbstractVector)
     s
 end
 
-"""
-$TYPEDSIGNATURES
-
-Permute the qubits (i.e., columns) of the state in place.
-"""
+"""Permute the qubits (i.e., columns) of the state in place."""
 function Base.permute!(s::AbstractStabilizer, perm::AbstractVector)
     permute!(tab(s), perm)
     s
 end
 
-"""$(TYPEDSIGNATURES)"""
 function check_allrowscommute(stabilizer::Tableau)
     for i in eachindex(stabilizer)
         for j in eachindex(stabilizer)
@@ -960,11 +920,8 @@ function check_allrowscommute(stabilizer::Tableau)
     end
     return true
 end
-
-"""$(TYPEDSIGNATURES)"""
 check_allrowscommute(stabilizer::Stabilizer)=check_allrowscommute(tab(stabilizer))
 
-"""$(TYPEDSIGNATURES)"""
 function Base.vcat(tabs::Tableau...)
     Tableau(
         vcat((s.phases for s in tabs)...),
@@ -972,30 +929,24 @@ function Base.vcat(tabs::Tableau...)
         hcat((s.xzs for s in tabs)...))
 end
 
-"""$(TYPEDSIGNATURES)"""
 Base.vcat(stabs::Stabilizer...) = Stabilizer(vcat((tab(s) for s in stabs)...))
 
 ##############################
 # Unitary Clifford Operations
 ##############################
 
-"""In `QuantumClifford` the [`apply!`](@ref) function is used to apply any quantum operation to a stabilizer state,
+"""In `QuantumClifford` the `apply!` function is used to apply any quantum operation to a stabilizer state,
 including unitary Clifford operations, Pauli measurements, and noise.
 Thus, this function may result in a random/stochastic result (e.g. with measurements or noise)."""
 function apply! end
 
-"""$(TYPEDSIGNATURES)"""
 function Base.:(*)(p::AbstractCliffordOperator, s::AbstractStabilizer; phases::Bool=true)
     s = copy(s)
     @valbooldispatch _apply!(s,p; phases=Val(phases)) phases
 end
-
-"""$(TYPEDSIGNATURES)"""
 function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator; phases::Bool=true)
     @valbooldispatch _apply!(stab,op; phases=Val(phases)) phases
 end
-
-"""$(TYPEDSIGNATURES)"""
 function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices; phases::Bool=true)
     @valbooldispatch _apply!(stab,op,indices; phases=Val(phases)) phases
 end
@@ -1029,11 +980,7 @@ end
 # Helpers for binary codes
 ##############################
 
-"""
-$TYPEDSIGNATURES
-
-The F(2,2) matrix of a given tableau, represented as the concatenation of two binary matrices, one for X and one for Z.
-"""
+"""The F(2,2) matrix of a given tableau, represented as the concatenation of two binary matrices, one for X and one for Z."""
 function stab_to_gf2(s::Tableau)
     r, n = size(s)
     H = zeros(Bool,r,2n)
@@ -1044,8 +991,6 @@ function stab_to_gf2(s::Tableau)
     end
     H
 end
-
-"""$(TYPEDSIGNATURES)"""
 function stab_to_gf2(p::PauliOperator)
     n = nqubits(p)
     H = zeros(Bool,2n)
@@ -1054,15 +999,9 @@ function stab_to_gf2(p::PauliOperator)
     end
     H
 end
-
-"""$(TYPEDSIGNATURES)"""
 stab_to_gf2(s::Stabilizer) = stab_to_gf2(tab(s))
 
-"""
-$TYPEDSIGNATURES
-
-Gaussian elimination over the binary field.
-"""
+"""Gaussian elimination over the binary field."""
 function gf2_gausselim!(H)
     rows, cols = size(H)
     j = 1
@@ -1086,21 +1025,13 @@ function gf2_gausselim!(H)
 end
 
 # TODO check whether Nemo is faster in doing this and other gf2 methods.
-"""
-$TYPEDSIGNATURES
-
-Check whether a binary matrix is invertible.
-"""
+"""Check whether a binary matrix is invertible."""
 function gf2_isinvertible(H) # TODO can be smarter and exit earlier. And should check for squareness.
     ut = gf2_gausselim!(copy(H))
     all((ut[i, i] for i in 1:size(ut,1)))::Bool
 end
 
-"""
-$TYPEDSIGNATURES
-
-Invert a binary matrix.
-"""
+"""Invert a binary matrix."""
 function gf2_invert(H)
     id = zero(H)
     s = size(H,1)
@@ -1110,11 +1041,7 @@ function gf2_invert(H)
     M[:,s+1:end]
 end
 
-"""
-$TYPEDSIGNATURES
-
-The permutation of columns which turns a binary matrix into standard form. It is assumed the matrix has already undergone Gaussian elimination.
-"""
+"""The permutation of columns which turns a binary matrix into standard form. It is assumed the matrix has already undergone Gaussian elimination."""
 function gf2_H_standard_form_indices(H)
     rows, cols = size(H)
     goodindices = Int[]
@@ -1129,11 +1056,7 @@ function gf2_H_standard_form_indices(H)
     return vcat(goodindices, badindices, goodindices[end]+1:cols)
 end
 
-"""
-$TYPEDSIGNATURES
-
-For a given F(2,2) parity check matrix, return the generator matrix.
-"""
+"""For a given F(2,2) parity check matrix, return the generator matrix."""
 function gf2_H_to_G(H)
     # XXX it assumes that H is upper triangular (Gauss elimination, canonicalized, etc)
     # XXX careful, this is the binary code matrix - for the F(2,2) code you need to swap the x and z parts
@@ -1163,8 +1086,6 @@ end
 ##############################
 
 """
-$TYPEDSIGNATURES
-
 Check basic consistency requirements of a stabilizer. Used in tests.
 """
 function stab_looks_good(s)
@@ -1184,8 +1105,6 @@ function stab_looks_good(s)
 end
 
 """
-$TYPEDSIGNATURES
-
 Check basic consistency requirements of a mixed stabilizer. Used in tests.
 """
 function mixed_stab_looks_good(s)
@@ -1201,8 +1120,6 @@ function mixed_stab_looks_good(s)
 end
 
 """
-$TYPEDSIGNATURES
-
 Check basic consistency requirements of a destabilizer. Used in tests.
 """
 function destab_looks_good(destabilizer)
@@ -1221,8 +1138,6 @@ function destab_looks_good(destabilizer)
 end
 
 """
-$TYPEDSIGNATURES
-
 Check basic consistency requirements of a mixed destabilizer. Used in tests.
 """
 function mixed_destab_looks_good(destabilizer)

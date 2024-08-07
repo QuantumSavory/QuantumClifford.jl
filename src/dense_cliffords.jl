@@ -1,6 +1,4 @@
 """
-$TYPEDSIGNATURES
-
 Clifford Operator specified by the mapping of the basis generators.
 
 ```jldoctest
@@ -60,13 +58,8 @@ macro C_str(a)
     quote CliffordOperator($tab) end
 end
 
-"""$TYPEDSIGNATURES"""
 CliffordOperator(op::CliffordOperator) = op
-
-"""$TYPEDSIGNATURES"""
 CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Tableau(paulis))
-
-"""$TYPEDSIGNATURES"""
 CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
 
 Base.:(==)(l::CliffordOperator, r::CliffordOperator) = l.tab == r.tab
@@ -79,7 +72,6 @@ tab(c::CliffordOperator) = c.tab
 
 Base.size(c::CliffordOperator,args...) = size(tab(c),args...)
 
-"""$TYPEDSIGNATURES"""
 function row_limit(str, limit=50)
     n = length(str)
     if (n <= limit || limit==-1)
@@ -101,7 +93,6 @@ end
 Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.tab))
 Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Tableau, 2n, n))
 
-"""$TYPEDSIGNATURES"""
 function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
     tab = copy(r.tab)
     apply!(Stabilizer(tab),l) # TODO maybe not the most elegant way to perform apply!(::Tableau, gate)
@@ -118,11 +109,7 @@ function permute(c::CliffordOperator,p) # TODO this is a slow stupid implementat
     CliffordOperator(Tableau([c.tab[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
 end
 
-"""
-$TYPEDSIGNATURES
-
-Nonvectorized version of `apply!` used for unit tests.
-"""
+"""Nonvectorized version of `apply!` used for unit tests."""
 function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true)
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
     s_tab = tab(stab)

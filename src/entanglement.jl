@@ -1,5 +1,5 @@
 """
-$(TYPEDSIGNATURES)
+$TYPEDSIGNATURES
 
 Fix the clipped gauge of a stabilizer (in place).
 
@@ -130,7 +130,7 @@ end
 
 
 """
-$(TYPEDSIGNATURES)
+$TYPEDSIGNATURES
 
 Get the bigram of a tableau.
 
@@ -160,6 +160,8 @@ end
 
 
 """
+$TYPEDSIGNATURES
+
 Get bipartite entanglement entropy of a subsystem
 
 Defined as entropy of the reduced density matrix.
@@ -174,8 +176,6 @@ function entanglement_entropy end
 
 
 """
-$(TYPEDSIGNATURES)
-
 Get bipartite entanglement entropy of a contiguous subsystem by passing through the clipped gauge.
 
 If `clip=false` is set the canonicalization step is skipped, useful if the input state is already in the clipped gauge.
@@ -193,8 +193,6 @@ end
 
 
 """
-$(TYPEDSIGNATURES)
-
 Get bipartite entanglement entropy by first converting the state to a graph and computing the rank of the adjacency matrix.
 
 Based on "Entanglement in graph states and its applications".
@@ -209,8 +207,6 @@ end
 
 
 """
-$(TYPEDSIGNATURES)
-
 Get bipartite entanglement entropy by converting to RREF form (i.e., partial trace form).
 
 The state will be partially canonicalized in an RREF form.
@@ -231,5 +227,4 @@ function entanglement_entropy(state::AbstractStabilizer, subsystem::AbstractVect
     return nb_of_qubits - rank_after_deletion - nb_of_deletions
 end
 
-"""$(TYPEDSIGNATURES)"""
 entanglement_entropy(state::MixedDestabilizer, subsystem::AbstractVector, a::Val{:rref}) = entanglement_entropy(state, subsystem, a; pure=nqubits(state)==rank(state))
