@@ -330,6 +330,17 @@ julia> Stabilizer(a, b)
 julia> Stabilizer([0x0, 0x2], a, b)
 + XY
 - ZZ
+
+julia> Stabilizer(Bool[1 1 0 1;
+                       0 0 1 1])
++ XY
++ ZZ
+
+julia> Stabilizer([0x0, 0x2], 
+                   Bool[1 1 0 1;
+                        0 0 1 1])
++ XY
+- ZZ
 ```
 
 - initialize an empty Stabilizer and fill it through indexing
@@ -342,6 +353,67 @@ julia> s = zero(Stabilizer, 2)
 julia> s[1,1] = (true, false); s
 + X_
 + __
+```
+
+Stabilizer can be copied and assigned.
+
+```jldoctest stabilizer
+julia> s = S"-XXX
+             +ZZI
+             -IZZ";
+
+julia> s1 = copy(s)
+- XXX
++ ZZ_
+- _ZZ
+```
+
+`Length` and `size` of stabilizer can be determined.
+
+```jldoctest stabilizer
+julia> length(s)
+3
+
+julia> size(s)
+(3, 3)
+```
+
+Indexing operations on stabilizer via `setindex!` and `getindex`.
+
+```jldoctest stabilizer
+julia> s = S"-XYZ
+             -ZIX
+             +XIZ";
+
+julia> getindex(s, 1)
+- XYZ
+
+julia> getindex(s, 3, 1)
+(true, false)
+
+julia> setindex!(s, P"Z", 1)
++ Z__
+- Z_X
++ X_Z
+
+julia> setindex!(s, P"ZYX", 1)
++ ZYX
+- Z_X
++ X_Z
+
+julia> setindex!(s, (true, true), 1, 1)
++ YYX
+- Z_X
++ X_Z
+
+julia> firstindex(s)
+1
+
+julia> lastindex(s)
+3
+
+julia> lastindex(s, 2)
+3
 ```
 
 There are no automatic checks for correctness (i.e. independence of all rows,

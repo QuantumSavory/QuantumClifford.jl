@@ -9,6 +9,42 @@ states, [`Destabilizer`](@ref) should be the appropriate data structure. If
 mixed stabilizer states are involved, [`MixedStabilizer`](@ref) would be
 necessary.
 
+```@raw html
+<div class="mermaid">
+flowchart TB
+    A["<code>Tableau Data Structure Selection</code>"]
+    class A startEnd
+
+    A -->|<code>Are the states pure?</code>| B{ }
+    class A,B startEnd
+
+    B -->|<code>Yes</code>| C["<code>Stabilizer</code>"]
+    B -->|<code>No</code>| D{ }
+    class B decision
+
+    D -->|<code>Are the states mixed?</code>| E{ }
+    class D,E decision
+
+    C --> C_desc1["<code>Ensures pure stabilizer states</code>"]
+    C --> C_desc2["<code>Requires user to check for consistency</code>"]
+    C --> C_desc3["<code>Efficient project! operations</code>"]
+    class C_desc1,C_desc2,C_desc3 description
+
+    C --> G["<code>Destabilizer</code>"]
+    G --> G_desc1["<code>No stabilizer canonicalization needed</code>"]
+    class G_desc1 description
+
+    E -->|<code>Yes</code>| F["<code>MixedStabilizer</code>"]
+    F --> F_desc1["<code>Explicitly tracks rank of mixed states</code>"]
+    F --> F_desc2["<code>Project! on non-Stabilizer commuting operators</code>"]
+    class F_desc1,F_desc2 description
+
+    E -->|<code>No</code>| H["<code>MixedDestabilizer</code>"]
+    H --> H_desc1["<code>Tracks destabilizer and logical operators</code>"]
+    H --> H_desc2["<code>Efficient project! operations</code>"]
+</div>
+```
+
 [`Stabilizer`](@ref) is simply a list of Pauli operators in a tableau form. As a
 data structure it does not enforce the requirements for a pure stabilizer state
 (the rows of the tableau do not necessarily commute, nor are they forced to be
