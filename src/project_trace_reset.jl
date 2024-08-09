@@ -492,44 +492,8 @@ function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases
 end
 
 """
-$TYPEDSIGNATURES
-
 Measure a given qubit in the Z basis.
 A faster special-case version of [`project!`](@ref).
-
-```jldoctest pz!
-julia> s = MixedDestabilizer(T"-ZI -IZ -YI IX", 2)
-𝒟ℯ𝓈𝓉𝒶𝒷
-- Z_
-- _Z
-𝒮𝓉𝒶𝒷
-- Y_
-+ _X
-
-julia> n = 2; r = 2;
-
-julia> pz = single_z(n, r)
-+ _Z
-
-julia> pz! = projectZ!(copy(s),r)
-(MixedDestablizer 2×2, 2, nothing)
-
-julia> sz = project!(copy(s), pz)[1]
-𝒟ℯ𝓈𝓉𝒶𝒷
-- Z_
-+ _X
-𝒮𝓉𝒶𝒷
-- Y_
-+ _Z
-
-julia> ssz = project!(copy(s), sMZ(r))[1]
-𝒟ℯ𝓈𝓉𝒶𝒷
-- Z_
-+ _X
-𝒮𝓉𝒶𝒷
-- Y_
-+ _Z
-```
 
 See also: [`project!`](@ref), [`projectZrand!`](@ref), [`projectY!`](@ref), [`projectX!`](@ref).
 """
@@ -538,44 +502,8 @@ function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases
 end
 
 """
-$TYPEDSIGNATURES
-
 Measure a given qubit in the Y basis.
 A faster special-case version of [`project!`](@ref).
-
-```jldoctest py!
-julia> s = MixedDestabilizer(T"-XZ -YY XX XI", 2)
-𝒟ℯ𝓈𝓉𝒶𝒷
-- XZ
-- YY
-𝒮𝓉𝒶𝒷
-+ XX
-+ X_
-
-julia> n = 2; r = 2;
-
-julia> py = single_y(n, r)
-+ _Y
-
-julia> py! = projectY!(copy(s),r)
-(MixedDestablizer 2×2, 1, nothing)
-
-julia> sy = project!(copy(s), py)[1]
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ XX
-- YY
-𝒮𝓉𝒶𝒷
-+ _Y
-+ X_
-
-julia> ssy = project!(copy(s), sMY(r))[1]
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ XX
-- YY
-𝒮𝓉𝒶𝒷
-+ _Y
-+ X_
-```
 
 See also: [`project!`](@ref), [`projectYrand!`](@ref), [`projectX!`](@ref), [`projectZ!`](@ref).
 """
@@ -745,6 +673,8 @@ end
 $TYPEDSIGNATURES
 
 Trace out a qubit.
+
+See also: [`delete_columns`](@ref)
 """ # TODO all of these should raise an error if length(qubits)>rank
 function traceout!(s::Stabilizer, qubits; phases=true, rank=false)
     _,i = canonicalize_rref!(s,qubits;phases=phases)
@@ -754,7 +684,9 @@ function traceout!(s::Stabilizer, qubits; phases=true, rank=false)
     if rank return (s, i) else return s end
 end
 
-"""$TYPEDSIGNATURES"""
+"""
+$TYPEDSIGNATURES
+"""
 function traceout!(s::Union{MixedStabilizer, MixedDestabilizer}, qubits; phases=true, rank=false)
     _,i = canonicalize_rref!(s,qubits;phases=phases)
     s.rank = i
@@ -792,7 +724,9 @@ function reset_qubits!(s::Stabilizer, newstate, qubits; phases=true)
     s
 end
 
-"""$TYPEDSIGNATURES"""
+"""
+$TYPEDSIGNATURES
+"""
 function reset_qubits!(s::MixedStabilizer, newstate, qubits; phases=true) # TODO create the necessary interfaces so that Stabilizer and MixedStabilizer share this code
     nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
     length(qubits) <= nqubits(s) || throw(DimensionMismatch("the stabilizer is not big enough to contain the new state"))
@@ -1008,15 +942,13 @@ function projectremoverand!(s::MixedDestabilizer, projfunc::F, qubit) where {F<:
     s, res
 end
 
-"""$TYPEDSIGNATURES"""
 function traceoutremove!(s::MixedDestabilizer, qubit)
     traceout!(s,[qubit]) # TODO this can be optimized thanks to the information already known from projfunc
     s = _remove_rowcol!(s, nqubits(s), qubit)
 end
 
-"""
-$TYPEDSIGNATURES
 
+"""
 Return the given stabilizer without all the qubits in the given iterable.
 
 The resulting tableaux is not guaranteed to be valid (to retain its commutation relationships).

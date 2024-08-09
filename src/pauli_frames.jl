@@ -54,16 +54,13 @@ function initZ!(rng::AbstractRNG, frame::PauliFrame)
     return frame
 end
 
-"""$(TYPEDSIGNATURES)"""
 initZ!(frame::PauliFrame) = initZ!(GLOBAL_RNG, frame)
 
-"""$(TYPEDSIGNATURES)"""
 function apply!(f::PauliFrame, op::AbstractCliffordOperator)
     _apply!(f.frame, op; phases=Val(false))
     return f
 end
 
-"""$(TYPEDSIGNATURES)"""
 function apply!(frame::PauliFrame, xor::ClassicalXOR)
     for f in eachindex(frame)
         value = frame.measurements[f,xor.bits[1]]
@@ -75,20 +72,17 @@ function apply!(frame::PauliFrame, xor::ClassicalXOR)
     return frame
 end
 
-"""$(TYPEDSIGNATURES)"""
 function apply!(frame::PauliFrame, op::sMX) # TODO implement a faster direct version
     op.bit == 0 && return frame
     apply!(frame, sHadamard(op.qubit))
     apply!(frame, sMZ(op.qubit, op.bit))
 end
 
-"""$(TYPEDSIGNATURES)"""
 function apply!(frame::PauliFrame, op::sMRX) # TODO implement a faster direct version
     apply!(frame, sHadamard(op.qubit))
     apply!(frame, sMRZ(op.qubit, op.bit))
 end
 
-"""$(TYPEDSIGNATURES)"""
 function apply!(frame::PauliFrame, op::sMZ) # TODO sMY, and faster sMX
     op.bit == 0 && return frame
     i = op.qubit
@@ -107,7 +101,6 @@ function apply!(frame::PauliFrame, op::sMZ) # TODO sMY, and faster sMX
     return frame
 end
 
-"""$(TYPEDSIGNATURES)"""
 function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRY, and faster sMRX
     i = op.qubit
     xzs = frame.frame.tab.xzs
@@ -131,7 +124,6 @@ function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRY, and faster sMRX
     return frame
 end
 
-"""$(TYPEDSIGNATURES)"""
 function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     p = noise.p
     T = eltype(frame.frame.tab.xzs)
@@ -156,7 +148,6 @@ function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     return frame
 end
 
-"""$(TYPEDSIGNATURES)"""
 function applynoise!(frame::PauliFrame,noise::PauliNoise,i::Int)
     T = eltype(frame.frame.tab.xzs)
 

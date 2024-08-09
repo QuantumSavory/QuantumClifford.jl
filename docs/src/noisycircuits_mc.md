@@ -40,7 +40,7 @@ n = NoiseOpAll(UnbiasedUncorrelatedNoise(epsilon))
 circuit = [n,g1,g2,m,v]
 ```
 
-And we can run a Monte Carlo simulation on the above circuit with [`mctrajectories`](@ref).
+And we can run a Monte Carlo simulation of that circuit with [`mctrajectories`](@ref).
 
 ```@example 1
 mctrajectories(initial_state, circuit, trajectories=500)

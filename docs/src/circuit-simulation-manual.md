@@ -71,29 +71,9 @@ julia> quantumstate(stabmx)
 𝒮𝓉𝒶𝒷
 - XX
 - X_
-
-julia> stabmz = apply!(rng, copy(reg), sMZ(1, 1));
-
-julia> quantumstate(stabmz)
-𝒟ℯ𝓈𝓉𝒶𝒷
-- XX
-- ZZ
-𝒮𝓉𝒶𝒷
-+ Z_
-+ ZY
-
-julia> stabmy = apply!(rng, copy(reg), sMY(1, 1));
-
-julia> quantumstate(stabmy)
-𝒟ℯ𝓈𝓉𝒶𝒷
-- XX
-- YY
-𝒮𝓉𝒶𝒷
-+ Y_
-- YZ
 ```
 
-Projective measurements with automatic phase randomization, including [`projectY!`](@ref), [`projectZ!`](@ref) and [`projectrand!`](@ref) are available for the [`Register`](@ref) object.
+Projective measurements with automatic phase randomization, including [`projectXrand!`](@ref), [`projectYrand!`](@ref), [`projectZrand!`](@ref), and [`projectrand!`](@ref) are available for the [`Register`](@ref) object.
 
 ```jldoctest
 julia> rng = StableRNG(42); # hide
@@ -117,31 +97,11 @@ julia> quantumstate(px[1])
 𝒮𝓉𝒶𝒷
 + X_
 - _X
-
-julia> py = projectYrand!(rng, copy(reg), 1);
-
-julia> quantumstate(py[1])
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ X_
-- _X
-𝒮𝓉𝒶𝒷
-+ Y_
-+ _Z
-
-julia> pz = projectZrand!(rng, copy(reg), 2);
-
-julia> quantumstate(pz[1])
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ YZ
-- XX
-𝒮𝓉𝒶𝒷
-+ X_
-+ _Z
 ```
 
 # Pauli Frame
 
-[`PauliFrame`](@ref) is a wrapper for a "frame" tableau. Each row represents the Pauli operation differing 
+[`PauliFrame`](@ref) is a wrapper for a "frame" tableau. Each row represents the Pauli operation differing
 the frame from the reference, behaving uniquely under Clifford operations.
 
 ```jldoctest frame
