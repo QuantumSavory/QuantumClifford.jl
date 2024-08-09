@@ -59,6 +59,7 @@
             startB = rand(subsystem_rangeA)
             endB = rand(startB:n) 
             subsystem_rangeB = startB:endB
+            @test mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:clip)) == mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:rref)) == mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:graph))
             # The mutual information `Iⁿ(𝒶, 𝒷) = Sⁿ𝒶 + Sⁿ𝒷 - Sⁿ𝒶𝒷 for Clifford circuits is non-negative since n is 1 [li2019measurement](@cite).
             @test mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:clip)) & mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:rref)) >= 0
             @test mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:graph)) >= 0

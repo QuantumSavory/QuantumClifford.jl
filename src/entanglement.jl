@@ -263,8 +263,8 @@ julia> entanglement_entropy(s, [1,4], Val(:graph))
 1
 ```
 
-Based on [hein2006entanglement](@ref). 
-"""
+Based on "Entanglement in graph states and its applications".
+""" # TODO you should use [hein2006entanglement](@cite) instead of "Entanglement in graph states and its applications", but Documenter is giving the weirdest error if you do so...
 function entanglement_entropy(state::AbstractStabilizer, subsystem::AbstractVector, algorithm::Val{:graph})
     graph = Graphs.Graph(state)
     adjmat = Graphs.adjacency_matrix(graph)
@@ -325,7 +325,7 @@ given by `Iⁿ(𝒶, 𝒷) = Sⁿ𝒶 + Sⁿ𝒷 - Sⁿ𝒶𝒷`, where the Rén
 Clifford circuits, all Renyi entropies are equal due to the flat entanglement spectrum.
 
 ```jldoctest
-julia> mutual_information(ghz(3), 1:2, 3:5, Val(:clip))
+julia> mutual_information(ghz(3), 1:2, 3:4, Val(:clip))
 2
 ```
 
@@ -351,7 +351,7 @@ julia> s = Stabilizer(Graph(ghz(4)))
 + Z__X
 
 julia> mutual_information(s, [1,2], [3, 4], Val(:graph))
-0
+2
 ```
 
 """
@@ -360,9 +360,11 @@ function mutual_information(state::AbstractStabilizer, A::AbstractVector, B::Abs
         S𝒶 = entanglement_entropy(state, A, algorithm)
         S𝒷 = entanglement_entropy(state, B, algorithm)
         S𝒶𝒷 = entanglement_entropy(state, union(A, B), algorithm)
+        return S𝒶 + S𝒷 - S𝒶𝒷
     else
         S𝒶 = entanglement_entropy(state, A, algorithm; pure=pure)
         S𝒷 = entanglement_entropy(state, B, algorithm; pure=pure)
         S𝒶𝒷 = entanglement_entropy(state, union(A, B), algorithm; pure=pure)
+        return S𝒶 + S𝒷 - S𝒶𝒷
     end
 end
