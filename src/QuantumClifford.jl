@@ -77,7 +77,7 @@ export
     # Group theory tools
     groupify, minimal_generating_set, pauligroup, normalizer, centralizer, contractor, delete_columns,
     # Clipped Gauge
-    canonicalize_clip!, bigram, entanglement_entropy,
+    canonicalize_clip!, bigram, entanglement_entropy, mutual_information,
     # mctrajectories
     CircuitStatus, continue_stat, true_success_stat, false_success_stat, failure_stat,
     mctrajectory!, mctrajectories, applywstatus!,
