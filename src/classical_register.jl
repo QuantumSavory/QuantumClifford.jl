@@ -49,13 +49,19 @@ struct Register{T<:Tableau} <: AbstractQCState # TODO simplify type parameters (
     Register(s::MixedDestabilizer{T}, bits) where {T} = new{T}(s,bits)
 end
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 Register(s,bits) = Register(MixedDestabilizer(s), bits)
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 Register(s) = Register(s, Bool[])
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 Register(s::MixedDestabilizer,nbits::Int) = Register(s, falses(nbits))
 
 Base.copy(r::Register) = Register(copy(r.stab),copy(r.bits))
@@ -80,46 +86,64 @@ quantumstate(r::Register) = r.stab
 
 tab(r::Register) = tab(quantumstate(r))
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 tensor(regs::Register...) = Register(tensor((quantumstate(r) for r in regs)...), [bit for r in regs for bit in r.bits])
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function apply!(r::Register, op, args...; kwargs...)
     apply!(quantumstate(r), op, args...; kwargs...)
     r
 end
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function apply!(rng::AbstractRNG, r::Register, m::sMX)
     _, res = projectXrand!(rng, r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 apply!(r::Register, m::sMX) = apply!(GLOBAL_RNG, r, m)
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function apply!(rng::AbstractRNG, r::Register, m::sMY)
     _, res = projectYrand!(rng, r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 apply!(r::Register, m::sMY) = apply!(GLOBAL_RNG, r, m)
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function apply!(rng::AbstractRNG, r::Register, m::sMZ)
     _, res = projectZrand!(rng, r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 apply!(r::Register, m::sMZ) = apply!(GLOBAL_RNG, r, m)
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function apply!(r::Register, m::sMRX) # TODO sMRY
     _, anticom, res = projectX!(quantumstate(r),m.qubit)
     mres = if isnothing(res)
@@ -136,7 +160,9 @@ function apply!(r::Register, m::sMRX) # TODO sMRY
     r
 end
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function apply!(r::Register, m::sMRZ) # TODO sMRY
     _, anticom, res = projectZ!(quantumstate(r),m.qubit)
     mres = if isnothing(res)
@@ -153,7 +179,9 @@ function apply!(r::Register, m::sMRZ) # TODO sMRY
     r
 end
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function apply!(r::Register, m::PauliMeasurement{A,B}) where {A,B}
     _, res = projectrand!(r,m.pauli)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
@@ -221,37 +249,51 @@ function projectXrand!(rng::AbstractRNG, r::Register, m)
     r, res
 end
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 projectXrand!(r::Register, m) = projectXrand!(GLOBAL_RNG, r, m)
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function projectYrand!(rng::AbstractRNG, r::Register, m)
     q = quantumstate(r)
     _, res = projectYrand!(rng, q,m)
     r, res
 end
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 projectYrand!(r::Register, m) = projectYrand!(GLOBAL_RNG, r, m)
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function projectZrand!(rng::AbstractRNG, r::Register, m)
     q = quantumstate(r)
     _, res = projectZrand!(rng, q,m)
     r, res
 end
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 projectZrand!(r::Register, m) = projectZrand!(GLOBAL_RNG, r, m)
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function projectrand!(r::Register, m)
     q = quantumstate(r)
     _, res = projectrand!(q,m)
     r, res
 end
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function traceout!(r::Register, arg)
     q = quantumstate(r)
     traceout!(q,arg)
@@ -262,13 +304,17 @@ end
 # petrajectories, applynoise_branches
 ##
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function applynoise_branches(state::Register, noise, indices; max_order=1)
     [(Register(newstate,copy(state.bits)), prob, order)
      for (newstate, prob, order) in applynoise_branches(quantumstate(state), noise, indices; max_order=max_order)]
 end
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function applybranches(s::Register, op::PauliMeasurement; max_order=1) # TODO this is almost the same as `applybranches(s::Register, op::AbstractMeasurement; max_order=1)` defined below
     stab = s.stab
     stab, anticom, r = project!(stab, op.pauli)
@@ -289,7 +335,9 @@ function applybranches(s::Register, op::PauliMeasurement; max_order=1) # TODO th
     new_branches
 end
 
-"""$(TYPEDSIGNATURES)"""
+"""
+$TYPEDSIGNATURES
+"""
 function applybranches(s::Register, op::AbstractMeasurement; max_order=1)
     stab = s.stab
     stab, anticom, r = project!(stab, op)

@@ -745,6 +745,8 @@ end
 $TYPEDSIGNATURES
 
 Trace out a qubit.
+
+See also: [`delete_columns`](@ref)
 """ # TODO all of these should raise an error if length(qubits)>rank
 function traceout!(s::Stabilizer, qubits; phases=true, rank=false)
     _,i = canonicalize_rref!(s,qubits;phases=phases)
@@ -754,7 +756,9 @@ function traceout!(s::Stabilizer, qubits; phases=true, rank=false)
     if rank return (s, i) else return s end
 end
 
-"""$TYPEDSIGNATURES"""
+"""
+$TYPEDSIGNATURES
+"""
 function traceout!(s::Union{MixedStabilizer, MixedDestabilizer}, qubits; phases=true, rank=false)
     _,i = canonicalize_rref!(s,qubits;phases=phases)
     s.rank = i
@@ -792,7 +796,9 @@ function reset_qubits!(s::Stabilizer, newstate, qubits; phases=true)
     s
 end
 
-"""$TYPEDSIGNATURES"""
+"""
+$TYPEDSIGNATURES
+"""
 function reset_qubits!(s::MixedStabilizer, newstate, qubits; phases=true) # TODO create the necessary interfaces so that Stabilizer and MixedStabilizer share this code
     nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
     length(qubits) <= nqubits(s) || throw(DimensionMismatch("the stabilizer is not big enough to contain the new state"))
@@ -1008,7 +1014,9 @@ function projectremoverand!(s::MixedDestabilizer, projfunc::F, qubit) where {F<:
     s, res
 end
 
-"""$TYPEDSIGNATURES"""
+"""
+$TYPEDSIGNATURES
+"""
 function traceoutremove!(s::MixedDestabilizer, qubit)
     traceout!(s,[qubit]) # TODO this can be optimized thanks to the information already known from projfunc
     s = _remove_rowcol!(s, nqubits(s), qubit)
