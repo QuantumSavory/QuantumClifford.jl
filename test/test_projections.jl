@@ -1,6 +1,7 @@
 @testitem "Projective measurements" begin
     using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
     using QuantumClifford: projectremoverand!
+    using StableRNGs
 
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
@@ -372,5 +373,24 @@
         @test mixed_destab_looks_good(t)
         project!(t,c[2])
         @test mixed_destab_looks_good(t) # This used to fail because anticomlog==rank+1 leading to a repeated row permutation
+    end
+    @testset "New StableRNG streams for sMX, sMY, sMZ, projectXrand!, projectYrand!, projectZrand!" begin
+        for i in rand(1:10)
+            rng = StableRNG(120)
+            md = MixedDestabilizer(T"XY -ZZ -XX -YZ", 2)
+            reg = Register(md, [0, 0])
+            stabmx = apply!(rng, copy(reg), sMX(1, 1))
+            @test quantumstate(stabmx) == MixedDestabilizer(T"XY -YZ -XX XI", 2)
+            stabmz = apply!(rng, copy(reg), sMZ(1, 1))
+            @test quantumstate(stabmz) == MixedDestabilizer(T"-XX -ZZ ZI ZY", 2)
+            stabmy = apply!(rng, copy(reg), sMY(1, 1))
+            @test quantumstate(stabmy) == MixedDestabilizer(T"-XX -YY -YI -YZ", 2)
+            px = projectXrand!(rng, copy(reg), 2)
+            @test quantumstate(px[1]) == MixedDestabilizer(T"ZX -YZ -XX -IX", 2)
+            pz = projectZrand!(rng, copy(reg), 2)
+            @test quantumstate(pz[1]) == MixedDestabilizer(T"-XX -ZZ IZ -YZ", 2)
+            py = projectYrand!(rng, copy(reg), 1)
+            @test quantumstate(py[1]) == MixedDestabilizer(T"-XX -YY -YI -YZ", 2)
+        end
     end
 end

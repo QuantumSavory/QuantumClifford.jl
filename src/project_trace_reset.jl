@@ -1,4 +1,8 @@
+using Random: randperm, AbstractRNG, GLOBAL_RNG
+
 """
+$TYPEDSIGNATURES
+
 Generate a Pauli operator by using operators from a given the Stabilizer.
 
 **It assumes the stabilizer is already canonicalized.** It modifies
@@ -442,8 +446,44 @@ function _project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Val{Bk
 end
 
 """
+$TYPEDSIGNATURES
+
 Measure a given qubit in the X basis.
 A faster special-case version of [`project!`](@ref).
+
+```jldoctest px!
+julia> s = MixedDestabilizer(T"ZI IX XX ZZ", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ ZZ
+
+julia> n = 2; r = 1;
+
+julia> px = single_x(n, r)
++ X_
+
+julia> px! = projectX!(copy(s), r)
+(MixedDestablizer 2×2, 2, nothing)
+
+julia> sx = project!(copy(s), px)[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
++ _Z
++ ZZ
+𝒮𝓉𝒶𝒷
++ XX
++ X_
+
+julia> ssx = project!(copy(s), sMX(r))[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
++ _Z
++ ZZ
+𝒮𝓉𝒶𝒷
++ XX
++ X_
+```
 
 See also: [`project!`](@ref), [`projectXrand!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
 """
@@ -452,8 +492,44 @@ function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases
 end
 
 """
+$TYPEDSIGNATURES
+
 Measure a given qubit in the Z basis.
 A faster special-case version of [`project!`](@ref).
+
+```jldoctest pz!
+julia> s = MixedDestabilizer(T"-ZI -IZ -YI IX", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
+- Z_
+- _Z
+𝒮𝓉𝒶𝒷
+- Y_
++ _X
+
+julia> n = 2; r = 2;
+
+julia> pz = single_z(n, r)
++ _Z
+
+julia> pz! = projectZ!(copy(s),r)
+(MixedDestablizer 2×2, 2, nothing)
+
+julia> sz = project!(copy(s), pz)[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
+- Z_
++ _X
+𝒮𝓉𝒶𝒷
+- Y_
++ _Z
+
+julia> ssz = project!(copy(s), sMZ(r))[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
+- Z_
++ _X
+𝒮𝓉𝒶𝒷
+- Y_
++ _Z
+```
 
 See also: [`project!`](@ref), [`projectZrand!`](@ref), [`projectY!`](@ref), [`projectX!`](@ref).
 """
@@ -462,8 +538,44 @@ function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases
 end
 
 """
+$TYPEDSIGNATURES
+
 Measure a given qubit in the Y basis.
 A faster special-case version of [`project!`](@ref).
+
+```jldoctest py!
+julia> s = MixedDestabilizer(T"-XZ -YY XX XI", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
+- XZ
+- YY
+𝒮𝓉𝒶𝒷
++ XX
++ X_
+
+julia> n = 2; r = 2;
+
+julia> py = single_y(n, r)
++ _Y
+
+julia> py! = projectY!(copy(s),r)
+(MixedDestablizer 2×2, 1, nothing)
+
+julia> sy = project!(copy(s), py)[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
++ XX
+- YY
+𝒮𝓉𝒶𝒷
++ _Y
++ X_
+
+julia> ssy = project!(copy(s), sMY(r))[1]
+𝒟ℯ𝓈𝓉𝒶𝒷
++ XX
+- YY
+𝒮𝓉𝒶𝒷
++ _Y
++ X_
+```
 
 See also: [`project!`](@ref), [`projectYrand!`](@ref), [`projectX!`](@ref), [`projectZ!`](@ref).
 """
@@ -572,11 +684,13 @@ Lower boilerplate version of [`project!`](@ref).
 
 See also: [`project!`](@ref), [`projectX!`](@ref), [`projectZrand!`](@ref), [`projectYrand!`](@ref)
 """
-function projectXrand!(state, qubit)
+function projectXrand!(rng::AbstractRNG, state, qubit)
     _, anticom, res = projectX!(state, qubit)
-    isnothing(res) && (res = tab(stabilizerview(state)).phases[anticom] = rand((0x0, 0x2)))
+    isnothing(res) && (res = tab(stabilizerview(state)).phases[anticom] = rand(rng, (0x0, 0x2)))
     return state, res
 end
+
+projectXrand!(state, qubit) = projectXrand!(GLOBAL_RNG, state, qubit)
 
 """
 $TYPEDSIGNATURES
@@ -587,11 +701,13 @@ Lower boilerplate version of [`project!`](@ref).
 
 See also: [`project!`](@ref), [`projectZ!`](@ref), [`projectXrand!`](@ref), [`projectYrand!`](@ref)
 """
-function projectZrand!(state, qubit)
+function projectZrand!(rng::AbstractRNG, state, qubit)
     _, anticom, res = projectZ!(state, qubit)
-    isnothing(res) && (res = tab(stabilizerview(state)).phases[anticom] = rand((0x0, 0x2)))
+    isnothing(res) && (res = tab(stabilizerview(state)).phases[anticom] = rand(rng, (0x0, 0x2)))
     return state, res
 end
+
+projectZrand!(state, qubit) = projectZrand!(GLOBAL_RNG, state, qubit)
 
 """
 $TYPEDSIGNATURES
@@ -602,11 +718,13 @@ Lower boilerplate version of [`project!`](@ref).
 
 See also: [`project!`](@ref), [`projectY!`](@ref), [`projectXrand!`](@ref), [`projectZrand!`](@ref)
 """
-function projectYrand!(state, qubit)
+function projectYrand!(rng::AbstractRNG, state, qubit)
     _, anticom, res = projectY!(state, qubit)
-    isnothing(res) && (res = tab(stabilizerview(state)).phases[anticom] = rand((0x0, 0x2)))
+    isnothing(res) && (res = tab(stabilizerview(state)).phases[anticom] = rand(rng, (0x0, 0x2)))
     return state, res
 end
+
+projectYrand!(state, qubit) = projectYrand!(GLOBAL_RNG, state, qubit)
 
 """
 $TYPEDSIGNATURES
@@ -696,6 +814,30 @@ end
 
 """
 $TYPEDSIGNATURES
+
+```jldoctest
+julia> ghz(4)
++ XXXX
++ ZZ__
++ _ZZ_
++ __ZZ
+
+julia> ghz(2)
++ XX
++ ZZ
+
+julia> reset_qubits!(ghz(4), ghz(2), [1, 2])
++ __ZZ
++ XX__
++ ZZ__
++ ____
+
+julia> reset_qubits!(ghz(4), ghz(2), [3, 4])
++ ZZ__
++ __XX
++ __ZZ
++ ____
+```
 """
 function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubits; phases=true) # TODO this is really inefficient
     _phases = Val(phases)
@@ -727,10 +869,18 @@ function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubit
 end
 
 """
-    expect(p::PauliOperator, st::AbstractStabilizer)
+$TYPEDSIGNATURES
 
 Compute the expectation value of a Pauli operator `p` on a stabilizer state `st`.
 This function will allocate a temporary copy of the stabilizer state `st`.
+
+```jldoctest
+julia> expect(P"X", S"Z")
+0
+
+julia> expect(P"X", S"-iX")
+0 - 1im
+```
 """
 function expect(p::PauliOperator, s::AbstractStabilizer)
     nqubits(p) == nqubits(s) || error("The number of qubits does not match")
@@ -864,13 +1014,17 @@ function projectremoverand!(s::MixedDestabilizer, projfunc::F, qubit) where {F<:
     s, res
 end
 
+"""
+$TYPEDSIGNATURES
+"""
 function traceoutremove!(s::MixedDestabilizer, qubit)
     traceout!(s,[qubit]) # TODO this can be optimized thanks to the information already known from projfunc
     s = _remove_rowcol!(s, nqubits(s), qubit)
 end
 
-
 """
+$TYPEDSIGNATURES
+
 Return the given stabilizer without all the qubits in the given iterable.
 
 The resulting tableaux is not guaranteed to be valid (to retain its commutation relationships).

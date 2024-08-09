@@ -33,7 +33,8 @@ pages = [
     "Datastructure Choice" => "datastructures.md",
     "Useful States" => "commonstates.md",
 ],
-"Noisy Circuits" => [
+"Circuit Simulation" => [
+    "Manual" => "circuit-simulation-manual.md",
     "Simulation of Noisy Circuits" => "noisycircuits.md",
     "Monte Carlo" => "noisycircuits_mc.md",
     "Perturbative Expansions" => "noisycircuits_perturb.md",

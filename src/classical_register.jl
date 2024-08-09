@@ -1,12 +1,67 @@
-"""A register, representing the state of a computer including both a tableaux and an array of classical bits (e.g. for storing measurement results)"""
+using Random: randperm, AbstractRNG, GLOBAL_RNG
+
+"""
+$(TYPEDEF)
+
+A [`Register`](@ref) representing the state of a computer including both a tableaux and an array of classical bits (e.g. for storing measurement results).
+
+```jldoctest
+julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ YZ
+- XX
+𝒮𝓉𝒶𝒷
++ X_
++ _Z
+
+julia> reg = Register(s, [0,0])
+Register{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}(MixedDestablizer 2×2, Bool[0, 0])
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ YZ
+- XX
+𝒮𝓉𝒶𝒷
++ X_
++ _Z
+
+julia> stabilizerview(reg)
++ X_
++ _Z
+
+julia> destabilizerview(reg)
++ YZ
+- XX
+
+julia> bitview(reg)
+2-element Vector{Bool}:
+ 0
+ 0
+```
+
+Measurement results can be obtained using symbolic measurement operations which can be applied with [`apply!`](@ref).
+
+See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`projectXrand!`](@ref), [`projectYrand!`](@ref), [`projectZrand!`](@ref), [`sMX`](@ref), [`sMY`](@ref), [`sMZ`](@ref), [`sMRX`](@ref), [`sMRZ`](@ref), [`traceout!`](@ref).
+"""
 struct Register{T<:Tableau} <: AbstractQCState # TODO simplify type parameters (remove nesting)
     stab::MixedDestabilizer{T}
     bits::Vector{Bool}
     Register(s::MixedDestabilizer{T}, bits) where {T} = new{T}(s,bits)
 end
 
+"""
+$TYPEDSIGNATURES
+"""
 Register(s,bits) = Register(MixedDestabilizer(s), bits)
+
+"""
+$TYPEDSIGNATURES
+"""
 Register(s) = Register(s, Bool[])
+
+"""
+$TYPEDSIGNATURES
+"""
 Register(s::MixedDestabilizer,nbits::Int) = Register(s, falses(nbits))
 
 Base.copy(r::Register) = Register(copy(r.stab),copy(r.bits))
@@ -31,28 +86,64 @@ quantumstate(r::Register) = r.stab
 
 tab(r::Register) = tab(quantumstate(r))
 
+"""
+$TYPEDSIGNATURES
+"""
 tensor(regs::Register...) = Register(tensor((quantumstate(r) for r in regs)...), [bit for r in regs for bit in r.bits])
 
+"""
+$TYPEDSIGNATURES
+"""
 function apply!(r::Register, op, args...; kwargs...)
     apply!(quantumstate(r), op, args...; kwargs...)
     r
 end
 
-function apply!(r::Register, m::sMX)
-    _, res = projectXrand!(r,m.qubit)
+"""
+$TYPEDSIGNATURES
+"""
+function apply!(rng::AbstractRNG, r::Register, m::sMX)
+    _, res = projectXrand!(rng, r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
-function apply!(r::Register, m::sMY)
-    _, res = projectYrand!(r,m.qubit)
+
+"""
+$TYPEDSIGNATURES
+"""
+apply!(r::Register, m::sMX) = apply!(GLOBAL_RNG, r, m)
+
+"""
+$TYPEDSIGNATURES
+"""
+function apply!(rng::AbstractRNG, r::Register, m::sMY)
+    _, res = projectYrand!(rng, r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
-function apply!(r::Register, m::sMZ)
-    _, res = projectZrand!(r,m.qubit)
+
+"""
+$TYPEDSIGNATURES
+"""
+apply!(r::Register, m::sMY) = apply!(GLOBAL_RNG, r, m)
+
+"""
+$TYPEDSIGNATURES
+"""
+function apply!(rng::AbstractRNG, r::Register, m::sMZ)
+    _, res = projectZrand!(rng, r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
+
+"""
+$TYPEDSIGNATURES
+"""
+apply!(r::Register, m::sMZ) = apply!(GLOBAL_RNG, r, m)
+
+"""
+$TYPEDSIGNATURES
+"""
 function apply!(r::Register, m::sMRX) # TODO sMRY
     _, anticom, res = projectX!(quantumstate(r),m.qubit)
     mres = if isnothing(res)
@@ -68,6 +159,10 @@ function apply!(r::Register, m::sMRX) # TODO sMRY
     end
     r
 end
+
+"""
+$TYPEDSIGNATURES
+"""
 function apply!(r::Register, m::sMRZ) # TODO sMRY
     _, anticom, res = projectZ!(quantumstate(r),m.qubit)
     mres = if isnothing(res)
@@ -83,32 +178,122 @@ function apply!(r::Register, m::sMRZ) # TODO sMRY
     end
     r
 end
+
+"""
+$TYPEDSIGNATURES
+"""
 function apply!(r::Register, m::PauliMeasurement{A,B}) where {A,B}
     _, res = projectrand!(r,m.pauli)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
-function projectXrand!(r::Register, m)
+
+"""
+$(TYPEDSIGNATURES)
+
+Projective measurements with automatic phase randomization are available for the [`Register`](@ref) object.
+
+```jldoctest
+julia> using StableRNGs
+
+julia> rng = StableRNG(42);
+
+julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ YZ
+- XX
+𝒮𝓉𝒶𝒷
++ X_
++ _Z
+
+julia> reg = Register(s, [0, 0])
+Register{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}(MixedDestablizer 2×2, Bool[0, 0])
+
+julia> projectXrand!(rng, reg, 2);
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Y_
++ _Z
+𝒮𝓉𝒶𝒷
++ X_
+- _X
+
+julia> projectYrand!(rng, reg, 1);
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ X_
++ _Z
+𝒮𝓉𝒶𝒷
++ Y_
+- _X
+
+julia> projectZrand!(rng, reg, 2);
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ X_
+- _X
+𝒮𝓉𝒶𝒷
++ Y_
++ _Z
+```
+
+See also: [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref),
+[`sMX`](@ref), [`sMRZ`](@ref), [`sMRX`](@ref), [`traceout!`](@ref).
+"""
+function projectXrand!(rng::AbstractRNG, r::Register, m)
     q = quantumstate(r)
-    _, res = projectXrand!(q,m)
+    _, res = projectXrand!(rng, q,m)
     r, res
 end
-function projectYrand!(r::Register, m)
+
+"""
+$TYPEDSIGNATURES
+"""
+projectXrand!(r::Register, m) = projectXrand!(GLOBAL_RNG, r, m)
+
+"""
+$TYPEDSIGNATURES
+"""
+function projectYrand!(rng::AbstractRNG, r::Register, m)
     q = quantumstate(r)
-    _, res = projectYrand!(q,m)
+    _, res = projectYrand!(rng, q,m)
     r, res
 end
-function projectZrand!(r::Register, m)
+
+"""
+$TYPEDSIGNATURES
+"""
+projectYrand!(r::Register, m) = projectYrand!(GLOBAL_RNG, r, m)
+
+"""
+$TYPEDSIGNATURES
+"""
+function projectZrand!(rng::AbstractRNG, r::Register, m)
     q = quantumstate(r)
-    _, res = projectZrand!(q,m)
+    _, res = projectZrand!(rng, q,m)
     r, res
 end
+
+"""
+$TYPEDSIGNATURES
+"""
+projectZrand!(r::Register, m) = projectZrand!(GLOBAL_RNG, r, m)
+
+"""
+$TYPEDSIGNATURES
+"""
 function projectrand!(r::Register, m)
     q = quantumstate(r)
     _, res = projectrand!(q,m)
     r, res
 end
 
+"""
+$TYPEDSIGNATURES
+"""
 function traceout!(r::Register, arg)
     q = quantumstate(r)
     traceout!(q,arg)
@@ -119,11 +304,17 @@ end
 # petrajectories, applynoise_branches
 ##
 
+"""
+$TYPEDSIGNATURES
+"""
 function applynoise_branches(state::Register, noise, indices; max_order=1)
     [(Register(newstate,copy(state.bits)), prob, order)
      for (newstate, prob, order) in applynoise_branches(quantumstate(state), noise, indices; max_order=max_order)]
 end
 
+"""
+$TYPEDSIGNATURES
+"""
 function applybranches(s::Register, op::PauliMeasurement; max_order=1) # TODO this is almost the same as `applybranches(s::Register, op::AbstractMeasurement; max_order=1)` defined below
     stab = s.stab
     stab, anticom, r = project!(stab, op.pauli)
@@ -144,6 +335,9 @@ function applybranches(s::Register, op::PauliMeasurement; max_order=1) # TODO th
     new_branches
 end
 
+"""
+$TYPEDSIGNATURES
+"""
 function applybranches(s::Register, op::AbstractMeasurement; max_order=1)
     stab = s.stab
     stab, anticom, r = project!(stab, op)
