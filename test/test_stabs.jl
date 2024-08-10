@@ -58,6 +58,21 @@
         end
     end
 
+    @testset "Tensor products over generalized stabilizers" begin
+        for n in rand(1:10, 10)
+            l = random_stabilizer(n)
+            r = random_stabilizer(n)
+            sm = GeneralizedStabilizer(l)
+            sm1 = GeneralizedStabilizer(r)
+            s = l⊗r
+            sm2 = sm⊗sm1
+            @test mixed_destab_looks_good(sm2.stab)
+            canonicalize!(s)
+            dss = canonicalize!(copy(stabilizerview(sm2.stab)))
+            @test s == dss
+        end
+    end
+
     @testset "Stabilizer indexing" begin
         s = random_stabilizer(9,10)
         @test s[1,1] == s[[1,3,4],[1,3,5]][1,1]

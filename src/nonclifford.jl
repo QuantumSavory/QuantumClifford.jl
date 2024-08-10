@@ -1,3 +1,7 @@
+import QuantumClifford: ⊗
+
+import Base: *, copy
+
 #=
 1. adding tests for basic correctness
 2. single qubit gates / channels (and tests)
@@ -60,7 +64,6 @@ DataStructures.DefaultDict{Tuple{BitVector, BitVector}, ComplexF64, ComplexF64} 
   ([1], [0]) => 0.0-0.353553im
   ([0], [0]) => 0.853553+0.0im
   ([1], [1]) => 0.146447+0.0im
-
 ```
 
 See also: [`PauliChannel`](@ref)
@@ -111,6 +114,123 @@ function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator) # 
     apply!(state.stab, gate)
     state
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> sm ⊗ sm
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _Z
+𝒮𝓉𝒶𝒷
+- X_
+- _X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + __ | + __
+```
+
+"""
+function (⊗)(state₁::GeneralizedStabilizer, state₂::GeneralizedStabilizer)
+    dict₁ = state₁.destabweights
+    dict₂ = state₂.destabweights
+    dtype = valtype(dict₁)
+    tzero = zero(dtype)
+    newdict = typeof(dict₁)(tzero)
+    newstab = state₁.stab ⊗ state₂.stab
+    n = nqubits(newstab)
+    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im))
+    for ((dᵢ, dⱼ), χ) in dict₁
+        for ((dᵢ′, dⱼ′), χ′) in dict₂
+            newdict[(dᵢ, dⱼ)] = get!(newdict, (dᵢ, dⱼ), tzero) + χ * χ′
+        end
+    end
+    newsm.destabweights = newdict
+    return newsm
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> tHadamard * sm
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ X
+𝒮𝓉𝒶𝒷
+- Z
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+```
+
+"""
+function (*)(Op::AbstractCliffordOperator, state::GeneralizedStabilizer)
+    dict = state.destabweights
+    dtype = valtype(dict)
+    tzero = zero(dtype)
+    newdict = typeof(dict)(tzero)
+    newstab = Op * state.stab
+    n = nqubits(newstab)
+    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im))
+    newsm.destabweights = dict
+    return newsm
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> P"-Y" * sm
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
+- Z
+𝒮𝓉𝒶𝒷
++ X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+```
+
+"""
+function (*)(Op::PauliOperator, state::GeneralizedStabilizer)
+    dict = state.destabweights
+    dtype = valtype(dict)
+    tzero = zero(dtype)
+    newdict = typeof(dict)(tzero)
+    newstab = Op * state.stab
+    n = nqubits(newstab)
+    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im))
+    newsm.destabweights = dict
+    return newsm
+end 
+
 
 """$(TYPEDSIGNATURES)
 
@@ -325,6 +445,78 @@ end
 nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
 apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold::Union{Nothing, Float64}=nothing) = prune_threshold === nothing ? apply!(state, gate.paulichannel) : apply!(state, gate.paulichannel, prune_threshold)
+
+"""
+$(TYPEDSIGNATURES)
+
+```jldoctest
+julia> pcT ⊗ P"X"
+A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
+with ϕᵢ | Pᵢ
+ 0.853553+0.353553im | + _X
+ 0.146447-0.353553im | + ZX
+```
+
+"""
+function (⊗)(gate::AbstractPauliChannel, Op::PauliOperator)
+    new_unitary_channel = typeof(gate)
+    ps = typeof(gate.paulichannel)
+    new_paulis = pcT.paulis |> collect |> x -> map(y -> y ⊗ Op, x) |> Tuple
+    weights = gate.weights
+    return UnitaryPauliChannel(new_paulis, weights)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+```jldoctest
+julia> tHadamard * pcT
+A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
+with ϕᵢ | Pᵢ
+ 0.853553+0.353553im | X₁ ⟼ + Z
+Z₁ ⟼ + X
+ 0.146447-0.353553im | X₁ ⟼ + Z
+Z₁ ⟼ - X
+```
+
+"""
+function (*)(Op::AbstractCliffordOperator, gate::AbstractPauliChannel)
+    new_unitary_channel = typeof(gate)
+    ps = typeof(gate.paulichannel)
+    new_paulis = pcT.paulis |> collect |> x -> map(y -> y * Op, x) |> Tuple
+    weights = gate.weights
+    return UnitaryPauliChannel(new_paulis, weights)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> copy(sm)
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> sm == copy(sm)
+true
+```
+
+"""
+Base.copy(sm::GeneralizedStabilizer) = GeneralizedStabilizer(copy(sm.stab),copy(sm.destabweights))
+Base.:(==)(sm₁::GeneralizedStabilizer, sm₂::GeneralizedStabilizer) = sm₁.stab==sm₂.stab && sm₁.destabweights==sm₂.destabweights
 
 ##
 # Predefined Pauli Channels
