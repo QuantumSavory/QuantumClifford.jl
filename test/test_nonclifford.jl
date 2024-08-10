@@ -1,5 +1,5 @@
 @testitem "NonClifford" begin
-    using QuantumClifford: StabMixture, rowdecompose, PauliChannel, mul_left!, mul_right!
+    using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!
     using InteractiveUtils
     using Random
 
