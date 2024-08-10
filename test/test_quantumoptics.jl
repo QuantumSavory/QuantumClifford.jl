@@ -47,10 +47,10 @@
         end
     end
 
-    @testset "conversion from StabMixture to Operator" begin
+    @testset "conversion from GeneralizedStabilizer to Operator" begin
         for n in 1:5
             stab = random_stabilizer(n)
-            @test dm(Ket(stab)) == Operator(StabMixture(stab))
+            @test dm(Ket(stab)) == Operator(GeneralizedStabilizer(stab))
         end
     end
 
