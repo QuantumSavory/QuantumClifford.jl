@@ -1,4 +1,6 @@
 """
+A construction of the Reed-Muller class of codes using the recursive definition.
+
 The Plotkin `(u, u + v)` construction defines a recursive relation between generator matrices of Reed-Muller `(RM)` codes [abbe2020reed](@cite). To derive the generator matrix `G(m, r)` for `RM(r, m)`, the generator matrices of lower-order codes are utilized:
 - `G(r - 1, m - 1)`: Generator matrix of `RM(r - 1, m - 1)`
 - `G(r, m - 1)`: Generator matrix of `RM(r, m - 1)`
