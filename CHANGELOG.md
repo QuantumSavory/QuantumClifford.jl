@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.10 - 2024-08-11
+
+- **(fix)** Bug fix to the `parity_checks(ReedMuller(r, m))` of classical `Reed-Muller` code along with `RecursiveReedMuller` code implementation for cross reference.
+
 ## v0.9.9 - 2024-08-05
 
 - `inv` is implemented for all Clifford operator types (symbolic, dense, sparse).

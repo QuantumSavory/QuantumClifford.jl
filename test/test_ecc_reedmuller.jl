@@ -46,7 +46,7 @@
                 # generator(RecursiveReedMuller(r, m)) is canonically equivalent to the generator(ReedMuller(r, m)) under reduced row echelon form.
                 @test echelon_form(matrix(GF(2), Matrix{Int64}(H))) == echelon_form(matrix(GF(2), Matrix{Int64}(H₁)))
                 H = parity_checks(ReedMuller(r, m))
-                H₁ = parity_checks(RecursiveReedMuller(r, m)) 
+                H₁ = parity_checks(RecursiveReedMuller(r, m))
                 # parity_checks(RecursiveReedMuller(r, m)) is canonically equivalent to the parity_checks(ReedMuller(r, m)) under reduced row echelon form.
                 @test echelon_form(matrix(GF(2), Matrix{Int64}(H))) == echelon_form(matrix(GF(2), Matrix{Int64}(H₁)))
                 # dim(ReedMuller(m - r - 1, m)) = dim(ReedMuller(r, m)^⊥). 

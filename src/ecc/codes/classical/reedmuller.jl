@@ -11,6 +11,8 @@ You might be interested in consulting [raaphorst2003reed](@cite), [abbe2020reed]
 The dimension of `RM(m - r - 1, m)` equals the dimension of the dual of `RM(r, m)`. Thus, `RM(m - r - 1, m) = RM(r, m)^⊥` shows that the [dual code](https://en.wikipedia.org/wiki/Dual_code) of `RM(r, m)` is `RM(m − r − 1, m)`, indicating the parity check matrix of `RM(r, m)` is the generator matrix for `RM(m - r - 1, m)`.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed_muller).
+
+See also: `RecursiveReedMuller`
 """
 struct ReedMuller <: ClassicalCode
     r::Int

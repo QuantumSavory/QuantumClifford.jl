@@ -11,12 +11,14 @@ The generator matrix `G(m, r)` of `RM(m, r)` is formulated as follows in matrix 
 G(m, r) = \begin{bmatrix}
 G(r, m - 1) & G(r, m - 1) \\
 0 & G(r - 1, m - 1)
-\end{bmatrix} 
+\end{bmatrix}
 ```
 
 Here, the matrix 0 denotes an all-zero matrix with dimensions matching `G(r - 1, m - 1)`. This recursive approach facilitates the construction of higher-order Reed-Muller codes based on the generator matrices of lower-order codes.
 
 In addition, the dimension of `RM(m - r - 1, m)` equals the dimension of the dual of `RM(r, m)`. Thus, `RM(m - r - 1, m) = RM(r, m)^⊥` shows that the [dual code](https://en.wikipedia.org/wiki/Dual_code) of `RM(r, m)` is `RM(m − r − 1, m)`, indicating the parity check matrix of `RM(r, m)` is the generator matrix for `RM(m - r - 1, m)`.
+
+See also: `ReedMuller`
 """
 struct RecursiveReedMuller <: ClassicalCode
     r::Int
