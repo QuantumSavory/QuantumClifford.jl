@@ -29,11 +29,20 @@ end
 struct SparseGate{T<:Tableau} <: AbstractCliffordOperator # TODO simplify type parameters (remove nesting)
     cliff::CliffordOperator{T}
     indices::Vector{Int}
+    function SparseGate(cliff::CliffordOperator{T}, indices::Vector{Int}) where T<:Tableau
+        if length(indices) != nqubits(cliff)
+            throw(ArgumentError("The number of target qubits (indices) must match the number of qubits in the Clifford operator."))
+        end
+        new{T}(cliff, indices)
+    end
 end
 
 SparseGate(c,t::Tuple) = SparseGate(c,collect(t))
 
 function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
+    if maximum(g.indices) > nqubits(state) || length(g.indices) != nqubits(g.cliff)
+        throw(ArgumentError("Cannot apply gate: check qubit indices and CliffordOperator qubit count."))
+    end
     apply!(state, g.cliff, g.indices; kwargs...)
 end
 
