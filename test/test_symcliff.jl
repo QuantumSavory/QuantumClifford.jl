@@ -88,7 +88,15 @@
             @test CliffordOperator(inv(sXCZ(n₁, n₂)), n₁) == inv(CliffordOperator(sCNOT(n₂, n₁), n₁))
             @test CliffordOperator(inv(sZCrY(n₁, n₂)), n₁) == inv(CliffordOperator(sZCrY(n₁, n₂), n₁))
             @test CliffordOperator(inv(sInvZCrY(n₁, n₂)), n₁) == inv(CliffordOperator(sInvZCrY(n₁, n₂), n₁))
-            @test CliffordOperator(inv(sCXSWAP(n₁, n₂)), n₁) == inv(CliffordOperator(sSWAPCXDAG(n₁, n₂), n₁))
+            @test CliffordOperator(inv(sCXSWAP(n₁, n₂)), n₁) == inv(CliffordOperator(sInvSWAPCX(n₁, n₂), n₁))
         end
+    end
+
+    @testset "New two qubit gates consistency check" begin
+        # see https://github.com/quantumlib/Stim/blob/main/doc/gates.md
+        @test CliffordOperator(sSWAPCX)    == C"IX XX ZZ ZI"
+        @test CliffordOperator(sInvSWAPCX) == C"XX XI IZ ZZ"
+        @test CliffordOperator(sCZSWAP)    == C"ZX XZ IZ ZI"
+        @test CliffordOperator(sCXSWAP)    == C"XX XI IZ ZZ"
     end
 end
