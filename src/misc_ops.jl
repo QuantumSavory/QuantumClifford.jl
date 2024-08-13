@@ -31,7 +31,7 @@ struct SparseGate{T<:Tableau} <: AbstractCliffordOperator # TODO simplify type p
     indices::Vector{Int}
     function SparseGate(cliff::CliffordOperator{T}, indices::Vector{Int}) where T<:Tableau
         if length(indices) != nqubits(cliff)
-            throw(ArgumentError("The number of target qubits (indices) must match the number of qubits in the Clifford operator."))
+            throw(ArgumentError("The number of target qubits (indices) must match the qubit count in the CliffordOperator."))
         end
         new{T}(cliff, indices)
     end
