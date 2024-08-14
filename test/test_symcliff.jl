@@ -76,5 +76,16 @@
             @test CliffordOperator(inv(random_op), i) == inv(CliffordOperator(random_op, i))
             @test CliffordOperator(inv(SingleQubitOperator(random_op)), i) == inv(CliffordOperator(random_op, i))
         end
+
+    @testset "New single qubit gates consistency check" begin
+       # see https://github.com/quantumlib/Stim/blob/main/doc/gates.md
+       @test CliffordOperator(sCXYZ)       == C"Y X"
+       @test CliffordOperator(sCZYX)       == C"Z Y"
+       @test CliffordOperator(sSQRTX)      == C"X -Y"
+       @test CliffordOperator(sSQRTY)      == C"-Z X"
+       @test CliffordOperator(sInvSQRTX)   == C"X Y"
+       @test CliffordOperator(sInvSQRTY)   == C"Z -X"
+       @test CliffordOperator(sHadamardXY) == C"Y -Z"
+       @test CliffordOperator(sHadamardYZ) == C"-X Y"
     end
 end
