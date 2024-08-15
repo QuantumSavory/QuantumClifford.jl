@@ -286,11 +286,14 @@ end
 #                 x1   z1      x2      z2
 @qubitop2 SWAP   (x2 , z2    , x1    , z1    , false)
 
-@qubitop2 SWAPCX    (x2   , z2⊻z1,  x2⊻x1, z1    , ~iszero((x1 & z1 & x2 & z2) | (~x1 & z1 & x2 & ~z2)))
-@qubitop2 InvSWAPCX (x2⊻x1, z2   ,  x1   , z2⊻z1 , ~iszero((x1 & z1 & x2 & z2) | ( x1 &~z1 &~x2 &  z2)))
+@qubitop2 SWAPCX    (x2    , z2⊻z1 , x2⊻x1 , z1    , ~iszero((x1 & z1 & x2 & z2) | (~x1 & z1 & x2 & ~z2)))
+@qubitop2 InvSWAPCX (x2⊻x1 , z2    , x1    , z2⊻z1 , ~iszero((x1 & z1 & x2 & z2) | ( x1 &~z1 &~x2 &  z2)))
 
-@qubitop2 CZSWAP (x2   , z2⊻x1, x1  , x2⊻z1 , ~iszero((x1 & ~z1 & x2 & z2) | (x1 & z1 & x2 & ~z2)))
-@qubitop2 CXSWAP (x2⊻x1, z2   , x1  , z2⊻z1 , ~iszero((x1 & ~z1 &~x2 & z2) | (x1 & z1 & x2 &  z2)))
+@qubitop2 ISWAP    (x2       , x1⊻z2⊻x2 , x1       , x1⊻x2⊻z1 , ~iszero((x1 & z1 & ~x2) | (~x1 & x2 & z2)))
+@qubitop2 InvISWAP (x2       , x1⊻z2⊻x2 , x1       , x1⊻x2⊻z1 , ~iszero((x1 &~z1 & ~x2) | (~x1 & x2 &~z2)))
+
+@qubitop2 CZSWAP (x2    , z2⊻x1 , x1    , x2⊻z1 , ~iszero((x1 & ~z1 & x2 & z2) | (x1 & z1 & x2 & ~z2)))
+@qubitop2 CXSWAP (x2⊻x1 , z2    , x1    , z2⊻z1 , ~iszero((x1 & ~z1 &~x2 & z2) | (x1 & z1 & x2 &  z2)))
 
 @qubitop2 CNOT   (x1 , z1⊻z2 , x2⊻x1 , z2    , ~iszero( (x1 & z1 & x2 & z2)  | (x1 & z2 &~(z1|x2)) ))
 @qubitop2 CPHASE (x1 , z1⊻x2 , x2    , z2⊻x1 , ~iszero( (x1 & z1 & x2 &~z2)  | (x1 &~z1 & x2 & z2) ))
@@ -309,6 +312,9 @@ end
 
 @qubitop2 ZCrY  (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & ~z1 & x2) | (x1 & ~z1 & ~z2) | (x1 & x2 & ~z2)))
 @qubitop2 InvZCrY (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & z1 & ~x2 & ~z2) | (x1 & ~z1 & ~x2 & z2) | (x1 & z1 & ~x2 & z2) | (x1 & z1 & x2 & z2)))
+
+@qubitop2 SQRTZZ    (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 & z1 & ~x2) | (~x1 & x2 & z2)))
+@qubitop2 InvSQRTZZ (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 &~z1 & ~x2) | (~x1 & x2 &~z2)))
 
 #=
 To get the boolean formulas for the phase, it is easiest to first write down the truth table for the phase:
@@ -372,6 +378,10 @@ LinearAlgebra.inv(op::sSWAPCX)    = sInvSWAPCX(op.q1, op.q2)
 LinearAlgebra.inv(op::sInvSWAPCX) = sSWAPCX(op.q1, op.q2)
 LinearAlgebra.inv(op::sCZSWAP)    = sCZSWAP(op.q1, op.q2)
 LinearAlgebra.inv(op::sCXSWAP)    = sSWAPCX(op.q1, op.q2)
+LinearAlgebra.inv(op::sISWAP)     = sInvISWAP(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvISWAP)  = sISWAP(op.q1, op.q2)
+LinearAlgebra.inv(op::sSQRTZZ)    = sInvSQRTZZ(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvSQRTZZ) = sSQRTZZ(op.q1, op.q2)
 
 ##############################
 # Functions that perform direct application of common operators without needing an operator instance
