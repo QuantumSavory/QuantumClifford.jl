@@ -439,6 +439,114 @@ See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`]
 tab(s::Stabilizer{T}) where {T} = s.tab
 tab(s::AbstractStabilizer) = s.tab
 
+"""
+Embed a Tableau in a larger Tableau.
+
+```jldoctest
+julia> embed(10, 5, T"Z X")
++ ____Z_____
++ ____X_____
+
+julia> embed(10, (1, 5), T"-XZ IZ YI YX")
+- X___Z_____
++ ____Z_____
++ Y_________
++ Y___X_____
+```
+"""
+function embed(n::Int, i::Int, t::Tableau)
+     if nqubits(t) == 1
+        tout = zero(typeof(t), size(t)[1], n)
+        for j in 1:size(t)[1]
+            tout[j, i] = t[j][1]
+            tout.phases[j] = t.phases[j]
+        end
+        return tout
+    else
+        throw(ArgumentError("""
+        You are trying to embed a small Tableau into a larger Tableau.
+        However, you have not given all the positions at which the Tableau needs to be embedded.
+        If you are directly calling `embed`, use the form `embed(nqubits, indices::Tuple, t::Tableau)`.
+        If you are not using `embed` directly, then `embed` must have been incorrectly called
+        by one of the functions you have called.
+        """))
+    end
+end
+
+function embed(n::Int, indices, t::Tableau)
+    if nqubits(t) == length(indices)
+        tout = zero(typeof(t), size(t)[1], n)
+        @inbounds @simd for j in 1:size(t)[1]
+            @inbounds @simd for i in eachindex(indices)
+                tout[j, indices[i]] = t[j][i]
+                tout.phases[j] = t.phases[j]
+            end
+        end
+        return tout
+    else
+        throw(ArgumentError(lazy"""
+        You are trying to embed a small Tableau into a larger Tableau.
+        However, you have not given all the positions at which the Tableau needs to be embedded.
+        If you are directly calling `embed`, use the form `embed(nqubits, indices::Tuple, t::Tableau)`.
+        If you are not using `embed` directly, then `embed` must have been incorrectly called
+        by one of the functions you have called.
+        """))
+    end
+end
+
+"""
+Embed a Stabilizer in a larger Stabilizer.
+
+```jldoctest
+julia> embed(10, 5, S"-Y Z")
+- ____Y_____
++ ____Z_____
+
+julia> embed(10, (1,9), S"XX -YZ")
++ X_______X_
+- Y_______Z_
+```
+"""
+function embed(n::Int, i::Int, s::AbstractStabilizer)
+     if nqubits(s) == 1
+        sout = zero(typeof(s), size(s)[1], n)
+        for j in 1:size(s)[1]
+            tab(sout)[j, i] = tab(s)[j][1]
+            tab(sout).phases[j] = tab(s).phases[j]
+        end
+        return sout
+    else
+        throw(ArgumentError("""
+        You are trying to embed a small Stabilizer into a larger Stabilizer.
+        However, you have not given all the positions at which the Stabilizer needs to be embedded.
+        If you are directly calling `embed`, use the form `embed(nqubits, indices::Tuple, s::AbstractStabilizer)`.
+        If you are not using `embed` directly, then `embed` must have been incorrectly called
+        by one of the functions you have called.
+        """))
+    end
+end
+
+function embed(n::Int, indices, s::AbstractStabilizer)
+    if nqubits(s) == length(indices)
+        sout = zero(typeof(s), size(s)[1], n)
+        @inbounds @simd for j in 1:size(s)[1]
+            @inbounds @simd for i in eachindex(indices)
+                tab(sout)[j, indices[i]] = tab(s)[j][i]
+                tab(sout).phases[j] = tab(s).phases[j]
+            end
+        end
+        return sout
+    else
+        throw(ArgumentError(lazy"""
+        You are trying to embed a small Stabilizer into a larger Stabilizer.
+        However, you have not given all the positions at which the Stabilizer needs to be embedded.
+        If you are directly calling `embed`, use the form `embed(nqubits, indices::Tuple, s::AbstractStabilizer)`.
+        If you are not using `embed` directly, then `embed` must have been incorrectly called
+        by one of the functions you have called.
+        """))
+    end
+end
+
 ##############################
 # Destabilizer formalism
 ##############################
