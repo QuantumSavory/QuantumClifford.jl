@@ -1,3 +1,7 @@
+import QuantumClifford: ⊗
+
+import Base: *, copy
+
 #=
 1. adding tests for basic correctness
 2. single qubit gates / channels (and tests)
@@ -26,13 +30,17 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 with ϕᵢⱼ | Pᵢ | Pⱼ:
  1.0+0.0im | + _ | + _
 
+julia> GeneralizedStabilizer(S"-X").destabweights
+DataStructures.DefaultDict{Tuple{BitVector, BitVector}, ComplexF64, ComplexF64} with 1 entry:
+  ([0], [0]) => 1.0+0.0im
+
 julia> pcT
 A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
 with ϕᵢ | Pᵢ
  0.853553+0.353553im | + _
  0.146447-0.353553im | + Z
 
-julia> apply!(GeneralizedStabilizer(S"-X"), pcT)
+julia> gs = apply!(GeneralizedStabilizer(S"-X"), pcT)
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
@@ -43,6 +51,19 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
  0.0-0.353553im | + Z | + _
  0.853553+0.0im | + _ | + _
  0.146447+0.0im | + Z | + Z
+
+julia> gs.stab
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+
+julia> gs.destabweights
+DataStructures.DefaultDict{Tuple{BitVector, BitVector}, ComplexF64, ComplexF64} with 4 entries:
+  ([0], [1]) => 0.0+0.353553im
+  ([1], [0]) => 0.0-0.353553im
+  ([0], [0]) => 0.853553+0.0im
+  ([1], [1]) => 0.146447+0.0im
 ```
 
 See also: [`PauliChannel`](@ref)
@@ -94,6 +115,123 @@ function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator) # 
     state
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> sm ⊗ sm
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _Z
+𝒮𝓉𝒶𝒷
+- X_
+- _X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + __ | + __
+```
+
+"""
+function (⊗)(state₁::GeneralizedStabilizer, state₂::GeneralizedStabilizer)
+    dict₁ = state₁.destabweights
+    dict₂ = state₂.destabweights
+    dtype = valtype(dict₁)
+    tzero = zero(dtype)
+    newdict = typeof(dict₁)(tzero)
+    newstab = state₁.stab ⊗ state₂.stab
+    n = nqubits(newstab)
+    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im))
+    for ((dᵢ, dⱼ), χ) in dict₁
+        for ((dᵢ′, dⱼ′), χ′) in dict₂
+            newdict[(dᵢ, dⱼ)] = get!(newdict, (dᵢ, dⱼ), tzero) + χ * χ′
+        end
+    end
+    newsm.destabweights = newdict
+    return newsm
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> tHadamard * sm
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ X
+𝒮𝓉𝒶𝒷
+- Z
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+```
+
+"""
+function (*)(Op::AbstractCliffordOperator, state::GeneralizedStabilizer)
+    dict = state.destabweights
+    dtype = valtype(dict)
+    tzero = zero(dtype)
+    newdict = typeof(dict)(tzero)
+    newstab = Op * state.stab
+    n = nqubits(newstab)
+    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im))
+    newsm.destabweights = dict
+    return newsm
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> P"-Y" * sm
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
+- Z
+𝒮𝓉𝒶𝒷
++ X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+```
+
+"""
+function (*)(Op::PauliOperator, state::GeneralizedStabilizer)
+    dict = state.destabweights
+    dtype = valtype(dict)
+    tzero = zero(dtype)
+    newdict = typeof(dict)(tzero)
+    newstab = Op * state.stab
+    n = nqubits(newstab)
+    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im))
+    newsm.destabweights = dict
+    return newsm
+end 
+
+
 """$(TYPEDSIGNATURES)
 
 Expectation value for the [PauliOperator](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`."""
@@ -110,13 +248,13 @@ end
 """Same as `all(==(0), (a.+b.+c) .% 2)`"""
 function _allthreesumtozero(a,b,c) # TODO consider using bitpacking and SIMD xor with less eager shortcircuiting -- probably would be much faster
     @inbounds @simd for i in 1:length(a)
-        iseven(a[i]+b[i]+c[i]) || return false
+        ((a[i] + b[i] + c[i]) & 1) == 0 || return false
     end
     true
 end
 
 function _dictvaltype(dict)
-    return eltype(dict).parameters[2] # TODO there must be a cleaner way to do this
+    return valtype(dict)
 end
 
 function project!(sm::GeneralizedStabilizer, p::PauliOperator)
@@ -173,29 +311,30 @@ end
 
 nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 
-function apply!(state::GeneralizedStabilizer, gate::PauliChannel)
+function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold::Union{Nothing, Float64}=nothing)
+    if prune_threshold === nothing
+        prune_threshold = 1e-14  # Default value
+    end
     dict = state.destabweights
     stab = state.stab
     dtype = _dictvaltype(dict)
     tzero = zero(dtype)
     tone = one(dtype)
-    newdict = typeof(dict)(tzero) # TODO jeez, this is ugly
+    newdict = typeof(dict)(tzero)
     for ((dᵢ,dⱼ), χ) in dict # the state
-        for ((Pₗ,Pᵣ), w) in zip(gate.paulis,gate.weights) # the channel
+        for ((Pₖ,Pₗ), w) in zip(gate.paulis, gate.weights) # the channel
+            phaseₖ, dₖ, dₖˢᵗᵃᵇ = rowdecompose(Pₖ,stab)
             phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ,stab)
-            phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ,stab)
-            c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ))*2
-            dᵢ′ = dₗ .⊻ dᵢ
-            dⱼ′ = dᵣ .⊻ dⱼ
-            χ′ = χ * w * (-tone)^c * (im)^(-phaseₗ+phaseᵣ+4)
-            newdict[(dᵢ′,dⱼ′)] += χ′
+            cₖₗ = (dot(dₖˢᵗᵃᵇ,dᵢ) + dot(dₗˢᵗᵃᵇ,dⱼ))*2
+            dᵢ′ = dₖ .⊻ dᵢ
+            dⱼ′ = dₗ .⊻ dⱼ
+            χ′ = χ * w * (-tone)^cₖₗ * (im)^(-phaseₖ+phaseₗ+4)
+            if abs(χ′) >= prune_threshold
+                newdict[(dᵢ′,dⱼ′)] = get!(newdict,(dᵢ′,dⱼ′),0)+χ′
+            end
         end
     end
-    for (k,v) in newdict # TODO is it safe to modify a dict while iterating over it?
-        if abs(v) < 1e-14 # TODO parameterize this pruning parameter
-            delete!(newdict, k)
-        end
-    end
+    filter!(x -> abs(x[2]) >= prune_threshold, newdict)
     state.destabweights = newdict
     state
 end
@@ -205,6 +344,9 @@ end
 For given tableaux of rows destabilizer rows ``\\{d_i\\}`` and stabilizer rows ``\\{s_i\\}``,
 there are boolean vectors ``b`` and ``c`` such that
 ``P = i^p \\prod_i d_i^{b_i} \\prod_i s_i^{c_i}``.
+
+By examining the commutation of `P` with the stabilizer and destabilizer generators,
+this decomposition can be determined in `Ο(n²)` time.
 
 This function returns `p`, `b`, `c`.
 
@@ -302,7 +444,79 @@ end
 
 nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
-apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel) = apply!(state, gate.paulichannel)
+apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold::Union{Nothing, Float64}=nothing) = prune_threshold === nothing ? apply!(state, gate.paulichannel) : apply!(state, gate.paulichannel, prune_threshold)
+
+"""
+$(TYPEDSIGNATURES)
+
+```jldoctest
+julia> pcT ⊗ P"X"
+A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
+with ϕᵢ | Pᵢ
+ 0.853553+0.353553im | + _X
+ 0.146447-0.353553im | + ZX
+```
+
+"""
+function (⊗)(gate::AbstractPauliChannel, Op::PauliOperator)
+    new_unitary_channel = typeof(gate)
+    ps = typeof(gate.paulichannel)
+    new_paulis = pcT.paulis |> collect |> x -> map(y -> y ⊗ Op, x) |> Tuple
+    weights = gate.weights
+    return UnitaryPauliChannel(new_paulis, weights)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+```jldoctest
+julia> tHadamard * pcT
+A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
+with ϕᵢ | Pᵢ
+ 0.853553+0.353553im | X₁ ⟼ + Z
+Z₁ ⟼ + X
+ 0.146447-0.353553im | X₁ ⟼ + Z
+Z₁ ⟼ - X
+```
+
+"""
+function (*)(Op::AbstractCliffordOperator, gate::AbstractPauliChannel)
+    new_unitary_channel = typeof(gate)
+    ps = typeof(gate.paulichannel)
+    new_paulis = pcT.paulis |> collect |> x -> map(y -> y * Op, x) |> Tuple
+    weights = gate.weights
+    return UnitaryPauliChannel(new_paulis, weights)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> copy(sm)
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> sm == copy(sm)
+true
+```
+
+"""
+Base.copy(sm::GeneralizedStabilizer) = GeneralizedStabilizer(copy(sm.stab),copy(sm.destabweights))
+Base.:(==)(sm₁::GeneralizedStabilizer, sm₂::GeneralizedStabilizer) = sm₁.stab==sm₂.stab && sm₁.destabweights==sm₂.destabweights
 
 ##
 # Predefined Pauli Channels

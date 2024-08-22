@@ -58,18 +58,18 @@
         end
     end
 
-    @testset "Tensor products over generalized stabilizers" begin
-        for n in rand(1:10, 10)
-            l = random_stabilizer(n)
-            r = random_stabilizer(n)
-            sm = GeneralizedStabilizer(l)
-            sm1 = GeneralizedStabilizer(r)
-            s = l⊗r
-            sm2 = sm⊗sm1
-            @test mixed_destab_looks_good(sm2.stab)
-            canonicalize!(s)
-            dss = canonicalize!(copy(stabilizerview(sm2.stab)))
-            @test s == dss
+    @testset "Tensor products over GeneralizedStabilizer" begin
+        for nₛₘ in rand(1:10, 10)
+            lₛₘ = random_stabilizer(nₛₘ)
+            rₛₘ = random_stabilizer(nₛₘ)
+            sm₁ = GeneralizedStabilizer(lₛₘ)
+            sm₂ = GeneralizedStabilizer(rₛₘ)
+            sₜ = lₛₘ⊗rₛₘ
+            sm₃ = sm₁⊗sm₂
+            @test mixed_destab_looks_good(sm₃.stab)
+            canonicalize!(sₜ)
+            dssₛₘ = canonicalize!(copy(stabilizerview(sm₃.stab)))
+            @test sₜ == dssₛₘ
         end
     end
 

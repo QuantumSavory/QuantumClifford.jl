@@ -1,6 +1,6 @@
 @testitem "Pauli Operators" begin
-  using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
-  test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
+    using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
+    test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
     @testset "Parsing, constructors, and properties" begin
         @test P"-iXYZ" == PauliOperator(0x3, 3, vcat(BitArray([1,1,0]).chunks, BitArray([0,1,1]).chunks))
@@ -88,6 +88,32 @@
                     apply!(s3,P"Z",[z])
                     @test s1==s2==s3
                 end
+            end
+        end
+
+    @testset "Single qubit Paulis and their action on GeneralizedStabilizer" begin
+        for i in 1:3
+            for n in test_sizes
+                x, y, z = rand(1:n), rand(1:n), rand(1:n)
+                px = single_x(n,x)
+                py = single_y(n,y)
+                pz = single_z(n,z)
+                rstab = random_stabilizer(n)
+                s1 = GeneralizedStabilizer(rstab)
+                s2 = copy(s1)
+                s3 = copy(s1)
+                apply!(s1,px)
+                apply_single_x!(s2.stab,x)
+                apply!(s3.stab,P"X",[x])
+                @test s1==s2==s3
+                apply!(s1,py)
+                apply_single_y!(s2.stab,y)
+                apply!(s3.stab,P"Y",[y])
+                @test s1==s2==s3
+                apply!(s1,pz)
+                apply_single_z!(s2.stab,z)
+                apply!(s3.stab,P"Z",[z])
+                @test s1==s2==s3
             end
         end
     end
