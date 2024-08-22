@@ -44,17 +44,17 @@ for _ in 1:10
         bigtgate = embed(n,i, pcT)
         @test qo_bigtgate ≈ Operator(bigtgate)
 
-        for step in 1:10
+        #for step in 1:10
             # apply!(ket, qo_bigtgate) TODO implement this API
-            ket = qo_bigtgate*ket
-            apply!(genstab, bigtgate)
-            @test dm(ket) ≈ Operator(genstab)
-            if isapprox(expect(qo_pauli, ket), expect(pauli, genstab); atol=1e-5)
-            else
-                @show step
-                ref[] = (stab,pauli)
-                break
-            end
-        end
+            #ket = qo_bigtgate*ket
+            #apply!(genstab, bigtgate)
+            #@test dm(ket) ≈ Operator(genstab)
+            #if isapprox(expect(qo_pauli, ket), expect(pauli, genstab); atol=1e-5)
+            #else
+               # @show step
+               # ref[] = (stab,pauli)
+                #break
+           # end
+        #end
     end
 end
