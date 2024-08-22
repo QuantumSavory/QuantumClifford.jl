@@ -116,7 +116,7 @@ function _allthreesumtozero(a,b,c) # TODO consider using bitpacking and SIMD xor
 end
 
 function _dictvaltype(dict)
-    return eltype(dict).parameters[2] # TODO there must be a cleaner way to do this
+    return valtype(dict)
 end
 
 function project!(sm::GeneralizedStabilizer, p::PauliOperator)
@@ -173,29 +173,30 @@ end
 
 nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 
-function apply!(state::GeneralizedStabilizer, gate::PauliChannel)
+function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold::Union{Nothing, Float64}=nothing)
+    if prune_threshold === nothing
+        prune_threshold = 1e-14  # Default value
+    end
     dict = state.destabweights
     stab = state.stab
     dtype = _dictvaltype(dict)
     tzero = zero(dtype)
     tone = one(dtype)
-    newdict = typeof(dict)(tzero) # TODO jeez, this is ugly
+    newdict = typeof(dict)(tzero)
     for ((dᵢ,dⱼ), χ) in dict # the state
-        for ((Pₗ,Pᵣ), w) in zip(gate.paulis,gate.weights) # the channel
+        for ((Pₖ,Pₗ), w) in zip(gate.paulis, gate.weights) # the channel
+            phaseₖ, dₖ, dₖˢᵗᵃᵇ = rowdecompose(Pₖ,stab)
             phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ,stab)
-            phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ,stab)
-            c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ))*2
-            dᵢ′ = dₗ .⊻ dᵢ
-            dⱼ′ = dᵣ .⊻ dⱼ
-            χ′ = χ * w * (-tone)^c * (im)^(-phaseₗ+phaseᵣ+4)
-            newdict[(dᵢ′,dⱼ′)] += χ′
+            cₖₗ = (dot(dₖˢᵗᵃᵇ,dᵢ) + dot(dₗˢᵗᵃᵇ,dⱼ))*2
+            dᵢ′ = dₖ .⊻ dᵢ
+            dⱼ′ = dₗ .⊻ dⱼ
+            χ′ = χ * w * (-tone)^cₖₗ * (im)^(-phaseₖ+phaseₗ+4)
+            if abs(χ′) >= prune_threshold
+                newdict[(dᵢ′,dⱼ′)] = get!(newdict,(dᵢ′,dⱼ′),0)+χ′
+            end
         end
     end
-    for (k,v) in newdict # TODO is it safe to modify a dict while iterating over it?
-        if abs(v) < 1e-14 # TODO parameterize this pruning parameter
-            delete!(newdict, k)
-        end
-    end
+    filter!(x -> abs(x[2]) >= prune_threshold, newdict)
     state.destabweights = newdict
     state
 end
@@ -302,7 +303,7 @@ end
 
 nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
-apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel) = apply!(state, gate.paulichannel)
+apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold::Union{Nothing, Float64}=nothing) = prune_threshold === nothing ? apply!(state, gate.paulichannel) : apply!(state, gate.paulichannel, prune_threshold)
 
 ##
 # Predefined Pauli Channels
