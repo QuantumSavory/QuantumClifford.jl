@@ -23,13 +23,26 @@ jobs:
           - '5'
         arch:
           - x64
+        include:
+          - arch: aarch64
+            os: macos-latest
+            version: '1'
+            threads: '1'
+          - arch: x64
+            os: macos-latest
+            version: '1'
+            threads: '1'
+          - arch: x64
+            os: windows-latest
+            version: '1'
+            threads: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - uses: julia-actions/cache@v1
+      - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
         env:
@@ -47,7 +60,7 @@ jobs:
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1'
-      - uses: julia-actions/cache@v1
+      - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-docdeploy@v1
         env:

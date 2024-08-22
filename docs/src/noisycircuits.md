@@ -5,7 +5,6 @@ DocTestSetup = quote
     using QuantumClifford
     using QuantumClifford.Experimental.NoisyCircuits
 end
-CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
 
 !!! warning "Unstable"
