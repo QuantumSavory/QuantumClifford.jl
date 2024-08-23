@@ -16,36 +16,24 @@
         s_test = copy(s)
         group = groupify(s)
         @test length(group) == 2^n
-        unchanged = true
         for stabilizer in group
             apply!(s, stabilizer)
-            if !(s == s_test)
-                unchanged = false
-            end
-            @test unchanged == true
+            @test s == s_test
         end
     end
     #Test minimal_generating_set
-    for n in [1, small_test_sizes...]
+    for n in [1, test_sizes...]
         s = random_stabilizer(n)
         group = groupify(s)
         gen_set = minimal_generating_set(Stabilizer(group))
+        @test length(group) == 2^(length(gen_set))
         new_group = groupify(gen_set)
-        canonicalize!(Stabilizer(group))
-        canonicalize!(Stabilizer(new_group))
-        @test group == new_group
-        s = zero(Stabilizer, rand(1:(2*n)), n)
-        for i in 1:length(s)
-            s[i] = random_pauli(n)
-        end
-        gen_set = minimal_generating_set(s)
-        new_group = groupify(s)
-        for operator in s
-            @test operator in new_group
-        end
+        s1, _, r = canonicalize!(Stabilizer(group), ranks = true)
+        s2, _, r = canonicalize!(Stabilizer(new_group), ranks=true)
+        @test group[1:r, :] == new_group[1:r, :]
     end
     #Test logical_operator_canonicalize
-    for n in [1, test_sizes...]
+    for n in [1, small_test_sizes...]
         t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
         for i in eachindex(t) t[i] = random_pauli(n) end 
         loc = QuantumClifford.logical_operator_canonicalize(t) #TODO fix exporting
@@ -72,13 +60,13 @@
         end   
     end
     #Test commutativise
-    for n in [1, test_sizes...]
+    for n in [1, small_test_sizes...]
         t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
         for i in eachindex(t) t[i] = random_pauli(n) end
         c, d = QuantumClifford.commutavise(t)
         for i in c
             for j in c
-                if comm(i, j) == 0x01 println("asd") end
+                @test comm(i, j) == 0x0
             end
         end
         for i in d
@@ -90,6 +78,18 @@
         loc2 = logical_operator_canonicalize(t)
         for i in eachindex(delete_columns(c, d))
            for j in eachindex(loc1[i]) @test loc1[i][j] ==loc2[i][j] end
+        end
+    end
+    #Test embed
+    for n in [1,2,3,4,5]
+        t = zero(QuantumClifford.Tableau, 2*n, n)
+        for i in eachindex(t) t[i] = random_pauli(n) end
+        s = Stabilizer(groupify(embed(t)))
+        @test 2^(nqubits(s)) == length(s) #assumes commutativise works
+        s_test = copy(s)
+        for p in s
+            apply!(s, p)
+            @test s == s_test
         end
     end
     #Test pauligroup
@@ -118,7 +118,7 @@
            @test (!commutes) || (pauli in normalized)
         end
     end
-    #Test centralizer
+    # #Test centralizer
     for n in [1, test_sizes...]
         t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
         for i in eachindex(t) t[i] = random_pauli(n) end
