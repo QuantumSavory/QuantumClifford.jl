@@ -89,6 +89,31 @@ function _stabmixdestab(mixeddestab, d)
     p
 end
 
+"""
+Updates the generalized stabilizer `τ = (χ, B(S, D))` by applying a Clifford gate `G`,
+where `χ` represents the density matrix and `B(S, D)` denotes the stabilizer basis in
+which `χ` is expressed.
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> apply!(sm, CliffordOperator(sHadamard))
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ X
+𝒮𝓉𝒶𝒷
+- Z
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+```
+"""
 function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator) # TODO conjugate also the destabs
     apply!(state.stab, gate)
     state
