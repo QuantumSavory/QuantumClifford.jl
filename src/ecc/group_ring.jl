@@ -303,3 +303,7 @@ end
 Construct a cyclic permutation of length `l` with a shift `n`.
 """
 cyclic_permutation(n::Int, l::Int) = Perm(vcat(n+1:l, 1:n))
+
+PermGroupRingMatrix = Union{
+    Matrix{<:PermGroupRingElem},
+    LinearAlgebra.Adjoint{<:PermGroupRingElem,<:Matrix{<:PermGroupRingElem}}}

@@ -1,5 +1,5 @@
 import Nemo: matrix_space
-
+import LinearAlgebra
 
 """
 Lifted product codes [panteleev2021degenerate](@cite) [panteleev2022asymptotically](@cite)
@@ -16,12 +16,13 @@ The lifting is achieved by applying `repr` to each element of the matrix resulte
 
 See also: [`LiftedCode`](@ref), [`PermGroupRing`](@ref).
 """
+
 struct LPCode <: AbstractECC
-    A::Matrix{PermGroupRingElem}
-    B::Matrix{PermGroupRingElem}
+    A::PermGroupRingMatrix
+    B::PermGroupRingMatrix
     repr::Function
 
-    function LPCode(A::Matrix{<: PermGroupRingElem}, B::Matrix{<: PermGroupRingElem}, repr::Function)
+    function LPCode(A::PermGroupRingMatrix, B::PermGroupRingMatrix, repr::Function)
         A[1, 1].parent == B[1, 1].parent || error("The base rings of the two codes must be the same")
         new(A, B, repr)
     end
@@ -32,7 +33,7 @@ struct LPCode <: AbstractECC
     end
 end
 
-function LPCode(A::Matrix{<: PermGroupRingElem}, B::Matrix{<: PermGroupRingElem})
+function LPCode(A::PermGroupRingMatrix, B::PermGroupRingMatrix)
     A[1, 1].parent == B[1, 1].parent || error("The base rings of the two codes must be the same")
     LPCode(A, B, permutation_repr)
 end
@@ -53,7 +54,7 @@ end
 iscss(::Type{LPCode}) = true
 
 function parity_checks_xz(c::LPCode)
-    hx, hz = hgp(c.A, c.B)
+    hx, hz = hgp(c.A, c.B')
     hx, hz = lift(c.repr, hx), lift(c.repr, hz)
     return hx, hz
 end

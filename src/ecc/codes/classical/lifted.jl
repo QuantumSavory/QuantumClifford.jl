@@ -13,7 +13,7 @@ This will enlarge the parity check matrix from `A` with each element being infla
 See also: [`LPCode`](@ref), [`PermGroupRing`](@ref).
 """
 struct LiftedCode <: ClassicalCode
-    A::Matrix{PermGroupRingElem}
+    A::PermGroupRingMatrix
     repr::Function
 
     function LiftedCode(A::Matrix{<: PermGroupRingElem}, repr::Function)
@@ -21,7 +21,7 @@ struct LiftedCode <: ClassicalCode
     end
 end
 
-function LiftedCode(A::Matrix{PermGroupRingElem{FqFieldElem}})
+function LiftedCode(A::PermGroupRingMatrix)
     !(characteristic(base_ring(A[1,1])) == 2) && error("The default permutation representation applies only to GF(2) group algebra")
     LiftedCode(A, permutation_repr)
 end
@@ -50,7 +50,7 @@ function permutation_repr(x::PermGroupRingElem{FqFieldElem})
     return mat
 end
 
-function lift(repr::Function, mat::Matrix{PermGroupRingElem})
+function lift(repr::Function, mat::PermGroupRingMatrix)
     vcat([hcat([repr(mat[i, j]) for j in axes(mat, 2)]...) for i in axes(mat, 1)]...)
 end
 

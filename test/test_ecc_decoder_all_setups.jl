@@ -4,9 +4,6 @@
     import PyQDecoders
     import LDPCDecoders
 
-    import Nemo: GF
-    import LinearAlgebra
-
     include("test_ecc_base.jl")
 
     @testset "table decoder, good for small codes" begin
@@ -100,28 +97,8 @@
     end
 end
 
-# TODO add generalized bicycle codes, after which maybe we should remove some of the above codes
-
-other_lifted_product_codes = []
-
-# from https://arxiv.org/abs/2202.01702v3
-
-l = 63
-R = PermutationGroupRing(GF(2), l)
-A = zeros(R, 7, 7)
-x = R(cyclic_permutation(1, l))
-A[LinearAlgebra.diagind(A)] .= x^27
-A[LinearAlgebra.diagind(A, -1)] .= x^54
-A[LinearAlgebra.diagind(A, 6)] .= x^54
-A[LinearAlgebra.diagind(A, -2)] .= R(1)
-A[LinearAlgebra.diagind(A, 5)] .= R(1)
-
-B = reshape([(1 + x + x^6)'], (1, 1))
-
-push!(other_lifted_product_codes, LPCode(A, B))
-
 @testset "belief prop decoders, good for sparse codes" begin
-    codes = vcat(LP04, LP118, other_lifted_product_codes)
+    codes = vcat(LP04, LP118, test_gb_codes, other_lifted_product_codes)
 
     noise = 0.001
 
