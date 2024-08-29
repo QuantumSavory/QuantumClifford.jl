@@ -37,6 +37,7 @@ For quantum code construction routines:
 - [kitaev2003fault](@cite)
 - [fowler2012surface](@cite)
 - [knill1996concatenated](@cite)
+- [fan2016quantum](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)
@@ -48,6 +49,8 @@ For classical code construction routines:
 - [bose1960class](@cite)
 - [bose1960further](@cite)
 - [error2024lin](@cite)
+- [wolf1965codes](@cite)
+- [wolf2006introduction](@cite)
 
 # References
 

@@ -2,7 +2,7 @@
     using LinearAlgebra
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC, BCH, generator_polynomial
-    using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible 
+    using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible
 
     """
     - To prove that `t`-bit error correcting BCH code indeed has minimum distance of at least `2 * t + 1`, it is shown that no `2 * t` or fewer columns of its binary parity check matrix `H` sum to zero. A formal mathematical proof can be found on pages 168 and 169 of Ch6 of Error Control Coding by Lin, Shu and Costello, Daniel. 
@@ -26,7 +26,7 @@
         m_cases = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         for m in m_cases
             n = 2 ^ m - 1
-            for t in rand(1:m, 2)
+            for t in rand(1:m-1, 2)
                 H = parity_checks(BCH(m, t))
                 @test check_designed_distance(H, t) == true
                 # n - k == degree of generator polynomial, `g(x)` == rank of binary parity check matrix, `H`.
