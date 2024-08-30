@@ -36,7 +36,7 @@
     for n in [1, small_test_sizes...]
         t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
         for i in eachindex(t) t[i] = random_pauli(n) end 
-        loc = logical_operator_canonicalize(t) #TODO fix exporting
+        loc = logical_operator_canonicalize(t).tab 
         index = 0
         for i in range(1, stop=length(loc)+1, step=2)
             if i + 1 > length(loc)|| comm(loc[i], loc[i+1]) == 0x0 
@@ -75,7 +75,7 @@
             end
         end
         loc1= delete_columns(c, d)
-        loc2 = logical_operator_canonicalize(t)
+        loc2 = logical_operator_canonicalize(t).tab
         for i in eachindex(delete_columns(c, d))
            for j in eachindex(loc1[i]) @test loc1[i][j] ==loc2[i][j] end
         end

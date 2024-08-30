@@ -76,7 +76,7 @@ export
     graphstate, graphstate!, graph_gatesequence, graph_gate,
     # Group tableaux functions for error correction
     groupify, minimal_generating_set, logical_operator_canonicalize, commutavise, embed, 
-    pauligroup, normalizer, centralizer, contractor, delete_columns,
+    SubsystemCodeTableau, pauligroup, normalizer, centralizer, contractor, delete_columns,
     # Clipped Gauge
     canonicalize_clip!, bigram, entanglement_entropy,
     # mctrajectories

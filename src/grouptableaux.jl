@@ -2,6 +2,44 @@ using Graphs
 using LinearAlgebra
 
 """
+A tableau representation of the logical operator canonical form of a set of Paulis.
+The index of the first operator that commutes with all others is tracked so that the
+stabilizer, destabilizer, logical X, and logical Z aspects of the tableau can be 
+represented.
+"""
+mutable struct SubsystemCodeTableau{Tableau} <: AbstractStabilizer
+    tab::Tableau
+    index::Int
+end
+function SubsystemCodeTableau(t::Tableau)
+    index = -1
+    for i in range(1, stop=length(t), step=2)
+        if i + 1 > length(t) 
+            break
+        end
+        if comm(t[i], t[i+1]) == 0x01 
+            index = i+2 # index to split loc into non-commuting pairs and commuting operators
+        end
+    end
+    return SubsystemCodeTableau(t, index)::SubsystemCodeTableau
+    
+end
+
+Base.length(t::SubsystemCodeTableau) = length(t.tab)
+
+Base.copy(t::SubsystemCodeTableau) = SubsystemCodeTableau(copy(t.tab))
+
+"""A view of the subtableau corresponding to the stabilizer. See also [`tab`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
+@inline stabilizerview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[index(s):length()])
+"""A view of the subtableau corresponding to the destabilizer. See also [`tab`](@ref), [`stabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
+@inline destabilizerview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[index(s):length()])
+"""A view of the subtableau corresponding to the logical X operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalzview`](@ref)"""
+@inline logicalxview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[range(1, index, 2)])
+"""A view of the subtableau corresponding to the logical Z operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalzview`](@ref)"""
+@inline logicalzview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[range(2, index, 2)])
+
+
+"""
 Return the full stabilizer group represented by the input generating set (a [`Stabilizer`](@ref)).
 
 The returned object is exponentially long.
@@ -109,7 +147,7 @@ function logical_operator_canonicalize(t:: QuantumClifford.Tableau)
         loc = loc[1:(length(loc)-1)]
     end
 
-    return loc
+    return SubsystemCodeTableau(loc)
 end
 
 """
@@ -133,15 +171,17 @@ julia> commutavise(QuantumClifford.Tableau([P"XX", P"XZ", P"XY"]))[2]
 """
 function commutavise(t)
     loc = QuantumClifford.logical_operator_canonicalize(t)
-    index = -1
-    for i in range(1, stop=length(loc), step=2)
-        if i + 1 > length(loc) 
-            break
-        end
-        if comm(loc[i], loc[i+1]) == 0x01 
-            index = i # index to split loc into non-commuting pairs and commuting operators
-        end
-    end
+    index = loc.index
+    loc = loc.tab
+    # index = -1
+    # for i in range(1, stop=length(loc), step=2)
+    #     if i + 1 > length(loc) 
+    #         break
+    #     end
+    #     if comm(loc[i], loc[i+1]) == 0x01 
+    #         index = i # index to split loc into non-commuting pairs and commuting operators
+    #     end
+    # end
     commutative = zero(Stabilizer, length(loc), nqubits(loc)+convert(Int64, (index+1)/2))
     for i in eachindex(loc)
         dummy = commutative[i]
