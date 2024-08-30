@@ -165,8 +165,8 @@ function commutavise(t)
 end
 
 """
-For a given set of Paulis that does not neccessarily represent a qubit state, return a set of
-Paulis that contains the commutativised given set and represents a qubit state. 
+For a given set of Paulis that does not neccessarily represent a state, return a set of
+Paulis that contains the commutativised given set and represents a state. 
 
 ```jldoctest
 julia> embed(QuantumClifford.Tableau([P"XX"]))
@@ -177,10 +177,6 @@ julia> embed(QuantumClifford.Tableau([P"XX"]))
 
 ```
 """
-#TODO make more efficent: if have some conditions on way stabilizer is repsented, can do tricks?
-# hvae gen set, know its commutative
-# norm contains gen set(this case(input is commutative))
-# add subsets for contract and delete
 function embed(t::QuantumClifford.Tableau)
     com, d1= QuantumClifford.commutavise(t)
     norm = QuantumClifford.normalizer(com.tab)
