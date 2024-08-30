@@ -36,7 +36,7 @@
     for n in [1, small_test_sizes...]
         t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
         for i in eachindex(t) t[i] = random_pauli(n) end 
-        loc = QuantumClifford.logical_operator_canonicalize(t) #TODO fix exporting
+        loc = logical_operator_canonicalize(t) #TODO fix exporting
         index = 0
         for i in range(1, stop=length(loc)+1, step=2)
             if i + 1 > length(loc)|| comm(loc[i], loc[i+1]) == 0x0 
@@ -63,7 +63,7 @@
     for n in [1, small_test_sizes...]
         t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
         for i in eachindex(t) t[i] = random_pauli(n) end
-        c, d = QuantumClifford.commutavise(t)
+        c, d = commutavise(t)
         for i in c
             for j in c
                 @test comm(i, j) == 0x0
@@ -84,13 +84,15 @@
     for n in [1,2,3,4,5]
         t = zero(QuantumClifford.Tableau, 2*n, n)
         for i in eachindex(t) t[i] = random_pauli(n) end
-        s = Stabilizer(groupify(embed(t)))
+        e, d2, d1 = embed(t)
+        s = Stabilizer(groupify(e))
         @test 2^(nqubits(s)) == length(s) #assumes commutativise works
-        s_test = copy(s)
-        for p in s
-            apply!(s, p)
-            @test s == s_test
-        end
+        #find oringal tableau from embedded state, ignoring phases
+        inverted = delete_columns(Stabilizer(normalizer(delete_columns(Stabilizer(e), d2).tab)), d1)
+        original = Stabilizer(groupify(Stabilizer(t)))
+        canonicalize!(inverted)
+        canonicalize!(original)
+        @test inverted.tab.xzs == original.tab.xzs
     end
     #Test pauligroup
     for n in [1, small_test_sizes...] 
