@@ -118,13 +118,17 @@ form of that set, and for each pair Aₖ, Bₖ of anticommutative Paulis, add an
 a Z to Bₖ, and an I to each other operator, such that the set is now fully commutative 
 as well as return a list of the indices of the added qubits.
 
-```jldoctest
-julia> embed(QuantumClifford.Tableau([P"XX"]))
-+ X_X
-+ ZZZ
-+ XX_
-+ ___
+Phases are ignored, and returned Stabilizers contain only the + phase
 
+```jldoctest
+julia> commutavise(QuantumClifford.Tableau([P"XX", P"XZ", P"XY"]))[1]
++ XXX
++ XZZ
++ X__
+
+julia> commutavise(QuantumClifford.Tableau([P"XX", P"XZ", P"XY"]))[2]
+1-element Vector{Any}:
+ 3
 ```
 """
 function commutavise(t)
@@ -166,15 +170,25 @@ end
 
 """
 For a given set of Paulis that does not neccessarily represent a state, return a set of
-Paulis that contains the commutativised given set and represents a state. 
+Paulis that contains the commutativised given set and represents a state, as well as deletions 
+needed to return to the original set of Paulis. 
+
+By deleting the qubits in the first returned array, taking the normalizer, then deleting the qubits in the 
+second returned array from the normalizer, the original set is produced. 
 
 ```jldoctest
-julia> embed(QuantumClifford.Tableau([P"XX"]))
+julia> embed(QuantumClifford.Tableau([P"XX"]))[1]
 + X_X
 + ZZZ
 + XX_
 + ___
 
+julia> embed(QuantumClifford.Tableau([P"XX"]))[2]
+1-element Vector{Any}:
+ 3
+
+julia> embed(QuantumClifford.Tableau([P"XX"]))[3]
+Any[]
 ```
 """
 function embed(t::QuantumClifford.Tableau)
@@ -255,7 +269,7 @@ julia> normalizer(T"X")
 + X
 ```
 """
-function normalizer(t::Tableau)
+function normalizer(t::Tableau; phases=false)
     # For each `PauliOperator` p in the with same number of qubits as the `Stabilizer` s, iterate through s and check each 
     # operator's commutivity with p. If they all commute, add p a vector of `PauliOperators`. Return the vector 
     # converted to `Tableau`.
@@ -279,11 +293,11 @@ function normalizer(t::Tableau)
         if commutes
             push!(norm, copy(p))
         end
-        # if phases
-        #     for phase in [-1, 1im, -1im]   
-        #         push!(pgroup, p*phase)
-        #     end
-        # end
+        if phases
+            for phase in [-1, 1im, -1im]   
+                push!(pgroup, p*phase)
+            end
+        end
     end
     return QuantumClifford.Tableau(norm)
 end
