@@ -1,3 +1,5 @@
+import QuantumInterface: nsubsystems
+
 """A Stabilizer measurement on the entirety of the quantum register.
 
 `projectrand!(state, pauli)` and `apply!(state, PauliMeasurement(pauli))` give the same (possibly non-deterministic) result.
@@ -17,6 +19,9 @@ function apply!(state::AbstractStabilizer, m::PauliMeasurement)
     state
 end
 
+function apply!(state::MixedDestabilizer, indices::Base.AbstractVecOrTuple, operation::Type{<:AbstractSymbolicOperator})
+    apply!(state, operation(indices...))
+end
 
 """A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`.
 
@@ -30,6 +35,10 @@ SparseGate(c,t::Tuple) = SparseGate(c,collect(t))
 
 function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
     apply!(state, g.cliff, g.indices; kwargs...)
+end
+
+function LinearAlgebra.inv(g::SparseGate; phases=true)
+  return SparseGate(inv(g.cliff;phases=phases), g.indices)
 end
 
 """Reset the specified qubits to the given state.
@@ -136,3 +145,5 @@ struct ClassicalXOR{N} <: AbstractOperation
 end
 
 ClassicalXOR(bits,store) = ClassicalXOR{length(bits)}(tuple(bits...),store)
+
+nsubsystems(state::MixedDestabilizer) = nqubits(state)

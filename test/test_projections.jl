@@ -1,20 +1,19 @@
-using QuantumClifford
+@testitem "Projective measurements" begin
+    using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
+    using QuantumClifford: projectremoverand!
 
-using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
-using QuantumClifford: projectremoverand!
+    test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
-test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
-@testset "Projective measurements" begin
     @testset "Stabilizer representation" begin
         s = S"XXX
-                ZZI
-                IZZ"
+        ZZI
+        IZZ"
         ps, anticom, res = project!(copy(s), P"ZII")
         ps = canonicalize!(ps)
         @test anticom==1 && isnothing(res) && ps == S"ZII
-                                                        IZI
-                                                        IIZ"
+        IZI
+        IIZ"
         @test stab_looks_good(ps)
 
         ps, anticom, res = project!(copy(s), P"-XXX")
@@ -65,7 +64,7 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
     end
     @testset "Anticommutation indices and NA results" begin
         s = S" XXX
-                -ZZI"
+        -ZZI"
         ds = Destabilizer(copy(s))
         ms = MixedStabilizer(copy(s))
         mds = MixedDestabilizer(copy(s))
@@ -125,21 +124,21 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         s, a, r = project!(copy(stab), projzl)
         @test mixed_destab_looks_good(s)
         @test a==0 && r==0x0       && stabilizerview(s)==S"Z___
-                                                            _Z__"
+        _Z__"
         s, a, r = project!(copy(stab), projxl)
         @test mixed_destab_looks_good(s)
         @test a==1 && isnothing(r) && stabilizerview(s)==S"X___
-                                                            _Z__"
+        _Z__"
         s, a, r = project!(copy(stab), projzr)
         @test mixed_destab_looks_good(s)
         @test a==3 && isnothing(r) && stabilizerview(s)==S"Z___
-                                                            _Z__
-                                                            ___Z"
+        _Z__
+        ___Z"
         s, a, r = project!(copy(stab), projxr)
         @test mixed_destab_looks_good(s)
         @test a==3 && isnothing(r) && stabilizerview(s)==S"Z___
-                                                            _Z__
-                                                            ___X"
+        _Z__
+        ___X"
     end
     @testset "Interface Particularities" begin
         s = S"ZII IZI"
@@ -349,21 +348,21 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
     @testset "Redundant row permutations in `project!(::MixedDestabilizer)`" begin
         # Fixed in 41ed1d3c
         destab =  T"+ ZX_Y_YXZ
-                    + XY_Y____
-                    + _Z_XXY__
-                    + _ZYXXY__
-                    + X__Y_ZXZ
-                    + X__YXZXZ
-                    + ___YXXZZ
-                    + _______Z"
+        + XY_Y____
+        + _Z_XXY__
+        + _ZYXXY__
+        + X__Y_ZXZ
+        + X__YXZXZ
+        + ___YXXZZ
+        + _______Z"
         stab =    T"+ X_______
-                    + _X_Y____
-                    + __ZY____
-                    + __Z_____
-                    + ___YZY__
-                    + X__YZYZZ
-                    + X____YZZ
-                    + ______YX"
+        + _X_Y____
+        + __ZY____
+        + __Z_____
+        + ___YZY__
+        + X__YZYZZ
+        + X____YZZ
+        + ______YX"
         t = MixedDestabilizer(vcat(destab,stab), 8)
         @test mixed_destab_looks_good(t)
         c = copy(stabilizerview(t)[[1,3,5,7]])
