@@ -926,15 +926,24 @@ end
 Base.vcat(stabs::Stabilizer...) = Stabilizer(vcat((tab(s) for s in stabs)...))
 
 function Base.hcat(tabs::Tableau...)
-    # Ensure all Tableaus have the same number of rows
-    nqubits = tabs[1].nqubits
-    if !all(t -> t.nqubits == nqubits, tabs)
-        throw(ArgumentError("All Tableaus must have the same number of qubits for horizontal concatenation."))
+    rows = size(tabs[1], 1)
+    cols = sum(map(tab -> size(tab, 2), tabs))
+    newtab = zero(Tableau, rows, cols)
+    cols_idx = 1
+    for tab in tabs
+        rows_tab, cols_tab = size(tab)
+        if rows_tab != rows
+            throw(ArgumentError("All input Tableaux/Stabilizers must have the same number of rows."))
+        end
+        for i in 1:rows
+            for j in 1:cols_tab
+                newtab[i, cols_idx+j-1] = tab[i, j]
+            end
+            newtab.phases[i] |= tab.phases[i]
+        end
+        cols_idx += cols_tab
     end
-    Tableau(
-    tabs[1].phases, #does not make sense, better method needed for phases concatenation
-    sum(s.nqubits for s in tabs),
-    hcat((s.xzs for s in tabs)...))
+    return newtab
 end
 
 Base.hcat(stabs::Stabilizer...) = Stabilizer(hcat((tab(s) for s in stabs)...))
