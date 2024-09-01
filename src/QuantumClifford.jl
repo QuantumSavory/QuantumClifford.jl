@@ -917,7 +917,7 @@ end
 check_allrowscommute(stabilizer::Stabilizer)=check_allrowscommute(tab(stabilizer))
 
 """
-Vertically concatenates multiple `stabilizers`.
+Vertically concatenates `stabilizers`.
 
 ```jldoctest
 julia> vcat(ghz(2), ghz(2))
@@ -939,7 +939,7 @@ end
 Base.vcat(stabs::Stabilizer...) = Stabilizer(vcat((tab(s) for s in stabs)...))
 
 """
-Horizontally concatenates multiple `stabilizers`.
+Horizontally concatenates `stabilizers`.
 
 ```jldoctest
 julia> hcat(ghz(2), ghz(2))
