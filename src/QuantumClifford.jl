@@ -916,6 +916,19 @@ function check_allrowscommute(stabilizer::Tableau)
 end
 check_allrowscommute(stabilizer::Stabilizer)=check_allrowscommute(tab(stabilizer))
 
+"""
+Vertically concatenates multiple `stabilizers`.
+
+```jldoctest
+julia> vcat(ghz(2), ghz(2))
++ XX
++ ZZ
++ XX
++ ZZ
+```
+
+See also: [`hcat`](@ref)
+"""
 function Base.vcat(tabs::Tableau...)
     Tableau(
         vcat((s.phases for s in tabs)...),
@@ -925,6 +938,17 @@ end
 
 Base.vcat(stabs::Stabilizer...) = Stabilizer(vcat((tab(s) for s in stabs)...))
 
+"""
+Horizontally concatenates multiple `stabilizers`.
+
+```jldoctest
+julia> hcat(ghz(2), ghz(2))
++ XXXX
++ ZZZZ
+```
+
+See also: [`vcat`](@ref)
+"""
 function Base.hcat(tabs::Tableau...)
     rows = size(tabs[1], 1)
     cols = sum(map(tab -> size(tab, 2), tabs))
