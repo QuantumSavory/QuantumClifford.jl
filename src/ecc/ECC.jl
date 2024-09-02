@@ -361,6 +361,7 @@ include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
+include("codes/bbqldpc.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/bch.jl")
 end #module
