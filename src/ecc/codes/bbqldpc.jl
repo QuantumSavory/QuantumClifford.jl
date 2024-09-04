@@ -10,6 +10,12 @@ struct BBQLDPC <: AbstractECC
     m::Int
     A::Vector{Int}
     B::Vector{Int}
+    function BBQLDPC(l,m,A,B)
+        (l >= 0 && m >= 0) || error("l and m must be non-negative")
+        (length(A) == 3 && length(B) == 3) || error("A and B must each have exactly 3 entries")
+        (all(x -> x >= 0, A) && all(x -> x >= 0, B)) || error("A and B must contain only non-negative integers")
+        new(l,m,A,B)
+    end
 end
 
 function iscss(::Type{BBQLDPC})
@@ -39,6 +45,7 @@ function parity_checks(c::BBQLDPC)
 end
 
 code_n(c::BBQLDPC) = 2*c.l*c.m
+
 code_k(c::BBQLDPC) = code_n(c) - LinearAlgebra.rank(matrix(GF(2), parity_checks_x(c))) - LinearAlgebra.rank(matrix(GF(2), parity_checks_z(c)))
 
 parity_checks_x(c::BBQLDPC) = hcat(_AB(c)...)

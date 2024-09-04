@@ -8,7 +8,7 @@ using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, nullspace, hom, free_module, kernel, domain, map, gens
 
 abstract type AbstractECC end
 
