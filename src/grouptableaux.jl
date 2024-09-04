@@ -10,9 +10,12 @@ represented.
 mutable struct SubsystemCodeTableau{Tableau} <: AbstractStabilizer
     tab::Tableau
     index::Int
+    # r::Int
+    # k::Int
 end
 function SubsystemCodeTableau(t::Tableau)
-    index = -1
+    tab = zero(Tableau, length(t), nqubits(t))
+    index = 1
     for i in range(1, stop=length(t), step=2)
         if i + 1 > length(t) 
             break
@@ -20,6 +23,25 @@ function SubsystemCodeTableau(t::Tableau)
         if comm(t[i], t[i+1]) == 0x01 
             index = i+2 # index to split loc into non-commuting pairs and commuting operators
         end
+    end
+    s = Stabilizer(t[index:length(t)])
+    d = Destabilizer(s)
+    ind = 1 
+    for p in d 
+        tab[ind] = p
+        ind+=1
+    end
+    for i in range(1, stop=index-1, step=2)
+        tab[ind] = t[i]
+        ind+=1
+    end
+    for p in s 
+        tab[ind] = p
+        ind+=1
+    end
+    for i in range(2, stop=index, step=2)
+        tab[ind] = t[i]
+        ind+=1
     end
     return SubsystemCodeTableau(t, index)::SubsystemCodeTableau
     
@@ -30,9 +52,9 @@ Base.length(t::SubsystemCodeTableau) = length(t.tab)
 Base.copy(t::SubsystemCodeTableau) = SubsystemCodeTableau(copy(t.tab))
 
 """A view of the subtableau corresponding to the stabilizer. See also [`tab`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
-@inline stabilizerview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[index(s):length()])
+@inline stabilizerview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[index(s):length(s)])
 """A view of the subtableau corresponding to the destabilizer. See also [`tab`](@ref), [`stabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
-@inline destabilizerview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[index(s):length()])
+@inline destabilizerview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[index(s):length(s)])
 """A view of the subtableau corresponding to the logical X operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalzview`](@ref)"""
 @inline logicalxview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[range(1, index, 2)])
 """A view of the subtableau corresponding to the logical Z operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalzview`](@ref)"""
@@ -190,7 +212,7 @@ function commutavise(t)
         
     end
     for i in range(1, stop=length(loc), step=2)
-        if (i <= index) 
+        if (i < index) 
             dummy = commutative[i]
             dummy[nqubits(t)+convert(Int64, (i+1)/2)] = (true, false) 
             commutative[i] = dummy
@@ -239,8 +261,8 @@ function embed(t::QuantumClifford.Tableau)
 end
 
 """
-Return the full Pauli group of a given length. Phases besides + are ignored by default, 
-but can be included by setting phases = true.
+Return the full Pauli group of a given length. Phases are ignored by default, 
+but can be included by setting `phases = true`.
 
 ```jldoctest
 julia> pauligroup(1)
@@ -288,7 +310,7 @@ function pauligroup(n::Int; phases=false)
         end
     end
     if !phases
-        s = zero(Tableau, (4^n), n)
+        s = zero(Tableau, 4^n, n)
         paulis = ((false, false), (true, false), (false, true), (true, true))
         for (i, P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
             for (j, p) in enumerate(P)
