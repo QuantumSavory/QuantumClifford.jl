@@ -51,7 +51,23 @@ function prototype_parity_checks(c::Triangular4_8_8)
     i = 1
     checks_written = 0
     for layer in 1:num_layers
-        # TODO convert half 8-gons from previous layer into full 8-gons
+        # Convert half 8-gons from previous layer into full 8-gons
+        num_8_gons = layer-1
+        checks_written -= num_8_gons
+        for j in 1:(num_8_gons)
+            checks[checks_written+1,i+2*layer+1+(j-1)*2] = 1
+            checks[checks_written+1,i+2*layer+j*2] = 1
+
+            offset = 0
+            if layer == num_layers && num_layers%2==0
+                offset = 1
+            end
+
+            checks[checks_written+1,(2*layer+1)+i+2*layer+1+(j-1)*2 - offset] = 1
+            checks[checks_written+1,(2*layer+1)+i+2*layer+j*2 - offset] = 1
+
+            checks_written += 1
+        end
 
         # red 4-gons
         for j in 0:(layer-1)
@@ -107,6 +123,12 @@ function prototype_parity_checks(c::Triangular4_8_8)
     end
 
     return checks
+end
+
+# Just a function for testing/debugging prints which qubits each stabilizer touches
+function get_qubit_indices(matrix)
+    for j in 1:size(matrix)[1] println(findall(>(0),matrix[j,:])) end
+    return
 end
 
 function iscss(::ColorCode)
