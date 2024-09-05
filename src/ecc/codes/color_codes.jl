@@ -14,40 +14,19 @@ end
 Triangular4_8_8() = Triangular4_8_8(3) # smallest d
 
 function parity_checks(c::Triangular4_8_8)
-    matrix = nothing
-    if c.d == 3 # Note that this is the same as the Steane7 code
-        matrix = Matrix{Bool}([
-            [1 1 1 1 0 0 0];
-            [1 0 1 0 1 1 0]; 
-            [0 0 1 1 0 1 1]])
-    elseif c.d== 5
-        matrix = Matrix{Bool}([
-            [1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0];
-            [1 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0];
-            [0 0 1 1 0 1 1 0 0 1 1 0 0 1 1 0 0];
-            [0 0 0 0 1 1 0 0 1 1 0 0 0 0 0 0 0];
-            [0 0 0 0 0 0 1 1 0 0 1 1 0 0 0 0 0];
-            [0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 1];
-            [0 0 0 0 0 0 0 0 1 1 0 0 1 1 0 0 0];
-            [0 0 0 0 0 0 0 0 0 0 1 1 0 0 1 1 0]])
-    end
+    matrix = get_check_matrix(c)
 
-    if isnothing(matrix)
-        throw("Parity checks for a distance $(c.d) code of type $(typeof(c)) are not currently implemented.")
-    else
-        num_checks, qubits = size(matrix)
-        return Stabilizer(vcat(matrix,zeros(Bool,num_checks,qubits)), vcat(zeros(Bool,num_checks,qubits), matrix))
-    end
+    num_checks, qubits = size(matrix)
+    return Stabilizer(vcat(matrix,zeros(Bool,num_checks,qubits)), vcat(zeros(Bool,num_checks,qubits), matrix))
 end
 
-function prototype_parity_checks(c::Triangular4_8_8)
+"""Returns the binary matrix defining the x stabilizers for the Triangular4_8_8 code. The Z stabilizers are the same."""
+function get_check_matrix(c::Triangular4_8_8)
     n = code_n(c)
-    num_checks = (n-1)/2 |> Int
-
-    checks = zeros(Bool, num_checks, n)
-
+    num_checks = (n-1)/2 |> Int 
     num_layers = (c.d-1)/2 |> Int
-
+    checks = zeros(Bool, num_checks, n)
+    
     i = 1
     checks_written = 0
     for layer in 1:num_layers
@@ -85,8 +64,6 @@ function prototype_parity_checks(c::Triangular4_8_8)
             checks[checks_written+1,i+4*layer] = 1
             checks[checks_written+1,i+4*layer+1] = 1
             checks_written += 1
-
-            
         else
             # blue half 8-gon on right side
             checks[checks_written+1,i+1+(layer-1)*2] = 1
@@ -121,12 +98,11 @@ function prototype_parity_checks(c::Triangular4_8_8)
 
         i += 4*layer  
     end
-
     return checks
 end
 
-# Just a function for testing/debugging prints which qubits each stabilizer touches
-function get_qubit_indices(matrix)
+"""Returns which qubits each stabilizer touches when given a parity check matrix. Useful for debugging/testing."""
+function get_qubit_indices(matrix::Matrix{Bool})
     for j in 1:size(matrix)[1] println(findall(>(0),matrix[j,:])) end
     return
 end
