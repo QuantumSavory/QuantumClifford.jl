@@ -15,11 +15,11 @@ mutable struct SubsystemCodeTableau <: AbstractStabilizer
     k::Int
 end
 function SubsystemCodeTableau(t::Tableau)
-    identity = zero(PauliOperator, nqubits(t))
-    num = 0
-    for p in t 
-        if p == identity num+=1 end
-    end
+    # identity = zero(PauliOperator, nqubits(t))
+    # num = 0
+    # for p in t 
+    #     if p == identity num+=1 end
+    # end
     index = 1
     for i in range(1, stop=length(t), step=2)
         if i + 1 > length(t) 
@@ -33,7 +33,7 @@ function SubsystemCodeTableau(t::Tableau)
     ind = 1
     if length(s)>nqubits(s)#if stabilizer is overdetermined, Destabilizer constructor throws error 
         m = length(s)
-        tab = zero(Tableau, length(t)+length(s)-num, nqubits(t))
+        tab = zero(Tableau, length(t)+length(s), nqubits(t))
         for i in s 
             tab[ind] = zero(PauliOperator, nqubits(s))
             ind+=1
@@ -41,7 +41,7 @@ function SubsystemCodeTableau(t::Tableau)
     else
         d = Destabilizer(s)
         m = length(d)
-        tab = zero(Tableau, length(t)+length(d)-num, nqubits(t))
+        tab = zero(Tableau, length(t)+length(d), nqubits(t))
         for p in destabilizerview(d) 
             tab[ind] = p
             ind+=1
@@ -52,16 +52,16 @@ function SubsystemCodeTableau(t::Tableau)
         ind+=1
     end
     for p in s
-        if p != identity 
+        
             tab[ind] = p
             ind+=1
-        end
+        
     end
     for i in range(2, stop=index, step=2)
         tab[ind] = t[i]
         ind+=1
     end
-    return SubsystemCodeTableau(tab, index, length(s)-num, m, (index-1)/2)
+    return SubsystemCodeTableau(tab, index, length(s), m, (index-1)/2)
     
 end
 
@@ -71,27 +71,19 @@ Base.copy(t::SubsystemCodeTableau) = SubsystemCodeTableau(copy(t.tab))
 
 """A view of the subtableau corresponding to the stabilizer. See also [`tab`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
 function stabilizerview(s::SubsystemCodeTableau)
-    if s.r !=0 return Stabilizer(@view tab(s)[s.m+s.k+1:s.m+s.k+s.r])
-    else return zero(Stabilizer, 1, nqubits(s))
-    end
+    return Stabilizer(@view tab(s)[s.m+s.k+1:s.m+s.k+s.r])
 end
 """A view of the subtableau corresponding to the destabilizer. See also [`tab`](@ref), [`stabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
 function destabilizerview(s::SubsystemCodeTableau)
-    if s.r !=0 return Stabilizer(@view tab(s)[1:s.m])
-    else return zero(Stabilizer, 1, nqubits(s))
-    end
+    return Stabilizer(@view tab(s)[1:s.m])
 end
 """A view of the subtableau corresponding to the logical X operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalzview`](@ref)"""
 function logicalxview(s::SubsystemCodeTableau)
-    if s.k !=0 return Stabilizer(tab(s)[s.m+1:s.m+s.k])
-    else return zero(Stabilizer, 1, nqubits(s))    
-    end
+    return Stabilizer(tab(s)[s.m+1:s.m+s.k])
 end
 """A view of the subtableau corresponding to the logical Z operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalzview`](@ref)"""
 function logicalzview(s::SubsystemCodeTableau)
-    if s.k !=0 return Stabilizer(tab(s)[s.m+1+s.k+s.r:length(s)])
-    else return zero(Stabilizer, 1, nqubits(s))
-    end
+    return Stabilizer(tab(s)[s.m+1+s.k+s.r:length(s)])
 end
 
 
