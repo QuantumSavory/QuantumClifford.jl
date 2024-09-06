@@ -261,8 +261,9 @@ second returned array from the normalizer, the original set is produced.
 ```jldoctest
 julia> embed(QuantumClifford.Tableau([P"XX"]))[1]
 + X_X
-+ ZZZ
-+ XX_
+│ + ZZZ
+│ + XX_
+│ + ___
 
 julia> embed(QuantumClifford.Tableau([P"XX"]))[2]
 1-element Vector{Any}:
