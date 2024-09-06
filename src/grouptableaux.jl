@@ -7,14 +7,19 @@ The index of the first operator that commutes with all others is tracked so that
 stabilizer, destabilizer, logical X, and logical Z aspects of the tableau can be 
 represented.
 """
-mutable struct SubsystemCodeTableau{Tableau} <: AbstractStabilizer
+mutable struct SubsystemCodeTableau <: AbstractStabilizer
     tab::Tableau
     index::Int
-    # r::Int
-    # k::Int
+    r::Int
+    m::Int
+    k::Int
 end
 function SubsystemCodeTableau(t::Tableau)
-    tab = zero(Tableau, length(t), nqubits(t))
+    identity = zero(PauliOperator, nqubits(t))
+    num = 0
+    for p in t 
+        if p == identity num+=1 end
+    end
     index = 1
     for i in range(1, stop=length(t), step=2)
         if i + 1 > length(t) 
@@ -25,25 +30,38 @@ function SubsystemCodeTableau(t::Tableau)
         end
     end
     s = Stabilizer(t[index:length(t)])
-    d = Destabilizer(s)
-    ind = 1 
-    for p in d 
-        tab[ind] = p
-        ind+=1
+    ind = 1
+    if length(s)>nqubits(s)#if stabilizer is overdetermined, Destabilizer constuctors throws error 
+        m = length(s)
+        tab = zero(Tableau, length(t)+length(s)-num, nqubits(t))
+        for i in s 
+            tab[ind] = zero(PauliOperator, nqubits(s))
+            ind+=1
+        end
+    else
+        d = Destabilizer(s)
+        m = length(d)
+        tab = zero(Tableau, length(t)+length(d)-num, nqubits(t))
+        for p in destabilizerview(d) 
+            tab[ind] = p
+            ind+=1
+        end
     end
     for i in range(1, stop=index-1, step=2)
         tab[ind] = t[i]
         ind+=1
     end
-    for p in s 
-        tab[ind] = p
-        ind+=1
+    for p in s
+        if p != identity 
+            tab[ind] = p
+            ind+=1
+        end
     end
     for i in range(2, stop=index, step=2)
         tab[ind] = t[i]
         ind+=1
     end
-    return SubsystemCodeTableau(t, index)::SubsystemCodeTableau
+    return SubsystemCodeTableau(tab, index, length(s)-num, m, (index-1)/2)
     
 end
 
@@ -52,13 +70,29 @@ Base.length(t::SubsystemCodeTableau) = length(t.tab)
 Base.copy(t::SubsystemCodeTableau) = SubsystemCodeTableau(copy(t.tab))
 
 """A view of the subtableau corresponding to the stabilizer. See also [`tab`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
-@inline stabilizerview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[index(s):length(s)])
+function stabilizerview(s::SubsystemCodeTableau)
+    if s.r !=0 return Stabilizer(@view tab(s)[s.m+s.k+1:s.m+s.k+s.r])
+    else return zero(Stabilizer, 1, nqubits(s))
+    end
+end
 """A view of the subtableau corresponding to the destabilizer. See also [`tab`](@ref), [`stabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
-@inline destabilizerview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[index(s):length(s)])
+function destabilizerview(s::SubsystemCodeTableau)
+    if s.r !=0 return Stabilizer(@view tab(s)[1:s.m])
+    else return zero(Stabilizer, 1, nqubits(s))
+    end
+end
 """A view of the subtableau corresponding to the logical X operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalzview`](@ref)"""
-@inline logicalxview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[range(1, index, 2)])
+function logicalxview(s::SubsystemCodeTableau)
+    if s.k !=0 return Stabilizer(tab(s)[s.m+1:s.m+s.k])
+    else return zero(Stabilizer, 1, nqubits(s))    
+    end
+end
 """A view of the subtableau corresponding to the logical Z operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalzview`](@ref)"""
-@inline logicalzview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[range(2, index, 2)])
+function logicalzview(s::SubsystemCodeTableau)
+    if s.k !=0 return Stabilizer(tab(s)[s.m+1+s.k+s.r:length(s)])
+    else return zero(Stabilizer, 1, nqubits(s))
+    end
+end
 
 
 """
@@ -125,11 +159,14 @@ For a not-neccessarily commutative set of Paulis, returning a generating set of 
 <A₁, B₁, A₂, B₂, ... Aₖ, Bₖ, Aₖ₊₁, ... Aₘ> where two operators anticommute if and only if they 
 are of the form Aₖ, Bₖ and commute otherwise.
 
+Returns the generating set as a data structure of type [`SubsystemCodeTableau`](@ref).
+
 ```jldoctest
-julia> logical_operator_canonicalize(QuantumClifford.Tableau([P"XX", P"XZ", P"XY"]))
+julia> tab(logical_operator_canonicalize(QuantumClifford.Tableau([P"XX", P"XZ", P"XY"])))
++ Z_
 + XX
-+ XZ
 -iX_
++ XZ
 ```
 """
 function logical_operator_canonicalize(t:: QuantumClifford.Tableau)
@@ -168,7 +205,6 @@ function logical_operator_canonicalize(t:: QuantumClifford.Tableau)
     while length(loc) > 1 && loc[length(loc)-1] == zero(PauliOperator, nqubits(loc)) 
         loc = loc[1:(length(loc)-1)]
     end
-
     return SubsystemCodeTableau(loc)
 end
 
@@ -193,39 +229,31 @@ julia> commutavise(QuantumClifford.Tableau([P"XX", P"XZ", P"XY"]))[2]
 """
 function commutavise(t)
     loc = QuantumClifford.logical_operator_canonicalize(t)
-    index = loc.index
-    loc = loc.tab
-    # index = -1
-    # for i in range(1, stop=length(loc), step=2)
-    #     if i + 1 > length(loc) 
-    #         break
-    #     end
-    #     if comm(loc[i], loc[i+1]) == 0x01 
-    #         index = i # index to split loc into non-commuting pairs and commuting operators
-    #     end
-    # end
-    commutative = zero(Stabilizer, length(loc), nqubits(loc)+convert(Int64, (index+1)/2))
-    for i in eachindex(loc)
-        dummy = commutative[i]
-        for j in eachindex(loc[i]) dummy[j] = loc[i][j] end
-        commutative[i] = dummy
-        
+    commutative = zero(Stabilizer, 2*loc.k+loc.r, nqubits(loc)+loc.k)
+    ind = 1
+    for i in 1:loc.k
+        dummy = commutative[ind]
+        for j in eachindex(logicalxview(loc)[i]) dummy[j] = logicalxview(loc)[i][j] end
+        dummy[nqubits(loc)+i] = (true, false)
+        commutative[ind] = dummy
+        ind+=1
     end
-    for i in range(1, stop=length(loc), step=2)
-        if (i < index) 
-            dummy = commutative[i]
-            dummy[nqubits(t)+convert(Int64, (i+1)/2)] = (true, false) 
-            commutative[i] = dummy
-            dummy = commutative[i+1]
-            dummy[nqubits(t)+convert(Int64, (i+1)/2)] = (false, true) 
-            commutative[i+1] = dummy
-        end
+    for i in 1:loc.k
+        dummy = commutative[ind]
+        for j in eachindex(logicalzview(loc)[i]) dummy[j] = logicalzview(loc)[i][j] end
+        dummy[nqubits(loc)+i] = (false, true)
+        commutative[ind] = dummy
+        ind+=1
+    end
+    for i in 1:loc.r
+        dummy = commutative[ind]
+        for j in eachindex(stabilizerview(loc)[i]) dummy[j] = stabilizerview(loc)[i][j] end
+        commutative[ind] = dummy
+        ind+=1   
     end
     to_delete = []
-    i = nqubits(t)+1
-    while i <=nqubits(t)+convert(Int64, (index+1)/2)
-        push!(to_delete, i)
-        i+=1
+    for i in 1:loc.k
+        push!(to_delete, i+nqubits(tab(loc)))
     end
     return commutative, to_delete
 end
@@ -243,7 +271,6 @@ julia> embed(QuantumClifford.Tableau([P"XX"]))[1]
 + X_X
 + ZZZ
 + XX_
-+ ___
 
 julia> embed(QuantumClifford.Tableau([P"XX"]))[2]
 1-element Vector{Any}:
@@ -357,7 +384,7 @@ function normalizer(t::Tableau; phases=false)
         end
         if phases
             for phase in [-1, 1im, -1im]   
-                push!(pgroup, p*phase)
+                push!(norm, phase *p)
             end
         end
     end

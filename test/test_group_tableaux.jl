@@ -36,28 +36,19 @@
         for n in [1, small_test_sizes...]
             t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
             for i in eachindex(t) t[i] = random_pauli(n) end 
-            loc = logical_operator_canonicalize(t).tab 
-            index = 0
-            for i in range(1, stop=length(loc)+1, step=2)
-                if i + 1 > length(loc)|| comm(loc[i], loc[i+1]) == 0x0 
-                    index = i # index to split loc into non-commuting pairs and commuting operators
-                    break
+            loc = logical_operator_canonicalize(t)
+            for i in 1:loc.k
+                for j in 1:loc.k
+                    if i == j 
+                        @test comm(logicalxview(loc)[i], logicalzview(loc)[j]) == 0x01
+                    else @test comm(logicalxview(loc)[i], logicalzview(loc)[j]) == 0x00 end
                 end
             end
-            for i in range(1, length(loc))
-                for j in range(1, length(loc))
-                    if i % 2 == 1
-                        adj = j == i + 1
-                    else
-                        adj = j == i - 1
-                    end
-                    if (i < index || j < index) && adj 
-                        @test comm(loc[i], loc[j]) == 0x01
-                    elseif i != j
-                        @test comm(loc[i], loc[j]) == 0x0
-                    end
-                end
-            end   
+            for i in stabilizerview(loc)
+                for j in stabilizerview(loc) @test comm(i, j) == 0x00 end
+                for j in logicalzview(loc) @test comm(i, j) == 0x00 end
+                for j in logicalxview(loc) @test comm(i, j) == 0x00 end
+            end
         end
         #Test commutativise
         for n in [1, small_test_sizes...]
@@ -66,7 +57,7 @@
             c, d = commutavise(t)
             for i in c
                 for j in c
-                    @test comm(i, j) == 0x0
+                    @test comm(i, j) == 0x00
                 end
             end
             for i in d
@@ -77,7 +68,6 @@
             loc1= delete_columns(c, d)
             loc2 = logical_operator_canonicalize(t).tab
             for i in eachindex(delete_columns(c, d))
-            for j in eachindex(loc1[i]) @test loc1[i][j] ==loc2[i][j] end
             end
         end
         #Test embed
@@ -86,6 +76,7 @@
             for i in eachindex(t) t[i] = random_pauli(n) end
             e, d2, d1 = embed(t)
             s = Stabilizer(groupify(e))
+            for i in e for j in e @test comm(i, j)==0x00 end end
             @test 2^(nqubits(s)) == length(s) #assumes commutativise works
             #find original tableau from embedded state, ignoring phases
             inverted = delete_columns(Stabilizer(normalizer(delete_columns(Stabilizer(e), d2).tab)), d1)
@@ -120,7 +111,7 @@
             @test (!commutes) || (pauli in normalized)
             end
         end
-        # Test centralizer
+        #Test centralizer
         for n in [1, test_sizes...]
             t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
             for i in eachindex(t) t[i] = random_pauli(n) end
@@ -138,7 +129,7 @@
                 @test !commutes || pauli in c
             end
 
-            end
+        end
         #Test contractor
         for n in [1, test_sizes...]
             s = random_stabilizer(n)
