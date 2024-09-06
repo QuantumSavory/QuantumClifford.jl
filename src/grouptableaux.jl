@@ -31,7 +31,7 @@ function SubsystemCodeTableau(t::Tableau)
     end
     s = Stabilizer(t[index:length(t)])
     ind = 1
-    if length(s)>nqubits(s)#if stabilizer is overdetermined, Destabilizer constuctors throws error 
+    if length(s)>nqubits(s)#if stabilizer is overdetermined, Destabilizer constructor throws error 
         m = length(s)
         tab = zero(Tableau, length(t)+length(s)-num, nqubits(t))
         for i in s 
@@ -155,7 +155,7 @@ function minimal_generating_set(s::Stabilizer)
 end
 
 """
-For a not-neccessarily commutative set of Paulis, returning a generating set of the form 
+For a not-necessarily commutative set of Paulis, returning a generating set of the form 
 <A₁, B₁, A₂, B₂, ... Aₖ, Bₖ, Aₖ₊₁, ... Aₘ> where two operators anticommute if and only if they 
 are of the form Aₖ, Bₖ and commute otherwise.
 
@@ -259,7 +259,7 @@ function commutavise(t)
 end
 
 """
-For a given set of Paulis that does not neccessarily represent a state, return a set of
+For a given set of Paulis that does not necessarily represent a state, return a set of
 Paulis that contains the commutativised given set and represents a state, as well as deletions 
 needed to return to the original set of Paulis. 
 
