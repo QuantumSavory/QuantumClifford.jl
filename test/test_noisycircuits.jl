@@ -5,7 +5,15 @@
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
     using QuantumClifford.Experimental.NoisyCircuits
+
     import AbstractAlgebra
+
+    @testset "SparseGate" begin
+        g = SparseGate(random_clifford(2), randperm(10)[1:2])
+        gi = inv(g)
+        c = random_stabilizer(10)
+        @assert apply!(apply!(copy(c), g), gi) == c
+    end
 
     @testset "Noisy Gates" begin
         g1 = SparseGate(tId1, [1])
@@ -25,6 +33,7 @@
         resp = petrajectories(copy(state), [ng1,ng2,ng3,ng4,ng5])
         @test all(values(resp).==0)
     end
+
     @testset "Monte Carlo Purification examples" begin
         g1 = SparseGate(tCNOT, [1,3])
         g2 = SparseGate(tCNOT, [2,4])
@@ -48,8 +57,6 @@
         @test get(nonoise,false_success_stat,0) == 0
         @test nonoise[true_success_stat] == 10
     end
-
-
 
     @testset "Perturbative expansion Purification examples" begin
         @testset "Comparison to MC" begin
@@ -79,6 +86,7 @@
             @test compare(mc,pe,false_success_stat)
             @test compare(mc,pe,true_success_stat)
         end
+
         @testset "Symbolic" begin
             R, (e,) = AbstractAlgebra.polynomial_ring(AbstractAlgebra.RealField, ["e"])
             unity = R(1);
@@ -97,6 +105,7 @@
             @test pe_symbolic[true_success_stat]       == 27.0*e^4 + -54.0*e^3 + 36.0*e^2 + -10.0*e + 1.0
         end
     end
+
     @testset "Measurements" begin
         @testset "BellMeasurements" begin
             stateX = S"X"
@@ -138,6 +147,7 @@
             @test random2_pe[failure_stat]+random2_pe[false_success_stat] == 1
             @test random2_pe[true_success_stat] == 0
         end
+
         @testset "PauliMeasurements" begin
             ghzState = S"XXX
             ZZI
@@ -174,6 +184,7 @@
             @test random2_pe[false_success_stat] == 1
             @test random2_pe[true_success_stat] == 0
         end
+
         @testset "Sparse Measurements" begin
             ghzState = S"XXX
             ZZI
@@ -212,6 +223,7 @@
             @test random2_pe[false_success_stat] == 1
             @test random2_pe[true_success_stat] == 0
         end
+
         @testset "Conforming to the project! interface" begin
             state = Register(MixedDestabilizer(S"ZZ"), zeros(Bool, 1))
             meas = PauliMeasurement(P"ZI", 1)
@@ -222,6 +234,7 @@
             ZI"
         end
     end
+
     @testset "Classical Bits" begin
         @testset "DecisionGate" begin
             X_error = CliffordOperator([P"X", P"-Z"])
@@ -256,6 +269,7 @@
             canonicalize!(quantumstate(r))
             @test stabilizerview(r) == expectedFinalState
         end
+
         @testset "ConditionalGate" begin
             id_op = CliffordOperator([P"X", P"Z"])
             X_error = CliffordOperator([P"X", P"-Z"])

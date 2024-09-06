@@ -20,6 +20,10 @@ testfilter = ti -> begin
     push!(exclude, :gpu)
   end
 
+  if !(Base.Sys.islinux() & (Int===Int64))
+    push!(exclude, :bitpack)
+  end
+
   return all(!in(exclude), ti.tags)
 end
 

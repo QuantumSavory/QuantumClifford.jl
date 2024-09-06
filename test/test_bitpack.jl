@@ -1,4 +1,4 @@
-@testitem "Alternative bit packing" begin
+@testitem "Alternative bit packing" tags=[:bitpack] begin
     using Random
     using QuantumClifford: Tableau
 
