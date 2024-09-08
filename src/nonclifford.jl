@@ -98,13 +98,13 @@ end
 
 Expectation value for the [PauliOperator](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`."""
 function expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
-    e = zero(_dictvaltype(s.destabweights))
+    χ′ = zero(_dictvaltype(s.destabweights))
     phase, b, c = rowdecompose(p, s.stab)
     for ((dᵢ,dⱼ), χ) in s.destabweights
         _allthreesumtozero(dᵢ,dⱼ,b) || continue
-        e += χ * (-1)^(dᵢ'*c)
+        χ′ += χ * (-1)^(dᵢ'*c)
     end
-    return (-1)^(phase÷2) * e
+    return (im)^(phase) * χ′
 end
 
 """Same as `all(==(0), (a.+b.+c) .% 2)`"""
@@ -119,15 +119,84 @@ function _dictvaltype(dict)
     return eltype(dict).parameters[2] # TODO there must be a cleaner way to do this
 end
 
+"""
+Project the state of a [`GeneralizedStabilizer`](@ref) on the two eigenspaces of a
+Pauli operator.
+
+The projection is determined based on the expectation value of `p` with respect to
+the[`GeneralizedStabilizer`](@ref).
+
+When the expectation value of `p` is close to 1, the [`GeneralizedStabilizer`](@ref)
+`sm` is projected onto  the +1 eigenspace of `p`. Conversely, if the expectation
+value is near -1, the [`GeneralizedStabilizer`](@ref) `sm` projected onto the +1
+eigenspace of `-p`, which corresponds to the -1 eigenspace of  `p`. 
+
+For expectationvalues that fall between these extremes, the projection is
+determined probabilistically according to the magnitude of the expectation
+value.
+
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
++ X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> apply!(sm, pcT)
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
++ X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + _ | + Z
+ 0.0-0.353553im | + Z | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
+
+julia> project!(sm, P"Y")[1]
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ X
+𝒮𝓉𝒶𝒷
++ Y
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + _ | + X
+ 0.0-0.353553im | + X | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + X | + X
+```
+"""
 function project!(sm::GeneralizedStabilizer, p::PauliOperator)
     eval = expect(p, sm)
     prob₁ = (real(eval)+1)/2
-    error("This functionality is not implemented yet")
+    if prob₁ ≈ 0
+        return _proj₊(sm, -p)
+    elseif prob₁ ≈ 1
+        return _proj₊(sm, p)
+    else
+        if rand() < prob₁
+            return _proj₊(sm, p)
+        else
+            return _proj₊(sm, -p)
+        end
+    end
+end
+
+function _proj₊(sm::GeneralizedStabilizer, p::PauliOperator)
+    newstab, anticom_idx, res = project!(sm.stab, p)
+    sm.stab = newstab
+    return sm, anticom_idx, res
 end
 
 function _proj₋(sm::GeneralizedStabilizer, p::PauliOperator)
-end
-function _proj₊(sm::GeneralizedStabilizer, p::PauliOperator)
+    newstab, anticom_idx, res = project!(sm.stab, -p)
+    sm.stab = newstab
+    return sm, anticom_idx, res
 end
 
 abstract type AbstractPauliChannel <: AbstractOperation end
