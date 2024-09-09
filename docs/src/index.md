@@ -18,6 +18,25 @@ An `n`-qubit stabilizer state is uniquely determined as the joint eigenvector wi
 
 The stabilizer formalism is crucial in the realm of quantum error-correcting codes[^5], where mixed stabilizer states correspond directly to projectors on subspaces defined by stabilizer codes[^1]. Also, specific communication protocols like quantum teleportation utilize states described by their stabilizer. This group structure is robust enough to enable a wide range of quantum effects, even though it does not encompass the full power of quantum computation. Constructing and analyzing networks of quantum gates can be challenging due to the arbitrary states within the large Hilbert space that quantum computers handle. However, a subset of these networks can be more easily described by tracking the evolution of operators acting on the computer, similar to the Heisenberg representation in quantum mechanics where operators evolve over time.
 
+<div class="mermaid">
+mindmap
+  root((Applications of Stabilizer Formalism))
+    Quantum Error Correction
+      Quantum Error Correcting Codes
+      Fault-Tolerant Quantum Computing
+    Measurement-Based Quantum Computation
+      Cluster States
+      Graph States
+    Quantum Communication
+      Quantum Cryptography
+      Quantum Networking
+    Entanglement Distillation
+    Quantum Metrology
+    Quantum Simulation
+      Stabilizer Circuits
+      Efficient Simulation of Quantum Systems
+</div>
+
 [^1]: [gottesman1998heisenberg](@cite)
 
 [^2]: [aaronson2004improved](@cite)
