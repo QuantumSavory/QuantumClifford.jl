@@ -20,9 +20,10 @@ The parity check matrix is obtained by applying `repr` to each element of the ma
 
 ## Code instances
 
-A [[882, 24, d ≤ 24]] code from https://arxiv.org/abs/2202.01702v3, following the 1st constructor.
-During the construction, we do arithmetic operations to get the permutation group ring elements
-with `x` being the offset-1 cyclic permutation and `GA(1)` being the unit.
+A [[882, 24, d ≤ 24]] code from Appendix B of [roffe2023bias](@cite).
+We use the the 1st constructor to generate the code and check its length and dimension.
+During the construction, we do arithmetic operations to get the group algebra elements in base matrices `A` and `B`.
+Here `x` is the generator of the group algebra, i.e., offset-1 cyclic permutation, and `GA(1)` is the unit element.
 
 ```jldoctest
 julia> ENV["HECKE_PRINT_BANNER"] = "false"; import Hecke: group_algebra, GF, abelian_group, gens; import LinearAlgebra;
@@ -49,7 +50,8 @@ julia> code_n(c1), code_k(c1)
 (882, 24)
 ```
  
-A [[175, 19, d ≤ 0]] code from paper http://arxiv.org/abs/2111.07029, following the 4th constructor.
+A [[175, 19, d ≤ 0]] code from Eq. (18) in Appendix A of [raveendran2022finite](@cite),
+following the 4th constructor.
 
 ```jldoctest
 julia> base_matrix = [0 0 0 0; 0 1 2 5; 0 6 3 1]; l = 7;
@@ -149,6 +151,8 @@ Here the group is choosen as the cyclic group of order `l`,
 and the base matrices `a` and `b` are the sum of the group algebra elements corresponding to the shifts `a_shifts` and `b_shifts`.
 
 See also: [`two_block_group_algebra_codes`](@ref), [`bicycle_codes`](@ref).
+
+A [[254, 28, 14 ≤ d ≤ 20]] code from (A1) in Appendix B of [panteleev2021degenerate](@cite).
 
 ```jldoctest
 julia> c = generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 127);

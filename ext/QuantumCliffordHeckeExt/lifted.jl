@@ -1,7 +1,7 @@
 """
 $TYPEDEF
 
-Classical codes lifted over a group algebra [panteleev2021degenerate](@cite) [panteleev2022asymptotically](@cite).
+Classical codes lifted over a group algebra, used for lifted product code construction [panteleev2021degenerate](@cite) [panteleev2022asymptotically](@cite).
 
 The parity-check matrix is constructed by applying `repr` to each element of `A`,
 which is mathematically a linear map from a group algebra element to a binary matrix.
