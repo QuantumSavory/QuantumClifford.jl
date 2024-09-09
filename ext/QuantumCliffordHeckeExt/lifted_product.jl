@@ -1,22 +1,44 @@
 """
+$TYPEDEF
+
 Lifted product codes [panteleev2021degenerate](@cite) [panteleev2022asymptotically](@cite)
 
-- `A::Matrix{PermGroupRingElem}`: the first base matrix for constructing the lifted product code, whose elements are in a permutation group ring;
-- `B::Matrix{PermGroupRingElem}`: the second base matrix for constructing the lifted product code, whose elements are in the same permutation group ring as `A`;
-- `repr::Function`: a function that converts the permutation group ring element to a matrix;
- default to be [`permutation_repr`](@ref) for GF(2)-algebra.
+A lifted product code is defined by the hypergraph product of a base matrices `A` and the conjugate of another base matrix `B'`.
+Here, the hypergraph product is taken over a group algebra, of which the base matrices are consisting.
 
-A lifted product code is constructed by hypergraph product of the two lifted codes `c₁` and `c₂`.
-Here, the hypergraph product is taken over a group ring, which serves as the base ring for both lifted codes.
-After the hypergraph product, the parity-check matrices are lifted by `repr`.
-The lifting is achieved by applying `repr` to each element of the matrix resulted from the hypergraph product, which is mathematically a linear map from a group algebra element to a binary matrix.
+The parity check matrix is obtained by applying `repr` to each element of the matrix resulted from the hypergraph product, which is mathematically a linear map from each group algebra element to a binary matrix.
 
-See also: [`LiftedCode`](@ref).
+## Constructors
+
+1. Two base matrices of group algebra elements.
+
+2. Two lifted codes, whose base matrices are for quantum code construction. 
+
+3. Two base matrices of group elements, where each group element will be considered as a group algebra element by assigning a unit coefficient.
+
+4. Two base matrices of integers, where each integer represent the shift of a cyclic permutation. The order of the cyclic permutation should be specified.
+
+## The representation function
+
+In this struct, we use the default representation function `default_repr` to convert a `GF(2)`-group algebra element to a binary matrix.
+The default representation, provided by `Hecke`, is the permutation representation.
+
+We also accept a custom representation function. The reasons are detailed in [`LiftedCode`](@ref).
+
+See also: [`LiftedCode`](@ref), [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref).
+
+$TYPEDFIELDS
 """
 struct LPCode <: AbstractECC
+    """the first base matrix of the code, whose elements are in a group algebra."""
     A::GroupAlgebraElemMatrix
+    """the second base matrix of the code, whose elements are in the same group algebra as `A`."""
     B::GroupAlgebraElemMatrix
+    """the group algebra for which elements in `A` and `B` are from."""
     GA::GroupAlgebra
+    """
+    a function that converts a group algebra element to a binary matrix;
+    default to be the permutation representation for GF(2)-algebra."""
     repr::Function
 
     function LPCode(A::GroupAlgebraElemMatrix, B::GroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]), repr::Function)
@@ -62,7 +84,10 @@ code_n(c::LPCode) = size(c.repr(zero(c.GA)), 2) * (size(c.A, 2) * size(c.B, 1) +
 code_s(c::LPCode) = size(c.repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) + size(c.A, 2) * size(c.B, 2))
 
 """
-Two-block group algebra (2GBA) codes.
+Two-block group algebra (2GBA) codes, which are a special case of lifted product codes
+from two group algebra elements `a` and `b`, used as `1x1` base matrices.
+
+See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref)
 """
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
     A = reshape([a], (1, 1))
@@ -71,7 +96,11 @@ function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
 end
 
 """
-Generalized bicycle codes.
+Generalized bicycle codes, which are a special case of 2GBA codes (and therefore of lifted product codes).
+Here the group is choosen as the cyclic group of order `l`,
+and the base matrices `a` and `b` are the sum of the group algebra elements corresponding to the shifts `a_shifts` and `b_shifts`.
+
+See also: [`two_block_group_algebra_codes`](@ref), [`bicycle_codes`](@ref).
 """
 function generalized_bicycle_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
@@ -81,7 +110,11 @@ function generalized_bicycle_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l
 end
 
 """
-Bicycle codes.
+Bicycle codes are a special case of generalized bicycle codes,
+where `a` and `b` are conjugate to each other.
+The order of the cyclic group is `l`, and the shifts `a_shifts` and `b_shifts` are reverse to each other.
+
+See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref).
 """
 function bicycle_codes(a_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
