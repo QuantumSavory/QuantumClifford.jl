@@ -30,7 +30,7 @@
             H = parity_checks(code)
             @test nqubits(code) == size(H, 2) == code_n(code)
             @test size(H, 1) == code_s(code)
-            @test code_s(code) + code_k(code) >= code_n(code) # possbly exist redundant checks
+            @test code_s(code) + code_k(code) >= code_n(code) # possibly exist redundant checks
             @test size(H, 1) <= size(H, 2) # equal in some cases with redundancy
             @test QuantumClifford.stab_looks_good(copy(H))
         end

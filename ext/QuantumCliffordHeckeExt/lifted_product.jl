@@ -65,7 +65,7 @@ julia> code_n(c2), code_k(c2)
 ## Examples of code subfamilies
 
 - When the base matrices of the `LPCode` are one-by-one, the code is called a two-block group-algebra code [`two_block_group_algebra_codes`](@ref).
-- When the base matrices of the `LPCode` are one-by-one and their elements are sums of cyclic permuatations, the code is called a generalized bicycle code [`generalized_bicycle_codes`](@ref).
+- When the base matrices of the `LPCode` are one-by-one and their elements are sums of cyclic permutations, the code is called a generalized bicycle code [`generalized_bicycle_codes`](@ref).
 - When the two matrices are adjoint to each other, the code is called a bicycle code [`bicycle_codes`](@ref).
 
 ## The representation function
@@ -147,7 +147,7 @@ end
 
 """
 Generalized bicycle codes, which are a special case of 2GBA codes (and therefore of lifted product codes).
-Here the group is choosen as the cyclic group of order `l`,
+Here the group is chosen as the cyclic group of order `l`,
 and the base matrices `a` and `b` are the sum of the group algebra elements corresponding to the shifts `a_shifts` and `b_shifts`.
 
 See also: [`two_block_group_algebra_codes`](@ref), [`bicycle_codes`](@ref).
