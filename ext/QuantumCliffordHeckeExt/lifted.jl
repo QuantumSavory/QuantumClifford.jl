@@ -59,20 +59,9 @@ function lift(repr::Function, mat::GroupAlgebraElemMatrix)
 end
 
 function parity_checks(c::LiftedCode)
-    h = lift(c.repr, c.A)
-    rk = mod2rank(h) # TODO mod2rank and canonicalize, which is more efficient?
-    rk < size(h, 1) && @warn "The lifted code has redundant rows"
-    return h
+    return lift(c.repr, c.A)
 end
 
-code_n(c::LiftedCode) = size(c.A, 2) * size(c.repr(parent(c.A[1,1])(0)), 2)
+code_n(c::LiftedCode) = size(c.A, 2) * size(zero(c.GA), 2)
 
-function mod2rank(h::Matrix{<:Integer}) # TODO move this mod2rank to a common place
-    Z2, _ = residue_ring(ZZ, 2)
-    S = matrix_space(Z2, size(h)...)
-    rank(S(h))
-end
-
-code_s(c::LiftedCode) = mod2rank(parity_checks(c))
-
-code_k(c::LiftedCode) = code_n(c) - code_s(c)
+code_s(c::LiftedCode) = size(c.A, 1) * size(zero(c.GA), 1)
