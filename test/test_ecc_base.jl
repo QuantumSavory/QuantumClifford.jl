@@ -19,7 +19,8 @@ random_circuit_code_args = vcat(
 )
 
 # TODO benchmarking them in wiki
-# test codes LP04 and LP118 are from https://arxiv.org/pdf/2111.07029
+
+# test codes LP04 and LP118 from Appendix A of [raveendran2022finite](@cite),
 B04 = Dict(
     7 => [0 0 0 0; 0 1 2 5; 0 6 3 1],
     9 => [0 0 0 0; 0 1 6 7; 0 4 5 2],
@@ -36,8 +37,7 @@ B118 = Dict(
 LP04 = [LPCode(base_matrix, l .- base_matrix', l) for (l, base_matrix) in B04]
 LP118 = [LPCode(base_matrix, l .- base_matrix', l) for (l, base_matrix) in B118]
 
-# generalized bicyle codes
-
+# generalized bicyle codes from from Appendix B of [panteleev2021degenerate](@cite).
 test_gb_codes = [
     generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 127),
     generalized_bicycle_codes([0, 1, 14, 16, 22], [0, 3, 13, 20, 42], 63),
@@ -45,7 +45,7 @@ test_gb_codes = [
 
 other_lifted_product_codes = []
 
-# from https://arxiv.org/abs/2202.01702v3
+# from Eq. (18) in Appendix A of [raveendran2022finite](@cite)
 l = 63
 GA = group_algebra(GF(2), abelian_group(l))
 A = zeros(GA, 7, 7)
@@ -55,9 +55,7 @@ A[LinearAlgebra.diagind(A, -1)] .= x^54
 A[LinearAlgebra.diagind(A, 6)] .= x^54
 A[LinearAlgebra.diagind(A, -2)] .= GA(1)
 A[LinearAlgebra.diagind(A, 5)] .= GA(1)
-
 B = reshape([1 + x + x^6], (1, 1))
-
 push!(other_lifted_product_codes, LPCode(A, B))
 
 const code_instance_args = Dict(
