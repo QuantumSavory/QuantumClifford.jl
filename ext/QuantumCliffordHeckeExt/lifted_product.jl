@@ -18,6 +18,54 @@ The parity check matrix is obtained by applying `repr` to each element of the ma
 
 4. Two base matrices of integers, where each integer represent the shift of a cyclic permutation. The order of the cyclic permutation should be specified.
 
+## Code instances
+
+A [[882, 24, d ≤ 24]] code from https://arxiv.org/abs/2202.01702v3, following the 1st constructor.
+During the construction, we do arithmetic operations to get the permutation group ring elements
+with `x` being the offset-1 cyclic permutation and `GA(1)` being the unit.
+
+```jldoctest
+julia> ENV["HECKE_PRINT_BANNER"] = "false"; import Hecke: group_algebra, GF, abelian_group, gens; import LinearAlgebra;
+
+julia> l = 63; GA = group_algebra(GF(2), abelian_group(l)); x = gens(GA)[];
+
+julia> A = zeros(GA, 7, 7);
+
+julia> A[LinearAlgebra.diagind(A)] .= x^27;
+
+julia> A[LinearAlgebra.diagind(A, -1)] .= x^54;
+
+julia> A[LinearAlgebra.diagind(A, 6)] .= x^54;
+
+julia> A[LinearAlgebra.diagind(A, -2)] .= GA(1);
+
+julia> A[LinearAlgebra.diagind(A, 5)] .= GA(1);
+
+julia> B = reshape([1 + x + x^6], (1, 1));
+
+julia> c1 = LPCode(A, B);
+
+julia> code_n(c1), code_k(c1)
+(882, 24)
+```
+ 
+A [[175, 19, d ≤ 0]] code from paper http://arxiv.org/abs/2111.07029, following the 4th constructor.
+
+```jldoctest
+julia> base_matrix = [0 0 0 0; 0 1 2 5; 0 6 3 1]; l = 7;
+
+julia> c2 = LPCode(base_matrix, l .- base_matrix', l);
+
+julia> code_n(c2), code_k(c2)
+(175, 19)
+```
+
+## Examples of code subfamilies
+
+- When the base matrices of the `LPCode` are one-by-one, the code is called a two-block group-algebra code [`two_block_group_algebra_codes`](@ref).
+- When the base matrices of the `LPCode` are one-by-one and their elements are sums of cyclic permuatations, the code is called a generalized bicycle code [`generalized_bicycle_codes`](@ref).
+- When the two matrices are adjoint to each other, the code is called a bicycle code [`bicycle_codes`](@ref).
+
 ## The representation function
 
 In this struct, we use the default representation function `default_repr` to convert a `GF(2)`-group algebra element to a binary matrix.
@@ -101,6 +149,13 @@ Here the group is choosen as the cyclic group of order `l`,
 and the base matrices `a` and `b` are the sum of the group algebra elements corresponding to the shifts `a_shifts` and `b_shifts`.
 
 See also: [`two_block_group_algebra_codes`](@ref), [`bicycle_codes`](@ref).
+
+```jldoctest
+julia> c = generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 127);
+
+julia> code_n(c), code_k(c)
+(254, 28)
+```
 """
 function generalized_bicycle_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
