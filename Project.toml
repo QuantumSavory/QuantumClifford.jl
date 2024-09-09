@@ -4,12 +4,10 @@ authors = ["Stefan Krastanov <stefan@krastanov.org> and QuantumSavory community 
 version = "0.9.8"
 
 [deps]
-AbstractAlgebra = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
-Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
 HostCPUFeatures = "3e5b6fbb-0976-4d2c-9146-d79de83f2fb0"
 ILog2 = "2cd5bd5f-40a1-5050-9e10-fc8cdb6109f5"
 InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
@@ -25,7 +23,9 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 SumTypes = "8e1ec7a9-0e02-4297-b0fe-6433085c89f2"
 
 [weakdeps]
+AbstractAlgebra = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
 LDPCDecoders = "3c486d74-64b9-4c60-8b1a-13a564e77efb"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
@@ -35,6 +35,7 @@ QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
 
 [extensions]
 QuantumCliffordGPUExt = "CUDA"
+QuantumCliffordHeckeExt = ["AbstractAlgebra", "Hecke"]
 QuantumCliffordLDPCDecodersExt = "LDPCDecoders"
 QuantumCliffordMakieExt = "Makie"
 QuantumCliffordPlotsExt = "Plots"
@@ -43,11 +44,13 @@ QuantumCliffordQOpticsExt = "QuantumOpticsBase"
 QuantumCliffordQuantikzExt = "Quantikz"
 
 [compat]
+AbstractAlgebra = "0.42"
 CUDA = "4.4.0, 5"
 Combinatorics = "1.0"
 DataStructures = "0.18"
 DocStringExtensions = "0.9"
 Graphs = "1.9"
+Hecke = "0.33"
 HostCPUFeatures = "0.1.6"
 ILog2 = "0.2.3"
 InteractiveUtils = "1.9"
