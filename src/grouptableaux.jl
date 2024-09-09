@@ -161,8 +161,8 @@ julia> tab(logical_operator_canonicalize(QuantumClifford.Tableau([P"XX", P"XZ", 
 + XZ
 ```
 """
-function logical_operator_canonicalize(t:: QuantumClifford.Tableau)
-    loc = zero(QuantumClifford.Tableau, length(t), nqubits(t))
+function logical_operator_canonicalize(t:: Tableau)
+    loc = zero(Tableau, length(t), nqubits(t))
     index = 1
     for i in eachindex(t)
         for j in eachindex(t)
