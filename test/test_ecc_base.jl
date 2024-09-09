@@ -5,7 +5,7 @@ using InteractiveUtils
 
 import Nemo: GF
 import LinearAlgebra
-import Hecke: group_algebra, abelian_group
+import Hecke: group_algebra, abelian_group, gens
 
 # generate instances of all implemented codes to make sure nothing skips being checked
 
