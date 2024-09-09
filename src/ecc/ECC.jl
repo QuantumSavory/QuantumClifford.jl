@@ -16,7 +16,6 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
-    PermGroupRing, PermutationGroupRing, PermGroupRingElem, cyclic_permutation, permutation_repr, # group utils
     RepCode, LiftedCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
@@ -361,7 +360,6 @@ end
 
 include("circuits.jl")
 include("decoder_pipeline.jl")
-include("group_ring.jl")
 
 include("codes/util.jl")
 include("codes/classical_codes.jl")

@@ -17,6 +17,7 @@ random_circuit_code_args = vcat(
     [map(f -> getfield(random_all_to_all_circuit_code(c...), f), fieldnames(CircuitCode)) for c in random_all_to_all_circuit_args]
 )
 
+# TODO benchmarking them in wiki
 # test codes LP04 and LP118 are from https://arxiv.org/pdf/2111.07029
 B04 = Dict(
     7 => [0 0 0 0; 0 1 2 5; 0 6 3 1],
@@ -33,7 +34,6 @@ B118 = Dict(
 
 LP04 = [LPCode(base_matrix, l .- base_matrix', l) for (l, base_matrix) in B04]
 LP118 = [LPCode(base_matrix, l .- base_matrix', l) for (l, base_matrix) in B118]
-# benchmarking wiki
 
 # generalized bicyle codes
 
@@ -46,19 +46,16 @@ other_lifted_product_codes = []
 
 # from https://arxiv.org/abs/2202.01702v3
 l = 63
-R = PermutationGroupRing(GF(2), l)
-A = zeros(R, 7, 7)
-x = R(cyclic_permutation(1, l))
+GA = group_algebra(GF(2), abelian_group(l))
+A = zeros(GA, 7, 7)
+x = gens(GA)[]
 A[LinearAlgebra.diagind(A)] .= x^27
 A[LinearAlgebra.diagind(A, -1)] .= x^54
 A[LinearAlgebra.diagind(A, 6)] .= x^54
-A[LinearAlgebra.diagind(A, -2)] .= R(1)
-A[LinearAlgebra.diagind(A, 5)] .= R(1)
+A[LinearAlgebra.diagind(A, -2)] .= GA(1)
+A[LinearAlgebra.diagind(A, 5)] .= GA(1)
 
 B = reshape([1 + x + x^6], (1, 1))
-
-# x^63 == 1
-# how is this not polynomial...
 
 push!(other_lifted_product_codes, LPCode(A, B))
 

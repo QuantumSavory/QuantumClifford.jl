@@ -1,56 +1,64 @@
 import Nemo: characteristic, lift, matrix_repr
+import Hecke: representation_matrix, GroupAlgebra, GroupAlgebraElem, GroupElem, abelian_group, group_algebra
+
 
 """
-Classical codes lifted over a permutation group ring [panteleev2021degenerate](@cite) [panteleev2022asymptotically](@cite).
+Classical codes lifted over a group algebra [panteleev2021degenerate](@cite) [panteleev2022asymptotically](@cite).
 
-- `A::Matrix`: the base matrix of the code, whose elements are in a permutation group ring.
-- `repr::Function`: a function that converts a permutation group ring element to a matrix;
-  default to be [`permutation_repr`](@ref) for GF(2)-algebra.
+- `A::Matrix`: the base matrix of the code, whose elements are in a group algebra.
+- `repr::Function`: a function that converts a group algebra element to a matrix; default to be [`permutation_repr`](@ref) for GF(2)-algebra.
+
+TODO why we need such a freedom of representation?
 
 The parity-check matrix is constructed by applying `repr` to each element of `A`, which is mathematically a linear map from a group algebra element to a binary matrix.
 This will enlarge the parity check matrix from `A` with each element being inflated into a matrix. The procedure is called a lift [panteleev2022asymptotically](@cite).
 
-See also: [`LPCode`](@ref), [`PermGroupRing`](@ref).
+See also: [`LPCode`](@ref).
 """
 struct LiftedCode <: ClassicalCode
-    A::PermGroupRingMatrix
+    A::GroupAlgebraElemMatrix
+    GA::GroupAlgebra
     repr::Function
 
-    function LiftedCode(A::Matrix{<: PermGroupRingElem}, repr::Function)
-        new(A, repr)
+    function LiftedCode(A::GroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]), repr::Function)
+        all(elem.parent == GA for elem in A) || error("The base ring of all elements in the code must be the same as the group algebra")
+        new(A, GA, repr)
     end
 end
 
-function LiftedCode(A::PermGroupRingMatrix)
-    !(characteristic(base_ring(A[1,1])) == 2) && error("The default permutation representation applies only to GF(2) group algebra")
-    LiftedCode(A, permutation_repr)
-end
-
-function LiftedCode(perm_array::Matrix{<:Perm})
-    l = length(perm_array[1,1].d)
-    R = PermutationGroupRing(GF(2), l)
-    A = Matrix(matrix_space(R, size(perm_array)...)(perm_array)) # convert perms to group ring elements
-    LiftedCode(A)
-end
-
-function LiftedCode(shift_array::Matrix{Int}, l::Int)
-    perm_array = map(n->cyclic_permutation(n, l), shift_array)
-    LiftedCode(perm_array)
-end
+default_repr(y::GroupAlgebraElem{FqFieldElem, <: GroupAlgebra}) = Matrix((x -> Bool(Int(lift(ZZ, x)))).(representation_matrix(y)))
 
 """
-Represent a permutation group ring element by mapping permutations to circulant matrices.
+The GroupAlgebraElem with `GF(2)` coefficients can be converted to a permutation matrix by `representation_matrix` provided by Hecke.
 """
-function permutation_repr(x::PermGroupRingElem{FqFieldElem})
-    mat = zeros(Bool, parent(x).l, parent(x).l)
-    for k in keys(x.coeffs)
-        c = Int(lift(ZZ, x.coeffs[k])) # the coefficient of the group element `k`, which is converted to Int type for matrix calculation
-        mat += c .* Array(matrix_repr(k)) # the coefficient times the matrix representation of the corresponding group element
+function LiftedCode(A::Matrix{GroupAlgebraElem{FqFieldElem, <: GroupAlgebra}}; GA::GroupAlgebra=parent(A[1,1]))
+    !(characteristic(base_ring(A[1, 1])) == 2) && error("The default permutation representation applies only to GF(2) group algebra; otherwise, a custom representation function should be provided")
+    LiftedCode(A; GA=GA, repr=default_repr)
+end
+
+function LiftedCode(group_elem_array::Matrix{<: GroupOrAdditiveGroupElem}; GA::GroupAlgebra=group_algebra(GF(2), parent(group_elem_array[1,1])), repr::Union{Function, Nothing}=nothing)
+    A = zeros(GA, size(group_elem_array)...)
+    for i in axes(group_elem_array, 1), j in axes(group_elem_array, 2)
+        A[i, j] = GA[A[i, j]]
     end
-    return mat
+    if repr === nothing
+        return LiftedCode(A; GA=GA, repr=default_repr)
+    else
+        return LiftedCode(A; GA=GA, repr=repr)
+    end
 end
 
-function lift(repr::Function, mat::PermGroupRingMatrix)
+function LiftedCode(shift_array::Matrix{Int}, l::Int; GA::GroupAlgebra=group_algebra(GF(2), abelian_group(l)))
+    A = zeros(GA, size(shift_array)...)
+    for i in 1:size(shift_array, 1)
+        for j in 1:size(shift_array, 2)
+            A[i, j] = GA[shift_array[i, j]%l+1]
+        end
+    end
+    return LiftedCode(A; GA=GA, repr=default_repr)
+end
+
+function lift(repr::Function, mat::GroupAlgebraElemMatrix)
     vcat([hcat([repr(mat[i, j]) for j in axes(mat, 2)]...) for i in axes(mat, 1)]...)
 end
 
