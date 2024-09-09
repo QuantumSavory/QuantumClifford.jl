@@ -11,37 +11,26 @@ necessary.
 
 ```@raw html
 <div class="mermaid">
-flowchart TB
+flowchart TD
     A["<code>Tableau Data Structure Selection</code>"]
     class A startEnd
-
-    A -->|<code>Are the states pure?</code>| B{ }
+    A --> B{"Is the state a stabilizer?"}
     class A,B startEnd
-
-    B -->|<code>Yes</code>| C["<code>Stabilizer</code>"]
-    B -->|<code>No</code>| D{ }
-    class B decision
-
-    D -->|<code>Are the states mixed?</code>| E{ }
-    class D,E decision
-
-    C --> C_desc1["<code>Ensures pure stabilizer states</code>"]
-    C --> C_desc2["<code>Requires user to check for consistency</code>"]
-    C --> C_desc3["<code>Efficient project! operations</code>"]
-    class C_desc1,C_desc2,C_desc3 description
-
-    C --> G["<code>Destabilizer</code>"]
-    G --> G_desc1["<code>No stabilizer canonicalization needed</code>"]
-    class G_desc1 description
-
-    E -->|<code>Yes</code>| F["<code>MixedStabilizer</code>"]
-    F --> F_desc1["<code>Explicitly tracks rank of mixed states</code>"]
-    F --> F_desc2["<code>Project! on non-Stabilizer commuting operators</code>"]
-    class F_desc1,F_desc2 description
-
-    E -->|<code>No</code>| H["<code>MixedDestabilizer</code>"]
-    H --> H_desc1["<code>Tracks destabilizer and logical operators</code>"]
-    H --> H_desc2["<code>Efficient project! operations</code>"]
+    B -->|Yes| C{"Pure state?"}
+    B -->|No| D{"Pure state?"}
+    class B,C,D decision
+    C -->|Yes| E["<code>Stabilizer</code>"]
+    E --> E_desc["<code>Pure stabilizer states<br/>Efficient 'project!' operations</code>"]
+    class E_desc description
+    C -->|No| F["<code>MixedStabilizer</code>"]
+    F --> F_desc["<code>Tracks rank of mixed states<br/>'Project!' on non-Stabilizer commuting operators</code>"]
+    class F_desc description
+    D -->|Yes| G["<code>Destabilizer</code>"]
+    G --> G_desc["<code>Pure stabilizer states<br/>Tracks destabilizers<br/>Efficient 'project!' operations</code>"]
+    class G_desc description
+    D -->|No| H["<code>MixedDestabilizer<code>"]
+    H --> H_desc["<code>Tracks destabilizers<br/>Tracks 'logical' operators<br/>Efficient 'project!' operations</code>"]
+    class H_desc description
 </div>
 ```
 

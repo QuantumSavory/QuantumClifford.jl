@@ -2,7 +2,7 @@
 
 ```@meta
 DocTestSetup = quote
-    using QuantumClifford: @S_str, Stabilizer, Destabilizer, MixedDestabilizer, MixedStabilizer, stabilizerview, destabilizerview, logicalxview, logicalzview, @T_str, _T_str, @P_str, PauliOperator, ⊗, comm, prodphase, xview, xbit, getindex, setindex!, firstindex, lastindex, stab_to_gf2, canonicalize!, project!, Register, apply!, bitview, sMX, traceout!, generate!, tHadamard, tPhase, tCNOT, permute, apply!, CliffordOperator, sHadamard, sCNOT, phases, tId1, @C_str, tab, Tableau
+    using QuantumClifford
 end
 ```
 
@@ -146,6 +146,8 @@ number of different constructors.
     See also the [data structures discussion page](@ref Choosing-Appropriate-Data-Structure).
 
 ```jldoctest
+julia> using QuantumClifford: Tableau # hide
+
 julia> S"-XX
          +ZZ"
 - XX
@@ -171,6 +173,16 @@ julia> Stabilizer(Bool[1 1 0 0;
 julia> Stabilizer([0x2, 0x0], 
                   Bool[1 1 0 0;
                        0 0 1 1])
+- XX
++ ZZ
+
+julia> Stabilizer(T"-XX ZZ")
+- XX
++ ZZ
+
+julia> Stabilizer(Tableau([0x2, 0x0],
+                  Bool[1 1; 0 0],
+                  Bool[0 0; 1 1]))
 - XX
 + ZZ
 ```
@@ -206,36 +218,6 @@ julia> s[[3,1],[2]]
 
 julia> s[3][3]
 (false, true)
-
-julia> getindex(s, 1)
-- XYZ
-
-julia> getindex(s, 3, 1)
-(true, false)
-
-julia> setindex!(s, P"Z", 1)
-+ Z__
-- Z_X
-+ X_Z
-
-julia> setindex!(s, P"ZYX", 1)
-+ ZYX
-- Z_X
-+ X_Z
-
-julia> setindex!(s, (true, true), 1, 1)
-+ YYX
-- Z_X
-+ X_Z
-
-julia> firstindex(s)
-1
-
-julia> lastindex(s)
-3
-
-julia> lastindex(s, 2)
-3
 ```
 
 Consistency at creation is not verified so nonsensical stabilizers can be
@@ -708,18 +690,29 @@ julia> d = Destabilizer(s)
 ```
 
 - A low-level constructor that accepts a manually created `Tableau`
-object. Note thatthe `Tableau` object is not currently public. It serves
-as the underlying data structure for all related objects but does not
-assume commutativity or other properties.
+object. Note thatthe `Tableau` object is not currently public. It
+serves as the underlying data structure for all related objects
+but does not assume commutativity or other properties.
 
 ```jldoctest destab
-julia> d₁ = Destabilizer(Tableau(Bool[0 0; 0 1; 1 1; 0 0], Bool[1 0; 0 0; 0 0; 0 1]))
+julia> using QuantumClifford: Tableau # hide
+
+julia> d₁ = Destabilizer(Tableau(Bool[0 0; 0 1; 1 1; 0 0],
+                                Bool[1 0; 0 0; 0 0; 0 1]))
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z_
 + _X
 𝒮𝓉𝒶𝒷
 + XX
 + _Z
+
+julia> d₂ = Destabilizer(T"ZX ZI -ZZ -XY")
+𝒟ℯ𝓈𝓉𝒶𝒷
++ ZX
++ Z_
+𝒮𝓉𝒶𝒷
+- ZZ
+- XY
 ```
 
 They have convenience methods to extract only the stabilizer and destabilizer

@@ -355,67 +355,6 @@ julia> s[1,1] = (true, false); s
 + __
 ```
 
-Stabilizer can be copied and assigned.
-
-```jldoctest stabilizer
-julia> s = S"-XXX
-             +ZZI
-             -IZZ";
-
-julia> s1 = copy(s)
-- XXX
-+ ZZ_
-- _ZZ
-```
-
-`Length` and `size` of stabilizer can be determined.
-
-```jldoctest stabilizer
-julia> length(s)
-3
-
-julia> size(s)
-(3, 3)
-```
-
-Indexing operations on stabilizer via `setindex!` and `getindex`.
-
-```jldoctest stabilizer
-julia> s = S"-XYZ
-             -ZIX
-             +XIZ";
-
-julia> getindex(s, 1)
-- XYZ
-
-julia> getindex(s, 3, 1)
-(true, false)
-
-julia> setindex!(s, P"Z", 1)
-+ Z__
-- Z_X
-+ X_Z
-
-julia> setindex!(s, P"ZYX", 1)
-+ ZYX
-- Z_X
-+ X_Z
-
-julia> setindex!(s, (true, true), 1, 1)
-+ YYX
-- Z_X
-+ X_Z
-
-julia> firstindex(s)
-1
-
-julia> lastindex(s)
-3
-
-julia> lastindex(s, 2)
-3
-```
-
 There are no automatic checks for correctness (i.e. independence of all rows,
 commutativity of all rows, hermiticity of all rows). The rank (number of rows)
 is permitted to be less than the number of qubits (number of columns):

@@ -2,7 +2,7 @@
 
 ```@meta
 DocTestSetup = quote
-    using QuantumClifford: @S_str, Destabilizer, MixedDestabilizer, MixedStabilizer, stabilizerview, destabilizerview, logicalxview, logicalzview, @T_str, _T_str, canonicalize!, Tableau
+    using QuantumClifford
 end
 ```
 
@@ -18,7 +18,7 @@ generators.
 # Options for constructing with MixedDestabilizer
 
 - Given a `Destabilizer` object (which  presumesfull rank), convert it
-into a `MixedDestabilizer` object. This allows for the possibility of 
+into a `MixedDestabilizer` object. This allows for the possibility of
 rank deficiency.
 
 ```jldoctest mix
@@ -66,8 +66,8 @@ julia> logicalzview(m)
 ```
 
 - Similar to the first option, but with the added capability to
-specify the "rank." This rank determines the number of rows
-associated with the `Stabilizer` and the number corresponding 
+specify the "rank". This rank determines the number of rows
+associated with the `Stabilizer` and the number corresponding
 to the logical operators.
 
 ```jldoctest mix
@@ -80,10 +80,12 @@ julia> MixedDestabilizer(T"ZI IX XX ZZ", 2)
 + ZZ
 ```
 
-If the macro string `@T_str` is not convenient, use the normal strings 
+If the macro string `@T_str` is not convenient, use the normal strings
 `_T_str`.
 
 ```jldoctest mix
+julia> using QuantumClifford: _T_str # hide
+
 julia> MixedDestabilizer(_T_str("ZI IX XX ZZ"), 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z_
@@ -93,10 +95,10 @@ julia> MixedDestabilizer(_T_str("ZI IX XX ZZ"), 2)
 + ZZ
 ```
 
-- Given a `Stabilizer` object (whichmay have fewer rows than columns)
-, perform the necessary canonicalization to determine the 
-corresponding destabilizer and logical operators, resulting in a 
-complete MixedDestabilizer object.
+- Given a `Stabilizer` object (whichmay have fewer rows than columns),
+perform the necessary canonicalization to determine the corresponding
+destabilizer and logical operators, resulting in a complete
+MixedDestabilizer object.
 
 ```jldoctest mix
 julia> s = S"-XXX
@@ -116,9 +118,9 @@ julia> MixedDestabilizer(s, undoperm=false, reportperm=false)
 + Z_Z
 ```
 
-When `undoperm` is set to `false`, the column permutations are not reversed.
-As a result, the qubits may be reindexed according to the permutations
-made during the canonicalization process.
+When `undoperm` is set to `false`, the column permutations are not
+reversed. As a result, the qubits may be reindexed according to 
+the permutations made during the canonicalization process.
 
 ```jldoctest mix
 julia> MixedDestabilizer(s, undoperm=true, reportperm=false)
@@ -134,9 +136,9 @@ julia> MixedDestabilizer(s, undoperm=true, reportperm=false)
 + ZZ_
 ```
 
-When `undoperm` is set to `true`, the column permutations performed during 
-canonicalizationare automatically reversed before finalizing the 
-`MixedDestabilizer`.
+When `undoperm` is set to `true`, the column permutations performed
+during canonicalizationare automatically reversed before finalizing
+the `MixedDestabilizer`.
 
 ```jldoctest mix
 julia> MixedDestabilizer(canonicalize!(s))
@@ -152,12 +154,14 @@ julia> MixedDestabilizer(canonicalize!(s))
 + ZZ_
 ```
 
-- A low-level constructor that accepts a manually created `Tableau` object 
-and rank. Note that the `Tableau` object is not currently public. It 
-serves as the underlying data structure for all related objects but 
-does not assume commutativity or other properties.
+- A low-level constructor that accepts a manually created `Tableau`
+ object and rank. Note that the `Tableau` object is not currently
+public. It serves as the underlying data structure for all related
+objects but does not assume commutativity or other properties.
 
 ```jldoctest mix
+julia> using QuantumClifford: Tableau # hide
+
 julia> MixedDestabilizer(Tableau(Bool[0 0; 0 1; 1 1; 1 0],
                                  Bool[1 0; 0 0; 0 0; 1 1]), 2)
 𝒟ℯ𝓈𝓉𝒶𝒷
@@ -170,9 +174,9 @@ julia> MixedDestabilizer(Tableau(Bool[0 0; 0 1; 1 1; 1 0],
 
 # Options for constructing with MixedStabilizer
 
-- Given a `Stabilizer` object (which  presumesfull rank), convert it
-into a `MixedStabilizer` object. This allows for the possibility of 
-rank deficiency.
+- Given a `Stabilizer` object (which  presumesfull rank), convert
+ it into a `MixedStabilizer` object. This allows for the
+possibility of  rank deficiency.
 
 ```jldoctest mix
 julia> s = S"-XXX
@@ -189,10 +193,10 @@ julia> MixedStabilizer(s, 2)
 - Z_Z
 ```
 
-- Similar to the first option, but with the added capability to
-specify the "rank." This rank determines the number of rows
-associated with the `Stabilizer` and the number corresponding 
-to the logical operators.
+- Similar to the first option, but with the added capability
+to specify the "rank." This rank determines the number of
+rows associated with the `Stabilizer` and the number
+corresponding  to the logical operators.
 
 ```jldoctest mix
 julia> MixedStabilizer(S"-XXX -ZIZ IZZ")
@@ -207,7 +211,7 @@ julia> MixedStabilizer(S"-XXX -ZIZ IZZ", 2)
 
 - A low-level constructor that accepts a manually created `Tableau`
 object and rank. Note that the `Tableau` object is not currently
-public. It serves as the underlying data structure for all related 
+public. It serves as the underlying data structure for all related
 objects but does not assume commutativity or other properties.
 
 ```jldoctest mix
