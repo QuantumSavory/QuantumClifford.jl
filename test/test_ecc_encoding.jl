@@ -1,10 +1,10 @@
-using Test
-using QuantumClifford
-using QuantumClifford.ECC
+@testitem "encoding circuits - compare to algebraic construction of encoded state" begin
+    using QuantumClifford
+    using QuantumClifford.ECC
 
-include("test_ecc_base.jl")
+    include("test_ecc_base.jl")
 
-@testset "encoding circuits - compare to algebraic construction of encoded state" begin
+
     # This test verifies that logical measurements on an encoded state match the physical pre-encoded state.
     # This test skips verifying the permutations of qubits during canonicalization are properly undone,
     # i.e. we modify the code we are testing so that the canonicalization does not need any permutations.

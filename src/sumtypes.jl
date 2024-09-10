@@ -217,7 +217,10 @@ function concrete_typeparams(t::Type{ClassicalXOR})
 end
 
 function concrete_typeparams(t::Type{NoiseOp})
-    return [(UnbiasedUncorrelatedNoise{Float64}, i) for i in 1:8]
+    return [
+        [(UnbiasedUncorrelatedNoise{Float64}, i) for i in 1:8];
+        [(PauliNoise{Float64}, i) for i in 1:8];
+    ]
 end
 
 

@@ -9,6 +9,18 @@ const all_single_qubit_patterns = (
 
 """Generate a symbolic single-qubit gate given its index. Optionally, set non-trivial phases.
 
+```jldoctest
+julia> enumerate_single_qubit_gates(6)
+sPhase on qubit 1
+X₁ ⟼ + Y
+Z₁ ⟼ + Z
+
+julia> enumerate_single_qubit_gates(6, qubit=2, phases=(true, true))
+SingleQubitOperator on qubit 2
+X₁ ⟼ - Y
+Z₁ ⟼ - Z
+```
+
 See also: [`enumerate_cliffords`](@ref)."""
 function enumerate_single_qubit_gates(index; qubit=1, phases::Tuple{Bool,Bool}=(false,false))
     @assert index<=6 "Only 6 single-qubit gates exit, up to the choice of phases"
@@ -37,9 +49,21 @@ function enumerate_single_qubit_gates(index; qubit=1, phases::Tuple{Bool,Bool}=(
     end
 end
 
-"""The size of the Clifford group over a given number of qubits, possibly modulo the phases.
+"""The size of the Clifford group `𝒞` over a given number of qubits, possibly modulo the phases.
 
-For n qubits, not accounting for phases is 2ⁿⁿΠⱼ₌₁ⁿ(4ʲ-1). There are 4ⁿ different phase configurations.
+For n qubits, not accounting for phases is `2ⁿⁿΠⱼ₌₁ⁿ(4ʲ-1)`. There are `4ⁿ` different phase configurations.
+
+```jldoctest
+julia> clifford_cardinality(7)
+457620995529680351512370381586432000
+```
+
+When not accounting for phases (`phases = false`) the result is the same as the size of the Symplectic group `Sp(2n) ≡ 𝒞ₙ/𝒫ₙ`, where `𝒫ₙ` is the Pauli group over `n` qubits.
+
+```jldoctest
+julia> clifford_cardinality(7, phases=false)
+27930968965434591767112450048000
+```
 
 See also: [`enumerate_cliffords`](@ref).
 """
@@ -82,6 +106,20 @@ end
 """Perform the Symplectic Gram-Schmidt procedure that gives a Clifford operator canonically related to a given Pauli operator.
 
 The algorithm is detailed in [koenig2014efficiently](@cite).
+
+```jldoctest
+julia> symplecticGS(P"X", padded_n=3)
+X₁ ⟼ + X__
+X₂ ⟼ + _X_
+X₃ ⟼ + __X
+Z₁ ⟼ + Z__
+Z₂ ⟼ + _Z_
+Z₃ ⟼ + __Z
+
+julia> symplecticGS(P"Z")
+X₁ ⟼ + Z
+Z₁ ⟼ + X
+```
 
 See also: [`enumerate_cliffords`](@ref), [`clifford_cardinality`](@ref)."""
 function symplecticGS(pauli::PauliOperator; padded_n=nqubits(pauli))

@@ -1,8 +1,5 @@
-using Random
-using QuantumClifford
-using Test
-
-@testset "Column-fast vs row-fast operations" begin
+@testitem "Column-fast vs row-fast operations" begin
+    using Random
     for n in [3, 300]
         for T in (Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer)
             s = T(random_stabilizer(n,n))

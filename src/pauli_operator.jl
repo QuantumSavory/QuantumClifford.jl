@@ -122,6 +122,17 @@ Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.xz, h)
 
 Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
 
+function LinearAlgebra.inv(p::PauliOperator)
+  ph = p.phase[]
+  phin = xor((ph << 1) & ~(UInt8(1) << 2), ph)
+  return PauliOperator(phin, p.nqubits, copy(p.xz))
+end
+
+function Base.deleteat!(p::PauliOperator, subset)
+    p =p[setdiff(1:length(p), subset)]
+    return p
+end
+
 _nchunks(i::Int,T::Type{<:Unsigned}) = 2*( (i-1) ÷ (8*sizeof(T)) + 1 )
 Base.zero(::Type{PauliOperator{Tₚ, Tᵥ}}, q) where {Tₚ,T<:Unsigned,Tᵥ<:AbstractVector{T}} = PauliOperator(zeros(UInt8), q, zeros(T, _nchunks(q,T)))
 Base.zero(::Type{PauliOperator}, q) = zero(PauliOperator{Array{UInt8, 0}, Vector{UInt}}, q)
