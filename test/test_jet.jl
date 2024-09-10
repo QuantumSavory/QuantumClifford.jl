@@ -5,6 +5,8 @@ using Static
 using Graphs
 using StridedViews
 using LinearAlgebra
+using AbstractAlgebra, Hecke
+
 
 using JET: ReportPass, BasicPass, InferenceErrorReport, UncaughtExceptionReport
 
@@ -31,6 +33,8 @@ end
             AnyFrameModule(Static),
             AnyFrameModule(StridedViews),
             AnyFrameModule(LinearAlgebra),
+            AnyFrameModule(AbstractAlgebra),
+            AnyFrameModule(Hecke),
         )
     )
     @show rep
