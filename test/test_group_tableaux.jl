@@ -32,11 +32,11 @@
             s2, _, r = canonicalize!(Stabilizer(new_group), ranks=true)
             @test group[1:r, :] == new_group[1:r, :]
         end
-        #Test logical_operator_canonicalize
+        #Test canonicalize_noncomm
         for n in [1, small_test_sizes...]
             t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
             for i in eachindex(t) t[i] = random_pauli(n) end 
-            loc = logical_operator_canonicalize(t)
+            loc = canonicalize_noncomm(t)
             for i in 1:loc.k
                 for j in 1:loc.k
                     if i == j 
@@ -50,11 +50,11 @@
                 for j in logicalxview(loc) @test comm(i, j) == 0x00 end
             end
         end
-        #Test commutativise
-        for n in [1, small_test_sizes...]
+        #Test commutify
+        for n in [1,2,3,4,5,6,7]
             t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
             for i in eachindex(t) t[i] = random_pauli(n) end
-            c, d = commutavise(t)
+            c, d = commutify(t)
             for i in c
                 for j in c
                     @test comm(i, j) == 0x00
@@ -66,19 +66,19 @@
                 end
             end
             loc1= delete_columns(c, d)
-            loc2 = logical_operator_canonicalize(t).tab
+            loc2 = canonicalize_noncomm(t).tab
             for i in eachindex(delete_columns(c, d))
             end
         end
-        #Test embed
+        #Test matroid_parent
         for n in [1,2,3,4,5]
             t = zero(QuantumClifford.Tableau, 2*n, n)
             for i in eachindex(t) t[i] = random_pauli(n) end
-            e, d2, d1 = embed(t)
+            e, d2, d1 = matroid_parent(t)
             s = Stabilizer(groupify(e))
             for i in e for j in e @test comm(i, j)==0x00 end end
             @test 2^(nqubits(s)) == length(s) #assumes commutativise works
-            #find original tableau from embedded state, ignoring phases
+            #find original tableau from matroid_parentded state, ignoring phases
             inverted = delete_columns(Stabilizer(normalizer(delete_columns(Stabilizer(e), d2).tab)), d1)
             original = Stabilizer(groupify(Stabilizer(t)))
             canonicalize!(inverted)

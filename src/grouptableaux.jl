@@ -2,24 +2,19 @@ using Graphs
 using LinearAlgebra
 
 """
-A tableau representation of the logical operator canonical form of a set of Paulis.
+A tableau representation of the non-commutative canonical form of a set of Paulis.
 The index of the first operator that commutes with all others is tracked so that the
 stabilizer, destabilizer, logical X, and logical Z aspects of the tableau can be 
 represented.
 """
-mutable struct SubsystemCodeTableau <: AbstractStabilizer
-    tab::Tableau
+mutable struct SubsystemCodeTableau{T <: Tableau} <: AbstractStabilizer
+    tab::T
     index::Int
     r::Int
     m::Int
     k::Int
 end
 function SubsystemCodeTableau(t::Tableau)
-    # identity = zero(PauliOperator, nqubits(t))
-    # num = 0
-    # for p in t 
-    #     if p == identity num+=1 end
-    # end
     index = 1
     for i in range(1, stop=length(t), step=2)
         if i + 1 > length(t) 
@@ -61,31 +56,16 @@ function SubsystemCodeTableau(t::Tableau)
         tab[ind] = t[i]
         ind+=1
     end
-    return SubsystemCodeTableau(tab, index, length(s), m, (index-1)/2)
-    
+    return SubsystemCodeTableau(tab, index, length(s), m, Int((index-1)/2))
 end
 
-Base.length(t::SubsystemCodeTableau) = length(t.tab)
 
 Base.copy(t::SubsystemCodeTableau) = SubsystemCodeTableau(copy(t.tab))
 
-"""A view of the subtableau corresponding to the stabilizer. See also [`tab`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
-function stabilizerview(s::SubsystemCodeTableau)
-    return Stabilizer(@view tab(s)[s.m+s.k+1:s.m+s.k+s.r])
-end
-"""A view of the subtableau corresponding to the destabilizer. See also [`tab`](@ref), [`stabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
-function destabilizerview(s::SubsystemCodeTableau)
-    return Stabilizer(@view tab(s)[1:s.m])
-end
-"""A view of the subtableau corresponding to the logical X operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalzview`](@ref)"""
-function logicalxview(s::SubsystemCodeTableau)
-    return Stabilizer(tab(s)[s.m+1:s.m+s.k])
-end
-"""A view of the subtableau corresponding to the logical Z operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalzview`](@ref)"""
-function logicalzview(s::SubsystemCodeTableau)
-    return Stabilizer(tab(s)[s.m+1+s.k+s.r:length(s)])
-end
-
+@inline stabilizerview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[s.m+s.k+1:s.m+s.k+s.r])
+@inline destabilizerview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[1:s.m])
+@inline logicalxview(s::SubsystemCodeTableau) = Stabilizer(tab(s)[s.m+1:s.m+s.k])
+@inline logicalzview(s::SubsystemCodeTableau) = Stabilizer(tab(s)[s.m+1+s.k+s.r:s.m+s.k+s.r+s.k])
 
 """
 Return the full stabilizer group represented by the input generating set (a [`Stabilizer`](@ref)).
@@ -147,22 +127,26 @@ function minimal_generating_set(s::Stabilizer)
 end
 
 """
-For a not-necessarily commutative set of Paulis, returning a generating set of the form 
-<A₁, B₁, A₂, B₂, ... Aₖ, Bₖ, Aₖ₊₁, ... Aₘ> where two operators anticommute if and only if they 
+For a not-necessarily commutative set of Paulis, return a generating set of the form 
+<A₁, A₂, ... Aₖ, Aₖ₊₁, ... Aₘ, B₁, B₂, ... Bₖ> where two operators anticommute if and only if they 
 are of the form Aₖ, Bₖ and commute otherwise.
 
-Returns the generating set as a data structure of type [`SubsystemCodeTableau`](@ref).
+Returns the generating set as a data structure of type [`SubsystemCodeTableau`](@ref). The 
+`logicalxview` function returns the <A₁, A₂,... Aₖ>, and the `logicalzview`
+function returns <B₁, B₂, ... Bₖ>. `stabilizerview` returns <Aₖ₊₁, ... Aₘ> 
+as a Stabilizer, and `destabilizerview` returns the Destabilizer of that Stabilizer. 
+
 
 ```jldoctest
-julia> tab(logical_operator_canonicalize(QuantumClifford.Tableau([P"XX", P"XZ", P"XY"])))
+julia> tab(canonicalize_noncomm(T"XX", P"XZ", P"XY"))
 + Z_
 + XX
 -iX_
 + XZ
 ```
 """
-function logical_operator_canonicalize(t:: QuantumClifford.Tableau)
-    loc = zero(QuantumClifford.Tableau, length(t), nqubits(t))
+function canonicalize_noncomm(t:: Tableau)
+    loc = zero(Tableau, length(t), nqubits(t))
     index = 1
     for i in eachindex(t)
         for j in eachindex(t)
@@ -201,47 +185,35 @@ function logical_operator_canonicalize(t:: QuantumClifford.Tableau)
 end
 
 """
-For a not-necessarily commutative set of Paulis, return the logical operator canonical
-form of that set, and for each pair Aₖ, Bₖ of anticommutative Paulis, add an X to Aₖ,
-a Z to Bₖ, and an I to each other operator, such that the set is now fully commutative 
-as well as return a list of the indices of the added qubits.
+For a not-necessarily commutative set of Paulis S, then take S', the [non-commutative canonical form](@ref canonicalize_noncomm) of 
+of S. For each pair Aₖ, Bₖ of anticommutative Paulis in S', there is a qubit added to 
+each Pauli in the set that is X for Aₖ, Z for Bₖ, and I for each other operator to produce S'', a
+fully commutative set. Return S'' as well as a list of the indices of the added qubits. 
 
-Phases are ignored, and returned Stabilizers contain only the + phase
+The returned object is a Stabilizet.
 
 ```jldoctest
-julia> commutavise(QuantumClifford.Tableau([P"XX", P"XZ", P"XY"]))[1]
+julia> commutify(TP"XX XZ XY")[1]
 + XXX
 + XZZ
 + X__
 
-julia> commutavise(QuantumClifford.Tableau([P"XX", P"XZ", P"XY"]))[2]
+julia> commutify(T"XX XZ XY")[2]
 1-element Vector{Any}:
  3
 ```
 """
-function commutavise(t)
-    loc = QuantumClifford.logical_operator_canonicalize(t)
+function commutify(t)
+    loc = canonicalize_noncomm(t)
     commutative = zero(Stabilizer, 2*loc.k+loc.r, nqubits(loc)+loc.k)
-    ind = 1
-    for i in 1:loc.k
-        dummy = commutative[ind]
-        for j in eachindex(logicalxview(loc)[i]) dummy[j] = logicalxview(loc)[i][j] end
-        dummy[nqubits(loc)+i] = (true, false)
-        commutative[ind] = dummy
-        ind+=1
-    end
-    for i in 1:loc.k
-        dummy = commutative[ind]
-        for j in eachindex(logicalzview(loc)[i]) dummy[j] = logicalzview(loc)[i][j] end
-        dummy[nqubits(loc)+i] = (false, true)
-        commutative[ind] = dummy
-        ind+=1
-    end
-    for i in 1:loc.r
-        dummy = commutative[ind]
-        for j in eachindex(stabilizerview(loc)[i]) dummy[j] = stabilizerview(loc)[i][j] end
-        commutative[ind] = dummy
-        ind+=1   
+    puttableau!(commutative, logicalxview(loc), 0,0)
+    puttableau!(commutative, stabilizerview(loc), loc.k,0)
+    puttableau!(commutative, logicalzview(loc), loc.k+loc.r,0)
+    x= T"X"
+    z=T"Z"
+    for i in 0:(loc.k-1)
+        puttableau!(commutative, x, i, nqubits(loc)+i)
+        puttableau!(commutative, z, i+loc.r+loc.k, nqubits(loc)+i)
     end
     to_delete = []
     for i in 1:loc.k
@@ -251,38 +223,38 @@ function commutavise(t)
 end
 
 """
-For a given set of Paulis that does not necessarily represent a state, return a set of
-Paulis that contains the commutativised given set and represents a state, as well as deletions 
-needed to return to the original set of Paulis. 
+For a given set S of Paulis that does not necessarily represent a state, return a set of
+Paulis S' that represents a state. S' is a superset of S [commutified](@ref commutify). Additionally returns
+two arrays representing deletions needed to produce S. 
 
-By deleting the qubits in the first returned array, taking the normalizer, then deleting the qubits in the 
-second returned array from the normalizer, the original set is produced. 
+By deleting the qubits in first output array from S`, taking the normalizer, then deleting the qubits in the 
+second returned array from the normalizer, S is reproduced. 
 
 ```jldoctest
-julia> embed(QuantumClifford.Tableau([P"XX"]))[1]
+julia> matroid_parent(T"XX")[1]
 + X_X
 + ZZZ
 + XX_
 + ___
 
-julia> embed(QuantumClifford.Tableau([P"XX"]))[2]
+julia> matroid_parent(T"XX")[2]
 1-element Vector{Any}:
  3
 
-julia> embed(QuantumClifford.Tableau([P"XX"]))[3]
+julia> matroid_parent(T"XX")[3]
 Any[]
 ```
 """
-function embed(t::QuantumClifford.Tableau)
-    com, d1= QuantumClifford.commutavise(t)
-    norm = QuantumClifford.normalizer(com.tab)
-    state, d2 = QuantumClifford.commutavise(norm)
+function matroid_parent(t::Tableau)
+    com, d1= commutify(t)
+    norm = normalizer(com.tab)
+    state, d2 = commutify(norm)
     return state, d2, d1
 end
 
 """
 Return the full Pauli group of a given length. Phases are ignored by default, 
-but can be included by setting `phases = true`.
+but can be included by setting `phases=true`.
 
 ```jldoctest
 julia> pauligroup(1)
@@ -362,7 +334,7 @@ function normalizer(t::Tableau; phases=false)
     p = zero(PauliOperator, n)
     paulis = ((false, false), (true, false), (false, true), (true, true))
     for i in Iterators.product(Iterators.repeated(paulis, n)...)
-        QuantumClifford.zero!(p)
+        zero!(p)
         for (j, k) in enumerate(i)
             p[j] = k
         end
@@ -381,7 +353,7 @@ function normalizer(t::Tableau; phases=false)
             end
         end
     end
-    return QuantumClifford.Tableau(norm)
+    return Tableau(norm)
 end
 
 """
