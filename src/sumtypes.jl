@@ -30,7 +30,11 @@ julia> make_variant(sCNOT)
 ```
 """
 function make_variant(type::Union{DataType,SymbolicDataType})
-    Expr(:call, _symbol(type), [:(::$t) for t in _types(type)]...)
+    variant_args = []
+    for t in _types(type)
+        push!(variant_args, :(::$t))
+    end
+    Expr(:call, _symbol(type), variant_args...)
 end
 
 """

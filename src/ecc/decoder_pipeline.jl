@@ -132,7 +132,10 @@ function evaluate_decoder(d::AbstractSyndromeDecoder, setup::AbstractECCSetup, n
 
     physical_noisy_circ, syndrome_bits, n_anc = physical_ECC_circuit(H, setup)
     encoding_circ = naive_encoding_circuit(H)
-    preX = [sHadamard(i) for i in n-k+1:n]
+    preX = Vector{typeof(sHadamard(1))}()
+    for i in (n-k+1):n
+        push!(preX, sHadamard(i))
+    end
 
     mdH = MixedDestabilizer(H)
     logX_circ, _, logX_bits = naive_syndrome_circuit(logicalxview(mdH), n_anc+1, last(syndrome_bits)+1)

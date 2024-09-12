@@ -763,7 +763,9 @@ comm!(v, l::Tableau, r::PauliOperator) = comm!(v, r, l)
 @inline comm!(v, l::PauliOperator, r::Stabilizer) = comm!(v, l, tab(r))
 @inline comm!(v, l::Stabilizer, r::PauliOperator) = comm!(v, tab(l), r)
 @inline comm!(v, s::Stabilizer, l::Int, r::Int) = comm!(v, tab(s), l, r)
-
+@inline comm!(v, l::PauliOperator, r::Tableau, i::Int) = comm!(v, l, r, i)
+@inline comm!(v, l::Tableau, r::PauliOperator, i::Int) = comm!(v, l, r, i)
+@inline comm!(v, s::Tableau, l::Int, r::Int) = comm!(v, s, l, r)
 
 Base.:(*)(l::PauliOperator, r::PauliOperator) = mul_left!(copy(r),l)
 
