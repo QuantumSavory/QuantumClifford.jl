@@ -58,6 +58,21 @@
         end
     end
 
+    @testset "Tensor products over GeneralizedStabilizer" begin
+        for nₛₘ in rand(1:10, 10)
+            lₛₘ = random_stabilizer(nₛₘ)
+            rₛₘ = random_stabilizer(nₛₘ)
+            sm₁ = GeneralizedStabilizer(lₛₘ)
+            sm₂ = GeneralizedStabilizer(rₛₘ)
+            sₜ = lₛₘ⊗rₛₘ
+            sm₃ = sm₁⊗sm₂
+            @test mixed_destab_looks_good(sm₃.stab)
+            canonicalize!(sₜ)
+            dssₛₘ = canonicalize!(copy(stabilizerview(sm₃.stab)))
+            @test sₜ == dssₛₘ
+        end
+    end
+
     @testset "Stabilizer indexing" begin
         s = random_stabilizer(9,10)
         @test s[1,1] == s[[1,3,4],[1,3,5]][1,1]
@@ -88,6 +103,14 @@
             s2b = copy(s)[:,ri2]
             @test stab_to_gf2(s1a) == stab_to_gf2(s1b)
             @test stab_to_gf2(s2a) == stab_to_gf2(s2b)
+        end
+    end
+
+    @testset "Consistency between Destabilizer and MixedDestabilizer" begin # They have different construction algorithms so a consistency check is in order
+        for n in test_sizes
+            s = random_stabilizer(n)
+            @test stabilizerview(Destabilizer(s))==s # Destabilizer is supposed to guarantee same stabilizer generators
+            @test canonicalize!(stabilizerview(MixedDestabilizer(s)))==canonicalize!(stabilizerview(Destabilizer(s)))
         end
     end
 end

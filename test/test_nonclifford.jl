@@ -1,5 +1,5 @@
 @testitem "NonClifford" begin
-    using QuantumClifford: StabMixture, rowdecompose, PauliChannel, mul_left!, mul_right!
+    using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!
     using InteractiveUtils
     using Random
 
@@ -23,7 +23,7 @@
 
     @testset "PauliChannel T gate ^4 = Id" begin
         tgate = pcT
-        state = StabMixture(S"X")
+        state = GeneralizedStabilizer(S"X")
 
         apply!(state, tgate)
         apply!(state, tgate)
@@ -36,9 +36,10 @@
 
     ##
 
-    @test_throws ArgumentError StabMixture(S"XX")
+    @test_throws ArgumentError GeneralizedStabilizer(S"XX")
     @test_throws ArgumentError PauliChannel(((P"X", P"Z"), (P"X", P"ZZ")), (1,2))
     @test_throws ArgumentError PauliChannel(((P"X", P"Z"), (P"X", P"Z")), (1,))
     @test_throws ArgumentError UnitaryPauliChannel((P"X", P"ZZ"), (1,2))
     @test_throws ArgumentError UnitaryPauliChannel((P"X", P"Z"), (1,))
+
 end

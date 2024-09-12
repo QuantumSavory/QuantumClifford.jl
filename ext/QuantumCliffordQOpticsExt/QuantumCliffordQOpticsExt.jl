@@ -72,7 +72,14 @@ Ket(dim=4)
 ```"""
 Ket(s::QuantumClifford.AbstractStabilizer) = stab_to_ket(s)
 
-function stabmix_to_densityop(s::StabMixture)
+"""
+$TYPEDSIGNATURES
+
+Convert a stabilizer tableau to a density matrix corresponding to the given state.
+"""
+Operator(s::QuantumClifford.AbstractStabilizer) = dm(Ket(s)) # TODO support mixed stabilizer states
+
+function genstab_to_densityop(s::GeneralizedStabilizer)
     ρ₀ = zero(dm(Ket(s.stab)))
     for ((Pₗᵇⁱᵗˢ,Pᵣᵇⁱᵗˢ), χ) in s.destabweights
         ρ̃ = dm(Ket(s.stab))
@@ -96,7 +103,7 @@ end
 $TYPEDSIGNATURES
 
 """
-Operator(s::StabMixture) = stabmix_to_densityop(s)
+Operator(s::GeneralizedStabilizer) = genstab_to_densityop(s)
 
 
 """
