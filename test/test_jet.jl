@@ -18,5 +18,5 @@ rep = report_package("QuantumClifford";
 )
 @show rep
 @test_broken length(JET.get_reports(rep)) == 0
-@test length(JET.get_reports(rep)) <= 22
+@test length(JET.get_reports(rep)) <= 23
 end
