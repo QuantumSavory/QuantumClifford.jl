@@ -129,7 +129,7 @@ end
 """
 For a not-necessarily commutative set of Paulis, return a generating set of the form 
 <A₁, A₂, ... Aₖ, Aₖ₊₁, ... Aₘ, B₁, B₂, ... Bₖ> where two operators anticommute if and only if they 
-are of the form Aₖ, Bₖ and commute otherwise.
+are of the form Aₖ, Bₖ and commute otherwise. Based on [RevModPhys.87.307](@cite)
 
 Returns the generating set as a data structure of type [`SubsystemCodeTableau`](@ref). The 
 `logicalxview` function returns the <A₁, A₂,... Aₖ>, and the `logicalzview`
@@ -138,7 +138,7 @@ as a Stabilizer, and `destabilizerview` returns the Destabilizer of that Stabili
 
 
 ```jldoctest
-julia> tab(canonicalize_noncomm(T"XX", P"XZ", P"XY"))
+julia> tab(canonicalize_noncomm(T"XX XZ XY"))
 + Z_
 + XX
 -iX_
@@ -193,10 +193,10 @@ fully commutative set. Return S'' as well as a list of the indices of the added 
 The returned object is a Stabilizet.
 
 ```jldoctest
-julia> commutify(TP"XX XZ XY")[1]
+julia> commutify(T"XX XZ XY")[1]
 + XXX
+-iX__
 + XZZ
-+ X__
 
 julia> commutify(T"XX XZ XY")[2]
 1-element Vector{Any}:
@@ -224,18 +224,18 @@ end
 
 """
 For a given set S of Paulis that does not necessarily represent a state, return a set of
-Paulis S' that represents a state. S' is a superset of S [commutified](@ref commutify). Additionally returns
-two arrays representing deletions needed to produce S. 
+Paulis S' that represents a state. S' is a superset of [commutified](@ref commutify) S. Additionally 
+returns two arrays representing deletions needed to produce S. Based on [goodenough2024bipartiteentanglementnoisystabilizer](@cite)
 
-By deleting the qubits in first output array from S`, taking the normalizer, then deleting the qubits in the 
-second returned array from the normalizer, S is reproduced. 
+By deleting the qubits in the first output array from S`, taking the normalizer of S', then deleting 
+the qubits in the second returned array from the normalizer of S', S is reproduced. 
 
 ```jldoctest
 julia> matroid_parent(T"XX")[1]
 + X_X
-+ ZZZ
 + XX_
 + ___
++ ZZZ
 
 julia> matroid_parent(T"XX")[2]
 1-element Vector{Any}:
