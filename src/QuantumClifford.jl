@@ -951,7 +951,7 @@ See also: [`vcat`](@ref)
 """
 function Base.hcat(tabs::Tableau...)
     rows = size(tabs[1], 1)
-    cols = sum(map(tab -> size(tab, 2), tabs))
+    cols = sum(map(nqubits, tabs))
     newtab = zero(Tableau, rows, cols)
     cols_idx = 1
     for tab in tabs
