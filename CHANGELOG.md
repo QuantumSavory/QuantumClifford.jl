@@ -5,6 +5,15 @@
 
 # News
 
+## dev
+
+- **(fix)** Bug fix to the `parity_checks(ReedMuller(r, m))` of classical Reed-Muller code (it was returning generator matrix).
+- `RecursiveReedMuller` code implementation as an alternative implementation of `ReedMuller`.
+
+## v0.9.9 - 2024-08-05
+
+- `inv` is implemented for all Clifford operator types (symbolic, dense, sparse).
+
 ## v0.9.8 - 2024-08-03
 
 - New group-theoretical tools:
