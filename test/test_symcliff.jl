@@ -92,7 +92,7 @@
         end
     end
 
-    @testset "New two qubit gates consistency check" begin
+    @testset "Consistency check with STIM conventions" begin
         # see https://github.com/quantumlib/Stim/blob/main/doc/gates.md
         @test CliffordOperator(sSWAPCX)    == C"IX XX ZZ ZI"
         @test CliffordOperator(sInvSWAPCX) == C"XX XI IZ ZZ"
