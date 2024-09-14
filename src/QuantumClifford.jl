@@ -939,7 +939,7 @@ end
 Base.vcat(stabs::Stabilizer...) = Stabilizer(vcat((tab(s) for s in stabs)...))
 
 """
-Horizontally concatenates `stabilizers`.
+Horizontally concatenates tableaux.
 
 ```jldoctest
 julia> hcat(ghz(2), ghz(2))
@@ -963,7 +963,7 @@ function Base.hcat(tabs::Tableau...)
             for j in 1:cols_tab
                 newtab[i, cols_idx+j-1] = tab[i, j]
             end
-            newtab.phases[i] |= tab.phases[i]
+            newtab.phases[i] = (newtab.phases[i]+tab.phases[i])%4
         end
         cols_idx += cols_tab
     end
