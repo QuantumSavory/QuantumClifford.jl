@@ -104,7 +104,7 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 with ϕᵢⱼ | Pᵢ | Pⱼ:
  1.0+0.0im | + _ | + _
 
-julia> apply!(sm, CliffordOperator(sHadamard))
+julia> apply!(sm, CliffordOperator(tHadamard))
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + X
@@ -113,6 +113,7 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 with ϕᵢⱼ | Pᵢ | Pⱼ:
  1.0+0.0im | + _ | + _
 ```
+
 """
 function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator) # TODO conjugate also the destabs
     apply!(state.stab, gate)
@@ -121,9 +122,37 @@ end
 
 """$(TYPEDSIGNATURES)
 
-Expectation value for the [PauliOperator](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`."""
+Expectation value for the [PauliOperator](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`.
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> apply!(sm, pcT)
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + _ | + Z
+ 0.0-0.353553im | + Z | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
+
+julia> expect(P"-X", sm)
+0.7071067811865475 + 0.0im
+```
+
+"""
 function expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
-    χ′ = zero(_dictvaltype(s.destabweights))
+    χ′ = zero(valtype(s.destabweights))
     phase, b, c = rowdecompose(p, s.stab)
     for ((dᵢ,dⱼ), χ) in s.destabweights
         _allthreesumtozero(dᵢ,dⱼ,b) || continue
@@ -138,10 +167,6 @@ function _allthreesumtozero(a,b,c) # TODO consider using bitpacking and SIMD xor
         iseven(a[i]+b[i]+c[i]) || return false
     end
     true
-end
-
-function _dictvaltype(dict)
-    return valtype(dict)
 end
 
 function project!(sm::GeneralizedStabilizer, p::PauliOperator)
@@ -198,30 +223,25 @@ end
 
 nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 
-function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold::Union{Nothing, Float64}=nothing)
-    if prune_threshold === nothing
-        prune_threshold = 1e-14  # Default value
-    end
+function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold::Float64=1e-14)
     dict = state.destabweights
     stab = state.stab
-    dtype = _dictvaltype(dict)
+    dtype = valtype(dict)
     tzero = zero(dtype)
     tone = one(dtype)
     newdict = typeof(dict)(tzero)
     for ((dᵢ,dⱼ), χ) in dict # the state
-        for ((Pₖ,Pₗ), w) in zip(gate.paulis, gate.weights) # the channel
-            phaseₖ, dₖ, dₖˢᵗᵃᵇ = rowdecompose(Pₖ,stab)
+        for ((Pₗ,Pᵣ), w) in zip(gate.paulis,gate.weights) # the channel
             phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ,stab)
-            cₖₗ = (dot(dₖˢᵗᵃᵇ,dᵢ) + dot(dₗˢᵗᵃᵇ,dⱼ))*2
-            dᵢ′ = dₖ .⊻ dᵢ
-            dⱼ′ = dₗ .⊻ dⱼ
-            χ′ = χ * w * (-tone)^cₖₗ * (im)^(-phaseₖ+phaseₗ+4)
-            if abs(χ′) >= prune_threshold
-                newdict[(dᵢ′,dⱼ′)] = get!(newdict,(dᵢ′,dⱼ′),0)+χ′
-            end
+            phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ,stab)
+            c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ))*2
+            dᵢ′ = dₗ .⊻ dᵢ
+            dⱼ′ = dᵣ .⊻ dⱼ
+            χ′ = χ * w * (-tone)^c * (im)^(-phaseₗ+phaseᵣ+4)
+            newdict[(dᵢ′,dⱼ′)] = get!(newdict,(dᵢ′,dⱼ′),0)+χ′
         end
     end
-    filter!(x -> abs(x[2]) >= prune_threshold, newdict)
+    filter!(x -> abs(x[2]) > prune_threshold, newdict)
     state.destabweights = newdict
     state
 end
@@ -328,7 +348,7 @@ end
 
 nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
-apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold::Union{Nothing, Float64}=nothing) = prune_threshold === nothing ? apply!(state, gate.paulichannel) : apply!(state, gate.paulichannel, prune_threshold)
+apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold::Float64=1e-14) = apply!(state, gate.paulichannel; prune_threshold=prune_threshold)
 
 ##
 # Predefined Pauli Channels
