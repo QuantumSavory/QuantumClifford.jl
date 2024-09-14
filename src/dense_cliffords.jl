@@ -82,15 +82,7 @@ function row_limit(str, limit=50)
 end
 
 digits_subchars = collect("₀₁₂₃₄₅₆₇₈₉")
-function digits_substr(n::Integer, nwidth::Int)
-    dlist = digits(n, base=10, pad=nwidth)
-    for d in dlist
-        if d < 0 || d > 9
-            throw(BoundsError("Digits out of range: $d"))
-        end
-    end
-    return join([digits_subchars[d+1] for d in reverse(dlist)])
-end
+digits_substr(n::Int,nwidth::Int) = join(([digits_subchars[d+1] for d in reverse(digits(n, pad=nwidth))]))
 
 function Base.copy(c::CliffordOperator)
     CliffordOperator(copy(c.tab))
