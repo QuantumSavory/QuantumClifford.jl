@@ -5,6 +5,10 @@
 
 # News
 
+## dev
+
+- Implementing many more named single-qubit gates following naming convention similar to the stim package in python.
+
 ## v0.9.8 - 2024-08-03
 
 - New group-theoretical tools:
