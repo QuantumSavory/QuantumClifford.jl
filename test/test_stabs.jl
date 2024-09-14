@@ -95,7 +95,7 @@
         @test hcat(ghz(2), ghz(2)) == S"XXXX ZZZZ"
         s1 = S"YZ -XX"
         s2 = S"-ZY -YX"
-        @test hcat(copy(s1), copy(s2)) == S"-YZZY +XXYX"
+        @test hcat(copy(s1), copy(s2)) == S"-YZZY XXYX"
         @test hcat(copy(s1), copy(s2), copy(s1), copy(s2)) == S"YZZYYZZY XXYXXXYX"
         @test_throws ArgumentError hcat(copy(s1), random_stabilizer(3))
         @test hcat(copy(tab(s1)), copy(tab(s2))) == T"-YZZY XXYX"
