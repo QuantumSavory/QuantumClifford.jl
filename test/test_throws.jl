@@ -45,6 +45,9 @@
 
     @test_throws ArgumentError one(typeof(T"X"), 1, basis=:U)
 
+    @test_throws ArgumentError SparseGate(random_clifford(2), [1, 2, 3])
+    @test_throws ArgumentError apply!(random_stabilizer(2), SparseGate(random_clifford(3), [1, 2, 3]))
+
     for gt in subtypes(QuantumClifford.AbstractSingleQubitOperator)
         gt == SingleQubitOperator && continue
         @test_throws ArgumentError gt(0)

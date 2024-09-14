@@ -82,7 +82,7 @@ function row_limit(str, limit=50)
 end
 
 digits_subchars = collect("₀₁₂₃₄₅₆₇₈₉")
-digits_substr(n,nwidth) = join(([digits_subchars[d+1] for d in reverse(digits(n, pad=nwidth))]))
+digits_substr(n::Int,nwidth::Int) = join(([digits_subchars[d+1] for d in reverse(digits(n, pad=nwidth))]))
 
 function Base.copy(c::CliffordOperator)
     CliffordOperator(copy(c.tab))

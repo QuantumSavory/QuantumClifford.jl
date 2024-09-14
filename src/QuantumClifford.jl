@@ -767,10 +767,19 @@ function comm!(v, l::PauliOperator, r::Tableau)
     v
 end
 comm!(v, l::Tableau, r::PauliOperator) = comm!(v, r, l)
-@inline comm!(v, l::PauliOperator, r::Stabilizer, i::Int) = comm!(v, l, tab(r), i)
-@inline comm!(v, l::Stabilizer, r::PauliOperator, i::Int) = comm!(v, tab(l), r, i)
 @inline comm!(v, l::PauliOperator, r::Stabilizer) = comm!(v, l, tab(r))
 @inline comm!(v, l::Stabilizer, r::PauliOperator) = comm!(v, tab(l), r)
+function comm!(v, l::PauliOperator, r::Tableau, i)
+    v[i] = comm(l,r,i)
+    v
+end
+comm!(v, l::Tableau, r::PauliOperator, i) = comm!(v, r, l, i)
+@inline comm!(v, l::PauliOperator, r::Stabilizer, i::Int) = comm!(v, l, tab(r), i)
+@inline comm!(v, l::Stabilizer, r::PauliOperator, i::Int) = comm!(v, tab(l), r, i)
+function comm!(v, s::Tableau, l::Int, r::Int)
+    v[l] = comm(s, l, r)
+    v
+end
 @inline comm!(v, s::Stabilizer, l::Int, r::Int) = comm!(v, tab(s), l, r)
 
 
