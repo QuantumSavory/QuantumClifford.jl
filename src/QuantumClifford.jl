@@ -153,7 +153,7 @@ function Tableau(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::Ab
     r_xs = size(xs, 1)
     r_zs = size(zs, 1)
     if length(phases) != r_xs || r_xs != r_zs
-        throw(DimensionMismatch("The length of phases ($(length(phases))), rows of xs ($r_xs), rows of zs ($r_zs) must all be equal."))
+        throw(DimensionMismatch(lazy"The length of phases ($(length(phases))), rows of xs ($r_xs), rows of zs ($r_zs) must all be equal."))
     end
     Tableau(
         phases,size(xs, 2),
