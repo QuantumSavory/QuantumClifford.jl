@@ -339,8 +339,9 @@ isdegenerate(c::AbstractECC, args...) = isdegenerate(parity_checks(c), args...)
 isdegenerate(c::AbstractStabilizer, args...) = isdegenerate(stabilizerview(c), args...)
 
 function isdegenerate(H::Stabilizer, errors) # Described in https://quantumcomputing.stackexchange.com/questions/27279
-    syndromes = comm.((H,), errors) # TODO This can be optimized by having something that always returns bitvectors
-    return length(Set(syndromes)) != length(errors)
+    syndromes = map(e -> comm(H,e), errors) # TODO This can be optimized by having something that always returns bitvectors
+    syndrome_set = Set(syndromes)
+    return length(syndrome_set) != length(errors)
 end
 
 function isdegenerate(H::Stabilizer, d::Int=1)
