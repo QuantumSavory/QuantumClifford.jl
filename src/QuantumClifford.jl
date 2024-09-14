@@ -149,11 +149,20 @@ function Tableau(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ<:
     tab
 end
 
-Tableau(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Tableau(
-    phases, size(xs,2),
-    vcat(hcat((BitArray(xs[i,:]).chunks for i in 1:size(xs,1))...)::Matrix{UInt},
-         hcat((BitArray(zs[i,:]).chunks for i in 1:size(zs,1))...)::Matrix{UInt}) # type assertions to help Julia infer types
-)
+function Tableau(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
+    r_xs = size(xs, 1)
+    r_zs = size(zs, 1)
+    if length(phases) != r_xs || r_xs != r_zs
+        throw(DimensionMismatch(lazy"The length of phases ($(length(phases))), rows of xs ($r_xs), rows of zs ($r_zs) must all be equal."))
+    end
+    Tableau(
+        phases,size(xs, 2),
+        vcat(
+            hcat((BitArray(xs[i, :]).chunks for i in 1:r_xs)...)::Matrix{UInt},
+            hcat((BitArray(zs[i, :]).chunks for i in 1:r_zs)...)::Matrix{UInt} # type assertions to help Julia infer types
+        )
+    )
+end
 
 Tableau(phases::AbstractVector{UInt8}, xzs::AbstractMatrix{Bool}) = Tableau(phases, xzs[:,1:end÷2], xzs[:,end÷2+1:end])
 
