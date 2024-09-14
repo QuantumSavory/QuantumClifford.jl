@@ -5,9 +5,10 @@
 
 # News
 
-## v0.9.10 - 2024-08-11
+## dev
 
-- **(fix)** Bug fix to the `parity_checks(ReedMuller(r, m))` of classical `Reed-Muller` code along with `RecursiveReedMuller` code implementation for cross reference.
+- **(fix)** Bug fix to the `parity_checks(ReedMuller(r, m))` of classical Reed-Muller code (it was returning generator matrix).
+- `RecursiveReedMuller` code implementation as an alternative implementation of `ReedMuller`.
 
 ## v0.9.9 - 2024-08-05
 
