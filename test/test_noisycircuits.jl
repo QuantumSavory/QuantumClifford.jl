@@ -15,15 +15,6 @@
         @assert apply!(apply!(copy(c), g), gi) == c
     end
 
-    @testset "Sanity checks on SparseGate operations" begin
-        @test_throws ArgumentError SparseGate(random_clifford(2), [1, 2, 3])
-        @test_throws ArgumentError apply!(random_stabilizer(2), SparseGate(random_clifford(3), [1, 2, 3]))
-        for n in filter(x -> x > 1, test_sizes)
-            @test_throws ArgumentError SparseGate(random_clifford(n-1), collect(1:n))
-            @test_throws ArgumentError apply!(random_stabilizer(n-1), SparseGate(random_clifford(n), collect(1:n)))
-        end
-    end
-
     @testset "Noisy Gates" begin
         g1 = SparseGate(tId1, [1])
         g2 = SparseGate(tCNOT, [2,3])

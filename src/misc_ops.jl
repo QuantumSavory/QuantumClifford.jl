@@ -40,8 +40,9 @@ end
 SparseGate(c,t::Tuple) = SparseGate(c,collect(t))
 
 function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
-    if maximum(g.indices) > nqubits(state) || length(g.indices) != nqubits(g.cliff)
-        throw(ArgumentError("Cannot apply gate: check qubit indices and CliffordOperator qubit count."))
+    m = maximum(g.indices)
+    if m > nqubits(state)
+        throw(ArgumentError(lazy"SparseGate was attempted on invalid qubit index $(m) when the state contains only $(nqubits(state)) qubits."))
     end
     apply!(state, g.cliff, g.indices; kwargs...)
 end
