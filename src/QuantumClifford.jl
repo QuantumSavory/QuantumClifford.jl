@@ -955,7 +955,7 @@ function Base.vcat(tabs::Tableau...)
         hcat((s.xzs for s in tabs)...))
 end
 
-Base.vcat(stabs::Stabilizer...) = Stabilizer(vcat((tab(s) for s in stabs)...))
+Base.vcat(stabs::Stabilizer{T}...) where {T} = Stabilizer(vcat((tab(s) for s in stabs)...))
 
 """
 Horizontally concatenates tableaux.
@@ -980,7 +980,7 @@ function Base.hcat(tabs::Tableau...)
         end
         for i in 1:rows
             for j in 1:cols_tab
-                newtab[i, cols_idx+j-1] = tab[i, j]
+                newtab[i, cols_idx+j-1]::Tuple{Bool,Bool} = tab[i, j]::Tuple{Bool,Bool}
             end
             newtab.phases[i] = (newtab.phases[i]+tab.phases[i])%4
         end
@@ -989,7 +989,7 @@ function Base.hcat(tabs::Tableau...)
     return newtab
 end
 
-Base.hcat(stabs::Stabilizer...) = Stabilizer(hcat((tab(s) for s in stabs)...))
+Base.hcat(stabs::Stabilizer{T}...) where {T} = Stabilizer(hcat((tab(s) for s in stabs)...))
 
 ##############################
 # Unitary Clifford Operations
