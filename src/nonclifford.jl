@@ -123,13 +123,13 @@ end
 
 Expectation value for the [PauliOperator](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`."""
 function expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
-    e = zero(_dictvaltype(s.destabweights))
+    χ′ = zero(_dictvaltype(s.destabweights))
     phase, b, c = rowdecompose(p, s.stab)
     for ((dᵢ,dⱼ), χ) in s.destabweights
         _allthreesumtozero(dᵢ,dⱼ,b) || continue
-        e += χ * (-1)^(dᵢ'*c)
+        χ′ += χ * (-1)^(dᵢ'*c)
     end
-    return (-1)^(phase÷2) * e
+    return (im)^(phase) * χ′
 end
 
 """Same as `all(==(0), (a.+b.+c) .% 2)`"""
