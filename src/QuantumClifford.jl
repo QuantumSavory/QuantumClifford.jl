@@ -9,7 +9,6 @@ module QuantumClifford
 
 import LinearAlgebra
 using LinearAlgebra: inv, mul!, rank, Adjoint, dot
-import Base: promote_rule, convert
 import DataStructures
 using DataStructures: DefaultDict, Accumulator
 using Combinatorics: combinations
@@ -994,13 +993,13 @@ end
 # Conversion and promotion
 ##############################
 
-promote_rule(::Type{<:MixedStabilizer{T}}, ::Type{<:Stabilizer{T}}) where {T<:Tableau} = Stabilizer{T}
-promote_rule(::Type{<:MixedDestabilizer{T}}, ::Type{<:Stabilizer{T}}) where {T<:Tableau} = MixedDestabilizer{T}
-promote_rule(::Type{<:MixedDestabilizer{T}}, ::Type{<:Destabilizer{T}}) where {T<:Tableau} = MixedDestabilizer{T}
+Base.promote_rule(::Type{<:MixedStabilizer{T}}  ,  ::Type{<:Stabilizer{T}})   where {T<:Tableau} = Stabilizer{T}
+Base.promote_rule(::Type{<:MixedDestabilizer{T}},  ::Type{<:Stabilizer{T}})   where {T<:Tableau} = MixedDestabilizer{T}
+Base.promote_rule(::Type{<:MixedDestabilizer{T}},  ::Type{<:Destabilizer{T}}) where {T<:Tableau} = MixedDestabilizer{T}
 
-convert(::Type{<:MixedDestabilizer{T}}, x::Stabilizer{T}) where {T<:Tableau} = MixedDestabilizer(x)
-convert(::Type{<:Stabilizer{T}}, x::MixedStabilizer{T}) where {T<:Tableau} = Stabilizer(tab(x))
-convert(::Type{<:MixedDestabilizer{T}}, x::Destabilizer{T}) where {T<:Tableau} = MixedDestabilizer(x)
+Base.convert(::Type{<:Stabilizer{T}}            , x::MixedStabilizer{T})      where {T<:Tableau} = Stabilizer(tab(x))
+Base.convert(::Type{<:MixedDestabilizer{T}}     , x::Stabilizer{T})           where {T<:Tableau} = MixedDestabilizer(x)
+Base.convert(::Type{<:MixedDestabilizer{T}}     , x::Destabilizer{T})         where {T<:Tableau} = MixedDestabilizer(x)
 
 ##############################
 # Helpers for binary codes
