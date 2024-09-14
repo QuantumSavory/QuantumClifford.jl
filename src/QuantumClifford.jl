@@ -993,13 +993,13 @@ end
 # Conversion and promotion
 ##############################
 
-Base.promote_rule(::Type{<:MixedStabilizer{T}}  ,  ::Type{<:Stabilizer{T}})   where {T<:Tableau} = Stabilizer{T}
-Base.promote_rule(::Type{<:MixedDestabilizer{T}},  ::Type{<:Stabilizer{T}})   where {T<:Tableau} = MixedDestabilizer{T}
+Base.promote_rule(::Type{<:MixedStabilizer{T}}  ,  ::Type{<:Stabilizer{T}}  ) where {T<:Tableau} = Stabilizer{T}
+Base.promote_rule(::Type{<:MixedDestabilizer{T}},  ::Type{<:Stabilizer{T}}  ) where {T<:Tableau} = MixedDestabilizer{T}
 Base.promote_rule(::Type{<:MixedDestabilizer{T}},  ::Type{<:Destabilizer{T}}) where {T<:Tableau} = MixedDestabilizer{T}
 
-Base.convert(::Type{<:Stabilizer{T}}            , x::MixedStabilizer{T})      where {T<:Tableau} = Stabilizer(tab(x))
-Base.convert(::Type{<:MixedDestabilizer{T}}     , x::Stabilizer{T})           where {T<:Tableau} = MixedDestabilizer(x)
-Base.convert(::Type{<:MixedDestabilizer{T}}     , x::Destabilizer{T})         where {T<:Tableau} = MixedDestabilizer(x)
+Base.convert(::Type{<:Stabilizer{T}}            , x::MixedStabilizer{T}     ) where {T<:Tableau} = Stabilizer(tab(x))
+Base.convert(::Type{<:MixedDestabilizer{T}}     , x::Stabilizer{T}          ) where {T<:Tableau} = MixedDestabilizer(x)
+Base.convert(::Type{<:MixedDestabilizer{T}}     , x::Destabilizer{T}        ) where {T<:Tableau} = MixedDestabilizer(x)
 
 ##############################
 # Helpers for binary codes
