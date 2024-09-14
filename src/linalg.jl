@@ -158,6 +158,55 @@ julia> tensor(s, s)
 - ____Z_
 ```
 
+Tensor product between [`MixedDestabilizer`](@ref) and [`Stabilizer`](@ref).
+
+```jldoctest promote
+julia> md = MixedDestabilizer(T"Z//X", 1)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
++ X
+
+julia> tensor(S"X", md)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _Z
+𝒮𝓉𝒶𝒷
++ X_
++ _X
+```
+
+Tensor product between [`MixedDestabilizer`](@ref) and [`Destabilizer`](@ref).
+
+```jldoctest promote
+julia> d = Destabilizer(T"-Y//-X")
+𝒟ℯ𝓈𝓉𝒶𝒷
+- Y
+𝒮𝓉𝒶𝒷
+- X
+
+julia> tensor(d, md)
+𝒟ℯ𝓈𝓉𝒶𝒷
+- Y_
++ _Z
+𝒮𝓉𝒶𝒷
+- X_
++ _X
+```
+
+Tensor product between [`MixedStabilizer`](@ref) and [`Stabilizer`](@ref).
+
+```jldoctest
+julia> ms = MixedStabilizer(S"-XZ//-ZX")
+- XZ
+- ZX
+
+julia> tensor(S"X", ms)
++ X__
+- _XZ
+- _ZX
+```
+
 See also [`tensor_pow`](@ref)."""
 function tensor end
 
@@ -266,67 +315,3 @@ function tensor(ops::CliffordOperator...) # TODO implement \otimes for Destabili
     end
     CliffordOperator(tab)
 end
-
-"""
-Tensor product between [`MixedDestabilizer`](@ref) and [`Stabilizer`](@ref).
-
-```jldoctest
-julia> md = MixedDestabilizer(T"Z//X", 1)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z
-𝒮𝓉𝒶𝒷
-+ X
-
-julia> md ⊗ S"X"
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z_
-+ _Z
-𝒮𝓉𝒶𝒷
-+ X_
-+ _X
-
-julia> S"X" ⊗ md
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z_
-+ _Z
-𝒮𝓉𝒶𝒷
-+ X_
-+ _X
-
-julia> S"X" ⊗ md ⊗ S"X" ⊗ md
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z___
-+ _Z__
-+ __Z_
-+ ___Z
-𝒮𝓉𝒶𝒷━━
-+ X___
-+ _X__
-+ __X_
-+ ___X
-```
-"""
-function tensor(md::MixedDestabilizer, s::Stabilizer)
-    ntot_md = nqubits(md)
-    ntot_s = nqubits(s)
-    ntot = ntot_md + ntot_s
-    rtot_md = LinearAlgebra.rank(md)
-    rtot_s = length(s)
-    rtot = rtot_md + rtot_s
-    tab = zero(Tableau, 2*ntot, ntot)
-    last_dvrow = 0
-    last_svrow = ntot
-    last_col = 0
-    md1 = MixedDestabilizer(s)
-    last_lxrow = rtot
-    last_lzrow = ntot+rtot
-    for op in [md, md1]
-        _, last_svrow, _        = puttableau!(tab,   stabilizerview(op), last_svrow, last_col)
-        _, last_dvrow, _        = puttableau!(tab, destabilizerview(op), last_dvrow, last_col)
-        _, last_lxrow, _        = puttableau!(tab,     logicalxview(op), last_lxrow, last_col)
-        _, last_lzrow, last_col = puttableau!(tab,     logicalzview(op), last_lzrow, last_col)
-    end
-    return MixedDestabilizer(tab, rtot)
-end
-
-tensor(s::Stabilizer, md::MixedDestabilizer) = tensor(md, s)
