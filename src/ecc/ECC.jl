@@ -1,6 +1,7 @@
 module ECC
 
 using LinearAlgebra
+using LinearAlgebra: I
 using QuantumClifford
 using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
@@ -8,7 +9,7 @@ using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 
 abstract type AbstractECC end
 
@@ -69,6 +70,9 @@ Generator Polynomial `g(x)`
 In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field `F`. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
 """
 function generator_polynomial end
+
+"""The generator matrix of a code."""
+function generator end
 
 parity_checks(s::Stabilizer) = s
 Stabilizer(c::AbstractECC) = parity_checks(c)
@@ -363,4 +367,5 @@ include("codes/concat.jl")
 include("codes/random_circuit.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/bch.jl")
+include("codes/classical/recursivereedmuller.jl")
 end #module
