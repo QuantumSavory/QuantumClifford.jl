@@ -917,7 +917,7 @@ end
 check_allrowscommute(stabilizer::Stabilizer)=check_allrowscommute(tab(stabilizer))
 
 """
-Vertically concatenates `stabilizers`.
+Vertically concatenates tableaux.
 
 ```jldoctest
 julia> vcat(ghz(2), ghz(2))
