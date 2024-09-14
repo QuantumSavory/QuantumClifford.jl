@@ -77,7 +77,7 @@
             @test CliffordOperator(inv(SingleQubitOperator(random_op)), i) == inv(CliffordOperator(random_op, i))
         end
 
-    @testset "New single qubit gates consistency check" begin
+    @testset "Consistency checks with Stim" begin
        # see https://github.com/quantumlib/Stim/blob/main/doc/gates.md
        @test CliffordOperator(sCXYZ)       == C"Y X"
        @test CliffordOperator(sCZYX)       == C"Z Y"
