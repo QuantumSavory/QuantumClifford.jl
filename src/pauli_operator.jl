@@ -122,7 +122,13 @@ Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.xz, h)
 
 Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
 
-function Base.deleteat!(p::PauliOperator, subset) 
+function LinearAlgebra.inv(p::PauliOperator)
+  ph = p.phase[]
+  phin = xor((ph << 1) & ~(UInt8(1) << 2), ph)
+  return PauliOperator(phin, p.nqubits, copy(p.xz))
+end
+
+function Base.deleteat!(p::PauliOperator, subset)
     p =p[setdiff(1:length(p), subset)]
     return p
 end

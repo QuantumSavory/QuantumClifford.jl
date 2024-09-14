@@ -51,7 +51,7 @@ export
     sHadamardXY, sHadamardYZ, sSQRTX, sInvSQRTX, sSQRTY, sInvSQRTY, sCXYZ, sCZYX,
     sCNOT, sCPHASE, sSWAP,
     sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZCX, sZCY, sZCZ,
-    sZCrY,
+    sZCrY, sInvZCrY,
     # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
