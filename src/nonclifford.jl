@@ -223,11 +223,10 @@ end
 
 nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 
-"""
-Applies a Pauli channel to the generalized stabilizer `τ = (χ, B(S, D))`, where `χ`
-represents the density matrix and `B(S, D)` denotes the stabilizer basis in which
-`χ` is expressed. The channel is defined as `ρ ↦ ∑ ϕᵢⱼ Pᵢ ρ Pⱼ†`, where `ϕᵢⱼ` are
-complex coefficients, and `Pᵢ` and `Pⱼ` are Pauli operators."""
+"""Applies a Pauli channel to the generalized stabilizer `τ = (χ, B(S, D))`, where
+`χ` represents the density matrix and `B(S, D)` denotes the stabilizer basis in
+which `χ` is expressed. The channel is defined as `ρ ↦ ∑ ϕᵢⱼ Pᵢ ρ Pⱼ†`, where `ϕᵢⱼ`
+are complex coefficients, and `Pᵢ` and `Pⱼ` are Pauli operators."""
 function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold=1e-10)
     dict = state.destabweights
     stab = state.stab
