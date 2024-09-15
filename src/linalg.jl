@@ -158,7 +158,7 @@ julia> tensor(s, s)
 - ____Z_
 ```
 
-Tensor product between [`MixedDestabilizer`](@ref) and [`Stabilizer`](@ref).
+Tensor product between [`MixedDestabilizer`](@ref) and [`Stabilizer`](@ref):
 
 ```jldoctest promote
 julia> md = MixedDestabilizer(T"Z//X", 1)
@@ -176,7 +176,7 @@ julia> tensor(S"X", md)
 + _X
 ```
 
-Tensor product between [`MixedDestabilizer`](@ref) and [`Destabilizer`](@ref).
+Tensor product between [`MixedDestabilizer`](@ref) and [`Destabilizer`](@ref):
 
 ```jldoctest promote
 julia> d = Destabilizer(T"-Y//-X")
@@ -194,9 +194,9 @@ julia> tensor(d, md)
 + _X
 ```
 
-Tensor product between [`MixedStabilizer`](@ref) and [`Stabilizer`](@ref).
+Tensor product between [`MixedStabilizer`](@ref) and [`Stabilizer`](@ref):
 
-```jldoctest
+```jldoctest promote
 julia> ms = MixedStabilizer(S"-XZ//-ZX")
 - XZ
 - ZX
@@ -205,6 +205,68 @@ julia> tensor(S"X", ms)
 + X__
 - _XZ
 - _ZX
+```
+
+Tensor product between [`Stabilizer`](@ref) and [`Destabilizer`](@ref):
+
+```jldoctest promote
+julia> tensor(S"X", d)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
+- _Y
+𝒮𝓉𝒶𝒷
++ X_
+- _X
+```
+
+Tensor product between [`MixedStabilizer`](@ref) and [`MixedDestabilizer`](@ref):
+
+```jldoctest promote
+julia> tensor(md, ms)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
++ _Z_
++ __Z
+𝒮𝓉𝒶𝒷━
++ X__
+- _XZ
+- _ZX
+```
+
+Tensor product between [`MixedStabilizer`](@ref) and [`Destabilizer`](@ref):
+
+```jldoctest promote
+julia> tensor(d, ms)
+𝒟ℯ𝓈𝓉𝒶𝒷
+- Y__
++ _Z_
++ __Z
+𝒮𝓉𝒶𝒷━
+- X__
+- _XZ
+- _ZX
+```
+
+Tensor product between [`Destabilizer`](@ref) and [`Destabilizer`](@ref):
+
+```jldoctest promote
+julia> tensor(d, d)
+𝒟ℯ𝓈𝓉𝒶𝒷
+- Y_
+- _Y
+𝒮𝓉𝒶𝒷
+- X_
+- _X
+```
+
+Tensor product between [`MixedStabilizer`](@ref) and [`MixedStabilizer`](@ref):
+
+```jldoctest promote
+julia> tensor(ms, ms)
+- XZ__
+- ZX__
+- __XZ
+- __ZX
 ```
 
 See also [`tensor_pow`](@ref)."""
