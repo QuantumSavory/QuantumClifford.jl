@@ -2,10 +2,10 @@ using Graphs
 using LinearAlgebra
 
 """
-A tableau representation of the non-commutative canonical form of a set of Paulis.
-The index of the first operator that commutes with all others is tracked so that the
-stabilizer, destabilizer, logical X, and logical Z aspects of the tableau can be 
-represented.
+A tableau representation of the non-commutative canonical form of a set of Paulis, 
+which is used in [`commutify`](@ref).The index of the first operator that commutes 
+with all others is tracked so that the stabilizer, destabilizer, logical X, and logical 
+Z aspects of the tableau can be represented.
 """
 mutable struct SubsystemCodeTableau{T <: Tableau} <: AbstractStabilizer
     tab::T
@@ -225,8 +225,8 @@ For a given set S of Paulis that does not necessarily represent a state, return 
 Paulis S' that represents a state. S' is a superset of [commutified](@ref commutify) S. Additionally 
 returns two arrays representing deletions needed to produce S. Based on [goodenough2024bipartiteentanglementnoisystabilizer](@cite)
 
-By deleting the qubits in the first output array from S`, taking the ['normalizer'](@ref) of S', then deleting 
-the qubits in the second returned array from the ['normalizer'](@ref) of S', S is reproduced. 
+By deleting the qubits in the first output array from S`, taking the ['normalizer'](@ref) of S', then 
+deleting the qubits in the second returned array from the ['normalizer'](@ref) of S', S is reproduced. 
 
 ```jldoctest
 julia> matroid_parent(T"XX")[1]
