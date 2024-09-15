@@ -4,6 +4,7 @@ authors = ["Stefan Krastanov <stefan@krastanov.org> and QuantumSavory community 
 version = "0.9.9"
 
 [deps]
+AbstractAlgebra = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
@@ -23,7 +24,6 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 SumTypes = "8e1ec7a9-0e02-4297-b0fe-6433085c89f2"
 
 [weakdeps]
-AbstractAlgebra = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
 LDPCDecoders = "3c486d74-64b9-4c60-8b1a-13a564e77efb"
@@ -35,7 +35,7 @@ QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
 
 [extensions]
 QuantumCliffordGPUExt = "CUDA"
-QuantumCliffordHeckeExt = ["AbstractAlgebra", "Hecke"]
+QuantumCliffordHeckeExt = "Hecke"
 QuantumCliffordLDPCDecodersExt = "LDPCDecoders"
 QuantumCliffordMakieExt = "Makie"
 QuantumCliffordPlotsExt = "Plots"
