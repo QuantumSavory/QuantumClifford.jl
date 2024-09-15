@@ -871,7 +871,7 @@ end
 
 
 """
-Return the given stabilizer without all the qubits in the given iterable.
+Return the given stabilizer without all the qubits in the given iterable. Based on [goodenough2024bipartiteentanglementnoisystabilizer](@ref)
 
 The resulting tableaux is not guaranteed to be valid (to retain its commutation relationships).
 

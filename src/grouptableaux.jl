@@ -21,7 +21,7 @@ function SubsystemCodeTableau(t::Tableau)
             break
         end
         if comm(t[i], t[i+1]) == 0x01 
-            index = i+2 # index to split loc into non-commuting pairs and commuting operators
+            index = i+2 # index to split t into non-commuting pairs and commuting operators
         end
     end
     s = Stabilizer(t[index:length(t)])
@@ -47,10 +47,8 @@ function SubsystemCodeTableau(t::Tableau)
         ind+=1
     end
     for p in s
-        
-            tab[ind] = p
-            ind+=1
-        
+        tab[ind] = p
+        ind+=1
     end
     for i in range(2, stop=index, step=2)
         tab[ind] = t[i]
@@ -186,11 +184,11 @@ end
 
 """
 For a not-necessarily commutative set of Paulis S, then take S', the [non-commutative canonical form](@ref canonicalize_noncomm) of 
-of S. For each pair Aₖ, Bₖ of anticommutative Paulis in S', there is a qubit added to 
-each Pauli in the set that is X for Aₖ, Z for Bₖ, and I for each other operator to produce S'', a
-fully commutative set. Return S'' as well as a list of the indices of the added qubits. 
+of S. For each pair Aₖ, Bₖ of anticommutative Paulis in S', add a qubit to each Pauli in the set:
+X to Aₖ, Z to Bₖ, and I to each other operator to produce S'', a fully commutative set. Return 
+S'' as well as a list of the indices of the added qubits. 
 
-The returned object is a Stabilizet.
+The returned object is a Stabilizer that is used in of the ['matroid_parent'](@ref) function.
 
 ```jldoctest
 julia> commutify(T"XX XZ XY")[1]
@@ -227,8 +225,8 @@ For a given set S of Paulis that does not necessarily represent a state, return 
 Paulis S' that represents a state. S' is a superset of [commutified](@ref commutify) S. Additionally 
 returns two arrays representing deletions needed to produce S. Based on [goodenough2024bipartiteentanglementnoisystabilizer](@cite)
 
-By deleting the qubits in the first output array from S`, taking the normalizer of S', then deleting 
-the qubits in the second returned array from the normalizer of S', S is reproduced. 
+By deleting the qubits in the first output array from S`, taking the ['normalizer'](@ref) of S', then deleting 
+the qubits in the second returned array from the ['normalizer'](@ref) of S', S is reproduced. 
 
 ```jldoctest
 julia> matroid_parent(T"XX")[1]
@@ -387,8 +385,8 @@ end
 
 """
 Return the subset of Paulis in a Stabilizer that have identity operators on all qubits corresponding to 
-the given subset, without the entries corresponding to subset.
-
+the given subset, without the entries corresponding to subset. Based on 
+[goodenough2024bipartiteentanglementnoisystabilizer](@ref)
 ```jldoctest
 julia> contractor(S"_X X_", [1])
 + X
