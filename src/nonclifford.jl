@@ -223,7 +223,12 @@ end
 
 nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 
-function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold::Float64=1e-14)
+"""
+Applies a Pauli channel to the generalized stabilizer `τ = (χ, B(S, D))`, where `χ`
+represents the density matrix and `B(S, D)` denotes the stabilizer basis in which
+`χ` is expressed. The channel is defined as `ρ ↦ ∑ ϕᵢⱼ Pᵢ ρ Pⱼ†`, where `ϕᵢⱼ` are
+complex coefficients, and `Pᵢ` and `Pⱼ` are Pauli operators."""
+function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold=1e-10)
     dict = state.destabweights
     stab = state.stab
     dtype = valtype(dict)
@@ -238,7 +243,7 @@ function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_
             dᵢ′ = dₗ .⊻ dᵢ
             dⱼ′ = dᵣ .⊻ dⱼ
             χ′ = χ * w * (-tone)^c * (im)^(-phaseₗ+phaseᵣ+4)
-            newdict[(dᵢ′,dⱼ′)] = get!(newdict,(dᵢ′,dⱼ′),0)+χ′
+             newdict[(dᵢ′,dⱼ′)] += χ′
         end
     end
     filter!(x -> abs(x[2]) > prune_threshold, newdict)
@@ -348,7 +353,7 @@ end
 
 nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
-apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold::Float64=1e-14) = apply!(state, gate.paulichannel; prune_threshold)
+apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold=1e-10) = apply!(state, gate.paulichannel; prune_threshold=prune_threshold)
 
 ##
 # Predefined Pauli Channels
