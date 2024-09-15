@@ -5,6 +5,12 @@
 
 # News
 
+## dev
+
+- Implementing many more named single-qubit gates following naming convention similar to the stim package in python.
+- **(fix)** Bug fix to the `parity_checks(ReedMuller(r, m))` of classical Reed-Muller code (it was returning generator matrix).
+- `RecursiveReedMuller` code implementation as an alternative implementation of `ReedMuller`.
+
 ## v0.9.9 - 2024-08-05
 
 - `inv` is implemented for all Clifford operator types (symbolic, dense, sparse).

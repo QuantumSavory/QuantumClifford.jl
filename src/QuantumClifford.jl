@@ -48,6 +48,7 @@ export
     # Symbolic Clifford Ops
     AbstractSymbolicOperator, AbstractSingleQubitOperator, AbstractTwoQubitOperator,
     sHadamard, sPhase, sInvPhase, SingleQubitOperator, sId1, sX, sY, sZ,
+    sHadamardXY, sHadamardYZ, sSQRTX, sInvSQRTX, sSQRTY, sInvSQRTY, sCXYZ, sCZYX,
     sCNOT, sCPHASE, sSWAP,
     sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZCX, sZCY, sZCZ,
     sZCrY, sInvZCrY,
@@ -149,11 +150,20 @@ function Tableau(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ<:
     tab
 end
 
-Tableau(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Tableau(
-    phases, size(xs,2),
-    vcat(hcat((BitArray(xs[i,:]).chunks for i in 1:size(xs,1))...)::Matrix{UInt},
-         hcat((BitArray(zs[i,:]).chunks for i in 1:size(zs,1))...)::Matrix{UInt}) # type assertions to help Julia infer types
-)
+function Tableau(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
+    r_xs = size(xs, 1)
+    r_zs = size(zs, 1)
+    if length(phases) != r_xs || r_xs != r_zs
+        throw(DimensionMismatch(lazy"The length of phases ($(length(phases))), rows of xs ($r_xs), rows of zs ($r_zs) must all be equal."))
+    end
+    Tableau(
+        phases,size(xs, 2),
+        vcat(
+            hcat((BitArray(xs[i, :]).chunks for i in 1:r_xs)...)::Matrix{UInt},
+            hcat((BitArray(zs[i, :]).chunks for i in 1:r_zs)...)::Matrix{UInt} # type assertions to help Julia infer types
+        )
+    )
+end
 
 Tableau(phases::AbstractVector{UInt8}, xzs::AbstractMatrix{Bool}) = Tableau(phases, xzs[:,1:end÷2], xzs[:,end÷2+1:end])
 
@@ -758,10 +768,19 @@ function comm!(v, l::PauliOperator, r::Tableau)
     v
 end
 comm!(v, l::Tableau, r::PauliOperator) = comm!(v, r, l)
-@inline comm!(v, l::PauliOperator, r::Stabilizer, i::Int) = comm!(v, l, tab(r), i)
-@inline comm!(v, l::Stabilizer, r::PauliOperator, i::Int) = comm!(v, tab(l), r, i)
 @inline comm!(v, l::PauliOperator, r::Stabilizer) = comm!(v, l, tab(r))
 @inline comm!(v, l::Stabilizer, r::PauliOperator) = comm!(v, tab(l), r)
+function comm!(v, l::PauliOperator, r::Tableau, i)
+    v[i] = comm(l,r,i)
+    v
+end
+comm!(v, l::Tableau, r::PauliOperator, i) = comm!(v, r, l, i)
+@inline comm!(v, l::PauliOperator, r::Stabilizer, i::Int) = comm!(v, l, tab(r), i)
+@inline comm!(v, l::Stabilizer, r::PauliOperator, i::Int) = comm!(v, tab(l), r, i)
+function comm!(v, s::Tableau, l::Int, r::Int)
+    v[l] = comm(s, l, r)
+    v
+end
 @inline comm!(v, s::Stabilizer, l::Int, r::Int) = comm!(v, tab(s), l, r)
 
 
