@@ -10,7 +10,8 @@ import Base: adjoint
 import Nemo: characteristic, lift, matrix_repr, GF, ZZ
 
 import QuantumClifford.ECC: AbstractECC, CSS, ClassicalCode,
-    hgp, code_k, code_n, code_s, iscss, parity_checks, parity_checks_x, parity_checks_z, parity_checks_xz
+    hgp, code_k, code_n, code_s, iscss, parity_checks, parity_checks_x, parity_checks_z, parity_checks_xz,
+    two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes
 
 include("types.jl")
 include("lifted.jl")
