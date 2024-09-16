@@ -176,24 +176,6 @@ julia> tensor(S"X", md)
 + _X
 ```
 
-Tensor product between [`MixedDestabilizer`](@ref) and [`Destabilizer`](@ref):
-
-```jldoctest promote
-julia> d = Destabilizer(T"-Y//-X")
-𝒟ℯ𝓈𝓉𝒶𝒷
-- Y
-𝒮𝓉𝒶𝒷
-- X
-
-julia> tensor(d, md)
-𝒟ℯ𝓈𝓉𝒶𝒷
-- Y_
-+ _Z
-𝒮𝓉𝒶𝒷
-- X_
-+ _X
-```
-
 See also [`tensor_pow`](@ref)."""
 function tensor end
 

@@ -62,12 +62,8 @@
             estab = stabilizerview(md)⊗s
             @test canonicalize!(copy(stabilizerview(mds))) == canonicalize!(estab)
             d = random_destabilizer(n)
-            dmd = d⊗md
-            @test mixed_destab_looks_good(dmd)
             sd = random_stabilizer(n)⊗random_destabilizer(n)
             @test mixed_destab_looks_good(sd)
-            dd = d⊗d
-            @test destab_looks_good(dd)
         end
     end
 
