@@ -188,7 +188,7 @@ of S. For each pair Aₖ, Bₖ of anticommutative Paulis in S', add a qubit to e
 X to Aₖ, Z to Bₖ, and I to each other operator to produce S'', a fully commutative set. Return 
 S'' as well as a list of the indices of the added qubits. 
 
-The returned object is a Stabilizer that is used in of the ['matroid_parent'](@ref) function.
+The returned object is a Stabilizer that is used in of the [`matroid_parent`](@ref) function.
 
 ```jldoctest
 julia> commutify(T"XX XZ XY")[1]
@@ -225,8 +225,8 @@ For a given set S of Paulis that does not necessarily represent a state, return 
 Paulis S' that represents a state. S' is a superset of [commutified](@ref commutify) S. Additionally 
 returns two arrays representing deletions needed to produce S. Based on [goodenough2024bipartiteentanglementnoisystabilizer](@cite)
 
-By deleting the qubits in the first output array from S`, taking the ['normalizer'](@ref) of S', then 
-deleting the qubits in the second returned array from the ['normalizer'](@ref) of S', S is reproduced. 
+By deleting the qubits in the first output array from S`, taking the [`normalizer`](@ref) of S', then 
+deleting the qubits in the second returned array from the [`normalizer`](@ref) of S', S is reproduced. 
 
 ```jldoctest
 julia> matroid_parent(T"XX")[1]
@@ -385,8 +385,7 @@ end
 
 """
 Return the subset of Paulis in a Stabilizer that have identity operators on all qubits corresponding to 
-the given subset, without the entries corresponding to subset. Based on 
-[goodenough2024bipartiteentanglementnoisystabilizer](@ref)
+the given subset, without the entries corresponding to subset. Based on [goodenough2024bipartiteentanglementnoisystabilizer](@cite)
 ```jldoctest
 julia> contractor(S"_X X_", [1])
 + X
