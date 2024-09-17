@@ -993,10 +993,14 @@ end
 # Conversion and promotion
 ##############################
 
-Base.promote_rule(::Type{<:Stabilizer{T}}       ,  ::Type{<:Destabilizer{T}}   ) where {T<:Tableau} = MixedDestabilizer{T}
-Base.promote_rule(::Type{<:MixedDestabilizer{T}},  ::Type{<:Stabilizer{T}}     ) where {T<:Tableau} = MixedDestabilizer{T}
+# Destabilizer, MixedDestabilizer -> MixedDestabilizer
+Base.promote_rule(::Type{<:Destabilizer{T}}   , ::Type{<:MixedDestabilizer{T}}) where {T<:Tableau} = MixedDestabilizer{T}
+# MixedStabilizer, MixedDestabilizer -> MixedDestabilizer
+Base.promote_rule(::Type{<:MixedStabilizer{T}}, ::Type{<:MixedDestabilizer{T}}) where {T<:Tableau} = MixedDestabilizer{T}
+# Stabilizer, T<:Union{MixedStabilizer, Destabilizer, MixedDestabilizer} -> T
+Base.promote_rule(::Type{<:Stabilizer{T}}     , ::Type{<:S}                   ) where {T<:Tableau, S<:Union{MixedStabilizer{T}, Destabilizer{T}, MixedDestabilizer{T}}} = S
 
-Base.convert(::Type{<:MixedDestabilizer{T}}, x::Union{Destabilizer{T}, Stabilizer{T}}) where {T <: Tableau} = MixedDestabilizer(x)
+Base.convert(::Type{<:MixedDestabilizer{T}}, x::Union{Destabilizer{T}, MixedStabilizer{T}, Stabilizer{T}}) where {T <: Tableau} = MixedDestabilizer(x)
 
 ##############################
 # Helpers for binary codes
