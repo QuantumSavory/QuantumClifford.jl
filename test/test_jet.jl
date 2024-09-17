@@ -5,6 +5,8 @@ using Static
 using Graphs
 using StridedViews
 using LinearAlgebra
+using Nemo
+using AbstractAlgebra
 
 using JET: ReportPass, BasicPass, InferenceErrorReport, UncaughtExceptionReport
 
@@ -32,9 +34,11 @@ end
             AnyFrameModule(Static),
             AnyFrameModule(StridedViews),
             AnyFrameModule(LinearAlgebra),
+            AnyFrameModule(Nemo),
+            AnyFrameModule(AbstractAlgebra),
         )
     )
     @show rep
     @test_broken length(JET.get_reports(rep)) == 0
-    @test length(JET.get_reports(rep)) <= 25
+    @test length(JET.get_reports(rep)) <= 21
 end

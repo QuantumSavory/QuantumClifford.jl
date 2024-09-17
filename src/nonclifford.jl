@@ -159,7 +159,8 @@ end
 function Base.show(io::IO, pc::PauliChannel)
     println(io, "Pauli channel ρ ↦ ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† with the following branches:")
     print(io, "with ϕᵢⱼ | Pᵢ | Pⱼ:")
-    for ((di,dj), χ) in zip(pc.paulis, pc.weights)
+    for (i, (di,dj)) in enumerate(pc.paulis)
+        χ = pc.weights[i]
         println(io)
         print(io, " ")
         print(IOContext(io, :compact => true), χ)
@@ -181,7 +182,8 @@ function apply!(state::GeneralizedStabilizer, gate::PauliChannel)
     tone = one(dtype)
     newdict = typeof(dict)(tzero) # TODO jeez, this is ugly
     for ((dᵢ,dⱼ), χ) in dict # the state
-        for ((Pₗ,Pᵣ), w) in zip(gate.paulis,gate.weights) # the channel
+        for (i, (Pₗ,Pᵣ)) in enumerate(gate.paulis) # the channel
+            w = gate.weights[i]
             phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ,stab)
             phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ,stab)
             c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ))*2
@@ -288,7 +290,8 @@ PauliChannel(p::UnitaryPauliChannel) = p.paulichannel
 function Base.show(io::IO, pc::UnitaryPauliChannel)
     println(io, "A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:")
     print(io, "with ϕᵢ | Pᵢ")
-    for (p, χ) in zip(pc.paulis, pc.weights)
+    for (i, p) in enumerate(pc.paulis)
+        χ = pc.weights[i]
         println(io)
         print(io, " ")
         print(IOContext(io, :compact => true), χ)
