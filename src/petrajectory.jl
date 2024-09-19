@@ -34,7 +34,7 @@ function petrajectory(state, circuit; branch_weight=1.0, current_order=0, max_or
         if status==continue_stat # TODO is the copy below necessary?
             out_probs = petrajectory(copy(newstate), rest_of_circuit,
                 branch_weight=branch_weight*prob, current_order=current_order+order, max_order=max_order)
-            status_probs .+= out_probs
+            map!((x,y)-> x+y, status_probs, status_probs, out_probs)
         else
             status_probs[status.status] += prob*branch_weight
         end
