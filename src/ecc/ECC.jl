@@ -102,7 +102,6 @@ function rate(c)
     return rate
 end
 
-function generator end
 
 """The distance of a code."""
 function distance end
