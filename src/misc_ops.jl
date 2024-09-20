@@ -1,3 +1,5 @@
+import QuantumInterface: nsubsystems
+
 """A Stabilizer measurement on the entirety of the quantum register.
 
 `projectrand!(state, pauli)` and `apply!(state, PauliMeasurement(pauli))` give the same (possibly non-deterministic) result.
@@ -17,6 +19,9 @@ function apply!(state::AbstractStabilizer, m::PauliMeasurement)
     state
 end
 
+function apply!(state::MixedDestabilizer, indices::Base.AbstractVecOrTuple, operation::Type{<:AbstractSymbolicOperator})
+    apply!(state, operation(indices...))
+end
 
 """A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`.
 
@@ -24,12 +29,26 @@ end
 struct SparseGate{T<:Tableau} <: AbstractCliffordOperator # TODO simplify type parameters (remove nesting)
     cliff::CliffordOperator{T}
     indices::Vector{Int}
+    function SparseGate(cliff::CliffordOperator{T}, indices::Vector{Int}) where T<:Tableau
+        if length(indices) != nqubits(cliff)
+            throw(ArgumentError("The number of target qubits (indices) must match the qubit count in the CliffordOperator."))
+        end
+        new{T}(cliff, indices)
+    end
 end
 
 SparseGate(c,t::Tuple) = SparseGate(c,collect(t))
 
 function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
+    m = maximum(g.indices)
+    if m > nqubits(state)
+        throw(ArgumentError(lazy"SparseGate was attempted on invalid qubit index $(m) when the state contains only $(nqubits(state)) qubits."))
+    end
     apply!(state, g.cliff, g.indices; kwargs...)
+end
+
+function LinearAlgebra.inv(g::SparseGate; phases=true)
+  return SparseGate(inv(g.cliff;phases=phases), g.indices)
 end
 
 """Reset the specified qubits to the given state.
@@ -136,3 +155,5 @@ struct ClassicalXOR{N} <: AbstractOperation
 end
 
 ClassicalXOR(bits,store) = ClassicalXOR{length(bits)}(tuple(bits...),store)
+
+nsubsystems(state::MixedDestabilizer) = nqubits(state)

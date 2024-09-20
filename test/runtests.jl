@@ -1,77 +1,32 @@
-using SafeTestsets
 using QuantumClifford
+using TestItemRunner
 
-function doset(descr)
-    if length(ARGS) == 0
-        return true
-    end
-    for a in ARGS
-        if occursin(lowercase(a), lowercase(descr))
-            return true
-        end
-    end
-    return false
+if get(ENV, "GPU_TESTS", "") != "true"
+    println("skipping gpu tests (set GPU_TESTS=true to test gpu)")
 end
 
-macro doset(descr)
-    quote
-        if doset($descr)
-            @safetestset $descr begin
-                include("test_"*$descr*".jl")
-            end
-        end
-    end
+# filter for the test
+testfilter = ti -> begin
+  exclude = Symbol[]
+  if get(ENV,"JET_TEST","")!="true"
+    push!(exclude, :jet)
+  end
+  if !(VERSION >= v"1.10")
+    push!(exclude, :doctests)
+    push!(exclude, :aqua)
+  end
+
+  if get(ENV, "GPU_TESTS", "")!="true"
+    push!(exclude, :gpu)
+  end
+
+  if !(Base.Sys.islinux() & (Int===Int64))
+    push!(exclude, :bitpack)
+  end
+
+  return all(!in(exclude), ti.tags)
 end
 
 println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREADS = $(Sys.CPU_THREADS)`...")
 
-
-# in order to run the gpu tests automatically set GPU_TESTS to true in the .env file
-if get(ENV, "GPU_TESTS", "") == "true"
-    @doset "gpu"
-else
-    println("skipping gpu tests (set GPU_TESTS=true to test gpu)")
-end
-
-@doset "throws"
-@doset "paulis"
-@doset "stabs"
-@doset "stabcanon"
-@doset "mul_leftright"
-@doset "inner"
-@doset "embed"
-@doset "gf2"
-@doset "projections"
-@doset "expect"
-@doset "trace"
-@doset "cliff"
-@doset "symcliff"
-@doset "symcontrolled"
-@doset "classicalreg"
-@doset "random"
-@doset "noisycircuits"
-@doset "syndromemeas"
-@doset "bitpack"
-@doset "memorylayout"
-@doset "graphs"
-@doset "hash"
-@doset "entanglement"
-@doset "enumerate"
-@doset "quantumoptics"
-@doset "ecc"
-@doset "ecc_codeproperties"
-@doset "ecc_decoder_all_setups"
-@doset "ecc_encoding"
-@doset "ecc_gottesman"
-@doset "ecc_reedmuller"
-@doset "ecc_bch"
-@doset "ecc_quantumreedmuller"
-@doset "ecc_syndromes"
-@doset "ecc_throws"
-@doset "precompile"
-@doset "pauliframe"
-@doset "sumtypecompactification"
-@doset "allocations"
-VERSION >= v"1.10" && @doset "doctests"
-get(ENV,"JET_TEST","")=="true" && @doset "jet"
-VERSION >= v"1.10" && @doset "aqua"
+@run_package_tests filter=testfilter
