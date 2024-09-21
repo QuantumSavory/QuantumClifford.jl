@@ -50,7 +50,7 @@ qo_tgate.data[2,2] = exp(im*pi/4)
         end
     end
 end
-
+  
 @testset "project" begin
     for s in [S"X", S"Y", S"Z", S"-X", S"-Y", S"-Z"]
         for p in [P"X", P"Y", P"Z", P"-X", P"-Y", P"-Z"]
