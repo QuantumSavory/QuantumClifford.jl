@@ -569,8 +569,13 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false)
         t[n+r+s+1:end] = sZ # The other logical set in the tableau
     end
     if undoperm
-        t = t[:,invperm(permx[permz])]::T
-        return MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
+        if isa(t, SubArray)
+            t = t[:, invperm(permx[permz])]::T
+            return MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
+        else
+            t = t[:, invperm(permx[permz])]
+            return MixedDestabilizer(t, r+s)
+        end
     end
     if reportperm
         return (MixedDestabilizer(t, r+s)::MixedDestabilizer{T}, r, permx, permz)
