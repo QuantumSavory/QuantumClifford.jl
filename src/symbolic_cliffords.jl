@@ -326,6 +326,12 @@ end
 @qubitop2 ZCrY  (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & ~z1 & x2) | (x1 & ~z1 & ~z2) | (x1 & x2 & ~z2)))
 @qubitop2 InvZCrY (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & z1 & ~x2 & ~z2) | (x1 & ~z1 & ~x2 & z2) | (x1 & z1 & ~x2 & z2) | (x1 & z1 & x2 & z2)))
 
+@qubitop2 SQRTXX      (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero((~x1 & z1 &~z2) | ( ~z1 &~x2 & z2)))
+@qubitop2 InvSQRTXX   (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero((x1 & z1 & ~z2) | ( ~z1 & x2 & z2)))
+
+@qubitop2 SQRTYY     (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero((~x1 &~z1 & x2 &~z2) | ( x1 &~z1 &~x2 &~z2) | ( x1 &~z1 & x2 & z2) | ( x1 & z1 & x2 &~z2)))
+@qubitop2 InvSQRTYY  (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero(( x1 & z1 &~x2 & z2) | (~x1 & z1 & x2 & z2) | (~x1 & z1 &~x2 &~z2) | (~x1 &~z1 &~x2 & z2)))
+
 #=
 To get the boolean formulas for the phase, it is easiest to first write down the truth table for the phase:
 for i in 0:15
@@ -384,6 +390,10 @@ LinearAlgebra.inv(op::sYCY) = sYCY(op.q1, op.q2)
 LinearAlgebra.inv(op::sYCZ) = sYCZ(op.q1, op.q2)
 LinearAlgebra.inv(op::sZCrY) = sInvZCrY(op.q1, op.q2)
 LinearAlgebra.inv(op::sInvZCrY) = sZCrY(op.q1, op.q2)
+LinearAlgebra.inv(op::sSQRTXX) = sInvSQRTXX(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvSQRTXX) = sSQRTXX(op.q1, op.q2)
+LinearAlgebra.inv(op::sSQRTYY) = sInvSQRTYY(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvSQRTYY) = sSQRTYY(op.q1, op.q2)
 
 ##############################
 # Functions that perform direct application of common operators without needing an operator instance
