@@ -28,7 +28,6 @@ During the construction, we do arithmetic operations to get the group algebra el
 Here `x` is the generator of the group algebra, i.e., offset-1 cyclic permutation, and `GA(1)` is the unit element.
 
 ```jldoctest
-julia> ENV["HECKE_PRINT_BANNER"] = "false"; # hide
 julia> import Hecke: group_algebra, GF, abelian_group, gens; import LinearAlgebra: diagind;
 
 julia> l = 63; GA = group_algebra(GF(2), abelian_group(l)); x = gens(GA)[];
