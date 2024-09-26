@@ -264,8 +264,8 @@ function create_lookup_table(code::Stabilizer)
     lookup_table
 end;
 
-function decode(d::TableDecoder, syndrome_sample)
-    d.lookup_buffer .= syndrome_sample # TODO have this work without data copying, by supporting the correct types, especially in the batch decode case
+function decode(d::TableDecoder, syndrome_sample::AbstractVector{Bool})
+    copyto!(d.lookup_buffer, syndrome_sample)
     return get(d.lookup_table, d.lookup_buffer, nothing)
 end
 
