@@ -7,7 +7,7 @@ import Hecke: Group, GroupElem, AdditiveGroup, AdditiveGroupElem,
     GroupAlgebra, GroupAlgebraElem, FqFieldElem, representation_matrix, dim, base_ring,
     multiplication_table, coefficients, abelian_group, group_algebra
 import Base: adjoint
-import Nemo: characteristic, lift, matrix_repr, GF, ZZ
+import Nemo: characteristic, matrix_repr, GF, ZZ
 
 import QuantumClifford.ECC: AbstractECC, CSS, ClassicalCode,
     hgp, code_k, code_n, code_s, iscss, parity_checks, parity_checks_x, parity_checks_z, parity_checks_xz,
