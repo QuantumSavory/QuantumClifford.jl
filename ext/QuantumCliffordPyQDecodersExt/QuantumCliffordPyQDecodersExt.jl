@@ -73,10 +73,7 @@ function decode(d::PyBP, syndrome_sample)
     row_z = @view syndrome_sample[d.nx+1:end]
     guess_z_errors = PythonCall.PyArray(d.pyx.decode(np.array(row_x)))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode(np.array(row_z)))
-    result = Matrix{Int}(undef, 2, length(guess_x_errors))
-    @inbounds result[1, 1:length(guess_x_errors)] .= guess_x_errors
-    @inbounds result[2, 1:length(guess_z_errors)] .= guess_z_errors
-    return result
+    vcat(guess_x_errors, guess_z_errors)
 end
 
 struct PyMatchingDecoder <: AbstractSyndromeDecoder # TODO all these decoders have the same fields, maybe we can factor out a common type
@@ -113,10 +110,7 @@ function decode(d::PyMatchingDecoder, syndrome_sample)
     row_z = @view syndrome_sample[d.nx+1:end]
     guess_z_errors = PythonCall.PyArray(d.pyx.decode(row_x))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode(row_z))
-    result = Matrix{Int}(undef, 2, length(guess_x_errors))
-    @inbounds result[1, 1:length(guess_x_errors)] .= guess_x_errors
-    @inbounds result[2, 1:length(guess_z_errors)] .= guess_z_errors
-    return result
+    vcat(guess_x_errors, guess_z_errors)
 end
 
 function batchdecode(d::PyMatchingDecoder, syndrome_samples)
@@ -125,10 +119,7 @@ function batchdecode(d::PyMatchingDecoder, syndrome_samples)
     guess_z_errors = PythonCall.PyArray(d.pyx.decode_batch(row_x))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode_batch(row_z))
     n_cols_x = size(guess_x_errors, 2)
-    result = Matrix{Int}(undef, size(guess_x_errors, 1), n_cols_x + size(guess_z_errors, 2))
-    @inbounds result[:,1:n_cols_x] .= guess_x_errors
-    @inbounds result[:,n_cols_x+1:end] .= guess_z_errors
-    return result
+    hcat(guess_x_errors, guess_z_errors)
 end
 
 end

@@ -78,10 +78,7 @@ function decode(d::BeliefPropDecoder, syndrome_sample)
     row_z = @view syndrome_sample[d.cx+1:d.cx+d.cz]
     guess_z, success = LDPCDecoders.decode!(d.bpdecoderx, row_x)
     guess_x, success = LDPCDecoders.decode!(d.bpdecoderz, row_z)
-    result = Matrix{Int}(undef, 2, length(guess_x))
-    @inbounds result[1, 1:length(guess_x)] .= guess_x
-    @inbounds result[2, 1:length(guess_z)] .= guess_z
-    return result
+    return vcat(guess_x, guess_z)
 end
 
 function decode(d::BitFlipDecoder, syndrome_sample)
@@ -89,10 +86,7 @@ function decode(d::BitFlipDecoder, syndrome_sample)
     row_z = @view syndrome_sample[d.cx+1:d.cx+d.cz]
     guess_z, success = LDPCDecoders.decode!(d.bfdecoderx, row_x)
     guess_x, success = LDPCDecoders.decode!(d.bfdecoderz, row_z)
-    result = Matrix{Int}(undef, 2, length(guess_x))
-    @inbounds result[1, 1:length(guess_x)] .= guess_x
-    @inbounds result[2, 1:length(guess_z)] .= guess_z
-    return result
+    return vcat(guess_x, guess_z)
 end
 
 end
