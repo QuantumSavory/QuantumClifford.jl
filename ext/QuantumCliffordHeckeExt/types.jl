@@ -15,7 +15,7 @@ Compute the adjoint of a group algebra element.
 The adjoint is defined as the conjugate of the element in the group algebra,
 i.e. the inverse of the element in the associated group.
 """
-function adjoint(a::GroupAlgebraElem{T}) where T
+function _adjoint(a::GroupAlgebraElem{T}) where T # TODO Is this used? Should it be deleted?
     A = parent(a)
     d = dim(A)
     v = Vector{T}(undef, d)
