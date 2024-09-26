@@ -88,14 +88,10 @@ code_n(c::AbstractECC) = code_n(parity_checks(c))
 
 code_n(s::Stabilizer) = nqubits(s)
 
-"""The number of stabilizer checks in a code."""
+"""The number of stabilizer checks in a code. They might not be all linearly independent, thus `code_s >= code_n-code_k`. For the number of linearly independent checks you can use `LinearAlgebra.rank`."""
 function code_s end
 code_s(s::Stabilizer) = length(s)
 code_s(c::AbstractECC) = code_s(parity_checks(c))
-# function code_s(s::Stabilizer)
-#     _, _, r = canonicalize!(Base.copy(s), ranks=true)
-#     return r
-# end
 
 """
 The number of logical qubits in a code.
