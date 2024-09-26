@@ -120,29 +120,23 @@ function _dictvaltype(dict)
 end
 
 """
-Project the state of a [`GeneralizedStabilizer`](@ref) on the two eigenspaces of a
-Pauli operator.
+Projects the state of a [`GeneralizedStabilizer`](@ref) onto the eigenspaces of a
+given Pauli operator `p`. The projection is determined by the expectation value of
+`p` with respect to the [`GeneralizedStabilizer`](@ref).
 
-The projection is determined based on the expectation value of `p` with respect to
-the[`GeneralizedStabilizer`](@ref).
-
-When the expectation value of `p` is close to 1, the [`GeneralizedStabilizer`](@ref)
-`sm` is projected onto  the +1 eigenspace of `p`. Conversely, if the expectation
-value is near -1, the [`GeneralizedStabilizer`](@ref) `sm` projected onto the +1
-eigenspace of `-p`, which corresponds to the -1 eigenspace of  `p`. 
-
-For expectationvalues that fall between these extremes, the projection is
-determined probabilistically according to the magnitude of the expectation
-value.
-
+If the expectation value `⟨p⟩` is close to `1`, the state is projected onto the `+1`
+ eigenspace of `p`. Conversely, if `⟨p⟩` is near `−1`, the state is projected onto
+the `−1` eigenspace of `p`. For intermediate values of `⟨p⟩`, the projection is
+performed probabilistically, with the likelihood of projecting onto the `+1` or
+`−1` eigenspace proportional to the expectation value.
 
 ```jldoctest
-julia> sm = GeneralizedStabilizer(S"X")
+julia> sm = GeneralizedStabilizer(S"-X")
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
 𝒮𝓉𝒶𝒷
-+ X
+- X
 with ϕᵢⱼ | Pᵢ | Pⱼ:
  1.0+0.0im | + _ | + _
 
@@ -151,39 +145,36 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
 𝒮𝓉𝒶𝒷
-+ X
+- X
 with ϕᵢⱼ | Pᵢ | Pⱼ:
  0.0+0.353553im | + _ | + Z
  0.0-0.353553im | + Z | + _
  0.853553+0.0im | + _ | + _
  0.146447+0.0im | + Z | + Z
 
-julia> project!(sm, P"Y")[1]
+julia> project!(sm, P"-Y")[1]
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
-+ X
+- X
 𝒮𝓉𝒶𝒷
 + Y
 with ϕᵢⱼ | Pᵢ | Pⱼ:
- 0.0+0.353553im | + _ | + X
- 0.0-0.353553im | + X | + _
+ 0.0+0.353553im | + _ | - X
+ 0.0-0.353553im | - X | + _
  0.853553+0.0im | + _ | + _
- 0.146447+0.0im | + X | + X
+ 0.146447+0.0im | - X | - X
 ```
+
 """
 function project!(sm::GeneralizedStabilizer, p::PauliOperator)
     eval = expect(p, sm)
-    prob₁ = (real(eval)+1)/2
-    if prob₁ ≈ 0
-        return _proj₊(sm, -p)
-    elseif prob₁ ≈ 1
+    prob = (real(eval)+1)/2
+    if prob ≈ 0
+        return _proj₋(sm, p)
+    elseif prob ≈ 1
         return _proj₊(sm, p)
     else
-        if rand() < prob₁
-            return _proj₊(sm, p)
-        else
-            return _proj₊(sm, -p)
-        end
+        return rand() < prob ? _proj₊(sm, p) : _proj₋(sm, p)
     end
 end
 
@@ -241,6 +232,7 @@ function embed(n::Int,idx,pc::PauliChannel)
 end
 
 nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
+nqubits(sm::GeneralizedStabilizer) = nqubits(sm.stab)
 
 function apply!(state::GeneralizedStabilizer, gate::PauliChannel)
     dict = state.destabweights
