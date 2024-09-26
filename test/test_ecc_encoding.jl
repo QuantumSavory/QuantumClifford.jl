@@ -31,7 +31,7 @@
         pre_encₖ = one(Stabilizer, code_k(code))
 
         # n-k ancillary qubits in state zero prepended
-        pre_encₙ = one(Stabilizer, code_s(code)) ⊗ pre_encₖ
+        pre_encₙ = one(Stabilizer, code_n(code) - code_k(code)) ⊗ pre_encₖ
 
         # running the encoding circuit
         encodedₙ = mctrajectory!(pre_encₙ, circ)[1] |> canonicalize!
