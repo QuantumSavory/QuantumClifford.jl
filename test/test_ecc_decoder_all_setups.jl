@@ -96,3 +96,30 @@
         end
     end
 end
+
+@testset "belief prop decoders, good for sparse codes" begin
+    codes = vcat(LP04, LP118, test_gb_codes, other_lifted_product_codes)
+
+    noise = 0.001
+
+    setups = [
+        CommutationCheckECCSetup(noise),
+        NaiveSyndromeECCSetup(noise, 0),
+        ShorSyndromeECCSetup(noise, 0),
+    ]
+    # lifted product codes currently trigger errors in syndrome circuits
+
+    for c in codes
+        for s in setups
+            for d in [c -> PyBeliefPropOSDecoder(c, maxiter=10)]
+                nsamples = code_n(c) > 400 ? 1000 : 100000
+                # take fewer samples for larger codes to save time
+                e = evaluate_decoder(d(c), s, nsamples)
+                # @show c
+                # @show s
+                # @show e
+                @assert max(e...) < noise / 4 (c, s, e)
+            end
+        end
+    end
+end
