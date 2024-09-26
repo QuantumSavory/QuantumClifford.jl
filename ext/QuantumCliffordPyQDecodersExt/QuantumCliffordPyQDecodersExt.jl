@@ -73,7 +73,7 @@ function decode(d::PyBP, syndrome_sample)
     row_z = @view syndrome_sample[d.nx+1:end]
     guess_z_errors = PythonCall.PyArray(d.pyx.decode(np.array(row_x)))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode(np.array(row_z)))
-    result = Matrix{Int}(undef, 2,  length(guess_x_errors))
+    result = Matrix{Int}(undef, 2, length(guess_x_errors))
     @inbounds result[1, 1:length(guess_x_errors)] .= guess_x_errors
     @inbounds result[2, 1:length(guess_z_errors)] .= guess_z_errors
     return result
@@ -113,7 +113,7 @@ function decode(d::PyMatchingDecoder, syndrome_sample)
     row_z = @view syndrome_sample[d.nx+1:end]
     guess_z_errors = PythonCall.PyArray(d.pyx.decode(row_x))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode(row_z))
-    result = Matrix{Int}(undef, 2,  length(guess_x_errors))
+    result = Matrix{Int}(undef, 2, length(guess_x_errors))
     @inbounds result[1, 1:length(guess_x_errors)] .= guess_x_errors
     @inbounds result[2, 1:length(guess_z_errors)] .= guess_z_errors
     return result
