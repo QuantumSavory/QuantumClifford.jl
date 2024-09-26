@@ -1101,8 +1101,14 @@ end
 """
 Check basic consistency requirements of a stabilizer. Used in tests.
 """
-function stab_looks_good(s)
-    c = tab(canonicalize!(copy(s)))
+function stab_looks_good(s; remove_redundant_rows=false)
+    # first remove redundant rows
+    c = if remove_redundant_rows
+        s1, _, rank = canonicalize!(copy(s), ranks=true)
+        tab(s1[1:rank])
+    else
+        tab(canonicalize!(copy(s)))
+    end
     nrows, ncols = size(c)
     all((c.phases .== 0x0) .| (c.phases .== 0x2)) || return false
     H = stab_to_gf2(c)
