@@ -18,8 +18,6 @@ random_circuit_code_args = vcat(
     [map(f -> getfield(random_all_to_all_circuit_code(c...), f), fieldnames(CircuitCode)) for c in random_all_to_all_circuit_args]
 )
 
-# TODO benchmarking them in wiki
-
 # test codes LP04 and LP118 from Appendix A of [raveendran2022finite](@cite),
 B04 = Dict(
     7 => [0 0 0 0; 0 1 2 5; 0 6 3 1],
