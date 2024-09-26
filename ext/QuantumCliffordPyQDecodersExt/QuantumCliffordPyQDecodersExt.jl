@@ -69,11 +69,14 @@ end
 parity_checks(d::PyBP) = d.H
 
 function decode(d::PyBP, syndrome_sample)
-    row_x = syndrome_sample[1:d.nx] # TODO These copies and indirections might be costly!
-    row_z = syndrome_sample[d.nx+1:end]
+    row_x = @view syndrome_sample[1:d.nx]
+    row_z = @view syndrome_sample[d.nx+1:end]
     guess_z_errors = PythonCall.PyArray(d.pyx.decode(np.array(row_x)))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode(np.array(row_z)))
-    vcat(guess_x_errors, guess_z_errors)
+    result = Matrix{Int}(undef, 2,  length(guess_x_errors))
+    @inbounds result[1, 1:length(guess_x_errors)] .= guess_x_errors
+    @inbounds result[2, 1:length(guess_z_errors)] .= guess_z_errors
+    return result
 end
 
 struct PyMatchingDecoder <: AbstractSyndromeDecoder # TODO all these decoders have the same fields, maybe we can factor out a common type
@@ -106,19 +109,26 @@ end
 parity_checks(d::PyMatchingDecoder) = d.H
 
 function decode(d::PyMatchingDecoder, syndrome_sample)
-    row_x = syndrome_sample[1:d.nx] # TODO This copy is costly!
-    row_z = syndrome_sample[d.nx+1:end]
+    row_x = @view syndrome_sample[1:d.nx]
+    row_z = @view syndrome_sample[d.nx+1:end]
     guess_z_errors = PythonCall.PyArray(d.pyx.decode(row_x))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode(row_z))
-    vcat(guess_x_errors, guess_z_errors)
+    result = Matrix{Int}(undef, 2,  length(guess_x_errors))
+    @inbounds result[1, 1:length(guess_x_errors)] .= guess_x_errors
+    @inbounds result[2, 1:length(guess_z_errors)] .= guess_z_errors
+    return result
 end
 
 function batchdecode(d::PyMatchingDecoder, syndrome_samples)
-    row_x = syndrome_samples[:,1:d.nx] # TODO This copy is costly!
-    row_z = syndrome_samples[:,d.nx+1:end]
+    row_x = @view syndrome_samples[:,1:d.nx]
+    row_z = @view syndrome_samples[:,d.nx+1:end]
     guess_z_errors = PythonCall.PyArray(d.pyx.decode_batch(row_x))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode_batch(row_z))
-    hcat(guess_x_errors, guess_z_errors)
+    n_cols_x = size(guess_x_errors, 2)
+    result = Matrix{Int}(undef, size(guess_x_errors, 1), n_cols_x + size(guess_z_errors, 2))
+    @inbounds result[:,1:n_cols_x] .= guess_x_errors
+    @inbounds result[:,n_cols_x+1:end] .= guess_z_errors
+    return result
 end
 
 end

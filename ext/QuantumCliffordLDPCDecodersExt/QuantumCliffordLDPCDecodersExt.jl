@@ -74,19 +74,25 @@ parity_checks(d::BeliefPropDecoder) = d.H
 parity_checks(d::BitFlipDecoder) = d.H
 
 function decode(d::BeliefPropDecoder, syndrome_sample)
-    row_x = syndrome_sample[1:d.cx]
-    row_z = syndrome_sample[d.cx+1:d.cx+d.cz]
+    row_x = @view syndrome_sample[1:d.cx]
+    row_z = @view syndrome_sample[d.cx+1:d.cx+d.cz]
     guess_z, success = LDPCDecoders.decode!(d.bpdecoderx, row_x)
     guess_x, success = LDPCDecoders.decode!(d.bpdecoderz, row_z)
-    return vcat(guess_x, guess_z)
+    result = Matrix{Int}(undef, 2,  length(guess_x))
+    @inbounds result[1, 1:length(guess_x)] .= guess_x
+    @inbounds result[2, 1:length(guess_z)] .= guess_z
+    return result
 end
 
 function decode(d::BitFlipDecoder, syndrome_sample)
-    row_x = syndrome_sample[1:d.cx]
-    row_z = syndrome_sample[d.cx+1:d.cx+d.cz]
+    row_x = @view syndrome_sample[1:d.cx]
+    row_z = @view syndrome_sample[d.cx+1:d.cx+d.cz]
     guess_z, success = LDPCDecoders.decode!(d.bfdecoderx, row_x)
     guess_x, success = LDPCDecoders.decode!(d.bfdecoderz, row_z)
-    return vcat(guess_x, guess_z)
+    result = Matrix{Int}(undef, 2,  length(guess_x))
+    @inbounds result[1, 1:length(guess_x)] .= guess_x
+    @inbounds result[2, 1:length(guess_z)] .= guess_z
+    return result
 end
 
 end
