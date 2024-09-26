@@ -16,8 +16,7 @@ function batchdecode(d::AbstractSyndromeDecoder, syndrome_samples)
     samples, _s = size(syndrome_samples)
     s == _s || throw(ArgumentError(lazy"The syndromes given to `batchdecode` have the wrong dimensions. The syndrome length is $(_s) while it should be $(s)"))
     results = falses(samples, 2n)
-    @inbounds for i in 1:samples
-        syndrome_sample = @view syndrome_samples[i,:]
+    for (i,syndrome_sample) in enumerate(eachrow(syndrome_samples))
         guess = decode(d, syndrome_sample)# TODO use `decode!`
         isnothing(guess) || (results[i,:] = guess)
     end
@@ -265,8 +264,8 @@ function create_lookup_table(code::Stabilizer)
     lookup_table
 end;
 
-function decode(d::TableDecoder, syndrome_sample::AbstractVector{Bool})
-    @inbounds copyto!(d.lookup_buffer, syndrome_sample)
+function decode(d::TableDecoder, syndrome_sample)
+    d.lookup_buffer .= syndrome_sample # TODO have this work without data copying, by supporting the correct types, especially in the batch decode case
     return get(d.lookup_table, d.lookup_buffer, nothing)
 end
 
