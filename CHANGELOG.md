@@ -5,15 +5,14 @@
 
 # News
 
-## dev
+## v0.9.10 - 2024-09-26
 
+- The lifted product class of quantum LDPC codes is implemented in the ECC submodule.
+- **(fix)** `ECC.code_s` now gives the number of parity checks with redundancy. If you want the number of linearly independent parity checks, you can use `LinearAlgebra.rank`.
 - Implementing many more named single-qubit gates following naming convention similar to the stim package in python.
 - **(fix)** Bug fix to the `parity_checks(ReedMuller(r, m))` of classical Reed-Muller code (it was returning generator matrix).
 - `RecursiveReedMuller` code implementation as an alternative implementation of `ReedMuller`.
 
-## v0.9.10 - 2024-09-26
-
-- **(fix)** `ECC.code_s` now gives the number of parity checks with redundancy. If you want the number of linearly independent parity checks, you can use `LinearAlgebra.rank`.
 
 ## v0.9.9 - 2024-08-05
 
