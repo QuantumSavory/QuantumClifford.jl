@@ -28,9 +28,11 @@ The default representation, provided by `Hecke`, is the permutation representati
 We also accept a custom representation function.
 Such a customization would be useful to reduce the number of bits required by the code construction.
 
-For example, if we use a D4 group for lifting. In our default way, the representation will be `8×8` matrices,
-where 8 is the group's order. We can find a `4×4` matrix representation for the group,
-with details in [this discussion](https://github.com/QuantumSavory/QuantumClifford.jl/pull/312#discussion_r1682721136).
+For example, if we use a D4 group for lifting, our default representation will be `8×8` permutation matrices,
+where 8 is the group's order.
+However, we can find a `4×4` matrix representation for the group,
+e.g. by using the typical [`2×2` representation](https://en.wikipedia.org/wiki/Dihedral_group)
+and converting it into binary representation by replacing "1" with the Pauli I, and "-1" with the Pauli X matrix.
 
 See also: [`LPCode`](@ref).
 
