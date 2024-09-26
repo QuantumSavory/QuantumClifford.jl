@@ -1,3 +1,6 @@
+"""Lifted product codes ([panteleev2021degenerate](@cite), [panteleev2022asymptotically](@cite))
+
+Implemented as a package extension with Hecke. Check the QuantumClifford documentation for more details on that extension."""
 function LPCode(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
     if isnothing(ext)
@@ -6,8 +9,11 @@ function LPCode(args...; kwargs...)
     return ext.LPCode(args...; kwargs...)
 end
 
+"""Implemented in a package extension with Hecke."""
 function two_block_group_algebra_codes end
 
+"""Implemented in a package extension with Hecke."""
 function generalized_bicycle_codes end
 
+"""Implemented in a package extension with Hecke."""
 function bicycle_codes end

@@ -1,7 +1,7 @@
 """
 $TYPEDEF
 
-Classical codes lifted over a group algebra, used for lifted product code construction [panteleev2021degenerate](@cite) [panteleev2022asymptotically](@cite).
+Classical codes lifted over a group algebra, used for lifted product code construction ([panteleev2021degenerate](@cite), [panteleev2022asymptotically](@cite))
 
 The parity-check matrix is constructed by applying `repr` to each element of `A`,
 which is mathematically a linear map from a group algebra element to a binary matrix.
@@ -18,9 +18,9 @@ A lifted code can be constructed via the following approaches:
 
 3. A matrix of integers, where each integer represent the shift of a cyclic permutation. The order of the cyclic permutation should be specified.
 
-The default `GA` is the group algebra of `A[1, 1]`, the default representation is the permutation representation.
+The default `GA` is the group algebra of `A[1, 1]`, the default representation `repr` is the permutation representation.
 
-## The representation function
+## The representation function `repr`
 
 In this struct, we use the default representation function `default_repr` to convert a `GF(2)`-group algebra element to a binary matrix.
 The default representation, provided by `Hecke`, is the permutation representation.
@@ -57,13 +57,14 @@ end
 default_repr(y::GroupAlgebraElem{FqFieldElem, <: GroupAlgebra}) = Matrix((x -> Bool(Int(lift(ZZ, x)))).(representation_matrix(y)))
 
 """
-The GroupAlgebraElem with `GF(2)` coefficients can be converted to a permutation matrix by `representation_matrix` provided by Hecke.
-"""
+`LiftedCode` constructor using the default `GF(2)` representation (coefficients converted to a permutation matrix by `representation_matrix` provided by Hecke).
+""" # TODO doctest example
 function LiftedCode(A::Matrix{GroupAlgebraElem{FqFieldElem, <: GroupAlgebra}}; GA::GroupAlgebra=parent(A[1,1]))
     !(characteristic(base_ring(A[1, 1])) == 2) && error("The default permutation representation applies only to GF(2) group algebra; otherwise, a custom representation function should be provided")
     LiftedCode(A; GA=GA, repr=default_repr)
 end
 
+# TODO document and doctest example
 function LiftedCode(group_elem_array::Matrix{<: GroupOrAdditiveGroupElem}; GA::GroupAlgebra=group_algebra(GF(2), parent(group_elem_array[1,1])), repr::Union{Function, Nothing}=nothing)
     A = zeros(GA, size(group_elem_array)...)
     for i in axes(group_elem_array, 1), j in axes(group_elem_array, 2)
@@ -76,6 +77,7 @@ function LiftedCode(group_elem_array::Matrix{<: GroupOrAdditiveGroupElem}; GA::G
     end
 end
 
+# TODO document and doctest example
 function LiftedCode(shift_array::Matrix{Int}, l::Int; GA::GroupAlgebra=group_algebra(GF(2), abelian_group(l)))
     A = zeros(GA, size(shift_array)...)
     for i in 1:size(shift_array, 1)
