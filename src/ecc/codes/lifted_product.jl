@@ -1,7 +1,7 @@
 function LPCode(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
     if isnothing(ext)
-        throw("The `LPCode` depends on the package `AbstractAlgebra` and `Hecke` but you have not installed or imported them yet. Immediately after you import `AbstractAlgebra` and `Hecke`, the `LPCode` will be available.")
+        throw("The `LPCode` depends on the package `Hecke` but you have not installed or imported it yet. Immediately after you import `Hecke`, the `LPCode` will be available.")
     end
     return ext.LPCode(args...; kwargs...)
 end

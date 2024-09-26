@@ -4,7 +4,6 @@ authors = ["Stefan Krastanov <stefan@krastanov.org> and QuantumSavory community 
 version = "0.9.9"
 
 [deps]
-AbstractAlgebra = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
@@ -44,7 +43,6 @@ QuantumCliffordQOpticsExt = "QuantumOpticsBase"
 QuantumCliffordQuantikzExt = "Quantikz"
 
 [compat]
-AbstractAlgebra = "^0.39.0, 0.40, 0.41, 0.42"
 CUDA = "4.4.0, 5"
 Combinatorics = "1.0"
 DataStructures = "0.18"

@@ -3,8 +3,8 @@ module QuantumCliffordHeckeExt
 using DocStringExtensions
 
 import QuantumClifford, LinearAlgebra
-import AbstractAlgebra: Group, GroupElem, AdditiveGroup, AdditiveGroupElem
-import Hecke: GroupAlgebra, GroupAlgebraElem, FqFieldElem, representation_matrix, dim, base_ring,
+import Hecke: Group, GroupElem, AdditiveGroup, AdditiveGroupElem,
+    GroupAlgebra, GroupAlgebraElem, FqFieldElem, representation_matrix, dim, base_ring,
     multiplication_table, coefficients, abelian_group, group_algebra
 import Base: adjoint
 import Nemo: characteristic, lift, matrix_repr, GF, ZZ
