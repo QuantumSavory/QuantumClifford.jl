@@ -22,7 +22,7 @@ function iscss(::Type{BBQLDPC})
     return true
 end
 
-function _AB(c::BBQLDPC)
+function parity_checks(c::BBQLDPC)
     a₁,a₂,a₃ = c.A[1],c.A[2],c.A[3]
     b₁,b₂,b₃ = c.B[1],c.B[2],c.B[3]
     Iₗ  = Matrix{Bool}(LinearAlgebra.I,c.l,c.l)
@@ -33,11 +33,6 @@ function _AB(c::BBQLDPC)
     y  = Dict(i => kron(Iₗ,circshift(Iₘ,(0,i))) for i in 0:(c.m))
     A  = mod.(x[a₁]+y[a₂]+y[a₃],2)
     B  = mod.(y[b₁]+x[b₂]+x[b₃],2)
-    return A, B
-end
-
-function parity_checks(c::BBQLDPC)
-    A, B = _AB(c)
     Hx = hcat(A,B)
     Hz = hcat(B',A')
     H  = CSS(Hx,Hz)
@@ -48,6 +43,6 @@ code_n(c::BBQLDPC) = 2*c.l*c.m
 
 code_k(c::BBQLDPC) = code_n(c) - LinearAlgebra.rank(matrix(GF(2), parity_checks_x(c))) - LinearAlgebra.rank(matrix(GF(2), parity_checks_z(c)))
 
-parity_checks_x(c::BBQLDPC) = hcat(_AB(c)...)
+parity_checks_x(c::BBQLDPC) = stab_to_gf2(parity_checks(BBQLDPC(c.l, c.m, c.A, c.B)))[1:end÷2,:]
 
-parity_checks_z(c::BBQLDPC) = hcat(_AB(c)[2]', _AB(c)[1]')
+parity_checks_z(c::BBQLDPC) = stab_to_gf2(parity_checks(BBQLDPC(c.l, c.m, c.A, c.B)))[end÷2+1:end,:]

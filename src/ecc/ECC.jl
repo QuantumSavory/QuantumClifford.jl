@@ -9,7 +9,7 @@ using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form, nullspace, hom, free_module, kernel, domain, map, gens
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 
 abstract type AbstractECC end
 
@@ -23,6 +23,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     Toric, Gottesman, Surface, Concat, CircuitCode,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
+    BBQLDPC,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
