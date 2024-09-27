@@ -12,8 +12,8 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/quan
 struct QuantumReedMuller <: AbstractECC
     m::Int
     function QuantumReedMuller(m)
-        if  m < 3 || m > 11
-            throw(ArgumentError("Invalid parameters: m must be ≤ 3 and m ≤ 11 in order to valid code."))
+        if  m < 3
+            throw(DomainError("Invalid parameters: m must be bigger than 2 in order to have a valid code."))
         end
         new(m)
     end
