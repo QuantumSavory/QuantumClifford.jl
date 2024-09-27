@@ -968,7 +968,7 @@ julia> hcat(ghz(2), ghz(2))
 
 See also: [`vcat`](@ref)
 """
-function Base.hcat(tabs::Tableau...)
+function Base.hcat(tabs::Tableau...) # TODO this implementation is slow as it unpacks each bitvector into bits and repacks them -- reuse the various tableau inset functionality we have to speed this up
     rows = size(tabs[1], 1)
     cols = sum(map(nqubits, tabs))
     newtab = zero(Tableau, rows, cols)
