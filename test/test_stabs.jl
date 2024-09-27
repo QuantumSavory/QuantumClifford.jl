@@ -55,6 +55,12 @@
             stabs = [s[1:i] for s in [random_stabilizer(n) for n in [32,16,16,64,63,65,129,128,127]] for i in rand(1:10)];
             mdstabs = MixedDestabilizer.(stabs);
             @test canonicalize!(⊗(stabs...)) == canonicalize!(stabilizerview(⊗(mdstabs...)))
+            md = MixedDestabilizer(random_destabilizer(n))
+            s = random_stabilizer(n)
+            mds = md⊗s
+            @test mixed_destab_looks_good(mds)
+            estab = stabilizerview(md)⊗s
+            @test canonicalize!(copy(stabilizerview(mds))) == canonicalize!(estab)
         end
     end
 

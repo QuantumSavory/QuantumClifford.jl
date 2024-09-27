@@ -1037,6 +1037,16 @@ function _apply!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Va
 end
 
 ##############################
+# Conversion and promotion
+##############################
+
+Base.promote_rule(::Type{<:Destabilizer{T}}   , ::Type{<:MixedDestabilizer{T}}) where {T<:Tableau} = MixedDestabilizer{T}
+Base.promote_rule(::Type{<:MixedStabilizer{T}}, ::Type{<:MixedDestabilizer{T}}) where {T<:Tableau} = MixedDestabilizer{T}
+Base.promote_rule(::Type{<:Stabilizer{T}}     , ::Type{<:S}                   ) where {T<:Tableau, S<:Union{MixedStabilizer{T}, Destabilizer{T}, MixedDestabilizer{T}}} = S
+
+Base.convert(::Type{<:MixedDestabilizer{T}}, x::Union{Destabilizer{T}, MixedStabilizer{T}, Stabilizer{T}}) where {T <: Tableau} = MixedDestabilizer(x)
+
+##############################
 # Helpers for binary codes
 ##############################
 
@@ -1148,8 +1158,14 @@ end
 """
 Check basic consistency requirements of a stabilizer. Used in tests.
 """
-function stab_looks_good(s)
-    c = tab(canonicalize!(copy(s)))
+function stab_looks_good(s; remove_redundant_rows=false)
+    # first remove redundant rows
+    c = if remove_redundant_rows
+        s1, _, rank = canonicalize!(copy(s), ranks=true)
+        tab(s1[1:rank])
+    else
+        tab(canonicalize!(copy(s)))
+    end
     nrows, ncols = size(c)
     all((c.phases .== 0x0) .| (c.phases .== 0x2)) || return false
     H = stab_to_gf2(c)
