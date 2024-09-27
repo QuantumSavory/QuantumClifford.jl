@@ -380,6 +380,7 @@ include("codes/classical/reedmuller.jl")
 include("codes/classical/recursivereedmuller.jl")
 include("codes/classical/bch.jl")
 include("codes/quantumreedmuller.jl")
+include("codes/gottesman4.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
