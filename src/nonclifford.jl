@@ -89,6 +89,31 @@ function _stabmixdestab(mixeddestab, d)
     p
 end
 
+"""
+Apply a Clifford gate to a generalized stabilizer state, i.e. a weighted sum of stabilizer states.
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> apply!(sm, CliffordOperator(tHadamard))
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ X
+𝒮𝓉𝒶𝒷
+- Z
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+```
+
+See also: [`GeneralizedStabilizer`](@ref)
+"""
 function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator) # TODO conjugate also the destabs
     apply!(state.stab, gate)
     state
@@ -96,9 +121,37 @@ end
 
 """$(TYPEDSIGNATURES)
 
-Expectation value for the [PauliOperator](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`."""
+Expectation value for the [PauliOperator](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`.
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> apply!(sm, pcT)
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + _ | + Z
+ 0.0-0.353553im | + Z | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
+
+julia> expect(P"-X", sm)
+0.7071067811865475 + 0.0im
+```
+
+"""
 function expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
-    χ′ = zero(_dictvaltype(s.destabweights))
+    χ′ = zero(valtype(s.destabweights))
     phase, b, c = rowdecompose(p, s.stab)
     for ((dᵢ,dⱼ), χ) in s.destabweights
         _allthreesumtozero(dᵢ,dⱼ,b) || continue
@@ -113,10 +166,6 @@ function _allthreesumtozero(a,b,c) # TODO consider using bitpacking and SIMD xor
         iseven(a[i]+b[i]+c[i]) || return false
     end
     true
-end
-
-function _dictvaltype(dict)
-    return eltype(dict).parameters[2] # TODO there must be a cleaner way to do this
 end
 
 function project!(sm::GeneralizedStabilizer, p::PauliOperator)
@@ -174,13 +223,17 @@ end
 
 nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 
-function apply!(state::GeneralizedStabilizer, gate::PauliChannel)
+"""Applies a (potentially non-unitary) Pauli channel to a generalized stabilizer.
+
+See also: [`GeneralizedStabilizer`](@ref), [`PauliChannel`](@ref), [`UnitaryPauliChannel`](@ref)
+"""
+function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold=1e-10)
     dict = state.destabweights
     stab = state.stab
-    dtype = _dictvaltype(dict)
+    dtype = valtype(dict)
     tzero = zero(dtype)
     tone = one(dtype)
-    newdict = typeof(dict)(tzero) # TODO jeez, this is ugly
+    newdict = typeof(dict)(tzero)
     for ((dᵢ,dⱼ), χ) in dict # the state
         for (i, (Pₗ,Pᵣ)) in enumerate(gate.paulis) # the channel
             w = gate.weights[i]
@@ -193,11 +246,7 @@ function apply!(state::GeneralizedStabilizer, gate::PauliChannel)
             newdict[(dᵢ′,dⱼ′)] += χ′
         end
     end
-    for (k,v) in newdict # TODO is it safe to modify a dict while iterating over it?
-        if abs(v) < 1e-14 # TODO parameterize this pruning parameter
-            delete!(newdict, k)
-        end
-    end
+    filter!(x -> abs(x[2]) > prune_threshold, newdict)
     state.destabweights = newdict
     state
 end
@@ -305,7 +354,7 @@ end
 
 nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
-apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel) = apply!(state, gate.paulichannel)
+apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold=1e-10) = apply!(state, gate.paulichannel; prune_threshold)
 
 ##
 # Predefined Pauli Channels
