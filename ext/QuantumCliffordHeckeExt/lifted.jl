@@ -88,12 +88,9 @@ function LiftedCode(shift_array::Matrix{Int}, l::Int; GA::GroupAlgebra=group_alg
     return LiftedCode(A; GA=GA, repr=default_repr)
 end
 
-function lift(repr::Function, mat::GroupAlgebraElemMatrix) # TODO can we just drop this and use the appropriate Nemo/Hecke lift representation?
-    vcat([hcat([repr(mat[i, j]) for j in axes(mat, 2)]...) for i in axes(mat, 1)]...)
-end
-
-function lift(x,y)
-    Nemo.lift(x,y)
+function concat_repr(repr, mat)
+    y = repr.(mat)
+    return hvcat(size(y,1), y...)'
 end
 
 function parity_checks(c::LiftedCode)

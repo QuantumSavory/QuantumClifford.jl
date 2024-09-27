@@ -124,7 +124,7 @@ iscss(::Type{LPCode}) = true
 
 function parity_checks_xz(c::LPCode)
     hx, hz = hgp(c.A, c.B')
-    hx, hz = lift(c.repr, hx), lift(c.repr, hz)
+    hx, hz = concat_repr(c.repr,hx), concat_repr(c.repr,hz)
     return hx, hz
 end
 
