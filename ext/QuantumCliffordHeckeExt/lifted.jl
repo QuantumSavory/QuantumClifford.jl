@@ -22,10 +22,11 @@ The default `GA` is the group algebra of `A[1, 1]`, the default representation `
 
 ## The representation function `repr`
 
-In this struct, we use the default representation function `default_repr` to convert a `GF(2)`-group algebra element to a binary matrix.
+We use the default representation function `Hecke.representation_matrix` to convert a `GF(2)`-group algebra element to a binary matrix.
 The default representation, provided by `Hecke`, is the permutation representation.
 
-We also accept a custom representation function.
+We also accept a custom representation function (the `repr` field of the constructor).
+Whatever the representation, the matrix elements need to be convertible to Integers (e.g. permit `lift(ZZ, ...)`).
 Such a customization would be useful to reduce the number of bits required by the code construction.
 
 For example, if we use a D4 group for lifting, our default representation will be `8×8` permutation matrices,
@@ -54,14 +55,12 @@ struct LiftedCode <: ClassicalCode
     end
 end
 
-default_repr(y::GroupAlgebraElem{FqFieldElem, <: GroupAlgebra}) = Matrix((x -> Bool(Int(lift(ZZ, x)))).(representation_matrix(y)))
-
 """
 `LiftedCode` constructor using the default `GF(2)` representation (coefficients converted to a permutation matrix by `representation_matrix` provided by Hecke).
 """ # TODO doctest example
 function LiftedCode(A::Matrix{GroupAlgebraElem{FqFieldElem, <: GroupAlgebra}}; GA::GroupAlgebra=parent(A[1,1]))
     !(characteristic(base_ring(A[1, 1])) == 2) && error("The default permutation representation applies only to GF(2) group algebra; otherwise, a custom representation function should be provided")
-    LiftedCode(A; GA=GA, repr=default_repr)
+    LiftedCode(A; GA=GA, repr=representation_matrix)
 end
 
 # TODO document and doctest example
@@ -71,7 +70,7 @@ function LiftedCode(group_elem_array::Matrix{<: GroupOrAdditiveGroupElem}; GA::G
         A[i, j] = GA[A[i, j]]
     end
     if repr === nothing
-        return LiftedCode(A; GA=GA, repr=default_repr)
+        return LiftedCode(A; GA=GA, repr=representation_matrix)
     else
         return LiftedCode(A; GA=GA, repr=repr)
     end
@@ -85,12 +84,16 @@ function LiftedCode(shift_array::Matrix{Int}, l::Int; GA::GroupAlgebra=group_alg
             A[i, j] = GA[shift_array[i, j]%l+1]
         end
     end
-    return LiftedCode(A; GA=GA, repr=default_repr)
+    return LiftedCode(A; GA=GA, repr=representation_matrix)
 end
 
-function concat_repr(repr, mat)
-    y = repr.(mat)
-    return hvcat(size(y,1), y...)'
+lift_to_bool(x) = Bool(Int(lift(ZZ,x)))
+
+function concat_lift_repr(repr, mat)
+    x = repr.(mat)
+    y = hvcat(size(x,2), transpose(x)...)
+    z = Matrix(lift_to_bool.(y))
+    return z
 end
 
 function parity_checks(c::LiftedCode)

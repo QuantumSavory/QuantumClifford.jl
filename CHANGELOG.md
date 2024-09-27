@@ -5,10 +5,11 @@
 
 # News
 
-## v0.9.11-dev
+## v0.9.11
 
 - `hcat` of Tableaux objects
 - `QuantumReedMuller` codes added to the ECC module
+- **(breaking)** change the convention for how to provide a representation function in the constructor of `LPCode` -- strictly speaking a breaking change, but this is not an API that is publicly used in practice
 
 ## v0.9.10 - 2024-09-26
 
