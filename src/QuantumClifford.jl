@@ -935,6 +935,19 @@ function check_allrowscommute(stabilizer::Tableau)
 end
 check_allrowscommute(stabilizer::Stabilizer)=check_allrowscommute(tab(stabilizer))
 
+"""
+Vertically concatenates tableaux.
+
+```jldoctest
+julia> vcat(ghz(2), ghz(2))
++ XX
++ ZZ
++ XX
++ ZZ
+```
+
+See also: [`hcat`](@ref)
+"""
 function Base.vcat(tabs::Tableau...)
     Tableau(
         vcat((s.phases for s in tabs)...),
@@ -942,7 +955,41 @@ function Base.vcat(tabs::Tableau...)
         hcat((s.xzs for s in tabs)...))
 end
 
-Base.vcat(stabs::Stabilizer...) = Stabilizer(vcat((tab(s) for s in stabs)...))
+Base.vcat(stabs::Stabilizer{T}...) where {T} = Stabilizer(vcat((tab(s) for s in stabs)...))
+
+"""
+Horizontally concatenates tableaux.
+
+```jldoctest
+julia> hcat(ghz(2), ghz(2))
++ XXXX
++ ZZZZ
+```
+
+See also: [`vcat`](@ref)
+"""
+function Base.hcat(tabs::Tableau...) # TODO this implementation is slow as it unpacks each bitvector into bits and repacks them -- reuse the various tableau inset functionality we have to speed this up
+    rows = size(tabs[1], 1)
+    cols = sum(map(nqubits, tabs))
+    newtab = zero(Tableau, rows, cols)
+    cols_idx = 1
+    for tab in tabs
+        rows_tab, cols_tab = size(tab)
+        if rows_tab != rows
+            throw(ArgumentError("All input Tableaux/Stabilizers must have the same number of rows."))
+        end
+        for i in 1:rows
+            for j in 1:cols_tab
+                newtab[i, cols_idx+j-1]::Tuple{Bool,Bool} = tab[i, j]::Tuple{Bool,Bool}
+            end
+            newtab.phases[i] = (newtab.phases[i]+tab.phases[i])%4
+        end
+        cols_idx += cols_tab
+    end
+    return newtab
+end
+
+Base.hcat(stabs::Stabilizer{T}...) where {T} = Stabilizer(hcat((tab(s) for s in stabs)...))
 
 ##############################
 # Unitary Clifford Operations

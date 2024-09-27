@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.11-dev
+
+- `hcat` of Tableaux objects
+
 ## v0.9.10 - 2024-09-26
 
 - The lifted product class of quantum LDPC codes is implemented in the ECC submodule.
