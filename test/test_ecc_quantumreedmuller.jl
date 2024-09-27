@@ -5,7 +5,7 @@
     using QuantumClifford
     using QuantumClifford: canonicalize!, Stabilizer, stab_to_gf2
     using QuantumClifford.ECC
-    using QuantumClifford.ECC: AbstractECC, QuantumReedMuller, Steane7
+    using QuantumClifford.ECC: AbstractECC, QuantumReedMuller, Steane7, CSS
 
     function designed_distance(mat)
         dist = 3
@@ -28,8 +28,7 @@
             @test code_n(QuantumReedMuller(m)) == 2^m - 1
             @test code_k(QuantumReedMuller(m)) == 1
             @test distance(QuantumReedMuller(m)) == 3
-            @test parity_checks_x(QuantumReedMuller(m)) == H[1:m, 1: 1:end÷2]
-            @test parity_checks_z(QuantumReedMuller(m)) == H[end-(code_n(QuantumReedMuller(m))-2-m):end, end÷2+1:end]
+            @test H == parity_checks(CSS(parity_checks_x(QuantumReedMuller(m)), parity_checks_z(QuantumReedMuller(m))))
             # [[15,1,3]] qrm code from table 1 of https://arxiv.org/pdf/1705.0010
             qrm₁₅₁₃ = S"ZIZIZIZIZIZIZIZ
                         IZZIIZZIIZZIIZZ
