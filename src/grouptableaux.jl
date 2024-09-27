@@ -117,7 +117,7 @@ function minimal_generating_set(s::Stabilizer)
     if r == 0
         gs = zero(Stabilizer, 1, nqubits(s))
         if 0x02 in phases(s)
-            gs[1] = -1 * gs[1]
+            phases(gs)[1] = 0x2
         end
         return gs
     else
