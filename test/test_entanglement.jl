@@ -50,4 +50,24 @@
         @test entanglement_entropy(copy(s), subsystem, Val(:graph))==2
         @test entanglement_entropy(copy(s), subsystem, Val(:rref))==2
     end
+
+    @testset "Mutual information for Clifford circuits" begin
+        for n in test_sizes
+            s = random_stabilizer(n)
+            endpointsA = sort(rand(1:n, 2))
+            subsystem_rangeA = endpointsA[1]:endpointsA[2]
+            startB = rand(subsystem_rangeA)
+            endB = rand(startB:n) 
+            subsystem_rangeB = startB:endB
+            if !isempty(intersect(subsystem_rangeA, subsystem_rangeB))
+                @test_throws ArgumentError mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:clip))
+                @test_throws ArgumentError mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:rref))
+                @test_throws ArgumentError mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:graph))
+            else
+                @test mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:clip)) == mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:rref)) == mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:graph))
+                # The mutual information `I(𝒶, 𝒷) = S𝒶 + S𝒷 - S𝒶𝒷 for Clifford circuits is non-negative [li2019measurement](@cite).
+                @test mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:clip)) & mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:rref)) & mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:graph)) >= 0
+            end
+        end
+    end
 end

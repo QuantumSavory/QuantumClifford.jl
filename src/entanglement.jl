@@ -132,14 +132,40 @@ end
 """
 $TYPEDSIGNATURES
 
-Get the bigram of a tableau.
+The Bigram `B` of stabilizer endpoints represents the "span" of each stabilizer within a set of Pauli operators `𝒢 = {g₁,…,gₙ}`.
 
-It is the list of endpoints of a tableau in the clipped gauge.
+For each stabilizer `g`, the left endpoint `𝓁(g)` is defined as the minimum site `x` where `g` acts non-trivially, while the
+right endpoint `𝓇(g)` is the maximum site where `g` acts non-trivially. 
+
+The site `x` represent the position within the system, taking values from `{1,2,…,n}` where `n` is the number of qubits.
+
+The bigram set `B(𝒢)` encodes these endpoints as pairs:
+
+`B(𝒢) ≡ {(𝓁(g₁),𝓇(g₁)),…,(𝓁(gₙ),𝓇(gₙ))}`
+
+The clipped gauge `𝒢` is a specific choice of stabilizer state where exactly two stabilizer endpoints exist at each site,
+ensuring `ρₗ(x) + ρᵣ(x) = 2` for all sites `x` where `ρ` represents the reduced density matrix for the subsystem under
+consideration.
+
+In the clipped gauge, entanglement entropy is determined only by the stabilizers' endpoints, regardless of their internal structure.
 
 If `clip=true` (the default) the tableau is converted to the clipped gauge in-place before calculating the bigram.
 Otherwise, the clip gauge conversion is skipped (for cases where the input is already known to be in the correct gauge).
 
 Introduced in [nahum2017quantum](@cite), with a more detailed explanation of the algorithm in [li2019measurement](@cite) and [gullans2021quantum](@cite).
+
+```jldoctest
+julia> s = ghz(3)
++ XXX
++ ZZ_
++ _ZZ
+
+julia> bigram(s)
+3×2 Matrix{Int64}:
+ 1  3
+ 1  2
+ 2  3
+```
 
 See also: [`canonicalize_clip!`](@ref)
 """
@@ -171,14 +197,39 @@ the most performant one depending on the particular case.
 
 Currently implemented are the `:clip` (clipped gauge), `:graph` (graph state), and `:rref` (Gaussian elimination) algorithms.
 Benchmark your particular case to choose the best one.
+
+See Appendix C of [nahum2017quantum](@cite).
 """
 function entanglement_entropy end
 
 
 """
+$TYPEDSIGNATURES
+
 Get bipartite entanglement entropy of a contiguous subsystem by passing through the clipped gauge.
 
 If `clip=false` is set the canonicalization step is skipped, useful if the input state is already in the clipped gauge.
+
+```jldoctest
+julia> using Graphs # hide
+
+julia> s = ghz(3)
++ XXX
++ ZZ_
++ _ZZ
+
+julia> entanglement_entropy(s, 1:3, Val(:clip))
+0
+
+julia> s = Stabilizer(Graph(ghz(4)))
++ XZZZ
++ ZX__
++ Z_X_
++ Z__X
+
+julia> entanglement_entropy(s, [1,4], Val(:graph))
+1
+```
 
 See also: [`bigram`](@ref), [`canonicalize_clip!`](@ref)
 """
@@ -193,6 +244,8 @@ end
 
 
 """
+$TYPEDSIGNATURES
+
 Get bipartite entanglement entropy by first converting the state to a graph and computing the rank of the adjacency matrix.
 
 Based on "Entanglement in graph states and its applications".
@@ -207,11 +260,13 @@ end
 
 
 """
+$TYPEDSIGNATURES
+
 Get bipartite entanglement entropy by converting to RREF form (i.e., partial trace form).
 
 The state will be partially canonicalized in an RREF form.
 
-See also: [`canonicalize_rref!`](@ref), [`traceout!`](@ref).
+See also: [`canonicalize_rref!`](@ref), [`traceout!`](@ref), [`mutual_information`](@ref)
 """
 function entanglement_entropy(state::AbstractStabilizer, subsystem::AbstractVector, algorithm::Val{:rref}; pure::Bool=false)
     nb_of_qubits = nqubits(state)
@@ -228,3 +283,56 @@ function entanglement_entropy(state::AbstractStabilizer, subsystem::AbstractVect
 end
 
 entanglement_entropy(state::MixedDestabilizer, subsystem::AbstractVector, a::Val{:rref}) = entanglement_entropy(state, subsystem, a; pure=nqubits(state)==rank(state))
+
+"""
+$TYPEDSIGNATURES
+
+The mutual information between subsystems `𝒶` and `𝒷` in a stabilizer state is given by `I(𝒶, 𝒷) = S𝒶 + S𝒷 - S𝒶𝒷`.
+
+```jldoctest
+julia> using Graphs # hide
+
+julia> mutual_information(ghz(3), 1:2, 3:4, Val(:clip))
+2
+
+julia> s = Stabilizer(Graph(ghz(4)))
++ XZZZ
++ ZX__
++ Z_X_
++ Z__X
+
+julia> mutual_information(s, [1,2], [3, 4], Val(:graph))
+2
+```
+
+See Eq. E6 of [li2019measurement](@cite). See also: [`entanglement_entropy`](@ref)
+"""
+function mutual_information(state::AbstractStabilizer, A::UnitRange, B::UnitRange, algorithm::Val{:clip}; clip::Bool=true)
+    if !isempty(intersect(A, B))
+        throw(ArgumentError("Ranges A and B must not overlap."))
+    end
+    S𝒶 = entanglement_entropy(state, A, algorithm; clip=clip)
+    S𝒷 = entanglement_entropy(state, B, algorithm; clip=clip) 
+    S𝒶𝒷 = entanglement_entropy(state, UnitRange(first(union(A, B)), last(union(A, B))), algorithm; clip=clip)
+    return S𝒶 + S𝒷 - S𝒶𝒷
+end
+
+function mutual_information(state::AbstractStabilizer, A::AbstractVector, B::AbstractVector, algorithm::Val{:rref}; pure::Bool=false)
+    if !isempty(intersect(A, B))
+        throw(ArgumentError("Ranges A and B must not overlap."))
+    end
+    S𝒶 = entanglement_entropy(state, A, algorithm; pure=pure)
+    S𝒷 = entanglement_entropy(state, B, algorithm; pure=pure)
+    S𝒶𝒷 = entanglement_entropy(state, union(A, B), algorithm; pure=pure)
+    return S𝒶 + S𝒷 - S𝒶𝒷
+end
+
+function mutual_information(state::AbstractStabilizer, A::AbstractVector, B::AbstractVector, algorithm::Val{:graph})
+    if !isempty(intersect(A, B))
+        throw(ArgumentError("Ranges A and B must not overlap."))
+    end
+    S𝒶 = entanglement_entropy(state, A, algorithm)
+    S𝒷 = entanglement_entropy(state, B, algorithm)
+    S𝒶𝒷 = entanglement_entropy(state, union(A, B), algorithm)
+    return S𝒶 + S𝒷 - S𝒶𝒷
+end
