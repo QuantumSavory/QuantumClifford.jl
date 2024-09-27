@@ -20,7 +20,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     RepCode, LiftedCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
-    Toric, Gottesman, Surface, Concat, CircuitCode,
+    Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
     BBQLDPC,
@@ -380,6 +380,7 @@ include("codes/random_circuit.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/recursivereedmuller.jl")
 include("codes/classical/bch.jl")
+include("codes/quantumreedmuller.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
