@@ -5,7 +5,7 @@
     using QuantumClifford
 
     # Including sizes that would test off-by-one errors in the bit encoding.
-    test_sizes = [1, 2, 3, 4, 5, 7, 8, 9, 15, 16, 17] 
+    test_sizes = [1, 2, 3, 4, 5, 7, 8, 9, 15, 16, 17]
     # Zero function(in groupify) slows down around 2^30(n=30),eventually breaks
     small_test_sizes = [1, 2, 3, 4, 5, 7] # Pauligroup slows around n = 8
 
@@ -35,11 +35,11 @@
         #Test canonicalize_noncomm
         for n in [1, small_test_sizes...]
             t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
-            for i in eachindex(t) t[i] = random_pauli(n) end 
+            for i in eachindex(t) t[i] = random_pauli(n) end
             loc = canonicalize_noncomm(t)
             for i in 1:loc.k
                 for j in 1:loc.k
-                    if i == j 
+                    if i == j
                         @test comm(logicalxview(loc)[i], logicalzview(loc)[j]) == 0x01
                     else @test comm(logicalxview(loc)[i], logicalzview(loc)[j]) == 0x00 end
                 end
@@ -61,7 +61,7 @@
                 end
             end
             for i in d
-                for p in c 
+                for p in c
                     @test p[i] != (true, true)
                 end
             end
@@ -86,7 +86,7 @@
             @test inverted[1:length(inverted)].tab.xzs == original[1:length(inverted)].tab.xzs
         end
         #Test pauligroup
-        for n in [1, small_test_sizes...] 
+        for n in [1, small_test_sizes...]
             @test length(QuantumClifford.pauligroup(n, phases=false)) == 4^n
             @test length(QuantumClifford.pauligroup(n, phases=true)) == 4^(n+1)
         end
@@ -139,7 +139,7 @@
             end
             c = contractor(s, subset)
             count = 0
-            for stabilizer in s 
+            for stabilizer in s
                 contractable = true
                 for i in subset
                     if stabilizer[i] != (false, false) contractable = false end
@@ -152,9 +152,9 @@
                     p = zero(PauliOperator, nqubits(s))
                     index = 0
                     for i in 1:nqubits(s)
-                        if !(i in subset) 
-                            index+=1 
-                            p[i] = contracted[index] 
+                        if !(i in subset)
+                            index+=1
+                            p[i] = contracted[index]
                         end
                     end
                     @test p in s || -1* p in s || 1im * p in s || -1im * p in s
