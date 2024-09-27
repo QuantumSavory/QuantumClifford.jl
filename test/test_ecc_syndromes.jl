@@ -17,8 +17,8 @@
         # no noise
         naive_frames = PauliFrame(nframes, naive_qubits, syndromebits)
         shor_frames = PauliFrame(nframes, shor_qubits, last(shor_bits))
-        naive_circuit = [ecirc..., naive_scirc...]
-        shor_circuit = [ecirc..., shor_cat_scirc..., shor_scirc...]
+        naive_circuit = vcat(ecirc, naive_scirc)
+        shor_circuit = vcat(ecirc, shor_cat_scirc, shor_scirc)
         pftrajectories(naive_frames, naive_circuit)
         pftrajectories(shor_frames, shor_circuit)
         @test pfmeasurements(naive_frames) == pfmeasurements(shor_frames)[:,shor_bits]
@@ -27,7 +27,7 @@
             naive_frames = PauliFrame(nframes, naive_qubits, syndromebits)
             shor_frames = PauliFrame(nframes, shor_qubits, last(shor_bits))
             pftrajectories(naive_frames, ecirc)
-            pftrajectories(shor_frames, [ecirc..., shor_cat_scirc...])
+            pftrajectories(shor_frames, vcat(ecirc, shor_cat_scirc))
             # manually injecting the same type of noise in the frames -- not really a user accessible API
             p = random_pauli(dataqubits, realphase=true)
             pₙ = embed(naive_qubits, 1:dataqubits, p)

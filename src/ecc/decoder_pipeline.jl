@@ -101,7 +101,7 @@ function physical_ECC_circuit(H, setup::NaiveSyndromeECCSetup)
     end
 
     mem_error_circ = [PauliError(i, setup.mem_noise) for i in 1:nqubits(H)]
-    circ = [mem_error_circ..., noisy_syndrome_circ...]
+    circ = vcat(mem_error_circ, noisy_syndrome_circ)
     return circ, syndrome_bits, n_anc
 end
 
@@ -119,7 +119,7 @@ function physical_ECC_circuit(H, setup::ShorSyndromeECCSetup)
 
     mem_error_circ = [PauliError(i, setup.mem_noise) for i in 1:nqubits(H)]
 
-    circ = [prep_anc..., mem_error_circ..., noisy_syndrome_circ...]
+    circ = vcat(prep_anc, mem_error_circ, noisy_syndrome_circ)
     circ, syndrome_bits, n_anc
 end
 
@@ -132,7 +132,7 @@ function evaluate_decoder(d::AbstractSyndromeDecoder, setup::AbstractECCSetup, n
 
     physical_noisy_circ, syndrome_bits, n_anc = physical_ECC_circuit(H, setup)
     encoding_circ = naive_encoding_circuit(H)
-    preX = [sHadamard(i) for i in n-k+1:n]
+    preX = sHadamard[sHadamard(i) for i in n-k+1:n]
 
     mdH = MixedDestabilizer(H)
     logX_circ, _, logX_bits = naive_syndrome_circuit(logicalxview(mdH), n_anc+1, last(syndrome_bits)+1)
@@ -141,12 +141,12 @@ function evaluate_decoder(d::AbstractSyndromeDecoder, setup::AbstractECCSetup, n
     # Evaluate the probability for X logical error (the Z-observable part of the faults matrix is used)
     X_error = evaluate_decoder(
         d, nsamples,
-        [encoding_circ..., physical_noisy_circ..., logZ_circ...],
+        vcat(encoding_circ, physical_noisy_circ, logZ_circ),
         syndrome_bits, logZ_bits, O[end÷2+1:end,:])
     # Evaluate the probability for Z logical error (the X-observable part of the faults matrix is used)
     Z_error = evaluate_decoder(
         d, nsamples,
-        [preX..., encoding_circ..., physical_noisy_circ..., logX_circ...],
+        vcat(preX, encoding_circ, physical_noisy_circ, logX_circ),
         syndrome_bits, logX_bits, O[1:end÷2,:])
     return (X_error, Z_error)
 end
