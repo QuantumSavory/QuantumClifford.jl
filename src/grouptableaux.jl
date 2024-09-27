@@ -3,9 +3,10 @@ using LinearAlgebra
 
 """
 A tableau representation of the non-commutative canonical form of a set of Paulis,
-which is used in [`commutify`](@ref).The index of the first operator that commutes
-with all others is tracked so that the stabilizer, destabilizer, logical X, and logical
-Z aspects of the tableau can be represented.
+which is used in [`commutify`](@ref).
+
+They are organized in the same form as [`MixedDestabilizer`](@ref)
+with a stabilizer, destabilizer, logical X, and logical Z components.
 """
 mutable struct SubsystemCodeTableau{T <: Tableau} <: AbstractStabilizer
     tab::T
@@ -126,14 +127,14 @@ end
 
 """
 For a not-necessarily commutative set of Paulis, return a generating set of the form
-<A₁, A₂, ... Aₖ, Aₖ₊₁, ... Aₘ, B₁, B₂, ... Bₖ> where two operators anticommute if and only if they
-are of the form Aₖ, Bₖ and commute otherwise. Based on [RevModPhys.87.307](@cite)
+⟨A₁, A₂, ... Aₖ, Aₖ₊₁, ... Aₘ, B₁, B₂, ... Bₖ⟩ where pairs Aₖ, Bₖ anticommute and all other pairings commute. Based on [RevModPhys.87.307](@cite)
 
 Returns the generating set as a data structure of type [`SubsystemCodeTableau`](@ref). The
-`logicalxview` function returns the <A₁, A₂,... Aₖ>, and the `logicalzview`
-function returns <B₁, B₂, ... Bₖ>. `stabilizerview` returns <Aₖ₊₁, ... Aₘ>
+`logicalxview` function returns the ⟨A₁, A₂,... Aₖ⟩, and the `logicalzview`
+function returns ⟨B₁, B₂, ... Bₖ⟩. `stabilizerview` returns ⟨Aₖ₊₁, ... Aₘ⟩
 as a Stabilizer, and `destabilizerview` returns the Destabilizer of that Stabilizer.
 
+Phases are zeroed-out in this canonicalization.
 
 ```jldoctest
 julia> tab(canonicalize_noncomm(T"XX XZ XY"))
@@ -143,7 +144,7 @@ julia> tab(canonicalize_noncomm(T"XX XZ XY"))
 + XZ
 ```
 """
-function canonicalize_noncomm(t:: Tableau)
+function canonicalize_noncomm(t::Tableau)
     loc = zero(Tableau, length(t), nqubits(t))
     index = 1
     for i in eachindex(t)
@@ -183,12 +184,13 @@ function canonicalize_noncomm(t:: Tableau)
 end
 
 """
-For a not-necessarily commutative set of Paulis S, then take S', the [non-commutative canonical form](@ref canonicalize_noncomm) of
-of S. For each pair Aₖ, Bₖ of anticommutative Paulis in S', add a qubit to each Pauli in the set:
+For a not-necessarily commutative set of Paulis S,
+computed S', the [non-commutative canonical form](@ref canonicalize_noncomm) of of S.
+For each pair Aₖ, Bₖ of anticommutative Paulis in S', add a qubit to each Pauli in the set:
 X to Aₖ, Z to Bₖ, and I to each other operator to produce S'', a fully commutative set. Return
 S'' as well as a list of the indices of the added qubits.
 
-The returned object is a Stabilizer that is used in of the [`matroid_parent`](@ref) function.
+The returned object is a Stabilizer that is also useful for the [`matroid_parent`](@ref) function.
 
 ```jldoctest
 julia> commutify(T"XX XZ XY")[1]
@@ -221,11 +223,13 @@ function commutify(t)
 end
 
 """
-For a given set S of Paulis that does not necessarily represent a state, return a set of
-Paulis S' that represents a state. S' is a superset of [commutified](@ref commutify) S. Additionally
-returns two arrays representing deletions needed to produce S. Based on [goodenough2024bipartiteentanglementnoisystabilizer](@cite)
+For a given set S of Paulis that does not necessarily represent a state,
+return a set of Paulis S' that represents a state.
+S' is a superset of [commutified](@ref commutify) S.
+Additionally returns two arrays representing deletions needed to produce S.
+Based on [goodenough2024bipartiteentanglementnoisystabilizer](@cite)
 
-By deleting the qubits in the first output array from S`, taking the [`normalizer`](@ref) of S', then
+By deleting the qubits in the first output array from S', taking the [`normalizer`](@ref) of S', then
 deleting the qubits in the second returned array from the [`normalizer`](@ref) of S', S is reproduced.
 
 ```jldoctest
