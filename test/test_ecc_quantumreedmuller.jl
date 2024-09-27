@@ -31,7 +31,20 @@
             @test parity_checks_x(QuantumReedMuller(m)) == H[1:m, 1: 1:end÷2]
             @test parity_checks_z(QuantumReedMuller(m)) == H[end-(code_n(QuantumReedMuller(m))-2-m):end, end÷2+1:end]
             # [[15,1,3]] qrm code from table 1 of https://arxiv.org/pdf/1705.0010
-            qrm₁₅₁₃ = S"ZIZIZIZIZIZIZIZ//IZZIIZZIIZZIIZZ//IIIZZZZIIIIZZZZ//IIIIIIIZZZZZZZZ//IIZIIIZIIIZIIIZ//IIIIZIZIIIIIZIZ//IIIIIZZIIIIIIZZ//IIIIIIIIIZZIIZZ//IIIIIIIIIIIZZZZ//IIIIIIIIZIZIZIZ//XIXIXIXIXIXIXIX//IXXIIXXIIXXIIXX//IIIXXXXIIIIXXXX//IIIIIIIXXXXXXXX"
+            qrm₁₅₁₃ = S"ZIZIZIZIZIZIZIZ
+                        IZZIIZZIIZZIIZZ
+                        IIIZZZZIIIIZZZZ
+                        IIIIIIIZZZZZZZZ
+                        IIZIIIZIIIZIIIZ
+                        IIIIZIZIIIIIZIZ
+                        IIIIIZZIIIIIIZZ
+                        IIIIIIIIIZZIIZZ
+                        IIIIIIIIIIIZZZZ
+                        IIIIIIIIZIZIZIZ
+                        XIXIXIXIXIXIXIX
+                        IXXIIXXIIXXIIXX
+                        IIIXXXXIIIIXXXX
+                        IIIIIIIXXXXXXXX"
             @test canonicalize!(parity_checks(qrm₁₅₁₃)) == canonicalize!(parity_checks(QuantumReedMuller(4)))
         end
     end
