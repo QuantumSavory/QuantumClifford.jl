@@ -1,4 +1,4 @@
-# @testitem "Classical" begin
+@testitem "group theory tools" begin
     using Test
 
     using Random
@@ -9,7 +9,7 @@
     # Zero function(in groupify) slows down around 2^30(n=30),eventually breaks
     small_test_sizes = [1, 2, 3, 4, 5, 7] # Pauligroup slows around n = 8
 
-    @testset "group_tableaux" begin
+    @testset "group theory tools" begin
         #Test groupify
         for n in [1, test_sizes...]
             s = random_stabilizer(n)
@@ -164,4 +164,4 @@
             end
         end
     end
-# end
+end
