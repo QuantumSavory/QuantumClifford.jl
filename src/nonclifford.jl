@@ -90,9 +90,7 @@ function _stabmixdestab(mixeddestab, d)
 end
 
 """
-Updates the generalized stabilizer `τ = (χ, B(S, D))` by applying a Clifford gate `G`,
-where `χ` represents the density matrix and `B(S, D)` denotes the stabilizer basis in
-which `χ` is expressed.
+Apply a Clifford gate to a generalized stabilizer state, i.e. a weighted sum of stabilizer states.
 
 ```jldoctest
 julia> sm = GeneralizedStabilizer(S"-X")
@@ -114,6 +112,7 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
  1.0+0.0im | + _ | + _
 ```
 
+See also: [`GeneralizedStabilizer`](@ref)
 """
 function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator) # TODO conjugate also the destabs
     apply!(state.stab, gate)
@@ -223,10 +222,10 @@ end
 
 nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 
-"""Applies a Pauli channel to the generalized stabilizer `τ = (χ, B(S, D))`, where
-`χ` represents the density matrix and `B(S, D)` denotes the stabilizer basis in
-which `χ` is expressed. The channel is defined as `ρ ↦ ∑ ϕᵢⱼ Pᵢ ρ Pⱼ†`, where `ϕᵢⱼ`
-are complex coefficients, and `Pᵢ` and `Pⱼ` are Pauli operators."""
+"""Applies a (potentially non-unitary) Pauli channel to a generalized stabilizer.
+
+See also: [`GeneralizedStabilizer`](@ref), [`PauliChannel`](@ref), [`UnitaryPauliChannel`](@ref)
+"""
 function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold=1e-10)
     dict = state.destabweights
     stab = state.stab
