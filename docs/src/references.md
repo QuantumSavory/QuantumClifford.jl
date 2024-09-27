@@ -36,6 +36,10 @@ For quantum code construction routines:
 - [chao2018quantum](@cite)
 - [kitaev2003fault](@cite)
 - [fowler2012surface](@cite)
+- [knill1996concatenated](@cite)
+- [steane1999quantum](@cite)
+- [campbell2012magic](@cite)
+- [anderson2014fault](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)

@@ -48,9 +48,10 @@ export
     # Symbolic Clifford Ops
     AbstractSymbolicOperator, AbstractSingleQubitOperator, AbstractTwoQubitOperator,
     sHadamard, sPhase, sInvPhase, SingleQubitOperator, sId1, sX, sY, sZ,
+    sHadamardXY, sHadamardYZ, sSQRTX, sInvSQRTX, sSQRTY, sInvSQRTY, sCXYZ, sCZYX,
     sCNOT, sCPHASE, sSWAP,
     sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZCX, sZCY, sZCZ,
-    sZCrY,
+    sZCrY, sInvZCrY,
     # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
@@ -63,6 +64,7 @@ export
     random_invertible_gf2,
     random_pauli, random_pauli!,
     random_stabilizer, random_destabilizer, random_clifford,
+    random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
     # Noise
     applynoise!, UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, NoisyGate,
     PauliNoise, PauliError,
@@ -73,6 +75,8 @@ export
     single_z, single_x, single_y,
     # Graphs
     graphstate, graphstate!, graph_gatesequence, graph_gate,
+    # Group theory tools
+    groupify, minimal_generating_set, pauligroup, normalizer, centralizer, contractor, delete_columns,
     # Clipped Gauge
     canonicalize_clip!, bigram, entanglement_entropy,
     # mctrajectories
@@ -146,11 +150,20 @@ function Tableau(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ<:
     tab
 end
 
-Tableau(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Tableau(
-    phases, size(xs,2),
-    vcat(hcat((BitArray(xs[i,:]).chunks for i in 1:size(xs,1))...)::Matrix{UInt},
-         hcat((BitArray(zs[i,:]).chunks for i in 1:size(zs,1))...)::Matrix{UInt}) # type assertions to help Julia infer types
-)
+function Tableau(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
+    r_xs = size(xs, 1)
+    r_zs = size(zs, 1)
+    if length(phases) != r_xs || r_xs != r_zs
+        throw(DimensionMismatch(lazy"The length of phases ($(length(phases))), rows of xs ($r_xs), rows of zs ($r_zs) must all be equal."))
+    end
+    Tableau(
+        phases,size(xs, 2),
+        vcat(
+            hcat((BitArray(xs[i, :]).chunks for i in 1:r_xs)...)::Matrix{UInt},
+            hcat((BitArray(zs[i, :]).chunks for i in 1:r_zs)...)::Matrix{UInt} # type assertions to help Julia infer types
+        )
+    )
+end
 
 Tableau(phases::AbstractVector{UInt8}, xzs::AbstractMatrix{Bool}) = Tableau(phases, xzs[:,1:end÷2], xzs[:,end÷2+1:end])
 
@@ -755,10 +768,19 @@ function comm!(v, l::PauliOperator, r::Tableau)
     v
 end
 comm!(v, l::Tableau, r::PauliOperator) = comm!(v, r, l)
-@inline comm!(v, l::PauliOperator, r::Stabilizer, i::Int) = comm!(v, l, tab(r), i)
-@inline comm!(v, l::Stabilizer, r::PauliOperator, i::Int) = comm!(v, tab(l), r, i)
 @inline comm!(v, l::PauliOperator, r::Stabilizer) = comm!(v, l, tab(r))
 @inline comm!(v, l::Stabilizer, r::PauliOperator) = comm!(v, tab(l), r)
+function comm!(v, l::PauliOperator, r::Tableau, i)
+    v[i] = comm(l,r,i)
+    v
+end
+comm!(v, l::Tableau, r::PauliOperator, i) = comm!(v, r, l, i)
+@inline comm!(v, l::PauliOperator, r::Stabilizer, i::Int) = comm!(v, l, tab(r), i)
+@inline comm!(v, l::Stabilizer, r::PauliOperator, i::Int) = comm!(v, tab(l), r, i)
+function comm!(v, s::Tableau, l::Int, r::Int)
+    v[l] = comm(s, l, r)
+    v
+end
 @inline comm!(v, s::Stabilizer, l::Int, r::Int) = comm!(v, tab(s), l, r)
 
 
@@ -913,6 +935,19 @@ function check_allrowscommute(stabilizer::Tableau)
 end
 check_allrowscommute(stabilizer::Stabilizer)=check_allrowscommute(tab(stabilizer))
 
+"""
+Vertically concatenates tableaux.
+
+```jldoctest
+julia> vcat(ghz(2), ghz(2))
++ XX
++ ZZ
++ XX
++ ZZ
+```
+
+See also: [`hcat`](@ref)
+"""
 function Base.vcat(tabs::Tableau...)
     Tableau(
         vcat((s.phases for s in tabs)...),
@@ -920,7 +955,41 @@ function Base.vcat(tabs::Tableau...)
         hcat((s.xzs for s in tabs)...))
 end
 
-Base.vcat(stabs::Stabilizer...) = Stabilizer(vcat((tab(s) for s in stabs)...))
+Base.vcat(stabs::Stabilizer{T}...) where {T} = Stabilizer(vcat((tab(s) for s in stabs)...))
+
+"""
+Horizontally concatenates tableaux.
+
+```jldoctest
+julia> hcat(ghz(2), ghz(2))
++ XXXX
++ ZZZZ
+```
+
+See also: [`vcat`](@ref)
+"""
+function Base.hcat(tabs::Tableau...) # TODO this implementation is slow as it unpacks each bitvector into bits and repacks them -- reuse the various tableau inset functionality we have to speed this up
+    rows = size(tabs[1], 1)
+    cols = sum(map(nqubits, tabs))
+    newtab = zero(Tableau, rows, cols)
+    cols_idx = 1
+    for tab in tabs
+        rows_tab, cols_tab = size(tab)
+        if rows_tab != rows
+            throw(ArgumentError("All input Tableaux/Stabilizers must have the same number of rows."))
+        end
+        for i in 1:rows
+            for j in 1:cols_tab
+                newtab[i, cols_idx+j-1]::Tuple{Bool,Bool} = tab[i, j]::Tuple{Bool,Bool}
+            end
+            newtab.phases[i] = (newtab.phases[i]+tab.phases[i])%4
+        end
+        cols_idx += cols_tab
+    end
+    return newtab
+end
+
+Base.hcat(stabs::Stabilizer{T}...) where {T} = Stabilizer(hcat((tab(s) for s in stabs)...))
 
 ##############################
 # Unitary Clifford Operations
@@ -966,6 +1035,16 @@ function _apply!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Va
     end
     stab
 end
+
+##############################
+# Conversion and promotion
+##############################
+
+Base.promote_rule(::Type{<:Destabilizer{T}}   , ::Type{<:MixedDestabilizer{T}}) where {T<:Tableau} = MixedDestabilizer{T}
+Base.promote_rule(::Type{<:MixedStabilizer{T}}, ::Type{<:MixedDestabilizer{T}}) where {T<:Tableau} = MixedDestabilizer{T}
+Base.promote_rule(::Type{<:Stabilizer{T}}     , ::Type{<:S}                   ) where {T<:Tableau, S<:Union{MixedStabilizer{T}, Destabilizer{T}, MixedDestabilizer{T}}} = S
+
+Base.convert(::Type{<:MixedDestabilizer{T}}, x::Union{Destabilizer{T}, MixedStabilizer{T}, Stabilizer{T}}) where {T <: Tableau} = MixedDestabilizer(x)
 
 ##############################
 # Helpers for binary codes
@@ -1079,8 +1158,14 @@ end
 """
 Check basic consistency requirements of a stabilizer. Used in tests.
 """
-function stab_looks_good(s)
-    c = tab(canonicalize!(copy(s)))
+function stab_looks_good(s; remove_redundant_rows=false)
+    # first remove redundant rows
+    c = if remove_redundant_rows
+        s1, _, rank = canonicalize!(copy(s), ranks=true)
+        tab(s1[1:rank])
+    else
+        tab(canonicalize!(copy(s)))
+    end
     nrows, ncols = size(c)
     all((c.phases .== 0x0) .| (c.phases .== 0x2)) || return false
     H = stab_to_gf2(c)
@@ -1201,6 +1286,7 @@ include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
 include("nonclifford.jl")
+include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")

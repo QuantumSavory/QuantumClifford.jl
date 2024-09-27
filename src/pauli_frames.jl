@@ -144,6 +144,28 @@ function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     return frame
 end
 
+function applynoise!(frame::PauliFrame,noise::PauliNoise,i::Int)
+    T = eltype(frame.frame.tab.xzs)
+
+    lowbit = T(1)
+    ibig = _div(T,i-1)+1
+    ismall = _mod(T,i-1)
+    ismallm = lowbit<<(ismall)
+
+    @inbounds @simd for f in eachindex(frame)
+        r = rand()
+        if  r < noise.px # X error
+            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
+        elseif r < noise.px+noise.pz # Z error
+            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
+        elseif r < noise.px+noise.pz+noise.py # Y error
+            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
+            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
+        end
+    end
+    return frame
+end
+
 """
 Perform a "Pauli frame" style simulation of a quantum circuit.
 """
@@ -175,7 +197,12 @@ function _pftrajectories(circuit;trajectories=5000,threads=true)
     ccircuit = if eltype(circuit) <: CompactifiedGate
         circuit
     else
-        compactify_circuit(circuit)
+        try
+            compactify_circuit(circuit)
+        catch err
+            @warn "Could not compactify the circuit, falling back to a slower version of the simulation. Consider reporting this issue to the package maintainers to improve performance. The offending gate was `$(err.args[2])`."
+            circuit
+        end
     end
     frames = _create_pauliframe(ccircuit; trajectories)
     nthr = min(Threads.nthreads(),trajectories÷(100))
