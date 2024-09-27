@@ -171,9 +171,8 @@ end
 
 function evaluate_guesses(measured_faults, guesses, faults_matrix)
     nsamples = size(guesses, 1)
-    decoded = 0
+    fails = 0
     for i in 1:nsamples
-        is_decoded = true
         for j in 1:size(faults_matrix, 1)
             sum_mod = 0
             @inbounds @simd for k in 1:size(faults_matrix, 2)
@@ -181,13 +180,12 @@ function evaluate_guesses(measured_faults, guesses, faults_matrix)
             end
             sum_mod %= 2
             if sum_mod != measured_faults[i, j]
-                is_decoded = false
+                fails += 1
                 break
             end
         end
-        decoded += is_decoded
     end
-    return (nsamples - decoded) / nsamples
+    return fails / nsamples
 end
 
 function evaluate_decoder(d::AbstractSyndromeDecoder, setup::CommutationCheckECCSetup, nsamples::Int)
