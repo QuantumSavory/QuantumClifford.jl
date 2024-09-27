@@ -8,7 +8,6 @@
     using LinearAlgebra
     using Nemo
     using AbstractAlgebra
-    using Hecke
 
     rep = report_package("QuantumClifford";
         ignored_modules=(
@@ -20,7 +19,6 @@
             AnyFrameModule(LinearAlgebra),
             AnyFrameModule(Nemo),
             AnyFrameModule(AbstractAlgebra),
-            AnyFrameModule(Hecke),
     ))
 
     @show rep
