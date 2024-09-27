@@ -41,12 +41,12 @@ qo_tgate.data[2,2] = exp(im*pi/4)
             @test qo_bigtgate ≈ Operator(bigtgate)
 
             for step in 1:10
-            # apply!(ket, qo_bigtgate) TODO implement this API
+                # apply!(ket, qo_bigtgate) TODO implement this API
                 ket = qo_bigtgate*ket
                 apply!(genstab, bigtgate)
                 @test dm(ket) ≈ Operator(genstab)
                 @test isapprox(expect(qo_pauli, ket), expect(pauli, genstab); atol=1e-5)
-           end
+            end
         end
     end
 end
@@ -64,3 +64,4 @@ end
         end
     end
 end
+
