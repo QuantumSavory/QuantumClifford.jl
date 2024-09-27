@@ -8,6 +8,7 @@
 ## v0.9.11-dev
 
 - `hcat` of Tableaux objects
+- `QuantumReedMuller` codes added to the ECC module
 
 ## v0.9.10 - 2024-09-26
 
