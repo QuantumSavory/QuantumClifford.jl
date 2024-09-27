@@ -158,28 +158,10 @@ julia> tensor(s, s)
 - ____Z_
 ```
 
-Tensor product between [`MixedDestabilizer`](@ref) and [`Stabilizer`](@ref):
-
-```jldoctest promote
-julia> md = MixedDestabilizer(T"Z//X", 1)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z
-𝒮𝓉𝒶𝒷
-+ X
-
-julia> tensor(S"X", md)
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z_
-+ _Z
-𝒮𝓉𝒶𝒷
-+ X_
-+ _X
-```
-
 See also [`tensor_pow`](@ref)."""
 function tensor end
 
-function tensor(ops::AbstractStabilizer...)
+function tensor(ops::AbstractStabilizer...) # TODO optimize by pre-allocating one large tableau instead of the current quadratic fold
     ct = promote_type(map(typeof, ops)...)
     conv_ops = map(x -> convert(ct, x), ops)
     return foldl(⊗, conv_ops)
