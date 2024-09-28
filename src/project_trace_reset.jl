@@ -42,17 +42,15 @@ function _generate!(pauli::PauliOperator{Tₚ,Tᵥ}, stabilizer::Stabilizer{Tabl
     xzs = tab(stabilizer).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
-    lowbit = Tₘₑ(0x1)
     zerobit = Tₘₑ(0x0)
     px,pz = xview(pauli), zview(pauli)
     used_indices = Int[]
     used = 0
     # remove Xs
     while (i=unsafe_bitfindnext_(px,1); i !== nothing) # TODO awkward notation due to https://github.com/JuliaLang/julia/issues/45499
-        jbig = _div(Tₘₑ,i-1)+1
-        jsmall = lowbit<<_mod(Tₘₑ,i-1)
-        candidate = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
-                              xs[jbig,used+1:end])
+        _, ibig, _, ismallm = get_bitmask_idxs(xzs,i)
+        candidate = findfirst(e->e&ismallm!=zerobit, # TODO some form of reinterpret might be faster than equality check
+                              xs[ibig,used+1:end])
         if isnothing(candidate)
             return nothing
         else
@@ -63,10 +61,9 @@ function _generate!(pauli::PauliOperator{Tₚ,Tᵥ}, stabilizer::Stabilizer{Tabl
     end
     # remove Zs
     while (i=unsafe_bitfindnext_(pz,1); i !== nothing) # TODO awkward notation due to https://github.com/JuliaLang/julia/issues/45499
-        jbig = _div(Tₘₑ,i-1)+1
-        jsmall = lowbit<<_mod(Tₘₑ,i-1)
-        candidate = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
-                              zs[jbig,used+1:end])
+        _, ibig, _, ismallm = get_bitmask_idxs(xzs,i)
+        candidate = findfirst(e->e&ismallm!=zerobit, # TODO some form of reinterpret might be faster than equality check
+                              zs[ibig,used+1:end])
         if isnothing(candidate)
             return nothing
         else
