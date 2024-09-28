@@ -171,12 +171,21 @@ end
 
 function evaluate_guesses(measured_faults, guesses, faults_matrix)
     nsamples = size(guesses, 1)
-    guess_faults = (faults_matrix * guesses') .% 2 # TODO this can be faster and non-allocating by turning it into a loop
-    decoded = 0
-    for i in 1:nsamples # TODO this can be faster and non-allocating by having the loop and the matrix multiplication on the line above work together and not store anything
-        (@view guess_faults[:,i]) == (@view measured_faults[i,:]) && (decoded += 1)
+    fails = 0
+    for i in 1:nsamples
+        for j in 1:size(faults_matrix, 1)
+            sum_mod = 0
+            @inbounds @simd for k in 1:size(faults_matrix, 2)
+                sum_mod += faults_matrix[j, k] * guesses[i, k]
+            end
+            sum_mod %= 2
+            if sum_mod != measured_faults[i, j]
+                fails += 1
+                break
+            end
+        end
     end
-    return (nsamples - decoded) / nsamples
+    return fails / nsamples
 end
 
 function evaluate_decoder(d::AbstractSyndromeDecoder, setup::CommutationCheckECCSetup, nsamples::Int)
