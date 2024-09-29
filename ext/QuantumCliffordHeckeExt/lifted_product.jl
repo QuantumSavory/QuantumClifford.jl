@@ -70,6 +70,33 @@ julia> code_n(c2), code_k(c2)
 - When the base matrices of the `LPCode` are 1×1 and their elements are sums of cyclic permutations, the code is called a generalized bicycle code [`generalized_bicycle_codes`](@ref).
 - When the two matrices are adjoint to each other, the code is called a bicycle code [`bicycle_codes`](@ref).
 
+# Examples
+
+Bivariate Bicycle codes belong to a wider class of generalized bicycle (GB) codes, which are further generalized into of two block group algebra (2GBA) codes. They can be viewed as a special case of Lifted Product construction based on abelian group `ℤₗ x ℤₘ` where `ℤⱼ` cyclic group of order `j`.
+
+A [[756, 16, ≤ 34]] code from Table 3 of [bravyi2024high](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens; import Oscar: PcGroup;
+
+julia> l=21; m=18;
+
+julia> GA = group_algebra(GF(2), abelian_group(PcGroup, [l, m]));
+
+julia> x = gens(GA)[1];
+
+julia> y = gens(GA)[2];
+
+julia> A = reshape([x^3 + y^10 + y^17], (1, 1));
+
+julia> B = reshape([y^5 + x^3 + x^19], (1, 1));
+
+julia> c1 = LPCode(A, B);
+
+julia> code_n(c1), code_k(c1)
+(756, 16)
+```
+
 ## The representation function
 
 We use the default representation function `Hecke.representation_matrix` to convert a `GF(2)`-group algebra element to a binary matrix.
