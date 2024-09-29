@@ -168,6 +168,8 @@ julia> code_n(c), code_k(c)
 """ # TODO doctest example
 function generalized_bicycle_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
+    !(all(a_shifts .>= 0) && all(a_shifts .< dim(GA))) && throw(DimensionMismatch("Each element in $a_shifts must ≥ 0 and < the order of Group Algebra $(dim(GA))"))
+    !(all(b_shifts .>= 0) && all(b_shifts .< dim(GA))) && throw(DimensionMismatch("Each element in $b_shifts must ≥ 0 and < the order of Group Algebra $(dim(GA))"))
     a = sum(GA[n%l+1] for n in a_shifts)
     b = sum(GA[n%l+1] for n in b_shifts)
     two_block_group_algebra_codes(a, b)
@@ -182,6 +184,7 @@ See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`]
 """ # TODO doctest example
 function bicycle_codes(a_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
+    !(all(a_shifts .>= 0) && all(a_shifts .< dim(GA))) && throw(DimensionMismatch("Each element in $a_shifts must ≥ 0 and < the order of Group Algebra $(dim(GA))"))
     a = sum(GA[n÷l+1] for n in a_shifts)
     two_block_group_algebra_codes(a, a')
 end
