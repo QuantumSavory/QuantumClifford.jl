@@ -179,6 +179,8 @@ end
 function _proj₊(sm::GeneralizedStabilizer, p::PauliOperator)
 end
 
+nqubits(sm::GeneralizedStabilizer) = nqubits(sm.stab)
+
 abstract type AbstractPauliChannel <: AbstractOperation end
 
 """A Pauli channel datastructure, mainly for use with [`GeneralizedStabilizer`](@ref)
@@ -228,6 +230,7 @@ nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 See also: [`GeneralizedStabilizer`](@ref), [`PauliChannel`](@ref), [`UnitaryPauliChannel`](@ref)
 """
 function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold=1e-10)
+    nqubits(state) == nqubits(gate) || throw(DimensionMismatch("GeneralizedStabilizer has $(nqubits(state)) qubits, but PauliChannel has $(nqubits(gate)). Use `embed` to create an appropriately padded PauliChannel."))
     dict = state.destabweights
     stab = state.stab
     dtype = valtype(dict)
