@@ -273,12 +273,12 @@ abstract type AbstractQCState end # This could include classical bits
 abstract type AbstractStabilizer <: AbstractQCState end # This includes only qubits in stabilizer states
 
 """
-Stabilizer, i.e. a list of commuting multi-qubit Hermitian Pauli operators.
+Stabilizer `𝒮`, i.e. a list of commuting multi-qubit Hermitian Pauli operators.
 
 Instances can be created with the `S` custom string macro or
 as direct sum of other stabilizers.
 
-!!! tip "Stabilizers and Destabilizers"
+!!! tip "Stabilizers `𝒮` and Destabilizers `𝒟`"
     In many cases you probably would prefer to use the [`MixedDestabilizer`](@ref)
     data structure, as it caries a lot of useful additional information, like tracking
     rank and destabilizer operators. `Stabilizer` has mostly a pedagogical value, and it
@@ -454,7 +454,13 @@ tab(s::AbstractStabilizer) = s.tab
 ##############################
 
 """
-A tableau representation of a pure stabilizer state. The tableau tracks the
+
+A destabilizer `𝒟` associated with a stabilizer `𝒮 = ⟨𝓈₁, 𝓈₂,…,𝓈ᵣ⟩` is a subgroup of Pauli 
+group `𝒫ₙ`​. For `𝒟` to be a valid destabilizer, it must have the same number of generators
+as `𝒮`, hence `𝒟 = ⟨𝒹₁, 𝒹₂,…,𝒹ᵣ⟩`. Additionally, each generator `𝒹ᵢ` of `𝒟` must anti-commute
+with the corresponding `𝓈ᵢ`​ and commute with all other `𝓈ⱼ​` where `j≠i`.
+
+Internally, it is a tableau representation of a pure stabilizer state. The tableau tracks the
 destabilizers as well, for efficient projections. On initialization there are
 no checks that the provided state is indeed pure. This enables the use of this
 data structure for mixed stabilizer state, but a better choice would be to use
