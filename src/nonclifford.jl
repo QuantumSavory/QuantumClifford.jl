@@ -356,6 +356,40 @@ nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
 apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold=1e-10) = apply!(state, gate.paulichannel; prune_threshold)
 
+"""
+Calculates the number of non-zero elements in the density matrix `χ`
+of a [`GeneralizedStabilizer`](@ref), representing the inverse sparsity
+of `χ`. It provides a measure of the state's complexity, with bounds
+`Λ(χ) ≤ 4ⁿ`.
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
++ X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> apply!(sm, pcT) |> invsparsity
+4
+```
+
+Similarly, it calculates the number of non-zero elements in the density
+matrix `ϕᵢⱼ`​ of a PauliChannel, providing a measure of the channel
+complexity.
+
+```jldoctest
+julia> invsparsity(pcT)
+4
+```
+
+See also: [`GeneralizedStabilizer`](@ref)
+"""
+invsparsity(sm::GeneralizedStabilizer) = count(!iszero, values(sm.destabweights::DefaultDict{Tuple{BitVector, BitVector}, ComplexF64, ComplexF64}))
+invsparsity(gate::AbstractPauliChannel) = count(!iszero, values(gate.paulichannel.weights::Vector{ComplexF64}))
+
 ##
 # Predefined Pauli Channels
 ##
