@@ -52,15 +52,45 @@ qo_tgate.data[2,2] = exp(im*pi/4)
 end
 
 @testset "project!" begin
-    for s in [S"X", S"Y", S"Z", S"-X", S"-Y", S"-Z"]
-        for p in [P"X", P"Y", P"Z", P"-X", P"-Y", P"-Z"]
+    for n in 1:4
+        for repetition in 1:5
+            s = random_stabilizer(n)
+            p = random_pauli(n)
             gs = GeneralizedStabilizer(s)
-            apply!(gs, pcT)
-            ρ = Operator(gs)
-            gs_proj, _, _ = project!(gs, p)
-            ρ_proj = Operator(gs_proj)
-            @test isapprox(Operator(gs_proj), ρ_proj; atol=1e-5)
-            @test isapprox(expect(p, gs_proj), expect(Operator(p), ρ_proj); atol=1e-5)
+            for i in 1:rand(1:3)
+                apply!(copy(gs), embed(n, i, pcT))
+            end
+            qo_state = Operator(gs)
+            project!(copy(gs), copy(p))[1]
+            qo_state_after_proj = Operator(gs)
+            qo_pauli = Operator(gs)
+            qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
+            qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
+            result1  = qo_proj1*qo_state*qo_proj1'
+            result2  = qo_proj2*qo_state*qo_proj2'
+            @test qo_state_after_proj ≈ result2 || qo_state_after_proj ≈ result1
+        end
+    end
+end
+
+@testset "projectrand!" begin
+    for n in 1:4
+        for repetition in 1:5
+            s = random_stabilizer(n)
+            p = random_pauli(n)
+            gs = GeneralizedStabilizer(s)
+            for i in 1:rand(1:3)
+                apply!(copy(gs), embed(n, i, pcT))
+            end
+            qo_state = Operator(gs)
+            projectrand!(copy(gs), copy(p))[1]
+            qo_state_after_proj = Operator(gs)
+            qo_pauli = Operator(gs)
+            qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
+            qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
+            result1  = qo_proj1*qo_state*qo_proj1'
+            result2  = qo_proj2*qo_state*qo_proj2'
+            @test qo_state_after_proj ≈ result2 || qo_state_after_proj ≈ result1
         end
     end
 end

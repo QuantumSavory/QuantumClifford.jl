@@ -206,11 +206,11 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
 
 """
 function project!(sm::GeneralizedStabilizer, p::PauliOperator)
-    newstab, anticom_idx, res = project!(sm.stab, p)
+    newstab, anticom, res = project!(sm.stab, p)
     χ′ = expect(p, sm)
     n = nqubits(newstab)
     newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>χ′))
-    return newsm, anticom_idx, res
+    return newsm, anticom, res
 end
 
 """
@@ -225,20 +225,23 @@ function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
 end
 
 function _proj₊(sm::GeneralizedStabilizer, p::PauliOperator)
-    newstab, anticom_idx, res = project!(sm.stab, p)
-    sm.stab = newstab
+    newstab, res = projectrand!(sm.stab, p)
+    χ′ = expect(p, sm)
     n = nqubits(newstab)
-    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>expect(p, sm)))
-    return newsm, anticom_idx, res
+    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>χ′))
+    return newsm, res
 end
 
 function _proj₋(sm::GeneralizedStabilizer, p::PauliOperator)
-    newstab, anticom_idx, res = project!(sm.stab, -p)
-    sm.stab = newstab
+    newstab, res = projectrand!(sm.stab, -p)
+    χ′ = expect(p, sm)
     n = nqubits(newstab)
-    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>expect(p, sm)))
-    return newsm, anticom_idx, res
+    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>χ′))
+    return newsm, res
 end
+
+Base.copy(sm::GeneralizedStabilizer) = GeneralizedStabilizer(copy(sm.stab),copy(sm.destabweights))
+Base.:(==)(sm₁::GeneralizedStabilizer, sm₂::GeneralizedStabilizer) = sm₁.stab==sm₂.stab && sm₁.destabweights==sm₂.destabweights
 
 abstract type AbstractPauliChannel <: AbstractOperation end
 
