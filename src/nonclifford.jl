@@ -170,14 +170,7 @@ end
 
 """
 Projects the state of a [`GeneralizedStabilizer`](@ref) onto the eigenspaces of a
-given Pauli operator `p`. The projection is determined by the expectation value of
-`p` with respect to the [`GeneralizedStabilizer`](@ref).
-
-If the expectation value `⟨p⟩` is close to `1`, the state is projected onto the `+1`
- eigenspace of `p`. Conversely, if `⟨p⟩` is near `−1`, the state is projected onto
-the `−1` eigenspace of `p`. For intermediate values of `⟨p⟩`, the projection is
-performed probabilistically, with the likelihood of projecting onto the `+1` or
-`−1` eigenspace proportional to the expectation value.
+given Pauli operator `p`.
 
 ```jldoctest
 julia> sm = GeneralizedStabilizer(S"-X")
@@ -201,45 +194,51 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
  0.853553+0.0im | + _ | + _
  0.146447+0.0im | + Z | + Z
 
-julia> project!(sm, P"-Y")[1]
+julia> project!(sm, P"-X")[1]
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
-- X
++ Z
 𝒮𝓉𝒶𝒷
-- Y
+- X
 with ϕᵢⱼ | Pᵢ | Pⱼ:
- 0.0+0.353553im | + _ | - X
- 0.0-0.353553im | - X | + _
- 0.853553+0.0im | + _ | + _
- 0.146447+0.0im | - X | - X
+ 0.707107+0.0im | + _ | + _
 ```
 
 """
 function project!(sm::GeneralizedStabilizer, p::PauliOperator)
+    newstab, anticom_idx, res = project!(sm.stab, p)
+    χ′ = expect(p, sm)
+    n = nqubits(newstab)
+    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>χ′))
+    return newsm, anticom_idx, res
+end
+
+"""
+$TYPEDSIGNATURES
+
+Measure `pauli` operator on `state` and randomize the phase if necessary.
+"""
+function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
     eval = expect(p, sm)
     prob = (real(eval)+1)/2
-    if prob ≈ 0
-        return _proj₋(sm, p)
-    elseif prob ≈ 1
-        return _proj₊(sm, p)
-    else
-        return rand() < prob ? _proj₊(sm, p) : _proj₋(sm, p)
-    end
+    return rand() < prob ? _proj₊(sm, p) : _proj₋(sm, p)
 end
 
 function _proj₊(sm::GeneralizedStabilizer, p::PauliOperator)
     newstab, anticom_idx, res = project!(sm.stab, p)
     sm.stab = newstab
-    return sm, anticom_idx, res
+    n = nqubits(newstab)
+    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>expect(p, sm)))
+    return newsm, anticom_idx, res
 end
 
 function _proj₋(sm::GeneralizedStabilizer, p::PauliOperator)
     newstab, anticom_idx, res = project!(sm.stab, -p)
     sm.stab = newstab
-    return sm, anticom_idx, res
+    n = nqubits(newstab)
+    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>expect(p, sm)))
+    return newsm, anticom_idx, res
 end
-      
-nqubits(sm::GeneralizedStabilizer) = nqubits(sm.stab)
 
 abstract type AbstractPauliChannel <: AbstractOperation end
 
