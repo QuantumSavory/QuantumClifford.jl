@@ -59,7 +59,48 @@ function SubsystemCodeTableau(t::Tableau)
 end
 
 
-Base.copy(t::SubsystemCodeTableau) = SubsystemCodeTableau(copy(t.tab))
+Base.copy(t::SubsystemCodeTableau) = SubsystemCodeTableau(copy(t.tab), t.index, t.r, t.m, t.k)
+
+function Base.show(io::IO, t::SubsystemCodeTableau)
+    r = t.r+t.m+2*t.k 
+    q = nqubits(t)
+    if get(io, :compact, false) | haskey(io, :typeinfo)
+        print(io, "MixedDestablizer $r×$q")
+    elseif get(io, :limit, false)
+        h,w = displaysize(io)
+        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(min(w-9,size(t.tab,2)-4),0))
+        _show(io, destabilizerview(t).tab, w, h÷4)
+        if r != q
+            println(io)
+            println(io, "𝒳" * "━"^max(min(w-5,size(t.tab,2)),0))
+            _show(io, logicalxview(t).tab, w, h÷4)
+        end
+        println(io)
+        println(io, "𝒮𝓉𝒶𝒷" * "━"^max(min(w-7,size(t.tab,2)-2),0))
+        _show(io, stabilizerview(t).tab, w, h÷4)
+        if r != q
+            println(io)
+            println(io, "𝒵" * "━"^max(min(w-5,size(t.tab,2)),0))
+            _show(io, logicalzview(t).tab, w, h÷4)
+        end
+    else
+        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(size(t.tab,2)-4,0))
+        _show(io, destabilizerview(t).tab, missing, missing)
+        if r != q
+            println(io)
+            println(io, "𝒳ₗ" * "━"^max(size(t.tab,2),0))
+            _show(io, logicalxview(t).tab, missing, missing)
+        end
+        println(io)
+        println(io, "𝒮𝓉𝒶𝒷" * "━"^max(size(t.tab,2)-2,0))
+        _show(io, stabilizerview(t).tab, missing, missing)
+        if r != q
+            println(io)
+            println(io, "𝒵ₗ" * "━"^max(size(t.tab,2)),0)
+            _show(io, logicalzview(t.tab, missing, missing))
+        end
+    end
+end
 
 @inline stabilizerview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[s.m+s.k+1:s.m+s.k+s.r])
 @inline destabilizerview(s::SubsystemCodeTableau) = Stabilizer(@view tab(s)[1:s.m])
