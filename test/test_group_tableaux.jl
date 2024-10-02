@@ -51,7 +51,7 @@
             end
         end
         #Test commutify
-        for n in [1,2,3,4,5,6,7]
+        for n in [1, small_test_sizes...]
             t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
             for i in eachindex(t) t[i] = random_pauli(n) end
             c, d = commutify(t)
