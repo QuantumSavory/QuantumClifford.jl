@@ -162,8 +162,12 @@ end
 
 """Same as `all(==(0), (a.+b.+c) .% 2)`"""
 function _allthreesumtozero(a,b,c) # TODO consider using bitpacking and SIMD xor with less eager shortcircuiting -- probably would be much faster
-    @inbounds @simd for i in 1:length(a)
-        iseven(a[i]+b[i]+c[i]) || return false
+    n = length(a)
+    @inbounds @simd for i in 1:n
+        odd = (a[i]+b[i]+c[i]) & 1
+        if odd != 0
+            return false
+        end
     end
     true
 end
