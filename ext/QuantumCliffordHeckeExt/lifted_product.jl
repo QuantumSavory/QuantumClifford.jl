@@ -70,6 +70,56 @@ julia> code_n(c2), code_k(c2)
 - When the base matrices of the `LPCode` are 1×1 and their elements are sums of cyclic permutations, the code is called a generalized bicycle code [`generalized_bicycle_codes`](@ref).
 - When the two matrices are adjoint to each other, the code is called a bicycle code [`bicycle_codes`](@ref).
 
+
+# Examples
+
+The coprime bivariate bicycle (BB) codes are defined by two polynomials `𝑎(𝑥,𝑦)` and `𝑏(𝑥,𝑦)`,
+where `𝑙` and `𝑚` are coprime, and can be expressed as univariate polynomials `𝑎(𝜋)` and `𝑏(𝜋)`,
+with generator `𝜋 = 𝑥𝑦`. They can be viewed as a special case of Lifted Product construction
+based on abelian group `ℤₗ x ℤₘ` where `ℤⱼ` cyclic group of order `j`.
+
+[108, 12, 6]] coprime-bivariate bicycle (BB) code from Table 2 of [wang2024coprime](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens; import Oscar: SubPcGroup;
+
+julia> l=2; m=27;
+
+julia> GA = group_algebra(GF(2), abelian_group(SubPcGroup, [l*m]));
+
+julia> π = gens(GA)[1];
+
+julia> A = reshape([π^2 + π^5 + π^44], (1,1));
+
+julia> B = reshape([π^8 + π^14 + π^47], (1,1));
+
+julia> c1 = LPCode(A, B);
+
+julia> code_n(c1), code_k(c1)
+(108, 12)
+```
+
+[126, 12, 10]] coprime-bivariate bicycle (BB) code from Table 2 of [wang2024coprime](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens; import Oscar: SubPcGroup;
+
+julia> l=7; m=9;
+
+julia> GA = group_algebra(GF(2), abelian_group(SubPcGroup, [l*m]));
+
+julia> π = gens(GA)[1];
+
+julia> A = reshape([1 + π + π^58], (1,1));
+
+julia> B = reshape([π^3 + π^16 + π^44], (1,1));
+
+julia> c1 = LPCode(A, B);
+
+julia> code_n(c1), code_k(c1)
+(126, 12)
+```
+
 ## The representation function
 
 We use the default representation function `Hecke.representation_matrix` to convert a `GF(2)`-group algebra element to a binary matrix.
