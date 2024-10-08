@@ -8,6 +8,8 @@ import Hecke: Group, GroupElem, AdditiveGroup, AdditiveGroupElem,
     multiplication_table, coefficients, abelian_group, group_algebra
 import Nemo
 import Nemo: characteristic, matrix_repr, GF, ZZ, lift
+import Oscar
+import Oscar: direct_product, PcGroup, SubPcGroup
 
 import QuantumClifford.ECC: AbstractECC, CSS, ClassicalCode,
     hgp, code_k, code_n, code_s, iscss, parity_checks, parity_checks_x, parity_checks_z, parity_checks_xz,

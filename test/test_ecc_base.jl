@@ -6,6 +6,7 @@ using InteractiveUtils
 import Nemo: GF
 import LinearAlgebra
 import Hecke: group_algebra, abelian_group, gens
+import Oscar
 
 # generate instances of all implemented codes to make sure nothing skips being checked
 
