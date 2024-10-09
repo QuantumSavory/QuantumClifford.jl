@@ -647,7 +647,7 @@ function traceout!(s::Union{MixedStabilizer, MixedDestabilizer}, qubits; phases=
     if rank return (s, i) else return s end
 end
 
-function _expand_pauli(pauli,qubits,n) # TODO rename and make public
+function _expand_pauli(pauli::PauliOperator,qubits,n) # TODO rename and make public
     expanded = zero(PauliOperator,n)
     for (ii, i) in enumerate(qubits)
         expanded[i] = pauli[ii]
