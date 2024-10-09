@@ -87,7 +87,7 @@ macro P_str(a)
     quote _P_str($a) end
 end
 
-Base.getindex(p::PauliOperator{Tₚ,Tᵥ}, i::Int) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}} = (p.xz[_div(Tᵥₑ, i-1)+1] & Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1))!=0x0, (p.xz[end÷2+_div(Tᵥₑ,i-1)+1] & Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1))!=0x0
+Base.getindex(p::PauliOperator{Tₚ,Tᵥ}, i::Int) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}} = ((p.xz[_div(Tᵥₑ, i-1)+1] & Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1))!=0x0)::Bool, ((p.xz[end÷2+_div(Tᵥₑ,i-1)+1] & Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1))!=0x0)::Bool
 Base.getindex(p::PauliOperator{Tₚ,Tᵥ}, r) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}} = PauliOperator(p.phase[], xbit(p)[r], zbit(p)[r])
 
 function Base.setindex!(p::PauliOperator{Tₚ,Tᵥ}, (x,z)::Tuple{Bool,Bool}, i) where {Tₚ, Tᵥₑ, Tᵥ<:AbstractVector{Tᵥₑ}}
@@ -176,7 +176,8 @@ end
 function embed(n::Int, indices, p::PauliOperator)
     if nqubits(p) == length(indices)
         pout = zero(typeof(p), n)
-        @inbounds @simd for i in eachindex(indices)
+        @inbounds @simd for i_ in eachindex(indices)
+            i = i_::Int
             pout[indices[i]] = p[i]
         end
         pout.phase[] = p.phase[]
