@@ -260,7 +260,7 @@ function tensor(ops::CliffordOperator...) # TODO implement \otimes for Destabili
     last_zrow = ntot
     last_xrow = 0
     for op in ops
-        t = op.tab
+        t = QuantumClifford.tab(op)
         _, last_zrow, _ = puttableau!(tab, (@view t[end÷2+1:end]), last_zrow, last_xrow)
         _, last_xrow, _ = puttableau!(tab, (@view t[1:end÷2]), last_xrow, last_xrow)
     end

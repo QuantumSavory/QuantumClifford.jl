@@ -339,7 +339,7 @@ end
 
 function _project!(d::Destabilizer,pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr, Bp} # repetition between Destabilizer and MixedDestabilizer, but the redundancy makes the two codes slightly simpler and easier to infer
     anticommutes = 0
-    tab = d.tab
+    tab = QuantumClifford.tab(d)
     stabilizer = stabilizerview(d)
     destabilizer = destabilizerview(d)
     r = trusted_rank(d)
@@ -377,7 +377,7 @@ end
 
 function _project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr, Bp} # repetition between Destabilizer and MixedDestabilizer, but the redundancy makes the two codes slightly simpler and easier to infer
     anticommutes = 0
-    tab = d.tab
+    tab = QuantumClifford.tab(d)
     stabilizer = stabilizerview(d)
     destabilizer = destabilizerview(d)
     r = trusted_rank(d)
@@ -497,7 +497,7 @@ end
 """Internal method used to implement [`projectX!`](@ref), [`projectZ!`](@ref), and [`projectY!`](@ref)."""
 function project_cond!(d::MixedDestabilizer,qubit::Int,cond::Val{IS},reset::Val{RESET};keep_result::Bool=true,phases::Val{PHASES}=Val(true)) where {IS,RESET,PHASES}
     anticommutes = 0
-    tab = d.tab
+    tab = QuantumClifford.tab(d)
     stabilizer = stabilizerview(d)
     destabilizer = destabilizerview(d)
     r = d.rank
