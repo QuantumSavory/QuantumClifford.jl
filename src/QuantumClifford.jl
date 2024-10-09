@@ -237,7 +237,7 @@ Base.eachindex(tab::Tableau) = Base.OneTo(lastindex(tab.phases))
 Base.axes(tab::Tableau) = (Base.OneTo(lastindex(tab)), Base.OneTo(nqubits(tab)))
 Base.axes(tab::Tableau,i) = axes(tab)[i]
 
-Base.size(tab::Tableau) = (length(tab.phases),nqubits(tab))
+Base.size(tab::Tableau) = (length(tab.phases)::Int, nqubits(tab))
 Base.size(tab::Tableau,i) = size(tab)[i]
 
 Base.length(tab::Tableau) = length(tab.phases)
