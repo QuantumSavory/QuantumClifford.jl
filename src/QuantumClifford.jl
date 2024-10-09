@@ -229,10 +229,10 @@ end
 
 Base.firstindex(tab::Tableau) = 1
 
-Base.lastindex(tab::Tableau) = length(tab.phases)
+Base.lastindex(tab::Tableau) = length(tab.phases)::Int
 Base.lastindex(tab::Tableau, i) = size(tab)[i]
 
-Base.eachindex(tab::Tableau) = Base.OneTo(lastindex(tab.phases))
+Base.eachindex(tab::Tableau) = Base.OneTo(lastindex(tab.phases)::Int)
 
 Base.axes(tab::Tableau) = (Base.OneTo(lastindex(tab)), Base.OneTo(nqubits(tab)))
 Base.axes(tab::Tableau,i) = axes(tab)[i]
@@ -240,7 +240,7 @@ Base.axes(tab::Tableau,i) = axes(tab)[i]
 Base.size(tab::Tableau) = (length(tab.phases)::Int, nqubits(tab))
 Base.size(tab::Tableau,i) = size(tab)[i]
 
-Base.length(tab::Tableau) = length(tab.phases)
+Base.length(tab::Tableau) = length(tab.phases)::Int
 
 Base.:(==)(l::Tableau, r::Tableau) = r.nqubits==l.nqubits && r.phases==l.phases && r.xzs==l.xzs
 
