@@ -378,7 +378,7 @@ macro S_str(a)
     quote Stabilizer(_T_str($a)) end
 end
 Base.getindex(stab::Stabilizer, i::Int) = tab(stab)[i]
-Base.getindex(stab::Stabilizer, i) = Stabilizer(tab(stab)[i])
+Base.getindex(stab::Stabilizer, i) = Stabilizer(tab(stab)[i]::Tableau)
 @inline Base.getindex(stab::Stabilizer, r::Int, c) = tab(stab)[r,c]
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer(tab(stab)[r,c])
 Base.view(stab::Stabilizer, r) = Stabilizer(view(tab(stab),r))
