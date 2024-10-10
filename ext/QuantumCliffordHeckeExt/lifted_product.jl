@@ -81,11 +81,11 @@ based on abelian group `ℤₗ x ℤₘ` where `ℤⱼ` cyclic group of order `j
 [108, 12, 6]] coprime-bivariate bicycle (BB) code from Table 2 of [wang2024coprime](@cite).
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens; import Oscar: SubPcGroup;
+julia> import Hecke: group_algebra, GF, abelian_group, gens;
 
 julia> l=2; m=27;
 
-julia> GA = group_algebra(GF(2), abelian_group(SubPcGroup, [l*m]));
+julia> GA = group_algebra(GF(2), abelian_group([l*m]));
 
 julia> π = gens(GA)[1];
 
@@ -102,11 +102,11 @@ julia> code_n(c1), code_k(c1)
 [126, 12, 10]] coprime-bivariate bicycle (BB) code from Table 2 of [wang2024coprime](@cite).
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens; import Oscar: SubPcGroup;
+julia> import Hecke: group_algebra, GF, abelian_group, gens;
 
 julia> l=7; m=9;
 
-julia> GA = group_algebra(GF(2), abelian_group(SubPcGroup, [l*m]));
+julia> GA = group_algebra(GF(2), abelian_group([l*m]));
 
 julia> π = gens(GA)[1];
 
