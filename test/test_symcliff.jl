@@ -76,6 +76,7 @@
             @test CliffordOperator(inv(random_op), i) == inv(CliffordOperator(random_op, i))
             @test CliffordOperator(inv(SingleQubitOperator(random_op)), i) == inv(CliffordOperator(random_op, i))
         end
+    end
 
     @testset "Consistency checks with Stim" begin
        # see https://github.com/quantumlib/Stim/blob/main/doc/gates.md
@@ -100,5 +101,13 @@
             @test CliffordOperator(inv(sZCrY(n₁, n₂)), n₁) == inv(CliffordOperator(sZCrY(n₁, n₂), n₁))
             @test CliffordOperator(inv(sInvZCrY(n₁, n₂)), n₁) == inv(CliffordOperator(sInvZCrY(n₁, n₂), n₁))
         end
+    end
+
+    @testset "Consistency check with STIM conventions" begin
+        # see https://github.com/quantumlib/Stim/blob/main/doc/gates.md
+        @test CliffordOperator(sSQRTXX)       == C"XI IX -YX -XY"
+        @test CliffordOperator(sInvSQRTXX)    == C"XI IX YX XY"
+        @test CliffordOperator(sSQRTYY)       == C"-ZY -YZ XY YX"
+        @test CliffordOperator(sInvSQRTYY)    == C"ZY YZ -XY -YX"
     end
 end
