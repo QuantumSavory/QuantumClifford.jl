@@ -142,6 +142,68 @@ code_s(c::LPCode) = size(c.repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) +
 Two-block group algebra (2GBA) codes, which are a special case of lifted product codes
 from two group algebra elements `a` and `b`, used as `1x1` base matrices.
 
+From Table 1 of [lin2024quantum](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens; import Oscar: semidirect_product, hom, automorphism_group, cyclic_group;
+
+julia> C₅ = cyclic_group(5);
+
+julia> C₈ = cyclic_group(8);
+
+julia> Aut = automorphism_group(C₅);
+
+julia> f = hom(C₈, Aut, [C₈[1]], [Aut[1]^8]);
+
+julia> s = semidirect_product(C₅, f, C₈);
+
+julia> GA = group_algebra(GF(2), s);
+
+julia> s = gens(GA)[1];
+
+julia> r = gens(GA)[2];
+
+julia> A = reshape([1 + s*r^4], (1, 1));
+
+julia> B = reshape([1 + r + r^2 + s + s^3*r + s^2*r^6], (1, 1));
+
+julia> c1 = LPCode(A, B);
+
+julia> code_n(c1), code_k(c1)
+(80, 10)
+```
+
+From Table 1 of [lin2024quantum](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens; import Oscar: semidirect_product, hom, automorphism_group, cyclic_group;
+
+julia> C₂₄ = cyclic_group(24);
+
+julia> C₂ = cyclic_group(2);
+
+julia> Aut = automorphism_group(C₂₄);
+
+julia> f = hom(C₂, Aut, [C₂[1]], [Aut[1]^8]);
+
+julia> s = semidirect_product(C₂₄, f, C₂);
+
+julia> GA = group_algebra(GF(2), s);
+
+julia> s = gens(GA)[1];
+
+julia> r = gens(GA)[2];
+
+julia> A = reshape([1 + s + r^9 + s*r^13], (1, 1));
+
+julia> B = reshape([1 + r^9 + s*r^18 + r^7], (1, 1));
+
+julia> c1 = LPCode(A, B);
+
+julia> code_n(c1), code_k(c1)
+(96, 12)
+```
+
 See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref)
 """ # TODO doctest example
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
