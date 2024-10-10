@@ -27,6 +27,5 @@
 
     @show rep
     @show length(JET.get_reports(rep))
-    @test_broken length(JET.get_reports(rep)) == 0
-    @test length(JET.get_reports(rep)) <= 1
+    @test length(JET.get_reports(rep)) == 0
 end
