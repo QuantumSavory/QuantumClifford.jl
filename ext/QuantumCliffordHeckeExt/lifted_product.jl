@@ -185,3 +185,23 @@ function bicycle_codes(a_shifts::Array{Int}, l::Int)
     a = sum(GA[n÷l+1] for n in a_shifts)
     two_block_group_algebra_codes(a, a')
 end
+
+"""
+Haah’s cubic codes [haah2011local](@cite) can be viewed as GB codes
+with the group `G = Cₗ × Cₗ × Cₗ`, where `l` denotes the lattice size.
+In particular, a GB code with the group `G = ℤ₃ˣ³` corresponds to a
+cubic code [https://errorcorrectionzoo.org/c/haah_cubic](@cite).
+
+```jldoctest
+julia> c = Haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 6);
+
+julia> code_n(c), code_k(c)
+(432, 8)
+```
+"""
+function Haah_cubic_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
+    GA = group_algebra(GF(2), abelian_group([l,l,l]))
+    a = sum(GA[n%dim(GA)+1] for n in a_shifts)
+    b = sum(GA[n%dim(GA)+1] for n in b_shifts)
+    two_block_group_algebra_codes(a, b)
+end
