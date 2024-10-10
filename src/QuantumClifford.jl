@@ -173,7 +173,7 @@ Tableau(xzs::AbstractMatrix{Bool}) = Tableau(zeros(UInt8, size(xzs,1)), xzs[:,1:
 
 Tableau(t::Tableau) = t
 
-function _T_str(a) # TODO this can be optimized by not creating intermediary PauliOperator objects
+function _T_str(a::Union{String,SubString{String}}) # TODO this can be optimized by not creating intermediary PauliOperator objects
     paulis = [_P_str(strip(s.match)) for s in eachmatch(r"[+-]?\h*[i]?\h*[XYZI_]+", a)]
     Tableau(paulis)
 end

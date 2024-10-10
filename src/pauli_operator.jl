@@ -77,7 +77,7 @@ function zbit(p::PauliOperator)
     [(word>>s)&one==one for word in zview(p) for s in 0:size-1][begin:p.nqubits]
 end
 
-function _P_str(a)
+function _P_str(a::Union{String,SubString{String}})
     letters = filter(x->occursin(x,"_IZXY"),a)
     phase = phasedict[strip(filter(x->!occursin(x,"_IZXY"),a))]
     PauliOperator(phase, [l=='X'||l=='Y' for l in letters], [l=='Z'||l=='Y' for l in letters])
