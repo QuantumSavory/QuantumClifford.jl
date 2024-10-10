@@ -15,6 +15,12 @@ Mixed stabilizer states are implemented with [`MixedStabilizer`](@ref) and
 for most tasks as it is much faster by virtue of tracking the destabilizer
 generators.
 
+# Options for constructing with MixedDestabilizer
+
+- Given a `Destabilizer` object (which  presumesfull rank), convert it
+into a `MixedDestabilizer` object. This allows for the possibility of
+rank deficiency.
+
 ```jldoctest mix
 julia> s = S"XXX
              IZZ";
@@ -57,6 +63,163 @@ julia> logicalxview(m)
 
 julia> logicalzview(m)
 + Z_Z
+```
+
+- Similar to the first option, but with the added capability to
+specify the "rank". This rank determines the number of rows
+associated with the `Stabilizer` and the number corresponding
+to the logical operators.
+
+```jldoctest mix
+julia> MixedDestabilizer(T"ZI IX XX ZZ", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ ZZ
+```
+
+If the macro string `@T_str` is not convenient, use the normal strings
+`_T_str`.
+
+```jldoctest mix
+julia> using QuantumClifford: _T_str # hide
+
+julia> MixedDestabilizer(_T_str("ZI IX XX ZZ"), 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ ZZ
+```
+
+- Given a `Stabilizer` object (whichmay have fewer rows than columns),
+perform the necessary canonicalization to determine the corresponding
+destabilizer and logical operators, resulting in a complete
+MixedDestabilizer object.
+
+```jldoctest mix
+julia> s = S"-XXX
+             +ZZX
+             +III";
+
+julia> MixedDestabilizer(s, undoperm=false, reportperm=false)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
++ _Z_
+𝒳ₗ━━━
++ ZZX
+𝒮𝓉𝒶𝒷━
++ Y_Y
++ ZXZ
+𝒵ₗ━━━
++ Z_Z
+```
+
+When `undoperm` is set to `false`, the column permutations are not
+reversed. As a result, the qubits may be reindexed according to 
+the permutations made during the canonicalization process.
+
+```jldoctest mix
+julia> MixedDestabilizer(s, undoperm=true, reportperm=false)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
++ __Z
+𝒳ₗ━━━
++ ZXZ
+𝒮𝓉𝒶𝒷━
++ YY_
++ ZZX
+𝒵ₗ━━━
++ ZZ_
+```
+
+When `undoperm` is set to `true`, the column permutations performed
+during canonicalizationare automatically reversed before finalizing
+the `MixedDestabilizer`.
+
+```jldoctest mix
+julia> MixedDestabilizer(canonicalize!(s))
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
++ __Z
+𝒳ₗ━━━
++ ZXZ
+𝒮𝓉𝒶𝒷━
++ YY_
++ ZZX
+𝒵ₗ━━━
++ ZZ_
+```
+
+- A low-level constructor that accepts a manually created `Tableau`
+ object and rank. Note that the `Tableau` object is not currently
+public. It serves as the underlying data structure for all related
+objects but does not assume commutativity or other properties.
+
+```jldoctest mix
+julia> using QuantumClifford: Tableau # hide
+
+julia> MixedDestabilizer(Tableau(Bool[0 0; 0 1; 1 1; 1 0],
+                                 Bool[1 0; 0 0; 0 0; 1 1]), 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ YZ
+```
+
+# Options for constructing with MixedStabilizer
+
+- Given a `Stabilizer` object (which  presumesfull rank), convert
+ it into a `MixedStabilizer` object. This allows for the
+possibility of  rank deficiency.
+
+```jldoctest mix
+julia> s = S"-XXX
+             -ZZI
+             +IZZ";
+
+julia> MixedStabilizer(s)
+- XXX
+- Z_Z
++ _ZZ
+
+julia> MixedStabilizer(s, 2)
+- XXX
+- Z_Z
+```
+
+- Similar to the first option, but with the added capability
+to specify the "rank." This rank determines the number of
+rows associated with the `Stabilizer` and the number
+corresponding  to the logical operators.
+
+```jldoctest mix
+julia> MixedStabilizer(S"-XXX -ZIZ IZZ")
+- XXX
+- Z_Z
++ _ZZ
+
+julia> MixedStabilizer(S"-XXX -ZIZ IZZ", 2)
+- XXX
+- Z_Z
+```
+
+- A low-level constructor that accepts a manually created `Tableau`
+object and rank. Note that the `Tableau` object is not currently
+public. It serves as the underlying data structure for all related
+objects but does not assume commutativity or other properties.
+
+```jldoctest mix
+julia> MixedStabilizer(Tableau(Bool[1 1 1; 0 0 0; 0 0 0],
+                               Bool[0 0 0; 1 0 1; 0 1 1]), 3)
++ XXX
++ Z_Z
++ _ZZ
 ```
 
 # Gottesman Canonicalization
