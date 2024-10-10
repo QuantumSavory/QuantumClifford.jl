@@ -7,7 +7,7 @@ using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
 using DocStringExtensions
 using Combinatorics: combinations
-using SparseArrays: sparse
+using SparseArrays: SparseMatrixCSC, sparse, spzeros
 using Statistics: std
 using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 
@@ -27,7 +27,8 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
     BeliefPropDecoder, BitFlipDecoder,
-    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder
+    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder,
+    bivariate_toric_layout
 
 """Parity check tableau of a code.
 
@@ -361,6 +362,7 @@ end
 
 include("circuits.jl")
 include("decoder_pipeline.jl")
+include("bivariate_toric_layout.jl")
 
 include("codes/util.jl")
 
