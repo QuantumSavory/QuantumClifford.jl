@@ -151,6 +151,28 @@ function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
 end
 
 """
+[[48, 8, 6]] 2BGA code from Table 3 of [lin2024quantum](@cite) with dihedral group of
+order `l = 12`.
+
+```jldoctest
+julia> c = two_block_group_algebra_codes([0, 10], [0, 8, 9, 4, 2, 5], (12, 4), (2, 1));
+
+julia> code_n(c), code_k(c)
+(48, 8)
+```
+"""
+function two_block_group_algebra_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, sg1::Tuple{Int,Int}, sg2::Tuple{Int,Int})
+    m, i = sg1
+    l, i = sg2
+    g1 = small_group(m, i)
+    g2 = small_group(l, i)
+    GA = group_algebra(GF(2), direct_product(g1, g2))
+    a = sum(GA[n%dim(GA)+1] for n in a_shifts)
+    b = sum(GA[n%dim(GA)+1] for n in b_shifts)
+    two_block_group_algebra_codes(a, b)
+end
+
+"""
 Generalized bicycle codes, which are a special case of 2GBA codes (and therefore of lifted product codes).
 Here the group is chosen as the cyclic group of order `l`,
 and the base matrices `a` and `b` are the sum of the group algebra elements corresponding to the shifts `a_shifts` and `b_shifts`.
