@@ -151,6 +151,26 @@ function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
 end
 
 """
+[[72, 8, 9]] 2BGA code from Table 1 of [lin2024quantum](@cite) with direct product
+of `C₉ x C₄`.
+
+```jldoctest
+julia> c = two_block_group_algebra_codes([0, 28], [0, 9, 18, 12, 29, 14], (36, 2));
+
+julia> code_n(c), code_k(c)
+(72, 8)
+```
+"""
+function two_block_group_algebra_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, sg::Tuple{Int,Int})
+    m, i = sg
+    g1 = small_group(m, i)
+    GA = group_algebra(GF(2), g1)
+    a = sum(GA[n%dim(GA)+1] for n in a_shifts)
+    b = sum(GA[n%dim(GA)+1] for n in b_shifts)
+    two_block_group_algebra_codes(a, b)
+end
+
+"""
 [[48, 8, 6]] 2BGA code from Table 3 of [lin2024quantum](@cite) with dihedral group of
 order `l = 12`.
 
