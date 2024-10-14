@@ -139,11 +139,23 @@ code_n(c::LPCode) = size(c.repr(zero(c.GA)), 2) * (size(c.A, 2) * size(c.B, 1) +
 code_s(c::LPCode) = size(c.repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) + size(c.A, 2) * size(c.B, 2))
 
 """
-Two-block group algebra (2GBA) codes, which are a special case of lifted product codes
+Two-block group algebra (2BGA) codes, which are a special case of lifted product codes
 from two group algebra elements `a` and `b`, used as `1x1` base matrices.
 
+[[70, 8, 10]] 2BGA code from Table 1 of [lin2024quantum](@cite) with cyclic group of
+order `l = 35`.
+
+```jldoctest
+julia> l = 35;
+
+julia> c1 = generalized_bicycle_codes([0, 15, 16, 18], [0, 1, 24, 27], l);
+
+julia> code_n(c1), code_k(c1)
+(70, 8)
+```
+
 See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref)
-""" # TODO doctest example
+"""
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
     A = reshape([a], (1, 1))
     B = reshape([b], (1, 1))
@@ -151,7 +163,7 @@ function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
 end
 
 """
-Generalized bicycle codes, which are a special case of 2GBA codes (and therefore of lifted product codes).
+Generalized bicycle codes, which are a special case of 2BGA codes (and therefore of lifted product codes).
 Here the group is chosen as the cyclic group of order `l`,
 and the base matrices `a` and `b` are the sum of the group algebra elements corresponding to the shifts `a_shifts` and `b_shifts`.
 
