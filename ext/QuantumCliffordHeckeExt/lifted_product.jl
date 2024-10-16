@@ -122,8 +122,17 @@ end
 
 iscss(::Type{LPCode}) = true
 
+function hgp(h₁::GroupAlgebraElemMatrix, h₂::GroupAlgebraElemMatrix)
+    r₁, n₁ = size(h₁)
+    r₂, n₂ = size(h₂)
+    # here we use `permutdims` instead of `transpose` to avoid recursive call
+    hx = hcat(kron(h₁, LinearAlgebra.I(n₂)), kron(LinearAlgebra.I(r₁), permutedims(group_algebra_conj.(h₂))))
+    hz = hcat(kron(LinearAlgebra.I(n₁), h₂), kron(permutedims(group_algebra_conj.(h₁)), LinearAlgebra.I(r₂)))
+    hx, hz
+end
+
 function parity_checks_xz(c::LPCode)
-    hx, hz = hgp(c.A, c.B')
+    hx, hz = hgp(c.A, permutedims(group_algebra_conj.(c.B)))
     hx, hz = concat_lift_repr(c.repr,hx), concat_lift_repr(c.repr,hz)
     return hx, hz
 end
@@ -165,7 +174,7 @@ julia> c = generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121],
 julia> code_n(c), code_k(c)
 (254, 28)
 ```
-""" # TODO doctest example
+"""
 function generalized_bicycle_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
     a = sum(GA[n%l+1] for n in a_shifts)
@@ -183,5 +192,5 @@ See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`]
 function bicycle_codes(a_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
     a = sum(GA[n÷l+1] for n in a_shifts)
-    two_block_group_algebra_codes(a, a')
+    two_block_group_algebra_codes(a, group_algebra_conj(a))
 end
