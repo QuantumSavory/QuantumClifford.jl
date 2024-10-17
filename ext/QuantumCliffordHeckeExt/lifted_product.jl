@@ -72,10 +72,10 @@ julia> code_n(c2), code_k(c2)
 
 # Examples
 
-Bivariate Bicycle codes belong to a wider class of generalized bicycle (GB) codes,
-which are further generalized into of two block group algebra (2GBA) codes. They
-can be viewed as a special case of Lifted Product construction based on abelian
-group `ℤₗ x ℤₘ` where `ℤⱼ` cyclic group of order `j`.
+Bivariate Bicycle codes belong to a wider class of generalized bicycle (GB) codes, which
+are further generalized into of two block group algebra (2BGA) codes. They can be viewed
+as a special case of Lifted Product construction based on abelian group `ℤₗ x ℤₘ` where `ℤⱼ`
+cyclic group of order `j`.
 
 A [[756, 16, ≤ 34]] code from Table 3 of [bravyi2024high](@cite).
 
