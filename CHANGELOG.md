@@ -5,6 +5,10 @@
 
 # News
 
+## vdev
+
+- Diagnostic
+
 ## v0.9.11
 
 - `hcat` of Tableaux objects
