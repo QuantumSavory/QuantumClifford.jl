@@ -126,8 +126,10 @@ function hgp(h₁::GroupAlgebraElemMatrix, h₂::GroupAlgebraElemMatrix)
     r₁, n₁ = size(h₁)
     r₂, n₂ = size(h₂)
     # here we use `permutdims` instead of `transpose` to avoid recursive call
-    hx = hcat(kron(h₁, LinearAlgebra.I(n₂)), kron(LinearAlgebra.I(r₁), permutedims(group_algebra_conj.(h₂))))
-    hz = hcat(kron(LinearAlgebra.I(n₁), h₂), kron(permutedims(group_algebra_conj.(h₁)), LinearAlgebra.I(r₂)))
+    # convert LinearAlgebra.I to Matrix to fix incompatibility with Julia 1.11.1
+    # TODO the performance may be affected by this workaround for large codes
+    hx = hcat(kron(h₁, Matrix(LinearAlgebra.I(n₂))), kron(Matrix(LinearAlgebra.I(r₁)), permutedims(group_algebra_conj.(h₂))))
+    hz = hcat(kron(Matrix(LinearAlgebra.I(n₁)), h₂), kron(permutedims(group_algebra_conj.(h₁)), Matrix(LinearAlgebra.I(r₂))))
     hx, hz
 end
 
