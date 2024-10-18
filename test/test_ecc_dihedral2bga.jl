@@ -1,7 +1,7 @@
 @testitem "ECC 2BGA lin2024quantum" begin
-    using Hecke
-    using Hecke: group_algebra, GF, abelian_group, gens, quo, one
-    using QuantumClifford.ECC: LPCode, code_k, code_n
+    import Hecke: group_algebra, GF, abelian_group, gens, quo, one
+    using QuantumClifford.ECC
+    using QuantumClifford.ECC: LPCode, code_k, code_n, two_block_group_algebra_codes
     using Oscar: free_group, small_group_identification, describe, order
 
     @testset "Reproduce Table 3 of lin2024quantum" begin
