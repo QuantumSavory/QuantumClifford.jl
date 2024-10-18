@@ -35,15 +35,15 @@ B118 = Dict(
 LP04 = [LPCode(base_matrix, l .- base_matrix', l) for (l, base_matrix) in B04]
 LP118 = [LPCode(base_matrix, l .- base_matrix', l) for (l, base_matrix) in B118]
 
-# generalized bicyle codes from from Appendix B of [panteleev2021degenerate](@cite).
+# generalized bicyle codes from (A1) and (A2) Appendix B of [panteleev2021degenerate](@cite).
 test_gb_codes = [
-    generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 127),
-    generalized_bicycle_codes([0, 1, 14, 16, 22], [0, 3, 13, 20, 42], 63),
+    generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 127), # (A1) [[254, 28, 14≤d≤20]]
+    generalized_bicycle_codes([0, 1, 14, 16, 22], [0, 3, 13, 20, 42], 63), # (A2) [[126, 28, 8]]
 ]
 
 other_lifted_product_codes = []
 
-# from Eq. (18) in Appendix A of [raveendran2022finite](@cite)
+# [[882, 24, d≤24]] code from (B1) in Appendix B of [panteleev2021degenerate](@cite)
 l = 63
 GA = group_algebra(GF(2), abelian_group(l))
 A = zeros(GA, 7, 7)
