@@ -83,11 +83,7 @@ function apply!(frame::PauliFrame, op::sMZ) # TODO sMY, and faster sMX
     op.bit == 0 && return frame
     i = op.qubit
     xzs = frame.frame.tab.xzs
-    T = eltype(xzs)
-    lowbit = T(1)
-    ibig = _div(T,i-1)+1
-    ismall = _mod(T,i-1)
-    ismallm = lowbit<<(ismall)
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
 
     @inbounds @simd for f in eachindex(frame)
         should_flip = !iszero(xzs[ibig,f] & ismallm)
@@ -100,11 +96,7 @@ end
 function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRY, and faster sMRX
     i = op.qubit
     xzs = frame.frame.tab.xzs
-    T = eltype(xzs)
-    lowbit = T(1)
-    ibig = _div(T,i-1)+1
-    ismall = _mod(T,i-1)
-    ismallm = lowbit<<(ismall)
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
 
     if op.bit != 0
         @inbounds @simd for f in eachindex(frame)
@@ -122,12 +114,9 @@ end
 
 function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     p = noise.p
-    T = eltype(frame.frame.tab.xzs)
+    xzs = frame.frame.tab.xzs
 
-    lowbit = T(1)
-    ibig = _div(T,i-1)+1
-    ismall = _mod(T,i-1)
-    ismallm = lowbit<<(ismall)
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
     p = p/3
 
     @inbounds @simd for f in eachindex(frame)
@@ -145,12 +134,9 @@ function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
 end
 
 function applynoise!(frame::PauliFrame,noise::PauliNoise,i::Int)
-    T = eltype(frame.frame.tab.xzs)
+    xzs = frame.frame.tab.xzs
 
-    lowbit = T(1)
-    ibig = _div(T,i-1)+1
-    ismall = _mod(T,i-1)
-    ismallm = lowbit<<(ismall)
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
 
     @inbounds @simd for f in eachindex(frame)
         r = rand()
