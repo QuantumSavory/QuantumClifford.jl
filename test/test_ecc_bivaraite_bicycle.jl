@@ -1,4 +1,4 @@
-@testitem "ECC Bivaraite Bicycle LP" begin
+@testitem "ECC Bivaraite Bicycle" begin
     using Hecke
     using Hecke: group_algebra, GF, abelian_group, gens
     using QuantumClifford.ECC: LPCode, code_k, code_n
