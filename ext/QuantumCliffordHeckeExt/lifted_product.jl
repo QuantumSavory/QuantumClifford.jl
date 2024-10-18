@@ -87,37 +87,16 @@ julia> l=2; m=27;
 
 julia> GA = group_algebra(GF(2), abelian_group([l*m]));
 
-julia> π = gens(GA)[1];
+julia> 𝜋 = gens(GA)[1];
 
-julia> A = reshape([π^2 + π^5 + π^44], (1,1));
+julia> A = reshape([𝜋^2 + 𝜋^5 + 𝜋^44], (1,1));
 
-julia> B = reshape([π^8 + π^14 + π^47], (1,1));
+julia> B = reshape([𝜋^8 + 𝜋^14 + 𝜋^47], (1,1));
 
-julia> c1 = LPCode(A, B);
+julia> c = LPCode(A, B);
 
-julia> code_n(c1), code_k(c1)
+julia> code_n(c), code_k(c)
 (108, 12)
-```
-
-[126, 12, 10]] coprime-bivariate bicycle (BB) code from Table 2 of [wang2024coprime](@cite).
-
-```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens;
-
-julia> l=7; m=9;
-
-julia> GA = group_algebra(GF(2), abelian_group([l*m]));
-
-julia> π = gens(GA)[1];
-
-julia> A = reshape([1 + π + π^58], (1,1));
-
-julia> B = reshape([π^3 + π^16 + π^44], (1,1));
-
-julia> c1 = LPCode(A, B);
-
-julia> code_n(c1), code_k(c1)
-(126, 12)
 ```
 
 ## The representation function
