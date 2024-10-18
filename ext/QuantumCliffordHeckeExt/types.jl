@@ -11,11 +11,10 @@ const FqFieldGroupAlgebraElemMatrix = Union{
 }
 
 """
-Compute the adjoint of a group algebra element.
-The adjoint is defined as the conjugate of the element in the group algebra,
-i.e. the inverse of the element in the associated group.
+Compute the conjugate of a group algebra element.
+The conjugate is defined by inversing elements in the associated group.
 """
-function Base.adjoint(a::GroupAlgebraElem{T}) where T # TODO we would like to use Base.adjoint, but that would be type piracy. Upstream this to Nemo or Hecke or AbstractAlgebra
+function group_algebra_conj(a::GroupAlgebraElem{T}) where T
     A = parent(a)
     d = dim(A)
     v = Vector{T}(undef, d)

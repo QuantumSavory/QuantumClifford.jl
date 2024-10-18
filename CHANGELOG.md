@@ -5,7 +5,11 @@
 
 # News
 
-## v0.9.11
+## v0.9.12 - 2024-10-18
+
+- Minor compat fixes for julia 1.11 in the handling of `hgp`
+
+## v0.9.11 - 2024-09-27
 
 - `hcat` of Tableaux objects
 - `QuantumReedMuller` codes added to the ECC module
