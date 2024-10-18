@@ -203,7 +203,7 @@ SingleQubitOperator(p::sInvSQRTY)           = SingleQubitOperator(p.q, false, tr
 SingleQubitOperator(o::SingleQubitOperator) = o
 function SingleQubitOperator(op::CliffordOperator, qubit)
     nqubits(op)==1 || throw(DimensionMismatch("You are trying to convert a multiqubit `CliffordOperator` into a symbolic `SingleQubitOperator`."))
-    SingleQubitOperator(qubit,op.tab[1,1]...,op.tab[2,1]...,(~).(iszero.(op.tab.phases))...)
+    SingleQubitOperator(qubit,tab(op)[1,1]...,tab(op)[2,1]...,(~).(iszero.(tab(op).phases))...)
 end
 SingleQubitOperator(op::CliffordOperator) = SingleQubitOperator(op, 1)
 

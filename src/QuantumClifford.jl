@@ -26,7 +26,7 @@ export
     nqubits,
     stabilizerview, destabilizerview, logicalxview, logicalzview, phases,
     fastcolumn, fastrow,
-    bitview, quantumstate, tab,
+    bitview, quantumstate, tab, rank,
     BadDataStructure,
     affectedqubits, #TODO move to QuantumInterface?
     # GF2
@@ -173,7 +173,7 @@ Tableau(xzs::AbstractMatrix{Bool}) = Tableau(zeros(UInt8, size(xzs,1)), xzs[:,1:
 
 Tableau(t::Tableau) = t
 
-function _T_str(a) # TODO this can be optimized by not creating intermediary PauliOperator objects
+function _T_str(a::Union{String,SubString{String}}) # TODO this can be optimized by not creating intermediary PauliOperator objects
     paulis = [_P_str(strip(s.match)) for s in eachmatch(r"[+-]?\h*[i]?\h*[XYZI_]+", a)]
     Tableau(paulis)
 end
@@ -229,18 +229,18 @@ end
 
 Base.firstindex(tab::Tableau) = 1
 
-Base.lastindex(tab::Tableau) = length(tab.phases)
+Base.lastindex(tab::Tableau) = length(tab.phases)::Int
 Base.lastindex(tab::Tableau, i) = size(tab)[i]
 
-Base.eachindex(tab::Tableau) = Base.OneTo(lastindex(tab.phases))
+Base.eachindex(tab::Tableau) = Base.OneTo(lastindex(tab.phases)::Int)
 
 Base.axes(tab::Tableau) = (Base.OneTo(lastindex(tab)), Base.OneTo(nqubits(tab)))
 Base.axes(tab::Tableau,i) = axes(tab)[i]
 
-Base.size(tab::Tableau) = (length(tab.phases),nqubits(tab))
+Base.size(tab::Tableau) = (length(tab.phases)::Int, nqubits(tab))
 Base.size(tab::Tableau,i) = size(tab)[i]
 
-Base.length(tab::Tableau) = length(tab.phases)
+Base.length(tab::Tableau) = length(tab.phases)::Int
 
 Base.:(==)(l::Tableau, r::Tableau) = r.nqubits==l.nqubits && r.phases==l.phases && r.xzs==l.xzs
 
@@ -378,7 +378,7 @@ macro S_str(a)
     quote Stabilizer(_T_str($a)) end
 end
 Base.getindex(stab::Stabilizer, i::Int) = tab(stab)[i]
-Base.getindex(stab::Stabilizer, i) = Stabilizer(tab(stab)[i])
+Base.getindex(stab::Stabilizer, i) = Stabilizer(tab(stab)[i]::Tableau)
 @inline Base.getindex(stab::Stabilizer, r::Int, c) = tab(stab)[r,c]
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer(tab(stab)[r,c])
 Base.view(stab::Stabilizer, r) = Stabilizer(view(tab(stab),r))
@@ -497,11 +497,11 @@ function MixedStabilizer(s::Stabilizer{T}) where {T}
     MixedStabilizer(spadded,zr)
 end
 
-MixedStabilizer(s::Stabilizer,rank::Int) = MixedStabilizer(tab(s),rank)
+MixedStabilizer(s::Stabilizer,rank::Int) = MixedStabilizer(tab(s), rank)
 
-Base.length(d::MixedStabilizer) = length(d.tab)
+Base.length(d::MixedStabilizer) = length(tab(d))
 
-Base.copy(ms::MixedStabilizer) = MixedStabilizer(copy(ms.tab),ms.rank)
+Base.copy(ms::MixedStabilizer) = MixedStabilizer(copy(tab(ms)), rank(ms))
 
 ##############################
 # Mixed Destabilizer states
@@ -580,7 +580,7 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false)
 end
 
 function MixedDestabilizer(d::Destabilizer, r::Int)
-    l,n = size(d.tab)
+    l,n = size(tab(d))
     if l==2n
         MixedDestabilizer(tab(d), r)
     else
@@ -588,7 +588,7 @@ function MixedDestabilizer(d::Destabilizer, r::Int)
     end
 end
 function MixedDestabilizer(d::Destabilizer)
-    l,n = size(d.tab)
+    l,n = size(tab(d))
     if l==2n
         MixedDestabilizer(d, nqubits(d))
     else
@@ -599,9 +599,9 @@ end
 MixedDestabilizer(d::MixedStabilizer) = MixedDestabilizer(stabilizerview(d))
 MixedDestabilizer(d::MixedDestabilizer) = d
 
-Base.length(d::MixedDestabilizer) = length(d.tab)÷2
+Base.length(d::MixedDestabilizer) = length(tab(d))÷2
 
-Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
+Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(tab(d)),rank(d))
 
 ##############################
 # Subtableau views
@@ -610,17 +610,17 @@ Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 """A view of the subtableau corresponding to the stabilizer. See also [`tab`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
 @inline stabilizerview(s::Stabilizer) = s
 @inline stabilizerview(s::Destabilizer) = Stabilizer(@view tab(s)[end÷2+1:end])
-@inline stabilizerview(s::MixedStabilizer) = Stabilizer(@view tab(s)[1:s.rank])
-@inline stabilizerview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[end÷2+1:end÷2+s.rank])
+@inline stabilizerview(s::MixedStabilizer) = Stabilizer(@view tab(s)[1:rank(s)])
+@inline stabilizerview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[end÷2+1:end÷2+rank(s)])
 
 """A view of the subtableau corresponding to the destabilizer. See also [`tab`](@ref), [`stabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
 @inline destabilizerview(s::Destabilizer) = Stabilizer(@view tab(s)[1:end÷2])
-@inline destabilizerview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[1:s.rank])
+@inline destabilizerview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[1:rank(s)])
 
 """A view of the subtableau corresponding to the logical X operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalzview`](@ref)"""
-@inline logicalxview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[s.rank+1:end÷2])
+@inline logicalxview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[rank(s)+1:end÷2])
 """A view of the subtableau corresponding to the logical Z operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref)"""
-@inline logicalzview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[end÷2+s.rank+1:end])
+@inline logicalzview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[end÷2+rank(s)+1:end])
 
 """The number of qubits of a given state."""
 @inline nqubits(s::AbstractStabilizer) = nqubits(tab(s))

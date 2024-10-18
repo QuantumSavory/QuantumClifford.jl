@@ -76,15 +76,15 @@ function Base.show(io::IO, d::Destabilizer)
         print(io, "Destablizer $r×$q")
     elseif get(io, :limit, false)
         h,w = displaysize(io)
-        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(min(w-9,size(d.tab,2)-4),0))
-        _show(io, destabilizerview(d).tab, w, h÷2)
-        println(io, "\n𝒮𝓉𝒶𝒷" * "━"^max(min(w-7,size(d.tab,2)-2),0))
-        _show(io, stabilizerview(d).tab, w, h÷2)
+        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(min(w-9,size(tab(d),2)-4),0))
+        _show(io, tab(destabilizerview(d)), w, h÷2)
+        println(io, "\n𝒮𝓉𝒶𝒷" * "━"^max(min(w-7,size(tab(d),2)-2),0))
+        _show(io, tab(stabilizerview(d)), w, h÷2)
     else
-        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-4,0))
-        _show(io, destabilizerview(d).tab, missing, missing)
-        println(io, "\n𝒮𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-2,0))
-        _show(io, stabilizerview(d).tab, missing, missing)
+        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(size(tab(d),2)-4,0))
+        _show(io, tab(destabilizerview(d)), missing, missing)
+        println(io, "\n𝒮𝓉𝒶𝒷" * "━"^max(size(tab(d),2)-2,0))
+        _show(io, tab(stabilizerview(d)), missing, missing)
     end
 end
 
@@ -95,36 +95,36 @@ function Base.show(io::IO, d::MixedDestabilizer)
         print(io, "MixedDestablizer $r×$q")
     elseif get(io, :limit, false)
         h,w = displaysize(io)
-        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(min(w-9,size(d.tab,2)-4),0))
-        _show(io, destabilizerview(d).tab, w, h÷4)
+        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(min(w-9,size(tab(d),2)-4),0))
+        _show(io, tab(destabilizerview(d)), w, h÷4)
         if r != q
             println(io)
-            println(io, "𝒳ₗ" * "━"^max(min(w-5,size(d.tab,2)),0))
-            _show(io, logicalxview(d).tab, w, h÷4)
+            println(io, "𝒳ₗ" * "━"^max(min(w-5,size(tab(d),2)),0))
+            _show(io, tab(logicalxview(d)), w, h÷4)
         end
         println(io)
-        println(io, "𝒮𝓉𝒶𝒷" * "━"^max(min(w-7,size(d.tab,2)-2),0))
-        _show(io, stabilizerview(d).tab, w, h÷4)
+        println(io, "𝒮𝓉𝒶𝒷" * "━"^max(min(w-7,size(tab(d),2)-2),0))
+        _show(io, tab(stabilizerview(d)), w, h÷4)
         if r != q
             println(io)
-            println(io, "𝒵ₗ" * "━"^max(min(w-5,size(d.tab,2)),0))
-            _show(io, logicalzview(d).tab, w, h÷4)
+            println(io, "𝒵ₗ" * "━"^max(min(w-5,size(tab(d),2)),0))
+            _show(io, tab(logicalzview(d)), w, h÷4)
         end
     else
-        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-4,0))
-        _show(io, destabilizerview(d).tab, missing, missing)
+        println(io, "𝒟ℯ𝓈𝓉𝒶𝒷" * "━"^max(size(tab(d),2)-4,0))
+        _show(io, tab(destabilizerview(d)), missing, missing)
         if r != q
             println(io)
-            println(io, "𝒳ₗ" * "━"^max(size(d.tab,2),0))
-            _show(io, logicalxview(d).tab, missing, missing)
+            println(io, "𝒳ₗ" * "━"^max(size(tab(d),2),0))
+            _show(io, tab(logicalxview(d)), missing, missing)
         end
         println(io)
-        println(io, "𝒮𝓉𝒶𝒷" * "━"^max(size(d.tab,2)-2,0))
-        _show(io, stabilizerview(d).tab, missing, missing)
+        println(io, "𝒮𝓉𝒶𝒷" * "━"^max(size(tab(d),2)-2,0))
+        _show(io, tab(stabilizerview(d)), missing, missing)
         if r != q
             println(io)
-            println(io, "𝒵ₗ" * "━"^max(size(d.tab,2)),0)
-            _show(io, logicalzview(d).tab, missing, missing)
+            println(io, "𝒵ₗ" * "━"^max(size(tab(d),2)),0)
+            _show(io, tab(logicalzview(d)), missing, missing)
         end
     end
 end
@@ -144,7 +144,7 @@ function _show(io::IO, c::CliffordOperator, limit=50, limit_vertical=20)
             continue
         end
         print(io, "X"*digits_substr(i,nwidth)*" ⟼ ")
-        _show(io, c.tab[i], _limit)
+        _show(io, tab(c)[i], _limit)
         println(io)
     end
     for i in range
@@ -153,7 +153,7 @@ function _show(io::IO, c::CliffordOperator, limit=50, limit_vertical=20)
             continue
         end
         print(io, "Z"*digits_substr(i,nwidth)*" ⟼ ")
-        _show(io, c.tab[i+n], _limit)
+        _show(io, tab(c)[i+n], _limit)
         i!=n && println(io)
     end
 end
