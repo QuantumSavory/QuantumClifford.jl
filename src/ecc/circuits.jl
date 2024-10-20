@@ -74,6 +74,7 @@ function perm_to_transpositions(perm)
     for i in n:-1:1
         if perm[i]!=i
             j = findfirst(==(i), perm)
+            @assert !isnothing(j)
             push!(transpositions, (i, j))
             perm[j] = perm[i]
         end
