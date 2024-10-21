@@ -871,7 +871,7 @@ end
 
 
 """
-Return the given stabilizer without all the qubits in the given iterable.
+Return the given stabilizer without all the qubits in the given iterable. Based on [goodenough2024bipartiteentanglementnoisystabilizer](@cite)
 
 The resulting tableaux is not guaranteed to be valid (to retain its commutation relationships).
 
@@ -885,5 +885,6 @@ julia> delete_columns(S"XYZ YZX ZXY", [1,3])
 See also: [`traceout!`](@ref)
 """
 function delete_columns(𝒮::Stabilizer, subset)
+    if length(𝒮) == 0 return 𝒮 end
     return 𝒮[:, setdiff(1:nqubits(𝒮), subset)]
 end
