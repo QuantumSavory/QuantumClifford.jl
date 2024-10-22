@@ -23,6 +23,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
+    twobga_from_fp_group,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -384,5 +385,8 @@ include("codes/quantumreedmuller.jl")
 # qLDPC
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
+
+# group presentation
+include("codes/group_presentation.jl")
 
 end #module
