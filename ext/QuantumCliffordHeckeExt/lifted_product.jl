@@ -153,7 +153,7 @@ code_s(c::LPCode) = size(c.repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) +
 Two-block group algebra (2GBA) codes, which are a special case of lifted product codes
 from two group algebra elements `a` and `b`, used as `1x1` base matrices.
 
-See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref)
+See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`bivariate_bicycle_codes`](@ref)
 """ # TODO doctest example
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
     A = reshape([a], (1, 1))
@@ -166,7 +166,7 @@ Generalized bicycle codes, which are a special case of 2GBA codes (and therefore
 Here the group is chosen as the cyclic group of order `l`,
 and the base matrices `a` and `b` are the sum of the group algebra elements corresponding to the shifts `a_shifts` and `b_shifts`.
 
-See also: [`two_block_group_algebra_codes`](@ref), [`bicycle_codes`](@ref).
+See also: [`two_block_group_algebra_codes`](@ref), [`bicycle_codes`](@ref), [`bivariate_bicycle_codes`](@ref)
 
 A [[254, 28, 14 ≤ d ≤ 20]] code from (A1) in Appendix B of [panteleev2021degenerate](@cite).
 
@@ -189,10 +189,48 @@ Bicycle codes are a special case of generalized bicycle codes,
 where `a` and `b` are conjugate to each other.
 The order of the cyclic group is `l`, and the shifts `a_shifts` and `b_shifts` are reverse to each other.
 
-See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref).
+See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`bivariate_bicycle_codes`](@ref)
 """ # TODO doctest example
 function bicycle_codes(a_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
     a = sum(GA[n÷l+1] for n in a_shifts)
     two_block_group_algebra_codes(a, group_algebra_conj(a))
+end
+
+"""
+Bivariate Bicycle codes are a class of Abelian 2BGA codes formed by the direct product
+of two cyclic groups `ℤₗ × ℤₘ`. The parameters `l` and `m` represent the orders of the
+first and second cyclic groups, respectively.
+
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/q-ary_bch).
+
+See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref),
+[`bicycle_codes`](@ref), [`LPCode`](@ref)
+
+A [[756, 16, ≤ 34]] code from Table 3 of [bravyi2024high](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens; # hide
+
+julia> l=21; m=18;
+
+julia> GA = group_algebra(GF(2), abelian_group([l, m]));
+
+julia> x, y = gens(GA);
+
+julia> A = [x^3 , y^10 , y^17];
+
+julia> B = [y^5 , x^3  , x^19];
+
+julia> c = bivariate_bicycle_codes(A,B,GA);
+
+julia> code_n(c), code_k(c)
+(756, 16)
+```
+"""
+function bivariate_bicycle_codes(A::Vector{GroupAlgebraElem{FqFieldElem, GroupAlgebra{FqFieldElem, FinGenAbGroup, FinGenAbGroupElem}}}, B::Vector{GroupAlgebraElem{FqFieldElem, GroupAlgebra{FqFieldElem, FinGenAbGroup, FinGenAbGroupElem}}}, GA::GroupAlgebra{FqFieldElem, FinGenAbGroup, FinGenAbGroupElem})
+    a = sum(GA(x) for x in A)
+    b = sum(GA(x) for x in B)
+    c = two_block_group_algebra_codes(a,b)
+    return c
 end
