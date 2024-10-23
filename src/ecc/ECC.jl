@@ -15,7 +15,7 @@ abstract type AbstractECC end
 
 export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
-    isdegenerate, faults_matrix,
+    isdegenerate, faults_matrix, check_repr_commutation_relation,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode, LiftedCode,
     CSS,
