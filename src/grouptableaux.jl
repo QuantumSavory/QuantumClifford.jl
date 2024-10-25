@@ -1,6 +1,3 @@
-using Graphs
-using LinearAlgebra
-
 """
 A tableau representation of the non-commutative canonical form of a set of Paulis,
 which is used in [`commutify`](@ref).
@@ -453,6 +450,7 @@ end
 """
 Return the subset of Paulis in a Stabilizer that have identity operators on all qubits corresponding to
 the given subset, without the entries corresponding to subset. Based on [goodenough2024bipartiteentanglementnoisystabilizer](@cite)
+
 ```jldoctest
 julia> contractor(S"_X X_", [1])
 + X

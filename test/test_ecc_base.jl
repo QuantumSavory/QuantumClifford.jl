@@ -35,15 +35,15 @@ B118 = Dict(
 LP04 = [LPCode(base_matrix, l .- base_matrix', l) for (l, base_matrix) in B04]
 LP118 = [LPCode(base_matrix, l .- base_matrix', l) for (l, base_matrix) in B118]
 
-# generalized bicyle codes from from Appendix B of [panteleev2021degenerate](@cite).
+# generalized bicyle codes from (A1) and (A2) Appendix B of [panteleev2021degenerate](@cite).
 test_gb_codes = [
-    generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 127),
-    generalized_bicycle_codes([0, 1, 14, 16, 22], [0, 3, 13, 20, 42], 63),
+    generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 127), # (A1) [[254, 28, 14≤d≤20]]
+    generalized_bicycle_codes([0, 1, 14, 16, 22], [0, 3, 13, 20, 42], 63), # (A2) [[126, 28, 8]]
 ]
 
 other_lifted_product_codes = []
 
-# from Eq. (18) in Appendix A of [raveendran2022finite](@cite)
+# [[882, 24, d≤24]] code from (B1) in Appendix B of [panteleev2021degenerate](@cite)
 l = 63
 GA = group_algebra(GF(2), abelian_group(l))
 A = zeros(GA, 7, 7)
@@ -57,19 +57,20 @@ B = reshape([1 + x + x^6], (1, 1))
 push!(other_lifted_product_codes, LPCode(A, B))
 
 const code_instance_args = Dict(
-    Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
-    Surface => [(3,3), (4,4), (3,6), (4,3), (5,5)],
-    Gottesman => [3, 4, 5],
-    CSS => (c -> (parity_checks_x(c), parity_checks_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
-    Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
-    CircuitCode => random_circuit_code_args,
-    LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, other_lifted_product_codes))
+    :Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
+    :Surface => [(3,3), (4,4), (3,6), (4,3), (5,5)],
+    :Gottesman => [3, 4, 5],
+    :CSS => (c -> (parity_checks_x(c), parity_checks_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
+    :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
+    :CircuitCode => random_circuit_code_args,
+    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, other_lifted_product_codes)),
+    :QuantumReedMuller => [3, 4, 5]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
     codeinstances = []
     for t in subtypes(QuantumClifford.ECC.AbstractECC)
-        for c in get(code_instance_args, t, [])
+        for c in get(code_instance_args, t.name.name, [])
             codeinstance = t(c...)
             !isnothing(maxn) && nqubits(codeinstance) > maxn && continue
             push!(codeinstances, codeinstance)

@@ -72,7 +72,7 @@ julia> code_n(c2), code_k(c2)
 
 ## The representation function
 
-In this struct, we use the default representation function `default_repr` to convert a `GF(2)`-group algebra element to a binary matrix.
+We use the default representation function `Hecke.representation_matrix` to convert a `GF(2)`-group algebra element to a binary matrix.
 The default representation, provided by `Hecke`, is the permutation representation.
 
 We also accept a custom representation function as detailed in [`LiftedCode`](@ref).
@@ -107,24 +107,35 @@ end
 
 # TODO document and doctest example
 function LPCode(A::FqFieldGroupAlgebraElemMatrix, B::FqFieldGroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]))
-    LPCode(LiftedCode(A; GA=GA, repr=default_repr), LiftedCode(B; GA=GA, repr=default_repr); GA=GA, repr=default_repr)
+    LPCode(LiftedCode(A; GA=GA, repr=representation_matrix), LiftedCode(B; GA=GA, repr=representation_matrix); GA=GA, repr=representation_matrix)
 end
 
 # TODO document and doctest example
 function LPCode(group_elem_array1::Matrix{<: GroupOrAdditiveGroupElem}, group_elem_array2::Matrix{<: GroupOrAdditiveGroupElem}; GA::GroupAlgebra=group_algebra(GF(2), parent(group_elem_array1[1,1])))
-    LPCode(LiftedCode(group_elem_array1; GA=GA), LiftedCode(group_elem_array2; GA=GA); GA=GA, repr=default_repr)
+    LPCode(LiftedCode(group_elem_array1; GA=GA), LiftedCode(group_elem_array2; GA=GA); GA=GA, repr=representation_matrix)
 end
 
 # TODO document and doctest example
 function LPCode(shift_array1::Matrix{Int}, shift_array2::Matrix{Int}, l::Int; GA::GroupAlgebra=group_algebra(GF(2), abelian_group(l)))
-    LPCode(LiftedCode(shift_array1, l; GA=GA), LiftedCode(shift_array2, l; GA=GA); GA=GA, repr=default_repr)
+    LPCode(LiftedCode(shift_array1, l; GA=GA), LiftedCode(shift_array2, l; GA=GA); GA=GA, repr=representation_matrix)
 end
 
 iscss(::Type{LPCode}) = true
 
+function hgp(h₁::GroupAlgebraElemMatrix, h₂::GroupAlgebraElemMatrix)
+    r₁, n₁ = size(h₁)
+    r₂, n₂ = size(h₂)
+    # here we use `permutdims` instead of `transpose` to avoid recursive call
+    # convert LinearAlgebra.I to Matrix to fix incompatibility with Julia 1.11.1
+    # TODO the performance may be affected by this workaround for large codes
+    hx = hcat(kron(h₁, Matrix(LinearAlgebra.I(n₂))), kron(Matrix(LinearAlgebra.I(r₁)), permutedims(group_algebra_conj.(h₂))))
+    hz = hcat(kron(Matrix(LinearAlgebra.I(n₁)), h₂), kron(permutedims(group_algebra_conj.(h₁)), Matrix(LinearAlgebra.I(r₂))))
+    hx, hz
+end
+
 function parity_checks_xz(c::LPCode)
-    hx, hz = hgp(c.A, c.B')
-    hx, hz = lift(c.repr, hx), lift(c.repr, hz)
+    hx, hz = hgp(c.A, permutedims(group_algebra_conj.(c.B)))
+    hx, hz = concat_lift_repr(c.repr,hx), concat_lift_repr(c.repr,hz)
     return hx, hz
 end
 
@@ -165,7 +176,7 @@ julia> c = generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121],
 julia> code_n(c), code_k(c)
 (254, 28)
 ```
-""" # TODO doctest example
+"""
 function generalized_bicycle_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
     a = sum(GA[n%l+1] for n in a_shifts)
@@ -183,5 +194,5 @@ See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`]
 function bicycle_codes(a_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
     a = sum(GA[n÷l+1] for n in a_shifts)
-    two_block_group_algebra_codes(a, a')
+    two_block_group_algebra_codes(a, group_algebra_conj(a))
 end

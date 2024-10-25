@@ -161,8 +161,10 @@ julia> tensor(s, s)
 See also [`tensor_pow`](@ref)."""
 function tensor end
 
-function tensor(ops::AbstractStabilizer...) # TODO optimize this by doing conversion to common type to enable preallocation
-    foldl(⊗, ops[2:end], init=ops[1])
+function tensor(ops::AbstractStabilizer...) # TODO optimize by pre-allocating one large tableau instead of the current quadratic fold
+    ct = promote_type(map(typeof, ops)...)
+    conv_ops = map(x -> convert(ct, x), ops)
+    return foldl(⊗, conv_ops)
 end
 
 """Repeated tensor product of an operators or a tableau.
@@ -258,7 +260,7 @@ function tensor(ops::CliffordOperator...) # TODO implement \otimes for Destabili
     last_zrow = ntot
     last_xrow = 0
     for op in ops
-        t = op.tab
+        t = QuantumClifford.tab(op)
         _, last_zrow, _ = puttableau!(tab, (@view t[end÷2+1:end]), last_zrow, last_xrow)
         _, last_xrow, _ = puttableau!(tab, (@view t[1:end÷2]), last_xrow, last_xrow)
     end
