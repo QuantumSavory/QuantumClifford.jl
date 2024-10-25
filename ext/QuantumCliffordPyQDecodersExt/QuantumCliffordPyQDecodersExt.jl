@@ -69,8 +69,8 @@ end
 parity_checks(d::PyBP) = d.H
 
 function decode(d::PyBP, syndrome_sample)
-    row_x = syndrome_sample[1:d.nx] # TODO These copies and indirections might be costly!
-    row_z = syndrome_sample[d.nx+1:end]
+    row_x = @view syndrome_sample[1:d.nx]
+    row_z = @view syndrome_sample[d.nx+1:end]
     guess_z_errors = PythonCall.PyArray(d.pyx.decode(np.array(row_x)))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode(np.array(row_z)))
     vcat(guess_x_errors, guess_z_errors)
@@ -106,18 +106,19 @@ end
 parity_checks(d::PyMatchingDecoder) = d.H
 
 function decode(d::PyMatchingDecoder, syndrome_sample)
-    row_x = syndrome_sample[1:d.nx] # TODO This copy is costly!
-    row_z = syndrome_sample[d.nx+1:end]
+    row_x = @view syndrome_sample[1:d.nx]
+    row_z = @view syndrome_sample[d.nx+1:end]
     guess_z_errors = PythonCall.PyArray(d.pyx.decode(row_x))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode(row_z))
     vcat(guess_x_errors, guess_z_errors)
 end
 
 function batchdecode(d::PyMatchingDecoder, syndrome_samples)
-    row_x = syndrome_samples[:,1:d.nx] # TODO This copy is costly!
-    row_z = syndrome_samples[:,d.nx+1:end]
+    row_x = @view syndrome_samples[:,1:d.nx]
+    row_z = @view syndrome_samples[:,d.nx+1:end]
     guess_z_errors = PythonCall.PyArray(d.pyx.decode_batch(row_x))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode_batch(row_z))
+    n_cols_x = size(guess_x_errors, 2)
     hcat(guess_x_errors, guess_z_errors)
 end
 

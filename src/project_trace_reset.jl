@@ -339,7 +339,7 @@ end
 
 function _project!(d::Destabilizer,pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr, Bp} # repetition between Destabilizer and MixedDestabilizer, but the redundancy makes the two codes slightly simpler and easier to infer
     anticommutes = 0
-    tab = d.tab
+    tab = QuantumClifford.tab(d)
     stabilizer = stabilizerview(d)
     destabilizer = destabilizerview(d)
     r = trusted_rank(d)
@@ -377,7 +377,7 @@ end
 
 function _project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr, Bp} # repetition between Destabilizer and MixedDestabilizer, but the redundancy makes the two codes slightly simpler and easier to infer
     anticommutes = 0
-    tab = d.tab
+    tab = QuantumClifford.tab(d)
     stabilizer = stabilizerview(d)
     destabilizer = destabilizerview(d)
     r = trusted_rank(d)
@@ -497,7 +497,7 @@ end
 """Internal method used to implement [`projectX!`](@ref), [`projectZ!`](@ref), and [`projectY!`](@ref)."""
 function project_cond!(d::MixedDestabilizer,qubit::Int,cond::Val{IS},reset::Val{RESET};keep_result::Bool=true,phases::Val{PHASES}=Val(true)) where {IS,RESET,PHASES}
     anticommutes = 0
-    tab = d.tab
+    tab = QuantumClifford.tab(d)
     stabilizer = stabilizerview(d)
     destabilizer = destabilizerview(d)
     r = d.rank
@@ -647,7 +647,7 @@ function traceout!(s::Union{MixedStabilizer, MixedDestabilizer}, qubits; phases=
     if rank return (s, i) else return s end
 end
 
-function _expand_pauli(pauli,qubits,n) # TODO rename and make public
+function _expand_pauli(pauli::PauliOperator,qubits,n) # TODO rename and make public
     expanded = zero(PauliOperator,n)
     for (ii, i) in enumerate(qubits)
         expanded[i] = pauli[ii]
@@ -885,5 +885,6 @@ julia> delete_columns(S"XYZ YZX ZXY", [1,3])
 See also: [`traceout!`](@ref)
 """
 function delete_columns(𝒮::Stabilizer, subset)
+    if length(𝒮) == 0 return 𝒮 end
     return 𝒮[:, setdiff(1:nqubits(𝒮), subset)]
 end
