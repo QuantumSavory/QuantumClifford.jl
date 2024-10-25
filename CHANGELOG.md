@@ -13,6 +13,8 @@
     - `commutify` function to find a commutative version of a non-commutative set of Paulis with minimal changes
     - `matroid_parent` to, for set of Paulis that doesn't represent a state, find a version
     that does.
+- Implementing additional named two-qubit gates: `sSWAPCX, sInvSWAPCX, sCZSWAP, sCXSWAP, sISWAP, sInvISWAP,
+    sSQRTZZ, sInvSQRTZZ`
 
 ## v0.9.12 - 2024-10-18
 
