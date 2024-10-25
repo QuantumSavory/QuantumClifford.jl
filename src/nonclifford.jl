@@ -161,7 +161,7 @@ function expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
 end
 
 """Same as `all(==(0), (a.+b.+c) .% 2)`"""
-function _allthreesumtozero(a,b,c) # TODO consider using bitpacking and SIMD xor with less eager shortcircuiting -- probably would be much faster
+function _allthreesumtozero(a,b,c)
     n = length(a)
     @inbounds @simd for i in 1:n
         odd = (a[i]+b[i]+c[i]) & 1
