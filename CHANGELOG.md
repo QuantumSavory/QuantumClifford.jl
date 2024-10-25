@@ -7,6 +7,9 @@
 
 ## dev
 
+- Implementing additional named two-qubit gates: `sSWAPCX, sInvSWAPCX, sCZSWAP, sCXSWAP, sISWAP, sInvISWAP,
+    sSQRTZZ, sInvSQRTZZ`
+
 - Implementing many more named single-qubit gates following naming convention similar to the stim package in python.
 - **(fix)** Bug fix to the `parity_checks(ReedMuller(r, m))` of classical Reed-Muller code (it was returning generator matrix).
 - `RecursiveReedMuller` code implementation as an alternative implementation of `ReedMuller`.
