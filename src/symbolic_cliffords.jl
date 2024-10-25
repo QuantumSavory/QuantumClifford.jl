@@ -203,7 +203,7 @@ SingleQubitOperator(p::sInvSQRTY)           = SingleQubitOperator(p.q, false, tr
 SingleQubitOperator(o::SingleQubitOperator) = o
 function SingleQubitOperator(op::CliffordOperator, qubit)
     nqubits(op)==1 || throw(DimensionMismatch("You are trying to convert a multiqubit `CliffordOperator` into a symbolic `SingleQubitOperator`."))
-    SingleQubitOperator(qubit,op.tab[1,1]...,op.tab[2,1]...,(~).(iszero.(op.tab.phases))...)
+    SingleQubitOperator(qubit,tab(op)[1,1]...,tab(op)[2,1]...,(~).(iszero.(tab(op).phases))...)
 end
 SingleQubitOperator(op::CliffordOperator) = SingleQubitOperator(op, 1)
 
@@ -333,8 +333,8 @@ end
 @qubitop2 YCY    (x1⊻z2⊻x2, z1⊻x2⊻z2 , x1⊻x2⊻z1 , x1⊻z1⊻z2, ~iszero( (x1 & ~z1 & ~x2 & z2) | (~x1 & z1 & x2 & ~z2)))
 @qubitop2 YCZ    (x1⊻x2   , x2⊻z1    , x2       , z2⊻x1⊻z1, ~iszero( (x2 & (x1 ⊻ z1) & (z2 ⊻ x1)) ))
 
-@qubitop2 ZCrY  (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & ~z1 & x2) | (x1 & ~z1 & ~z2) | (x1 & x2 & ~z2)))
-@qubitop2 InvZCrY (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & z1 & ~x2 & ~z2) | (x1 & ~z1 & ~x2 & z2) | (x1 & z1 & ~x2 & z2) | (x1 & z1 & x2 & z2)))
+@qubitop2 ZCrY    (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 &~z1 & x2) | (x1 & ~z1 & ~z2) | (x1 & x2 & ~z2)))
+@qubitop2 InvZCrY (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & z1 &~x2) | (x1 &  z1 &  z2) | (x1 &~x2 &  z2)))
 
 @qubitop2 SQRTZZ    (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 & z1 & ~x2) | (~x1 & x2 & z2)))
 @qubitop2 InvSQRTZZ (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 &~z1 & ~x2) | (~x1 & x2 &~z2)))

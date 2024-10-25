@@ -17,10 +17,11 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
-    RepCode,
+    RepCode, LiftedCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
-    Toric, Gottesman, Surface, Concat, CircuitCode,
+    Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
+    LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
@@ -87,14 +88,22 @@ code_n(c::AbstractECC) = code_n(parity_checks(c))
 
 code_n(s::Stabilizer) = nqubits(s)
 
-"""The number of stabilizer checks in a code."""
+"""The number of stabilizer checks in a code. They might not be all linearly independent, thus `code_s >= code_n-code_k`. For the number of linearly independent checks you can use `LinearAlgebra.rank`."""
 function code_s end
-
-code_s(c::AbstractECC) = code_s(parity_checks(c))
 code_s(s::Stabilizer) = length(s)
+code_s(c::AbstractECC) = code_s(parity_checks(c))
 
-"""The number of logical qubits in a code."""
-code_k(c) = code_n(c) - code_s(c)
+"""
+The number of logical qubits in a code.
+
+Note that when redundant rows exist in the parity check matrix, the number of logical qubits `code_k(c)` will be greater than `code_n(c) - code_s(c)`, where the difference equals the redundancy.
+"""
+function code_k(s::Stabilizer)
+    _, _, r = canonicalize!(Base.copy(s), ranks=true)
+    return code_n(s) - r
+end
+
+code_k(c::AbstractECC) = code_k(parity_checks(c))
 
 """The rate of a code."""
 function rate(c)
@@ -354,6 +363,7 @@ include("circuits.jl")
 include("decoder_pipeline.jl")
 
 include("codes/util.jl")
+
 include("codes/classical_codes.jl")
 include("codes/css.jl")
 include("codes/bitflipcode.jl")
@@ -367,6 +377,12 @@ include("codes/surface.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
 include("codes/classical/reedmuller.jl")
-include("codes/classical/bch.jl")
 include("codes/classical/recursivereedmuller.jl")
+include("codes/classical/bch.jl")
+include("codes/quantumreedmuller.jl")
+
+# qLDPC
+include("codes/classical/lifted.jl")
+include("codes/lifted_product.jl")
+
 end #module

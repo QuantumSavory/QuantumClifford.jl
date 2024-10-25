@@ -26,7 +26,7 @@
                     #@show c
                     #@show s
                     #@show e
-                    @assert max(e...) < noise/4
+                    @test max(e...) < noise/4
                 end
             end
         end
@@ -35,8 +35,39 @@
     ##
 
     @testset "belief prop decoders, good for sparse codes" begin
+        codes = vcat(LP04, LP118, test_gb_codes, other_lifted_product_codes)
+
+        noise = 0.001
+
+        setups = [
+            CommutationCheckECCSetup(noise),
+            NaiveSyndromeECCSetup(noise, 0),
+            ShorSyndromeECCSetup(noise, 0),
+        ]
+
+        for c in codes
+            for s in setups
+                for d in [c -> PyBeliefPropOSDecoder(c, maxiter=2)]
+                    nsamples = 10000
+                    if true
+                        @test_broken false # TODO these are too slow to test in CI
+                        continue
+                    end
+                    e = evaluate_decoder(d(c), s, nsamples)
+                    # @show c
+                    # @show s
+                    # @show e
+                    @test max(e...) <= noise
+                end
+            end
+        end
+    end
+
+
+    @testset "BitFlipDecoder decoder, good for sparse codes" begin
         codes = [
-                 # TODO
+                 QuantumReedMuller(3),
+                 QuantumReedMuller(4)
                 ]
 
         noise = 0.001
@@ -49,12 +80,12 @@
 
         for c in codes
             for s in setups
-                for d in [c->PyBeliefPropOSDecoder(c, maxiter=10)]
+                for d in [c->BitFlipDecoder(c, maxiter=10)]
                     e = evaluate_decoder(d(c), s, 100000)
-                    @show c
-                    @show s
-                    @show e
-                    @assert max(e...) < noise/4
+                    #@show c
+                    #@show s
+                    #@show e
+                    @test max(e...) < noise/4
                 end
             end
         end
@@ -91,7 +122,7 @@
                 #@show c
                 #@show s
                 #@show e
-                @assert max(e...) < noise/5
+                @test max(e...) < noise/5
             end
         end
     end

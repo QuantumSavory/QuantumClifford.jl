@@ -62,7 +62,7 @@ CliffordOperator(op::CliffordOperator) = op
 CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Tableau(paulis))
 CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
 
-Base.:(==)(l::CliffordOperator, r::CliffordOperator) = l.tab == r.tab
+Base.:(==)(l::CliffordOperator, r::CliffordOperator) = tab(l) == tab(r)
 Base.hash(c::T, h::UInt) where {T<:CliffordOperator} = hash(T, hash(tab(c), h))
 
 Base.getindex(c::CliffordOperator, args...) = getindex(tab(c), args...)
@@ -85,16 +85,16 @@ digits_subchars = collect("₀₁₂₃₄₅₆₇₈₉")
 digits_substr(n::Int,nwidth::Int) = join(([digits_subchars[d+1] for d in reverse(digits(n, pad=nwidth))]))
 
 function Base.copy(c::CliffordOperator)
-    CliffordOperator(copy(c.tab))
+    CliffordOperator(copy(tab(c)))
 end
 
-@inline nqubits(c::CliffordOperator) = nqubits(c.tab)
+@inline nqubits(c::CliffordOperator) = nqubits(tab(c))
 
-Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.tab))
+Base.zero(c::CliffordOperator) = CliffordOperator(zero(tab(c)))
 Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Tableau, 2n, n))
 
 function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
-    tab = copy(r.tab)
+    tab = copy(QuantumClifford.tab(r))
     apply!(Stabilizer(tab),l) # TODO maybe not the most elegant way to perform apply!(::Tableau, gate)
     CliffordOperator(tab)
 end
@@ -106,7 +106,7 @@ end
 
 # TODO create Base.permute! and getindex(..., permutation_array)
 function permute(c::CliffordOperator,p) # TODO this is a slow stupid implementation
-    CliffordOperator(Tableau([c.tab[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
+    CliffordOperator(Tableau([tab(c)[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
 end
 
 """Nonvectorized version of `apply!` used for unit tests."""

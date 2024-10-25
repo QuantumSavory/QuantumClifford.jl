@@ -30,11 +30,10 @@
             H = parity_checks(code)
             @test nqubits(code) == size(H, 2) == code_n(code)
             @test size(H, 1) == code_s(code)
-            @test code_s(code) + code_k(code) == code_n(code)
-            @test size(H, 1) < size(H, 2)
+            @test code_s(code) + code_k(code) >= code_n(code) # possibly exist redundant checks
             _, _, rank = canonicalize!(copy(H), ranks=true)
-            @test rank == size(H, 1) # TODO maybe weaken this if we want to permit codes with redundancies
-            @test QuantumClifford.stab_looks_good(copy(H))
+            @test rank <= size(H, 1)
+            @test QuantumClifford.stab_looks_good(copy(H), remove_redundant_rows=true)
         end
     end
 end
