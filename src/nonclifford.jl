@@ -161,9 +161,13 @@ function expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
 end
 
 """Same as `all(==(0), (a.+b.+c) .% 2)`"""
-function _allthreesumtozero(a,b,c) # TODO consider using bitpacking and SIMD xor with less eager shortcircuiting -- probably would be much faster
-    @inbounds @simd for i in 1:length(a)
-        iseven(a[i]+b[i]+c[i]) || return false
+function _allthreesumtozero(a,b,c)
+    n = length(a)
+    @inbounds @simd for i in 1:n
+        odd = (a[i]+b[i]+c[i]) & 1
+        if odd != 0
+            return false
+        end
     end
     true
 end
@@ -219,7 +223,10 @@ function _proj₊(sm::GeneralizedStabilizer, p::PauliOperator)
 end
 
 Base.copy(sm::GeneralizedStabilizer) = GeneralizedStabilizer(copy(sm.stab),copy(sm.destabweights))
+
 Base.:(==)(sm₁::GeneralizedStabilizer, sm₂::GeneralizedStabilizer) = sm₁.stab==sm₂.stab && sm₁.destabweights==sm₂.destabweights
+
+nqubits(sm::GeneralizedStabilizer) = nqubits(sm.stab)
 
 abstract type AbstractPauliChannel <: AbstractOperation end
 
@@ -270,6 +277,7 @@ nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 See also: [`GeneralizedStabilizer`](@ref), [`PauliChannel`](@ref), [`UnitaryPauliChannel`](@ref)
 """
 function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold=1e-10)
+    nqubits(state) == nqubits(gate) || throw(DimensionMismatch(lazy"GeneralizedStabilizer has $(nqubits(state)) qubits, but PauliChannel has $(nqubits(gate)). Use `embed` to create an appropriately padded PauliChannel."))
     dict = state.destabweights
     stab = state.stab
     dtype = valtype(dict)
