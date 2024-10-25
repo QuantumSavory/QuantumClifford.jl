@@ -8,7 +8,7 @@ using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     sCNOT, sSWAP, sHadamard, sPhase, sInvPhase,
     sZCX, sZCY, sZCZ, sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZ, sX, sY, sMRZ, sMRX,
     single_x, single_y, single_z,
-    apply!, stab_to_gf2, embed, @S_str
+    apply!, comm, stab_to_gf2, embed, @S_str
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
 using DocStringExtensions
 using Combinatorics: combinations
