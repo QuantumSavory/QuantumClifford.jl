@@ -6,6 +6,7 @@ using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
     canonicalize!, logicalxview, logicalzview, stabilizerview, destabilizerview, tab, phases,
     sCNOT, sSWAP, sHadamard, sPhase, sInvPhase, sZCX, sZCY, sZCZ, sZ, sX, sY,
+    single_x, single_y, single_z,
     apply!, stab_to_gf2, embed, @S_str
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
 using DocStringExtensions
