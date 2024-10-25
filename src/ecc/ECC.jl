@@ -7,7 +7,7 @@ using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     canonicalize!, logicalxview, logicalzview, stabilizerview, destabilizerview, tab, phases,
     sCNOT, sSWAP, sHadamard, sPhase, sInvPhase,
     sZCX, sZCY, sZCZ, sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZ, sX, sY, sMRZ, sMRX,
-    single_x, single_y, single_z,
+    single_x, single_y, single_z, random_pauli!,
     apply!, comm, stab_to_gf2, embed, @S_str
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
 using DocStringExtensions
