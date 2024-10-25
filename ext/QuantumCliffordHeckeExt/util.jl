@@ -8,7 +8,7 @@ condition.
 """
 function check_repr_commutation_relation(GA::GroupAlgebra)
     a, b = rand(GA), rand(GA)
-    # Check commutation relation: L(a) R(b) == R(b) L(a)
+    # Check commutation relation: L(a)R(b) = R(b)L(a)
     L_a = representation_matrix(a)
     R_a = representation_matrix(b, :right)
     return L_a * R_a == R_a * L_a
