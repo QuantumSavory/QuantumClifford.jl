@@ -339,11 +339,11 @@ end
 @qubitop2 SQRTZZ    (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 & z1 & ~x2) | (~x1 & x2 & z2)))
 @qubitop2 InvSQRTZZ (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 &~z1 & ~x2) | (~x1 & x2 &~z2)))
 
-@qubitop2 SQRTXX     (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero((~x1 & z1 &~z2) | ( ~z1 &~x2 & z2)))
-@qubitop2 InvSQRTXX  (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero((x1 & z1 & ~z2) | ( ~z1 & x2 & z2)))
+@qubitop2 SQRTXX    (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero((~x1 & z1 &~z2) | (~z1 &~x2 & z2)))
+@qubitop2 InvSQRTXX (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero(( x1 & z1 &~z2) | (~z1 & x2 & z2)))
 
-@qubitop2 SQRTYY     (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero((~x1 &~z1 & x2 &~z2) | ( x1 &~z1 &~x2 &~z2) | ( x1 &~z1 & x2 & z2) | ( x1 & z1 & x2 &~z2)))
-@qubitop2 InvSQRTYY  (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero(( x1 & z1 &~x2 & z2) | (~x1 & z1 & x2 & z2) | (~x1 & z1 &~x2 &~z2) | (~x1 &~z1 &~x2 & z2)))
+@qubitop2 SQRTYY    (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero((~x1 &~z1 & x2 &~z2) | ( x1 &~z1 &~x2 &~z2) | ( x1 &~z1 & x2 & z2) | ( x1 & z1 & x2 &~z2)))
+@qubitop2 InvSQRTYY (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero(( x1 & z1 &~x2 & z2) | (~x1 & z1 & x2 & z2) | (~x1 & z1 &~x2 &~z2) | (~x1 &~z1 &~x2 & z2)))
 
 #=
 To get the boolean formulas for the phase, it is easiest to first write down the truth table for the phase:
