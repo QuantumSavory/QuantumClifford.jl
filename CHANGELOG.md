@@ -5,6 +5,11 @@
 
 # News
 
+## v0.9.13 - dev
+
+- Implementing additional named two-qubit gates: `sSWAPCX, sInvSWAPCX, sCZSWAP, sCXSWAP, sISWAP, sInvISWAP,
+    sSQRTZZ, sInvSQRTZZ`
+
 ## v0.9.12 - 2024-10-18
 
 - Minor compat fixes for julia 1.11 in the handling of `hgp`
