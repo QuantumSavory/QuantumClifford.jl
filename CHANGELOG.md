@@ -7,6 +7,12 @@
 
 ## v0.9.13 - dev
 
+- New error correction group theory tools:
+    - `canonicalize_noncomm` function to find a generating set with minimal anticommutivity
+    - `SubsystemCodeTableau` data structure to represent the output of `canonicalize_noncomm`
+    - `commutify` function to find a commutative version of a non-commutative set of Paulis with minimal changes
+    - `matroid_parent` to, for set of Paulis that doesn't represent a state, find a version
+    that does.
 - Implementing additional named two-qubit gates: `sSWAPCX, sInvSWAPCX, sCZSWAP, sCXSWAP, sISWAP, sInvISWAP,
     sSQRTZZ, sInvSQRTZZ`
 

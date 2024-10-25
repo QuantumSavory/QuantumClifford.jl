@@ -1,4 +1,4 @@
-@testitem "group theory routines" begin
+@testitem "group theory tools" begin
     using Test
     using Random
     using QuantumClifford
@@ -8,40 +8,81 @@
     # Zero function(in groupify) slows down around 2^30(n=30),eventually breaks
     small_test_sizes = [1, 2, 3, 4, 5, 7] # Pauligroup slows around n = 8
 
-    @testset "group_tableaux" begin
+    @testset "group theory tools" begin
         #Test groupify
         for n in [1, test_sizes...]
             s = random_stabilizer(n)
             s_test = copy(s)
             group = groupify(s)
             @test length(group) == 2^n
-            unchanged = true
             for stabilizer in group
                 apply!(s, stabilizer)
-                if !(s == s_test)
-                    unchanged = false
-                end
-                @test unchanged == true
+                @test s == s_test
             end
         end
         #Test minimal_generating_set
-        for n in [1, small_test_sizes...]
+        for n in [1, test_sizes...]
             s = random_stabilizer(n)
             group = groupify(s)
             gen_set = minimal_generating_set(Stabilizer(group))
+            @test length(group) == 2^(length(gen_set))
             new_group = groupify(gen_set)
-            canonicalize!(Stabilizer(group))
-            canonicalize!(Stabilizer(new_group))
-            @test group == new_group
-            s = zero(Stabilizer, rand(1:(2*n)), n)
-            for i in 1:length(s)
-                s[i] = random_pauli(n)
+            s1, _, r = canonicalize!(Stabilizer(group), ranks = true)
+            s2, _, r = canonicalize!(Stabilizer(new_group), ranks=true)
+            @test group[1:r, :] == new_group[1:r, :]
+        end
+        #Test canonicalize_noncomm
+        for n in [1, small_test_sizes...]
+            t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
+            for i in eachindex(t) t[i] = random_pauli(n) end
+            loc = canonicalize_noncomm(t)
+            for i in 1:loc.k
+                for j in 1:loc.k
+                    if i == j
+                        @test comm(logicalxview(loc)[i], logicalzview(loc)[j]) == 0x01
+                    else @test comm(logicalxview(loc)[i], logicalzview(loc)[j]) == 0x00 end
+                end
             end
-            gen_set = minimal_generating_set(s)
-            new_group = groupify(s)
-            for operator in s
-                @test operator in new_group
+            for i in stabilizerview(loc)
+                for j in stabilizerview(loc) @test comm(i, j) == 0x00 end
+                for j in logicalzview(loc) @test comm(i, j) == 0x00 end
+                for j in logicalxview(loc) @test comm(i, j) == 0x00 end
             end
+        end
+        #Test commutify
+        for n in [1, small_test_sizes...]
+            t = zero(QuantumClifford.Tableau, rand(1:(2*n)), n)
+            for i in eachindex(t) t[i] = random_pauli(n) end
+            c, d = commutify(t)
+            for i in c
+                for j in c
+                    @test comm(i, j) == 0x00
+                end
+            end
+            for i in d
+                for p in c
+                    @test p[i] != (true, true)
+                end
+            end
+            loc1= delete_columns(c, d)
+            loc2 = canonicalize_noncomm(t).tab
+            for i in eachindex(delete_columns(c, d))
+            end
+        end
+        #Test matroid_parent
+        for n in [1,2,3,4,5]
+            t = zero(QuantumClifford.Tableau, 2*n, n)
+            for i in eachindex(t) t[i] = random_pauli(n) end
+            e, d2, d1 = matroid_parent(t)
+            s = Stabilizer(groupify(e))
+            for i in e for j in e @test comm(i, j)==0x00 end end
+            @test 2^(nqubits(s)) == length(s) #assumes commutativise works
+            #find original tableau from matroid_parentded state, ignoring phases
+            inverted = delete_columns(Stabilizer(normalizer(delete_columns(Stabilizer(e), d2).tab)), d1)
+            original = Stabilizer(groupify(Stabilizer(t)))
+            canonicalize!(inverted)
+            canonicalize!(original)
+            @test inverted[1:length(inverted)].tab.xzs == original[1:length(inverted)].tab.xzs
         end
         #Test pauligroup
         for n in [1, small_test_sizes...]

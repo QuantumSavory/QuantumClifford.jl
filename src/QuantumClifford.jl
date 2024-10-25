@@ -78,6 +78,7 @@ export
     graphstate, graphstate!, graph_gatesequence, graph_gate,
     # Group theory tools
     groupify, minimal_generating_set, pauligroup, normalizer, centralizer, contractor, delete_columns,
+    canonicalize_noncomm, commutify, matroid_parent, SubsystemCodeTableau,
     # Clipped Gauge
     canonicalize_clip!, bigram, entanglement_entropy,
     # mctrajectories
