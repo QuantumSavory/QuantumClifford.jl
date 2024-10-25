@@ -111,6 +111,7 @@
         @test CliffordOperator(sCZSWAP)    == C"ZX XZ IZ ZI"
         @test CliffordOperator(sCXSWAP)    == C"XX XI IZ ZZ"
         @test CliffordOperator(sISWAP)     == C"ZY YZ IZ ZI"
+        @test CliffordOperator(sInvISWAP)  == C"-ZY -YZ IZ ZI"
         @test CliffordOperator(sSQRTZZ)    == C"YZ ZY ZI IZ"
         @test CliffordOperator(sInvSQRTZZ) == C"-YZ -ZY ZI IZ"
         @test CliffordOperator(sSQRTXX)    == C"XI IX -YX -XY"

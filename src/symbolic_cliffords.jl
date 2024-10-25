@@ -411,6 +411,10 @@ LinearAlgebra.inv(op::sISWAP)     = sInvISWAP(op.q1, op.q2)
 LinearAlgebra.inv(op::sInvISWAP)  = sISWAP(op.q1, op.q2)
 LinearAlgebra.inv(op::sSQRTZZ)    = sInvSQRTZZ(op.q1, op.q2)
 LinearAlgebra.inv(op::sInvSQRTZZ) = sSQRTZZ(op.q1, op.q2)
+LinearAlgebra.inv(op::sSQRTXX)    = sInvSQRTXX(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvSQRTXX) = sSQRTXX(op.q1, op.q2)
+LinearAlgebra.inv(op::sSQRTYY)    = sInvSQRTYY(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvSQRTYY) = sSQRTYY(op.q1, op.q2)
 
 ##############################
 # Functions that perform direct application of common operators without needing an operator instance
