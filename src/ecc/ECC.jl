@@ -1,9 +1,12 @@
 module ECC
 
-using LinearAlgebra
-using LinearAlgebra: I
-using QuantumClifford
-using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
+using LinearAlgebra: LinearAlgebra, I, rank, tr
+using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
+    AbstractTwoQubitOperator, Stabilizer, PauliOperator,
+    random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
+    canonicalize!, logicalxview, logicalzview, stabilizerview, destabilizerview, tab, phases,
+    sCNOT, sSWAP, sHadamard, sPhase, sInvPhase, sZCX, sZCY, sZCZ, sZ, sX, sY,
+    apply!, stab_to_gf2, embed, @S_str
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
 using DocStringExtensions
 using Combinatorics: combinations
