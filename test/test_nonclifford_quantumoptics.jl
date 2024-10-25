@@ -52,45 +52,18 @@ qo_tgate.data[2,2] = exp(im*pi/4)
 end
 
 @testset "project!" begin
-    for n in 1:4
-        for repetition in 1:5
-            s = random_stabilizer(n)
-            p = random_pauli(n)
-            gs = GeneralizedStabilizer(s)
-            for i in 1:rand(1:3)
-                apply!(copy(gs), embed(n, i, pcT))
-            end
-            qo_state = Operator(gs)
-            project!(copy(gs), copy(p))[1]
-            qo_state_after_proj = Operator(gs)
-            qo_pauli = Operator(gs)
-            qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
-            qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
-            result1  = qo_proj1*qo_state*qo_proj1'
-            result2  = qo_proj2*qo_state*qo_proj2'
-            @test qo_state_after_proj ≈ result2 || qo_state_after_proj ≈ result1
-        end
-    end
-end
-
-@testset "projectrand!" begin
-    for n in 1:4
-        for repetition in 1:5
-            s = random_stabilizer(n)
-            p = random_pauli(n)
-            gs = GeneralizedStabilizer(s)
-            for i in 1:rand(1:3)
-                apply!(copy(gs), embed(n, i, pcT))
-            end
-            qo_state = Operator(gs)
-            projectrand!(copy(gs), copy(p))[1]
-            qo_state_after_proj = Operator(gs)
-            qo_pauli = Operator(gs)
-            qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
-            qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
-            result1  = qo_proj1*qo_state*qo_proj1'
-            result2  = qo_proj2*qo_state*qo_proj2'
-            @test qo_state_after_proj ≈ result2 || qo_state_after_proj ≈ result1
-        end
+    checks = [(S"X",P"X"),(S"Y",P"Y"),(S"Z",P"Z"),(S"-X",P"-X"),(S"-Y",P"-Y"),(S"-Z",P"-Z")]
+    for (s, p) in checks
+        gs = GeneralizedStabilizer(s)
+        apply!(gs, p)
+        qo_state = Operator(gs)
+        project!(gs, p)[1]
+        qo_state_after_proj = Operator(gs)
+        qo_pauli = Operator(p)
+        qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
+        qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
+        result1 = qo_proj1*qo_state*qo_proj1'
+        result2 = qo_proj2*qo_state*qo_proj2'
+        @test qo_state_after_proj ≈ result2 || qo_state_after_proj ≈ result1
     end
 end

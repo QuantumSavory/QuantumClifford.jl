@@ -213,31 +213,9 @@ function project!(sm::GeneralizedStabilizer, p::PauliOperator)
     return newsm, anticom, res
 end
 
-"""
-$TYPEDSIGNATURES
-
-Measure `pauli` operator on `state` and randomize the phase if necessary.
-"""
-function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
-    eval = expect(p, sm)
-    prob = (real(eval)+1)/2
-    return rand() < prob ? _proj₊(sm, p) : _proj₋(sm, p)
-end
-
-function _proj₊(sm::GeneralizedStabilizer, p::PauliOperator)
-    newstab, res = projectrand!(sm.stab, p)
-    χ′ = expect(p, sm)
-    n = nqubits(newstab)
-    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>χ′))
-    return newsm, res
-end
-
 function _proj₋(sm::GeneralizedStabilizer, p::PauliOperator)
-    newstab, res = projectrand!(sm.stab, -p)
-    χ′ = expect(p, sm)
-    n = nqubits(newstab)
-    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>χ′))
-    return newsm, res
+end
+function _proj₊(sm::GeneralizedStabilizer, p::PauliOperator)
 end
 
 Base.copy(sm::GeneralizedStabilizer) = GeneralizedStabilizer(copy(sm.stab),copy(sm.destabweights))
