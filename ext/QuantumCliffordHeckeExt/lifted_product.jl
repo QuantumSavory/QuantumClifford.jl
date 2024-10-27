@@ -153,8 +153,43 @@ code_s(c::LPCode) = size(c.repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) +
 Two-block group algebra (2GBA) codes, which are a special case of lifted product codes
 from two group algebra elements `a` and `b`, used as `1x1` base matrices.
 
+# Example
+
+An abelian `[[60, 6, 10]]` 2BGA code  of order `l = 30` with group ID `4`, represented
+by the group presentation `⟨r | r³⁰⟩`, constructed via `Hecke.small_group`.
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens, small_group, one; # hide
+
+julia> l = 30;
+
+julia> group_id = 4;
+
+julia> G = small_group(l, group_id);
+
+julia> GA = group_algebra(GF(2), G);
+
+julia> r = prod(gens(GA));
+
+julia> r^30  ==  1 # presentation ⟨r|r³⁰⟩ satisfied 
+true
+
+julia> a_elts = [one(G), r^10, r^6, r^13];
+
+julia> b_elts = [one(G), r^25, r^16, r^12];
+
+julia> a = sum(GA(x) for x in a_elts);
+
+julia> b = sum(GA(x) for x in b_elts);
+
+julia> c = two_block_group_algebra_codes(a,b);
+
+julia> code_n(c), code_k(c) 
+(60, 6)
+```
+
 See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref)
-""" # TODO doctest example
+"""
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
     A = reshape([a], (1, 1))
     B = reshape([b], (1, 1))

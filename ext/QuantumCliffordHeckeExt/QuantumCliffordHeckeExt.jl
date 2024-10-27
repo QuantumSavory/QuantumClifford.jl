@@ -5,7 +5,7 @@ using DocStringExtensions
 import QuantumClifford, LinearAlgebra
 import Hecke: Group, GroupElem, AdditiveGroup, AdditiveGroupElem,
     GroupAlgebra, GroupAlgebraElem, FqFieldElem, representation_matrix, dim, base_ring,
-    multiplication_table, coefficients, abelian_group, group_algebra
+    multiplication_table, coefficients, abelian_group, group_algebra, small_group, one
 import Nemo
 import Nemo: characteristic, matrix_repr, GF, ZZ, lift
 
