@@ -210,9 +210,9 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
 
 """
 function project!(sm::GeneralizedStabilizer, p::PauliOperator)
-    newstab, anticom, res = project!(sm.stab, p)
+    n = nqubits(sm)
     χ′ = expect(p, sm)
-    n = nqubits(newstab)
+    newstab, anticom, res = project!(sm.stab, p)
     newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>χ′))
     return newsm, anticom, res
 end
