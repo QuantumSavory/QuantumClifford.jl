@@ -55,6 +55,12 @@
             stabs = [s[1:i] for s in [random_stabilizer(n) for n in [32,16,16,64,63,65,129,128,127]] for i in rand(1:10)];
             mdstabs = MixedDestabilizer.(stabs);
             @test canonicalize!(⊗(stabs...)) == canonicalize!(stabilizerview(⊗(mdstabs...)))
+            md = MixedDestabilizer(random_destabilizer(n))
+            s = random_stabilizer(n)
+            mds = md⊗s
+            @test mixed_destab_looks_good(mds)
+            estab = stabilizerview(md)⊗s
+            @test canonicalize!(copy(stabilizerview(mds))) == canonicalize!(estab)
         end
     end
 
@@ -91,7 +97,18 @@
         end
     end
 
-    @testset "MixedDestabilizer: Regular Array vs Subarray Using Tableau" begin
+    @testset "horizontal concatenation" begin
+        @test hcat(ghz(2), ghz(2)) == S"XXXX ZZZZ"
+        s1 = S"YZ -XX"
+        s2 = S"-ZY -YX"
+        @test hcat(copy(s1), copy(s2)) == S"-YZZY XXYX"
+        @test hcat(copy(s1), copy(s2), copy(s1), copy(s2)) == S"YZZYYZZY XXYXXXYX"
+        @test_throws ArgumentError hcat(copy(s1), random_stabilizer(3))
+        @test hcat(copy(tab(s1)), copy(tab(s2))) == T"-YZZY XXYX"
+        @test hcat(copy(tab(s1)), copy(tab(s2)), copy(tab(s1)), copy(tab(s2))) == T"YZZYYZZY XXYXXXYX"
+    end
+
+    @testset "MixedDestabilizer via Stabilizer{Tableau}: Regular Array vs. Subarray in Tableau Structure" begin
         # Case 1: QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}
         for _ in 1:5
             n = rand(2:6)
