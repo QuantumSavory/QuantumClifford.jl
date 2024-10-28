@@ -569,6 +569,7 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false)
         t[n+r+s+1:end] = sZ # The other logical set in the tableau
     end
     if undoperm
+        # Handle SubArray separately to ensure the correct type is maintained after applying the inverse permutation.
         if isa(t, SubArray)
             t = t[:, invperm(permx[permz])]::T
             return MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
