@@ -90,4 +90,25 @@
             @test stab_to_gf2(s2a) == stab_to_gf2(s2b)
         end
     end
+
+    @testset "MixedDestabilizer: Regular Array vs Subarray Using Tableau" begin
+        # Case 1: QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}
+        for _ in 1:5
+            n = rand(2:6)
+            stab = random_stabilizer(n)
+            regular_arr = MixedDestabilizer(stab; undoperm=true)
+            @test isa(regular_arr, MixedDestabilizer)
+        end
+
+        # Case 2: Tableau{SubArray{...}, SubArray{...}, Tuple{Base.Slice{...}}}
+        for _ in 1:5
+            n = rand(2:6)
+            stab = random_stabilizer(n)
+            start_idx = rand(1:n)
+            end_idx = rand(start_idx:n)
+            t_subarr = @view stab[start_idx:end_idx]
+            md_via_subarr = MixedDestabilizer(Stabilizer(t_subarr); undoperm=true)
+            @test isa(md_via_subarr, MixedDestabilizer)
+        end
+    end
 end
