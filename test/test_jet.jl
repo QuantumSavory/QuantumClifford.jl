@@ -9,6 +9,7 @@
     using Nemo
     using AbstractAlgebra
     using Hecke
+    using StaticArrays
 
     rep = report_package("QuantumClifford";
         ignored_modules=(
@@ -21,9 +22,10 @@
             AnyFrameModule(Nemo),
             AnyFrameModule(AbstractAlgebra),
             AnyFrameModule(Hecke),
+            AnyFrameModule(StaticArrays),
     ))
 
     @show rep
-    @test_broken length(JET.get_reports(rep)) == 0
-    @test length(JET.get_reports(rep)) <= 10
+    @show length(JET.get_reports(rep))
+    @test length(JET.get_reports(rep)) == 0
 end

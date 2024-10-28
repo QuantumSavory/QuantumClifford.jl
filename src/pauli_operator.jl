@@ -77,7 +77,7 @@ function zbit(p::PauliOperator)
     [(word>>s)&one==one for word in zview(p) for s in 0:size-1][begin:p.nqubits]
 end
 
-function _P_str(a)
+function _P_str(a::Union{String,SubString{String}})
     letters = filter(x->occursin(x,"_IZXY"),a)
     phase = phasedict[strip(filter(x->!occursin(x,"_IZXY"),a))]
     PauliOperator(phase, [l=='X'||l=='Y' for l in letters], [l=='Z'||l=='Y' for l in letters])
@@ -89,7 +89,7 @@ end
 
 Base.getindex(p::PauliOperator{Tₚ,Tᵥ}, i::Int) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}} = begin
     _, ibig, _, ismallm = get_bitmask_idxs(p.xz,i)
-    (p.xz[ibig] & ismallm) != 0x0, (p.xz[end÷2+ibig] & ismallm) != 0x0
+    ((p.xz[ibig] & ismallm) != 0x0)::Bool, ((p.xz[end÷2+ibig] & ismallm) != 0x0)::Bool
 end
 Base.getindex(p::PauliOperator{Tₚ,Tᵥ}, r) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}} = PauliOperator(p.phase[], xbit(p)[r], zbit(p)[r])
 
@@ -180,7 +180,8 @@ end
 function embed(n::Int, indices, p::PauliOperator)
     if nqubits(p) == length(indices)
         pout = zero(typeof(p), n)
-        @inbounds @simd for i in eachindex(indices)
+        @inbounds @simd for i_ in eachindex(indices)
+            i = i_::Int
             pout[indices[i]] = p[i]
         end
         pout.phase[] = p.phase[]

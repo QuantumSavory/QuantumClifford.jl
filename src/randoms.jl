@@ -184,7 +184,7 @@ function nemo_inv(a, n)::Matrix{UInt8}
 end
 
 """Sample (h, S) from the distribution P_n(h, S) from Bravyi and Maslov Algorithm 1."""
-function quantum_mallows(rng, n) # each one is benchmakred in benchmarks/quantum_mallows.jl
+function quantum_mallows(rng::AbstractRNG, n::Int) # each one is benchmarked in benchmarks/quantum_mallows.jl
     arr = collect(1:n)
     hadamard = falses(n)
     perm = zeros(Int64, n)
@@ -202,7 +202,7 @@ end
 
 """ This function samples a number from 1 to `n` where `n >= 1`
     probability of outputting `i` is proportional to `2^i`"""
-function sample_geometric_2(rng, n::Integer)
+function sample_geometric_2(rng::AbstractRNG, n::Integer)
     n < 1 && throw(DomainError(n))
     if n<30
         k = rand(rng, 2:UInt(2)^n)
@@ -217,7 +217,7 @@ function sample_geometric_2(rng, n::Integer)
 end
 
 """Assign (symmetric) random ints to off diagonals of matrix."""
-function fill_tril(rng, matrix, n; symmetric::Bool=false)
+function fill_tril(rng::AbstractRNG, matrix, n; symmetric::Bool=false)
     # Add (symmetric) random ints to off diagonals
     @inbounds for row in 1:n, col in 1:row-1
         b = rand(rng, Bool)
