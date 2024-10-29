@@ -1,6 +1,7 @@
 using Test
 using QuantumClifford
 using QuantumClifford.ECC
+using QuantumClifford.ECC: check_repr_regular_linear
 using InteractiveUtils
 
 import Nemo: GF
@@ -46,6 +47,7 @@ other_lifted_product_codes = []
 # [[882, 24, d≤24]] code from (B1) in Appendix B of [panteleev2021degenerate](@cite)
 l = 63
 GA = group_algebra(GF(2), abelian_group(l))
+@test check_repr_regular_linear(GA)
 A = zeros(GA, 7, 7)
 x = gens(GA)[]
 A[LinearAlgebra.diagind(A)] .= x^27
