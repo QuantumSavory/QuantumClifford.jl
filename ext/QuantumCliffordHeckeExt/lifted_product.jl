@@ -228,7 +228,7 @@ julia> code_n(c), code_k(c)
 (756, 16)
 ```
 """
-function bivariate_bicycle_codes(A::Vector{GroupAlgebraElem{FqFieldElem, GroupAlgebra{FqFieldElem, FinGenAbGroup, FinGenAbGroupElem}}}, B::Vector{GroupAlgebraElem{FqFieldElem, GroupAlgebra{FqFieldElem, FinGenAbGroup, FinGenAbGroupElem}}}, GA::GroupAlgebra{FqFieldElem, FinGenAbGroup, FinGenAbGroupElem})
+function bivariate_bicycle_codes(A::VectorGroupAlgebraElem, B::VectorGroupAlgebraElem, GA::FqFieldFinGenAbGroupElemGroupAlgebra)
     a = sum(GA(x) for x in A)
     b = sum(GA(x) for x in B)
     c = two_block_group_algebra_codes(a,b)

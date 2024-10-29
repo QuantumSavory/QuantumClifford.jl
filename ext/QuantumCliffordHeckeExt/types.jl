@@ -10,6 +10,10 @@ const FqFieldGroupAlgebraElemMatrix = Union{
     LinearAlgebra.Adjoint{<:GroupAlgebraElem{FqFieldElem,<:GroupAlgebra},<:Matrix{<:GroupAlgebraElem{FqFieldElem,<:GroupAlgebra}}}
 }
 
+const VectorGroupAlgebraElem = Vector{GroupAlgebraElem{FqFieldElem, GroupAlgebra{FqFieldElem, FinGenAbGroup, FinGenAbGroupElem}}}
+
+const FqFieldFinGenAbGroupElemGroupAlgebra = GroupAlgebra{FqFieldElem, FinGenAbGroup, FinGenAbGroupElem}
+
 """
 Compute the conjugate of a group algebra element.
 The conjugate is defined by inversing elements in the associated group.
