@@ -89,6 +89,19 @@ function _stabmixdestab(mixeddestab, d)
     p
 end
 
+function _conj_destabs(state::GeneralizedStabilizer)
+    dict = state.destabweights
+    dtype = valtype(dict)
+    tzero = zero(dtype)
+    newdict = typeof(dict)(tzero)
+    for ((dᵢ, dⱼ), χ) in dict
+        dᵢ′ = .!dᵢ
+        dⱼ′ = .!dⱼ
+        newdict[(dᵢ′, dⱼ′)] += χ
+    end
+    state.destabweights = newdict
+end
+
 """
 Apply a Clifford gate to a generalized stabilizer state, i.e. a weighted sum of stabilizer states.
 
@@ -109,13 +122,14 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒮𝓉𝒶𝒷
 - Z
 with ϕᵢⱼ | Pᵢ | Pⱼ:
- 1.0+0.0im | + _ | + _
+ 1.0+0.0im | + X | + X
 ```
 
 See also: [`GeneralizedStabilizer`](@ref)
 """
-function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator) # TODO conjugate also the destabs
+function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator)
     apply!(state.stab, gate)
+    _conj_destabs(state)
     state
 end
 
