@@ -4,11 +4,13 @@ using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
-    canonicalize!, logicalxview, logicalzview, stabilizerview, destabilizerview, tab, phases,
+    canonicalize!, canonicalize_gott!,
+    logicalxview, logicalzview, stabilizerview, destabilizerview, tab, phases,
     sCNOT, sSWAP, sHadamard, sPhase, sInvPhase,
     sZCX, sZCY, sZCZ, sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZ, sX, sY, sMRZ, sMRX,
     single_x, single_y, single_z, random_pauli!, PauliError,
-    apply!, comm, comm!, stab_to_gf2, embed, @S_str, affectedqubits, affectedbits
+    apply!, comm, comm!, stab_to_gf2, embed, @S_str, affectedqubits, affectedbits,
+    pftrajectories, pfmeasurements, mctrajectories
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
 using DocStringExtensions
 using Combinatorics: combinations
