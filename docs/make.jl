@@ -41,6 +41,9 @@ pages = [
     "Circuit Operations" => "noisycircuits_ops.md",
     "API" => "noisycircuits_API.md"
 ],
+"Generalized Stabilizer" => [
+    "Overview" => "genstab.md",
+    ],
 "ECC compendium" => [
     "Evaluating codes and decoders" => "ECC_evaluating.md"
     "API" => "ECC_API.md"
