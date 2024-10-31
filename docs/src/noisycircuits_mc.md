@@ -15,7 +15,7 @@ Import with `using QuantumClifford.Experimental.NoisyCircuits`.
 
 This module enables the simulation of noisy Clifford circuits through a Monte Carlo method where the same circuit is evaluated multiple times with random errors interspersed through it as prescribed by a given error model.
 
-Below is an example of a purification circuit. We first prepare the circuit we desire to use, including a noise model. `Quantikz.jl` was is used to visualize the circuit.
+Below is an example of a purification circuit. We first prepare the circuit we desire to use, including a noise model. `Quantikz.jl` is used to visualize the circuit.
 
 ```@example 1
 using QuantumClifford # hide
