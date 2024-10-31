@@ -46,7 +46,7 @@ efficient updates of the entire stabilizer basis with minimal computational over
 
 Yoder[^2] investigated the classical simulation of quantum circuits in the context of `strong simulation`, which
 focuses on calculating exact probabilities for specific measurement outcomes. A notable gap exists between weak
-and strong sampling problems, with some circuits being `#P`-complete for strong simulation while weak simulation
+and strong simulation problems, with some circuits being `#P`-complete for strong simulation while weak simulation
 is in `BPP`.The key differences between these two approaches are as follows:
 
 ```@raw html
