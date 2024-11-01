@@ -11,7 +11,7 @@ struct PauliFrame{T,S} <: AbstractQCState
     measurements::S # TODO check if when looping over this we are actually looping over the fast axis
 end
 
-nqubits(f::PauliFrame) = nqubits(f.frame)
+nqubits(f::PauliFrame) = nqubits(f.frame) - 1 # dont count the ancilla qubit
 Base.length(f::PauliFrame) = size(f.measurements, 1)
 Base.eachindex(f::PauliFrame) = 1:length(f)
 Base.copy(f::PauliFrame) = PauliFrame(copy(f.frame), copy(f.measurements))
@@ -122,7 +122,7 @@ function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRY, and faster sMRX
 end
 
 function apply!(frame::PauliFrame, op::PauliMeasurement)
-    # this is inspired by ECC.naive_ancillary_paulimeasurement. Not sure if it's better to import and call that.
+    # this is inspired by ECC.naive_syndrome_circuit
     n = nqubits(op.pauli)
     for qubit in 1:n
         if op.pauli[qubit] == (1, 0)
@@ -134,7 +134,7 @@ function apply!(frame::PauliFrame, op::PauliMeasurement)
         end
     end
     op.pauli.phase[] == 0 || apply!(frame, sX(n + 1))
-    apply!(frame, sMRX(n + 1, op.bit))
+    apply!(frame, sMRZ(n + 1, op.bit))
 
     return frame
 end
