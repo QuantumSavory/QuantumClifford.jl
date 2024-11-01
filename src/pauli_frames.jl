@@ -26,7 +26,8 @@ $(TYPEDSIGNATURES)
 Prepare an empty set of Pauli frames with the given number of `frames` and `qubits`. Preallocates spaces for `measurement` number of measurements.
 """
 function PauliFrame(frames, qubits, measurements)
-    stab = fastcolumn(zero(Stabilizer, frames, qubits)) # TODO this should really be a Tableau
+    # one extra qubit for ancilla measurements
+    stab = fastcolumn(zero(Stabilizer, frames, qubits + 1)) # TODO this should really be a Tableau
     bits = zeros(Bool, frames, measurements)
     frame = PauliFrame(stab, bits)
     initZ!(frame)
@@ -116,6 +117,24 @@ function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRY, and faster sMRX
         xzs[ibig,f] &= ~ismallm
         rand(Bool) && (xzs[end÷2+ibig,f] ⊻= ismallm)
     end
+
+    return frame
+end
+
+function apply!(frame::PauliFrame, op::PauliMeasurement)
+    # this is inspired by ECC.naive_ancillary_paulimeasurement. Not sure if it's better to import and call that.
+    n = nqubits(op.pauli)
+    for qubit in 1:n
+        if op.pauli[qubit] == (1, 0)
+            apply!(frame, sXCZ(qubit, n + 1))
+        elseif op.pauli[qubit] == (0, 1)
+            apply!(frame, sCNOT(qubit, n + 1))
+        elseif op.pauli[qubit] == (1, 1)
+            apply!(frame, sYCX(qubit, n + 1))
+        end
+    end
+    op.pauli.phase[] == 0 || apply!(frame, sX(n + 1))
+    apply!(frame, sMRX(n + 1, op.bit))
 
     return frame
 end
