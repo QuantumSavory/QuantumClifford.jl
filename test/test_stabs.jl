@@ -117,7 +117,7 @@
         @test isa(regular_arr, MixedDestabilizer)
         # Case 2: Tableau{SubArray{...}, SubArray{...}, Tuple{Base.Slice{...}}}
         stab = random_stabilizer(n)
-        substab = @view stab[3:end_idx]
+        substab = @view stab[3:n]
         md_via_subarr = MixedDestabilizer(substab; undoperm=true)
         @test isa(md_via_subarr, MixedDestabilizer)
     end
