@@ -52,7 +52,7 @@ export
     sCNOT, sCPHASE, sSWAP,
     sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZCX, sZCY, sZCZ,
     sZCrY, sInvZCrY, sSWAPCX, sInvSWAPCX, sCZSWAP, sCXSWAP, sISWAP, sInvISWAP,
-    sSQRTZZ, sInvSQRTZZ,
+    sSQRTZZ, sInvSQRTZZ, sSQRTXX, sInvSQRTXX, sSQRTYY, sInvSQRTYY,
     # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
