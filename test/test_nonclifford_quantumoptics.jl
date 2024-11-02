@@ -50,3 +50,24 @@ qo_tgate.data[2,2] = exp(im*pi/4)
         end
     end
 end
+
+function test_conj_destabs(num_qubits, gates)
+    for _ in 1:5
+        s = random_stabilizer(num_qubits)
+        sm = GeneralizedStabilizer(s)
+        @test dm(Ket(s)) ≈ Operator(sm)
+        for C in gates
+            @test Operator(C) * Operator(sm) * Operator(C)' ≈ Operator(apply!(sm, C))
+        end
+    end
+end
+
+@testset "conjugate destabs" begin
+    @testset "Single-qubit Clifford gate" begin
+        test_conj_destabs(1, [tHadamard, tPhase, tId1])
+    end
+
+    @testset "Two-qubit Clifford gate" begin
+        test_conj_destabs(2, [tCNOT, tCPHASE, tSWAP])
+    end
+end

@@ -114,7 +114,7 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
 
 See also: [`GeneralizedStabilizer`](@ref)
 """
-function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator) # TODO conjugate also the destabs
+function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator)
     apply!(state.stab, gate)
     state
 end
