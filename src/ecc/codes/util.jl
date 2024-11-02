@@ -6,3 +6,6 @@ function hgp(h₁,h₂)
     hz = hcat(kron(LinearAlgebra.I(n₁), h₂), kron(h₁', LinearAlgebra.I(r₂)))
     hx, hz
 end
+
+"""Implemented in a package extension with Hecke."""
+function check_repr_regular_linear end
