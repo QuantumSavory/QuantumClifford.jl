@@ -55,9 +55,9 @@ end
     test_cases = [
         (1, [tHadamard, tPhase, tId1]),
         (2, [tCNOT, tCPHASE, tSWAP]),
-        (3, [enumerate_cliffords(3, clifford_cardinality(3))]),
-        (4, [enumerate_cliffords(4, clifford_cardinality(4))]),
-        (5, [enumerate_cliffords(5, clifford_cardinality(5))])
+        (3, [enumerate_cliffords(3, clifford_cardinality(3)), CliffordOperator(sHadamard(3), 3), CliffordOperator(sCNOT(1, 2), 3)]),
+        (4, [enumerate_cliffords(4, clifford_cardinality(4)), CliffordOperator(sHadamard(4), 4), CliffordOperator(sCNOT(2, 1), 4)]),
+        (5, [enumerate_cliffords(5, clifford_cardinality(5)), CliffordOperator(sHadamard(5), 5), CliffordOperator(sCNOT(2, 3), 5)])
     ]
 
     for (num_qubits, gates) in test_cases
