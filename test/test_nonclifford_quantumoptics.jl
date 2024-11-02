@@ -51,23 +51,27 @@ qo_tgate.data[2,2] = exp(im*pi/4)
     end
 end
 
-function test_conj_destabs(num_qubits, gates)
-    for _ in 1:5
-        s = random_stabilizer(num_qubits)
-        sm = GeneralizedStabilizer(s)
-        @test dm(Ket(s)) ≈ Operator(sm)
-        for C in gates
-            @test Operator(C) * Operator(sm) * Operator(C)' ≈ Operator(apply!(sm, C))
+@testset "Conjugate destabs" begin
+    for (num_qubits, gates) in [(1, [tHadamard, tPhase, tId1]), (2, [tCNOT, tCPHASE, tSWAP])]
+        @testset "$num_qubits-qubit Clifford gate" begin
+            for _ in 1:10
+                s = random_stabilizer(num_qubits)
+                sm = GeneralizedStabilizer(s)
+                @test dm(Ket(s)) ≈ Operator(sm)
+                for C in gates
+                    @test Operator(C) * Operator(sm) * Operator(C)' ≈ Operator(apply!(sm, C))
+                end
+            end
         end
     end
-end
 
-@testset "conjugate destabs" begin
-    @testset "Single-qubit Clifford gate" begin
-        test_conj_destabs(1, [tHadamard, tPhase, tId1])
-    end
-
-    @testset "Two-qubit Clifford gate" begin
-        test_conj_destabs(2, [tCNOT, tCPHASE, tSWAP])
+    @testset "non-clifford gate" begin
+        for n in 5:10
+            i = rand(1:(n-1))
+            eg = embed(n, i, pcT)
+            sm = GeneralizedStabilizer(random_stabilizer(n))
+            @test dm(Ket(sm.stab)) ≈ Operator(sm)
+            @test Operator(eg) * Operator(sm) * Operator(eg)' ≈ Operator(apply!(sm, eg))
+        end
     end
 end
