@@ -912,6 +912,30 @@ function unsafe_bitfindnext_(chunks::AbstractVector{T}, start::Int) where T<:Uns
     return nothing
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Computes bitmask indices for an unsigned integer at index `i`
+within the binary structure of a `Tableau` or `PauliOperator`.
+
+For `Tableau`, the method operates on the `.xzs` field, while
+for `PauliOperator`, it uses the `.xz` field. It calculates
+the following values based on the index `i`:
+
+- `lowbit`, the lowest bit.
+- `ibig`, the index of the word containing the bit.
+- `ismall`, the position of the bit within the word.
+- `ismallm`, a bitmask isolating the specified bit.
+"""
+@inline function get_bitmask_idxs(xzs::AbstractArray{<:Unsigned}, i::Int)
+    T = eltype(xzs)
+    lowbit = T(1)
+    ibig = _div(T, i-1) + 1
+    ismall = _mod(T, i-1)
+    ismallm = lowbit << ismall
+    return lowbit, ibig, ismall, ismallm
+end
+
 """Permute the qubits (i.e., columns) of the tableau in place."""
 function Base.permute!(s::Tableau, perm::AbstractVector)
     for r in 1:size(s,1)

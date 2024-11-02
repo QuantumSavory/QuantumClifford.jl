@@ -415,12 +415,9 @@ LinearAlgebra.inv(op::sInvSQRTZZ) = sSQRTZZ(op.q1, op.q2)
 """Apply a Pauli Z to the `i`-th qubit of state `s`. You should use `apply!(stab,sZ(i))` instead of this."""
 function apply_single_z!(stab::AbstractStabilizer, i)
     s = tab(stab)
-    Tₘₑ = eltype(s.xzs)
-    bigi = _div(Tₘₑ,i-1)+1
-    smalli = _mod(Tₘₑ,i-1)
-    mask = Tₘₑ(0x1)<<smalli
+    _, ibig, _, ismallm = get_bitmask_idxs(s.xzs,i)
     @inbounds @simd for row in 1:size(s.xzs,2)
-        if !iszero(s.xzs[bigi,row] & mask)
+        if !iszero(s.xzs[ibig,row] & ismallm)
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end
@@ -430,12 +427,9 @@ end
 """Apply a Pauli X to the `i`-th qubit of state `s`. You should use `apply!(stab,sX(i))` instead of this."""
 function apply_single_x!(stab::AbstractStabilizer, i)
     s = tab(stab)
-    Tₘₑ = eltype(s.xzs)
-    bigi = _div(Tₘₑ,i-1)+1
-    smalli = _mod(Tₘₑ,i-1)
-    mask = Tₘₑ(0x1)<<smalli
+    _, ibig, _, ismallm = get_bitmask_idxs(s.xzs,i)
     @inbounds @simd for row in 1:size(s.xzs,2)
-        if !iszero(s.xzs[end÷2+bigi,row] & mask)
+        if !iszero(s.xzs[end÷2+ibig,row] & ismallm)
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end
@@ -445,12 +439,9 @@ end
 """Apply a Pauli Y to the `i`-th qubit of state `s`. You should use `apply!(stab,sY(i))` instead of this."""
 function apply_single_y!(stab::AbstractStabilizer, i)
     s = tab(stab)
-    Tₘₑ = eltype(s.xzs)
-    bigi = _div(Tₘₑ,i-1)+1
-    smalli = _mod(Tₘₑ,i-1)
-    mask = Tₘₑ(0x1)<<smalli
+    _, ibig, _, ismallm = get_bitmask_idxs(s.xzs,i)
     @inbounds @simd for row in 1:size(s.xzs,2)
-        if !iszero((s.xzs[bigi,row] & mask) ⊻ (s.xzs[end÷2+bigi,row] & mask))
+        if !iszero((s.xzs[ibig,row] & ismallm) ⊻ (s.xzs[end÷2+ibig,row] & ismallm))
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end

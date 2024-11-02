@@ -87,19 +87,23 @@ macro P_str(a)
     quote _P_str($a) end
 end
 
-Base.getindex(p::PauliOperator{Tₚ,Tᵥ}, i::Int) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}} = ((p.xz[_div(Tᵥₑ, i-1)+1] & Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1))!=0x0)::Bool, ((p.xz[end÷2+_div(Tᵥₑ,i-1)+1] & Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1))!=0x0)::Bool
+function Base.getindex(p::PauliOperator{Tₚ,Tᵥ}, i::Int) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}}
+    _, ibig, _, ismallm = get_bitmask_idxs(p.xz,i)
+    ((p.xz[ibig] & ismallm) != 0x0)::Bool, ((p.xz[end÷2+ibig] & ismallm) != 0x0)::Bool
+end
 Base.getindex(p::PauliOperator{Tₚ,Tᵥ}, r) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}} = PauliOperator(p.phase[], xbit(p)[r], zbit(p)[r])
 
 function Base.setindex!(p::PauliOperator{Tₚ,Tᵥ}, (x,z)::Tuple{Bool,Bool}, i) where {Tₚ, Tᵥₑ, Tᵥ<:AbstractVector{Tᵥₑ}}
+    _, ibig, _, ismallm = get_bitmask_idxs(p.xz,i)
     if x
-        p.xz[_div(Tᵥₑ,i-1)+1] |= Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1)
+        p.xz[ibig] |= ismallm
     else
-        p.xz[_div(Tᵥₑ,i-1)+1] &= ~(Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1))
+        p.xz[ibig] &= ~(ismallm)
     end
     if z
-        p.xz[end÷2+_div(Tᵥₑ,i-1)+1] |= Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1)
+        p.xz[end÷2+ibig] |= ismallm
     else
-        p.xz[end÷2+_div(Tᵥₑ,i-1)+1] &= ~(Tᵥₑ(0x1)<<_mod(Tᵥₑ,i-1))
+        p.xz[end÷2+ibig] &= ~(ismallm)
     end
     p
 end
