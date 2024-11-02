@@ -82,7 +82,7 @@ end
 function apply!(frame::PauliFrame, op::sMZ) # TODO sMY, and faster sMX
     op.bit == 0 && return frame
     i = op.qubit
-    xzs = frame.frame.tab.xzs
+    xzs = tab(frame.frame).xzs
     lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
 
     @inbounds @simd for f in eachindex(frame)
@@ -95,7 +95,7 @@ end
 
 function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRY, and faster sMRX
     i = op.qubit
-    xzs = frame.frame.tab.xzs
+    xzs = tab(frame.frame).xzs
     lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
 
     if op.bit != 0
@@ -114,7 +114,7 @@ end
 
 function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     p = noise.p
-    xzs = frame.frame.tab.xzs
+    xzs = tab(frame.frame).xzs
 
     lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
     p = p/3
@@ -122,31 +122,31 @@ function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     @inbounds @simd for f in eachindex(frame)
         r = rand()
         if  r < p # X error
-            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
+            xzs[ibig,f] ⊻= ismallm
         elseif r < 2p # Z error
-            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
+            xzs[end÷2+ibig,f] ⊻= ismallm
         elseif r < 3p # Y error
-            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
-            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
+            xzs[ibig,f] ⊻= ismallm
+            xzs[end÷2+ibig,f] ⊻= ismallm
         end
     end
     return frame
 end
 
 function applynoise!(frame::PauliFrame,noise::PauliNoise,i::Int)
-    xzs = frame.frame.tab.xzs
+    xzs = tab(frame.frame).xzs
 
     lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
 
     @inbounds @simd for f in eachindex(frame)
         r = rand()
         if  r < noise.px # X error
-            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
+            xzs[ibig,f] ⊻= ismallm
         elseif r < noise.px+noise.pz # Z error
-            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
+            xzs[end÷2+ibig,f] ⊻= ismallm
         elseif r < noise.px+noise.pz+noise.py # Y error
-            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
-            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
+            xzs[ibig,f] ⊻= ismallm
+            xzs[end÷2+ibig,f] ⊻= ismallm
         end
     end
     return frame

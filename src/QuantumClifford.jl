@@ -26,7 +26,7 @@ export
     nqubits,
     stabilizerview, destabilizerview, logicalxview, logicalzview, phases,
     fastcolumn, fastrow,
-    bitview, quantumstate, tab, rank, get_bitmask_idxs,
+    bitview, quantumstate, tab, rank,
     BadDataStructure,
     affectedqubits, #TODO move to QuantumInterface?
     # GF2
@@ -926,12 +926,8 @@ the following values based on the index `i`:
 - `ibig`, the index of the word containing the bit.
 - `ismall`, the position of the bit within the word.
 - `ismallm`, a bitmask isolating the specified bit.
-
-Internal bitwise operations `_div`, `_mod`, and `_mask` are
-used to compute the word and bit positions based on the bit
-size of the type `T`.
 """
-function get_bitmask_idxs(xzs::AbstractArray{<:Unsigned}, i::Int)
+@inline function get_bitmask_idxs(xzs::AbstractArray{<:Unsigned}, i::Int)
     T = eltype(xzs)
     lowbit = T(1)
     ibig = _div(T, i-1) + 1
