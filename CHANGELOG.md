@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.14 - 2024-11-02
+
+- **(fix)** `affectedqubits()` on `sMX`, `sMY`, and `sMR*`
+
 ## v0.9.13 - 2024-10-30
 
 - New error-correction group theory tools:
