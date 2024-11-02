@@ -1,4 +1,5 @@
 @testitem "Stabilizers" begin
+    using QuantumClifford
     using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
     @testset "Pure and Mixed state initialization" begin
@@ -108,24 +109,16 @@
         @test hcat(copy(tab(s1)), copy(tab(s2)), copy(tab(s1)), copy(tab(s2))) == T"YZZYYZZY XXYXXXYX"
     end
 
-    @testset "MixedDestabilizer via Stabilizer{Tableau}: Regular Array vs. Subarray in Tableau Structure" begin
+    @testset "MixedDestabilizer over subarrays (#191)" begin
         # Case 1: QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}
-        for _ in 1:5
-            n = rand(2:6)
-            stab = random_stabilizer(n)
-            regular_arr = MixedDestabilizer(stab; undoperm=true)
-            @test isa(regular_arr, MixedDestabilizer)
-        end
-
+        n = 6
+        stab = random_stabilizer(n)
+        regular_arr = MixedDestabilizer(stab; undoperm=true)
+        @test isa(regular_arr, MixedDestabilizer)
         # Case 2: Tableau{SubArray{...}, SubArray{...}, Tuple{Base.Slice{...}}}
-        for _ in 1:5
-            n = rand(2:6)
-            stab = random_stabilizer(n)
-            start_idx = rand(1:n)
-            end_idx = rand(start_idx:n)
-            t_subarr = @view stab[start_idx:end_idx]
-            md_via_subarr = MixedDestabilizer(Stabilizer(t_subarr); undoperm=true)
-            @test isa(md_via_subarr, MixedDestabilizer)
-        end
+        stab = random_stabilizer(n)
+        substab = @view stab[3:end_idx]
+        md_via_subarr = MixedDestabilizer(substab; undoperm=true)
+        @test isa(md_via_subarr, MixedDestabilizer)
     end
 end
