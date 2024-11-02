@@ -52,8 +52,16 @@ qo_tgate.data[2,2] = exp(im*pi/4)
 end
 
 @testset "Conjugate destabs" begin
-    for (num_qubits, gates) in [(1, [tHadamard, tPhase, tId1]), (2, [tCNOT, tCPHASE, tSWAP])]
-        @testset "$num_qubits-qubit Clifford gate" begin
+    test_cases = [
+        (1, [tHadamard, tPhase, tId1]),
+        (2, [tCNOT, tCPHASE, tSWAP]),
+        (3, [enumerate_cliffords(3, clifford_cardinality(3))]),
+        (4, [enumerate_cliffords(4, clifford_cardinality(4))]),
+        (5, [enumerate_cliffords(5, clifford_cardinality(5))])
+    ]
+
+    for (num_qubits, gates) in test_cases
+        @testset "Conjugate destabs test using $num_qubits-qubit Clifford gate" begin
             for _ in 1:10
                 s = random_stabilizer(num_qubits)
                 sm = GeneralizedStabilizer(s)
@@ -65,7 +73,7 @@ end
         end
     end
 
-    @testset "non-clifford gate" begin
+    @testset "Conjugate destabs test using non-Clifford gate" begin
         for n in 5:10
             i = rand(1:(n-1))
             eg = embed(n, i, pcT)
