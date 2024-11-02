@@ -416,6 +416,42 @@ LinearAlgebra.inv(op::sInvSQRTXX) = sSQRTXX(op.q1, op.q2)
 LinearAlgebra.inv(op::sSQRTYY)    = sInvSQRTYY(op.q1, op.q2)
 LinearAlgebra.inv(op::sInvSQRTYY) = sSQRTYY(op.q1, op.q2)
 
+"""
+Embed a single-qubit Clifford operator in a larger Clifford operator.
+
+```jldoctest
+julia> embed(5, 4, sHadamard)
+X₁ ⟼ + X____
+X₂ ⟼ + _X___
+X₃ ⟼ + __X__
+X₄ ⟼ + ___Z_
+X₅ ⟼ + ____X
+Z₁ ⟼ + Z____
+Z₂ ⟼ + _Z___
+Z₃ ⟼ + __Z__
+Z₄ ⟼ + ___X_
+Z₅ ⟼ + ____Z
+```
+
+Embed a two-qubit Clifford operator in a larger Clifford operator.
+
+```jldoctest
+julia> embed(5, (2,3), sCNOT)
+X₁ ⟼ + X____
+X₂ ⟼ + _XX__
+X₃ ⟼ + __X__
+X₄ ⟼ + ___X_
+X₅ ⟼ + ____X
+Z₁ ⟼ + Z____
+Z₂ ⟼ + _Z___
+Z₃ ⟼ + _ZZ__
+Z₄ ⟼ + ___Z_
+Z₅ ⟼ + ____Z
+```
+"""
+embed(n::Int, i::Int, t::Type{<:AbstractSingleQubitOperator}) = CliffordOperator(t(i), n)
+embed(n::Int, indices::Tuple{Int,Int}, t::Type{<:AbstractTwoQubitOperator}) = CliffordOperator(t(indices...), n)
+
 ##############################
 # Functions that perform direct application of common operators without needing an operator instance
 ##############################
