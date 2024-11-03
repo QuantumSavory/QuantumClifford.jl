@@ -347,8 +347,8 @@ struct UnitaryPauliChannel{T,S,P} <: AbstractPauliChannel
 end
 
 PauliChannel(p::UnitaryPauliChannel) = p.paulichannel
-Base.copy(p::UnitaryPauliChannel) = deepcopy(p)
-Base.:(==)(p₁::UnitaryPauliChannel, p₂::UnitaryPauliChannel) = p₁.paulis==p₂.paulis && p₁.weights==p₂.weights && p₁.paulichannel==p₂.paulichannel
+Base.copy(p::UnitaryPauliChannel) = UnitaryPauliChannel(p.paulis, p.weights)
+Base.:(==)(p₁::UnitaryPauliChannel, p₂::UnitaryPauliChannel) = p₁.paulis==p₂.paulis && p₁.weights==p₂.weights
 
 function Base.show(io::IO, pc::UnitaryPauliChannel)
     println(io, "A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:")
