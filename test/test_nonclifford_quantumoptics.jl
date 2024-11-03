@@ -57,7 +57,7 @@ end
         gs = GeneralizedStabilizer(s)
         apply!(gs, p)
         qo_state = Operator(gs)
-        project!(gs, p)[1]
+        projectrand!(gs, p)[1]
         qo_state_after_proj = Operator(gs)
         qo_pauli = Operator(p)
         qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2

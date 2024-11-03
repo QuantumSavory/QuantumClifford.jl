@@ -172,59 +172,18 @@ function _allthreesumtozero(a,b,c)
     true
 end
 
-"""
-Projects the state of a [`GeneralizedStabilizer`](@ref) onto the eigenspaces of a
-given Pauli operator `p`.
 
-```jldoctest
-julia> sm = GeneralizedStabilizer(S"-X")
-A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z
-𝒮𝓉𝒶𝒷
-- X
-with ϕᵢⱼ | Pᵢ | Pⱼ:
- 1.0+0.0im | + _ | + _
+function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
+    prob = (real(expect(p, sm))+1)/2
+    return _proj(sm, rand() < prob ? p : -p)
+end
 
-julia> apply!(sm, pcT)
-A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z
-𝒮𝓉𝒶𝒷
-- X
-with ϕᵢⱼ | Pᵢ | Pⱼ:
- 0.0+0.353553im | + _ | + Z
- 0.0-0.353553im | + Z | + _
- 0.853553+0.0im | + _ | + _
- 0.146447+0.0im | + Z | + Z
-
-julia> project!(sm, P"-X")[1]
-A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
-𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z
-𝒮𝓉𝒶𝒷
-- X
-with ϕᵢⱼ | Pᵢ | Pⱼ:
- 0.707107+0.0im | + _ | + _
-```
-
-"""
-function project!(sm::GeneralizedStabilizer, p::PauliOperator)
+function _proj(sm::GeneralizedStabilizer, p::PauliOperator)
     n = nqubits(sm)
-    χ′ = expect(p, sm)
-    newstab, anticom, res = project!(sm.stab, p)
-    newsm = GeneralizedStabilizer(newstab, DefaultDict(0.0im, (falses(n),falses(n))=>χ′))
-    return newsm, anticom, res
+    state, res = projectrand!(sm.stab, p)
+    newsm = GeneralizedStabilizer(state, DefaultDict(0.0im, (falses(n), falses(n)) => expect(p, sm)))
+    return newsm, res
 end
-
-function _proj₋(sm::GeneralizedStabilizer, p::PauliOperator)
-end
-function _proj₊(sm::GeneralizedStabilizer, p::PauliOperator)
-end
-
-Base.copy(sm::GeneralizedStabilizer) = GeneralizedStabilizer(copy(sm.stab),copy(sm.destabweights))
-
-Base.:(==)(sm₁::GeneralizedStabilizer, sm₂::GeneralizedStabilizer) = sm₁.stab==sm₂.stab && sm₁.destabweights==sm₂.destabweights
 
 nqubits(sm::GeneralizedStabilizer) = nqubits(sm.stab)
 
