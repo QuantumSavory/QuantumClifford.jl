@@ -5,9 +5,11 @@
 
 # News
 
-## v0.9.14 - 2024-11-02
+## v0.9.14 - 2024-11-03
 
 - **(fix)** `affectedqubits()` on `sMX`, `sMY`, and `sMR*`
+- **(fix)** restrictive type-assert in `MixedDestabilizer` failing on views of tableaux
+- Implementing additional named two-qubit gates: `sSQRTXX, sInvSQRTXX, sSQRTYY, sInvSQRTYY`
 
 ## v0.9.13 - 2024-10-30
 
