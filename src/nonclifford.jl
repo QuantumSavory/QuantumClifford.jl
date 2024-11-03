@@ -174,23 +174,31 @@ end
 
 
 project!(::GeneralizedStabilizer, ::PauliOperator) =
-    error("The method `project!` is not applicable for `GeneralizedStabilizer` when measuring the hermitian `PauliOperator`, ℳ.\n\n" *
-    "The `GeneralizedStabilizer` 𝜏 is updated by measuring ℳ = 𝒶⋅𝒹ₘ⋅𝓈ₙ, resulting in the new state 𝜏′ defined as:\n\n" *
-    "    𝜏′ = ¼(ℐ + ℳ)𝜏(ℐ + ℳ) = (𝜙′, ℬ(𝒮′, 𝒟′)) = 𝛴 𝜙ᵢⱼ' 𝒫ᵢ 𝜌 𝒫ⱼ†,\n\n" *
-    "where (𝒮′, 𝒟′) is derived from (𝒮, 𝒟) through the traditional stabilizer update, and 𝜙' represents the updated density matrix.\n\n" *
-    "Note that ¼(ℐ − ℳ)𝜏(ℐ − ℳ) can be obtained by changing the sign of 𝒶.\n\n" *
-    "This projection requires a probabilistic approach, as measurement outcomes depend on the expectation value of the `PauliOperator`.\n\n" *
-    "Specifically, this expectation value is derived from the trace Tr[𝜏′] = Tr[𝜙ᵢⱼ′] in the expression:\n\n" *
-    "    𝜏′ = 𝛴 𝜙ᵢⱼ' 𝒫ᵢ 𝜌 𝒫ⱼ†,\n\n" *
-    "where 𝜙ᵢⱼ′ is the updated density matrix. \n\n" *
-    "The trace Tr[𝜏′] = Tr[𝜙ᵢⱼ′] represents the probability of measuring either 0 or a non-zero outcome and serves as the normalization required for 𝜏′.\n\n" *
-    "To correctly perform the 'nondeterministic' projection, please use `projectrand!(::GeneralizedStabilizer, ::PauliOperator)`.\n\n" *
-    "Moreover, `project!` in this library operates as a 'deterministic' method to verify whether a measurement operator commutes with stabilizers.\n\n" *
-    "Based on this commutation, it executes additional steps to determine the resultant state after projection.\n\n" *
-    "Therefore, there are semantic nuances in defining `project!` consistently for `GeneralizedStabilizer`, particularly regarding the interpretations of `anticom` and `res` in this context.\n\n" *
+    error("The method `project!` is not applicable for `GeneralizedStabilizer` with \n" *
+    "measurements involving the hermitian Pauli operator ℳ. The `GeneralizedStabilizer` 𝜏 \n" *
+    "is updated by measuring ℳ = 𝒶⋅𝒹ₘ⋅𝓈ₙ, resulting in the new state 𝜏′ defined as: \n" *
+    "𝜏′ = ¼(ℐ + ℳ)𝜏(ℐ + ℳ) = (𝜙′, ℬ(𝒮′, 𝒟′)), where (𝒮′, 𝒟′) is derived from (𝒮, 𝒟) \n" *
+    "through the traditional stabilizer update, and 𝜙' represents the updated density \n" *
+    "matrix. Note that ¼(ℐ − ℳ)𝜏(ℐ − ℳ) can be obtained by changing the sign of 𝒶.\n\n" *
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" *
+    "The projection requires a probabilistic approach, as measurement outcomes depend on \n" *
+    "the expectation value of the `PauliOperator`. Specifically, the expectation value is \n" *
+    "derived from the trace Tr[𝜏′] = Tr[𝜙ᵢⱼ′] in the expression: 𝜏′ = 𝛴 𝜙ᵢⱼ' 𝒫ᵢ 𝜌 𝒫ⱼ†, where 𝜙ᵢⱼ′\n" *
+    "is the updated 𝜙-matrix. The trace Tr[𝜏′] = Tr[𝜙ᵢⱼ′] represents the probability of \n" *
+    "measuring either 0 or a non-zero outcome and serves as the normalization required for 𝜏′.\n\n" *
+    "To correctly perform the 'nondeterministic' projection, please use `projectrand!`.\n\n" *
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" *
+    "Moreover, `project!` in this library operates as a 'deterministic' method to verify \n" *
+    "whether a measurement operator commutes with stabilizers. Based on this commutation, it \n" *
+    "executes additional steps to determine the resultant state after projection. Thus, there \n" *
+    "are semantic nuances in defining `project!` consistently for`GeneralizedStabilizer`, \n" *
+    "particularly regarding the interpretations of `anticom` and `res` in this context.\n\n" *
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" *
     "𝒩𝒪𝒯ℰ𝒮:\n" *
-    "- `rowdecompose(ℳ, 𝜏.stab)`: Provides the decomposition of ℳ in terms of stabilizer and destabilizer rows of the given tableau of 𝜏.\n\n" *
-    "- `expect(ℳ, 𝜏)`: Returns the updated density matrix 𝜙ᵢⱼ′, where the trace Tr[𝜙ᵢⱼ′] provides the expectation value of measuring ℳ.\n\n")
+    "- `rowdecompose(ℳ, 𝜏.stab)`: Provides the decomposition of ℳ in terms of stabilizer \n" *
+    "and destabilizer rows of the given tableau of 𝜏.\n\n" *
+    "- `expect(ℳ, 𝜏)`: Returns the updated 𝜙-matrix 𝜙ᵢⱼ′, where the trace Tr[𝜙ᵢⱼ′] provides \n" *
+    "the expectation value of measuring ℳ.\n\n")
 
 function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
     eval = expect(p, sm)
