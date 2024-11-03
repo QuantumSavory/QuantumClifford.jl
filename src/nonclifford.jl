@@ -14,31 +14,31 @@
 """
 $(TYPEDEF)
 
-Represents mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is a pure stabilizer state.
+Represents mixture 𝛴 𝜙ᵢⱼ 𝒫ᵢ 𝜌 𝒫ⱼ† where 𝜌 is a pure stabilizer state.
 
 ```jldoctest
 julia> GeneralizedStabilizer(S"-X")
-A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+A mixture 𝛴 𝜙ᵢⱼ 𝒫ᵢ 𝜌 𝒫ⱼ† where 𝜌 is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
 𝒮𝓉𝒶𝒷
 - X
-with ϕᵢⱼ | Pᵢ | Pⱼ:
+with 𝜙ᵢⱼ | 𝒫ᵢ | 𝒫ⱼ:
  1.0+0.0im | + _ | + _
 
 julia> pcT
-A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
-with ϕᵢ | Pᵢ
+A unitary Pauli channel 𝒫 = 𝛴 𝜙ᵢ 𝒫ᵢ with the following branches:
+with 𝜙ᵢ | 𝒫ᵢ
  0.853553+0.353553im | + _
  0.146447-0.353553im | + Z
 
 julia> apply!(GeneralizedStabilizer(S"-X"), pcT)
-A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+A mixture 𝛴 𝜙ᵢⱼ 𝒫ᵢ 𝜌 𝒫ⱼ† where 𝜌 is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
 𝒮𝓉𝒶𝒷
 - X
-with ϕᵢⱼ | Pᵢ | Pⱼ:
+with 𝜙ᵢⱼ | 𝒫ᵢ | 𝒫ⱼ:
  0.0+0.353553im | + _ | + Z
  0.0-0.353553im | + Z | + _
  0.853553+0.0im | + _ | + _
@@ -66,10 +66,10 @@ end
 GeneralizedStabilizer(s::GeneralizedStabilizer) = s
 
 function Base.show(io::IO, s::GeneralizedStabilizer)
-    println(io, "A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is")
+    println(io, "A mixture 𝛴 𝜙ᵢⱼ 𝒫ᵢ 𝜌 𝒫ⱼ† where 𝜌 is")
     show(io,s.stab)
     println(io)
-    print(io, "with ϕᵢⱼ | Pᵢ | Pⱼ:")
+    print(io, "with 𝜙ᵢⱼ | 𝒫ᵢ | 𝒫ⱼ:")
     for ((di,dj), χ) in s.destabweights
         println(io)
         print(io, " ")
@@ -94,21 +94,21 @@ Apply a Clifford gate to a generalized stabilizer state, i.e. a weighted sum of 
 
 ```jldoctest
 julia> sm = GeneralizedStabilizer(S"-X")
-A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+A mixture 𝛴 𝜙ᵢⱼ 𝒫ᵢ 𝜌 𝒫ⱼ† where 𝜌 is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
 𝒮𝓉𝒶𝒷
 - X
-with ϕᵢⱼ | Pᵢ | Pⱼ:
+with 𝜙ᵢⱼ | 𝒫ᵢ | 𝒫ⱼ:
  1.0+0.0im | + _ | + _
 
 julia> apply!(sm, CliffordOperator(tHadamard))
-A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+A mixture 𝛴 𝜙ᵢⱼ 𝒫ᵢ 𝜌 𝒫ⱼ† where 𝜌 is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + X
 𝒮𝓉𝒶𝒷
 - Z
-with ϕᵢⱼ | Pᵢ | Pⱼ:
+with 𝜙ᵢⱼ | 𝒫ᵢ | 𝒫ⱼ:
  1.0+0.0im | + _ | + _
 ```
 
@@ -125,28 +125,31 @@ Expectation value for the [PauliOperator](@ref) observable given the [`Generaliz
 
 ```jldoctest
 julia> sm = GeneralizedStabilizer(S"-X")
-A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+A mixture 𝛴 𝜙ᵢⱼ 𝒫ᵢ 𝜌 𝒫ⱼ† where 𝜌 is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
 𝒮𝓉𝒶𝒷
 - X
-with ϕᵢⱼ | Pᵢ | Pⱼ:
+with 𝜙ᵢⱼ | 𝒫ᵢ | 𝒫ⱼ:
  1.0+0.0im | + _ | + _
 
 julia> apply!(sm, pcT)
-A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+A mixture 𝛴 𝜙ᵢⱼ 𝒫ᵢ 𝜌 𝒫ⱼ† where 𝜌 is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
 𝒮𝓉𝒶𝒷
 - X
-with ϕᵢⱼ | Pᵢ | Pⱼ:
+with 𝜙ᵢⱼ | 𝒫ᵢ | 𝒫ⱼ:
  0.0+0.353553im | + _ | + Z
  0.0-0.353553im | + Z | + _
  0.853553+0.0im | + _ | + _
  0.146447+0.0im | + Z | + Z
 
-julia> expect(P"-X", sm)
+julia> χ′ = expect(P"-X", sm)
 0.7071067811865475 + 0.0im
+
+julia> prob = (real(χ′)+1)/2
+0.8535533905932737
 ```
 
 """
@@ -212,8 +215,8 @@ struct PauliChannel{T,S} <: AbstractPauliChannel
 end
 
 function Base.show(io::IO, pc::PauliChannel)
-    println(io, "Pauli channel ρ ↦ ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† with the following branches:")
-    print(io, "with ϕᵢⱼ | Pᵢ | Pⱼ:")
+    println(io, "Pauli channel 𝜌 ↦ 𝛴 𝜙ᵢⱼ 𝒫ᵢ 𝜌 𝒫ⱼ† with the following branches:")
+    print(io, "with 𝜙ᵢⱼ | 𝒫ᵢ | 𝒫ⱼ:")
     for (i, (di,dj)) in enumerate(pc.paulis)
         χ = pc.weights[i]
         println(io)
@@ -314,14 +317,14 @@ julia> Tgate = UnitaryPauliChannel(
            (I, Z),
            ((1+exp(im*π/4))/2, (1-exp(im*π/4))/2)
        )
-A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
-with ϕᵢ | Pᵢ
+A unitary Pauli channel 𝒫 = 𝛴 𝜙ᵢ 𝒫ᵢ with the following branches:
+with 𝜙ᵢ | 𝒫ᵢ
  0.853553+0.353553im | + _
  0.146447-0.353553im | + Z
 
 julia> PauliChannel(Tgate)
-Pauli channel ρ ↦ ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† with the following branches:
-with ϕᵢⱼ | Pᵢ | Pⱼ:
+Pauli channel 𝜌 ↦ 𝛴 𝜙ᵢⱼ 𝒫ᵢ 𝜌 𝒫ⱼ† with the following branches:
+with 𝜙ᵢⱼ | 𝒫ᵢ | 𝒫ⱼ:
  0.853553+0.0im | + _ | + _
  0.0+0.353553im | + _ | + Z
  0.0-0.353553im | + Z | + _
@@ -344,8 +347,8 @@ end
 PauliChannel(p::UnitaryPauliChannel) = p.paulichannel
 
 function Base.show(io::IO, pc::UnitaryPauliChannel)
-    println(io, "A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:")
-    print(io, "with ϕᵢ | Pᵢ")
+    println(io, "A unitary Pauli channel 𝒫 = 𝛴 𝜙ᵢ 𝒫ᵢ with the following branches:")
+    print(io, "with 𝜙ᵢ | 𝒫ᵢ")
     for (i, p) in enumerate(pc.paulis)
         χ = pc.weights[i]
         println(io)
