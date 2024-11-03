@@ -51,35 +51,25 @@ qo_tgate.data[2,2] = exp(im*pi/4)
     end
 end
 
-@testset "Conjugate destabs" begin
-    test_cases = [
-        (1, [tHadamard, tPhase, tId1]),
-        (2, [tCNOT, tCPHASE, tSWAP]),
-        (3, [enumerate_cliffords(3, clifford_cardinality(3)), CliffordOperator(sHadamard(3), 3), CliffordOperator(sCNOT(1, 2), 3)]),
-        (4, [enumerate_cliffords(4, clifford_cardinality(4)), CliffordOperator(sHadamard(4), 4), CliffordOperator(sCNOT(2, 1), 4)]),
-        (5, [enumerate_cliffords(5, clifford_cardinality(5)), CliffordOperator(sHadamard(5), 5), CliffordOperator(sCNOT(2, 3), 5)])
-    ]
-
-    for (num_qubits, gates) in test_cases
-        @testset "Conjugate destabs test using $num_qubits-qubit Clifford gate" begin
-            for _ in 1:10
-                s = random_stabilizer(num_qubits)
-                sm = GeneralizedStabilizer(s)
-                @test dm(Ket(s)) ≈ Operator(sm)
-                for C in gates
-                    @test Operator(C) * Operator(sm) * Operator(C)' ≈ Operator(apply!(sm, C))
-                end
-            end
+@testset "apply!" begin
+    for n in [1,2,3,4] # exponential cost in this term
+        s = random_stabilizer(n)
+        sm = GeneralizedStabilizer(s)
+        @test dm(Ket(s)) ≈ Operator(sm)
+        # test clifford gates
+        for _ in 1:10
+            c = random_clifford(n)
+            uc = Operator(c)
+            @test uc * Operator(sm) * uc' ≈ Operator(apply!(sm, c)) # sm is modified in place for the next round
         end
-    end
-
-    @testset "Conjugate destabs test using non-Clifford gate" begin
-        for n in 5:10
-            i = rand(1:(n-1))
-            eg = embed(n, i, pcT)
-            sm = GeneralizedStabilizer(random_stabilizer(n))
-            @test dm(Ket(sm.stab)) ≈ Operator(sm)
-            @test Operator(eg) * Operator(sm) * Operator(eg)' ≈ Operator(apply!(sm, eg))
+        # and now some (repeated) non-clifford ops
+        for _ in 1:5 # exponential cost in this term
+            i = rand(1:n)
+            nc = embed(n, i, pcT)
+            apply!(sm, nc) # in-place
+            c = random_clifford(n)
+            uc = Operator(c)
+            @test uc * Operator(sm) * uc' ≈ Operator(apply!(sm, c)) # sm is modified in place for the next round
         end
     end
 end
