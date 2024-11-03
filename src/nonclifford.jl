@@ -64,6 +64,8 @@ function GeneralizedStabilizer(state)
 end
 
 GeneralizedStabilizer(s::GeneralizedStabilizer) = s
+Base.copy(sm::GeneralizedStabilizer) = GeneralizedStabilizer(copy(sm.stab),copy(sm.destabweights))
+Base.:(==)(sm₁::GeneralizedStabilizer, sm₂::GeneralizedStabilizer) = sm₁.stab==sm₂.stab && sm₁.destabweights==sm₂.destabweights
 
 function Base.show(io::IO, s::GeneralizedStabilizer)
     println(io, "A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is")
@@ -145,8 +147,11 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
  0.853553+0.0im | + _ | + _
  0.146447+0.0im | + Z | + Z
 
-julia> expect(P"-X", sm)
+julia> χ′ = expect(P"-X", sm)
 0.7071067811865475 + 0.0im
+
+julia> prob = (real(χ′)+1)/2
+0.8535533905932737
 ```
 
 """
@@ -342,6 +347,8 @@ struct UnitaryPauliChannel{T,S,P} <: AbstractPauliChannel
 end
 
 PauliChannel(p::UnitaryPauliChannel) = p.paulichannel
+Base.copy(p::UnitaryPauliChannel) = deepcopy(p)
+Base.:(==)(p₁::UnitaryPauliChannel, p₂::UnitaryPauliChannel) = p₁.paulis==p₂.paulis && p₁.weights==p₂.weights && p₁.paulichannel==p₂.paulichannel
 
 function Base.show(io::IO, pc::UnitaryPauliChannel)
     println(io, "A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:")
