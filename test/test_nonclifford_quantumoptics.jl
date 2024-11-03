@@ -51,8 +51,8 @@ qo_tgate.data[2,2] = exp(im*pi/4)
     end
 end
 
-@testset "project!" begin
-    checks = [(S"X",P"X"),(S"Y",P"Y"),(S"Z",P"Z"),(S"-X",P"-X"),(S"-Y",P"-Y"),(S"-Z",P"-Z")]
+@testset "Single-qubit projections of stabilizer states" begin
+    checks = [(random_stabilizer(1), random_pauli(1))]
     for (s, p) in checks
         gs = GeneralizedStabilizer(s)
         apply!(gs, p)
@@ -64,6 +64,7 @@ end
         qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
         result1 = qo_proj1*qo_state*qo_proj1'
         result2 = qo_proj2*qo_state*qo_proj2'
+        @test result1 == zero(qo_tgate) || result2 == zero(qo_tgate) # https://github.com/QuantumSavory/QuantumClifford.jl/pull/355#discussion_r1826568296
         @test qo_state_after_proj ≈ result2 || qo_state_after_proj ≈ result1
     end
 end
