@@ -347,7 +347,7 @@ struct UnitaryPauliChannel{T,S,P} <: AbstractPauliChannel
 end
 
 PauliChannel(p::UnitaryPauliChannel) = p.paulichannel
-Base.copy(p::UnitaryPauliChannel) = UnitaryPauliChannel(p.paulis, p.weights)
+Base.copy(p::UnitaryPauliChannel) = UnitaryPauliChannel(map(copy, p.paulis), map(copy, p.weights))
 Base.:(==)(p₁::UnitaryPauliChannel, p₂::UnitaryPauliChannel) = p₁.paulis==p₂.paulis && p₁.weights==p₂.weights
 
 function Base.show(io::IO, pc::UnitaryPauliChannel)
