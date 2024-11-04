@@ -123,7 +123,7 @@ end
 
 Expectation value for the [PauliOperator](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`.
 
-```jldoctest
+```jldoctest genstab
 julia> sm = GeneralizedStabilizer(S"-X")
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
@@ -172,15 +172,54 @@ function _allthreesumtozero(a,b,c)
     true
 end
 
-function project!(sm::GeneralizedStabilizer, p::PauliOperator)
-    eval = expect(p, sm)
-    prob₁ = (real(eval)+1)/2
-    error("This functionality is not implemented yet")
+"""$(TYPEDSIGNATURES)
+Performs a randomized projection of the state represented by the [`GeneralizedStabilizer`](@ref) `sm`,
+based on the measurement of a [PauliOperator](@ref) `p`.
+
+The expectation value χ′, calculated as `expect(p, sm)`, quantifies the expected outcome of measuring `p`:
+
+```math
+\\chi' = \\langle p \\rangle = \\text{expect}(p, sm)
+```
+
+To convert χ′ into a probability, the following transformation is used:
+
+```math
+\\text{probability}_{1} = \\frac{\\text{real}(\\chi') + 1}{2}
+```
+
+Here, χ′ ranges from `-1` to `+1`, allowing the probability to be scaled between `0` and `1`, thus
+reflecting the likelihood of measuring the `+1` eigenvalue. The implications are:
+
+- `probability = 1` when `⟨p⟩ = +1`, indicating certainty in projecting onto `p`.
+- `probability = 0` when `⟨p⟩ = -1`, indicating certainty in projecting onto `-p`.
+- For intermediate values, the probability reflects the likelihood of measuring either outcome,
+particularly in the context of non-stabilizer states.
+
+!!! note This probabilistic approach is essential, particularly as non-Clifford gates can lead to
+intermediate probabilities based on the expectation value. This is illustrated by applying the
+non-Clifford gate `pcT` to the state represented by `sm = GeneralizedStabilizer(S"-X")`, which yields:
+
+```jldoctest genstab
+julia> χ′ = expect(P"-X", sm)
+0.7071067811865475 + 0.0im
+
+julia> prob₁ = (real(χ′)+1)/2
+0.8535533905932737
+```
+
+See also: [`expect`](@ref)
+"""
+function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
+    χ′ = expect(p, sm)
+    # Compute the probability of measuring in the +1 eigenstate
+    prob₁ = (real(χ′)+1)/2
+    # Randomly choose projection based on this probability
+    return _proj(sm, rand() < prob₁ ? p : -p)
 end
 
-function _proj₋(sm::GeneralizedStabilizer, p::PauliOperator)
-end
-function _proj₊(sm::GeneralizedStabilizer, p::PauliOperator)
+function _proj(sm::GeneralizedStabilizer, p::PauliOperator)
+    error("This functionality is not implemented yet")
 end
 
 nqubits(sm::GeneralizedStabilizer) = nqubits(sm.stab)
