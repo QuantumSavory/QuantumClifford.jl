@@ -265,7 +265,7 @@ function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
 end
 
 """
-Generalized bicycle codes, which are a special case of 2GBA codes (and therefore of lifted product codes).
+Generalized bicycle codes, which are a special case of *abelian* 2GBA codes (and therefore of lifted product codes).
 Here the group is chosen as the cyclic group of order `l`,
 and the base matrices `a` and `b` are the sum of the group algebra elements corresponding to the shifts `a_shifts` and `b_shifts`.
 
@@ -278,6 +278,18 @@ julia> c = generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121],
 
 julia> code_n(c), code_k(c)
 (254, 28)
+```
+
+An [[70, 8, 10]] *abelian* 2BGA code from Table 1 of [lin2024quantum](@cite), with cyclic group of
+order `l = 35`, illustrates that *abelian* 2BGA codes can be viewed as GB codes.
+
+```jldoctest
+julia> l = 35;
+
+julia> c1 = generalized_bicycle_codes([0, 15, 16, 18], [0, 1, 24, 27], l);
+
+julia> code_n(c1), code_k(c1)
+(70, 8)
 ```
 """
 function generalized_bicycle_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
