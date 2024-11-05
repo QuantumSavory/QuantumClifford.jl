@@ -40,6 +40,7 @@ For quantum code construction routines:
 - [steane1999quantum](@cite)
 - [campbell2012magic](@cite)
 - [anderson2014fault](@cite)
+- [voss2024multivariatebicyclecodes](@cite)
 - [lin2024quantum](@cite)
 - [bravyi2024high](@cite)
 

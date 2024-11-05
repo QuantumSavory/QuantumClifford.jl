@@ -58,6 +58,45 @@ A[LinearAlgebra.diagind(A, 5)] .= GA(1)
 B = reshape([1 + x + x^6], (1, 1))
 push!(other_lifted_product_codes, LPCode(A, B))
 
+# Multivariate Bicycle codes taken from Table 1 of [voss2024multivariatebicyclecodes](@cite)
+# Weight-4 [[144, 2, 12]] MBB code
+l=8; m=9
+GA = group_algebra(GF(2), abelian_group([l, m]))
+x, y = gens(GA)
+z = x*y
+A = x^3 + y^7
+B = x + y^5
+weight4mbb = two_block_group_algebra_codes(A, B)
+
+# Weight-5 [96, 4, 8]] MBB code
+l=8; m=6
+GA = group_algebra(GF(2), abelian_group([l, m]))
+x, y = gens(GA)
+z = x*y
+A = x^6 + x^3
+B = z^5 + x^5 + y
+weight5mbb = two_block_group_algebra_codes(A, B)
+
+# Weight-6 [[48, 4, 6]] MBB code
+l=4; m=6
+GA = group_algebra(GF(2), abelian_group([l, m]))
+x, y = gens(GA)
+z = x*y
+A = x^3 + y^5
+B = x + z^5 + y^5 + y^2
+weight6mbb = two_block_group_algebra_codes(A, B)
+
+# Weight-7 [[30, 4, 5]] MBB code
+l=5; m=3
+GA = group_algebra(GF(2), abelian_group([l, m]));
+x, y = gens(GA)
+z = x*y
+A = x^4 + x^2
+B = x + x^2 + y + z^2 + z^3
+weight7mbb = two_block_group_algebra_codes(A, B)
+
+test_mbb_codes = [weight4mbb, weight5mbb, weight6mbb, weight7mbb]
+
 # Bivariate Bicycle codes
 # A [[72, 12, 6]] code from Table 3 of [bravyi2024high](@cite).
 l=6; m=6
@@ -92,7 +131,7 @@ const code_instance_args = Dict(
     :CSS => (c -> (parity_checks_x(c), parity_checks_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
     :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
     :CircuitCode => random_circuit_code_args,
-    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, other_lifted_product_codes)),
+    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, other_lifted_product_codes)),
     :QuantumReedMuller => [3, 4, 5]
 )
 

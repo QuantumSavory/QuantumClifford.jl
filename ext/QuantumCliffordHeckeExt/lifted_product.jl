@@ -207,6 +207,29 @@ julia> c = two_block_group_algebra_codes(A,B);
 julia> code_n(c), code_k(c)
 (756, 16)
 ```
+### Multivariate Bicycle code
+
+The group algebra of the qubit multivariate bicycle (MB) code with r variables is `𝔽₂[𝐺ᵣ]`,
+where `𝐺ᵣ = ℤ/l₁ × ℤ/l₂ × ... × ℤ/lᵣ`.
+
+A [[48, 4, 6]] Weight-6 TB-QLDPC code from Appendix A Table 2 of [voss2024multivariatebicyclecodes](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens; # hide
+
+julia> l=4; m=6;
+
+julia> z = x*y;
+
+julia> A = x^3 + y^5;
+
+julia> B = x + z^5 + y^5 + y^2;
+
+julia> c = two_block_group_algebra_codes(A, B);
+
+julia> code_n(c), code_k(c)
+(48, 4)
+```
 
 See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref).
 """
