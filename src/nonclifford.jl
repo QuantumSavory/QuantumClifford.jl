@@ -173,35 +173,44 @@ function _allthreesumtozero(a,b,c)
 end
 
 """$(TYPEDSIGNATURES)
+
 Performs a randomized projection of the state represented by the [`GeneralizedStabilizer`](@ref) `sm`,
 based on the measurement of a [PauliOperator](@ref) `p`.
 
-The expectation value χ′, calculated as `expect(p, sm)`, quantifies the expected outcome of measuring `p`:
+Unlike in the case of stabilizer states, the expectation value χ′ of a Pauli operator
+with respect to these more general states can be any real number between -1 and 1.
+The expectation value can be calculated with `expect(p, sm)`.
 
 ```math
 \\chi' = \\langle p \\rangle = \\text{expect}(p, sm)
 ```
 
-To convert χ′ into a probability, the following transformation is used:
+To convert χ′ into a probability of projecting on the +1 eigenvalue branch:
 
 ```math
 \\text{probability}_{1} = \\frac{\\text{real}(\\chi') + 1}{2}
 ```
 
-Here, χ′ ranges from `-1` to `+1`, allowing the probability to be scaled between `0` and `1`, thus
-reflecting the likelihood of measuring the `+1` eigenvalue. The implications are:
-
-- `probability = 1` when `⟨p⟩ = +1`, indicating certainty in projecting onto `p`.
-- `probability = 0` when `⟨p⟩ = -1`, indicating certainty in projecting onto `-p`.
-- For intermediate values, the probability reflects the likelihood of measuring either outcome,
-particularly in the context of non-stabilizer states.
-
-!!! note This probabilistic approach is essential, particularly as non-Clifford gates can lead to
-intermediate probabilities based on the expectation value. This is illustrated by applying the
-non-Clifford gate `pcT` to the state represented by `sm = GeneralizedStabilizer(S"-X")`, which yields:
+!!! note Because the possible measurement results are themselves not stabilizer states anymore,
+we can not use the `project!` API, which assumes a stabilizer tableau and reports detailed
+information about whether the tableau and measurement commute or anticommute.
 
 ```jldoctest genstab
-julia> χ′ = expect(P"-X", sm)
+julia> sm = GeneralizedStabilizer(S"-X");
+
+julia> apply!(sm, pcT)
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + _ | + Z
+ 0.0-0.353553im | + Z | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
+
+julia> expect(P"-X", sm)
 0.7071067811865475 + 0.0im
 
 julia> prob₁ = (real(χ′)+1)/2
