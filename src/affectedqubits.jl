@@ -15,6 +15,5 @@ affectedqubits(c::CliffordOperator) = 1:nqubits(c)
 affectedqubits(c::ClassicalXOR) = ()
 
 affectedbits(o) = ()
-affectedbits(m::sMRZ) = (m.bit,)
-affectedbits(m::sMZ) = (m.bit,)
+affectedbits(m::Union{sMRZ,sMZ,sMRX,sMX,sMRY,sMY}) = m.bit==0 ? () : (m.bit,)
 affectedbits(c::ClassicalXOR) = (c.bits..., c.store)
