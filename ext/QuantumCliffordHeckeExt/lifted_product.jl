@@ -218,7 +218,7 @@ function bicycle_codes(a_shifts::Array{Int}, l::Int)
 end
 
 """
-Haah’s cubic codes [haah2011local](@cite) can be viewed as GB codes
+Haah’s cubic codes [haah2011local](@cite) can be viewed as generalized bicycle (GB) codes
 with the group `G = Cₗ × Cₗ × Cₗ`, where `l` denotes the lattice size.
 In particular, a GB code with the group `G = ℤ₃ˣ³` corresponds to a
 cubic code [https://errorcorrectionzoo.org/c/haah_cubic](@cite).
