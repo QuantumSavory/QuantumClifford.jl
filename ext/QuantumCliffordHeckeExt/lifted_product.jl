@@ -207,6 +207,7 @@ julia> c = two_block_group_algebra_codes(A,B);
 julia> code_n(c), code_k(c)
 (756, 16)
 ```
+
 ### Multivariate Bicycle code
 
 The group algebra of the qubit multivariate bicycle (MB) code with r variables is `𝔽₂[𝐺ᵣ]`,
@@ -229,6 +230,32 @@ julia> c = two_block_group_algebra_codes(A, B);
 
 julia> code_n(c), code_k(c)
 (48, 4)
+```
+
+### Coprime Bivariate Bicycle code
+
+The coprime bivariate bicycle (BB) codes are defined by two polynomials `𝑎(𝑥,𝑦)` and `𝑏(𝑥,𝑦)`,
+where `𝑙` and `𝑚` are coprime, and can be expressed as univariate polynomials `𝑎(𝜋)` and `𝑏(𝜋)`,
+with generator `𝜋 = 𝑥𝑦`. They can be viewed as a special case of Lifted Product construction
+based on abelian group `ℤₗ x ℤₘ` where `ℤⱼ` cyclic group of order `j`.
+
+[108, 12, 6]] coprime-bivariate bicycle (BB) code from Table 2 of [wang2024coprime](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens;
+
+julia> l=2; m=27;
+
+julia> GA = group_algebra(GF(2), abelian_group([l*m]));
+
+julia> 𝜋 = gens(GA)[1];
+
+julia> A = 𝜋^2 + 𝜋^5  + 𝜋^44;
+
+julia> B = 𝜋^8 + 𝜋^14 + 𝜋^47;
+
+
+(108, 12)
 ```
 
 See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref).
