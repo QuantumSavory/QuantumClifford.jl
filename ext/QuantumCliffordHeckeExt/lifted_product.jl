@@ -230,7 +230,7 @@ julia> code_n(c), code_k(c)
 (432, 8)
 ```
 """
-function Haah_cubic_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
+function haah_cubic_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group([l,l,l]))
     a = sum(GA[n%dim(GA)+1] for n in a_shifts)
     b = sum(GA[n%dim(GA)+1] for n in b_shifts)
