@@ -17,6 +17,3 @@ function generalized_bicycle_codes end
 
 """Implemented in a package extension with Hecke."""
 function bicycle_codes end
-
-"""Implemented in a package extension with Hecke."""
-function bivariate_bicycle_codes end
