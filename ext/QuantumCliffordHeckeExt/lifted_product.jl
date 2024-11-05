@@ -175,7 +175,7 @@ julia> code_n(c), code_k(c)
 (56, 28)
 ```
 
-# Examples of 2BGA Code subfamilies
+# Examples of 2BGA code subfamilies
 
 Bivariate Bicycle codes are a class of Abelian 2BGA codes formed by the direct product
 of two cyclic groups `ℤₗ × ℤₘ`. The parameters `l` and `m` represent the orders of the
