@@ -317,7 +317,7 @@ code with the group `G = ℤ₃ˣ³` corresponds to a cubic code.
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/haah_cubic).
 
 ```jldoctest
-julia> c = Haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 6);
+julia> c = haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 6);
 
 julia> code_n(c), code_k(c)
 (432, 8)
