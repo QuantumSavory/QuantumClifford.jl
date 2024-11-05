@@ -70,60 +70,6 @@ julia> code_n(c2), code_k(c2)
 - When the base matrices of the `LPCode` are 1×1 and their elements are sums of cyclic permutations, the code is called a generalized bicycle code [`generalized_bicycle_codes`](@ref).
 - When the two matrices are adjoint to each other, the code is called a bicycle code [`bicycle_codes`](@ref).
 
-# Examples
-
-The group algebra of the qubit multivariate bicycle (MB) code with r variables is `𝔽₂[𝐺ᵣ]`, where `𝐺ᵣ = ℤ/l₁ × ℤ/l₂ × ... × ℤ/lᵣ`.
-
-[[48, 4, 6]] Weight-6 TB-QLDPC code from Appendix A Table 2 of [voss2024multivariatebicyclecodes](@cite).
-
-```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens;
-
-julia> l=4; m=6;
-
-julia> GA = group_algebra(GF(2), abelian_group([l, m]));
-
-julia> x = gens(GA)[1];
-
-julia> y = gens(GA)[2];
-
-julia> z = x*y;
-
-julia> A = reshape([x^3 + y^5], (1, 1));
-
-julia> B = reshape([x + z^5 + y^5 + y^2], (1, 1));
-
-julia> c1 = LPCode(A, B);
-
-julia> code_n(c1), code_k(c1)
-(48, 4)
-```
-
-[[30, 4, 5]] Weight-7 TB-QLDPC code from Appendix A Table 2 of [voss2024multivariatebicyclecodes](@cite).
-
-```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens;
-
-julia> l=5; m=3;
-
-julia> GA = group_algebra(GF(2), abelian_group([l, m]));
-
-julia> x = gens(GA)[1];
-
-julia> y = gens(GA)[2];
-
-julia> z = x*y;
-
-julia> A = reshape([x^4 + x^2], (1, 1));
-
-julia> B = reshape([x + x^2 + y + z^2 + z^3], (1, 1));
-
-julia> c1 = LPCode(A, B);
-
-julia> code_n(c1), code_k(c1)
-(30, 4)
-```
-
 ## The representation function
 
 We use the default representation function `Hecke.representation_matrix` to convert a `GF(2)`-group algebra element to a binary matrix.
@@ -227,6 +173,34 @@ julia> c = two_block_group_algebra_codes(A,B);
 
 julia> code_n(c), code_k(c)
 (56, 28)
+```
+
+# Examples of 2BGA code subfamilies
+
+The group algebra of the qubit multivariate bicycle (MB) code with r variables is `𝔽₂[𝐺ᵣ]`,
+where `𝐺ᵣ = ℤ/l₁ × ℤ/l₂ × ... × ℤ/lᵣ`.
+
+A [[48, 4, 6]] Weight-6 TB-QLDPC code from Appendix A Table 2 of [voss2024multivariatebicyclecodes](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens; # hide
+
+julia> l=4; m=6;
+
+julia> GA = group_algebra(GF(2), abelian_group([l, m]));
+
+julia> x, y = gens(GA);
+
+julia> z = x*y;
+
+julia> A = x^3 + y^5;
+
+julia> B = x + z^5 + y^5 + y^2;
+
+julia> c = two_block_group_algebra_codes(A, B);
+
+julia> code_n(c), code_k(c)
+(48, 4)
 ```
 
 See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref)
