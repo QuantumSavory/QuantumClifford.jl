@@ -150,20 +150,22 @@ code_n(c::LPCode) = size(c.repr(zero(c.GA)), 2) * (size(c.A, 2) * size(c.B, 1) +
 code_s(c::LPCode) = size(c.repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) + size(c.A, 2) * size(c.B, 2))
 
 """
-Two-block group algebra (2GBA) codes, which are a special case of lifted product codes
+Two-block group algebra (2BGA) codes, which are a special case of lifted product codes
 from two group algebra elements `a` and `b`, used as `1x1` base matrices.
+
+## Examples of 2BGA code subfamilies
+
+### `C₄ x C₂`
 
 Here is an example of a [[56, 28, 2]] 2BGA code from Table 2 of [lin2024quantum](@cite)
 with direct product of `C₄ x C₂`.
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens;
+julia> import Hecke: group_algebra, GF, abelian_group, gens
 
 julia> GA = group_algebra(GF(2), abelian_group([14,2]));
 
-julia> x = gens(GA)[1];
-
-julia> s = gens(GA)[2];
+julia> x, s = gens(GA);
 
 julia> A = 1 + x^7
 
@@ -175,14 +177,93 @@ julia> code_n(c), code_k(c)
 (56, 28)
 ```
 
-See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref)
+### Bivariate Bicycle codes
+
+Bivariate Bicycle codes are a class of Abelian 2BGA codes formed by the direct product
+of two cyclic groups `ℤₗ × ℤₘ`. The parameters `l` and `m` represent the orders of the
+first and second cyclic groups, respectively.
+
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/qcga).
+
+A [[756, 16, ≤ 34]] code from Table 3 of [bravyi2024high](@cite):
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens
+
+julia> l=21; m=18;
+
+julia> GA = group_algebra(GF(2), abelian_group([l, m]));
+
+julia> x, y = gens(GA);
+
+julia> A = x^3 + y^10 + y^17;
+
+julia> B = y^5 + x^3  + x^19;
+
+julia> c = two_block_group_algebra_codes(A,B);
+
+julia> code_n(c), code_k(c)
+(756, 16)
+```
+
+### Multivariate Bicycle code
+
+The group algebra of the qubit multivariate bicycle (MB) code with r variables is `𝔽₂[𝐺ᵣ]`,
+where `𝐺ᵣ = ℤ/l₁ × ℤ/l₂ × ... × ℤ/lᵣ`.
+
+A [[48, 4, 6]] Weight-6 TB-QLDPC code from Appendix A Table 2 of [voss2024multivariatebicyclecodes](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens; # hide
+
+julia> l=4; m=6;
+
+julia> z = x*y;
+
+julia> A = x^3 + y^5;
+
+julia> B = x + z^5 + y^5 + y^2;
+
+julia> c = two_block_group_algebra_codes(A, B);
+
+julia> code_n(c), code_k(c)
+(48, 4)
+```
+
+### Coprime Bivariate Bicycle code
+
+The coprime bivariate bicycle (BB) codes are defined by two polynomials `𝑎(𝑥,𝑦)` and `𝑏(𝑥,𝑦)`,
+where `𝑙` and `𝑚` are coprime, and can be expressed as univariate polynomials `𝑎(𝜋)` and `𝑏(𝜋)`,
+with generator `𝜋 = 𝑥𝑦`. They can be viewed as a special case of Lifted Product construction
+based on abelian group `ℤₗ x ℤₘ` where `ℤⱼ` cyclic group of order `j`.
+
+[108, 12, 6]] coprime-bivariate bicycle (BB) code from Table 2 of [wang2024coprime](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens;
+
+julia> l=2; m=27;
+
+julia> GA = group_algebra(GF(2), abelian_group([l*m]));
+
+julia> 𝜋 = gens(GA)[1];
+
+julia> A = 𝜋^2 + 𝜋^5  + 𝜋^44;
+
+julia> B = 𝜋^8 + 𝜋^14 + 𝜋^47;
+
+
+(108, 12)
+```
+
+See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref).
 """
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
     LPCode([a;;], [b;;])
 end
 
 """
-Generalized bicycle codes, which are a special case of 2GBA codes (and therefore of lifted product codes).
+Generalized bicycle codes, which are a special case of *abelian* 2GBA codes (and therefore of lifted product codes).
 Here the group is chosen as the cyclic group of order `l`,
 and the base matrices `a` and `b` are the sum of the group algebra elements corresponding to the shifts `a_shifts` and `b_shifts`.
 
@@ -195,6 +276,18 @@ julia> c = generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121],
 
 julia> code_n(c), code_k(c)
 (254, 28)
+```
+
+An [[70, 8, 10]] *abelian* 2BGA code from Table 1 of [lin2024quantum](@cite), with cyclic group of
+order `l = 35`, illustrates that *abelian* 2BGA codes can be viewed as GB codes.
+
+```jldoctest
+julia> l = 35;
+
+julia> c1 = generalized_bicycle_codes([0, 15, 16, 18], [0, 1, 24, 27], l);
+
+julia> code_n(c1), code_k(c1)
+(70, 8)
 ```
 """
 function generalized_bicycle_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)

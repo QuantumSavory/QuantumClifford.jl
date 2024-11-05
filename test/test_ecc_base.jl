@@ -62,6 +62,91 @@ A[LinearAlgebra.diagind(A, 5)] .= GA(1)
 B = reshape([1 + x + x^6], (1, 1))
 push!(other_lifted_product_codes, LPCode(A, B))
 
+# coprime Bivariate Bicycle codes from Table 2 of [wang2024coprime](@cite)
+# [[108,12,6]]
+l=2; m=27
+GA = group_algebra(GF(2), abelian_group([l*m]))
+𝜋 = gens(GA)[1]
+A = 𝜋^2 + 𝜋^5  + 𝜋^44
+B = 𝜋^8 + 𝜋^14 + 𝜋^47
+coprimeBB1 = two_block_group_algebra_codes(A, B)
+
+# [[126,12,10]]
+l=7; m=9
+GA = group_algebra(GF(2), abelian_group([l*m]))
+𝜋 = gens(GA)[1]
+A = 1   + 𝜋    + 𝜋^58
+B = 𝜋^3 + 𝜋^16 + 𝜋^44
+coprimeBB2 = two_block_group_algebra_codes(A, B)
+
+test_coprimeBB_codes = [coprimeBB1, coprimeBB2]
+
+# Multivariate Bicycle codes taken from Table 1 of [voss2024multivariatebicyclecodes](@cite)
+# Weight-4 [[144, 2, 12]] MBB code
+l=8; m=9
+GA = group_algebra(GF(2), abelian_group([l, m]))
+x, y = gens(GA)
+z = x*y
+A = x^3 + y^7
+B = x + y^5
+weight4mbb = two_block_group_algebra_codes(A, B)
+
+# Weight-5 [96, 4, 8]] MBB code
+l=8; m=6
+GA = group_algebra(GF(2), abelian_group([l, m]))
+x, y = gens(GA)
+z = x*y
+A = x^6 + x^3
+B = z^5 + x^5 + y
+weight5mbb = two_block_group_algebra_codes(A, B)
+
+# Weight-6 [[48, 4, 6]] MBB code
+l=4; m=6
+GA = group_algebra(GF(2), abelian_group([l, m]))
+x, y = gens(GA)
+z = x*y
+A = x^3 + y^5
+B = x + z^5 + y^5 + y^2
+weight6mbb = two_block_group_algebra_codes(A, B)
+
+# Weight-7 [[30, 4, 5]] MBB code
+l=5; m=3
+GA = group_algebra(GF(2), abelian_group([l, m]));
+x, y = gens(GA)
+z = x*y
+A = x^4 + x^2
+B = x + x^2 + y + z^2 + z^3
+weight7mbb = two_block_group_algebra_codes(A, B)
+
+test_mbb_codes = [weight4mbb, weight5mbb, weight6mbb, weight7mbb]
+
+# Bivariate Bicycle codes
+# A [[72, 12, 6]] code from Table 3 of [bravyi2024high](@cite).
+l=6; m=6
+GA = group_algebra(GF(2), abelian_group([l, m]))
+x, y = gens(GA)
+A = x^3 + y + y^2
+B = y^3 + x + x^2
+bb1 = two_block_group_algebra_codes(A,B)
+
+# A [[90, 8, 10]] code from Table 3 of [bravyi2024high](@cite).
+l=15; m=3
+GA = group_algebra(GF(2), abelian_group([l, m]))
+x, y = gens(GA)
+A = x^9 + y   + y^2
+B = 1   + x^2 + x^7
+bb2 = two_block_group_algebra_codes(A,B)
+
+# A [[360, 12, ≤ 24]]  code from Table 3 of [bravyi2024high](@cite).
+l=30; m=6
+GA = group_algebra(GF(2), abelian_group([l, m]))
+x, y = gens(GA)
+A = x^9 + y    + y^2
+B = y^3 + x^25 + x^26
+bb3 = two_block_group_algebra_codes(A,B)
+
+test_bb_codes = [bb1, bb2, bb3]
+
 const code_instance_args = Dict(
     :Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
     :Surface => [(3,3), (4,4), (3,6), (4,3), (5,5)],
@@ -69,7 +154,7 @@ const code_instance_args = Dict(
     :CSS => (c -> (parity_checks_x(c), parity_checks_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
     :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
     :CircuitCode => random_circuit_code_args,
-    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_hcubic_codes, other_lifted_product_codes)),
+    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, other_lifted_product_codes)),
     :QuantumReedMuller => [3, 4, 5]
 )
 
