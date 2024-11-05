@@ -150,14 +150,18 @@ code_n(c::LPCode) = size(c.repr(zero(c.GA)), 2) * (size(c.A, 2) * size(c.B, 1) +
 code_s(c::LPCode) = size(c.repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) + size(c.A, 2) * size(c.B, 2))
 
 """
-Two-block group algebra (2GBA) codes, which are a special case of lifted product codes
+Two-block group algebra (2BGA) codes, which are a special case of lifted product codes
 from two group algebra elements `a` and `b`, used as `1x1` base matrices.
+
+## Examples of 2BGA code subfamilies
+
+### [lin2024quantum](@cite)
 
 Here is an example of a [[56, 28, 2]] 2BGA code from Table 2 of [lin2024quantum](@cite)
 with direct product of `C₄ x C₂`.
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens;
+julia> import Hecke: group_algebra, GF, abelian_group, gens
 
 julia> GA = group_algebra(GF(2), abelian_group([14,2]));
 
@@ -175,7 +179,7 @@ julia> code_n(c), code_k(c)
 (56, 28)
 ```
 
-# Examples of 2BGA code subfamilies
+### Bivariate Bicycle codes
 
 Bivariate Bicycle codes are a class of Abelian 2BGA codes formed by the direct product
 of two cyclic groups `ℤₗ × ℤₘ`. The parameters `l` and `m` represent the orders of the
@@ -183,10 +187,10 @@ first and second cyclic groups, respectively.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/qcga).
 
-A [[756, 16, ≤ 34]] code from Table 3 of [bravyi2024high](@cite).
+A [[756, 16, ≤ 34]] code from Table 3 of [bravyi2024high](@cite):
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens; # hide
+julia> import Hecke: group_algebra, GF, abelian_group, gens
 
 julia> l=21; m=18;
 
