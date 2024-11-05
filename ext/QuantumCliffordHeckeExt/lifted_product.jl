@@ -311,9 +311,10 @@ end
 
 """
 Haah’s cubic codes [haah2011local](@cite) can be viewed as generalized bicycle (GB) codes
-with the group `G = Cₗ × Cₗ × Cₗ`, where `l` denotes the lattice size.
-In particular, a GB code with the group `G = ℤ₃ˣ³` corresponds to a
-cubic code [https://errorcorrectionzoo.org/c/haah_cubic](@cite).
+with the group `G = Cₗ × Cₗ × Cₗ`, where `l` denotes the lattice size. In particular, a GB
+code with the group `G = ℤ₃ˣ³` corresponds to a cubic code.
+
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/haah_cubic).
 
 ```jldoctest
 julia> c = Haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 6);
