@@ -153,12 +153,32 @@ code_s(c::LPCode) = size(c.repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) +
 Two-block group algebra (2GBA) codes, which are a special case of lifted product codes
 from two group algebra elements `a` and `b`, used as `1x1` base matrices.
 
+Here is an example of a [[56, 28, 2]] 2BGA code from Table 2 of [lin2024quantum](@cite)
+with direct product of `C₄ x C₂`.
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens;
+
+julia> GA = group_algebra(GF(2), abelian_group([14,2]));
+
+julia> x = gens(GA)[1];
+
+julia> s = gens(GA)[2];
+
+julia> A = 1 + x^7
+
+julia> B = 1 + x^7 + s + x^8 + s*x^7 + x
+
+julia> c = two_block_group_algebra_codes(A,B);
+
+julia> code_n(c), code_k(c)
+(56, 28)
+```
+
 See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref)
-""" # TODO doctest example
+"""
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
-    A = reshape([a], (1, 1))
-    B = reshape([b], (1, 1))
-    LPCode(A, B)
+    LPCode([a;;], [b;;])
 end
 
 """
