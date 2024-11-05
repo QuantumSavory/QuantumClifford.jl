@@ -150,14 +150,18 @@ code_n(c::LPCode) = size(c.repr(zero(c.GA)), 2) * (size(c.A, 2) * size(c.B, 1) +
 code_s(c::LPCode) = size(c.repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) + size(c.A, 2) * size(c.B, 2))
 
 """
-Two-block group algebra (2GBA) codes, which are a special case of lifted product codes
+Two-block group algebra (2BGA) codes, which are a special case of lifted product codes
 from two group algebra elements `a` and `b`, used as `1x1` base matrices.
+
+## Examples of 2BGA code subfamilies
+
+### `C₄ x C₂`
 
 Here is an example of a [[56, 28, 2]] 2BGA code from Table 2 of [lin2024quantum](@cite)
 with direct product of `C₄ x C₂`.
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens;
+julia> import Hecke: group_algebra, GF, abelian_group, gens
 
 julia> GA = group_algebra(GF(2), abelian_group([14,2]));
 
@@ -175,7 +179,60 @@ julia> code_n(c), code_k(c)
 (56, 28)
 ```
 
-# Examples of 2BGA code subfamilies
+### Bivariate Bicycle codes
+
+Bivariate Bicycle codes are a class of Abelian 2BGA codes formed by the direct product
+of two cyclic groups `ℤₗ × ℤₘ`. The parameters `l` and `m` represent the orders of the
+first and second cyclic groups, respectively.
+
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/qcga).
+
+A [[756, 16, ≤ 34]] code from Table 3 of [bravyi2024high](@cite):
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens
+
+julia> l=21; m=18;
+
+julia> GA = group_algebra(GF(2), abelian_group([l, m]));
+
+julia> x, y = gens(GA);
+
+julia> A = x^3 + y^10 + y^17;
+
+julia> B = y^5 + x^3  + x^19;
+
+julia> c = two_block_group_algebra_codes(A,B);
+
+julia> code_n(c), code_k(c)
+(756, 16)
+```
+
+### Multivariate Bicycle code
+
+The group algebra of the qubit multivariate bicycle (MB) code with r variables is `𝔽₂[𝐺ᵣ]`,
+where `𝐺ᵣ = ℤ/l₁ × ℤ/l₂ × ... × ℤ/lᵣ`.
+
+A [[48, 4, 6]] Weight-6 TB-QLDPC code from Appendix A Table 2 of [voss2024multivariatebicyclecodes](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens; # hide
+
+julia> l=4; m=6;
+
+julia> z = x*y;
+
+julia> A = x^3 + y^5;
+
+julia> B = x + z^5 + y^5 + y^2;
+
+julia> c = two_block_group_algebra_codes(A, B);
+
+julia> code_n(c), code_k(c)
+(48, 4)
+```
+
+### Coprime Bivariate Bicycle code
 
 The coprime bivariate bicycle (BB) codes are defined by two polynomials `𝑎(𝑥,𝑦)` and `𝑏(𝑥,𝑦)`,
 where `𝑙` and `𝑚` are coprime, and can be expressed as univariate polynomials `𝑎(𝜋)` and `𝑏(𝜋)`,
@@ -197,13 +254,11 @@ julia> A = 𝜋^2 + 𝜋^5  + 𝜋^44;
 
 julia> B = 𝜋^8 + 𝜋^14 + 𝜋^47;
 
-julia> c = two_block_group_algebra_codes(A, B);
 
-julia> code_n(c), code_k(c)
 (108, 12)
 ```
 
-See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref)
+See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref).
 """
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
     LPCode([a;;], [b;;])
