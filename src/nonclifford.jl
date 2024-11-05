@@ -387,6 +387,8 @@ julia> invsparsity(pcT)
 
 See also: [`GeneralizedStabilizer`](@ref)
 """
+function invsparsity end
+
 invsparsity(sm::GeneralizedStabilizer) = count(!iszero, values(sm.destabweights::DefaultDict{Tuple{BitVector, BitVector}, ComplexF64, ComplexF64}))
 invsparsity(gate::AbstractPauliChannel) = count(!iszero, values(gate.paulichannel.weights::Vector{ComplexF64}))
 

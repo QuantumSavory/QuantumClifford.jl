@@ -81,7 +81,7 @@ export
     # petrajectories
     petrajectories, applybranches,
     # nonclifford
-    GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, invsparsity,
+    GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
