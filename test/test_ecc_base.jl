@@ -6,7 +6,7 @@ using InteractiveUtils
 
 import Nemo: GF
 import LinearAlgebra
-import Hecke: group_algebra, abelian_group, gens, one
+import Hecke: group_algebra, abelian_group, gens
 
 # generate instances of all implemented codes to make sure nothing skips being checked
 
@@ -62,25 +62,25 @@ push!(other_lifted_product_codes, LPCode(A, B))
 l=6; m=6
 GA = group_algebra(GF(2), abelian_group([l, m]))
 x, y = gens(GA)
-A = [x^3, y, y^2]
-B = [y^3, x, x^2]
-bb1 = bivariate_bicycle_codes(A,B,GA)
+A = x^3 + y + y^2
+B = y^3 + x + x^2
+bb1 = bivariate_bicycle_codes(A,B)
 
 # A [[90, 8, 10]] code from Table 3 of [bravyi2024high](@cite).
 l=15; m=3
 GA = group_algebra(GF(2), abelian_group([l, m]))
 x, y = gens(GA)
-A = [x^9   , y   , y^2]
-B = [one(x), x^2 , x^7]
-bb2 = bivariate_bicycle_codes(A,B,GA)
+A = x^9 + y   + y^2
+B = 1   + x^2 + x^7
+bb2 = bivariate_bicycle_codes(A,B)
 
 # A [[360, 12, ≤ 24]]  code from Table 3 of [bravyi2024high](@cite).
 l=30; m=6
 GA = group_algebra(GF(2), abelian_group([l, m]))
 x, y = gens(GA)
-A = [x^9 , y    ,  y^2]
-B = [y^3 , x^25 , x^26]
-bb3 = bivariate_bicycle_codes(A,B,GA)
+A = x^9 + y    + y^2
+B = y^3 + x^25 + x^26
+bb3 = bivariate_bicycle_codes(A,B)
 
 test_bb_codes = [bb1, bb2, bb3]
 

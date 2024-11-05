@@ -238,19 +238,17 @@ julia> GA = group_algebra(GF(2), abelian_group([l, m]));
 
 julia> x, y = gens(GA);
 
-julia> A = [x^3 , y^10 , y^17];
+julia> A = x^3 + y^10 + y^17;
 
-julia> B = [y^5 , x^3  , x^19];
+julia> B = y^5 + x^3  + x^19;
 
-julia> c = bivariate_bicycle_codes(A,B,GA);
+julia> c = bivariate_bicycle_codes(A,B);
 
 julia> code_n(c), code_k(c)
 (756, 16)
 ```
 """
-function bivariate_bicycle_codes(A::VectorGroupAlgebraElem, B::VectorGroupAlgebraElem, GA::FqFieldFinGenAbGroupElemGroupAlgebra)
-    a = sum(GA(x) for x in A)
-    b = sum(GA(x) for x in B)
-    c = two_block_group_algebra_codes(a,b)
+function bivariate_bicycle_codes(A::GroupAlgebraElem, B::GroupAlgebraElem)
+    c = two_block_group_algebra_codes(A,B)
     return c
 end
