@@ -202,7 +202,7 @@ Bivariate Bicycle codes are a class of Abelian 2BGA codes formed by the direct p
 of two cyclic groups `ℤₗ × ℤₘ`. The parameters `l` and `m` represent the orders of the
 first and second cyclic groups, respectively.
 
-The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/q-ary_bch).
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/qcga).
 
 See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref),
 [`bicycle_codes`](@ref), [`LPCode`](@ref)
