@@ -157,6 +157,12 @@ end
 # On Tableaux
 ##############################
 
+@inline function mul_left!(s::Tableau, m, t::Tableau, i; phases::Val{B}=Val(true)) where B
+    extra_phase = mul_left!((@view s.xzs[:,m]), (@view t.xzs[:,i]); phases=phases)
+    B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
+    s
+end
+
 @inline function mul_left!(s::Tableau, m, i; phases::Val{B}=Val(true)) where B
     extra_phase = mul_left!((@view s.xzs[:,m]), (@view s.xzs[:,i]); phases=phases)
     B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
