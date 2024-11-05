@@ -155,7 +155,7 @@ from two group algebra elements `a` and `b`, used as `1x1` base matrices.
 
 ## Examples of 2BGA code subfamilies
 
-### [lin2024quantum](@cite)
+### `C₄ x C₂`
 
 Here is an example of a [[56, 28, 2]] 2BGA code from Table 2 of [lin2024quantum](@cite)
 with direct product of `C₄ x C₂`.
