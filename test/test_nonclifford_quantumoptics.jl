@@ -50,3 +50,16 @@ qo_tgate.data[2,2] = exp(im*pi/4)
         end
     end
 end
+
+@testset "copy and ==" begin
+    for n in 1:10
+        s = random_stabilizer(n)
+        sm = GeneralizedStabilizer(s)
+        i = rand(1:n)
+        apply!(sm, embed(n, i, pcT))
+        smcopy = copy(sm)
+        @test smcopy == sm
+        nc = embed(n, rand(1:n), pcT)
+        @test copy(nc) == nc
+    end
+end
