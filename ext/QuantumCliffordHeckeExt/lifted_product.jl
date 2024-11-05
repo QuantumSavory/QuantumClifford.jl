@@ -165,9 +165,7 @@ julia> import Hecke: group_algebra, GF, abelian_group, gens
 
 julia> GA = group_algebra(GF(2), abelian_group([14,2]));
 
-julia> x = gens(GA)[1];
-
-julia> s = gens(GA)[2];
+julia> x, s = gens(GA);
 
 julia> A = 1 + x^7
 
