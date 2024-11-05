@@ -64,6 +64,8 @@ function GeneralizedStabilizer(state)
 end
 
 GeneralizedStabilizer(s::GeneralizedStabilizer) = s
+Base.copy(sm::GeneralizedStabilizer) = GeneralizedStabilizer(copy(sm.stab),copy(sm.destabweights))
+Base.:(==)(sm₁::GeneralizedStabilizer, sm₂::GeneralizedStabilizer) = sm₁.stab==sm₂.stab && sm₁.destabweights==sm₂.destabweights
 
 function Base.show(io::IO, s::GeneralizedStabilizer)
     println(io, "A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is")
@@ -114,7 +116,7 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
 
 See also: [`GeneralizedStabilizer`](@ref)
 """
-function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator) # TODO conjugate also the destabs
+function apply!(state::GeneralizedStabilizer, gate::AbstractCliffordOperator)
     apply!(state.stab, gate)
     state
 end
@@ -123,7 +125,7 @@ end
 
 Expectation value for the [PauliOperator](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`.
 
-```jldoctest
+```jldoctest genstab
 julia> sm = GeneralizedStabilizer(S"-X")
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
@@ -145,8 +147,11 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
  0.853553+0.0im | + _ | + _
  0.146447+0.0im | + Z | + Z
 
-julia> expect(P"-X", sm)
+julia> χ′ = expect(P"-X", sm)
 0.7071067811865475 + 0.0im
+
+julia> prob = (real(χ′)+1)/2
+0.8535533905932737
 ```
 
 """
@@ -172,41 +177,67 @@ function _allthreesumtozero(a,b,c)
     true
 end
 
+"""$(TYPEDSIGNATURES)
 
-project!(::GeneralizedStabilizer, ::PauliOperator) =
-    error("The method `project!` is not applicable for `GeneralizedStabilizer` with \n" *
-    "measurements involving the hermitian Pauli operator ℳ. The `GeneralizedStabilizer` 𝜏 \n" *
-    "is updated by measuring ℳ = 𝒶⋅𝒹ₘ⋅𝓈ₙ, resulting in the new state 𝜏′ defined as: \n" *
-    "𝜏′ = ¼(ℐ + ℳ)𝜏(ℐ + ℳ) = (𝜙′, ℬ(𝒮′, 𝒟′)), where (𝒮′, 𝒟′) is derived from (𝒮, 𝒟) \n" *
-    "through the traditional stabilizer update, and 𝜙' represents the updated density \n" *
-    "matrix. Note that ¼(ℐ − ℳ)𝜏(ℐ − ℳ) can be obtained by changing the sign of 𝒶.\n\n" *
-    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" *
-    "The projection requires a probabilistic approach, as measurement outcomes depend on \n" *
-    "the expectation value of the `PauliOperator`. Specifically, the expectation value is \n" *
-    "derived from the trace Tr[𝜏′] = Tr[𝜙ᵢⱼ′] in the expression: 𝜏′ = 𝛴 𝜙ᵢⱼ' 𝒫ᵢ 𝜌 𝒫ⱼ†, where 𝜙ᵢⱼ′\n" *
-    "is the updated 𝜙-matrix. The trace Tr[𝜏′] = Tr[𝜙ᵢⱼ′] represents the probability of \n" *
-    "measuring either 0 or a non-zero outcome and serves as the normalization required for 𝜏′.\n\n" *
-    "To correctly perform the 'nondeterministic' projection, please use `projectrand!`.\n\n" *
-    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" *
-    "Moreover, `project!` in this library operates as a 'deterministic' method to verify \n" *
-    "whether a measurement operator commutes with stabilizers. Based on this commutation, it \n" *
-    "executes additional steps to determine the resultant state after projection. Thus, there \n" *
-    "are semantic nuances in defining `project!` consistently for`GeneralizedStabilizer`, \n" *
-    "particularly regarding the interpretations of `anticom` and `res` in this context.\n\n" *
-    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" *
-    "𝒩𝒪𝒯ℰ𝒮:\n" *
-    "- `rowdecompose(ℳ, 𝜏.stab)`: Provides the decomposition of ℳ in terms of stabilizer \n" *
-    "and destabilizer rows of the given tableau of 𝜏.\n\n" *
-    "- `expect(ℳ, 𝜏)`: Returns the updated 𝜙-matrix 𝜙ᵢⱼ′, where the trace Tr[𝜙ᵢⱼ′] provides \n" *
-    "the expectation value of measuring ℳ.\n\n")
+Performs a randomized projection of the state represented by the [`GeneralizedStabilizer`](@ref) `sm`,
+based on the measurement of a [PauliOperator](@ref) `p`.
 
+Unlike in the case of stabilizer states, the expectation value χ′ of a Pauli operator
+with respect to these more general states can be any real number between -1 and 1.
+The expectation value can be calculated with `expect(p, sm)`.
+
+```math
+\\chi' = \\langle p \\rangle = \\text{expect}(p, sm)
+```
+
+To convert χ′ into a probability of projecting on the +1 eigenvalue branch:
+
+```math
+\\text{probability}_{1} = \\frac{\\text{real}(\\chi') + 1}{2}
+```
+
+!!! note Because the possible measurement results are themselves not stabilizer states anymore,
+we can not use the `project!` API, which assumes a stabilizer tableau and reports detailed
+information about whether the tableau and measurement commute or anticommute.
+
+```jldoctest genstab
+julia> sm = GeneralizedStabilizer(S"-X");
+
+julia> apply!(sm, pcT)
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + _ | + Z
+ 0.0-0.353553im | + Z | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
+
+julia> expect(P"-X", sm)
+0.7071067811865475 + 0.0im
+
+julia> prob₁ = (real(χ′)+1)/2
+0.8535533905932737
+```
+
+See also: [`expect`](@ref)
+"""
 function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
-    eval = expect(p, sm)
-    prob₁ = (real(eval)+1)/2
-    error("This functionality is not implemented yet")
+    χ′ = expect(p, sm)
+    # Compute the probability of measuring in the +1 eigenstate
+    prob₁ = (real(χ′)+1)/2
+    # Randomly choose projection based on this probability
+    return _proj(sm, rand() < prob₁ ? p : -p)
 end
 
 function _proj(sm::GeneralizedStabilizer, p::PauliOperator)
+    error("This functionality is not implemented yet")
+end
+
+function project!(::GeneralizedStabilizer, ::PauliOperator)
+    throw(Base.Experimental.MethodError(project!, (GeneralizedStabilizer, PauliOperator)))
 end
 
 nqubits(sm::GeneralizedStabilizer) = nqubits(sm.stab)
@@ -368,6 +399,8 @@ struct UnitaryPauliChannel{T,S,P} <: AbstractPauliChannel
 end
 
 PauliChannel(p::UnitaryPauliChannel) = p.paulichannel
+Base.copy(p::UnitaryPauliChannel) = UnitaryPauliChannel(map(copy, p.paulis), map(copy, p.weights))
+Base.:(==)(p₁::UnitaryPauliChannel, p₂::UnitaryPauliChannel) = p₁.paulis==p₂.paulis && p₁.weights==p₂.weights
 
 function Base.show(io::IO, pc::UnitaryPauliChannel)
     println(io, "A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:")
@@ -388,6 +421,42 @@ end
 nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
 apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold=1e-10) = apply!(state, gate.paulichannel; prune_threshold)
+
+"""
+Calculates the number of non-zero elements in the density matrix `χ`
+of a [`GeneralizedStabilizer`](@ref), representing the inverse sparsity
+of `χ`. It provides a measure of the state's complexity, with bounds
+`Λ(χ) ≤ 4ⁿ`.
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
++ X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> apply!(sm, pcT) |> invsparsity
+4
+```
+
+Similarly, it calculates the number of non-zero elements in the density
+matrix `ϕᵢⱼ`​ of a PauliChannel, providing a measure of the channel
+complexity.
+
+```jldoctest
+julia> invsparsity(pcT)
+4
+```
+
+See also: [`GeneralizedStabilizer`](@ref)
+"""
+function invsparsity end
+
+invsparsity(sm::GeneralizedStabilizer) = count(!iszero, values(sm.destabweights::DefaultDict{Tuple{BitVector, BitVector}, ComplexF64, ComplexF64}))
+invsparsity(gate::AbstractPauliChannel) = count(!iszero, values(gate.paulichannel.weights::Vector{ComplexF64}))
 
 ##
 # Predefined Pauli Channels

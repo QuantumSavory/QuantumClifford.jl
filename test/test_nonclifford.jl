@@ -1,5 +1,5 @@
 using QuantumClifford
-using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!
+using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, invsparsity, mul_left!, mul_right!
 using Test
 using InteractiveUtils
 using Random
@@ -38,6 +38,21 @@ end
 end
 
 ##
+
+@testset "Inverse sparsity" begin
+    for n in 1:5
+        s = random_stabilizer(n)
+        gs = GeneralizedStabilizer(s)
+        for i in 1:rand(1:4)
+            apply!(gs, embed(n, i, pcT))
+        end
+        # Λ(χ) ≤ 4ⁿ
+        @test invsparsity(gs) <= 4^n
+        channels = [embed(n, i, pcT) for i in 1:rand(1:4)]
+        # Λ(ϕᵢⱼ) ≤ 4ⁿ
+        @test all(invsparsity(channel) <= 4^n for channel in channels)
+    end
+end
 
 @test_throws ArgumentError GeneralizedStabilizer(S"XX")
 @test_throws ArgumentError PauliChannel(((P"X", P"Z"), (P"X", P"ZZ")), (1,2))
