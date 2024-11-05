@@ -125,7 +125,7 @@ end
 
 Expectation value for the [PauliOperator](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`.
 
-```jldoctest
+```jldoctest genstab
 julia> sm = GeneralizedStabilizer(S"-X")
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
@@ -177,15 +177,63 @@ function _allthreesumtozero(a,b,c)
     true
 end
 
-function project!(sm::GeneralizedStabilizer, p::PauliOperator)
-    eval = expect(p, sm)
-    prob₁ = (real(eval)+1)/2
-    error("This functionality is not implemented yet")
+"""$(TYPEDSIGNATURES)
+
+Performs a randomized projection of the state represented by the [`GeneralizedStabilizer`](@ref) `sm`,
+based on the measurement of a [PauliOperator](@ref) `p`.
+
+Unlike in the case of stabilizer states, the expectation value χ′ of a Pauli operator
+with respect to these more general states can be any real number between -1 and 1.
+The expectation value can be calculated with `expect(p, sm)`.
+
+```math
+\\chi' = \\langle p \\rangle = \\text{expect}(p, sm)
+```
+
+To convert χ′ into a probability of projecting on the +1 eigenvalue branch:
+
+```math
+\\text{probability}_{1} = \\frac{\\text{real}(\\chi') + 1}{2}
+```
+
+!!! note Because the possible measurement results are themselves not stabilizer states anymore,
+we can not use the `project!` API, which assumes a stabilizer tableau and reports detailed
+information about whether the tableau and measurement commute or anticommute.
+
+```jldoctest genstab
+julia> sm = GeneralizedStabilizer(S"-X");
+
+julia> apply!(sm, pcT)
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + _ | + Z
+ 0.0-0.353553im | + Z | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
+
+julia> expect(P"-X", sm)
+0.7071067811865475 + 0.0im
+
+julia> prob₁ = (real(χ′)+1)/2
+0.8535533905932737
+```
+
+See also: [`expect`](@ref)
+"""
+function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
+    χ′ = expect(p, sm)
+    # Compute the probability of measuring in the +1 eigenstate
+    prob₁ = (real(χ′)+1)/2
+    # Randomly choose projection based on this probability
+    return _proj(sm, rand() < prob₁ ? p : -p)
 end
 
-function _proj₋(sm::GeneralizedStabilizer, p::PauliOperator)
-end
-function _proj₊(sm::GeneralizedStabilizer, p::PauliOperator)
+function _proj(sm::GeneralizedStabilizer, p::PauliOperator)
+    error("This functionality is not implemented yet")
 end
 
 nqubits(sm::GeneralizedStabilizer) = nqubits(sm.stab)
