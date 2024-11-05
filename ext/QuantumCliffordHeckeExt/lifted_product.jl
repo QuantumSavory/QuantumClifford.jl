@@ -77,7 +77,8 @@ The default representation, provided by `Hecke`, is the permutation representati
 
 We also accept a custom representation function as detailed in [`LiftedCode`](@ref).
 
-See also: [`LiftedCode`](@ref), [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref).
+See also: [`LiftedCode`](@ref), [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref),
+[`haah_cubic_codes`](@ref).
 
 $TYPEDFIELDS
 """
@@ -251,12 +252,10 @@ julia> 𝜋 = gens(GA)[1];
 julia> A = 𝜋^2 + 𝜋^5  + 𝜋^44;
 
 julia> B = 𝜋^8 + 𝜋^14 + 𝜋^47;
-
-
 (108, 12)
 ```
 
-See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref).
+See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
 """
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
     LPCode([a;;], [b;;])
@@ -302,10 +301,33 @@ Bicycle codes are a special case of generalized bicycle codes,
 where `a` and `b` are conjugate to each other.
 The order of the cyclic group is `l`, and the shifts `a_shifts` and `b_shifts` are reverse to each other.
 
-See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref).
+See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
 """ # TODO doctest example
 function bicycle_codes(a_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
     a = sum(GA[n÷l+1] for n in a_shifts)
     two_block_group_algebra_codes(a, group_algebra_conj(a))
+end
+
+"""
+Haah’s cubic codes [haah2011local](@cite) can be viewed as generalized bicycle (GB) codes
+with the group `G = Cₗ × Cₗ × Cₗ`, where `l` denotes the lattice size. In particular, a GB
+code with the group `G = ℤ₃ˣ³` corresponds to a cubic code.
+
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/haah_cubic).
+
+```jldoctest
+julia> c = haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 6);
+
+julia> code_n(c), code_k(c)
+(432, 8)
+```
+
+See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref).
+"""
+function haah_cubic_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
+    GA = group_algebra(GF(2), abelian_group([l,l,l]))
+    a = sum(GA[n%dim(GA)+1] for n in a_shifts)
+    b = sum(GA[n%dim(GA)+1] for n in b_shifts)
+    two_block_group_algebra_codes(a, b)
 end
