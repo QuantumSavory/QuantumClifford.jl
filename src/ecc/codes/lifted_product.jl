@@ -19,4 +19,4 @@ function generalized_bicycle_codes end
 function bicycle_codes end
 
 """Implemented in a package extension with Hecke."""
-function Haah_cubic_codes end
+function haah_cubic_codes end

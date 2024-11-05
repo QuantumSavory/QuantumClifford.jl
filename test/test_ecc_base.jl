@@ -43,7 +43,7 @@ test_gb_codes = [
 ]
 
 test_hcubic_codes = [
-    Haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 3)
+    haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 3)
 ]
 
 other_lifted_product_codes = []
