@@ -5,3 +5,5 @@ LocalPreferences.toml
 scratch/
 *.cov
 .vscode
+test/.CondaPkg/
+docs/.CondaPkg/
