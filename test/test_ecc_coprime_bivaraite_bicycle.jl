@@ -22,7 +22,7 @@
         𝜋 = gens(GA)[1]
         A = 1 + 𝜋^2 + 𝜋^3
         B = 𝜋 + 𝜋^3 + 𝜋^11
-        c = two_block_group_algebra_codes(A, B);
+        c = two_block_group_algebra_codes(A, B)
         @test gcd([l,m]) == 1
         @test code_n(c) == 42 && code_k(c) == 6
 
@@ -32,7 +32,7 @@
         𝜋 = gens(GA)[1]
         A = 1 + 𝜋 + 𝜋^5;
         B = 1 + 𝜋 + 𝜋^12;
-        c = two_block_group_algebra_codes(A, B);
+        c = two_block_group_algebra_codes(A, B)
         @test gcd([l,m]) == 1
         @test code_n(c) == 70 && code_k(c) == 6
 
@@ -42,7 +42,7 @@
         𝜋 = gens(GA)[1]
         A = 𝜋^2 + 𝜋^5  + 𝜋^44
         B = 𝜋^8 + 𝜋^14 + 𝜋^47
-        c = two_block_group_algebra_codes(A, B);
+        c = two_block_group_algebra_codes(A, B)
         @test gcd([l,m]) == 1
         @test code_n(c) == 108 && code_k(c) == 12
 
@@ -52,7 +52,7 @@
         𝜋 = gens(GA)[1]
         A = 1   + 𝜋    + 𝜋^58
         B = 𝜋^3 + 𝜋^16 + 𝜋^44
-        c = two_block_group_algebra_codes(A, B);
+        c = two_block_group_algebra_codes(A, B)
         @test gcd([l,m]) == 1
         @test code_n(c) == 126 && code_k(c) == 12
     end

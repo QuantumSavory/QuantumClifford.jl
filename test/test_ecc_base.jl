@@ -58,6 +58,25 @@ A[LinearAlgebra.diagind(A, 5)] .= GA(1)
 B = reshape([1 + x + x^6], (1, 1))
 push!(other_lifted_product_codes, LPCode(A, B))
 
+# coprime Bivariate Bicycle codes from Table 2 of [wang2024coprime](@cite)
+# [[108,12,6]]
+l=2; m=27
+GA = group_algebra(GF(2), abelian_group([l*m]))
+𝜋 = gens(GA)[1]
+A = 𝜋^2 + 𝜋^5  + 𝜋^44
+B = 𝜋^8 + 𝜋^14 + 𝜋^47
+coprimeBB1 = two_block_group_algebra_codes(A, B)
+
+# [[126,12,10]]
+l=7; m=9
+GA = group_algebra(GF(2), abelian_group([l*m]))
+𝜋 = gens(GA)[1]
+A = 1   + 𝜋    + 𝜋^58
+B = 𝜋^3 + 𝜋^16 + 𝜋^44
+coprimeBB2 = two_block_group_algebra_codes(A, B)
+
+test_coprimeBB_codes = [coprimeBB1, coprimeBB2]
+
 const code_instance_args = Dict(
     :Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
     :Surface => [(3,3), (4,4), (3,6), (4,3), (5,5)],
@@ -65,7 +84,7 @@ const code_instance_args = Dict(
     :CSS => (c -> (parity_checks_x(c), parity_checks_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
     :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
     :CircuitCode => random_circuit_code_args,
-    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, other_lifted_product_codes)),
+    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_coprimeBB_codes, other_lifted_product_codes)),
     :QuantumReedMuller => [3, 4, 5]
 )
 
