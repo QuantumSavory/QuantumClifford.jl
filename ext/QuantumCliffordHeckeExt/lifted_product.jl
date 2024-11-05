@@ -198,7 +198,7 @@ julia> code_n(c), code_k(c)
 ```
 
 An [[70, 8, 10]] *abelian* 2BGA code from Table 1 of [lin2024quantum](@cite), with cyclic group of
-order `l = 35`, illustrates that `abelian` 2BGA codes can be viewed as GB codes.
+order `l = 35`, illustrates that *abelian* 2BGA codes can be viewed as GB codes.
 
 ```jldoctest
 julia> l = 35;
