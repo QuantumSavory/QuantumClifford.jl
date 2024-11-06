@@ -215,7 +215,7 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
  0.853553+0.0im | + _ | + _
  0.146447+0.0im | + Z | + Z
 
-julia> expect(P"-X", sm)
+julia> χ′ = expect(P"-X", sm)
 0.7071067811865475 + 0.0im
 
 julia> prob₁ = (real(χ′)+1)/2
