@@ -428,7 +428,9 @@ of a [`GeneralizedStabilizer`](@ref), representing the inverse sparsity
 of `χ`. It provides a measure of the state's complexity, with bounds
 `Λ(χ) ≤ 4ⁿ`.
 
-```jldoctest
+```jldoctest heuristic
+julia> using QuantumClifford: invsparsity; # hide
+
 julia> sm = GeneralizedStabilizer(S"X")
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
@@ -438,7 +440,7 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 with ϕᵢⱼ | Pᵢ | Pⱼ:
  1.0+0.0im | + _ | + _
 
-julia> apply!(sm, pcT) |> QuantumClifford.invsparsity
+julia> apply!(sm, pcT) |> invsparsity
 4
 ```
 
@@ -446,8 +448,8 @@ Similarly, it calculates the number of non-zero elements in the density
 matrix `ϕᵢⱼ`​ of a PauliChannel, providing a measure of the channel
 complexity.
 
-```jldoctest
-julia> QuantumClifford.invsparsity(pcT)
+```jldoctest heuristic
+julia> invsparsity(pcT)
 4
 ```
 
