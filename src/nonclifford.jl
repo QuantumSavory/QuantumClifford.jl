@@ -438,7 +438,7 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 with ϕᵢⱼ | Pᵢ | Pⱼ:
  1.0+0.0im | + _ | + _
 
-julia> apply!(sm, pcT) |> invsparsity
+julia> apply!(sm, pcT) |> QuantumClifford.invsparsity
 4
 ```
 
@@ -447,7 +447,7 @@ matrix `ϕᵢⱼ`​ of a PauliChannel, providing a measure of the channel
 complexity.
 
 ```jldoctest
-julia> invsparsity(pcT)
+julia> QuantumClifford.invsparsity(pcT)
 4
 ```
 
