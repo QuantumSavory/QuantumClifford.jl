@@ -462,3 +462,16 @@ const pcT = UnitaryPauliChannel(
     (I, Z),
     ((1+exp(im*π/4))/2, (1-exp(im*π/4))/2)
 )
+
+##
+# QuantumOpticsBaseExt methods
+##
+
+function LinearAlgebra.dot(args...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordOpticsBase)
+    if isnothing(ext)
+        throw("The `LinearAlgebra.dot` depends on the package `QuantumOpticsBase` but you have not installed or imported it yet. Immediately after you import `QuantumOpticsBase`, the `LinearAlgebra.dot` will be available.")
+    end
+    return ext.LinearAlgebra.dot(args...)
+end
+

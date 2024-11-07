@@ -1,11 +1,12 @@
 module QuantumCliffordQOpticsExt
 
 using QuantumClifford
-import QuantumClifford: mul_left!, mul_right!
+import QuantumClifford: mul_left!, mul_right!, dot
 using QuantumOpticsBase
 using Graphs
 using DocStringExtensions
 import QuantumOpticsBase: Ket, Operator
+using LinearAlgebra
 
 const _b2 = SpinBasis(1//2)
 const _l0 = spinup(_b2)
@@ -232,6 +233,41 @@ Operator(dim=2x2)
 """
 function Operator(c::CliffordOperator)
     cliff_to_unitary(c)
+end
+
+"""
+The inner product of two [`GeneralizedStabilizer`](@ref) states, `sm₁` and `sm₂`.
+
+```jldoctest
+julia> using QuantumOpticsBase; using LinearAlgebra; # hide
+
+julia> sm = GeneralizedStabilizer(S"X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
++ X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> apply!(sm, pcT)
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
++ X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + _ | + Z
+ 0.0-0.353553im | + Z | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
+
+julia> dot(sm, sm)
+0.9999999999999994
+```
+"""
+function LinearAlgebra.dot(sm₁::GeneralizedStabilizer, sm₂::GeneralizedStabilizer)
+    return real(tr(Operator(sm₁)' * Operator(sm₂)))
 end
 
 end

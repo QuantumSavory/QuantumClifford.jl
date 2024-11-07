@@ -82,6 +82,7 @@ end
         apply!(sm, embed(n, i, pcT))
         smcopy = copy(sm)
         @test smcopy == sm
+        @test dot(sm, smcopy) ≈ 1
         nc = embed(n, rand(1:n), pcT)
         @test copy(nc) == nc
     end
