@@ -215,7 +215,7 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
  0.853553+0.0im | + _ | + _
  0.146447+0.0im | + Z | + Z
 
-julia> expect(P"-X", sm)
+julia> χ′ = expect(P"-X", sm)
 0.7071067811865475 + 0.0im
 
 julia> prob₁ = (real(χ′)+1)/2
@@ -424,7 +424,9 @@ of a [`GeneralizedStabilizer`](@ref), representing the inverse sparsity
 of `χ`. It provides a measure of the state's complexity, with bounds
 `Λ(χ) ≤ 4ⁿ`.
 
-```jldoctest
+```jldoctest heuristic
+julia> using QuantumClifford: invsparsity; # hide
+
 julia> sm = GeneralizedStabilizer(S"X")
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
@@ -442,7 +444,7 @@ Similarly, it calculates the number of non-zero elements in the density
 matrix `ϕᵢⱼ`​ of a PauliChannel, providing a measure of the channel
 complexity.
 
-```jldoctest
+```jldoctest heuristic
 julia> invsparsity(pcT)
 4
 ```
@@ -462,3 +464,15 @@ const pcT = UnitaryPauliChannel(
     (I, Z),
     ((1+exp(im*π/4))/2, (1-exp(im*π/4))/2)
 )
+
+##
+# QuantumOpticsBaseExt methods
+##
+
+function cauchy_schwarz_check(args...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordOpticsBase)
+    if isnothing(ext)
+        throw("The `cauchy_schwarz_check` depends on the package `QuantumOpticsBase` but you have not installed or imported it yet. Immediately after you import `QuantumOpticsBase`, the `cauchy_schwarz_check` will be available.")
+    end
+    return ext.cauchy_schwarz_check(args...)
+end

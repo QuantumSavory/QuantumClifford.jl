@@ -1,5 +1,5 @@
 using QuantumClifford
-using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!
+using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!, cauchy_schwarz_check
 using QuantumClifford: @S_str, random_stabilizer
 using QuantumOpticsBase
 using LinearAlgebra
@@ -82,6 +82,7 @@ end
         apply!(sm, embed(n, i, pcT))
         smcopy = copy(sm)
         @test smcopy == sm
+        @test cauchy_schwarz_check(copy(smcopy), sm)
         nc = embed(n, rand(1:n), pcT)
         @test copy(nc) == nc
     end

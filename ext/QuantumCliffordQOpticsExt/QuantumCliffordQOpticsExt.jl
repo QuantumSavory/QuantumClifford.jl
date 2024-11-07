@@ -6,6 +6,7 @@ using QuantumOpticsBase
 using Graphs
 using DocStringExtensions
 import QuantumOpticsBase: Ket, Operator
+import QuantumClifford: cauchy_schwarz_check
 
 const _b2 = SpinBasis(1//2)
 const _l0 = spinup(_b2)
@@ -232,6 +233,24 @@ Operator(dim=2x2)
 """
 function Operator(c::CliffordOperator)
     cliff_to_unitary(c)
+end
+
+"""
+$TYPEDSIGNATURES
+
+Determines whether two [`GeneralizedStabilizer`](@ref) states, `sm₁` and `sm₂`, satisfy the
+*Cauchy-Schwarz inequality* within the the Hilbert space for `n`-qubit density matrices.
+
+The *Cauchy-Schwarz inequality* for `n`-qubit density matrices is given by:
+
+```math
+\\left| \\text{Tr}[sm_1' sm_2] \\right| \\leq \\sqrt{\\text{Tr}[(sm_1')^2] \\, \\text{Tr}[sm_2^2]}
+```
+
+Equality holds if and only if: `sm₁ =  sm₂`
+"""
+function cauchy_schwarz_check(sm₁::GeneralizedStabilizer, sm₂::GeneralizedStabilizer)
+    return abs(real(tr(Operator(sm₁)' * Operator(sm₂)))) <= sqrt(real(tr((Operator(sm₁)')^2) * tr(Operator(sm₂)^2)))
 end
 
 end
