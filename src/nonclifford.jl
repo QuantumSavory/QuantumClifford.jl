@@ -237,7 +237,7 @@ function _proj(sm::GeneralizedStabilizer, p::PauliOperator)
 end
 
 function project!(::GeneralizedStabilizer, ::PauliOperator)
-    throw(Base.Experimental.MethodError(project!, (GeneralizedStabilizer, PauliOperator)))
+    throw(MethodError(project!, (GeneralizedStabilizer, PauliOperator)))
 end
 
 nqubits(sm::GeneralizedStabilizer) = nqubits(sm.stab)
