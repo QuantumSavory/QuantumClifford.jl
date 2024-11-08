@@ -236,6 +236,10 @@ function _proj(sm::GeneralizedStabilizer, p::PauliOperator)
     error("This functionality is not implemented yet")
 end
 
+function project!(s::GeneralizedStabilizer, p::PauliOperator)
+    throw(MethodError(project!, (s, p)))
+end
+
 nqubits(sm::GeneralizedStabilizer) = nqubits(sm.stab)
 
 abstract type AbstractPauliChannel <: AbstractOperation end
@@ -425,7 +429,7 @@ of `χ`. It provides a measure of the state's complexity, with bounds
 `Λ(χ) ≤ 4ⁿ`.
 
 ```jldoctest heuristic
-julia> using QuantumClifford: invsparsity;
+julia> using QuantumClifford: invsparsity; # hide
 
 julia> sm = GeneralizedStabilizer(S"X")
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
@@ -441,7 +445,7 @@ julia> apply!(sm, pcT) |> invsparsity
 ```
 
 Similarly, it calculates the number of non-zero elements in the density
-matrix `ϕᵢⱼ`​ of a PauliChannel, providing a measure of the channel
+matrix `ϕᵢⱼ` of a PauliChannel, providing a measure of the channel
 complexity.
 
 ```jldoctest heuristic
