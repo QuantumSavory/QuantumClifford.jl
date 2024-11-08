@@ -236,8 +236,8 @@ function _proj(sm::GeneralizedStabilizer, p::PauliOperator)
     error("This functionality is not implemented yet")
 end
 
-function project!(::GeneralizedStabilizer, ::PauliOperator)
-    throw(MethodError(project!, (GeneralizedStabilizer, PauliOperator)))
+function project!(s::GeneralizedStabilizer, p::PauliOperator)
+    throw(MethodError(project!, (s, p)))
 end
 
 nqubits(sm::GeneralizedStabilizer) = nqubits(sm.stab)
