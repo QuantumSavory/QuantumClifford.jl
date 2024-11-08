@@ -87,11 +87,11 @@ end
     end
 end
 
-@testset "Multi-qubit projections using multi-qubit random_stabilizer and random_pauli for MixedDestabilizer/Stabilizer states (#418)" begin
+@testset "Multi-qubit projections using random_stabilizer states and random_pauli operators for MixedDestabilizer/Stabilizer states (#418)" begin
     for n in 1:10
         for repetition in 1:5
             s = random_stabilizer(n)
-            p =  random_pauli(n)
+            p = random_pauli(n)
             md = MixedDestabilizer(s)
             apply!(md, p) # or apply!(s, p)
             qo_state = Operator(md) # or Operator(s)
