@@ -59,3 +59,4 @@ end
 @test_throws ArgumentError PauliChannel(((P"X", P"Z"), (P"X", P"Z")), (1,))
 @test_throws ArgumentError UnitaryPauliChannel((P"X", P"ZZ"), (1,2))
 @test_throws ArgumentError UnitaryPauliChannel((P"X", P"Z"), (1,))
+@test_throws MethodError project!(GeneralizedStabilizer(S"X"), P"X")
