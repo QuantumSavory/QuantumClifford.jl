@@ -86,3 +86,23 @@ end
         @test copy(nc) == nc
     end
 end
+
+@testset "Multi-qubit projections using multi-qubit random_stabilizer and random_pauli for MixedDestabilizer/Stabilizer states (#418)" begin
+    for n in 1:10
+        for repetition in 1:5
+            s = random_stabilizer(n)
+            p =  random_pauli(n)
+            md = MixedDestabilizer(s)
+            apply!(md, p) # or apply!(s, p)
+            qo_state = Operator(md) # or Operator(s)
+            projectrand!(md, p)[1] # or projectrand!(s, p)[1]
+            qo_state_after_proj = Operator(md) # or Operator(s)
+            qo_pauli = Operator(p)
+            qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
+            qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
+            result1 = qo_proj1*qo_state*qo_proj1'
+            result2 = qo_proj2*qo_state*qo_proj2'
+            @test qo_state_after_proj ≈ result2 || qo_state_after_proj ≈ result1 || qo_state_after_proj ≈ 2*result2 || qo_state_after_proj ≈ 2*result1
+        end
+    end
+end
