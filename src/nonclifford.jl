@@ -232,16 +232,12 @@ function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
     return _proj(sm, rand() < prob₁ ? p : -p)
 end
 
-# Returns the updated `GeneralizedStabilizer` state sm' = (χ', B(S', D')), where (S', D')
-# is derived from (S, D) through the traditional stabilizer update, and χ' represents the
-# updated density matrix.
 function _proj(sm::GeneralizedStabilizer, p::PauliOperator)
-    state', res = projectrand!(sm.stab, p)
+    # Returns the updated `GeneralizedStabilizer` state sm' = (χ', B(S', D')),
+    # where (S', D') is derived from (S, D) through the traditional stabilizer update.
+    updated_state, res = projectrand!(sm.stab, p)
     # sm'.stab' is derived from sm.stab through the traditional stabilizer update.
-    sm.stab = state' # in-place
-    # χ' = expect(p, sm) represents the updated density matrix.
-    # Note: The density of χ does not increase, as χ′ after measurement is never more sparse than χ before measurement; thus, Λ(χ′) ≤ Λ(χ).
-    sm.destabweights[([0], [0])] = expect(p, sm) # in-place
+    sm.stab = updated_state # in-place
     return sm, res
 end
 
@@ -434,8 +430,8 @@ of `χ`. It provides a measure of the state's complexity, with bounds
 `Λ(χ) ≤ 4ⁿ`.
 
 ```jldoctest heuristic
-julia> using QuantumClifford: invsparsity # hide
-          
+julia> using QuantumClifford: invsparsity; # hide
+
 julia> sm = GeneralizedStabilizer(S"X")
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷

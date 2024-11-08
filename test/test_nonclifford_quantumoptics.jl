@@ -87,21 +87,22 @@ end
     end
 end
 
-@testset "Single-qubit projections of stabilizer states" begin
-    checks = [(random_stabilizer(1), random_pauli(1))]
-    for (s, p) in checks
-        gs = GeneralizedStabilizer(s)
-        apply!(gs, p)
-        qo_state = Operator(gs)
-        projectrand!(gs, p)[1]
-        qo_state_after_proj = Operator(gs)
-        qo_pauli = Operator(p)
-        qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
-        qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
-        result1 = qo_proj1*qo_state*qo_proj1'
-        result2 = qo_proj2*qo_state*qo_proj2'
-        @test result1 == zero(qo_tgate) || result2 == zero(qo_tgate) # https://github.com/QuantumSavory/QuantumClifford.jl/pull/355#discussion_r1826568296
-        @test qo_state_after_proj ≈ result2 || qo_state_after_proj ≈ result1
+@testset "Multi-qubit projections using GeneralizedStabilizer for stabilizer states" begin
+    for n in 1:10
+        for repetition in 1:5
+            s = random_stabilizer(n)
+            p = random_pauli(n)
+            gs = GeneralizedStabilizer(s)
+            apply!(gs, p)
+            qo_state = Operator(gs)
+            projectrand!(gs, p)[1]
+            qo_state_after_proj = Operator(gs)
+            qo_pauli = Operator(p)
+            qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
+            qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
+            result1 = qo_proj1*qo_state*qo_proj1'
+            result2 = qo_proj2*qo_state*qo_proj2'
+            @test qo_state_after_proj ≈ result2 || qo_state_after_proj ≈ result1 || qo_state_after_proj ≈ 2*result2 || qo_state_after_proj ≈ 2*result1
+        end
     end
 end
-
