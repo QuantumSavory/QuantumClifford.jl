@@ -51,6 +51,42 @@ qo_tgate.data[2,2] = exp(im*pi/4)
     end
 end
 
+@testset "apply!" begin
+    for n in [1,2,3,4] # exponential cost in this term
+        s = random_stabilizer(n)
+        sm = GeneralizedStabilizer(s)
+        @test dm(Ket(s)) ≈ Operator(sm)
+        # test clifford gates
+        for _ in 1:10
+            c = random_clifford(n)
+            uc = Operator(c)
+            @test uc * Operator(sm) * uc' ≈ Operator(apply!(sm, c)) # sm is modified in place for the next round
+        end
+        # and now some (repeated) non-clifford ops
+        for _ in 1:5 # exponential cost in this term
+            i = rand(1:n)
+            nc = embed(n, i, pcT)
+            apply!(sm, nc) # in-place
+            c = random_clifford(n)
+            uc = Operator(c)
+            @test uc * Operator(sm) * uc' ≈ Operator(apply!(sm, c)) # sm is modified in place for the next round
+        end
+    end
+end
+
+@testset "copy and ==" begin
+    for n in 1:10
+        s = random_stabilizer(n)
+        sm = GeneralizedStabilizer(s)
+        i = rand(1:n)
+        apply!(sm, embed(n, i, pcT))
+        smcopy = copy(sm)
+        @test smcopy == sm
+        nc = embed(n, rand(1:n), pcT)
+        @test copy(nc) == nc
+    end
+end
+
 @testset "Single-qubit projections of stabilizer states" begin
     checks = [(random_stabilizer(1), random_pauli(1))]
     for (s, p) in checks
@@ -68,3 +104,4 @@ end
         @test qo_state_after_proj ≈ result2 || qo_state_after_proj ≈ result1
     end
 end
+
