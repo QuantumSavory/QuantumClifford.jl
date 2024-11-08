@@ -93,7 +93,7 @@ end
             s = random_stabilizer(n)
             p = random_pauli(n)
             md = MixedDestabilizer(s)
-            apply!(md, p) # or apply!(s, p)
+            apply!(md, random_clifford(n)) # or apply!(s, random_clifford(n))
             qo_state = Operator(md) # or Operator(s)
             projectrand!(md, p)[1] # or projectrand!(s, p)[1]
             qo_state_after_proj = Operator(md) # or Operator(s)
@@ -102,7 +102,11 @@ end
             qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
             result1 = qo_proj1*qo_state*qo_proj1'
             result2 = qo_proj2*qo_state*qo_proj2'
-            @test qo_state_after_proj ≈ result2 || qo_state_after_proj ≈ result1 || qo_state_after_proj ≈ 2*result2 || qo_state_after_proj ≈ 2*result1
+            # Normalize to ensure consistent comparison of the projected state, independent of scaling factors
+            norm_qo_state_after_proj = qo_state_after_proj/tr(qo_state_after_proj)
+            norm_result1 = result1/tr(result1)
+            norm_result2 = result2/tr(result2)
+            @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
         end
     end
 end
