@@ -90,14 +90,14 @@ end
 @testset "Multi-qubit projections using GeneralizedStabilizer for stabilizer states" begin
     for n in 1:10
         for repetition in 1:5
-            for state in [MixedDestabilizer, GeneralizedStabilizer]
+            for state in [Stabilizer, MixedDestabilizer, GeneralizedStabilizer]
                 s = random_stabilizer(n)
                 p = random_pauli(n)
-                gs = state(s)
-                apply!(gs, random_clifford(n))
-                qo_state = Operator(gs)
-                projectrand!(gs, p)[1]
-                qo_state_after_proj = Operator(gs)
+                τ = state(s)
+                apply!(τ, random_clifford(n))
+                qo_state = Operator(τ)
+                projectrand!(τ, p)[1]
+                qo_state_after_proj = Operator(τ)
                 qo_pauli = Operator(p)
                 qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
                 qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
