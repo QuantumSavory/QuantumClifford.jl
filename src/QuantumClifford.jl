@@ -98,6 +98,22 @@ function __init__()
     BIG_INT_MINUS_ONE[] = BigInt(-1)
     BIG_INT_TWO[] = BigInt(2)
     BIG_INT_FOUR[] = BigInt(4)
+
+    # Register error hint for the `project!` method for GeneralizedStabilizer
+    if isdefined(Base.Experimental, :register_error_hint)
+        Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
+            if exc.f === project! && argtypes[1] <: GeneralizedStabilizer
+                print(io, """
+                \nThe method `project!` is not appropriate for use with`GeneralizedStabilizer`.
+                You probably are looking for `projectrand!`.
+                `project!` in this library is a low-level "linear algebra" method to verify
+                whether a measurement operator commutes with a set of stabilizers, and to
+                potentially simplify the tableau and provide the index of the anticommuting
+                term in that tableau. This linear algebra operation is not defined for
+                `GeneralStabilizer` as there is no single tableau to provide an index into.""")
+            end
+        end
+    end
 end
 
 const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you are attempting to create a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")

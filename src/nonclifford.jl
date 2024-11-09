@@ -241,6 +241,10 @@ function _proj(sm::GeneralizedStabilizer, p::PauliOperator)
     return sm, res
 end
 
+function project!(s::GeneralizedStabilizer, p::PauliOperator)
+    throw(MethodError(project!, (s, p)))
+end
+
 nqubits(sm::GeneralizedStabilizer) = nqubits(sm.stab)
 
 abstract type AbstractPauliChannel <: AbstractOperation end
@@ -430,7 +434,7 @@ of `χ`. It provides a measure of the state's complexity, with bounds
 `Λ(χ) ≤ 4ⁿ`.
 
 ```jldoctest heuristic
-julia> using QuantumClifford: invsparsity;
+julia> using QuantumClifford: invsparsity; # hide
 
 julia> sm = GeneralizedStabilizer(S"X")
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
