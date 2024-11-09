@@ -430,7 +430,7 @@ of `χ`. It provides a measure of the state's complexity, with bounds
 `Λ(χ) ≤ 4ⁿ`.
 
 ```jldoctest heuristic
-julia> using QuantumClifford: invsparsity; # hide
+julia> using QuantumClifford: invsparsity;
 
 julia> sm = GeneralizedStabilizer(S"X")
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is

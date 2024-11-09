@@ -90,23 +90,25 @@ end
 @testset "Multi-qubit projections using GeneralizedStabilizer for stabilizer states" begin
     for n in 1:10
         for repetition in 1:5
-            s = random_stabilizer(n)
-            p = random_pauli(n)
-            gs = GeneralizedStabilizer(s)
-            apply!(gs, random_clifford(n))
-            qo_state = Operator(gs)
-            projectrand!(gs, p)[1]
-            qo_state_after_proj = Operator(gs)
-            qo_pauli = Operator(p)
-            qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
-            qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
-            result1 = qo_proj1*qo_state*qo_proj1'
-            result2 = qo_proj2*qo_state*qo_proj2'
-            # Normalize to ensure consistent comparison of the projected state, independent of scaling factors
-            norm_qo_state_after_proj = qo_state_after_proj/tr(qo_state_after_proj)
-            norm_result1 = result1/tr(result1)
-            norm_result2 = result2/tr(result2)
-            @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
+            for state in [MixedDestabilizer, GeneralizedStabilizer]
+                s = random_stabilizer(n)
+                p = random_pauli(n)
+                gs = state(s)
+                apply!(gs, random_clifford(n))
+                qo_state = Operator(gs)
+                projectrand!(gs, p)[1]
+                qo_state_after_proj = Operator(gs)
+                qo_pauli = Operator(p)
+                qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
+                qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
+                result1 = qo_proj1*qo_state*qo_proj1'
+                result2 = qo_proj2*qo_state*qo_proj2'
+                # Normalize to ensure consistent comparison of the projected state, independent of scaling factors
+                norm_qo_state_after_proj = qo_state_after_proj/tr(qo_state_after_proj)
+                norm_result1 = result1/tr(result1)
+                norm_result2 = result2/tr(result2)
+                @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
+            end
         end
     end
 end
