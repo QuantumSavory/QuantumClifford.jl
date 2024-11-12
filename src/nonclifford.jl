@@ -233,8 +233,19 @@ function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
 end
 
 function _proj(sm::GeneralizedStabilizer, p::PauliOperator)
-    # Returns the updated `GeneralizedStabilizer` state sm' = (χ', B(S', D')),
-    # where (S', D') is derived from (S, D) through the traditional stabilizer update.
+    # As detailed in https://www.scottaaronson.com/showcase2/report/ted-yoder.pdf, "A generalized
+    # stabilizer (χ, B(S, D)) separates the “classical” part of the quantum state from the quantum
+    # state." In this framework, the quasi-classical tableau T = (S, D) is updated through Clifford
+    # gates and measurements, while the χ-matrix is updated solely by non-Clifford operations.
+
+    # In this divided simulation approach:
+    # 1) When encountering a Clifford gate or measurement, we update the tableau as per usual.
+    # 2) For a non-Clifford gate or channel, the Kraus operator decompositions and operator-sum
+    #    coefficients are stored for use with apply!(::GeneralizedStabilizer, ::AbstractPauliChannel).
+
+    # This function returns an updated `GeneralizedStabilizer` state sm' = (χ', B(S', D')), where
+    # (S', D') is derived from (S, D) through traditional stabilizer update. The χ' matrix is
+    # updated whenever a non-Clifford gate is applied via apply!(sm, appropriately_padded_pcT).
     updated_state, res = projectrand!(sm.stab, p)
     # sm'.stab' is derived from sm.stab through the traditional stabilizer update.
     sm.stab = updated_state # in-place
