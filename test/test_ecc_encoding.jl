@@ -9,28 +9,12 @@ include("test_ecc_base.jl")
     # This test skips verifying the permutations of qubits during canonicalization are properly undone,
     # i.e. we modify the code we are testing so that the canonicalization does not need any permutations.
     for undoperm in [true, false],
-<<<<<<< HEAD
-        codeexpr in [
-        :(Cleve8()),
-        :(Steane7()),
-        :(Shor9()),
-        :(Perfect5()),
-        :(Bitflip3()),
-        :(Bicycle(6, 4)),
-        :(Bicycle(10, 6)),
-        :(Unicycle(21, [1, 3, 8, 9, 12])),
-        :(S"Y_"),
-        :(S"Z_"),
-        :(S"X_"),
-        fill(:(random_stabilizer(5,7)), 100)...
-=======
         code in [
             all_testablable_code_instances()...,
             S"Y_",
             S"Z_",
             S"X_",
             [random_stabilizer(5,7) for _ in 1:100]...
->>>>>>> 11ae38c7342c76a75ad9201b609b352d38117256
         ]
 
         if undoperm==false

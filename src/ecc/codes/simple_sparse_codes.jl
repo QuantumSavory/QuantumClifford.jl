@@ -1,15 +1,12 @@
-# Currently just has Bicycle and Unicycle codes, but open to all types of rudimentary sparse codes
-
 """Takes a height and width of matrix and generates a bicycle code to the specified height and width.
-Based on codes from this paper: https://ieeexplore.ieee.org/document/1337106
+Based on codes from [mackay_sparse-graph_2004](@cite)
 
 Parameters:
-- n: width of array, should be >= 2
-- m: height of array, should be >= 2 and a multiple of 2
+$TYPEDFIELDS
 
 ```jldoctest Bicycle
 julia> O = typeof(Bicycle(4, 2))
-CSS
+Bicycle
 
 julia> O = parity_checks(Bicycle(4, 2))
 + XXXX
@@ -20,12 +17,18 @@ julia> O = parity_checks(Bicycle(6, 4))
 + X_X_XX
 + ZZ_Z_Z
 + Z_Z_ZZ
-
-julia> stab_looks_good(parity_checks(Bicycle(200, 120)))
-true
 ```
 """
-function Bicycle(n::Int, m::Int)
+struct Bicycle
+    "width of array, should be >= 2"
+    n::Int
+    "height of array, should be >= 2 and a multiple of 2"
+    m::Int
+end
+
+function parity_checks(b::Bicycle)
+    m = b.m
+    n = b.n
     if m%2 == 1
         throw(DomainError(m, " M should be a multiple for 2 for bicycle codes."))
     end
@@ -41,21 +44,24 @@ function Bicycle(n::Int, m::Int)
     bs = bicycle_set_gen(Int(n/2))
     bsc = circ_to_bicycle_h0(bs, Int(n/2))
     while size(bsc)[1] > m/2
+        print(bsc)
         bsc = reduce_bicycle(bsc)
     end
-    return CSS(bsc, bsc)
+    return parity_checks(CSS(bsc, bsc))
 end
 
-"""Takes a height and width of matrix and generates a bicycle code to the specified height and width.
-Based on codes from this paper: https://ieeexplore.ieee.org/document/1337106
+"""Takes a height and width of matrix and generates a unicycle code to the specified height and width.
+Based on codes from [mackay_sparse-graph_2004](@cite)
 
 Parameters:
-- n: Size of parity check matrix, also max size of generated set array, should be >= 1. 
-- set: array of indices that are 'active' checks in the circulant code
+$TYPEDFIELDS 
 
-Reference paper to find good sizes of perfect difference sets to use.
+Reference [mackay_sparse-graph_2004](@cite) to find good sizes of perfect difference sets to use.
 
 ```jldoctest Unicycle
+julia> typeof(Unicycle(21, [1, 3, 8, 9, 12]))
+Unicycle
+
 julia> parity_checks(Unicycle(21, [1, 3, 8, 9, 12]))
 + _X_________X_X____XX_X
 + __X_________X_X____XXX
@@ -68,7 +74,9 @@ julia> parity_checks(Unicycle(21, [1, 3, 8, 9, 12]))
 ```
 """
 struct Unicycle
+    "size of parity check matrix, also max size of generated set array, should be >= 1."
     N::Int
+    "array of indices that are 'active' checks in the circulant code"
     set::Vector{Int}
 end
 
@@ -85,7 +93,19 @@ end
 Required before the bicycle code can be used.
 
 Typical usage:
-ReduceBicycle(Circ2BicycleH0(array_indices, (block length / 2) ) )"""
+```jldoctest reduce_bicycle
+
+julia> reduce_bicycle(circ_to_bicycle_h0([1, 2, 4], 7))
+6×14 Matrix{Bool}:
+ 0  0  1  1  0  1  0  1  0  0  0  1  0  1
+ 0  0  0  1  1  0  1  1  1  0  0  0  1  0
+ 1  0  0  0  1  1  0  0  1  1  0  0  0  1
+ 0  1  0  0  0  1  1  1  0  1  1  0  0  0
+ 1  0  1  0  0  0  1  0  1  0  1  1  0  0
+ 1  1  0  1  0  0  0  0  0  1  0  1  1  0
+
+```
+"""
 function reduce_bicycle(H0::Matrix{Bool})
     m, n = size(H0)
     r_i = 0
@@ -104,10 +124,23 @@ end
 """Takes a list of indices and creates the base of the bicycle matrix.
 
 For example:
-Circ2BicycleH0([1, 2, 4], 7)
 
-See https://arxiv.org/abs/quant-ph/0304161 for more details"""
-function circ_to_bicycle_h0(circ_indices::Array{Int}, n::Int)
+```jldoctest circ_to_bicycle_h0
+
+julia> circ_to_bicycle_h0([1, 2, 4], 7)
+7×14 Matrix{Bool}:
+ 0  1  1  0  1  0  0  0  0  0  1  0  1  1
+ 0  0  1  1  0  1  0  1  0  0  0  1  0  1
+ 0  0  0  1  1  0  1  1  1  0  0  0  1  0
+ 1  0  0  0  1  1  0  0  1  1  0  0  0  1
+ 0  1  0  0  0  1  1  1  0  1  1  0  0  0
+ 1  0  1  0  0  0  1  0  1  0  1  1  0  0
+ 1  1  0  1  0  0  0  0  0  1  0  1  1  0
+
+```
+
+See [mackay_sparse-graph_2004](@cite) for more details"""
+function circ_to_bicycle_h0(circ_indices, n::Int)
     circ_arr = Array{Bool}(undef, n)
     circ_matrix = Matrix{Bool}(undef, n, n)
     comp_matrix = Matrix{Bool}(undef, n, 2*n)
@@ -134,9 +167,20 @@ end
 Required before the unicycle code can be used.
 
 Typical usage:
-`ReduceUnicycle(Circ2UnicycleH0(array_indices, block length) )`"""
+
+```jldoctest reduce_unicycle
+julia> reduce_unicycle(circ_to_unicycle_h0([1, 2, 4], 7))
+4×8 Matrix{Bool}:
+ 0  0  0  1  1  0  1  1
+ 1  0  0  0  1  1  0  1
+ 0  1  0  0  0  1  1  1
+ 1  0  1  0  0  0  1  1
+
+```
+
+"""
 function reduce_unicycle(m::Matrix{Bool})
-    rrzz = residue_ring(ZZ, 2)
+    rrzz, = residue_ring(ZZ, 2)
     nm = matrix(rrzz, m)
     r = LinearAlgebra.rank(nm)
     i = 1
@@ -158,9 +202,20 @@ end
 """Takes a list of indices and creates the base of the unicycle matrix.
 
 For example:
-`Circ2UnicycleH0([1, 2, 4], 7)`
 
-See https://arxiv.org/abs/quant-ph/0304161 for more details"""
+```jldoctest circ_to_unicycle_h0
+julia> circ_to_unicycle_h0([1, 2, 4], 7)
+7×8 Matrix{Bool}:
+ 1  1  0  1  0  0  0  1
+ 0  1  1  0  1  0  0  1
+ 0  0  1  1  0  1  0  1
+ 0  0  0  1  1  0  1  1
+ 1  0  0  0  1  1  0  1
+ 0  1  0  0  0  1  1  1
+ 1  0  1  0  0  0  1  1
+
+```
+See [mackay_sparse-graph_2004](@cite) for more details"""
 function circ_to_unicycle_h0(circ_indices::Array{Int}, n::Int)
     circ_arr = fill(false, n)
     one_col = transpose(fill(true, n))

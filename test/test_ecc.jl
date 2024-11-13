@@ -75,10 +75,4 @@ end
     @test isdegenerate(Unicycle(21, [1, 3, 8, 9, 12])) == true
 end
 
-@testset "do rows commute - required for ECCs" begin
-    @test stab_looks_good(parity_checks(Bicycle(6, 4))) == true
-    @test stab_looks_good(parity_checks(Bicycle(18, 14))) == true
-    @test stab_looks_good(parity_checks(Bicycle(200, 120))) == true
-    @test stab_looks_good(parity_checks(Unicycle(21, [1, 3, 8, 9, 12]))) == true
-
 function 

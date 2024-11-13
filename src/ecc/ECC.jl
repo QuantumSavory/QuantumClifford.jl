@@ -1,20 +1,12 @@
 module ECC
 
 using LinearAlgebra
-<<<<<<< HEAD
-using QuantumClifford, SparseArrays
-using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
-import QuantumClifford: Stabilizer, MixedDestabilizer
-using DocStringExtensions
-using Combinatorics: combinations
-=======
 using QuantumClifford
 using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
 using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
->>>>>>> 11ae38c7342c76a75ad9201b609b352d38117256
 using Statistics: std
 using Nemo: ZZ, residue_ring, matrix
 
