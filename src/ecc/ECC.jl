@@ -1,14 +1,22 @@
 module ECC
 
-using LinearAlgebra
-using QuantumClifford
-using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
+using LinearAlgebra: LinearAlgebra, I, rank, tr
+using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
+    AbstractTwoQubitOperator, Stabilizer, PauliOperator,
+    random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
+    canonicalize!, canonicalize_gott!,
+    logicalxview, logicalzview, stabilizerview, destabilizerview, tab, phases,
+    sCNOT, sSWAP, sHadamard, sPhase, sInvPhase,
+    sZCX, sZCY, sZCZ, sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZ, sX, sY, sMRZ, sMRX,
+    single_x, single_y, single_z, random_pauli!, PauliError,
+    apply!, comm, comm!, stab_to_gf2, embed, @S_str, affectedqubits, affectedbits,
+    pftrajectories, pfmeasurements, mctrajectories
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
 using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 
 abstract type AbstractECC end
 
@@ -16,15 +24,18 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
-    RepCode,
+    RepCode, LiftedCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Unicycle, Bicycle,
-    Toric, Gottesman, Surface,
+    Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
+    LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
+    haah_cubic_codes,
+    random_brickwork_circuit_code, random_all_to_all_circuit_code,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
-    BeliefPropDecoder,
+    BeliefPropDecoder, BitFlipDecoder,
     PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder
 
 """Parity check tableau of a code.
@@ -50,6 +61,11 @@ function parity_checks_z(code::AbstractECC)
     throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
 end
 
+
+"""Check if the code is CSS.
+
+Return `nothing` if unknown from the type.
+"""
 function iscss(::Type{T}) where T<:AbstractECC
     return false
 end
@@ -57,6 +73,16 @@ end
 function iscss(c::AbstractECC)
     return iscss(typeof(c))
 end
+
+"""
+Generator Polynomial `g(x)`
+
+In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field `F`. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
+"""
+function generator_polynomial end
+
+"""The generator matrix of a code."""
+function generator end
 
 parity_checks(s::Stabilizer) = s
 Stabilizer(c::AbstractECC) = parity_checks(c)
@@ -71,14 +97,22 @@ code_n(c::AbstractECC) = code_n(parity_checks(c))
 
 code_n(s::Stabilizer) = nqubits(s)
 
-"""The number of stabilizer checks in a code."""
+"""The number of stabilizer checks in a code. They might not be all linearly independent, thus `code_s >= code_n-code_k`. For the number of linearly independent checks you can use `LinearAlgebra.rank`."""
 function code_s end
-
-code_s(c::AbstractECC) = code_s(parity_checks(c))
 code_s(s::Stabilizer) = length(s)
+code_s(c::AbstractECC) = code_s(parity_checks(c))
 
-"""The number of logical qubits in a code."""
-code_k(c) = code_n(c) - code_s(c)
+"""
+The number of logical qubits in a code.
+
+Note that when redundant rows exist in the parity check matrix, the number of logical qubits `code_k(c)` will be greater than `code_n(c) - code_s(c)`, where the difference equals the redundancy.
+"""
+function code_k(s::Stabilizer)
+    _, _, r = canonicalize!(Base.copy(s), ranks=true)
+    return code_n(s) - r
+end
+
+code_k(c::AbstractECC) = code_k(parity_checks(c))
 
 """The rate of a code."""
 function rate(c)
@@ -323,8 +357,9 @@ isdegenerate(c::AbstractECC, args...) = isdegenerate(parity_checks(c), args...)
 isdegenerate(c::AbstractStabilizer, args...) = isdegenerate(stabilizerview(c), args...)
 
 function isdegenerate(H::Stabilizer, errors) # Described in https://quantumcomputing.stackexchange.com/questions/27279
-    syndromes = comm.((H,), errors) # TODO This can be optimized by having something that always returns bitvectors
-    return length(Set(syndromes)) != length(errors)
+    syndromes = map(e -> comm(H,e), errors) # TODO This can be optimized by having something that always returns bitvectors
+    syndrome_set = Set(syndromes)
+    return length(syndrome_set) != length(errors)
 end
 
 function isdegenerate(H::Stabilizer, d::Int=1)
@@ -337,6 +372,7 @@ include("circuits.jl")
 include("decoder_pipeline.jl")
 
 include("codes/util.jl")
+
 include("codes/classical_codes.jl")
 include("codes/css.jl")
 include("codes/bitflipcode.jl")
@@ -347,6 +383,16 @@ include("codes/clevecode.jl")
 include("codes/toric.jl")
 include("codes/gottesman.jl")
 include("codes/surface.jl")
+include("codes/concat.jl")
+include("codes/random_circuit.jl")
 include("codes/classical/reedmuller.jl")
+include("codes/classical/recursivereedmuller.jl")
+include("codes/classical/bch.jl")
+include("codes/quantumreedmuller.jl")
+
+# qLDPC
+include("codes/classical/lifted.jl")
+include("codes/lifted_product.jl")
 include("codes/simple_sparse_codes.jl")
+
 end #module

@@ -4,4 +4,6 @@ LocalPreferences.toml
 */.*swp
 scratch/
 *.cov
-.vscode/
+.vscode
+test/.CondaPkg/
+docs/.CondaPkg/

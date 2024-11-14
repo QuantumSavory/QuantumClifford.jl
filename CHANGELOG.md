@@ -5,6 +5,89 @@
 
 # News
 
+## v0.9.14 - 2024-11-03
+
+- **(fix)** `affectedqubits()` on `sMX`, `sMY`, and `sMR*`
+- **(fix)** restrictive type-assert in `MixedDestabilizer` failing on views of tableaux
+- Implementing additional named two-qubit gates: `sSQRTXX, sInvSQRTXX, sSQRTYY, sInvSQRTYY`
+
+## v0.9.13 - 2024-10-30
+
+- New error-correction group theory tools:
+    - `canonicalize_noncomm` function to find a generating set with minimal anticommutivity
+    - `SubsystemCodeTableau` data structure to represent the output of `canonicalize_noncomm`
+    - `commutify` function to find a commutative version of a non-commutative set of Paulis with minimal changes
+    - `matroid_parent` to, for set of Paulis that doesn't represent a state, find a version
+    that does.
+- Implementing additional named two-qubit gates: `sSWAPCX, sInvSWAPCX, sCZSWAP, sCXSWAP, sISWAP, sInvISWAP, sSQRTZZ, sInvSQRTZZ`
+
+## v0.9.12 - 2024-10-18
+
+- Minor compat fixes for julia 1.11 in the handling of `hgp`
+
+## v0.9.11 - 2024-09-27
+
+- `hcat` of Tableaux objects
+- `QuantumReedMuller` codes added to the ECC module
+- **(breaking)** change the convention for how to provide a representation function in the constructor of `LPCode` -- strictly speaking a breaking change, but this is not an API that is publicly used in practice
+
+## v0.9.10 - 2024-09-26
+
+- The lifted product class of quantum LDPC codes is implemented in the ECC submodule.
+- **(fix)** `ECC.code_s` now gives the number of parity checks with redundancy. If you want the number of linearly independent parity checks, you can use `LinearAlgebra.rank`.
+- Implementing many more named single-qubit gates following naming convention similar to the stim package in python.
+- **(fix)** Bug fix to the `parity_checks(ReedMuller(r, m))` of classical Reed-Muller code (it was returning generator matrix).
+- `RecursiveReedMuller` code implementation as an alternative implementation of `ReedMuller`.
+
+
+## v0.9.9 - 2024-08-05
+
+- `inv` is implemented for all Clifford operator types (symbolic, dense, sparse).
+
+## v0.9.8 - 2024-08-03
+
+- New group-theoretical tools:
+    - `groupify` to generate full stabilizer group from generating set
+    - `minimal_generating_set` function to find the minimal generating set of a set of operators
+    - `pauligroup` to generate the full Pauli group of a certain number of qubits
+    - `normalizer` to generate all Paulis that commute with a set of Paulis
+    - `centralizer` to find a subset of a set of Paulis such that each element in the subset commutes with each element in the set
+    - `contractor` to find a subset of Paulis in a tableau that have an identity operator on a certain qubit
+    - `delete_columns` to remove the operators corresponding to a certain qubit from all Paulis in a Stabilizer
+- `PauliError` can now encode biased noise during Pauli frame simulation, i.e. one can simulate only X errors, or only Y errors, or only Z errors, or some weighted combination of these.
+
+## v0.9.7 - 2024-07-23
+
+- **(fix `#320`)** Fix a serious correctness bug in the SIMD implementation of Pauli string multiplication (affects the correctness of canonicalization and traceout for tableaux bigger than ~500 qubits; does not affect symbolic gates or Pauli frame simulations of any scale)
+
+## v0.9.6 - 2024-07-12
+
+- `inv` implementation for single-qubit "symbolic" Clifford operators (subtypes of `AbstractSingleQubitOperator`).
+
+## v0.9.5 - 2024-07-04
+
+- Implementation of random all-to-all and brickwork Clifford circuits and corresponding ECC codes.
+
+## v0.9.4 - 2024-06-28
+
+- Addition of a constructor for concatenated quantum codes `Concat`.
+- Addition of multiple unexported classical code constructors.
+- Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
+- Significant improvements to the low-level circuit compiler (the sumtype compactifier), leading to faster Pauli frame simulation of noisy circuits.
+- Bump `QuantumOpticsBase.jl` package extension compat bound.
+- **(fix)** Remove printing of spurious debug info from the PyBP decoder. 
+- **(fix)** Failed compactification of gates now only raises a warning instead of throwing an error. Defaults to slower non-compactified gates.
+
+## v0.9.3 - 2024-04-10
+
+- **(fix)** One of `random_pauli`'s methods was disregarding the error probability and had incorrect kwarg defaults.
+
+## v0.9.2 - 2024-04-08
+
+- The ECC module now has access to an iterative bitflip decoder thanks to `LDPCDecoders.jl`.
+- Provide more configuration options in the `PyBeliefProp` decoders.
+- **(fix)** The belief prop decoder from LDPCDecoders was counting iterations incorrectly.
+
 ## v0.9.1 - 2024-03-31
 
 - Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.

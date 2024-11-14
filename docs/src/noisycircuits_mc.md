@@ -6,7 +6,6 @@ DocTestSetup = quote
     using QuantumClifford.Experimental.NoisyCircuits
     using Quantikz
 end
-CurrentModule = QuantumClifford.Experimental.NoisyCircuits
 ```
 
 !!! warning "Unstable"
@@ -16,7 +15,7 @@ Import with `using QuantumClifford.Experimental.NoisyCircuits`.
 
 This module enables the simulation of noisy Clifford circuits through a Monte Carlo method where the same circuit is evaluated multiple times with random errors interspersed through it as prescribed by a given error model.
 
-Below is an example of a purification circuit. We first prepare the circuit we desire to use, including a noise model. `Quantikz.jl` was is used to visualize the circuit.
+Below is an example of a purification circuit. We first prepare the circuit we desire to use, including a noise model. `Quantikz.jl` is used to visualize the circuit.
 
 ```@example 1
 using QuantumClifford # hide
@@ -56,7 +55,7 @@ If you want to create a custom gate type (e.g. calling it `Operation`), you need
 The `Symbol` is the status of the operation. Predefined statuses are kept in the `registered_statuses` list, but you can add more.
 Be sure to expand this list if you want the trajectory simulators using your custom statuses to output all trajectories.
 
-There is also [`applynoise!`](@ref) which is convenient wait to create a noise model that can then be plugged into the [`NoisyGate`](@ref) struct,
+There is also [`applynoise!`](@ref) which is a convenient way to create a noise model that can then be plugged into the [`NoisyGate`](@ref) struct,
 letting you reuse the predefined perfect gates and measurements.
 However, you can also just make up your own noise operator simply by implementing [`applywstatus!`](@ref) for it.
 

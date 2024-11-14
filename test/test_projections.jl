@@ -1,20 +1,19 @@
-using QuantumClifford
+@testitem "Projective measurements" begin
+    using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
+    using QuantumClifford: projectremoverand!
 
-using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
-using QuantumClifford: projectremoverand!
+    test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
-test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
-@testset "Projective measurements" begin
     @testset "Stabilizer representation" begin
         s = S"XXX
-                ZZI
-                IZZ"
+        ZZI
+        IZZ"
         ps, anticom, res = project!(copy(s), P"ZII")
         ps = canonicalize!(ps)
         @test anticom==1 && isnothing(res) && ps == S"ZII
-                                                        IZI
-                                                        IIZ"
+        IZI
+        IIZ"
         @test stab_looks_good(ps)
 
         ps, anticom, res = project!(copy(s), P"-XXX")
@@ -65,7 +64,7 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
     end
     @testset "Anticommutation indices and NA results" begin
         s = S" XXX
-                -ZZI"
+        -ZZI"
         ds = Destabilizer(copy(s))
         ms = MixedStabilizer(copy(s))
         mds = MixedDestabilizer(copy(s))
@@ -77,12 +76,12 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         @test_throws BadDataStructure pds, a, r = project!(copy(ds),p)
         pms, a, r = project!(copy(ms),p)
         @test mixed_stab_looks_good(pms)
-        @test pms.rank==3
-        @test a==pms.rank && isnothing(r)
+        @test rank(pms)==3
+        @test a==rank(pms) && isnothing(r)
         pmds, a, r = project!(copy(mds),p)
         @test mixed_destab_looks_good(pmds)
-        @test pmds.rank==3
-        @test a==pmds.rank && isnothing(r)
+        @test rank(pmds)==3
+        @test a==rank(pmds) && isnothing(r)
 
         p = P"ZZI"
         ps, a, r = project!(copy(s),p)
@@ -91,11 +90,11 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         @test_throws BadDataStructure pds, a, r = project!(copy(ds),p)
         pms, a, r = project!(copy(ms),p)
         @test mixed_stab_looks_good(pms)
-        @test pms.rank==2
+        @test rank(pms)==2
         @test a==0 && r==0x2
         pmds, a, r = project!(copy(mds),p)
         @test mixed_destab_looks_good(pmds)
-        @test pmds.rank==2
+        @test rank(pmds)==2
         @test a==0 && r==0x2
         @test canonicalize!(ps)==canonicalize!(stabilizerview(pms))==canonicalize!(stabilizerview(pmds))
 
@@ -108,11 +107,11 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         @test a==2 && isnothing(r)
         pms, a, r = project!(copy(ms),p)
         @test mixed_stab_looks_good(pms)
-        @test pms.rank==2
+        @test rank(pms)==2
         @test a==2 && isnothing(r)
         pmds, a, r = project!(copy(mds),p)
         @test mixed_destab_looks_good(pmds)
-        @test pmds.rank==2
+        @test rank(pmds)==2
         @test a==2 && isnothing(r)
         @test canonicalize!(ps)==canonicalize!(stabilizerview(pms))==canonicalize!(stabilizerview(pds))==canonicalize!(stabilizerview(pmds))
     end
@@ -125,21 +124,21 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         s, a, r = project!(copy(stab), projzl)
         @test mixed_destab_looks_good(s)
         @test a==0 && r==0x0       && stabilizerview(s)==S"Z___
-                                                            _Z__"
+        _Z__"
         s, a, r = project!(copy(stab), projxl)
         @test mixed_destab_looks_good(s)
         @test a==1 && isnothing(r) && stabilizerview(s)==S"X___
-                                                            _Z__"
+        _Z__"
         s, a, r = project!(copy(stab), projzr)
         @test mixed_destab_looks_good(s)
         @test a==3 && isnothing(r) && stabilizerview(s)==S"Z___
-                                                            _Z__
-                                                            ___Z"
+        _Z__
+        ___Z"
         s, a, r = project!(copy(stab), projxr)
         @test mixed_destab_looks_good(s)
         @test a==3 && isnothing(r) && stabilizerview(s)==S"Z___
-                                                            _Z__
-                                                            ___X"
+        _Z__
+        ___X"
     end
     @testset "Interface Particularities" begin
         s = S"ZII IZI"
@@ -163,10 +162,10 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         s = MixedStabilizer(s, 2)
         ms, a, r = project!(copy(s), P"IZI")
         @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
-        @test ms.rank == 2
+        @test rank(ms) == 2
         ms, a, r = project!(copy(s), P"IIZ")
         @test (a, r) == (3, nothing) # on commuting operator out of the stabilizer
-        @test ms.rank == 3
+        @test rank(ms) == 3
         s = S"ZII IZI"
         s = Destabilizer(s)
         @test_throws BadDataStructure project!(copy(s), P"IZI"; keep_result=true)  # on comm
@@ -183,16 +182,16 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         s = MixedDestabilizer(s)
         mds, a, r = project!(copy(s), P"IZI"; keep_result=true)
         @test (a, r) == (0, 0x0) # on commuting operator in the stabilizer
-        @test mds.rank == 2
+        @test rank(mds) == 2
         mds, a, r = project!(copy(s), P"IIZ"; keep_result=true)
         @test (a, r) == (3, nothing) # on commuting operator out of the stabilizer
-        @test mds.rank == 3
+        @test rank(mds) == 3
         mds, a, r = project!(copy(s), P"IZI"; keep_result=false)
         @test (a, r) == (0, nothing) # on commuting operator in the stabilizer
-        @test mds.rank == 2
+        @test rank(mds) == 2
         mds, a, r = project!(copy(s), P"IIZ"; keep_result=false)
         @test (a, r) == (3, nothing) # on commuting operator out of the stabilizer
-        @test mds.rank == 3
+        @test rank(mds) == 3
     end
     @testset "Results from canonicalization vs from destabilizer" begin
         @test generate!(P"_Z", S"XZ") === nothing # for bug fixed in 4b536231c3ee4e6446262fcc61ba8da669415bc8
@@ -207,7 +206,7 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
                 _, ams, rms = project!(ms,p)
                 _, amd, rmd = project!(md,p)
                 @test rs == rms == rmd
-                @test (md.rank!=r) || (canonicalize!(s) == canonicalize!(stabilizerview(ms)))
+                @test (rank(md)!=r) || (canonicalize!(s) == canonicalize!(stabilizerview(ms)))
                 @test canonicalize!(stabilizerview(ms)) == canonicalize!(stabilizerview(md))
                 if as == 0
                     @test ams == amd == 0
@@ -349,21 +348,21 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
     @testset "Redundant row permutations in `project!(::MixedDestabilizer)`" begin
         # Fixed in 41ed1d3c
         destab =  T"+ ZX_Y_YXZ
-                    + XY_Y____
-                    + _Z_XXY__
-                    + _ZYXXY__
-                    + X__Y_ZXZ
-                    + X__YXZXZ
-                    + ___YXXZZ
-                    + _______Z"
+        + XY_Y____
+        + _Z_XXY__
+        + _ZYXXY__
+        + X__Y_ZXZ
+        + X__YXZXZ
+        + ___YXXZZ
+        + _______Z"
         stab =    T"+ X_______
-                    + _X_Y____
-                    + __ZY____
-                    + __Z_____
-                    + ___YZY__
-                    + X__YZYZZ
-                    + X____YZZ
-                    + ______YX"
+        + _X_Y____
+        + __ZY____
+        + __Z_____
+        + ___YZY__
+        + X__YZYZZ
+        + X____YZZ
+        + ______YX"
         t = MixedDestabilizer(vcat(destab,stab), 8)
         @test mixed_destab_looks_good(t)
         c = copy(stabilizerview(t)[[1,3,5,7]])

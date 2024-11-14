@@ -1,16 +1,11 @@
-using QuantumClifford: _div, _mod
+using QuantumClifford: get_bitmask_idxs
 
 #according to https://github.com/JuliaGPU/CUDA.jl/blob/ac1bc29a118e7be56d9edb084a4dea4224c1d707/test/core/device/random.jl#L33
 #CUDA.jl supports calling rand() inside kernel
 function applynoise!(frame::PauliFrameGPU{T},noise::UnbiasedUncorrelatedNoise,i::Int) where {T <: Unsigned}
     p = noise.p
-    lowbit = T(1)
-    ibig = _div(T,i-1)+1
-    ismall = _mod(T,i-1)
-    ismallm = lowbit<<(ismall)
-
-    stab = frame.frame
-    xzs = tab(stab).xzs
+    xzs = tab(frame.frame).xzs
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
     rows = size(stab, 1)
 
     @run_cuda applynoise_kernel(xzs, p, ibig, ismallm, rows) rows
@@ -18,11 +13,11 @@ function applynoise!(frame::PauliFrameGPU{T},noise::UnbiasedUncorrelatedNoise,i:
 end
 
 
-function applynoise_kernel(xzs::DeviceMatrix{Tme},
+function applynoise_kernel(xzs::DeviceMatrix{Tₘₑ},
     p::Real,
     ibig::Int,
-    ismallm::Tme,
-    rows::Int) where {Tme <: Unsigned}
+    ismallm::Tₘₑ,
+    rows::Int) where {Tₘₑ <: Unsigned}
 
     f = (blockIdx().x - 1) * blockDim().x + threadIdx().x;
     if f > rows

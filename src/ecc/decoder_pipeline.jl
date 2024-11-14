@@ -79,19 +79,47 @@ struct ShorSyndromeECCSetup <: AbstractECCSetup
     end
 end
 
+function add_two_qubit_gate_noise(g, gate_error)
+    return ()
+end
+
+"""Applies gate_error to a given two-qubit gate g."""
+function add_two_qubit_gate_noise(g::AbstractTwoQubitOperator, gate_error)
+    qubits = affectedqubits(g)
+    return (PauliError(qubits, gate_error), )
+end
+
 function physical_ECC_circuit(H, setup::NaiveSyndromeECCSetup)
     syndrome_circ, n_anc, syndrome_bits = naive_syndrome_circuit(H)
-    noisy_syndrome_circ = syndrome_circ # add_two_qubit_gate_noise(syndrome_circ, gate_error)
-    mem_error_circ = [PauliError(i, setup.mem_noise) for i in 1:nqubits(H)];
-    circ = [mem_error_circ..., noisy_syndrome_circ...]
-    circ, syndrome_bits, n_anc
+    noisy_syndrome_circ = []
+
+    for op in syndrome_circ
+        push!(noisy_syndrome_circ, op)
+        for noise_op in add_two_qubit_gate_noise(op, setup.two_qubit_gate_noise)
+            push!(noisy_syndrome_circ, noise_op)
+        end
+    end
+
+    mem_error_circ = [PauliError(i, setup.mem_noise) for i in 1:nqubits(H)]
+    circ = vcat(mem_error_circ, noisy_syndrome_circ)
+    return circ, syndrome_bits, n_anc
 end
+
 
 function physical_ECC_circuit(H, setup::ShorSyndromeECCSetup)
     prep_anc, syndrome_circ, n_anc, syndrome_bits = shor_syndrome_circuit(H)
-    noisy_syndrome_circ = syndrome_circ # add_two_qubit_gate_noise(syndrome_circ, gate_error)
-    mem_error_circ = [PauliError(i, setup.mem_noise) for i in 1:nqubits(H)];
-    circ = [prep_anc..., mem_error_circ..., noisy_syndrome_circ...]
+
+    noisy_syndrome_circ = []
+    for op in syndrome_circ
+        push!(noisy_syndrome_circ, op)
+        for noise_op in add_two_qubit_gate_noise(op, setup.two_qubit_gate_noise)
+            push!(noisy_syndrome_circ, noise_op)
+        end
+    end
+
+    mem_error_circ = [PauliError(i, setup.mem_noise) for i in 1:nqubits(H)]
+
+    circ = vcat(prep_anc, mem_error_circ, noisy_syndrome_circ)
     circ, syndrome_bits, n_anc
 end
 
@@ -104,7 +132,7 @@ function evaluate_decoder(d::AbstractSyndromeDecoder, setup::AbstractECCSetup, n
 
     physical_noisy_circ, syndrome_bits, n_anc = physical_ECC_circuit(H, setup)
     encoding_circ = naive_encoding_circuit(H)
-    preX = [sHadamard(i) for i in n-k+1:n]
+    preX = sHadamard[sHadamard(i) for i in n-k+1:n]
 
     mdH = MixedDestabilizer(H)
     logX_circ, _, logX_bits = naive_syndrome_circuit(logicalxview(mdH), n_anc+1, last(syndrome_bits)+1)
@@ -113,12 +141,12 @@ function evaluate_decoder(d::AbstractSyndromeDecoder, setup::AbstractECCSetup, n
     # Evaluate the probability for X logical error (the Z-observable part of the faults matrix is used)
     X_error = evaluate_decoder(
         d, nsamples,
-        [encoding_circ..., physical_noisy_circ..., logZ_circ...],
+        vcat(encoding_circ, physical_noisy_circ, logZ_circ),
         syndrome_bits, logZ_bits, O[end÷2+1:end,:])
     # Evaluate the probability for Z logical error (the X-observable part of the faults matrix is used)
     Z_error = evaluate_decoder(
         d, nsamples,
-        [preX..., encoding_circ..., physical_noisy_circ..., logX_circ...],
+        vcat(preX, encoding_circ, physical_noisy_circ, logX_circ),
         syndrome_bits, logX_bits, O[1:end÷2,:])
     return (X_error, Z_error)
 end
@@ -143,12 +171,21 @@ end
 
 function evaluate_guesses(measured_faults, guesses, faults_matrix)
     nsamples = size(guesses, 1)
-    guess_faults = (faults_matrix * guesses') .% 2 # TODO this can be faster and non-allocating by turning it into a loop
-    decoded = 0
-    for i in 1:nsamples # TODO this can be faster and non-allocating by having the loop and the matrix multiplication on the line above work together and not store anything
-        (@view guess_faults[:,i]) == (@view measured_faults[i,:]) && (decoded += 1)
+    fails = 0
+    for i in 1:nsamples
+        for j in 1:size(faults_matrix, 1)
+            sum_mod = 0
+            @inbounds @simd for k in 1:size(faults_matrix, 2)
+                sum_mod += faults_matrix[j, k] * guesses[i, k]
+            end
+            sum_mod %= 2
+            if sum_mod != measured_faults[i, j]
+                fails += 1
+                break
+            end
+        end
     end
-    return (nsamples - decoded) / nsamples
+    return fails / nsamples
 end
 
 function evaluate_decoder(d::AbstractSyndromeDecoder, setup::CommutationCheckECCSetup, nsamples::Int)
@@ -214,7 +251,7 @@ function create_lookup_table(code::Stabilizer)
     for bit_to_be_flipped in 1:qubits
         for error_type in [single_x, single_y, single_z]
             # Generate e⃗
-            error = error_type(qubits, bit_to_be_flipped)
+            error = error_type(qubits, bit_to_be_flipped)::PauliOperator{Array{UInt8, 0}, Vector{UInt}}
             # Calculate s⃗
             # (check which stabilizer rows do not commute with the Pauli error)
             syndrome = comm(error, code)
@@ -240,6 +277,16 @@ function BeliefPropDecoder(args...; kwargs...)
     end
     return ext.BeliefPropDecoder(args...; kwargs...)
 end
+
+"""An Iterative Bitflip decoder built around tools from `LDPCDecoders.jl`."""
+function BitFlipDecoder(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordLDPCDecodersExt)
+    if isnothing(ext)
+        throw("The `BitFlipDecoder` depends on the package `LDPCDecoders` but you have not installed or imported `LDPCDecoders` yet. Immediately after you import `LDPCDecoders`, the `BitFlipDecoder` will be available.")
+    end
+    return ext.BitFlipDecoder(args...; kwargs...)
+end
+
 
 """A Belief Propagation decoder built around tools from the python package `ldpc` available from the julia package `PyQDecoders.jl`."""
 function PyBeliefPropDecoder(args...; kwargs...)
