@@ -106,7 +106,6 @@ end
             gs = GeneralizedStabilizer(s)
             apply!(gs, pcT)
             qo_state_after_proj, result1, result2 = multiqubit_projrand(gs,p)
-            # Normalize to ensure consistent comparison of the projected state, independent of scaling factors
             norm_qo_state_after_proj = qo_state_after_proj/tr(qo_state_after_proj)
             norm_result1 = result1/tr(result1)
             norm_result2 = result2/tr(result2)
@@ -133,47 +132,4 @@ end
             end
         end
     end
-end
-
-# exclusively multi-qubit
-function non_stabilizer_simulator(num_trials,n)
-    count = 0
-    for n in 2:n # exponential cost in this term
-        for _ in 1:num_trials
-            s = random_stabilizer(n)
-            p = random_pauli(n)
-            gs = GeneralizedStabilizer(s)
-            i = rand(1:n)
-            nc = embed(n, i, pcT)
-            apply!(gs, nc)
-            qo_state_after_proj, result1, result2 = multiqubit_projrand(gs,p)
-            # Normalize to ensure consistent comparison of the projected state, independent of scaling factors
-            norm_qo_state_after_proj = qo_state_after_proj/tr(qo_state_after_proj)
-            norm_result1 = result1/tr(result1)
-            norm_result2 = result2/tr(result2)
-            if norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
-                count += 1
-            end
-        end
-    end
-    prob = count/(num_trials*(n-1))
-    return prob
-end
-
-@testset "probabilistic non-stabilizer simulator" begin
-# As described in https://www.scottaaronson.com/showcase2/report/ted-yoder.pdf,
-# "The set of states that are stabilizer circuit efficient is related to the
-# set of magic states, those states that, when combined with stabilizer circuits,
-# allow universal quantum computation. The problems are essentially complementary;
-# no magic state will be simulatable through every stabilizer circuit (assuming
-# BQP is larger than BPP, that is). With qudits of odd prime dimension, it was
-# recently found in https://arxiv.org/pdf/1201.1256 that a sufficient condition
-# for a state to be efficiently (weakly) simulated through stabilizer circuits is
-# that a certain quasi-probability representation of the state be positive."
-# Therefore, non-Clifford simulators generally require probabilistic sampling
-# techniques.
-
-    num_qubits = 5
-    num_trials = 5
-    prob = non_stabilizer_simulator(num_trials, num_qubits)
 end
