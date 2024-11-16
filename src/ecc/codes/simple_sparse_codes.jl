@@ -1,18 +1,20 @@
-"""Takes a height and width of matrix and generates a bicycle code to the specified height and width.
-Based on codes from [mackay_sparse-graph_2004](@cite)
+"""Struct for an LDPC bicycle code based on [mackay2004sparse](@cite). This code is produced by taking a circulant matrix based on a difference set, reducing the number of rows, and then using it as the base matrix for a CSS code.
 
 Parameters:
 $TYPEDFIELDS
 
 ```jldoctest Bicycle
-julia> O = typeof(Bicycle(4, 2))
-Bicycle
+julia> Bicycle(4, 2).n
+4
 
-julia> O = parity_checks(Bicycle(4, 2))
+julia> Bicycle(4, 2).m
+2
+
+julia> parity_checks(Bicycle(4, 2))
 + XXXX
 + ZZZZ
 
-julia> O = parity_checks(Bicycle(6, 4))
+julia> parity_checks(Bicycle(6, 4))
 + XX_X_X
 + X_X_XX
 + ZZ_Z_Z
@@ -20,9 +22,9 @@ julia> O = parity_checks(Bicycle(6, 4))
 ```
 """
 struct Bicycle
-    "width of array, should be >= 2"
+    "Width of array, should be >= 2. Equal to number to number of physical qubits (N)"
     n::Int
-    "height of array, should be >= 2 and a multiple of 2"
+    "Height of array, should be >= 2 and a multiple of 2. Equal to number of parity checks (M)"
     m::Int
 end
 
@@ -36,10 +38,10 @@ function parity_checks(b::Bicycle)
         throw(DomainError(m, " M is too small, make it greater than 1."))
     end
     if n%2 == 1
-        throw(DomainError(m, " N should be a multiple for 2 for bicycle codes."))
+        throw(DomainError(n, " N should be a multiple for 2 for bicycle codes."))
     end
     if n < 2
-        throw(DomainError(m, " N is too small, make it greater than 1."))
+        throw(DomainError(n, " N is too small, make it greater than 1."))
     end
     bs = bicycle_set_gen(Int(n/2))
     bsc = circ_to_bicycle_h0(bs, Int(n/2))
@@ -50,13 +52,12 @@ function parity_checks(b::Bicycle)
     return parity_checks(CSS(bsc, bsc))
 end
 
-"""Takes a height and width of matrix and generates a unicycle code to the specified height and width.
-Based on codes from [mackay_sparse-graph_2004](@cite)
+"""Struct for an LDPC unicycle code based on [mackay2004sparse](@cite). The parity check matrix is produced by taking a perfect difference set, turning it into a circulant matrix, and removing the linearly dependent rows. Good performance when decoded by message passing decoders.
+
+Has the drawback of only being possible to make at sizes that correspond to existing perfect difference sets. Reference [mackay2004sparse](@cite) to find good sizes of perfect difference sets to use.
 
 Parameters:
-$TYPEDFIELDS 
-
-Reference [mackay_sparse-graph_2004](@cite) to find good sizes of perfect difference sets to use.
+$TYPEDFIELDS
 
 ```jldoctest Unicycle
 julia> typeof(Unicycle(21, [1, 3, 8, 9, 12]))
@@ -74,9 +75,9 @@ julia> parity_checks(Unicycle(21, [1, 3, 8, 9, 12]))
 ```
 """
 struct Unicycle
-    "size of parity check matrix, also max size of generated set array, should be >= 1."
+    "Size of parity check matrix, also max size of generated set array, should be >= 1. Equal to the number of physical qubits."
     N::Int
-    "array of indices that are 'active' checks in the circulant code"
+    "Perfect difference set modulo (N). Array of indices that are 'active' checks in the circulant code."
     set::Vector{Int}
 end
 
@@ -136,12 +137,12 @@ julia> circ_to_bicycle_h0([1, 2, 4], 7)
  0  1  0  0  0  1  1  1  0  1  1  0  0  0
  1  0  1  0  0  0  1  0  1  0  1  1  0  0
  1  1  0  1  0  0  0  0  0  1  0  1  1  0
-
 ```
 
-See [mackay_sparse-graph_2004](@cite) for more details"""
+See [mackay2004sparse](@cite) for more details
+"""
 function circ_to_bicycle_h0(circ_indices, n::Int)
-    circ_arr = Array{Bool}(undef, n)
+    circ_arr = Vector{Bool}(undef, n)
     circ_matrix = Matrix{Bool}(undef, n, n)
     comp_matrix = Matrix{Bool}(undef, n, 2*n)
     for i = 1:n
@@ -215,8 +216,8 @@ julia> circ_to_unicycle_h0([1, 2, 4], 7)
  1  0  1  0  0  0  1  1
 
 ```
-See [mackay_sparse-graph_2004](@cite) for more details"""
-function circ_to_unicycle_h0(circ_indices::Array{Int}, n::Int)
+See [mackay2004sparse](@cite) for more details"""
+function circ_to_unicycle_h0(circ_indices::Vector{Int}, n::Int)
     circ_arr = fill(false, n)
     one_col = transpose(fill(true, n))
     circ_matrix = Matrix{Bool}(undef, n, n)
@@ -239,16 +240,16 @@ function circ_to_unicycle_h0(circ_indices::Array{Int}, n::Int)
     return comp_matrix
 end
 
-"""Attempts to generate a list of indices to be used in a bicycle code using a search method"""
+"""Attempts to generate a list of indices to be used in a bicycle code using a search method given a matrix width (N)"""
 function bicycle_set_gen(N::Int)
-    circ_arr::Array{Int} = [0]
-    diff_arr::Array{Int} = []
+    circ_arr = Int[0]
+    diff_arr = Int[]
     circ_arr[1] = 0
     # test new elements
     for add_i = (circ_arr[end] + 1):N - 1
         valid = true
         temp_circ_arr = copy(circ_arr)
-        temp_diff_arr::Array{Int} = []
+        temp_diff_arr = []
         push!(temp_circ_arr, add_i)
         for j = 1:size(temp_circ_arr)[1]
             temp_arr = copy(temp_circ_arr)
@@ -277,60 +278,6 @@ function bicycle_set_gen(N::Int)
         if valid
             circ_arr = copy(temp_circ_arr)
             diff_arr = copy(temp_diff_arr)
-        end
-    end
-    return circ_arr
-end
-
-"""Attempts to generate a list of indices to be used in a bicycle code using a randomized check method
-
-Note: This is very slow for large N"""
-function bicycle_set_gen_rand(N::Int, d::Int)
-    circ_arr::Array{Int} = [0]
-    diff_arr::Array{Int} = []
-    atmp_add::Array{Int} = [0]
-    circ_arr[1] = 0
-    # test new elements
-    for i = (circ_arr[end] + 1):(N^2)
-        valid = true
-        temp_circ_arr = copy(circ_arr)
-        temp_diff_arr::Array{Int} = []
-        add_i = rand(1: N-1)
-        atmp_add = push!(atmp_add, add_i)
-        if add_i in circ_arr
-            continue
-        end
-        push!(temp_circ_arr, add_i)
-        for j = 1:size(temp_circ_arr)[1]
-            temp_arr = copy(temp_circ_arr)
-            # add lesser elements + N to temp_arr
-            for k = 1:size(temp_circ_arr)[1]
-                if k < j
-                    push!(temp_arr, temp_circ_arr[k] + N)
-                else
-                    break
-                end
-            end
-            # test if new index is valid
-            for k = 1:(size(temp_circ_arr)[1] - 2)
-                t_diff = (temp_arr[j + k] - temp_arr[j]) % N
-                if ((t_diff) in temp_diff_arr)
-                    valid = false
-                    break
-                else
-                    push!(temp_diff_arr, t_diff)
-                end
-            end
-            if !valid
-                break
-            end
-        end
-        if valid
-            circ_arr = copy(temp_circ_arr)
-            diff_arr = copy(temp_diff_arr)
-            if (size(atmp_add)[1] == N) || (size(circ_arr)[1] == d)
-                break
-            end
         end
     end
     return circ_arr

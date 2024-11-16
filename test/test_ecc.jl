@@ -73,5 +73,4 @@
         @test isdegenerate(Bicycle(200, 120)) == true
         @test isdegenerate(Unicycle(21, [1, 3, 8, 9, 12])) == true
     end
-
-function 
+end
