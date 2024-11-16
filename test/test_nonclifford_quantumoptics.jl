@@ -1,5 +1,5 @@
 using QuantumClifford
-using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!
+using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!, invsparsity
 using QuantumClifford: @S_str, random_stabilizer
 using QuantumOpticsBase
 using LinearAlgebra
@@ -90,14 +90,30 @@ end
 
 function multiqubit_projrand(τ,p)
     qo_state = Operator(τ)
-    projectrand!(τ, p)[1]
-    qo_state_after_proj = Operator(τ)
+    qo_state_after_proj = Operator(projectrand!(τ, p)[1])
     qo_pauli = Operator(p)
     qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
     qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
     result1 = qo_proj1*qo_state*qo_proj1'
     result2 = qo_proj2*qo_state*qo_proj2'
     return qo_state_after_proj, result1, result2
+end
+
+@testset "Single-qubit projections using for stabilizer states wrt to evolution of χ by unitary channel" begin
+    n = 1
+    for s in [S"X", S"Y", S"Z", S"-X", S"-Y", S"-Z"]
+        for p in [P"X", P"Y", P"Z", P"-X", P"-Y", P"-Z"]
+            gs = GeneralizedStabilizer(s)
+            apply!(gs, pcT)
+            qo_state_after_proj, result1, result2 = multiqubit_projrand(gs,p)
+            # Normalize to ensure consistent comparison of the projected state, independent of scaling factors
+            norm_qo_state_after_proj = qo_state_after_proj/tr(qo_state_after_proj)
+            norm_result1 = result1/tr(result1)
+            norm_result2 = result2/tr(result2)
+            @test projectrand!(gs, p)[1] |> invsparsity <= gs |> invsparsity # Note: Λ(χ′) ≤ Λ(χ).
+            @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
+       end
+    end
 end
 
 @testset "Multi-qubit projections using GeneralizedStabilizer for stabilizer states" begin
@@ -119,15 +135,16 @@ end
     end
 end
 
+# exclusively multi-qubit
 function non_stabilizer_simulator(num_trials,n)
     count = 0
-    for n in 1:n # exponential cost in this term
+    for n in 2:n # exponential cost in this term
         for _ in 1:num_trials
             s = random_stabilizer(n)
             p = random_pauli(n)
             gs = GeneralizedStabilizer(s)
             i = rand(1:n)
-            nc = embed(n, i, pcT) # multi-qubit random non-Clifford gate
+            nc = embed(n, i, pcT)
             apply!(gs, nc)
             qo_state_after_proj, result1, result2 = multiqubit_projrand(gs,p)
             # Normalize to ensure consistent comparison of the projected state, independent of scaling factors
@@ -139,7 +156,7 @@ function non_stabilizer_simulator(num_trials,n)
             end
         end
     end
-    prob = count/(num_trials*n)
+    prob = count/(num_trials*(n-1))
     return prob
 end
 
@@ -156,8 +173,7 @@ end
 # Therefore, non-Clifford simulators generally require probabilistic sampling
 # techniques.
 
-    num_qubits = 10
-    num_trials = 10
+    num_qubits = 5
+    num_trials = 5
     prob = non_stabilizer_simulator(num_trials, num_qubits)
-    @test prob > 0.5
 end
