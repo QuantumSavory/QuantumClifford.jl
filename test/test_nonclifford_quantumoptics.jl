@@ -113,6 +113,22 @@ end
             @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
        end
     end
+
+    for _ in 1:100
+        for n in 1:1
+            stab = random_stabilizer(n)
+            genstab = GeneralizedStabilizer(stab)
+            pauli = random_pauli(n)
+            apply!(genstab, pcT)
+            qo_state_after_proj, result1, result2 = _projrand(genstab,pauli)
+            # Normalize to ensure consistent comparison of the projected state
+            norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
+            norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
+            norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
+            @test projectrand!(genstab, pauli)[1] |> invsparsity <= genstab |> invsparsity # Note: Λ(χ′) ≤ Λ(χ).
+            @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
+        end
+    end
 end
 
 # TODO Add more tests...
