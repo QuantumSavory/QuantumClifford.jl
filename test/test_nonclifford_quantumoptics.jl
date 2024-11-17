@@ -1,5 +1,5 @@
 using QuantumClifford
-using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!
+using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!, invsparsity
 using QuantumClifford: @S_str, random_stabilizer
 using QuantumOpticsBase
 using LinearAlgebra
@@ -86,3 +86,34 @@ end
         @test copy(nc) == nc
     end
 end
+
+function _projrand(τ,p)
+    qo_state = Operator(τ)
+    projectrand!(τ, p)[1]
+    qo_state_after_proj = Operator(τ)
+    qo_pauli = Operator(p)
+    qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
+    qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
+    result1 = qo_proj1*qo_state*qo_proj1'
+    result2 = qo_proj2*qo_state*qo_proj2'
+    return qo_state_after_proj, result1, result2
+end
+
+@testset "Single-qubit projections using for stabilizer states" begin
+    for s in [S"X", S"Y", S"Z", S"-X", S"-Y"]
+        for p in [P"X", P"Y", P"Z", P"-X", P"-Y"]
+            # TODO Add P"-Z", S"-Z" as well, 0.0 +0.0im/0.0 +0.0im = NAN + NaN in one case when doing normalization
+            gs = GeneralizedStabilizer(s)
+            apply!(gs, pcT)
+            qo_state_after_proj, result1, result2 = _projrand(gs,p)
+            # Normalize to ensure consistent comparison of the projected state
+            norm_qo_state_after_proj = qo_state_after_proj/tr(qo_state_after_proj)
+            norm_result1 = result1/tr(result1)
+            norm_result2 = result2/tr(result2)
+            @test projectrand!(gs, p)[1] |> invsparsity <= gs |> invsparsity # Note: Λ(χ′) ≤ Λ(χ).
+            @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
+       end
+    end
+end
+
+# TODO Add more tests...

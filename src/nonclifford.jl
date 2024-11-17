@@ -177,6 +177,15 @@ function _allthreesumtozero(a,b,c)
     true
 end
 
+function _create_k(b::BitVector)
+    k = falses(length(b))
+    pos = findfirst(b)
+    if pos !== nothing
+        k[pos] = true
+    end
+    return k
+end
+
 """$(TYPEDSIGNATURES)
 
 Performs a randomized projection of the state represented by the [`GeneralizedStabilizer`](@ref) `sm`,
@@ -225,15 +234,46 @@ julia> prob₁ = (real(χ′)+1)/2
 See also: [`expect`](@ref)
 """
 function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
-    χ′ = expect(p, sm)
-    # Compute the probability of measuring in the +1 eigenstate
-    prob₁ = (real(χ′)+1)/2
-    # Randomly choose projection based on this probability
-    return _proj(sm, rand() < prob₁ ? p : -p)
-end
+    # Returns the updated `GeneralizedStabilizer` state sm′ = (χ′, B(S′, D′)),
+    # where (S′, D′) is derived from (S, D) through the traditional stabilizer update,
+    # and χ′ is the updated density matrix after measurement. Note: Λ(χ′) ≤ Λ(χ).
+    dict = sm.destabweights
+    dtype = valtype(dict)
+    tzero = zero(dtype)
+    tone = one(dtype)
+    stab = sm.stab
+    newdict = typeof(dict)(tzero)
+    phase, b, c = rowdecompose(p, stab)
 
-function _proj(sm::GeneralizedStabilizer, p::PauliOperator)
-    error("This functionality is not implemented yet")
+    if all(x -> x == 0, b) # Equation 17
+        for ((dᵢ, dⱼ), χ) in dict
+            if (im^phase * (-tone)^(dot(dᵢ, c)) == 1) && (im^phase * (-tone)^(dot(dⱼ, c)) == 1)
+                newdict[(dᵢ,dⱼ)] += χ
+            end
+        end
+        sm.destabweights = newdict # in-place
+        return sm, nothing # In the same basis, so no need to update (S, D) (17)
+    else
+        k = _create_k(b)
+        for ((dᵢ, dⱼ), χ) in dict
+            x, y = dᵢ, dⱼ
+            q = 1
+            if dot(dᵢ, k) == 1
+                q *= im^phase * (-tone)^dot(dᵢ, c)
+                x = dᵢ .⊻ b
+            end
+            if dot(dⱼ, k) == 1
+                q *= conj(im^(phase)) * (-tone)^dot(dⱼ, c) # α* == conj(im^(phase))
+                y = dⱼ .⊻ b
+            end
+            χ′ = 1/2 * χ * q
+            newdict[(x,y)] += χ′
+        end
+        sm.destabweights = newdict # in-place
+        state, res = projectrand!(stab, p) # traditional stabilizer update
+        sm.stab = state # in-place
+        return sm, res
+    end
 end
 
 function project!(s::GeneralizedStabilizer, p::PauliOperator)
