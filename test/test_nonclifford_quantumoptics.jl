@@ -109,7 +109,7 @@ end
             norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
             norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
             norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
-            @test projectrand!(gs, p)[1] |> invsparsity <= gs |> invsparsity # Note: Λ(χ′) ≤ Λ(χ).
+            @test projectrand!(gs, p)[1] |> invsparsity <= gs |> invsparsity # Λ(χ′) ≤ Λ(χ).
             @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
        end
     end
@@ -125,8 +125,27 @@ end
             norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
             norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
             norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
-            @test projectrand!(genstab, pauli)[1] |> invsparsity <= genstab |> invsparsity # Note: Λ(χ′) ≤ Λ(χ).
+            @test projectrand!(genstab, pauli)[1] |> invsparsity <= genstab |> invsparsity # Λ(χ′) ≤ Λ(χ).
             @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
+        end
+    end
+end
+
+@testset "Multi-qubit projections using GeneralizedStabilizer for stabilizer states" begin
+    for n in 1:10
+        for repetition in 1:10
+            for state in [Stabilizer, MixedDestabilizer, GeneralizedStabilizer]
+                s = random_stabilizer(n)
+                p = random_pauli(n)
+                τ = state(s)
+                apply!(τ, random_clifford(n))
+                qo_state_after_proj, result1, result2 = _projrand(τ,p)
+                # Normalize to ensure consistent comparison of the projected state, independent of scaling factors
+                norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
+                norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
+                norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
+                @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
+            end
         end
     end
 end
