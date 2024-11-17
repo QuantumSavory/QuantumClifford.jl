@@ -177,6 +177,9 @@ function _allthreesumtozero(a,b,c)
     true
 end
 
+"""Creates a binary vector `k` of the same length as the input vector `b`, with exactly one nonzero element.
+The single nonzero element in `k` is positioned at the index of the first nonzero element in `b`. Example:
+If `k = BitVector([0, 1, 0, 0, 1])`, then `_create_k(k)` returns `BitVector([0, 1, 0, 0, 0])`."""
 function _create_k(b::BitVector)
     k = falses(length(b))
     pos = findfirst(b)
