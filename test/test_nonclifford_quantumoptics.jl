@@ -100,16 +100,15 @@ function _projrand(τ,p)
 end
 
 @testset "Single-qubit projections using for stabilizer states" begin
-    for s in [S"X", S"Y", S"Z", S"-X", S"-Y"]
-        for p in [P"X", P"Y", P"Z", P"-X", P"-Y"]
-            # TODO Add P"-Z", S"-Z" as well, 0.0 +0.0im/0.0 +0.0im = NAN + NaN in one case when doing normalization
+    for s in [S"X", S"Y", S"Z", S"-X", S"-Y", S"-Z"]
+        for p in [P"X", P"Y", P"Z", P"-X", P"-Y", P"-Z"]
             gs = GeneralizedStabilizer(s)
             apply!(gs, pcT)
             qo_state_after_proj, result1, result2 = _projrand(gs,p)
             # Normalize to ensure consistent comparison of the projected state
-            norm_qo_state_after_proj = qo_state_after_proj/tr(qo_state_after_proj)
-            norm_result1 = result1/tr(result1)
-            norm_result2 = result2/tr(result2)
+            norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
+            norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
+            norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
             @test projectrand!(gs, p)[1] |> invsparsity <= gs |> invsparsity # Note: Λ(χ′) ≤ Λ(χ).
             @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
        end
