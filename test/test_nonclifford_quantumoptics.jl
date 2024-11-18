@@ -199,6 +199,5 @@ end
         end
     end
     prob = count/(num_trials*(num_qubits-1))
-    println(prob)
     @test prob > 0.7
 end
