@@ -251,6 +251,7 @@ function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
     # Implementation of the in-place Pauli measurement quantum operation (Algorithm 2)
     # on a generalized stabilizer by Ted Yoder (Page 8) from [yoder2012generalization](@cite).
     if all(x -> x == 0, b)
+        # (Eq. 14-17)
         for ((dᵢ, dⱼ), χ) in dict
             if (im^phase * (-tone)^(dot(dᵢ, c)) == 1) && (im^phase * (-tone)^(dot(dⱼ, c)) == 1) # (Eq. 16)
                 newdict[(dᵢ,dⱼ)] += χ
