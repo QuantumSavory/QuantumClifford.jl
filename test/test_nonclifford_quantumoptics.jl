@@ -103,8 +103,8 @@ end
     for s in [S"X", S"Y", S"Z", S"-X", S"-Y", S"-Z"]
         for p in [P"X", P"Y", P"Z", P"-X", P"-Y", P"-Z"]
             gs = GeneralizedStabilizer(s)
-            apply!(gs, pcT)
-            qo_state_after_proj, result1, result2 = _projrand(gs,p)
+            apply!(gs, pcT) # in-place
+            qo_state_after_proj, result1, result2 = _projrand(gs,p) # in-place
             # Normalize to ensure consistent comparison of the projected state
             norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
             norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
@@ -120,8 +120,8 @@ end
             stab = random_stabilizer(n)
             genstab = GeneralizedStabilizer(stab)
             pauli = random_pauli(n)
-            apply!(genstab, pcT)
-            qo_state_after_proj, result1, result2 = _projrand(genstab,pauli)
+            apply!(genstab, pcT) # in-place
+            qo_state_after_proj, result1, result2 = _projrand(genstab,pauli) # in-place
             # Normalize to ensure consistent comparison of the projected state
             norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
             norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
@@ -140,8 +140,8 @@ end
                 s = random_stabilizer(n)
                 p = random_pauli(n)
                 τ = state(s)
-                apply!(τ, random_clifford(n))
-                qo_state_after_proj, result1, result2 = _projrand(τ,p)
+                apply!(τ, random_clifford(n)) # in-place
+                qo_state_after_proj, result1, result2 = _projrand(τ,p) # in-place
                 # Normalize to ensure consistent comparison of the projected state
                 norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
                 norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
@@ -162,7 +162,7 @@ end
     for s in [S"X", S"Y", S"Z", S"-X", S"-Y", S"Z"]
         for p in [P"X", P"Y", P"Z", P"-X", P"-Y"]
             gs = GeneralizedStabilizer(s)
-            apply!(gs, pcT)
+            apply!(gs, pcT) # in-place
             prob1 = (real(expect(p, gs))+1)/2
             projectrand!(gs, p)[1] # in-place
             dict = gs.destabweights
@@ -172,4 +172,33 @@ end
     end
 end
 
-# TODO Add more tests...
+@testset "Multi-qubit projections using GeneralizedStabilizer with multiple non-Clifford gates" begin
+    # TODO: Analyze some multi-qubit genstab states that are unsimulable due to very complex
+    # destabweights, which also exhibit an inverse sparsity relation (Λ(χ′) = Λ(χ) = 4).
+    count = 0
+    num_trials = 10
+    num_qubits = 10
+    for n in 2:num_qubits
+        for repetition in 1:num_trials
+            stab = random_stabilizer(n)
+            pauli = random_pauli(n)
+            genstab = GeneralizedStabilizer(stab)
+            i = rand(1:n)
+            nc = embed(n, i, pcT)
+            apply!(genstab, nc) # in-place
+            apply!(genstab, nc) # in-place
+            apply!(genstab, nc) # in-place
+            qo_state_after_proj, result1, result2 = _projrand(genstab,pauli) # in-place
+            # Normalize to ensure consistent comparison of the projected state
+            norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
+            norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
+            norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
+            !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
+            @test projectrand!(genstab, pauli)[1] |> invsparsity <= genstab |> invsparsity # Λ(χ′) ≤ Λ(χ)
+            count += (norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1) ? 1 : 0
+        end
+    end
+    prob = count/(num_trials*(num_qubits-1))
+    println(prob)
+    @test prob > 0.7
+end
