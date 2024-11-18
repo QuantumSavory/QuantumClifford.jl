@@ -67,7 +67,7 @@ end
             invsparsity_before = genstab |> invsparsity
             i = rand(1:n)
             nc = embed(n, i, pcT)
-            for in in 1:k
+            for i in 1:k
                 apply!(genstab, nc) # in-place
             end
             invsparsity_after = genstab |> invsparsity
