@@ -173,12 +173,12 @@ end
 end
 
 @testset "Multi-qubit projections using GeneralizedStabilizer with multiple non-Clifford gates" begin
-    # TODO: Analyze some multi-qubit genstab states that are unsimulable due to very complex
+    # TODO Analyze some multi-qubit genstab states that are unsimulable due to very complex
     # destabweights, which also exhibit an inverse sparsity relation (Λ(χ′) = Λ(χ) = 4).
     count = 0
-    num_trials = 10
-    num_qubits = 10
-    for n in 2:num_qubits
+    num_trials = 20
+    num_qubits = [2,3,4,5,6,7,8,9]
+    for n in num_qubits
         for repetition in 1:num_trials
             stab = random_stabilizer(n)
             pauli = random_pauli(n)
@@ -198,6 +198,6 @@ end
             count += (norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1) ? 1 : 0
         end
     end
-    prob = count/(num_trials*(num_qubits-1))
+    prob = count/(num_trials*(length(num_qubits)))
     @test prob > 0.7
 end
