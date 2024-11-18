@@ -245,23 +245,21 @@ function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
     tzero = zero(dtype)
     tone = one(dtype)
     stab = sm.stab
-    n = nqubits(stab)
-    key = (falses(n), falses(n))
     newdict = typeof(dict)(tzero)
     phase, b, c = rowdecompose(p, stab)
 
     # Implementation of the in-place Pauli measurement quantum operation (Algorithm 2)
-    # on a generalized stabilizer by Ted Yoder (Page 8) of [yoder2012generalization](@cite).
-    if all(x -> x == 0, b) # Equation 17
+    # on a generalized stabilizer by Ted Yoder (Page 8) from [yoder2012generalization](@cite).
+    if all(x -> x == 0, b)
         for ((dᵢ, dⱼ), χ) in dict
-            if (im^phase * (-tone)^(dot(dᵢ, c)) == 1) && (im^phase * (-tone)^(dot(dⱼ, c)) == 1)
+            if (im^phase * (-tone)^(dot(dᵢ, c)) == 1) && (im^phase * (-tone)^(dot(dⱼ, c)) == 1) # (Eq. 16)
                 newdict[(dᵢ,dⱼ)] += χ
             end
         end
-        isempty(newdict) && (newdict[key] = 0.0 + 0.0im)
         sm.destabweights = newdict # in-place
-        return sm, nothing # In the same basis, so no need to update (S, D) (17)
+        return sm, nothing # In the same basis, so no need to update (S, D) (Eq. 17)
     else
+        # (Eq. 18-26)
         k = _create_k(b)
         for ((dᵢ, dⱼ), χ) in dict
             x, y = dᵢ, dⱼ
@@ -271,7 +269,7 @@ function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
                 x = dᵢ .⊻ b
             end
             if dot(dⱼ, k) == 1
-                q *= conj(im^(phase)) * (-tone)^dot(dⱼ, c) # α* == conj(im^(phase))
+                q *= conj(im^(phase)) * (-tone)^dot(dⱼ, c) # α* is conj(im^(phase))
                 y = dⱼ .⊻ b
             end
             χ′ = 1/2 * χ * q

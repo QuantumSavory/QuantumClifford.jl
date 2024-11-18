@@ -110,6 +110,7 @@ end
             norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
             norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
             @test projectrand!(gs, p)[1] |> invsparsity <= gs |> invsparsity # Λ(χ′) ≤ Λ(χ)
+            !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
             @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
        end
     end
@@ -126,6 +127,7 @@ end
             norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
             norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
             @test projectrand!(genstab, pauli)[1] |> invsparsity <= genstab |> invsparsity # Λ(χ′) ≤ Λ(χ)
+            !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
             @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
         end
     end
@@ -145,6 +147,7 @@ end
                 norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
                 norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
                 @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
+                !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
                 isa(τ, GeneralizedStabilizer) && @test projectrand!(τ, p)[1] |> invsparsity <= τ |> invsparsity # Λ(χ′) ≤ Λ(χ)
             end
         end
@@ -152,10 +155,13 @@ end
 end
 
 @testset "The trace Tr[χ′] is the probability of measuring an outcome" begin
-    # The trace Tr[χ′] represents the probability of obtaining a result of 0,
-    # where projectrand!(gs, p)[1] corresponds to the outcome of this measurement.
-    for s in [S"X", S"Y", S"Z", S"-X", S"-Y", S"-Z"]
-        for p in [P"X", P"Y", P"Z", P"-X", P"-Y", P"-Z"]
+    # The trace Tr[χ′] represents the probability of obtaining an outcome of 0.
+    # Since ((real(expect(P"Z", apply!(genstab(S"-Z"), pcT))))+1)/2 is 0.0, it
+    # triggers Eq. 16, where (I+(-1)^(i·c)*M)ρₛ(I+(-1)^(j·c)*M) evaluates to 0. Thus,
+    # genstab after projectrand!(apply!(genstab(S"-Z"), pcT), P"Z")[1] has no meaning.
+
+    for s in [S"X", S"Y", S"Z", S"-X", S"-Y", S"Z"]
+        for p in [P"X", P"Y", P"Z", P"-X", P"-Y"]
             gs = GeneralizedStabilizer(s)
             apply!(gs, pcT)
             prob1 = (real(expect(p, gs))+1)/2
