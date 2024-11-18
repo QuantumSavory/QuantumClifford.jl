@@ -245,6 +245,8 @@ function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
     tzero = zero(dtype)
     tone = one(dtype)
     stab = sm.stab
+    n = nqubits(stab)
+    key = (falses(n), falses(n))
     newdict = typeof(dict)(tzero)
     phase, b, c = rowdecompose(p, stab)
 
@@ -254,6 +256,7 @@ function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
                 newdict[(dᵢ,dⱼ)] += χ
             end
         end
+        isempty(newdict) && (newdict[key] = 0.0 + 0.0im)
         sm.destabweights = newdict # in-place
         return sm, nothing # In the same basis, so no need to update (S, D) (17)
     else
