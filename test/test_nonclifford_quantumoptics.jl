@@ -89,7 +89,7 @@ end
 
 function _projrand(τ,p)
     qo_state = Operator(τ)
-    projectrand!(τ, p)[1]
+    projectrand!(τ, p)[1] # in-place
     qo_state_after_proj = Operator(τ)
     qo_pauli = Operator(p)
     qo_proj1 = (identityoperator(qo_pauli) - qo_pauli)/2
@@ -140,7 +140,7 @@ end
                 τ = state(s)
                 apply!(τ, random_clifford(n))
                 qo_state_after_proj, result1, result2 = _projrand(τ,p)
-                # Normalize to ensure consistent comparison of the projected state, independent of scaling factors
+                # Normalize to ensure consistent comparison of the projected state
                 norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
                 norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
                 norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
@@ -159,7 +159,7 @@ end
             gs = GeneralizedStabilizer(s)
             apply!(gs, pcT)
             prob1 = (real(expect(p, gs))+1)/2
-            projectrand!(gs, p)[1]
+            projectrand!(gs, p)[1] # in-place
             dict = gs.destabweights
             trace_χ′ = real(collect(values(dict)))[1] # Tr[χ′]
             @test isapprox(prob1, trace_χ′; atol=1e-5)
