@@ -54,6 +54,30 @@ end
     end
 end
 
+##
+
+@testset "inverse sparsity of k-qubit channels" begin
+    # In general, the increase in Λ(χ) due to k-qubit channels is limited to a maximum factor of 16ᵏ.
+    k = 10
+    for n in 1:10
+        for repetition in 1:1000
+            stab = random_stabilizer(n)
+            pauli = random_pauli(n)
+            genstab = GeneralizedStabilizer(stab)
+            invsparsity_before = genstab |> invsparsity
+            i = rand(1:n)
+            nc = embed(n, i, pcT)
+            for in in 1:k
+                apply!(genstab, nc) # in-place
+            end
+            invsparsity_after = genstab |> invsparsity
+            @test (invsparsity_after/invsparsity_before) <= 16^k
+        end
+    end
+end
+
+##
+
 @test_throws ArgumentError GeneralizedStabilizer(S"XX")
 @test_throws ArgumentError PauliChannel(((P"X", P"Z"), (P"X", P"ZZ")), (1,2))
 @test_throws ArgumentError PauliChannel(((P"X", P"Z"), (P"X", P"Z")), (1,))
