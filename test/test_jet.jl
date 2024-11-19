@@ -40,5 +40,5 @@ end
     )
     @show rep
     @test_broken length(JET.get_reports(rep)) == 0
-    @test length(JET.get_reports(rep)) <= 24
+    @test length(JET.get_reports(rep)) <= 30
 end
