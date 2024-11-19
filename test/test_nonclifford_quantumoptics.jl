@@ -96,7 +96,11 @@ function _projrand(τ,p)
     qo_proj2 = (identityoperator(qo_pauli) + qo_pauli)/2
     result1 = qo_proj1*qo_state*qo_proj1'
     result2 = qo_proj2*qo_state*qo_proj2'
-    return qo_state_after_proj, result1, result2
+    # Normalize to ensure consistent comparison of the projected state
+    norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
+    norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
+    norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
+    return norm_qo_state_after_proj, norm_result1, norm_result2
 end
 
 @testset "Single-qubit projections using for stabilizer states" begin
@@ -104,11 +108,7 @@ end
         for p in [P"X", P"Y", P"Z", P"-X", P"-Y", P"-Z"]
             genstab = GeneralizedStabilizer(s)
             apply!(genstab, pcT) # in-place
-            qo_state_after_proj, result1, result2 = _projrand(genstab,p) # in-place
-            # Normalize to ensure consistent comparison of the projected state
-            norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
-            norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
-            norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
+            norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(genstab,p) # in-place
             !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
             @test projectrand!(genstab, p)[1] |> invsparsity <= genstab |> invsparsity # Λ(χ′) ≤ Λ(χ)
             @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
@@ -121,11 +121,7 @@ end
             genstab = GeneralizedStabilizer(stab)
             pauli = random_pauli(n)
             apply!(genstab, pcT) # in-place
-            qo_state_after_proj, result1, result2 = _projrand(genstab,pauli) # in-place
-            # Normalize to ensure consistent comparison of the projected state
-            norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
-            norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
-            norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
+            norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(genstab,pauli) # in-place
             !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
             @test projectrand!(genstab, pauli)[1] |> invsparsity <= genstab |> invsparsity # Λ(χ′) ≤ Λ(χ)
             @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
@@ -141,11 +137,7 @@ end
                 p = random_pauli(n)
                 τ = state(s)
                 apply!(τ, random_clifford(n)) # in-place
-                qo_state_after_proj, result1, result2 = _projrand(τ,p) # in-place
-                # Normalize to ensure consistent comparison of the projected state
-                norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
-                norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
-                norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
+                norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(τ,p) # in-place
                 !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
                 @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
                 isa(τ, GeneralizedStabilizer) && @test projectrand!(τ, p)[1] |> invsparsity <= τ |> invsparsity # Λ(χ′) ≤ Λ(χ)
@@ -178,21 +170,18 @@ end
     count = 0
     num_trials = 20
     num_qubits = [2,3,4,5,6,7,8,9]
-    for n in num_qubits
+    for n in num_qubits # exponential cost in this term
         for repetition in 1:num_trials
             stab = random_stabilizer(n)
             pauli = random_pauli(n)
             genstab = GeneralizedStabilizer(stab)
+            # some (repeated) non-clifford ops
             i = rand(1:n)
             nc = embed(n, i, pcT)
             apply!(genstab, nc) # in-place
             apply!(genstab, nc) # in-place
             apply!(genstab, nc) # in-place
-            qo_state_after_proj, result1, result2 = _projrand(genstab,pauli) # in-place
-            # Normalize to ensure consistent comparison of the projected state
-            norm_qo_state_after_proj = iszero(qo_state_after_proj) ? qo_state_after_proj : qo_state_after_proj/tr(qo_state_after_proj)
-            norm_result1 = iszero(result1) ? result1 : result1/tr(result1)
-            norm_result2 = iszero(result2) ? result2 : result2/tr(result2)
+            norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(genstab,pauli) # in-place
             !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
             @test projectrand!(genstab, pauli)[1] |> invsparsity <= genstab |> invsparsity # Λ(χ′) ≤ Λ(χ)
             count += (norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1) ? 1 : 0
