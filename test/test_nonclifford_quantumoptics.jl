@@ -158,7 +158,7 @@ end
             prob1 = (real(expect(p, genstab))+1)/2
             projectrand!(genstab, p)[1] # in-place
             dict = genstab.destabweights
-            trace_χ′ = real(collect(values(dict)))[1] # Tr[χ′]
+            trace_χ′ = real(tr(collect(values(dict))[1])) # Tr[χ′]
             @test isapprox(prob1, trace_χ′; atol=1e-5)
         end
     end
