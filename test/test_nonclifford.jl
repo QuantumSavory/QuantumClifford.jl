@@ -91,7 +91,26 @@ end
             Λ_E = nc |> invsparsity # Λ(E)
             apply!(genstab, nc) # in-place
             Λ_χ′ = genstab |> invsparsity # Λ(χ′)
-            @test Λ_χ <= Λ_χ′ <= Λ_E*Λ_χ
+            @test Λ_χ <= Λ_χ′ <= Λ_E*Λ_χ # Corollary 14, page 9 of [yoder2012generalization](@cite).
+        end
+    end
+end
+
+##
+
+@testset "PauliMeasurement: Λ(χ′) ≤ Λ(χ)" begin
+    # In general, the complexity of χ may decrease in the case of evolution through a measurement.
+    for n in 1:10
+        for repetition in 1:1000
+            stab = random_stabilizer(n)
+            pauli = random_pauli(n)
+            genstab = GeneralizedStabilizer(stab)
+            Λ_χ = genstab |> invsparsity # Λ(χ)
+            i = rand(1:n)
+            nc = embed(n, i, pcT)
+            projectrand!(genstab, pauli)[1] # in-place
+            Λ_χ′ = genstab |> invsparsity # Λ(χ′)
+            @test Λ_χ′ <= Λ_χ # Corollary 14, page 9 of [yoder2012generalization](@cite).
         end
     end
 end
