@@ -169,7 +169,7 @@ end
     # destabweights, which also exhibit an inverse sparsity relation (Λ(χ′) = Λ(χ) = 4).
     count = 0
     num_trials = 20
-    num_qubits = [2,3,4,5,6,7,8,9]
+    num_qubits = [2,3,4,5,6,7,8,9] # exclusively multi-qubit
     for n in num_qubits # exponential cost in this term
         for repetition in 1:num_trials
             stab = random_stabilizer(n)

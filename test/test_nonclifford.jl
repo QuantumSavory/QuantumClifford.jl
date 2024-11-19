@@ -56,7 +56,7 @@ end
 
 ##
 
-@testset "inverse sparsity of k-qubit channels" begin
+@testset "PauliChannel: inverse sparsity of k-qubit channels" begin
     # In general, the increase in Λ(χ) due to k-qubit channels is limited to a maximum factor of 16ᵏ.
     k = 10
     for n in 1:10
@@ -64,14 +64,34 @@ end
             stab = random_stabilizer(n)
             pauli = random_pauli(n)
             genstab = GeneralizedStabilizer(stab)
-            invsparsity_before = genstab |> invsparsity
+            Λ_χ = genstab |> invsparsity # Λ(χ)
             i = rand(1:n)
             nc = embed(n, i, pcT)
             for i in 1:k
                 apply!(genstab, nc) # in-place
             end
-            invsparsity_after = genstab |> invsparsity
-            @test (invsparsity_after/invsparsity_before) <= 16^k
+            Λ_χ′ = genstab |> invsparsity # Λ(χ′)
+            @test (Λ_χ′/Λ_χ) <= 16^k
+        end
+    end
+end
+
+##
+
+@testset "PauliChannel: Λ(χ) ≤ Λ(χ′) ≤ Λ(E)Λ(χ)" begin
+    # In general, the complexity of χ increases in the case of evolution through a channel.
+    for n in 1:10
+        for repetition in 1:1000
+            stab = random_stabilizer(n)
+            pauli = random_pauli(n)
+            genstab = GeneralizedStabilizer(stab)
+            Λ_χ = genstab |> invsparsity # Λ(χ)
+            i = rand(1:n)
+            nc = embed(n, i, pcT)
+            Λ_E = nc |> invsparsity # Λ(E)
+            apply!(genstab, nc) # in-place
+            Λ_χ′ = genstab |> invsparsity # Λ(χ′)
+            @test Λ_χ <= Λ_χ′ <= Λ_E*Λ_χ
         end
     end
 end
