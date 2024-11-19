@@ -46,7 +46,6 @@ function parity_checks(b::Bicycle)
     bs = bicycle_set_gen(Int(n/2))
     bsc = circ_to_bicycle_h0(bs, Int(n/2))
     while size(bsc)[1] > m/2
-        print(bsc)
         bsc = reduce_bicycle(bsc)
     end
     return parity_checks(CSS(bsc, bsc))
@@ -98,12 +97,12 @@ Typical usage:
 
 julia> reduce_bicycle(circ_to_bicycle_h0([1, 2, 4], 7))
 6×14 Matrix{Bool}:
- 0  0  1  1  0  1  0  1  0  0  0  1  0  1
- 0  0  0  1  1  0  1  1  1  0  0  0  1  0
- 1  0  0  0  1  1  0  0  1  1  0  0  0  1
- 0  1  0  0  0  1  1  1  0  1  1  0  0  0
- 1  0  1  0  0  0  1  0  1  0  1  1  0  0
- 1  1  0  1  0  0  0  0  0  1  0  1  1  0
+ 1  1  0  1  0  0  0  1  0  0  0  1  0  1
+ 0  1  1  0  1  0  0  1  1  0  0  0  1  0
+ 0  0  0  1  1  0  1  1  0  1  1  0  0  0
+ 1  0  0  0  1  1  0  0  1  0  1  1  0  0
+ 0  1  0  0  0  1  1  0  0  1  0  1  1  0
+ 1  0  1  0  0  0  1  0  0  0  1  0  1  1
 
 ```
 """
@@ -130,13 +129,13 @@ For example:
 
 julia> circ_to_bicycle_h0([1, 2, 4], 7)
 7×14 Matrix{Bool}:
- 0  1  1  0  1  0  0  0  0  0  1  0  1  1
- 0  0  1  1  0  1  0  1  0  0  0  1  0  1
- 0  0  0  1  1  0  1  1  1  0  0  0  1  0
- 1  0  0  0  1  1  0  0  1  1  0  0  0  1
- 0  1  0  0  0  1  1  1  0  1  1  0  0  0
- 1  0  1  0  0  0  1  0  1  0  1  1  0  0
- 1  1  0  1  0  0  0  0  0  1  0  1  1  0
+ 1  1  0  1  0  0  0  1  0  0  0  1  0  1
+ 0  1  1  0  1  0  0  1  1  0  0  0  1  0
+ 0  0  1  1  0  1  0  0  1  1  0  0  0  1
+ 0  0  0  1  1  0  1  1  0  1  1  0  0  0
+ 1  0  0  0  1  1  0  0  1  0  1  1  0  0
+ 0  1  0  0  0  1  1  0  0  1  0  1  1  0
+ 1  0  1  0  0  0  1  0  0  0  1  0  1  1
 ```
 
 See [mackay2004sparse](@cite) for more details
@@ -146,7 +145,7 @@ function circ_to_bicycle_h0(circ_indices, n::Int)
     circ_matrix = Matrix{Bool}(undef, n, n)
     comp_matrix = Matrix{Bool}(undef, n, 2*n)
     for i = 1:n
-        if Int(i-1) in circ_indices
+        if Int(i) in circ_indices
             circ_arr[i] = true
         else
             circ_arr[i] = false
@@ -240,11 +239,26 @@ function circ_to_unicycle_h0(circ_indices::Vector{Int}, n::Int)
     return comp_matrix
 end
 
-"""Attempts to generate a list of indices to be used in a bicycle code using a search method given a matrix width (N)"""
+"""
+Generates a list of indices to be used in a bicycle code using a search method given a number of qubits (N). This algirithm finds indicies which have the property that no 2 differences between elements occurs more than once. The differences can also loop over the end of the array. For example, the method will never return the indices 1, 3, and 5, as the difference '2' occurs twice. Occurrences are: 3-1 = 2 and 5-3 = 2.
+
+Note: This algorithm can, but is not guaranteed, to find the optimal sets of indices for certain numbers of qubits. For example N = 13 will give you a perfect difference set, the optimal set of indices. We know this is the optimal set as there are no ways to increase the number of unique differences because the number of unique distances has been maximized per definition of a perfect difference set. Optimal indices can be found via a Monte Carlo search or brute force method. Generally, one does not need to worry about small numbers of missing differences as the function often returns the optimal set, but it is hard to prove so for larger qubit numbers.
+
+This algorithm find the indices by iterating a value 'i' over 1 to N and doing the following for each index: The algorithm adds 'i' to the set of indices, checks if it violates the difference set property, keeps it in the set if it does not violate the afformentioned property, and otherwise removes.
+
+```jldoctest bicycle_set_gen
+julia> bicycle_set_gen(13)
+4-element Vector{Int64}:
+  1
+  2
+  4
+ 10
+
+```
+"""
 function bicycle_set_gen(N::Int)
     circ_arr = Int[0]
     diff_arr = Int[]
-    circ_arr[1] = 0
     # test new elements
     for add_i = (circ_arr[end] + 1):N - 1
         valid = true
@@ -280,5 +294,5 @@ function bicycle_set_gen(N::Int)
             diff_arr = copy(temp_diff_arr)
         end
     end
-    return circ_arr
+    return circ_arr .+ 1
 end
