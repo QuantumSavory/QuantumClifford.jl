@@ -106,8 +106,6 @@ end
             pauli = random_pauli(n)
             genstab = GeneralizedStabilizer(stab)
             Λ_χ = genstab |> invsparsity # Λ(χ)
-            i = rand(1:n)
-            nc = embed(n, i, pcT)
             projectrand!(genstab, pauli)[1] # in-place
             Λ_χ′ = genstab |> invsparsity # Λ(χ′)
             @test Λ_χ′ <= Λ_χ # Corollary 14, page 9 of [yoder2012generalization](@cite).
