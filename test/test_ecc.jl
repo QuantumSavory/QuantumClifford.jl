@@ -68,5 +68,9 @@
         @test isdegenerate(Steane7()) == false
         @test isdegenerate(Steane7(), 2) == true
         @test isdegenerate(Bitflip3()) == true
+        @test isdegenerate(Bicycle(6, 4)) == true
+        @test isdegenerate(Bicycle(18, 16)) == true
+        @test isdegenerate(Bicycle(200, 120)) == true
+        @test isdegenerate(Unicycle(21, [1, 3, 8, 9, 12])) == true
     end
 end
