@@ -32,8 +32,8 @@
             p = random_pauli(dataqubits, realphase=true)
             pₙ = embed(naive_qubits, 1:dataqubits, p)
             pₛ = embed(shor_qubits, 1:dataqubits, p)
-            mul_left!(naive_frames.frame, pₙ)
-            mul_left!(shor_frames.frame, pₛ)
+            mul_left!(tab(naive_frames), pₙ)
+            mul_left!(tab(shor_frames), pₛ)
             # run the syndrome circuits using the public API
             pftrajectories(naive_frames, naive_scirc)
             pftrajectories(shor_frames, shor_scirc)

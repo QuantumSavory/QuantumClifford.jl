@@ -88,4 +88,29 @@
             @test all(0.25.*[1 0 0 0 1] .<= (sum(m, dims=1)[:,1:5])./n .<= 0.75.*[1 0 0 0 1])
         end
     end
+
+    @testset "PauliMeasurements" begin
+        n = 2000
+        state = Register(one(MixedDestabilizer, 3), 5)
+        frame = PauliFrame(n, 3, 5)
+
+        glassy_ghz_circuit = [
+            sHadamard(1), sHadamard(2), sHadamard(3),
+            PauliMeasurement(P"ZZ_", 1), PauliMeasurement(P"_ZZ", 2),
+            sMZ(1, 3), sMZ(2, 4), sMZ(3, 5)
+        ]
+        for m in [pfmeasurements(pftrajectories(copy(frame), glassy_ghz_circuit)),
+            pfmeasurements(pftrajectories(glassy_ghz_circuit; trajectories=n, threads=false)),
+            pfmeasurements(pftrajectories(glassy_ghz_circuit; trajectories=n, threads=true))]
+
+            # decode based on measurement outcomes
+            for r in eachrow(m)
+                r[4] ⊻= r[1]
+                r[5] ⊻= r[1] ⊻ r[2]
+            end
+
+            # check that the correct correlations are present
+            @test all(m[:, 3] .== m[:, 4] .== m[:, 5])
+        end
+    end
 end

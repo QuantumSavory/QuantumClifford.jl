@@ -223,6 +223,12 @@ function concrete_typeparams(t::Type{NoiseOp})
     ]
 end
 
+function concrete_typeparams(::Type{PauliMeasurement})
+    return [
+        (Array{UInt8,0}, Vector{UInt64}),
+    ]
+end
+
 
 # XXX This has to happen after defining all the `concrete_typeparams` methods
 
