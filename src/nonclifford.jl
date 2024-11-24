@@ -39,9 +39,9 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒮𝓉𝒶𝒷
 - X
 with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.853553+0.0im | + _ | + _
  0.0+0.353553im | + _ | + Z
  0.0-0.353553im | + Z | + _
- 0.853553+0.0im | + _ | + _
  0.146447+0.0im | + Z | + Z
 ```
 
@@ -68,11 +68,13 @@ Base.copy(sm::GeneralizedStabilizer) = GeneralizedStabilizer(copy(sm.stab),copy(
 Base.:(==)(sm₁::GeneralizedStabilizer, sm₂::GeneralizedStabilizer) = sm₁.stab==sm₂.stab && sm₁.destabweights==sm₂.destabweights
 
 function Base.show(io::IO, s::GeneralizedStabilizer)
+    sorted_keys = sort(collect(keys(s.destabweights)))
     println(io, "A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is")
     show(io,s.stab)
     println(io)
     print(io, "with ϕᵢⱼ | Pᵢ | Pⱼ:")
-    for ((di,dj), χ) in s.destabweights
+    for (di, dj) in sorted_keys
+        χ = s.destabweights[(di, dj)]
         println(io)
         print(io, " ")
         print(IOContext(io, :compact => true), χ)
@@ -142,9 +144,9 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒮𝓉𝒶𝒷
 - X
 with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.853553+0.0im | + _ | + _
  0.0+0.353553im | + _ | + Z
  0.0-0.353553im | + Z | + _
- 0.853553+0.0im | + _ | + _
  0.146447+0.0im | + Z | + Z
 
 julia> χ′ = expect(P"-X", sm)
@@ -210,9 +212,9 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒮𝓉𝒶𝒷
 - X
 with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.853553+0.0im | + _ | + _
  0.0+0.353553im | + _ | + Z
  0.0-0.353553im | + Z | + _
- 0.853553+0.0im | + _ | + _
  0.146447+0.0im | + Z | + Z
 
 julia> χ′ = expect(P"-X", sm)
