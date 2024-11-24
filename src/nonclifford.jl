@@ -68,12 +68,11 @@ Base.copy(sm::GeneralizedStabilizer) = GeneralizedStabilizer(copy(sm.stab),copy(
 Base.:(==)(sm₁::GeneralizedStabilizer, sm₂::GeneralizedStabilizer) = sm₁.stab==sm₂.stab && sm₁.destabweights==sm₂.destabweights
 
 function Base.show(io::IO, s::GeneralizedStabilizer)
-    sorted_keys = sort(collect(keys(s.destabweights)))
     println(io, "A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is")
     show(io,s.stab)
     println(io)
     print(io, "with ϕᵢⱼ | Pᵢ | Pⱼ:")
-    for (di, dj) in sorted_keys
+    for (di, dj) in sort(collect(keys(s.destabweights)))
         χ = s.destabweights[(di, dj)]
         println(io)
         print(io, " ")
