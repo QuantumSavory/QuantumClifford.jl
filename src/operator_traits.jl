@@ -5,3 +5,4 @@ struct NondeterministicOperatorTrait <: OperatorDeterminismTrait end
 
 operatordeterminism(::Type{<:AbstractCliffordOperator}) = DeterministicOperatorTrait()
 operatordeterminism(::Type{<:AbstractOperation}) = NondeterministicOperatorTrait()
+operatordeterminism(::Type{sMZ}) = NondeterministicOperatorTrait()

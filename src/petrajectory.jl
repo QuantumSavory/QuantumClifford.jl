@@ -12,6 +12,40 @@ function applybranches(::DeterministicOperatorTrait, state, op; max_order=1)
     [(applywstatus!(copy(state),op)...,1,0)]
 end
 
+function applybranches(::NondeterministicOperatorTrait, state, op::sMZ; max_order=1)
+    # [(applywstatus!(copy(state),op)...,1,0)]
+    s = copy(state)
+    d, anticom, res = projectY!(s, op.qubit)
+    if isnothing(res)
+        tab(stabilizerview(s)).phases[anticom] = 0x0
+        s1 = s
+        tab(stabilizerview(s)).phases[anticom] = 0x2
+        s2 = s
+        return [(s1, continue_stat, .5, 0), (s2, continue_stat, .5, 0)]
+    else 
+        return [(s, continue_stat, 1, 0)] end
+end
+function applybranches(::NondeterministicOperatorTrait, state, op::sMX; max_order=1)
+    # [(applywstatus!(copy(state),op)...,1,0)]
+    s = copy(state)
+    d, anticom, res = projectX!(s, op.qubit)
+    isnothing(res) && (res = tab(stabilizerview(s)).phases[anticom] = rand((0x0, 0x2)))
+    if anticom == 0 return [(s, continue_stat, 1, 0)]
+    else return [(s, continue_stat, .5, 0)] end
+end
+
+function applybranches(::NondeterministicOperatorTrait, state, op::sMY; max_order=1)
+    # [(applywstatus!(copy(state),op)...,1,0)]
+    s = copy(state)
+    d, anticom, res = projectY!(s, op.qubit)
+    if isnothing(res)
+        s1 = tab(stabilizerview(s)).phases[anticom] = 0x0
+        s2 = tab(stabilizerview(s)).phases[anticom] = 0x2
+        return [(s1, continue_stat, .5, 0), (s2, continue_stat, .5, 0)]
+    else 
+        return [(s, continue_stat, 1, 0)] end
+end
+
 function applybranches(::NondeterministicOperatorTrait, state, op; max_order=1)
     throw(ArgumentError(lazy"""
         You are trying to apply a non-deterministic operator $(typeof(op)) in a perturbative expansion, but this particular operator does not have a `applybranches` method defined for it.
@@ -67,7 +101,7 @@ function petrajectory_keep(state, circuit; branch_weight=1.0, current_order=0, m
 end
 
 """Run a perturbative expansion to a given order. This is the main public function for the perturbative expansion approach.
-
+Currently only has defined behavior for Clifford operators(AbstractCliffordOperator) and single-qubit X, Y and Z measurements(sMX, sMY, sMZ)
 See also: [`pftrajectories`](@ref), [`mctrajectories`](@ref)"""
 function petrajectories(initialstate, circuit; branch_weight=1.0, max_order=1, keepstates::Bool=false)
     if keepstates
