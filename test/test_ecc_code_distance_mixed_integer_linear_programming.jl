@@ -9,7 +9,7 @@
     include("test_ecc_util.jl") # minimum_distance
 
     function get_hx_lx(c)
-        hx = stab_to_gf2(Stabilizer(parity_checks(c))[1:end?2,:])
+        hx = stab_to_gf2(Stabilizer(parity_checks(c))[1:end÷2,:])
         lx = stab_to_gf2(logicalxview(canonicalize!(MixedDestabilizer(parity_checks(c)))))
         return hx, lx
     end
