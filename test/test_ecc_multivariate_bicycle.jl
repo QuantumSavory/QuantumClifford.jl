@@ -1,5 +1,7 @@
 @testitem "ECC Multivaraite Bicycle" begin
     using Hecke
+    using JuMP
+    using GLPK
     using Hecke: group_algebra, GF, abelian_group, gens
     using QuantumClifford
     using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, parity_checks_x, parity_checks
