@@ -4,7 +4,7 @@
     using GLPK
     using Hecke: group_algebra, GF, abelian_group, gens, one
     using QuantumClifford
-    using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, parity_checks
+    using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, parity_checks, parity_checks_x
 
     include("test_ecc_util.jl") # minimum_distance
 
@@ -12,6 +12,15 @@
         hx = stab_to_gf2(Stabilizer(parity_checks(c))[1:end÷2,:])
         lx = stab_to_gf2(logicalxview(canonicalize!(MixedDestabilizer(parity_checks(c)))))
         return hx, lx
+    end
+
+    function code_distance(hx, lx, k)
+        w_values = []
+        for i in 1:k
+            w = minimum_distance(hx, lx[i, :])
+            push!(w_values, w)
+        end
+        return round(Int, sum(w_values)/k)
     end
 
     @testset "Reproduce Table 3 bravyi2024high" begin
@@ -24,7 +33,7 @@
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 6
+        @test code_distance(hx, lx, code_k(c)) == 6
 
         # [[90, 8, 10]]
         l=15; m=3
@@ -35,7 +44,7 @@
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 10
+        @test code_distance(hx, lx, code_k(c)) == 10
 
         # [[108, 8, 10]]
         l=9; m=6
@@ -46,7 +55,7 @@
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 10
+        @test code_distance(hx, lx, code_k(c)) == 10
     end
 
     @testset "Reproduce Table 1 berthusen2024toward" begin
@@ -59,7 +68,7 @@
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 6
+        @test code_distance(hx, lx, code_k(c)) == 6
 
         # [[90, 8, 6]]
         l=9; m=5
@@ -70,7 +79,7 @@
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 6
+        @test code_distance(hx, lx, code_k(c)) == 6
 
         # [[120, 8, 8]]
         l=12; m=5
@@ -81,7 +90,7 @@
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 8
+        @test code_distance(hx, lx, code_k(c)) == 8
     end
 
     @testset "Reproduce Table 1 wang2024coprime" begin
@@ -94,7 +103,7 @@
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 6
+        @test code_distance(hx, lx, code_k(c)) == 6
 
         # [[98, 6, 12]]
         l=7; m=7
@@ -105,7 +114,7 @@
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 12
+        @test code_distance(hx, lx, code_k(c)) == 12
 
         # [[126, 8, 10]]
         l=3; m=21
@@ -116,6 +125,6 @@
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 10
+        @test code_distance(hx, lx, code_k(c)) == 10
     end
 end
