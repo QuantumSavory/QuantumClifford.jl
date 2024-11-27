@@ -1,4 +1,5 @@
 @testitem "ECC throws" begin
+
     using QuantumClifford.ECC: ReedMuller, BCH, RecursiveReedMuller, Golay
 
     @test_throws ArgumentError ReedMuller(-1, 3)

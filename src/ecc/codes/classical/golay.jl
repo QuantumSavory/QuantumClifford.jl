@@ -1,17 +1,22 @@
 """
-The family of classical binary Golay codes were discovered by Edouard Golay in his 1949 paper [golay1949notes](@cite), where he described the binary `[23, 12, 7]` Golay code.
+The family of classical binary Golay codes were discovered by Edouard Golay
+in his 1949 paper [golay1949notes](@cite), where he described the binary
+`[23, 12, 7]` Golay code.
 
 There are two binary Golay codes:
 
-1. Binary `[23, 12, 7]` Golay code: The perfect code with code length `n` 23 and dimension `k` 12. Minimum distance is 7, implying it can detect or correct up to 3 errors. By puncturing in any of the coordinates of parity check Matrix `H` = `[24, 12, 8]`, we obtain a `[23, 12, 7]` Golay code.
+- Binary `[23, 12, 7]` Golay code: The perfect code with code length `n = 23`
+and dimension `k = 12`. By puncturing in any of the coordinates of parity check
+matrix `H` = `[24, 12, 8]`, we obtain a `[23, 12, 7]` Golay code.
 
-2. Extended Binary `[24, 12, 8]` Golay code: Obtained by adding a parity check bit to `[23, 12, 7]`. The bordered reverse circulant matrix `(A)` of `[24, 12, 8]` Golay code is self-dual, i.e., A₂₄ is same as A₂₄'. 
+- Extended Binary `[24, 12, 8]` Golay code: Obtained by adding a parity check bit
+to `[23, 12, 7]`. The bordered reverse circulant matrix `(A)` of `[24, 12, 8]`
+Golay code is self-dual, i.e., `A₂₄` is same as A₂₄'.
 
-Parity Check Matrix `(H)`: `H` is defined as follows: `H₂₄ = [I₁₂ | A']` where `I₁₂` is the 12 x 12 identity matrix and `A` is a bordered reverse circulant matrix.
-
-Construction method for `A` [huffman2010fundamentals](@cite): The columns of `A` are labeled by ∞, 0, 1, 2, ..., 10. The first row contains 0 in column ∞ and 1 elsewhere. To obtain the second row, a 1 is placed in column ∞ and a 1 is placed in columns 0, 1, 3, 4, 5, and 9; these numbers are precisely the squares of the integers modulo 11. That is, 0² = 0, 1² ≡ 10² ≡ 1 (mod 11), 2² ≡ 2² ≡ 4 (mod 11), etc. The third row of `A` is obtained by putting a 1 in column ∞ and then shifting the components in the second row one place to the left and wrapping the entry in column 0 around to column 10. The fourth row is obtained from the third in the same manner, as are the remaining rows.
-
-Puncturing and then extending any column in​ with an overall parity check `H₂₃` reconstructs the original parity check matrix `H₂₄`. Thus, all punctured codes are equivalent.
+The parity check matrix is defined as follows: `H₂₄ = [I₁₂ | A']` where `I₁₂` is the
+12 x 12 identity matrix and `A` is a bordered reverse circulant matrix. Puncturing
+and then extending any column in​ with an overall parity check `H₂₃` reconstructs
+the original parity check matrix `H₂₄`. Thus, all punctured codes are equivalent.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/golay).
 """
@@ -52,33 +57,35 @@ end
 function generator(g::Golay)
     if g.n == 24 
         A₂₄ = _create_A₂₄_golay(24)
-        I₁₂ = Diagonal(ones(Int, g.n ÷ 2))
+        I₁₂ = LinearAlgebra.Diagonal(ones(Int, g.n ÷ 2))
         G₂₄ = hcat(I₁₂, (A₂₄)')
         return G₂₄
     else 
         A₂₄ = _create_A₂₄_golay(24)
         A₂₃ = A₂₄[:, 1:end - 1]
-        I₁₂ = Diagonal(ones(Int, g.n ÷ 2))
+        I₁₂ = LinearAlgebra.Diagonal(ones(Int, g.n ÷ 2))
         G₂₃ = hcat(I₁₂, (A₂₃)')
         return G₂₃
     end
 end
 
 function parity_checks(g::Golay)
-    if g.n == 24 
+    if g.n == 24
         A₂₄ = _create_A₂₄_golay(24)
-        I₁₂ = Diagonal(ones(Int, g.n ÷ 2))
+        I₁₂ = LinearAlgebra.Diagonal(ones(Int, g.n ÷ 2))
         H₂₄ = hcat((A₂₄)', I₁₂)
         return H₂₄
     else 
         A₂₄ = _create_A₂₄_golay(24)
         A₂₃ = A₂₄[:, 1:end - 1]
-        I₁₂ = Diagonal(ones(Int, g.n ÷ 2))
+        I₁₂ = LinearAlgebra.Diagonal(ones(Int, g.n ÷ 2))
         H₂₃ = hcat((A₂₃)', I₁₂)
         return H₂₃
     end
 end
 
 code_n(g::Golay) = g.n
+
 code_k(g::Golay) = 12
+
 distance(g::Golay) = code_n(g::Golay) - code_k(g::Golay) - 4
