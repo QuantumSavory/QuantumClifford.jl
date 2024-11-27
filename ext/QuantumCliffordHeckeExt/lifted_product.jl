@@ -77,7 +77,8 @@ The default representation, provided by `Hecke`, is the permutation representati
 
 We also accept a custom representation function as detailed in [`LiftedCode`](@ref).
 
-See also: [`LiftedCode`](@ref), [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref).
+See also: [`LiftedCode`](@ref), [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref),
+[`haah_cubic_codes`](@ref).
 
 $TYPEDFIELDS
 """
@@ -150,16 +151,118 @@ code_n(c::LPCode) = size(c.repr(zero(c.GA)), 2) * (size(c.A, 2) * size(c.B, 1) +
 code_s(c::LPCode) = size(c.repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) + size(c.A, 2) * size(c.B, 2))
 
 """
-Two-block group algebra (2GBA) codes, which are a special case of lifted product codes
+Two-block group algebra (2BGA) codes, which are a special case of lifted product codes
 from two group algebra elements `a` and `b`, used as `1x1` base matrices.
 
-# Example
+## Examples of 2BGA code subfamilies
 
-An abelian `[[60, 6, 10]]` 2BGA code  of order `l = 30` with group ID `4`, represented
-by the group presentation `⟨r | r³⁰⟩`, constructed via `Hecke.small_group`.
+### `C₄ x C₂`
+
+Here is an example of a [[56, 28, 2]] 2BGA code from Table 2 of [lin2024quantum](@cite)
+with direct product of `C₄ x C₂`.
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens, small_group, one; # hide
+julia> import Hecke: group_algebra, GF, abelian_group, gens
+
+julia> GA = group_algebra(GF(2), abelian_group([14,2]));
+
+julia> x, s = gens(GA);
+
+julia> A = 1 + x^7
+
+julia> B = 1 + x^7 + s + x^8 + s*x^7 + x
+
+julia> c = two_block_group_algebra_codes(A,B);
+
+julia> code_n(c), code_k(c)
+(56, 28)
+```
+
+### Bivariate Bicycle codes
+
+Bivariate Bicycle codes are a class of Abelian 2BGA codes formed by the direct product
+of two cyclic groups `ℤₗ × ℤₘ`. The parameters `l` and `m` represent the orders of the
+first and second cyclic groups, respectively.
+
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/qcga).
+
+A [[756, 16, ≤ 34]] code from Table 3 of [bravyi2024high](@cite):
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens
+
+julia> l=21; m=18;
+
+julia> GA = group_algebra(GF(2), abelian_group([l, m]));
+
+julia> x, y = gens(GA);
+
+julia> A = x^3 + y^10 + y^17;
+
+julia> B = y^5 + x^3  + x^19;
+
+julia> c = two_block_group_algebra_codes(A,B);
+
+julia> code_n(c), code_k(c)
+(756, 16)
+```
+
+### Multivariate Bicycle code
+
+The group algebra of the qubit multivariate bicycle (MB) code with r variables is `𝔽₂[𝐺ᵣ]`,
+where `𝐺ᵣ = ℤ/l₁ × ℤ/l₂ × ... × ℤ/lᵣ`.
+
+A [[48, 4, 6]] Weight-6 TB-QLDPC code from Appendix A Table 2 of [voss2024multivariatebicyclecodes](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens
+
+julia> l=4; m=6;
+
+julia> z = x*y;
+
+julia> A = x^3 + y^5;
+
+julia> B = x + z^5 + y^5 + y^2;
+
+julia> c = two_block_group_algebra_codes(A, B);
+
+julia> code_n(c), code_k(c)
+(48, 4)
+```
+
+### Coprime Bivariate Bicycle code
+
+The coprime bivariate bicycle (BB) codes are defined by two polynomials `𝑎(𝑥,𝑦)` and `𝑏(𝑥,𝑦)`,
+where `𝑙` and `𝑚` are coprime, and can be expressed as univariate polynomials `𝑎(𝜋)` and `𝑏(𝜋)`,
+with generator `𝜋 = 𝑥𝑦`. They can be viewed as a special case of Lifted Product construction
+based on abelian group `ℤₗ x ℤₘ` where `ℤⱼ` cyclic group of order `j`.
+
+[108, 12, 6]] coprime-bivariate bicycle (BB) code from Table 2 of [wang2024coprime](@cite).
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens
+
+julia> l=2; m=27;
+
+julia> GA = group_algebra(GF(2), abelian_group([l*m]));
+
+julia> 𝜋 = gens(GA)[1];
+
+julia> A = 𝜋^2 + 𝜋^5  + 𝜋^44;
+
+julia> B = 𝜋^8 + 𝜋^14 + 𝜋^47;
+(108, 12)
+```
+
+### Small Groups
+
+An abelian `[[60, 6, 10]]` 2BGA code  of order `l = 30` with group ID `4`, represented
+by the group presentation `⟨r | r³⁰⟩`, constructed via `Hecke.small_group(4,30)`. Note:
+Hecke's small groups are limited in scope and should only be used for single cyclic groups.
+
+```jldoctest sg
+julia> import Hecke: group_algebra, GF, abelian_group, gens, small_group
 
 julia> l = 30;
 
@@ -170,34 +273,39 @@ julia> G = small_group(l, group_id);
 julia> GA = group_algebra(GF(2), G);
 
 julia> r = prod(gens(GA));
+```
 
-julia> r^30  ==  1 # presentation ⟨r|r³⁰⟩ satisfied 
+!!! note When using `Hecke.small_group`, it is essential to verify that the
+presentation for the single cyclic group is satisfied before proceeding with
+the code construction. This method serves as a workaround for creating small
+groups, specifically for single cyclic groups, using a group presentation with
+no *extra relations*, such as `⟨r | r³⁰⟩`.For the construction of *general* groups
+with specific group presentations, the only effective method is to use *finitely
+presented groups* (`Oscar.FPGroup`), which allow for defining direct products of
+two or more *general* groups—something not supported directly by Hecke.
+
+```jldoctest sg
+julia> r^30  ==  1
 true
 
-julia> a_elts = [one(G), r^10, r^6, r^13];
+julia> A = 1 + r^10 + r^6  + r^13;
 
-julia> b_elts = [one(G), r^25, r^16, r^12];
+julia> B = 1 + r^25 + r^16 + r^12;
 
-julia> a = sum(GA(x) for x in a_elts);
+julia> c = two_block_group_algebra_codes(A,B);
 
-julia> b = sum(GA(x) for x in b_elts);
-
-julia> c = two_block_group_algebra_codes(a,b);
-
-julia> code_n(c), code_k(c) 
+julia> code_n(c), code_k(c)
 (60, 6)
 ```
 
-See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref)
+See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
 """
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
-    A = reshape([a], (1, 1))
-    B = reshape([b], (1, 1))
-    LPCode(A, B)
+    LPCode([a;;], [b;;])
 end
 
 """
-Generalized bicycle codes, which are a special case of 2GBA codes (and therefore of lifted product codes).
+Generalized bicycle codes, which are a special case of *abelian* 2GBA codes (and therefore of lifted product codes).
 Here the group is chosen as the cyclic group of order `l`,
 and the base matrices `a` and `b` are the sum of the group algebra elements corresponding to the shifts `a_shifts` and `b_shifts`.
 
@@ -210,6 +318,18 @@ julia> c = generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121],
 
 julia> code_n(c), code_k(c)
 (254, 28)
+```
+
+An [[70, 8, 10]] *abelian* 2BGA code from Table 1 of [lin2024quantum](@cite), with cyclic group of
+order `l = 35`, illustrates that *abelian* 2BGA codes can be viewed as GB codes.
+
+```jldoctest
+julia> l = 35;
+
+julia> c1 = generalized_bicycle_codes([0, 15, 16, 18], [0, 1, 24, 27], l);
+
+julia> code_n(c1), code_k(c1)
+(70, 8)
 ```
 """
 function generalized_bicycle_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
@@ -224,10 +344,33 @@ Bicycle codes are a special case of generalized bicycle codes,
 where `a` and `b` are conjugate to each other.
 The order of the cyclic group is `l`, and the shifts `a_shifts` and `b_shifts` are reverse to each other.
 
-See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref).
+See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
 """ # TODO doctest example
 function bicycle_codes(a_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
     a = sum(GA[n÷l+1] for n in a_shifts)
     two_block_group_algebra_codes(a, group_algebra_conj(a))
+end
+
+"""
+Haah’s cubic codes [haah2011local](@cite) can be viewed as generalized bicycle (GB) codes
+with the group `G = Cₗ × Cₗ × Cₗ`, where `l` denotes the lattice size. In particular, a GB
+code with the group `G = ℤ₃ˣ³` corresponds to a cubic code.
+
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/haah_cubic).
+
+```jldoctest
+julia> c = haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 6);
+
+julia> code_n(c), code_k(c)
+(432, 8)
+```
+
+See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref).
+"""
+function haah_cubic_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
+    GA = group_algebra(GF(2), abelian_group([l,l,l]))
+    a = sum(GA[n%dim(GA)+1] for n in a_shifts)
+    b = sum(GA[n%dim(GA)+1] for n in b_shifts)
+    two_block_group_algebra_codes(a, b)
 end
