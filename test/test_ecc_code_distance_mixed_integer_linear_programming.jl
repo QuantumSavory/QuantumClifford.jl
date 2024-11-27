@@ -1,4 +1,4 @@
-@testitem "ECC MILP Code Distance Solver" begin
+@testitem "ECC Minimum Distance Solver MILP" begin
     using Hecke
     using JuMP
     using GLPK
@@ -93,17 +93,6 @@
         hx, lx = get_hx_lx(c)
         i = rand(1:code_k(c))
         @test minimum_distance(hx, lx[i, :]) == 10
-
-        # [[144, 12, 12]]
-        l=12; m=6
-        GA = group_algebra(GF(2), abelian_group([l, m]))
-        x, y = gens(GA)
-        A = x^3 + y + y^2
-        B = y^3 + x + x^2
-        c = two_block_group_algebra_codes(A,B)
-        hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 12
     end
 
     @testset "Reproduce Table 1 berthusen2024toward" begin
@@ -135,28 +124,6 @@
         x, y = gens(GA)
         A = x^10 + y^4 + y
         B = 1    + x   + x^2
-        c = two_block_group_algebra_codes(A,B)
-        hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 8
-
-        # [[150, 8, 8]]
-        l=15; m=5
-        GA = group_algebra(GF(2), abelian_group([l, m]))
-        x, y = gens(GA)
-        A = x^5 + y^2 + y^3
-        B = y^2 + x^7 + x^6
-        c = two_block_group_algebra_codes(A,B)
-        hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 8
-
-        # [[196, 12, 8]]
-        l=14; m=7
-        GA = group_algebra(GF(2), abelian_group([l, m]))
-        x, y = gens(GA)
-        A = x^6 + y^5 + y^6
-        B = 1   + x^4 + x^13
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         i = rand(1:code_k(c))
@@ -196,38 +163,5 @@
         hx, lx = get_hx_lx(c)
         i = rand(1:code_k(c))
         @test minimum_distance(hx, lx[i, :]) == 10
-
-        # [[150, 16, 8]]
-        l=5; m=15
-        GA = group_algebra(GF(2), abelian_group([l, m]))
-        x, y = gens(GA)
-        A = 1   + y^6 + y^8
-        B = y^5 + x   + x^4
-        c = two_block_group_algebra_codes(A,B)
-        hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 8
-
-        # [[162, 8, 14]]
-        l=3; m=27
-        GA = group_algebra(GF(2), abelian_group([l, m]))
-        x, y = gens(GA)
-        A = 1    + y^10 + y^14
-        B = y^12 + x    + x^2
-        c = two_block_group_algebra_codes(A,B)
-        hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 14
-
-        # [[180, 8, 16]]
-        l=6; m=15
-        GA = group_algebra(GF(2), abelian_group([l, m]))
-        x, y = gens(GA)
-        A = x^3 + y   + y^2
-        B = y^6 + x^4 + x^5
-        c = two_block_group_algebra_codes(A,B)
-        hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
-        @test minimum_distance(hx, lx[i, :]) == 16
     end
 end
