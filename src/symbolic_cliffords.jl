@@ -85,12 +85,20 @@ macro qubitop1(name, kernel)
     end
 end
 
-@qubitop1 Hadamard (z , x   , x!=0 && z!=0)
-@qubitop1 Phase    (x , x⊻z , x!=0 && z!=0)
-@qubitop1 InvPhase (x , x⊻z , x!=0 && z==0)
-@qubitop1 X        (x , z   , z!=0)
-@qubitop1 Y        (x , z   , (x⊻z)!=0)
-@qubitop1 Z        (x , z   , x!=0)
+@qubitop1 Hadamard     (z   ,x   , x!=0 && z!=0)
+@qubitop1 HadamardXY   (x   ,x⊻z , x==0 && z!=0)
+@qubitop1 HadamardYZ   (x⊻z ,z   , x!=0 && z==0)
+@qubitop1 Phase        (x   ,x⊻z , x!=0 && z!=0)
+@qubitop1 InvPhase     (x   ,x⊻z , x!=0 && z==0)
+@qubitop1 X            (x   ,z   , z!=0)
+@qubitop1 Y            (x   ,z   , (x⊻z)!=0)
+@qubitop1 Z            (x   ,z   , x!=0)
+@qubitop1 SQRTX        (x⊻z ,z   , x==0 && z!=0)
+@qubitop1 InvSQRTX     (x⊻z ,z   , x!=0 && z!=0)
+@qubitop1 SQRTY        (z   ,x   , z==0)
+@qubitop1 InvSQRTY     (z   ,x   , z!=0 && x==0)
+@qubitop1 CXYZ         (x⊻z ,x   , z==0 && x==0)
+@qubitop1 CZYX         (z   ,x⊻z , z==0 && x==0)
 
 """A "symbolic" single-qubit Identity operation.
 
@@ -177,17 +185,25 @@ function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{
     stab
 end
 
-SingleQubitOperator(h::sHadamard) = SingleQubitOperator(h.q, false, true , true , false, false, false)
-SingleQubitOperator(p::sPhase)    = SingleQubitOperator(p.q, true , true , false, true , false, false)
-SingleQubitOperator(p::sInvPhase) = SingleQubitOperator(p.q, true , true , false, true , true , false)
-SingleQubitOperator(p::sId1)      = SingleQubitOperator(p.q, true , false, false, true , false, false)
-SingleQubitOperator(p::sX)        = SingleQubitOperator(p.q, true , false, false, true , false, true)
-SingleQubitOperator(p::sY)        = SingleQubitOperator(p.q, true , false, false, true , true , true)
-SingleQubitOperator(p::sZ)        = SingleQubitOperator(p.q, true , false, false, true , true , false)
+SingleQubitOperator(h::sHadamard)           = SingleQubitOperator(h.q, false, true , true , false, false, false)
+SingleQubitOperator(p::sPhase)              = SingleQubitOperator(p.q, true , true , false, true , false, false)
+SingleQubitOperator(p::sInvPhase)           = SingleQubitOperator(p.q, true , true , false, true , true , false)
+SingleQubitOperator(p::sId1)                = SingleQubitOperator(p.q, true , false, false, true , false, false)
+SingleQubitOperator(p::sX)                  = SingleQubitOperator(p.q, true , false, false, true , false, true)
+SingleQubitOperator(p::sY)                  = SingleQubitOperator(p.q, true , false, false, true , true , true)
+SingleQubitOperator(p::sZ)                  = SingleQubitOperator(p.q, true , false, false, true , true , false)
+SingleQubitOperator(p::sCXYZ)               = SingleQubitOperator(p.q, true , true , true , false, false, false)
+SingleQubitOperator(p::sCZYX)               = SingleQubitOperator(p.q, false, true , true , true , false, false)
+SingleQubitOperator(p::sHadamardXY)         = SingleQubitOperator(p.q, true , true , false, true , false, true)
+SingleQubitOperator(p::sHadamardYZ)         = SingleQubitOperator(p.q, true , false, true , true , true , false)
+SingleQubitOperator(p::sSQRTX)              = SingleQubitOperator(p.q, true , false, true , true , false, true)
+SingleQubitOperator(p::sInvSQRTX)           = SingleQubitOperator(p.q, true , false, true , true , false, false)
+SingleQubitOperator(p::sSQRTY)              = SingleQubitOperator(p.q, false, true , true , false, true , false)
+SingleQubitOperator(p::sInvSQRTY)           = SingleQubitOperator(p.q, false, true , true , false, false, true)
 SingleQubitOperator(o::SingleQubitOperator) = o
 function SingleQubitOperator(op::CliffordOperator, qubit)
     nqubits(op)==1 || throw(DimensionMismatch("You are trying to convert a multiqubit `CliffordOperator` into a symbolic `SingleQubitOperator`."))
-    SingleQubitOperator(qubit,op.tab[1,1]...,op.tab[2,1]...,(~).(iszero.(op.tab.phases))...)
+    SingleQubitOperator(qubit,tab(op)[1,1]...,tab(op)[2,1]...,(~).(iszero.(tab(op).phases))...)
 end
 SingleQubitOperator(op::CliffordOperator) = SingleQubitOperator(op, 1)
 
@@ -232,14 +248,21 @@ function LinearAlgebra.inv(op::SingleQubitOperator)
     return SingleQubitOperator(c, op.q)
 end
 
-LinearAlgebra.inv(h::sHadamard) = sHadamard(h.q)
-LinearAlgebra.inv(p::sPhase) = sInvPhase(p.q)
-LinearAlgebra.inv(p::sInvPhase) = sPhase(p.q)
-LinearAlgebra.inv(p::sId1) = sId1(p.q)
-LinearAlgebra.inv(p::sX) = sX(p.q)
-LinearAlgebra.inv(p::sY) = sY(p.q)
-LinearAlgebra.inv(p::sZ) = sZ(p.q)
-
+LinearAlgebra.inv(h::sHadamard)   = sHadamard(h.q)
+LinearAlgebra.inv(p::sPhase)      = sInvPhase(p.q)
+LinearAlgebra.inv(p::sInvPhase)   = sPhase(p.q)
+LinearAlgebra.inv(p::sId1)        = sId1(p.q)
+LinearAlgebra.inv(p::sX)          = sX(p.q)
+LinearAlgebra.inv(p::sY)          = sY(p.q)
+LinearAlgebra.inv(p::sZ)          = sZ(p.q)
+LinearAlgebra.inv(p::sHadamardXY) = sHadamardXY(p.q)
+LinearAlgebra.inv(p::sHadamardYZ) = sHadamardYZ(p.q)
+LinearAlgebra.inv(p::sSQRTX)      = sInvSQRTX(p.q)
+LinearAlgebra.inv(p::sInvSQRTX)   = sSQRTX(p.q)
+LinearAlgebra.inv(p::sSQRTY)      = sInvSQRTY(p.q)
+LinearAlgebra.inv(p::sInvSQRTY)   = sSQRTY(p.q)
+LinearAlgebra.inv(p::sCZYX)       = sCXYZ(p.q)
+LinearAlgebra.inv(p::sCXYZ)       = sCZYX(p.q)
 ##############################
 # Two-qubit gates
 ##############################
@@ -285,6 +308,16 @@ macro qubitop2(name, kernel)
 end
 #                 x1   z1      x2      z2
 @qubitop2 SWAP   (x2 , z2    , x1    , z1    , false)
+
+@qubitop2 SWAPCX    (x2    , z2⊻z1 , x2⊻x1 , z1    , ~iszero((x1 & z1 & x2 & z2) | (~x1 & z1 & x2 & ~z2)))
+@qubitop2 InvSWAPCX (x2⊻x1 , z2    , x1    , z2⊻z1 , ~iszero((x1 & z1 & x2 & z2) | ( x1 &~z1 &~x2 &  z2)))
+
+@qubitop2 ISWAP    (x2       , x1⊻z2⊻x2 , x1       , x1⊻x2⊻z1 , ~iszero((x1 & z1 & ~x2) | (~x1 & x2 & z2)))
+@qubitop2 InvISWAP (x2       , x1⊻z2⊻x2 , x1       , x1⊻x2⊻z1 , ~iszero((x1 &~z1 & ~x2) | (~x1 & x2 &~z2)))
+
+@qubitop2 CZSWAP (x2    , z2⊻x1 , x1    , x2⊻z1 , ~iszero((x1 & ~z1 & x2 & z2) | (x1 & z1 & x2 & ~z2)))
+@qubitop2 CXSWAP (x2⊻x1 , z2    , x1    , z2⊻z1 , ~iszero((x1 & ~z1 &~x2 & z2) | (x1 & z1 & x2 &  z2)))
+
 @qubitop2 CNOT   (x1 , z1⊻z2 , x2⊻x1 , z2    , ~iszero( (x1 & z1 & x2 & z2)  | (x1 & z2 &~(z1|x2)) ))
 @qubitop2 CPHASE (x1 , z1⊻x2 , x2    , z2⊻x1 , ~iszero( (x1 & z1 & x2 &~z2)  | (x1 &~z1 & x2 & z2) ))
 
@@ -300,8 +333,17 @@ end
 @qubitop2 YCY    (x1⊻z2⊻x2, z1⊻x2⊻z2 , x1⊻x2⊻z1 , x1⊻z1⊻z2, ~iszero( (x1 & ~z1 & ~x2 & z2) | (~x1 & z1 & x2 & ~z2)))
 @qubitop2 YCZ    (x1⊻x2   , x2⊻z1    , x2       , z2⊻x1⊻z1, ~iszero( (x2 & (x1 ⊻ z1) & (z2 ⊻ x1)) ))
 
-@qubitop2 ZCrY  (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & ~z1 & x2) | (x1 & ~z1 & ~z2) | (x1 & x2 & ~z2)))
-@qubitop2 InvZCrY (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & z1 & ~x2 & ~z2) | (x1 & ~z1 & ~x2 & z2) | (x1 & z1 & ~x2 & z2) | (x1 & z1 & x2 & z2)))
+@qubitop2 ZCrY    (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 &~z1 & x2) | (x1 & ~z1 & ~z2) | (x1 & x2 & ~z2)))
+@qubitop2 InvZCrY (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & z1 &~x2) | (x1 &  z1 &  z2) | (x1 &~x2 &  z2)))
+
+@qubitop2 SQRTZZ    (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 & z1 & ~x2) | (~x1 & x2 & z2)))
+@qubitop2 InvSQRTZZ (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 &~z1 & ~x2) | (~x1 & x2 &~z2)))
+
+@qubitop2 SQRTXX    (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero((~x1 & z1 &~z2) | (~z1 &~x2 & z2)))
+@qubitop2 InvSQRTXX (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero(( x1 & z1 &~z2) | (~z1 & x2 & z2)))
+
+@qubitop2 SQRTYY    (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero((~x1 &~z1 & x2 &~z2) | ( x1 &~z1 &~x2 &~z2) | ( x1 &~z1 & x2 & z2) | ( x1 & z1 & x2 &~z2)))
+@qubitop2 InvSQRTYY (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero(( x1 & z1 &~x2 & z2) | (~x1 & z1 & x2 & z2) | (~x1 & z1 &~x2 &~z2) | (~x1 &~z1 &~x2 & z2)))
 
 #=
 To get the boolean formulas for the phase, it is easiest to first write down the truth table for the phase:
@@ -347,20 +389,32 @@ function Base.show(io::IO, op::AbstractTwoQubitOperator)
     end
 end
 
-LinearAlgebra.inv(op::sSWAP) = sSWAP(op.q1, op.q2)
-LinearAlgebra.inv(op::sCNOT) = sCNOT(op.q1, op.q2)
-LinearAlgebra.inv(op::sCPHASE) = sCPHASE(op.q1, op.q2)
-LinearAlgebra.inv(op::sZCX) = sZCX(op.q1, op.q2)
-LinearAlgebra.inv(op::sZCY) = sZCY(op.q1, op.q2)
-LinearAlgebra.inv(op::sZCZ) = sZCZ(op.q1, op.q2)
-LinearAlgebra.inv(op::sXCX) = sXCX(op.q1, op.q2)
-LinearAlgebra.inv(op::sXCY) = sXCY(op.q1, op.q2)
-LinearAlgebra.inv(op::sXCZ) = sXCZ(op.q1, op.q2)
-LinearAlgebra.inv(op::sYCX) = sYCX(op.q1, op.q2)
-LinearAlgebra.inv(op::sYCY) = sYCY(op.q1, op.q2)
-LinearAlgebra.inv(op::sYCZ) = sYCZ(op.q1, op.q2)
-LinearAlgebra.inv(op::sZCrY) = sInvZCrY(op.q1, op.q2)
-LinearAlgebra.inv(op::sInvZCrY) = sZCrY(op.q1, op.q2)
+LinearAlgebra.inv(op::sSWAP)      = sSWAP(op.q1, op.q2)
+LinearAlgebra.inv(op::sCNOT)      = sCNOT(op.q1, op.q2)
+LinearAlgebra.inv(op::sCPHASE)    = sCPHASE(op.q1, op.q2)
+LinearAlgebra.inv(op::sZCX)       = sZCX(op.q1, op.q2)
+LinearAlgebra.inv(op::sZCY)       = sZCY(op.q1, op.q2)
+LinearAlgebra.inv(op::sZCZ)       = sZCZ(op.q1, op.q2)
+LinearAlgebra.inv(op::sXCX)       = sXCX(op.q1, op.q2)
+LinearAlgebra.inv(op::sXCY)       = sXCY(op.q1, op.q2)
+LinearAlgebra.inv(op::sXCZ)       = sXCZ(op.q1, op.q2)
+LinearAlgebra.inv(op::sYCX)       = sYCX(op.q1, op.q2)
+LinearAlgebra.inv(op::sYCY)       = sYCY(op.q1, op.q2)
+LinearAlgebra.inv(op::sYCZ)       = sYCZ(op.q1, op.q2)
+LinearAlgebra.inv(op::sZCrY)      = sInvZCrY(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvZCrY)   = sZCrY(op.q1, op.q2)
+LinearAlgebra.inv(op::sSWAPCX)    = sInvSWAPCX(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvSWAPCX) = sSWAPCX(op.q1, op.q2)
+LinearAlgebra.inv(op::sCZSWAP)    = sCZSWAP(op.q1, op.q2)
+LinearAlgebra.inv(op::sCXSWAP)    = sSWAPCX(op.q1, op.q2)
+LinearAlgebra.inv(op::sISWAP)     = sInvISWAP(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvISWAP)  = sISWAP(op.q1, op.q2)
+LinearAlgebra.inv(op::sSQRTZZ)    = sInvSQRTZZ(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvSQRTZZ) = sSQRTZZ(op.q1, op.q2)
+LinearAlgebra.inv(op::sSQRTXX)    = sInvSQRTXX(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvSQRTXX) = sSQRTXX(op.q1, op.q2)
+LinearAlgebra.inv(op::sSQRTYY)    = sInvSQRTYY(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvSQRTYY) = sSQRTYY(op.q1, op.q2)
 
 ##############################
 # Functions that perform direct application of common operators without needing an operator instance
@@ -371,12 +425,9 @@ LinearAlgebra.inv(op::sInvZCrY) = sZCrY(op.q1, op.q2)
 """Apply a Pauli Z to the `i`-th qubit of state `s`. You should use `apply!(stab,sZ(i))` instead of this."""
 function apply_single_z!(stab::AbstractStabilizer, i)
     s = tab(stab)
-    Tₘₑ = eltype(s.xzs)
-    bigi = _div(Tₘₑ,i-1)+1
-    smalli = _mod(Tₘₑ,i-1)
-    mask = Tₘₑ(0x1)<<smalli
+    _, ibig, _, ismallm = get_bitmask_idxs(s.xzs,i)
     @inbounds @simd for row in 1:size(s.xzs,2)
-        if !iszero(s.xzs[bigi,row] & mask)
+        if !iszero(s.xzs[ibig,row] & ismallm)
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end
@@ -386,12 +437,9 @@ end
 """Apply a Pauli X to the `i`-th qubit of state `s`. You should use `apply!(stab,sX(i))` instead of this."""
 function apply_single_x!(stab::AbstractStabilizer, i)
     s = tab(stab)
-    Tₘₑ = eltype(s.xzs)
-    bigi = _div(Tₘₑ,i-1)+1
-    smalli = _mod(Tₘₑ,i-1)
-    mask = Tₘₑ(0x1)<<smalli
+    _, ibig, _, ismallm = get_bitmask_idxs(s.xzs,i)
     @inbounds @simd for row in 1:size(s.xzs,2)
-        if !iszero(s.xzs[end÷2+bigi,row] & mask)
+        if !iszero(s.xzs[end÷2+ibig,row] & ismallm)
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end
@@ -401,12 +449,9 @@ end
 """Apply a Pauli Y to the `i`-th qubit of state `s`. You should use `apply!(stab,sY(i))` instead of this."""
 function apply_single_y!(stab::AbstractStabilizer, i)
     s = tab(stab)
-    Tₘₑ = eltype(s.xzs)
-    bigi = _div(Tₘₑ,i-1)+1
-    smalli = _mod(Tₘₑ,i-1)
-    mask = Tₘₑ(0x1)<<smalli
+    _, ibig, _, ismallm = get_bitmask_idxs(s.xzs,i)
     @inbounds @simd for row in 1:size(s.xzs,2)
-        if !iszero((s.xzs[bigi,row] & mask) ⊻ (s.xzs[end÷2+bigi,row] & mask))
+        if !iszero((s.xzs[ibig,row] & ismallm) ⊻ (s.xzs[end÷2+ibig,row] & ismallm))
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end

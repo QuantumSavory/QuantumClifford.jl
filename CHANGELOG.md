@@ -5,6 +5,41 @@
 
 # News
 
+## v0.9.14 - 2024-11-03
+
+- **(fix)** `affectedqubits()` on `sMX`, `sMY`, and `sMR*`
+- **(fix)** restrictive type-assert in `MixedDestabilizer` failing on views of tableaux
+- Implementing additional named two-qubit gates: `sSQRTXX, sInvSQRTXX, sSQRTYY, sInvSQRTYY`
+
+## v0.9.13 - 2024-10-30
+
+- New error-correction group theory tools:
+    - `canonicalize_noncomm` function to find a generating set with minimal anticommutivity
+    - `SubsystemCodeTableau` data structure to represent the output of `canonicalize_noncomm`
+    - `commutify` function to find a commutative version of a non-commutative set of Paulis with minimal changes
+    - `matroid_parent` to, for set of Paulis that doesn't represent a state, find a version
+    that does.
+- Implementing additional named two-qubit gates: `sSWAPCX, sInvSWAPCX, sCZSWAP, sCXSWAP, sISWAP, sInvISWAP, sSQRTZZ, sInvSQRTZZ`
+
+## v0.9.12 - 2024-10-18
+
+- Minor compat fixes for julia 1.11 in the handling of `hgp`
+
+## v0.9.11 - 2024-09-27
+
+- `hcat` of Tableaux objects
+- `QuantumReedMuller` codes added to the ECC module
+- **(breaking)** change the convention for how to provide a representation function in the constructor of `LPCode` -- strictly speaking a breaking change, but this is not an API that is publicly used in practice
+
+## v0.9.10 - 2024-09-26
+
+- The lifted product class of quantum LDPC codes is implemented in the ECC submodule.
+- **(fix)** `ECC.code_s` now gives the number of parity checks with redundancy. If you want the number of linearly independent parity checks, you can use `LinearAlgebra.rank`.
+- Implementing many more named single-qubit gates following naming convention similar to the stim package in python.
+- **(fix)** Bug fix to the `parity_checks(ReedMuller(r, m))` of classical Reed-Muller code (it was returning generator matrix).
+- `RecursiveReedMuller` code implementation as an alternative implementation of `ReedMuller`.
+
+
 ## v0.9.9 - 2024-08-05
 
 - `inv` is implemented for all Clifford operator types (symbolic, dense, sparse).
