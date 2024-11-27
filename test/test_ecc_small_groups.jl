@@ -11,11 +11,9 @@
         GA = group_algebra(GF(2), G)
         r = prod(gens(GA))
         @test r^36  ==  1 # presentation ⟨r|r³⁶⟩ satisfied
-        a_elts = [one(G), r^28]
-        b_elts = [one(G), r, r^18, r^12, r^29, r^14]
-        a = sum(GA(x) for x in a_elts)
-        b = sum(GA(x) for x in b_elts)
-        c = two_block_group_algebra_codes(a,b)
+        A = 1 + r^28
+        B = 1 + r + r^18 + r^12 + r^29 + r^14
+        c = two_block_group_algebra_codes(A,B)
         @test code_n(c) == 72 && code_k(c) == 8
 
         # [[54, 6, 9]]
@@ -25,11 +23,9 @@
         GA = group_algebra(GF(2), G)
         r = prod(gens(GA))
         @test r^27  ==  1 # presentation ⟨r|r²⁷⟩ satisfied
-        a_elts = [one(G), r, r^3, r^7]
-        b_elts = [one(G), r, r^12, r^19]
-        a = sum(GA(x) for x in a_elts)
-        b = sum(GA(x) for x in b_elts)
-        c = two_block_group_algebra_codes(a,b)
+        A = 1 + r + r^3  + r^7
+        B = 1 + r + r^12 + r^19
+        c = two_block_group_algebra_codes(A,B)
         @test code_n(c) == 54 && code_k(c) == 6
 
         # [[60, 6, 10]]
@@ -39,11 +35,9 @@
         GA = group_algebra(GF(2), G)
         r = prod(gens(GA))
         @test r^30  ==  1 # presentation ⟨r|r³⁰⟩ satisfied
-        a_elts = [one(G), r^10, r^6, r^13]
-        b_elts = [one(G), r^25, r^16, r^12]
-        a = sum(GA(x) for x in a_elts)
-        b = sum(GA(x) for x in b_elts)
-        c = two_block_group_algebra_codes(a,b)
+        A = 1 + r^10 + r^6  + r^13
+        B = 1 + r^25 + r^16 + r^12
+        c = two_block_group_algebra_codes(A,B)
         @test code_n(c) == 60 && code_k(c) == 6
 
         # [[70, 8, 10]]
@@ -53,11 +47,9 @@
         GA = group_algebra(GF(2), G)
         r = prod(gens(GA))
         @test r^35  ==  1 # presentation ⟨r|r³⁵⟩ satisfied
-        a_elts = [one(G), r^15, r^16, r^18]
-        b_elts = [one(G), r, r^24, r^27]
-        a = sum(GA(x) for x in a_elts)
-        b = sum(GA(x) for x in b_elts)
-        c = two_block_group_algebra_codes(a,b)
+        A = 1 + r^15 + r^16 + r^18
+        B = 1 + r    + r^24 + r^27
+        c = two_block_group_algebra_codes(A,B)
         @test code_n(c) == 70 && code_k(c) == 8
 
         # [[72, 8, 10]]
@@ -67,11 +59,9 @@
         GA = group_algebra(GF(2), G)
         r = prod(gens(GA))
         @test r^36  ==  1 # presentation ⟨r|r³⁶⟩ satisfied
-        a_elts = [one(G), r^9, r^28, r^31]
-        b_elts = [one(G), r, r^21, r^34]
-        a = sum(GA(x) for x in a_elts)
-        b = sum(GA(x) for x in b_elts)
-        c = two_block_group_algebra_codes(a,b)
+        A = 1 + r^9 + r^28 + r^31
+        B = 1 + r   + r^21 + r^34
+        c = two_block_group_algebra_codes(A,B)
         @test code_n(c) == 72 && code_k(c) == 8
 
         # [[72, 10, 9]]
@@ -81,11 +71,9 @@
         GA = group_algebra(GF(2), G)
         r = prod(gens(GA))
         @test r^36  ==  1 # presentation ⟨r|r³⁶⟩ satisfied
-        a_elts = [one(G), r^9, r^28, r^13]
-        b_elts = [one(G), r, r^3, r^22]
-        a = sum(GA(x) for x in a_elts)
-        b = sum(GA(x) for x in b_elts)
-        c = two_block_group_algebra_codes(a,b)
+        A = 1 + r^9 + r^28 + r^13
+        B = 1 + r   + r^3  + r^22
+        c = two_block_group_algebra_codes(A,B)
         @test code_n(c) == 72 && code_k(c) == 10
     end
 end
