@@ -32,7 +32,6 @@
         B = y^3 + x + x^2
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
         @test code_distance(hx, lx, code_k(c)) == 6
 
         # [[90, 8, 10]]
@@ -43,7 +42,6 @@
         B = 1   + x^2 + x^7
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
         @test code_distance(hx, lx, code_k(c)) == 10
 
         # [[108, 8, 10]]
@@ -54,7 +52,6 @@
         B = y^3 + x + x^2
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
         @test code_distance(hx, lx, code_k(c)) == 10
     end
 
@@ -67,7 +64,6 @@
         B = 1   + x + x^11
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
         @test code_distance(hx, lx, code_k(c)) == 6
 
         # [[90, 8, 6]]
@@ -78,7 +74,6 @@
         B = y^5 + x^8 + x^7
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
         @test code_distance(hx, lx, code_k(c)) == 6
 
         # [[120, 8, 8]]
@@ -89,7 +84,6 @@
         B = 1    + x   + x^2
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
         @test code_distance(hx, lx, code_k(c)) == 8
     end
 
@@ -102,7 +96,6 @@
         B = y^3 + x   + x^2
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
         @test code_distance(hx, lx, code_k(c)) == 6
 
         # [[98, 6, 12]]
@@ -113,7 +106,6 @@
         B = y^2 + x^3 + x^5
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
         @test code_distance(hx, lx, code_k(c)) == 12
 
         # [[126, 8, 10]]
@@ -124,7 +116,6 @@
         B = y^3 + x  +  x^2
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
-        i = rand(1:code_k(c))
         @test code_distance(hx, lx, code_k(c)) == 10
     end
 end
