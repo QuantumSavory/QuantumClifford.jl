@@ -46,6 +46,12 @@ test_hcubic_codes = [
     haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 3)
 ]
 
+# honeycomb color codes from [eberhardt2024logical](@cite).
+test_honeycomb_color_codes = [
+    honeycomb_color_codes(6 , 6), honeycomb_color_codes(9 , 6),
+    honeycomb_color_codes(12, 6), honeycomb_color_codes(12, 9),
+]
+
 other_lifted_product_codes = []
 
 # [[882, 24, d≤24]] code from (B1) in Appendix B of [panteleev2021degenerate](@cite)
@@ -154,7 +160,7 @@ const code_instance_args = Dict(
     :CSS => (c -> (parity_checks_x(c), parity_checks_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
     :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
     :CircuitCode => random_circuit_code_args,
-    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, other_lifted_product_codes)),
+    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, test_honeycomb_color_codes, other_lifted_product_codes)),
     :QuantumReedMuller => [3, 4, 5]
 )
 
