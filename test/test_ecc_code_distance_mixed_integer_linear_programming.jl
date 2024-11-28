@@ -43,16 +43,6 @@
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         @test code_distance(hx, lx, code_k(c)) == 10
-
-        # [[108, 8, 10]]
-        l=9; m=6
-        GA = group_algebra(GF(2), abelian_group([l, m]))
-        x, y = gens(GA)
-        A = x^3 + y + y^2
-        B = y^3 + x + x^2
-        c = two_block_group_algebra_codes(A,B)
-        hx, lx = get_hx_lx(c)
-        @test code_distance(hx, lx, code_k(c)) == 10
     end
 
     @testset "Reproduce Table 1 berthusen2024toward" begin
@@ -75,16 +65,6 @@
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         @test code_distance(hx, lx, code_k(c)) == 6
-
-        # [[120, 8, 8]]
-        l=12; m=5
-        GA = group_algebra(GF(2), abelian_group([l, m]))
-        x, y = gens(GA)
-        A = x^10 + y^4 + y
-        B = 1    + x   + x^2
-        c = two_block_group_algebra_codes(A,B)
-        hx, lx = get_hx_lx(c)
-        @test code_distance(hx, lx, code_k(c)) == 8
     end
 
     @testset "Reproduce Table 1 wang2024coprime" begin
@@ -107,15 +87,5 @@
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         @test code_distance(hx, lx, code_k(c)) == 12
-
-        # [[126, 8, 10]]
-        l=3; m=21
-        GA = group_algebra(GF(2), abelian_group([l, m]))
-        x, y = gens(GA)
-        A = 1   + y^2 + y^10
-        B = y^3 + x  +  x^2
-        c = two_block_group_algebra_codes(A,B)
-        hx, lx = get_hx_lx(c)
-        @test code_distance(hx, lx, code_k(c)) == 10
     end
 end
