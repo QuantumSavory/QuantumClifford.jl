@@ -4,7 +4,7 @@
     using GLPK
     using Hecke: group_algebra, GF, abelian_group, gens, one
     using QuantumClifford
-    using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, parity_checks, parity_checks_x
+    using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, parity_checks
 
     include("test_ecc_util.jl") # minimum_distance
 

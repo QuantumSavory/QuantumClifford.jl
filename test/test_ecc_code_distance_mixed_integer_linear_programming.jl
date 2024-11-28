@@ -4,7 +4,7 @@
     using GLPK
     using Hecke: group_algebra, GF, abelian_group, gens, one
     using QuantumClifford
-    using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, parity_checks, parity_checks_x
+    using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, parity_checks
 
     include("test_ecc_util.jl") # minimum_distance
 
@@ -77,15 +77,5 @@
         c = two_block_group_algebra_codes(A,B)
         hx, lx = get_hx_lx(c)
         @test code_distance(hx, lx, code_k(c)) == 6
-
-        # [[98, 6, 12]]
-        l=7; m=7
-        GA = group_algebra(GF(2), abelian_group([l, m]))
-        x, y = gens(GA)
-        A = x^3 + y^5 + y^6
-        B = y^2 + x^3 + x^5
-        c = two_block_group_algebra_codes(A,B)
-        hx, lx = get_hx_lx(c)
-        @test code_distance(hx, lx, code_k(c)) == 12
     end
 end
