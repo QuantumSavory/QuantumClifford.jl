@@ -20,3 +20,6 @@ function bicycle_codes end
 
 """Implemented in a package extension with Hecke."""
 function haah_cubic_codes end
+
+"""Implemented in a package extension with Hecke."""
+function honeycomb_color_codes end
