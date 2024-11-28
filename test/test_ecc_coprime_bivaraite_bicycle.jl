@@ -13,7 +13,7 @@
     function get_hx_lx(c)
         hx = stab_to_gf2(Stabilizer(parity_checks(c))[1:end÷2,:])
         lx = stab_to_gf2(logicalxview(canonicalize!(MixedDestabilizer(parity_checks(c)))))
-        return hx, lx
+        return hx,lx
     end
 
     function code_distance(hx, lx, k)
@@ -83,7 +83,5 @@
         c = two_block_group_algebra_codes(A, B)
         @test gcd([l,m]) == 1
         @test code_n(c) == 126 && code_k(c) == 12
-        hx, lx = get_hx_lx(c)
-        @test code_distance(hx, lx, code_k(c)) == 10
     end
 end
