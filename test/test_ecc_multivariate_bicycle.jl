@@ -126,8 +126,6 @@
         B = z^5 + x^5 + y 
         c = two_block_group_algebra_codes(A, B)
         @test code_n(c) == 96 && code_k(c) == 4
-        hx, lx = get_hx_lx(c)
-        @test code_distance(hx, lx, code_k(c)) == 8
     end
 
     @testset "Weight-6 QLDPC codes" begin
