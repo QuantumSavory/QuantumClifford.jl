@@ -123,8 +123,10 @@ end
 """The distance of a code."""
 function distance end
 
-"""The [Hamming bound](https://en.wikipedia.org/wiki/Hamming_bound) is a limit on the parameters of an arbitrary block code, where n is the code length, k is the code size, and d is the minimum Hamming distance."""
-function Hamming_bound(c)
+"""The [Hamming bound](https://en.wikipedia.org/wiki/Hamming_bound) is a limit
+on the parameters of an arbitrary block code, where n is the code length, k is
+the code size, and d is the minimum Hamming distance."""
+function hamming_bound(c)
     n = code_n(c)
     k = code_k(c) 
     d = distance(c)
@@ -134,28 +136,16 @@ function Hamming_bound(c)
     return sum_val <= 2 ^ (n - k)
 end
 
-"""The [Gilbert-Varshamov bound](https://en.wikipedia.org/wiki/Gilbert%E2%80%93Varshamov_bound) establishes a theoretical constraint on the size of (not necessarily linear) error correction codes, denoted by n for code length, k for code size, and d for minimum Hamming distance."""
-function Gilbert_Varshamov_bound(c)
+"""The [Gilbert-Varshamov bound](https://en.wikipedia.org/wiki/Gilbert-Varshamov_bound)
+establishes a theoretical constraint on the size of (not necessarily linear) error correction
+codes, denoted by n for code length, k for code size, and d for minimum Hamming distance."""
+function gilbert_varshamov_bound(c)
     n = code_n(c)
     k = code_k(c)
     d = distance(c)
     sum_val = 0
     sum_val = sum(binomial(n - 1, i) for i in 0:d - 2)
     return sum_val < 2 ^ (n - k)
-end
-
-"""The [Griesmer bound](https://en.wikipedia.org/wiki/Griesmer_bound) on the length of linear binary codes of dimension k and minimum distance d."""
-function Griesmer_bound(c)
-    n = code_n(c)
-    k = code_k(c)
-    d = distance(c)
-    sum_val = 0
-    if isinf(d)
-        return false  # If d is infinite, Griesmer bound cannot be applied.
-    else
-        sum_val = sum(isinf(d / 2 ^ i) ? d : ceil(Int, d / 2 ^ i) for i in 0:k - 1) # apply ceiling function to d / 2 ^ i.
-        return n >= sum_val
-    end
 end
 
 """Parity matrix of a code, given as a stabilizer tableau."""
