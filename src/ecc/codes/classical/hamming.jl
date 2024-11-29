@@ -28,21 +28,21 @@ end
 using SparseArrays
 
 function parity_checks(h::Hamming)
-    n = 2 ^ h.r - 1  # Total number of columns
+    n = 2 ^ h.r - 1
     rows = Int[]
     cols = Int[]
-    values = Int[]
+    vals = Int[]
     for j in 1:n
         columnsⱼ = bitstring(j)[end - h.r + 1:end]
         for i in 1:h.r
             if parse(Int, columnsⱼ[i]) == 1
                 push!(rows, i)
                 push!(cols, j)
-                push!(values, 1)
+                push!(vals, 1)
             end
         end
     end
-    H = sparse(rows, cols, values, h.r, n)
+    H = sparse(rows, cols, vals, h.r, n)
     return H
 end
 

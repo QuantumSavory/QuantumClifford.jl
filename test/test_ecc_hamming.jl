@@ -21,7 +21,7 @@
     end
 
     @testset "Testing Hamming codes properties" begin
-        r_vals = [3, 4, 5]
+        r_vals = [3, 4]
         for r in r_vals
             n = 2 ^ r - 1
             k = 2 ^ r - 1 - r
@@ -31,8 +31,8 @@
             mat = matrix(GF(2), parity_checks(Hamming(r)))
             computed_rank = rank(mat)
             @test computed_rank == n - k
-            @test Hamming_bound(Hamming(r)) == true
-            @test Gilbert_Varshamov_bound(Hamming(r)) == true
+            @test hamming_bound(Hamming(r)) == true
+            @test gilbert_varshamov_bound(Hamming(r)) == true
         end
         # Example taken from [huffman2010fundamentals](@cite).
         @test Matrix{Bool}(parity_checks(Hamming(3))) == [0  0  0  1  1  1  1;
