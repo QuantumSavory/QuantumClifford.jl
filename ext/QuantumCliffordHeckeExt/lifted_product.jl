@@ -279,10 +279,10 @@ julia> r = prod(gens(GA));
 presentation for the single cyclic group is satisfied before proceeding with
 the code construction. This method serves as a workaround for creating small
 groups, specifically for single cyclic groups, using a group presentation with
-*no extra relations*, such as `⟨r | r³⁰⟩`.For the construction of *general* groups
-with specific group presentations, the only effective method is to use *finitely
-presented groups* (`Oscar.FPGroup`), which allow for defining direct products of
-two or more *general* groups—something not supported by Hecke.
+*no extra relations*, such as `⟨r | r³⁰⟩`. For the construction of *general*
+groups with specific group presentations, the only effective method is to use
+*finitely presented groups* (`Oscar.FPGroup`), which allow for defining direct
+products of two or more *general* groups—something not supported by Hecke.
 
 ```jldoctest sg
 julia> r^30  ==  1
