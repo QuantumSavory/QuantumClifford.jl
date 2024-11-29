@@ -162,7 +162,9 @@ Here is an example of a [[56, 28, 2]] 2BGA code from Table 2 of [lin2024quantum]
 with direct product of `C₄ x C₂`.
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens
+julia> import Hecke: group_algebra, GF, abelian_group, gens; import GLPK; import JuMP;
+
+julia> using QuantumClifford.ECC: minimum_distance, two_block_group_algebra_codes; # hide
 
 julia> GA = group_algebra(GF(2), abelian_group([14,2]));
 
@@ -174,8 +176,8 @@ julia> B = 1 + x^7 + s + x^8 + s*x^7 + x
 
 julia> c = two_block_group_algebra_codes(A,B);
 
-julia> code_n(c), code_k(c)
-(56, 28)
+julia> code_n(c), code_k(c), minimum_distance(c)
+(56, 28, 2)
 ```
 
 ### Bivariate Bicycle codes
@@ -189,7 +191,7 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/qcga
 A [[756, 16, ≤ 34]] code from Table 3 of [bravyi2024high](@cite):
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens
+julia> import Hecke: group_algebra, GF, abelian_group, gens;
 
 julia> l=21; m=18;
 
@@ -215,9 +217,15 @@ where `𝐺ᵣ = ℤ/l₁ × ℤ/l₂ × ... × ℤ/lᵣ`.
 A [[48, 4, 6]] Weight-6 TB-QLDPC code from Appendix A Table 2 of [voss2024multivariatebicyclecodes](@cite).
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens; # hide
+julia> import Hecke: group_algebra, GF, abelian_group, gens; import GLPK; import JuMP;
+
+julia> using QuantumClifford.ECC: minimum_distance, two_block_group_algebra_codes; # hide
 
 julia> l=4; m=6;
+
+julia> GA = group_algebra(GF(2), abelian_group([l, m]));
+
+julia> x, y = gens(GA);
 
 julia> z = x*y;
 
@@ -227,8 +235,8 @@ julia> B = x + z^5 + y^5 + y^2;
 
 julia> c = two_block_group_algebra_codes(A, B);
 
-julia> code_n(c), code_k(c)
-(48, 4)
+julia> code_n(c), code_k(c), minimum_distance(c)
+(48, 4, 6)
 ```
 
 ### Coprime Bivariate Bicycle code
@@ -241,7 +249,9 @@ based on abelian group `ℤₗ x ℤₘ` where `ℤⱼ` cyclic group of order `j
 [108, 12, 6]] coprime-bivariate bicycle (BB) code from Table 2 of [wang2024coprime](@cite).
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens;
+julia> import Hecke: group_algebra, GF, abelian_group, gens; import GLPK; import JuMP;
+
+julia> using QuantumClifford.ECC: minimum_distance, two_block_group_algebra_codes; # hide
 
 julia> l=2; m=27;
 
@@ -252,7 +262,11 @@ julia> 𝜋 = gens(GA)[1];
 julia> A = 𝜋^2 + 𝜋^5  + 𝜋^44;
 
 julia> B = 𝜋^8 + 𝜋^14 + 𝜋^47;
-(108, 12)
+
+julia> c = two_block_group_algebra_codes(A, B);
+
+julia> code_n(c), code_k(c), minimum_distance(c)
+(108, 12, 6)
 ```
 
 See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).

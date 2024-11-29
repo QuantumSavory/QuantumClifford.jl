@@ -21,7 +21,7 @@ using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqP
 abstract type AbstractECC end
 
 export parity_checks, parity_checks_x, parity_checks_z, iscss,
-    code_n, code_s, code_k, rate, distance,
+    code_n, code_s, code_k, rate, distance, minimum_distance,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode, LiftedCode,
@@ -122,6 +122,16 @@ end
 
 """The distance of a code."""
 function distance end
+
+"""The minimum distance of a qLDPC code.
+
+Requires a JuMP.jl backend to be loaded, e.g. `using JuMP`.
+
+Requires a GLPK.jl backend to be loaded, e.g. `using GLPK`.
+"""
+function minimum_distance end
+
+minimum_distance(c::AbstractECC; kwargs...) = minimum_distance(parity_checks(c); kwargs...)
 
 """Parity matrix of a code, given as a stabilizer tableau."""
 function parity_matrix(c::AbstractECC)
