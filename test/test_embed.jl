@@ -1,7 +1,4 @@
-using Test
-using QuantumClifford
-
-@testset "embed PauliOperator" begin
+@testitem "embed PauliOperator" begin
     @test embed(5,3,P"-Y") == P"-__Y__"
     @test embed(5,(3,5),P"-YZ") == P"-__Y_Z"
     @test embed(5,[3,5],P"-YZ") == P"-__Y_Z"

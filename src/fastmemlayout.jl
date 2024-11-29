@@ -20,14 +20,14 @@ fastrow(t::Tableau{Tₚᵥ,Tₘ}) where {Tₚᵥ, Tₘ<:Adjoint} = Tableau(t.pha
 fastcolumn(t::Tableau{Tₚᵥ,Tₘ}) where {Tₚᵥ, Tₘ} = Tableau(t.phases, t.nqubits, collect(t.xzs')')
 fastcolumn(t::Tableau{Tₚᵥ,Tₘ}) where {Tₚᵥ, Tₘ<:Adjoint} = t
 
-fastrow(s::Stabilizer) = Stabilizer(fastrow(s.tab))
-fastcolumn(s::Stabilizer) = Stabilizer(fastcolumn(s.tab))
+fastrow(s::Stabilizer) = Stabilizer(fastrow(tab(s)))
+fastcolumn(s::Stabilizer) = Stabilizer(fastcolumn(tab(s)))
 
-fastrow(s::Destabilizer) = Destabilizer(fastrow(s.tab))
-fastcolumn(s::Destabilizer) = Destabilizer(fastcolumn(s.tab))
+fastrow(s::Destabilizer) = Destabilizer(fastrow(tab(s)))
+fastcolumn(s::Destabilizer) = Destabilizer(fastcolumn(tab(s)))
 
-fastrow(s::MixedStabilizer) = MixedStabilizer(fastrow(s.tab), s.rank)
-fastcolumn(s::MixedStabilizer) = MixedStabilizer(fastcolumn(s.tab), s.rank)
+fastrow(s::MixedStabilizer) = MixedStabilizer(fastrow(tab(s)), rank(s))
+fastcolumn(s::MixedStabilizer) = MixedStabilizer(fastcolumn(tab(s)), rank(s))
 
-fastrow(s::MixedDestabilizer) = MixedDestabilizer(fastrow(s.tab), s.rank)
-fastcolumn(s::MixedDestabilizer) = MixedDestabilizer(fastcolumn(s.tab), s.rank)
+fastrow(s::MixedDestabilizer) = MixedDestabilizer(fastrow(tab(s)), rank(s))
+fastcolumn(s::MixedDestabilizer) = MixedDestabilizer(fastcolumn(tab(s)), rank(s))

@@ -82,12 +82,8 @@ end
 function apply!(frame::PauliFrame, op::sMZ) # TODO sMY, and faster sMX
     op.bit == 0 && return frame
     i = op.qubit
-    xzs = frame.frame.tab.xzs
-    T = eltype(xzs)
-    lowbit = T(1)
-    ibig = _div(T,i-1)+1
-    ismall = _mod(T,i-1)
-    ismallm = lowbit<<(ismall)
+    xzs = tab(frame.frame).xzs
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
 
     @inbounds @simd for f in eachindex(frame)
         should_flip = !iszero(xzs[ibig,f] & ismallm)
@@ -99,12 +95,8 @@ end
 
 function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRY, and faster sMRX
     i = op.qubit
-    xzs = frame.frame.tab.xzs
-    T = eltype(xzs)
-    lowbit = T(1)
-    ibig = _div(T,i-1)+1
-    ismall = _mod(T,i-1)
-    ismallm = lowbit<<(ismall)
+    xzs = tab(frame.frame).xzs
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
 
     if op.bit != 0
         @inbounds @simd for f in eachindex(frame)
@@ -122,23 +114,39 @@ end
 
 function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     p = noise.p
-    T = eltype(frame.frame.tab.xzs)
+    xzs = tab(frame.frame).xzs
 
-    lowbit = T(1)
-    ibig = _div(T,i-1)+1
-    ismall = _mod(T,i-1)
-    ismallm = lowbit<<(ismall)
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
     p = p/3
 
     @inbounds @simd for f in eachindex(frame)
         r = rand()
         if  r < p # X error
-            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
+            xzs[ibig,f] ⊻= ismallm
         elseif r < 2p # Z error
-            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
+            xzs[end÷2+ibig,f] ⊻= ismallm
         elseif r < 3p # Y error
-            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
-            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
+            xzs[ibig,f] ⊻= ismallm
+            xzs[end÷2+ibig,f] ⊻= ismallm
+        end
+    end
+    return frame
+end
+
+function applynoise!(frame::PauliFrame,noise::PauliNoise,i::Int)
+    xzs = tab(frame.frame).xzs
+
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
+
+    @inbounds @simd for f in eachindex(frame)
+        r = rand()
+        if  r < noise.px # X error
+            xzs[ibig,f] ⊻= ismallm
+        elseif r < noise.px+noise.pz # Z error
+            xzs[end÷2+ibig,f] ⊻= ismallm
+        elseif r < noise.px+noise.pz+noise.py # Y error
+            xzs[ibig,f] ⊻= ismallm
+            xzs[end÷2+ibig,f] ⊻= ismallm
         end
     end
     return frame
@@ -175,7 +183,12 @@ function _pftrajectories(circuit;trajectories=5000,threads=true)
     ccircuit = if eltype(circuit) <: CompactifiedGate
         circuit
     else
-        compactify_circuit(circuit)
+        try
+            compactify_circuit(circuit)
+        catch err
+            @warn "Could not compactify the circuit, falling back to a slower version of the simulation. Consider reporting this issue to the package maintainers to improve performance. The offending gate was `$(err.args[2])`."
+            circuit
+        end
     end
     frames = _create_pauliframe(ccircuit; trajectories)
     nthr = min(Threads.nthreads(),trajectories÷(100))

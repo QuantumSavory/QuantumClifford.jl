@@ -184,7 +184,7 @@ function nemo_inv(a, n)::Matrix{UInt8}
 end
 
 """Sample (h, S) from the distribution P_n(h, S) from Bravyi and Maslov Algorithm 1."""
-function quantum_mallows(rng, n) # each one is benchmakred in benchmarks/quantum_mallows.jl
+function quantum_mallows(rng::AbstractRNG, n::Int) # each one is benchmarked in benchmarks/quantum_mallows.jl
     arr = collect(1:n)
     hadamard = falses(n)
     perm = zeros(Int64, n)
@@ -202,7 +202,7 @@ end
 
 """ This function samples a number from 1 to `n` where `n >= 1`
     probability of outputting `i` is proportional to `2^i`"""
-function sample_geometric_2(rng, n::Integer)
+function sample_geometric_2(rng::AbstractRNG, n::Integer)
     n < 1 && throw(DomainError(n))
     if n<30
         k = rand(rng, 2:UInt(2)^n)
@@ -217,7 +217,7 @@ function sample_geometric_2(rng, n::Integer)
 end
 
 """Assign (symmetric) random ints to off diagonals of matrix."""
-function fill_tril(rng, matrix, n; symmetric::Bool=false)
+function fill_tril(rng::AbstractRNG, matrix, n; symmetric::Bool=false)
     # Add (symmetric) random ints to off diagonals
     @inbounds for row in 1:n, col in 1:row-1
         b = rand(rng, Bool)
@@ -228,3 +228,60 @@ function fill_tril(rng, matrix, n; symmetric::Bool=false)
     end
     matrix
 end
+
+##############################
+# Random circuit
+##############################
+
+"""
+Random brickwork Clifford circuit.
+
+The connectivity of the random circuit is brickwork in some dimensions. Each gate in the circuit is a random 2-qubit Clifford gate.
+
+The brickwork is defined as follows: The qubits are arranged as a lattice, and `lattice_size` contains side length in each dimension.
+For example, a chain of length five will have `lattice_size = (5,)`, and a 5×5 lattice will have `lattice_size = (5, 5)`.
+
+In multi-dimensional cases, gate layers act alternatively along each direction.
+The nearest two layers along the same direction are offset by one qubit, forming a so-called brickwork.
+The boundary condition is chosen as open.
+"""
+function random_brickwork_clifford_circuit(rng::AbstractRNG, lattice_size::NTuple{N,Int} where {N}, nlayers::Int)
+    circ = QuantumClifford.SparseGate[]
+    cartesian = CartesianIndices(lattice_size)
+    dim = length(lattice_size)
+    nqubits = prod(lattice_size)
+    for i in 1:nlayers
+        gate_direction = (i - 1) % dim + 1
+        l = lattice_size[gate_direction]
+        brickwise_parity = dim == 1 ? i % 2 : 1 - (i ÷ dim) % 2
+        for j in 1:nqubits
+            cardj = collect(cartesian[j].I)
+            if cardj[gate_direction] % 2 == brickwise_parity && cardj[gate_direction] != l # open boundary
+                cardk = cardj
+                cardk[gate_direction] = cardk[gate_direction] + 1
+                k = LinearIndices(cartesian)[cardk...]
+                push!(circ, SparseGate(random_clifford(rng, 2), [j, k]))
+            end
+        end
+    end
+    circ
+end
+
+random_brickwork_clifford_circuit(lattice_size::NTuple{N,Int} where {N}, nlayers::Int) = random_brickwork_clifford_circuit(GLOBAL_RNG, lattice_size, nlayers)
+
+"""
+Random all-to-all Clifford circuit.
+
+The circuit contains `nqubits` qubits and `ngates` gates. The connectivity is all to all. Each gate in the circuit is a random 2-qubit Clifford gate on randomly picked two qubits.
+"""
+function random_all_to_all_clifford_circuit(rng::AbstractRNG, nqubits::Int, ngates::Int)
+    circ = QuantumClifford.SparseGate[]
+    for i in 1:ngates
+        j = rand(1:nqubits)
+        k = rand(1:nqubits-1)
+        push!(circ, SparseGate(random_clifford(rng, 2), [j, (j + k - 1) % nqubits + 1]))
+    end
+    circ
+end
+
+random_all_to_all_clifford_circuit(nqubits::Int, ngates::Int) = random_all_to_all_clifford_circuit(GLOBAL_RNG, nqubits, ngates)

@@ -1,7 +1,5 @@
-using QuantumClifford
-using QuantumClifford: mul_left!
-
-@testset "Allocation checks" begin
+@testitem "Allocation checks" begin
+    using QuantumClifford: mul_left!
     n = Threads.nthreads()
     allocated(f::F) where {F} = @allocated f()
     @testset "apply! mul_left! canonicalize!" begin
