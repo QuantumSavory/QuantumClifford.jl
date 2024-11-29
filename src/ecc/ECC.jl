@@ -21,7 +21,7 @@ using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqP
 abstract type AbstractECC end
 
 export parity_checks, parity_checks_x, parity_checks_z, iscss,
-    code_n, code_s, code_k, rate, distance, Hamming_bound,
+    code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode, LiftedCode,
@@ -122,31 +122,6 @@ end
 
 """The distance of a code."""
 function distance end
-
-"""The [Hamming bound](https://en.wikipedia.org/wiki/Hamming_bound) is a limit
-on the parameters of an arbitrary block code, where n is the code length, k is
-the code size, and d is the minimum Hamming distance."""
-function hamming_bound(c)
-    n = code_n(c)
-    k = code_k(c) 
-    d = distance(c)
-    t = floor(Int, (d - 1) / 2)
-    sum_val = 0
-    sum_val = sum(binomial(n, i) for i in 0:t)
-    return sum_val <= 2 ^ (n - k)
-end
-
-"""The [Gilbert-Varshamov bound](https://en.wikipedia.org/wiki/Gilbert-Varshamov_bound)
-establishes a theoretical constraint on the size of (not necessarily linear) error correction
-codes, denoted by n for code length, k for code size, and d for minimum Hamming distance."""
-function gilbert_varshamov_bound(c)
-    n = code_n(c)
-    k = code_k(c)
-    d = distance(c)
-    sum_val = 0
-    sum_val = sum(binomial(n - 1, i) for i in 0:d - 2)
-    return sum_val < 2 ^ (n - k)
-end
 
 """Parity matrix of a code, given as a stabilizer tableau."""
 function parity_matrix(c::AbstractECC)

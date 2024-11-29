@@ -3,7 +3,7 @@
     using LinearAlgebra
     using QuantumClifford
     using QuantumClifford.ECC
-    using QuantumClifford.ECC: AbstractECC, Hamming, gilbert_varshamov_bound, hamming_bound
+    using QuantumClifford.ECC: AbstractECC, Hamming
     using Nemo: matrix, GF
 
     function minimum_distance(H)
@@ -31,8 +31,6 @@
             mat = matrix(GF(2), parity_checks(Hamming(r)))
             computed_rank = rank(mat)
             @test computed_rank == n - k
-            @test hamming_bound(Hamming(r)) == true
-            @test gilbert_varshamov_bound(Hamming(r)) == true
         end
         # Example taken from [huffman2010fundamentals](@cite).
         @test Matrix{Bool}(parity_checks(Hamming(3))) == [0  0  0  1  1  1  1;

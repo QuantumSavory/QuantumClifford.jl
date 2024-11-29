@@ -18,7 +18,7 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/hamm
 struct Hamming <: ClassicalCode
     r::Int
     function Hamming(r)
-        if r <= 2
+        if r < 2
             throw(ArgumentError("Invalid parameters: `r` must be ≥ 2 to obtain a valid code."))
         end
         new(r)
@@ -43,7 +43,6 @@ function parity_checks(h::Hamming)
         end
     end
     H = sparse(rows, cols, vals, h.r, n)
-    return H
 end
 
 code_n(h::Hamming) = 2 ^ h.r - 1
