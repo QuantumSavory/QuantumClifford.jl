@@ -52,7 +52,7 @@ julia> code_n(c1), code_k(c1)
 (882, 24)
 ```
 
-A [[175, 19, d ≤ 0]] code from Eq. (18) in Appendix A of [raveendran2022finite](@cite),
+A [[175, 19, d ≤ 10]] code from Eq. (18) in Appendix A of [raveendran2022finite](@cite),
 following the 4th constructor.
 
 ```jldoctest
@@ -219,6 +219,10 @@ julia> import Hecke: group_algebra, GF, abelian_group, gens; # hide
 
 julia> l=4; m=6;
 
+julia> GA = group_algebra(GF(2), abelian_group([l, m]));
+
+julia> x, y = gens(GA);
+
 julia> z = x*y;
 
 julia> A = x^3 + y^5;
@@ -252,6 +256,10 @@ julia> 𝜋 = gens(GA)[1];
 julia> A = 𝜋^2 + 𝜋^5  + 𝜋^44;
 
 julia> B = 𝜋^8 + 𝜋^14 + 𝜋^47;
+
+julia> c = two_block_group_algebra_codes(A, B);
+
+julia> code_n(c), code_k(c)
 (108, 12)
 ```
 
