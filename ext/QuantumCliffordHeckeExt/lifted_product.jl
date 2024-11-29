@@ -52,7 +52,7 @@ julia> code_n(c1), code_k(c1)
 (882, 24)
 ```
 
-A [[175, 19, d ≤ 0]] code from Eq. (18) in Appendix A of [raveendran2022finite](@cite),
+A [[175, 19, d ≤ 10]] code from Eq. (18) in Appendix A of [raveendran2022finite](@cite),
 following the 4th constructor.
 
 ```jldoctest
