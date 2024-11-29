@@ -111,6 +111,7 @@
              0 1 1 0 1 1 1 0 0 0 1 1;
              1 1 1 1 1 1 1 1 1 1 1 0]
 
+        H = parity_checks(Golay(24))
         @test echelon_form(matrix(GF(2), A)) == echelon_form(matrix(GF(2), H[1:12, 1:12]))
         # test self-duality for extended Golay code, G == H
         @test echelon_form(matrix(GF(2), generator(Golay(24)))) == echelon_form(matrix(GF(2), parity_checks(Golay(24))))
