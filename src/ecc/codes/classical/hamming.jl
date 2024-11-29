@@ -1,3 +1,5 @@
+using SparseArrays
+
 abstract type ClassicalCode end
 
 """
@@ -24,8 +26,6 @@ struct Hamming <: ClassicalCode
         new(r)
     end
 end
-
-using SparseArrays
 
 function parity_checks(h::Hamming)
     n = 2 ^ h.r - 1
