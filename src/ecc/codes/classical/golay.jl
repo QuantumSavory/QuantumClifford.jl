@@ -14,7 +14,7 @@ to `[23, 12, 7]`. The bordered reverse circulant matrix `(A)` of `[24, 12, 8]`
 Golay code is self-dual, i.e., `A₂₄` is same as A₂₄'.
 
 The parity check matrix is defined as follows: `H₂₄ = [I₁₂ | A']` where `I₁₂` is the
-12 x 12 identity matrix and `A` is a bordered reverse circulant matrix. Puncturing
+`12 × 12` identity matrix and `A` is a bordered reverse circulant matrix. Puncturing
 and then extending any column in​ with an overall parity check `H₂₃` reconstructs
 the original parity check matrix `H₂₄`. Thus, all punctured codes are equivalent.
 

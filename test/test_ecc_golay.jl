@@ -1,7 +1,6 @@
 @testitem "ECC Golay" begin
 
     using LinearAlgebra
-    using Combinatorics
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC, Golay, generator
     using Nemo: matrix, GF, echelon_form
@@ -9,9 +8,10 @@
     # Theorem: Let `C` be a binary linear code. If `C` is self-orthogonal and
     # has a generator matrix `G` where each row has weight divisible by four,
     # then every codeword of `C` has weight divisible by four. `H₂₄` is self-dual
-    # because its generator matrix has all rows with weight divisible by four.Thus,
-    # all codewords of `H₂₄` must have weights divisible by four. Refer to pg. 30 to
-    # 33 of Ch1 of Fundamentals of Error Correcting Codes by Huffman, Cary and Pless, Vera.
+    # because its generator matrix has all rows with weight divisible by four.
+    # Thus, all codewords of `H₂₄` must have weights divisible by four. Refer to
+    # pg. 30 to 33 of Ch1 of Fundamentals of Error Correcting Codes by Huffman,
+    # Cary and Pless, Vera.
     function code_weight_property(matrix)
         for row in eachrow(matrix)
             count = sum(row)
@@ -26,12 +26,12 @@
     # the binary parity check matrix H₂₄ in any coordinate and then extending it by adding
     # an overall parity check in the same position yields the original matrix H₂₄.
     # Steps:
-    # 1. Puncture the Code: Remove the i-th column from H₂₄ to create a punctured matrix
+    # 1) Puncture the Code: Remove the i-th column from H₂₄ to create a punctured matrix
     # H₂₃. Note: H₂₃ = H[:, [1:i-1; i+1:end]]
-    # 2. Extend the Code: Add a column in the same position to ensure each row has even
-    # parity. Note: H'₂₄ = [H₂₃[:, 1:i-1] c H₂₃[:, i:end]]. Here, c is a column vector added
-    # to ensure each row in H'₂₄ has even parity.
-    # 3. Equivalence Check: Verify that H'₂₄ = H₂₄.
+    # 2) Extend the Code: Add a column in the same position to ensure each row has even
+    # parity. Note: H'₂₄ = [H₂₃[:, 1:i-1] c H₂₃[:, i:end]]. Here, c is a column vector
+    # added to ensure each row in H'₂₄ has even parity.
+    # 3) Equivalence Check: Verify that H'₂₄ = H₂₄.
     function puncture_code(mat, i)
         return mat[:, [1:i-1; i+1:end]]
     end
@@ -45,6 +45,20 @@
             extended_mat[row, i] = row_parity
         end
         return extended_mat
+    end
+
+    function minimum_distance(H)
+        n = size(H, 2)
+        min_dist = n + 1
+        for x_bits in 1:(2^n - 1)
+            x = reverse(digits(x_bits, base=2, pad=n))
+            xᵀ = reshape(x, :, 1)
+            if all(mod.(H * xᵀ, 2) .== 0)
+                weight = sum(x)
+                min_dist = min(min_dist, weight)
+            end
+        end
+        return min_dist
     end
 
     @testset "Testing binary Golay codes properties" begin
@@ -73,6 +87,14 @@
                                            1  0  1  0  1  1  0  1  1  1  0  0  0  0  0  0  0  0  0  0  0  1  0  0;
                                            1  1  0  1  1  0  1  1  1  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0;
                                            1  0  1  1  0  1  1  1  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  1]
+
+        # minimum distance test
+        # [24, 12, 8]
+        H = parity_checks(Golay(24))
+        @test minimum_distance(H) == 8
+        # [23, 12, 7]
+        H = parity_checks(Golay(23))
+        @test minimum_distance(H) == 7
 
         # cross-verifying the canonical equivalence of bordered reverse circulant matrix (A)
         # from [huffman2010fundamentals](@cite) with matrix A taken from [bhatia2018mceliece](@cite).
