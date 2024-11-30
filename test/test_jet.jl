@@ -10,6 +10,8 @@
     using AbstractAlgebra
     using Hecke
     using StaticArrays
+    using JuMP
+    using GLPK
 
     rep = report_package("QuantumClifford";
         ignored_modules=(
@@ -23,6 +25,8 @@
             AnyFrameModule(AbstractAlgebra),
             AnyFrameModule(Hecke),
             AnyFrameModule(StaticArrays),
+            AnyFrameModule(JuMP),
+            AnyFrameModule(GLPK),
     ))
 
     @show rep
