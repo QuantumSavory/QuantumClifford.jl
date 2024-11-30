@@ -26,6 +26,7 @@
             AnyFrameModule(Hecke),
             AnyFrameModule(StaticArrays),
             AnyFrameModule(JuMP),
+            AnyFrameModule(JuMP.Containers),
             AnyFrameModule(GLPK),
     ))
 
