@@ -26,7 +26,7 @@
             AnyFrameModule(Hecke),
             AnyFrameModule(StaticArrays),
             AnyFrameModule(JuMP),
-            # JET.jl does not eliminate all false positives in JuMP.Containers.DenseAxisArray.
+            # JET.jl does not eliminate all false positives from JuMP.Containers.DenseAxisArray.
             AnyFrameModule(JuMP.Containers),
             AnyFrameModule(GLPK),
     ))
