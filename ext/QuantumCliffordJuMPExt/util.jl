@@ -1,4 +1,4 @@
-function get_stab_hx(matrix::SparseMatrixCSC{T, Int}) where T
+function get_stab_hx(matrix::SparseMatrixCSC{Int, Int})
     rows, cols = size(matrix)
     rhs_start = div(cols, 2) + 1
     rhs_cols = matrix[:, rhs_start:cols]
@@ -10,5 +10,7 @@ end
 function get_lx_lz(c::Stabilizer)
     lx = stab_to_gf2(logicalxview(canonicalize!(MixedDestabilizer(c))))
     lz = stab_to_gf2(logicalzview(canonicalize!(MixedDestabilizer(c))))
+    lx = SparseMatrixCSC{Int, Int}(lx)
+    lz = SparseMatrixCSC{Int, Int}(lx)
     return lx, lz
 end

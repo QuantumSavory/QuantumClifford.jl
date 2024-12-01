@@ -12,11 +12,10 @@ import QuantumClifford
 import QuantumClifford: stab_to_gf2, logicalxview, logicalzview, canonicalize!,
     MixedDestabilizer, Stabilizer
 import QuantumClifford.ECC
-import QuantumClifford.ECC: minimum_distance, AbstractECC, code_n, code_k,
-    parity_checks
+import QuantumClifford.ECC: distance, AbstractECC, code_n, code_k, parity_checks
 
 import SparseArrays
-import SparseArrays: SparseMatrixCSC, sparse
+import SparseArrays: SparseMatrixCSC, sparse, spzeros, findnz, sparsevec
 
 include("util.jl")
 include("min_distance_mixed_integer_programming.jl")

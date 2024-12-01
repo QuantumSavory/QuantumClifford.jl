@@ -120,18 +120,15 @@ function rate(c)
 end
 
 
-"""The distance of a code."""
+"""The distance of a code.
+
+The minimum distance of a qLDPC code requires:
+- a JuMP.jl backend to be loaded, e.g. `using JuMP`.
+- a GLPK.jl backend to be loaded, e.g. `using GLPK`.
+"""
 function distance end
 
-"""The minimum distance of a qLDPC code.
-
-Requires a JuMP.jl backend to be loaded, e.g. `using JuMP`.
-
-Requires a GLPK.jl backend to be loaded, e.g. `using GLPK`.
-"""
-function minimum_distance end
-
-minimum_distance(c::AbstractECC; kwargs...) = minimum_distance(parity_checks(c); kwargs...)
+distance(c::AbstractECC; kwargs...) = distance(parity_checks(c); kwargs...)
 
 """Parity matrix of a code, given as a stabilizer tableau."""
 function parity_matrix(c::AbstractECC)
