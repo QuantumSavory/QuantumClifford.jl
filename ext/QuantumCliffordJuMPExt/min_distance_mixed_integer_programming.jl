@@ -23,10 +23,10 @@ distance is *NP-hard*, and the corresponding decision problem is *NP-complete*,
 making polynomial-time algorithms unlikely.
 
 In the case of *quantum* codes, classical intuition does not always apply. For instance,
-the Steane code has a minimum distance of three, even though all its elements have weight
-four [Sabo:2022smk](@cite).
+the [[7, 1, 3]] Steane code has a minimum distance of three, even though all its elements
+have weight four [Sabo:2022smk](@cite).
 
-```jldoctest example1
+```jldoctest example
 julia> using QuantumClifford.ECC: Steane7, distance;
 
 julia> c = parity_checks(Steane7());
@@ -40,6 +40,9 @@ julia> stab_to_gf2(c)
  0  0  0  0  0  0  0  0  1  1  0  0  1  1
  0  0  0  0  0  0  0  1  0  1  0  1  0  1
 
+julia> minimum(sum(stab_to_gf2(c), dims=2))
+4
+
 julia> distance(Steane7())
 3
 ```
@@ -48,14 +51,20 @@ Such discrepancies arise because stabilizer codes are defined by parity-check ma
 but their minimum distances are determined by the dual, specifically the minimum weight
 of non-trivial logical operators.
 
-```jldoctest example1
-julia> lz = stab_to_gf2(logicalzview(canonicalize!(MixedDestabilizer(c))))
+```jldoctest example
+julia> lx = stab_to_gf2(logicalzview(canonicalize!(MixedDestabilizer(c))))
 1×14 Matrix{Bool}:
  0  0  1  0  1  1  0  0  0  0  0  0  0  0
+
+julia> sum(lx)
+3
 
 julia> lz = stab_to_gf2(logicalzview(canonicalize!(MixedDestabilizer(c))))
 1×14 Matrix{Bool}:
  0  0  0  0  0  0  0  0  1  0  1  0  1  0
+
+julia> sum(lz)
+3
 ```
 
 Brute-force methods remain viable but inefficient. White and Grassl [white2006new](@cite)
