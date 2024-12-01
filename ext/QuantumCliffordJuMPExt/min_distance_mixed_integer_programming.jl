@@ -10,7 +10,7 @@ even overlap with each X-check of the stabilizer binary representation `stab`.
 an odd overlap with logical-X operator `logicOp` on the i-th logical qubit.
 
 Specifically, it calculates the minimum Hamming weight \$d_{Z}\$ for the Z-type
-logical operator, and the minimum distance for X-type logical operators is the same.
+logical operator. The minimum distance for X-type logical operators is the same.
 
 ### Background on Minimum Distance
 
@@ -59,9 +59,9 @@ julia> distance(Steane7())
 3
 ```
 
-The minimum distance problem for quantum codes is *NP-hard*, and this hardness extends
-to multiplicative and additive approximations, even when restricted to stabilizer or
-CSS codes, with the result established through a reduction from classical problems in
+!!! note The minimum distance problem for quantum codes is *NP-hard*, and this hardness
+extends to multiplicative and additive approximations, even when restricted to stabilizer
+or CSS codes, with the result established through a reduction from classical problems in
 the CWS framework using a 4-cycle free graph [kapshikar2023hardness](@cite). Despite
 this, methods that improve on brute-force approaches are actively explored.
 
@@ -136,6 +136,22 @@ julia> code_n(c1), code_k(c1), distance(c1)
 (48, 6, 8)
 ```
 
+!!!Since the [[48, 6, 8]] GB code does not have specific lower and upper bounds
+(e.g., consider [[48, 6, 5 ≤ d ≤ 8]]), the minimum distance for all `Z`-type and
+`X`-type logical qubits remains the same. In this context, the *exact* minimum
+distance is provided.
+
+```jldoctest examples
+julia> distance(c1, all_logical_qubits=true)
+Dict{Int64, Int64} with 6 entries:
+  5 => 8
+  4 => 8
+  6 => 8
+  2 => 8
+  3 => 8
+  1 => 8
+```
+
 ### Applications
 
 - The first usecase of the MIP approach was the code capacity Most Likely
@@ -147,25 +163,23 @@ to a mixed integer linear program and using the GNU Linear Programming Kit.
 the code distance was calculated using the mixed integer programming approach.
 
 """
-function distance(c::Stabilizer; num_logical_qubits=code_k(c), upper_bound=false)
-    lx, _ = get_lx_lz(c)
-    H = stab_to_gf2(parity_checks(c))
-    H = SparseMatrixCSC{Int, Int}(H)
-    hx = get_stab_hx(H)
-    1 <= num_logical_qubits < code_k(c) && return _minimum_distance(hx, lx[num_logical_qubits, :]) # for large instances
-    1 <= num_logical_qubits <= code_k(c) || throw(ArgumentError("The number of logical qubits must be between 1 and $(code_k(c)) inclusive"))
-    if num_logical_qubits == code_k(c)
-        weights = []
-        for i in 1:num_logical_qubits
-            w = _minimum_distance(hx, lx[num_logical_qubits, :])
-            push!(weights, w)
-        end
-        if upper_bound
-            return minimum(weights), maximum(weights) # return upper bound of minimum distance if required.
-        else
-            return minimum(weights)
-        end
+function distance(c::Stabilizer; upper_bound=false, logical_qubit=code_k(c), all_logical_qubits=false, logical_operator_type=:X)
+    1 <= logical_qubit <= code_k(c) || throw(ArgumentError("The number of logical qubit must be between 1 and $(code_k(c)) inclusive"))
+    logical_operator_type == :X || logical_operator_type == :Z || throw(ArgumentError("Invalid type of logical operator: Use :X or :Z"))
+    l = get_lx_lz(c)[1]
+    H = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(c)))
+    h = get_stab(H, :X)
+    if logical_operator_type == :Z
+        l = get_lx_lz(c)[2]
+        H = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(c)))
+        h = get_stab(H, :Z)
     end
+    weights = Dict{Int, Int}()
+    for i in 1:logical_qubit
+        w = _minimum_distance(h, l[i, :])
+        weights[i] = w
+    end
+    return upper_bound ? maximum(values(weights)) : (all_logical_qubits ? weights : minimum(values(weights)))
 end
 
 # Computing minimum distance for quantum LDPC codes is a NP-Hard problem,

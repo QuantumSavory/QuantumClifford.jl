@@ -1,10 +1,14 @@
-function get_stab_hx(matrix::SparseMatrixCSC{Int, Int})
+function get_stab(matrix::SparseMatrixCSC{Int, Int}, logical_operator_type::Symbol)
     rows, cols = size(matrix)
-    rhs_start = div(cols, 2) + 1
-    rhs_cols = matrix[:, rhs_start:cols]
-    non_zero_rows_rhs = unique(rhs_cols.rowval)
-    zero_rows_rhs = setdiff(1:rows, non_zero_rows_rhs)
-    return matrix[zero_rows_rhs, :]
+    if logical_operator_type == :Z
+        col_range = 1:div(cols, 2)
+    else logical_operator_type == :X
+        col_range = div(cols, 2) + 1:cols
+    end
+    submatrix = matrix[:, col_range]
+    non_zero_rows = unique(submatrix.rowval)
+    zero_rows = setdiff(1:rows, non_zero_rows)
+    return matrix[zero_rows, :]
 end
 
 function get_lx_lz(c::Stabilizer)
