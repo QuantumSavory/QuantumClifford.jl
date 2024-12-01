@@ -136,10 +136,10 @@ julia> code_n(c1), code_k(c1), distance(c1)
 (48, 6, 8)
 ```
 
-!!!Since the [[48, 6, 8]] GB code does not have specific lower and upper bounds
-(e.g., consider [[48, 6, 5 ≤ d ≤ 8]]), the minimum distance for all `Z`-type and
-`X`-type logical qubits remains the same. In this context, the *exact* minimum
-distance is provided.
+!!!note Since the [[48, 6, 8]] GB code does not have specific lower and upper
+bounds (e.g., consider [[48, 6, 5 ≤ d ≤ 8]]), the minimum distance for all
+`Z`-type and `X`-type logical operators remains the same. Here, the *exact*
+minimum distance is provided.
 
 ```jldoctest examples
 julia> distance(c1, all_logical_qubits=true)
