@@ -57,12 +57,13 @@ For classical code construction routines:
 - [bose1960further](@cite)
 - [error2024lin](@cite)
 
-For minimum distance calculation for quantum codes:
+For minimum distance calculation of quantum codes:
 - [vardy1997intractability](@cite)
 - [Sabo:2022smk](@cite)
 - [kapshikar2023hardness](@cite)
 - [landahl2011fault](@cite)
 - [white2006new](@cite)
+- [pryadko2023qdistrnd](@cite)
 
 # References
 
