@@ -234,8 +234,8 @@ function _minimum_distance(hx, lx)
         cnt += 1
     end
     @constraint(model, sum(weight[i] * x[i] for i in 1:num_var) == 1)
-    # Ensure the model is solved and feasible
     optimize!(model)
+    # Ensure the model is solved and feasible
     is_solved_and_feasible(model) || error("Did not solve model")
     opt_val = sum(value(x[i]) for i in 1:n)
     return Int(opt_val)
