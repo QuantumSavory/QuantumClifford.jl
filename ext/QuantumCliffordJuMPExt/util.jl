@@ -11,6 +11,6 @@ function get_lx_lz(c::Stabilizer)
     lx = stab_to_gf2(logicalxview(canonicalize!(MixedDestabilizer(c))))
     lz = stab_to_gf2(logicalzview(canonicalize!(MixedDestabilizer(c))))
     lx = SparseMatrixCSC{Int, Int}(lx)
-    lz = SparseMatrixCSC{Int, Int}(lx)
+    lz = SparseMatrixCSC{Int, Int}(lz)
     return lx, lz
 end
