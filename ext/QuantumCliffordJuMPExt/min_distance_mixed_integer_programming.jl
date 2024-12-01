@@ -22,9 +22,21 @@ time. Vardy [vardy1997intractability](@cite) demonstrated that computing the min
 distance is *NP-hard*, and the corresponding decision problem is *NP-complete*,
 making polynomial-time algorithms unlikely.
 
-In the case of *quantum* codes, classical intuition does not always apply. For instance,
-the [[7, 1, 3]] Steane code has a minimum distance of three, even though all its elements
-have weight four [Sabo:2022smk](@cite).
+For *quantum* codes, classical intuition does not always apply. The minimum distance
+is given by the minimum weight of a non-trivial logical operator. This is generally
+unrelated to the minimum distance of the corresponding stabilizer code when viewed as
+a classical, additive code. White and Grassl [white2006new](@cite) proposed mapping
+quantum codes to higher-dimensional classical linear codes. This mapping allows the
+minimum distance of the quantum additive code to be inferred from that of the classical
+linear code but increases parameters from `n` to `3n` and `d` to `2d`, adding complexity.
+Furthermore, once a minimal weight vector is identified, it is essential to verify
+whether it belongs to the Pauli group `𝒫ₙ` over `n` qubits [Sabo:2022smk](@cite).
+
+Additionally, to illustrate how classical intuition can be misleading in this context,
+consider that the [[7, 1, 3]] Steane code has a minimum distance of three, despite all
+its elements having a weight of four. This discrepancy occurs because stabilizer codes
+are defined by parity-check matrices, while their minimum distances are determined by
+the dual [Sabo:2022smk](@cite).
 
 ```jldoctest example
 julia> using QuantumClifford.ECC: Steane7, distance;
@@ -46,32 +58,6 @@ julia> minimum(sum(stab_to_gf2(c), dims=2))
 julia> distance(Steane7())
 3
 ```
-
-Such discrepancies arise because stabilizer codes are defined by parity-check matrices,
-but their minimum distances are determined by the dual, specifically the minimum weight
-of non-trivial logical operators.
-
-```jldoctest example
-julia> lx = stab_to_gf2(logicalzview(canonicalize!(MixedDestabilizer(c))))
-1×14 Matrix{Bool}:
- 0  0  1  0  1  1  0  0  0  0  0  0  0  0
-
-julia> sum(lx)
-3
-
-julia> lz = stab_to_gf2(logicalzview(canonicalize!(MixedDestabilizer(c))))
-1×14 Matrix{Bool}:
- 0  0  0  0  0  0  0  0  1  0  1  0  1  0
-
-julia> sum(lz)
-3
-```
-
-Brute-force methods remain viable but inefficient. White and Grassl [white2006new](@cite)
-proposed mapping quantum codes to higher-dimensional classical linear codes. This mapping
-allows the minimum distance of the quantum additive code to be inferred from that of the
-classical linear code but increases parameters from `n` to `3n` and `d` to `2d`, adding
-complexity.
 
 The minimum distance problem for quantum codes is *NP-hard*, and this hardness extends
 to multiplicative and additive approximations, even when restricted to stabilizer or
