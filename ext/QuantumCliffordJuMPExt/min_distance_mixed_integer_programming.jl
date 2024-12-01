@@ -196,6 +196,8 @@ function _minimum_distance(hx, lx)
     num_anc_hx = ceil(Int, log2(whx))
     num_anc_logical = ceil(Int, log2(wlx))
     num_var = n + m * num_anc_hx + num_anc_logical
+    # MIP problem solver: https://jump.dev/JuMP.jl/stable/packages/GLPK/#GLPK.jl
+    # GLPK.jl is a wrapper for the GNU Linear Programming Kit library.
     model = Model(GLPK.Optimizer; add_bridges = false) # model
     set_silent(model)
     @variable(model, x[1:num_var], Bin) # binary variables
@@ -232,7 +234,9 @@ function _minimum_distance(hx, lx)
         cnt += 1
     end
     @constraint(model, sum(weight[i] * x[i] for i in 1:num_var) == 1)
+    # Ensure the model is solved and feasible
     optimize!(model)
+    is_solved_and_feasible(model) || error("Did not solve model")
     opt_val = sum(value(x[i]) for i in 1:n)
     return Int(opt_val)
 end

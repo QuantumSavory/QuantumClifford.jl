@@ -4,7 +4,7 @@ using DocStringExtensions
 
 import JuMP
 import JuMP: @variable, @objective, @constraint, optimize!, Model, set_silent,
-    sum, value
+    sum, value, optimize!, is_solved_and_feasible
 import GLPK
 import GLPK: Optimizer
 
