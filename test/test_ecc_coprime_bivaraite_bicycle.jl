@@ -49,6 +49,8 @@
         B = 𝜋^8 + 𝜋^14 + 𝜋^47
         c = two_block_group_algebra_codes(A, B)
         @test gcd([l,m]) == 1
+        i = rand(1:code_k(c))
+        @test distance(c, logical_qubit=i) == 6
         @test code_n(c) == 108 && code_k(c) == 12
 
         # [[126,12,10]]
