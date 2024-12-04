@@ -29,11 +29,11 @@
             for rep in 1:100
                 gf2_matrices = [rand(Bool, size, size) for size in test_sizes]
                 for (i, matrix) in enumerate(gf2_matrices)
-                     echelon_form, _, transformation, _ = gf2_row_echelon_with_pivots!(Matrix{Int}(matrix), full=true) # in-place
-                     # Check the correctness of the transformation matrix
-                     @test (transformation*matrix) .%2 == echelon_form
-                     # Check the correctness of Gaussian elimination
-                     @test echelon_form == gf2_gausselim!(matrix)
+                    echelon_form, _, transformation, _ = gf2_row_echelon_with_pivots!(Matrix{Int}(matrix), full=true) # in-place
+                    # Check the correctness of the transformation matrix
+                    @test (transformation*matrix) .%2 == echelon_form
+                    # Check the correctness of Gaussian elimination
+                    @test echelon_form == gf2_gausselim!(matrix)
                 end
             end
         end
