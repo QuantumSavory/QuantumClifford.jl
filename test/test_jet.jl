@@ -10,6 +10,8 @@
     using AbstractAlgebra
     using Hecke
     using StaticArrays
+    using JuMP
+    using GLPK
 
     rep = report_package("QuantumClifford";
         ignored_modules=(
@@ -23,9 +25,13 @@
             AnyFrameModule(AbstractAlgebra),
             AnyFrameModule(Hecke),
             AnyFrameModule(StaticArrays),
+            AnyFrameModule(JuMP),
+            # JET.jl does not eliminate all false positives from JuMP.Containers.DenseAxisArray.
+            AnyFrameModule(JuMP.Containers),
+            AnyFrameModule(GLPK),
     ))
 
     @show rep
     @show length(JET.get_reports(rep))
-    @test length(JET.get_reports(rep)) == 0
+    @test length(JET.get_reports(rep)) == 5
 end
