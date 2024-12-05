@@ -12,6 +12,11 @@ import Hecke
 
 const QuantumCliffordHeckeExt = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
 
+ENV["OSCAR_PRINT_BANNER"] = "false"
+import Oscar
+
+const QuantumCliffordOscarExt = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
+
 #DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
 
 ENV["LINES"] = 80    # for forcing `displaysize(io)` to be big enough
@@ -25,7 +30,7 @@ doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
 format = Documenter.HTML(size_threshold_ignore = ["API.md"]),
-modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt],
+modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt],
 warnonly = [:missing_docs],
 linkcheck = true,
 authors = "Stefan Krastanov",

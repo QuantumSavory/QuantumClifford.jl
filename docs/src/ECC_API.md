@@ -11,3 +11,10 @@ Private = false
 Modules = [QuantumCliffordHeckeExt]
 Private = true
 ```
+
+## Implemented in an extension requiring `Oscar.jl`
+
+```@autodocs
+Modules = [QuantumCliffordOscarExt]
+Private = true
+```

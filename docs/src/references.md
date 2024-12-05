@@ -45,6 +45,8 @@ For quantum code construction routines:
 - [lin2024quantum](@cite)
 - [bravyi2024high](@cite)
 - [haah2011local](@cite)
+- [wang2023abelian](@cite)
+- [naghipour2015quantum](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)
