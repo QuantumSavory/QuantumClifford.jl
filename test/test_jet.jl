@@ -33,5 +33,5 @@
 
     @show rep
     @show length(JET.get_reports(rep))
-    @test length(JET.get_reports(rep)) == 4
+    @test length(JET.get_reports(rep)) == 5
 end
