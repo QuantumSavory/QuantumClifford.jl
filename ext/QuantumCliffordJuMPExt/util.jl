@@ -12,8 +12,8 @@ function get_stab(matrix::SparseMatrixCSC{Int, Int}, logical_operator_type::Symb
 end
 
 function get_lx_lz(c::Stabilizer)
-    lx = stab_to_gf2(logicalxview(canonicalize!(MixedDestabilizer(c))))
-    lz = stab_to_gf2(logicalzview(canonicalize!(MixedDestabilizer(c))))
+    lx = stab_to_gf2(logx_ops(c))
+    lz = stab_to_gf2(logz_ops(c))
     lx = SparseMatrixCSC{Int, Int}(lx)
     lz = SparseMatrixCSC{Int, Int}(lz)
     return lx, lz

@@ -12,7 +12,8 @@ import QuantumClifford
 import QuantumClifford: stab_to_gf2, logicalxview, logicalzview, canonicalize!,
     MixedDestabilizer, Stabilizer
 import QuantumClifford.ECC
-import QuantumClifford.ECC: distance, AbstractECC, code_n, code_k, parity_checks
+import QuantumClifford.ECC: distance, AbstractECC, code_n, code_k, parity_checks,
+    logx_ops, logz_ops
 
 import SparseArrays
 import SparseArrays: SparseMatrixCSC, sparse, spzeros, findnz, sparsevec
