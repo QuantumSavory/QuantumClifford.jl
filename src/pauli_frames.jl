@@ -1,3 +1,5 @@
+using Random: randperm, AbstractRNG, GLOBAL_RNG
+
 """
 $(TYPEDEF)
 
@@ -41,16 +43,18 @@ Inject random Z errors over all frames and qubits for the supplied PauliFrame wi
 Calling this after initialization is essential for simulating any non-deterministic circuit.
 It is done automatically by most [`PauliFrame`](@ref) constructors.
 """
-function initZ!(frame::PauliFrame)
+function initZ!(rng::AbstractRNG, frame::PauliFrame)
     T = eltype(frame.frame.tab.xzs)
 
     @inbounds @simd for f in eachindex(frame)
         @simd for row in 1:size(frame.frame.tab.xzs,1)÷2
-            frame.frame.tab.xzs[end÷2+row,f] = rand(T)
+            frame.frame.tab.xzs[end÷2+row,f] = rand(rng, T)
         end
     end
     return frame
 end
+
+initZ!(frame::PauliFrame) = initZ!(GLOBAL_RNG, frame)
 
 function apply!(f::PauliFrame, op::AbstractCliffordOperator)
     _apply!(f.frame, op; phases=Val(false))
