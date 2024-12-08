@@ -13,3 +13,12 @@ function check_repr_commutation_relation(GA::GroupAlgebra)
     R_b = representation_matrix(b, :right)
     return L_a * R_b == R_b * L_a
 end
+
+"""Checks whether the group algebra is commutative."""
+function check_commutative_group_algebra(GA::GroupAlgebra)
+    a = rand(GA)
+    # Check whether the group algebra is commutative: L(a) = R(a)
+    L_a = representation_matrix(a)
+    R_a = representation_matrix(a, :right)
+    return L_a == R_a
+end
