@@ -24,7 +24,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
-    RepCode, LiftedCode,
+    RepCode, LiftedCode, Golay,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
@@ -384,10 +384,11 @@ include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
+include("codes/quantumreedmuller.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/recursivereedmuller.jl")
 include("codes/classical/bch.jl")
-include("codes/quantumreedmuller.jl")
+include("codes/classical/golay.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
