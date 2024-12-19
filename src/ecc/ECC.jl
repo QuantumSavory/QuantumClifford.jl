@@ -27,6 +27,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     RepCode, LiftedCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
+    Unicycle, Bicycle,
     Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     haah_cubic_codes,
@@ -392,5 +393,6 @@ include("codes/quantumreedmuller.jl")
 # qLDPC
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
+include("codes/simple_sparse_codes.jl")
 
 end #module
