@@ -52,6 +52,11 @@ jobs:
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
+      - name: "Inject Oscar as test dependency (if not Windows and not threaded)"
+          if: ${{ matrix.os != 'windows-latest' && matrix.threads == 1 }}
+          continue-on-error: true
+          run: |
+            sed -i -e "s/\[deps\]/[deps]\nOscar = \"f1435218-dba5-11e9-1e4d-f1a5fab5fc13\"/" test/Project.toml
       - uses: julia-actions/julia-runtest@v1
         env:
           JULIA_NUM_THREADS: ${{ matrix.threads }}
