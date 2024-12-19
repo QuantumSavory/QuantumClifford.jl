@@ -1,4 +1,4 @@
-"""Struct for an LDPC bicycle code based on [mackay2004sparse](@cite). This code is produced by taking a circulant matrix based on a difference set, reducing the number of rows, and then using it as the base matrix for a CSS code.
+"""A bicycle (LDPC) code based on [mackay2004sparse](@cite). This code is produced by taking a circulant matrix based on a difference set, reducing the number of rows, and then using it as the base matrix for a CSS code.
 
 Parameters:
 $TYPEDFIELDS
@@ -51,7 +51,7 @@ function parity_checks(b::Bicycle)
     return parity_checks(CSS(bsc, bsc))
 end
 
-"""Struct for an LDPC unicycle code based on [mackay2004sparse](@cite). The parity check matrix is produced by taking a perfect difference set, turning it into a circulant matrix, and removing the linearly dependent rows. Good performance when decoded by message passing decoders.
+"""A unicycle (LDPC) code based on [mackay2004sparse](@cite). The parity check matrix is produced by taking a perfect difference set, turning it into a circulant matrix, and removing the linearly dependent rows.
 
 Has the drawback of only being possible to make at sizes that correspond to existing perfect difference sets. Reference [mackay2004sparse](@cite) to find good sizes of perfect difference sets to use.
 
@@ -76,7 +76,7 @@ julia> parity_checks(Unicycle(21, [1, 3, 8, 9, 12]))
 struct Unicycle
     "Size of parity check matrix, also max size of generated set array, should be >= 1. Equal to the number of physical qubits."
     N::Int
-    "Perfect difference set modulo (N). Array of indices that are 'active' checks in the circulant code."
+    "Perfect difference set modulo N. Array of indices that are 'active' checks in the circulant code."
     set::Vector{Int}
 end
 
@@ -92,7 +92,6 @@ end
 
 Required before the bicycle code can be used.
 
-Typical usage:
 ```jldoctest reduce_bicycle
 
 julia> reduce_bicycle(circ_to_bicycle_h0([1, 2, 4], 7))
@@ -177,7 +176,6 @@ julia> reduce_unicycle(circ_to_unicycle_h0([1, 2, 4], 7))
  1  0  1  0  0  0  1  1
 
 ```
-
 """
 function reduce_unicycle(m::Matrix{Bool})
     rrzz, = residue_ring(ZZ, 2)
@@ -215,7 +213,8 @@ julia> circ_to_unicycle_h0([1, 2, 4], 7)
  1  0  1  0  0  0  1  1
 
 ```
-See [mackay2004sparse](@cite) for more details"""
+See [mackay2004sparse](@cite) for more details
+"""
 function circ_to_unicycle_h0(circ_indices::Vector{Int}, n::Int)
     circ_arr = fill(false, n)
     one_col = transpose(fill(true, n))
