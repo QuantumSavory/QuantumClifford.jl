@@ -21,19 +21,14 @@ the original parity check matrix `H₂₄`. Thus, all punctured codes are equiva
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/golay).
 """
 struct Golay <: ClassicalCode
-    n::Int 
-   
+    n::Int
+
     function Golay(n)
         if !(n in (23, 24))
             throw(ArgumentError("Invalid parameters: `n` must be either 24 or 23 to obtain a valid code."))
         end
         new(n)
     end
-end
-
-function _circshift_row_golay(row::Vector{Int}, shift::Int, n::Int)
-    l = length(row)
-    return [row[mod((i - shift - 1), l) + 1] for i in 1:l]
 end
 
 # bordered reverse circulant matrix (see section 1.9.1, pg. 30-33) of [huffman2010fundamentals](@cite).
@@ -48,19 +43,19 @@ function _create_A₂₄_golay(n::Int)
     end
     # Fill in the rest of the rows using the reverse circulant property.
     for i in 3:n ÷ 2
-        A[i, 2:end] = _circshift_row_golay(A[i - 1, 2:end], -1, n ÷ 2)
-        A[i, 1] = 1 
+        A[i, 2:end] = circshift(A[i - 1, 2:end], -1)
+        A[i, 1] = 1
     end
     return A
 end
 
 function generator(g::Golay)
-    if g.n == 24 
+    if g.n == 24
         A₂₄ = _create_A₂₄_golay(24)
         I₁₂ = LinearAlgebra.Diagonal(ones(Int, g.n ÷ 2))
         G₂₄ = hcat(I₁₂, (A₂₄)')
         return G₂₄
-    else 
+    else
         A₂₄ = _create_A₂₄_golay(24)
         A₂₃ = A₂₄[:, 1:end - 1]
         I₁₂ = LinearAlgebra.Diagonal(ones(Int, g.n ÷ 2))
@@ -75,7 +70,7 @@ function parity_checks(g::Golay)
         I₁₂ = LinearAlgebra.Diagonal(ones(Int, g.n ÷ 2))
         H₂₄ = hcat((A₂₄)', I₁₂)
         return H₂₄
-    else 
+    else
         A₂₄ = _create_A₂₄_golay(24)
         A₂₃ = A₂₄[:, 1:end - 1]
         I₁₂ = LinearAlgebra.Diagonal(ones(Int, g.n ÷ 2))
