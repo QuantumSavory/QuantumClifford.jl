@@ -64,6 +64,8 @@ For minimum distance calculation of quantum codes:
 - [landahl2011fault](@cite)
 - [white2006new](@cite)
 - [pryadko2023qdistrnd](@cite)
+- [makhorin2008glpk](@cite)
+- [Lubin2023](@cite)
 
 # References
 
