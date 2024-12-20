@@ -9,7 +9,7 @@ import QuantumClifford.ECC: AbstractSyndromeDecoder, decode, batchdecode, parity
 abstract type PyBP <: AbstractSyndromeDecoder end
 
 # A common structure to hold shared fields for different decoders
-mutable struct GenericPyLDPCDecoder <: PyBP
+mutable struct GenericLDPCDecoder{D} <: PyBP
     code
     H
     Hx
@@ -17,8 +17,8 @@ mutable struct GenericPyLDPCDecoder <: PyBP
     nx
     nz
     faults_matrix
-    pyx  # Python-based decoder for X syndromes
-    pyz  # Python-based decoder for Z syndromes
+    pyx::D
+    pyz::D
 end
 
 # Common function to initialize PyBeliefPropDecoder or PyBeliefPropOSDecoder
