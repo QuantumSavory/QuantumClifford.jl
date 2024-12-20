@@ -2,8 +2,10 @@
     using Nemo
     using Nemo: gcd
     using Hecke
+    using JuMP
+    using GLPK
     using Hecke: group_algebra, GF, abelian_group, gens
-    using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n
+    using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, distance
 
     @testset "Reproduce Table 2 wang2024coprime" begin
         # [[30,4,6]]
@@ -14,6 +16,7 @@
         B = 𝜋 + 𝜋^3 + 𝜋^8
         c = two_block_group_algebra_codes(A, B)
         @test gcd([l,m]) == 1
+        @test distance(c) == 6
         @test code_n(c) == 30 && code_k(c) == 4
 
         # [[42,6,6]]
@@ -24,6 +27,7 @@
         B = 𝜋 + 𝜋^3 + 𝜋^11
         c = two_block_group_algebra_codes(A, B)
         @test gcd([l,m]) == 1
+        @test distance(c) == 6
         @test code_n(c) == 42 && code_k(c) == 6
 
         # [[70,6,8]]
@@ -34,6 +38,7 @@
         B = 1 + 𝜋 + 𝜋^12;
         c = two_block_group_algebra_codes(A, B)
         @test gcd([l,m]) == 1
+        @test distance(c) == 8
         @test code_n(c) == 70 && code_k(c) == 6
 
         # [[108,12,6]]
@@ -44,6 +49,8 @@
         B = 𝜋^8 + 𝜋^14 + 𝜋^47
         c = two_block_group_algebra_codes(A, B)
         @test gcd([l,m]) == 1
+        i = rand(1:code_k(c))
+        @test distance(c, logical_qubit=i) == 6
         @test code_n(c) == 108 && code_k(c) == 12
 
         # [[126,12,10]]
