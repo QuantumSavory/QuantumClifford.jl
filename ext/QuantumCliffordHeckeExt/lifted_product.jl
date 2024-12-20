@@ -255,7 +255,8 @@ julia> B = 𝜋^8 + 𝜋^14 + 𝜋^47;
 (108, 12)
 ```
 
-See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
+See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref),
+[`honeycomb_color_codes`](@ref).
 """
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
     LPCode([a;;], [b;;])
@@ -301,7 +302,8 @@ Bicycle codes are a special case of generalized bicycle codes,
 where `a` and `b` are conjugate to each other.
 The order of the cyclic group is `l`, and the shifts `a_shifts` and `b_shifts` are reverse to each other.
 
-See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
+See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`haah_cubic_codes`](@ref),
+[`honeycomb_color_codes`](@ref).
 """ # TODO doctest example
 function bicycle_codes(a_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
@@ -323,11 +325,40 @@ julia> code_n(c), code_k(c)
 (432, 8)
 ```
 
-See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref).
+See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref),
+[`honeycomb_color_codes`](@ref).
 """
 function haah_cubic_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group([l,l,l]))
     a = sum(GA[n%dim(GA)+1] for n in a_shifts)
     b = sum(GA[n%dim(GA)+1] for n in b_shifts)
     two_block_group_algebra_codes(a, b)
+end
+
+"""
+The honeycomb color codes [eberhardt2024logical](@cite) are exactly the Bivariate
+Bicycle (BB) codes defined by the polynomials `c = 1 + x + xy` and `d = 1 + y + xy`,
+provided that both `ℓ` and `m` are divisible by three.
+
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/triangular_color).
+
+```jldoctest
+julia> ℓ = 9; m = 6;
+
+julia> c = honeycomb_color_codes(ℓ, m);
+
+julia> code_n(c), code_k(c)
+(108, 4)
+```
+
+See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref),
+[`honeycomb_color_codes`](@ref).
+"""
+function honeycomb_color_codes(ℓ::Int, m::Int)
+    (ℓ % 3 == 0 && m % 3 == 0) || throw(ArgumentError("Both ℓ and m must be divisible by 3"))
+    GA = group_algebra(GF(2), abelian_group([ℓ, m]))
+    x, y = gens(GA)
+    c = 1 + x + x*y
+    d = 1 + y + x*y
+    two_block_group_algebra_codes(c, d)
 end
