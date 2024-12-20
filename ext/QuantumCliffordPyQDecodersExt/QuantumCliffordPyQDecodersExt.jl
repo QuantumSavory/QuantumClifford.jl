@@ -41,8 +41,7 @@ function initialize_decoder(c, maxiter, bpmethod, errorrate, osdmethod, osdorder
     else
         error("Unknown decoder type.")
     end
-
-    return BasePyLDPCDecoder(c, H, Hx, Hz, size(Hx, 1), size(Hz, 1), fm, pyx, pyz)
+    return GenericPyLDPCDecoder(c, H, Hx, Hz, size(Hx, 1), size(Hz, 1), fm, pyx, pyz)
 end
 
 function PyBeliefPropDecoder(c; maxiter=nothing, bpmethod=nothing, errorrate=nothing)
@@ -81,10 +80,8 @@ end
 function batchdecode(d::GenericPyLDPCDecoder, syndrome_samples)
     row_x = @view syndrome_samples[:,1:d.nx]
     row_z = @view syndrome_samples[:,d.nx+1:end]
-
     guess_z_errors = PythonCall.PyArray(d.pyx.decode_batch(row_x))
     guess_x_errors = PythonCall.PyArray(d.pyz.decode_batch(row_z))
-
     return hcat(guess_x_errors, guess_z_errors)
 end
 
