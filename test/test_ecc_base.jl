@@ -69,11 +69,14 @@ const code_instance_args = Dict(
 
 function all_testablable_code_instances(;maxn=nothing)
     codeinstances = []
+    i = 1
     for t in subtypes(QuantumClifford.ECC.AbstractECC)
         for c in get(code_instance_args, t.name.name, [])
             codeinstance = t(c...)
             !isnothing(maxn) && nqubits(codeinstance) > maxn && continue
             push!(codeinstances, codeinstance)
+            #@show i, t, code_n(codeinstance), code_k(codeinstance), code_s(codeinstance), code_n(codeinstance)-code_k(codeinstance)
+            i += 1
         end
     end
     return codeinstances
