@@ -1,5 +1,5 @@
 using QuantumClifford
-using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!, invsparsity
+using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!, invsparsity, _projectrand_notnorm
 using QuantumClifford: @S_str, random_stabilizer
 using QuantumOpticsBase
 using LinearAlgebra
@@ -156,7 +156,7 @@ end
             genstab = GeneralizedStabilizer(s)
             apply!(genstab, pcT) # in-place
             prob1 = (real(expect(p, genstab))+1)/2
-            projectrand!(genstab, p)[1] # in-place
+            _projectrand_notnorm(genstab, p)[1] # in-place
             dict = genstab.destabweights
             trace_χ′ = real(tr(collect(values(dict))[1])) # Tr[χ′]
             @test isapprox(prob1, trace_χ′; atol=1e-5)

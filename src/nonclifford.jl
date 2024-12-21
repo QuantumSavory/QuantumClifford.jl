@@ -236,7 +236,7 @@ julia> prob₁ = (real(χ′)+1)/2
 
 See also: [`expect`](@ref)
 """
-function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
+function _projectrand_notnorm(sm::GeneralizedStabilizer, p::PauliOperator)
     # Returns the updated `GeneralizedStabilizer` state sm′ = (χ′, B(S′, D′)),
     # where (S′, D′) is derived from (S, D) through the traditional stabilizer update,
     # and χ′ is the updated density matrix after measurement. Note: Λ(χ′) ≤ Λ(χ).
@@ -283,6 +283,19 @@ function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
         sm.stab = state # in-place
         return sm, res
     end
+end
+
+function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
+    sm, res = _projectrand_notnorm(sm, p)
+    dict = sm.destabweights
+    if sm |> QuantumClifford.invsparsity == 1
+        for ((dᵢ, dⱼ), χ) in dict
+            χ′ = χ/LinearAlgebra.tr(χ) # normalization
+            sm.destabweights[(dᵢ, dⱼ)] = χ′
+        end
+        return sm, res
+    end
+    return sm, res
 end
 
 function project!(s::GeneralizedStabilizer, p::PauliOperator)
