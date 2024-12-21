@@ -168,7 +168,7 @@ end
     # TODO Analyze some multi-qubit genstab states that are unsimulable due to very complex
     # destabweights, which also exhibit an inverse sparsity relation (Λ(χ′) = Λ(χ) = 4).
     count = 0
-    num_trials = 5
+    num_trials = 20
     num_qubits = [2,3,4,5] # exclusively multi-qubit
     for n in num_qubits # exponential cost in this term
         for repetition in 1:num_trials
