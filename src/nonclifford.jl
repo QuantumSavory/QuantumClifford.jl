@@ -258,7 +258,9 @@ function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
             end
         end
         sm.destabweights = newdict # in-place
-        return sm, nothing # In the same basis, so no need to update (S, D) (Eq. 17)
+        state, res = projectrand!(stab, p)
+        sm.stab = state # in-place
+        return sm, res # the stabilizer basis (S, D) is not updated (Eq. 17)
     else
         # (Eq. 18-26)
         k = _create_k(b)
