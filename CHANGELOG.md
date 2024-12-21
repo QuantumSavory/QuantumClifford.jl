@@ -5,9 +5,12 @@
 
 # News
 
-## v0.9.15 - 2024-12-22
+## v0.9.16 - dev
 
 - Enhancements to `GF(2)` Linear Algebra: unexported, experimental `gf2_row_echelon_with_pivots!`, `gf2_nullspace`, `gf2_rowspace_basis`.
+
+## v0.9.15 - 2024-12-22
+
 - `pftrajectories` now supports fast multiqubit measurements with `PauliMeasurement` in addition to the already supported single qubit measurements `sMX/Z/Y` and workarounds like `naive_syndrome_circuit`.
 
 ## v0.9.14 - 2024-11-03

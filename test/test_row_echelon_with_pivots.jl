@@ -16,7 +16,7 @@
                     @test (transformation*mat) .%2 == naive_echelon_form
                     # Check the correctness of Gaussian elimination
                     @test naive_echelon_form == gf2_gausselim!(mat)
-                    #Consistency check with Nemo.jl's echelon_form
+                    # Consistency check with Nemo.jl's echelon_form
                     nemo_mat =  matrix(GF(2), Matrix{Int}(mat))
                     @test echelon_form(nemo_mat) == matrix(GF(2), naive_echelon_form)
                 end
