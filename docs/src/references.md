@@ -58,6 +58,9 @@ For classical code construction routines:
 - [bose1960class](@cite)
 - [bose1960further](@cite)
 - [error2024lin](@cite)
+- [golay1949notes](@cite)
+- [huffman2010fundamentals](@cite)
+- [bhatia2018mceliece](@cite)
 
 # References
 
