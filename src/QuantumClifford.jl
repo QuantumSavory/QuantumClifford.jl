@@ -31,7 +31,6 @@ export
     affectedqubits, #TODO move to QuantumInterface?
     # GF2
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
-    gf2_row_echelon_with_pivots!, gf2_nullspace, gf2_rowspace_basis,
     # Canonicalization
     canonicalize!, canonicalize_rref!, canonicalize_gott!,
     # Linear Algebra
