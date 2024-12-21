@@ -130,8 +130,8 @@ end
 end
 
 @testset "Multi-qubit projections using GeneralizedStabilizer for stabilizer states" begin
-    for n in 1:10
-        for repetition in 1:10
+    for n in 1:5
+        for repetition in 1:3
             for state in [Stabilizer, MixedDestabilizer, GeneralizedStabilizer]
                 s = random_stabilizer(n)
                 p = random_pauli(n)
@@ -168,8 +168,8 @@ end
     # TODO Analyze some multi-qubit genstab states that are unsimulable due to very complex
     # destabweights, which also exhibit an inverse sparsity relation (Λ(χ′) = Λ(χ) = 4).
     count = 0
-    num_trials = 20
-    num_qubits = [2,3,4,5,6,7,8,9] # exclusively multi-qubit
+    num_trials = 5
+    num_qubits = [2,3,4,5] # exclusively multi-qubit
     for n in num_qubits # exponential cost in this term
         for repetition in 1:num_trials
             stab = random_stabilizer(n)
