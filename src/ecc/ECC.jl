@@ -391,10 +391,11 @@ include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
+include("codes/quantumreedmuller.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/recursivereedmuller.jl")
 include("codes/classical/bch.jl")
-include("codes/quantumreedmuller.jl")
+include("codes/classical/golay.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")

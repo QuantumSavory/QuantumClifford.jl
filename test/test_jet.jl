@@ -12,6 +12,7 @@
     using StaticArrays
     using JuMP
     using GLPK
+    using StyledStrings
 
     rep = report_package("QuantumClifford";
         ignored_modules=(
@@ -26,6 +27,7 @@
             AnyFrameModule(Hecke),
             AnyFrameModule(StaticArrays),
             AnyFrameModule(JuMP),
+            AnyFrameModule(StyledStrings),
             # JET.jl does not eliminate all false positives from JuMP.Containers.DenseAxisArray.
             AnyFrameModule(JuMP.Containers),
             AnyFrameModule(GLPK),
@@ -33,5 +35,5 @@
 
     @show rep
     @show length(JET.get_reports(rep))
-    @test length(JET.get_reports(rep)) == 5
+    @test length(JET.get_reports(rep)) == 4
 end
