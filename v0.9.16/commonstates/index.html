@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Useful States · QuantumClifford.jl</title><meta name="title" content="Useful States · QuantumClifford.jl"/><meta property="og:title" content="Useful States · QuantumClifford.jl"/><meta property="twitter:title" content="Useful States · QuantumClifford.jl"/><meta name="description" content="Documentation for QuantumClifford.jl."/><meta property="og:description" content="Documentation for QuantumClifford.jl."/><meta property="twitter:description" content="Documentation for QuantumClifford.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">QuantumClifford.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">QuantumClifford.jl</a></li><li><span class="tocitem">Stabilizer Tableau Algebra</span><ul><li><a class="tocitem" href="../stab-algebra-manual/">Manual</a></li><li><a class="tocitem" href="../canonicalization/">Canonicalization</a></li><li><a class="tocitem" href="../mixed/">Mixed States</a></li><li><a class="tocitem" href="../graphs/">Graph States</a></li><li><a class="tocitem" href="../datastructures/">Datastructure Choice</a></li><li class="is-active"><a class="tocitem" href>Useful States</a><ul class="internal"><li><a class="tocitem" href="#States"><span>States</span></a></li><li><a class="tocitem" href="#Pauli-Operators"><span>Pauli Operators</span></a></li><li><a class="tocitem" href="#Stabilizer-States"><span>Stabilizer States</span></a></li><li><a class="tocitem" href="#Mixed-States"><span>Mixed States</span></a></li><li><a class="tocitem" href="#Enumerating-all-Clifford-Operations"><span>Enumerating all Clifford Operations</span></a></li><li><a class="tocitem" href="#Common-entangled-states"><span>Common entangled states</span></a></li></ul></li></ul></li><li><span class="tocitem">Noisy Circuits</span><ul><li><a class="tocitem" href="../noisycircuits/">Simulation of Noisy Circuits</a></li><li><a class="tocitem" href="../noisycircuits_mc/">Monte Carlo</a></li><li><a class="tocitem" href="../noisycircuits_perturb/">Perturbative Expansions</a></li><li><a class="tocitem" href="../ecc_example_sim/">ECC example</a></li><li><a class="tocitem" href="../noisycircuits_ops/">Circuit Operations</a></li><li><a class="tocitem" href="../noisycircuits_API/">API</a></li></ul></li><li><span class="tocitem">ECC compendium</span><ul><li><a class="tocitem" href="../ECC_evaluating/">Evaluating codes and decoders</a></li><li><a class="tocitem" href="../ECC_API/">API</a></li></ul></li><li><a class="tocitem" href="../allops/">All Gates</a></li><li><a class="tocitem" href="../plotting/">Visualizations</a></li><li><a class="tocitem" href="../API/">API</a></li><li><a class="tocitem" href="../tutandpub/">Tutorials and Publications</a></li><li><a class="tocitem" href="../references/">Suggested Readings &amp; References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Stabilizer Tableau Algebra</a></li><li class="is-active"><a href>Useful States</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Useful States</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/QuantumSavory/QuantumClifford.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/QuantumSavory/QuantumClifford.jl/blob/master/docs/src/commonstates.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Useful-States-and-Operators"><a class="docs-heading-anchor" href="#Useful-States-and-Operators">Useful States and Operators</a><a id="Useful-States-and-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Useful-States-and-Operators" title="Permalink"></a></h1><h2 id="States"><a class="docs-heading-anchor" href="#States">States</a><a id="States-1"></a><a class="docs-heading-anchor-permalink" href="#States" title="Permalink"></a></h2><p>Stabilizer states can be represented with the <a href="../API/#QuantumClifford.Stabilizer"><code>Stabilizer</code></a>, <a href="../API/#QuantumClifford.Destabilizer"><code>Destabilizer</code></a>, <a href="../API/#QuantumClifford.MixedStabilizer"><code>MixedStabilizer</code></a>, and <a href="../API/#QuantumClifford.MixedDestabilizer"><code>MixedDestabilizer</code></a> tableau data structures. You probably want to use <a href="../API/#QuantumClifford.MixedDestabilizer"><code>MixedDestabilizer</code></a> which supports the widest set of operations.</p><p>Moreover, a <a href="../API/#QuantumClifford.MixedDestabilizer"><code>MixedDestabilizer</code></a> can be stored inside a <a href="../API/#QuantumClifford.Register"><code>Register</code></a> together with a set of classical bits in which measurement results can be written.</p><p>Below are convenience constructors for common types of states and operators, already implemented in this library.</p><h2 id="Pauli-Operators"><a class="docs-heading-anchor" href="#Pauli-Operators">Pauli Operators</a><a id="Pauli-Operators-1"></a><a class="docs-heading-anchor-permalink" href="#Pauli-Operators" title="Permalink"></a></h2><p>Single qubit <code>PauliOperator</code> is implemented in [<code>single_z</code>] and [<code>single_x</code>].</p><pre><code class="language-julia-repl hljs">julia&gt; single_z(4,2)
++ _Z__
+
+julia&gt; single_x(4,3)
++ __X_</code></pre><p>All identity operators use <code>zero</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; zero(PauliOperator, 3)
++ ___
+
+julia&gt; zero(P&quot;XYZXYZ&quot;)
++ ______</code></pre><p>Random Pauli operators are implemented as well (with or without a random phase).</p><pre><code class="language-julia-repl hljs">julia&gt; using StableRNGs; rng = StableRNG(42);
+
+julia&gt; random_pauli(rng, 4)
++ ZYY_
+
+julia&gt; random_pauli(rng, 4; nophase=false)
+- YZ_X</code></pre><h2 id="Stabilizer-States"><a class="docs-heading-anchor" href="#Stabilizer-States">Stabilizer States</a><a id="Stabilizer-States-1"></a><a class="docs-heading-anchor-permalink" href="#Stabilizer-States" title="Permalink"></a></h2><p>An all-identity stabilizer can be created with <code>zero</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; zero(Stabilizer, 3)
++ ___
++ ___
++ ___
+
+julia&gt; zero(Stabilizer, 2, 3)
++ ___
++ ___
+
+julia&gt; zero(S&quot;XIZ
+              YZX&quot;)
++ ___
++ ___</code></pre><p>Diagonal stabilizers in different bases are available as well, through <code>one</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; one(Stabilizer, 3)
++ Z__
++ _Z_
++ __Z
+
+julia&gt; one(Stabilizer, 3; basis=:Y)
++ Y__
++ _Y_
++ __Y
+
+julia&gt; one(S&quot;XX
+             ZZ&quot;)
++ Z_
++ _Z</code></pre><p>A random stabilizer (or destabilizers or Clifford operators) can be created as well. We use the algorithm described in (<a href="../references/#bravyi2020hadamard">Bravyi and Maslov, 2021</a>).</p><pre><code class="language-julia-repl hljs">julia&gt; random_stabilizer(rng, 2,5)
++ YZXZZ
+- XZYYY</code></pre><h2 id="Mixed-States"><a class="docs-heading-anchor" href="#Mixed-States">Mixed States</a><a id="Mixed-States-1"></a><a class="docs-heading-anchor-permalink" href="#Mixed-States" title="Permalink"></a></h2><p>Similarly, one can create a diagonal mixed state.</p><pre><code class="language-julia-repl hljs">julia&gt; one(MixedDestabilizer, 2, 3)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ X__
++ _X_
+𝒳ₗ━━━
++ __X
+𝒮𝓉𝒶𝒷━
++ Z__
++ _Z_
+𝒵ₗ━━━
++ __Z</code></pre><h2 id="Enumerating-all-Clifford-Operations"><a class="docs-heading-anchor" href="#Enumerating-all-Clifford-Operations">Enumerating all Clifford Operations</a><a id="Enumerating-all-Clifford-Operations-1"></a><a class="docs-heading-anchor-permalink" href="#Enumerating-all-Clifford-Operations" title="Permalink"></a></h2><p>The algorithm from (<a href="../references/#koenig2014efficiently">Koenig and Smolin, 2014</a>) can be used to enumerate all Clifford operations on a given number of qubits through <a href="../API/#QuantumClifford.enumerate_cliffords-Tuple{Any, Any}"><code>enumerate_cliffords</code></a>. Or one can use <a href="../API/#QuantumClifford.random_clifford-Tuple{Random.AbstractRNG, Int64}"><code>random_clifford</code></a>, <a href="../API/#QuantumClifford.random_stabilizer-Tuple{Random.AbstractRNG, Int64}"><code>random_stabilizer</code></a> to directly sample from that set.</p><pre><code class="language-julia-repl hljs">julia&gt; length(enumerate_cliffords(1))
+6
+
+julia&gt; length(enumerate_cliffords(2))
+720</code></pre><p>To also enumerate possible phases, you can use <a href="../API/#QuantumClifford.enumerate_phases-Tuple{CliffordOperator}"><code>enumerate_phases</code></a>.</p><pre><code class="language-julia-repl hljs">julia&gt; length(collect(enumerate_phases(tCNOT)))
+16
+
+julia&gt; length(collect(enumerate_phases(enumerate_cliffords(2))))
+11520</code></pre><h2 id="Common-entangled-states"><a class="docs-heading-anchor" href="#Common-entangled-states">Common entangled states</a><a id="Common-entangled-states-1"></a><a class="docs-heading-anchor-permalink" href="#Common-entangled-states" title="Permalink"></a></h2><p>Bell states and GHZ states have convenience constructors:</p><pre><code class="language-julia-repl hljs">julia&gt; bell()
++ XX
++ ZZ
+
+julia&gt; bell(2)
++ XX__
++ ZZ__
++ __XX
++ __ZZ
+
+julia&gt; ghz(4)
++ XXXX
++ ZZ__
++ _ZZ_
++ __ZZ</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../datastructures/">« Datastructure Choice</a><a class="docs-footer-nextpage" href="../noisycircuits/">Simulation of Noisy Circuits »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Sunday 29 December 2024 06:45">Sunday 29 December 2024</span>. Using Julia version 1.11.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
