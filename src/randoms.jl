@@ -1,4 +1,4 @@
-using Random: randperm, AbstractRNG, GLOBAL_RNG
+using Random: randperm, AbstractRNG, GLOBAL_RNG, rand!
 using ILog2
 import Nemo
 
@@ -21,11 +21,24 @@ function random_pauli end
 """An in-place version of [`random_pauli`](@ref)"""
 function random_pauli! end
 
+
+# Modified from `Base` for `BitArray`
+@inline _msk_end(::Type{T}, l::Int) where {T<:Unsigned} = ~T(0) >>> _mod(T, -l)
+
+# A mask for the non-coding bits in the last chunk.
+@inline _msk_end(P::PauliOperator) = _msk_end(eltype(P.xz), length(P))
+
+# Unset the leftover bits in the data array that don't code the Pauli operator.
+@inline function _unset_noncoding_bits!(P::PauliOperator)
+    msk = _msk_end(P)
+    P.xz[end] &= msk
+    P.xz[end÷2] &= msk
+    nothing
+end
+
 function random_pauli!(rng::AbstractRNG, P::PauliOperator; nophase=true, realphase=true)
-    n = nqubits(P)
-    for i in 1:n
-        P[i] = rand(rng, (true, false)), rand(rng, (true,false))
-    end
+    rand!(rng, P.xz)
+    _unset_noncoding_bits!(P)
     P.phase[] = nophase ? 0x0 : (realphase ? rand(rng,(0x0,0x2)) : rand(rng,0x0:0x3))
     P
 end

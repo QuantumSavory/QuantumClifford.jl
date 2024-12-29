@@ -5,8 +5,9 @@
 
 # News
 
-## v0.9.16 - dev
+## v0.9.16 - 2024-12-29
 
+- 100× faster unbiased `random_pauli`.
 - Enhancements to `GF(2)` Linear Algebra: unexported, experimental `gf2_row_echelon_with_pivots!`, `gf2_nullspace`, `gf2_rowspace_basis`.
 
 ## v0.9.15 - 2024-12-22
