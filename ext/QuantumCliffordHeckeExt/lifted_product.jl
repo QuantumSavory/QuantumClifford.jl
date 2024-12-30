@@ -28,7 +28,7 @@ During the construction, we do arithmetic operations to get the group algebra el
 Here `x` is the generator of the group algebra, i.e., offset-1 cyclic permutation, and `GA(1)` is the unit element.
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens; import LinearAlgebra: diagind;
+julia> import Hecke: group_algebra, GF, abelian_group, gens; import LinearAlgebra: diagind; using QuantumClifford.ECC;
 
 julia> l = 63; GA = group_algebra(GF(2), abelian_group(l)); x = gens(GA)[];
 
@@ -52,10 +52,12 @@ julia> code_n(c1), code_k(c1)
 (882, 24)
 ```
 
-A [[175, 19, d ≤ 0]] code from Eq. (18) in Appendix A of [raveendran2022finite](@cite),
+A [[175, 19, d ≤ 10]] code from Eq. (18) in Appendix A of [raveendran2022finite](@cite),
 following the 4th constructor.
 
 ```jldoctest
+julia> import Hecke; using QuantumClifford.ECC;
+
 julia> base_matrix = [0 0 0 0; 0 1 2 5; 0 6 3 1]; l = 7;
 
 julia> c2 = LPCode(base_matrix, l .- base_matrix', l);
@@ -162,15 +164,15 @@ Here is an example of a [[56, 28, 2]] 2BGA code from Table 2 of [lin2024quantum]
 with direct product of `C₄ x C₂`.
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens
+julia> import Hecke: group_algebra, GF, abelian_group, gens; using QuantumClifford.ECC;
 
 julia> GA = group_algebra(GF(2), abelian_group([14,2]));
 
 julia> x, s = gens(GA);
 
-julia> A = 1 + x^7
+julia> A = 1 + x^7;
 
-julia> B = 1 + x^7 + s + x^8 + s*x^7 + x
+julia> B = 1 + x^7 + s + x^8 + s*x^7 + x;
 
 julia> c = two_block_group_algebra_codes(A,B);
 
@@ -189,7 +191,7 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/qcga
 A [[756, 16, ≤ 34]] code from Table 3 of [bravyi2024high](@cite):
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens
+julia> import Hecke: group_algebra, GF, abelian_group, gens; using QuantumClifford.ECC;
 
 julia> l=21; m=18;
 
@@ -215,9 +217,13 @@ where `𝐺ᵣ = ℤ/l₁ × ℤ/l₂ × ... × ℤ/lᵣ`.
 A [[48, 4, 6]] Weight-6 TB-QLDPC code from Appendix A Table 2 of [voss2024multivariatebicyclecodes](@cite).
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens
+julia> import Hecke: group_algebra, GF, abelian_group, gens; using QuantumClifford.ECC;
 
 julia> l=4; m=6;
+
+julia> GA = group_algebra(GF(2), abelian_group([l, m]));
+
+julia> x, y = gens(GA);
 
 julia> z = x*y;
 
@@ -238,10 +244,10 @@ where `𝑙` and `𝑚` are coprime, and can be expressed as univariate polynomi
 with generator `𝜋 = 𝑥𝑦`. They can be viewed as a special case of Lifted Product construction
 based on abelian group `ℤₗ x ℤₘ` where `ℤⱼ` cyclic group of order `j`.
 
-[108, 12, 6]] coprime-bivariate bicycle (BB) code from Table 2 of [wang2024coprime](@cite).
+[[108, 12, 6]] coprime-bivariate bicycle (BB) code from Table 2 of [wang2024coprime](@cite).
 
 ```jldoctest
-julia> import Hecke: group_algebra, GF, abelian_group, gens
+julia> import Hecke: group_algebra, GF, abelian_group, gens; using QuantumClifford.ECC;
 
 julia> l=2; m=27;
 
@@ -252,6 +258,10 @@ julia> 𝜋 = gens(GA)[1];
 julia> A = 𝜋^2 + 𝜋^5  + 𝜋^44;
 
 julia> B = 𝜋^8 + 𝜋^14 + 𝜋^47;
+
+julia> c = two_block_group_algebra_codes(A, B);
+
+julia> code_n(c), code_k(c)
 (108, 12)
 ```
 
@@ -262,7 +272,7 @@ by the group presentation `⟨r | r³⁰⟩`, constructed via `Hecke.small_group
 Hecke's small groups are limited in scope and should only be used for single cyclic groups.
 
 ```jldoctest sg
-julia> import Hecke: group_algebra, GF, abelian_group, gens, small_group
+julia> import Hecke: group_algebra, GF, abelian_group, gens, small_group; using QuantumClifford.ECC;
 
 julia> l = 30;
 
@@ -314,6 +324,8 @@ See also: [`two_block_group_algebra_codes`](@ref), [`bicycle_codes`](@ref).
 A [[254, 28, 14 ≤ d ≤ 20]] code from (A1) in Appendix B of [panteleev2021degenerate](@cite).
 
 ```jldoctest
+julia> import Hecke; using QuantumClifford.ECC
+
 julia> c = generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 127);
 
 julia> code_n(c), code_k(c)
@@ -324,6 +336,8 @@ An [[70, 8, 10]] *abelian* 2BGA code from Table 1 of [lin2024quantum](@cite), wi
 order `l = 35`, illustrates that *abelian* 2BGA codes can be viewed as GB codes.
 
 ```jldoctest
+julia> import Hecke; using QuantumClifford.ECC
+
 julia> l = 35;
 
 julia> c1 = generalized_bicycle_codes([0, 15, 16, 18], [0, 1, 24, 27], l);
@@ -360,6 +374,8 @@ code with the group `G = ℤ₃ˣ³` corresponds to a cubic code.
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/haah_cubic).
 
 ```jldoctest
+julia> import Hecke; using QuantumClifford.ECC;
+
 julia> c = haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 6);
 
 julia> code_n(c), code_k(c)

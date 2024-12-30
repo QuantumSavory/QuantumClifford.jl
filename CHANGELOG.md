@@ -5,6 +5,15 @@
 
 # News
 
+## v0.9.16 - 2024-12-29
+
+- 100× faster unbiased `random_pauli`.
+- Enhancements to `GF(2)` Linear Algebra: unexported, experimental `gf2_row_echelon_with_pivots!`, `gf2_nullspace`, `gf2_rowspace_basis`.
+
+## v0.9.15 - 2024-12-22
+
+- `pftrajectories` now supports fast multiqubit measurements with `PauliMeasurement` in addition to the already supported single qubit measurements `sMX/Z/Y` and workarounds like `naive_syndrome_circuit`.
+
 ## v0.9.14 - 2024-11-03
 
 - **(fix)** `affectedqubits()` on `sMX`, `sMY`, and `sMR*`
@@ -75,7 +84,7 @@
 - Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
 - Significant improvements to the low-level circuit compiler (the sumtype compactifier), leading to faster Pauli frame simulation of noisy circuits.
 - Bump `QuantumOpticsBase.jl` package extension compat bound.
-- **(fix)** Remove printing of spurious debug info from the PyBP decoder. 
+- **(fix)** Remove printing of spurious debug info from the PyBP decoder.
 - **(fix)** Failed compactification of gates now only raises a warning instead of throwing an error. Defaults to slower non-compactified gates.
 
 ## v0.9.3 - 2024-04-10
@@ -93,7 +102,7 @@
 - Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.
 - Added the classical Reed-Muller code in the ECC module.
 - Added the surface code to the ECC module.
- 
+
 ## v0.9.0 - 2024-03-19
 
 - **(breaking)** The defaults in `random_pauli` are now `realphase=true` and `nophase=true`.
