@@ -8,3 +8,4 @@ operatordeterminism(::Type{<:AbstractOperation}) = NondeterministicOperatorTrait
 operatordeterminism(::Type{sMZ}) = NondeterministicOperatorTrait()
 operatordeterminism(::Type{sMX}) = NondeterministicOperatorTrait()
 operatordeterminism(::Type{sMY}) = NondeterministicOperatorTrait()
+operatordeterminism(::Type{sCNOT}) = DeterministicOperatorTrait()
