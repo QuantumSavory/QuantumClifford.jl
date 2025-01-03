@@ -67,6 +67,13 @@ For brute-force simulators:
 - [de2007massively](@cite)
 - [markov2018quantum](@cite)
 
+For efficient classical simulators:
+- [gottesman1998heisenberg](@cite)
+- [aaronson2004improved](@cite)
+- [terhal2002classical](@cite)
+- [bartlett2002efficient](@cite)
+- [jozsa2008matchgate](@cite)
+
 For Born rule probability estimators:
 - [seddon2021quantifying](@cite)
 - [pashayan2020estimation](@cite)

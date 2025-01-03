@@ -4,11 +4,12 @@ Brute-force simulation algorithms, such as *Schrödinger-style* ([fatima2021fast
 ([de2019massively](@cite), [markov2008simulating](@cite), [de2007massively](@cite)), and *hybrid* simulators
 ([markov2018quantum](@cite)) provide high precision for simulating *universal* quantum circuits, but
 they can become highly resource-intensive for circuits with moderate width (around *40* qubits) or depth.
-Alternatively, efficiently classically simulable quantum circuits, like stabilizer circuits, can be
-simulated using the *Gottesman-Knill* theorem, allowing the simulation of thousands of qubits with hundreds
-of thousands of gates. Research to overcome the limitations of these methods falls into two main categories:
-*Born rule probability estimators* that use a quasi-probabilistic representation of the density matrix, and
-*pure-state sampling simulators*.
+Alternatively, efficiently classically simulable quantum circuits ([gottesman1998heisenberg](@cite),
+[aaronson2004improved](@cite), [terhal2002classical](@cite), [bartlett2002efficient](@cite), [jozsa2008matchgate](@cite)),
+like stabilizer circuits, can be simulated using the *Gottesman-Knill* theorem, allowing the simulation
+of thousands of qubits with hundreds of thousands of gates. Research to overcome the limitations of these
+methods falls into two main categories: *Born rule probability estimators* that use a quasi-probabilistic
+representation of the density matrix, and *pure-state sampling simulators*.
 
 ### Aaronson and Gottesman's Simulator
 
@@ -22,7 +23,7 @@ non-stabilizer gates, incurring a heavy penalty even for small deviations from s
 
 ### Research Categories to Overcome Limitation
 
-#### **Born Rule Probability Estimators**
+#### Born Rule Probability Estimators
 
 - **Quasi-Probabilistic Representation**
   - *Quantifying quantum speedups: improved classical simulation from tighter magic monotones* ([seddon2021quantifying](@cite))
@@ -34,7 +35,7 @@ non-stabilizer gates, incurring a heavy penalty even for small deviations from s
   - *Negative Quasi-Probability as a Resource for Quantum Computation* ([veitch2012negative](@cite))
   - *Positive Wigner functions render classical simulation of quantum computation efficient* ([mari2012positive](@cite))
 
-#### **Pure-State Sampling Simulators**
+#### Pure-State Sampling Simulators
 
 - **Bravyi and Gosset Algorithms**
     - *Improved classical simulation of quantum circuits dominated by Clifford gates* ([bravyi2016improved](@cite))
@@ -49,7 +50,7 @@ non-stabilizer gates, incurring a heavy penalty even for small deviations from s
 - **Purpose**: Produce additive precision estimates of Born rule probabilities.
 - **Representation**: Density matrices are expressed as a linear combination of a preferred set of operators (frame).
 
-#### **Frame Choices**:
+#### Frame Choices
 
 - **Examples**:
   - **Weyl-Heisenberg displacement operators**
@@ -64,14 +65,14 @@ non-stabilizer gates, incurring a heavy penalty even for small deviations from s
       - *Negative Quasi-Probability as a Resource for Quantum Computation* ([veitch2012negative](@cite)
       - *Positive Wigner functions render classical simulation of quantum computation efficient* ([mari2012positive](@cite))
 
-#### **Special Mention**:
+#### Special Mention
 
 - **Dyadic Frame Simulator**:
   - Introduced in *Quantifying quantum speedups: improved classical simulation from tighter magic monotones* ([seddon2021quantifying](@cite))
   - Decomposes density matrices into stabilizer *dyads* ``|L\rangle\langle R|``.
   - Circuits promoted to universality using magic states.
 
-#### **Run-Time**:
+#### Run-Time
 
 - Depends quadratically on the dyadic negativity.
 - Dyadic negativity measures deviation from convex combinations of stabilizer dyads.
@@ -81,7 +82,7 @@ non-stabilizer gates, incurring a heavy penalty even for small deviations from s
 - **BG-Estimation Algorithm**: Produces multiplicative precision estimates of Born rule probabilities.
 - **BG-Sampling Algorithm**: Samples approximately from the quantum circuit outcome distribution.
 
-#### **Methodology**:
+#### Methodology
 
 - **State Representation**: Initial states are expressed as a linear combination of stabilizer states.
 - **Efficiently Simulable Circuits**:
@@ -89,7 +90,7 @@ non-stabilizer gates, incurring a heavy penalty even for small deviations from s
   - Clifford gates and computational basis measurements.
 - **Promoting Universality**: Allowing magic states in initial conditions.
 
-#### **Run-Time Dependence**:
+#### Run-Time Dependence
 
 - Linear in the stabilizer rank of the state.
 - **Stabilizer Rank**: Minimal number of stabilizer states required to represent the state as a linear combination.
@@ -109,7 +110,7 @@ non-stabilizer gates, incurring a heavy penalty even for small deviations from s
   - Generalized BG-sampling algorithm to include mixed states.
   - Improved run-time dependence on error tolerance for approximate sampling.
 
-#### **Mixed-State Extent**:
+#### Mixed-State Extent
 
 - **Definition**: Quantity governing run-time for mixed-state simulators.
 - **Comparison**: For $n$-qubit product states, dyadic negativity, stabilizer extent, and mixed-state extent are equivalent.
