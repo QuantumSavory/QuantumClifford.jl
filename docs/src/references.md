@@ -72,7 +72,7 @@ For efficient classical simulators:
 - [aaronson2004improved](@cite)
 - [terhal2002classical](@cite)
 - [bartlett2002efficient](@cite)
-- [jozsa2008matchgate](@cite)
+- [jozsa2008matchgates](@cite)
 
 For Born rule probability estimators:
 - [seddon2021quantifying](@cite)
