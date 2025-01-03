@@ -5,7 +5,7 @@ Brute-force simulation algorithms, such as *Schrödinger-style* ([fatima2021fast
 ([markov2018quantum](@cite)) provide high precision for simulating *universal* quantum circuits, but
 they can become highly resource-intensive for circuits with moderate width (around *40* qubits) or depth.
 Alternatively, efficiently classically simulable quantum circuits ([gottesman1998heisenberg](@cite),
-[aaronson2004improved](@cite), [terhal2002classical](@cite), [bartlett2002efficient](@cite), [jozsa2008matchgate](@cite)),
+[aaronson2004improved](@cite), [terhal2002classical](@cite), [bartlett2002efficient](@cite), [jozsa2008matchgates](@cite)),
 like stabilizer circuits, can be simulated using the *Gottesman-Knill* theorem, allowing the simulation
 of thousands of qubits with hundreds of thousands of gates. Research to overcome the limitations of these
 methods falls into two main categories: *Born rule probability estimators* that use a quasi-probabilistic
