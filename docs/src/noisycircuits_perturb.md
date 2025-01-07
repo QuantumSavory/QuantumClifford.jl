@@ -42,7 +42,52 @@ circuit = [n,g1,g2,m,v]
 
 petrajectories(initial_state, circuit)
 ```
-[![](https://mermaid.ink/img/pako:eNq1lltvmzAUgP-K5T60k6DiFrogbS_r9raLljxUCXkwxiRWDI58WRc1_e91MVlIyzRteH4JHH_n41g6jv0AMS8JzGDeVIzf4w0SCsxv8waYIRVSZHl3BxaLFfD994cZrTVDivIGRIe1mQzR1fLDl69zEHrx6s2fs2KbVfxdVmiz8OssW4PlNcZEykMbi451RV5yxhYDbPEbFgP_2sAfheCiQ_EwGp2XIIjUTEXL7-3vqscVfaXF4gEMD-jCc64LGk7q-mo503UXkgA1JZD7uuCMYrATvEAFZVQReSy5q8_m9kNxP2QezOsPxDSRy289jZ0-jbnQBHTFAvAOBNfTIJ4k6UvuE6JMCwIsE8TpJEinryEmT7YWnCQ3aZCsjn2yZ8R2C6goY9lF1Q4PVLxRfoVqyvYZuJwRQatLTyrBtyS7CNrRV3StM95ROHDg8Y7IwVoiB2uJRq6la2wXksiFJB4nMbtonMBuwH91MNpsZ60nAOfzHe7f01JtsnD308OccZEVDOGtN_SBl8bQuTFyboydGxPnxolzY-rceOPc-Na5ceq-w__DpnG_a8Lx2wZ6sCaiRrQ0V8GH5w_kUG1ITXKYmceSVMj8FebmlvhoUKQVn-0bDDNljn4PCq7XG5hVz0e3B_WuNMfALUVrgepf0R1qFpyf3klJFRef7eWzvYM-PgGgdnFL?type=png)](https://mermaid-js.github.io/mermaid-live-editor/edit#pako:eNq1lltvmzAUgP-K5T60k6DiFrogbS_r9raLljxUCXkwxiRWDI58WRc1_e91MVlIyzRteH4JHH_n41g6jv0AMS8JzGDeVIzf4w0SCsxv8waYIRVSZHl3BxaLFfD994cZrTVDivIGRIe1mQzR1fLDl69zEHrx6s2fs2KbVfxdVmiz8OssW4PlNcZEykMbi451RV5yxhYDbPEbFgP_2sAfheCiQ_EwGp2XIIjUTEXL7-3vqscVfaXF4gEMD-jCc64LGk7q-mo503UXkgA1JZD7uuCMYrATvEAFZVQReSy5q8_m9kNxP2QezOsPxDSRy289jZ0-jbnQBHTFAvAOBNfTIJ4k6UvuE6JMCwIsE8TpJEinryEmT7YWnCQ3aZCsjn2yZ8R2C6goY9lF1Q4PVLxRfoVqyvYZuJwRQatLTyrBtyS7CNrRV3StM95ROHDg8Y7IwVoiB2uJRq6la2wXksiFJB4nMbtonMBuwH91MNpsZ60nAOfzHe7f01JtsnD308OccZEVDOGtN_SBl8bQuTFyboydGxPnxolzY-rceOPc-Na5ceq-w__DpnG_a8Lx2wZ6sCaiRrQ0V8GH5w_kUG1ITXKYmceSVMj8FebmlvhoUKQVn-0bDDNljn4PCq7XG5hVz0e3B_WuNMfALUVrgepf0R1qFpyf3klJFRef7eWzvYM-PgGgdnFL)
+```@raw html
+<div class="mermaid">
+
+flowchart TD
+    state[XX ZZ] -->|Simulation 2|gate1a([CNOT 1,3])
+    state[XX ZZ] -->|Simulation 3|gate1b([CNOT 1,3])
+    state[XX ZZ] -->|Simulation 1|gate1c([CNOT 1,3])
+    gate1a -->|Success| gate2a([CNOT 2,4])
+    gate1b -->|Success| gate2b([CNOT 2,4])
+    gate1c -.->|Error| gate2c([CNOT 2,4])
+    gate2a -->|Success|result2[Result]
+    gate2b -.->|Error|result3[Result]
+    gate2c -->|Success|result1[Result]
+    result1-->sum([Sum results and symbolic probabilites])
+    result2-->sum
+    result3-->sum
+    sum-->values[Probabilites
+              True Success  = 0.903546
+              Failure   = 0.0365069
+              False Success = 0.0547604]
+    style state fill:#ffffff, font-family: 'Serif',stroke:#000000
+    style gate1a fill:#ffffff, font-family: 'Serif',stroke:#000000
+    style gate1b fill:#ffffff, font-family: 'Serif',stroke:#000000
+    style gate1c fill:#ffffff, font-family: 'Serif',stroke:#000000
+    style gate2a fill:#ffffff, font-family: 'Serif',stroke:#000000
+    style gate2b fill:#ffffff, font-family: 'Serif',stroke:#000000
+    style gate2c fill:#ffffff, font-family: 'Serif',stroke:#000000
+    style result1 fill:#ffffff, font-family: 'Serif',stroke:#000000
+    style result2 fill:#ffffff, font-family: 'Serif',stroke:#000000
+    style result3 fill:#ffffff, font-family: 'Serif',stroke:#000000
+    style sum fill:#ffffff, font-family: 'Serif',stroke:#000000
+    style values fill:#ffffff, font-family: 'Serif',stroke:#000000
+    linkStyle 0 stroke:#000000,stroke-width:1px,color:black,font-family: 'Serif'
+    linkStyle 1 stroke:#000000,stroke-width:1px,color:black,font-family: 'Serif'
+    linkStyle 2 stroke:#000000,stroke-width:1px,color:black,font-family: 'Serif'
+    linkStyle 3 stroke:#000000,stroke-width:1px,color:black,font-family: 'Serif'
+    linkStyle 4 stroke:#000000,stroke-width:1px,color:black,font-family: 'Serif'
+    linkStyle 5 stroke:#000000,stroke-width:1px,color:black,font-family: 'Serif'
+    linkStyle 6 stroke:#000000,stroke-width:1px,color:black,font-family: 'Serif'
+    linkStyle 7 stroke:#000000,stroke-width:1px,color:black,font-family: 'Serif'
+    linkStyle 8 stroke:#000000,stroke-width:1px,color:black,font-family: 'Serif'
+    linkStyle 9 stroke:#000000,stroke-width:1px,color:black,font-family: 'Serif'
+    linkStyle 10 stroke:#000000,stroke-width:1px,color:black,font-family: 'Serif'
+    linkStyle 11 stroke:#000000,stroke-width:1px,color:black,font-family: 'Serif'
+    linkStyle 12 stroke:#000000,stroke-width:1px,color:black,font-family: 'Serif'
+</div>```
 For more examples, see the [notebook comparing the Monte Carlo and Perturbative method](https://nbviewer.jupyter.org/github/QuantumSavory/QuantumClifford.jl/blob/master/docs/src/notebooks/Perturbative_Expansions_vs_Monte_Carlo_Simulations.ipynb) or this tutorial on [entanglement purification](https://github.com/QuantumSavory/QuantumClifford.jl/blob/master/docs/src/notebooks/Noisy_Circuits_Tutorial_with_Purification_Circuits.ipynb).
 
 ## Symbolic expansions
