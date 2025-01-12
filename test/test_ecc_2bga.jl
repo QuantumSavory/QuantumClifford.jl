@@ -1,7 +1,7 @@
 @testitem "ECC 2BGA" begin
     using Hecke
     using JuMP
-    using GLPK
+    using HiGHS
     using Hecke: group_algebra, GF, abelian_group, gens
     using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, distance
 

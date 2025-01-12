@@ -104,7 +104,7 @@ A [[40, 8, 5]] 2BGA code with the minimum distance of 5 from
 Table 2 of [lin2024quantum](@cite).
 
 ```jldoctest examples
-julia> import Hecke: group_algebra, GF, abelian_group, gens; import GLPK; import JuMP;
+julia> import Hecke: group_algebra, GF, abelian_group, gens; import HiGHS; import JuMP;
 
 julia> using QuantumClifford.ECC: two_block_group_algebra_codes, generalized_bicycle_codes; # hide
 
@@ -147,7 +147,8 @@ to a mixed integer linear program and using the GNU Linear Programming Kit.
 the code distance was calculated using the mixed integer programming approach.
 
 """
-function distance(c::Stabilizer; upper_bound=false, logical_qubit=code_k(c), all_logical_qubits=false, logical_operator_type=:X)
+function distance(c::Stabilizer; upper_bound=false, logical_qubit=code_k(c), all_logical_qubits=false, logical_operator_type=:X, solver = HiGHS)
+    opt = solver.Optimizer
     1 <= logical_qubit <= code_k(c) || throw(ArgumentError("The number of logical qubit must be between 1 and $(code_k(c)) inclusive"))
     logical_operator_type == :X || logical_operator_type == :Z || throw(ArgumentError("Invalid type of logical operator: Use :X or :Z"))
     l = get_lx_lz(c)[1]
@@ -160,7 +161,7 @@ function distance(c::Stabilizer; upper_bound=false, logical_qubit=code_k(c), all
     end
     weights = Dict{Int, Int}()
     for i in 1:logical_qubit
-        w = _minimum_distance(h, l[i, :])
+        w = _minimum_distance(h, l[i, :], opt)
         weights[i] = w
     end
     return upper_bound ? maximum(values(weights)) : (all_logical_qubits ? weights : minimum(values(weights)))
@@ -169,7 +170,7 @@ end
 # Computing minimum distance for quantum LDPC codes is a NP-Hard problem,
 # but we can solve mixed integer program (MIP) for small instance sizes.
 # inspired from [bravyi2024high](@cite) and [landahl2011fault](@cite).
-function _minimum_distance(hx, lx)
+function _minimum_distance(hx, lx, opt)
     n = size(hx, 2) # number of qubits
     m = size(hx, 1) # number of stabilizers
     # Maximum stabilizer weight
@@ -182,7 +183,8 @@ function _minimum_distance(hx, lx)
     num_var = n + m * num_anc_hx + num_anc_logical
     # MIP problem solver: https://jump.dev/JuMP.jl/stable/packages/GLPK/#GLPK.jl
     # GLPK.jl is a wrapper for the GNU Linear Programming Kit library.
-    model = Model(GLPK.Optimizer; add_bridges = false) # model
+    # HiGHS.jl is a wrapper for the HiGHS solver.
+    model = Model(opt; add_bridges = false) # model
     set_silent(model)
     @variable(model, x[1:num_var], Bin) # binary variables
     @objective(model, Min, sum(x[i] for i in 1:n)) # objective function
@@ -222,5 +224,5 @@ function _minimum_distance(hx, lx)
     # Ensure the model is solved and feasible
     is_solved_and_feasible(model) || error("Did not solve model")
     opt_val = sum(value(x[i]) for i in 1:n)
-    return Int(opt_val)
+    return round(Int, opt_val)
 end

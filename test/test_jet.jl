@@ -12,6 +12,7 @@
     using StaticArrays
     using JuMP
     using GLPK
+    using HiGHS
     using StyledStrings
 
     rep = report_package("QuantumClifford";
@@ -31,6 +32,7 @@
             # JET.jl does not eliminate all false positives from JuMP.Containers.DenseAxisArray.
             AnyFrameModule(JuMP.Containers),
             AnyFrameModule(GLPK),
+            AnyFrameModule(HiGHS),
     ))
 
     @show rep
