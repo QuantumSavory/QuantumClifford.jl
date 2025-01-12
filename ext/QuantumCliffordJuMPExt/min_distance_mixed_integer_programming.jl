@@ -104,7 +104,7 @@ A [[40, 8, 5]] 2BGA code with the minimum distance of 5 from
 Table 2 of [lin2024quantum](@cite).
 
 ```jldoctest examples
-julia> import Hecke: group_algebra, GF, abelian_group, gens; import HiGHS; import JuMP;
+julia> import Hecke: group_algebra, GF, abelian_group, gens; import GLPK; import HiGHS; import JuMP;
 
 julia> using QuantumClifford.ECC: two_block_group_algebra_codes, generalized_bicycle_codes; # hide
 
