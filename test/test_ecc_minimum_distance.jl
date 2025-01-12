@@ -63,7 +63,7 @@
         B = 1 + 𝜋 + 𝜋^12;
         c = two_block_group_algebra_codes(A, B)
         # minimum distance is exact, d = 8
-        for i in 1:2
+        for i in 1:2 # save test time
             @test code_n(c) == 70 && code_k(c) == 6
             @test distance(c, logical_qubit=i) == 8
             # By default, the minimum distance for the Z-type logical operator is computed.
@@ -82,7 +82,7 @@
         B = x + x^2 + y + z^2 + z^3
         c = two_block_group_algebra_codes(A, B)
         # minimum distance is exact, d = 5
-        for i in 1:2
+        for i in 1:2 # save test time
             @test code_n(c) == 30 && code_k(c) == 4
             @test distance(c, logical_qubit=i) == 5
             # By default, the minimum distance for the Z-type logical operator is computed.
