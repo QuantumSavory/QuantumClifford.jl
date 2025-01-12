@@ -15,9 +15,10 @@ const QuantumCliffordHeckeExt = Base.get_extension(QuantumClifford, :QuantumClif
 #DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
 
 import GLPK
+import HiGHS
 import JuMP
 
-const QuantumCliffordOscarExt = Base.get_extension(QuantumClifford, :QuantumCliffordJuMPExt)
+const QuantumCliffordJuMPExt = Base.get_extension(QuantumClifford, :QuantumCliffordJuMPExt)
 
 ENV["LINES"] = 80    # for forcing `displaysize(io)` to be big enough
 ENV["COLUMNS"] = 80

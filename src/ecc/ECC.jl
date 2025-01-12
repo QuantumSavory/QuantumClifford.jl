@@ -125,6 +125,7 @@ end
 The minimum distance of a qLDPC code requires:
 - a JuMP.jl backend to be loaded, e.g. `using JuMP`.
 - a GLPK.jl backend to be loaded, e.g. `using GLPK`.
+- a HiGHS.jl backend to be loaded, e.g. `using HiGHS`.
 """
 function distance end
 
