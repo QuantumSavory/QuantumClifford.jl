@@ -3,6 +3,8 @@
 ```@meta
 DocTestSetup = quote
     using QuantumClifford
+    using Quantikz
+    using StableRNGs
 end
 ```
 
@@ -691,4 +693,70 @@ which expands upon the algorithms available for each structure.
 
 # Random States and Circuits
 
-[`random_clifford`](@ref), [`random_stabilizer`](@ref), and [`enumerate_cliffords`](@ref) can be used for the generation of random states.
+[`random_clifford`](@ref), [`random_stabilizer`](@ref), [`random_destabilizer`](@ref), [`random_pauli`](@ref) 
+and [`enumerate_cliffords`](@ref) can be used for the generation of random states.
+
+```jldoctest
+julia> rng = StableRNG(42); # hide
+
+julia> random_clifford(rng, 2)
+X₁ ⟼ - _X
+X₂ ⟼ + XX
+Z₁ ⟼ + ZZ
+Z₂ ⟼ - Z_
+
+julia> random_stabilizer(rng, 2)
+- YX
++ XY
+
+julia> random_destabilizer(rng, 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ XY
++ YX
+𝒮𝓉𝒶𝒷
++ ZY
++ _Y
+
+julia> random_pauli(rng, 4)
++ X_X_
+
+julia> random_pauli(rng, 4; nophase=false)
++ ZXYX
+
+julia> enumerate_cliffords(2, clifford_cardinality(2))
+X₁ ⟼ + YY
+X₂ ⟼ + XZ
+Z₁ ⟼ + YX
+Z₂ ⟼ + Y_
+
+julia> enumerate_cliffords(2, clifford_cardinality(2), onlycoset=true)
+X₁ ⟼ + YY
+X₂ ⟼ + ZZ
+Z₁ ⟼ + YX
+Z₂ ⟼ + Y_
+```
+
+Random circuits can be built using [`random_brickwork_clifford_circuit`](@ref) and [`random_all_to_all_clifford_circuit`](@ref).
+
+The former features `brickwork` connectivity with each gate being a random `2-qubit` Clifford gate, 
+arranged in a lattice defined by `lattice_size`.
+
+```@example 1
+using QuantumClifford # hide
+using QuantumClifford.Experimental.NoisyCircuits # hide
+using Quantikz # hide
+using StableRNGs # hide
+rng = StableRNG(42); # hide
+# lattice size =(2, 2), layers = 2
+random_brickwork_clifford_circuit(rng, (2, 2), 2) 
+```
+
+The latter comprises `nqubits` qubits and `ngates` gates, with each gate being a random `2-qubit` Clifford 
+gate on randomly chosen qubits.
+
+```@example 1
+# nqubits = 3, ngates = 3
+random_all_to_all_clifford_circuit(rng, 3, 3)
+```
+
+For more examples on random circuits, see the [notebook on Stabilizer Codes Based on Random Circuits](https://github.com/QuantumSavory/QuantumClifford.jl/blob/master/docs/src/notebooks/Stabilizer_Codes_Based_on_Random_Circuits.ipynb).
