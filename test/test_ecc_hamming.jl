@@ -30,7 +30,7 @@
             computed_rank = rank(mat)
             @test computed_rank == n - k
         end
-        # mininum distance test is expensive (NP-Hard) so we test for r = [3,4]
+        # minimum distance test is expensive (NP-hard) so we test for r = [3,4]
         r_vals = [3,4]
         for r in r_vals
             H = parity_checks(Hamming(r))
