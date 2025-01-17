@@ -4,7 +4,7 @@
     using QuantumClifford
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC, Hamming
-    using Nemo: matrix, GF
+    using Nemo: matrix, GF, echelon_form
 
     function minimum_distance(H)
         n = size(H, 2)
@@ -21,16 +21,21 @@
     end
 
     @testset "Testing Hamming codes properties" begin
-        r_vals = [3, 4]
-        for r in r_vals
+        for r in 3:15
             n = 2 ^ r - 1
             k = 2 ^ r - 1 - r
             H = parity_checks(Hamming(r))
             H = Matrix{Bool}(H)
-            @test minimum_distance(parity_checks(Hamming(r))) == 3
             mat = matrix(GF(2), parity_checks(Hamming(r)))
             computed_rank = rank(mat)
             @test computed_rank == n - k
+        end
+        # mininum distance test is expensive (NP-Hard) so we test for r = [3,4]
+        r_vals = [3,4]
+        for r in r_vals
+            H = parity_checks(Hamming(r))
+            H = Matrix{Bool}(H)
+            @test minimum_distance(parity_checks(Hamming(r))) == 3
         end
         # Example taken from [huffman2010fundamentals](@cite).
         @test Matrix{Bool}(parity_checks(Hamming(3))) == [0  0  0  1  1  1  1;
