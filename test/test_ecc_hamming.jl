@@ -21,7 +21,7 @@
     end
 
     @testset "Testing Hamming codes properties" begin
-        for r in 3:15
+        for r in 3:20
             n = 2 ^ r - 1
             k = 2 ^ r - 1 - r
             H = parity_checks(Hamming(r))

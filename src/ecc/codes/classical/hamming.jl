@@ -28,21 +28,30 @@ struct Hamming <: ClassicalCode
 end
 
 function parity_checks(h::Hamming)
-    n = 2 ^ h.r - 1
-    rows = Int[]
-    cols = Int[]
-    vals = Int[]
-    for j in 1:n
-        columnsⱼ = bitstring(j)[end - h.r + 1:end]
-        for i in 1:h.r
-            if parse(Int, columnsⱼ[i]) == 1
-                push!(rows, i)
-                push!(cols, j)
-                push!(vals, 1)
+    n = 2^h.r - 1 # Number of columns in H
+    max_elements = n * h.r # Max non-zero entries in H
+    # Pre-allocate arrays for sparse matrix indices and values
+    rows = Vector{Int}(undef, max_elements)
+    cols = Vector{Int}(undef, max_elements)
+    vals = Vector{Int}(undef, max_elements)
+    idx = 1 # Tracks position in arrays
+    @inbounds for j in 1:n
+        mask = 1 << (h.r - 1) # Initialize mask for MSB
+        @simd for i in 1:h.r
+            if j & mask != 0 # Check if the i-th bit is 1
+                rows[idx] = i
+                cols[idx] = j
+                vals[idx] = 1
+                idx += 1
             end
+            mask >>= 1 # Shift mask to next bit
         end
     end
-    H = sparse(rows, cols, vals, h.r, n)
+    # Resize arrays to actual number of non-zero elements
+    rows = rows[1:idx-1]
+    cols = cols[1:idx-1]
+    vals = vals[1:idx-1]
+    return sparse(rows, cols, vals, h.r, n)
 end
 
 code_n(h::Hamming) = 2 ^ h.r - 1
