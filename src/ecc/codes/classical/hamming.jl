@@ -29,11 +29,11 @@ end
 
 function parity_checks(h::Hamming)
     n = 2^h.r - 1 # Number of columns in H
-    max_elements = n * h.r # Max non-zero entries in H
+    max_elem = n * h.r # Max non-zero entries in H
     # Pre-allocate arrays for sparse matrix indices and values
-    rows = Vector{Int}(undef, max_elements)
-    cols = Vector{Int}(undef, max_elements)
-    vals = Vector{Int}(undef, max_elements)
+    rows = Vector{Int}(undef, max_elem)
+    cols = Vector{Int}(undef, max_elem)
+    vals = Vector{Int}(undef, max_elem)
     idx = 1 # Tracks position in arrays
     @inbounds for j in 1:n
         mask = 1 << (h.r - 1) # Initialize mask for MSB
