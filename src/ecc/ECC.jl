@@ -129,7 +129,12 @@ The minimum distance of a qLDPC code requires:
 """
 function distance end
 
-distance(c::AbstractECC; kwargs...) = distance(parity_checks(c); kwargs...)
+function distance(c::AbstractECC; kwargs...)
+    if !iscss(c)
+        throw(ArgumentError("Computing the minimum distance of QLDPC using Mixed Integer Programming works only for CSS codes."))
+    end
+    return distance(parity_checks(c); kwargs...)
+end
 
 """Parity matrix of a code, given as a stabilizer tableau."""
 function parity_matrix(c::AbstractECC)
