@@ -55,10 +55,10 @@ flowchart TD
     gate2a -->|Success|result2[Result]
     gate2b -.->|Error|result3[Result]
     gate2c -->|Success|result1[Result]
-    result1-->sum([Sum results and symbolic probabilites])
+    result1-->sum([Sum results and symbolic probabilities])
     result2-->sum
     result3-->sum
-    sum-->values[Probabilites
+    sum-->values[Probabilities
               True Success  = 0.903546
               Failure   = 0.0365069
               False Success = 0.0547604]
