@@ -268,7 +268,7 @@ function random_destabilizer(rng::AbstractRNG, n::Int, memory::RandDestabMemory;
     perm = memory.perm
     _quantum_mallows!(rng, hadamard, perm, memory.arr)
     had_idxs = memory.had_idxs
-    j = 0
+    j = 1
     for i in eachindex(hadamard)
         @inbounds if hadamard[i]
             @inbounds had_idxs[j] = i
