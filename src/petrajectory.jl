@@ -34,45 +34,6 @@ function applybranches(::NondeterministicOperatorTrait, state, op::T; max_order=
     else 
         return [(s, continue_stat, 1, 0)] end
 end
-# function applybranches(::NondeterministicOperatorTrait, state, op::sMZ; max_order=1)
-#     s = copy(state)
-#     d, anticom, res = projectZ!(s, op.qubit)
-#     if isnothing(res)
-#         tab(stabilizerview(s)).phases[anticom] = 0x0
-#         s1 = copy(s)
-#         tab(stabilizerview(s)).phases[anticom] = 0x2
-#         s2 = s
-#         return [(s1, continue_stat, .5, 0), (s2, continue_stat, .5, 0)]
-#     else 
-#         return [(s, continue_stat, 1, 0)] end
-# end
-
-# function applybranches(::NondeterministicOperatorTrait, state, op::sMX; max_order=1)
-#     s = copy(state)
-#     d, anticom, res = projectX!(s, op.qubit)
-#     isnothing(res) && (res = tab(stabilizerview(s)).phases[anticom] = rand((0x0, 0x2)))
-#     if isnothing(res)
-#         tab(stabilizerview(s)).phases[anticom] = 0x0
-#         s1 = copy(s)
-#         tab(stabilizerview(s)).phases[anticom] = 0x2
-#         s2 = s
-#         return [(s1, continue_stat, .5, 0), (s2, continue_stat, .5, 0)]
-#     else 
-#         return [(s, continue_stat, 1, 0)] end
-# end
-
-# function applybranches(::NondeterministicOperatorTrait, state, op::sMY; max_order=1)
-#     s = copy(state)
-#     d, anticom, res = projectY!(s, op.qubit)
-#     if isnothing(res)
-#         tab(stabilizerview(s)).phases[anticom] = 0x0
-#         s1 = copy(s)
-#         tab(stabilizerview(s)).phases[anticom] = 0x2
-#         s2 = s
-#         return [(s1, continue_stat, .5, 0), (s2, continue_stat, .5, 0)]
-#     else 
-#         return [(s, continue_stat, 1, 0)] end
-# end
 
 function applybranches(::NondeterministicOperatorTrait, state, op; max_order=1)
     throw(ArgumentError(lazy"""
