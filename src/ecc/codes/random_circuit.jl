@@ -16,7 +16,7 @@ struct CircuitCode <: AbstractECC
     encode_qubits::AbstractArray
 end
 
-iscss(::Type{CircuitCode}) = nothing
+iscss(::Type{CircuitCode}) = false
 
 code_n(c::CircuitCode) = c.n
 
