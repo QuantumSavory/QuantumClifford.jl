@@ -1,8 +1,10 @@
 """
-The `[[4p, 2(p − 2), 4]]` Delfosse repetition code is derived from the classical [4, 1, 4]
-repetition code and is used to construct quantum stabilizer code.  The [4, 1, 4] repetition
-code is a classical error-correcting code where each bit is repeated four times to improve
-error detection and correction. It is defined by the following parity-check matrix:
+The `[[4p, 2(p − 2), 4]]` Delfosse repetition code is derived from the classical
+`[4, 1, 4]` repetition code and is used to construct quantum stabilizer code.
+
+The `[4, 1, 4]` repetition code is a classical error-correcting code where each bit
+is repeated four times to improve error detection and correction. It is defined by
+the following parity-check matrix:
 
 \$\$
 \\begin{pmatrix}
@@ -12,12 +14,37 @@ error detection and correction. It is defined by the following parity-check matr
 \\end{pmatrix}
 \$\$
 
-The `[[4p, 2(p − 2), 4]]` codes were introduced by Delfosse and Reichardt in the paper
-*Short Shor-style syndrome sequences* [delfosse2020short](@cite). The parameter `p` represents
-the **number of blocks** in the code construction, and it must be a multiple of 2. This is
-because the code is constructed by adding *eight qubits at a time*, with each addition
-consisting of *two blocks of four qubits*. Since each construction step adds two blocks,
-the total number of blocks `p` must always be a multiple of 2 for the code to be valid.
+The `[[4p, 2(p − 2), 4]]` codes were introduced by Delfosse and Reichardt in the
+paper *Short Shor-style syndrome sequences* [delfosse2020short](@cite). The parameter
+`p` specifies the **number of blocks** in the code construction. For the code to be
+valid, `p` must be a multiple of 2.
+
+An `[[24, 8, 4]]` Delfosse repetition code from [delfosse2020short](@cite).
+
+```jldoctest
+julia> using QuantumClifford; using QuantumClifford.ECC; # hide
+
+julia> c = parity_checks(DelfosseRepCode(6))
++ XXXX____________________
++ ____XXXX________________
++ ________XXXX____________
++ ____________XXXX________
++ ________________XXXX____
++ ____________________XXXX
++ __XX__XX__XX__XX__XX__XX
++ _X_X_X_X_X_X_X_X_X_X_X_X
++ ZZZZ____________________
++ ____ZZZZ________________
++ ________ZZZZ____________
++ ____________ZZZZ________
++ ________________ZZZZ____
++ ____________________ZZZZ
++ __ZZ__ZZ__ZZ__ZZ__ZZ__ZZ
++ _Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z
+
+julia> code_n(c), code_k(c)
+(24, 8)
+```
 """
 struct DelfosseRepCode <: AbstractECC
     blocks::Int
@@ -58,8 +85,6 @@ end
 code_n(c::DelfosseRepCode) = 4*c.blocks
 
 code_k(c::DelfosseRepCode) = 2*(c.blocks - 2)
-
-distance(c::DelfosseRepCode) = 4
 
 parity_checks_x(c::DelfosseRepCode) = _extend_414_repetition_code(c.blocks)
 

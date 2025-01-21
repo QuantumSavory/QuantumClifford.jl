@@ -2,7 +2,7 @@
 
     using LinearAlgebra
     using QuantumClifford.ECC
-    using QuantumClifford.ECC: DelfosseRepCode, _extend_414_repetition_code
+    using QuantumClifford.ECC: DelfosseRepCode, _extend_414_repetition_code, logz_ops, logx_ops
     using Nemo: matrix, GF
 
     @testset "Testing [[4p, 2(p − 2), 4]] DelfosseRepCode properties" begin
@@ -41,5 +41,14 @@
                                                       0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1  1;
                                                       0  0  1  1  0  0  1  1  0  0  1  1  0  0  1  1  0  0  1  1  0  0  1  1;
                                                       0  1  0  1  0  1  0  1  0  1  0  1  0  1  0  1  0  1  0  1  0  1  0  1];
+        # The minimum distance of [[4p, 2(p − 2), 4]] DelfosseRepCode is 4.
+        for i in 2:50
+            p = 2*i
+            c = parity_checks(DelfosseRepCode(p))
+            Lz = stab_to_gf2(logz_ops(c))
+            Lx = stab_to_gf2(logx_ops(c))
+            min_distance = min(minimum(sum(Lz, dims=2)), minimum(sum(Lx, dims=2)))
+            @test min_distance == 4
+        end
     end
 end
