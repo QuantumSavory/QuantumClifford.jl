@@ -55,6 +55,12 @@ function parity_checks(c::DelfosseRepCode)
     Stabilizer(code)
 end
 
+code_n(c::DelfosseRepCode) = 4*c.blocks
+
+code_k(c::DelfosseRepCode) = 2*(c.blocks - 2)
+
+distance(c::DelfosseRepCode) = 4
+
 parity_checks_x(c::DelfosseRepCode) = _extend_414_repetition_code(c.blocks)
 
 parity_checks_z(c::DelfosseRepCode) = _extend_414_repetition_code(c.blocks)
