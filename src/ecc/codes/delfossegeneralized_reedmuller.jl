@@ -122,6 +122,6 @@ code_n(c::DelfosseGeneralizedReedMuller) = 8*c.blocks*c.r
 
 code_k(c::DelfosseGeneralizedReedMuller) = (8*c.r − 2)*c.blocks − 2*c.m
 
-parity_checks_x(c::DelfosseGeneralizedReedMuller) = _generalize_ReedMuller_code(c.blocks)
+parity_checks_x(c::DelfosseGeneralizedReedMuller) = _generalize_ReedMuller_code(c.blocks, c.r, c.m)
 
-parity_checks_z(c::DelfosseGeneralizedReedMuller) = _generalize_ReedMuller_code(c.blocks)
+parity_checks_z(c::DelfosseGeneralizedReedMuller) = _generalize_ReedMuller_code(c.blocks, c.r, c.m)
