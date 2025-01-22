@@ -5,6 +5,10 @@
 
 # News
 
+## v0.9.17 - dev
+
+- Diagnostic Test: Check whether false positives with `allocated` occur on CI
+
 ## v0.9.16 - 2024-12-29
 
 - 100× faster unbiased `random_pauli`.
