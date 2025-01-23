@@ -1,6 +1,6 @@
 """
-The `[[8rp, (8r − 2)p − 2m, 4]]` Delfosse Genneralized Reed-Muller code is derived from
-the classical Reed-Muller code and is used to construct quantum stabilizer code. 
+The `[[8rp, (8r − 2)p − 2m, 4]]` Delfosse-Reichardt code is derived from the classical
+Reed-Muller code and is used to construct quantum stabilizer code. 
 
 Delfosse and Reichardt utilize the `[8, 4, 4]` Reed-Muller code to construct `[[8p, 6(p−1), 4]]`
 self-dual CSS quantum codes for `p≥2`, and the `[16, 11, 4]` Reed-Muller code to construct
@@ -8,8 +8,8 @@ self-dual CSS quantum codes for `p≥2`, and the `[16, 11, 4]` Reed-Muller code 
 the code construction, we proposed that these codes be generalized using the Reed-Muller code
 as the base matrix. Rather than hardcoding the `[8, 4, 4]` or `[16, 11, 4]` Reed-Muller codes,
 users should be able to input parameters `r` and `m`, thus enhancing the versatility of the
-code. This leads to the following generalized code: `[[8rp, (8r − 2)p − 2m, 4]]` Delfosse
-Generalized Reed-Muller code.
+code. This leads to the following generalized code: `[[8rp, (8r − 2)p − 2m, 4]]` Delfosse-Reichardt
+code.
 
 The `[[8p, 6(p − 1), 4]]` and `[[16p, 14p − 8, 4]]` codes were introduced by Delfosse and
 Reichardt in the paper *Short Shor-style syndrome sequences* [delfosse2020short](@cite). The
@@ -24,7 +24,7 @@ julia> using QuantumClifford; using QuantumClifford.ECC; # hide
 
 julia> p = 2; r = 1; m = 3;
 
-julia> c = parity_checks(DelfosseGeneralizedReedMuller(p,r,m))
+julia> c = parity_checks(DelfosseReichardt(p,r,m))
 + XXXXXXXX________
 + ________XXXXXXXX
 + XXXX____XXXX____
@@ -49,7 +49,7 @@ julia> using QuantumClifford; using QuantumClifford.ECC; # hide
 
 julia> p = 2; r = 2; m = 4;
 
-julia> c = parity_checks(DelfosseGeneralizedReedMuller(p,r,m))
+julia> c = parity_checks(DelfosseReichardt(p,r,m))
 + XXXXXXXXXXXXXXXX________________
 + ________________XXXXXXXXXXXXXXXX
 + XXXXXXXX________XXXXXXXX________
@@ -67,11 +67,11 @@ julia> code_n(c), code_k(c)
 (32, 20)
 ```
 """
-struct DelfosseGeneralizedReedMuller <: AbstractECC
+struct DelfosseReichardt <: AbstractECC
     blocks::Int
     r::Int
     m::Int
-    function DelfosseGeneralizedReedMuller(blocks,r,m)
+    function DelfosseReichardt(blocks,r,m)
         blocks < 2 && throw(ArgumentError("The number of blocks must be at least 2 to construct a valid code."))
         if r < 0 || r > m
             throw(ArgumentError("Invalid parameters: r must be non-negative and r ≤ m in order to valid code."))
@@ -80,11 +80,11 @@ struct DelfosseGeneralizedReedMuller <: AbstractECC
     end
 end
 
-function iscss(::Type{DelfosseGeneralizedReedMuller})
+function iscss(::Type{DelfosseReichardt})
     return true
 end
 
-function _generalize_ReedMuller_code(blocks::Int, r::Int, m::Int)
+function _generalize_delfosse_reichardt_code(blocks::Int, r::Int, m::Int)
     # base matrix: Reed-Muller paritycheck matrix
     H = parity_checks(ReedMuller(r,m))
     r, c = size(H)
@@ -111,17 +111,17 @@ function _generalize_ReedMuller_code(blocks::Int, r::Int, m::Int)
     return extended_H
 end
 
-function parity_checks(c::DelfosseGeneralizedReedMuller)
-    extended_mat = _generalize_ReedMuller_code(c.blocks, c.r, c.m)
+function parity_checks(c::DelfosseReichardt)
+    extended_mat = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)
     hx, hz = extended_mat, extended_mat
     code = CSS(hx, hz)
     Stabilizer(code)
 end
 
-code_n(c::DelfosseGeneralizedReedMuller) = 8*c.blocks*c.r
+code_n(c::DelfosseReichardt) = 8*c.blocks*c.r
 
-code_k(c::DelfosseGeneralizedReedMuller) = (8*c.r − 2)*c.blocks − 2*c.m
+code_k(c::DelfosseReichardt) = (8*c.r − 2)*c.blocks − 2*c.m
 
-parity_checks_x(c::DelfosseGeneralizedReedMuller) = _generalize_ReedMuller_code(c.blocks, c.r, c.m)
+parity_checks_x(c::DelfosseReichardt) = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)
 
-parity_checks_z(c::DelfosseGeneralizedReedMuller) = _generalize_ReedMuller_code(c.blocks, c.r, c.m)
+parity_checks_z(c::DelfosseReichardt) = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)

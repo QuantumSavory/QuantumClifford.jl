@@ -1,9 +1,9 @@
-@testitem "ECC [[8rp, (8r − 2)p − 2m, 4]] Delfosse Generalized ReedMuller code" begin
+@testitem "ECC [[8rp, (8r − 2)p − 2m, 4]] Delfosse-Reichardt code" begin
 
     using LinearAlgebra
     using QuantumClifford
     using QuantumClifford.ECC
-    using QuantumClifford.ECC: DelfosseGeneralizedReedMuller, _generalize_ReedMuller_code
+    using QuantumClifford.ECC: DelfosseReichardt, _generalize_delfosse_reichardt_code
     using Nemo: matrix, GF, echelon_form
 
     @testset "Testing [[8rp, (8r − 2)p − 2m, 4]] DelfosseRepCode properties" begin
@@ -15,7 +15,7 @@
                 p = i
                 n = 8*r*p
                 k = (8*r-2)*p-2*m
-                stab = parity_checks(DelfosseGeneralizedReedMuller(p,r,m))
+                stab = parity_checks(DelfosseReichardt(p,r,m))
                 H = stab_to_gf2(stab)
                 mat = matrix(GF(2), H)
                 computed_rank = rank(mat)
@@ -31,7 +31,7 @@
                 p = i
                 n = 8*r*p
                 k = (8*r-2)*p-2*m
-                stab = parity_checks(DelfosseGeneralizedReedMuller(p,r,m))
+                stab = parity_checks(DelfosseReichardt(p,r,m))
                 H = stab_to_gf2(stab)
                 mat = matrix(GF(2), H)
                 computed_rank = rank(mat)
@@ -49,6 +49,6 @@
                      0 0 0 0 1 1 1 1 0 0 0 0 1 1 1 1;
                      0 0 1 1 0 0 1 1 0 0 1 1 0 0 1 1;
                      0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1];
-       @test echelon_form(matrix(GF(2), Matrix{Int}(_generalize_ReedMuller_code(blocks,r,m)))) == echelon_form(matrix(GF(2), mat_paper))
+       @test echelon_form(matrix(GF(2), Matrix{Int}(_generalize_delfosse_reichardt_code(blocks,r,m)))) == echelon_form(matrix(GF(2), mat_paper))
     end
 end
