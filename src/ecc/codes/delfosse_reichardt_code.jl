@@ -1,6 +1,6 @@
 """
 The `[[8rp, (8r − 2)p − 2m, 4]]` Delfosse-Reichardt code is derived from the classical
-Reed-Muller code and is used to construct quantum stabilizer code. 
+Reed-Muller code and is used to construct quantum stabilizer code.
 
 Delfosse and Reichardt utilize the `[8, 4, 4]` Reed-Muller code to construct `[[8p, 6(p−1), 4]]`
 self-dual CSS quantum codes for `p≥2`, and the `[16, 11, 4]` Reed-Muller code to construct
@@ -15,9 +15,10 @@ The `[[8p, 6(p − 1), 4]]` and `[[16p, 14p − 8, 4]]` codes were introduced by
 Reichardt in the paper *Short Shor-style syndrome sequences* [delfosse2020short](@cite). The
 parameter `p` specifies the **number of blocks** in the code construction.
 
-An `[[16, 6, 4]]` Delfosse Genneralized `[8,4,4]` Reed-Muller code from [delfosse2020short](@cite).
+# [[8p, 6(p−1), 4]] code family
 
-# [[8p, 6(p−1), 4]] code
+An `[[16, 6, 4]]` Delfosse-Reichardt code of from `[[8p, 6(p−1), 4]]` code family
+from [delfosse2020short](@cite).
 
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC; # hide
@@ -40,9 +41,9 @@ julia> code_n(c), code_k(c)
 (16, 6)
 ```
 
-# [[16p, 14p − 8, 4]] code
+# [[16p, 14p − 8, 4]] code family
 
-An `[[32, 20, 4]]` Delfosse Genneralized `[16,11,4]` Reed-Muller code from [delfosse2020short](@cite).
+An `[[32, 20, 4]]` Delfosse-Reichardt code of from `[[16p, 14p − 8, 4]]` code family
 
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC; # hide
