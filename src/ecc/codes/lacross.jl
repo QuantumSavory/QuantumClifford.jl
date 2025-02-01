@@ -44,7 +44,7 @@ julia> using QuantumClifford: stab_looks_good
 
 julia> n = 7; polynomial = [1,1,0,1];
 
-julia> c = parity_checks(Lacross(7,polynomial,false));
+julia> c = parity_checks(Lacross(n,polynomial,false));
 
 julia> code_n(c), code_k(c)
 (98, 18)
@@ -59,7 +59,7 @@ full rank seed circulant matrix from [pecorari2025high](@cite).
 ```jldoctest lacrosseg
 julia> n = 7; polynomial = [1,1,0,1];
 
-julia> c = parity_checks(Lacross(7,polynomial,true));
+julia> c = parity_checks(Lacross(n,polynomial,true));
 
 julia> code_n(c), code_k(c)
 (65, 9)
