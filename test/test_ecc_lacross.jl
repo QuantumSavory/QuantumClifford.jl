@@ -1,7 +1,7 @@
 @testitem "ECC Lacross" begin
     using Hecke
     using QuantumClifford: stab_looks_good
-    using QuantumClifford.ECC: Lacross code_k, code_n
+    using QuantumClifford.ECC: Lacross, code_k, code_n
 
     @testset "Reproduce Figure 3 of [pecorari2025high](@cite)" begin
         # [[52, 4, 4]]
