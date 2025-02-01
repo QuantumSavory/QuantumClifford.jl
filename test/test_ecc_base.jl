@@ -156,7 +156,7 @@ const code_instance_args = Dict(
     :CircuitCode => random_circuit_code_args,
     :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, other_lifted_product_codes)),
     :QuantumReedMuller => [3, 4, 5],
-    :Lacross => [(7,[1,1,0,1],false), (7,[1,1,0,1],true)]
+    :Lacross => [(7,3,[1,0,1],false), (7,3,[1,0,1],true)]
     )
 
 function all_testablable_code_instances(;maxn=nothing)
