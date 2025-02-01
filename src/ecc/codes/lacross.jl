@@ -1,31 +1,38 @@
 """
-A La-cross code is quantum LDPC code constructed using the hypergraph product of two
-classical LDPC codes. The LaCross LDPC code is characterized by its parity-check matrix,
-which is derived from circulant matrices with specific properties.
+A **La-Cross** code is quantum LDPC code constructed using the hypergraph product
+of two classical LDPC codes. The LaCross LDPC code is characterized by its parity
+check matrix, which is derived from circulant matrices with specific properties. These
+codes were introduced in [pecorari2025high](@cite).
 
-# Properties of Circulant Matrices
+# Cyclic codes and circulant matrices
 
-A circulant matrix is one where each row is a cyclic shift of the first row. The
-parity-check matrix H can be described as:
-
-\$\$
-H = \\text{circ}(c_0, c_1, c_2, \\dots, c_{n-1}) \\in \\mathbb{F}_2^{n \\times n}.
-\$\$
-
-Each element ``c_i`` (for ``i = 0, 1, \\dots, n-1``) corresponds to a polynomial of
-degree n-1:
+A **cyclic code** is a linear code in which codewords remain valid under cyclic
+shifts. A **circulant matrix** is a square matrix where each row is a cyclic shift
+of the first row. When the parity-check matrix `H` is circulant, the code is fully
+determined by its first row:
 
 \$\$
-h(x) = c_0 + c_1 x + c_2 x^2 + \\dots + c_{n-1} x^{n-1}.
+H = \\text{circ}(c_0, c_1, \\dots, c_k, 0, \\dots, 0) \\in \\mathbb{F}_2^{n \\times n}.
 \$\$
 
+The elements ``c_i`` (for ``i = 0, 1, \\dots, k``) correspond to the coefficients of
+a ``degree-k`` polynomial:
 
-This polynomial belongs to the ring ``\\mathbb{F}_2[x]/(x^n - 1)``, which consists of
-polynomials modulo ``x^n - 1``. In this formulation, cyclic shifts in ``\\mathbb{F}_2^n``
-correspond to multiplications by ``x`` in ``\\mathbb{F}_2[x]/(x^n - 1)``, making this
-representation particularly useful in coding theory.
+\$\$
+h(x) = 1 + \\sum_{i=1}^{k} c_i x^i \\in \\mathbb{F}_2[x]/(x^n - 1).
+\$\$
 
-# Polynomial Representation
+This establishes a mapping between ``\\mathbb{F}_2^n`` and the quotient ring
+``\\mathbb{F}_2[x]/(x^n - 1)``, where cyclic shifts in ``\\mathbb{F}_2^n`` correspond
+to multiplications by `x` in the polynomial ring. Since multiplication by `x` preserves
+the ideal structure of ``\\mathbb{F}_2[x]/(x^n - 1)``, cyclic codes correspond to
+ideals in this ring. These ideals are in one-to-one correspondence with unitary mod-2
+divisors of `x^n - 1`  with a leading coefficient of 1. Consequently, the fundamental
+building blocks of cyclic codes correspond to the factorization of `x^n - 1`. 
+
+!!! note For k = 1, the generator polynomial h(x) = 1 + x defines the **repetition code**.
+
+# Polynomial representation
 
 The first row of a circulant matrix ``H = \\text{circ}(c_0, c_1, c_2, \\dots, c_{n-1})``
 can be mapped to the coefficients of a polynomial ``h(x)``. For instance, if the first
@@ -34,7 +41,7 @@ representation aids in the analysis and design of cyclic codes.
 
 # Example
 
-An `[[98, 18, 4]]` La-cross code from with `h(x) = h(x) = 1 + x + x^3` and `n = 7`
+An `[[98, 18, 4]]` La-cross code from with `h(x) = h(x) = 1 + x + x^3`, `n = 7`, and `k = 3`
 from [pecorari2025high](@cite).
 
 ```jldoctest lacrosseg
@@ -42,9 +49,9 @@ julia> using QuantumClifford; using QuantumClifford.ECC; # hide
 
 julia> using QuantumClifford: stab_looks_good
 
-julia> n = 7; polynomial = [1,1,0,1];
+julia> n = 7; k = 3; coeffs = [1,0,1];
 
-julia> c = parity_checks(Lacross(n,polynomial,false));
+julia> c = parity_checks(Lacross(n,k,coeffs,false));
 
 julia> code_n(c), code_k(c)
 (98, 18)
@@ -53,13 +60,13 @@ julia> stab_looks_good(copy(c), remove_redundant_rows=true)
 true
 ```
 
-An `[[65, 9, 4]]` La-cross code from with `h(x) = h(x) = 1 + x + x^3`, `n = 7` and
-full rank seed circulant matrix from [pecorari2025high](@cite).
+An `[[65, 9, 4]]` La-cross code from with `h(x) = h(x) = 1 + x + x^3`, `n = 7`, `k = 3`
+and full rank seed circulant matrix from [pecorari2025high](@cite).
 
 ```jldoctest lacrosseg
-julia> n = 7; polynomial = [1,1,0,1];
+julia> n = 7; k = 3; coeffs = [1,0,1];
 
-julia> c = parity_checks(Lacross(n,polynomial,true));
+julia> c = parity_checks(Lacross(n,k,coeffs,true));
 
 julia> code_n(c), code_k(c)
 (65, 9)
@@ -73,10 +80,18 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/lacr
 struct Lacross <: AbstractECC
     """The block length of the classical seed code"""
     n::Int
+    """The degree of the polynomial."""
+    k::Int
     """The polynomial representation of the first row of the circulant parity-check matrix."""
-    pattern::Vector{Int}
+    coeffs::Vector{Int}
     """A flag indicating whether to use the full-rank rectangular matrix (true) or the original circulant matrix (false)."""
     full_rank::Bool
+    function Lacross(n, k, coeffs, full_rank)
+        k <= 0 && throw(ArgumentError("Degree k must be positive."))
+        n <= 0 && throw(ArgumentError("Block length must be positive."))
+        length(coeffs) != k && throw(ArgumentError("Length of coeffs vector must match degree k."))
+        new(n,k,coeffs,full_rank)
+    end
 end
 
 function iscss(::Type{Lacross})
@@ -84,10 +99,13 @@ function iscss(::Type{Lacross})
 end
 
 function parity_checks_xz(c::Lacross)
-    first_r = zeros(Int, c.n)
-    first_r[1:length(c.pattern)] = c.pattern
+    first_row = zeros(Int, c.n)
+    first_row[1] = 1 # Constant term (x⁰)
+    for i in 1:c.k
+        first_row[i+1] = c.coeffs[i] # Coefficients for x¹, x², ..., xᵏ
+    end
     H = zeros(Int, c.n, c.n)
-    H[1, :] = first_r
+    H[1, :] = first_row
     for i in 2:c.n
         H[i, :] = circshift(H[i-1, :], 1)
     end
