@@ -1,10 +1,10 @@
 """
-A **La-Cross** code is quantum LDPC code constructed using the hypergraph product
-of two classical LDPC codes. The LaCross LDPC code is characterized by its parity
-check matrix, which is derived from circulant matrices with specific properties. These
-codes were introduced in [pecorari2025high](@cite).
+The **La-Cross** code is a quantum LDPC code constructed using the hypergraph product
+of two classical seed LDPC codes. It is characterized by its parity check matrix `H`,
+which is derived from **circulant** matrices with specific properties. These codes were
+introduced in [pecorari2025high](@cite).
 
-La-Cross code has two families: one for **periodic boundary** conditions and one for
+The La-Cross code has two families: one for **periodic boundary** conditions and one for
 **open boundary** conditions:
 
 ```@raw html
@@ -17,6 +17,13 @@ graph TD
     C -- full_rank = true --> E[⟦❨n² - k²❩ + n², k², d⟧]
 </div>
 ```
+
+!!! note When `H` is square and circulant (`full_rank=false`), classical checks connect
+opposite endpoints of the `length-n` classical code and give rise to a quantum code with
+stabilizers connecting opposite array boundaries, i.e. with **periodic boundary conditions**.
+On the contrary, **rectangular** parity-check matrices in ``\\mathbb{F}_2^{(n−k)×n}`` give
+rise to a quantum code with stabilizers stretching up to the array extent, i.e. with **open
+boundary conditions**.
 
 # Cyclic codes and circulant matrices
 
@@ -40,11 +47,11 @@ This establishes a mapping between ``\\mathbb{F}_2^n`` and the quotient ring
 ``\\mathbb{F}_2[x]/(x^n - 1)``, where cyclic shifts in ``\\mathbb{F}_2^n`` correspond
 to multiplications by `x` in the polynomial ring. Since multiplication by `x` preserves
 the ideal structure of ``\\mathbb{F}_2[x]/(x^n - 1)``, cyclic codes correspond to
-ideals in this ring. These ideals are in one-to-one correspondence with unitary mod-2
-divisors of `x^n - 1`  with a leading coefficient of 1. Consequently, the fundamental
-building blocks of cyclic codes correspond to the factorization of `x^n - 1`. 
+ideals in this ring. These ideals are in one-to-one correspondence with unitary``mod-2``
+divisors of ``x^n - 1`` with a leading coefficient of 1. Consequently, the fundamental
+building blocks of cyclic codes correspond to the factorization of ``x^n - 1``.
 
-!!! note For k = 1, the generator polynomial h(x) = 1 + x defines the **repetition code**.
+!!! note For `k = 1`, the generator polynomial `h(x) = 1 + x` defines the **repetition code**.
 
 # Polynomial representation
 
@@ -53,9 +60,14 @@ can be mapped to the coefficients of a polynomial ``h(x)``. For instance, if the
 row is ``[1, 1, 0, 1]``, the polynomial is: ``h(x) = 1 + x + x^3``. This polynomial-based
 representation aids in the analysis and design of cyclic codes.
 
+!!! The **next-to-next-to-nearest neighbor** connectivity implies the use of a *degree-3*
+seed polynomial ``h(x) = 1 + x + x^2 + x^3`` in the ring ``\\mathbb{F}_2[x]/(x^n - 1)`` for
+a specific code length `n`. Additionally, the condition of low stabilizer weight requires
+the polynomial ``1 + x + x^3``.
+
 # Example
 
-An `[[98, 18, 4]]` La-cross code from with `h(x) = h(x) = 1 + x + x^3`, `n = 7`, and `k = 3`
+An `[[98, 18, 4]]` La-cross code from with `h(x) = 1 + x + x^3`, `n = 7`, and `k = 3`
 from [pecorari2025high](@cite).
 
 ```jldoctest lacrosseg
@@ -74,8 +86,8 @@ julia> stab_looks_good(copy(c), remove_redundant_rows=true)
 true
 ```
 
-An `[[65, 9, 4]]` La-cross code from with `h(x) = h(x) = 1 + x + x^3`, `n = 7`, `k = 3`
-and full rank seed circulant matrix from [pecorari2025high](@cite).
+An `[[65, 9, 4]]` La-cross code from with `h(x) = 1 + x + x^3`, `n = 7`, `k = 3`
+and full rank seed *rectangular* circulant matrix from [pecorari2025high](@cite).
 
 ```jldoctest lacrosseg
 julia> n = 7; k = 3; coeffs = [1,0,1];
@@ -139,3 +151,7 @@ parity_checks_x(c::Lacross) = parity_checks_xz(c)[1]
 parity_checks_z(c::Lacross) = parity_checks_xz(c)[2]
 
 parity_checks(c::Lacross) = parity_checks(CSS(parity_checks_xz(c)...))
+
+code_n(c::Lacross) = c.full_rank ? (c.n^2 - c.k^2) + c.n^2 : 2 * c.n^2
+
+code_k(c::Lacross) = c.full_rank ? c.k^2 : 2 * c.k^2
