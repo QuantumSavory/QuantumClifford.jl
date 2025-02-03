@@ -14,7 +14,7 @@ graph TD
     A --> C[Open Boundary]
 
     B -- full_rank = false --> D[⟦2n², 2k², d⟧]
-    C -- full_rank = true --> E[⟦❨n² - k²❩ + n², k², d⟧]
+    C -- full_rank = true --> E[⟦❨n - k❩² + n², k², d⟧]
 </div>
 ```
 
@@ -151,3 +151,7 @@ parity_checks_x(c::Lacross) = parity_checks_xz(c)[1]
 parity_checks_z(c::Lacross) = parity_checks_xz(c)[2]
 
 parity_checks(c::Lacross) = parity_checks(CSS(parity_checks_xz(c)...))
+
+code_k(c::Lacross) = c.full_rank ? c.k^2 : 2*c.k^2
+
+code_n(c::Lacross) = c.full_rank ? (c.n-c.k)^2+c.n^2 : 2*c.n^2
