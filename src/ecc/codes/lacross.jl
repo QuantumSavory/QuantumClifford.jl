@@ -4,7 +4,7 @@ of two classical LDPC codes. The LaCross LDPC code is characterized by its parit
 check matrix, which is derived from circulant matrices with specific properties. These
 codes were introduced in [pecorari2025high](@cite).
 
-La-Cross Code has two families: one for **periodic boundary** conditions and one for
+La-Cross code has two families: one for **periodic boundary** conditions and one for
 **open boundary** conditions:
 
 ```@raw html
@@ -114,9 +114,9 @@ end
 
 function parity_checks_xz(c::Lacross)
     first_row = zeros(Int, c.n)
-    first_row[1] = 1 # Constant term (x⁰)
+    first_row[1] = 1 # constant term (x⁰)
     for i in 1:c.k
-        first_row[i+1] = c.coeffs[i] # Coefficients for x¹, x², ..., xᵏ
+        first_row[i+1] = c.coeffs[i] # coefficients for x¹, x², ..., xᵏ
     end
     H = zeros(Int, c.n, c.n)
     H[1, :] = first_row
