@@ -4,6 +4,20 @@ of two classical LDPC codes. The LaCross LDPC code is characterized by its parit
 check matrix, which is derived from circulant matrices with specific properties. These
 codes were introduced in [pecorari2025high](@cite).
 
+La-Cross Code has two families: one for **periodic boundary** conditions and one for
+**open boundary** conditions:
+
+```@raw html
+<div class="mermaid">
+graph TD
+    A[La-cross Code Families] --> B[Periodic Boundary]
+    A --> C[Open Boundary]
+
+    B -- full_rank = false --> D[⟦2n², 2k², d⟧]
+    C -- full_rank = true --> E[⟦❨n² - k²❩ + n², k², d⟧]
+</div>
+```
+
 # Cyclic codes and circulant matrices
 
 A **cyclic code** is a linear code in which codewords remain valid under cyclic
