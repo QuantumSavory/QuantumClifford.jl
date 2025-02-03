@@ -67,8 +67,8 @@ the polynomial ``1 + x + x^3``.
 
 # [[2n², 2k², d]] La-Cross code
 
-An example of `[[98, 18, 4]]` La-cross code from with `h(x) = 1 + x + x^3`, `n = 7`,
-and `k = 3` from [pecorari2025high](@cite).
+Here is `[[98, 18, 4]]` La-cross code from with `h(x) = 1 + x + x^3`, `n = 7`,
+and `k = 3` from Appendix A of [pecorari2025high](@cite).
 
 ```jldoctest lacrosseg
 julia> using QuantumClifford; using QuantumClifford.ECC; # hide
@@ -88,8 +88,8 @@ true
 
 # [[(n - k)² + n², k², d]] La-Cross code
 
-An `[[65, 9, 4]]` La-cross code from with `h(x) = 1 + x + x^3`, `n = 7`, `k = 3`
-and full rank seed *rectangular* circulant matrix from [pecorari2025high](@cite).
+Here is `[[65, 9, 4]]` La-cross code from with `h(x) = 1 + x + x^3`, `n = 7`, `k = 3`
+and full rank seed *rectangular* circulant matrix from Appendix A of [pecorari2025high](@cite).
 
 ```jldoctest lacrosseg
 julia> n = 7; k = 3; coeffs = [1,0,1];
