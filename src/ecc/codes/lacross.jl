@@ -151,7 +151,3 @@ parity_checks_x(c::Lacross) = parity_checks_xz(c)[1]
 parity_checks_z(c::Lacross) = parity_checks_xz(c)[2]
 
 parity_checks(c::Lacross) = parity_checks(CSS(parity_checks_xz(c)...))
-
-code_n(c::Lacross) = c.full_rank ? (c.n^2 - c.k^2) + c.n^2 : 2 * c.n^2
-
-code_k(c::Lacross) = c.full_rank ? c.k^2 : 2 * c.k^2
