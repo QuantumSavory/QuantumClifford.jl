@@ -34,6 +34,15 @@
             @test code_n(c) == 130 && code_k(c) == 4
             @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
 
+            # [[164, 4, 6]]
+            n = 10
+            k = 2
+            coeffs = [0,1]
+            full_rank = true
+            c = parity_checks(Lacross(n,k,coeffs,full_rank))
+            @test code_n(c) == 164 && code_k(c) == 4
+            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
+
             # [[244, 4, 8]]
             n = 12
             k = 2
@@ -63,6 +72,15 @@
             @test code_n(c) == 98 && code_k(c) == 18
             @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
 
+            # [[117, 9, 4]]
+            n = 9
+            k = 3
+            coeffs = [0,0,1]
+            full_rank =  true
+            c = parity_checks(Lacross(n,k,coeffs,full_rank))
+            @test code_n(c) == 117 && code_k(c) == 9
+            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
+
             # [[244, 4, 8]]
             n = 12
             k = 3
@@ -90,6 +108,15 @@
              @test code_n(c) == 317 && code_k(c) == 9
             @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
 
+            # [[369, 9, 8]]
+            n = 15
+            k = 3
+            coeffs = [0,0,1]
+            full_rank = true
+            c = parity_checks(Lacross(n,k,coeffs,full_rank))
+             @test code_n(c) == 369 && code_k(c) == 9
+            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
+
             # [[52, 4, 4]]
             n = 6
             k = 3
@@ -101,6 +128,15 @@
         end
 
         @testset "Reproduce Figure 3(c) of [pecorari2025high](@cite)" begin
+            # [[136, 16, 5]]
+            n = 10
+            k = 4
+            coeffs = [1,1,1,1]
+            full_rank = true
+            c = parity_checks(Lacross(n,k,coeffs,full_rank))
+            @test code_n(c) == 136 && code_k(c) == 16
+            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
+
             # [[208, 16, 6]]
             n = 12
             k = 4
@@ -117,6 +153,15 @@
             full_rank = true
             c = parity_checks(Lacross(n,k,coeffs,full_rank))
             @test code_n(c) == 296 && code_k(c) == 16
+            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
+
+            # [[400, 16, 8]]
+            n = 16
+            k = 4
+            coeffs = [0,0,0,1]
+            full_rank = true
+            c = parity_checks(Lacross(n,k,coeffs,full_rank))
+            @test code_n(c) == 400 && code_k(c) == 16
             @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
         end
 
