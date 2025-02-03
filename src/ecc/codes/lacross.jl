@@ -65,10 +65,10 @@ seed polynomial ``h(x) = 1 + x + x^2 + x^3`` in the ring ``\\mathbb{F}_2[x]/(x^n
 a specific code length `n`. Additionally, the condition of low stabilizer weight requires
 the polynomial ``1 + x + x^3``.
 
-# Example
+# [[2n², 2k², d]] La-Cross code
 
-An `[[98, 18, 4]]` La-cross code from with `h(x) = 1 + x + x^3`, `n = 7`, and `k = 3`
-from [pecorari2025high](@cite).
+An example of `[[98, 18, 4]]` La-cross code from with `h(x) = 1 + x + x^3`, `n = 7`,
+and `k = 3` from [pecorari2025high](@cite).
 
 ```jldoctest lacrosseg
 julia> using QuantumClifford; using QuantumClifford.ECC; # hide
@@ -85,6 +85,8 @@ julia> code_n(c), code_k(c)
 julia> stab_looks_good(copy(c), remove_redundant_rows=true)
 true
 ```
+
+# [[(n - k)² + n², k², d]] La-Cross code
 
 An `[[65, 9, 4]]` La-cross code from with `h(x) = 1 + x + x^3`, `n = 7`, `k = 3`
 and full rank seed *rectangular* circulant matrix from [pecorari2025high](@cite).
