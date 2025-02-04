@@ -1,5 +1,6 @@
 @testitem "Allocation checks" begin
-    using QuantumClifford: mul_left!
+    using QuantumClifford: mul_left!, RandDestabMemory, Tableau
+    using Random
     n = Threads.nthreads()
     allocated(f::F) where {F} = @allocated f()
     @testset "apply! mul_left! canonicalize!" begin
@@ -36,6 +37,15 @@
             f6()
             @test allocated(f6) < 170*n
         end
+    end
+    @testset "random_destabilizer" begin
+        N = 100
+        memory = RandDestabMemory(N)
+        f1() = RandDestabMemory(N)
+        f2() = random_destabilizer(Random.GLOBAL_RNG, memory)
+        f3() = Destabilizer(Tableau(memory.phasesarray, memory.xzs))
+        @test allocated(f1) < 12.5 * N^2 + 50 * N + 1000
+        @test abs(allocated(f2) - allocated(f3)) / allocated(f3) < 0.05
     end
     @testset "project!" begin
         N = 100
