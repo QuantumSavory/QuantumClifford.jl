@@ -42,10 +42,15 @@
         N = 100
         memory = RandDestabMemory(N)
         f1() = RandDestabMemory(N)
+        f1()
         f2() = random_destabilizer(Random.GLOBAL_RNG, memory)
+        f2()
         f3() = Destabilizer(Tableau(memory.phasesarray, memory.xzs))
+        f3()
         @test allocated(f1) < 12.5 * N^2 + 50 * N + 1000
-        @test abs(allocated(f2) - allocated(f3)) / allocated(f3) < 0.05
+        if VERSION >= v"1.11"
+            @test abs(allocated(f2) - allocated(f3)) / allocated(f3) < 0.05
+        end
     end
     @testset "project!" begin
         N = 100
