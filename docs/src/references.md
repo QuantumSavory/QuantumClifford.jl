@@ -45,6 +45,8 @@ For quantum code construction routines:
 - [lin2024quantum](@cite)
 - [bravyi2024high](@cite)
 - [haah2011local](@cite)
+- [arnault2025upperboundsminimumdistance](@cite)
+- [tillich2006minimum](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)

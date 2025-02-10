@@ -155,7 +155,8 @@ const code_instance_args = Dict(
     :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
     :CircuitCode => random_circuit_code_args,
     :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, other_lifted_product_codes)),
-    :QuantumReedMuller => [3, 4, 5]
+    :QuantumReedMuller => [3, 4, 5],
+    :StructuredRandomQLDPC => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
