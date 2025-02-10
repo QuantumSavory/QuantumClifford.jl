@@ -1,8 +1,8 @@
-@testitem "ECC [[4p, 2(p − 2), 4]] DelfosseRepCode" begin
+@testitem "ECC [[4p, 2(p − 2), 4]] DelfosseReichardtRepCode" begin
 
     using LinearAlgebra
     using QuantumClifford.ECC
-    using QuantumClifford.ECC: DelfosseRepCode, _extend_414_repetition_code, logz_ops, logx_ops
+    using QuantumClifford.ECC: DelfosseReichardtRepCode, _extend_414_repetition_code, logz_ops, logx_ops
     using Nemo: matrix, GF
 
     @testset "Testing [[4p, 2(p − 2), 4]] DelfosseRepCode properties" begin
@@ -10,7 +10,7 @@
             p = 2*i
             n = 4*p
             k = 2*(p - 2)
-            stab = parity_checks(DelfosseRepCode(p))
+            stab = parity_checks(DelfosseReichardtRepCode(p))
             H = stab_to_gf2(stab)
             mat = matrix(GF(2), H)
             computed_rank = rank(mat)

@@ -1,6 +1,6 @@
 """
-The `[[4p, 2(p − 2), 4]]` Delfosse repetition code is derived from the classical
-`[4, 1, 4]` repetition code and is used to construct quantum stabilizer code.
+The `[[4p, 2(p − 2), 4]]` Delfosse-Reichardt repetition code is derived from the
+classical `[4, 1, 4]` repetition code and is used to construct quantum stabilizer code.
 
 The `[4, 1, 4]` repetition code is a classical error-correcting code where each bit
 is repeated four times to improve error detection and correction. It is defined by
@@ -19,12 +19,12 @@ paper *Short Shor-style syndrome sequences* [delfosse2020short](@cite). The para
 `p` specifies the **number of blocks** in the code construction. For the code to be
 valid, `p` must be a multiple of 2.
 
-An `[[24, 8, 4]]` Delfosse repetition code from [delfosse2020short](@cite).
+An `[[24, 8, 4]]` Delfosse-Reichardt repetition code from [delfosse2020short](@cite).
 
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC; # hide
 
-julia> c = parity_checks(DelfosseRepCode(6))
+julia> c = parity_checks(DelfosseReichardtRepCode(6))
 + XXXX____________________
 + ____XXXX________________
 + ________XXXX____________
@@ -46,16 +46,16 @@ julia> code_n(c), code_k(c)
 (24, 8)
 ```
 """
-struct DelfosseRepCode <: AbstractECC
+struct DelfosseReichardtRepCode <: AbstractECC
     blocks::Int
-    function DelfosseRepCode(blocks)
+    function DelfosseReichardtRepCode(blocks)
         blocks < 2 && throw(ArgumentError("The number of blocks must be at least 2 to construct a valid code."))
         blocks % 2 != 0 && throw(ArgumentError("The number of blocks must be a multiple of 2."))
         new(blocks)
     end
 end
 
-function iscss(::Type{DelfosseRepCode})
+function iscss(::Type{DelfosseReichardtRepCode})
     return true
 end
 
@@ -75,17 +75,17 @@ function _extend_414_repetition_code(blocks::Int)
     return H
 end
 
-function parity_checks(c::DelfosseRepCode)
+function parity_checks(c::DelfosseReichardtRepCode)
     extended_mat = _extend_414_repetition_code(c.blocks)
     hx, hz = extended_mat, extended_mat
     code = CSS(hx, hz)
     Stabilizer(code)
 end
 
-code_n(c::DelfosseRepCode) = 4*c.blocks
+code_n(c::DelfosseReichardtRepCode) = 4*c.blocks
 
-code_k(c::DelfosseRepCode) = 2*(c.blocks - 2)
+code_k(c::DelfosseReichardtRepCode) = 2*(c.blocks - 2)
 
-parity_checks_x(c::DelfosseRepCode) = _extend_414_repetition_code(c.blocks)
+parity_checks_x(c::DelfosseReichardtRepCode) = _extend_414_repetition_code(c.blocks)
 
-parity_checks_z(c::DelfosseRepCode) = _extend_414_repetition_code(c.blocks)
+parity_checks_z(c::DelfosseReichardtRepCode) = _extend_414_repetition_code(c.blocks)
