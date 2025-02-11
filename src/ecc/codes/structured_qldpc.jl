@@ -1,7 +1,7 @@
-using Random
+using Random: AbstractRNG, GLOBAL_RNG, randperm
 
 """
-The **(n, m, r)-Structured Random quantum LDPC codes** code is constructed using
+The **(n, m, r)-Structured quantum LDPC codes** code is constructed using
 the hypergraph product of two classical seed **structured LDPC** codes.
 
 The classical structured LDPC were introduced in [tillich2006minimum](@cite).
@@ -56,20 +56,20 @@ m \\geq r \\quad \\text{and} \\quad (n - m)r \\geq m
 \$\$.
 These conditions ensure that the matrix `M` can be constructed with the required properties.
 """
-struct StructuredRandomQLDPC <: AbstractECC
+struct StructuredQLDPC <: AbstractECC
     """The block length of the classical seed code"""
     n::Int
     """The number of check nodes (rows in the parity-check matrix H)"""
     m::Int
     """The column weight parameter for matrix M (each column of M must have exactly r ones)"""
     r::Int
-    function StructuredRandomQLDPC(n, m, r)
+    function StructuredQLDPC(n, m, r)
         m < r || (n - m) * r < m && throw(ArgumentError(("Conditions for the existence of M are not satisfied.")))
         new(n, m, r)
     end
 end
 
-function iscss(::Type{StructuredRandomQLDPC})
+function iscss(::Type{ StructuredQLDPC})
     return true
 end
 
@@ -86,36 +86,79 @@ function _create_circulant_matrix(m::Int)
 end
 
 """create the matrix M of size m x (n - m) with column weight r"""
-function _create_matrix_M(m::Int, n::Int, r::Int)
+function _create_matrix_M_deterministic(m::Int, n::Int, r::Int)
     M = zeros(Int, m, n - m)
-    # Fill M such that each column has exactly r ones and no row is all zeros
+    # Fill M such that each column has exactly r ones
     for col in 1:(n - m)
-        # Randomly select r distinct rows to place ones
-        rows = randperm(m)[1:r]
+        # Deterministically select r distinct rows to place ones
+        rows = mod1.((col-1)*r+1:col*r, m)
         M[rows, col] .= 1
     end
     # Ensure no row is all zeros
     for row in 1:m
         if all(M[row, :] .== 0)
-            # Randomly select a column and set this row to 1
-            col = rand(1:(n - m))
-            M[row, col] = 1
+            # Deterministically select the first column to set this row to 1
+            M[row, 1] = 1
         end
     end
     return M
 end
 
-function parity_checks_xz(c::StructuredRandomQLDPC)
+function parity_checks_xz(c:: StructuredQLDPC)
     C = _create_circulant_matrix(c.m)
-    M = _create_matrix_M(c.m, c.n, c.r)
+    M = _create_matrix_M_deterministic(c.m, c.n, c.r)
     # The parity-check matrix H = [C | M]
     H = hcat(C, M)
     hx, hz = hgp(H,H)
     return hx, hz
 end
 
-parity_checks_x(c::StructuredRandomQLDPC) = parity_checks_xz(c)[1]
+parity_checks_x(c:: StructuredQLDPC) = parity_checks_xz(c)[1]
 
-parity_checks_z(c::StructuredRandomQLDPC) = parity_checks_xz(c)[2]
+parity_checks_z(c:: StructuredQLDPC) = parity_checks_xz(c)[2]
 
-parity_checks(c::StructuredRandomQLDPC) = parity_checks(CSS(parity_checks_xz(c)...))
+parity_checks(c:: StructuredQLDPC) = parity_checks(CSS(parity_checks_xz(c)...))
+
+"""
+The **random (n, m, r)-Structured quantum LDPC codes** code is constructed
+using the hypergraph product of two classical seed **random structured LDPC** codes.
+"""
+function random_structured_qldpc_code end
+
+function _create_matrix_M_random(rng::AbstractRNG, m::Int, n::Int, r::Int)
+    M = zeros(Int, m, n - m)
+    for col in 1:(n - m)
+        # Randomly select r distinct rows to place ones
+        rows = randperm(rng, m)[1:r]
+        M[rows, col] .= 1
+    end
+    # Ensure no row is all zeros
+    for row in 1:m
+        if all(M[row, :] .== 0)
+            # Randomly select a column and set this row to 1
+            col = rand(rng, 1:(n - m))
+            M[row, col] = 1
+        end
+    end
+    return M
+end
+
+function _construct_parity_check_matrix(rng::AbstractRNG, n::Int, m::Int, r::Int)
+    C = _create_circulant_matrix(m)
+    M = _create_matrix_M_random(rng, m, n, r)
+    # The parity-check matrix H = [C | M]
+    H = hcat(C, M)
+    return H
+end
+
+function random_structured_qldpc_code(rng::AbstractRNG, n::Int, m::Int, r::Int)
+    H = _construct_parity_check_matrix(rng, n, m, r)
+    hx, hz = hgp(H, H)
+    Stabilizer(CSS(hx, hz))
+end
+
+function random_structured_qldpc_code(n::Int, m::Int, r::Int)
+    H = _construct_parity_check_matrix(GLOBAL_RNG, n, m, r)
+    hx, hz = hgp(H, H)
+    Stabilizer(CSS(hx, hz))
+end
