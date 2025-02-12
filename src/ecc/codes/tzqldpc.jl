@@ -1,8 +1,8 @@
 using Random: AbstractRNG, GLOBAL_RNG, randperm
 
 """
-The **(n, m, r)-Structured quantum LDPC codes** code is constructed using
-the hypergraph product of two classical seed **structured LDPC** codes.
+The **quantum Tillich Zémor code** is a quantum LDPC codes** code is constructed
+using the hypergraph product of two classical seed **(n, m, r)-Structured LDPC** codes.
 
 The classical structured LDPC were introduced in [tillich2006minimum](@cite).
 Arnault et. al. showed ([arnault2025upperboundsminimumdistance](@cite)) that
@@ -56,20 +56,20 @@ m \\geq r \\quad \\text{and} \\quad (n - m)r \\geq m
 \$\$.
 These conditions ensure that the matrix `M` can be constructed with the required properties.
 """
-struct StructuredQLDPC <: AbstractECC
+struct TZQLDPC <: AbstractECC
     """The block length of the classical seed code"""
     n::Int
     """The number of check nodes (rows in the parity-check matrix H)"""
     m::Int
     """The column weight parameter for matrix M (each column of M must have exactly r ones)"""
     r::Int
-    function StructuredQLDPC(n, m, r)
+    function TZQLDPC(n, m, r)
         m < r || (n - m) * r < m && throw(ArgumentError(("Conditions for the existence of M are not satisfied.")))
         new(n, m, r)
     end
 end
 
-function iscss(::Type{ StructuredQLDPC})
+function iscss(::Type{TZQLDPC})
     return true
 end
 
@@ -104,7 +104,7 @@ function _create_matrix_M_deterministic(m::Int, n::Int, r::Int)
     return M
 end
 
-function parity_checks_xz(c:: StructuredQLDPC)
+function parity_checks_xz(c:: TZQLDPC)
     C = _create_circulant_matrix(c.m)
     M = _create_matrix_M_deterministic(c.m, c.n, c.r)
     # The parity-check matrix H = [C | M]
@@ -113,17 +113,17 @@ function parity_checks_xz(c:: StructuredQLDPC)
     return hx, hz
 end
 
-parity_checks_x(c:: StructuredQLDPC) = parity_checks_xz(c)[1]
+parity_checks_x(c:: TZQLDPC) = parity_checks_xz(c)[1]
 
-parity_checks_z(c:: StructuredQLDPC) = parity_checks_xz(c)[2]
+parity_checks_z(c:: TZQLDPC) = parity_checks_xz(c)[2]
 
-parity_checks(c:: StructuredQLDPC) = parity_checks(CSS(parity_checks_xz(c)...))
+parity_checks(c:: TZQLDPC) = parity_checks(CSS(parity_checks_xz(c)...))
 
 """
-The **random (n, m, r)-Structured quantum LDPC codes** code is constructed
-using the hypergraph product of two classical seed **random structured LDPC** codes.
+The **random Tillich Zémor code** is a quantum LDPC code constructed using the
+hypergraph product of two classical seed **(n, m, r)-Structured LDPC** codes.
 """
-function random_structured_qldpc_code end
+function random_tzqldpc_code end
 
 function _create_matrix_M_random(rng::AbstractRNG, m::Int, n::Int, r::Int)
     M = zeros(Int, m, n - m)
@@ -151,13 +151,13 @@ function _construct_parity_check_matrix(rng::AbstractRNG, n::Int, m::Int, r::Int
     return H
 end
 
-function random_structured_qldpc_code(rng::AbstractRNG, n::Int, m::Int, r::Int)
+function random_tzqldpc_code(rng::AbstractRNG, n::Int, m::Int, r::Int)
     H = _construct_parity_check_matrix(rng, n, m, r)
     hx, hz = hgp(H, H)
     Stabilizer(CSS(hx, hz))
 end
 
-function random_structured_qldpc_code(n::Int, m::Int, r::Int)
+function random_tzqldpc_code(n::Int, m::Int, r::Int)
     H = _construct_parity_check_matrix(GLOBAL_RNG, n, m, r)
     hx, hz = hgp(H, H)
     Stabilizer(CSS(hx, hz))

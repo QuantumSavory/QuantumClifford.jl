@@ -29,7 +29,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
-    haah_cubic_codes, StructuredQLDPC, random_structured_qldpc_code,
+    haah_cubic_codes, TZQLDPC, random_tzqldpc_code,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
@@ -385,7 +385,6 @@ include("codes/surface.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
 include("codes/quantumreedmuller.jl")
-include("codes/structured_qldpc.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/recursivereedmuller.jl")
 include("codes/classical/bch.jl")
@@ -394,5 +393,6 @@ include("codes/classical/golay.jl")
 # qLDPC
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
+include("codes/tzqldpc.jl")
 
 end #module
