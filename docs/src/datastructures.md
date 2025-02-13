@@ -74,6 +74,26 @@ We do not use boolean arrays to store information about the qubits as this would
 Moreover, how a tableau is stored in memory can affect performance. Rows in a tabluea represent Pauli strings (e.g. the stabilizers of a stabilizer state) and each column correspond to the support of each Pauli string on a specific qubit. Accordingly, a row-major storage 
 usually permits more efficient use of the CPU cache for functions that need to access and manipulate the entire Pauli string, e.g.  [`canonicalize!`](@ref) while a column-major storage benefits functions that need to access only few qubits, e.g. application of small sparse gates like [`sCNOT`](@ref). Internally, the tablueux are stored in the row-major format[^2]. One may use [`fastrow`](@ref) and [`fastcolumn`](@ref) to store a tabluea in the row-major and column-major format respectively. These functions only alter the internal storage of a tabluea and thus do not change the interface to the rest of the library. Curently they work with `Stabilizer`, `Destabilizer`, `MixedStabilizer` and `MixedDestabilizer`.
 
+```jldoctest; filter = r"[0-9\.]+ seconds \(.*\)"
+julia> s=random_stabilizer(1000);
+
+julia> sr=fastrow(copy(s));
+
+julia> sc=fastcolumn(copy(s));
+
+julia> @time canonicalize!(sr);
+  0.012469 seconds (1 allocation: 32 bytes)
+
+julia> @time canonicalize!(sc);
+  0.033206 seconds (1 allocation: 32 bytes)
+
+julia> @time apply!(sr, sCNOT(1,2));
+  0.000028 seconds (1 allocation: 32 bytes)
+
+julia> @time apply!(sc, sCNOT(1,2));
+  0.000019 seconds (1 allocation: 32 bytes)
+```
+
 [^2]: Since the Julia language stores multidimensional arrays in a column-major format, this means that each row of the tabluea is internally stored as a column of a matrix.
 
 Both of these parameters are [benchmarked](bench_intsize.png) (testing the application of a Pauli operator, which is an $\mathcal{O}(n^2)$ operation; and testing the canonicalization of a Stabilizer, which is an $\mathcal{O}(n^3)$ operation). Row-major UInt64 is the best performing and it is  used by default in this library.
