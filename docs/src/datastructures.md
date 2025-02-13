@@ -71,7 +71,10 @@ Notice the results when the projection operator commutes with the state but is n
 
 We do not use boolean arrays to store information about the qubits as this would be wasteful (7 out of 8 bits in the boolean would be unused). Instead, we use all 8 qubits in a byte and perform bitwise logical operations as necessary. Implementation details of the object in RAM can matter for performance. The library permits any of the standard `UInt` types to be used for packing the bits, and larger `UInt` types (like `UInt64`) are usually faster as they permit working on 64 qubits at a time (instead of 1 if we used a boolean, or 8 if we used a byte).
 
-Moreover, how a tableau is stored in memory can affect performance, as a row-major storage
-usually permits more efficient use of the CPU cache (for the particular algorithms we use).
+Moreover, how a tableau is stored in memory can affect performance. Rows in a tabluea represent Pauli strings (e.g. the stabilizers of a stabilizer state) and each column correspond to the support of each Pauli string on a specific qubit. Accordingly, a row-major storage 
+usually permits more efficient use of the CPU cache for functions that need to access and manipulate the entire Pauli string, e.g.  [`canonicalize!`](@ref) while a column-major storage benefits functions that need to access only few qubits, e.g. application of small sparse gates like [`sCNOT`](@ref). Internally, the tablueux are stored in the row-major format[^2]. One may use [`fastrow`](@ref) and [`fastcolumn`](@ref) to store a tabluea in the row-major and column-major format respectively. These functions only alter the internal storage of a tabluea and thus do not change the interface to the rest of the library. Curently they work with `Stabilizer`, `Destabilizer`, `MixedStabilizer` and `MixedDestabilizer`.
+
+[^2]: Since the Julia language stores multidimensional arrays in a column-major format, this means that each row of the tabluea is internally stored as a column of a matrix.
 
 Both of these parameters are [benchmarked](bench_intsize.png) (testing the application of a Pauli operator, which is an $\mathcal{O}(n^2)$ operation; and testing the canonicalization of a Stabilizer, which is an $\mathcal{O}(n^3)$ operation). Row-major UInt64 is the best performing and it is  used by default in this library.
+
