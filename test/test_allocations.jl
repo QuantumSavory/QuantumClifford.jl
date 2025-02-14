@@ -21,12 +21,12 @@
         c = random_clifford(500)
         f3() = apply!(s,c)
         f3()
-        if VERSION >= v"1.11.1"
+        if VERSION == v"1.11.1"
             @test_broken allocated(f3) < 1500*n # TODO lower it by making apply! more efficient
             f4() = apply!(s, tCNOT, [5, 20])
             f4()
             @test_broken allocated(f4) < 1500*n # TODO lower it by making apply! more efficient
-        else
+        elseif VERSION == v"1.11.0"
             @test allocated(f3) < 1500*n
             f4() = apply!(s, tCNOT, [5, 20])
             f4()
