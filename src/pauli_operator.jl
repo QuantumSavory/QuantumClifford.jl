@@ -144,9 +144,9 @@ Base.zero(p::P) where {P<:PauliOperator} = zero(P, nqubits(p))
 
 """Zero-out the phases and single-qubit operators in a [`PauliOperator`](@ref)"""
 @inline function zero!(p::PauliOperator{Tₚ,Tᵥ}) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}}
-    fill!(p.xz, zero(Tᵥₑ))::Tᵥ
-    setindex!(p.phase, 0x0)::Tₚ
-    p::PauliOperator{Tₚ,Tᵥ}
+    fill!(p.xz, zero(Tᵥₑ))
+    p.phase[] = 0x0
+    p
 end
 
 """
