@@ -4,13 +4,13 @@
     n = Threads.nthreads()
     allocated(f::F) where {F} = @allocations f()
     @testset "apply! mul_left! canonicalize!" begin
-        const p1 = random_pauli(500)
-        const p2 = random_pauli(500)
+        p1 = random_pauli(500)
+        p2 = random_pauli(500)
         f1() = mul_left!(p1,p2)
         f1()
         allocated(f1)
         @test allocated(f1) == 0
-        const s = random_stabilizer(500)
+        s = random_stabilizer(500)
         f2() = canonicalize!(s)
         f2()
         allocated(f2)
@@ -19,7 +19,7 @@
         f2a()
         allocated(f2a)
         @test allocated(f2a) <= 1
-        const c = random_clifford(500)
+        c = random_clifford(500)
         f3() = apply!(s,c)
         f3()
         @test allocated(f3) <= 1 # TODO lower it by making apply! more efficient
@@ -41,12 +41,12 @@
     @testset "project!" begin
         N = 100
         d = random_destabilizer(N)
-        const md = MixedDestabilizer(random_destabilizer(N))
+        md = MixedDestabilizer(random_destabilizer(N))
         md.rank = 50
-        const s = copy(stabilizerview(d))
-        const ms = MixedStabilizer(s)
+        s = copy(stabilizerview(d))
+        ms = MixedStabilizer(s)
         ms.rank = 50
-        const p = s[end];
+        p = s[end];
         f1() = project!(s,p)
         f1()
         f2() = project!(ms,p)
@@ -68,7 +68,7 @@
         end
     end
     @testset "tensor product" begin
-        const stabs = [s[1:5] for s in [random_stabilizer(n) for n in [63,64,65,127,128,129]]]
+        stabs = [s[1:5] for s in [random_stabilizer(n) for n in [63,64,65,127,128,129]]]
         f1() = ⊗(stabs...)
         f1()
         @test allocated(f1) <= 18
