@@ -21,15 +21,13 @@
         c = random_clifford(500)
         f3() = apply!(s,c)
         f3()
-        if VERSION == v"1.11.1"
+        f4() = apply!(s, tCNOT, [5, 20])
+        f4()
+        if VERSION >= v"1.11.1"
             @test_broken allocated(f3) < 1500*n # TODO lower it by making apply! more efficient
-            f4() = apply!(s, tCNOT, [5, 20])
-            f4()
             @test_broken allocated(f4) < 1500*n # TODO lower it by making apply! more efficient
-        elseif VERSION == v"1.10.0"
+        else
             @test allocated(f3) < 1500*n
-            f4() = apply!(s, tCNOT, [5, 20])
-            f4()
             @test allocated(f4) < 1500*n
         end
         for phases in [(false,false),(false,true),(true,false),(true,true)], i in 1:6
