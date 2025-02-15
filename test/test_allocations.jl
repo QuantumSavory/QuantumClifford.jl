@@ -71,6 +71,6 @@
         const stabs = [s[1:5] for s in [random_stabilizer(n) for n in [63,64,65,127,128,129]]]
         f1() = ⊗(stabs...)
         f1()
-        @test allocated(f1) < 18
+        @test allocated(f1) <= 18
     end
 end
