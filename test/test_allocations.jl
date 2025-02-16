@@ -22,19 +22,23 @@
         c = random_clifford(500)
         f3() = apply!(s,c)
         f3()
+        allocated(f3)
         @test allocated(f3) <= 1 # TODO lower it by making apply! more efficient
         f4() = apply!(s,tCNOT,[5,20])
         f4()
+        allocated(f4)
         @test allocated(f4) <= 3 # TODO lower it by making apply! more efficient
         for phases in [(false,false),(false,true),(true,false),(true,true)], i in 1:6
             g = enumerate_single_qubit_gates(i,qubit=10,phases=phases)
             f5() = apply!(s,g)
             f5()
+            allocated(f5)
             @test allocated(f5) <= 2
         end
         for g in [sSWAP(10,200), sCNOT(10,200)]
             f6() = apply!(s,g)
             f6()
+            allocated(f6)
             @test allocated(f6) <= 2
         end
     end
@@ -55,6 +59,10 @@
         f3()
         f4() = project!(md,p)
         f4()
+        allocated(f1)
+        allocated(f2)
+        allocated(f3)
+        allocated(f4)
         @test allocated(f1) <= 11
         @test allocated(f2) <= 12
         @test allocated(f3) <= 6
@@ -64,6 +72,7 @@
             md.rank = 50
             f5() = p!(md,40)
             f5()
+            allocated(f5)
             @test allocated(f5) <= 7
         end
     end
@@ -71,6 +80,7 @@
         stabs = [s[1:5] for s in [random_stabilizer(n) for n in [63,64,65,127,128,129]]]
         f1() = ⊗(stabs...)
         f1()
+        allocated(f1)
         @test allocated(f1) <= 18
     end
 end

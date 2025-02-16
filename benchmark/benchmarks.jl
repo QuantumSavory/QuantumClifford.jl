@@ -148,16 +148,19 @@ import PyQDecoders, LDPCDecoders
 
 SUITE["ecc"] = BenchmarkGroup(["ecc"])
 SUITE["ecc"]["evaluate_decoder"] = BenchmarkGroup(["evaluate_decoder"])
-for (cs, c) in [("shor",Shor9()), ("toric8",Toric(8,8))]
+for i in 1:10
+for (cs, c) in [("shor",Shor9())]
     for (ds, d) in [
-        [("table",TableDecoder(c)), ("bp",BeliefPropDecoder(c)), ("pybp",PyBeliefPropDecoder(c))]...,
+        [("pybp",PyBeliefPropDecoder(c))]...,
         (isa(c,Toric) ? [("pymatch",PyMatchingDecoder(c))] : [])...]
-        for (ss, s) in [("comm",CommutationCheckECCSetup(0.01)), ("naivesyn",NaiveSyndromeECCSetup(0.01,0)), ("shorsyn",ShorSyndromeECCSetup(0.01,0))]
-            SUITE["ecc"]["evaluate_decoder"]["$(cs)_$(ds)_$(ss)"] = @benchmarkable evaluate_decoder($d, $s, 1000)
+        for (ss, s) in [("naivesyn",NaiveSyndromeECCSetup(0.01,0))]
+            #SUITE["ecc"]["evaluate_decoder"]["$(cs)_$(ds)_$(ss)"] =
+            @info cs, ds, ss
+            @show @benchmark evaluate_decoder($d, $s, 1000)
         end
     end
 end
-
+end
 
 if V > v"0.9.0"
 
