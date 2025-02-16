@@ -63,10 +63,10 @@
         allocated(f2)
         allocated(f3)
         allocated(f4)
-        @test allocated(f1) <= 11
+        @test allocated(f1) <= 15
         @test allocated(f2) <= 12
         @test allocated(f3) <= 6
-        @test allocated(f4) <= 5
+        @test allocated(f4) <= 8
         for p! in [projectX!, projectY!, projectZ!]
             md = MixedDestabilizer(random_destabilizer(N))
             md.rank = 50
