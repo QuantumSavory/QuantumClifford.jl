@@ -17,7 +17,12 @@ Makie.@recipe(
 function (scene)
     Makie.Theme(;
         xzcomponents = :together,
-        colormap = Makie.cgrad([:lightgray,Makie.RGB(0x1b9e77),Makie.RGB(0xd95f02),Makie.RGB(0x7570b3)], 4, categorical = true),
+        colormap = Makie.cgrad([
+            :lightgray,
+            Makie.RGB(27/255, 158/255, 119/255),
+            Makie.RGB(217/255, 95/255, 2/255),
+            Makie.RGB(117/255, 112/255, 179/255)
+        ], 4, categorical = true),
         colorrange = (-0.5, 3.5)
     )
 end,
