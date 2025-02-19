@@ -120,8 +120,21 @@ function rate(c)
 end
 
 
-"""The distance of a code."""
+"""The distance of a code.
+
+The minimum distance of a qLDPC code requires:
+- a JuMP.jl backend to be loaded, e.g. `using JuMP`.
+- a GLPK.jl backend to be loaded, e.g. `using GLPK`.
+- a HiGHS.jl backend to be loaded, e.g. `using HiGHS`.
+"""
 function distance end
+
+function distance(c::AbstractECC; kwargs...)
+    if iscss(c) == nothing || !iscss(c)
+        throw(ArgumentError("Computing the minimum distance of QLDPC using Mixed Integer Programming works only for CSS codes."))
+    end
+    return distance(parity_checks(c); kwargs...)
+end
 
 """Parity matrix of a code, given as a stabilizer tableau."""
 function parity_matrix(c::AbstractECC)
