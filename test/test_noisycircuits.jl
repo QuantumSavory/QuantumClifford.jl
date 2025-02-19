@@ -233,6 +233,34 @@
             @test stabilizerview(state.stab) == S"ZZ
             ZI"
         end
+
+        @testset "Symbolic Measurements" begin 
+            state = MixedDestabilizer(S"Z")
+            had = sHadamard(1)
+            Zmeas = sMZ(1)
+            Xmeas = sMX(1)
+            Ymeas = sMY(1)
+            circuit = [Zmeas]
+            pe = petrajectories(state, circuit, keepstates=true)
+            for i in pe
+                @test i[2] == 1.0
+            end
+            circuit = [had, Zmeas]
+            pe = petrajectories(state, circuit, keepstates=true)
+            for i in pe
+                @test i[2] == 0.5
+            end
+            circuit = [had, Xmeas]
+            pe = petrajectories(state, circuit, keepstates=true)
+            for i in pe
+                @test i[2] == 1.0
+            end
+            circuit = [had, Ymeas]
+            pe = petrajectories(state, circuit, keepstates=true)
+            for i in pe
+                @test i[2] == 0.5
+            end
+        end
     end
 
     @testset "Classical Bits" begin
