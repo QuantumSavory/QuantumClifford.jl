@@ -5,7 +5,7 @@ The **quantum Tillich Zémor code** is a quantum LDPC codes** code is constructe
 using the hypergraph product of two classical seed **(n, m, r)-Structured LDPC** codes.
 
 The classical structured LDPC were introduced in [tillich2006minimum](@cite).
-Arnault et. al. showed ([arnault2025upper](@cite)) that
+Arnault et. al. showed ([arnault2025upperboundsminimumdistance](@cite)) that
 the minimum distance of structured binary LDPC codes with parity-check matrices
 of the form [C|M], where C is circulant and M has fixed column weight ``r \\geq 3``,
 is in ``O(n^{\\frac{r-2}{r-1} + \\epsilon})``, improving the previous bound of
