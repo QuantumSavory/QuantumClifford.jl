@@ -1,4 +1,5 @@
 @testitem "Random" begin
+    using Random
     using QuantumClifford
     using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
 
@@ -29,6 +30,21 @@
             @test stab_looks_good(apply!(ss,sq,phases=false))
             @test destab_looks_good(apply!(d,sq,phases=false))
             @test mixed_destab_looks_good(apply!(ms,sq,phases=false))
+        end
+    end
+
+    @testset "Random sampling of operators memory reuse" begin
+        for n in [1, test_sizes..., 200, 500]
+            workingmemory = QuantumClifford.RandDestabMemory(n)
+            for _ in 1:2
+                seed = rand(1:100000)
+                rng = Random.GLOBAL_RNG
+                Random.seed!(rng, seed)
+                non_reuse_version = random_destabilizer(rng, n)
+                Random.seed!(rng, seed)
+                reuse_version = random_destabilizer(rng, workingmemory)
+                @test non_reuse_version == reuse_version
+            end
         end
     end
 
