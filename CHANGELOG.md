@@ -5,6 +5,11 @@
 
 # News
 
+## v0.9.17 - 2025-02-18
+
+- New memory structure and matrix inversion function for `random_destabilizer`, to reduce allocations and speed up repeated generation of many random destabilizers.
+- Improvements to allocations in `apply!`
+
 ## v0.9.16 - 2024-12-29
 
 - 100× faster unbiased `random_pauli`.
