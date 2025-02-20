@@ -225,7 +225,7 @@ julia> entanglement_entropy(s, [1,4], Val(:graph))
 1
 ```
 
-See also: [`bigram`](@ref), [`canonicalize_clip!`](@ref)
+See also: [`bigram`](@ref), [`canonicalize_clip!`](@ref).
 """
 function entanglement_entropy(state::AbstractStabilizer, subsystem_range::UnitRange, algorithm::Val{:clip}; clip::Bool=true)
     # JET-XXX The ::Matrix{Int} should not be necessary, but they help with inference
