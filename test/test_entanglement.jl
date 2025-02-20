@@ -2,6 +2,7 @@
     using Graphs
 
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
+
     using QuantumClifford
     using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good, mutual_information, entanglement_entropy
 
