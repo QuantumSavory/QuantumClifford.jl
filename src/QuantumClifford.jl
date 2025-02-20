@@ -80,7 +80,7 @@ export
     groupify, minimal_generating_set, pauligroup, normalizer, centralizer, contractor, delete_columns,
     canonicalize_noncomm, commutify, matroid_parent, SubsystemCodeTableau,
     # Clipped Gauge
-    canonicalize_clip!, bigram, entanglement_entropy, mutual_information,
+    canonicalize_clip!, bigram, entanglement_entropy,
     # mctrajectories
     CircuitStatus, continue_stat, true_success_stat, false_success_stat, failure_stat,
     mctrajectory!, mctrajectories, applywstatus!,
