@@ -72,17 +72,14 @@
                 mi_graph = mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:graph))
                 @test mi_clip == mi_rref == mi_graph
                 @test mi_clip ≥ 0
-                # Independent calculation using entanglement_entropy on the density operator.
                 ψ = Ket(s)
                 ρ = dm(ψ)
-                # The union of A and B (assumed contiguous) is:
                 union_range = first(subsystem_rangeA) : last(subsystem_rangeB)
                 S_A = entanglement_entropy(ρ, subsystem_rangeA, entropy_vn)
                 S_B = entanglement_entropy(ρ, subsystem_rangeB, entropy_vn)
-                # If the union covers the whole system, avoid using ptrace (which errors) and set S_AB = 0.
+                # If A ∪ B covers the full system (1:n), set S_AB = 0 to avoid an invalid full-system trace in entanglement_entropy.
                 S_AB = union_range == (1:n) ? 0.0 : entanglement_entropy(ρ, union_range, entropy_vn)
-                # For a pure state, define:
-                # I(A:B) = [S(A) + S(B) - S(A∪B)] / 2, and convert nats → bits by dividing by log(2)
+                # For a pure state: I(A:B) = [S(A) + S(B) - S(A∪B)] / 2, and convert nats → bits by dividing by log(2).
                 mi_indep = (S_A + S_B - S_AB) / (2 * log(2))
                 @test isapprox(mi_clip, mi_indep; atol=1e-6)
             end

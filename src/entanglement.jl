@@ -260,7 +260,7 @@ Get bipartite entanglement entropy by converting to RREF form (i.e., partial tra
 
 The state will be partially canonicalized in an RREF form.
 
-See also: [`canonicalize_rref!`](@ref), [`traceout!`](@ref)
+See also: [`canonicalize_rref!`](@ref), [`traceout!`](@ref).
 """
 function entanglement_entropy(state::AbstractStabilizer, subsystem::AbstractVector, algorithm::Val{:rref}; pure::Bool=false)
     nb_of_qubits = nqubits(state)
