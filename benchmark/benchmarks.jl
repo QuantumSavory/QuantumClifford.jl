@@ -150,7 +150,7 @@ SUITE["ecc"] = BenchmarkGroup(["ecc"])
 SUITE["ecc"]["evaluate_decoder"] = BenchmarkGroup(["evaluate_decoder"])
 for (cs, c) in [("shor",Shor9()), ("toric8",Toric(8,8))]
     for (ds, d) in [
-        [("table",TableDecoder(c)), ("bp",BeliefPropDecoder(c)), ("pybp",PyBeliefPropDecoder(c))]...,
+        [("table",TableDecoder(c)), ("bp",BeliefPropDecoder(c)), ("pybp",PyBeliefPropDecoder(c)), ("pybposd",PyBeliefPropOSDecoder(c))]...,
         (isa(c,Toric) ? [("pymatch",PyMatchingDecoder(c))] : [])...]
         for (ss, s) in [("comm",CommutationCheckECCSetup(0.01)), ("naivesyn",NaiveSyndromeECCSetup(0.01,0)), ("shorsyn",ShorSyndromeECCSetup(0.01,0))]
             SUITE["ecc"]["evaluate_decoder"]["$(cs)_$(ds)_$(ss)"] = @benchmarkable evaluate_decoder($d, $s, 1000)
