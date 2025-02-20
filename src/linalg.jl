@@ -111,7 +111,7 @@ trusted_rank(s::Destabilizer) = length(s)
 trusted_rank(s::MixedStabilizer) = LinearAlgebra.rank(s)
 trusted_rank(s::MixedDestabilizer) = LinearAlgebra.rank(s)
 
-"""Tensor product between operators or tableaux. 
+"""Tensor product between operators or tableaux.
 
 Tensor product between CiffordOperators:
 
@@ -221,8 +221,8 @@ end
 
 function tensor(ops::Stabilizer...)
     length(ops)==1 && return ops[1]
-    ntot = sum(nqubits, ops)
-    rtot = sum(length, ops)
+    ntot = sum(nqubits, ops) # TODO why is this allocating (at least in 1.11)
+    rtot = sum(length, ops)  # TODO why is this allocating (at least in 1.11)
     tab = zero(Stabilizer, rtot, ntot)
     last_row = 0
     last_col = 0

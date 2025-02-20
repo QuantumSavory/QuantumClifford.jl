@@ -39,11 +39,13 @@ X₁ ⟼ + Z
 Z₁ ⟼ + Y
 ```
 """
-struct CliffordOperator{T<:Tableau} <: AbstractCliffordOperator
+struct CliffordOperator{T<:Tableau,P<:PauliOperator} <: AbstractCliffordOperator
     tab::T
+    buffer::P
     function CliffordOperator(tab::Tableau)
         if size(tab,1)==2*size(tab,2)
-            new{typeof(tab)}(tab)
+            p = zero!(tab[1])
+            new{typeof(tab),typeof(p)}(tab,p)
         #elseif size(stab,1)==size(stab,2) # TODO be able to work with squara tableaux (by reversing all row operations)
         #    destab = tab(Destabilizer(stab))
         #    new{typeof(destab.phases),typeof(destab.xzs)}(destab) # TODO be smarter about type signatures here... there should be a better way
@@ -114,7 +116,7 @@ function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator; phases
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
     s_tab = tab(stab)
     c_tab = tab(c)
-    new_stabrow = zero(s_tab[1])
+    new_stabrow = c.buffer
     for row_stab in eachindex(s_tab)
         zero!(new_stabrow)
         apply_row_kernel!(new_stabrow, row_stab, s_tab, c_tab, phases=Val(phases))
@@ -127,7 +129,7 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=V
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
     s_tab = tab(stab)
     c_tab = tab(c)
-    threadlocal=zero(c_tab[1])::PauliOperator # typeassert for JET
+    threadlocal = c.buffer
     @inbounds for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, phases=phases)
@@ -159,7 +161,7 @@ end
 function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{Int,1}; phases::Bool=true)
     s_tab = tab(stab)
     c_tab = tab(c)
-    new_stabrow = zero(PauliOperator,nqubits(c))
+    new_stabrow = c.buffer
     for row in eachindex(s_tab)
         zero!(new_stabrow)
         apply_row_kernel!(new_stabrow, row, s_tab, c_tab, indices_of_application; phases=Val(phases))
@@ -172,7 +174,7 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_appli
     #max(indices_of_application)<=nqubits(s) || throw(DimensionMismatch("")) # Too expensive to check every time
     s_tab = tab(stab)
     c_tab = tab(c)
-    threadlocal=zero(c_tab[1])::PauliOperator # typeassert for JET
+    threadlocal= c.buffer
     @inbounds for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, indices_of_application, phases=phases)
