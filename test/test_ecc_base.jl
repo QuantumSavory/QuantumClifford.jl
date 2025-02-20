@@ -1,7 +1,7 @@
 using Test
 using QuantumClifford
 using QuantumClifford.ECC
-using QuantumClifford.ECC: check_repr_commutation_relation
+using QuantumClifford.ECC: check_repr_commutation_relation, check_repr_regular_linear
 using InteractiveUtils
 
 import Nemo: GF
@@ -52,6 +52,7 @@ other_lifted_product_codes = []
 l = 63
 GA = group_algebra(GF(2), abelian_group(l))
 @test check_repr_commutation_relation(GA) # TODO use this check more pervasively throughout the test suite
+@test check_repr_regular_linear(GA) # TODO use this check more pervasively throughout the test suite
 A = zeros(GA, 7, 7)
 x = gens(GA)[]
 A[LinearAlgebra.diagind(A)] .= x^27
