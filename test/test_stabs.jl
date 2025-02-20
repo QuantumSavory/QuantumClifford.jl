@@ -1,4 +1,5 @@
 @testitem "Stabilizers" begin
+    using QuantumClifford
     using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
     @testset "Pure and Mixed state initialization" begin
@@ -55,6 +56,12 @@
             stabs = [s[1:i] for s in [random_stabilizer(n) for n in [32,16,16,64,63,65,129,128,127]] for i in rand(1:10)];
             mdstabs = MixedDestabilizer.(stabs);
             @test canonicalize!(⊗(stabs...)) == canonicalize!(stabilizerview(⊗(mdstabs...)))
+            md = MixedDestabilizer(random_destabilizer(n))
+            s = random_stabilizer(n)
+            mds = md⊗s
+            @test mixed_destab_looks_good(mds)
+            estab = stabilizerview(md)⊗s
+            @test canonicalize!(copy(stabilizerview(mds))) == canonicalize!(estab)
         end
     end
 
@@ -89,5 +96,29 @@
             @test stab_to_gf2(s1a) == stab_to_gf2(s1b)
             @test stab_to_gf2(s2a) == stab_to_gf2(s2b)
         end
+    end
+
+    @testset "horizontal concatenation" begin
+        @test hcat(ghz(2), ghz(2)) == S"XXXX ZZZZ"
+        s1 = S"YZ -XX"
+        s2 = S"-ZY -YX"
+        @test hcat(copy(s1), copy(s2)) == S"-YZZY XXYX"
+        @test hcat(copy(s1), copy(s2), copy(s1), copy(s2)) == S"YZZYYZZY XXYXXXYX"
+        @test_throws ArgumentError hcat(copy(s1), random_stabilizer(3))
+        @test hcat(copy(tab(s1)), copy(tab(s2))) == T"-YZZY XXYX"
+        @test hcat(copy(tab(s1)), copy(tab(s2)), copy(tab(s1)), copy(tab(s2))) == T"YZZYYZZY XXYXXXYX"
+    end
+
+    @testset "MixedDestabilizer over subarrays (#191)" begin
+        # Case 1: QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}
+        n = 6
+        stab = random_stabilizer(n)
+        regular_arr = MixedDestabilizer(stab; undoperm=true)
+        @test isa(regular_arr, MixedDestabilizer)
+        # Case 2: Tableau{SubArray{...}, SubArray{...}, Tuple{Base.Slice{...}}}
+        stab = random_stabilizer(n)
+        substab = @view stab[3:n]
+        md_via_subarr = MixedDestabilizer(substab; undoperm=true)
+        @test isa(md_via_subarr, MixedDestabilizer)
     end
 end

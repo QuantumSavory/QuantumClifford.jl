@@ -9,7 +9,7 @@
     function test_naive_syndrome(c::AbstractECC, e::Bool)
         # create a random logical state
         unencoded_qubits = random_stabilizer(code_k(c))
-        bufferqubits = one(Stabilizer,code_s(c))
+        bufferqubits = one(Stabilizer, code_n(c) - code_k(c))
         logicalqubits = bufferqubits⊗unencoded_qubits
         mctrajectory!(logicalqubits, naive_encoding_circuit(c))
         if e
@@ -50,7 +50,7 @@
         ancqubits = code_s(code)
         regbits = ancqubits
         frames = PauliFrame(nframes, dataqubits+ancqubits, regbits)
-        circuit = [ecirc..., scirc...]
+        circuit = vcat(ecirc, scirc)
         pftrajectories(frames, circuit)
         @test sum(pfmeasurements(frames)) == 0
     end

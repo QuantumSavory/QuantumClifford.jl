@@ -228,7 +228,7 @@
             state = Register(MixedDestabilizer(S"ZZ"), zeros(Bool, 1))
             meas = PauliMeasurement(P"ZI", 1)
             state, flag = applywstatus!(state, meas)
-            @test state.stab.rank == 2
+            @test rank(state.stab) == 2
             tab(state.stab).phases .= 0
             @test stabilizerview(state.stab) == S"ZZ
             ZI"
