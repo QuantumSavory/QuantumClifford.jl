@@ -132,7 +132,7 @@ Z₂ ⟼ - _X_
 Z₃ ⟼ + __Z
 
 julia> typeof(t_op)
-CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}
+CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}, PauliOperator{Array{UInt8, 0}, Vector{UInt64}}}
 
 julia> CliffordOperator(op, 1, compact=true) # You can also extract just the non-trivial part of the tableau
 X₁ ⟼ - Y
@@ -339,6 +339,12 @@ end
 @qubitop2 SQRTZZ    (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 & z1 & ~x2) | (~x1 & x2 & z2)))
 @qubitop2 InvSQRTZZ (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 &~z1 & ~x2) | (~x1 & x2 &~z2)))
 
+@qubitop2 SQRTXX    (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero((~x1 & z1 &~z2) | (~z1 &~x2 & z2)))
+@qubitop2 InvSQRTXX (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero(( x1 & z1 &~z2) | (~z1 & x2 & z2)))
+
+@qubitop2 SQRTYY    (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero((~x1 &~z1 & x2 &~z2) | ( x1 &~z1 &~x2 &~z2) | ( x1 &~z1 & x2 & z2) | ( x1 & z1 & x2 &~z2)))
+@qubitop2 InvSQRTYY (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero(( x1 & z1 &~x2 & z2) | (~x1 & z1 & x2 & z2) | (~x1 & z1 &~x2 &~z2) | (~x1 &~z1 &~x2 & z2)))
+
 #=
 To get the boolean formulas for the phase, it is easiest to first write down the truth table for the phase:
 for i in 0:15
@@ -405,6 +411,10 @@ LinearAlgebra.inv(op::sISWAP)     = sInvISWAP(op.q1, op.q2)
 LinearAlgebra.inv(op::sInvISWAP)  = sISWAP(op.q1, op.q2)
 LinearAlgebra.inv(op::sSQRTZZ)    = sInvSQRTZZ(op.q1, op.q2)
 LinearAlgebra.inv(op::sInvSQRTZZ) = sSQRTZZ(op.q1, op.q2)
+LinearAlgebra.inv(op::sSQRTXX)    = sInvSQRTXX(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvSQRTXX) = sSQRTXX(op.q1, op.q2)
+LinearAlgebra.inv(op::sSQRTYY)    = sInvSQRTYY(op.q1, op.q2)
+LinearAlgebra.inv(op::sInvSQRTYY) = sSQRTYY(op.q1, op.q2)
 
 ##############################
 # Functions that perform direct application of common operators without needing an operator instance
@@ -415,12 +425,9 @@ LinearAlgebra.inv(op::sInvSQRTZZ) = sSQRTZZ(op.q1, op.q2)
 """Apply a Pauli Z to the `i`-th qubit of state `s`. You should use `apply!(stab,sZ(i))` instead of this."""
 function apply_single_z!(stab::AbstractStabilizer, i)
     s = tab(stab)
-    Tₘₑ = eltype(s.xzs)
-    bigi = _div(Tₘₑ,i-1)+1
-    smalli = _mod(Tₘₑ,i-1)
-    mask = Tₘₑ(0x1)<<smalli
+    _, ibig, _, ismallm = get_bitmask_idxs(s.xzs,i)
     @inbounds @simd for row in 1:size(s.xzs,2)
-        if !iszero(s.xzs[bigi,row] & mask)
+        if !iszero(s.xzs[ibig,row] & ismallm)
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end
@@ -430,12 +437,9 @@ end
 """Apply a Pauli X to the `i`-th qubit of state `s`. You should use `apply!(stab,sX(i))` instead of this."""
 function apply_single_x!(stab::AbstractStabilizer, i)
     s = tab(stab)
-    Tₘₑ = eltype(s.xzs)
-    bigi = _div(Tₘₑ,i-1)+1
-    smalli = _mod(Tₘₑ,i-1)
-    mask = Tₘₑ(0x1)<<smalli
+    _, ibig, _, ismallm = get_bitmask_idxs(s.xzs,i)
     @inbounds @simd for row in 1:size(s.xzs,2)
-        if !iszero(s.xzs[end÷2+bigi,row] & mask)
+        if !iszero(s.xzs[end÷2+ibig,row] & ismallm)
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end
@@ -445,12 +449,9 @@ end
 """Apply a Pauli Y to the `i`-th qubit of state `s`. You should use `apply!(stab,sY(i))` instead of this."""
 function apply_single_y!(stab::AbstractStabilizer, i)
     s = tab(stab)
-    Tₘₑ = eltype(s.xzs)
-    bigi = _div(Tₘₑ,i-1)+1
-    smalli = _mod(Tₘₑ,i-1)
-    mask = Tₘₑ(0x1)<<smalli
+    _, ibig, _, ismallm = get_bitmask_idxs(s.xzs,i)
     @inbounds @simd for row in 1:size(s.xzs,2)
-        if !iszero((s.xzs[bigi,row] & mask) ⊻ (s.xzs[end÷2+bigi,row] & mask))
+        if !iszero((s.xzs[ibig,row] & ismallm) ⊻ (s.xzs[end÷2+ibig,row] & ismallm))
             s.phases[row] = (s.phases[row]+0x2)&0x3
         end
     end

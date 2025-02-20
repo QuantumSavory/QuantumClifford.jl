@@ -1,9 +1,16 @@
 module ECC
 
-using LinearAlgebra
-using LinearAlgebra: I
-using QuantumClifford
-using QuantumClifford: AbstractOperation, AbstractStabilizer, Stabilizer
+using LinearAlgebra: LinearAlgebra, I, rank, tr
+using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
+    AbstractTwoQubitOperator, Stabilizer, PauliOperator,
+    random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
+    canonicalize!, canonicalize_gott!,
+    logicalxview, logicalzview, stabilizerview, destabilizerview, tab, phases,
+    sCNOT, sSWAP, sHadamard, sPhase, sInvPhase,
+    sZCX, sZCY, sZCZ, sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZ, sX, sY, sMRZ, sMRX,
+    single_x, single_y, single_z, random_pauli!, PauliError,
+    apply!, comm, comm!, stab_to_gf2, embed, @S_str, affectedqubits, affectedbits,
+    pftrajectories, pfmeasurements, mctrajectories
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
 using DocStringExtensions
 using Combinatorics: combinations
@@ -22,6 +29,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
+    haah_cubic_codes,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
@@ -376,10 +384,11 @@ include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
+include("codes/quantumreedmuller.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/recursivereedmuller.jl")
 include("codes/classical/bch.jl")
-include("codes/quantumreedmuller.jl")
+include("codes/classical/golay.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")

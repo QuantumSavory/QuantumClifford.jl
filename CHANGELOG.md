@@ -5,16 +5,35 @@
 
 # News
 
-## v0.9.13 - dev
+## v0.9.17 - 2025-02-18
 
-- New error correction group theory tools:
+- New memory structure and matrix inversion function for `random_destabilizer`, to reduce allocations and speed up repeated generation of many random destabilizers.
+- Improvements to allocations in `apply!`
+
+## v0.9.16 - 2024-12-29
+
+- 100× faster unbiased `random_pauli`.
+- Enhancements to `GF(2)` Linear Algebra: unexported, experimental `gf2_row_echelon_with_pivots!`, `gf2_nullspace`, `gf2_rowspace_basis`.
+
+## v0.9.15 - 2024-12-22
+
+- `pftrajectories` now supports fast multiqubit measurements with `PauliMeasurement` in addition to the already supported single qubit measurements `sMX/Z/Y` and workarounds like `naive_syndrome_circuit`.
+
+## v0.9.14 - 2024-11-03
+
+- **(fix)** `affectedqubits()` on `sMX`, `sMY`, and `sMR*`
+- **(fix)** restrictive type-assert in `MixedDestabilizer` failing on views of tableaux
+- Implementing additional named two-qubit gates: `sSQRTXX, sInvSQRTXX, sSQRTYY, sInvSQRTYY`
+
+## v0.9.13 - 2024-10-30
+
+- New error-correction group theory tools:
     - `canonicalize_noncomm` function to find a generating set with minimal anticommutivity
     - `SubsystemCodeTableau` data structure to represent the output of `canonicalize_noncomm`
     - `commutify` function to find a commutative version of a non-commutative set of Paulis with minimal changes
     - `matroid_parent` to, for set of Paulis that doesn't represent a state, find a version
     that does.
-- Implementing additional named two-qubit gates: `sSWAPCX, sInvSWAPCX, sCZSWAP, sCXSWAP, sISWAP, sInvISWAP,
-    sSQRTZZ, sInvSQRTZZ`
+- Implementing additional named two-qubit gates: `sSWAPCX, sInvSWAPCX, sCZSWAP, sCXSWAP, sISWAP, sInvISWAP, sSQRTZZ, sInvSQRTZZ`
 
 ## v0.9.12 - 2024-10-18
 
@@ -70,7 +89,7 @@
 - Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
 - Significant improvements to the low-level circuit compiler (the sumtype compactifier), leading to faster Pauli frame simulation of noisy circuits.
 - Bump `QuantumOpticsBase.jl` package extension compat bound.
-- **(fix)** Remove printing of spurious debug info from the PyBP decoder. 
+- **(fix)** Remove printing of spurious debug info from the PyBP decoder.
 - **(fix)** Failed compactification of gates now only raises a warning instead of throwing an error. Defaults to slower non-compactified gates.
 
 ## v0.9.3 - 2024-04-10
@@ -88,7 +107,7 @@
 - Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.
 - Added the classical Reed-Muller code in the ECC module.
 - Added the surface code to the ECC module.
- 
+
 ## v0.9.0 - 2024-03-19
 
 - **(breaking)** The defaults in `random_pauli` are now `realphase=true` and `nophase=true`.

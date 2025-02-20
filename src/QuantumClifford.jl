@@ -52,7 +52,7 @@ export
     sCNOT, sCPHASE, sSWAP,
     sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZCX, sZCY, sZCZ,
     sZCrY, sInvZCrY, sSWAPCX, sInvSWAPCX, sCZSWAP, sCXSWAP, sISWAP, sInvISWAP,
-    sSQRTZZ, sInvSQRTZZ,
+    sSQRTZZ, sInvSQRTZZ, sSQRTXX, sInvSQRTXX, sSQRTYY, sInvSQRTYY,
     # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
@@ -571,8 +571,8 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false)
         t[n+r+s+1:end] = sZ # The other logical set in the tableau
     end
     if undoperm
-        t = t[:,invperm(permx[permz])]::T
-        return MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
+        t = t[:,invperm(permx[permz])]
+        return MixedDestabilizer(t, r+s)
     end
     if reportperm
         return (MixedDestabilizer(t, r+s)::MixedDestabilizer{T}, r, permx, permz)
@@ -912,6 +912,30 @@ function unsafe_bitfindnext_(chunks::AbstractVector{T}, start::Int) where T<:Uns
     return nothing
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Computes bitmask indices for an unsigned integer at index `i`
+within the binary structure of a `Tableau` or `PauliOperator`.
+
+For `Tableau`, the method operates on the `.xzs` field, while
+for `PauliOperator`, it uses the `.xz` field. It calculates
+the following values based on the index `i`:
+
+- `lowbit`, the lowest bit.
+- `ibig`, the index of the word containing the bit.
+- `ismall`, the position of the bit within the word.
+- `ismallm`, a bitmask isolating the specified bit.
+"""
+@inline function get_bitmask_idxs(xzs::AbstractArray{<:Unsigned}, i::Int)
+    T = eltype(xzs)
+    lowbit = T(1)
+    ibig = _div(T, i-1) + 1
+    ismall = _mod(T, i-1)
+    ismallm = lowbit << ismall
+    return lowbit, ibig, ismall, ismallm
+end
+
 """Permute the qubits (i.e., columns) of the tableau in place."""
 function Base.permute!(s::Tableau, perm::AbstractVector)
     for r in 1:size(s,1)
@@ -1142,6 +1166,69 @@ function gf2_H_to_G(H)
     end
     G = hcat(P,I)
     G[:,invperm(sindx)]
+end
+
+"""Performs in-place Gaussian elimination on a binary matrix and returns
+its *row echelon form*,*rank*, the *transformation matrix*, and the *pivot
+columns*. The transformation matrix that converts the original matrix into
+the row echelon form. The `full` parameter controls the extent of elimination:
+if `true`, only rows below the pivot are affected; if `false`, both above and
+below the pivot are eliminated."""
+function gf2_row_echelon_with_pivots!(M::AbstractMatrix{Int}; full=false)
+    r, c = size(M)
+    N = Matrix{Int}(LinearAlgebra.I, r, r)
+    p = 1
+    pivots = Int[]
+    for col in 1:c
+        @inbounds for row in p:r
+            if M[row, col] == 1
+                if row != p
+                    M[[row, p], :] .= M[[p, row], :]
+                    N[[row, p], :] .= N[[p, row], :]
+                end
+                break
+            end
+        end
+        if M[p, col] == 1
+            if !full
+                elim_range = p+1:r
+            else
+                elim_range = 1:r
+            end
+            @simd for j in elim_range
+                @inbounds if j != p && M[j, col] == 1
+                    M[j, :] .= (M[j, :] .+ M[p, :]) .% 2
+                    N[j, :] .= (N[j, :] .+ N[p, :]) .% 2
+                end
+            end
+            p += 1
+            push!(pivots, col)
+        end
+        if p > r
+            break
+        end
+    end
+    rank = p - 1
+    return M, rank, N, pivots
+end
+
+"""The nullspace of a binary matrix."""
+function gf2_nullspace(H::AbstractMatrix{Int})
+    m = size(H',1)
+    _, matrix_rank, transformation_matrix, _ = gf2_row_echelon_with_pivots!(copy(H)')
+    if m == matrix_rank
+        # By the rank-nullity theorem, if rank(M) = m, then nullity(M) = 0
+        return zeros(Bool, 1, m)
+    end
+    # Extract the nullspace from the transformation matrix
+    return transformation_matrix[matrix_rank+1:end, :]
+end
+
+"""The basis for the row space of the binary matrix."""
+function gf2_rowspace_basis(H::AbstractMatrix{Int})
+    pivots = gf2_row_echelon_with_pivots!(copy(H)')[4]
+    # Extract the rows corresponding to the pivot columns
+    H[pivots,:]
 end
 
 ##############################
