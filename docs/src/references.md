@@ -38,6 +38,14 @@ For quantum code construction routines:
 - [fowler2012surface](@cite)
 - [knill1996concatenated](@cite)
 - [fan2016quantum](@cite)
+- [steane1999quantum](@cite)
+- [campbell2012magic](@cite)
+- [anderson2014fault](@cite)
+- [wang2024coprime](@cite)
+- [voss2024multivariatebicyclecodes](@cite)
+- [lin2024quantum](@cite)
+- [bravyi2024high](@cite)
+- [haah2011local](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)
@@ -51,6 +59,9 @@ For classical code construction routines:
 - [error2024lin](@cite)
 - [wolf1965codes](@cite)
 - [wolf2006introduction](@cite)
+- [golay1949notes](@cite)
+- [huffman2010fundamentals](@cite)
+- [bhatia2018mceliece](@cite)
 
 # References
 
