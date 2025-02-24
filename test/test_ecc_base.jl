@@ -3,12 +3,17 @@ using QuantumClifford
 using QuantumClifford.ECC
 using QuantumClifford.ECC: check_repr_commutation_relation
 using InteractiveUtils
+using SparseArrays
 
 import Nemo: GF
 import LinearAlgebra
 import Hecke: group_algebra, abelian_group, gens
 
 # generate instances of all implemented codes to make sure nothing skips being checked
+
+const H1 = sparse(Bool[1 0 1 0; 0 1 0 1; 1 1 0 0]);
+
+const H2 = sparse(Bool[1 1 0;0 1 1]);
 
 # We do not include smaller random circuit code because some of them has a bad distance and fails the TableDecoder test
 const random_brickwork_circuit_args = repeat([((20,), 50, [1]), ((20,), 50, 1:2:20), ((5, 5), 50, [1]), ((3, 3, 3), 50, [1])], 10)
@@ -155,7 +160,8 @@ const code_instance_args = Dict(
     :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
     :CircuitCode => random_circuit_code_args,
     :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, other_lifted_product_codes)),
-    :QuantumReedMuller => [3, 4, 5]
+    :QuantumReedMuller => [3, 4, 5],
+    :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)

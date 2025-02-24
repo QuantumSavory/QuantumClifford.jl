@@ -29,7 +29,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
-    haah_cubic_codes,
+    haah_cubic_codes, QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
@@ -393,5 +393,8 @@ include("codes/classical/golay.jl")
 # qLDPC
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
+
+# Tanner codes
+include("codes/quantumtannergraphproductcode.jl")
 
 end #module
