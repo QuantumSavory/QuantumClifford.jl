@@ -2,7 +2,6 @@
     using Hecke
     using JuMP
     using HiGHS
-    using GLPK
     using Hecke: group_algebra, GF, abelian_group, gens
     using QuantumClifford.ECC: two_block_group_algebra_codes, generalized_bicycle_codes, code_k, code_n, distance
 
@@ -17,10 +16,10 @@
         # [[56, 8, 7]] 2BGA code
         # minimum distance is exact, d = 7
         for i in 1:code_k(c)
-            @test distance(c, logical_qubit=i) == 7
+            @test distance(c, logical_qubit=i; solver=HiGHS) == 7
             # By default, the minimum distance for the Z-type logical operator is computed.
             # The minimum distance for X-type logical operators is the same.
-            @test distance(c, logical_qubit=i) == distance(c, logical_qubit=i, logical_operator_type=:Z) == 7
+            @test distance(c, logical_qubit=i; solver=HiGHS) == distance(c, logical_qubit=i, logical_operator_type=:Z; solver=HiGHS) == 7
         end
     end
 
@@ -30,10 +29,10 @@
         c = generalized_bicycle_codes([0, 2, 8, 15], [0, 2, 12, 17], l)
         # minimum distance is exact, d = 8
         for i in 1:2 # save test time
-            @test distance(c, logical_qubit=i) == 8
+            @test distance(c, logical_qubit=i; solver=HiGHS) == 8
             # By default, the minimum distance for the Z-type logical operator is computed.
             # The minimum distance for X-type logical operators is the same.
-            @test distance(c, logical_qubit=i) == distance(c, logical_qubit=i, logical_operator_type=:Z) == 8
+            @test distance(c, logical_qubit=i; solver=HiGHS) == distance(c, logical_qubit=i, logical_operator_type=:Z; solver=HiGHS) == 8
         end
     end
 
@@ -47,10 +46,10 @@
         c = two_block_group_algebra_codes(A,B)
         # minimum distance is exact, d = 6
         for i in 1:2 # save test time
-            @test distance(c, logical_qubit=i) == 6
+            @test distance(c, logical_qubit=i; solver=HiGHS) == 6
             # By default, the minimum distance for the Z-type logical operator is computed.
             # The minimum distance for X-type logical operators is the same.
-            @test distance(c, logical_qubit=i) == distance(c, logical_qubit=i, logical_operator_type=:Z) == 6
+            @test distance(c, logical_qubit=i; solver=HiGHS) == distance(c, logical_qubit=i, logical_operator_type=:Z; solver=HiGHS) == 6
         end
     end
 
@@ -65,10 +64,10 @@
         # minimum distance is exact, d = 8
         for i in 1:2 # save test time
             @test code_n(c) == 70 && code_k(c) == 6
-            @test distance(c, logical_qubit=i) == 8
+            @test distance(c, logical_qubit=i; solver=HiGHS) == 8
             # By default, the minimum distance for the Z-type logical operator is computed.
             # The minimum distance for X-type logical operators is the same.
-            @test distance(c, logical_qubit=i) == distance(c, logical_qubit=i, logical_operator_type=:Z) == 8
+            @test distance(c, logical_qubit=i; solver=HiGHS) == distance(c, logical_qubit=i, logical_operator_type=:Z; solver=HiGHS) == 8
         end
     end
 
@@ -84,10 +83,10 @@
         # minimum distance is exact, d = 5
         for i in 1:2 # save test time
             @test code_n(c) == 30 && code_k(c) == 4
-            @test distance(c, logical_qubit=i) == 5
+            @test distance(c, logical_qubit=i; solver=HiGHS) == 5
             # By default, the minimum distance for the Z-type logical operator is computed.
             # The minimum distance for X-type logical operators is the same.
-            @test distance(c, logical_qubit=i) == distance(c, logical_qubit=i, logical_operator_type=:Z) == 5
+            @test distance(c, logical_qubit=i; solver=HiGHS) == distance(c, logical_qubit=i, logical_operator_type=:Z; solver=HiGHS) == 5
         end
     end
 end

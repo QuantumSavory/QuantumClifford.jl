@@ -120,7 +120,7 @@ julia> B = 1 + x^5 + s + x^6 + x + s*x^2;
 
 julia> c = two_block_group_algebra_codes(A,B);
 
-julia> code_n(c), code_k(c), distance(c)
+julia> code_n(c), code_k(c), distance(c; solver=HiGHS)
 (40, 8, 5)
 ```
 
@@ -132,7 +132,7 @@ julia> l = 24;
 
 julia> c1 = generalized_bicycle_codes([0, 2, 8, 15], [0, 2, 12, 17], l);
 
-julia> code_n(c1), code_k(c1), distance(c1)
+julia> code_n(c1), code_k(c1), distance(c1; solver=HiGHS)
 (48, 6, 8)
 ```
 
@@ -147,7 +147,7 @@ to a mixed integer linear program and using the GNU Linear Programming Kit.
 the code distance was calculated using the mixed integer programming approach.
 
 """
-function distance(c::Stabilizer; upper_bound=false, logical_qubit=code_k(c), all_logical_qubits=false, logical_operator_type=:X, solver = HiGHS)
+function distance(c::Stabilizer; upper_bound=false, logical_qubit=code_k(c), all_logical_qubits=false, logical_operator_type=:X, solver::Module)
     opt = solver.Optimizer
     1 <= logical_qubit <= code_k(c) || throw(ArgumentError("The number of logical qubit must be between 1 and $(code_k(c)) inclusive"))
     logical_operator_type == :X || logical_operator_type == :Z || throw(ArgumentError("Invalid type of logical operator: Use :X or :Z"))

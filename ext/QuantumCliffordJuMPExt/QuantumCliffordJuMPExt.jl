@@ -5,8 +5,6 @@ using DocStringExtensions
 import JuMP
 import JuMP: @variable, @objective, @constraint, optimize!, Model, set_silent,
     sum, value, optimize!, is_solved_and_feasible
-import GLPK
-import HiGHS
 
 import QuantumClifford
 import QuantumClifford: stab_to_gf2, logicalxview, logicalzview, canonicalize!,
