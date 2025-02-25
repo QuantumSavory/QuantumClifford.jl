@@ -181,9 +181,7 @@ function _minimum_distance(hx, lx, opt)
     num_anc_hx = ceil(Int, log2(whx))
     num_anc_logical = ceil(Int, log2(wlx))
     num_var = n + m * num_anc_hx + num_anc_logical
-    # MIP problem solver: https://jump.dev/JuMP.jl/stable/packages/GLPK/#GLPK.jl
-    # GLPK.jl is a wrapper for the GNU Linear Programming Kit library.
-    # HiGHS.jl is a wrapper for the HiGHS solver.
+    # Let the user choose which MIP solver to use
     model = Model(opt; add_bridges = false) # model
     set_silent(model)
     @variable(model, x[1:num_var], Bin) # binary variables
