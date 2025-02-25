@@ -14,8 +14,6 @@ const QuantumCliffordHeckeExt = Base.get_extension(QuantumClifford, :QuantumClif
 
 #DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
 
-import GLPK
-import HiGHS
 import JuMP
 
 const QuantumCliffordJuMPExt = Base.get_extension(QuantumClifford, :QuantumCliffordJuMPExt)
