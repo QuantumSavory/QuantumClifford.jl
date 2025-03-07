@@ -16,6 +16,7 @@ function linear_copy_kernel!(dest, src, N)
         dest[i] = src[i]
         i += stride
     end
+    
     return
 end
 
@@ -287,7 +288,7 @@ end
 ###########################################################################
 # 4. GPU-Resident Canonicalization Wrapper
 ###########################################################################
-function canonicalize_gpu!(stab::QuantumClifford.Stabilizer; phases::Bool=true)
+function canonicalize!(stab::QuantumClifford.Stabilizer; phases::Bool=true)
     d_mat    = stab.tab.xzs
     d_phases = stab.tab.phases
     nqubits  = stab.tab.nqubits
@@ -389,7 +390,7 @@ cpu_stab_example = S"""
 + Z_YYY_ZZ_X_Z_Y__XX_YYXXX__XXXX
 """
 gpu_stab_example = cpu_to_gpu_stabilizer(cpu_stab_example)
-canonicalize_gpu!(gpu_stab_example; phases=true)
+canonicalize!(gpu_stab_example; phases=true)
 println(typeof(gpu_stab_example))
 cpu_stab_converted = gpu_to_cpu_stabilizer(gpu_stab_example)
 println("Original CPU Stabilizer:")
@@ -401,7 +402,7 @@ println(typeof(cpu_stab_converted))
 #using random_stabilizer
 cpu_stabil = random_stabilizer(4)
 gpu_stabil = cpu_to_gpu_stabilizer(cpu_stabil)
-canonicalize_gpu!(gpu_stabil; phases = true)
+canonicalize!(gpu_stabil; phases = true)
 cpu_stab_con = gpu_to_cpu_stabilizer(gpu_stabil)
 println("Original CPU Stabilizer:")
 println(cpu_stabil)
