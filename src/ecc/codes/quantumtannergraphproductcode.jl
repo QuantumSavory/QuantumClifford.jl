@@ -4,9 +4,9 @@ using LinearAlgebra
 
 """
 Represents a bipartite Tanner graph used in classical coding theory. It
-connects *variable nodes* (codeword bits or qubits) to *check nodes*
-(parity constraints) and serves as the foundation for constructing
-product graphs in quantum CSS codes.
+connects variable nodes (codeword bits or qubits) to check nodes (parity
+constraints) and serves as the foundation for constructing product graphs
+in quantum CSS codes.
 """
 struct BipartiteGraph
     """The underlying undirected graph (from `Graphs.jl`)."""
@@ -43,12 +43,12 @@ function tanner_graph_from_parity_matrix(H::SparseMatrixCSC{Bool,Int})
 end
 
 """
-Reconstructs the parity-check matrix from a Tanner graph `bg`, assuming
+Reconstructs the parity-check matrix from a Tanner graph `g`, assuming
 the first block of vertices corresponds to variable nodes and the remaining
-to check nodes. The function returns a sparse Boolean matrix `H` of size
+to check nodes. The function returns a parity check matrix `H` of size
 `(number of check nodes) × (number of variable nodes).`
 
-!!! note The input `bg` must be a `BipartiteGraph` instance.
+!!! note The input `g` must be a `BipartiteGraph` i
 """
 function parity_matrix_from_tanner_graph(bg::BipartiteGraph)
     n_vars = length(bg.left_nodes)
@@ -93,13 +93,95 @@ struct ProductTannerGraph
     check_mapping::Dict{Tuple{Int,Int},Int}
 end
 
+# The variable node list: (V₁ × V₂) ∪ (C₁ × C₂)
+function _construct_var_nodes(V1, V2, C1, C2)
+    var_nodes = Tuple{Symbol,Int,Int}[]
+    for v1 in V1, v2 in V2
+        push!(var_nodes, (:v, v1, v2))
+    end
+    for c1 in C1, c2 in C2
+        push!(var_nodes, (:c, c1, c2))
+    end
+    return var_nodes
+end
+
+# The mapping dictionaries for variable and check nodes.
+function _construct_mappings(var_nodes, check_nodes)
+    var_mapping = Dict{Tuple{Symbol,Int,Int},Int}()
+    for (i, node) in enumerate(var_nodes)
+        var_mapping[node] = i
+    end
+    check_mapping = Dict{Tuple{Int,Int},Int}()
+    for (i, node) in enumerate(check_nodes)
+        check_mapping[node] = i
+    end
+    return var_mapping, check_mapping
+end
+
+# Add edges for X-type Tanner graph.
+# For :v nodes: iterate over c in C1 and add edge if G1 has an edge (v1, c).
+# For :c nodes: iterate over v in V2 and add edge if G2 has an edge (v, c2).
+function _add_edges_X!(pg, var_nodes, var_mapping, check_mapping, G1, G2, V2, C1)
+    for node in var_nodes
+        if node[1] == :v
+            (_, v1, v2) = node
+            for c in C1
+                check_node = (c, v2)
+                if has_edge(G1.g, v1, c)
+                    var_index = var_mapping[node]
+                    check_index = check_mapping[check_node]
+                    add_edge!(pg, var_index, length(var_nodes) + check_index)
+                end
+            end
+        elseif node[1] == :c
+            (_, c1, c2) = node
+            for v in V2
+                check_node = (c1, v)
+                if has_edge(G2.g, v, c2)
+                    var_index = var_mapping[node]
+                    check_index = check_mapping[check_node]
+                    add_edge!(pg, var_index, length(var_nodes) + check_index)
+                end
+            end
+        end
+    end
+end
+
+# Add edges for Z-type Tanner graph.
+# For :v nodes: iterate over c in C2 and add edge if G2 has an edge (v2, c).
+# For :c nodes: iterate over v in V1 and add edge if G1 has an edge (v, c1).
+function _add_edges_Z!(pg, var_nodes, var_mapping, check_mapping, G1, G2, V1, C2)
+    for node in var_nodes
+        if node[1] == :v
+            (_, v1, v2) = node
+            for c in C2
+                check_node = (v1, c)
+                if has_edge(G2.g, v2, c)
+                    var_index = var_mapping[node]
+                    check_index = check_mapping[check_node]
+                    add_edge!(pg, var_index, length(var_nodes) + check_index)
+                end
+            end
+        elseif node[1] == :c
+            (_, c1, c2) = node
+            for v in V1
+                check_node = (v, c2)
+                if has_edge(G1.g, v, c1)
+                    var_index = var_mapping[node]
+                    check_index = check_mapping[check_node]
+                    add_edge!(pg, var_index, length(var_nodes) + check_index)
+                end
+            end
+        end
+    end
+end
+
 """
 Constructs the product Tanner graph for `X-type` checks.
 
 Given Tanner graphs `G₁ = T(V₁, C₁, E₁)` and `G₂ = T(V₂, C₂, E₂)`, define:
-
 - **Variable nodes**: `V = (V₁ × V₂) ∪ (C₁ × C₂)`
-- **Check nodes for X-type**: `Cₓ = C₁ × V₂`
+- **Check nodes for `X-type`**: `Cₓ = C₁ × V₂`
 
 Edges are added as follows:
 1. A variable node `(v₁, v₂) ∈ (V₁ × V₂)` connects to a check node `(c₁, v₂)`
@@ -110,60 +192,16 @@ Edges are added as follows:
 The resulting bipartite graph, `G₁ ×ₓ G₂`, defines the classical code `Cₓ`.
 """
 function product_tanner_graph_X(G1::BipartiteGraph, G2::BipartiteGraph)
-    V1 = G1.left_nodes
-    C1 = G1.right_nodes
-    V2 = G2.left_nodes
-    C2 = G2.right_nodes
-    # Construct variable node list: (V₁ × V₂) ∪ (C₁ × C₂).
-    var_nodes = Tuple{Symbol,Int,Int}[]
-    for v1 in V1, v2 in V2
-        push!(var_nodes, (:v, v1, v2))
-    end
-    for c1 in C1, c2 in C2
-        push!(var_nodes, (:c, c1, c2))
-    end
-    # Define check node list for X-type: Cₓ = C₁ × V₂.
-    check_nodes = [(c1, v2) for c1 in C1 for v2 in V2]
-    # Create mappings.
-    var_mapping = Dict{Tuple{Symbol,Int,Int},Int}()
-    for (i, node) in enumerate(var_nodes)
-        var_mapping[node] = i
-    end
-    check_mapping = Dict{Tuple{Int,Int},Int}()
-    for (i, node) in enumerate(check_nodes)
-        check_mapping[node] = i
-    end
+    V1, C1 = G1.left_nodes, G1.right_nodes
+    V2, _   = G2.left_nodes, G2.right_nodes  # only V2 needed in edge-adding
+    # Build variable nodes: (V₁ × V₂) ∪ (C₁ × C₂)
+    var_nodes = _construct_var_nodes(V1, G2.left_nodes, C1, G2.right_nodes)
+    # X-type check nodes: C₁ × V₂
+    check_nodes = [(c, v) for c in C1 for v in G2.left_nodes]
+    var_mapping, check_mapping = _construct_mappings(var_nodes, check_nodes)
     total_vertices = length(var_nodes) + length(check_nodes)
     pg = Graph(total_vertices)
-    # Add edges for X-type checks 
-    # For variable nodes of type (:v, v1, v2).
-    for node in var_nodes
-        if node[1] == :v
-            (_, v1, v2) = node
-            for c1 in C1
-                check_node = (c1, v2)
-                if has_edge(G1.g, v1, c1)
-                    var_index = var_mapping[node]
-                    check_index = check_mapping[check_node]
-                    add_edge!(pg, var_index, length(var_nodes) + check_index)
-                end
-            end
-        end
-    end
-    # For variable nodes of type (:c, c1, c2).
-    for node in var_nodes
-        if node[1] == :c
-            (_, c1, c2) = node
-            for v2 in V2
-                check_node = (c1, v2)
-                if has_edge(G2.g, v2, c2)
-                    var_index = var_mapping[node]
-                    check_index = check_mapping[check_node]
-                    add_edge!(pg, var_index, length(var_nodes) + check_index)
-                end
-            end
-        end
-    end
+    _add_edges_X!(pg, var_nodes, var_mapping, check_mapping, G1, G2, G2.left_nodes, C1)
     return ProductTannerGraph(pg, var_nodes, check_nodes, var_mapping, check_mapping)
 end
 
@@ -171,73 +209,28 @@ end
 Constructs the product Tanner graph for `Z-type` checks.
 
 Given Tanner graphs `G₁ = T(V₁, C₁, E₁)` and `G₂ = T(V₂, C₂, E₂)`, define:
-
 - **Variable nodes**: `V = (V₁ × V₂) ∪ (C₁ × C₂)`
 - **Check nodes for `Z-type`**: `C𝓏 = V₁ × C₂`
 
 Edges are added as follows:
-1. Connect a variable node `(v₁, v₂) ∈ (V₁ × V₂)` to a check node `(v₁, c₂)`
-   if `(v₂, c₂)` is an edge in `G₂`
-2. Connect a variable node `(c₁, c₂) ∈ (C₁ × C₂)` to a check node `(v₁, c₂)`
+1. A variable node `(v₁, v₂) ∈ (V₁ × V₂)` connects to a check node `(v₁, c₂)`
+   if `(v₂, c₂)` is an edge in `G₂`.
+2. A variable node `(c₁, c₂) ∈ (C₁ × C₂)` connects to a check node `(v₁, c₂)`
    if `(v₁, c₁)` is an edge in `G₁`.
 
 The resulting bipartite graph, `G₁ ×𝓏 G₂`, defines the classical code `C𝓏`.
 """
 function product_tanner_graph_Z(G1::BipartiteGraph, G2::BipartiteGraph)
-    V1 = G1.left_nodes
-    C1 = G1.right_nodes
-    V2 = G2.left_nodes
-    C2 = G2.right_nodes
-    # Construct variable node list: (V₁ × V₂) ∪ (C₁ × C₂).
-    var_nodes = Tuple{Symbol,Int,Int}[]
-    for v1 in V1, v2 in V2
-        push!(var_nodes, (:v, v1, v2))
-    end
-    for c1 in C1, c2 in C2
-        push!(var_nodes, (:c, c1, c2))
-    end
-    # Define check node list for Z-type: C𝓏 = V₁ × C₂.
-    check_nodes = [(v1, c2) for v1 in V1 for c2 in C2]
-    # Create mappings.
-    var_mapping = Dict{Tuple{Symbol,Int,Int},Int}()
-    for (i, node) in enumerate(var_nodes)
-        var_mapping[node] = i
-    end
-    check_mapping = Dict{Tuple{Int,Int},Int}()
-    for (i, node) in enumerate(check_nodes)
-        check_mapping[node] = i
-    end
+    V1, C1 = G1.left_nodes, G1.right_nodes
+    _, C2   = G2.left_nodes, G2.right_nodes  # only C2 needed in edge-adding
+    # Build variable nodes: (V₁ × V₂) ∪ (C₁ × C₂)
+    var_nodes = _construct_var_nodes(V1, G2.left_nodes, C1, G2.right_nodes)
+    # Z-type check nodes: V₁ × C₂
+    check_nodes = [(v, c) for v in V1 for c in G2.right_nodes]
+    var_mapping, check_mapping = _construct_mappings(var_nodes, check_nodes)
     total_vertices = length(var_nodes) + length(check_nodes)
     pg = Graph(total_vertices)
-    # Add edges for Z-type checks
-    # For variable nodes of type (:v, v1, v2).
-    for node in var_nodes
-        if node[1] == :v
-            (_, v1, v2) = node
-            for c2 in C2
-                check_node = (v1, c2)
-                if has_edge(G2.g, v2, c2)
-                    var_index = var_mapping[node]
-                    check_index = check_mapping[check_node]
-                    add_edge!(pg, var_index, length(var_nodes) + check_index)
-                end
-            end
-        end
-    end
-    # For variable nodes of type (:c, c1, c2).
-    for node in var_nodes
-        if node[1] == :c
-            (_, c1, c2) = node
-            for v1 in V1
-                check_node = (v1, c2)
-                if has_edge(G1.g, v1, c1)
-                    var_index = var_mapping[node]
-                    check_index = check_mapping[check_node]
-                    add_edge!(pg, var_index, length(var_nodes) + check_index)
-                end
-            end
-        end
-    end
+    _add_edges_Z!(pg, var_nodes, var_mapping, check_mapping, G1, G2, V1, G2.right_nodes)
     return ProductTannerGraph(pg, var_nodes, check_nodes, var_mapping, check_mapping)
 end
 
@@ -345,9 +338,12 @@ Since the Tanner graphs can be fully reconstructed from H₁ and H₂, only thes
 matrices and the resulting parity-check matrices Hₓ and H𝓏 need to be stored in order
 to define the CSS code.
 
-# Example
+# 𝑄(𝐺₁ × 𝐺₂)
 
-```jldoctest
+The `𝑄(𝐺₁ × 𝐺₂)` quantum LDPC codes represent a broader generalization of quantum
+expander codes which are derived from the Leverrier-Tillich-Zémor construction.
+
+```jldoctest examples
 julia> using QuantumClifford; using QuantumClifford.ECC; # hide
 
 julia> using SparseArrays; # hide
@@ -375,6 +371,36 @@ julia> c = parity_checks(QuantumTannerGraphProduct(H1, H2))
 + _________ZZ___Z___
 + __________ZZ___Z__
 ```
+
+# Quantum Expander code
+
+The 𝑄(𝐺₁ × 𝐺₂) code is more general than the standard quantum expander code construction.
+The quantum expander code construction corresponds to the specific case where `G = G1= G2`​.
+
+```jldoctest examples
+julia> H = sparse(parity_checks(RepCode(3)));
+
+julia> c = parity_checks(QuantumTannerGraphProduct(H, H))
++ X__X_____X_X______
++ _X__X____XX_______
++ __X__X____XX______
++ ___X__X_____X_X___
++ ____X__X____XX____
++ _____X__X____XX___
++ X_____X________X_X
++ _X_____X_______XX_
++ __X_____X_______XX
++ ZZ_______Z_____Z__
++ _ZZ_______Z_____Z_
++ Z_Z________Z_____Z
++ ___ZZ____Z__Z_____
++ ____ZZ____Z__Z____
++ ___Z_Z_____Z__Z___
++ ______ZZ____Z__Z__
++ _______ZZ____Z__Z_
++ ______Z_Z_____Z__Z
+```
+
 """
 struct QuantumTannerGraphProduct <: AbstractECC
     H1::SparseMatrixCSC{Bool,Int}
