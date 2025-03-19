@@ -8,7 +8,7 @@
 ## v0.9.18 - 2025-02-19
 
 - Fixes for rare crashes in the python BP decoders.
-- Less repetetive error messages.
+- Less repetitive error messages.
 
 ## v0.9.17 - 2025-02-18
 
