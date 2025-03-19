@@ -94,7 +94,7 @@
 
     @testset "4.1: Validity of the Construction of Q(G1 × G2)" begin
         for n in 3:100
-            H1 = sparse(parity_checks(RepCode(n)))
+            H = sparse(parity_checks(RepCode(n)))
             c = QuantumTannerGraphProduct(H, H)
             hx, hz = QuantumClifford.ECC.parity_checks_xz(c)
             @test QuantumClifford.ECC.verify_orthogonality(sparse(hx), sparse(hz))
