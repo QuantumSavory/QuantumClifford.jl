@@ -394,7 +394,7 @@ include("codes/classical/golay.jl")
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
 
-# Tanner codes
+# qexpander
 include("codes/quantumtannergraphproductcode.jl")
 
 end #module
