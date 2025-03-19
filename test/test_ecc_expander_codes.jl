@@ -93,7 +93,7 @@
     end
 
     @testset "4.2: Degree Structure of the Tanner Graphs (Full Distribution)" begin
-        for n in 3:100
+        for n in 3:200
             H1 = sparse(parity_checks(RepCode(n)))
             H2 = sparse(parity_checks(RepCode(n)))
             G1 = QuantumClifford.ECC.tanner_graph_from_parity_matrix(H1)
