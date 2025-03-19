@@ -5,6 +5,11 @@
 
 # News
 
+## v0.9.18 - 2025-02-19
+
+- Fixes for rare crashes in the python BP decoders.
+- Less repetitive error messages.
+
 ## v0.9.17 - 2025-02-18
 
 - New memory structure and matrix inversion function for `random_destabilizer`, to reduce allocations and speed up repeated generation of many random destabilizers.
