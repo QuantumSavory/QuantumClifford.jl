@@ -92,12 +92,25 @@
         return λ, ρ
     end
 
+    @testset "4.1: Validity of the Construction of Q(G1 × G2)" begin
+        for n in 3:100
+            H1 = sparse(parity_checks(RepCode(n)))
+            c = QuantumTannerGraphProduct(H, H)
+            hx, hz = QuantumClifford.ECC.parity_checks_xz(c)
+            @test QuantumClifford.ECC.verify_orthogonality(sparse(hx), sparse(hz))
+        end
+        for n in 3:40
+            c = CyclicQuantumTannerGraphProduct(n)
+            hx, hz = QuantumClifford.ECC.parity_checks_xz(c)
+            @test QuantumClifford.ECC.verify_orthogonality(sparse(hx), sparse(hz))
+        end
+    end
+
     @testset "4.2: Degree Structure of the Tanner Graphs (Full Distribution)" begin
         for n in 3:200
-            H1 = sparse(parity_checks(RepCode(n)))
-            H2 = sparse(parity_checks(RepCode(n)))
-            G1 = QuantumClifford.ECC.tanner_graph_from_parity_matrix(H1)
-            G2 = QuantumClifford.ECC.tanner_graph_from_parity_matrix(H2)
+            H = sparse(parity_checks(RepCode(n)))
+            G1 = QuantumClifford.ECC.tanner_graph_from_parity_matrix(H)
+            G2 = G1 # For expander code, H1 == H2, hence G1 == G2
 
             # product Tanner graphs for X-type and Z-type checks
             PG_X = QuantumClifford.ECC.product_tanner_graph_X(G1, G2)
