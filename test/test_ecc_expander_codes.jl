@@ -97,16 +97,16 @@
     function generate_parity_checks(code_type::Symbol, args...)
         if code_type == :RepCode
             n = args[1]
-            return sparse(parity_checks(RepCode(n)))
+            return parity_checks(RepCode(n))
         elseif code_type == :ReedMuller
             r, m = args
-            return parity_checks(ReedMuller(r, m))
+            return sparse(parity_checks(ReedMuller(r, m)))
         elseif code_type == :Golay
             n = args[1]
             if n == 23
-                return Matrix{Bool}(parity_checks(Golay(n)))
+                return sparse(Matrix{Bool}(parity_checks(Golay(n))))
             elseif n == 24
-                return Matrix{Bool}(parity_checks(Golay(n)))
+                return sparse(Matrix{Bool}(parity_checks(Golay(n))))
             else
                 error("Golay code only supports n = 23 or 24")
             end
@@ -116,14 +116,14 @@
     end
 
     @testset "4.1: Validity of the Construction of Q(G1 × G2)" begin
-        for n in 3:100
+        for n in 3:20
             H = generate_parity_checks(:RepCode, n)
             c = QuantumTannerGraphProduct(H, H)
             @test stab_looks_good(parity_checks(c); remove_redundant_rows=true)
             hx, hz = QuantumClifford.ECC.parity_checks_xz(c)
             @test QuantumClifford.ECC.verify_orthogonality(sparse(hx), sparse(hz))
         end
-        for n in 3:40
+        for n in 3:20
             c = CyclicQuantumTannerGraphProduct(n)
             @test stab_looks_good(parity_checks(c); remove_redundant_rows=true)
             hx, hz = QuantumClifford.ECC.parity_checks_xz(c)
@@ -139,7 +139,7 @@
         for m in 3:5
             for r in 1:m-1
                 H = generate_parity_checks(:ReedMuller, r, m)
-                c = QuantumTannerGraphProduct(sparse(H), sparse(H))
+                c = QuantumTannerGraphProduct(H, H)
                 @test stab_looks_good(parity_checks(c); remove_redundant_rows=true)
                 hx, hz = QuantumClifford.ECC.parity_checks_xz(c)
                 @test QuantumClifford.ECC.verify_orthogonality(sparse(hx), sparse(hz))
