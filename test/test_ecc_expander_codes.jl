@@ -5,7 +5,9 @@
     using LinearAlgebra
     using Graphs
     using QuantumClifford
+    using QuantumClifford: stab_looks_good
     using QuantumClifford.ECC
+    using QuantumClifford.ECC: Golay, RepCode, ReedMuller
 
     # Function to compute the degree distribution of nodes in a graph
     function compute_degree_distribution(graph, nodes)
@@ -92,21 +94,60 @@
         return λ, ρ
     end
 
+    function generate_parity_checks(code_type::Symbol, args...)
+        if code_type == :RepCode
+            n = args[1]
+            return sparse(parity_checks(RepCode(n)))
+        elseif code_type == :ReedMuller
+            r, m = args
+            return parity_checks(ReedMuller(r, m))
+        elseif code_type == :Golay
+            n = args[1]
+            if n == 23
+                return Matrix{Bool}(parity_checks(Golay(n)))
+            elseif n == 24
+                return Matrix{Bool}(parity_checks(Golay(n)))
+            else
+                error("Golay code only supports n = 23 or 24")
+            end
+        else
+            error("Unsupported code type")
+        end
+    end
+
     @testset "4.1: Validity of the Construction of Q(G1 × G2)" begin
         for n in 3:100
-            H = sparse(parity_checks(RepCode(n)))
+            H = generate_parity_checks(:RepCode, n)
             c = QuantumTannerGraphProduct(H, H)
+            @test stab_looks_good(parity_checks(c); remove_redundant_rows=true)
             hx, hz = QuantumClifford.ECC.parity_checks_xz(c)
             @test QuantumClifford.ECC.verify_orthogonality(sparse(hx), sparse(hz))
         end
         for n in 3:40
             c = CyclicQuantumTannerGraphProduct(n)
+            @test stab_looks_good(parity_checks(c); remove_redundant_rows=true)
             hx, hz = QuantumClifford.ECC.parity_checks_xz(c)
             @test QuantumClifford.ECC.verify_orthogonality(sparse(hx), sparse(hz))
         end
+        for n in [23, 24]
+            H = generate_parity_checks(:Golay, n)
+            c = QuantumTannerGraphProduct(sparse(H), sparse(H))
+            @test stab_looks_good(parity_checks(c); remove_redundant_rows=true)
+            hx, hz = QuantumClifford.ECC.parity_checks_xz(c)
+            @test QuantumClifford.ECC.verify_orthogonality(sparse(hx), sparse(hz))
+        end
+        for m in 3:5
+            for r in 1:m-1
+                H = generate_parity_checks(:ReedMuller, r, m)
+                c = QuantumTannerGraphProduct(sparse(H), sparse(H))
+                @test stab_looks_good(parity_checks(c); remove_redundant_rows=true)
+                hx, hz = QuantumClifford.ECC.parity_checks_xz(c)
+                @test QuantumClifford.ECC.verify_orthogonality(sparse(hx), sparse(hz))
+            end
+        end
     end
 
-    @testset "4.2: Degree Structure of the Tanner Graphs (Full Distribution)" begin
+    @testset "4.2: Degree Structure of the Tanner Graphs" begin
         for n in 3:200
             H = sparse(parity_checks(RepCode(n)))
             G1 = QuantumClifford.ECC.tanner_graph_from_parity_matrix(H)
@@ -156,6 +197,44 @@
             @test check_degrees_X == expected_check_X
             @test var_degrees_Z == expected_var_Z
             @test check_degrees_Z == expected_check_Z
+        end
+    end
+
+    @testset "Tests for parity matrix from tanner graph" begin
+        Random.seed!(123)
+
+        @testset "Empty graph" begin
+            bg = QuantumClifford.ECC.generate_random_bipartite_graph(3, 2, 0.0)
+            H = QuantumClifford.ECC.parity_matrix_from_tanner_graph(bg)
+            @test Graphs.is_bipartite(bg.g)
+            @test all(H .== false)
+        end
+
+        @testset "Fully connected bipartite graph" begin
+            bg = QuantumClifford.ECC.generate_random_bipartite_graph(3, 2, 1.0)
+            H = QuantumClifford.ECC.parity_matrix_from_tanner_graph(bg)
+            @test Graphs.is_bipartite(bg.g)
+            @test all(H .== true)
+        end
+
+        @testset "Random bipartite graphs" begin
+            for _ in 1:1000
+                n_v = rand(1:10)
+                n_c = rand(1:10)
+                p = rand() * 0.5  # Edge probability
+                bg = QuantumClifford.ECC.generate_random_bipartite_graph(n_v, n_c, p)
+                @test Graphs.is_bipartite(bg.g)
+                H = QuantumClifford.ECC.parity_matrix_from_tanner_graph(bg)
+                @test size(H) == (n_c, n_v)
+            end
+        end
+
+        @testset "Large bipartite graph" begin
+            bg = QuantumClifford.ECC.generate_random_bipartite_graph(1000, 50, 0.1)
+            H = QuantumClifford.ECC.parity_matrix_from_tanner_graph(bg)
+            @test Graphs.is_bipartite(bg.g)
+            @test size(H) == (50, 1000)
+            @test nnz(H) > 0
         end
     end
 end

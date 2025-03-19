@@ -42,6 +42,22 @@ function tanner_graph_from_parity_matrix(H::SparseMatrixCSC{Bool,Int})
     return BipartiteGraph(g, left_nodes, right_nodes)
 end
 
+"""Generate a random bipartite graph with `n_vars` variable nodes,
+`n_checks` check nodes, and edges added with probability `edge_prob`."""
+function generate_random_bipartite_graph(n_vars::Int, n_checks::Int, edge_prob::Float64)
+    g = SimpleGraph(n_vars + n_checks)
+    left_nodes = collect(1:n_vars)
+    right_nodes = collect((n_vars + 1):(n_vars + n_checks))
+    for v in left_nodes
+        for c in right_nodes
+            if rand() < edge_prob
+                add_edge!(g, v, c)
+            end
+        end
+    end
+    return BipartiteGraph(g, left_nodes, right_nodes)
+end
+
 """
 Reconstructs the parity-check matrix from a Tanner graph `g`, assuming
 the first block of vertices corresponds to variable nodes and the remaining
