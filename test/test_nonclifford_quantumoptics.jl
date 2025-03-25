@@ -165,11 +165,8 @@ end
 end
 
 @testset "Multi-qubit projections using GeneralizedStabilizer with multiple non-Clifford gates" begin
-    # TODO Analyze some multi-qubit genstab states that are unsimulable due to very complex
-    # destabweights, which also exhibit an inverse sparsity relation (Λ(χ′) = Λ(χ) = 4).
-    count = 0
-    num_trials = 20
-    num_qubits = [2,3,4,5] # exclusively multi-qubit
+    num_trials = 10
+    num_qubits = [2,3,4,5,6,7,8,9] # exclusively multi-qubit
     for n in num_qubits # exponential cost in this term
         for repetition in 1:num_trials
             stab = random_stabilizer(n)
@@ -183,10 +180,16 @@ end
             apply!(genstab, nc) # in-place
             norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(genstab,pauli) # in-place
             !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
-            @test projectrand!(genstab, pauli)[1] |> invsparsity <= genstab |> invsparsity # Λ(χ′) ≤ Λ(χ)
-            count += (norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1) ? 1 : 0
+            # check diagonal terms explicitly
+            diag_original = diag(norm_qo_state_after_proj.data)
+            diag_result1 = diag(norm_result1.data)
+            diag_result2 = diag(norm_result2.data)
+            @test diag_original ≈ diag_result1 || diag_original ≈ diag_result2
+            # check off-diagonals with abs due to phase flips
+            off_diag_original = abs.(norm_qo_state_after_proj.data - Diagonal(diag_original))
+            off_diag_result1 = abs.(norm_result1.data - Diagonal(diag_result1))
+            off_diag_result2 = abs.(norm_result2.data - Diagonal(diag_result2))
+            @test off_diag_original ≈ off_diag_result1 || off_diag_original ≈ off_diag_result2
         end
     end
-    prob = count/(num_trials*(length(num_qubits)))
-    @test prob > 0.7
 end

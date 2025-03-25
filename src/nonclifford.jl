@@ -288,12 +288,9 @@ end
 function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
     sm, res = _projectrand_notnorm(sm, p)
     dict = sm.destabweights
-    if sm |> QuantumClifford.invsparsity == 1
-        for ((dᵢ, dⱼ), χ) in dict
-            χ′ = χ/LinearAlgebra.tr(χ) # normalization
-            sm.destabweights[(dᵢ, dⱼ)] = χ′
-        end
-        return sm, res
+    total_norm = (sum(values(dict)))
+    for ((dᵢ, dⱼ), χ) in dict
+        sm.destabweights[(dᵢ, dⱼ)] = χ / total_norm
     end
     return sm, res
 end
