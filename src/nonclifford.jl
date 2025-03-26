@@ -11,6 +11,8 @@
 10. make an overleaf for a paper
 =#
 
+using LinearAlgebra
+
 """
 $(TYPEDEF)
 
@@ -177,16 +179,218 @@ function _allthreesumtozero(a,b,c)
     true
 end
 
-"""Creates a binary vector `k` of the same length as the input vector `b`, with exactly one nonzero element.
-The single nonzero element in `k` is positioned at the index of the first nonzero element in `b`. Example:
-If `k = BitVector([0, 1, 0, 0, 1])`, then `_create_k(k)` returns `BitVector([0, 1, 0, 0, 0])`."""
-function _create_k(b::BitVector)
-    k = falses(length(b))
+"""Compute the trace of a [`GeneralizedStabilizer`](@ref) state.
+
+```jldoctest trace
+julia> using QuantumClifford; using LinearAlgebra;
+
+julia> sm = GeneralizedStabilizer(S"-X");
+
+julia> apply!(sm, pcT)
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + _ | + Z
+ 0.0-0.353553im | + Z | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
+
+julia> tr(sm)
+1.0 + 0.0im
+```
+
+# Non-trivial state
+
+The trace Tr[χ′] is the probability of measuring an outcome with regards to
+unnormalized randomized projection [Yoder2012AGO](@cite).
+
+```jldoctest trace
+julia> using QuantumClifford: _projectrand_notnorm
+
+julia> sm_pre = GeneralizedStabilizer(bell(2))
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z___
++ __Z_
++ _X__
++ ___X
+𝒮𝓉𝒶𝒷━━
++ XX__
++ __XX
++ ZZ__
++ __ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + ____ | + ____
+
+julia> i = 1; nc = embed(4, i, pcT); apply!(sm_pre, nc);
+
+julia> i = 3; nc = embed(4, i, pcT); apply!(sm_pre, nc); sm_pre
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z___
++ __Z_
++ _X__
++ ___X
+𝒮𝓉𝒶𝒷━━
++ XX__
++ __XX
++ ZZ__
++ __ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.125+0.0im | + __Z_ | + Z___
+ 0.125+0.0im | + Z___ | + __Z_
+ 0.0-0.301777im | + Z___ | + ____
+ 0.0+0.0517767im | + Z___ | + Z_Z_
+ 0.125+0.0im | + Z___ | + Z___
+ 0.0+0.301777im | + ____ | + __Z_
+ 0.728553+0.0im | + ____ | + ____
+ -0.125+0.0im | + ____ | + Z_Z_
+ 0.0+0.301777im | + ____ | + Z___
+ 0.0-0.0517767im | + Z_Z_ | + __Z_
+ -0.125+0.0im | + Z_Z_ | + ____
+ 0.0214466+0.0im | + Z_Z_ | + Z_Z_
+ 0.0-0.0517767im | + Z_Z_ | + Z___
+ 0.125+0.0im | + __Z_ | + __Z_
+ 0.0-0.301777im | + __Z_ | + ____
+ 0.0+0.0517767im | + __Z_ | + Z_Z_
+
+julia> sm_pre_copy = copy(sm_pre);
+
+julia> tr(sm_pre)
+1.0 + 0.0im
+
+julia> χ′ = expect(P"__XY", sm_pre)
+0.7071067811865475 + 0.0im
+
+julia> prob₁ = (real(χ′)+1)/2
+0.8535533905932737
+
+julia> sm_post = _projectrand_notnorm(sm_pre, P"__XY")[1]
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z___
++ __XX
++ _X__
++ __X_
+𝒮𝓉𝒶𝒷━━
++ XX__
++ __XY
++ ZZ__
++ __ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.301777im | + ____ | + Z___
+ 0.0-0.301777im | + Z___ | + ____
+ 0.125+0.0im | + Z___ | + Z___
+ 0.728553+0.0im | + ____ | + ____
+
+julia> real(tr(sm_post))
+0.8535533905932737
+```
+
+In this library, the convention is to normalize the projected state to
+maintain consistency with the pre-existing API.
+
+```jldoctest trace
+julia> projectrand!(sm_pre_copy, P"__XY")[1]
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z___
++ __XX
++ _X__
++ __X_
+𝒮𝓉𝒶𝒷━━
++ XX__
+- __XY
++ ZZ__
++ __ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + ____ | + Z___
+ 0.0-0.353553im | + Z___ | + ____
+ 0.146447+0.0im | + Z___ | + Z___
+ 0.853553+0.0im | + ____ | + ____
+
+julia> tr(sm)
+1.0 + 0.0im
+```
+
+"""
+function LinearAlgebra.tr(sm::GeneralizedStabilizer)
+    trace_χ′ = sum(χ for ((P_i, P_j), χ) in sm.destabweights if P_i == P_j; init=0)
+    return trace_χ′
+end
+
+"""Creates a binary vector `k` of the same length as the input vector `b`,
+with exactly one nonzero element. The single nonzero element in `k` is positioned
+at the index of the first nonzero element in `b`.
+
+```jldoctest
+julia> b = BitVector([0, 1, 0, 0, 1]); _create_k!(copy(b))
+5-element BitVector:
+ 0
+ 1
+ 0
+ 0
+ 0
+```
+"""
+function _create_k!(b::BitVector)
     pos = findfirst(b)
-    if pos !== nothing
-        k[pos] = true
+    fill!(b, false)
+    pos === nothing || (b[pos] = true)
+    return b
+end
+
+"""Returns the updated `GeneralizedStabilizer` state sm′ = (χ′, B(S′, D′)),
+where (S′, D′) is derived from (S, D) through the traditional stabilizer update,
+and χ′ is the updated density matrix after measurement. Note: Λ(χ′) ≤ Λ(χ).
+"""
+function _projectrand_notnorm(sm::GeneralizedStabilizer, p::PauliOperator)
+    dict = sm.destabweights
+    dtype = valtype(dict)
+    tzero = zero(dtype)
+    tone = one(dtype)
+    stab = sm.stab
+    newdict = typeof(dict)(tzero)
+    phase, b, c = rowdecompose(p, stab)
+
+    # Implementation of the in-place Pauli measurement quantum operation (Algorithm 2)
+    # on a generalized stabilizer by Ted Yoder (Page 8) from [Yoder2012AGO](@cite).
+    if all(x -> x == 0, b)
+        # (Eq. 14-17)
+        for ((dᵢ, dⱼ), χ) in dict
+            if (im^phase * (-tone)^(dot(dᵢ, c)) == 1) && (im^phase * (-tone)^(dot(dⱼ, c)) == 1) # (Eq. 16)
+                newdict[(dᵢ,dⱼ)] += χ
+            end
+        end
+        sm.destabweights = newdict
+        state, res = projectrand!(stab, p)
+        sm.stab = state
+        return sm, res # the stabilizer basis (S, D) is not updated (Eq. 17)
+    else
+        # (Eq. 18-26)
+        k = _create_k!(copy(b))
+        for ((dᵢ, dⱼ), χ) in dict
+            x, y = dᵢ, dⱼ
+            q = 1
+            if dot(dᵢ, k) == 1
+                q *= im^phase * (-tone)^dot(dᵢ, c)
+                x = dᵢ .⊻ b
+            end
+            if dot(dⱼ, k) == 1
+                q *= conj(im^(phase)) * (-tone)^dot(dⱼ, c) # α* is conj(im^(phase))
+                y = dⱼ .⊻ b
+            end
+            χ′ = 1/2 * χ * q
+            newdict[(x,y)] += χ′
+        end
+        sm.destabweights = newdict
+        state, res = projectrand!(stab, p) # traditional stabilizer update
+        sm.stab = state
+        return sm, res
     end
-    return k
 end
 
 """$(TYPEDSIGNATURES)
@@ -212,6 +416,8 @@ To convert χ′ into a probability of projecting on the +1 eigenvalue branch:
 we can not use the `project!` API, which assumes a stabilizer tableau and reports detailed
 information about whether the tableau and measurement commute or anticommute.
 
+# Stabilizer state
+
 ```jldoctest genstab
 julia> sm = GeneralizedStabilizer(S"-X");
 
@@ -232,65 +438,148 @@ julia> χ′ = expect(P"-X", sm)
 
 julia> prob₁ = (real(χ′)+1)/2
 0.8535533905932737
+
+julia> projectrand!(sm, P"X")[1]
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + Z | + Z
+```
+
+# Non-trivial state
+
+```jldoctest genstab
+julia> sm = GeneralizedStabilizer(bell(3))
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷━━
++ Z_____
++ __Z___
++ ____Z_
++ _X____
++ ___X__
++ _____X
+𝒮𝓉𝒶𝒷━━━━
++ XX____
++ __XX__
++ ____XX
++ ZZ____
++ __ZZ__
++ ____ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + ______ | + ______
+
+julia> i = 2; nc = embed(6, i, pcT); apply!(sm, nc);
+
+julia> i = 3; nc = embed(6, i, pcT); apply!(sm, nc);
+
+julia> i = 4; nc = embed(6, i, pcT); apply!(sm, nc); sm
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷━━
++ Z_____
++ __Z___
++ ____Z_
++ _X____
++ ___X__
++ _____X
+𝒮𝓉𝒶𝒷━━━━
++ XX____
++ __XX__
++ ____XX
++ ZZ____
++ __ZZ__
++ ____ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.426777im | + ______ | + __Z___
+ 0.0-0.426777im | + __Z___ | + ______
+ 0.0+0.176777im | + __Z___ | + Z_Z___
+ 0.0-0.176777im | + Z_Z___ | + __Z___
+ 0.0+0.176777im | + ______ | + Z_____
+ 0.0-0.176777im | + Z_____ | + ______
+ 0.0+0.0732233im | + Z_____ | + Z_Z___
+ 0.0-0.0732233im | + Z_Z___ | + Z_____
+ 0.426777+0.0im | + __Z___ | + __Z___
+ 0.426777+0.0im | + ______ | + ______
+ 0.176777+0.0im | + __Z___ | + Z_____
+ -0.176777+0.0im | + ______ | + Z_Z___
+ -0.176777+0.0im | + Z_Z___ | + ______
+ 0.176777+0.0im | + Z_____ | + __Z___
+ 0.0732233+0.0im | + Z_Z___ | + Z_Z___
+ 0.0732233+0.0im | + Z_____ | + Z_____
+
+julia> sm_pre_copy = copy(sm);
+
+julia> projectrand!(sm, P"Z_____")[1]
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷━━
++ XX____
++ __Z___
++ ____XX
++ _X____
++ ___X__
++ ____X_
+𝒮𝓉𝒶𝒷━━━━
++ Z_____
++ __XX__
++ _____Z
++ ZZ____
++ __ZZ__
++ ____ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.5+0.0im | + __Z___ | + __Z___
+ 0.0+0.5im | + ______ | + __Z___
+ 0.0-0.5im | + __Z___ | + ______
+ 0.5+0.0im | + ______ | + ______
+
+julia> tr(sm)
+1.0 + 0.0im
+```
+
+!!! note The trace Tr[χ′] is the probability of measuring an outcome with
+regards to unnormalized randomized projection [Yoder2012AGO](@cite).
+
+```jldoctest genstab
+julia> using QuantumClifford: _projectrand_notnorm;
+
+julia> prob = real(expect(P"Z_____", sm_pre_copy)+1)/2
+0.5
+
+julia> sm_post = _projectrand_notnorm(sm_pre_copy, P"Z_____")[1]
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷━━
++ XX____
++ __Z___
++ ____Z_
++ _X____
++ ___X__
++ _____X
+𝒮𝓉𝒶𝒷━━━━
++ Z_____
++ __XX__
++ ____XX
++ ZZ____
++ __ZZ__
++ ____ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.25+0.0im | + __Z___ | + __Z___
+ 0.0+0.25im | + ______ | + __Z___
+ 0.0-0.25im | + __Z___ | + ______
+ 0.25+0.0im | + ______ | + ______
+
+julia> real(tr(sm_post))
+0.49999999999999994
 ```
 
 See also: [`expect`](@ref)
 """
-function _projectrand_notnorm(sm::GeneralizedStabilizer, p::PauliOperator)
-    # Returns the updated `GeneralizedStabilizer` state sm′ = (χ′, B(S′, D′)),
-    # where (S′, D′) is derived from (S, D) through the traditional stabilizer update,
-    # and χ′ is the updated density matrix after measurement. Note: Λ(χ′) ≤ Λ(χ).
-    dict = sm.destabweights
-    dtype = valtype(dict)
-    tzero = zero(dtype)
-    tone = one(dtype)
-    stab = sm.stab
-    newdict = typeof(dict)(tzero)
-    phase, b, c = rowdecompose(p, stab)
-
-    # Implementation of the in-place Pauli measurement quantum operation (Algorithm 2)
-    # on a generalized stabilizer by Ted Yoder (Page 8) from [yoder2012generalization](@cite).
-    if all(x -> x == 0, b)
-        # (Eq. 14-17)
-        for ((dᵢ, dⱼ), χ) in dict
-            if (im^phase * (-tone)^(dot(dᵢ, c)) == 1) && (im^phase * (-tone)^(dot(dⱼ, c)) == 1) # (Eq. 16)
-                newdict[(dᵢ,dⱼ)] += χ
-            end
-        end
-        sm.destabweights = newdict # in-place
-        state, res = projectrand!(stab, p)
-        sm.stab = state # in-place
-        return sm, res # the stabilizer basis (S, D) is not updated (Eq. 17)
-    else
-        # (Eq. 18-26)
-        k = _create_k(b)
-        for ((dᵢ, dⱼ), χ) in dict
-            x, y = dᵢ, dⱼ
-            q = 1
-            if dot(dᵢ, k) == 1
-                q *= im^phase * (-tone)^dot(dᵢ, c)
-                x = dᵢ .⊻ b
-            end
-            if dot(dⱼ, k) == 1
-                q *= conj(im^(phase)) * (-tone)^dot(dⱼ, c) # α* is conj(im^(phase))
-                y = dⱼ .⊻ b
-            end
-            χ′ = 1/2 * χ * q
-            newdict[(x,y)] += χ′
-        end
-        sm.destabweights = newdict # in-place
-        state, res = projectrand!(stab, p) # traditional stabilizer update
-        sm.stab = state # in-place
-        return sm, res
-    end
-end
-
 function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
     sm, res = _projectrand_notnorm(sm, p)
     dict = sm.destabweights
-    total_norm = (sum(values(dict)))
+    trace_χ′ = LinearAlgebra.tr(sm)
     for ((dᵢ, dⱼ), χ) in dict
-        sm.destabweights[(dᵢ, dⱼ)] = χ / total_norm
+        sm.destabweights[(dᵢ, dⱼ)] = χ / trace_χ′
     end
     return sm, res
 end

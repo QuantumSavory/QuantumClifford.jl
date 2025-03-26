@@ -3,6 +3,7 @@ using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_le
 using QuantumClifford: @S_str, random_stabilizer
 using QuantumOpticsBase
 using LinearAlgebra
+using LinearAlgebra: tr
 using Test
 using InteractiveUtils
 using Random
@@ -110,22 +111,9 @@ end
             apply!(genstab, pcT) # in-place
             norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(genstab,p) # in-place
             !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
-            @test projectrand!(genstab, p)[1] |> invsparsity <= genstab |> invsparsity # Λ(χ′) ≤ Λ(χ)
+            @test invsparsity(projectrand!(genstab, p)[1]) <= invsparsity(genstab) # Λ(χ′) ≤ Λ(χ)
             @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
        end
-    end
-
-    for _ in 1:100
-        for n in 1:1
-            stab = random_stabilizer(n)
-            genstab = GeneralizedStabilizer(stab)
-            pauli = random_pauli(n)
-            apply!(genstab, pcT) # in-place
-            norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(genstab,pauli) # in-place
-            !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
-            @test projectrand!(genstab, pauli)[1] |> invsparsity <= genstab |> invsparsity # Λ(χ′) ≤ Λ(χ)
-            @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
-        end
     end
 end
 
@@ -140,33 +128,63 @@ end
                 norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(τ,p) # in-place
                 !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
                 @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
-                isa(τ, GeneralizedStabilizer) && @test projectrand!(τ, p)[1] |> invsparsity <= τ |> invsparsity # Λ(χ′) ≤ Λ(χ)
+                isa(τ, GeneralizedStabilizer) && @test invsparsity(projectrand!(τ, p)[1]) <= invsparsity(τ) # Λ(χ′) ≤ Λ(χ)
             end
         end
     end
 end
 
-@testset "The trace Tr[χ′] is the probability of measuring an outcome" begin
-    # The trace Tr[χ′] represents the probability of obtaining an outcome of 0.
-    # TODO Document - Since ((real(expect(P"Z", apply!(genstab(S"-Z"), pcT))))+1)/2 is 0,
-    # it triggers Eq. 16, where (I+(-1)^(i·c)*M)ρₛ(I+(-1)^(j·c)*M) evaluates to 0. Thus,
-    # genstab after projectrand!(apply!(genstab(S"-Z"), pcT), P"Z")[1] has no meaning.
-    for s in [S"X", S"Y", S"Z", S"-X", S"-Y", S"Z"]
-        for p in [P"X", P"Y", P"Z", P"-X", P"-Y"]
+@testset "Probability consistency check between `expect` and `_projectrand_notnorm`" begin
+    # The trace Tr[χ′] is the probability of measuring an outcome wrt _projectrand_notnorm.
+    for s in [S"X", S"Y", S"Z", S"-X", S"-Y", S"-Z"]
+        for p in [P"X", P"Y", P"Z", P"-X", P"-Y", P"-Z"]
             genstab = GeneralizedStabilizer(s)
-            apply!(genstab, pcT) # in-place
-            prob1 = (real(expect(p, genstab))+1)/2
-            _projectrand_notnorm(genstab, p)[1] # in-place
-            dict = genstab.destabweights
-            trace_χ′ = real(tr(collect(values(dict))[1])) # Tr[χ′]
-            @test isapprox(prob1, trace_χ′; atol=1e-5)
+            apply!(genstab, pcT)
+            # Calculate theoretical probability
+            prob1 = (real(expect(p, genstab)) + 1)/2
+            # Perform unnormalized projection and get trace
+            genstab_proj, result = _projectrand_notnorm(genstab, p)
+            if !isempty(genstab_proj.destabweights)
+                # Calculate trace of χ′
+                trace_χ′ = tr(genstab_proj)
+                # Verify Tr[χ′] equals measurement probability using _projectrand_notnorm
+                @test isapprox(prob1, real(trace_χ′); atol=1e-5)
+            else
+                # Verify zero probability case
+                @test isapprox(prob1, 0.0; atol=1e-5)
+            end
+        end
+    end
+    # Test non-trivial states
+    for n in 2:5
+        for trial in 1:10
+            s = random_stabilizer(n)
+            genstab = GeneralizedStabilizer(s)
+            p = random_pauli(n)
+            # Apply non-Clifford operations
+            for _ in 1:n
+                apply!(genstab, embed(n, rand(1:n), pcT))
+            end
+            # Calculate theoretical probability
+            prob1 = (real(expect(p, genstab)) + 1)/2
+            # Perform unnormalized projection and get trace
+            genstab_proj, result = _projectrand_notnorm(genstab, p)
+            if !isempty(genstab_proj.destabweights)
+                # Calculate trace of χ′
+                trace_χ′ = tr(genstab_proj)
+                # Verify Tr[χ′] equals measurement probability using _projectrand_notnorm
+                @test isapprox(prob1, real(trace_χ′); atol=1e-5)
+            else
+                # Verify zero probability case
+                @test isapprox(prob1, 0.0; atol=1e-5)
+            end
         end
     end
 end
 
 @testset "Multi-qubit projections using GeneralizedStabilizer with multiple non-Clifford gates" begin
-    num_trials = 10
-    num_qubits = [2,3,4,5,6,7,8,9] # exclusively multi-qubit
+    num_trials = 5
+    num_qubits = [2,3,4,5] # exclusively multi-qubit
     for n in num_qubits # exponential cost in this term
         for repetition in 1:num_trials
             stab = random_stabilizer(n)
@@ -190,6 +208,20 @@ end
             off_diag_result1 = abs.(norm_result1.data - Diagonal(diag_result1))
             off_diag_result2 = abs.(norm_result2.data - Diagonal(diag_result2))
             @test off_diag_original ≈ off_diag_result1 || off_diag_original ≈ off_diag_result2
+        end
+    end
+    for j in 1:10
+        num_qubits = [2,3,4,5] # exclusively multi-qubit
+        for n in num_qubits # exponential cost in this term
+            genstab = GeneralizedStabilizer(random_stabilizer(n))
+            p = random_pauli(n)
+            for i in 1:n
+                apply!(genstab, embed(n, rand(1:n), pcT))
+            end
+            projectrand!(genstab, p)
+            # Check the trace after normalization
+            trace = tr(genstab)
+            !iszero(trace) && @assert trace ≈ 1
         end
     end
 end

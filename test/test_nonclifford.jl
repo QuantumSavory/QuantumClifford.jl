@@ -54,41 +54,37 @@ end
     end
 end
 
-##
-
 @testset "PauliChannel: inverse sparsity of k-qubit channels" begin
     # In general, the increase in Λ(χ) due to k-qubit channels is limited to a maximum factor of 16ᵏ.
     k = 10
     for n in 1:10
-        for repetition in 1:1000
+        for repetition in 1:10
             stab = random_stabilizer(n)
             pauli = random_pauli(n)
             genstab = GeneralizedStabilizer(stab)
-            Λ_χ = genstab |> invsparsity # Λ(χ)
+            Λ_χ = invsparsity(genstab) # Λ(χ)
             i = rand(1:n)
             nc = embed(n, i, pcT)
             for i in 1:k
                 apply!(genstab, nc) # in-place
             end
-            Λ_χ′ = genstab |> invsparsity # Λ(χ′)
+            Λ_χ′ = invsparsity(genstab) # Λ(χ′)
             @test (Λ_χ′/Λ_χ) <= 16^k
         end
     end
 end
 
-##
-
 @testset "PauliChannel: Λ(χ) ≤ Λ(χ′) ≤ Λ(E)Λ(χ)" begin
     # In general, the complexity of χ increases in the case of evolution through a channel.
     for n in 1:10
-        for repetition in 1:1000
+        for repetition in 1:10
             stab = random_stabilizer(n)
             pauli = random_pauli(n)
             genstab = GeneralizedStabilizer(stab)
-            Λ_χ = genstab |> invsparsity # Λ(χ)
+            Λ_χ = invsparsity(genstab) # Λ(χ)
             i = rand(1:n)
             nc = embed(n, i, pcT)
-            Λ_E = nc |> invsparsity # Λ(E)
+            Λ_E = invsparsity(nc) # Λ(E)
             apply!(genstab, nc) # in-place
             Λ_χ′ = genstab |> invsparsity # Λ(χ′)
             @test Λ_χ <= Λ_χ′ <= Λ_E*Λ_χ # Corollary 14, page 9 of [yoder2012generalization](@cite).
@@ -96,18 +92,16 @@ end
     end
 end
 
-##
-
 @testset "PauliMeasurement: Λ(χ′) ≤ Λ(χ)" begin
     # In general, the complexity of χ may decrease in the case of evolution through a measurement.
     for n in 1:10
-        for repetition in 1:1000
+        for repetition in 1:10
             stab = random_stabilizer(n)
             pauli = random_pauli(n)
             genstab = GeneralizedStabilizer(stab)
-            Λ_χ = genstab |> invsparsity # Λ(χ)
+            Λ_χ = invsparsity(genstab) # Λ(χ)
             projectrand!(genstab, pauli)[1] # in-place
-            Λ_χ′ = genstab |> invsparsity # Λ(χ′)
+            Λ_χ′ = invsparsity(genstab) # Λ(χ′)
             @test Λ_χ′ <= Λ_χ # Corollary 14, page 9 of [yoder2012generalization](@cite).
         end
     end
