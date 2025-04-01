@@ -265,6 +265,49 @@ julia> code_n(c), code_k(c)
 (108, 12)
 ```
 
+### Small Groups
+
+An abelian `[[60, 6, 10]]` 2BGA code  of order `l = 30` with group ID `4`, represented
+by the group presentation `⟨r | r³⁰⟩`, constructed via `Hecke.small_group(4,30)`. Note:
+Hecke's small groups are limited in scope and should only be used for single cyclic groups.
+
+```jldoctest sg
+julia> import Hecke: group_algebra, GF, abelian_group, gens, small_group; using QuantumClifford.ECC;
+
+julia> l = 30;
+
+julia> group_id = 4;
+
+julia> G = small_group(l, group_id);
+
+julia> GA = group_algebra(GF(2), G);
+
+julia> r = prod(gens(GA));
+```
+
+!!! note When using `Hecke.small_group`, it is essential to verify that the
+presentation for the single cyclic group is satisfied before proceeding with
+the code construction. This method serves as a workaround for creating small
+groups, specifically for single cyclic groups, using a group presentation with
+*no extra relations*, such as `⟨r | r³⁰⟩`. For the construction of *general*
+groups with specific group presentations, the only effective method is to use
+*finitely presented groups* (`Oscar.FPGroup`), which allow for defining direct
+products of two or more *general* groups—something not supported by Hecke.
+
+```jldoctest sg
+julia> r^30  ==  1
+true
+
+julia> A = 1 + r^10 + r^6  + r^13;
+
+julia> B = 1 + r^25 + r^16 + r^12;
+
+julia> c = two_block_group_algebra_codes(A,B);
+
+julia> code_n(c), code_k(c)
+(60, 6)
+```
+
 See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
 """
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
