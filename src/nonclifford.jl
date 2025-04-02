@@ -355,6 +355,11 @@ function _projectrand_notnorm(sm::GeneralizedStabilizer, p::PauliOperator)
     stab = sm.stab
     newdict = typeof(dict)(tzero)
     phase, b, c = rowdecompose(p, stab)
+    new_stab = copy(stab)
+    s_view = stabilizerview(new_stab)
+    d_view = destabilizerview(new_stab)
+    n = nqubits(new_stab)
+    id_op = embed(n, 1, P"I")  # Creates I⊗I⊗...⊗I
 
     # Implementation of the in-place Pauli measurement quantum operation (Algorithm 2)
     # on a generalized stabilizer by Ted Yoder (Page 8) from [Yoder2012AGO](@cite).
@@ -366,11 +371,31 @@ function _projectrand_notnorm(sm::GeneralizedStabilizer, p::PauliOperator)
             end
         end
         sm.destabweights = newdict
-        state, res = projectrand!(stab, p)
-        sm.stab = state
-        return sm, res # the stabilizer basis (S, D) is not updated (Eq. 17)
+        return sm, 0x0 # the stabilizer basis (S, D) is not updated (Eq. 17)
     else
         # (Eq. 18-26)
+        k_pos = findfirst(b)
+        # get the k-th stabilizer generator
+        sk = s_view[k_pos]
+        # update stabilizer generators
+        for j in 1:length(b)
+            if b[j]
+                s_view[j] = s_view[j] * sk
+            end
+        end
+        # update destabilizer generators
+        for j in 1:length(c)
+            if c[j] && j != k_pos  # cj = 1 and j ≠ k_pos
+                d_view[j] = d_view[j] * sk
+            end
+        end
+        # set dk to identity by direct assignment
+        d_view[k_pos] = id_op
+        # replace dk with sk
+        d_view[k_pos] = sk
+        # replace sk with M (the measured Pauli operator)
+        s_view[k_pos] = p
+        # update the χ matrix
         k = _create_k!(copy(b))
         for ((dᵢ, dⱼ), χ) in dict
             x, y = dᵢ, dⱼ
@@ -387,9 +412,8 @@ function _projectrand_notnorm(sm::GeneralizedStabilizer, p::PauliOperator)
             newdict[(x,y)] += χ′
         end
         sm.destabweights = newdict
-        state, res = projectrand!(stab, p) # traditional stabilizer update
-        sm.stab = state
-        return sm, res
+        sm.stab = new_stab
+        return sm, 0x0 # 0x0 added for no reason
     end
 end
 

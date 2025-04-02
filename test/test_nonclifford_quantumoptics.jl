@@ -183,31 +183,22 @@ end
 end
 
 @testset "Multi-qubit projections using GeneralizedStabilizer with multiple non-Clifford gates" begin
-    num_trials = 5
+    num_trials = 10
     num_qubits = [2,3,4,5] # exclusively multi-qubit
-    for n in num_qubits # exponential cost in this term
+    for n in num_qubits  # Exponential cost in this term
         for repetition in 1:num_trials
             stab = random_stabilizer(n)
             pauli = random_pauli(n)
             genstab = GeneralizedStabilizer(stab)
-            # some (repeated) non-clifford ops
+            # Apply some (repeated) non-Clifford operations
             i = rand(1:n)
             nc = embed(n, i, pcT)
-            apply!(genstab, nc) # in-place
-            apply!(genstab, nc) # in-place
-            apply!(genstab, nc) # in-place
-            norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(genstab,pauli) # in-place
+            for _ in 1:3
+                apply!(genstab, nc) # in-place
+            end
+            norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(genstab, pauli)
             !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
-            # check diagonal terms explicitly
-            diag_original = diag(norm_qo_state_after_proj.data)
-            diag_result1 = diag(norm_result1.data)
-            diag_result2 = diag(norm_result2.data)
-            @test diag_original ≈ diag_result1 || diag_original ≈ diag_result2
-            # check off-diagonals with abs due to phase flips
-            off_diag_original = abs.(norm_qo_state_after_proj.data - Diagonal(diag_original))
-            off_diag_result1 = abs.(norm_result1.data - Diagonal(diag_result1))
-            off_diag_result2 = abs.(norm_result2.data - Diagonal(diag_result2))
-            @test off_diag_original ≈ off_diag_result1 || off_diag_original ≈ off_diag_result2
+            @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
         end
     end
     for j in 1:10
