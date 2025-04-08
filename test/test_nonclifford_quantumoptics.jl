@@ -134,7 +134,7 @@ end
     end
 end
 
-@testset "The trace Tr[χ′] is the probability of measuring an 0 wrt _projectrand_notnorm." begin
+@testset "The trace Tr[χ′] is the probability of measuring 0 wrt _projectrand_notnorm." begin
     for s in [S"X", S"Y", S"Z", S"-X", S"-Y", S"-Z"]
         for p in [P"X", P"Y", P"Z", P"-X", P"-Y", P"-Z"]
             genstab = GeneralizedStabilizer(s)
