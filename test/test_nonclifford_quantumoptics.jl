@@ -215,3 +215,8 @@ end
         end
     end
 end
+
+@testset "projectrand! gives random results" begin
+    s1 = projectrand!(GeneralizedStabilizer(S"X"), P"Z")[1].stab
+    @test any(projectrand!(GeneralizedStabilizer(S"X"), P"Z")[1].stab != s1 for _ in 1:10)
+end
