@@ -134,16 +134,15 @@ end
     end
 end
 
-@testset "Probability consistency check between `expect` and `_projectrand_notnorm`" begin
-    # The trace Tr[χ′] is the probability of measuring an outcome wrt _projectrand_notnorm.
+@testset "The trace Tr[χ′] is the probability of measuring an 0 wrt _projectrand_notnorm." begin
     for s in [S"X", S"Y", S"Z", S"-X", S"-Y", S"-Z"]
         for p in [P"X", P"Y", P"Z", P"-X", P"-Y", P"-Z"]
             genstab = GeneralizedStabilizer(s)
             apply!(genstab, pcT)
             # Calculate theoretical probability
-            prob1 = (real(expect(p, genstab)) + 1)/2
-            # Perform unnormalized projection and get trace
-            genstab_proj, result = _projectrand_notnorm(genstab, p)
+            prob1 = (real(expect(p, genstab)) + 1) / 2
+            # Perform unnormalized projection and get the updated state
+            genstab_proj, _ = _projectrand_notnorm(genstab, p, 0)
             if !isempty(genstab_proj.destabweights)
                 # Calculate trace of χ′
                 trace_χ′ = tr(genstab_proj)
@@ -166,9 +165,9 @@ end
                 apply!(genstab, embed(n, rand(1:n), pcT))
             end
             # Calculate theoretical probability
-            prob1 = (real(expect(p, genstab)) + 1)/2
-            # Perform unnormalized projection and get trace
-            genstab_proj, result = _projectrand_notnorm(genstab, p)
+            prob1 = (real(expect(p, genstab)) + 1) / 2
+            # Perform unnormalized projection and get the updated state
+            genstab_proj, _ = _projectrand_notnorm(genstab, p, 0)
             if !isempty(genstab_proj.destabweights)
                 # Calculate trace of χ′
                 trace_χ′ = tr(genstab_proj)
@@ -193,9 +192,9 @@ end
             # Apply some (repeated) non-Clifford operations
             i = rand(1:n)
             nc = embed(n, i, pcT)
-            for _ in 1:3
-                apply!(genstab, nc) # in-place
-            end
+            apply!(genstab, nc) # in-place
+            apply!(genstab, nc) # in-place
+            apply!(genstab, nc) # in-place
             norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(genstab, pauli)
             !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
             @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
