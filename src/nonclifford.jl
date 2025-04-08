@@ -179,31 +179,9 @@ function _allthreesumtozero(a,b,c)
     true
 end
 
-
 function LinearAlgebra.tr(sm::GeneralizedStabilizer)
     trace_χ′ = sum(χ for ((P_i, P_j), χ) in sm.destabweights if P_i == P_j; init=0)
     return trace_χ′
-end
-
-"""Creates a binary vector `k` of the same length as the input vector `b`,
-with exactly one nonzero element. The single nonzero element in `k` is positioned
-at the index of the first nonzero element in `b`.
-
-```jldoctest
-julia> b = BitVector([0, 1, 0, 0, 1]); _create_k!(copy(b))
-5-element BitVector:
- 0
- 1
- 0
- 0
- 0
-```
-"""
-function _create_k!(b::BitVector)
-    pos = findfirst(b)
-    fill!(b, false)
-    pos === nothing || (b[pos] = true)
-    return b
 end
 
 """Returns the updated `GeneralizedStabilizer` state sm′ = (χ′, B(S′, D′)),
