@@ -179,6 +179,29 @@ function _allthreesumtozero(a,b,c)
     true
 end
 
+"""Compute the trace of a [`GeneralizedStabilizer`](@ref) state.
+
+```jldoctest trace
+julia> using QuantumClifford; using LinearAlgebra;
+
+julia> sm = GeneralizedStabilizer(S"-X");
+
+julia> apply!(sm, pcT)
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + _ | + Z
+ 0.0-0.353553im | + Z | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
+
+julia> tr(sm)
+1.0 + 0.0im
+```
+"""
 function LinearAlgebra.tr(sm::GeneralizedStabilizer)
     trace_χ′ = sum(χ for ((P_i, P_j), χ) in sm.destabweights if P_i == P_j; init=0)
     return trace_χ′
@@ -282,8 +305,6 @@ To convert χ′ into a probability of projecting on the +1 eigenvalue branch:
 we can not use the `project!` API, which assumes a stabilizer tableau and reports detailed
 information about whether the tableau and measurement commute or anticommute.
 
-# Stabilizer state
-
 ```jldoctest genstab
 julia> sm = GeneralizedStabilizer(S"-X");
 
@@ -304,6 +325,15 @@ julia> χ′ = expect(P"-X", sm)
 
 julia> prob₁ = (real(χ′)+1)/2
 0.8535533905932737
+
+julia> projectrand!(sm, P"X")[1]
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + Z | + Z
 ```
 
 See also: [`expect`](@ref)
