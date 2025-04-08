@@ -106,11 +106,6 @@ function apply!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
     r
 end
 
-# TODO create Base.permute! and getindex(..., permutation_array)
-function permute(c::CliffordOperator,p) # TODO this is a slow stupid implementation
-    CliffordOperator(Tableau([tab(c)[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
-end
-
 """Nonvectorized version of `apply!` used for unit tests."""
 function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true)
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
