@@ -16,7 +16,7 @@ using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form, kronecker_product
 
 abstract type AbstractECC end
 
@@ -24,13 +24,15 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
-    RepCode, LiftedCode,
+    RepCode, LiftedCode, TensorProduct,
+    RepCode, 
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     haah_cubic_codes,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
+    QuantumTensorProduct,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -383,10 +385,12 @@ include("codes/toric.jl")
 include("codes/gottesman.jl")
 include("codes/surface.jl")
 include("codes/concat.jl")
+include("codes/quantumtensorproduct.jl")
 include("codes/random_circuit.jl")
 include("codes/quantumreedmuller.jl")
 include("codes/classical/reedmuller.jl")
 include("codes/classical/recursivereedmuller.jl")
+include("codes/classical/tensorproduct.jl")
 include("codes/classical/bch.jl")
 include("codes/classical/golay.jl")
 
