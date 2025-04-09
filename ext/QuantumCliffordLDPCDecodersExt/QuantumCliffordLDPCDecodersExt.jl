@@ -30,10 +30,8 @@ struct BitFlipDecoder <: AbstractSyndromeDecoder # TODO all these decoders have 
     bfdecoderz
 end
 
-# In QuantumCliffordLDPCDecodersExt.jl
-# Here's the fixed BPOTSWrapperDecoder implementation for your extension module
-struct BPOTSWrapperDecoder <: AbstractSyndromeDecoder
-    original_code          # Store the original code object
+struct BPOTSDecoder <: AbstractSyndromeDecoder
+    original_code       
     H::SparseMatrixCSC{Bool,Int}
     faults_matrix::Matrix{Bool}
     n::Int
@@ -45,7 +43,7 @@ struct BPOTSWrapperDecoder <: AbstractSyndromeDecoder
     bpots_z::LDPCDecoders.BPOTSDecoder
 end
 
-function BPOTSWrapperDecoder(c; errorrate=nothing, maxiter=nothing, T=9, C=2.0)
+function BPOTSDecoder(c; errorrate=nothing, maxiter=nothing, T=9, C=2.0)
     # Get stabilizer matrices
     Hx_raw = parity_checks_x(c)
     Hz_raw = parity_checks_z(c)
@@ -93,15 +91,10 @@ function BPOTSWrapperDecoder(c; errorrate=nothing, maxiter=nothing, T=9, C=2.0)
     bpots_z = LDPCDecoders.BPOTSDecoder(Hz, errorrate, maxiter; T=T, C=C)
 
     # Pass the original code object as the first parameter
-    return BPOTSWrapperDecoder(c, H, fm, n, s, k, cx, cz, bpots_x, bpots_z)
+    return BPOTSDecoder(c, H, fm, n, s, k, cx, cz, bpots_x, bpots_z)
 end
 
-# Return the original code object
-function parity_checks(d::BPOTSWrapperDecoder)
-    return d.original_code
-end
-
-function decode(d::BPOTSWrapperDecoder, syndrome_sample::AbstractVector{Bool})
+function decode(d::BPOTSDecoder, syndrome_sample::AbstractVector{Bool})
     # Validate input size
     length(syndrome_sample) == d.cx + d.cz || 
         throw(DimensionMismatch("Syndrome length ($(length(syndrome_sample))) does not match expected size ($(d.cx + d.cz))"))
@@ -118,8 +111,7 @@ function decode(d::BPOTSWrapperDecoder, syndrome_sample::AbstractVector{Bool})
     return vcat(guess_x, guess_z)
 end
 
-# Make sure to also implement the parity_checks method
-function parity_checks(d::BPOTSWrapperDecoder)
+function parity_checks(d::BPOTSDecoder)
     return d.H
 end
 
@@ -157,7 +149,6 @@ function BitFlipDecoder(c; errorrate=nothing, maxiter=nothing)
     isnothing(errorrate) || 0≤errorrate≤1 || error(lazy"BitFlipDecoder got an invalid error rate argument. `errorrate` must be in the range [0, 1].")
     errorrate = isnothing(errorrate) ? 0.0 : errorrate
     maxiter = isnothing(maxiter) ? n : maxiter
-    bfx = LDPCDecoders.BitFlipDecoder(Hx, errorrate, maxiter)   # uses 2 classical bit flip decoders
     bfz = LDPCDecoders.BitFlipDecoder(Hz, errorrate, maxiter)
 
     return BitFlipDecoder(H, fm, n, s, k, cx, cz, bfx, bfz)
@@ -180,11 +171,6 @@ function decode(d::BitFlipDecoder, syndrome_sample)
     guess_z, success = LDPCDecoders.decode!(d.bfdecoderx, row_x)
     guess_x, success = LDPCDecoders.decode!(d.bfdecoderz, row_z)
     return vcat(guess_x, guess_z)
-end
-
-#parity_checks method
-function parity_checks(d::BPOTSWrapperDecoder)
-    return d.H
 end
 
 end
