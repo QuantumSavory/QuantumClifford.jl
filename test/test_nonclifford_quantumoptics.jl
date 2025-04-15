@@ -220,3 +220,41 @@ end
     s1 = projectrand!(GeneralizedStabilizer(S"X"), P"Z")[1].stab
     @test any(projectrand!(GeneralizedStabilizer(S"X"), P"Z")[1].stab != s1 for _ in 1:10)
 end
+
+@testset "smaller test redundant to the ones above" begin
+    for n in 1:5
+        for rep in 1:2
+            s = random_stabilizer(n)
+            g = GeneralizedStabilizer(s)
+            apply!(g, embed(n, rand(1:n), pcT))
+            p = random_pauli(n; realphase=true)
+            gm, r = projectrand!(copy(g), p)
+
+            rho = Operator(g)
+            pqo = Operator(p)
+            id = identityoperator(pqo)
+            projp = (pqo+id)/2
+            projm = (-pqo+id)/2
+
+            @test projp+projm ≈ id
+
+            rhom = projm*rho*projm'
+            rhop = projp*rho*projp'
+
+            #@test rhom + rhop ≈ rho
+
+            @test (expect(p, g)+1)/2 ≈ tr(rhop)
+
+            gm_notnorm, _ = QuantumClifford._projectrand_notnorm(copy(g), p, 0)
+            @test (expect(p, g)+1)/2 ≈ tr(gm_notnorm)
+
+            @test tr(rhop) ≈ tr(gm_notnorm)
+
+            if r == 0x2
+                @test rhom / tr(rhom) ≈ Operator(gm)
+            else
+                @test rhop / tr(rhop) ≈ Operator(gm)
+            end
+        end
+    end
+end
