@@ -351,6 +351,7 @@ function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
     for ((dᵢ, dⱼ), χ) in sm.destabweights
         sm.destabweights[(dᵢ, dⱼ)] = χ / trace
     end
+    res = (res == 0) ? 0x0 : 0x2
     return sm, res
 end
 
