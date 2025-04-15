@@ -11,6 +11,8 @@
 10. make an overleaf for a paper
 =#
 
+using LinearAlgebra
+
 """
 $(TYPEDEF)
 
@@ -177,6 +179,109 @@ function _allthreesumtozero(a,b,c)
     true
 end
 
+"""Compute the trace of a [`GeneralizedStabilizer`](@ref) state.
+
+```jldoctest trace
+julia> using QuantumClifford; using LinearAlgebra;
+
+julia> sm = GeneralizedStabilizer(S"-X");
+
+julia> apply!(sm, pcT)
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + _ | + Z
+ 0.0-0.353553im | + Z | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
+
+julia> tr(sm)
+1.0 + 0.0im
+```
+"""
+function LinearAlgebra.tr(sm::GeneralizedStabilizer)
+    trace_χ′ = sum(χ for ((P_i, P_j), χ) in sm.destabweights if P_i == P_j; init=0)
+    return trace_χ′
+end
+
+"""Returns the updated `GeneralizedStabilizer` state sm′ = (χ′, B(S′, D′)),
+where (S′, D′) is derived from (S, D) through the traditional stabilizer update,
+and χ′ is the updated density matrix after measurement. Note: Λ(χ′) ≤ Λ(χ).
+"""
+function _projectrand_notnorm(sm::GeneralizedStabilizer, p::PauliOperator, res::Int)
+    dict = sm.destabweights
+    dtype = valtype(dict)
+    tzero = zero(dtype)
+    tone = one(dtype)
+    stab = sm.stab
+    newdict = typeof(dict)(tzero)
+    phase, b, c = rowdecompose(p, stab)
+    new_stab = copy(stab)
+    s_view = stabilizerview(new_stab)
+    d_view = destabilizerview(new_stab)
+    n = nqubits(new_stab)
+    id_op = zero(PauliOperator, n)
+    sign = res == 0 ? 1 : -1
+
+    # Implementation of the in-place Pauli measurement quantum operation (Algorithm 2)
+    # on a generalized stabilizer by Ted Yoder (Page 8) from [Yoder2012AGO](@cite).
+    if all(iszero, b)
+        # (Eq. 14-17)
+        for ((dᵢ, dⱼ), χ) in dict
+            cond_i = im^phase * (-tone)^(dot(dᵢ, c)) == sign # (Eq. 16)
+            cond_j = im^phase * (-tone)^(dot(dⱼ, c)) == sign # (Eq. 16)
+            if cond_i && cond_j
+                newdict[(dᵢ, dⱼ)] += χ
+            end
+        end
+        sm.destabweights = newdict
+        return sm, res
+    else
+        # (Eq. 18-26)
+        k_pos = findfirst(!iszero, b)
+        # get the k-th stabilizer generator
+        sk = s_view[k_pos]
+        # update stabilizer generators
+        for j in eachindex(b)
+            if b[j]
+                s_view[j] *= sk
+            end
+        end
+        # update destabilizer generators
+        for j in eachindex(c)
+            if c[j] && j != k_pos  # cj = 1 and j ≠ k_pos
+                d_view[j] *= sk
+            end
+        end
+        d_view[k_pos] = id_op
+        d_view[k_pos] = sk
+        # replace sk with sign*M
+        s_view[k_pos] = sign * p
+        # update the χ matrix
+        k = falses(n)
+        k[k_pos] = true
+        for ((dᵢ, dⱼ), χ) in dict
+            x, y = dᵢ, dⱼ
+            q = one(dtype)
+            if dot(dᵢ, k) == 1
+                q *= im^phase * (-tone)^dot(dᵢ, c) * sign
+                x = dᵢ .⊻ b
+            end
+            if dot(dⱼ, k) == 1
+                q *= conj(im^phase) * (-tone)^dot(dⱼ, c) * sign
+                y = dⱼ .⊻ b
+            end
+            newdict[(x, y)] += χ * q / 2
+        end
+        sm.destabweights = newdict
+        sm.stab = new_stab
+        return sm, res
+    end
+end
+
 """$(TYPEDSIGNATURES)
 
 Performs a randomized projection of the state represented by the [`GeneralizedStabilizer`](@ref) `sm`,
@@ -220,20 +325,34 @@ julia> χ′ = expect(P"-X", sm)
 
 julia> prob₁ = (real(χ′)+1)/2
 0.8535533905932737
+
+julia> projectrand!(sm, P"X")[1]
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + Z | + Z
 ```
 
 See also: [`expect`](@ref)
 """
 function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
-    χ′ = expect(p, sm)
-    # Compute the probability of measuring in the +1 eigenstate
-    prob₁ = (real(χ′)+1)/2
-    # Randomly choose projection based on this probability
-    return _proj(sm, rand() < prob₁ ? p : -p)
-end
-
-function _proj(sm::GeneralizedStabilizer, p::PauliOperator)
-    error("This functionality is not implemented yet")
+    # Compute expectation value
+    exp_val = expect(p, sm)
+    prob_plus = (real(exp_val) + 1) / 2
+    # Randomly choose outcome
+    res = rand() < prob_plus ? 0 : 1
+    # Apply the corresponding projection
+    sm, _ = _projectrand_notnorm(sm, p, res)
+    # Normalize the state
+    trace = tr(sm)
+    for ((dᵢ, dⱼ), χ) in sm.destabweights
+        sm.destabweights[(dᵢ, dⱼ)] = χ / trace
+    end
+    res = (res == 0) ? 0x0 : 0x2
+    return sm, res
 end
 
 function project!(s::GeneralizedStabilizer, p::PauliOperator)
