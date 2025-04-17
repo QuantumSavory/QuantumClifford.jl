@@ -5,6 +5,10 @@
 
 # News
 
+## unreleased
+
+- Much faster indexing and slicing of `PauliOperator`.
+
 ## v0.9.19 - 2025-04-08
 
 - `permutesystems` and `permutesystems!` are no implemented, deprecating `permute` and `permute!`
