@@ -5,6 +5,10 @@
 
 # News
 
+## unreleased
+
+- Much faster indexing and slicing of `PauliOperator`.
+
 ## v0.9.18 - 2025-02-19
 
 - Fixes for rare crashes in the python BP decoders.
