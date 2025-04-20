@@ -3,43 +3,46 @@ abstract type ColorCode <: AbstractECC end
 """Planar color codes that encode a single logical qubit."""
 abstract type TriangularCode <: ColorCode end
 
-"""Triangular code following the 4.8.8 tiling. Constructor take a distance d as input."""
-struct Triangular4_8_8 <: TriangularCode
+"""Triangular code following the 4.8.8 tiling. Constructor take a distance d as input.
+More information can be seen in [landahl2011color](@cite)"""
+struct Triangular488 <: TriangularCode
     d::Int
-    function Triangular4_8_8(d)
+    function Triangular488(d)
         if d%2!=1
-            throw(DomainError("only odd distance trianglular color codes are allowed.\nRefer to https://arxiv.org/abs/1108.5738"))
+            throw(DomainError("only odd distance triangular color codes are allowed.\nRefer to https://arxiv.org/abs/1108.5738"))
+        elseif d<3
+            throw(DomainError("smallest allowed distance is 3.\nRefer to https://arxiv.org/abs/1108.5738"))
         end
         return new(d)
     end
 end
 
-"""Triangular code following the 6.6.6 tiling. Constructor take a distance d as input."""
-struct Triangular6_6_6 <: TriangularCode
+"""Triangular code following the 6.6.6 tiling. Constructor take a distance d as input.
+More information can be seen in [landahl2011color](@cite)"""
+struct Triangular666 <: TriangularCode
     d::Int
-    function Triangular6_6_6(d)
+    function Triangular666(d)
         if d%2!=1
-            throw(DomainError("only odd distance trianglular color codes are allowed.\nRefer to https://arxiv.org/abs/1108.5738"))
+            throw(DomainError("only odd distance triangular color codes are allowed.\nRefer to https://arxiv.org/abs/1108.5738"))
+        elseif d<3
+            throw(DomainError("smallest allowed distance is 3.\nRefer to https://arxiv.org/abs/1108.5738"))
         end
         return new(d)
     end
 end
 
-Triangular4_8_8() = Triangular4_8_8(3) # smallest d
-Triangular6_6_6() = Triangular6_6_6(3) # smallest d
+Triangular488() = Triangular488(3) # smallest d
+Triangular666() = Triangular666(3) # smallest d
 
 function parity_checks(c::TriangularCode)
-    matrix = get_check_matrix(c)
-
-    num_checks, qubits = size(matrix)
-    return Stabilizer(vcat(matrix,zeros(Bool,num_checks,qubits)), vcat(zeros(Bool,num_checks,qubits), matrix))
+    matrix = _colorcode_get_check_matrix(c)
+    return parity_checks(CSS(matrix, matrix))
 end
 
-function get_check_matrix(c::Triangular6_6_6) 
-    # TODO make code look a bit nicer by copying the style of the "init_pos" code blocks
+function _colorcode_get_check_matrix(c::Triangular666) 
     n = code_n(c)
-    num_checks = (n-1)/2 |> Int 
-    num_layers = (c.d-1)/2 |> Int
+    num_checks = (n-1)÷2
+    num_layers = (c.d-1)÷2
     checks = zeros(Bool, num_checks, n)
 
     i = 1
@@ -110,12 +113,12 @@ function get_check_matrix(c::Triangular6_6_6)
     return checks
 end
 
-"""Returns the binary matrix defining the X stabilizers for the Triangular4_8_8 code. The Z stabilizers are the same.
-Based on Fig. 2 of https://arxiv.org/abs/1108.5738"""
-function get_check_matrix(c::Triangular4_8_8)
+"""Returns the binary matrix defining the X stabilizers for the Triangular488 code. The Z stabilizers are the same.
+Based on Fig. 2 of [landahl2011color](@cite)"""
+function _colorcode_get_check_matrix(c::Triangular488)
     n = code_n(c)
-    num_checks = (n-1)/2 |> Int 
-    num_layers = (c.d-1)/2 |> Int
+    num_checks = (n-1)÷2
+    num_layers = (c.d-1)÷2
     checks = zeros(Bool, num_checks, n)
     
     i = 1
@@ -193,7 +196,7 @@ function get_check_matrix(c::Triangular4_8_8)
 end
 
 """Returns which qubits each stabilizer touches when given a parity check matrix. Useful for debugging/testing."""
-function get_qubit_indices(matrix::Matrix{Bool})
+function _colorcode_get_qubit_indices(matrix::Matrix{Bool})
     for j in 1:size(matrix)[1] println(findall(>(0),matrix[j,:])) end
     return
 end
@@ -202,7 +205,7 @@ function iscss(::ColorCode)
     return true
 end
 
-"""From https://arxiv.org/abs/1108.5738 Fig. 2's caption:"""
-code_n(c::Triangular4_8_8) = 0.5*c.d^2+c.d-0.5 |> Int
-code_n(c::Triangular6_6_6) = 0.75*c.d^2+.25 |> Int
+# From https://arxiv.org/abs/1108.5738 Fig. 2's caption:
+code_n(c::Triangular488) = 0.5*c.d^2+c.d-0.5 |> Int
+code_n(c::Triangular666) = 0.75*c.d^2+.25 |> Int
 code_k(c::TriangularCode) = 1
