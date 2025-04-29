@@ -24,7 +24,7 @@
     <tr>
         <td>Static analysis with</td>
         <td>
-            <a href="https://github.com/aviatesk/JET.jl"><img src="https://img.shields.io/badge/JET.jl-%E2%9C%88%EF%B8%8F-9cf" alt="JET static analysis"></a>
+            <a href="https://github.com/aviatesk/JET.jl"><img src="https://img.shields.io/badge/%F0%9F%9B%A9%EF%B8%8F_tested_with-JET.jl-233f9a" alt="JET static analysis"></a>
             <a href="https://github.com/JuliaTesting/Aqua.jl"><img src="https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg" alt="Aqua QA"></a>
         </td>
     </tr>
@@ -41,21 +41,21 @@ To install it use:
 ```
 
 Works efficiently with
-[pure](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Stabilizers-1) and
-[mixed stabilizer](https://quantumsavory.github.io/QuantumClifford.jl/dev/mixed/#Mixed-Stabilizer-States-1)
+[pure](https://qc.quantumsavory.org/dev/stab-algebra-manual/#Stabilizers) and
+[mixed stabilizer](https://qc.quantumsavory.org/dev/mixed/#Mixed-Stabilizer-States)
 states of thousands of qubits
 as well as
-[sparse or dense Clifford operations](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Clifford-Operators-1)
+[sparse or dense Clifford operations](https://qc.quantumsavory.org/dev/stab-algebra-manual/#Clifford-Operators)
 acting upon them.
 
-Implements [Pauli frames](https://quantumsavory.github.io/QuantumClifford.jl/dev/ecc_example_sim/) for fast sampling.
+Implements [Pauli frames](https://qc.quantumsavory.org/dev/ecc_example_sim/) for fast sampling.
 
 Provides
-[canonicalization](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Canonicalization-of-Stabilizers-1),
-[projection](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Projective-Measurements-1), and
-[generation](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Generating-a-Pauli-Operator-with-Stabilizer-Generators-1) operations,
+[canonicalization](https://qc.quantumsavory.org/dev/stab-algebra-manual/#Canonicalization-of-Stabilizers),
+[projection](http://qc.quantumsavory.org/dev/stab-algebra-manual/#Projective-Measurements), and
+[generation](https://qc.quantumsavory.org/dev/stab-algebra-manual/#Generating-a-Pauli-Operator-with-Stabilizer-Generators) operations,
 as well as
-[partial traces](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Partial-Traces-1).
+[partial traces](https://qc.quantumsavory.org/dev/stab-algebra-manual/#Partial-Traces).
 
 ```jldoctest
 julia> P"X" * P"Z"

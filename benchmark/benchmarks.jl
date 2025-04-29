@@ -150,12 +150,33 @@ SUITE["ecc"] = BenchmarkGroup(["ecc"])
 SUITE["ecc"]["evaluate_decoder"] = BenchmarkGroup(["evaluate_decoder"])
 for (cs, c) in [("shor",Shor9()), ("toric8",Toric(8,8))]
     for (ds, d) in [
-        [("table",TableDecoder(c)), ("bp",BeliefPropDecoder(c)), ("pybp",PyBeliefPropDecoder(c))]...,
+        [("table",TableDecoder(c)), ("bp",BeliefPropDecoder(c)), ("pybp",PyBeliefPropDecoder(c)), ("pybposd",PyBeliefPropOSDecoder(c))]...,
         (isa(c,Toric) ? [("pymatch",PyMatchingDecoder(c))] : [])...]
         for (ss, s) in [("comm",CommutationCheckECCSetup(0.01)), ("naivesyn",NaiveSyndromeECCSetup(0.01,0)), ("shorsyn",ShorSyndromeECCSetup(0.01,0))]
             SUITE["ecc"]["evaluate_decoder"]["$(cs)_$(ds)_$(ss)"] = @benchmarkable evaluate_decoder($d, $s, 1000)
         end
     end
+end
+
+
+if V > v"0.9.0"
+
+function x_diag_circuit_noisy_measurement(csize)
+    circuit = []
+    for i in 1:csize
+        push!(circuit, PauliError(i, 0.1))
+        push!(circuit, sHadamard(i))
+        push!(circuit, sCNOT(i, csize+1))
+        push!(circuit, sMZ(csize+1,i))
+        push!(circuit, ClassicalXOR(1:(i%6+2),i))
+    end
+    return circuit
+end
+
+SUITE["circuitsim"]["compactification"] = BenchmarkGroup(["compactification"])
+SUITE["circuitsim"]["compactification"]["no_compact"] = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame(1000, 1001, 1001); circuit=x_diag_circuit_noisy_measurement(1000)) evals=1
+SUITE["circuitsim"]["compactification"]["compact"] = @benchmarkable pftrajectories(state,circuit) setup=(state=PauliFrame(1000, 1001, 1001); circuit=compactify_circuit(x_diag_circuit_noisy_measurement(1000))) evals=1
+
 end
 
 end

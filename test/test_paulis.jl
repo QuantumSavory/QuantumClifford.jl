@@ -1,10 +1,7 @@
-using QuantumClifford
+@testitem "Pauli Operators" begin
+  using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
+  test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
-using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
-
-test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
-
-@testset "Pauli Operators" begin
     @testset "Parsing, constructors, and properties" begin
         @test P"-iXYZ" == PauliOperator(0x3, 3, vcat(BitArray([1,1,0]).chunks, BitArray([0,1,1]).chunks))
         @test P"-iXYZ" == PauliOperator(0x3, Bool[1,1,0], Bool[0,1,1])
@@ -41,6 +38,11 @@ test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off
         @test prodphase(P"XX",P"YY") == 0x2
         @test prodphase(P"ZZZ",P"XXX") == prodphase(S"III ZZZ",P"XXX",2) == prodphase(P"ZZZ",S"III XXX",2) == prodphase(S"III ZZZ",S"III XXX",2,2) == 0x3
     end
+
+    for Pop in [P"X", P"iX", P"-iXYZ", random_pauli(100; nophase=false, realphase=false)]
+        @test Pop * inv(Pop) == zero(Pop)
+    end
+
     @testset "Commutation implies real phase" begin
         for i in 1:10
             for n in test_sizes
