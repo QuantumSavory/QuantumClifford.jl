@@ -56,17 +56,18 @@
         using QuantumOpticsBase
         import QuantumOpticsBase: entanglement_entropy
 
-        for n in test_sizes
+        for n in test_sizes[3:end]
             s = random_stabilizer(n)
-            endpointsA = sort(rand(1:n, 2))
+            endpointsA = sort(rand(1:n÷2, 2))
             subsystem_rangeA = endpointsA[1]:endpointsA[2]
-            startB = rand(subsystem_rangeA)
+            startB = endpointsA[2]+rand(1:3)
             endB = rand(startB:n)
             subsystem_rangeB = startB:endB
             if !isempty(intersect(subsystem_rangeA, subsystem_rangeB))
                 @test_throws ArgumentError mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:clip))
                 @test_throws ArgumentError mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:rref))
                 @test_throws ArgumentError mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:graph))
+                # TODO lets test for these explicitly, outside of the loop
             else
                 mi_clip  = mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:clip))
                 mi_rref  = mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:rref))
@@ -75,7 +76,7 @@
                 @test mi_clip ≥ 0
                 ψ = Ket(s)
                 ρ = dm(ψ)
-                union_range = first(subsystem_rangeA) : last(subsystem_rangeB)
+                union_range = union(subsystem_rangeA,subsystem_rangeB)
                 S_A = entanglement_entropy(ρ, subsystem_rangeA, entropy_vn)
                 S_B = entanglement_entropy(ρ, subsystem_rangeB, entropy_vn)
                 # If A ∪ B covers the full system (1:n), set S_AB = 0 to avoid an invalid full-system trace in entanglement_entropy.

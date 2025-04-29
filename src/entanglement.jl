@@ -304,22 +304,11 @@ julia> mutual_information(s, [1,2], [3, 4], Val(:graph))
 See Eq. E6 of [li2019measurement](@cite). See also: [`entanglement_entropy`](@ref)
 """
 function mutual_information(state::AbstractStabilizer, A, B, alg::Val{T}) where T
-    mutual_information(state, A, B; algorithm = T)
-end
-
-function mutual_information(state::AbstractStabilizer, A, B; algorithm=:clip, kwargs...)
-    alg = Val(algorithm)
     if !isempty(intersect(A, B))
         throw(ArgumentError("Ranges A and B must not overlap."))
     end
-    S_A = entanglement_entropy(state, A, alg; kwargs...)
-    S_B = entanglement_entropy(state, B, alg; kwargs...)
-    S_AB = if alg == Val(:clip) && (A isa UnitRange) && (B isa UnitRange)
-        # When using :clip, ensure we pass a contiguous range if possible.
-        union_range = min(first(A), first(B)) : max(last(A), last(B))
-        entanglement_entropy(state, union_range, alg; kwargs...)
-    else
-        entanglement_entropy(state, union(A, B), alg; kwargs...)
-    end
+    S_A = entanglement_entropy(state, A, alg)
+    S_B = entanglement_entropy(state, B, alg)
+    S_AB = entanglement_entropy(state, union(A, B), alg)
     return S_A + S_B - S_AB
 end
