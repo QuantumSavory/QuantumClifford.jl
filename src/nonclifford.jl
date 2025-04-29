@@ -326,14 +326,23 @@ julia> χ′ = expect(P"-X", sm)
 julia> prob₁ = (real(χ′)+1)/2
 0.8535533905932737
 
-julia> projectrand!(sm, P"X")[1]
+julia> QuantumClifford._projectrand_notnorm(copy(sm), P"X", 0)[1]
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
 𝒮𝓉𝒶𝒷
 - X
 with ϕᵢⱼ | Pᵢ | Pⱼ:
- 1.0+0.0im | + Z | + Z
+ 0.146447+0.0im | + Z | + Z
+
+julia> QuantumClifford._projectrand_notnorm(copy(sm), P"X", 1)[1]
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.853553+0.0im | + _ | + _
 ```
 
 See also: [`expect`](@ref)
