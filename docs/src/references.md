@@ -60,6 +60,38 @@ For classical code construction routines:
 - [huffman2010fundamentals](@cite)
 - [bhatia2018mceliece](@cite)
 
+For brute-force simulators:
+- [fatima2021faster](@cite)
+- [de2019massively](@cite)
+- [markov2008simulating](@cite)
+- [de2007massively](@cite)
+- [markov2018quantum](@cite)
+
+For efficient classical simulators:
+- [gottesman1998heisenberg](@cite)
+- [aaronson2004improved](@cite)
+- [terhal2002classical](@cite)
+- [bartlett2002efficient](@cite)
+- [jozsa2008matchgates](@cite)
+
+For Born rule probability estimators:
+- [seddon2021quantifying](@cite)
+- [pashayan2020estimation](@cite)
+- [pashayan2019classical](@cite)
+- [pashayan2015estimating](@cite)
+- [rall2019simulation](@cite)
+- [howard2017application](@cite)
+- [veitch2012negative](@cite)
+- [mari2012positive](@cite)
+
+For pure-state sampling simulators:
+- [bravyi2016improved](@cite)
+- [garcia2017geometry](@cite)
+- [bravyi2016trading](@cite)
+- [bravyi2019simulation](@cite)
+- [garcia2012efficient](@cite)
+- [pashayan2022fast](@cite)
+
 # References
 
 ```@bibliography

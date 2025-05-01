@@ -55,6 +55,7 @@ pages = [
 "Visualizations" => "plotting.md",
 "API" => "API.md",
 "Tutorials and Publications" => "tutandpub.md",
+"Classification of Stabilizer Simulators" => "classification_of_stabilizer_simulators.md",
 "Suggested Readings & References" => "references.md",
 ],
 )
