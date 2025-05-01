@@ -1,4 +1,48 @@
-"""A register, representing the state of a computer including both a tableaux and an array of classical bits (e.g. for storing measurement results)"""
+using Random: randperm, AbstractRNG, GLOBAL_RNG
+
+"""
+$(TYPEDEF)
+
+A [`Register`](@ref) representing the state of a computer including both a tableaux and an array of classical bits (e.g. for storing measurement results).
+
+```jldoctest
+julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ YZ
+- XX
+𝒮𝓉𝒶𝒷
++ X_
++ _Z
+
+julia> reg = Register(s, [0,0])
+Register{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}(MixedDestablizer 2×2, Bool[0, 0])
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ YZ
+- XX
+𝒮𝓉𝒶𝒷
++ X_
++ _Z
+
+julia> stabilizerview(reg)
++ X_
++ _Z
+
+julia> destabilizerview(reg)
++ YZ
+- XX
+
+julia> bitview(reg)
+2-element Vector{Bool}:
+ 0
+ 0
+```
+
+Measurement results can be obtained using symbolic measurement operations which can be applied with [`apply!`](@ref).
+
+See also: [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`projectXrand!`](@ref), [`projectYrand!`](@ref), [`projectZrand!`](@ref), [`sMX`](@ref), [`sMY`](@ref), [`sMZ`](@ref), [`sMRX`](@ref), [`sMRZ`](@ref), [`traceout!`](@ref).
+"""
 struct Register{T<:Tableau} <: AbstractQCState # TODO simplify type parameters (remove nesting)
     stab::MixedDestabilizer{T}
     bits::Vector{Bool}
@@ -38,21 +82,27 @@ function apply!(r::Register, op, args...; kwargs...)
     r
 end
 
-function apply!(r::Register, m::sMX)
-    _, res = projectXrand!(r,m.qubit)
+function apply!(rng::AbstractRNG, r::Register, m::sMX)
+    _, res = projectXrand!(rng, r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
-function apply!(r::Register, m::sMY)
-    _, res = projectYrand!(r,m.qubit)
+apply!(r::Register, m::sMX) = apply!(GLOBAL_RNG, r, m)
+
+function apply!(rng::AbstractRNG, r::Register, m::sMY)
+    _, res = projectYrand!(rng, r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
-function apply!(r::Register, m::sMZ)
-    _, res = projectZrand!(r,m.qubit)
+apply!(r::Register, m::sMY) = apply!(GLOBAL_RNG, r, m)
+
+function apply!(rng::AbstractRNG, r::Register, m::sMZ)
+    _, res = projectZrand!(rng, r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
+apply!(r::Register, m::sMZ) = apply!(GLOBAL_RNG, r, m)
+
 function apply!(r::Register, m::sMRX) # TODO sMRY
     _, anticom, res = projectX!(quantumstate(r),m.qubit)
     mres = if isnothing(res)
@@ -88,21 +138,63 @@ function apply!(r::Register, m::PauliMeasurement{A,B}) where {A,B}
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
-function projectXrand!(r::Register, m)
+
+"""
+$(TYPEDSIGNATURES)
+
+Projective measurements with automatic phase randomization are available for the [`Register`](@ref) object.
+
+```jldoctest
+julia> using StableRNGs
+
+julia> rng = StableRNG(42);
+
+julia> s = MixedDestabilizer(T"YZ -XX XI IZ", 2)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ YZ
+- XX
+𝒮𝓉𝒶𝒷
++ X_
++ _Z
+
+julia> reg = Register(s, [0, 0])
+Register{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}(MixedDestablizer 2×2, Bool[0, 0])
+
+julia> projectXrand!(rng, reg, 2);
+
+julia> quantumstate(reg)
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Y_
++ _Z
+𝒮𝓉𝒶𝒷
++ X_
+- _X
+```
+
+See also: [`projectY!`](@ref), [`projectZ!`](@ref), [`projectrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref),
+[`sMX`](@ref), [`sMRZ`](@ref), [`sMRX`](@ref), [`traceout!`](@ref).
+"""
+function projectXrand!(rng::AbstractRNG, r::Register, m)
     q = quantumstate(r)
-    _, res = projectXrand!(q,m)
+    _, res = projectXrand!(rng, q,m)
     r, res
 end
-function projectYrand!(r::Register, m)
+projectXrand!(r::Register, m) = projectXrand!(GLOBAL_RNG, r, m)
+
+function projectYrand!(rng::AbstractRNG, r::Register, m)
     q = quantumstate(r)
-    _, res = projectYrand!(q,m)
+    _, res = projectYrand!(rng, q,m)
     r, res
 end
-function projectZrand!(r::Register, m)
+projectYrand!(r::Register, m) = projectYrand!(GLOBAL_RNG, r, m)
+
+function projectZrand!(rng::AbstractRNG, r::Register, m)
     q = quantumstate(r)
-    _, res = projectZrand!(q,m)
+    _, res = projectZrand!(rng, q,m)
     r, res
 end
+projectZrand!(r::Register, m) = projectZrand!(GLOBAL_RNG, r, m)
+
 function projectrand!(r::Register, m)
     q = quantumstate(r)
     _, res = projectrand!(q,m)
