@@ -59,6 +59,8 @@ For classical code construction routines:
 - [golay1949notes](@cite)
 - [huffman2010fundamentals](@cite)
 - [bhatia2018mceliece](@cite)
+- [hamming1950error](@cite)
+- [huffman2010fundamentals](@cite)
 
 # References
 
