@@ -1371,5 +1371,5 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
-
+include("conversion.jl")
 end #module
