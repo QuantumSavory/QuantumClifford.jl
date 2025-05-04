@@ -303,7 +303,24 @@ julia> mutual_information(s, [1,2], [3, 4], Val(:graph))
 
 See Eq. E6 of [li2019measurement](@cite). See also: [`entanglement_entropy`](@ref)
 """
-function mutual_information(state::AbstractStabilizer, A, B, alg::Val{T}) where T
+function mutual_information(state::AbstractStabilizer, A::AbstractVector{<:Integer}, B::AbstractVector{<:Integer}, alg::Val{:clip})
+    if !isempty(intersect(A, B))
+        throw(ArgumentError("Ranges A and B must not overlap."))
+    end
+    union_AB = union(A, B)
+    min_AB = minimum(union_AB)
+    max_AB = maximum(union_AB)
+    if length(union_AB) != max_AB - min_AB + 1
+        throw(ArgumentError("For the :clip algorithm, the union of A and B must form a contiguous range."))
+    end
+    contiguous_union = min_AB:max_AB
+    S_A = entanglement_entropy(state, A, alg)
+    S_B = entanglement_entropy(state, B, alg)
+    S_AB = entanglement_entropy(state, contiguous_union, alg)
+    return S_A + S_B - S_AB
+end
+
+function mutual_information(state::AbstractStabilizer, A::AbstractVector{<:Integer}, B::AbstractVector{<:Integer}, alg::Val{T}) where T
     if !isempty(intersect(A, B))
         throw(ArgumentError("Ranges A and B must not overlap."))
     end
@@ -312,3 +329,7 @@ function mutual_information(state::AbstractStabilizer, A, B, alg::Val{T}) where 
     S_AB = entanglement_entropy(state, union(A, B), alg)
     return S_A + S_B - S_AB
 end
+
+# Default method: use the :rref algorithm
+mutual_information(state::AbstractStabilizer, A::AbstractVector{<:Integer}, B::AbstractVector{<:Integer}) = 
+    mutual_information(state, A, B, Val{:rref}())

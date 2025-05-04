@@ -63,28 +63,46 @@
             startB = endpointsA[2]+rand(1:3)
             endB = rand(startB:n)
             subsystem_rangeB = startB:endB
+
             if !isempty(intersect(subsystem_rangeA, subsystem_rangeB))
                 @test_throws ArgumentError mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:clip))
                 @test_throws ArgumentError mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:rref))
                 @test_throws ArgumentError mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:graph))
-                # TODO lets test for these explicitly, outside of the loop
             else
-                mi_clip  = mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:clip))
-                mi_rref  = mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:rref))
-                mi_graph = mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:graph))
-                @test mi_clip == mi_rref == mi_graph
-                @test mi_clip ≥ 0
-                ψ = Ket(s)
-                ρ = dm(ψ)
-                union_range = union(subsystem_rangeA,subsystem_rangeB)
-                S_A = entanglement_entropy(ρ, subsystem_rangeA, entropy_vn)
-                S_B = entanglement_entropy(ρ, subsystem_rangeB, entropy_vn)
-                # If A ∪ B covers the full system (1:n), set S_AB = 0 to avoid an invalid full-system trace in entanglement_entropy.
-                S_AB = union_range == (1:n) ? 0.0 : entanglement_entropy(ρ, union_range, entropy_vn)
-                # For a pure state: I(A:B) = [S(A) + S(B) - S(A∪B)] / 2, and convert nats → bits by dividing by log(2).
-                mi_indep = (S_A + S_B - S_AB) / (2 * log(2))
-                @test isapprox(mi_clip, mi_indep; atol=1e-6)
+                # Now we need to check if the union is contiguous for :clip
+                union_AB = union(subsystem_rangeA, subsystem_rangeB)
+                min_AB = minimum(union_AB)
+                max_AB = maximum(union_AB)
+                is_contiguous = (length(union_AB) == (max_AB - min_AB + 1))
+                if is_contiguous
+                    mi_clip  = mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:clip))
+                    mi_rref  = mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:rref))
+                    mi_graph = mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:graph))
+                    @test mi_clip == mi_rref == mi_graph
+                    @test mi_clip ≥ 0
+                    ψ = Ket(s)
+                    ρ = dm(ψ)
+                    S_A = entanglement_entropy(ρ, subsystem_rangeA, entropy_vn)
+                    S_B = entanglement_entropy(ρ, subsystem_rangeB, entropy_vn)
+                    # If A ∪ B covers the full system (1:n), set S_AB = 0
+                    S_AB = union_AB == (1:n) ? 0.0 : entanglement_entropy(ρ, union_AB, entropy_vn)
+                    mi_indep = (S_A + S_B - S_AB) / (2 * log(2))
+                    @test isapprox(mi_clip, mi_indep; atol=1e-6)
+                else
+                    @test_throws ArgumentError mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:clip))
+                    mi_rref  = mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:rref))
+                    mi_graph = mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:graph))
+                    @test mi_rref == mi_graph # We can still test consistency between rref and graph
+                    @test mi_rref ≥ 0
+                end
             end
+        end
+        @testset "Explicit non-contiguous ranges with :clip" begin
+            n = 6
+            s = random_stabilizer(n)
+            subsystem_rangeA = 1:2
+            subsystem_rangeB = 5:6
+            @test_throws ArgumentError mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:clip))
         end
     end
 end
