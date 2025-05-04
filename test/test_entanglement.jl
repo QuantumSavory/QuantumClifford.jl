@@ -56,13 +56,14 @@
         using QuantumOpticsBase
         import QuantumOpticsBase: entanglement_entropy
 
-        for n in test_sizes[3:end]
+        for n in [4, 5, 6, 7] # exclude larger test sizes to avoid out of memory error
             s = random_stabilizer(n)
-            endpointsA = sort(rand(1:n÷2, 2))
-            subsystem_rangeA = endpointsA[1]:endpointsA[2]
-            startB = endpointsA[2]+rand(1:3)
-            endB = rand(startB:n)
-            subsystem_rangeB = startB:endB
+            a_start = rand(1:max(1, n-2))
+            a_end = rand(a_start:min(n-1, a_start+2))
+            subsystem_rangeA = a_start:a_end
+            b_start = min(n, a_end + rand(1:2))
+            b_end = rand(b_start:n)
+            subsystem_rangeB = b_start:b_end
 
             if !isempty(intersect(subsystem_rangeA, subsystem_rangeB))
                 @test_throws ArgumentError mutual_information(copy(s), subsystem_rangeA, subsystem_rangeB, Val(:clip))
@@ -82,10 +83,11 @@
                     @test mi_clip ≥ 0
                     ψ = Ket(s)
                     ρ = dm(ψ)
-                    S_A = entanglement_entropy(ρ, subsystem_rangeA, entropy_vn)
-                    S_B = entanglement_entropy(ρ, subsystem_rangeB, entropy_vn)
-                    # If A ∪ B covers the full system (1:n), set S_AB = 0
-                    S_AB = union_AB == (1:n) ? 0.0 : entanglement_entropy(ρ, union_AB, entropy_vn)
+                    S_A = QuantumOpticsBase.entanglement_entropy(ρ, subsystem_rangeA, entropy_vn)
+                    S_B = QuantumOpticsBase.entanglement_entropy(ρ, subsystem_rangeB, entropy_vn)
+                    # If A ∪ B covers the full system (1:n), set S_AB = 0 to avoid an invalid full-system trace in entanglement_entropy
+                    S_AB = union_AB == (1:n) ? 0.0 : QuantumOpticsBase.entanglement_entropy(ρ, union_AB, entropy_vn)
+                    # For a pure state: I(A:B) = [S(A) + S(B) - S(A∪B)] / 2, and convert nats → bits by dividing by log(2).
                     mi_indep = (S_A + S_B - S_AB) / (2 * log(2))
                     @test isapprox(mi_clip, mi_indep; atol=1e-6)
                 else
