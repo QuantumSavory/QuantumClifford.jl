@@ -314,7 +314,7 @@ function faults_matrix(c::Stabilizer)
     s, n = size(c)
     r = rank(md)
     k = n - r
-    k == n-s || @warn "`faults_matrix` was called on an ECC that has redundant rows (is rank-deficient). `faults_matrix` corrected for that, however this is a frequent source of mistakes and inefficiencies. We advise you remove redundant rows from your ECC."
+    k == n-s || @warn "`faults_matrix` was called on an ECC that has redundant rows (is rank-deficient). `faults_matrix` corrected for that, however this is a frequent source of mistakes and inefficiencies. We advise you remove redundant rows from your ECC." maxlog=1
     O = falses(2k, 2n)
     logviews = [logicalxview(md); logicalzview(md)]
     errors = [one(Stabilizer,n; basis=:X);one(Stabilizer,n)]

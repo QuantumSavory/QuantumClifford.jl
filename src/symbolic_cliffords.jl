@@ -132,7 +132,7 @@ Z₂ ⟼ - _X_
 Z₃ ⟼ + __Z
 
 julia> typeof(t_op)
-CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}}
+CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}, PauliOperator{Array{UInt8, 0}, Vector{UInt64}}}
 
 julia> CliffordOperator(op, 1, compact=true) # You can also extract just the non-trivial part of the tableau
 X₁ ⟼ - Y
@@ -384,7 +384,7 @@ function Base.show(io::IO, op::AbstractTwoQubitOperator)
     if get(io, :compact, false) | haskey(io, :typeinfo)
         print(io, "$(string(typeof(op)))($(op.q1),$(op.q2))")
     else
-        print(io, "$(string(typeof(op))) on qubit1 ($(op.q1),$(op.q2))\n")
+        print(io, "$(string(typeof(op))) on qubit ($(op.q1),$(op.q2))\n")
         show(io, CliffordOperator(op,2;compact=true))
     end
 end

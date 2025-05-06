@@ -1,4 +1,4 @@
-using Random: randperm, AbstractRNG, GLOBAL_RNG
+using Random: randperm, AbstractRNG, GLOBAL_RNG, rand!
 using ILog2
 import Nemo
 
@@ -21,11 +21,24 @@ function random_pauli end
 """An in-place version of [`random_pauli`](@ref)"""
 function random_pauli! end
 
+
+# Modified from `Base` for `BitArray`
+@inline _msk_end(::Type{T}, l::Int) where {T<:Unsigned} = ~T(0) >>> _mod(T, -l)
+
+# A mask for the non-coding bits in the last chunk.
+@inline _msk_end(P::PauliOperator) = _msk_end(eltype(P.xz), length(P))
+
+# Unset the leftover bits in the data array that don't code the Pauli operator.
+@inline function _unset_noncoding_bits!(P::PauliOperator)
+    msk = _msk_end(P)
+    P.xz[end] &= msk
+    P.xz[end÷2] &= msk
+    nothing
+end
+
 function random_pauli!(rng::AbstractRNG, P::PauliOperator; nophase=true, realphase=true)
-    n = nqubits(P)
-    for i in 1:n
-        P[i] = rand(rng, (true, false)), rand(rng, (true,false))
-    end
+    rand!(rng, P.xz)
+    _unset_noncoding_bits!(P)
     P.phase[] = nophase ? 0x0 : (realphase ? rand(rng,(0x0,0x2)) : rand(rng,0x0:0x3))
     P
 end
@@ -158,8 +171,199 @@ random_destabilizer(n::Int; phases::Bool=true) = random_destabilizer(GLOBAL_RNG,
 random_destabilizer(rng::AbstractRNG, r::Int, n::Int; phases::Bool=true) = MixedDestabilizer(random_destabilizer(rng,n;phases),r)
 random_destabilizer(r::Int, n::Int; phases::Bool=true) = random_destabilizer(GLOBAL_RNG,r,n; phases)
 
+# Reuse memory for faster generation of many random destabilizers
+struct RandDestabMemory{N,T<:Integer}
+    F1::Matrix{Int8}
+    F2::Matrix{Int8}
+    hadamard::BitVector
+    perm::Vector{T}
+    had_idxs::Vector{T}
+    perm_inds::Vector{T}
+    U::Matrix{Int8}
+    xzs::BitMatrix
+    phasesarray::Vector{UInt8}
+    phase_options::Vector{UInt8}
+    arr::Vector{T}
+    n::Int64
+
+    function RandDestabMemory(n::Integer)
+        T = typeof(n)
+        F1 = zeros(Int8, 2n, 2n)
+        F2 = zeros(Int8, 2n, 2n)
+        hadamard = falses(n)
+        perm = zeros(T, n)
+        had_idxs = zeros(T, n)
+        perm_inds = zeros(T, 2n)
+        U = zeros(Int8, 2n, 2n)
+        xzs = falses(2n, 2n)
+        phasesarray = zeros(UInt8, 2n)
+        phase_options = [0x0, 0x2]
+        arr = collect(1:n)
+        new{n,T}(F1, F2, hadamard, perm, had_idxs, perm_inds, U, xzs, phasesarray, phase_options, arr, n)
+    end
+end
+function _reset!(memory::RandDestabMemory)
+    fill!(memory.F1, 0)
+    fill!(memory.F2, 0)
+    fill!(memory.hadamard, false)
+    fill!(memory.perm, 0)
+    fill!(memory.had_idxs, 0)
+    fill!(memory.perm_inds, 0)
+    fill!(memory.U, 0)
+    fill!(memory.xzs, false)
+    fill!(memory.phasesarray, 0)
+    for i in eachindex(memory.arr)
+        @inbounds memory.arr[i] = i
+    end
+end
+
+# Allocation free inverse of upper trinagular int matrix with 1 on diagonal.
+function _inv!(inverse, A)
+    for i in 2:size(A, 2)
+        for j in 1:i-1
+            @inbounds factor = A[j, i] # diagonal always 1 => only integers in inverse matrix
+            for k in 1:j
+                @inbounds inverse[k, i] -= factor * inverse[k, j]
+            end
+        end
+    end
+    nothing
+end
+
+function random_destabilizer(rng::AbstractRNG, memory::RandDestabMemory; phases::Bool=true)
+    n = memory.n
+    # reset the working memory
+    _reset!(memory)
+
+    hadamard = memory.hadamard
+    perm = memory.perm
+    _quantum_mallows!(rng, hadamard, perm, memory.arr)
+    had_idxs = memory.had_idxs
+    j = 1
+    for i in eachindex(hadamard)
+        @inbounds if hadamard[i]
+            @inbounds had_idxs[j] = i
+            j += 1
+        end
+    end
+
+    # delta, delta', gamma, gamma' appear in the canonical form
+    # of a Clifford operator (Eq. 3/Theorem 1)
+    # delta is unit lower triangular, gamma is symmetric
+    F1 = memory.F1
+    F2 = memory.F2
+    delta = @view F1[1:n, 1:n]
+    delta_p = @view F2[1:n, 1:n]
+    prod = @view F1[n+1:2n, 1:n]
+    prod_p = @view F2[n+1:2n, 1:n]
+    gamma = @view F1[1:n, n+1:2n]
+    gamma_p = @view F2[1:n, n+1:2n]
+    inv_delta = @view F1[n+1:2n, n+1:2n]
+    inv_delta_p = @view F2[n+1:2n, n+1:2n]
+    for i in 1:n
+        delta[i, i] = 1
+        delta_p[i, i] = 1
+        gamma_p[i, i] = rand(rng, 0x0:0x1)::UInt8
+    end
+
+    # gamma_ii is zero if h[i] = 0
+    for idx in had_idxs
+        if idx != 0
+            gamma[idx, idx] = rand(rng, 0x0:0x1)::UInt8
+        end
+    end
+
+    # gamma' and delta' are unconstrained on the lower triangular
+    fill_tril(rng, gamma_p, n, symmetric=true) # I think this should be fill_tril!
+    fill_tril(rng, delta_p, n)
+
+    # off diagonal: gamma, delta must obey conditions C1-C5
+    for row in 1:n, col in 1:row-1
+        if hadamard[row] && hadamard[col]
+            gamma[row, col] = gamma[col, row] = rand(rng, 0x0:0x1)::UInt8
+            # otherwise delta[row,col] must be zero by C4
+            if perm[row] > perm[col]
+                delta[row, col] = rand(rng, 0x0:0x1)::UInt8
+            end
+        elseif hadamard[row] && (!hadamard[col]) && perm[row] < perm[col]
+            # C5 imposes delta[row, col] = 0 for h[row]=1, h[col]=0
+            # if perm[row] > perm[col] then C2 imposes gamma[row,col] = 0
+            gamma[row, col] = gamma[col, row] = rand(rng, 0x0:0x1)::UInt8
+        elseif (!hadamard[row]) && hadamard[col]
+            delta[row, col] = rand(rng, 0x0:0x1)::UInt8
+            # not sure what condition imposes this
+            if perm[row] > perm[col]
+                gamma[row, col] = gamma[col, row] = rand(rng, 0x0:0x1)::UInt8
+            end
+        elseif (!hadamard[row]) && (!hadamard[col]) && perm[row] < perm[col]
+            # C1 imposes gamma[row, col] = 0 for h[row]=h[col] = 0
+            # if perm[row] > perm[col] then C3 imposes delta[row,col] = 0
+            delta[row, col] = rand(rng, 0x0:0x1)::UInt8
+        end
+    end
+
+    # now construct the tableau representation for F(I, Gamma, Delta)
+    mul!(prod, gamma, delta)
+    mul!(prod_p, gamma_p, delta_p)
+    for i in n+1:2n
+        @inbounds F1[i, i] = 1
+        @inbounds F2[i, i] = 1
+    end
+    _inv!(inv_delta, delta')
+    _inv!(inv_delta_p, delta_p')
+
+    # block matrix form
+    F1 .= mod.(F1, 2)
+    F2 .= mod.(F2, 2)
+    gamma .= 0
+    gamma_p .= 0
+
+    # apply qubit permutation S to F2
+    perm_inds = memory.perm_inds
+    U = memory.U
+    for i in 1:n
+        @inbounds perm_inds[i] = perm[i]
+        @inbounds perm_inds[i+n] = perm[i] + n
+    end
+    for (i, e) in enumerate(perm_inds)
+        for j in 1:2n
+            U[i, j] = F2[e, j]
+        end
+    end
+
+    # apply layer of hadamards
+    for i in 1:n
+        if had_idxs[i] != 0
+            for j in 1:2n
+                @inbounds (U[had_idxs[i], j], U[had_idxs[i]+n, j]) = (U[had_idxs[i]+n, j], U[had_idxs[i], j])
+            end
+        end
+    end
+
+    # apply F1
+    xzs = memory.xzs
+    fill!(F2, 0)
+    mul!(F2, F1, U)
+
+    F2 .= mod.(F2, 2)
+    xzs .= F2 .== 1
+
+    # random Pauli matrix just amounts to phases on the stabilizer tableau
+    phasesarray = memory.phasesarray
+    if phases
+        for i in 1:2n
+            phasesarray[i] = rand(rng, memory.phase_options)
+        end
+    end
+
+    return Destabilizer(Tableau(phasesarray, xzs))
+end
+
+
+
 """A random Clifford operator generated by the Bravyi-Maslov Algorithm 2 from [bravyi2020hadamard](@cite)."""
 random_clifford(rng::AbstractRNG, n::Int; phases::Bool=true) = CliffordOperator(random_destabilizer(rng, n; phases))
+random_clifford(rng::AbstractRNG, memory::RandDestabMemory; phases::Bool=true) = CliffordOperator(random_destabilizer(rng, memory; phases))
 random_clifford(n::Int; phases::Bool=true) = random_clifford(GLOBAL_RNG, n::Int; phases)
 
 """A random Stabilizer tableau generated by the Bravyi-Maslov Algorithm 2 from [bravyi2020hadamard](@cite)."""
@@ -183,22 +387,48 @@ function nemo_inv(a, n)::Matrix{UInt8}
     return collect(UInt8.(inverted.==1)) # maybe there is a better way to do the conversion
 end
 
+
 """Sample (h, S) from the distribution P_n(h, S) from Bravyi and Maslov Algorithm 1."""
 function quantum_mallows(rng::AbstractRNG, n::Int) # each one is benchmarked in benchmarks/quantum_mallows.jl
     arr = collect(1:n)
     hadamard = falses(n)
     perm = zeros(Int64, n)
+
+    return _quantum_mallows!(rng, hadamard, perm, arr)
+end
+
+function _quantum_mallows!(
+    rng::AbstractRNG,
+    hadamard::BitVector,
+    perm::Vector{T},
+    arr::Vector{T}) where {T<:Integer} # inplace version
+
+    n = length(perm)
     for idx in 1:n
-        m = length(arr)
+        m = n - idx + 1
         # sample h_i from given prob distribution
         l = sample_geometric_2(rng, 2 * m)
         weight = 2 * m - l
         hadamard[idx] = (weight < m)
-        k = weight < m ? weight : 2*m - weight - 1
-        perm[idx] = popat!(arr, k + 1)
+        k = weight < m ? weight : 2 * m - weight - 1
+        perm[idx] = _popat!(arr, k + 1)
     end
     return hadamard, perm
 end
+
+function _popat!(arr, n)
+    m = length(arr)
+    at = arr[n]
+
+    for i in n:(m-1)
+        arr[i] = arr[i+1]
+    end
+
+    arr[end] = 0
+
+    return at
+end
+
 
 """ This function samples a number from 1 to `n` where `n >= 1`
     probability of outputting `i` is proportional to `2^i`"""
@@ -250,6 +480,7 @@ function random_brickwork_clifford_circuit(rng::AbstractRNG, lattice_size::NTupl
     cartesian = CartesianIndices(lattice_size)
     dim = length(lattice_size)
     nqubits = prod(lattice_size)
+    working_memory = RandDestabMemory(2)
     for i in 1:nlayers
         gate_direction = (i - 1) % dim + 1
         l = lattice_size[gate_direction]
@@ -260,7 +491,7 @@ function random_brickwork_clifford_circuit(rng::AbstractRNG, lattice_size::NTupl
                 cardk = cardj
                 cardk[gate_direction] = cardk[gate_direction] + 1
                 k = LinearIndices(cartesian)[cardk...]
-                push!(circ, SparseGate(random_clifford(rng, 2), [j, k]))
+                push!(circ, SparseGate(random_clifford(rng, working_memory), [j, k]))
             end
         end
     end

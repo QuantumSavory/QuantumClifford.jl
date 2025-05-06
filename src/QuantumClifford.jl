@@ -15,7 +15,11 @@ using Combinatorics: combinations
 using Base.Cartesian
 using DocStringExtensions
 
-import QuantumInterface: tensor, ⊗, tensor_pow, apply!, nqubits, expect, project!, reset_qubits!, traceout!, ptrace, apply!, projectX!, projectY!, projectZ!, entanglement_entropy, embed
+import QuantumInterface: tensor, ⊗, tensor_pow,
+    nqubits, expect, project!, reset_qubits!, traceout!, ptrace,
+    apply!, projectX!, projectY!, projectZ!,
+    embed, permutesystems,
+    entanglement_entropy
 
 export
     @P_str, PauliOperator, ⊗, I, X, Y, Z,
@@ -37,13 +41,14 @@ export
     tensor, tensor_pow,
     logdot, expect,
     apply!,
+    permutesystems, permutesystems!,
     # Low Level Function Interface
     generate!, project!, reset_qubits!, traceout!,
     projectX!, projectY!, projectZ!,
     projectrand!, projectXrand!, projectYrand!, projectZrand!,
     puttableau!, embed,
     # Clifford Ops
-    CliffordOperator, @C_str, permute,
+    CliffordOperator, @C_str,
     tCNOT, tCPHASE, tSWAP, tHadamard, tPhase, tId1,
     # Symbolic Clifford Ops
     AbstractSymbolicOperator, AbstractSingleQubitOperator, AbstractTwoQubitOperator,
@@ -936,20 +941,6 @@ the following values based on the index `i`:
     return lowbit, ibig, ismall, ismallm
 end
 
-"""Permute the qubits (i.e., columns) of the tableau in place."""
-function Base.permute!(s::Tableau, perm::AbstractVector)
-    for r in 1:size(s,1)
-        s[r] = s[r][perm] # TODO make a local temporary buffer row instead of constantly allocating new rows
-    end
-    s
-end
-
-"""Permute the qubits (i.e., columns) of the state in place."""
-function Base.permute!(s::AbstractStabilizer, perm::AbstractVector)
-    permute!(tab(s), perm)
-    s
-end
-
 function check_allrowscommute(stabilizer::Tableau)
     for i in eachindex(stabilizer)
         for j in eachindex(stabilizer)
@@ -1168,6 +1159,69 @@ function gf2_H_to_G(H)
     G[:,invperm(sindx)]
 end
 
+"""Performs in-place Gaussian elimination on a binary matrix and returns
+its *row echelon form*,*rank*, the *transformation matrix*, and the *pivot
+columns*. The transformation matrix that converts the original matrix into
+the row echelon form. The `full` parameter controls the extent of elimination:
+if `true`, only rows below the pivot are affected; if `false`, both above and
+below the pivot are eliminated."""
+function gf2_row_echelon_with_pivots!(M::AbstractMatrix{Int}; full=false)
+    r, c = size(M)
+    N = Matrix{Int}(LinearAlgebra.I, r, r)
+    p = 1
+    pivots = Int[]
+    for col in 1:c
+        @inbounds for row in p:r
+            if M[row, col] == 1
+                if row != p
+                    M[[row, p], :] .= M[[p, row], :]
+                    N[[row, p], :] .= N[[p, row], :]
+                end
+                break
+            end
+        end
+        if M[p, col] == 1
+            if !full
+                elim_range = p+1:r
+            else
+                elim_range = 1:r
+            end
+            @simd for j in elim_range
+                @inbounds if j != p && M[j, col] == 1
+                    M[j, :] .= (M[j, :] .+ M[p, :]) .% 2
+                    N[j, :] .= (N[j, :] .+ N[p, :]) .% 2
+                end
+            end
+            p += 1
+            push!(pivots, col)
+        end
+        if p > r
+            break
+        end
+    end
+    rank = p - 1
+    return M, rank, N, pivots
+end
+
+"""The nullspace of a binary matrix."""
+function gf2_nullspace(H::AbstractMatrix{Int})
+    m = size(H',1)
+    _, matrix_rank, transformation_matrix, _ = gf2_row_echelon_with_pivots!(copy(H)')
+    if m == matrix_rank
+        # By the rank-nullity theorem, if rank(M) = m, then nullity(M) = 0
+        return zeros(Bool, 1, m)
+    end
+    # Extract the nullspace from the transformation matrix
+    return transformation_matrix[matrix_rank+1:end, :]
+end
+
+"""The basis for the row space of the binary matrix."""
+function gf2_rowspace_basis(H::AbstractMatrix{Int})
+    pivots = gf2_row_echelon_with_pivots!(copy(H)')[4]
+    # Extract the rows corresponding to the pivot columns
+    H[pivots,:]
+end
+
 ##############################
 # Error classes
 ##############################
@@ -1286,6 +1340,7 @@ include("fastmemlayout.jl")
 include("dense_cliffords.jl")
 # special one- and two- qubit operators
 include("symbolic_cliffords.jl")
+# linear algebra and array-like operations
 include("linalg.jl")
 # circuits
 include("operator_traits.jl")

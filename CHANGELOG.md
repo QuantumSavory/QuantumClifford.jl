@@ -1,9 +1,32 @@
 # Planned changes for v1.0.0:
 
-- `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
+- `permute` will be a wrapper around to `QuantumInterface.permutesystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
 
 # News
+
+## unreleased
+
+- Much faster indexing and slicing of `PauliOperator`.
+
+## v0.9.19 - 2025-04-08
+
+- `permutesystems` and `permutesystems!` are no implemented, deprecating `permute` and `permute!`
+
+## v0.9.18 - 2025-02-19
+
+- Fixes for rare crashes in the python BP decoders.
+- Less repetitive error messages.
+
+## v0.9.17 - 2025-02-18
+
+- New memory structure and matrix inversion function for `random_destabilizer`, to reduce allocations and speed up repeated generation of many random destabilizers.
+- Improvements to allocations in `apply!`
+
+## v0.9.16 - 2024-12-29
+
+- 100× faster unbiased `random_pauli`.
+- Enhancements to `GF(2)` Linear Algebra: unexported, experimental `gf2_row_echelon_with_pivots!`, `gf2_nullspace`, `gf2_rowspace_basis`.
 
 ## v0.9.15 - 2024-12-22
 
