@@ -121,4 +121,12 @@
         md_via_subarr = MixedDestabilizer(substab; undoperm=true)
         @test isa(md_via_subarr, MixedDestabilizer)
     end
+
+    @testset "Consistency between Destabilizer and MixedDestabilizer" begin # They have different construction algorithms so a consistency check is in order
+        for n in test_sizes
+            s = random_stabilizer(n)
+            @test stabilizerview(Destabilizer(s))==s # Destabilizer is supposed to guarantee same stabilizer generators
+            @test canonicalize!(stabilizerview(MixedDestabilizer(s)))==canonicalize!(stabilizerview(Destabilizer(s)))
+        end
+    end
 end
