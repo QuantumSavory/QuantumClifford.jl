@@ -66,7 +66,7 @@
     end
 
     @testset "SingleQubitOperator inv methods" begin
-        for gate_type in [sHadamard, sX, sY, sZ, sId1 , sPhase, sInvPhase]
+        for gate_type in filter(gate_type -> gate_type != SingleQubitOperator, subtypes(AbstractSingleQubitOperator))
             n = rand(1:10)
             @test CliffordOperator(inv(SingleQubitOperator(gate_type(n))), n) == inv(CliffordOperator(gate_type(n), n))
             @test CliffordOperator(inv(gate_type(n)), n) == inv(CliffordOperator(gate_type(n), n))
@@ -76,6 +76,18 @@
             @test CliffordOperator(inv(random_op), i) == inv(CliffordOperator(random_op, i))
             @test CliffordOperator(inv(SingleQubitOperator(random_op)), i) == inv(CliffordOperator(random_op, i))
         end
+    end
+
+    @testset "Consistency checks with Stim" begin
+       # see https://github.com/quantumlib/Stim/blob/main/doc/gates.md
+       @test CliffordOperator(sCXYZ)       == C"Y X"
+       @test CliffordOperator(sCZYX)       == C"Z Y"
+       @test CliffordOperator(sSQRTX)      == C"X -Y"
+       @test CliffordOperator(sSQRTY)      == C"-Z X"
+       @test CliffordOperator(sInvSQRTX)   == C"X Y"
+       @test CliffordOperator(sInvSQRTY)   == C"Z -X"
+       @test CliffordOperator(sHadamardXY) == C"Y -Z"
+       @test CliffordOperator(sHadamardYZ) == C"-X Y"
     end
 
     @testset "TwoQubitOperator inv methods" begin
@@ -88,6 +100,23 @@
             @test CliffordOperator(inv(sXCZ(n₁, n₂)), n₁) == inv(CliffordOperator(sCNOT(n₂, n₁), n₁))
             @test CliffordOperator(inv(sZCrY(n₁, n₂)), n₁) == inv(CliffordOperator(sZCrY(n₁, n₂), n₁))
             @test CliffordOperator(inv(sInvZCrY(n₁, n₂)), n₁) == inv(CliffordOperator(sInvZCrY(n₁, n₂), n₁))
+            @test CliffordOperator(inv(sCXSWAP(n₁, n₂)), n₁) == inv(CliffordOperator(sInvSWAPCX(n₁, n₂), n₁))
         end
+    end
+
+    @testset "Consistency check with STIM conventions" begin
+        # see https://github.com/quantumlib/Stim/blob/main/doc/gates.md
+        @test CliffordOperator(sSWAPCX)    == C"IX XX ZZ ZI"
+        @test CliffordOperator(sInvSWAPCX) == C"XX XI IZ ZZ"
+        @test CliffordOperator(sCZSWAP)    == C"ZX XZ IZ ZI"
+        @test CliffordOperator(sCXSWAP)    == C"XX XI IZ ZZ"
+        @test CliffordOperator(sISWAP)     == C"ZY YZ IZ ZI"
+        @test CliffordOperator(sInvISWAP)  == C"-ZY -YZ IZ ZI"
+        @test CliffordOperator(sSQRTZZ)    == C"YZ ZY ZI IZ"
+        @test CliffordOperator(sInvSQRTZZ) == C"-YZ -ZY ZI IZ"
+        @test CliffordOperator(sSQRTXX)    == C"XI IX -YX -XY"
+        @test CliffordOperator(sInvSQRTXX) == C"XI IX YX XY"
+        @test CliffordOperator(sSQRTYY)    == C"-ZY -YZ XY YX"
+        @test CliffordOperator(sInvSQRTYY) == C"ZY YZ -XY -YX"
     end
 end

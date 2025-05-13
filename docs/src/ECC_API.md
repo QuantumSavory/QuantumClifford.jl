@@ -4,3 +4,10 @@
 Modules = [QuantumClifford.ECC]
 Private = false
 ```
+
+## Implemented in an extension requiring `Hecke.jl`
+
+```@autodocs
+Modules = [QuantumCliffordHeckeExt]
+Private = true
+```

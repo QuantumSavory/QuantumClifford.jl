@@ -1,3 +1,28 @@
+function permutesystems(c::CliffordOperator,p) # TODO this is a slow stupid implementation
+    CliffordOperator(Tableau([tab(c)[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
+end
+
+@deprecate permute(c::CliffordOperator,p) permutesystems(c,p)
+
+function permutesystems!(s::Tableau, perm::AbstractVector)
+    for r in 1:size(s,1)
+        s[r] = s[r][perm] # TODO make a local temporary buffer row instead of constantly allocating new rows
+    end
+    s
+end
+
+function permutesystems!(s::AbstractStabilizer, perm::AbstractVector)
+    permutesystems!(tab(s), perm)
+    s
+end
+
+import Base: permute!
+@deprecate permute!(s::Tableau, perm::AbstractVector) permutesystems!(s, perm)
+@deprecate permute!(s::AbstractStabilizer, perm::AbstractVector) permutesystems!(s, perm)
+
+# TODO upstream to QuantumInterface for (state::Any, perm)
+permutesystems(s::AbstractStabilizer, perm) = permutesystems!(s, perm)
+
 """
 $TYPEDSIGNATURES
 
@@ -111,7 +136,7 @@ trusted_rank(s::Destabilizer) = length(s)
 trusted_rank(s::MixedStabilizer) = LinearAlgebra.rank(s)
 trusted_rank(s::MixedDestabilizer) = LinearAlgebra.rank(s)
 
-"""Tensor product between operators or tableaux. 
+"""Tensor product between operators or tableaux.
 
 Tensor product between CiffordOperators:
 
@@ -161,8 +186,10 @@ julia> tensor(s, s)
 See also [`tensor_pow`](@ref)."""
 function tensor end
 
-function tensor(ops::AbstractStabilizer...) # TODO optimize this by doing conversion to common type to enable preallocation
-    foldl(⊗, ops[2:end], init=ops[1])
+function tensor(ops::AbstractStabilizer...) # TODO optimize by pre-allocating one large tableau instead of the current quadratic fold
+    ct = promote_type(map(typeof, ops)...)
+    conv_ops = map(x -> convert(ct, x), ops)
+    return foldl(⊗, conv_ops)
 end
 
 """Repeated tensor product of an operators or a tableau.
@@ -219,8 +246,8 @@ end
 
 function tensor(ops::Stabilizer...)
     length(ops)==1 && return ops[1]
-    ntot = sum(nqubits, ops)
-    rtot = sum(length, ops)
+    ntot = sum(nqubits, ops) # TODO why is this allocating (at least in 1.11)
+    rtot = sum(length, ops)  # TODO why is this allocating (at least in 1.11)
     tab = zero(Stabilizer, rtot, ntot)
     last_row = 0
     last_col = 0
@@ -258,7 +285,7 @@ function tensor(ops::CliffordOperator...) # TODO implement \otimes for Destabili
     last_zrow = ntot
     last_xrow = 0
     for op in ops
-        t = op.tab
+        t = QuantumClifford.tab(op)
         _, last_zrow, _ = puttableau!(tab, (@view t[end÷2+1:end]), last_zrow, last_xrow)
         _, last_xrow, _ = puttableau!(tab, (@view t[1:end÷2]), last_xrow, last_xrow)
     end
