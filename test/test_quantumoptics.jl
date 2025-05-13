@@ -87,6 +87,7 @@
                     @test expect(Operator(sm), ψ) ≈ 1
                 end
             end
+        end
 
         # embedded checks
         for single_qubit_explicit_channel in [pcT]

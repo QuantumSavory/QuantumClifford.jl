@@ -1,5 +1,6 @@
 @testitem "Stabilizers" begin
     using QuantumClifford
+    using LinearAlgebra
     using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
     @testset "Pure and Mixed state initialization" begin
@@ -62,6 +63,27 @@
             @test mixed_destab_looks_good(mds)
             estab = stabilizerview(md)⊗s
             @test canonicalize!(copy(stabilizerview(mds))) == canonicalize!(estab)
+        end
+    end
+
+    @testset "Tensor products over generalized stabilizers" begin
+        num_trials = 10
+        num_qubits = [2,3,4,5] # exclusively multi-qubit
+        for n in num_qubits  # Exponential cost in this term
+            for repetition in 1:num_trials
+                stab = random_stabilizer(n)
+                pauli = random_pauli(n)
+                genstab = GeneralizedStabilizer(stab)
+                # Apply some (repeated) non-Clifford operations
+                i = rand(1:n)
+                nc = embed(n, i, pcT)
+                apply!(genstab, nc) # in-place
+                apply!(genstab, nc) # in-place
+                apply!(genstab, nc) # in-place
+                newsm = genstab ⊗ genstab
+                @test mixed_destab_looks_good(newsm.stab)
+                @test real(tr(newsm)) ≈ 1
+            end
         end
     end
 
