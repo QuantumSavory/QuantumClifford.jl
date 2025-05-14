@@ -363,6 +363,17 @@ julia> Stabilizer(a, b)
 julia> Stabilizer([0x0, 0x2], a, b)
 + XY
 - ZZ
+
+julia> Stabilizer(Bool[1 1 0 1;
+                       0 0 1 1])
++ XY
++ ZZ
+
+julia> Stabilizer([0x0, 0x2], 
+                   Bool[1 1 0 1;
+                        0 0 1 1])
++ XY
+- ZZ
 ```
 
 - initialize an empty Stabilizer and fill it through indexing
