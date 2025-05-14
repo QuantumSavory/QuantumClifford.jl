@@ -1,6 +1,6 @@
 @testitem "ECC throws" begin
 
-    using QuantumClifford.ECC: ReedMuller, BCH, RecursiveReedMuller, Golay
+    using QuantumClifford.ECC: ReedMuller, BCH, RecursiveReedMuller, Golay, Triangular488, Triangular666
 
     @test_throws ArgumentError ReedMuller(-1, 3)
     @test_throws ArgumentError ReedMuller(1, 0)
@@ -14,4 +14,9 @@
     @test_throws ArgumentError RecursiveReedMuller(4, 2)
 
     @test_throws ArgumentError Golay(21)
+
+    @test_throws ArgumentError Triangular488(8)
+    @test_throws ArgumentError Triangular488(1)
+    @test_throws ArgumentError Triangular666(8)
+    @test_throws ArgumentError Triangular666(1)
 end

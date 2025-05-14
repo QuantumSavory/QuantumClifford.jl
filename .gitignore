@@ -7,3 +7,4 @@ scratch/
 .vscode
 test/.CondaPkg/
 docs/.CondaPkg/
+.DS_Store
