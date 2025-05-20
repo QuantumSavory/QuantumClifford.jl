@@ -1,7 +1,7 @@
 name = "QuantumClifford"
 uuid = "0525e862-1e90-11e9-3e4d-1b39d7109de1"
 authors = ["Stefan Krastanov <stefan@krastanov.org> and QuantumSavory community members"]
-version = "0.9.17"
+version = "0.10.0"
 
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
@@ -59,7 +59,7 @@ LDPCDecoders = "0.3.2"
 LinearAlgebra = "1.9"
 MacroTools = "0.5.9"
 Makie = "0.20, 0.21, 0.22"
-Nemo = "0.42.1, 0.43, 0.44, 0.45, 0.46, 0.47, 0.48"
+Nemo = "0.42.1, 0.43, 0.44, 0.45, 0.46, 0.47, 0.48, 0.49"
 Plots = "1.38.0"
 PrecompileTools = "1.2"
 PyQDecoders = "0.2.2"

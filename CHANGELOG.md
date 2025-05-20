@@ -1,9 +1,31 @@
 # Planned changes for v1.0.0:
 
-- `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
+- `permute` will be a wrapper around to `QuantumInterface.permutesystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
 
 # News
+
+## v0.10.0 - dev
+
+- **(breaking)** `StabMixture` was renamed to `GeneralizedStabilizer`.
+- **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in nonclifford functionality.
+- `expect` is now implemented for `GeneralizedStabilizer`.
+- Constructing a `Destabilizer` out of a full-rank `Stabilizer` does not require a canonicalization anymore, i.e. `stabilizerview(Destabilizer(s))==s` is guaranteed.
+- The `maximally_mixed` function is now available for creating maximally mixed multi-qubit states.
+- `projectrand!` is now implemented for `GeneralizedStabilizer`.
+
+## unreleased
+
+- Much faster indexing and slicing of `PauliOperator`.
+
+## v0.9.19 - 2025-04-08
+
+- `permutesystems` and `permutesystems!` are no implemented, deprecating `permute` and `permute!`
+
+## v0.9.18 - 2025-02-19
+
+- Fixes for rare crashes in the python BP decoders.
+- Less repetitive error messages.
 
 ## v0.9.17 - 2025-02-18
 

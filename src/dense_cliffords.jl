@@ -30,12 +30,12 @@ ERROR: DimensionMismatch: Input tableau should be of size 2n×n (top half is the
 ```jldoctest
 julia> d = Destabilizer(S"Y")
 𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z
++ X
 𝒮𝓉𝒶𝒷
 + Y
 
 julia> CliffordOperator(d)
-X₁ ⟼ + Z
+X₁ ⟼ + X
 Z₁ ⟼ + Y
 ```
 """
@@ -104,11 +104,6 @@ end
 function apply!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
     @valbooldispatch _apply!(Stabilizer(tab(r)),l;phases=Val(phases)) phases # TODO maybe not the most elegant way to perform apply!(::Tableau, gate)
     r
-end
-
-# TODO create Base.permute! and getindex(..., permutation_array)
-function permute(c::CliffordOperator,p) # TODO this is a slow stupid implementation
-    CliffordOperator(Tableau([tab(c)[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
 end
 
 """Nonvectorized version of `apply!` used for unit tests."""

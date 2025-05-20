@@ -59,7 +59,7 @@ function PyBeliefPropOSDecoder(c; maxiter=nothing, bpmethod=nothing, errorrate=n
     error_rate = isnothing(errorrate) ? PythonCall.Py(0.0001) : errorrate
     isnothing(osdmethod) || osdmethod ∈ (:zeroorder, :exhaustive, :combinationsweep) || error(lazy"PyBeliefPropOSDecoder got an unknown OSD method argument. `osdmethod` must be one of :zeroorder, :exhaustive, :combinationsweep.")
     osd_method = get(Dict(:zeroorder => "OSD_0", :exhaustive => "OSD_E", :combinationsweep => "OSD_CS"), osdmethod, 0)
-    0≥osdorder || error(lazy"PyBeliefPropOSDecoder got an invalid OSD order argument. `osdorder` must be ≥0.")
+    osdorder≥0 || error(lazy"PyBeliefPropOSDecoder got an invalid OSD order argument. `osdorder` must be ≥0.")
     osd_order = osdorder
     pyx = ldpc.BpOsdDecoder(np.array(Hx); max_iter, bp_method, error_rate, osd_method, osd_order) # TODO should be sparse
     pyz = ldpc.BpOsdDecoder(np.array(Hz); max_iter, bp_method, error_rate, osd_method, osd_order) # TODO should be sparse
@@ -69,11 +69,13 @@ end
 parity_checks(d::PyBP) = d.H
 
 function decode(d::PyBP, syndrome_sample)
-    row_x = @view syndrome_sample[1:d.nx]
+    row_x = @view syndrome_sample[1:d.nx] # TODO figure out a lower-overhead way to move data to python (and make sure the ecc wiki still works after that change -- a lot of the cruft here is because of rare crashes when running the wiki evaluator)
     row_z = @view syndrome_sample[d.nx+1:end]
-    guess_z_errors = PythonCall.PyArray(d.pyx.decode(np.array(row_x)))
-    guess_x_errors = PythonCall.PyArray(d.pyz.decode(np.array(row_z)))
-    vcat(guess_x_errors, guess_z_errors)
+    PythonCall.GIL.@lock begin
+        guess_z_errors = PythonCall.PyArray(d.pyx.decode(PythonCall.Py(row_x).to_numpy()))
+        guess_x_errors = PythonCall.PyArray(d.pyz.decode(PythonCall.Py(row_z).to_numpy()))
+        vcat(guess_x_errors, guess_z_errors)
+    end
 end
 
 struct PyMatchingDecoder <: AbstractSyndromeDecoder # TODO all these decoders have the same fields, maybe we can factor out a common type
@@ -108,9 +110,11 @@ parity_checks(d::PyMatchingDecoder) = d.H
 function decode(d::PyMatchingDecoder, syndrome_sample)
     row_x = @view syndrome_sample[1:d.nx]
     row_z = @view syndrome_sample[d.nx+1:end]
-    guess_z_errors = PythonCall.PyArray(d.pyx.decode(row_x))
-    guess_x_errors = PythonCall.PyArray(d.pyz.decode(row_z))
-    vcat(guess_x_errors, guess_z_errors)
+    PythonCall.GIL.@lock begin
+        guess_z_errors = PythonCall.PyArray(d.pyx.decode(PythonCall.Py(row_x).to_numpy()))
+        guess_x_errors = PythonCall.PyArray(d.pyz.decode(PythonCall.Py(row_z).to_numpy()))
+        vcat(guess_x_errors, guess_z_errors)
+    end
 end
 
 function batchdecode(d::PyMatchingDecoder, syndrome_samples)
