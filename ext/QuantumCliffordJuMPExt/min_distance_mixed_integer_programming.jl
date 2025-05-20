@@ -147,17 +147,19 @@ to a mixed integer linear program and using the GNU Linear Programming Kit.
 the code distance was calculated using the mixed integer programming approach.
 
 """
-function distance(c::Stabilizer; upper_bound=false, logical_qubit=code_k(c), all_logical_qubits=false, logical_operator_type=:X, solver::Module)
+function distance(c::AbstractECC; upper_bound=false, logical_qubit=code_k(c), all_logical_qubits=false, logical_operator_type=:X, solver::Module)
     opt = solver.Optimizer
     1 <= logical_qubit <= code_k(c) || throw(ArgumentError("The number of logical qubit must be between 1 and $(code_k(c)) inclusive"))
     logical_operator_type == :X || logical_operator_type == :Z || throw(ArgumentError("Invalid type of logical operator: Use :X or :Z"))
-    l = get_lx_lz(c)[1]
+    l = get_lx_lz(parity_checks(c))[1]
     H = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(c)))
-    h = get_stab(H, :X)
+    px = SparseMatrixCSC{Int, Int}(parity_checks_x(c))
+    h = cat(px, spzeros(Int, size(px, 1), nqubits(c)); dims=2)
     if logical_operator_type == :Z
-        l = get_lx_lz(c)[2]
+        l = get_lx_lz(parity_checks(c))[2]
         H = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(c)))
-        h = get_stab(H, :Z)
+        pz = SparseMatrixCSC{Int, Int}(parity_checks_z(c))
+        h = cat(spzeros(Int, size(pz, 1), nqubits(c), pz); dims=2)
     end
     weights = Dict{Int, Int}()
     for i in 1:logical_qubit
