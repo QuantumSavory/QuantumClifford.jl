@@ -106,7 +106,7 @@ Table 2 of [lin2024quantum](@cite).
 ```jldoctest examples
 julia> import Hecke: group_algebra, GF, abelian_group, gens; import GLPK; import HiGHS; import JuMP;
 
-julia> using QuantumClifford.ECC: two_block_group_algebra_codes, generalized_bicycle_codes; # hide
+julia> using QuantumClifford.ECC: two_block_group_algebra_codes, generalized_bicycle_codes, DistanceMIPAlgorithm; # hide
 
 julia> l = 10; m = 2;
 
@@ -120,7 +120,7 @@ julia> B = 1 + x^5 + s + x^6 + x + s*x^2;
 
 julia> c = two_block_group_algebra_codes(A,B);
 
-julia> code_n(c), code_k(c), distance(c; solver=HiGHS)
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (40, 8, 5)
 ```
 
@@ -132,7 +132,7 @@ julia> l = 24;
 
 julia> c1 = generalized_bicycle_codes([0, 2, 8, 15], [0, 2, 12, 17], l);
 
-julia> code_n(c1), code_k(c1), distance(c1; solver=HiGHS)
+julia> code_n(c1), code_k(c1), distance(c1, DistanceMIPAlgorithm(solver=HiGHS))
 (48, 6, 8)
 ```
 
@@ -147,31 +147,40 @@ to a mixed integer linear program and using the GNU Linear Programming Kit.
 the code distance was calculated using the mixed integer programming approach.
 
 """
-function distance(c::AbstractECC; upper_bound=false, logical_qubit=code_k(c), all_logical_qubits=false, logical_operator_type=:X, solver::Module)
-    opt = solver.Optimizer
-    1 <= logical_qubit <= code_k(c) || throw(ArgumentError("The number of logical qubit must be between 1 and $(code_k(c)) inclusive"))
-    logical_operator_type == :X || logical_operator_type == :Z || throw(ArgumentError("Invalid type of logical operator: Use :X or :Z"))
-    l = get_lx_lz(parity_checks(c))[1]
-    H = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(c)))
-    px = SparseMatrixCSC{Int, Int}(parity_checks_x(c))
-    h = cat(px, spzeros(Int, size(px, 1), nqubits(c)); dims=2)
-    if logical_operator_type == :Z
-        l = get_lx_lz(parity_checks(c))[2]
-        H = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(c)))
-        pz = SparseMatrixCSC{Int, Int}(parity_checks_z(c))
-        h = cat(spzeros(Int, size(pz, 1), nqubits(c), pz); dims=2)
+function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
+    logical_qubit = isnothing(alg.logical_qubit) ? code_k(code) : alg.logical_qubit
+    1 <= logical_qubit <= code_k(code) || throw(ArgumentError("Logical qubit out of range"))
+    # Get the appropriate logical operators and matrices based on operator type
+    logical_operator_type = alg.logical_operator_type
+    l, H, h = if logical_operator_type == :X
+        l_val = get_lx_lz(parity_checks(code))[1]
+        H_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(code)))
+        px = parity_checks_x(code)
+        h_val = cat(px, spzeros(Int, size(px, 1), nqubits(code)); dims=2)
+        (l_val, H_val, h_val)
+    else
+        l_val = get_lx_lz(parity_checks(code))[2]
+        H_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(code)))
+        pz = parity_checks_z(code)
+        h_val = cat(spzeros(Int, size(pz, 1), nqubits(code)), pz; dims=2)
+        (l_val, H_val, h_val)
     end
-    weights = Dict{Int, Int}()
-    for i in 1:logical_qubit
-        w = _minimum_distance(h, l[i, :], opt)
-        weights[i] = w
+    # Calculate weights for each logical qubit
+    weights = Dict(i => _minimum_distance(h, l[i, :], alg.solver.Optimizer)
+                   for i in 1:logical_qubit)
+    # Return appropriate result based on flags
+    if alg.upper_bound
+        return maximum(values(weights))
+    elseif alg.all_logical_qubits
+        return weights
+    else
+        return minimum(values(weights))
     end
-    return upper_bound ? maximum(values(weights)) : (all_logical_qubits ? weights : minimum(values(weights)))
 end
 
-# Computing minimum distance for quantum LDPC codes is a NP-Hard problem,
-# but we can solve mixed integer program (MIP) for small instance sizes.
-# inspired from [bravyi2024high](@cite) and [landahl2011fault](@cite).
+"""Computing minimum distance for quantum LDPC codes is a NP-Hard problem,
+but we can solve mixed integer program (MIP) for small instance sizes.
+inspired from [bravyi2024high](@cite) and [landahl2011fault](@cite)."""
 function _minimum_distance(hx, lx, opt)
     n = size(hx, 2) # number of qubits
     m = size(hx, 1) # number of stabilizers
@@ -180,8 +189,8 @@ function _minimum_distance(hx, lx, opt)
     # Weight of the logical operator
     wlx = count(!iszero, lx) # Count non-zero elements in lx
     # Number of slack variables needed to express orthogonality constraints modulo two
-    num_anc_hx = ceil(Int, log2(whx))
-    num_anc_logical = ceil(Int, log2(wlx))
+    num_anc_hx = ilog2(whx, RoundUp)
+    num_anc_logical = ilog2(wlx, RoundUp)
     num_var = n + m * num_anc_hx + num_anc_logical
     # Let the user choose which MIP solver to use
     model = Model(opt; add_bridges = false) # model

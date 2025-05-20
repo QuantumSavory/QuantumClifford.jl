@@ -119,13 +119,42 @@ function rate(c)
     return rate
 end
 
+abstract type AbstractDistanceAlg end
 
-"""The distance of a code.
+struct DistanceDataBase <: AbstractDistanceAlg end
 
-The minimum distance of a qLDPC code requires:
-- a JuMP.jl backend to be loaded, e.g. `using JuMP`.
-"""
-function distance end
+struct DistanceMIPAlgorithm <: AbstractDistanceAlg
+    upper_bound::Bool
+    logical_qubit::Union{Int, Nothing}
+    all_logical_qubits::Bool
+    logical_operator_type::Symbol
+    solver::Module
+
+    function DistanceMIPAlgorithm(;
+        upper_bound::Bool=false,
+        logical_qubit::Union{Int,Nothing}=nothing,
+        all_logical_qubits::Bool=false,
+        logical_operator_type::Symbol=:X,
+        solver::Module
+    )
+        logical_operator_type ∈ (:X, :Z) || throw(ArgumentError("logical_operator_type must be :X or :Z"))
+        new(upper_bound, logical_qubit, all_logical_qubits, logical_operator_type, solver)
+    end
+end
+
+"""The distance of a code."""
+function distance(code::AbstractECC)
+    try
+        return distance(code)
+    catch e
+        if e isa MethodError && occursin("distance", sprint(showerror, e))
+            throw(ErrorException("""No direct method for distance computation was defined. Consider using
+                the MIP-based method: distance(code, DistanceMIPAlgorithm(solver=...))"""))
+        else
+            rethrow()
+        end
+    end
+end
 
 """Parity matrix of a code, given as a stabilizer tableau."""
 function parity_matrix(c::AbstractECC)

@@ -166,6 +166,8 @@ with direct product of `C₄ x C₂`.
 ```jldoctest
 julia> import Hecke: group_algebra, GF, abelian_group, gens; using QuantumClifford.ECC;
 
+julia> using QuantumClifford.ECC: DistanceMIPAlgorithm; # hide
+
 julia> import HiGHS;
 
 julia> GA = group_algebra(GF(2), abelian_group([14,2]));
@@ -178,7 +180,7 @@ julia> B = 1 + x^7 + s + x^8 + s*x^7 + x;
 
 julia> c = two_block_group_algebra_codes(A,B);
 
-julia> code_n(c), code_k(c), distance(c; solver=HiGHS)
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (56, 28, 2)
 ```
 
@@ -221,6 +223,8 @@ A [[48, 4, 6]] Weight-6 TB-QLDPC code from Appendix A Table 2 of [voss2024multiv
 ```jldoctest
 julia> import Hecke: group_algebra, GF, abelian_group, gens; using QuantumClifford.ECC;
 
+julia> import QuantumClifford.ECC: DistanceMIPAlgorithm; # hide
+
 julia> import HiGHS;
 
 julia> l=4; m=6;
@@ -237,7 +241,7 @@ julia> B = x + z^5 + y^5 + y^2;
 
 julia> c = two_block_group_algebra_codes(A, B);
 
-julia> code_n(c), code_k(c), distance(c; solver=HiGHS)
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (48, 4, 6)
 ```
 
@@ -253,6 +257,8 @@ based on abelian group `ℤₗ x ℤₘ` where `ℤⱼ` cyclic group of order `j
 ```jldoctest
 julia> import Hecke: group_algebra, GF, abelian_group, gens; using QuantumClifford.ECC;
 
+julia> import QuantumClifford.ECC: DistanceMIPAlgorithm; # hide
+
 julia> import HiGHS
 
 julia> l=2; m=27;
@@ -267,7 +273,7 @@ julia> B = 𝜋^8 + 𝜋^14 + 𝜋^47;
 
 julia> c = two_block_group_algebra_codes(A, B);
 
-julia> code_n(c), code_k(c), distance(c; solver=HiGHS)
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (108, 12, 6)
 ```
 
