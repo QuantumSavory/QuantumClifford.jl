@@ -539,26 +539,21 @@ julia> real(tr(newsm))
 ```
 """
 function (⊗)(state₁::GeneralizedStabilizer, state₂::GeneralizedStabilizer)
-    # Extract the destabilizer weights (ϕᵢⱼ coefficients) from both states
     dict₁ = state₁.destabweights
     dict₂ = state₂.destabweights
     dtype = valtype(dict₁)
     tzero = zero(dtype)
-    # Initialize a new dictionary to store combined destabilizer weights
     newdict = DefaultDict{Tuple{BitVector,BitVector},dtype}(tzero)
-    # Compute the tensor product of the stabilizer parts
     newstab = state₁.stab ⊗ state₂.stab
-    # Iterate over all pairs of destabilizer terms from both states
     for ((d1_i, d1_j), χ) in dict₁ # χ = ϕᵢⱼ for state₁
         for ((d2_i, d2_j), χ′) in dict₂ # χ′ = ϕₖₗ for state₂
-            # Combine the Pauli operators via tensor product:
-            # Pᵢ ⊗ Pₖ and Pⱼ ⊗ Pₗ
-            # vcat implements P₁ ⊗ P₂ as bitwise concatenation
-            new_key_i = vcat(d1_i, d2_i) # Concatenate bit vectors
+            # Combine the Pauli operators via tensor product: Pᵢ ⊗ Pₖ
+            # and Pⱼ ⊗ Pₗ. vcat implements P₁ ⊗ P₂ as bitwise concatenation.
+            new_key_i = vcat(d1_i, d2_i)
             new_key_j = vcat(d1_j, d2_j)
             # The new coefficient is ϕᵢⱼ * ϕₖₗ because:
-            # ∑ϕᵢⱼ*ϕₖₗ(Pᵢρ₁Pⱼ†) ⊗ (Pₖρ₂Pₗ†) = ∑ϕᵢⱼ*ϕₖₗ(Pᵢ ⊗ Pₖ)(ρ₁ ⊗ ρ₂)(Pⱼ ⊗ Pₗ)†
-            # and thus the combined weight is the product of the individual weights.
+            # ∑ϕᵢⱼ*ϕₖₗ(Pᵢρ₁Pⱼ†) ⊗ (Pₖρ₂Pₗ†) = ∑ϕᵢⱼ*ϕₖₗ(Pᵢ ⊗ Pₖ)(ρ₁ ⊗ ρ₂)(Pⱼ ⊗ Pₗ)† and
+            # thus the combined weight is the product of the individual weights.
             newdict[(new_key_i, new_key_j)] += χ * χ′
         end
     end

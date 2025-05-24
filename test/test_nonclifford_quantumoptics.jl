@@ -231,17 +231,20 @@
                 genstab2 = GeneralizedStabilizer(stab2)
                 # apply some (repeated) non-Clifford operations to genstab1
                 for _ in 1:rand(1:5)
-                    qubit = rand(1:n)
-                    nc = embed(n, qubit, pcT)
+                    i = rand(1:n)
+                    nc = embed(n, i, pcT)
                     apply!(genstab1, nc)
                 end
                 # apply some (repeated) non-Clifford operations to genstab2
                 for _ in 1:rand(1:5)
-                    qubit = rand(1:n)
-                    nc = embed(n, qubit, pcT)
+                    i = rand(1:n)
+                    nc = embed(n, i, pcT)
                     apply!(genstab2, nc)
                 end
                 @test Operator(genstab1 ⊗ genstab2) ≈ Operator(genstab1) ⊗ Operator(genstab2)
+                @test Operator(genstab2 ⊗ genstab1) ≈ Operator(genstab2) ⊗ Operator(genstab1)
+                @test Operator(genstab1 ⊗ genstab1) ≈ Operator(genstab1) ⊗ Operator(genstab1)
+                @test Operator(genstab2 ⊗ genstab2) ≈ Operator(genstab2) ⊗ Operator(genstab2)
             end
         end
     end
