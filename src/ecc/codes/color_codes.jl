@@ -4,6 +4,40 @@ abstract type ColorCode <: AbstractECC end
 abstract type TriangularCode <: ColorCode end
 
 """Triangular code following the 4.8.8 tiling. Constructor take a distance d as input.
+
+# Example
+
+Here is `[[17,1, 5]]` color code following the `4.8.8` tiling:
+
+```jldoctest
+julia> import HiGHS; import JuMP; # hide
+
+julia> using QuantumClifford.ECC: Triangular666, DistanceMIPAlgorithm; # hide
+
+julia> c = Triangular488(5);
+
+julia> code = Stabilizer(c)
++ XXXX_____________
++ X_X_XX___________
++ __XX_XX__XX__XX__
++ ____XX__XX_______
++ ______XX__XX_____
++ _______X___X___XX
++ ________XX__XX___
++ __________XX__XX_
++ ZZZZ_____________
++ Z_Z_ZZ___________
++ __ZZ_ZZ__ZZ__ZZ__
++ ____ZZ__ZZ_______
++ ______ZZ__ZZ_____
++ _______Z___Z___ZZ
++ ________ZZ__ZZ___
++ __________ZZ__ZZ_
+
+julia> distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+5
+```
+
 More information can be seen in [landahl2011color](@cite)"""
 struct Triangular488 <: TriangularCode
     d::Int
@@ -18,6 +52,42 @@ struct Triangular488 <: TriangularCode
 end
 
 """Triangular code following the 6.6.6 tiling. Constructor take a distance d as input.
+
+# Example
+
+Here is `[[19,1, 5]]` color code following the `6.6.6` tiling:
+
+```jldoctest
+julia> import HiGHS; import JuMP; # hide
+
+julia> using QuantumClifford.ECC: Triangular666, DistanceMIPAlgorithm; # hide
+
+julia> c = Triangular666(5);
+
+julia> code = Stabilizer(c)
++ XXXX_______________
++ _X_X_XX____________
++ __XXXX_XX__________
++ ____X__X__XX_______
++ _________X___X___XX
++ _____XX_XX__XX_____
++ _______XX__XX__XX__
++ __________XX__XX___
++ ____________XX__XX_
++ ZZZZ_______________
++ _Z_Z_ZZ____________
++ __ZZZZ_ZZ__________
++ ____Z__Z__ZZ_______
++ _________Z___Z___ZZ
++ _____ZZ_ZZ__ZZ_____
++ _______ZZ__ZZ__ZZ__
++ __________ZZ__ZZ___
++ ____________ZZ__ZZ_
+
+julia> distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+5
+```
+
 More information can be seen in [landahl2011color](@cite)"""
 struct Triangular666 <: TriangularCode
     d::Int
@@ -33,6 +103,13 @@ end
 
 Triangular488() = Triangular488(3) # smallest d
 Triangular666() = Triangular666(3) # smallest d
+
+function iscss(::Type{TriangularCode})
+    return true
+end
+
+parity_checks_x(c::TriangularCode) = _colorcode_get_check_matrix(c)
+parity_checks_z(c::TriangularCode) = _colorcode_get_check_matrix(c)
 
 function parity_checks(c::TriangularCode)
     matrix = _colorcode_get_check_matrix(c)

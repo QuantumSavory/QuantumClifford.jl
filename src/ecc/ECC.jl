@@ -130,16 +130,20 @@ struct DistanceMIPAlgorithm <: AbstractDistanceAlg
     all_logical_qubits::Bool
     logical_operator_type::Symbol
     solver::Module
+    opt_summary::Bool
+    time_limit::Float64
 
     function DistanceMIPAlgorithm(;
         upper_bound::Bool=false,
         logical_qubit::Union{Int,Nothing}=nothing,
         all_logical_qubits::Bool=false,
         logical_operator_type::Symbol=:X,
-        solver::Module
+        solver::Module,
+        opt_summary::Bool=false,
+        time_limit::Float64=1800.0
     )
         logical_operator_type ∈ (:X, :Z) || throw(ArgumentError("logical_operator_type must be :X or :Z"))
-        new(upper_bound, logical_qubit, all_logical_qubits, logical_operator_type, solver)
+        new(upper_bound, logical_qubit, all_logical_qubits, logical_operator_type, solver, opt_summary, time_limit)
     end
 end
 

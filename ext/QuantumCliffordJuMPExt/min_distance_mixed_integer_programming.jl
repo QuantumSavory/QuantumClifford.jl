@@ -124,6 +124,34 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (40, 8, 5)
 ```
 
+To print the `JuMP` optimizer model summary, set the `opt_summary` parameter to `true`:
+
+```@example
+julia> distance(c, DistanceMIPAlgorithm(solver=HiGHS, opt_summary=true))
+(5, * Solver : HiGHS
+
+* Status
+  Result count       : 1
+  Termination status : OPTIMAL
+  Message from the solver:
+  "kHighsModelStatusOptimal"
+
+* Candidate solution (result #1)
+  Primal status      : FEASIBLE_POINT
+  Dual status        : NO_SOLUTION
+  Objective value    : 5.00000e+00
+  Objective bound    : 5.00000e+00
+  Relative gap       : 0.00000e+00
+  Dual objective value : NaN
+
+* Work counters
+  Solve time (sec)   : 1.38948e-02
+  Simplex iterations : 215
+  Barrier iterations : -1
+  Node count         : 1
+)
+```
+
 A [[48, 6, 8]] GB code with the minimum distance of 8 from (A3)
 in Appendix B of [panteleev2021degenerate](@cite).
 
@@ -165,23 +193,44 @@ function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
         h_val = cat(spzeros(Int, size(pz, 1), nqubits(code)), pz; dims=2)
         (l_val, H_val, h_val)
     end
-    # Calculate weights for each logical qubit
-    weights = Dict(i => _minimum_distance(h, l[i, :], alg.solver.Optimizer)
-                   for i in 1:logical_qubit)
-    # Return appropriate result based on flags
+    # Calculate weights for each logical qubit and solution summaries
+    if alg.opt_summary
+        weights = Dict(
+            i => (weight=w, summary=s)
+            for (i, (w, s)) in (
+                (i, _minimum_distance(h, l[i, :], alg.solver.Optimizer, alg.opt_summary, alg.time_limit))
+                for i in 1:logical_qubit
+            )
+        )
+    else
+        weights = Dict(
+            i => first(_minimum_distance(h, l[i, :], alg.solver.Optimizer, false, alg.time_limit))
+            for i in 1:logical_qubit
+        )
+    end
     if alg.upper_bound
-        return maximum(values(weights))
+        if alg.opt_summary
+            max_entry = argmax(x -> x.weight, values(weights))
+            return (max_entry.weight, max_entry.summary)
+        else
+            return maximum(values(weights))
+        end
     elseif alg.all_logical_qubits
         return weights
     else
-        return minimum(values(weights))
+        if alg.opt_summary
+            min_entry = argmin(x -> x.weight, values(weights))
+            return (min_entry.weight, min_entry.summary)
+        else
+            return minimum(values(weights))
+        end
     end
 end
 
 """Computing minimum distance for quantum LDPC codes is a NP-Hard problem,
 but we can solve mixed integer program (MIP) for small instance sizes.
 inspired from [bravyi2024high](@cite) and [landahl2011fault](@cite)."""
-function _minimum_distance(hx, lx, opt)
+function _minimum_distance(hx, lx, opt, opt_summary, time_limit)
     n = size(hx, 2) # number of qubits
     m = size(hx, 1) # number of stabilizers
     # Maximum stabilizer weight
@@ -195,6 +244,7 @@ function _minimum_distance(hx, lx, opt)
     # Let the user choose which MIP solver to use
     model = Model(opt; add_bridges = false) # model
     set_silent(model)
+    set_time_limit_sec(model, time_limit)
     @variable(model, x[1:num_var], Bin) # binary variables
     @objective(model, Min, sum(x[i] for i in 1:n)) # objective function
     # Caching weights for orthogonality constraints
@@ -231,7 +281,15 @@ function _minimum_distance(hx, lx, opt)
     @constraint(model, sum(weight[i] * x[i] for i in 1:num_var) == 1)
     optimize!(model)
     # Ensure the model is solved and feasible
-    is_solved_and_feasible(model) || error("Did not solve model")
+    if !is_solved_and_feasible(model)
+        if termination_status(model) == MOI.MEMORY_LIMIT
+            throw(ErrorException("Model exceeded memory limits"))
+        elseif termination_status(model) == MOI.TIME_LIMIT
+            throw(ErrorException("Model exceeded time limit"))
+        else
+            throw(ErrorException("Model failed to solve: $(termination_status(model))"))
+        end
+    end
     opt_val = sum(value(x[i]) for i in 1:n)
-    return round(Int, opt_val)
+    opt_summary ? (round(Int, opt_val), solution_summary(model)) : round(Int, opt_val)
 end
