@@ -1,4 +1,4 @@
-"""
+@doc raw"""
 $TYPEDSIGNATURES
 
 Compute the distance of a code using mixed integer programming.
@@ -7,13 +7,13 @@ See [`QuantumClifford.ECC.DistanceMIPAlgorithm`](@ref) for configuration options
 Computes the minimum Hamming weight of a binary vector `x` by solving an **mixed
 integer program (MIP)** that satisfies the following constraints:
 
-- \$\\text{stab} \\cdot x \\equiv 0 \\pmod{2}\$: The binary vector x must have an
-even overlap with each X-check of the stabilizer binary representation `stab`.
-- \$\\text{logicOp} \\cdot x \\equiv 1 \\pmod{2}\$: The binary vector x must have
-an odd overlap with logical-X operator `logicOp` on the i-th logical qubit.
+- ``\text{stab} \cdot x \equiv 0 \pmod{2}``: The binary vector `x` must have an
+even overlap with each `X`-check of the stabilizer binary representation `stab`.
+- ``\text{logicOp} \cdot x \equiv 1 \pmod{2}``: The binary vector `x` must have
+an odd overlap with logical-`X` operator `logicOp` on the `i`-th logical qubit.
 
-Specifically, it calculates the minimum Hamming weight \$d_{Z}\$ for the Z-type
-logical operator. The minimum distance for X-type logical operators is the same.
+Specifically, it calculates the minimum Hamming weight ``d_{Z}`` for the `Z`-type
+logical operator. The minimum distance for `X`-type logical operators is the same.
 
 ### Background on Minimum Distance
 
@@ -36,7 +36,7 @@ Furthermore, once a minimal weight vector is identified, it is essential to veri
 whether it belongs to the Pauli group `𝒫ₙ` over `n` qubits [Sabo:2022smk](@cite).
 
 Additionally, to illustrate how classical intuition can be misleading in this context,
-consider that the [[7, 1, 3]] Steane code has a minimum distance of three, despite all
+consider that the `[[7, 1, 3]]` Steane code has a minimum distance of three, despite all
 its elements having a weight of four. This discrepancy occurs because stabilizer codes
 are defined by parity-check matrices, while their minimum distances are determined by
 the dual [Sabo:2022smk](@cite).
@@ -62,11 +62,12 @@ julia> distance(Steane7())
 3
 ```
 
-!!! note The minimum distance problem for quantum codes is *NP-hard*, and this hardness
-extends to multiplicative and additive approximations, even when restricted to stabilizer
-or CSS codes, with the result established through a reduction from classical problems in
-the CWS framework using a 4-cycle free graph [kapshikar2023hardness](@cite). Despite
-this, methods that improve on brute-force approaches are actively explored.
+!!! note
+    The minimum distance problem for quantum codes is *NP-hard*, and this hardness extends
+    to multiplicative and additive approximations, even when restricted to stabilizer or
+    CSS codes, with the result established through a reduction from classical problems in
+    the CWS framework using a 4-cycle free graph [kapshikar2023hardness](@cite). Despite
+    this, methods that improve on brute-force approaches are actively explored.
 
 For a more in-depth background on minimum distance, see Chapter 3 of [Sabo:2022smk](@cite).
 
@@ -75,31 +76,31 @@ For a more in-depth background on minimum distance, see Chapter 3 of [Sabo:2022s
 The MIP minimizes the Hamming weight `w(x)`, defined as the number of nonzero
 elements in `x`, while satisfying the constraints:
 
-\$\$
-\\begin{aligned}
-    \\text{Minimize} \\quad & w(x) = \\sum_{i=1}^n x_i, \\\\
-    \\text{subject to} \\quad & \\text{stab} \\cdot x \\equiv 0 \\pmod{2}, \\\\
-                           & \\text{logicOp} \\cdot x \\equiv 1 \\pmod{2}, \\\\
-                           & x_i \\in \\{0, 1\\} \\quad \\text{for all } i.
-\\end{aligned}
-\$\$
+```math
+\begin{aligned}
+    \text{Minimize} \quad & w(x) = \sum_{i=1}^n x_i, \\
+    \text{subject to} \quad & \text{stab} \cdot x \equiv 0 \pmod{2}, \\
+                            & \text{logicOp} \cdot x \equiv 1 \pmod{2}, \\
+                            & x_i \in \{0, 1\} \quad \text{for all } i.
+\end{aligned}
+```
 
 Here:
-- \$\\text{stab}\$ is the binary matrix representing the stabilizer group.
-- \$\\text{logicOp}\$ is the binary vector representing the logical-X operator.
+- ``\text{stab}`` is the binary matrix representing the stabilizer group.
+- ``\text{logicOp}`` is the binary vector representing the logical-`X` operator.
 - `x` is the binary vector (decision variable) being optimized.
 
-The optimal solution \$w_{i}\$ for each logical-X operator corresponds to the
-minimum weight of a Pauli Z-type operator satisfying the above conditions.
-The Z-type distance is given by:
+The optimal solution ``w_{i}`` for each logical-`X` operator corresponds to the
+minimum weight of a Pauli `Z`-type operator satisfying the above conditions.
+The `Z`-type distance is given by:
 
-\$\$
-\\begin{aligned}
-    d_Z = \\min(w_1, w_2, \\dots, w_k),
-\\end{aligned}
-\$\$
+```math
+\begin{aligned}
+    d_Z = \min(w_1, w_2, \dots, w_k),
+\end{aligned}
+```
 
-where k is the number of logical qubits.
+where `k` is the number of logical qubits.
 
 # Example
 
@@ -161,8 +162,8 @@ likely chain of Pauli errors given the observed error syndrome by solving
 a mixed-integer program using `HiGHS` package ([huangfu2018parallelizing](@cite)).
 
 - [cain2025correlateddecodinglogicalalgorithms](@cite) formulate maximum-likelihood
-decoding as a mixed-integer program maximizing ``\\prod_{j=1}^M p_j^{E_j}(1-p_j)^{1-E_j}``
-(where binary variables ``E_j \\in {0,1}`` indicate error occurrence) subject
+decoding as a mixed-integer program maximizing ``\prod_{j=1}^M p_j^{E_j}(1-p_j)^{1-E_j}``
+(where binary variables ``E_j \in {0,1}`` indicate error occurrence) subject
 to syndrome constraints, solved optimally via MIP solvers despite its
 NP-hard complexity.
 """

@@ -123,23 +123,35 @@ end
 
 abstract type AbstractDistanceAlg end
 
-# TODO needs docstring and explanation of arguments
-# the explanation of arguments can be done automatically from argument docstrings
-# and DocStringExtensions
-# the docstring should also explain that a JuMP compatible solver needs to be used
 """
-Used with [`distance`](@ref) to select Mixed Integer Programming as the method of finding the distance of a code.
+$TYPEDEF
+
+A Mixed Integer Programming (MIP) method for computing the code distance of CSS stabilizer codes
+by finding the minimum-weight non-trivial logical [`PauliOperator`](@ref) (either `X`-type or `Z`-type).
+Used with [`distance`](@ref) to select MIP as the method of finding the distance of a code.
+
+!!! note
+    - Requires a `JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`).
+    - `X`-type and `Z`-type logical operators yield identical code distance results.
+    - For stabilizer codes, the `X`-distance and `Z`-distance are equal.
+
+$FIELDS
 """
 @kwdef struct DistanceMIPAlgorithm <: AbstractDistanceAlg
-    #"TODO docstring"
+    """if `true` (default=`false`), uses the provided value as an upper bound for the code distance"""
     upper_bound::Bool=false
-    #"TODO docstring"
+    """index of the logical qubit to compute code distance for (nothing means all logical qubits when all_logical_qubits=true)"""
     logical_qubit::Union{Int, Nothing}=nothing
-    #"TODO docstring ... etc"
+    """when `true` (default=`false`), computes the code distance for each logical qubit and returns the minimum value across all
+    logical operators of the specified type (`X` or `Z`)"""
     all_logical_qubits::Bool=false
+    """type of logical operator to consider (:X or :Z, defaults to :X) - both types yield identical distance results for CSS stabilizer codes."""
     logical_operator_type::Symbol=:X
+    """`JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`)"""
     solver::Module
+    """when `true` (default=`false`), prints the MIP solver's solution summary"""
     opt_summary::Bool=false
+    """time limit (in seconds) for the MIP solver's execution (default=60.0)"""
     time_limit::Float64=60.0
 
     function DistanceMIPAlgorithm(upper_bound, logical_qubit, all_logical_qubits, logical_operator_type, solver, opt_summary, time_limit)
