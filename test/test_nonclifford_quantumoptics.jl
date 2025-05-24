@@ -1,6 +1,6 @@
 @testitem "Non-Clifford Quantum Optics" begin
     using QuantumClifford
-    using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!, invsparsity, _projectrand_notnorm
+    using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!, invsparsity, _projectrand_notnorm, mixed_destab_looks_good, tr
     using QuantumClifford: @S_str, random_stabilizer
     using QuantumOpticsBase
     using LinearAlgebra
@@ -218,6 +218,35 @@
     @testset "projectrand! gives random results" begin
         s1 = projectrand!(GeneralizedStabilizer(S"X"), P"Z")[1].stab
         @test any(projectrand!(GeneralizedStabilizer(S"X"), P"Z")[1].stab != s1 for _ in 1:10)
+    end
+
+    @testset "Tensor products of generalized stabilizers" begin
+        num_trials = 3
+        num_qubits = [2,3] # exclusively multi-qubit
+        for n in num_qubits
+            for repetition in 1:num_trials
+                stab1 = random_stabilizer(n)
+                genstab1 = GeneralizedStabilizer(stab1)
+                stab2 = random_stabilizer(n)
+                genstab2 = GeneralizedStabilizer(stab2)
+                # apply some (repeated) non-Clifford operations to genstab1
+                for _ in 1:rand(1:5)
+                    i = rand(1:n)
+                    nc = embed(n, i, pcT)
+                    apply!(genstab1, nc)
+                end
+                # apply some (repeated) non-Clifford operations to genstab2
+                for _ in 1:rand(1:5)
+                    i = rand(1:n)
+                    nc = embed(n, i, pcT)
+                    apply!(genstab2, nc)
+                end
+                @test Operator(genstab1 ⊗ genstab2) ≈ Operator(genstab1) ⊗ Operator(genstab2)
+                @test Operator(genstab2 ⊗ genstab1) ≈ Operator(genstab2) ⊗ Operator(genstab1)
+                @test Operator(genstab1 ⊗ genstab1) ≈ Operator(genstab1) ⊗ Operator(genstab1)
+                @test Operator(genstab2 ⊗ genstab2) ≈ Operator(genstab2) ⊗ Operator(genstab2)
+            end
+        end
     end
 
     @testset "smaller test redundant to the ones above" begin

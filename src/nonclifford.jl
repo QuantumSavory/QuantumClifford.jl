@@ -443,6 +443,121 @@ function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_
     state
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Tensor product of [`GeneralizedStabilizer`](@ref) states.
+
+# Stabilizer state
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> sm ⊗ sm
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _Z
+𝒮𝓉𝒶𝒷
+- X_
+- _X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + __ | + __
+```
+
+# Arbitrary state
+
+```jldoctest
+julia> using LinearAlgebra; # hide
+
+julia> sm = GeneralizedStabilizer(ghz(2))
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + __ | + __
+
+julia> apply!(sm, embed(2, 2, pcT))
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.853553+0.0im | + __ | + __
+ 0.0+0.353553im | + __ | + Z_
+ 0.0-0.353553im | + Z_ | + __
+ 0.146447+0.0im | + Z_ | + Z_
+
+julia> newsm = sm ⊗ sm
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z___
++ _X__
++ __Z_
++ ___X
+𝒮𝓉𝒶𝒷━━
++ XX__
++ ZZ__
++ __XX
++ __ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0-0.301777im | + Z___ | + ____
+ -0.125+0.0im | + Z_Z_ | + ____
+ 0.125+0.0im | + Z___ | + Z___
+ 0.728553+0.0im | + ____ | + ____
+ 0.0-0.0517767im | + Z_Z_ | + Z___
+ 0.0-0.301777im | + __Z_ | + ____
+ 0.0+0.301777im | + ____ | + Z___
+ 0.125+0.0im | + __Z_ | + Z___
+ 0.125+0.0im | + Z___ | + __Z_
+ 0.0-0.0517767im | + Z_Z_ | + __Z_
+ 0.0+0.0517767im | + Z___ | + Z_Z_
+ 0.0+0.301777im | + ____ | + __Z_
+ 0.0214466+0.0im | + Z_Z_ | + Z_Z_
+ 0.125+0.0im | + __Z_ | + __Z_
+ -0.125+0.0im | + ____ | + Z_Z_
+ 0.0+0.0517767im | + __Z_ | + Z_Z_
+
+julia> real(tr(newsm))
+1.0
+```
+"""
+function (⊗)(state₁::GeneralizedStabilizer, state₂::GeneralizedStabilizer)
+    dict₁ = state₁.destabweights
+    dict₂ = state₂.destabweights
+    dtype = valtype(dict₁)
+    tzero = zero(dtype)
+    newdict = DefaultDict{Tuple{BitVector,BitVector},dtype}(tzero)
+    newstab = state₁.stab ⊗ state₂.stab
+    for ((d1_i, d1_j), χ) in dict₁ # χ = ϕᵢⱼ for state₁
+        for ((d2_i, d2_j), χ′) in dict₂ # χ′ = ϕₖₗ for state₂
+            # Combine the Pauli operators via tensor product: Pᵢ ⊗ Pₖ
+            # and Pⱼ ⊗ Pₗ. vcat implements P₁ ⊗ P₂ as bitwise concatenation.
+            new_key_i = vcat(d1_i, d2_i)
+            new_key_j = vcat(d1_j, d2_j)
+            # The new coefficient is ϕᵢⱼ * ϕₖₗ because:
+            # ∑ϕᵢⱼ*ϕₖₗ(Pᵢρ₁Pⱼ†) ⊗ (Pₖρ₂Pₗ†) = ∑ϕᵢⱼ*ϕₖₗ(Pᵢ ⊗ Pₖ)(ρ₁ ⊗ ρ₂)(Pⱼ ⊗ Pₗ)† and
+            # thus the combined weight is the product of the individual weights.
+            newdict[(new_key_i, new_key_j)] += χ * χ′
+        end
+    end
+    return GeneralizedStabilizer(newstab, newdict)
+end
+
 """Decompose a Pauli ``P`` in terms of stabilizer and destabilizer rows from a given tableaux.
 
 For given tableaux of rows destabilizer rows ``\\{d_i\\}`` and stabilizer rows ``\\{s_i\\}``,
