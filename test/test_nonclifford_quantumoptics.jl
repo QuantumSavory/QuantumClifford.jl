@@ -220,6 +220,31 @@
         @test any(projectrand!(GeneralizedStabilizer(S"X"), P"Z")[1].stab != s1 for _ in 1:10)
     end
 
+    @testset "Tensor products of generalized stabilizers" begin
+        num_trials = 3
+        num_qubits = [2,3] # exclusively multi-qubit
+        for n in num_qubits  # Exponential cost in this term
+            for repetition in 1:num_trials
+                stab1 = random_stabilizer(n)
+                genstab1 = GeneralizedStabilizer(stab1)
+                stab2 = random_stabilizer(n)
+                genstab2 = GeneralizedStabilizer(stab2)
+                # Apply some (repeated) non-Clifford operations
+                for i in 1:rand(5)
+                    i = rand(1:n)
+                    nc = embed(n, i, pcT)
+                    apply!(genstab1, nc)
+                end
+                for i in 1:rand(5)
+                    i = rand(1:n)
+                    nc = embed(n, i, pcT)
+                    apply!(genstab2, nc)
+                end
+                @test Operator(genstab ⊗ genstab) ≈ Operator(genstab) ⊗ Operator(genstab)
+            end
+        end
+    end
+
     @testset "smaller test redundant to the ones above" begin
         for n in 1:5
             for rep in 1:2

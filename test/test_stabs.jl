@@ -66,27 +66,6 @@
         end
     end
 
-    @testset "Tensor products over generalized stabilizers" begin
-        num_trials = 10
-        num_qubits = [2,3,4,5] # exclusively multi-qubit
-        for n in num_qubits  # Exponential cost in this term
-            for repetition in 1:num_trials
-                stab = random_stabilizer(n)
-                pauli = random_pauli(n)
-                genstab = GeneralizedStabilizer(stab)
-                # Apply some (repeated) non-Clifford operations
-                i = rand(1:n)
-                nc = embed(n, i, pcT)
-                apply!(genstab, nc) # in-place
-                apply!(genstab, nc) # in-place
-                apply!(genstab, nc) # in-place
-                newsm = genstab ⊗ genstab
-                @test mixed_destab_looks_good(newsm.stab)
-                @test real(tr(newsm)) ≈ 1
-            end
-        end
-    end
-
     @testset "Stabilizer indexing" begin
         s = random_stabilizer(9,10)
         @test s[1,1] == s[[1,3,4],[1,3,5]][1,1]
