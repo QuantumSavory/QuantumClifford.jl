@@ -22,6 +22,7 @@ abstract type AbstractECC end
 
 export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
+    DistanceMIPAlgorithm,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode, LiftedCode,
@@ -122,44 +123,35 @@ end
 
 abstract type AbstractDistanceAlg end
 
-struct DistanceDataBase <: AbstractDistanceAlg end
-
-struct DistanceMIPAlgorithm <: AbstractDistanceAlg
-    upper_bound::Bool
-    logical_qubit::Union{Int, Nothing}
-    all_logical_qubits::Bool
-    logical_operator_type::Symbol
+# TODO needs docstring and explanation of arguments
+# the explanation of arguments can be done automatically from argument docstrings
+# and DocStringExtensions
+# the docstring should also explain that a JuMP compatible solver needs to be used
+"""
+Used with [`distance`](@ref) to select Mixed Integer Programming as the method of finding the distance of a code.
+"""
+@kwdef struct DistanceMIPAlgorithm <: AbstractDistanceAlg
+    #"TODO docstring"
+    upper_bound::Bool=false
+    #"TODO docstring"
+    logical_qubit::Union{Int, Nothing}=nothing
+    #"TODO docstring ... etc"
+    all_logical_qubits::Bool=false
+    logical_operator_type::Symbol=:X
     solver::Module
-    opt_summary::Bool
-    time_limit::Float64
+    opt_summary::Bool=false
+    time_limit::Float64=60.0
 
-    function DistanceMIPAlgorithm(;
-        upper_bound::Bool=false,
-        logical_qubit::Union{Int,Nothing}=nothing,
-        all_logical_qubits::Bool=false,
-        logical_operator_type::Symbol=:X,
-        solver::Module,
-        opt_summary::Bool=false,
-        time_limit::Float64=1800.0
-    )
-        logical_operator_type ∈ (:X, :Z) || throw(ArgumentError("logical_operator_type must be :X or :Z"))
+    function DistanceMIPAlgorithm(upper_bound, logical_qubit, all_logical_qubits, logical_operator_type, solver, opt_summary, time_limit)
+        logical_operator_type ∈ (:X, :Z) || throw(ArgumentError("`logical_operator_type` must be :X or :Z"))
         new(upper_bound, logical_qubit, all_logical_qubits, logical_operator_type, solver, opt_summary, time_limit)
     end
 end
 
-"""The distance of a code."""
-function distance(code::AbstractECC)
-    try
-        return distance(code)
-    catch e
-        if e isa MethodError && occursin("distance", sprint(showerror, e))
-            throw(ErrorException("""No direct method for distance computation was defined. Consider using
-                the MIP-based method: distance(code, DistanceMIPAlgorithm(solver=...))"""))
-        else
-            rethrow()
-        end
-    end
-end
+"""The distance of a code as recorded in a database or computed by an (approximate) algorithm.
+
+See [`DistanceMIPAlgorithm`](@ref) for distance-finding algorithms if the code you are working with is not in the database."""
+function distance end
 
 """Parity matrix of a code, given as a stabilizer tableau."""
 function parity_matrix(c::AbstractECC)

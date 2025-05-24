@@ -1,5 +1,8 @@
 """
-TYPEDSIGNATURES
+$TYPEDSIGNATURES
+
+Compute the distance of a code using mixed integer programming.
+See [`QuantumClifford.ECC.DistanceMIPAlgorithm`](@ref) for configuration options.
 
 Computes the minimum Hamming weight of a binary vector `x` by solving an **mixed
 integer program (MIP)** that satisfies the following constraints:
@@ -122,34 +125,6 @@ julia> c = two_block_group_algebra_codes(A,B);
 
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (40, 8, 5)
-```
-
-To print the `JuMP` optimizer model summary, set the `opt_summary` parameter to `true`:
-
-```@example
-julia> distance(c, DistanceMIPAlgorithm(solver=HiGHS, opt_summary=true))
-(5, * Solver : HiGHS
-
-* Status
-  Result count       : 1
-  Termination status : OPTIMAL
-  Message from the solver:
-  "kHighsModelStatusOptimal"
-
-* Candidate solution (result #1)
-  Primal status      : FEASIBLE_POINT
-  Dual status        : NO_SOLUTION
-  Objective value    : 5.00000e+00
-  Objective bound    : 5.00000e+00
-  Relative gap       : 0.00000e+00
-  Dual objective value : NaN
-
-* Work counters
-  Solve time (sec)   : 1.38948e-02
-  Simplex iterations : 215
-  Barrier iterations : -1
-  Node count         : 1
-)
 ```
 
 A [[48, 6, 8]] GB code with the minimum distance of 8 from (A3)

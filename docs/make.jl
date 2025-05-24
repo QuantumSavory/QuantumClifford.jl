@@ -9,14 +9,12 @@ using QuantumInterface
 
 ENV["HECKE_PRINT_BANNER"] = "false"
 import Hecke
-
 const QuantumCliffordHeckeExt = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
 
-#DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
-
 import JuMP
-
 const QuantumCliffordJuMPExt = Base.get_extension(QuantumClifford, :QuantumCliffordJuMPExt)
+
+#DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
 
 ENV["LINES"] = 80    # for forcing `displaysize(io)` to be big enough
 ENV["COLUMNS"] = 80

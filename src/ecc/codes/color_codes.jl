@@ -116,7 +116,7 @@ function parity_checks(c::TriangularCode)
     return parity_checks(CSS(matrix, matrix))
 end
 
-function _colorcode_get_check_matrix(c::Triangular666) 
+function _colorcode_get_check_matrix(c::Triangular666)
     n = code_n(c)
     num_checks = (n-1)÷2
     num_layers = (c.d-1)÷2
@@ -165,11 +165,11 @@ function _colorcode_get_check_matrix(c::Triangular666)
         for j in 1:(layer-1)
             init_pos = i+(j-1)*2+(layer-1)*2+1
             checks[checks_written+1, init_pos] = 1
-            checks[checks_written+1, init_pos+1] = 1 
-            checks[checks_written+1, init_pos+2*layer] = 1 
-            checks[checks_written+1, init_pos+2*layer+1] = 1 
-            checks[checks_written+1, init_pos+4*layer] = 1 
-            checks[checks_written+1, init_pos+4*layer+1] = 1 
+            checks[checks_written+1, init_pos+1] = 1
+            checks[checks_written+1, init_pos+2*layer] = 1
+            checks[checks_written+1, init_pos+2*layer+1] = 1
+            checks[checks_written+1, init_pos+4*layer] = 1
+            checks[checks_written+1, init_pos+4*layer+1] = 1
 
             checks_written += 1
         end
@@ -197,7 +197,7 @@ function _colorcode_get_check_matrix(c::Triangular488)
     num_checks = (n-1)÷2
     num_layers = (c.d-1)÷2
     checks = zeros(Bool, num_checks, n)
-    
+
     i = 1
     checks_written = 0
     for layer in 1:num_layers
@@ -267,7 +267,7 @@ function _colorcode_get_check_matrix(c::Triangular488)
             checks_written += 1
         end
 
-        i += 4*layer  
+        i += 4*layer
     end
     return checks
 end
@@ -283,6 +283,6 @@ function iscss(::ColorCode)
 end
 
 # From https://arxiv.org/abs/1108.5738 Fig. 2's caption:
-code_n(c::Triangular488) = 0.5*c.d^2+c.d-0.5 |> Int
-code_n(c::Triangular666) = 0.75*c.d^2+.25 |> Int
+code_n(c::Triangular488) = (c.d^2+2c.d-1)÷2
+code_n(c::Triangular666) = (3*c.d^2+1)÷4
 code_k(c::TriangularCode) = 1

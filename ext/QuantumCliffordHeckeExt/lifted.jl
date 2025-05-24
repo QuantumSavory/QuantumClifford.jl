@@ -35,7 +35,7 @@ However, we can find a `4×4` matrix representation for the group,
 e.g. by using the typical [`2×2` representation](https://en.wikipedia.org/wiki/Dihedral_group)
 and converting it into binary representation by replacing "1" with the Pauli I, and "-1" with the Pauli X matrix.
 
-See also: [`LPCode`](@ref).
+See also: [`QuantumClifford.ECC.LPCode`](@ref).
 
 $TYPEDFIELDS
 """
