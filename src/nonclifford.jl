@@ -558,6 +558,80 @@ function (⊗)(state₁::GeneralizedStabilizer, state₂::GeneralizedStabilizer)
     return GeneralizedStabilizer(newstab, newdict)
 end
 
+"""Tensor product between [`GeneralizedStabilizer`](@ref) and [`Stabilizer`](@ref).
+
+```jldoctest
+julia> using LinearAlgebra; # hide
+
+julia> sm = GeneralizedStabilizer(ghz(2))
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + __ | + __
+
+julia> apply!(sm, embed(2, 2, pcT))
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.853553+0.0im | + __ | + __
+ 0.0+0.353553im | + __ | + Z_
+ 0.0-0.353553im | + Z_ | + __
+ 0.146447+0.0im | + Z_ | + Z_
+
+julia> s = ghz(2)
++ XX
++ ZZ
+
+julia> newsm = sm ⊗ s
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z___
++ _X__
++ __Z_
++ ___X
+𝒮𝓉𝒶𝒷━━
++ XX__
++ ZZ__
++ __XX
++ __ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + ____ | + Z___
+ 0.0-0.353553im | + Z___ | + ____
+ 0.146447+0.0im | + Z___ | + Z___
+ 0.853553+0.0im | + ____ | + ____
+
+julia> real(tr(newsm))
+1.0
+```
+"""
+function (⊗)(state₁::GeneralizedStabilizer, state₂::Stabilizer)
+    gs_dict = state₁.destabweights
+    gs_stab = state₁.stab
+    n_gs = nqubits(gs_stab)
+    n_s = nqubits(state₂)
+    newstab = gs_stab ⊗ state₂
+    dtype = valtype(gs_dict)
+    tzero = zero(dtype)
+    newdict = DefaultDict{Tuple{BitVector,BitVector},dtype}(tzero)
+    # ρ₁ ⊗ ρ₂ = (∑ϕᵢⱼPᵢρ₁Pⱼ†) ⊗ ρ₂ = ∑ϕᵢⱼ(Pᵢ⊗I)(ρ₁⊗ρ₂)(Pⱼ†⊗I)
+    for ((d_i, d_j), χ) in gs_dict
+        new_d_i = vcat(d_i, falses(2*n_s)) # Pᵢ ⊗ I
+        new_d_j = vcat(d_j, falses(2*n_s)) # Pⱼ ⊗ I
+        newdict[(new_d_i, new_d_j)] += χ
+    end
+    return GeneralizedStabilizer(newstab, newdict)
+end
+
 """Decompose a Pauli ``P`` in terms of stabilizer and destabilizer rows from a given tableaux.
 
 For given tableaux of rows destabilizer rows ``\\{d_i\\}`` and stabilizer rows ``\\{s_i\\}``,
@@ -664,6 +738,25 @@ end
 nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
 apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold=1e-10) = apply!(state, gate.paulichannel; prune_threshold)
+
+"""
+Tensor product between [`UnitaryPauliChannel`](@ref) and [`PauliOperator`](@ref).
+
+```jldoctest
+julia> pcT ⊗ P"X"
+A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
+with ϕᵢ | Pᵢ
+ 0.853553+0.353553im | + _X
+ 0.146447-0.353553im | + ZX
+```
+"""
+function (⊗)(pc::UnitaryPauliChannel, P::PauliOperator)
+    n_pc = nqubits(pc.paulis[1])
+    n_P = nqubits(P)
+    newpaulis = [p ⊗ P for p in pc.paulis]
+    newweights = pc.weights
+    return UnitaryPauliChannel(newpaulis, newweights)
+end
 
 """
 Calculates the number of non-zero elements in the density matrix `χ`

@@ -117,8 +117,11 @@
                 apply!(genstab, nc) # in-place
                 apply!(genstab, nc) # in-place
                 newsm = genstab ⊗ genstab
+                newsm1 = genstab ⊗ stab
                 @test mixed_destab_looks_good(newsm.stab)
                 @test real(tr(newsm)) ≈ 1
+                @test mixed_destab_looks_good(newsm1.stab)
+                @test real(tr(newsm1)) ≈ 1
             end
         end
     end
