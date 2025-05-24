@@ -1,6 +1,6 @@
 @testitem "NonClifford" begin
     using QuantumClifford
-    using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, invsparsity, mul_left!, mul_right!
+    using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, invsparsity, mul_left!, mul_right!, mixed_destab_looks_good, tr
     using Test
     using InteractiveUtils
     using Random
