@@ -241,10 +241,27 @@
                     nc = embed(n, i, pcT)
                     apply!(genstab2, nc)
                 end
+                @test Operator(genstab1 ⊗ stab1) ≈ Operator(genstab1) ⊗ Operator(stab1)
+                @test Operator(genstab2 ⊗ stab1) ≈ Operator(genstab2) ⊗ Operator(stab1)
+                @test Operator(genstab1 ⊗ stab2) ≈ Operator(genstab1) ⊗ Operator(stab2)
+                @test Operator(genstab2 ⊗ stab2) ≈ Operator(genstab2) ⊗ Operator(stab2)
                 @test Operator(genstab1 ⊗ genstab2) ≈ Operator(genstab1) ⊗ Operator(genstab2)
                 @test Operator(genstab2 ⊗ genstab1) ≈ Operator(genstab2) ⊗ Operator(genstab1)
                 @test Operator(genstab1 ⊗ genstab1) ≈ Operator(genstab1) ⊗ Operator(genstab1)
                 @test Operator(genstab2 ⊗ genstab2) ≈ Operator(genstab2) ⊗ Operator(genstab2)
+            end
+        end
+    end
+
+    @testset "Tensor products between paulichannels and paulis" begin
+        num_trials = 3
+        num_qubits = [2,3,4,5] # exclusively multi-qubit
+        for n in num_qubits
+            for repetition in 1:num_trials
+                p = random_pauli(n)
+                i = rand(1:n)
+                nc = embed(n, i, pcT)
+                @test Operator(nc ⊗ p) ≈ Operator(nc) ⊗ Operator(p)
             end
         end
     end
