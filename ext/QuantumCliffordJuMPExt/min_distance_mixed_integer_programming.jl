@@ -172,6 +172,7 @@ are as follows:
 
 - The first usecase of the MIP approach was the code capacity Most Likely
 Error (MLE) decoder for color codes introduced in [landahl2011color](@cite).
+
 - For all quantum LDPC codes presented in [panteleev2021degenerate](@cite),
 the lower and upper bounds on the minimum distance was obtained by reduction
 to a mixed integer linear program and using the GNU Linear Programming
@@ -180,14 +181,15 @@ Kit ([makhorin2008glpk](@cite)).
 - For all the Bivariate Bicycle (BB) codes presented in [bravyi2024high](@cite),
 the code distance was calculated using the mixed integer programming approach.
 
-- [lacroix2024scaling](@cite) develop a MLE decoder that finds the most likely
-chain of Pauli errors given the observed error syndrome by solving a mixed-integer
-program using `HiGHS` package ([huangfu2018parallelizing](@cite)).
+- [lacroix2024scaling](@cite) developed a MLE decoder that finds the most
+likely chain of Pauli errors given the observed error syndrome by solving
+a mixed-integer program using `HiGHS` package ([huangfu2018parallelizing](@cite)).
 
-- [cain2025correlateddecodinglogicalalgorithms](@cite) We formulate maximum-likelihood
+- [cain2025correlateddecodinglogicalalgorithms](@cite) formulate maximum-likelihood
 decoding as a mixed-integer program maximizing ``\\prod_{j=1}^M p_j^{E_j}(1-p_j)^{1-E_j}``
-(where binary variables ``E_j \\in {0,1}`` indicate error occurrence) subject to
-syndrome constraints, solved optimally via MIP solvers despite its NP-hard complexity.
+(where binary variables ``E_j \\in {0,1}`` indicate error occurrence) subject
+to syndrome constraints, solved optimally via MIP solvers despite its
+NP-hard complexity.
 """
 function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
     logical_qubit = isnothing(alg.logical_qubit) ? code_k(code) : alg.logical_qubit

@@ -1,7 +1,9 @@
 @testitem "ECC Bivaraite Bicycle as 2BGA" begin
     using Hecke
+    using HiGHS
+    using JuMP
     using Hecke: group_algebra, GF, abelian_group, gens, one
-    using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n
+    using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, distance, DistanceMIPAlgorithm
 
     @testset "Reproduce Table 3 bravyi2024high" begin
         # [[72, 12, 6]]
@@ -12,6 +14,7 @@
         B = y^3 + x + x^2
         c = two_block_group_algebra_codes(A,B)
         @test code_n(c) == 72 && code_k(c) == 12
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
         # [[90, 8, 10]]
         l=15; m=3
@@ -77,6 +80,7 @@
         B = 1   + x + x^11
         c = two_block_group_algebra_codes(A,B)
         @test code_n(c) == 72 && code_k(c) == 8
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
         # [[90, 8, 6]]
         l=9; m=5
@@ -86,6 +90,7 @@
         B = y^5 + x^8 + x^7
         c = two_block_group_algebra_codes(A,B)
         @test code_n(c) == 90 && code_k(c) == 8
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
         # [[120, 8, 8]]
         l=12; m=5
@@ -124,6 +129,7 @@
         B = y^3 + x   + x^2
         c = two_block_group_algebra_codes(A,B)
         @test code_n(c) == 54 && code_k(c) == 8
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
         # [[98, 6, 12]]
         l=7; m=7
