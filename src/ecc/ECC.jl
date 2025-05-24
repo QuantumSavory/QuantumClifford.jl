@@ -22,6 +22,7 @@ abstract type AbstractECC end
 
 export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
+    DistanceMIPAlgorithm,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode, LiftedCode,
@@ -120,8 +121,46 @@ function rate(c)
     return rate
 end
 
+abstract type AbstractDistanceAlg end
 
-"""The distance of a code."""
+"""
+$TYPEDEF
+
+A Mixed Integer Programming (MIP) method for computing code distance by finding minimum-weight logical operators.
+Used with [`distance`](@ref) to select this optimization-based approach.
+
+!!! note
+    - Requires a `JuMP`-compatible solver (e.g., `HiGHS`, `SCIP`).
+    - `X`-type and `Z`-type logical operators yield identical distance results.
+    - For stabilizer codes, the `X`-distance and `Z`-distance are equal.
+
+$FIELDS
+"""
+@kwdef struct DistanceMIPAlgorithm <: AbstractDistanceAlg
+    """if true, uses the provided value as an upper bound for the distance"""
+    upper_bound::Bool=false
+    """index of the logical qubit to compute distance for (nothing means all logical qubits when all_logical_qubits=true)"""
+    logical_qubit::Union{Int, Nothing}=nothing
+    """if true, computes distance for all logical qubits"""
+    all_logical_qubits::Bool=false
+    """type of logical operator to consider (:X or :Z) - both yield identical distance results"""
+    logical_operator_type::Symbol=:X
+    """JuMP-compatible solver module (e.g., `HiGHS`, `SCIP`)"""
+    solver::Module
+    """if true, prints a summary of the optimization solution"""
+    opt_summary::Bool=false
+    """time limit (in seconds) for the solver"""
+    time_limit::Float64=60.0
+
+    function DistanceMIPAlgorithm(upper_bound, logical_qubit, all_logical_qubits, logical_operator_type, solver, opt_summary, time_limit)
+        logical_operator_type ∈ (:X, :Z) || throw(ArgumentError("`logical_operator_type` must be :X or :Z"))
+        new(upper_bound, logical_qubit, all_logical_qubits, logical_operator_type, solver, opt_summary, time_limit)
+    end
+end
+
+"""The distance of a code as recorded in a database or computed by an (approximate) algorithm.
+
+See [`DistanceMIPAlgorithm`](@ref) for distance-finding algorithms if the code you are working with is not in the database."""
 function distance end
 
 """Parity matrix of a code, given as a stabilizer tableau."""
