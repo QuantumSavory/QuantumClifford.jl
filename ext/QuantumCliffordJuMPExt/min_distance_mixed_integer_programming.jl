@@ -104,9 +104,9 @@ A [[40, 8, 5]] 2BGA code with the minimum distance of 5 from
 Table 2 of [lin2024quantum](@cite).
 
 ```jldoctest examples
-julia> import Hecke: group_algebra, GF, abelian_group, gens; import GLPK; import HiGHS; import JuMP;
+julia> import Hecke: group_algebra, GF, abelian_group, gens; import HiGHS; import JuMP;
 
-julia> using QuantumClifford.ECC: two_block_group_algebra_codes, generalized_bicycle_codes, DistanceMIPAlgorithm; # hide
+julia> using QuantumClifford.ECC: code_n, code_k, distance, two_block_group_algebra_codes, generalized_bicycle_codes, DistanceMIPAlgorithm; # hide
 
 julia> l = 10; m = 2;
 
@@ -166,14 +166,28 @@ julia> code_n(c1), code_k(c1), distance(c1, DistanceMIPAlgorithm(solver=HiGHS))
 
 ### Applications
 
+Mixed-integer programming (MIP) is applied in quantum error correction,
+notably for decoding and minimum distance computation. Some applications
+are as follows:
+
 - The first usecase of the MIP approach was the code capacity Most Likely
-Error (MLE) decoder for color codes introduced in [landahl2011fault](@cite).
+Error (MLE) decoder for color codes introduced in [landahl2011color](@cite).
 - For all quantum LDPC codes presented in [panteleev2021degenerate](@cite),
 the lower and upper bounds on the minimum distance was obtained by reduction
-to a mixed integer linear program and using the GNU Linear Programming Kit.
+to a mixed integer linear program and using the GNU Linear Programming
+Kit ([makhorin2008glpk](@cite)).
+
 - For all the Bivariate Bicycle (BB) codes presented in [bravyi2024high](@cite),
 the code distance was calculated using the mixed integer programming approach.
 
+- [lacroix2024scaling](@cite) develop a MLE decoder that finds the most likely
+chain of Pauli errors given the observed error syndrome by solving a mixed-integer
+program using `HiGHS` package ([huangfu2018parallelizing](@cite)).
+
+- [cain2025correlateddecodinglogicalalgorithms](@cite) We formulate maximum-likelihood
+decoding as a mixed-integer program maximizing ``\\prod_{j=1}^M p_j^{E_j}(1-p_j)^{1-E_j}``
+(where binary variables ``E_j \\in {0,1}`` indicate error occurrence) subject to
+syndrome constraints, solved optimally via MIP solvers despite its NP-hard complexity.
 """
 function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
     logical_qubit = isnothing(alg.logical_qubit) ? code_k(code) : alg.logical_qubit
@@ -229,7 +243,7 @@ end
 
 """Computing minimum distance for quantum LDPC codes is a NP-Hard problem,
 but we can solve mixed integer program (MIP) for small instance sizes.
-inspired from [bravyi2024high](@cite) and [landahl2011fault](@cite)."""
+inspired from [bravyi2024high](@cite) and [landahl2011color](@cite)."""
 function _minimum_distance(hx, lx, opt, opt_summary, time_limit)
     n = size(hx, 2) # number of qubits
     m = size(hx, 1) # number of stabilizers
