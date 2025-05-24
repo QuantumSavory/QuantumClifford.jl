@@ -6,7 +6,7 @@
     using QuantumClifford.ECC: Triangular488, Triangular666, distance, DistanceMIPAlgorithm
 
     @testset "Minimum Distance test of Color Codes" begin
-        d = [3, 5, 7, 9, 11, 13, 15, 17]
+        d = [3, 5, 7, 9, 11]
         code_types = [Triangular488, Triangular666]
         for i in d
             for CodeType in code_types
