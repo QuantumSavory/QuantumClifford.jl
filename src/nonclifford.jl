@@ -743,7 +743,7 @@ apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold=
 Tensor product between [`UnitaryPauliChannel`](@ref) and [`PauliOperator`](@ref).
 
 ```jldoctest
-julia> julia> pcT ⊗ P"X"
+julia> pcT ⊗ P"X"
 A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
 with ϕᵢ | Pᵢ
  0.853553+0.353553im | + _X
