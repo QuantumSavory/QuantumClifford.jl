@@ -49,7 +49,7 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
 
 See also: [`PauliChannel`](@ref)
 """
-mutable struct GeneralizedStabilizer{T,F}
+mutable struct GeneralizedStabilizer{T,F} <: AbstractQCState
     stab::T
     destabweights::DefaultDict{Tuple{BitVector, BitVector}, F, F}
 end
@@ -614,22 +614,9 @@ julia> real(tr(newsm))
 1.0
 ```
 """
-function (⊗)(state₁::GeneralizedStabilizer, state₂::Stabilizer)
-    gs_dict = state₁.destabweights
-    gs_stab = state₁.stab
-    n_gs = nqubits(gs_stab)
-    n_s = nqubits(state₂)
-    newstab = gs_stab ⊗ state₂
-    dtype = valtype(gs_dict)
-    tzero = zero(dtype)
-    newdict = DefaultDict{Tuple{BitVector,BitVector},dtype}(tzero)
-    # ρ₁ ⊗ ρ₂ = (∑ϕᵢⱼPᵢρ₁Pⱼ†) ⊗ ρ₂ = ∑ϕᵢⱼ(Pᵢ⊗I)(ρ₁⊗ρ₂)(Pⱼ†⊗I)
-    for ((d_i, d_j), χ) in gs_dict
-        new_d_i = vcat(d_i, falses(2*n_s)) # Pᵢ ⊗ I
-        new_d_j = vcat(d_j, falses(2*n_s)) # Pⱼ ⊗ I
-        newdict[(new_d_i, new_d_j)] += χ
-    end
-    return GeneralizedStabilizer(newstab, newdict)
+function tensor(ops::Union{AbstractStabilizer,GeneralizedStabilizer}...)
+    gops = map(op -> op isa GeneralizedStabilizer ? op : GeneralizedStabilizer(MixedDestabilizer(op)), ops)
+    foldl(⊗, gops)
 end
 
 """Decompose a Pauli ``P`` in terms of stabilizer and destabilizer rows from a given tableaux.
@@ -714,7 +701,8 @@ struct UnitaryPauliChannel{T,S,P} <: AbstractPauliChannel
         new{typeof(paulis),typeof(weights),typeof(pc)}(paulis,weights,pc)
     end
 end
-
+UnitaryPauliChannel(P::PauliOperator) = UnitaryPauliChannel([P], [1.0+0.0im])
+PauliChannel(p::PauliOperator)=UnitaryPauliChannel(p)
 PauliChannel(p::UnitaryPauliChannel) = p.paulichannel
 Base.copy(p::UnitaryPauliChannel) = UnitaryPauliChannel(map(copy, p.paulis), map(copy, p.weights))
 Base.:(==)(p₁::UnitaryPauliChannel, p₂::UnitaryPauliChannel) = p₁.paulis==p₂.paulis && p₁.weights==p₂.weights
@@ -748,13 +736,21 @@ A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
 with ϕᵢ | Pᵢ
  0.853553+0.353553im | + _X
  0.146447-0.353553im | + ZX
+
+julia> pcT ⊗ pcT ⊗ P"X"
+A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
+with ϕᵢ | Pᵢ
+ 0.603553+0.603553im | + __X
+ 0.25-0.25im | + Z_X
+ 0.25-0.25im | + _ZX
+ -0.103553-0.103553im | + ZZX
 ```
 """
-function (⊗)(pc::UnitaryPauliChannel, P::PauliOperator)
-    n_pc = nqubits(pc.paulis[1])
-    n_P = nqubits(P)
-    newpaulis = [p ⊗ P for p in pc.paulis]
-    newweights = pc.weights
+function tensor(pc1::Union{UnitaryPauliChannel,PauliOperator}, pc2::Union{UnitaryPauliChannel,PauliOperator})
+    c1 = pc1 isa PauliOperator ? UnitaryPauliChannel(pc1) : pc1
+    c2 = pc2 isa PauliOperator ? UnitaryPauliChannel(pc2) : pc2
+    newpaulis = [p1 ⊗ p2 for p1 in c1.paulis, p2 in c2.paulis]
+    newweights = [w1 * w2 for w1 in c1.weights, w2 in c2.weights]
     return UnitaryPauliChannel(newpaulis, newweights)
 end
 
