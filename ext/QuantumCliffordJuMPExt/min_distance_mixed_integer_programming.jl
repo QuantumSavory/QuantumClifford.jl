@@ -168,38 +168,39 @@ to syndrome constraints, solved optimally via MIP solvers despite its
 NP-hard complexity.
 """
 function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
-    logical_qubit = isnothing(alg.logical_qubit) ? code_k(code) : alg.logical_qubit
-    1 <= logical_qubit <= code_k(code) || throw(ArgumentError("Logical qubit out of range"))
+    logical_qubits = isnothing(alg.logical_qubit) ? (1:code_k(code)) : (alg.logical_qubit:alg.logical_qubit)
+    isnothing(alg.logical_qubit) || (1 <= alg.logical_qubit <= code_k(code)) || throw(ArgumentError("Logical qubit out of range"))
     # Get the appropriate logical operators and matrices based on operator type
     logical_operator_type = alg.logical_operator_type
     l, H, h = if logical_operator_type == :X
-        l_val = get_lx_lz(parity_checks(code))[1]
+        l_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(logx_ops(code)))
         H_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(code)))
         px = parity_checks_x(code)
         h_val = cat(px, spzeros(Int, size(px, 1), nqubits(code)); dims=2)
         (l_val, H_val, h_val)
     else
-        l_val = get_lx_lz(parity_checks(code))[2]
+        l_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(logz_ops(code)))
         H_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(code)))
         pz = parity_checks_z(code)
         h_val = cat(spzeros(Int, size(pz, 1), nqubits(code)), pz; dims=2)
         (l_val, H_val, h_val)
     end
-    # Calculate weights for each logical qubit and solution summaries
+    # Calculate weights for each logical qubit
     if alg.opt_summary
         weights = Dict(
             i => (weight=w, summary=s)
             for (i, (w, s)) in (
-                (i, _minimum_distance(h, l[i, :], alg.solver.Optimizer, alg.opt_summary, alg.time_limit))
-                for i in 1:logical_qubit
+                (i, _minimum_distance(h, l[i, :], alg.solver.Optimizer, true, alg.time_limit))
+                for i in logical_qubits
             )
         )
     else
         weights = Dict(
             i => first(_minimum_distance(h, l[i, :], alg.solver.Optimizer, false, alg.time_limit))
-            for i in 1:logical_qubit
+            for i in logical_qubits
         )
     end
+    # Return appropriate result based on configuration
     if alg.upper_bound
         if alg.opt_summary
             max_entry = argmax(x -> x.weight, values(weights))
@@ -207,8 +208,6 @@ function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
         else
             return maximum(values(weights))
         end
-    elseif alg.all_logical_qubits
-        return weights
     else
         if alg.opt_summary
             min_entry = argmin(x -> x.weight, values(weights))

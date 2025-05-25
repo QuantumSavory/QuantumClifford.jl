@@ -23,7 +23,6 @@ import ILog2: ilog2, RoundUp
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export distance
 
-include("util.jl")
 include("min_distance_mixed_integer_programming.jl")
 
 end

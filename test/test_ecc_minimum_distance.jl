@@ -13,7 +13,7 @@
         i = rand(1:code_k(c))
         # By default, the minimum distance for the Z-type logical operator is computed.
         # The minimum distance for X-type logical operators is the same.
-        @test distance(c, DistanceMIPAlgorithm(logical_qubit=i; solver=HiGHS)) == distance(c, DistanceMIPAlgorithm(logical_qubit=i, logical_operator_type=:Z; solver=HiGHS)) == 8
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == distance(c, DistanceMIPAlgorithm(logical_operator_type=:Z; solver=HiGHS)) == 8
     end
     @testset "minimum distance properties: Weight-7 MB" begin
         # [[30, 4, 5]] MB code from Table 1 of [voss2024multivariatebicyclecodes](@cite)
@@ -29,6 +29,6 @@
         @test code_n(c) == 30 && code_k(c) == 4
         # By default, the minimum distance for the Z-type logical operator is computed.
         # The minimum distance for X-type logical operators is the same.
-        @test distance(c, DistanceMIPAlgorithm(logical_qubit=i; solver=HiGHS)) == distance(c, DistanceMIPAlgorithm(logical_qubit=i, logical_operator_type=:Z; solver=HiGHS)) == 5
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == distance(c, DistanceMIPAlgorithm(logical_operator_type=:Z; solver=HiGHS)) == 5
     end
 end
