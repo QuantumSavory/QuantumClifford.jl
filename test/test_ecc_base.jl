@@ -161,7 +161,9 @@ const code_instance_args = Dict(
     :CircuitCode => random_circuit_code_args,
     :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, other_lifted_product_codes)),
     :QuantumReedMuller => [3, 4, 5],
-    :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)]
+    :Triangular488 => [3, 5, 7, 9, 11],
+    :Triangular666 => [3, 5, 7, 9, 11],
+    :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
 )
 
 function all_testablable_code_instances(;maxn=nothing)

@@ -1,3 +1,28 @@
+function permutesystems(c::CliffordOperator,p) # TODO this is a slow stupid implementation
+    CliffordOperator(Tableau([tab(c)[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
+end
+
+@deprecate permute(c::CliffordOperator,p) permutesystems(c,p)
+
+function permutesystems!(s::Tableau, perm::AbstractVector)
+    for r in 1:size(s,1)
+        s[r] = s[r][perm] # TODO make a local temporary buffer row instead of constantly allocating new rows
+    end
+    s
+end
+
+function permutesystems!(s::AbstractStabilizer, perm::AbstractVector)
+    permutesystems!(tab(s), perm)
+    s
+end
+
+import Base: permute!
+@deprecate permute!(s::Tableau, perm::AbstractVector) permutesystems!(s, perm)
+@deprecate permute!(s::AbstractStabilizer, perm::AbstractVector) permutesystems!(s, perm)
+
+# TODO upstream to QuantumInterface for (state::Any, perm)
+permutesystems(s::AbstractStabilizer, perm) = permutesystems!(s, perm)
+
 """
 $TYPEDSIGNATURES
 
