@@ -31,6 +31,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     haah_cubic_codes, TZQLDPC, random_tzqldpc_code,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
+    Triangular488, Triangular666,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -314,7 +315,7 @@ function faults_matrix(c::Stabilizer)
     s, n = size(c)
     r = rank(md)
     k = n - r
-    k == n-s || @warn "`faults_matrix` was called on an ECC that has redundant rows (is rank-deficient). `faults_matrix` corrected for that, however this is a frequent source of mistakes and inefficiencies. We advise you remove redundant rows from your ECC."
+    k == n-s || @warn "`faults_matrix` was called on an ECC that has redundant rows (is rank-deficient). `faults_matrix` corrected for that, however this is a frequent source of mistakes and inefficiencies. We advise you remove redundant rows from your ECC." maxlog=1
     O = falses(2k, 2n)
     logviews = [logicalxview(md); logicalzview(md)]
     errors = [one(Stabilizer,n; basis=:X);one(Stabilizer,n)]
@@ -389,6 +390,7 @@ include("codes/classical/reedmuller.jl")
 include("codes/classical/recursivereedmuller.jl")
 include("codes/classical/bch.jl")
 include("codes/classical/golay.jl")
+include("codes/color_codes.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")

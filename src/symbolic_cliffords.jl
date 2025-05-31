@@ -384,7 +384,7 @@ function Base.show(io::IO, op::AbstractTwoQubitOperator)
     if get(io, :compact, false) | haskey(io, :typeinfo)
         print(io, "$(string(typeof(op)))($(op.q1),$(op.q2))")
     else
-        print(io, "$(string(typeof(op))) on qubit1 ($(op.q1),$(op.q2))\n")
+        print(io, "$(string(typeof(op))) on qubit ($(op.q1),$(op.q2))\n")
         show(io, CliffordOperator(op,2;compact=true))
     end
 end
