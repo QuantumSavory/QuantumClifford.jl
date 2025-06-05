@@ -49,7 +49,7 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
 
 See also: [`PauliChannel`](@ref)
 """
-mutable struct GeneralizedStabilizer{T,F}
+mutable struct GeneralizedStabilizer{T,F} <: AbstractQCState
     stab::T
     destabweights::DefaultDict{Tuple{BitVector, BitVector}, F, F}
 end
@@ -558,6 +558,67 @@ function (⊗)(state₁::GeneralizedStabilizer, state₂::GeneralizedStabilizer)
     return GeneralizedStabilizer(newstab, newdict)
 end
 
+"""Tensor product between [`GeneralizedStabilizer`](@ref) and [`Stabilizer`](@ref).
+
+```jldoctest
+julia> using LinearAlgebra; # hide
+
+julia> sm = GeneralizedStabilizer(ghz(2))
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + __ | + __
+
+julia> apply!(sm, embed(2, 2, pcT))
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.853553+0.0im | + __ | + __
+ 0.0+0.353553im | + __ | + Z_
+ 0.0-0.353553im | + Z_ | + __
+ 0.146447+0.0im | + Z_ | + Z_
+
+julia> s = ghz(2)
++ XX
++ ZZ
+
+julia> newsm = sm ⊗ s
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z___
++ _X__
++ __Z_
++ ___X
+𝒮𝓉𝒶𝒷━━
++ XX__
++ ZZ__
++ __XX
++ __ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + ____ | + Z___
+ 0.0-0.353553im | + Z___ | + ____
+ 0.146447+0.0im | + Z___ | + Z___
+ 0.853553+0.0im | + ____ | + ____
+
+julia> real(tr(newsm))
+1.0
+```
+"""
+function tensor(ops::Union{AbstractStabilizer,GeneralizedStabilizer}...)
+    gops = map(op -> op isa GeneralizedStabilizer ? op : GeneralizedStabilizer(MixedDestabilizer(op)), ops)
+    foldl(⊗, gops)
+end
+
 """Decompose a Pauli ``P`` in terms of stabilizer and destabilizer rows from a given tableaux.
 
 For given tableaux of rows destabilizer rows ``\\{d_i\\}`` and stabilizer rows ``\\{s_i\\}``,
@@ -640,7 +701,8 @@ struct UnitaryPauliChannel{T,S,P} <: AbstractPauliChannel
         new{typeof(paulis),typeof(weights),typeof(pc)}(paulis,weights,pc)
     end
 end
-
+UnitaryPauliChannel(P::PauliOperator) = UnitaryPauliChannel([P], [1.0+0.0im])
+PauliChannel(p::PauliOperator)=UnitaryPauliChannel(p)
 PauliChannel(p::UnitaryPauliChannel) = p.paulichannel
 Base.copy(p::UnitaryPauliChannel) = UnitaryPauliChannel(map(copy, p.paulis), map(copy, p.weights))
 Base.:(==)(p₁::UnitaryPauliChannel, p₂::UnitaryPauliChannel) = p₁.paulis==p₂.paulis && p₁.weights==p₂.weights
@@ -664,6 +726,61 @@ end
 nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
 apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold=1e-10) = apply!(state, gate.paulichannel; prune_threshold)
+
+"""
+Tensor product between [`UnitaryPauliChannel`](@ref) and [`PauliOperator`](@ref).
+
+```jldoctest
+julia> pcT ⊗ P"X"
+A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
+with ϕᵢ | Pᵢ
+ 0.853553+0.353553im | + _X
+ 0.146447-0.353553im | + ZX
+
+julia> pcT ⊗ pcT ⊗ P"X"
+A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
+with ϕᵢ | Pᵢ
+ 0.603553+0.603553im | + __X
+ 0.25-0.25im | + Z_X
+ 0.25-0.25im | + _ZX
+ -0.103553-0.103553im | + ZZX
+```
+"""
+function tensor(pc1::Union{UnitaryPauliChannel,PauliOperator}, pc2::Union{UnitaryPauliChannel,PauliOperator})
+    c1 = pc1 isa PauliOperator ? UnitaryPauliChannel(pc1) : pc1
+    c2 = pc2 isa PauliOperator ? UnitaryPauliChannel(pc2) : pc2
+    newpaulis = [p1 ⊗ p2 for p1 in c1.paulis, p2 in c2.paulis]
+    newweights = [w1 * w2 for w1 in c1.weights, w2 in c2.weights]
+    return UnitaryPauliChannel(newpaulis, newweights)
+end
+
+"""
+Apply a [`UnitaryPauliChannel`](@ref) to a [`GeneralizedStabilizer`](@ref) state.
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> pcT*sm
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + _ | + Z
+ 0.0-0.353553im | + Z | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
+```
+"""
+Base.:(*)(pc::UnitaryPauliChannel, sm::GeneralizedStabilizer) = apply!(sm, pc.paulichannel)
 
 """
 Calculates the number of non-zero elements in the density matrix `χ`
