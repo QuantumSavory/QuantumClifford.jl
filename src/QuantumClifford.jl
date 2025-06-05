@@ -122,6 +122,12 @@ function __init__()
                 potentially simplify the tableau and provide the index of the anticommuting
                 term in that tableau. This linear algebra operation is not defined for
                 `GeneralStabilizer` as there is no single tableau to provide an index into.""")
+            elseif exc.f === ECC.distance && length(argtypes)==1
+                print(io,"""
+                \nThe distance for this code is not in our database. Consider using the MIP-based method:
+                `import JuMP, HiGHS; distance(code, DistanceMIPAlgorithm(solver=HiGHS))` or another MIP solver""")
+            elseif exc.f === ECC.distance && length(argtypes)==2 && argtypes[2]===ECC.DistanceMIPAlgorithm
+                print(io,"""\nPlease first import `JuMP` to make MIP-based distance calculation available.""")
             end
         end
     end

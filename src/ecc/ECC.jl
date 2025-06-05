@@ -22,6 +22,7 @@ abstract type AbstractECC end
 
 export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
+    DistanceMIPAlgorithm,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode, LiftedCode,
@@ -120,8 +121,45 @@ function rate(c)
     return rate
 end
 
+abstract type AbstractDistanceAlg end
 
-"""The distance of a code."""
+"""
+$TYPEDEF
+
+A Mixed Integer Programming (MIP) method for computing the code distance of CSS stabilizer codes
+by finding the minimum-weight non-trivial logical [`PauliOperator`](@ref) (either `X`-type or `Z`-type).
+Used with [`distance`](@ref) to select MIP as the method of finding the distance of a code.
+
+!!! note
+    - Requires a `JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`).
+    - `X`-type and `Z`-type logical operators yield identical code distance results.
+    - For stabilizer codes, the `X`-distance and `Z`-distance are equal.
+
+$FIELDS
+"""
+@kwdef struct DistanceMIPAlgorithm <: AbstractDistanceAlg
+    """if `true` (default=`false`), uses the provided value as an upper bound for the code distance"""
+    upper_bound::Bool=false
+    """index of the logical qubit to compute code distance for (nothing means compute for all logical qubits)"""
+    logical_qubit::Union{Int, Nothing}=nothing
+    """type of logical operator to consider (:X or :Z, defaults to :X) - both types yield identical distance results for CSS stabilizer codes."""
+    logical_operator_type::Symbol=:X
+    """`JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`)"""
+    solver::Module
+    """when `true` (default=`false`), prints the MIP solver's solution summary"""
+    opt_summary::Bool=false
+    """time limit (in seconds) for the MIP solver's execution (default=60.0)"""
+    time_limit::Float64=60.0
+
+    function DistanceMIPAlgorithm(upper_bound, logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
+        logical_operator_type ∈ (:X, :Z) || throw(ArgumentError("`logical_operator_type` must be :X or :Z"))
+        new(upper_bound, logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
+    end
+end
+
+"""The distance of a code as recorded in a database or computed by an (approximate) algorithm.
+
+See [`DistanceMIPAlgorithm`](@ref) for distance-finding algorithms if the code you are working with is not in the database."""
 function distance end
 
 """Parity matrix of a code, given as a stabilizer tableau."""
