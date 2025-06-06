@@ -1,6 +1,7 @@
 module QuantumCliffordMakieExt
 
 using Makie
+using Graphs
 using QuantumClifford
 import QuantumClifford: stabilizerplot, stabilizerplot_axis
 
