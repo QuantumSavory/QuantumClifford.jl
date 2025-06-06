@@ -5,7 +5,6 @@ using Pkg
 const GROUP = get(ENV, "GROUP", "QuantumClifford")
 
 if GROUP == "QuantumClifford"
-    Pkg.develop(path=joinpath(dirname(@__DIR__), "lib", "QECCore"))
   if get(ENV, "GPU_TESTS", "") != "true"
       println("skipping gpu tests (set GPU_TESTS=true to test gpu)")
   end
