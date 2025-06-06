@@ -21,7 +21,7 @@ You might be interested in consulting [bose1960further](@cite) and [error2024lin
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/q-ary_bch).
 """
 
-abstract type AbstractPolynomialCode <: ClassicalCode end
+abstract type AbstractPolynomialCode <: AbstractCECC end
 
 """
 `BCH(m, t)`

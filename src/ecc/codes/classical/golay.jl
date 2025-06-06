@@ -20,7 +20,7 @@ the original parity check matrix `H₂₄`. Thus, all punctured codes are equiva
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/golay).
 """
-struct Golay <: ClassicalCode
+struct Golay <: AbstractCECC
     n::Int
 
     function Golay(n)

@@ -7,6 +7,7 @@
 
 ## v0.10.0 - dev
 
+- **(breaking)** `QuantumClifford` now depends on `QECCore`. `QECCore` is a new package separate from `QuantumClifford`, which specifies the interfaces and several essential error correction codes.
 - **(breaking)** `StabMixture` was renamed to `GeneralizedStabilizer`.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in nonclifford functionality.
 - `expect` is now implemented for `GeneralizedStabilizer`.

@@ -20,7 +20,7 @@ In addition, the dimension of `RM(m - r - 1, m)` equals the dimension of the dua
 
 See also: `ReedMuller`
 """
-struct RecursiveReedMuller <: ClassicalCode
+struct RecursiveReedMuller <: AbstractCECC
     r::Int
     m::Int
 

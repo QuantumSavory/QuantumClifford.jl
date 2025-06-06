@@ -80,5 +80,4 @@
             @test stab_to_gf2(s) == stab_to_gf2(sr) == stab_to_gf2(sc) == stab_to_gf2(s8) == stab_to_gf2(s8r) == stab_to_gf2(s8c)
         end
     end
-    end
 end

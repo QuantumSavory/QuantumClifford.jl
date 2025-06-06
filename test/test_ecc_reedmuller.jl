@@ -5,6 +5,7 @@
     using QuantumClifford
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC, ReedMuller, generator, RecursiveReedMuller
+    using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate
 
     function designed_distance(matrix, m, r)
         distance = 2 ^ (m - r)

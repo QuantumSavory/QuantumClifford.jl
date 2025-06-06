@@ -1,4 +1,5 @@
 using Test
+using QuantumClifford.ECC.QECCore
 using QuantumClifford
 using QuantumClifford.ECC
 using QuantumClifford.ECC: check_repr_commutation_relation
