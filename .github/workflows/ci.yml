@@ -55,7 +55,7 @@ jobs:
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
       - run: |
-          julia --project=QuantumClifford.jl -e 'using Pkg; Pkg.develop(path=joinpath(dirname(@__DIR__), "QuantumClifford.jl", "lib", "QECCore"))'
+          julia --project=@. -e 'using Pkg; Pkg.develop(path=joinpath(dirname(@__DIR__), "QuantumClifford.jl", "lib", "QECCore"))'
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
         env:
@@ -76,7 +76,7 @@ jobs:
           version: '1'
       - uses: julia-actions/cache@v2
       - run: |
-          julia --project=QuantumClifford.jl -e 'using Pkg; Pkg.develop(path=joinpath(dirname(@__DIR__), "QuantumClifford.jl", "lib", "QECCore"))'
+          julia --project=@. -e 'using Pkg; Pkg.develop(path=joinpath(dirname(@__DIR__), "QuantumClifford.jl", "lib", "QECCore"))'
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-docdeploy@v1
         env:

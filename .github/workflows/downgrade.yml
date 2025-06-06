@@ -26,6 +26,6 @@ jobs:
           skip: Pkg,TOML,InteractiveUtils,Random,LinearAlgebra
       - uses: julia-actions/cache@v2
       - run: |
-          julia --project=QuantumClifford.jl -e 'using Pkg; Pkg.develop(path=joinpath(dirname(@__DIR__), "QuantumClifford.jl", "lib", "QECCore"))'
+          julia --project=@. -e 'using Pkg; Pkg.develop(path=joinpath(dirname(@__DIR__), "QuantumClifford.jl", "lib", "QECCore"))'
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
