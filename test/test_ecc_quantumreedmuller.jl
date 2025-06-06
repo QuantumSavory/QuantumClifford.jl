@@ -6,6 +6,7 @@
     using QuantumClifford: canonicalize!, Stabilizer, stab_to_gf2
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC, QuantumReedMuller, Steane7, CSS
+    using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate
 
     function designed_distance(mat)
         dist = 3

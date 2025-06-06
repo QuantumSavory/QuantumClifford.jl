@@ -1,4 +1,4 @@
-struct RepCode <: ClassicalCode
+struct RepCode <: AbstractCECC
     n::Int
 end
 

@@ -1,6 +1,7 @@
 module ECC
 
 using QECCore
+import QECCore: code_n, code_s, code_k, rate, distance
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
