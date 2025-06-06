@@ -1,10 +1,11 @@
 using QuantumClifford
 using TestItemRunner
+using Pkg
 
 const GROUP = get(ENV, "GROUP", "QuantumClifford")
 
 if GROUP == "QuantumClifford"
-
+    Pkg.develop(path=joinpath(dirname(@__DIR__), "lib", "QECCore"))
   if get(ENV, "GPU_TESTS", "") != "true"
       println("skipping gpu tests (set GPU_TESTS=true to test gpu)")
   end
@@ -36,7 +37,6 @@ if GROUP == "QuantumClifford"
   @run_package_tests filter=testfilter
 
 elseif GROUP == "QECCore"
-    using Pkg
     Pkg.activate(joinpath(dirname(@__DIR__), "lib", GROUP))
     Pkg.test(GROUP)
 end
