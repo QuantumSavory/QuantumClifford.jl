@@ -419,14 +419,8 @@ julia> c = parity_checks(QuantumTannerGraphProduct(H, H))
 
 """
 struct QuantumTannerGraphProduct <: AbstractECC
-    H1::SparseMatrixCSC{Bool,Int}
-    H2::SparseMatrixCSC{Bool,Int}
-
-    function QuantumTannerGraphProduct(H1::SparseMatrixCSC, H2::SparseMatrixCSC)
-        isa(H1, SparseMatrixCSC{Bool,Int}) || throw(ArgumentError("H1 must be a sparse Boolean matrix."))
-        isa(H2, SparseMatrixCSC{Bool,Int}) || throw(ArgumentError("H2 must be a sparse Boolean matrix."))
-        new(H1, H2)
-    end
+    H1::AbstractMatrix
+    H2::AbstractMatrix
 end
 
 function iscss(::Type{QuantumTannerGraphProduct})
