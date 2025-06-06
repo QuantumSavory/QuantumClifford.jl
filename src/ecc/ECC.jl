@@ -19,8 +19,6 @@ using SparseArrays: sparse
 using Statistics: std
 using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 
-abstract type AbstractECC end
-
 export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
     isdegenerate, faults_matrix,
@@ -43,24 +41,6 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
 
 See also: [`parity_checks_x`](@ref) and [`parity_checks_z`](@ref)"""
 function parity_checks end
-
-"""Parity check boolean matrix of a code (only the X entries in the tableau, i.e. the checks for Z errors).
-
-Only CSS codes have this method.
-
-See also: [`parity_checks`](@ref)"""
-function parity_checks_x(code::AbstractECC)
-    throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
-end
-
-"""Parity check boolean matrix of a code (only the Z entries in the tableau, i.e. the checks for X errors).
-
-Only CSS codes have this method.
-
-See also: [`parity_checks`](@ref)"""
-function parity_checks_z(code::AbstractECC)
-    throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
-end
 
 
 """Check if the code is CSS.
@@ -89,8 +69,6 @@ parity_checks(s::Stabilizer) = s
 Stabilizer(c::AbstractECC) = parity_checks(c)
 MixedDestabilizer(c::AbstractECC; kwarg...) = MixedDestabilizer(Stabilizer(c); kwarg...)
 
-"""The number of physical qubits in a code."""
-function code_n end
 
 nqubits(c::AbstractECC) = code_n(c::AbstractECC)
 
@@ -98,8 +76,6 @@ code_n(c::AbstractECC) = code_n(parity_checks(c))
 
 code_n(s::Stabilizer) = nqubits(s)
 
-"""The number of stabilizer checks in a code. They might not be all linearly independent, thus `code_s >= code_n-code_k`. For the number of linearly independent checks you can use `LinearAlgebra.rank`."""
-function code_s end
 code_s(s::Stabilizer) = length(s)
 code_s(c::AbstractECC) = code_s(parity_checks(c))
 
@@ -115,15 +91,6 @@ end
 
 code_k(c::AbstractECC) = code_k(parity_checks(c))
 
-"""The rate of a code."""
-function rate(c)
-    rate = code_k(c)//code_n(c)
-    return rate
-end
-
-
-"""The distance of a code."""
-function distance end
 
 """Parity matrix of a code, given as a stabilizer tableau."""
 function parity_matrix(c::AbstractECC)

@@ -1,5 +1,3 @@
-abstract type ClassicalCode end
-
 struct RepCode <: ClassicalCode
     n::Int
 end
