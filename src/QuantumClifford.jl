@@ -77,7 +77,7 @@ export
     # Pauli frames
     PauliFrame, pftrajectories, pfmeasurements,
     # Useful States
-    bell, ghz,
+    bell, ghz, maximally_mixed,
     single_z, single_x, single_y,
     # Graphs
     graphstate, graphstate!, graph_gatesequence, graph_gate,
@@ -92,7 +92,7 @@ export
     # petrajectories
     petrajectories, applybranches,
     # nonclifford
-    StabMixture, UnitaryPauliChannel, PauliChannel, pcT,
+    GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
@@ -109,6 +109,22 @@ function __init__()
     BIG_INT_MINUS_ONE[] = BigInt(-1)
     BIG_INT_TWO[] = BigInt(2)
     BIG_INT_FOUR[] = BigInt(4)
+
+    # Register error hint for the `project!` method for GeneralizedStabilizer
+    if isdefined(Base.Experimental, :register_error_hint)
+        Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
+            if exc.f === project! && argtypes[1] <: GeneralizedStabilizer
+                print(io, """
+                \nThe method `project!` is not appropriate for use with`GeneralizedStabilizer`.
+                You probably are looking for `projectrand!`.
+                `project!` in this library is a low-level "linear algebra" method to verify
+                whether a measurement operator commutes with a set of stabilizers, and to
+                potentially simplify the tableau and provide the index of the anticommuting
+                term in that tableau. This linear algebra operation is not defined for
+                `GeneralStabilizer` as there is no single tableau to provide an index into.""")
+            end
+        end
+    end
 end
 
 const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you are attempting to create a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
@@ -462,21 +478,54 @@ tab(s::AbstractStabilizer) = s.tab
 
 """
 A tableau representation of a pure stabilizer state. The tableau tracks the
-destabilizers as well, for efficient projections. On initialization there are
+destabilizers as well, for efficient projections.
+
+For full-rank tableaux, the stabilizer part of the tableau is guaranteed to be kept the same as the input stabilizer tableau given to the constructor (a guarantee not kept by [`MixedDestabilizer`](@ref)).
+
+On initialization there are
 no checks that the provided state is indeed pure. This enables the use of this
-data structure for mixed stabilizer state, but a better choice would be to use
+data structure for mixed stabilizer state, but usually a better choice would be
 [`MixedDestabilizer`](@ref).
-""" # TODO clean up and document constructor
+
+```
+julia> Destabilizer(S"ZZI XXX")
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
++ _X_
+𝒮𝓉𝒶𝒷━
++ XXX
++ ZZ_
+
+julia> Destabilizer(S"ZZI XXX IZZ")
+𝒟ℯ𝓈𝓉𝒶𝒷
++ X__
++ _Z_
++ __X
+𝒮𝓉𝒶𝒷━
++ ZZ_
++ XXX
++ _ZZ
+```
+"""
 struct Destabilizer{T<:Tableau} <: AbstractStabilizer
     tab::T
 end
 
 function Destabilizer(s::Stabilizer)
     row, col = size(s)
-    row>col && error(DomainError("The input stabilizer has more rows than columns, making it inconsistent or overdetermined."))
-    mixed_destab = MixedDestabilizer(s)
-    t = vcat(tab(destabilizerview(mixed_destab)),tab(stabilizerview(mixed_destab)))
-    Destabilizer(t)
+    if row<col
+        mixed_destab = MixedDestabilizer(s)
+        t = vcat(tab(destabilizerview(mixed_destab)),tab(stabilizerview(mixed_destab)))
+        return Destabilizer(t)
+    elseif row==col
+        maxmix = maximally_mixed(col)
+        for row in s
+            project!(maxmix, row)
+        end
+        return Destabilizer(maxmix.tab)
+    else
+        error(DomainError("The input stabilizer has more rows than columns, making it inconsistent or overdetermined."))
+    end
 end
 
 Base.length(d::Destabilizer) = length(tab(d))÷2
