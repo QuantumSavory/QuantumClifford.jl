@@ -9,7 +9,7 @@
 
 - Quantum Tanner graph product codes:
     - `Q(G×G)` Quantum expander code (Tanner graph `G`)
-    - General and cyclic `Q(G₁×G₂)` variants (Tanner graphs `G₁`, `G₂`)
+    - General and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`)
 - **(breaking)** `StabMixture` was renamed to `GeneralizedStabilizer`.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in nonclifford functionality.
 - `expect` is now implemented for `GeneralizedStabilizer`.

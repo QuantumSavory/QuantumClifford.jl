@@ -55,6 +55,9 @@ end
 # Product Tanner Graphs
 #############################
 
+"""Plots the Tanner graphs associated with quantum tanner graph product codes and quantum expander codes."""
+function plot_product_tanner_graph end
+
 function _construct_product_var_nodes(V1, V2, C1, C2)
     var_nodes = Tuple{Symbol,Int,Int}[]
     for v1 in V1, v2 in V2
@@ -183,7 +186,7 @@ nodes (matrix rows).
 This matrix defines the classical codes `Cₓ = Cₓ(G₁ × G₂)` and `C𝓏 = C𝓏(G₁ × G₂)`,
 which together construct the quantum CSS `Q(G₁ × G₂)` code.
 """
-function product_parity_matrix_from_tanner_graph(graph::SimpleGraph, var_nodes::Vector, check_nodes::Vector)
+function parity_matrix_from_product_tanner_graph(graph::SimpleGraph, var_nodes::Vector, check_nodes::Vector)
     n_vars = length(var_nodes)
     n_checks = length(check_nodes)
     H = spzeros(Bool, n_checks, n_vars)
@@ -325,8 +328,8 @@ function parity_checks_xz(c::QuantumTannerGraphProduct)
     PG_X = product_tanner_graph_X(G1, G2)
     PG_Z = product_tanner_graph_Z(G1, G2)
     # Extract parity-check matrices
-    HX = product_parity_matrix_from_tanner_graph(PG_X.graph, PG_X.var_nodes, PG_X.check_nodes)
-    HZ = product_parity_matrix_from_tanner_graph(PG_Z.graph, PG_Z.var_nodes, PG_Z.check_nodes)
+    HX = parity_matrix_from_product_tanner_graph(PG_X.graph, PG_X.var_nodes, PG_X.check_nodes)
+    HZ = parity_matrix_from_product_tanner_graph(PG_Z.graph, PG_Z.var_nodes, PG_Z.check_nodes)
     return Matrix{Bool}(HX), Matrix{Bool}(HZ)
 end
 
@@ -358,8 +361,8 @@ function parity_checks_xz(Q::CyclicQuantumTannerGraphProduct)
     G2 = cycle_tanner_graph(n)
     PG_X = product_tanner_graph_X(G1, G2)
     PG_Z = product_tanner_graph_Z(G1, G2)
-    HX = product_parity_matrix_from_tanner_graph(PG_X.graph, PG_X.var_nodes, PG_X.check_nodes)
-    HZ = product_parity_matrix_from_tanner_graph(PG_Z.graph, PG_Z.var_nodes, PG_Z.check_nodes)
+    HX = parity_matrix_from_product_tanner_graph(PG_X.graph, PG_X.var_nodes, PG_X.check_nodes)
+    HZ = parity_matrix_from_product_tanner_graph(PG_Z.graph, PG_Z.var_nodes, PG_Z.check_nodes)
     return (Matrix{Bool}(HX), Matrix{Bool}(HZ))
 end
 
