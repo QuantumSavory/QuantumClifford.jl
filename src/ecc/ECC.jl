@@ -43,6 +43,23 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
 See also: [`parity_checks_x`](@ref) and [`parity_checks_z`](@ref)"""
 function parity_checks end
 
+"""Parity check boolean matrix of a code (only the X entries in the tableau, i.e. the checks for Z errors).
+
+Only CSS codes have this method.
+
+See also: [`parity_checks`](@ref)"""
+function parity_checks_x(code::AbstractECC)
+    throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
+end
+
+"""Parity check boolean matrix of a code (only the Z entries in the tableau, i.e. the checks for X errors).
+
+Only CSS codes have this method.
+
+See also: [`parity_checks`](@ref)"""
+function parity_checks_z(code::AbstractECC)
+    throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
+end
 
 """Check if the code is CSS.
 

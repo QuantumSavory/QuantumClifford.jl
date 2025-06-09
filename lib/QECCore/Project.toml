@@ -1,6 +1,6 @@
 name = "QECCore"
 uuid = "b50d4dc9-2544-401f-bae9-a24ba40d0c7a"
-authors = ["nzy1997"]
+authors = ["Zhongyi Ni <zhongyini1997@gmail.com>", "Developers from QuantumSavory organization"]
 version = "0.1.0-DEV"
 
 [compat]

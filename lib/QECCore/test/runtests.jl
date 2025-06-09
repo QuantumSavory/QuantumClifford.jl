@@ -1,7 +1,4 @@
 using QECCore
-using Test
+using TestItemRunner
 
-@testset "QECCore.jl" begin
-    @info "Testing QECCore.jl"
-    @test true
-end
+@run_package_tests
