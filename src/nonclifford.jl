@@ -57,11 +57,7 @@ end
 function GeneralizedStabilizer(state)
     n = nqubits(state)
     md = MixedDestabilizer(state)
-    rank(md)==n || throw(ArgumentError(lazy"""
-        Attempting to convert a `Stabilizer`-like object to `GeneralizedStabilizer` object failed,
-        because the initial state does not represent a pure state.
-        Currently only pure states can be used to initialize a `GeneralizedStabilizer` mixture of stabilizer states.
-    """))
+    rank(md)==n || throw(ArgumentError(lazy"""Attempting to convert a `Stabilizer`-like object to `GeneralizedStabilizer` object failed, because the initial state does not represent a pure state. Currently only pure states can be used to initialize a `GeneralizedStabilizer` mixture of stabilizer states."""))
     GeneralizedStabilizer(md, DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im)) # TODO maybe it should default to Destabilizer, not MixedDestabilizer
 end
 
@@ -614,10 +610,7 @@ julia> real(tr(newsm))
 1.0
 ```
 """
-function tensor(ops::Union{AbstractStabilizer,GeneralizedStabilizer}...)
-    gops = map(op -> op isa GeneralizedStabilizer ? op : GeneralizedStabilizer(MixedDestabilizer(op)), ops)
-    foldl(⊗, gops)
-end
+tensor(ops::Union{AbstractStabilizer,GeneralizedStabilizer}...) = tensor(GeneralizedStabilizer.(ops)...)
 
 """Decompose a Pauli ``P`` in terms of stabilizer and destabilizer rows from a given tableaux.
 
@@ -702,7 +695,7 @@ struct UnitaryPauliChannel{T,S,P} <: AbstractPauliChannel
     end
 end
 UnitaryPauliChannel(P::PauliOperator) = UnitaryPauliChannel([P], [1.0+0.0im])
-PauliChannel(p::PauliOperator)=UnitaryPauliChannel(p)
+PauliChannel(p::PauliOperator) = UnitaryPauliChannel(p)
 PauliChannel(p::UnitaryPauliChannel) = p.paulichannel
 Base.copy(p::UnitaryPauliChannel) = UnitaryPauliChannel(map(copy, p.paulis), map(copy, p.weights))
 Base.:(==)(p₁::UnitaryPauliChannel, p₂::UnitaryPauliChannel) = p₁.paulis==p₂.paulis && p₁.weights==p₂.weights
