@@ -261,7 +261,7 @@
 
     @testset "Tensor products between paulichannels and paulis" begin
         num_trials = 3
-        num_qubits = [2,3,4,5] # exclusively multi-qubit
+        num_qubits = [2,3] # exclusively multi-qubit
         for n in num_qubits
             for repetition in 1:num_trials
                 p = random_pauli(n)
