@@ -20,7 +20,12 @@ jobs:
       - uses: julia-actions/julia-buildpkg@latest
       - name: install dependencies
         run: julia -e 'using Pkg; pkg"add PkgBenchmark BenchmarkCI@0.1"'
-
+      - name: Print Folder Tree
+        uses: jaywcjlove/github-action-folder-tree@main
+        with:
+          exclude: "node_modules|dist|.git|.husky"
+          path: /home
+          depth: 6
       # run the benchmark suite
       - name: run benchmarks
         run: |
