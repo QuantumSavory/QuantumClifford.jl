@@ -694,8 +694,9 @@ struct UnitaryPauliChannel{T,S,P} <: AbstractPauliChannel
         new{typeof(paulis),typeof(weights),typeof(pc)}(paulis,weights,pc)
     end
 end
-UnitaryPauliChannel(P::PauliOperator) = UnitaryPauliChannel([P], [1.0+0.0im])
-PauliChannel(p::PauliOperator) = UnitaryPauliChannel(p)
+UnitaryPauliChannel(p::UnitaryPauliChannel) = p
+UnitaryPauliChannel(p::PauliOperator) = UnitaryPauliChannel([p], [1.0+0.0im])
+PauliChannel(p::PauliOperator) = UnitaryPauliChannel(p).paulichannel
 PauliChannel(p::UnitaryPauliChannel) = p.paulichannel
 Base.copy(p::UnitaryPauliChannel) = UnitaryPauliChannel(map(copy, p.paulis), map(copy, p.weights))
 Base.:(==)(p₁::UnitaryPauliChannel, p₂::UnitaryPauliChannel) = p₁.paulis==p₂.paulis && p₁.weights==p₂.weights
@@ -720,6 +721,12 @@ nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
 apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold=1e-10) = apply!(state, gate.paulichannel; prune_threshold)
 
+function tensor(pcs::UnitaryPauliChannel...)
+    newpaulis = [tensor(ps...) for ps in Iterators.product([pc.paulis for pc in pcs]...)]
+    newweights = [prod(ws) for ws in Iterators.product([pc.weights for pc in pcs]...)]
+    return UnitaryPauliChannel(newpaulis, newweights)
+end
+
 """
 Tensor product between [`UnitaryPauliChannel`](@ref) and [`PauliOperator`](@ref).
 
@@ -739,13 +746,7 @@ with ϕᵢ | Pᵢ
  -0.103553-0.103553im | + ZZX
 ```
 """
-function tensor(pc1::Union{UnitaryPauliChannel,PauliOperator}, pc2::Union{UnitaryPauliChannel,PauliOperator})
-    c1 = pc1 isa PauliOperator ? UnitaryPauliChannel(pc1) : pc1
-    c2 = pc2 isa PauliOperator ? UnitaryPauliChannel(pc2) : pc2
-    newpaulis = [p1 ⊗ p2 for p1 in c1.paulis, p2 in c2.paulis]
-    newweights = [w1 * w2 for w1 in c1.weights, w2 in c2.weights]
-    return UnitaryPauliChannel(newpaulis, newweights)
-end
+tensor(pcs::Union{UnitaryPauliChannel,PauliOperator}...) = tensor(UnitaryPauliChannel.(pcs)...)
 
 """
 Apply a [`UnitaryPauliChannel`](@ref) to a [`GeneralizedStabilizer`](@ref) state.
