@@ -23,7 +23,7 @@ abstract type AbstractCECC <: AbstractECC end
 """
     parity_matrix(c::AbstractECC)
 
-The parity check matrix of a error correction code. The matrix is shaped as (X|Z).
+The parity check matrix of a error correction code in the form of `(X|Z)`. The size of the matrix is `(code_s, 2*code_n)`. `code_s` is the number of stabilizers, and `code_n` is the number of physical qubits. Each row of the matrix is a stabilizer. The first `code_n` columns represent whether this stabilizer contains a X operator on the physical qubit, and the last `code_n` columns represent whether this stabilizer contains a Z operator on the physical qubit.
 
 See also: [`parity_matrix_x`](@ref) and [`parity_matrix_z`](@ref)
 """
@@ -42,7 +42,7 @@ abstract type AbstractCSSCode <: AbstractQECC end
 Parity check boolean matrix of a code (only the X entries in the tableau, i.e. the checks for Z errors).
 Only CSS codes have this method.
 
-See also: [`parity_matrix`](@ref)
+See also: [`parity_matrix`](@ref) and [`parity_matrix_z`](@ref)
 """
 function parity_matrix_x end
 
@@ -52,7 +52,7 @@ function parity_matrix_x end
 Parity check boolean matrix of a code (only the Z entries in the tableau, i.e. the checks for X errors).
 Only CSS codes have this method.
 
-See also: [`parity_matrix`](@ref)
+See also: [`parity_matrix`](@ref) and [`parity_matrix_x`](@ref)
 """
 function parity_matrix_z end
 

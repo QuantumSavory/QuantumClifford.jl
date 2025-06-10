@@ -20,17 +20,6 @@ jobs:
       - uses: julia-actions/julia-buildpkg@latest
       - name: install dependencies
         run: julia -e 'using Pkg; pkg"add PkgBenchmark BenchmarkCI@0.1"'
-      - name: Print Directory Structure
-        run: |
-          echo "Directory structure of /home:"
-          find /home -maxdepth 10 -type d -not -path "*/node_modules/*" -not -path "*/dist/*" -not -path "*/.git/*" -not -path "*/.husky/*" | while read dir; do
-            level=$(echo $dir | tr -cd '/' | wc -c)
-            indent=$(printf "%${level}s" | tr " " "  ")
-            echo "${indent}📁 $(basename $dir)/"
-            ls -la "$dir" | grep -v "^d" | while read file; do
-              echo "${indent}  📄 $(echo $file | awk '{print $NF}')"
-            done
-          done
       # run the benchmark suite
       - name: run benchmarks
         run: |
