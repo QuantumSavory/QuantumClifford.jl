@@ -10,6 +10,14 @@
 - Quantum Tanner graph product codes:
     - `Q(G×G)` Quantum expander code (Tanner graph `G`)
     - General and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`)
+- Improvements to `GeneralizedStabilizer` API:
+    - Tensor product operations:
+        - Between multiple `GeneralizedStabilizer` states: `genstab₁ ⊗ genstab₂ ⊗ ...`
+        - Between `GeneralizedStabilizer` and `AbstractStabilizer` states: `genstab ⊗ stab ⊗ ...`
+        - Between a `UnitaryPauliChannel` and one or more `PauliOperator` terms: `pcT ⊗ P"X" ⊗ ...`
+        - Between multiple `UnitaryPauliChannel`s: `pcT₁ ⊗ pcT₂ ⊗ ...`
+    - Product operations:
+        - Between a `UnitaryPauliChannel` and a `GeneralizedStabilizer`: `pcT * genstab`
 - `QuantumClifford` now depends on `QECCore`. `QECCore` is a new package separate from `QuantumClifford`, which specifies the interfaces and several essential error correction codes. Here are some changes to the function and type names:
   - `parity_check_x` -> `parity_matrix_x` and `parity_check_z` -> `parity_matrix_z`
   - `AbstractECC` -> `AbstractQECC`
