@@ -7,7 +7,7 @@
 
 ## v0.10.0 - dev
 
-- New Interfaces for `GeneralizedStabilizer`:
+- improvements to `GeneralizedStabilizer` API:
     - Tensor product operations:
         - Between two `GeneralizedStabilizer` states: `genstab₁ ⊗ genstab₂`
         - Between a `GeneralizedStabilizer` and an `AbstractStabilizer`: `genstab ⊗ stab`
