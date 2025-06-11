@@ -310,6 +310,31 @@ function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) wh
     stab
 end
 
+function _apply_inv!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) where {B, G<:AbstractTwoQubitOperator}
+    s = tab(stab)
+    q1 = gate.q1
+    q2 = gate.q2
+    Tₘₑ = eltype(s.xzs)
+    shift = getshift(Tₘₑ, q1) - getshift(Tₘₑ, q2)
+    @inbounds @simd for r in eachindex(s)
+#    for r in eachindex(s)
+        x1 = getxbit(s, r, q1)
+        z1 = getzbit(s, r, q1)
+        x2 = getxbit(s, r, q2)<<shift
+        z2 = getzbit(s, r, q2)<<shift
+        x1,z1,x2,z2,phase = inv_qubit_kernel(gate,x1,z1,x2,z2) # Most `inv_qubit_kernel` functions are defined by a `qubitop2` macro
+        setxbit(s, r, q1, x1, 0)
+        setzbit(s, r, q1, z1, 0)
+        setxbit(s, r, q2, x2, -shift)
+        setzbit(s, r, q2, z2, -shift)
+        if B && phase
+            s.phases[r] += 0x2
+            s.phases[r] &= 3
+        end
+    end
+    stab
+end
+
 """Macro used to define 2-qubit symbolic gates and their `qubit_kernel` methods."""
 macro qubitop2(name, kernel, inv_kernel)
     prefixname = Symbol(:s,name)
@@ -326,43 +351,43 @@ macro qubitop2(name, kernel, inv_kernel)
     end
 end
 #                 x1   z1      x2      z2
-@qubitop2 SWAP   (x2 , z2    , x1    , z1    , false) ()
+@qubitop2 SWAP   (x2 , z2    , x1    , z1    , false) (x2 , z2    , x1    , z1    , false)
 
-@qubitop2 SWAPCX    (x2    , z2⊻z1 , x2⊻x1 , z1    , ~iszero((x1 & z1 & x2 & z2) | (~x1 & z1 & x2 & ~z2))) ()
-@qubitop2 InvSWAPCX (x2⊻x1 , z2    , x1    , z2⊻z1 , ~iszero((x1 & z1 & x2 & z2) | ( x1 &~z1 &~x2 &  z2))) ()
+@qubitop2 SWAPCX    (x2    , z2⊻z1 , x2⊻x1 , z1    , ~iszero((x1 & z1 & x2 & z2) | (~x1 & z1 & x2 & ~z2))) (x2⊻x1 , z2    , x1    , z2⊻z1 , ~iszero((x1 & z1 & x2 & z2) | ( x1 &~z1 &~x2 &  z2)))
+@qubitop2 InvSWAPCX (x2⊻x1 , z2    , x1    , z2⊻z1 , ~iszero((x1 & z1 & x2 & z2) | ( x1 &~z1 &~x2 &  z2))) (x2    , z2⊻z1 , x2⊻x1 , z1    , ~iszero((x1 & z1 & x2 & z2) | (~x1 & z1 & x2 & ~z2)))
 
-@qubitop2 ISWAP    (x2       , x1⊻z2⊻x2 , x1       , x1⊻x2⊻z1 , ~iszero((x1 & z1 & ~x2) | (~x1 & x2 & z2))) ()
-@qubitop2 InvISWAP (x2       , x1⊻z2⊻x2 , x1       , x1⊻x2⊻z1 , ~iszero((x1 &~z1 & ~x2) | (~x1 & x2 &~z2))) ()
+@qubitop2 ISWAP    (x2       , x1⊻z2⊻x2 , x1       , x1⊻x2⊻z1 , ~iszero((x1 & z1 & ~x2) | (~x1 & x2 & z2))) (x2       , x1⊻z2⊻x2 , x1       , x1⊻x2⊻z1 , ~iszero((x1 &~z1 & ~x2) | (~x1 & x2 &~z2)))
+@qubitop2 InvISWAP (x2       , x1⊻z2⊻x2 , x1       , x1⊻x2⊻z1 , ~iszero((x1 &~z1 & ~x2) | (~x1 & x2 &~z2))) (x2       , x1⊻z2⊻x2 , x1       , x1⊻x2⊻z1 , ~iszero((x1 & z1 & ~x2) | (~x1 & x2 & z2)))
 
-@qubitop2 CZSWAP (x2    , z2⊻x1 , x1    , x2⊻z1 , ~iszero((x1 & ~z1 & x2 & z2) | (x1 & z1 & x2 & ~z2))) ()
-@qubitop2 CXSWAP (x2⊻x1 , z2    , x1    , z2⊻z1 , ~iszero((x1 & ~z1 &~x2 & z2) | (x1 & z1 & x2 &  z2))) ()
+@qubitop2 CZSWAP (x2    , z2⊻x1 , x1    , x2⊻z1 , ~iszero((x1 & ~z1 & x2 & z2) | (x1 & z1 & x2 & ~z2))) (x2    , z2⊻x1 , x1    , x2⊻z1 , ~iszero((x1 & ~z1 & x2 & z2) | (x1 & z1 & x2 & ~z2)))
+@qubitop2 CXSWAP (x2⊻x1 , z2    , x1    , z2⊻z1 , ~iszero((x1 & ~z1 &~x2 & z2) | (x1 & z1 & x2 &  z2))) (x2 , z2⊻z1    , x2⊻x1    , z1 , ~iszero((x1 &  z1 & x2 & z2) | (~x1 & z1 & x2 & ~z2)))
 
-@qubitop2 CNOT   (x1 , z1⊻z2 , x2⊻x1 , z2    , ~iszero( (x1 & z1 & x2 & z2)  | (x1 & z2 &~(z1|x2)) )) ()
-@qubitop2 CPHASE (x1 , z1⊻x2 , x2    , z2⊻x1 , ~iszero( (x1 & z1 & x2 &~z2)  | (x1 &~z1 & x2 & z2) )) ()
+@qubitop2 CNOT   (x1 , z1⊻z2 , x2⊻x1 , z2    , ~iszero( (x1 & z1 & x2 & z2)  | (x1 & z2 &~(z1|x2)) )) (x1 , z1⊻z2 , x2⊻x1 , z2    , ~iszero( (x1 & z1 & x2 & z2)  | (x1 & z2 &~(z1|x2)) ))
+@qubitop2 CPHASE (x1 , z1⊻x2 , x2    , z2⊻x1 , ~iszero( (x1 & z1 & x2 &~z2)  | (x1 &~z1 & x2 & z2) )) (x1 , z1⊻x2 , x2    , z2⊻x1 , ~iszero( (x1 & z1 & x2 &~z2)  | (x1 &~z1 & x2 & z2) ))
 
-@qubitop2 ZCX    (x1      , z1⊻z2    , x2⊻x1 , z2      , ~iszero( ((x1 & z2) &~(z1 ⊻ x2)) )) () # equiv of CNOT[1, 2]
-@qubitop2 ZCY    (x1      , x2⊻z1⊻z2 , x2⊻x1 , z2⊻x1   , ~iszero( (x1 & (x2 ⊻ z1) & (x2 ⊻ z2)) )) ()
-@qubitop2 ZCZ    (x1      , z1⊻x2    , x2    , z2⊻x1   , ~iszero( ((z1 ⊻ z2) & (x1 & x2)) )) ()
+@qubitop2 ZCX    (x1      , z1⊻z2    , x2⊻x1 , z2      , ~iszero( ((x1 & z2) &~(z1 ⊻ x2)) )) (x1      , z1⊻z2    , x2⊻x1 , z2      , ~iszero( ((x1 & z2) &~(z1 ⊻ x2)) )) # equiv of CNOT[1, 2]
+@qubitop2 ZCY    (x1      , x2⊻z1⊻z2 , x2⊻x1 , z2⊻x1   , ~iszero( (x1 & (x2 ⊻ z1) & (x2 ⊻ z2)) )) (x1      , x2⊻z1⊻z2 , x2⊻x1 , z2⊻x1   , ~iszero( (x1 & (x2 ⊻ z1) & (x2 ⊻ z2)) ))
+@qubitop2 ZCZ    (x1      , z1⊻x2    , x2    , z2⊻x1   , ~iszero( ((z1 ⊻ z2) & (x1 & x2)) )) (x1      , z1⊻x2    , x2    , z2⊻x1   , ~iszero( ((z1 ⊻ z2) & (x1 & x2)) ))
 
-@qubitop2 XCX    (z2⊻x1   , z1       , x2⊻z1 , z2      , ~iszero( (z1 & z2) & (x1 ⊻ x2) )) ()
-@qubitop2 XCY    (x1⊻x2⊻z2, z1       , z1⊻x2 , z2⊻z1   , ~iszero( (z1 & (x2 ⊻ z2) & ~(x2 ⊻ x1)) )) ()
-@qubitop2 XCZ    (x1⊻x2   , z1       , x2    , z2⊻z1   , ~iszero( (x2 & z1) & ~(x1 ⊻ z2) )) () # equiv to CNOT[2, 1]
+@qubitop2 XCX    (z2⊻x1   , z1       , x2⊻z1 , z2      , ~iszero( (z1 & z2) & (x1 ⊻ x2) )) (z2⊻x1   , z1       , x2⊻z1 , z2      , ~iszero( (z1 & z2) & (x1 ⊻ x2) ))
+@qubitop2 XCY    (x1⊻x2⊻z2, z1       , z1⊻x2 , z2⊻z1   , ~iszero( (z1 & (x2 ⊻ z2) & ~(x2 ⊻ x1)) )) (x1⊻x2⊻z2, z1       , z1⊻x2 , z2⊻z1   , ~iszero( (z1 & (x2 ⊻ z2) & ~(x2 ⊻ x1)) ))
+@qubitop2 XCZ    (x1⊻x2   , z1       , x2    , z2⊻z1   , ~iszero( (x2 & z1) & ~(x1 ⊻ z2) )) (x1⊻x2   , z1       , x2    , z2⊻z1   , ~iszero( (x2 & z1) & ~(x1 ⊻ z2) )) # equiv to CNOT[2, 1]
 
-@qubitop2 YCX    (x1⊻z2   , z2⊻z1    , x1⊻z1⊻x2 , z2      , ~iszero( (z2 & (x1 ⊻ z1) & ~(x2 ⊻ x1)) )) ()
-@qubitop2 YCY    (x1⊻z2⊻x2, z1⊻x2⊻z2 , x1⊻x2⊻z1 , x1⊻z1⊻z2, ~iszero( (x1 & ~z1 & ~x2 & z2) | (~x1 & z1 & x2 & ~z2))) ()
-@qubitop2 YCZ    (x1⊻x2   , x2⊻z1    , x2       , z2⊻x1⊻z1, ~iszero( (x2 & (x1 ⊻ z1) & (z2 ⊻ x1)) )) ()
+@qubitop2 YCX    (x1⊻z2   , z2⊻z1    , x1⊻z1⊻x2 , z2      , ~iszero( (z2 & (x1 ⊻ z1) & ~(x2 ⊻ x1)) )) (x1⊻z2   , z2⊻z1    , x1⊻z1⊻x2 , z2      , ~iszero( (z2 & (x1 ⊻ z1) & ~(x2 ⊻ x1)) ))
+@qubitop2 YCY    (x1⊻z2⊻x2, z1⊻x2⊻z2 , x1⊻x2⊻z1 , x1⊻z1⊻z2, ~iszero( (x1 & ~z1 & ~x2 & z2) | (~x1 & z1 & x2 & ~z2))) (x1⊻z2⊻x2, z1⊻x2⊻z2 , x1⊻x2⊻z1 , x1⊻z1⊻z2, ~iszero( (x1 & ~z1 & ~x2 & z2) | (~x1 & z1 & x2 & ~z2)))
+@qubitop2 YCZ    (x1⊻x2   , x2⊻z1    , x2       , z2⊻x1⊻z1, ~iszero( (x2 & (x1 ⊻ z1) & (z2 ⊻ x1)) )) (x1⊻x2   , x2⊻z1    , x2       , z2⊻x1⊻z1, ~iszero( (x2 & (x1 ⊻ z1) & (z2 ⊻ x1)) ))
 
-@qubitop2 ZCrY    (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 &~z1 & x2) | (x1 & ~z1 & ~z2) | (x1 & x2 & ~z2))) ()
-@qubitop2 InvZCrY (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & z1 &~x2) | (x1 &  z1 &  z2) | (x1 &~x2 &  z2))) ()
+@qubitop2 ZCrY    (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 &~z1 & x2) | (x1 & ~z1 & ~z2) | (x1 & x2 & ~z2))) (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & z1 &~x2) | (x1 &  z1 &  z2) | (x1 &~x2 &  z2)))
+@qubitop2 InvZCrY (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 & z1 &~x2) | (x1 &  z1 &  z2) | (x1 &~x2 &  z2))) (x1, x1⊻z1⊻x2⊻z2, x1⊻x2, x1⊻z2, ~iszero((x1 &~z1 & x2) | (x1 & ~z1 & ~z2) | (x1 & x2 & ~z2)))
 
-@qubitop2 SQRTZZ    (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 & z1 & ~x2) | (~x1 & x2 & z2))) ()
-@qubitop2 InvSQRTZZ (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 &~z1 & ~x2) | (~x1 & x2 &~z2))) ()
+@qubitop2 SQRTZZ    (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 & z1 & ~x2) | (~x1 & x2 & z2))) (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 &~z1 & ~x2) | (~x1 & x2 &~z2)))
+@qubitop2 InvSQRTZZ (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 &~z1 & ~x2) | (~x1 & x2 &~z2))) (x1       , x1⊻x2⊻z1 , x2       , x1⊻z2⊻x2 , ~iszero((x1 & z1 & ~x2) | (~x1 & x2 & z2)))
 
-@qubitop2 SQRTXX    (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero((~x1 & z1 &~z2) | (~z1 &~x2 & z2))) ()
-@qubitop2 InvSQRTXX (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero(( x1 & z1 &~z2) | (~z1 & x2 & z2))) ()
+@qubitop2 SQRTXX    (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero((~x1 & z1 &~z2) | (~z1 &~x2 & z2))) (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero(( x1 & z1 &~z2) | (~z1 & x2 & z2)))
+@qubitop2 InvSQRTXX (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero(( x1 & z1 &~z2) | (~z1 & x2 & z2))) (z1⊻z2⊻x1, z1      , z1⊻x2⊻z2, z2      , ~iszero((~x1 & z1 &~z2) | (~z1 &~x2 & z2)))
 
-@qubitop2 SQRTYY    (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero((~x1 &~z1 & x2 &~z2) | ( x1 &~z1 &~x2 &~z2) | ( x1 &~z1 & x2 & z2) | ( x1 & z1 & x2 &~z2))) ()
-@qubitop2 InvSQRTYY (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero(( x1 & z1 &~x2 & z2) | (~x1 & z1 & x2 & z2) | (~x1 & z1 &~x2 &~z2) | (~x1 &~z1 &~x2 & z2))) ()
+@qubitop2 SQRTYY    (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero((~x1 &~z1 & x2 &~z2) | ( x1 &~z1 &~x2 &~z2) | ( x1 &~z1 & x2 & z2) | ( x1 & z1 & x2 &~z2))) (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero(( x1 & z1 &~x2 & z2) | (~x1 & z1 & x2 & z2) | (~x1 & z1 &~x2 &~z2) | (~x1 &~z1 &~x2 & z2)))
+@qubitop2 InvSQRTYY (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero(( x1 & z1 &~x2 & z2) | (~x1 & z1 & x2 & z2) | (~x1 & z1 &~x2 &~z2) | (~x1 &~z1 &~x2 & z2))) (z1⊻x2⊻z2, x1⊻z2⊻x2, x1⊻z1⊻z2, x1⊻x2⊻z1, ~iszero((~x1 &~z1 & x2 &~z2) | ( x1 &~z1 &~x2 &~z2) | ( x1 &~z1 & x2 & z2) | ( x1 & z1 & x2 &~z2)))
 
 #=
 To get the boolean formulas for the phase, it is easiest to first write down the truth table for the phase:
