@@ -2,7 +2,7 @@
     using Hecke
     using HiGHS
     using JuMP
-    using QuantumClifford.ECC: generalized_bicycle_codes, code_k, code_n, distance, DistanceMIPAlgorithm
+    using QuantumClifford.ECC: generalized_bicycle_codes, code_k, code_n, DistanceMIPAlgorithm
 
     # codes taken from Table 1 of [lin2024quantum](@cite)
     # Abelian 2BGA codes can be viewed as GB codes.
@@ -26,5 +26,4 @@
         c = generalized_bicycle_codes([0, 9, 28, 13], [0, 1, 3, 22], 36)
         @test code_n(c) == 72 && code_k(c) == 10
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_qubit=1)) == 9
-    end
 end

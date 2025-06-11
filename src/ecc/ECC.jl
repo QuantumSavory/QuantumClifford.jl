@@ -1,5 +1,7 @@
 module ECC
 
+using QECCore
+import QECCore: code_n, code_s, code_k, rate, distance
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -18,11 +20,8 @@ using SparseArrays: sparse
 using Statistics: std
 using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 
-abstract type AbstractECC end
-
 export parity_checks, parity_checks_x, parity_checks_z, iscss,
     code_n, code_s, code_k, rate, distance,
-    DistanceMIPAlgorithm,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode, LiftedCode,
@@ -62,7 +61,6 @@ function parity_checks_z(code::AbstractECC)
     throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
 end
 
-
 """Check if the code is CSS.
 
 Return `nothing` if unknown from the type.
@@ -89,17 +87,12 @@ parity_checks(s::Stabilizer) = s
 Stabilizer(c::AbstractECC) = parity_checks(c)
 MixedDestabilizer(c::AbstractECC; kwarg...) = MixedDestabilizer(Stabilizer(c); kwarg...)
 
-"""The number of physical qubits in a code."""
-function code_n end
-
 nqubits(c::AbstractECC) = code_n(c::AbstractECC)
 
 code_n(c::AbstractECC) = code_n(parity_checks(c))
 
 code_n(s::Stabilizer) = nqubits(s)
 
-"""The number of stabilizer checks in a code. They might not be all linearly independent, thus `code_s >= code_n-code_k`. For the number of linearly independent checks you can use `LinearAlgebra.rank`."""
-function code_s end
 code_s(s::Stabilizer) = length(s)
 code_s(c::AbstractECC) = code_s(parity_checks(c))
 
@@ -114,14 +107,6 @@ function code_k(s::Stabilizer)
 end
 
 code_k(c::AbstractECC) = code_k(parity_checks(c))
-
-"""The rate of a code."""
-function rate(c)
-    rate = code_k(c)//code_n(c)
-    return rate
-end
-
-abstract type AbstractDistanceAlg end
 
 """
 $TYPEDEF
@@ -156,11 +141,6 @@ $FIELDS
         new(upper_bound, logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
     end
 end
-
-"""The distance of a code as recorded in a database or computed by an (approximate) algorithm.
-
-See [`DistanceMIPAlgorithm`](@ref) for distance-finding algorithms if the code you are working with is not in the database."""
-function distance end
 
 """Parity matrix of a code, given as a stabilizer tableau."""
 function parity_matrix(c::AbstractECC)

@@ -39,7 +39,7 @@ See also: [`QuantumClifford.ECC.LPCode`](@ref).
 
 $TYPEDFIELDS
 """
-struct LiftedCode <: ClassicalCode
+struct LiftedCode <: AbstractCECC
     """the base matrix of the code, whose elements are in a group algebra."""
     A::GroupAlgebraElemMatrix
     """the group algebra for which elements in `A` are from."""

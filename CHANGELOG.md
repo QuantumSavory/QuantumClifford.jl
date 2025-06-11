@@ -7,6 +7,11 @@
 
 ## v0.10.0 - dev
 
+- `QuantumClifford` now depends on `QECCore`. `QECCore` is a new package separate from `QuantumClifford`, which specifies the interfaces and several essential error correction codes. Here are some changes to the function and type names:
+  - `parity_check_x` -> `parity_matrix_x` and `parity_check_z` -> `parity_matrix_z`
+  - `AbstractECC` -> `AbstractQECC`
+  - `ClassicalCode` -> `AbstractCECC`
+
 - **(breaking)** `StabMixture` was renamed to `GeneralizedStabilizer`.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in nonclifford functionality.
 - `expect` is now implemented for `GeneralizedStabilizer`.
