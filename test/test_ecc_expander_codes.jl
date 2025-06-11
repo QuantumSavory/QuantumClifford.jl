@@ -8,7 +8,7 @@
     using QuantumClifford
     using QuantumClifford: stab_looks_good
     using QuantumClifford.ECC
-    using QuantumClifford.ECC: parity_checks_xz, tanner_graph_from_parity_matrix, parity_matrix_from_tanner_graph, generate_random_bipartite_graph
+    using QuantumClifford.ECC: parity_checks_xz, tanner_graph_from_parity_matrix, parity_matrix_from_tanner_graph
     using QuantumClifford.ECC: Golay, RepCode, ReedMuller
 
     function verify_orthogonality(HX::SparseMatrixCSC{Bool,Int}, HZ::SparseMatrixCSC{Bool,Int})
