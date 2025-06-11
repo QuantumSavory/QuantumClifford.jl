@@ -7,6 +7,9 @@
 
 ## v0.10.0 - dev
 
+- `QuantumClifffordJuMPExt`: New extension enabling:
+    - Compute minimum distance for quantum LDPC codes via Mixed Integer Programming (MIP) using `JuMP`.
+    - Introduce the `AbstractDistanceAlg` interface in `QECCore`.
 - `QuantumClifford` now depends on `QECCore`. `QECCore` is a new package separate from `QuantumClifford`, which specifies the interfaces and several essential error correction codes. Here are some changes to the function and type names:
   - `parity_check_x` -> `parity_matrix_x` and `parity_check_z` -> `parity_matrix_z`
   - `AbstractECC` -> `AbstractQECC`

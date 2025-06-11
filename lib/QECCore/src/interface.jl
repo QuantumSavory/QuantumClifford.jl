@@ -104,3 +104,10 @@ The code distance of a error correction code.
 See also: [`code_n`](@ref) and [`code_k`](@ref)
 """
 function distance end
+
+"""
+    AbstractDistanceAlg
+
+The algorithm for computing the minimum distance of error correction code.
+"""
+abstract type AbstractDistanceAlg end
