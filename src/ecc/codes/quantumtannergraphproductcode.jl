@@ -20,18 +20,6 @@ function tanner_graph_from_parity_matrix(H::SparseMatrixCSC{Bool,Int})
     return (graph=g, left=var_nodes, right=check_nodes)
 end
 
-"""Generate a random bipartite graph with `n_vars` variable nodes,
-`n_checks` check nodes, and edges added with probability `edge_prob`."""
-function generate_random_bipartite_graph(n_vars::Int, n_checks::Int, edge_prob::Float64)
-    g = SimpleGraph(n_vars + n_checks)
-    var_nodes = collect(1:n_vars)
-    check_nodes = collect(n_vars+1:n_vars+n_checks)
-    for v in var_nodes, c in check_nodes
-        rand() < edge_prob && add_edge!(g, v, c)
-    end
-    return (graph=g, left=var_nodes, right=check_nodes)
-end
-
 """Reconstructs the parity-check matrix from a Tanner graph `g`.
 
 !!! note
@@ -46,156 +34,6 @@ function parity_matrix_from_tanner_graph(g::Graph, var_nodes::Vector{Int}, check
     for (check_idx, check_node) in enumerate(check_nodes)
         for neighbor in neighbors(g, check_node)
             neighbor in var_nodes && (H[check_idx, neighbor] = true)
-        end
-    end
-    return H
-end
-
-#############################
-# Product Tanner Graphs
-#############################
-
-"""Plots the Tanner graphs associated with quantum tanner graph product codes and quantum expander codes."""
-function plot_product_tanner_graph end
-
-function _construct_product_var_nodes(V1, V2, C1, C2)
-    var_nodes = Tuple{Symbol,Int,Int}[]
-    for v1 in V1, v2 in V2
-        push!(var_nodes, (:v, v1, v2))
-    end
-    for c1 in C1, c2 in C2
-        push!(var_nodes, (:c, c1, c2))
-    end
-    return var_nodes
-end
-
-function _construct_product_mappings(var_nodes, check_nodes)
-    var_mapping = Dict((node => i for (i, node) in enumerate(var_nodes)))
-    check_mapping = Dict((node => i for (i, node) in enumerate(check_nodes)))
-    return var_mapping, check_mapping
-end
-
-function _add_product_edges!(
-    graph, var_nodes, var_mapping, check_mapping,
-    G1, G2, V_set, C_set;
-    edge_condition, make_check_node
-)
-    n_vars = length(var_nodes)
-    for node in var_nodes
-        type, a, b = node
-        iter_set = type == :v ? C_set : V_set
-        for x in iter_set
-            edge_condition(type, G1, G2, a, b, x) || continue
-            check_node = make_check_node(type, a, b, x)
-            var_idx = var_mapping[node]
-            check_idx = check_mapping[check_node]
-            add_edge!(graph, var_idx, n_vars + check_idx)
-        end
-    end
-end
-
-"""X-type specific conditions"""
-const x_conditions = (
-    edge_condition = (type, G1, G2, a, b, x) ->
-        type == :v ? has_edge(G1.graph, a, x) : has_edge(G2.graph, x, b),
-    make_check_node = (type, a, b, x) ->
-        type == :v ? (x, b) : (a, x)
-)
-
-"""Z-type specific conditions"""
-const z_conditions = (
-    edge_condition = (type, G1, G2, a, b, x) -> 
-        type == :v ? has_edge(G2.graph, b, x) : has_edge(G1.graph, x, a),
-    make_check_node = (type, a, b, x) ->
-        type == :v ? (a, x) : (x, b)
-)
-
-"""Add edges for X-type Tanner graph.
-- For `:v` nodes: iterate over `c` in `C1` and add edge if `G1` has an edge `(v1, c)`.
-- For `:c` nodes: iterate over `v` in `V2` and add edge if `G2` has an edge `(v, c2)`."""
-add_product_edges_X!(args...) = _add_product_edges!(args...; x_conditions...)
-
-""" Add edges for Z-type Tanner graph.
-For `:v` nodes: iterate over `c` in `C2` and add edge if `G2` has an edge `(v2, c)`.
-For `:c` nodes: iterate over `v` in `V1` and add edge if `G1` has an edge `(v, c1)`."""
-add_product_edges_Z!(args...) = _add_product_edges!(args...; z_conditions...)
-
-"""
-Constructs the product Tanner graph for `X-type` checks.
-
-Given Tanner graphs `G₁ = T(V₁, C₁, E₁)` and `G₂ = T(V₂, C₂, E₂)`, define:
-- **Variable nodes**: `V = (V₁ × V₂) ∪ (C₁ × C₂)`
-- **Check nodes for `X-type`**: `Cₓ = C₁ × V₂`
-
-Edges are added as follows:
-- A variable node `(v₁, v₂) ∈ (V₁ × V₂)` connects to a check node
-`(c₁, v₂)` if `(v₁, c₁)` is an edge in `G₁`.
-- A variable node `(c₁, c₂) ∈ (C₁ × C₂)` connects to a check node
-`(c₁, v₂)`if `(v₂, c₂)` is an edge in `G₂`.
-
-The resulting bipartite graph, `G₁ ×ₓ G₂`, defines the classical code `Cₓ`.
-"""
-function product_tanner_graph_X(G1, G2)
-    V1, C1 = G1.left, G1.right
-    V2 = G2.left
-    var_nodes = _construct_product_var_nodes(V1, V2, C1, G2.right)
-    check_nodes = [(c, v) for c in C1 for v in V2]
-    var_mapping, check_mapping = _construct_product_mappings(var_nodes, check_nodes)
-    total_vertices = length(var_nodes) + length(check_nodes)
-    pg = SimpleGraph(total_vertices)
-    add_product_edges_X!(pg, var_nodes, var_mapping, check_mapping, G1, G2, V2, C1)
-    return (graph=pg, var_nodes=var_nodes, check_nodes=check_nodes,
-            var_mapping=var_mapping, check_mapping=check_mapping)
-end
-
-"""
-Constructs the product Tanner graph for `Z-type` checks.
-
-Given Tanner graphs `G₁ = T(V₁, C₁, E₁)` and `G₂ = T(V₂, C₂, E₂)`, define:
-- **Variable nodes**: `V = (V₁ × V₂) ∪ (C₁ × C₂)`
-- **Check nodes for `Z-type`**: `C𝓏 = V₁ × C₂`
-
-Edges are added as follows:
-- A variable node `(v₁, v₂) ∈ (V₁ × V₂)` connects to a check node
-`(v₁, c₂)` if `(v₂, c₂)` is an edge in `G₂`.
-- A variable node `(c₁, c₂) ∈ (C₁ × C₂)` connects to a check node
-`(v₁, c₂)` if `(v₁, c₁)` is an edge in `G₁`.
-
-The resulting bipartite graph, `G₁ ×𝓏 G₂`, defines the classical code `C𝓏`.
-"""
-function product_tanner_graph_Z(G1, G2)
-    V1, C1 = G1.left, G1.right
-    C2 = G2.right
-    var_nodes = _construct_product_var_nodes(V1, G2.left, C1, G2.right)
-    check_nodes = [(v, c) for v in V1 for c in C2]
-    var_mapping, check_mapping = _construct_product_mappings(var_nodes, check_nodes)
-    total_vertices = length(var_nodes) + length(check_nodes)
-    pg = SimpleGraph(total_vertices)
-    add_product_edges_Z!(pg, var_nodes, var_mapping, check_mapping, G1, G2, V1, C2)
-    return (graph=pg, var_nodes=var_nodes, check_nodes=check_nodes,
-            var_mapping=var_mapping, check_mapping=check_mapping)
-end
-
-"""
-Extracts the parity-check matrix from a product Tanner graph `PG`.
-
-Vertices ``1\\,..\\,|\\mathit{var\\_nodes}|`` correspond to variable nodes
-(matrix columns), while the remaining vertices correspond to check
-nodes (matrix rows).
-
-This matrix defines the classical codes `Cₓ = Cₓ(G₁ × G₂)` and `C𝓏 = C𝓏(G₁ × G₂)`,
-which together construct the quantum CSS `Q(G₁ × G₂)` code.
-"""
-function parity_matrix_from_product_tanner_graph(graph::SimpleGraph, var_nodes::Vector, check_nodes::Vector)
-    n_vars = length(var_nodes)
-    n_checks = length(check_nodes)
-    H = spzeros(Bool, n_checks, n_vars)
-    for e in edges(graph)
-        u, v = src(e), dst(e)
-        if u ≤ n_vars && v > n_vars
-            H[v - n_vars, u] = true
-        elseif v ≤ n_vars && u > n_vars
-            H[u - n_vars, v] = true
         end
     end
     return H
@@ -320,18 +158,7 @@ struct QuantumTannerGraphProduct <: AbstractECC
     H2::AbstractMatrix
 end
 
-function parity_checks_xz(c::QuantumTannerGraphProduct)
-    # Build Tanner graphs
-    G1 = tanner_graph_from_parity_matrix(c.H1)
-    G2 = tanner_graph_from_parity_matrix(c.H2)
-    # Construct product graphs
-    PG_X = product_tanner_graph_X(G1, G2)
-    PG_Z = product_tanner_graph_Z(G1, G2)
-    # Extract parity-check matrices
-    HX = parity_matrix_from_product_tanner_graph(PG_X.graph, PG_X.var_nodes, PG_X.check_nodes)
-    HZ = parity_matrix_from_product_tanner_graph(PG_Z.graph, PG_Z.var_nodes, PG_Z.check_nodes)
-    return Matrix{Bool}(HX), Matrix{Bool}(HZ)
-end
+parity_checks_xz(c::QuantumTannerGraphProduct) = hgp(c.H1, c.H2)
 
 """ Constructs a 𝑄(𝐺₁ × 𝐺₂) quantum Tanner graph product code
 using cyclic Tanner graphs of length `2m`.
@@ -359,11 +186,9 @@ function parity_checks_xz(Q::CyclicQuantumTannerGraphProduct)
     n = 2 * Q.m
     G1 = cycle_tanner_graph(n)
     G2 = cycle_tanner_graph(n)
-    PG_X = product_tanner_graph_X(G1, G2)
-    PG_Z = product_tanner_graph_Z(G1, G2)
-    HX = parity_matrix_from_product_tanner_graph(PG_X.graph, PG_X.var_nodes, PG_X.check_nodes)
-    HZ = parity_matrix_from_product_tanner_graph(PG_Z.graph, PG_Z.var_nodes, PG_Z.check_nodes)
-    return (Matrix{Bool}(HX), Matrix{Bool}(HZ))
+    H1 = parity_matrix_from_tanner_graph(G1.graph, G1.left, G1.right)
+    H2 = parity_matrix_from_tanner_graph(G2.graph, G2.left, G2.right)
+    return hgp(H1, H2)
 end
 
 iscss(::Type{<:Union{QuantumTannerGraphProduct,CyclicQuantumTannerGraphProduct}}) = true
@@ -373,5 +198,5 @@ parity_checks_z(c::Union{QuantumTannerGraphProduct,CyclicQuantumTannerGraphProdu
 
 function parity_checks(c::Union{QuantumTannerGraphProduct,CyclicQuantumTannerGraphProduct})
     hx, hz = parity_checks_xz(c)
-    return parity_checks(CSS(parity_checks_xz(c)...))
+    return parity_checks(CSS(hx, hz))
 end
