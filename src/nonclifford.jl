@@ -49,7 +49,7 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
 
 See also: [`PauliChannel`](@ref)
 """
-mutable struct GeneralizedStabilizer{T,F}
+mutable struct GeneralizedStabilizer{T,F} <: AbstractQCState
     stab::T
     destabweights::DefaultDict{Tuple{BitVector, BitVector}, F, F}
 end
@@ -57,11 +57,7 @@ end
 function GeneralizedStabilizer(state)
     n = nqubits(state)
     md = MixedDestabilizer(state)
-    rank(md)==n || throw(ArgumentError(lazy"""
-        Attempting to convert a `Stabilizer`-like object to `GeneralizedStabilizer` object failed,
-        because the initial state does not represent a pure state.
-        Currently only pure states can be used to initialize a `GeneralizedStabilizer` mixture of stabilizer states.
-    """))
+    rank(md)==n || throw(ArgumentError(lazy"""Attempting to convert a `Stabilizer`-like object to `GeneralizedStabilizer` object failed, because the initial state does not represent a pure state. Currently only pure states can be used to initialize a `GeneralizedStabilizer` mixture of stabilizer states."""))
     GeneralizedStabilizer(md, DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im)) # TODO maybe it should default to Destabilizer, not MixedDestabilizer
 end
 
@@ -559,6 +555,64 @@ function (⊗)(state₁::GeneralizedStabilizer, state₂::GeneralizedStabilizer)
     return GeneralizedStabilizer(newstab, newdict)
 end
 
+"""Tensor product between [`GeneralizedStabilizer`](@ref) and [`Stabilizer`](@ref).
+
+```jldoctest
+julia> using LinearAlgebra; # hide
+
+julia> sm = GeneralizedStabilizer(ghz(2))
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + __ | + __
+
+julia> apply!(sm, embed(2, 2, pcT))
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.853553+0.0im | + __ | + __
+ 0.0+0.353553im | + __ | + Z_
+ 0.0-0.353553im | + Z_ | + __
+ 0.146447+0.0im | + Z_ | + Z_
+
+julia> s = ghz(2)
++ XX
++ ZZ
+
+julia> newsm = sm ⊗ s
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z___
++ _X__
++ __Z_
++ ___X
+𝒮𝓉𝒶𝒷━━
++ XX__
++ ZZ__
++ __XX
++ __ZZ
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + ____ | + Z___
+ 0.0-0.353553im | + Z___ | + ____
+ 0.146447+0.0im | + Z___ | + Z___
+ 0.853553+0.0im | + ____ | + ____
+
+julia> real(tr(newsm))
+1.0
+```
+"""
+tensor(ops::Union{AbstractStabilizer,GeneralizedStabilizer}...) = tensor(GeneralizedStabilizer.(ops)...)
+
 """Decompose a Pauli ``P`` in terms of stabilizer and destabilizer rows from a given tableaux.
 
 For given tableaux of rows destabilizer rows ``\\{d_i\\}`` and stabilizer rows ``\\{s_i\\}``,
@@ -641,7 +695,9 @@ struct UnitaryPauliChannel{T,S,P} <: AbstractPauliChannel
         new{typeof(paulis),typeof(weights),typeof(pc)}(paulis,weights,pc)
     end
 end
-
+UnitaryPauliChannel(p::UnitaryPauliChannel) = p
+UnitaryPauliChannel(p::PauliOperator) = UnitaryPauliChannel([p], [1.0+0.0im])
+PauliChannel(p::PauliOperator) = UnitaryPauliChannel(p).paulichannel
 PauliChannel(p::UnitaryPauliChannel) = p.paulichannel
 Base.copy(p::UnitaryPauliChannel) = UnitaryPauliChannel(map(copy, p.paulis), map(copy, p.weights))
 Base.:(==)(p₁::UnitaryPauliChannel, p₂::UnitaryPauliChannel) = p₁.paulis==p₂.paulis && p₁.weights==p₂.weights
@@ -665,6 +721,61 @@ end
 nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
 apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold=1e-10) = apply!(state, gate.paulichannel; prune_threshold)
+
+function tensor(pcs::UnitaryPauliChannel...)
+    newpaulis = [tensor(ps...) for ps in Iterators.product([pc.paulis for pc in pcs]...)]
+    newweights = [prod(ws) for ws in Iterators.product([pc.weights for pc in pcs]...)]
+    return UnitaryPauliChannel(newpaulis, newweights)
+end
+
+"""
+Tensor product between [`UnitaryPauliChannel`](@ref) and [`PauliOperator`](@ref).
+
+```jldoctest
+julia> pcT ⊗ P"X"
+A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
+with ϕᵢ | Pᵢ
+ 0.853553+0.353553im | + _X
+ 0.146447-0.353553im | + ZX
+
+julia> pcT ⊗ pcT ⊗ P"X"
+A unitary Pauli channel P = ∑ ϕᵢ Pᵢ with the following branches:
+with ϕᵢ | Pᵢ
+ 0.603553+0.603553im | + __X
+ 0.25-0.25im | + Z_X
+ 0.25-0.25im | + _ZX
+ -0.103553-0.103553im | + ZZX
+```
+"""
+tensor(pcs::Union{UnitaryPauliChannel,PauliOperator}...) = tensor(UnitaryPauliChannel.(pcs)...)
+
+"""
+Apply a [`UnitaryPauliChannel`](@ref) to a [`GeneralizedStabilizer`](@ref) state.
+
+```jldoctest
+julia> sm = GeneralizedStabilizer(S"-X")
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 1.0+0.0im | + _ | + _
+
+julia> pcT*sm
+A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z
+𝒮𝓉𝒶𝒷
+- X
+with ϕᵢⱼ | Pᵢ | Pⱼ:
+ 0.0+0.353553im | + _ | + Z
+ 0.0-0.353553im | + Z | + _
+ 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
+```
+"""
+Base.:(*)(pc::UnitaryPauliChannel, sm::GeneralizedStabilizer) = apply!(sm, pc.paulichannel)
 
 """
 Calculates the number of non-zero elements in the density matrix `χ`

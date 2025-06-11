@@ -10,11 +10,18 @@
 - `QuantumClifffordJuMPExt`: New extension enabling:
     - Compute minimum distance for quantum LDPC codes via Mixed Integer Programming (MIP) using `JuMP`.
     - Introduce the `AbstractDistanceAlg` interface in `QECCore`.
+- Improvements to `GeneralizedStabilizer` API:
+    - Tensor product operations:
+        - Between multiple `GeneralizedStabilizer` states: `genstab₁ ⊗ genstab₂ ⊗ ...`
+        - Between `GeneralizedStabilizer` and `AbstractStabilizer` states: `genstab ⊗ stab ⊗ ...`
+        - Between a `UnitaryPauliChannel` and one or more `PauliOperator` terms: `pcT ⊗ P"X" ⊗ ...`
+        - Between multiple `UnitaryPauliChannel`s: `pcT₁ ⊗ pcT₂ ⊗ ...`
+    - Product operations:
+        - Between a `UnitaryPauliChannel` and a `GeneralizedStabilizer`: `pcT * genstab`
 - `QuantumClifford` now depends on `QECCore`. `QECCore` is a new package separate from `QuantumClifford`, which specifies the interfaces and several essential error correction codes. Here are some changes to the function and type names:
   - `parity_check_x` -> `parity_matrix_x` and `parity_check_z` -> `parity_matrix_z`
   - `AbstractECC` -> `AbstractQECC`
   - `ClassicalCode` -> `AbstractCECC`
-
 - **(breaking)** `StabMixture` was renamed to `GeneralizedStabilizer`.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in nonclifford functionality.
 - `expect` is now implemented for `GeneralizedStabilizer`.

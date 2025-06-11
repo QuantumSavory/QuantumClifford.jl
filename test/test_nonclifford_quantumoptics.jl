@@ -223,28 +223,53 @@
     @testset "Tensor products of generalized stabilizers" begin
         num_trials = 3
         num_qubits = [2,3] # exclusively multi-qubit
+        function apply_random_nc_ops!(genstab, n)
+            for _ in 1:rand(1:5)
+                i = rand(1:n)
+                nc = embed(n, i, pcT)
+                apply!(genstab, nc)
+            end
+        end
         for n in num_qubits
             for repetition in 1:num_trials
                 stab1 = random_stabilizer(n)
                 genstab1 = GeneralizedStabilizer(stab1)
                 stab2 = random_stabilizer(n)
                 genstab2 = GeneralizedStabilizer(stab2)
+                destab1 = random_destabilizer(n)
+                destab2 = random_destabilizer(n)
+                md1 = MixedDestabilizer(destab1)
+                md2 = MixedDestabilizer(destab2)
+                ms1 = MixedStabilizer(stab1)
+                ms2 = MixedStabilizer(stab1)
                 # apply some (repeated) non-Clifford operations to genstab1
-                for _ in 1:rand(1:5)
-                    i = rand(1:n)
-                    nc = embed(n, i, pcT)
-                    apply!(genstab1, nc)
-                end
-                # apply some (repeated) non-Clifford operations to genstab2
-                for _ in 1:rand(1:5)
-                    i = rand(1:n)
-                    nc = embed(n, i, pcT)
-                    apply!(genstab2, nc)
+                apply_random_nc_ops!(genstab1, n)
+                apply_random_nc_ops!(genstab2, n)
+                for gs in [genstab1, genstab2]
+                    for qcstate in [md1, md2, ms1, ms2, stab1, stab2, destab1, destab2, genstab1, genstab2]
+                        @test Operator(gs ⊗ qcstate) ≈ Operator(gs) ⊗ Operator(qcstate)
+                        @test Operator(qcstate ⊗ gs) ≈ Operator(qcstate) ⊗ Operator(gs)
+                    end
                 end
                 @test Operator(genstab1 ⊗ genstab2) ≈ Operator(genstab1) ⊗ Operator(genstab2)
                 @test Operator(genstab2 ⊗ genstab1) ≈ Operator(genstab2) ⊗ Operator(genstab1)
                 @test Operator(genstab1 ⊗ genstab1) ≈ Operator(genstab1) ⊗ Operator(genstab1)
                 @test Operator(genstab2 ⊗ genstab2) ≈ Operator(genstab2) ⊗ Operator(genstab2)
+            end
+        end
+    end
+
+    @testset "Tensor products between paulichannels and paulis" begin
+        num_trials = 3
+        num_qubits = [2,3] # exclusively multi-qubit
+        for n in num_qubits
+            for repetition in 1:num_trials
+                p = random_pauli(n)
+                i = rand(1:n)
+                nc = embed(n, i, pcT)
+                @test Operator(nc ⊗ p) ≈ Operator(nc) ⊗ Operator(p)
+                @test Operator(nc ⊗ nc) ≈ Operator(nc) ⊗ Operator(nc)
+                @test Operator(nc ⊗ nc ⊗ p) ≈ Operator(nc) ⊗ Operator(nc) ⊗ Operator(p)
             end
         end
     end
