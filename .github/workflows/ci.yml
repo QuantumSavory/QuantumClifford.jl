@@ -16,11 +16,14 @@ env:
   PYTHON: ~
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - t=${{ matrix.threads }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    name: Julia ${{ matrix.version }} - t=${{ matrix.threads }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }} - ${{ matrix.group }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        group:
+          - QuantumClifford
+          - QECCore
         version:
           - '1'
           - '1.10'
@@ -51,10 +54,13 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
+      - run: |
+          julia --project=@. -e 'using Pkg; Pkg.develop(path=joinpath(dirname(@__DIR__), "QuantumClifford.jl", "lib", "QECCore"))'
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
         env:
           JULIA_NUM_THREADS: ${{ matrix.threads }}
+          GROUP: ${{ matrix.group }}
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v5
         with:
@@ -69,6 +75,8 @@ jobs:
         with:
           version: '1'
       - uses: julia-actions/cache@v2
+      - run: |
+          julia --project=@. -e 'using Pkg; Pkg.develop(path=joinpath(dirname(@__DIR__), "QuantumClifford.jl", "lib", "QECCore"))'
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-docdeploy@v1
         env:
