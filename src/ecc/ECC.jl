@@ -21,7 +21,7 @@ using Statistics: std
 using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 
 export parity_checks, parity_checks_x, parity_checks_z, iscss,
-    code_n, code_s, code_k, rate, distance,
+    code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode, LiftedCode,

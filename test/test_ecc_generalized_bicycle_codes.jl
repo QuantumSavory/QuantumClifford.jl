@@ -2,6 +2,7 @@
     using Hecke
     using HiGHS
     using JuMP
+    using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate
     using QuantumClifford.ECC: generalized_bicycle_codes, code_k, code_n, DistanceMIPAlgorithm
 
     # codes taken from Table 1 of [lin2024quantum](@cite)
