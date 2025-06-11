@@ -1,0 +1,13 @@
+name = "QECCore"
+uuid = "b50d4dc9-2544-401f-bae9-a24ba40d0c7a"
+authors = ["Zhongyi Ni <zhongyini1997@gmail.com>", "Developers from QuantumSavory organization"]
+version = "0.1.0"
+
+[compat]
+julia = "1.9"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
