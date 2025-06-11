@@ -64,29 +64,27 @@ function cycle_tanner_graph(n::Int)
 end
 
 """
-Represents the CSS `Q(G₁ × G₂)` quantum tanner graph product code
-constructed from two sparse parity-check matrices H₁ and H₂.
+Represents the CSS quantum code `Q(G₁ × G₂)` constructed from two binary
+codes with parity-check matrices `H₁` and `H₂`, using the hypergraph product
+formulation introduced by [tillich2013quantum](@cite).
 
-# CSS Code 𝑄(𝐺₁ × 𝐺₂) Associated with a Tanner Graph Product
+This construction corresponds to a specific product of Tanner graphs:
+- Let `G₁ = T(V₁, C₁, E₁)` and `G₂ = T(V₂, C₂, E₂)` be the Tanner graphs of
+`H₁` and `H₂`.
+- The product graph `G₁ × G₂` has vertex set `(V₁ × V₂) ∪ (C₁ × C₂)` and
+check set `(C₁ × V₂) ∪ (V₁ × C₂)`.
+- The Tanner subgraphs `G₁ ×ₓ G₂` and `G₁ ×𝓏 G₂` define classical codes
+`Cₓ` and `C𝓏` used in the CSS construction.
 
-The CSS code `𝑄(G₁ × G₂)` is constructed from two given sparse parity‐check
-matrices `H₁` and `H₂`. This construction follows a specific Tanner graph
-product [tillich2013quantum](@cite), defined as follows:
+The `hgp(H₁, H₂)` function algebraically realizes this graph-theoretic product using
+Kronecker operations, yielding the `X`- and `Z`-type parity-check matrices:
 
-!!! note
-    Let `G₁ = 𝑇(V₁, C₁, E₁)` and `G₂ = 𝑇(V₂, C₂, E₂)` be two Tanner graphs. Define the
-    vertex and check sets of the product graph as follows: `V = (V₁ × V₂) ∪ (C₁ × C₂)`
-    and `C = (C₁ × V₂) ∪ (V₁ × C₂)`. Thus, the product graph `G₁ × G₂` is a bipartite
-    graph with vertex set `V ∪ C`.
+- `H_X = [H₁ ⊗ I  |  I ⊗ H₂ᵗ]` corresponds to `G₁ ×ₓ G₂`
+- `H_Z = [I ⊗ H₂  |  H₁ᵗ ⊗ I]` corresponds to `G₁ ×𝓏 G₂`
 
-Two Tanner subgraphs are then defined:
+These matrices ensure `H_X * H_Zᵗ = 0`, satisfying the CSS condition.
 
-- **G₁ ×ₓ G₂**: A subgraph with variable nodes `V` and check nodes `C₁ × V₂`.
-- **G₁ ×𝓏 G₂**: A subgraph with variable nodes `V` and check nodes `V₁ × C₂`.
-
-The union of their edge sets forms `G₁ × G₂`. The classical codes corresponding to
-these Tanner graphs are given by: `Cₓ = Cₓ(G₁ × G₂)` and `C𝓏 = C𝓏(G₁ × G₂)`. Together,
-these codes define the CSS code 𝑄(G₁ × G₂) quantum tanner graph product code.
+See: [tillich2013quantum](@cite), Section 4.3 — “The hypergraph connection, product codes”
 
 # 𝑄(𝐺₁ × 𝐺₂)
 
