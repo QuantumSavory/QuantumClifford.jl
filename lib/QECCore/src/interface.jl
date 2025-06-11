@@ -108,6 +108,7 @@ function distance end
 """
     AbstractDistanceAlg
 
-The algorithm for computing the minimum distance of error correction code.
+Abstract type representing algorithms for computing
+the minimum distance of quantum error correction codes.
 """
 abstract type AbstractDistanceAlg end
