@@ -7,12 +7,12 @@
 
 ## v0.10.0 - dev
 
-- improvements to `GeneralizedStabilizer` API:
+- Improvements to `GeneralizedStabilizer` API:
     - Tensor product operations:
-        - Between two `GeneralizedStabilizer` states: `genstab₁ ⊗ genstab₂`
-        - Between a `GeneralizedStabilizer` and an `AbstractStabilizer`: `genstab ⊗ stab`
-        - Between a `UnitaryPauliChannel` and a `PauliOperator`: `pcT ⊗ P"X"`
-        - Between two `UnitaryPauliChannel`: `pcT₁ ⊗ pcT₂`
+        - Between multiple `GeneralizedStabilizer` states: `genstab₁ ⊗ genstab₂ ⊗ ...`
+        - Between `GeneralizedStabilizer` and `AbstractStabilizer` states: `genstab ⊗ stab ⊗ ...`
+        - Between a `UnitaryPauliChannel` and one or more `PauliOperator` terms: `pcT ⊗ P"X" ⊗ ...`
+        - Between multiple `UnitaryPauliChannel`s: `pcT₁ ⊗ pcT₂ ⊗ ...`
     - Product operations:
         - Between a `UnitaryPauliChannel` and a `GeneralizedStabilizer`: `pcT * genstab`
 - `QuantumClifford` now depends on `QECCore`. `QECCore` is a new package separate from `QuantumClifford`, which specifies the interfaces and several essential error correction codes. Here are some changes to the function and type names:
