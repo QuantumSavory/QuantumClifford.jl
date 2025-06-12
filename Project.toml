@@ -33,8 +33,8 @@ PyQDecoders = "17f5de1a-9b79-4409-a58d-4d45812840f7"
 Quantikz = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
 QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
 
-[sources.QECCore]
-path = "lib/QECCore"
+[sources]
+QECCore = {path = "lib/QECCore"}
 
 [extensions]
 QuantumCliffordGPUExt = "CUDA"
