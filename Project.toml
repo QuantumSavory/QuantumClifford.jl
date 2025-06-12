@@ -3,9 +3,6 @@ uuid = "0525e862-1e90-11e9-3e4d-1b39d7109de1"
 authors = ["Stefan Krastanov <stefan@krastanov.org> and QuantumSavory community members"]
 version = "0.10.0"
 
-[sources]
-QECCore = {path = "lib/QECCore"}
-
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
@@ -36,6 +33,9 @@ PyQDecoders = "17f5de1a-9b79-4409-a58d-4d45812840f7"
 Quantikz = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
 QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
 
+[sources.QECCore]
+path = "lib/QECCore"
+
 [extensions]
 QuantumCliffordGPUExt = "CUDA"
 QuantumCliffordHeckeExt = "Hecke"
@@ -59,7 +59,7 @@ InteractiveUtils = "1.9"
 LDPCDecoders = "0.3.2"
 LinearAlgebra = "1.9"
 MacroTools = "0.5.9"
-Makie = "0.20, 0.21, 0.22"
+Makie = "0.20, 0.21, 0.22, 0.23"
 Nemo = "0.42.1, 0.43, 0.44, 0.45, 0.46, 0.47, 0.48, 0.49, 0.50"
 Plots = "1.38.0"
 PrecompileTools = "1.2"
