@@ -1,64 +1,75 @@
-using QuantumClifford
-  
-struct ClassicalParity{N} <: AbstractOperation
-    "The indices of the classical bits to be xor-ed"
-    bits::NTuple{N,Int}
-    "The index of the classical bit that will store the results"
-    store::Int
-end
 
-struct ClassicalParityRelative{N}
-    bits::NTuple{N, Int}
-end
-struct Repeat
-    body::Vector
-    times:: Int
-end
+ 
 
-struct sMRZAbsolute <: AbstractOperation
-    qubit::Int
-    bit::Int
-    sMRZ(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
-end
+function parse_file(filepath::String)
 
-struct PauliFrame
-    measurements::Matrix{Int}
-end
-
-
-function apply!(frame::PauliFrame, xor::ClassicalParity)
-    for row in 1:size(frame.measurements, 1)
-        value = frame.measurements[row, xor.bits[1] + 1]
-        for i in xor.bits[2:end]
-            value ⊻= frame.measurements[row, i + 1]
-        end
-        frame.measurements[row, xor.store + 1] = value
+    operations = Vector{Tuple{String, Vector{Int}}}()
+    for raw in eachline(filepath)
+        line = strip(split(raw, "#")[1])
+        isempty(line) && continue
+        parts = split(line)
+        cmd = parts[1]
+        qubits = parse.(Int, parts[2:end])
+        push!(operations, (cmd, qubits))
     end
-    return frame
+    return operations
 end
 
+function infer_nqubits(path::String)
+    max_idx = -1
+    for raw in eachline(path)
+        
+        line = strip(split(raw, "#")[1])
+        isempty(line) && continue
 
-function apply!(frame::PauliFrame, r::Repeat)
-    for i in 1:r.times
-        for instructions in r.body
-            abs_bits = ntuple(j -> i - 1 + instr.bits[j], length(instructions.bits))
-            abs_instr = ClassicalParity(abs_bits, i)
-            apply!(frame, abs_instr)
+        parts = split(line)
+       
+        qs = parse.(Int, parts[2:end])
+        if !isempty(qs)
+            max_idx = max(max_idx, maximum(qs))
         end
     end
+    return max_idx + 1
 end
 
 
-function convert(r::Repeat)::Vector{ClassicalParity}
-    absolute_instructions = ClassicalParity[]
-    for i in r.times
-        for instructions in r.body
-            if instructions isa ClassicalParity
-                absolute_bits = ntuple(j->i -1+instructions.bits[j], length(instructions.bits))#translates relative position of the bits into an absolute index
-                push!(absolute_instructions, ClassicalParity(absolute_bits, i-1+100))#creates a classicalparity check and stores the the parity check to the list absolute_instructions list
+const STIM2QC = Dict(
+    "H"    => (1,qs -> sHadamard(qs[1])),
+    "X"    => (1,qs -> sX(qs[1])),
+    "Z"    => (1,qs -> sZ(qs[1])),
+    "CNOT" => (2,qs -> sCNOT(qs[1], qs[2])),
+    "CX"   => (2,qs -> sCNOT(qs[1], qs[2])),
+    "S"    => (1,qs -> sPhase(qs[1])),
+)
+
+function converter(filepath::String)
+    ops = parse_file(filepath)
+    n   = infer_nqubits(filepath)
+    st  = one(Stabilizer, n, basis=:Z)
+
+    
+
+    for (cmd, qs0) in ops
+        if haskey(STIM2QC, cmd)
+            num, build = STIM2QC[cmd]
+
+            # Ensure total qubits is a multiple of arity
+            if length(qs0) % num != 0
+                error("Invalid qubit list for $cmd: length $(length(qs0)) isn’t a multiple of arity $num")
+            end
+
+            # Chunk and apply
+            for i in 1:num:length(qs0)
+                slice = qs0[i : i+num-1]
+                qs    = slice .+ 1           # Stim is 0-based → 1-based indexing
+                op    = build(qs)
+                apply!(st, op)
             end
         end
     end
-    return absolute_instructions
+
+    return st
 end
 
+filepath = "/Users/rohan/Desktop/CS/lab_work/stim_test/my_circuit.stim"
+converter(filepath)
