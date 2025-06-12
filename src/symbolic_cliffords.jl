@@ -202,6 +202,9 @@ function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{
     end
     stab
 end
+function _apply_inv!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{B}=Val(true)) where B
+    # TODO
+end
 
 SingleQubitOperator(h::sHadamard)           = SingleQubitOperator(h.q, false, true , true , false, false, false)
 SingleQubitOperator(p::sPhase)              = SingleQubitOperator(p.q, true , true , false, true , false, false)
