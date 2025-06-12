@@ -1,10 +1,12 @@
-"""A pedagogical example of a quantum error correcting [8,3] code used in [cleve1997efficient](@cite)."""
-struct Cleve8 <: AbstractECC end
+"""
+    Cleve8 <: AbstractQECC
 
-code_n(c::Cleve8) = 8
+A pedagogical example of a quantum error correcting [8,3] code used in [cleve1997efficient](@cite).
+"""
+struct Cleve8 <: AbstractQECC end
 
-parity_checks(c::Cleve8) = S"XXXXXXXX
-                             ZZZZZZZZ
-                             XIXIZYZY
-                             XIYZXIYZ
-                             XZIYIYXZ"
+parity_matrix(c::Cleve8) = Bool[1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0;
+                                0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1;
+                                1 0 1 0 0 1 0 1 0 0 0 0 1 1 1 1;
+                                1 0 1 0 1 0 1 0 0 0 1 1 0 0 1 1;
+                                1 0 0 1 0 1 1 0 0 1 0 1 0 1 0 1]

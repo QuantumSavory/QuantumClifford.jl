@@ -1,4 +1,8 @@
-"""Hypergraph product of two classical codes."""
+"""
+    hgp(h₁::AbstractMatrix{Bool}, h₂::AbstractMatrix{Bool})
+
+Hypergraph product of two classical codes.
+"""
 function hgp(h₁,h₂)
     r₁, n₁ = size(h₁)
     r₂, n₂ = size(h₂)

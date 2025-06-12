@@ -1,21 +1,18 @@
-struct Shor9 <: AbstractECC end
+"""
+    Shor9 <: AbstractCSSCode
 
-code_n(c::Shor9) = 9
+Shor9 code [shor1995scheme](@cite)is a nine-qubit CSS code that is the first quantum error-correcting code.
+"""
+struct Shor9 <: AbstractCSSCode end
 
-function iscss(::Type{Shor9})
-    return true
-end
+parity_matrix_x(c::Shor9) = Bool[1 1 1 1 1 1 0 0 0 ;
+                                0 0 0 1 1 1 1 1 1 ]
 
-parity_checks(c::Shor9) = S"ZZ_______
-                            _ZZ______
-                            ___ZZ____
-                            ____ZZ___
-                            ______ZZ_
-                            _______ZZ
-                            XXXXXX___
-                            ___XXXXXX"
-
-parity_checks_x(c::Shor9) = stab_to_gf2(parity_checks(Shor9()))[end-1:end,1:end÷2]
-parity_checks_z(c::Shor9) = stab_to_gf2(parity_checks(Shor9()))[1:end-2,end÷2+1:end]
+parity_matrix_z(c::Shor9) = Bool[1 1 0 0 0 0 0 0 0;
+                                0 1 1 0 0 0 0 0 0;
+                                0 0 0 1 1 0 0 0 0;
+                                0 0 0 0 1 1 0 0 0;
+                                0 0 0 0 0 0 1 1 0;
+                                0 0 0 0 0 0 0 1 1]
 
 distance(c::Shor9) = 3

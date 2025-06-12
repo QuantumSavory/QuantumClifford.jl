@@ -1,19 +1,17 @@
 # TODO Steane5 qubit code
 
-struct Steane7 <: AbstractECC end
+"""
+    Steane7 <: AbstractCSSCode
 
-function iscss(::Type{Steane7})
-    return true
-end
+Steane code [steane1996error](@cite).
+"""
+struct Steane7 <: AbstractCSSCode end
 
-parity_checks(c::Steane7) = S"___XXXX
-                              _XX__XX
-                              X_X_X_X
-                              ___ZZZZ
-                              _ZZ__ZZ
-                              Z_Z_Z_Z"
+_steane_mat() = Bool[0 0 0 1 1 1 1;
+                    0 1 1 0 0 1 1;
+                    1 0 1 0 1 0 1]
 
-parity_checks_x(c::Steane7) = stab_to_gf2(parity_checks(Steane7()))[1:3,1:end÷2]
-parity_checks_z(c::Steane7) = stab_to_gf2(parity_checks(Steane7()))[4:end,end÷2+1:end]
+parity_matrix_x(c::Steane7) = _steane_mat()
+parity_matrix_z(c::Steane7) = _steane_mat()
 
 distance(c::Steane7) = 3
