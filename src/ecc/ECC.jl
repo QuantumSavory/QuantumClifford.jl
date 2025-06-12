@@ -360,7 +360,8 @@ end
 include("circuits.jl")
 include("decoder_pipeline.jl")
 
-include("util.jl")
+include("codes/util.jl")
+
 include("codes/gottesman.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
