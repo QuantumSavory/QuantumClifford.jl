@@ -349,11 +349,11 @@ function haah_cubic_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
 end
 
 """
-Haah’s cubic code is defined as ``\text{LP}(1 + x + y + z, 1 + xy + xz + yz)``
-where ``\text{LP}`` is the lifted product code, and `x`, `y`, `z` are elements
-of the ring ``R = \mathbb{F}_2[x, y, z] / (x^L - 1, y^L - 1, z^L - 1)``. Here
-``\mathbb{F}_2`` is the finite field of order `2` and `L` is the lattice size.
-The ring ``R`` is the group algebra ``\mathbb{F}_qG`` of a finite group `G`, where
+Haah’s cubic code is defined as ``\\text{LP}(1 + x + y + z, 1 + xy + xz + yz)``
+where ``\\text{LP}`` is the lifted product code, and `x`, `y`, `z` are elements
+of the ring ``R = \\mathbb{F}_2[x, y, z] / (x^L - 1, y^L - 1, z^L - 1)``. Here
+``\\mathbb{F}_2`` is the finite field of order `2` and `L` is the lattice size.
+The ring ``R`` is the group algebra ``\\mathbb{F}_qG`` of a finite group `G`, where
 ``G = (C_L)^3`` and ``C_L`` is the cyclic group of order `L`. This method of Haah's
 cubic code construction is outlined in Appendix B of [panteleev2022asymptotically](@cite).
 
