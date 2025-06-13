@@ -359,6 +359,8 @@ provided that both `ℓ` and `m` are divisible by three.
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/triangular_color).
 
 ```jldoctest
+julia> import Hecke; using QuantumClifford.ECC;
+
 julia> ℓ = 9; m = 6;
 
 julia> c = honeycomb_color_codes(ℓ, m);
