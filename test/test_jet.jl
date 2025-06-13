@@ -10,6 +10,7 @@
     using AbstractAlgebra
     using Hecke
     using StaticArrays
+    using StyledStrings
 
     rep = report_package("QuantumClifford";
         ignored_modules=(
@@ -23,6 +24,7 @@
             AnyFrameModule(AbstractAlgebra),
             AnyFrameModule(Hecke),
             AnyFrameModule(StaticArrays),
+            AnyFrameModule(StyledStrings),
     ))
 
     @show rep

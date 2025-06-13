@@ -240,7 +240,7 @@ function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) w
         end
     end
     xperm, r = gott_standard_form_indices((@view xzs[1:end÷2,:]),rows,columns)
-    permute!(stabilizer,xperm)
+    permutesystems!(stabilizer,xperm)
     i = r+1
     for j in r+1:columns
         # find first row with Z in col `j`
@@ -257,7 +257,7 @@ function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) w
         end
     end
     zperm, s = gott_standard_form_indices((@view xzs[end÷2+1:end,:]),rows,columns,skip=r)
-    permute!(stabilizer,zperm)
+    permutesystems!(stabilizer,zperm)
     # we have r+s==rows (or we have trailing rows that are zeroed)
     stabilizer, r, s, xperm, zperm
 end

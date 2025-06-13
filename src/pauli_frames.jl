@@ -11,11 +11,13 @@ struct PauliFrame{T,S} <: AbstractQCState
     measurements::S # TODO check if when looping over this we are actually looping over the fast axis
 end
 
-nqubits(f::PauliFrame) = nqubits(f.frame)
+nqubits(f::PauliFrame) = nqubits(f.frame) - 1 # dont count the ancilla qubit
 Base.length(f::PauliFrame) = size(f.measurements, 1)
 Base.eachindex(f::PauliFrame) = 1:length(f)
 Base.copy(f::PauliFrame) = PauliFrame(copy(f.frame), copy(f.measurements))
 Base.view(frame::PauliFrame, r) = PauliFrame(view(frame.frame, r), view(frame.measurements, r, :))
+
+tab(f::PauliFrame) = Tableau(f.frame.tab.phases, nqubits(f), f.frame.tab.xzs)
 
 fastrow(s::PauliFrame) = PauliFrame(fastrow(s.frame), s.measurements)
 fastcolumn(s::PauliFrame) = PauliFrame(fastcolumn(s.frame), s.measurements)
@@ -26,7 +28,8 @@ $(TYPEDSIGNATURES)
 Prepare an empty set of Pauli frames with the given number of `frames` and `qubits`. Preallocates spaces for `measurement` number of measurements.
 """
 function PauliFrame(frames, qubits, measurements)
-    stab = fastcolumn(zero(Stabilizer, frames, qubits)) # TODO this should really be a Tableau
+    # one extra qubit for ancilla measurements
+    stab = fastcolumn(zero(Stabilizer, frames, qubits + 1)) # TODO this should really be a Tableau
     bits = zeros(Bool, frames, measurements)
     frame = PauliFrame(stab, bits)
     initZ!(frame)
@@ -108,6 +111,24 @@ function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRY, and faster sMRX
         xzs[ibig,f] &= ~ismallm
         rand(Bool) && (xzs[end÷2+ibig,f] ⊻= ismallm)
     end
+
+    return frame
+end
+
+function apply!(frame::PauliFrame, op::PauliMeasurement)
+    # this is inspired by ECC.naive_syndrome_circuit
+    n = nqubits(op.pauli)
+    for qubit in 1:n
+        if op.pauli[qubit] == (1, 0)
+            apply!(frame, sXCZ(qubit, n + 1))
+        elseif op.pauli[qubit] == (0, 1)
+            apply!(frame, sCNOT(qubit, n + 1))
+        elseif op.pauli[qubit] == (1, 1)
+            apply!(frame, sYCX(qubit, n + 1))
+        end
+    end
+    op.pauli.phase[] == 0 || apply!(frame, sX(n + 1))
+    apply!(frame, sMRZ(n + 1, op.bit))
 
     return frame
 end
