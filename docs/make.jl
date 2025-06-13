@@ -9,8 +9,10 @@ using QuantumInterface
 
 ENV["HECKE_PRINT_BANNER"] = "false"
 import Hecke
-
 const QuantumCliffordHeckeExt = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
+
+import JuMP
+const QuantumCliffordJuMPExt = Base.get_extension(QuantumClifford, :QuantumCliffordJuMPExt)
 
 #DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
 
@@ -25,7 +27,7 @@ doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
 format = Documenter.HTML(size_threshold_ignore = ["API.md"]),
-modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt],
+modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordJuMPExt],
 warnonly = [:missing_docs],
 linkcheck = true,
 authors = "Stefan Krastanov",
