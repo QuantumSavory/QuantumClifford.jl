@@ -47,10 +47,10 @@
         end
     end
 
-    @testset "conversion from StabMixture to Operator" begin
+    @testset "conversion from GeneralizedStabilizer to Operator" begin
         for n in 1:5
             stab = random_stabilizer(n)
-            @test dm(Ket(stab)) == Operator(StabMixture(stab))
+            @test dm(Ket(stab)) == Operator(GeneralizedStabilizer(stab))
         end
     end
 
@@ -71,7 +71,7 @@
     tgate = sparse(identityoperator(SpinBasis(1//2)))
     tgate.data[2,2] = exp(im*pi/4)
 
-    @testset "StabMixture/PauliChannel to QuantumOptics - explicit single-qubit Pauli channels" begin
+    @testset "GeneralizedStabilizer/PauliChannel to QuantumOptics - explicit single-qubit Pauli channels" begin
         # manual checks
         @test Operator(pcT)≈tgate
 
@@ -79,7 +79,7 @@
         for single_qubit_explicit_channel in [pcT]
             qo_gate = Operator(single_qubit_explicit_channel)
             for single_qubit_tableau in [S"X", S"Y", S"Z", S"-X", S"-Y", S"-Z"]
-                sm = StabMixture(single_qubit_tableau)
+                sm = GeneralizedStabilizer(single_qubit_tableau)
                 ψ = Ket(single_qubit_tableau)
                 for rep in 1:8
                     apply!(sm, single_qubit_explicit_channel)
@@ -97,7 +97,7 @@
                 qo_gate1 = Operator(single_qubit_explicit_channel)
                 qo_gate = embed(basis(qo_gate1)^n, i, qo_gate1)
                 stab = random_stabilizer(n)
-                sm = StabMixture(stab)
+                sm = GeneralizedStabilizer(stab)
                 ψ = Ket(stab)
                 for rep in 1:8
                     apply!(sm, channel)
