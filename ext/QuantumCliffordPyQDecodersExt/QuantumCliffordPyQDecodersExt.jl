@@ -4,6 +4,7 @@ using PyQDecoders: np, sps, ldpc, pm, PythonCall
 using SparseArrays
 using QuantumClifford
 using QuantumClifford.ECC
+using QECCore
 import QuantumClifford.ECC: AbstractSyndromeDecoder, decode, batchdecode, parity_checks
 
 abstract type PyBP <: AbstractSyndromeDecoder end
@@ -91,8 +92,8 @@ struct PyMatchingDecoder <: AbstractSyndromeDecoder # TODO all these decoders ha
 end
 
 function PyMatchingDecoder(c; weights=nothing)
-    Hx = parity_checks_x(c) |> collect # TODO keep these sparse
-    Hz = parity_checks_z(c) |> collect
+    Hx = parity_matrix_x(c) |> collect # TODO keep these sparse
+    Hz = parity_matrix_z(c) |> collect
     H = parity_checks(c)
     fm = faults_matrix(c)
     if isnothing(weights)

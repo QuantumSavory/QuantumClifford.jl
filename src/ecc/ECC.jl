@@ -49,7 +49,6 @@ Only CSS codes have this method.
 
 See also: [`parity_checks`](@ref)"""
 function parity_checks_x(code::AbstractECC)
-    return parity_matrix_x(code)
     throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
 end
 
@@ -59,7 +58,6 @@ Only CSS codes have this method.
 
 See also: [`parity_checks`](@ref)"""
 function parity_checks_z(code::AbstractECC)
-    return parity_matrix_z(code)
     throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
 end
 
