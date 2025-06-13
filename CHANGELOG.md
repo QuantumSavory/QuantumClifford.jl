@@ -7,6 +7,9 @@
 
 ## v0.10.0 - dev
 
+- Quantum Tanner graph product codes:
+    - `Q(G×G)` Quantum expander code (Tanner graph `G`)
+    - General and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`)
 - Improvements to `GeneralizedStabilizer` API:
     - Tensor product operations:
         - Between multiple `GeneralizedStabilizer` states: `genstab₁ ⊗ genstab₂ ⊗ ...`
