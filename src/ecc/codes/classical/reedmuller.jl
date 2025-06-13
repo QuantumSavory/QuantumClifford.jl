@@ -14,7 +14,7 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed
 
 See also: `RecursiveReedMuller`
 """
-struct ReedMuller <: ClassicalCode
+struct ReedMuller <: AbstractCECC
     r::Int
     m::Int
 
