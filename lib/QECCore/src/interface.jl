@@ -76,7 +76,9 @@ The number of stabilizers in a error correction code. They might not be all line
 
 See also: [`code_n`](@ref) and [`code_k`](@ref)
 """
-code_s(c::AbstractECC) = nstabilizers(parity_matrix(c))
+function code_s end
+# TODO: remove `temp`
+code_s_temp(c::AbstractECC) = nstabilizers(parity_matrix(c))
 nstabilizers(pm::AbstractMatrix{Bool}) = size(pm, 1)
 
 """

@@ -10,6 +10,6 @@
                                     1 0 1 0 1 0 1 0 0 0 1 1 0 0 1 1;
                                     1 0 0 1 0 1 1 0 0 1 0 1 0 1 0 1]
         @test code_n(c) == 8
-        @test code_s(c) == 5
+        @test code_s_temp(c) == 5
     end
 end

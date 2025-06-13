@@ -9,7 +9,7 @@
                                             1 0 1 0 0 0 0 0 1 1;
                                             0 1 0 1 0 1 0 0 0 1]
         @test code_n(p5) == 5
-        @test code_s(p5) == 4
+        @test code_s_temp(p5) == 4
         @test distance(p5) == 3
     end
 end

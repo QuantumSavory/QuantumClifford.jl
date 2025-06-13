@@ -14,6 +14,6 @@
                                         0 0 1 1 1]
         @test distance(c) == 2
         @test code_n(c) == 5
-        @test code_s(c) == 4
+        @test code_s_temp(c) == 4
     end
 end
