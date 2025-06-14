@@ -361,6 +361,8 @@ Here is an example of a `[[1024, 30, 13 ≤ d ≤ 32]]` Haah's cubic code from A
 code D of [panteleev2021degenerate](@cite) on the `8 × 8 × 8` Lattice.
 
 ```jldoctest
+julia> import Hecke; using QuantumClifford.ECC;
+
 julia> l = 8;
 
 julia> c = haah_cubic_codes(l);
