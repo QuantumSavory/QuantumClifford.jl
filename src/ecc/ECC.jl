@@ -1,7 +1,7 @@
 module ECC
 
 using QECCore
-import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z
+import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z,parity_matrix
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -111,11 +111,11 @@ end
 code_k(c::AbstractECC) = code_k(parity_checks(c))
 
 
-# """Parity matrix of a code, given as a stabilizer tableau."""
-# function parity_matrix(c::AbstractECC)
-#     paritym = stab_to_gf2(parity_checks(c::AbstractECC))
-#     return paritym
-# end
+"""Parity matrix of a code, given as a stabilizer tableau."""
+function parity_matrix(c::AbstractECC)
+    paritym = stab_to_gf2(parity_checks(c::AbstractECC))
+    return paritym
+end
 
 """Logical X operations of a code."""
 function logx_ops(c)

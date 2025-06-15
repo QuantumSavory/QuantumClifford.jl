@@ -18,3 +18,6 @@ function parity_matrix(c::RepCode)
     V = true
     sparse(I,J,V,n,n)
 end
+
+code_n(c::RepCode) = c.n
+code_s(c::RepCode) = c.n

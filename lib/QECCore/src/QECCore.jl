@@ -8,8 +8,6 @@ using Combinatorics
 export distance, parity_matrix, code_n, code_s, code_k, parity_matrix_x, parity_matrix_z, rate
 export AbstractECC, AbstractQECC, AbstractCECC, AbstractCSSCode
 
-export code_s_temp
-
 # QEC Codes
 export Perfect5, Cleve8
 

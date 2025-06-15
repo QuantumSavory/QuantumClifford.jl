@@ -15,6 +15,6 @@
         @test parity_matrix_z(c) == pm[4:6,9:end]
         @test distance(c) == 2
         @test code_n(c) == 8
-        @test code_s_temp(c) == 6
+        @test code_s(c) == 6
     end
 end

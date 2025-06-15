@@ -13,7 +13,7 @@
                                     0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0;
                                     0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
         @test code_n(c) == 9
-        @test code_s_temp(c) == 8
+        @test code_s(c) == 8
         @test distance(c) == 3
     end
 end
