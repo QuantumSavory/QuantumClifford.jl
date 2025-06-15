@@ -25,7 +25,7 @@ __X__X_X
 ZZ____Z_
 _ZZ____Z
 ___ZZ_Z_
-____ZZ_
+____ZZ_Z
 ```
 
 More information can be seen in [fowler2012surface](@cite).
