@@ -146,6 +146,8 @@ number of different constructors.
     See also the [data structures discussion page](@ref Choosing-Appropriate-Data-Structure).
 
 ```jldoctest
+julia> using QuantumClifford: Tableau # hide
+
 julia> S"-XX
          +ZZ"
 - XX
@@ -160,6 +162,27 @@ julia> Stabilizer([0x2, 0x0],
                        0 0],
                   Bool[0 0;
                        1 1])
+- XX
++ ZZ
+
+julia> Stabilizer(Bool[1 1 0 0;
+                       0 0 1 1])
++ XX
++ ZZ
+
+julia> Stabilizer([0x2, 0x0], 
+                  Bool[1 1 0 0;
+                       0 0 1 1])
+- XX
++ ZZ
+
+julia> Stabilizer(T"-XX ZZ")
+- XX
++ ZZ
+
+julia> Stabilizer(Tableau([0x2, 0x0],
+                  Bool[1 1; 0 0],
+                  Bool[0 0; 1 1]))
 - XX
 + ZZ
 ```
@@ -192,6 +215,9 @@ julia> s[[3,1]]
 julia> s[[3,1],[2]]
 + _
 - Y
+
+julia> s[3][3]
+(false, true)
 ```
 
 Consistency at creation is not verified so nonsensical stabilizers can be
@@ -227,6 +253,29 @@ julia> stab_to_gf2(s)
  1  1  1  0  0  0
  0  0  0  1  1  0
  0  0  0  0  1  1
+```
+
+Stabilizer can be copied and assigned.
+
+```jldoctest stabilizer
+julia> s = S"-XXX
+             +ZZI
+             -IZZ";
+
+julia> s₁ = copy(s)
+- XXX
++ ZZ_
+- _ZZ
+```
+
+`Length` and `size` of stabilizer can be determined.
+
+```jldoctest stabilizer
+julia> length(s)
+3
+
+julia> size(s)
+(3, 3)
 ```
 
 # [Canonicalization of Stabilizers](@id Canonicalization-of-Stabilizers)
@@ -619,6 +668,11 @@ Slightly abusing the name: What we call "destabilizers" here is a stabilizer and
 its destabilizing operators saved together. They are implemented with the
 [`Destabilizer`](@ref) object and are initialized from a stabilizer.
 
+The two ways of creating destabilizers are the following:
+
+- Given a `Stabilizer` object (which presumes full rank), convert it into a
+`Destabilizer`object. This allows  for the possibility of rank deficiency.
+
 ```jldoctest destab
 julia> s=S"-XXX
            -ZZI
@@ -635,6 +689,32 @@ julia> d = Destabilizer(s)
 + _ZZ
 ```
 
+- A low-level constructor that accepts a manually created `Tableau`
+object. Note thatthe `Tableau` object is not currently public. It
+serves as the underlying data structure for all related objects
+but does not assume commutativity or other properties.
+
+```jldoctest destab
+julia> using QuantumClifford: Tableau # hide
+
+julia> d₁ = Destabilizer(Tableau(Bool[0 0; 0 1; 1 1; 0 0],
+                                Bool[1 0; 0 0; 0 0; 0 1]))
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z_
++ _X
+𝒮𝓉𝒶𝒷
++ XX
++ _Z
+
+julia> d₂ = Destabilizer(T"ZX ZI -ZZ -XY")
+𝒟ℯ𝓈𝓉𝒶𝒷
++ ZX
++ Z_
+𝒮𝓉𝒶𝒷
+- ZZ
+- XY
+```
+
 They have convenience methods to extract only the stabilizer and destabilizer
 pieces:
 
@@ -648,6 +728,14 @@ julia> destabilizerview(d)
 + Z__
 + _XX
 + __X
+
+julia> stabilizerview(d₁)
++ XX
++ _Z
+
+julia> destabilizerview(d₁)
++ Z_
++ _X
 ```
 
 Importantly commuting projections are much faster when tracking the destabilizer
