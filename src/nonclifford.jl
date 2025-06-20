@@ -297,9 +297,10 @@ To convert χ′ into a probability of projecting on the +1 eigenvalue branch:
 \\text{probability}_{1} = \\frac{\\text{real}(\\chi') + 1}{2}
 ```
 
-!!! note Because the possible measurement results are themselves not stabilizer states anymore,
-we can not use the `project!` API, which assumes a stabilizer tableau and reports detailed
-information about whether the tableau and measurement commute or anticommute.
+!!! note
+    Because the possible measurement results are themselves not stabilizer states anymore,
+    we can not use the `project!` API, which assumes a stabilizer tableau and reports detailed
+    information about whether the tableau and measurement commute or anticommute.
 
 ```jldoctest genstab
 julia> sm = GeneralizedStabilizer(S"-X");

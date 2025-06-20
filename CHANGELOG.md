@@ -7,6 +7,9 @@
 
 ## v0.10.0 - dev
 
+- `QuantumClifffordJuMPExt`: New extension enabling:
+    - Compute minimum distance for quantum LDPC codes via Mixed Integer Programming (MIP) using `JuMP`.
+    - Introduce the `AbstractDistanceAlg` interface in `QECCore`.
 - Improvements to `GeneralizedStabilizer` API:
     - Tensor product operations:
         - Between multiple `GeneralizedStabilizer` states: `genstab₁ ⊗ genstab₂ ⊗ ...`
