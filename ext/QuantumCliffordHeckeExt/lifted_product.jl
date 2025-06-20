@@ -63,7 +63,7 @@ julia> base_matrix = [0 0 0 0; 0 1 2 5; 0 6 3 1]; l = 7;
 julia> c2 = LPCode(base_matrix, l .- base_matrix', l);
 
 julia> code_n(c2), code_k(c2)
-(175, 9)
+(175, 19)
 ```
 
 ## Code subfamilies and convenience constructors for them
