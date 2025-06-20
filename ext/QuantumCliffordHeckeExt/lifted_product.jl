@@ -79,6 +79,56 @@ The default representation, provided by `Hecke`, is the permutation representati
 
 We also accept a custom representation function as detailed in [`LiftedCode`](@ref).
 
+
+## Non-commutative algebras
+
+Here is an `[[24, 8, 3]]` two block group algebra code using non-abelian dihedral group `Dₘ = ⟨r, s | rᵐ = s² = (rs)² = 1⟩`.
+
+```jldoctest
+julia> using QuantumClifford.ECC: two_block_group_algebra_codes, code_n, code_k, parity_checks;
+
+julia> import Hecke: gens, quo, group_algebra, GF, one;
+
+julia> import Oscar: free_group, small_group_identification, describe, order, dihedral_group;
+
+julia> m = 6;
+
+julia> Cₘ = cyclic_group(m);
+
+julia> C₂ = cyclic_group(2);
+
+julia> A = automorphism_group(Cₘ);
+
+julia> au = A(hom(Cₘ,Cₘ,[Cₘ[1]],[Cₘ[1]^-1]));
+
+julia> f = hom(C₂,A,[C₂[1]],[au]);
+
+julia> G = semidirect_product(Cₘ,f,C₂);
+
+julia> GA = group_algebra(GF(2), G);
+
+julia> s, r = gens(GA);
+
+julia> a_elts = [one(r), r^4];
+
+julia> b_elts = [one(r), s*r^4, r^3, r^4, s*r^2, r];
+
+julia> a = sum(GA(x) for x in a_elts);
+
+julia> b = sum(GA(x) for x in b_elts);
+
+julia> c = two_block_group_algebra_codes(a,b);
+
+julia> order(G)
+12
+
+julia> describe(G)
+"D12"
+
+julia> code_n(c), code_k(c)
+(24, 8)
+```
+
 See also: [`LiftedCode`](@ref), [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref),
 [`haah_cubic_codes`](@ref).
 
@@ -145,14 +195,14 @@ function parity_checks_xz(c::LPCode)
         hx, hz = hgp(c.A, permutedims(group_algebra_conj.(c.B)))
         hx, hz = concat_lift_repr(repr, hx), concat_lift_repr(repr, hz)
     else
-        Â = concat_lift_repr(c.A_repr, c.A) # Right regular (ρ) repr
-        B̂ = concat_lift_repr(c.B_repr, c.B) # Left regular (λ) repr
+        Â = concat_lift_repr(c.A_repr, c.A) # ρ(A) right regular repr
+        B̂ = concat_lift_repr(c.B_repr, c.B) # λ(B) left regular repr
         B̂ᵀ = concat_lift_repr(c.B_repr, permutedims(group_algebra_conj.(c.B))) # λ(B*)
         Âᵀ = concat_lift_repr(c.A_repr, permutedims(group_algebra_conj.(c.A))) # ρ(A*)
         ma, na = size(c.A)
         mb, nb = size(c.B)
-        hx = [kron(Â, Matrix(LinearAlgebra.I, mb, mb)) kron(Matrix(LinearAlgebra.I, ma, ma), B̂)]
-        hz = [kron(Matrix(LinearAlgebra.I, na, na), B̂ᵀ) kron(Âᵀ, Matrix(LinearAlgebra.I, nb, nb))]
+        hx = [kron(Â, Matrix(LinearAlgebra.I, mb, mb)) kron(Matrix(LinearAlgebra.I, ma, ma), B̂)] # [Â⊗I | I⊗B̂]
+        hz = [kron(Matrix(LinearAlgebra.I, na, na), B̂ᵀ) kron(Âᵀ, Matrix(LinearAlgebra.I, nb, nb))] # [I⊗B̂ᵀ | Âᵀ⊗I]
     end
     return hx, hz
 end
