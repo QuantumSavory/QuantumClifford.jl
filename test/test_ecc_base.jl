@@ -56,7 +56,21 @@ A = 1 + r
 B = 1 + s + r^6 + s^3*r + s*r^7 + s^3*r^5
 nonabel1 = two_block_group_algebra_codes(A,B)
 
-test_nonabelian_codes = [nonabel1]
+G = small_group(48,10)
+GA = group_algebra(GF(2), G)
+r, s  = gens(GA);
+A = 1 + s*r^2
+B = 1 + r + s^3 + s^4 + s^2*r^5 + s^4*r^6
+nonabel2 = two_block_group_algebra_codes(A,B)
+
+G = small_group(40,8)
+GA = group_algebra(GF(2), G)
+r, s  = gens(GA);
+A = 1 + s*r^5 + r^5 + s*r^6
+B = 1 + s^2 + r + s^2*r^3
+nonabel3 = two_block_group_algebra_codes(A,B)
+
+test_nonabelian_codes = [nonabel1, nonabel2, nonabel3]
 
 other_lifted_product_codes = []
 

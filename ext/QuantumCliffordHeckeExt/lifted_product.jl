@@ -89,7 +89,7 @@ julia> using QuantumClifford.ECC: two_block_group_algebra_codes, code_n, code_k,
 
 julia> import Hecke: gens, quo, group_algebra, GF, one;
 
-julia> import Oscar: free_group, small_group_identification, describe, order, dihedral_group;
+julia> using Oscar: cyclic_group, automorphism_group, hom, semidirect_product;
 
 julia> m = 6;
 
