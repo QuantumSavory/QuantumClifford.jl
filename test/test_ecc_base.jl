@@ -7,7 +7,7 @@ using InteractiveUtils
 
 import Nemo: GF
 import LinearAlgebra
-import Hecke: group_algebra, abelian_group, gens
+import Hecke: group_algebra, abelian_group, gens, small_group
 
 # generate instances of all implemented codes to make sure nothing skips being checked
 
@@ -46,6 +46,17 @@ test_gb_codes = [
 test_hcubic_codes = [
     haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 3)
 ]
+
+# Lifted product codes using non-commutative algebras
+
+G = small_group(36,1)
+GA = group_algebra(GF(2), G)
+r, s  = gens(GA);
+A = 1 + r
+B = 1 + s + r^6 + s^3*r + s*r^7 + s^3*r^5
+nonabel1 = two_block_group_algebra_codes(A,B)
+
+test_nonabelian_codes = [nonabel1]
 
 other_lifted_product_codes = []
 
@@ -155,7 +166,7 @@ const code_instance_args = Dict(
     :CSS => (c -> (parity_checks_x(c), parity_checks_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
     :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
     :CircuitCode => random_circuit_code_args,
-    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, other_lifted_product_codes)),
+    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, test_nonabelian_codes, other_lifted_product_codes)),
     :QuantumReedMuller => [3, 4, 5],
     :Triangular488 => [3, 5, 7, 9, 11],
     :Triangular666 => [3, 5, 7, 9, 11]
