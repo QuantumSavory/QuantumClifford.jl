@@ -62,7 +62,7 @@ julia> base_matrix = [0 0 0 0; 0 1 2 5; 0 6 3 1]; l = 7;
 
 julia> c2 = LPCode(base_matrix, l .- base_matrix', l);
 
-julia> code_n(c2), code_k(c2) # discrepency here: code_k returns 9 here... instead of 19
+julia> code_n(c2), code_k(c2)
 (175, 9)
 ```
 
@@ -128,16 +128,33 @@ end
 
 iscss(::Type{LPCode}) = true
 
+function hgp(h₁::GroupAlgebraElemMatrix, h₂::GroupAlgebraElemMatrix)
+    r₁, n₁ = size(h₁)
+    r₂, n₂ = size(h₂)
+    # here we use `permutdims` instead of `transpose` to avoid recursive call
+    # convert LinearAlgebra.I to Matrix to fix incompatibility with Julia 1.11.1
+    # TODO the performance may be affected by this workaround for large codes
+    hx = hcat(kron(h₁, Matrix(LinearAlgebra.I(n₂))), kron(Matrix(LinearAlgebra.I(r₁)), permutedims(group_algebra_conj.(h₂))))
+    hz = hcat(kron(Matrix(LinearAlgebra.I(n₁)), h₂), kron(permutedims(group_algebra_conj.(h₁)), Matrix(LinearAlgebra.I(r₂))))
+    hx, hz
+end
+
 function parity_checks_xz(c::LPCode)
-    ma, na = size(c.A)
-    mb, nb = size(c.B)
-    Â = concat_lift_repr(c.A_repr, c.A) # ρ(A) right regular repr
-    B̂ = concat_lift_repr(c.B_repr, c.B) # λ(B) left regular repr
-    B̂ᵀ = concat_lift_repr(c.B_repr, permutedims(group_algebra_conj.(c.B))) # λ(B*)
-    Âᵀ = concat_lift_repr(c.A_repr, permutedims(group_algebra_conj.(c.A))) # ρ(A*)
-    Ĥ_X = [kron(Â, Matrix(LinearAlgebra.I, mb, mb)) kron(Matrix(LinearAlgebra.I, ma, ma), B̂)] # [Â⊗I | I⊗B̂]
-    Ĥ_Z = [kron(Matrix(LinearAlgebra.I, na, na), B̂ᵀ) kron(Âᵀ, Matrix(LinearAlgebra.I, nb, nb))] # [I⊗B̂ᵀ | Âᵀ⊗I]
-    return Ĥ_X, Ĥ_Z
+    if is_commutative(c.GA)
+        repr = c.B_repr
+        hx, hz = hgp(c.A, permutedims(group_algebra_conj.(c.B)))
+        hx, hz = concat_lift_repr(repr, hx), concat_lift_repr(repr, hz)
+    else
+        Â = concat_lift_repr(c.A_repr, c.A) # Right regular (ρ) repr
+        B̂ = concat_lift_repr(c.B_repr, c.B) # Left regular (λ) repr
+        B̂ᵀ = concat_lift_repr(c.B_repr, permutedims(group_algebra_conj.(c.B))) # λ(B*)
+        Âᵀ = concat_lift_repr(c.A_repr, permutedims(group_algebra_conj.(c.A))) # ρ(A*)
+        ma, na = size(c.A)
+        mb, nb = size(c.B)
+        hx = [kron(Â, Matrix(LinearAlgebra.I, mb, mb)) kron(Matrix(LinearAlgebra.I, ma, ma), B̂)]
+        hz = [kron(Matrix(LinearAlgebra.I, na, na), B̂ᵀ) kron(Âᵀ, Matrix(LinearAlgebra.I, nb, nb))]
+    end
+    return hx, hz
 end
 
 parity_checks_x(c::LPCode) = parity_checks_xz(c)[1]
