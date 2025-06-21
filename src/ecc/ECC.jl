@@ -108,6 +108,9 @@ end
 
 code_k(c::AbstractECC) = code_k(parity_checks(c))
 
+"""Abstract type representing algorithms for computing the minimum distance of quantum error correction codes."""
+abstract type AbstractDistanceAlg end
+
 """
 $TYPEDEF
 
