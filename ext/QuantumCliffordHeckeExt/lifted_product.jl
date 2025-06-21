@@ -296,7 +296,7 @@ we want. All examples are of codes discovered in [lin2023quantumtwoblockgroupalg
 Here is an example of `[[96, 12, 10]]` non-abelian 2BGA code with presentation `⟨r, s|s⁶, r⁸,r⁻¹srs⟩`.
 
 ```jldoctest sg
-julia> using QuantumClifford.ECC; using Oscar; import Hecke; using QuantumClifford;
+julia> using QuantumClifford.ECC; import Oscar; import Hecke; using QuantumClifford;
 
 julia> l = 48;
 

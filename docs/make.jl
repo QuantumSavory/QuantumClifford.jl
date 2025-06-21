@@ -6,7 +6,7 @@ using DocumenterCitations
 using QuantumClifford
 using QuantumClifford.Experimental.NoisyCircuits
 using QuantumInterface
-using Oscar
+import Oscar
 
 ENV["HECKE_PRINT_BANNER"] = "false"
 import Hecke
