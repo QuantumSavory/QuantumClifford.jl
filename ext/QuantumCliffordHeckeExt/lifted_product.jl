@@ -291,7 +291,7 @@ Below we show how you can use the lighter package `Hecke` to pick some of the pr
 generators you get is actually the one obeying the relations specific to the presentation
 we want. All examples are of codes discovered in [lin2023quantumtwoblockgroupalgebra](@cite).
 
-#### Hecke.small_group(l, Id)
+#### Example
 
 Here is an example of `[[96, 12, 10]]` non-abelian 2BGA code with presentation `⟨r, s|s⁶, r⁸,r⁻¹srs⟩`.
 
