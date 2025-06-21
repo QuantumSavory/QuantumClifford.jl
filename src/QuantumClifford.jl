@@ -8,7 +8,7 @@ module QuantumClifford
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
 import LinearAlgebra
-using LinearAlgebra: inv, mul!, rank, Adjoint, dot
+using LinearAlgebra: inv, mul!, rank, Adjoint, dot, tr
 import DataStructures
 using DataStructures: DefaultDict, Accumulator
 using Combinatorics: combinations
