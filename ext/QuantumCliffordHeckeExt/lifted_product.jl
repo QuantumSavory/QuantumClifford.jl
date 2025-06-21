@@ -273,46 +273,112 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 
 ### Small Groups
 
-An abelian `[[60, 6, 10]]` 2BGA code  of order `l = 30` with group ID `4`, represented
-by the group presentation `⟨r | r³⁰⟩`, constructed via `Hecke.small_group(4,30)`. Note:
-Hecke's small groups are limited in scope and should only be used for single cyclic groups.
+Two group algebra codes are defined by specifying polynomials made out of group
+generators (hence the "group algebra" in the name). It is not sufficient to just
+pick a group, rather youneed specific choices for the generators, usually doneby
+specifying a ["group presentation"](https://en.wikipedia.org/wiki/Presentation_of_a_group).
+
+A "group presentation" is a set of generators together with a list of relations obeyed
+by these generators. The `Oscar` package has the tooling necessary to define such
+presentations succinctly and directly, but it is a rather heavy package. The much lighter
+package `Hecke` provides for an easy way to get sets of generators for many "small groups",
+but it does not necessary provide the generators that obey the relations we want (as there can
+be many different sets of generators for the same group) — nonetheless, if we manually confirm
+the relations, we can use `Hecke` directly.
+
+Below we show how you can use the lighter package `Hecke` to pick some of the pre-defined
+"small groups" in it, however, as we mentioned, it is important to verify that the set of
+generators you get is actually the one obeying the relations specific to the presentation
+we want. All examples are of codes discovered in [lin2023quantumtwoblockgroupalgebra](@cite).
+
+#### Hecke.small_group(l, Id)
+
+Here is an example of `[[96, 12, 10]]` non-abelian 2BGA code with presentation `⟨r, s|s⁶, r⁸,r⁻¹srs⟩`.
 
 ```jldoctest sg
-julia> import Hecke: group_algebra, GF, abelian_group, gens, small_group; using QuantumClifford.ECC;
+julia> using QuantumClifford.ECC; using Oscar; import Hecke; using QuantumClifford;
 
-julia> l = 30;
+julia> l = 48;
 
-julia> group_id = 4;
+julia> group_id = 9;
 
-julia> G = small_group(l, group_id);
+julia> G = Hecke.small_group(l,group_id);
+
+julia> gens(G)
+5-element Vector{PcGroupElem}:
+ f1
+ f2
+ f3
+ f4
+ f5
+
+julia> order.(gens(G)[1:length(gens(G))])
+5-element Vector{ZZRingElem}:
+ 8
+ 2
+ 4
+ 2
+ 3
 
 julia> GA = group_algebra(GF(2), G);
 
-julia> r = prod(gens(GA));
-```
+julia> Oscar.describe(G)
+"C2 x (C3 : C8)"
 
-!!! note
-    When using `Hecke.small_group`, it is essential to verify that the
-    presentation for the single cyclic group is satisfied before proceeding with
-    the code construction. This method serves as a workaround for creating small
-    groups, specifically for single cyclic groups, using a group presentation with
-    *no extra relations*, such as `⟨r | r³⁰⟩`. For the construction of *general*
-    groups with specific group presentations, the only effective method is to use
-    *finitely presented groups* (`Oscar.FPGroup`), which allow for defining direct
-    products of two or more *general* groups—something not supported by Hecke.
+julia> H, _  = sub(G, [gens(G)[1], gens(G)[2], gens(G)[5]]);
 
-julia> r^30  ==  1
+julia> H == G
 true
 
-julia> A = 1 + r^10 + r^6  + r^13;
+julia> r = gens(GA)[1]*gens(GA)[2];
 
-julia> B = 1 + r^25 + r^16 + r^12;
+julia> s = gens(GA)[5];
 
-julia> c = two_block_group_algebra_codes(A,B);
+julia> s^6 == r^8 == r^-1*s*r*s
+true
 
-julia> code_n(c), code_k(c)
-(60, 6)
+julia> a = 1 + r + s^3*r^2 + s^2*r^3;
+
+julia> b = 1 + r + s^4*r^6 + s^5*r^3;
+
+julia> cₕ = two_block_group_algebra_codes(a,b);
+
+julia> code_n(cₕ), code_k(cₕ)
+(96, 12)
 ```
+
+And now we do the same directly with `Oscar.small_group(l, id)`
+
+```jldoctest sg
+julia> m = 8; n = 6;
+
+julia> F = free_group(["s", "r"]);
+
+julia> s, r = gens(F);
+
+julia> G, = quo(F, [s^n, r^m, r^-1*s*r*s]);
+
+julia> GA = group_algebra(GF(2), G);
+
+julia> s, r = gens(G);
+
+julia> s^n == r^m == r^-1*s*r*s
+true
+
+julia> a_elts = [one(G), r, s^3*r^2, s^2*r^3];
+
+julia> b_elts = [one(G), r, s^4*r^6, s^5*r^3];
+
+julia> a = sum(GA(z) for z in a_elts);
+
+julia> b = sum(GA(z) for z in b_elts);
+
+julia> cₒ = two_block_group_algebra_codes(a,b);
+
+julia> code_n(cₒ), code_k(cₒ)
+(96, 12)
+```
+
 See also: [`QuantumClifford.ECC.LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
 """
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
