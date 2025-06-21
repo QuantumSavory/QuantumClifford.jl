@@ -8,7 +8,7 @@ module QuantumClifford
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
 import LinearAlgebra
-using LinearAlgebra: inv, mul!, rank, Adjoint, dot
+using LinearAlgebra: inv, mul!, rank, Adjoint, dot, tr
 import DataStructures
 using DataStructures: DefaultDict, Accumulator
 using Combinatorics: combinations
@@ -110,9 +110,6 @@ function __init__()
     BIG_INT_TWO[] = BigInt(2)
     BIG_INT_FOUR[] = BigInt(4)
 
-    Hecke_codes = [:two_block_group_algebra_codes, :generalized_bicycle_codes, :bicycle_codes, :haah_cubic_codes]
-    Oscar_codes = [:twobga_from_direct_product, :twobga_from_fp_group]
-
     # Register error hint for the `project!` method for GeneralizedStabilizer
     if isdefined(Base.Experimental, :register_error_hint)
         Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
@@ -131,10 +128,6 @@ function __init__()
                 `import JuMP, HiGHS; distance(code, DistanceMIPAlgorithm(solver=HiGHS))` or another MIP solver""")
             elseif exc.f === ECC.distance && length(argtypes)==2 && argtypes[2]===ECC.DistanceMIPAlgorithm
                 print(io,"""\nPlease first import `JuMP` to make MIP-based distance calculation available.""")
-            elseif Symbol(exc.f) in Hecke_codes
-                print(io,"""\nPlease first import `Hecke` to make codes that depend on the Hecke CAS available.""")
-            elseif Symbol(exc.f) in Oscar_codes
-                print(io,"""\nPlease first import `Oscar` to make codes that depend on the Oscar CAS available.""")
             end
         end
     end
@@ -541,6 +534,8 @@ function Destabilizer(s::Stabilizer)
     end
 end
 
+Destabilizer(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = Destabilizer(Stabilizer(Tableau(paulis)))
+
 Base.length(d::Destabilizer) = length(tab(d))÷2
 
 Base.copy(d::Destabilizer) = Destabilizer(copy(tab(d)))
@@ -567,6 +562,7 @@ function MixedStabilizer(s::Stabilizer{T}) where {T}
 end
 
 MixedStabilizer(s::Stabilizer,rank::Int) = MixedStabilizer(tab(s), rank)
+MixedStabilizer(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = MixedStabilizer(Stabilizer(Tableau(paulis)))
 
 Base.length(d::MixedStabilizer) = length(tab(d))
 
@@ -667,6 +663,7 @@ end
 
 MixedDestabilizer(d::MixedStabilizer) = MixedDestabilizer(stabilizerview(d))
 MixedDestabilizer(d::MixedDestabilizer) = d
+MixedDestabilizer(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = MixedDestabilizer(Stabilizer(Tableau(paulis)))
 
 Base.length(d::MixedDestabilizer) = length(tab(d))÷2
 

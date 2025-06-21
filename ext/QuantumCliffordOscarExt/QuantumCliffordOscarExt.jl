@@ -10,7 +10,7 @@ import Oscar
 import Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup,
     BasicGAPGroupElem, DirectProductGroup, cyclic_group
 
-import QuantumClifford.ECC: two_block_group_algebra_codes
+import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export twobga_from_direct_product, twobga_from_fp_group

@@ -153,9 +153,9 @@ test_bb_codes = [bb1, bb2, bb3]
 test_twobga_codes = []
 
 @static if !Sys.iswindows()
-  try
-    import Oscar: free_group, cyclic_group, direct_product
-    @info "Add group theoretic codes requiring Oscar"
+  import Oscar: free_group, cyclic_group, direct_product
+  function load_oscar_codes()
+    #@info "Add group theoretic codes requiring Oscar"
     # [[72, 8, 9]] 2BGA code taken from Table I Block 1 of [lin2024quantum](@cite)
     F = free_group(["r"])
     r = gens(F)[1]
@@ -220,12 +220,10 @@ test_twobga_codes = []
     dprod2 = twobga_from_direct_product(a, b, GA)
 
     append!(test_twobga_codes, [t1b1, t1b3, tb21, tb22, dprod1, dprod2])
-  catch e
-    @warn(e)
   end
+  load_oscar_codes()
 end
 
-@info "length(test_twobga_codes): $(length(test_twobga_codes))"
 
 const code_instance_args = Dict(
     :Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
