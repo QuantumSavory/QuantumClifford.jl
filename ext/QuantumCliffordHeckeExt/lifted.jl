@@ -35,11 +35,11 @@ However, we can find a `4×4` matrix representation for the group,
 e.g. by using the typical [`2×2` representation](https://en.wikipedia.org/wiki/Dihedral_group)
 and converting it into binary representation by replacing "1" with the Pauli I, and "-1" with the Pauli X matrix.
 
-See also: [`LPCode`](@ref).
+See also: [`QuantumClifford.ECC.LPCode`](@ref).
 
 $TYPEDFIELDS
 """
-struct LiftedCode <: ClassicalCode
+struct LiftedCode <: AbstractCECC
     """the base matrix of the code, whose elements are in a group algebra."""
     A::GroupAlgebraElemMatrix
     """the group algebra for which elements in `A` are from."""

@@ -1,9 +1,51 @@
 # Planned changes for v1.0.0:
 
-- `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
+- `permute` will be a wrapper around to `QuantumInterface.permutesystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
 
 # News
+
+## v0.10.0 - dev
+
+- `QuantumClifffordJuMPExt`: New extension enabling:
+    - Compute minimum distance for quantum LDPC codes via Mixed Integer Programming (MIP) using `JuMP`.
+    - Introduce the `AbstractDistanceAlg` interface in `QECCore`.
+- Improvements to `GeneralizedStabilizer` API:
+    - Tensor product operations:
+        - Between multiple `GeneralizedStabilizer` states: `genstab₁ ⊗ genstab₂ ⊗ ...`
+        - Between `GeneralizedStabilizer` and `AbstractStabilizer` states: `genstab ⊗ stab ⊗ ...`
+        - Between a `UnitaryPauliChannel` and one or more `PauliOperator` terms: `pcT ⊗ P"X" ⊗ ...`
+        - Between multiple `UnitaryPauliChannel`s: `pcT₁ ⊗ pcT₂ ⊗ ...`
+    - Product operations:
+        - Between a `UnitaryPauliChannel` and a `GeneralizedStabilizer`: `pcT * genstab`
+- `QuantumClifford` now depends on `QECCore`. `QECCore` is a new package separate from `QuantumClifford`, which specifies the interfaces and several essential error correction codes. Here are some changes to the function and type names:
+  - `parity_check_x` -> `parity_matrix_x` and `parity_check_z` -> `parity_matrix_z`
+  - `AbstractECC` -> `AbstractQECC`
+  - `ClassicalCode` -> `AbstractCECC`
+- **(breaking)** `StabMixture` was renamed to `GeneralizedStabilizer`.
+- **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in nonclifford functionality.
+- `expect` is now implemented for `GeneralizedStabilizer`.
+- Constructing a `Destabilizer` out of a full-rank `Stabilizer` does not require a canonicalization anymore, i.e. `stabilizerview(Destabilizer(s))==s` is guaranteed.
+- The `maximally_mixed` function is now available for creating maximally mixed multi-qubit states.
+- `projectrand!` is now implemented for `GeneralizedStabilizer`.
+
+## unreleased
+
+- Much faster indexing and slicing of `PauliOperator`.
+
+## v0.9.19 - 2025-04-08
+
+- `permutesystems` and `permutesystems!` are no implemented, deprecating `permute` and `permute!`
+
+## v0.9.18 - 2025-02-19
+
+- Fixes for rare crashes in the python BP decoders.
+- Less repetitive error messages.
+
+## v0.9.17 - 2025-02-18
+
+- New memory structure and matrix inversion function for `random_destabilizer`, to reduce allocations and speed up repeated generation of many random destabilizers.
+- Improvements to allocations in `apply!`
 
 ## v0.9.16 - 2024-12-29
 

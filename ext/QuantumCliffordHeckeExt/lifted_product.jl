@@ -176,8 +176,10 @@ julia> B = 1 + x^7 + s + x^8 + s*x^7 + x;
 
 julia> c = two_block_group_algebra_codes(A,B);
 
-julia> code_n(c), code_k(c)
-(56, 28)
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(56, 28, 2)
 ```
 
 ### Bivariate Bicycle codes
@@ -233,8 +235,10 @@ julia> B = x + z^5 + y^5 + y^2;
 
 julia> c = two_block_group_algebra_codes(A, B);
 
-julia> code_n(c), code_k(c)
-(48, 4)
+julia> import HiGHS
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(48, 4, 6)
 ```
 
 ### Coprime Bivariate Bicycle code
@@ -261,8 +265,10 @@ julia> B = 𝜋^8 + 𝜋^14 + 𝜋^47;
 
 julia> c = two_block_group_algebra_codes(A, B);
 
-julia> code_n(c), code_k(c)
-(108, 12)
+julia> import HiGHS
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(108, 12, 6)
 ```
 
 ### Small Groups
@@ -285,16 +291,16 @@ julia> GA = group_algebra(GF(2), G);
 julia> r = prod(gens(GA));
 ```
 
-!!! note When using `Hecke.small_group`, it is essential to verify that the
-presentation for the single cyclic group is satisfied before proceeding with
-the code construction. This method serves as a workaround for creating small
-groups, specifically for single cyclic groups, using a group presentation with
-*no extra relations*, such as `⟨r | r³⁰⟩`. For the construction of *general*
-groups with specific group presentations, the only effective method is to use
-*finitely presented groups* (`Oscar.FPGroup`), which allow for defining direct
-products of two or more *general* groups—something not supported by Hecke.
+!!! note
+    When using `Hecke.small_group`, it is essential to verify that the
+    presentation for the single cyclic group is satisfied before proceeding with
+    the code construction. This method serves as a workaround for creating small
+    groups, specifically for single cyclic groups, using a group presentation with
+    *no extra relations*, such as `⟨r | r³⁰⟩`. For the construction of *general*
+    groups with specific group presentations, the only effective method is to use
+    *finitely presented groups* (`Oscar.FPGroup`), which allow for defining direct
+    products of two or more *general* groups—something not supported by Hecke.
 
-```jldoctest sg
 julia> r^30  ==  1
 true
 
@@ -307,8 +313,7 @@ julia> c = two_block_group_algebra_codes(A,B);
 julia> code_n(c), code_k(c)
 (60, 6)
 ```
-
-See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
+See also: [`QuantumClifford.ECC.LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
 """
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
     LPCode([a;;], [b;;])
