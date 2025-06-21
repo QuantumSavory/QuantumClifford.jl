@@ -92,35 +92,38 @@ struct LPCode <: AbstractECC
     """the group algebra for which elements in `A` and `B` are from."""
     GA::GroupAlgebra
     """
-    a function that converts a group algebra element to a binary matrix;
-    default to be the permutation representation for GF(2)-algebra."""
-    repr::Function
+    a function that converts a group algebra element to a binary matrix for `A`;
+    default to be the right regular representation for `GF(2)`-algebra."""
+    A_repr::Function
+    """
+    a function that converts a group algebra element to a binary matrix for B;
+    default to be the left regular representation for `GF(2)`-algebra."""
+    B_repr::Function
 
-    function LPCode(A::GroupAlgebraElemMatrix, B::GroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]), repr::Function)
+    function LPCode(A::GroupAlgebraElemMatrix, B::GroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]), A_repr::Function=x->representation_matrix(x, :right), B_repr::Function=x->representation_matrix(x, :left))
         all(elem.parent == GA for elem in A) && all(elem.parent == GA for elem in B) || error("The base rings of all elements in both matrices must be the same as the group algebra")
-        new(A, B, GA, repr)
+        new(A, B, GA, A_repr, B_repr)
     end
 
-    function LPCode(c₁::LiftedCode, c₂::LiftedCode; GA::GroupAlgebra=c₁.GA, repr::Function=c₁.repr)
-        # we are using the group algebra and the representation function of the first lifted code
+    function LPCode(c₁::LiftedCode, c₂::LiftedCode; GA::GroupAlgebra=c₁.GA, A_repr::Function=x->representation_matrix(x, :right), B_repr::Function=x->representation_matrix(x, :left))
         c₁.GA == GA && c₂.GA == GA || error("The base rings of both lifted codes must be the same as the group algebra")
-        new(c₁.A, c₂.A, GA, repr)
+        new(c₁.A, c₂.A, GA, A_repr, B_repr)
     end
 end
 
 # TODO document and doctest example
 function LPCode(A::FqFieldGroupAlgebraElemMatrix, B::FqFieldGroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]))
-    LPCode(LiftedCode(A; GA=GA, repr=representation_matrix), LiftedCode(B; GA=GA, repr=representation_matrix); GA=GA, repr=representation_matrix)
+    LPCode(LiftedCode(A; GA=GA,repr=x->representation_matrix(x, :right)), LiftedCode(B; GA=GA, repr=x->representation_matrix(x, :left)); GA=GA, A_repr=x->representation_matrix(x, :right), B_repr=x->representation_matrix(x, :left))
 end
 
 # TODO document and doctest example
 function LPCode(group_elem_array1::Matrix{<: GroupOrAdditiveGroupElem}, group_elem_array2::Matrix{<: GroupOrAdditiveGroupElem}; GA::GroupAlgebra=group_algebra(GF(2), parent(group_elem_array1[1,1])))
-    LPCode(LiftedCode(group_elem_array1; GA=GA), LiftedCode(group_elem_array2; GA=GA); GA=GA, repr=representation_matrix)
+    LPCode(LiftedCode(group_elem_array1; GA=GA), LiftedCode(group_elem_array2; GA=GA); GA=GA, A_repr=x->representation_matrix(x, :right), B_repr=x->representation_matrix(x, :left))
 end
 
 # TODO document and doctest example
 function LPCode(shift_array1::Matrix{Int}, shift_array2::Matrix{Int}, l::Int; GA::GroupAlgebra=group_algebra(GF(2), abelian_group(l)))
-    LPCode(LiftedCode(shift_array1, l; GA=GA), LiftedCode(shift_array2, l; GA=GA); GA=GA, repr=representation_matrix)
+    LPCode(LiftedCode(shift_array1, l; GA=GA), LiftedCode(shift_array2, l; GA=GA); GA=GA, A_repr=x->representation_matrix(x, :right), B_repr=x->representation_matrix(x, :left))
 end
 
 iscss(::Type{LPCode}) = true
@@ -137,8 +140,20 @@ function hgp(h₁::GroupAlgebraElemMatrix, h₂::GroupAlgebraElemMatrix)
 end
 
 function parity_checks_xz(c::LPCode)
-    hx, hz = hgp(c.A, permutedims(group_algebra_conj.(c.B)))
-    hx, hz = concat_lift_repr(c.repr,hx), concat_lift_repr(c.repr,hz)
+    if is_commutative(c.GA)
+        repr = c.B_repr
+        hx, hz = hgp(c.A, permutedims(group_algebra_conj.(c.B)))
+        hx, hz = concat_lift_repr(repr, hx), concat_lift_repr(repr, hz)
+    else
+        Â = concat_lift_repr(c.A_repr, c.A) # ρ(A) right regular repr
+        B̂ = concat_lift_repr(c.B_repr, c.B) # λ(B) left regular repr
+        B̂ᵀ = concat_lift_repr(c.B_repr, permutedims(group_algebra_conj.(c.B))) # λ(B*)
+        Âᵀ = concat_lift_repr(c.A_repr, permutedims(group_algebra_conj.(c.A))) # ρ(A*)
+        ma, na = size(c.A)
+        mb, nb = size(c.B)
+        hx = [kron(Â, Matrix(LinearAlgebra.I, mb, mb)) kron(Matrix(LinearAlgebra.I, ma, ma), B̂)] # [Â⊗I | I⊗B̂]
+        hz = [kron(Matrix(LinearAlgebra.I, na, na), B̂ᵀ) kron(Âᵀ, Matrix(LinearAlgebra.I, nb, nb))] # [I⊗B̂ᵀ | Âᵀ⊗I]
+    end
     return hx, hz
 end
 
@@ -148,9 +163,9 @@ parity_checks_z(c::LPCode) = parity_checks_xz(c)[2]
 
 parity_checks(c::LPCode) = parity_checks(CSS(parity_checks_xz(c)...))
 
-code_n(c::LPCode) = size(c.repr(zero(c.GA)), 2) * (size(c.A, 2) * size(c.B, 1) + size(c.A, 1) * size(c.B, 2))
+code_n(c::LPCode) = size(c.A_repr(zero(c.GA)), 2) * (size(c.A, 2) * size(c.B, 1) + size(c.A, 1) * size(c.B, 2))
 
-code_s(c::LPCode) = size(c.repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) + size(c.A, 2) * size(c.B, 2))
+code_s(c::LPCode) = size(c.A_repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) + size(c.A, 2) * size(c.B, 2))
 
 """
 Two-block group algebra (2BGA) codes, which are a special case of lifted product codes
