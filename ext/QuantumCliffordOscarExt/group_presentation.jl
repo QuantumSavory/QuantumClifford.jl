@@ -31,7 +31,7 @@ See also: [`two_block_group_algebra_codes`](@ref), [`twobga_from_direct_product`
 ## Examples
 
 The [[96, 12, 10]] 2BGA code from Table I in [lin2024quantum](@cite) has the group presentation
-`⟨r, s | s⁶ = r⁸ = r⁻¹srs = 1⟩` and a group structure of `C₂ × (C₃ ⋉ C₈)`.
+`⟨r, s | s⁶ = r⁸ = r⁻¹srs = 1⟩` (the group `C₂ × (C₃ ⋉ C₈)`).
 
 ```jldoctest finitegrp
 julia> import Oscar: free_group, small_group_identification, describe, order
@@ -67,13 +67,10 @@ julia> describe(G), small_group_identification(G)
 ### Cyclic Groups
 
 Cyclic groups with specific group presentations, given by `Cₘ = ⟨x, s | xᵐ = s² = xsx⁻¹s⁻¹ = 1⟩`,
-where the order is `2m`, are supported.
-
-To construct the group algebra for a cyclic group, specify the group presentation `⟨S | R⟩`, using
-its generators `S` and defining relations `R`.
+where the order is `2m` as seen in Table II of [lin2024quantum](@cite).
 
 The [[56, 28, 2]] abelian 2BGA code from Appendix C, Table II in [lin2024quantum](@cite) is constructed using
-the cyclic group `C₂₈ = C₁₄ × C₂`.
+the group presentation `⟨x, s | xs = sx, xᵐ = s² = 1⟩` (the cyclic group `C₂₈ = C₁₄ × C₂`).
 
 ```jldoctest finitegrp
 julia> m = 14;
@@ -106,14 +103,11 @@ julia> describe(G), small_group_identification(G)
 
 ### Dihedral Groups
 
-Dihedral groups with specific group presentations, given by `Dₘ = ⟨r, s | rᵐ = s² = (rs)² = 1⟩`,
-where the order is `2m`, are supported.
-
-To construct the group algebra for a dihedral group, specify the group presentation `⟨S | R⟩`
-using its generators `S` and defining relations `R`.
+Dihedral (non-abelian) groups with group presentations given by `Dₘ = ⟨r, s | rᵐ = s² = (rs)² = 1⟩`,
+where the order is `2m`.
 
 The [[24, 8, 3]] 2BGA code from Appendix C, Table III in [lin2024quantum](@cite) is constructed
-using the dihedral group `D₆ = C₆ ⋉ C₂`.
+by specifying a group presentation below (giving the group `D₆ = C₆ ⋉ C₂`).
 
 ```jldoctest finitegrp
 julia> m = 6;
@@ -143,7 +137,12 @@ julia> code_n(c), code_k(c)
 julia> describe(G), small_group_identification(G)
 ("D12", (12, 4))
 ```
-""" # TODO check these examples
+
+!!! note
+    Notice how in all of these construction we are specifying a group presentation.
+    We are explicitly **not** picking a group by name and getting its "canonical" generators,
+    as we do not a priori know whether Oscar would give us the generating set we need (generating sets are not unique).
+"""
 function twobga_from_fp_group(a_elts::VectorFPGroupElem, b_elts::VectorFPGroupElem, F2G::FqFieldFPGroupAlgebra)
     a = sum(F2G(x) for x in a_elts)
     b = sum(F2G(x) for x in b_elts)

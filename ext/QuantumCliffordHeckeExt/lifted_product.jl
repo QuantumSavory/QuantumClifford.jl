@@ -284,7 +284,6 @@ julia> import HiGHS
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (108, 12, 6)
 ```
-#TODO check all the examples above
 """
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
     LPCode([a;;], [b;;])
