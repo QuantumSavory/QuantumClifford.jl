@@ -38,6 +38,8 @@ julia> import Oscar: free_group, small_group_identification, describe, order
 
 julia> import Hecke: gens, quo, group_algebra, GF, one
 
+julia> using QuantumClifford, QuantumClifford.ECC
+
 julia> F = free_group(["r", "s"]);
 
 julia> r, s = gens(F); # generators

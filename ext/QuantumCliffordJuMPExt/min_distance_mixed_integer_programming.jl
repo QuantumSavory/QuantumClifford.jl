@@ -41,8 +41,8 @@ its elements having a weight of four. This discrepancy occurs because stabilizer
 are defined by parity-check matrices, while their minimum distances are determined by
 the dual [Sabo:2022smk](@cite).
 
-```jldoctest example
-julia> using QuantumClifford.ECC: Steane7, distance;
+```jldoctest
+julia> using QuantumClifford, QuantumClifford.ECC
 
 julia> c = parity_checks(Steane7());
 
@@ -107,10 +107,10 @@ where `k` is the number of logical qubits.
 A [[40, 8, 5]] 2BGA code with the minimum distance of 5 from
 Table 2 of [lin2024quantum](@cite).
 
-```jldoctest examples
+```jldoctest jumpexamples
 julia> import Hecke: group_algebra, GF, abelian_group, gens; import HiGHS; import JuMP;
 
-julia> using QuantumClifford.ECC: code_n, code_k, distance, two_block_group_algebra_codes, generalized_bicycle_codes, DistanceMIPAlgorithm; # hide
+julia> using QuantumClifford, QuantumClifford.ECC
 
 julia> l = 10; m = 2;
 
@@ -131,7 +131,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 A [[48, 6, 8]] GB code with the minimum distance of 8 from (A3)
 in Appendix B of [panteleev2021degenerate](@cite).
 
-```jldoctest examples
+```jldoctest jumpexamples
 julia> l = 24;
 
 julia> c1 = generalized_bicycle_codes([0, 2, 8, 15], [0, 2, 12, 17], l);

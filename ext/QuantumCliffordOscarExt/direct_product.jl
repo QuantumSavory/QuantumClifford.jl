@@ -40,6 +40,8 @@ julia> import Oscar: cyclic_group, small_group_identification, describe, order
 
 julia> import Hecke: gens, quo, group_algebra, GF, one, direct_product, sub
 
+julia> using QuantumClifford, QuantumClifford.ECC
+
 julia> m = 14; n = 2;
 
 julia> C₁₄ = cyclic_group(m);
