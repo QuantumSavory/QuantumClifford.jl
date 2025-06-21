@@ -83,3 +83,15 @@ end
     msa2 = canonicalize!(copy(mss))
     @test stabilizerview(msa1) == stabilizerview(msa2) == sa1
 end
+
+@testitem "canonicalization of vectors of Paulis" begin
+    p1 = [P"+XXX", p"-ZZI"]
+    p2 = (P"+XXX", p"-ZZI")
+    t = T"+XXX -ZZI"
+    s = S"+XXX -ZZI"
+    @test canonicalize!(p1) == canonicalize!(p2) == canonicalize!(t) == canonicalize!(s)
+    @test canonicalize_gott!(p1) == canonicalize_gott!(p2) == canonicalize_gott!(t) == canonicalize_gott!(s)
+    @test canonicalize_rref!(p1) == canonicalize_rref!(p2) == canonicalize_rref!(t) == canonicalize_reff!(s)
+    @test canonicalize_clip!(p1) == canonicalize_clip!(p2) == canonicalize_clip!(t) == canonicalize_clip!(s)
+    @test canonicalize_noncomm!(p1) == canonicalize_noncomm!(p2) == canonicalize_noncomm!(t)
+end

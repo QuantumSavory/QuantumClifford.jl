@@ -7,6 +7,8 @@
 
 ## v0.10.0 - dev
 
+- Various stabilizer data structures can now be constructed out of sequences of Paulis.
+- Most canonicalization routines can now act on sequences of Paulis.
 - `QuantumClifffordJuMPExt`: New extension enabling:
     - Compute minimum distance for quantum LDPC codes via Mixed Integer Programming (MIP) using `JuMP`.
     - Introduce the `AbstractDistanceAlg` interface in `QECCore`.

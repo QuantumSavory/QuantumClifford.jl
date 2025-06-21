@@ -169,7 +169,7 @@ struct Tableau{Tₚᵥ<:AbstractVector{UInt8}, Tₘ<:AbstractMatrix{<:Unsigned}}
     xzs::Tₘ
 end
 
-function Tableau(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ<:AbstractArray{UInt8,0},Tᵥₑ<:Unsigned,Tᵥ<:AbstractVector{Tᵥₑ}}
+function Tableau(paulis::Base.AbstractVecOrTuple{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ<:AbstractArray{UInt8,0},Tᵥₑ<:Unsigned,Tᵥ<:AbstractVector{Tᵥₑ}}
     r = length(paulis)
     n = nqubits(paulis[1])
     tab = zero(Tableau{Vector{UInt8},Matrix{Tᵥₑ}},r,n)::Tableau{Vector{UInt8},Matrix{Tᵥₑ}} # typeassert for JET
@@ -397,7 +397,7 @@ struct Stabilizer{T<:Tableau} <: AbstractStabilizer
 end
 
 Stabilizer(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ<:AbstractVector{UInt8}, Tₘ<:AbstractMatrix{<:Unsigned}} = Stabilizer(Tableau(phases, nqubits, xzs))
-Stabilizer(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = Stabilizer(Tableau(paulis))
+Stabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = Stabilizer(Tableau(paulis))
 Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xs, zs))
 Stabilizer(phases::AbstractVector{UInt8}, xzs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xzs))
 Stabilizer(xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tableau(xs,zs))
@@ -534,6 +534,8 @@ function Destabilizer(s::Stabilizer)
     end
 end
 
+Destabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = Destabilizer(Stabilizer(Tableau(paulis)))
+
 Base.length(d::Destabilizer) = length(tab(d))÷2
 
 Base.copy(d::Destabilizer) = Destabilizer(copy(tab(d)))
@@ -560,6 +562,7 @@ function MixedStabilizer(s::Stabilizer{T}) where {T}
 end
 
 MixedStabilizer(s::Stabilizer,rank::Int) = MixedStabilizer(tab(s), rank)
+MixedStabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = MixedStabilizer(Stabilizer(Tableau(paulis)))
 
 Base.length(d::MixedStabilizer) = length(tab(d))
 
@@ -660,6 +663,7 @@ end
 
 MixedDestabilizer(d::MixedStabilizer) = MixedDestabilizer(stabilizerview(d))
 MixedDestabilizer(d::MixedDestabilizer) = d
+MixedDestabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = MixedDestabilizer(Stabilizer(Tableau(paulis)))
 
 Base.length(d::MixedDestabilizer) = length(tab(d))÷2
 
