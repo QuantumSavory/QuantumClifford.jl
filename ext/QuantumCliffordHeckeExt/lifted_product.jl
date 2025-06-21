@@ -79,56 +79,6 @@ The default representation, provided by `Hecke`, is the permutation representati
 
 We also accept a custom representation function as detailed in [`LiftedCode`](@ref).
 
-
-## Non-commutative algebras
-
-Here is an `[[24, 8, 3]]` two block group algebra code using non-abelian dihedral group `Dₘ = ⟨r, s | rᵐ = s² = (rs)² = 1⟩`.
-
-```jldoctest
-julia> using QuantumClifford.ECC: two_block_group_algebra_codes, code_n, code_k, parity_checks;
-
-julia> import Hecke: gens, quo, group_algebra, GF, one;
-
-julia> import Oscar: cyclic_group, automorphism_group, hom, semidirect_product;
-
-julia> m = 6;
-
-julia> Cₘ = cyclic_group(m);
-
-julia> C₂ = cyclic_group(2);
-
-julia> A = automorphism_group(Cₘ);
-
-julia> au = A(hom(Cₘ,Cₘ,[Cₘ[1]],[Cₘ[1]^-1]));
-
-julia> f = hom(C₂,A,[C₂[1]],[au]);
-
-julia> G = semidirect_product(Cₘ,f,C₂);
-
-julia> GA = group_algebra(GF(2), G);
-
-julia> s, r = gens(GA);
-
-julia> a_elts = [one(r), r^4];
-
-julia> b_elts = [one(r), s*r^4, r^3, r^4, s*r^2, r];
-
-julia> a = sum(GA(x) for x in a_elts);
-
-julia> b = sum(GA(x) for x in b_elts);
-
-julia> c = two_block_group_algebra_codes(a,b);
-
-julia> order(G)
-12
-
-julia> describe(G)
-"D12"
-
-julia> code_n(c), code_k(c)
-(24, 8)
-```
-
 See also: [`LiftedCode`](@ref), [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref),
 [`haah_cubic_codes`](@ref).
 
