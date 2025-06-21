@@ -1,9 +1,22 @@
+using Pkg
+if Sys.iswindows()
+    @info "skipping Oscar tests (they currently do not run on Windows)"
+    @info "skipping GPU tests (set GPU_TESTS=true to test GPU (on non-Windows))"
+    Pkg.activate("windows")
+    Pkg.develop(PackageSpec(path = dirname(@__DIR__)))
+    Pkg.instantiate()
+elseif get(ENV, "GPU_TESTS", "") == "true"
+    Pkg.activate("gpu")
+    Pkg.develop(PackageSpec(path = dirname(@__DIR__)))
+    Pkg.instantiate()
+    @info "running with GPU tests"
+    # Pkg.activate
+else
+    @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"
+end
+
 using TestItemRunner
 using QuantumClifford
-
-if get(ENV, "GPU_TESTS", "") != "true"
-    println("skipping gpu tests (set GPU_TESTS=true to test gpu)")
-end
 
 # filter for the test
 testfilter = ti -> begin

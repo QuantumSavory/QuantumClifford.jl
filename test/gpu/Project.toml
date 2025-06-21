@@ -1,5 +1,5 @@
 [sources]
-QECCore = {path = "../lib/QECCore"}
+QECCore = {path = "../../lib/QECCore"}
 
 [deps]
 AbstractAlgebra = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
@@ -21,7 +21,6 @@ LDPCDecoders = "3c486d74-64b9-4c60-8b1a-13a564e77efb"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 Nemo = "2edaba10-b0f1-5616-af89-8c11ac63239a"
-Oscar = "f1435218-dba5-11e9-1e4d-f1a5fab5fc13"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PyQDecoders = "17f5de1a-9b79-4409-a58d-4d45812840f7"
 QECCore = "b50d4dc9-2544-401f-bae9-a24ba40d0c7a"
