@@ -110,6 +110,9 @@ function __init__()
     BIG_INT_TWO[] = BigInt(2)
     BIG_INT_FOUR[] = BigInt(4)
 
+    Hecke_codes = [:two_block_group_algebra_codes, :generalized_bicycle_codes, :bicycle_codes, :haah_cubic_codes]
+    Oscar_codes = [:twobga_from_direct_product, :twobga_from_fp_group]
+
     # Register error hint for the `project!` method for GeneralizedStabilizer
     if isdefined(Base.Experimental, :register_error_hint)
         Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
@@ -128,6 +131,10 @@ function __init__()
                 `import JuMP, HiGHS; distance(code, DistanceMIPAlgorithm(solver=HiGHS))` or another MIP solver""")
             elseif exc.f === ECC.distance && length(argtypes)==2 && argtypes[2]===ECC.DistanceMIPAlgorithm
                 print(io,"""\nPlease first import `JuMP` to make MIP-based distance calculation available.""")
+            elseif Symbol(exc.f) in Hecke_codes
+                print(io,"""\nPlease first import `Hecke` to make codes that depend on the Hecke CAS available.""")
+            elseif Symbol(exc.f) in Oscar_codes
+                print(io,"""\nPlease first import `Oscar` to make codes that depend on the Oscar CAS available.""")
             end
         end
     end

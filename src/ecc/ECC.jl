@@ -414,10 +414,4 @@ include("codes/color_codes.jl")
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
 
-# group presentation
-include("codes/twobga_ext/group_presentation.jl")
-
-# direct product
-include("codes/twobga_ext/direct_product.jl")
-
 end #module

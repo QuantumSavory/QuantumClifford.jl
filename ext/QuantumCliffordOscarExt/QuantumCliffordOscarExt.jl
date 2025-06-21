@@ -12,6 +12,9 @@ import Oscar: free_group, small_group_identification, describe, order, FPGroupEl
 
 import QuantumClifford.ECC: two_block_group_algebra_codes
 
+# exported from extension so that Documenter.jl sees them when autogenerating API lists
+export twobga_from_direct_product, twobga_from_fp_group
+
 include("types.jl")
 include("direct_product.jl")
 include("group_presentation.jl")

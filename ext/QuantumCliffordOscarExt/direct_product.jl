@@ -1,44 +1,34 @@
 """
-# Direct Product of Groups
+$TYPEDSIGNATURES
 
-The direct product of groups is instrumental in constructing group algebra of two-block
-group algebra code. Lin and Pryadko illustrate this method in Appendix C, Table 2 of
-[lin2024quantum](@cite), where they utilize the direct product of two cyclic groups,
-expressed as `C₂ₘ = Cₘ × C₂`, with an order of `2m`.
+Constructing two block group algebra codes by specifying the direct product to be used.
+See also the more general [`two_block_group_algebra_codes`](@ref).
 
-`Hecke.jl` contains only abelian groups and a list of all finite groups of order up to 100.
-`Oscar.jl` brings in comprehensive functionality for computational group theory, including
-support for **arbitrary finitely presented groups** (groups of the form `⟨X | S⟩`. `Oscar.jl`
-supports the **direct product** operation between two or more arbitrary **general** groups,
+Two block group algebra codes are constructed by choosing a group (and specific generators),
+then choosing two polynomials made out of these generators,
+then piping these two polynomials as the elements of `1×1` matrices to the
+lifted product code constructors.
+
+The Hecke library, for which we already have an extension, provides for a fairly easy way
+to construct such polynomials for many abelian and small groups.
+See [`two_block_group_algebra_codes`](@ref) for those capabilities.
+
+However, more esoteric groups can be specified as the direct product of other groups.
+To support arbitrary direct products we use Oscar, which builds upon Hecke.
+Oscar supports the **direct product** operation between two or more arbitrary **general** groups,
 including non-abelian groups such as `alternating_group`, `dihedral_group`, `symmetric_group`,
 and even arbitrary finitely presented groups (e.g., `free_group`). This capability is not
 available in `Hecke.jl`. The 2BGA codes discovered in [lin2024quantum](@cite) rely on direct
 products of two or more *general* groups, which necessitate the use of `Oscar.direct_product`.
 
-The schematic below illustrates the limitations of `Hecke.direct_product` compared to
-`Oscar.direct_product`:
+This particular function is nothing more than a simple wrapper that takes care of argument conversions.
+Of note, the polynomials here are given as lists of monomials.
 
-```@raw html
-<div class="mermaid">
-graph TB
-    root[Direct Product of Groups]
+Of course, if you are comfortable with Oscar, you can use [`two_block_group_algebra_codes`](@ref) directly.
 
-    root --> A[Hecke.direct_product]
-    root --> B[Oscar.direct_product]
+See also: [`two_block_group_algebra_codes`](@ref), [`twobga_from_fp_group`](@ref)
 
-    %% Hecke Branch
-    A --> A1[Supports mostly abelian groups and list of finite groups]
-    A1--> A2[abelian_group symmetric_group small_group]
-    A2 --> A3[C × C, C × S]
-
-    %% Oscar Branch
-    B --> B1[Supports finite general groups, including non-abelian groups]
-    B1--> B2[alternating_group <br> dihedral_group <br> free_group <br> cyclic_group <br> permutation_group <br>  quaternion_group <br> symmetric_group <br> abelian_group<br> small_group]
-    B2--> B3[A × C,  A × D <br> D × C, D × D <br> F × F, F × A, F × D <br> F × S, F × C <br> C × C, C × S]
-</div>
-```
-
-# Example
+## Examples
 
 The [[56, 28, 2]] abelian 2BGA code from Appendix C, Table II in [lin2024quantum](@cite)
 can be constructed using the direct product of two cyclic groups. Specifically, the group
@@ -46,9 +36,9 @@ can be constructed using the direct product of two cyclic groups. Specifically, 
 `m = 14` and the second group has order `n = 2`.
 
 ```jldoctest directprod
-julia> import Oscar: cyclic_group, small_group_identification, describe, order; # hide
+julia> import Oscar: cyclic_group, small_group_identification, describe, order
 
-julia> import Hecke: gens, quo, group_algebra, GF, one, direct_product, sub; # hide
+julia> import Hecke: gens, quo, group_algebra, GF, one, direct_product, sub
 
 julia> m = 14; n = 2;
 
@@ -78,12 +68,15 @@ julia> describe(G), small_group_identification(G)
 ("C14 x C2", (28, 4))
 ```
 
-!!! note When using the direct product of two cyclic groups, it is essential to verify
-the group presentation `Cₘ = ⟨x, s | xᵐ = s² = xsx⁻¹s⁻¹ = 1⟩` is satisfied, where the
-order is `2m`. Ensure that the selected generators have the correct orders of `m = 14`
-and `n = 2`, respectively. If the group presentation is not satisfied, the resulting
-group algebra over `GF(2)` will not represent the intended group, `C₂₈ = C₁₄ × C₂`. In
-addition, `Oscar.sub` can be used to determine if `H` is a subgroup of `G` and to
+!!! danger
+    When using the direct product, there isn't necessarily a unique set of generators.
+    It is essential to verify that Oscar is providing you with the generators you expect,
+    e.g. for a cycling group that you have the presentation `Cₘ = ⟨x, s | xᵐ = s² = xsx⁻¹s⁻¹ = 1⟩`.
+    For situations where the generators provided by Oscar are not the ones you want,
+    you can also use [`twobga_from_fp_group`](@ref) where you specify the group presentation directly.
+
+As a verification that you have the correct generators,
+`Oscar.sub` can be used to determine if `H` is a subgroup of `G` and to
 confirm that both `C₁₄` and `C₂` are subgroups of `C₂₈`.
 
 ```jldoctest directprod

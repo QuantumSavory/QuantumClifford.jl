@@ -20,6 +20,10 @@ Multiple constructors are available:
 
 4. Two base matrices of integers, where each integer represent the shift of a cyclic permutation. The order of the cyclic permutation should be specified.
 
+Below is a list of all constructors:
+
+$METHODLIST
+
 ## Examples
 
 A [[882, 24, d ≤ 24]] code from Appendix B of [roffe2023bias](@cite).
@@ -81,6 +85,8 @@ We also accept a custom representation function as detailed in [`LiftedCode`](@r
 
 See also: [`LiftedCode`](@ref), [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref),
 [`haah_cubic_codes`](@ref).
+
+All fields:
 
 $TYPEDFIELDS
 """
@@ -153,15 +159,23 @@ code_n(c::LPCode) = size(c.repr(zero(c.GA)), 2) * (size(c.A, 2) * size(c.B, 1) +
 code_s(c::LPCode) = size(c.repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) + size(c.A, 2) * size(c.B, 2))
 
 """
+$TYPEDSIGNATURES
+
 Two-block group algebra (2BGA) codes, which are a special case of lifted product codes
-from two group algebra elements `a` and `b`, used as `1x1` base matrices.
+from two group algebra elements `a` and `b`, used as `1×1` base matrices.
+To build them, you pick a group and specific generators for that group,
+then you pick two polynomials made of the group generators,
+and then, behind the scenes, these two polynomials `a` and `b` are piped
+to the lifted product code constructor as the elements of `1×1` matrices.
+
+See also: [`QuantumClifford.ECC.LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
 
 ## Examples of 2BGA code subfamilies
 
 ### `C₄ x C₂`
 
 Here is an example of a [[56, 28, 2]] 2BGA code from Table 2 of [lin2024quantum](@cite)
-with direct product of `C₄ x C₂`.
+build out of polymonials of generators of the direct product `C₄ × C₂`.
 
 ```jldoctest
 julia> import Hecke: group_algebra, GF, abelian_group, gens; using QuantumClifford.ECC;
@@ -270,19 +284,24 @@ julia> import HiGHS
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (108, 12, 6)
 ```
-
-See also: [`QuantumClifford.ECC.LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
+#TODO check all the examples above
 """
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
     LPCode([a;;], [b;;])
 end
 
 """
+$TYPEDSIGNATURES
+
 Generalized bicycle codes, which are a special case of *abelian* 2GBA codes (and therefore of lifted product codes).
 Here the group is chosen as the cyclic group of order `l`,
 and the base matrices `a` and `b` are the sum of the group algebra elements corresponding to the shifts `a_shifts` and `b_shifts`.
 
+Behind the scenes, the shifts are converted to the corresponding group algebra elements and piped to [`two_block_group_algebra_codes`](@ref).
+
 See also: [`two_block_group_algebra_codes`](@ref), [`bicycle_codes`](@ref).
+
+## Examples
 
 A [[254, 28, 14 ≤ d ≤ 20]] code from (A1) in Appendix B of [panteleev2021degenerate](@cite).
 
@@ -317,9 +336,12 @@ function generalized_bicycle_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l
 end
 
 """
+$TYPEDSIGNATURES
+
 Bicycle codes are a special case of generalized bicycle codes,
 where `a` and `b` are conjugate to each other.
 The order of the cyclic group is `l`, and the shifts `a_shifts` and `b_shifts` are reverse to each other.
+Thus you need to provide only the `a_shifts` and the rest of the conversions and conjugations are taken care of.
 
 See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
 """ # TODO doctest example
@@ -330,11 +352,20 @@ function bicycle_codes(a_shifts::Array{Int}, l::Int)
 end
 
 """
+$TYPEDSIGNATURES
+
 Haah’s cubic codes [haah2011local](@cite) can be viewed as generalized bicycle (GB) codes
 with the group `G = Cₗ × Cₗ × Cₗ`, where `l` denotes the lattice size. In particular, a GB
 code with the group `G = ℤ₃ˣ³` corresponds to a cubic code.
 
+Behind the scenes, this function is just a simple shortcut for preparing the group `G`,
+before piping the arguments to [`generalized_bicycle_codes`](@ref).
+
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/haah_cubic).
+
+See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref).
+
+## Examples
 
 ```jldoctest
 julia> import Hecke; using QuantumClifford.ECC;
@@ -344,8 +375,6 @@ julia> c = haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 6);
 julia> code_n(c), code_k(c)
 (432, 8)
 ```
-
-See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref).
 """
 function haah_cubic_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group([l,l,l]))
