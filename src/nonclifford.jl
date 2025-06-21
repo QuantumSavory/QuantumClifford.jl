@@ -1,18 +1,3 @@
-#=
-1. adding tests for basic correctness
-2. single qubit gates / channels (and tests)
-3. embedding single qubit gates - Stefan
-4. pretty printing - Stefan
-5. good docstrings
-6. some superficial documentation
-7. picking names
-8. conversion into density matrices (QuantumOptics.jl) - Stefan
-9. special small gates
-10. make an overleaf for a paper
-=#
-
-using LinearAlgebra
-
 """
 $(TYPEDEF)
 
