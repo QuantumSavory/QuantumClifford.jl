@@ -1,7 +1,7 @@
 module ECC
 
 using QECCore
-import QECCore: code_n, code_s, code_k, rate, distance
+import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z,parity_matrix
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -21,7 +21,7 @@ using Statistics: std
 using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 
 export parity_checks, parity_checks_x, parity_checks_z, iscss,
-    code_n, code_s, code_k, rate, distance,
+    code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode, LiftedCode,
@@ -84,9 +84,9 @@ function generator_polynomial end
 function generator end
 
 parity_checks(s::Stabilizer) = s
+parity_checks(c::AbstractECC) = Stabilizer(parity_matrix(c))
 Stabilizer(c::AbstractECC) = parity_checks(c)
 MixedDestabilizer(c::AbstractECC; kwarg...) = MixedDestabilizer(Stabilizer(c); kwarg...)
-
 
 nqubits(c::AbstractECC) = code_n(c::AbstractECC)
 
@@ -109,6 +109,39 @@ end
 
 code_k(c::AbstractECC) = code_k(parity_checks(c))
 
+"""
+$TYPEDEF
+
+A Mixed Integer Programming (MIP) method for computing the code distance of CSS stabilizer codes
+by finding the minimum-weight non-trivial logical [`PauliOperator`](@ref) (either `X`-type or `Z`-type).
+Used with [`distance`](@ref) to select MIP as the method of finding the distance of a code.
+
+!!! note
+    - Requires a `JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`).
+    - `X`-type and `Z`-type logical operators yield identical code distance results.
+    - For stabilizer codes, the `X`-distance and `Z`-distance are equal.
+
+$FIELDS
+"""
+@kwdef struct DistanceMIPAlgorithm <: AbstractDistanceAlg
+    """if `true` (default=`false`), uses the provided value as an upper bound for the code distance"""
+    upper_bound::Bool=false
+    """index of the logical qubit to compute code distance for (nothing means compute for all logical qubits)"""
+    logical_qubit::Union{Int, Nothing}=nothing
+    """type of logical operator to consider (:X or :Z, defaults to :X) - both types yield identical distance results for CSS stabilizer codes."""
+    logical_operator_type::Symbol=:X
+    """`JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`)"""
+    solver::Module
+    """when `true` (default=`false`), prints the MIP solver's solution summary"""
+    opt_summary::Bool=false
+    """time limit (in seconds) for the MIP solver's execution (default=60.0)"""
+    time_limit::Float64=60.0
+
+    function DistanceMIPAlgorithm(upper_bound, logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
+        logical_operator_type ∈ (:X, :Z) || throw(ArgumentError("`logical_operator_type` must be :X or :Z"))
+        new(upper_bound, logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
+    end
+end
 
 """Parity matrix of a code, given as a stabilizer tableau."""
 function parity_matrix(c::AbstractECC)
@@ -359,16 +392,7 @@ include("decoder_pipeline.jl")
 
 include("codes/util.jl")
 
-include("codes/classical_codes.jl")
-include("codes/css.jl")
-include("codes/bitflipcode.jl")
-include("codes/fivequbit.jl")
-include("codes/steanecode.jl")
-include("codes/shorcode.jl")
-include("codes/clevecode.jl")
-include("codes/toric.jl")
 include("codes/gottesman.jl")
-include("codes/surface.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
 include("codes/quantumreedmuller.jl")
