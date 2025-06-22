@@ -92,7 +92,7 @@ end
     s = S"+XXX -ZZI"
     @test canonicalize!(p1) == canonicalize!(p2) == canonicalize!(s)
     @test canonicalize_gott!(p1) == canonicalize_gott!(p2) == canonicalize_gott!(s)
-    @test canonicalize_rref!(p1) == canonicalize_rref!(p2) == canonicalize_reff!(s)
+    @test canonicalize_rref!(p1) == canonicalize_rref!(p2) == canonicalize_rref!(s)
     @test canonicalize_clip!(p1) == canonicalize_clip!(p2) == canonicalize_clip!(s)
     @test canonicalize_noncomm!(p1) == canonicalize_noncomm!(p2) == canonicalize_noncomm!(t)
 end
