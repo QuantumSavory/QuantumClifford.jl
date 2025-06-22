@@ -164,13 +164,13 @@ function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
     l, H, h = if logical_operator_type == :X
         l_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(logx_ops(code)))
         H_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(code)))
-        px = parity_checks_x(code)
+        px = parity_matrix_x(code)
         h_val = cat(px, spzeros(Int, size(px, 1), nqubits(code)); dims=2)
         (l_val, H_val, h_val)
     else
         l_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(logz_ops(code)))
         H_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(code)))
-        pz = parity_checks_z(code)
+        pz = parity_matrix_z(code)
         h_val = cat(spzeros(Int, size(pz, 1), nqubits(code)), pz; dims=2)
         (l_val, H_val, h_val)
     end

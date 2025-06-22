@@ -142,17 +142,17 @@ function hgp(h₁::GroupAlgebraElemMatrix, h₂::GroupAlgebraElemMatrix)
     hx, hz
 end
 
-function parity_checks_xz(c::LPCode)
+function parity_matrix_xz(c::LPCode)
     hx, hz = hgp(c.A, permutedims(group_algebra_conj.(c.B)))
     hx, hz = concat_lift_repr(c.repr,hx), concat_lift_repr(c.repr,hz)
     return hx, hz
 end
 
-parity_matrix_x(c::LPCode) = parity_checks_xz(c)[1]
+parity_matrix_x(c::LPCode) = parity_matrix_xz(c)[1]
 
-parity_matrix_z(c::LPCode) = parity_checks_xz(c)[2]
+parity_matrix_z(c::LPCode) = parity_matrix_xz(c)[2]
 
-parity_checks(c::LPCode) = parity_checks(CSS(parity_checks_xz(c)...))
+parity_checks(c::LPCode) = parity_checks(CSS(parity_matrix_xz(c)...))
 
 code_n(c::LPCode) = size(c.repr(zero(c.GA)), 2) * (size(c.A, 2) * size(c.B, 1) + size(c.A, 1) * size(c.B, 2))
 
