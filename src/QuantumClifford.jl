@@ -534,6 +534,8 @@ function Destabilizer(s::Stabilizer)
     end
 end
 
+Destabilizer(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = Destabilizer(Stabilizer(Tableau(paulis)))
+
 Base.length(d::Destabilizer) = length(tab(d))÷2
 
 Base.copy(d::Destabilizer) = Destabilizer(copy(tab(d)))
@@ -560,6 +562,7 @@ function MixedStabilizer(s::Stabilizer{T}) where {T}
 end
 
 MixedStabilizer(s::Stabilizer,rank::Int) = MixedStabilizer(tab(s), rank)
+MixedStabilizer(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = MixedStabilizer(Stabilizer(Tableau(paulis)))
 
 Base.length(d::MixedStabilizer) = length(tab(d))
 
@@ -660,6 +663,7 @@ end
 
 MixedDestabilizer(d::MixedStabilizer) = MixedDestabilizer(stabilizerview(d))
 MixedDestabilizer(d::MixedDestabilizer) = d
+MixedDestabilizer(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = MixedDestabilizer(Stabilizer(Tableau(paulis)))
 
 Base.length(d::MixedDestabilizer) = length(tab(d))÷2
 
