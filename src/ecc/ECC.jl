@@ -1,7 +1,7 @@
 module ECC
 
 using QECCore
-import QECCore: code_n, code_s, code_k, rate, distance
+import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z,parity_matrix
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -84,6 +84,7 @@ function generator_polynomial end
 function generator end
 
 parity_checks(s::Stabilizer) = s
+parity_checks(c::AbstractECC) = Stabilizer(parity_matrix(c))
 Stabilizer(c::AbstractECC) = parity_checks(c)
 MixedDestabilizer(c::AbstractECC; kwarg...) = MixedDestabilizer(Stabilizer(c); kwarg...)
 
@@ -394,16 +395,7 @@ include("decoder_pipeline.jl")
 
 include("codes/util.jl")
 
-include("codes/classical_codes.jl")
-include("codes/css.jl")
-include("codes/bitflipcode.jl")
-include("codes/fivequbit.jl")
-include("codes/steanecode.jl")
-include("codes/shorcode.jl")
-include("codes/clevecode.jl")
-include("codes/toric.jl")
 include("codes/gottesman.jl")
-include("codes/surface.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
 include("codes/quantumreedmuller.jl")
