@@ -7,6 +7,9 @@ elseif get(ENV, "GPU_TESTS", "") == "true"
     Pkg.develop(PackageSpec(path = dirname(@__DIR__)))
     Pkg.instantiate()
     @info "running with GPU tests"
+elseif VERSION < v"1.11"
+    @info "skipping Oscar tests (not tested on Julia <1.11)"
+    @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"
 else
     @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"
     Pkg.activate("default")
