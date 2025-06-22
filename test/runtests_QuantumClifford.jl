@@ -3,18 +3,14 @@ if Sys.iswindows()
     @info "skipping Oscar tests (they currently do not run on Windows)"
     @info "skipping GPU tests (set GPU_TESTS=true to test GPU (on non-Windows))"
 elseif get(ENV, "GPU_TESTS", "") == "true"
-    Pkg.activate("gpu")
-    Pkg.develop(PackageSpec(path = dirname(@__DIR__)))
-    Pkg.instantiate()
     @info "running with GPU tests"
+    Pkg.add("CUDA")
 elseif VERSION < v"1.11"
     @info "skipping Oscar tests (not tested on Julia <1.11)"
     @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"
 else
     @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"
-    Pkg.activate("default")
-    Pkg.develop(PackageSpec(path = dirname(@__DIR__)))
-    Pkg.instantiate()
+    Pkg.add("Oscar")
 end
 
 using TestItemRunner
