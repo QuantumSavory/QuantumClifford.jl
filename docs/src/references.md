@@ -47,6 +47,8 @@ For quantum code construction routines:
 - [haah2011local](@cite)
 - [landahl2011color](@cite)
 - [lin2023quantumtwoblockgroupalgebra](@cite)
+- [wang2023abelian](@cite)
+- [naghipour2015quantum](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)
