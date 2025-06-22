@@ -148,9 +148,9 @@ function parity_checks_xz(c::LPCode)
     return hx, hz
 end
 
-parity_checks_x(c::LPCode) = parity_checks_xz(c)[1]
+parity_matrix_x(c::LPCode) = parity_checks_xz(c)[1]
 
-parity_checks_z(c::LPCode) = parity_checks_xz(c)[2]
+parity_matrix_z(c::LPCode) = parity_checks_xz(c)[2]
 
 parity_checks(c::LPCode) = parity_checks(CSS(parity_checks_xz(c)...))
 
