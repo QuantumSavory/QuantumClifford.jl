@@ -352,7 +352,7 @@ function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
     # Apply the corresponding projection
     sm, _ = _projectrand_notnorm(sm, p, res)
     # Normalize the state
-    trace = tr(sm)
+    trace = LinearAlgebra.tr(sm)
     for ((dᵢ, dⱼ), χ) in sm.destabweights
         sm.destabweights[(dᵢ, dⱼ)] = χ / trace
     end

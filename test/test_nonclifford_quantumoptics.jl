@@ -4,7 +4,6 @@
     using QuantumClifford: @S_str, random_stabilizer
     using QuantumOpticsBase
     using LinearAlgebra
-    using LinearAlgebra: tr
     using Test
     using InteractiveUtils
     using Random

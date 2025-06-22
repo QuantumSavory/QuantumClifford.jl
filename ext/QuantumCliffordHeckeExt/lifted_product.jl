@@ -151,7 +151,7 @@ function _build_parity_checks(::NonCommutativeLift, c::LPCode)
     A, B = c.A, c.B
     ma, na = size(A)
     mb, nb = size(B)
-    # Apply regular representations to ensure commutation for non-commutative algebras:
+    # Apply regular representations to ensure CSS orthogonality for non-commutative algebras:
     # Â = ρ(A) (right regular representation: x ↦ xa)
     # B̂ = λ(B) (left regular representation: x ↦ bx)
     Â = concat_lift_repr(c.A_repr, A) # ρ(A) right regular repr
@@ -160,7 +160,7 @@ function _build_parity_checks(::NonCommutativeLift, c::LPCode)
     # B̂* = λ(B*) and Â* = ρ(A*)
     B̂_conj = concat_lift_repr(c.B_repr, permutedims(group_algebra_conj.(B))) # λ(B*)
     Â_conj = concat_lift_repr(c.A_repr, permutedims(group_algebra_conj.(A))) # ρ(A*)
-    hx = [kron(Â, Matrix(LinearAlgebra.I(mb))) kron(Matrix(LinearAlgebra.I(ma)), B̂)] # [ρ(A) ⊗I | I ⊗ λ(B)]
+    hx = [kron(Â, Matrix(LinearAlgebra.I(mb))) kron(Matrix(LinearAlgebra.I(ma)), B̂)] # [ρ(A) ⊗ I | I ⊗ λ(B)]
     hz = [kron(Matrix(LinearAlgebra.I(na)), B̂_conj) kron(Â_conj, Matrix(LinearAlgebra.I(nb)))] # [I ⊗ λ(B*) | ρ(A*) ⊗ I]
     return hx, hz
 end
