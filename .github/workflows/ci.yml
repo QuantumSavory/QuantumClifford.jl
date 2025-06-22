@@ -16,14 +16,11 @@ env:
   PYTHON: ~
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - t=${{ matrix.threads }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }} - ${{ matrix.group }}
+    name: Julia ${{ matrix.version }} - t=${{ matrix.threads }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        group:
-          - QuantumClifford
-          - QECCore
         version:
           - '1'
           - '1.10'
@@ -60,10 +57,13 @@ jobs:
       - uses: julia-actions/julia-runtest@v1
         env:
           JULIA_NUM_THREADS: ${{ matrix.threads }}
-          GROUP: ${{ matrix.group }}
+      - run: |
+          julia --project=@. -e 'using Pkg; Pkg.test("QECCore")'
+        env:
+          JULIA_NUM_THREADS: ${{ matrix.threads }}
       - uses: julia-actions/julia-processcoverage@v1
         with:
-          directories: ${{ matrix.group == 'QECCore' && 'lib/QECCore' || './' }}
+          directories: './src,./ext,./lib'
       - uses: codecov/codecov-action@v5
         with:
           file: lcov.info

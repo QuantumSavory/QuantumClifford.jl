@@ -20,7 +20,7 @@ using SparseArrays: sparse
 using Statistics: std
 using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 
-export parity_checks, parity_checks_x, parity_checks_z, iscss,
+export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
@@ -29,7 +29,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
-    haah_cubic_codes,
+    haah_cubic_codes, twobga_from_fp_group, twobga_from_direct_product,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
     Triangular488, Triangular666,
     evaluate_decoder,
@@ -40,7 +40,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
 
 """Parity check tableau of a code.
 
-See also: [`parity_checks_x`](@ref) and [`parity_checks_z`](@ref)"""
+See also: [`parity_matrix_x`](@ref) and [`parity_matrix_z`](@ref)"""
 function parity_checks end
 
 """Parity check boolean matrix of a code (only the X entries in the tableau, i.e. the checks for Z errors).
@@ -48,7 +48,7 @@ function parity_checks end
 Only CSS codes have this method.
 
 See also: [`parity_checks`](@ref)"""
-function parity_checks_x(code::AbstractECC)
+function parity_matrix_x(code::AbstractECC)
     throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
 end
 
@@ -57,7 +57,7 @@ end
 Only CSS codes have this method.
 
 See also: [`parity_checks`](@ref)"""
-function parity_checks_z(code::AbstractECC)
+function parity_matrix_z(code::AbstractECC)
     throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
 end
 

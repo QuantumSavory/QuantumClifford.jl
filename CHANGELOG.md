@@ -7,7 +7,8 @@
 
 ## v0.10.0 - dev
 
-- `QuantumClifffordJuMPExt`: New extension enabling:
+- `QuantumCliffordOscarExt` provides more convenient ways to construction two block algebra codes with Oscar as an optional dependency.
+- `QuantumCliffordJuMPExt`: New extension enabling:
     - Compute minimum distance for quantum LDPC codes via Mixed Integer Programming (MIP) using `JuMP`.
     - Introduce the `AbstractDistanceAlg` interface in `QECCore`.
 - Improvements to `GeneralizedStabilizer` API:
