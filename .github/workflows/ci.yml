@@ -58,7 +58,7 @@ jobs:
         env:
           JULIA_NUM_THREADS: ${{ matrix.threads }}
       - run: |
-          julia --project=@. -e 'using Pkg; Pkg.test("QECCore"))'
+          julia --project=@. -e 'using Pkg; Pkg.test("QECCore")'
         env:
           JULIA_NUM_THREADS: ${{ matrix.threads }}
       - uses: julia-actions/julia-processcoverage@v1
