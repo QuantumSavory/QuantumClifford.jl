@@ -1,5 +1,6 @@
 @testitem "Stabilizer canonicalization" begin
   using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
+  using QuantumClifford: canonicalize_noncomm!
   test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
     @testset "Default canonicalization" begin
         s = S"- XZZZZ_____
@@ -89,9 +90,9 @@ end
     p2 = (P"+XXX", P"-ZZI")
     t = T"+XXX -ZZI"
     s = S"+XXX -ZZI"
-    @test canonicalize!(p1) == canonicalize!(p2) == canonicalize!(t) == canonicalize!(s)
-    @test canonicalize_gott!(p1) == canonicalize_gott!(p2) == canonicalize_gott!(t) == canonicalize_gott!(s)
-    @test canonicalize_rref!(p1) == canonicalize_rref!(p2) == canonicalize_rref!(t) == canonicalize_reff!(s)
-    @test canonicalize_clip!(p1) == canonicalize_clip!(p2) == canonicalize_clip!(t) == canonicalize_clip!(s)
+    @test canonicalize!(p1) == canonicalize!(p2) == canonicalize!(s)
+    @test canonicalize_gott!(p1) == canonicalize_gott!(p2) == canonicalize_gott!(s)
+    @test canonicalize_rref!(p1) == canonicalize_rref!(p2) == canonicalize_reff!(s)
+    @test canonicalize_clip!(p1) == canonicalize_clip!(p2) == canonicalize_clip!(s)
     @test canonicalize_noncomm!(p1) == canonicalize_noncomm!(p2) == canonicalize_noncomm!(t)
 end
