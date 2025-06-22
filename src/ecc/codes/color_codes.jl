@@ -108,8 +108,8 @@ function iscss(::Type{TriangularCode})
     return true
 end
 
-parity_checks_x(c::TriangularCode) = _colorcode_get_check_matrix(c)
-parity_checks_z(c::TriangularCode) = _colorcode_get_check_matrix(c)
+parity_matrix_x(c::TriangularCode) = _colorcode_get_check_matrix(c)
+parity_matrix_z(c::TriangularCode) = _colorcode_get_check_matrix(c)
 
 function parity_checks(c::TriangularCode)
     matrix = _colorcode_get_check_matrix(c)

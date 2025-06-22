@@ -1,4 +1,4 @@
-@doc raw"""
+"""
 $TYPEDSIGNATURES
 
 Compute the distance of a code using mixed integer programming.
@@ -7,9 +7,9 @@ See [`QuantumClifford.ECC.DistanceMIPAlgorithm`](@ref) for configuration options
 Computes the minimum Hamming weight of a binary vector `x` by solving an **mixed
 integer program (MIP)** that satisfies the following constraints:
 
-- ``\text{stab} \cdot x \equiv 0 \pmod{2}``: The binary vector `x` must have an
+- ``\\text{stab} \\cdot x \\equiv 0 \\pmod{2}``: The binary vector `x` must have an
 even overlap with each `X`-check of the stabilizer binary representation `stab`.
-- ``\text{logicOp} \cdot x \equiv 1 \pmod{2}``: The binary vector `x` must have
+- ``\\text{logicOp} \\cdot x \\equiv 1 \\pmod{2}``: The binary vector `x` must have
 an odd overlap with logical-`X` operator `logicOp` on the `i`-th logical qubit.
 
 Specifically, it calculates the minimum Hamming weight ``d_{Z}`` for the `Z`-type
@@ -41,8 +41,8 @@ its elements having a weight of four. This discrepancy occurs because stabilizer
 are defined by parity-check matrices, while their minimum distances are determined by
 the dual [Sabo:2022smk](@cite).
 
-```jldoctest example
-julia> using QuantumClifford.ECC: Steane7, distance;
+```jldoctest
+julia> using QuantumClifford, QuantumClifford.ECC
 
 julia> c = parity_checks(Steane7());
 
@@ -77,17 +77,17 @@ The MIP minimizes the Hamming weight `w(x)`, defined as the number of nonzero
 elements in `x`, while satisfying the constraints:
 
 ```math
-\begin{aligned}
-    \text{Minimize} \quad & w(x) = \sum_{i=1}^n x_i, \\
-    \text{subject to} \quad & \text{stab} \cdot x \equiv 0 \pmod{2}, \\
-                            & \text{logicOp} \cdot x \equiv 1 \pmod{2}, \\
-                            & x_i \in \{0, 1\} \quad \text{for all } i.
-\end{aligned}
+\\begin{aligned}
+    \\text{Minimize} \\quad & w(x) = \\sum_{i=1}^n x_i, \\\\
+    \\text{subject to} \\quad & \\text{stab} \\cdot x \\equiv 0 \\pmod{2}, \\\\
+                            & \\text{logicOp} \\cdot x \\equiv 1 \\pmod{2}, \\\\
+                            & x_i \\in \\{0, 1\\} \\quad \\text{for all } i.
+\\end{aligned}
 ```
 
 Here:
-- ``\text{stab}`` is the binary matrix representing the stabilizer group.
-- ``\text{logicOp}`` is the binary vector representing the logical-`X` operator.
+- ``\\text{stab}`` is the binary matrix representing the stabilizer group.
+- ``\\text{logicOp}`` is the binary vector representing the logical-`X` operator.
 - `x` is the binary vector (decision variable) being optimized.
 
 The optimal solution ``w_{i}`` for each logical-`X` operator corresponds to the
@@ -95,9 +95,9 @@ minimum weight of a Pauli `Z`-type operator satisfying the above conditions.
 The `Z`-type distance is given by:
 
 ```math
-\begin{aligned}
-    d_Z = \min(w_1, w_2, \dots, w_k),
-\end{aligned}
+\\begin{aligned}
+    d_Z = \\min(w_1, w_2, \\dots, w_k),
+\\end{aligned}
 ```
 
 where `k` is the number of logical qubits.
@@ -107,10 +107,10 @@ where `k` is the number of logical qubits.
 A [[40, 8, 5]] 2BGA code with the minimum distance of 5 from
 Table 2 of [lin2024quantum](@cite).
 
-```jldoctest examples
+```jldoctest jumpexamples
 julia> import Hecke: group_algebra, GF, abelian_group, gens; import HiGHS; import JuMP;
 
-julia> using QuantumClifford.ECC: code_n, code_k, distance, two_block_group_algebra_codes, generalized_bicycle_codes, DistanceMIPAlgorithm; # hide
+julia> using QuantumClifford, QuantumClifford.ECC
 
 julia> l = 10; m = 2;
 
@@ -131,7 +131,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 A [[48, 6, 8]] GB code with the minimum distance of 8 from (A3)
 in Appendix B of [panteleev2021degenerate](@cite).
 
-```jldoctest examples
+```jldoctest jumpexamples
 julia> l = 24;
 
 julia> c1 = generalized_bicycle_codes([0, 2, 8, 15], [0, 2, 12, 17], l);
@@ -146,26 +146,15 @@ Mixed-integer programming (MIP) is applied in quantum error correction,
 notably for decoding and minimum distance computation. Some applications
 are as follows:
 
-- The first usecase of the MIP approach was the code capacity Most Likely
-Error (MLE) decoder for color codes introduced in [landahl2011color](@cite).
+- The first usecase of the MIP approach was the code capacity Most Likely Error (MLE) decoder for color codes introduced in [landahl2011color](@cite).
 
-- For all quantum LDPC codes presented in [panteleev2021degenerate](@cite),
-the lower and upper bounds on the minimum distance was obtained by reduction
-to a mixed integer linear program and using the GNU Linear Programming
-Kit ([makhorin2008glpk](@cite)).
+- For all quantum LDPC codes presented in [panteleev2021degenerate](@cite), the lower and upper bounds on the minimum distance was obtained by reduction to a mixed integer linear program and using the GNU Linear Programming Kit ([makhorin2008glpk](@cite)).
 
-- For all the Bivariate Bicycle (BB) codes presented in [bravyi2024high](@cite),
-the code distance was calculated using the mixed integer programming approach.
+- For all the Bivariate Bicycle (BB) codes presented in [bravyi2024high](@cite), the code distance was calculated using the mixed integer programming approach.
 
-- [lacroix2024scaling](@cite) developed a MLE decoder that finds the most
-likely chain of Pauli errors given the observed error syndrome by solving
-a mixed-integer program using `HiGHS` package ([huangfu2018parallelizing](@cite)).
+- [lacroix2024scaling](@cite) developed a MLE decoder that finds the most likely chain of Pauli errors given the observed error syndrome by solving a mixed-integer program using `HiGHS` package ([huangfu2018parallelizing](@cite)).
 
-- [cain2025correlateddecodinglogicalalgorithms](@cite) formulate maximum-likelihood
-decoding as a mixed-integer program maximizing ``\prod_{j=1}^M p_j^{E_j}(1-p_j)^{1-E_j}``
-(where binary variables ``E_j \in {0,1}`` indicate error occurrence) subject
-to syndrome constraints, solved optimally via MIP solvers despite its
-NP-hard complexity.
+- [cain2025correlateddecodinglogicalalgorithms](@cite) formulate maximum-likelihood decoding as a mixed-integer program maximizing ``\\prod_{j=1}^M p_j^{E_j}(1-p_j)^{1-E_j}`` (where binary variables ``E_j \\in {0,1}`` indicate error occurrence) subject to syndrome constraints, solved optimally via MIP solvers despite its NP-hard complexity.
 """
 function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
     logical_qubits = isnothing(alg.logical_qubit) ? (1:code_k(code)) : (alg.logical_qubit:alg.logical_qubit)
@@ -175,13 +164,13 @@ function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
     l, H, h = if logical_operator_type == :X
         l_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(logx_ops(code)))
         H_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(code)))
-        px = parity_checks_x(code)
+        px = parity_matrix_x(code)
         h_val = cat(px, spzeros(Int, size(px, 1), nqubits(code)); dims=2)
         (l_val, H_val, h_val)
     else
         l_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(logz_ops(code)))
         H_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(code)))
-        pz = parity_checks_z(code)
+        pz = parity_matrix_z(code)
         h_val = cat(spzeros(Int, size(pz, 1), nqubits(code)), pz; dims=2)
         (l_val, H_val, h_val)
     end
