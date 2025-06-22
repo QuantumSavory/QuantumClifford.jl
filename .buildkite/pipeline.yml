@@ -25,7 +25,7 @@ steps:
       - QuantumSavory/julia-xvfb#v1:
     command:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project=(mktemp -d) -e '
+      - julia --project=$(mktemp -d) -e '
         using Pkg;
         pkg"dev .";'
         Pkg.add("QuantumSymbolics");
