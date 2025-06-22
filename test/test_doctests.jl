@@ -25,7 +25,7 @@
     ENV["LINES"] = 80    # for forcing `displaysize(io)` to be big enough
     ENV["COLUMNS"] = 80
     DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford; using QuantumClifford.ECC); recursive=true)
-    modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt]
+    modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, extensions...]
     doctestfilters = [r"(QuantumClifford\.|)"]
     doctest(nothing, modules;
             doctestfilters
