@@ -168,6 +168,7 @@ function _build_parity_checks(::NonCommutativeLift, c::LPCode)
     Â_conj = concat_lift_repr(c.A_repr, permutedims(group_algebra_conj.(A))) # ρ(A*)
     hx = [kron(Â, Matrix(LinearAlgebra.I(mb))) kron(Matrix(LinearAlgebra.I(ma)), B̂)] # [ρ(A) ⊗ I | I ⊗ λ(B)]
     hz = [kron(Matrix(LinearAlgebra.I(na)), B̂_conj) kron(Â_conj, Matrix(LinearAlgebra.I(nb)))] # [I ⊗ λ(B*) | ρ(A*) ⊗ I]
+    return hx, hz
 end
 
 parity_matrix_x(c::LPCode) = parity_matrix_xz(c)[1]

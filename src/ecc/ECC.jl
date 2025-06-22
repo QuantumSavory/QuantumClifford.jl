@@ -1,7 +1,7 @@
 module ECC
 
 using QECCore
-import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z,parity_matrix
+import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -108,6 +108,9 @@ function code_k(s::Stabilizer)
 end
 
 code_k(c::AbstractECC) = code_k(parity_checks(c))
+
+"""Abstract type representing algorithms for computing the minimum distance of quantum error correction codes."""
+abstract type AbstractDistanceAlg end
 
 """
 $TYPEDEF

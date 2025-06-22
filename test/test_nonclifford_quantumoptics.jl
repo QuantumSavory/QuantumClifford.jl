@@ -1,6 +1,6 @@
 @testitem "Non-Clifford Quantum Optics" begin
     using QuantumClifford
-    using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!, invsparsity, _projectrand_notnorm, mixed_destab_looks_good, tr
+    using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!, invsparsity, _projectrand_notnorm, mixed_destab_looks_good
     using QuantumClifford: @S_str, random_stabilizer
     using QuantumOpticsBase
     using LinearAlgebra
