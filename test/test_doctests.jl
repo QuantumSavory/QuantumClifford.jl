@@ -11,7 +11,7 @@
     const QuantumCliffordHeckeExt = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
     push!(extensions, QuantumCliffordHeckeExt)
 
-    @static if !Sys.iswindows() && VERSION >= v"1.11"
+    @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
         ENV["OSCAR_PRINT_BANNER"] = "false"
         import Oscar
         const QuantumCliffordOscarExt = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)

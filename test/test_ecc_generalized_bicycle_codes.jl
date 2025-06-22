@@ -27,4 +27,5 @@
         c = generalized_bicycle_codes([0, 9, 28, 13], [0, 1, 3, 22], 36)
         @test code_n(c) == 72 && code_k(c) == 10
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_qubit=1)) == 9
+    end
 end

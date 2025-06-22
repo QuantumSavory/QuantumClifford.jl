@@ -152,7 +152,7 @@ test_bb_codes = [bb1, bb2, bb3]
 
 test_twobga_codes = []
 
-@static if !Sys.iswindows() && VERSION >= v"1.11"
+@static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
   import Oscar: free_group, cyclic_group, direct_product
   function load_oscar_codes()
     #@info "Add group theoretic codes requiring Oscar"
