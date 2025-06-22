@@ -109,3 +109,11 @@ The code distance of a error correction code.
 See also: [`code_n`](@ref) and [`code_k`](@ref)
 """
 function distance end
+
+"""
+    AbstractDistanceAlg
+
+Abstract type representing algorithms for computing
+the minimum distance of quantum error correction codes.
+"""
+abstract type AbstractDistanceAlg end
