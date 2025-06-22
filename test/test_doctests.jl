@@ -4,16 +4,23 @@
     using QuantumClifford.Experimental.NoisyCircuits
     using QuantumInterface
 
+    extensions = []
+
     ENV["HECKE_PRINT_BANNER"] = "false"
     import Hecke
     const QuantumCliffordHeckeExt = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
+    push!(extensions, QuantumCliffordHeckeExt)
 
-    ENV["OSCAR_PRINT_BANNER"] = "false"
-    import Oscar
-    const QuantumCliffordOscarExt = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
+    @static if !Sys.iswindows() && VERSION >= v"1.11"
+        ENV["OSCAR_PRINT_BANNER"] = "false"
+        import Oscar
+        const QuantumCliffordOscarExt = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
+        push!(extensions, QuantumCliffordOscarExt)
+    end
 
     import JuMP
     const QuantumCliffordJuMPExt = Base.get_extension(QuantumClifford, :QuantumCliffordJuMPExt)
+    push!(extensions, QuantumCliffordJuMPExt)
 
     ENV["LINES"] = 80    # for forcing `displaysize(io)` to be big enough
     ENV["COLUMNS"] = 80
