@@ -85,8 +85,8 @@ end
 end
 
 @testitem "canonicalization of vectors of Paulis" begin
-    p1 = [P"+XXX", p"-ZZI"]
-    p2 = (P"+XXX", p"-ZZI")
+    p1 = [P"+XXX", P"-ZZI"]
+    p2 = (P"+XXX", P"-ZZI")
     t = T"+XXX -ZZI"
     s = S"+XXX -ZZI"
     @test canonicalize!(p1) == canonicalize!(p2) == canonicalize!(t) == canonicalize!(s)
