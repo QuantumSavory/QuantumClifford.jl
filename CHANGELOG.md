@@ -7,6 +7,7 @@
 
 ## v0.10.0 - dev
 
+- `QuantumCliffordOscarExt` provides more convenient ways to construction two block algebra codes with Oscar as an optional dependency.
 - Various stabilizer data structures can now be constructed out of sequences of Paulis.
 - Most canonicalization routines can now act on sequences of Paulis.
 - `QuantumClifffordJuMPExt`: New extension enabling:
@@ -21,18 +22,16 @@
     - Product operations:
         - Between a `UnitaryPauliChannel` and a `GeneralizedStabilizer`: `pcT * genstab`
 - `QuantumClifford` now depends on `QECCore`. `QECCore` is a new package separate from `QuantumClifford`, which specifies the interfaces and several essential error correction codes. Here are some changes to the function and type names:
-  - `parity_check_x` -> `parity_matrix_x` and `parity_check_z` -> `parity_matrix_z`
+  - `parity_checks_x` -> `parity_matrix_x` and `parity_checks_z` -> `parity_matrix_z`
   - `AbstractECC` -> `AbstractQECC`
   - `ClassicalCode` -> `AbstractCECC`
+  - Some codes are moved to `QECCore` from `QuantumClifford`, including `Toric`, `Surface`, `RepCode`, `CSS`, `Shor9`, `Steane7`, `Cleve8`, `Perfect5`, `Bitflip3`.
 - **(breaking)** `StabMixture` was renamed to `GeneralizedStabilizer`.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in nonclifford functionality.
 - `expect` is now implemented for `GeneralizedStabilizer`.
 - Constructing a `Destabilizer` out of a full-rank `Stabilizer` does not require a canonicalization anymore, i.e. `stabilizerview(Destabilizer(s))==s` is guaranteed.
 - The `maximally_mixed` function is now available for creating maximally mixed multi-qubit states.
 - `projectrand!` is now implemented for `GeneralizedStabilizer`.
-
-## unreleased
-
 - Much faster indexing and slicing of `PauliOperator`.
 
 ## v0.9.19 - 2025-04-08
