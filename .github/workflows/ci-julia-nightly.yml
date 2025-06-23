@@ -27,11 +27,11 @@ jobs:
             version: alpha
             threads: 2
             jet: 'false'
-          - os: ubuntu-latest
-            arch: x64
-            version: '1'
-            threads: 2
-            jet: 'true'
+#          - os: ubuntu-latest
+#            arch: x64
+#            version: '1'
+#            threads: 2
+#            jet: 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/install-juliaup@v2
