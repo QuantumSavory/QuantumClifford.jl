@@ -1,6 +1,5 @@
 @testitem "Stabilizer canonicalization" begin
   using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
-  using QuantumClifford: canonicalize_noncomm!
   test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
     @testset "Default canonicalization" begin
         s = S"- XZZZZ_____
@@ -86,6 +85,8 @@ end
 end
 
 @testitem "canonicalization of vectors of Paulis" begin
+    using QuantumClifford
+    using QuantumClifford: canonicalize_noncomm!
     p1 = [P"+XXX", P"-ZZI"]
     p2 = (P"+XXX", P"-ZZI")
     t = T"+XXX -ZZI"
