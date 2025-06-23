@@ -60,7 +60,7 @@ end
 Base.copy(t::SubsystemCodeTableau) = SubsystemCodeTableau(copy(t.tab), t.index, t.r, t.m, t.k)
 
 function Base.show(io::IO, t::SubsystemCodeTableau)
-    r = t.r+t.m+2*t.k 
+    r = t.r+t.m+2*t.k
     q = nqubits(t)
     if get(io, :compact, false) | haskey(io, :typeinfo)
         print(io, "MixedDestablizer $r×$q")
@@ -248,6 +248,8 @@ function canonicalize_noncomm(t::Tableau)
     else for i in 1:m zero!(loc, i) end end
     return SubsystemCodeTableau(loc, ind, r, m, k)
 end
+
+canonicalize_noncomm(ps::Base.AbstractVecOrTuple{PauliOperator}, args...; kwargs...) = canonicalize_noncomm(Tableau(ps), args...; kwargs...)
 
 """
 For a not-necessarily commutative set of Paulis S,

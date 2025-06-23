@@ -261,3 +261,8 @@ function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) w
     # we have r+s==rows (or we have trailing rows that are zeroed)
     stabilizer, r, s, xperm, zperm
 end
+
+
+canonicalize!(ps::Base.AbstractVecOrTuple{PauliOperator}, args...; kwargs...) = canonicalize!(Stabilizer(ps), args...; kwargs...)
+canonicalize_rref!(ps::Base.AbstractVecOrTuple{PauliOperator}, args...; kwargs...) = canonicalize_rref!(Stabilizer(ps), args...; kwargs...)
+canonicalize_gott!(ps::Base.AbstractVecOrTuple{PauliOperator}, args...; kwargs...) = canonicalize_gott!(Stabilizer(ps), args...; kwargs...)
