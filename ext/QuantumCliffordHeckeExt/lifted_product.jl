@@ -6,7 +6,60 @@ Lifted product codes ([panteleev2021degenerate](@cite), [panteleev2022asymptotic
 A lifted product code is defined by the hypergraph product of a base matrices `A` and the conjugate of another base matrix `B'`.
 Here, the hypergraph product is taken over a group algebra, of which the base matrices are consisting.
 
-The binary parity check matrix is obtained by applying `repr` to each element of the matrix resulted from the hypergraph product, which is mathematically a linear map from each group algebra element to a binary matrix.
+The binary parity check matrices are obtained by applying `A_repr` and `B_repr` representation maps to each element of the base matrices. These linear transformations convert group algebra elements to their matrix representations while preserving the CSS orthogonality condition.
+
+## Mathematical Framework
+
+Given classical parity-check matrices:
+
+- ``A \\in \\mathbb{F}_q^{m_a \\times n_a}``
+
+- ``B \\in \\mathbb{F}_q^{m_b \\times n_b}``
+
+The lifted product construction produces quantum CSS codes with parity-check matrices:
+
+```math
+\\begin{aligned}
+    H_X &= [A \\otimes I_{m_b}, -I_{m_a} \\otimes B] \\\\
+    H_Z &= [I_{n_a} \\otimes B^*, A^* \\otimes I_{n_b}]
+\\end{aligned}
+
+## CSS Orthogonality Condition
+
+For matrix blocks ``\\hat{a}_{ij}, \\hat{b}_{st} \\in R``, the requirement ``\\hat{H}_X\\hat{H}_Z^* = 0`` reduces to:
+
+```math
+\\begin{aligned}
+    \\hat{H}_X\\hat{H}_Z^* = 0 \\iff \\hat{a}_{ij}\\hat{b}_{st}^* = \\hat{b}_{st}^*\\hat{a}_{ij} \\quad \\forall i,j,s,t
+\\end{aligned}
+```
+### Commutative Algebra
+
+When `R` is *commutative*, a single representation suffices since all elements naturally commute. Here ``\\rho(a) = \\lambda(a)`` for all ``a \\in R``.
+
+### Non-Commutative Algebra
+
+When `R` is *non-commutative*, distinct representations are essential:
+
+- `A_repr` implements the right regular representation: ``\\rho(a)x = xa``
+
+- `B_repr` implements the left regular representation: ``\\lambda(b)x = bx``
+
+These ensure the critical commutation relation:
+
+```math
+\\begin{aligned}
+    \\rho(a)\\lambda(b) = \\lambda(b)\\rho(a)
+\\end{aligned}
+```
+
+which follows from the associative property:
+
+```math
+\\begin{aligned}
+    \\rho(a)\\lambda(b)(x) = b(xa) = (bx)a = \\lambda(b)\\rho(a)(x)
+\\end{aligned}
+```
 
 ## Constructors
 

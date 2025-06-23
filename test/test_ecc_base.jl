@@ -178,7 +178,8 @@ test_bb_codes = [bb1, bb2, bb3]
 test_twobga_codes = []
 
 @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
-  import Oscar: free_group, cyclic_group, direct_product
+  import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order
+  using QuantumClifford.ECC: twobga_from_direct_product
   function load_oscar_codes()
     #@info "Add group theoretic codes requiring Oscar"
     # [[72, 8, 9]] 2BGA code taken from Table I Block 1 of [lin2024quantum](@cite)
