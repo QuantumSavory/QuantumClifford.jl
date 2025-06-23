@@ -7,6 +7,7 @@
 
 ## v0.10.0 - 2025-06-23
 
+- **(breaking)** `LPCode` now supports non-commutative algebras via `A_repr` (right) and `B_repr` (left) representation maps, preserving CSS orthogonality for non-abelian group-based `LPCode` codes.
 - Various stabilizer data structures can now be constructed out of sequences of Paulis.
 - Most canonicalization routines can now act on sequences of Paulis.
 - `QuantumCliffordJuMPExt` is a new extension depending on the JuMP solver suite. It enables computing minimum distance for quantum LDPC codes via Mixed Integer Programming (MIP) using `JuMP`.

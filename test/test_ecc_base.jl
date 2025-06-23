@@ -178,8 +178,7 @@ test_bb_codes = [bb1, bb2, bb3]
 test_twobga_codes = []
 
 @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
-  import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order
-  using QuantumClifford.ECC: twobga_from_direct_product
+  import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order, gens, quo
   function load_oscar_codes()
     #@info "Add group theoretic codes requiring Oscar"
     # [[72, 8, 9]] 2BGA code taken from Table I Block 1 of [lin2024quantum](@cite)
@@ -245,7 +244,50 @@ test_twobga_codes = []
     b = [one(GA), x^3, s * x^6, x^4, s * x^9, s * x^10]
     dprod2 = twobga_from_direct_product(a, b, GA)
 
-    append!(test_twobga_codes, [t1b1, t1b3, tb21, tb22, dprod1, dprod2])
+    # 2BGA codes using non-abelian groups: Table III of [lin2024quantum](@cite)
+    # [[24, 8, 3]]
+    m = 6
+    F = free_group(["r", "s"])
+    r, s = gens(F)
+    G, = quo(F, [r^m, s^2, (r*s)^2])
+    GA = group_algebra(GF(2), G)
+    r, s = gens(G)
+    a = [one(G), r^4]
+    b = [one(G), s*r^4, r^3, r^4, s*r^2, r]
+    nonabel1 = twobga_from_fp_group(a, b, GA)
+
+    # [[24, 12, 2]]
+    F = free_group(["r", "s"])
+    r, s = gens(F)
+    G, = quo(F, [r^m, s^2, (r*s)^2])
+    GA = group_algebra(GF(2), G)
+    r, s = gens(G)
+    a = [one(G), r^3]
+    b = [one(G), s*r, r^3, r^4, s*r^4, r]
+    nonabel2 = twobga_from_fp_group(a, b, GA)
+
+    # [[32, 8, 4]]
+    m = 8
+    F = free_group(["r", "s"])
+    r, s = gens(F)
+    G, = quo(F, [r^m, s^2, (r*s)^2])
+    GA = group_algebra(GF(2), G)
+    r, s = gens(G)
+    a = [one(G), r^2]
+    b = [one(G), s*r^5, s*r^4, r^2, s*r^7, s*r^6]
+    nonabel3 = twobga_from_fp_group(a, b, GA)
+
+    # [[32, 16, 2]]
+    F = free_group(["r", "s"])
+    r, s = gens(F)
+    G, = quo(F, [r^m, s^2, (r*s)^2])
+    GA = group_algebra(GF(2), G)
+    r, s = gens(G)
+    a = [one(G), r^4]
+    b = [one(G), s*r^3, s*r^6, r^4, s*r^7, s*r^2]
+    nonabel4 = twobga_from_fp_group(a, b, GA)
+
+    append!(test_twobga_codes, [t1b1, t1b3, tb21, tb22, dprod1, dprod2, nonabel1, nonabel2, nonabel3, nonabel4])
   end
   load_oscar_codes()
 end
