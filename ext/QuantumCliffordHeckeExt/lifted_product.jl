@@ -310,60 +310,42 @@ we want. All examples are of codes discovered in [lin2023quantumtwoblockgroupalg
 Here is an example of `[[96, 12, 10]]` non-abelian 2BGA code with presentation `⟨r, s|s⁶, r⁸,r⁻¹srs⟩`.
 
 ```jldoctest sg
-julia> using QuantumClifford.ECC; import Oscar; import Hecke; using QuantumClifford;
+julia> using QuantumClifford.ECC; import Hecke; using QuantumClifford;
+
+julia> m = 6;
+
+julia> n = 8;
 
 julia> l = 48;
 
 julia> group_id = 9;
 
-julia> G = Hecke.small_group(l,group_id);
-
-julia> gens(G)
-5-element Vector{PcGroupElem}:
- f1
- f2
- f3
- f4
- f5
-
-julia> order.(gens(G)[1:length(gens(G))])
-5-element Vector{ZZRingElem}:
- 8
- 2
- 4
- 2
- 3
+julia> G = small_group(l,group_id);
 
 julia> GA = group_algebra(GF(2), G);
 
-julia> Oscar.describe(G)
-"C2 x (C3 : C8)"
-
-julia> H, _  = sub(G, [gens(G)[1], gens(G)[2], gens(G)[5]]);
-
-julia> H == G
-true
-
 julia> r = gens(GA)[1]*gens(GA)[2];
 
-julia> s = gens(GA)[5];
+julia> s = gens(GA)[3];
 
-julia> s^6 == r^8 == r^-1*s*r*s
+julia> s^m == r^n == r^-1*s*r*s
 true
 
 julia> a = 1 + r + s^3*r^2 + s^2*r^3;
 
 julia> b = 1 + r + s^4*r^6 + s^5*r^3;
 
-julia> cₕ = two_block_group_algebra_codes(a,b);
+julia> c = two_block_group_algebra_codes(a,b);
 
-julia> code_n(cₕ), code_k(cₕ)
+julia> code_n(c), code_k(c)
 (96, 12)
 ```
 
 And now we do the same directly with `Oscar.small_group(l, id)`
 
 ```jldoctest sg
+julia> using QuantumClifford.ECC; import Oscar; using QuantumClifford;
+
 julia> m = 8; n = 6;
 
 julia> F = free_group(["s", "r"]);

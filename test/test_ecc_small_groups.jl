@@ -1,5 +1,5 @@
 @testitem "ECC 2BGA Hecke Small Groups" begin
-    using Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra, small_group
+    using Hecke: group_algebra, GF, abelian_group, gens, quo, one, small_group
     using QuantumClifford.ECC
     using QuantumClifford.ECC: code_k, code_n, two_block_group_algebra_codes
 
@@ -75,5 +75,64 @@
         B = 1 + r   + r^3  + r^22
         c = two_block_group_algebra_codes(A,B)
         @test code_n(c) == 72 && code_k(c) == 10
+    end
+
+    @testset "Hecke Small Groups block 4" begin
+        # [[72, 8, 9]]
+        m = 4
+        n = 9
+        l = 36
+        group_id = 1
+        G = small_group(l,group_id)
+        GA = group_algebra(GF(2), G)
+        s, r = gens(GA)[1], gens(GA)[2]
+        @test s^m == r^n == s^-1*r*s*r
+        a = 1 + s + r + s*r^6
+        b = 1 + s^2*r + s^2*r^6 + r^2
+        c = two_block_group_algebra_codes(a,b)
+        @test code_n(c) == 72 && code_k(c) == 8
+
+        # [80, 8, 10]]
+        m = 5
+        n = 8
+        l = 40
+        group_id = 1
+        G = small_group(l,group_id)
+        GA = group_algebra(GF(2), G)
+        s, r = gens(GA)[2], gens(GA)[1]
+        @test s^m == r^n == r^-1*s*r*s
+        a = 1 + r + s + s^3*r^5 
+        b = 1 + r^2 + s*r^4 + s^3*r^2
+        c = two_block_group_algebra_codes(a,b)
+        @test code_n(c) == 80 && code_k(c) == 8
+
+        # [[96, 11, 9]]
+        m = 2
+        n = 24
+        l = 48
+        group_id = 5
+        G = small_group(l,group_id)
+        GA = group_algebra(GF(2), G)
+        r, s = gens(GA)[2], gens(GA)[1]
+        @test s^m == r^n == (r*s)^8
+        a = 1 + s + r^9 + s*r^1
+        b = 1 + r^9 + s*r^18 + r^7
+        c = two_block_group_algebra_codes(a,b)
+        @test code_n(c) == 96 && code_k(c) == 11
+
+        # [[96, 12, 10]]
+        m = 6
+        n = 8
+        l = 48
+        group_id = 9
+        G = small_group(l,group_id)
+        GA = group_algebra(GF(2), G)
+        r = gens(GA)[1]*gens(GA)[2]
+        s = gens(GA)[3];
+        @test s^m == r^n == r^-1*s*r*s
+        a = 1 + r + s^3*r^2 + s^2*r^3
+        b = 1 + r + s^4*r^6 + s^5*r^3
+        c = two_block_group_algebra_codes(a,b)
+        @test code_n(c) == 96 && code_k(c) == 12
     end
 end
