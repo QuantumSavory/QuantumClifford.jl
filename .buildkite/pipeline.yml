@@ -42,10 +42,10 @@ steps:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project=$(mktemp -d) -e '
         using Pkg;
-        pkg"dev .";'
+        pkg"dev .";
         Pkg.add("QuantumSavory");
         Pkg.build("QuantumSavory");
-        Pkg.test("QuantumSavory");
+        Pkg.test("QuantumSavory");'
   - label: "Downstream BPGates"
     plugins:
       - JuliaCI/julia#v1:
@@ -55,7 +55,7 @@ steps:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project=$(mktemp -d) -e '
         using Pkg;
-        pkg"dev .";'
+        pkg"dev .";
         Pkg.add("BPGates");
         Pkg.build("BPGates");
         Pkg.test("BPGates");'
@@ -68,7 +68,7 @@ steps:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project=$(mktemp -d) -e '
         using Pkg;
-        pkg"dev .";'
+        pkg"dev .";
         Pkg.add("QuantumSymbolics");
         Pkg.build("QuantumSymbolics");
-        Pkg.test("QuantumSymbolics");
+        Pkg.test("QuantumSymbolics");'
