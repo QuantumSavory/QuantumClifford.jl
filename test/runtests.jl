@@ -19,9 +19,13 @@ using QuantumClifford
 # filter for the test
 testfilter = ti -> begin
     exclude = Symbol[]
+
     if get(ENV, "JET_TEST", "")!="true"
         push!(exclude, :jet)
+    else
+        return :jet in ti.tags
     end
+
     if !(VERSION >= v"1.10")
         push!(exclude, :doctests)
         push!(exclude, :aqua)
