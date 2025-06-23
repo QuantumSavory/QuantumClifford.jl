@@ -1435,5 +1435,7 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
+#
+include("KA_acceleration.jl")
 
 end #module

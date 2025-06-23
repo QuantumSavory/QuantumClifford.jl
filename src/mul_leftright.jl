@@ -1,6 +1,7 @@
 # using LoopVectorization
 using HostCPUFeatures: pick_vector_width
 import SIMD
+import KernelAbstractions as KA
 
 """Nonvectorized version of `mul_left!` used for unit tests."""
 function _mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
@@ -136,29 +137,57 @@ end
 
 @inline function mul_left!(r::PauliOperator, l::PauliOperator; phases::Val{B}=Val(true)) where B
     nqubits(l)==nqubits(r) || throw(DimensionMismatch("The two Pauli operators should have the same length!")) # TODO skip this when @inbounds is set
-    s = mul_left!(r.xz, l.xz, phases=phases)
-    B && (r.phase[] = (s+r.phase[]+l.phase[])&0x3)
+    if KA.get_backend(r.xz) isa KA.GPU
+        mul_ordered!(
+            r.xz, r.phase, l.xz, l.phase;
+            phases = phases, order_right_left = Val(true)
+            )
+    else
+        s = mul_left!(r.xz, l.xz, phases=phases)
+        B && (r.phase[] = (s+r.phase[]+l.phase[])&0x3)
+    end
     r
 end
 
 @inline function mul_right!(l::PauliOperator, r::PauliOperator; phases::Val{B}=Val(true)) where B
     nqubits(l)==nqubits(r) || throw(DimensionMismatch("The two Pauli operators should have the same length!")) # TODO skip this when @inbounds is set
-    s = mul_right!(l.xz, r.xz, phases=phases)
-    B && (l.phase[] = (s+r.phase[]+l.phase[])&0x3)
+    if KA.get_backend(l.xz) isa KA.GPU
+        mul_ordered!(
+            l.xz, l.phase, r.xz, r.phase;
+            phases = phases, order_right_left = Val(false)
+            )
+    else
+        s = mul_right!(l.xz, r.xz, phases=phases)
+        B && (l.phase[] = (s+r.phase[]+l.phase[])&0x3)
+    end
     l
 end
 
 @inline function mul_left!(r::PauliOperator, l::Tableau, i::Int; phases::Val{B}=Val(true)) where B
-    s = mul_left!(r.xz, (@view l.xzs[:,i]), phases=phases)
-    B && (r.phase[] = (s+r.phase[]+l.phases[i])&0x3)
+    if KA.get_backend(r.xz) isa KA.GPU
+        mul_ordered!(
+            r.xz, r.phase, (@view l.xzs[:, i]), (@view l.phases[i]);
+            phases = phases, order_right_left = Val(true)
+            )
+    else
+        s = mul_left!(r.xz, (@view l.xzs[:,i]), phases=phases)
+        B && (r.phase[] = (s+r.phase[]+l.phases[i])&0x3)
+    end
     r
 end
 
 @inline mul_left!(r::PauliOperator, l::Stabilizer, i::Int; phases::Val{B}=Val(true)) where B = mul_left!(r, tab(l), i; phases=phases)
 
 @inline function mul_right!(l::PauliOperator, r::Tableau, i::Int; phases::Val{B}=Val(true)) where B
-    s = mul_right!(l.xz, (@view r.xzs[:,i]), phases=phases)
-    B && (l.phase[] = (s+l.phase[]+r.phases[i])&0x3)
+    if KA.get_backend(l.xz) isa KA.GPU
+        mul_ordered!(
+            l.xz, l.phase, (@view r.xzs[:, i]), (@view r.phases[i]);
+            phases = phases, order_right_left = Val(false)
+            )
+    else
+        s = mul_right!(l.xz, (@view r.xzs[:,i]), phases=phases)
+        B && (l.phase[] = (s+l.phase[]+r.phases[i])&0x3)
+    end
     l
 end
 
@@ -169,14 +198,30 @@ end
 ##############################
 
 @inline function mul_left!(s::Tableau, m, t::Tableau, i; phases::Val{B}=Val(true)) where B
-    extra_phase = mul_left!((@view s.xzs[:,m]), (@view t.xzs[:,i]); phases=phases)
-    B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
+    if KA.get_backend(s.xzs) isa KA.GPU
+        mul_ordered!(
+            (@view s.xzs[:, m]), (@view s.phases[m]),
+            (@view t.xzs[:, i]), (@view t.phases[i]);
+            phases = phases, order_right_left = Val(true)
+            )
+    else
+        extra_phase = mul_left!((@view s.xzs[:,m]), (@view t.xzs[:,i]); phases=phases)
+        B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
+    end
     s
 end
 
 @inline function mul_left!(s::Tableau, m, i; phases::Val{B}=Val(true)) where B
-    extra_phase = mul_left!((@view s.xzs[:,m]), (@view s.xzs[:,i]); phases=phases)
-    B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
+    if KA.get_backend(s.xzs) isa KA.GPU
+        mul_ordered!(
+            (@view s.xzs[:, m]), (@view s.phases[m]),
+            (@view s.xzs[:, i]), (@view s.phases[i]);
+            phases = phases, order_right_left = Val(true)
+            )
+    else
+        extra_phase = mul_left!((@view s.xzs[:,m]), (@view s.xzs[:,i]); phases=phases)
+        B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
+    end
     s
 end
 
@@ -203,9 +248,16 @@ end
 end
 
 @inline function mul_left!(s::Tableau, p::PauliOperator; phases::Val{B}=Val(true)) where B # TODO multithread
-    @inbounds @simd for m in eachindex(s)
-        extra_phase = mul_left!((@view s.xzs[:,m]), p.xz; phases=phases)
-        B && (s.phases[m] = (extra_phase+s.phases[m]+p.phase[])&0x3)
+    if KA.get_backend(s.xzs) isa KA.GPU
+        mul_ordered!(
+            s.xzs, s.phases, p.xz, p.phase;
+            phases = phases, order_right_left = Val(true)
+            )
+    else
+        @inbounds @simd for m in eachindex(s)
+            extra_phase = mul_left!((@view s.xzs[:,m]), p.xz; phases=phases)
+            B && (s.phases[m] = (extra_phase+s.phases[m]+p.phase[])&0x3)
+        end
     end
     s
 end
@@ -216,9 +268,16 @@ end
 end
 
 @inline function mul_right!(s::Tableau, p::PauliOperator; phases::Val{B}=Val(true)) where B # TODO multithread
-    @inbounds @simd for m in eachindex(s)
-        extra_phase = mul_right!((@view s.xzs[:,m]), p.xz; phases=phases)
-        B && (s.phases[m] = (extra_phase+s.phases[m]+p.phase[])&0x3)
+    if KA.get_backend(s.xzs) isa KA.GPU
+        mul_ordered!(
+            s.xzs, s.phases, p.xz, p.phase;
+            phases = phases, order_right_left = Val(false)
+            )
+    else
+        @inbounds @simd for m in eachindex(s)
+            extra_phase = mul_right!((@view s.xzs[:,m]), p.xz; phases=phases)
+            B && (s.phases[m] = (extra_phase+s.phases[m]+p.phase[])&0x3)
+        end
     end
     s
 end
