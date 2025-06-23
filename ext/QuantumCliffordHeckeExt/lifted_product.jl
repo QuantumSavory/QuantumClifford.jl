@@ -310,7 +310,9 @@ we want. All examples are of codes discovered in [lin2023quantumtwoblockgroupalg
 Here is an example of `[[96, 12, 10]]` non-abelian 2BGA code with presentation `⟨r, s|s⁶, r⁸,r⁻¹srs⟩`.
 
 ```jldoctest sg
-julia> using QuantumClifford.ECC; import Hecke; using QuantumClifford;
+julia> using QuantumClifford.ECC; using QuantumClifford;
+
+julia> import Hecke: small_group, gens, group_algebra; import Nemo: GF
 
 julia> m = 6;
 
@@ -344,7 +346,11 @@ julia> code_n(c), code_k(c)
 And now we do the same directly with `Oscar.small_group(l, id)`
 
 ```jldoctest sg
-julia> using QuantumClifford.ECC; import Oscar; using QuantumClifford;
+julia> using QuantumClifford.ECC; using QuantumClifford;
+
+import Hecke: small_group, gens, group_algebra; import Nemo: GF;
+
+julia> import Oscar: free_group, quo, one; 
 
 julia> m = 8; n = 6;
 

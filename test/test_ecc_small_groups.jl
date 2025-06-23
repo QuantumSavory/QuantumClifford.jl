@@ -159,7 +159,7 @@
         G = small_group(l,group_id)
         GA = group_algebra(GF(2), G)
         r = gens(GA)[1]*gens(GA)[2]
-        s = gens(GA)[3];
+        s = gens(GA)[3]
         @test s^m == r^n == r^-1*s*r*s
         a = 1 + r + s^3*r^2 + s^2*r^3
         b = 1 + r + s^4*r^6 + s^5*r^3
