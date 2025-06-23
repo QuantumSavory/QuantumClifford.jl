@@ -18,6 +18,19 @@ steps:
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
+  - label: "Nightly Tests"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "alpha"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
   - label: "JET Tests"
     plugins:
       - JuliaCI/julia#v1:
