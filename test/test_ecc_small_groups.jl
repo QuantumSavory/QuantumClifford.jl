@@ -106,6 +106,36 @@
         c = two_block_group_algebra_codes(a,b)
         @test code_n(c) == 80 && code_k(c) == 8
 
+        # [96, 8, 12]]
+        m = 3
+        n = 16
+        l = 48
+        group_id = 1
+        G = small_group(l,group_id)
+        GA = group_algebra(GF(2), G)
+        r = gens(GA)[1]
+        s = gens(GA)[2]
+        @test s^m == r^n ==  r^−1*s*r*s
+        a = 1 + r + s + s^3*r^5 
+        b = 1 + r^2 + s*r^4 + s^3*r^2
+        c = two_block_group_algebra_codes(a,b)
+        @test code_n(c) == 96 && code_k(c) == 8
+
+        # [[96, 10, 12]]
+        m = 4
+        n = 12
+        l = 48
+        group_id = 13
+        G = small_group(l,group_id)
+        GA = group_algebra(GF(2), G)
+        s = gens(GA)[1]
+        r = gens(GA)[2]*gens(GA)[3]
+        @test s^m == r^n == s^-1*r*s*r
+        a = 1 + s + r^9 + s*r
+        b = 1 + s^2*r^9 + r^7 + r^2
+        c = two_block_group_algebra_codes(a,b)
+        @test code_n(c) == 96 && code_k(c) == 10
+
         # [[96, 11, 9]]
         m = 2
         n = 24
@@ -113,7 +143,8 @@
         group_id = 5
         G = small_group(l,group_id)
         GA = group_algebra(GF(2), G)
-        r, s = gens(GA)[2], gens(GA)[1]
+        r = gens(GA)[2]*gens(GA)[3]
+        s = gens(GA)[1];
         @test s^m == r^n == (r*s)^8
         a = 1 + s + r^9 + s*r^1
         b = 1 + r^9 + s*r^18 + r^7
