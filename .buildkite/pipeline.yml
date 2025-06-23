@@ -5,7 +5,7 @@ env:
   PYCALL_DEBUG_BUILD: yes
   
 steps:
-  - label: "Package Tests CI on Buildkite"
+  - label: "Package Tests"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -18,18 +18,19 @@ steps:
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
-  - label: "Downstream Breakage CI on Buildkite"
+  - label: "Downstream Breakage"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
       - QuantumSavory/julia-xvfb#v1:
     command:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
+      - julia --project=$(mktemp -d) -e '
         using Pkg;
         pkg"dev .";'
-      - julia --project='~' -e '
-        using Pkg;
+        Pkg.add("QuantumSymbolics");
+        Pkg.build("QuantumSymbolics");
+        Pkg.test("QuantumSymbolics");
         Pkg.add("QuantumSavory");
         Pkg.build("QuantumSavory");
         Pkg.test("QuantumSavory");
