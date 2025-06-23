@@ -34,7 +34,7 @@
                 rs = random_stabilizer(nrows,n)
                 c = canonicalize!(copy(rs))
                 g, _, _, perm1, perm2 = canonicalize_gott!(copy(rs))
-                c1 = canonicalize!(permute!(permute!(copy(rs),perm1),perm2))
+                c1 = canonicalize!(permutesystems!(permutesystems!(copy(rs),perm1),perm2))
                 cg = canonicalize!(copy(g))
                 @test cg == c1
                 @test stab_looks_good(g)
