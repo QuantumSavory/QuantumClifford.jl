@@ -86,14 +86,13 @@ end
 
 @testitem "canonicalization of vectors of Paulis" begin
     using QuantumClifford
-    using QuantumClifford: canonicalize_noncomm!
     p1 = [P"+XXX", P"-ZZI"]
     p2 = (P"+XXX", P"-ZZI")
     t = T"+XXX -ZZI"
     s = S"+XXX -ZZI"
-    @test canonicalize!(p1) == canonicalize!(p2) == canonicalize!(s)
-    @test canonicalize_gott!(p1) == canonicalize_gott!(p2) == canonicalize_gott!(s)
-    @test canonicalize_rref!(p1) == canonicalize_rref!(p2) == canonicalize_rref!(s)
-    @test canonicalize_clip!(p1) == canonicalize_clip!(p2) == canonicalize_clip!(s)
-    @test canonicalize_noncomm!(p1) == canonicalize_noncomm!(p2) == canonicalize_noncomm!(t)
+    @test canonicalize!(p1) == canonicalize!(p2) == canonicalize!(copy(s))
+    @test canonicalize_gott!(p1) == canonicalize_gott!(p2) == canonicalize_gott!(copy(s))
+    @test canonicalize_rref!(p1) == canonicalize_rref!(p2) == canonicalize_rref!(copy(s))
+    @test canonicalize_clip!(p1) == canonicalize_clip!(p2) == canonicalize_clip!(copy(s))
+    @test canonicalize_noncomm(p1) == canonicalize_noncomm(p2) == canonicalize_noncomm(t)
 end

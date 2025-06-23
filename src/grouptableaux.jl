@@ -249,7 +249,7 @@ function canonicalize_noncomm(t::Tableau)
     return SubsystemCodeTableau(loc, ind, r, m, k)
 end
 
-canonicalize_noncomm!(ps::Base.AbstractVecOrTuple{PauliOperator}, args...; kwargs...) = canonicalize_noncomm!(Tableau(ps), args...; kwargs...)
+canonicalize_noncomm(ps::Base.AbstractVecOrTuple{PauliOperator}, args...; kwargs...) = canonicalize_noncomm(Tableau(ps), args...; kwargs...)
 
 """
 For a not-necessarily commutative set of Paulis S,
