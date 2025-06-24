@@ -119,4 +119,24 @@
         @test CliffordOperator(sSQRTYY)    == C"-ZY -YZ XY YX"
         @test CliffordOperator(sInvSQRTYY) == C"ZY YZ -XY -YX"
     end
+
+    @testset "Unitary" begin
+        for gate_type in subtypes(QuantumClifford.AbstractTwoQubitOperator)
+            @test phases(apply!(S"II II", gate_type(1,2))) == [0x0, 0x0]
+            s1 = random_stabilizer(4)
+            s2 = s1[randperm(4)]
+            apply!(s1, gate_type(3,2))
+            apply!(s2, gate_type(3,2))
+            @test canonicalize!(s1) == canonicalize!(s2)
+        end
+        for gate_type in subtypes(QuantumClifford.AbstractSingleQubitOperator)
+            gate_type === SingleQubitOperator && continue
+            @test phases(apply!(S"I", gate_type(1))) == [0x0]
+            s1 = random_stabilizer(4)
+            s2 = s1[randperm(4)]
+            apply!(s1, gate_type(2))
+            apply!(s2, gate_type(2))
+            @test canonicalize!(s1) == canonicalize!(s2)
+        end
+    end
 end
