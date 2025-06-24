@@ -56,19 +56,6 @@ function gpu_swap_columns!(d_mat, col1::Int, col2::Int)
     return
 end
 
-@inline function gpu_popc_32(x::UInt32)
-    count = UInt32(0)
-    @inbounds for i in 0:31
-        count += (x >> i) & UInt32(1)
-    end
-    return count
-end
-
-@inline function gpu_popc(x::UInt64)
-    lo = gpu_popc_32(UInt32(x))
-    hi = gpu_popc_32(UInt32(x >> 32))
-    return lo + hi
-end
 
 @inline function gpu_compute_phase(d_mat, pivot_col::Int32, target_col::Int32, nblocks::Int32)::UInt8
     cnt1 = UInt64(0)
@@ -86,33 +73,39 @@ end
         cnt2 = cnt2 ⊻ (inner & anti)
         cnt1 = cnt1 ⊻ anti
     end
-    rcnt1 = gpu_popc(cnt1)
-    rcnt2 = gpu_popc(cnt2)
+    rcnt1 = count_ones(cnt1)
+    rcnt2 = count_ones(cnt2)    
     return UInt8((rcnt1 ⊻ (rcnt2 << 1)) & UInt32(0x3))
 end
 
 function pivot_search_kernel!(d_mat, pivot_row::Int32, bit::UInt64, current_col::Int32, r::Int32, d_result)
-    result = Int32(0)
-    m = current_col
-    while m <= r
-        if (d_mat[pivot_row, m] & bit) != UInt64(0)
-            result = m
-            break
+    idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x + current_col - 1
+    
+    if idx <= r
+        if (d_mat[pivot_row, idx] & bit) != UInt64(0)
+            CUDA.atomic_min!(pointer(d_result), Int32(idx))
         end
-        m += Int32(1)
     end
-    d_result[1] = result
     return
 end
 
 function gpu_pivot_search!(d_mat, pivot_row::Int, bit::UInt64, current_col::Int, r::Int)::Int
-    row_segment = Array(view(d_mat, pivot_row, current_col:r))
-    pivot_offset = findfirst(x -> (x & bit) != UInt64(0), row_segment)
-    if pivot_offset === nothing
+    n_cols = r - current_col + 1
+    if n_cols <= 0
         return 0
-    else
-        return pivot_offset + current_col - 1
     end
+    
+    d_result = CUDA.fill(Int32(r + 1), 1)
+    
+    threads = min(256, n_cols)
+    blocks = cld(n_cols, threads)
+    
+    @cuda threads=threads blocks=blocks pivot_search_kernel!(
+        d_mat, Int32(pivot_row), bit, Int32(current_col), Int32(r), d_result
+    )
+    
+    result = Array(d_result)[1]
+    return result > r ? 0 : Int(result)
 end
 
 function update_kernel!(d_mat, d_phases, current_col::Int32, pivot_row::Int32, bit::UInt64,
@@ -141,24 +134,8 @@ function update_kernel!(d_mat, d_phases, current_col::Int32, pivot_row::Int32, b
                 cnt2 = cnt2 ⊻ (inner & anti)
                 cnt1 = cnt1 ⊻ anti
             end
-            lo1 = UInt32(cnt1 & 0xffffffff)
-            hi1 = UInt32((cnt1 >> 32) & 0xffffffff)
-            count_lo1 = UInt32(0)
-            count_hi1 = UInt32(0)
-            @inbounds for i in 0:31
-                count_lo1 += (lo1 >> i) & UInt32(1)
-                count_hi1 += (hi1 >> i) & UInt32(1)
-            end
-            rcnt1 = count_lo1 + count_hi1
-            lo2 = UInt32(cnt2 & 0xffffffff)
-            hi2 = UInt32((cnt2 >> 32) & 0xffffffff)
-            count_lo2 = UInt32(0)
-            count_hi2 = UInt32(0)
-            @inbounds for i in 0:31
-                count_lo2 += (lo2 >> i) & UInt32(1)
-                count_hi2 += (hi2 >> i) & UInt32(1)
-            end
-            rcnt2 = count_lo2 + count_hi2
+            rcnt1 = count_ones(cnt1)
+            rcnt2 = count_ones(cnt2)
             rcnt2_shifted = rcnt2 << 1
             extra_phase_val = rcnt1 ⊻ rcnt2_shifted
             mask = UInt32(0x3)
