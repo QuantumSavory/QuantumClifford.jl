@@ -56,12 +56,12 @@ function mul_ordered_lv!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val
 end
 =#
 
-function mul_ordered!(r::SubArray{T,1,P,I2,true}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B, I2, P}
+function mul_ordered!(r::SubArray{T,1,P,I2,false}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B, I2, P}
     # This method exists because SIMD.jl requires fast linear indexing
     # (which is not the case for Adjoint,
     # e.g. when we use `fastcolumn`).
-    # The `true` in the signgature stands for
-    # "supports fast linear indexing".
+    # The `false` in the SubArray parameters stands for
+    # "does not support fast linear indexing".
     _mul_ordered_nonvec!(r,l; phases=B)
 end
 
