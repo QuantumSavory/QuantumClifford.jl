@@ -3,8 +3,6 @@
     using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!, invsparsity, _projectrand_notnorm, mixed_destab_looks_good, tr
     using QuantumClifford: @S_str, random_stabilizer
     using QuantumOpticsBase
-    using LinearAlgebra
-    using LinearAlgebra: tr
     using Test
     using InteractiveUtils
     using Random
