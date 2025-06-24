@@ -77,7 +77,7 @@
         @test code_n(c) == 72 && code_k(c) == 10
     end
 
-    @testset "Hecke Small Groups Block 4 Table I of " begin
+    @testset "Hecke Small Groups Block 4 Table I of arxiv:2306.16400" begin
         # [[72, 8, 9]]
         m = 4
         n = 9

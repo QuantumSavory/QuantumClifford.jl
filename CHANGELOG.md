@@ -7,6 +7,7 @@
 
 ## v0.10.0 - 2025-06-23
 
+- document `LPCode` using `Hecke`'s (`small_group`) 
 - **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in non-Clifford functionality.
 - Various stabilizer data structures can now be constructed out of sequences of Paulis.
