@@ -1,7 +1,7 @@
-@testitem "Simple sanity checks" begin
+@testitem "Consistency checks -- Cliffords are unitary" begin
     using Random
     using InteractiveUtils
-    @testset "Apply small symbolics" begin
+    @testset "Apply small symbolics/sparse/named gates" begin
         for gate_type in subtypes(QuantumClifford.AbstractTwoQubitOperator)
             @test apply!(S"II II", gate_type(1,2)) == S"II II"
             s1 = random_stabilizer(4)
@@ -28,7 +28,7 @@
         end
     end
 
-    @testset "Apply small Cliffords" begin
+    @testset "Apply dense Cliffords and Paulis" begin
         for gate_type in (random_pauli, random_clifford)
             @test apply!(S"II II", gate_type(2)) == S"II II"
             s1 = random_stabilizer(4)
