@@ -320,7 +320,7 @@ julia> l = 36;
 
 julia> group_id = 1;
 
-julia> G = small_group(l, group_id; Hecke.DefaultSmallGroupDB())
+julia> G = small_group(l, group_id, Hecke.DefaultSmallGroupDB())
 
 julia> GA = group_algebra(GF(2), G);
 
