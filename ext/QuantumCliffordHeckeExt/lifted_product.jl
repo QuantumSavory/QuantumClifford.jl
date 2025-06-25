@@ -200,6 +200,9 @@ function _build_parity_checks(::CommutativeLift, c::LPCode)
     A, B = c.A, c.B
     ma, na = size(A)
     mb, nb = size(B)
+    # here we use `permutdims` instead of `transpose` to avoid recursive call
+    # convert LinearAlgebra.I to Matrix to fix incompatibility with Julia 1.11.1
+    # TODO the performance may be affected by this workaround for large codes
     hx = [kron(A, Matrix(LinearAlgebra.I(mb))) kron(Matrix(LinearAlgebra.I(ma)), B)] # [A ⊗ I | I ⊗ B]
     hz = [kron(Matrix(LinearAlgebra.I(na)), permutedims(group_algebra_conj.(B))) kron(permutedims(group_algebra_conj.(A)), Matrix(LinearAlgebra.I(nb)))] # [I ⊗ B* | A* ⊗ I]
     hx, hz = concat_lift_repr(c.B_repr, hx), concat_lift_repr(c.B_repr, hz)

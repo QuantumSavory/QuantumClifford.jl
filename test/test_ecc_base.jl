@@ -48,7 +48,8 @@ test_hcubic_codes = [
 ]
 
 # Lifted product codes using non-commutative algebras
-
+# These are just made up, they are not known to
+# specifically be good, they are not from a paper.
 G = small_group(36,1)
 GA = group_algebra(GF(2), G)
 r, s  = gens(GA);
