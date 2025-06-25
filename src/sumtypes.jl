@@ -225,7 +225,7 @@ end
 
 function concrete_typeparams(::Type{PauliMeasurement})
     return [
-        (Array{UInt8,0}, Vector{UInt64}),
+        (Array{PLACEHOLDER_IDENTIFIER,0}, Vector{UInt64}),
     ]
 end
 

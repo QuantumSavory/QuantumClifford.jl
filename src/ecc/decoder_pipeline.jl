@@ -251,7 +251,7 @@ function create_lookup_table(code::Stabilizer)
     for bit_to_be_flipped in 1:qubits
         for error_type in [single_x, single_y, single_z]
             # Generate e⃗
-            error = error_type(qubits, bit_to_be_flipped)::PauliOperator{Array{UInt8, 0}, Vector{UInt}}
+            error = error_type(qubits, bit_to_be_flipped)::PauliOperator{Array{PLACEHOLDER_IDENTIFIER, 0}, Vector{UInt}}
             # Calculate s⃗
             # (check which stabilizer rows do not commute with the Pauli error)
             syndrome = comm(error, code)
