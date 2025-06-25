@@ -132,7 +132,7 @@ Z₂ ⟼ - _X_
 Z₃ ⟼ + __Z
 
 julia> typeof(t_op)
-CliffordOperator{QuantumClifford.Tableau{Vector{PLACEHOLDER_IDENTIFIER}, Matrix{UInt64}}, PauliOperator{Array{PLACEHOLDER_IDENTIFIER, 0}, Vector{UInt64}}}
+CliffordOperator{QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}, PauliOperator{Array{UInt32, 0}, Vector{UInt64}}}
 
 julia> CliffordOperator(op, 1, compact=true) # You can also extract just the non-trivial part of the tableau
 X₁ ⟼ - Y
