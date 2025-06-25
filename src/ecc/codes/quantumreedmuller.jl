@@ -36,6 +36,6 @@ code_k(c::QuantumReedMuller) = 1
 
 distance(c::QuantumReedMuller) = 3
 
-parity_checks_x(c::QuantumReedMuller) = stab_to_gf2(parity_checks(QuantumReedMuller(c.m)))[1:c.m, 1:end÷2]
+parity_matrix_x(c::QuantumReedMuller) = stab_to_gf2(parity_checks(QuantumReedMuller(c.m)))[1:c.m, 1:end÷2]
 
-parity_checks_z(c::QuantumReedMuller) = stab_to_gf2(parity_checks(QuantumReedMuller(c.m)))[end-(code_n(c::QuantumReedMuller)-2-c.m):end, end÷2+1:end]
+parity_matrix_z(c::QuantumReedMuller) = stab_to_gf2(parity_checks(QuantumReedMuller(c.m)))[end-(code_n(c::QuantumReedMuller)-2-c.m):end, end÷2+1:end]

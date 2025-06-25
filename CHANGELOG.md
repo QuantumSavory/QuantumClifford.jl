@@ -5,32 +5,28 @@
 
 # News
 
-## v0.10.0 - dev
+## v0.10.0 - 2025-06-23
 
 - Quantum Tanner graph product codes:
     - `Q(G×G)` Quantum expander code (Tanner graph `G`)
     - General and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`)
-- Improvements to `GeneralizedStabilizer` API:
-    - Tensor product operations:
-        - Between multiple `GeneralizedStabilizer` states: `genstab₁ ⊗ genstab₂ ⊗ ...`
-        - Between `GeneralizedStabilizer` and `AbstractStabilizer` states: `genstab ⊗ stab ⊗ ...`
-        - Between a `UnitaryPauliChannel` and one or more `PauliOperator` terms: `pcT ⊗ P"X" ⊗ ...`
-        - Between multiple `UnitaryPauliChannel`s: `pcT₁ ⊗ pcT₂ ⊗ ...`
-    - Product operations:
-        - Between a `UnitaryPauliChannel` and a `GeneralizedStabilizer`: `pcT * genstab`
-- `QuantumClifford` now depends on `QECCore`. `QECCore` is a new package separate from `QuantumClifford`, which specifies the interfaces and several essential error correction codes. Here are some changes to the function and type names:
-  - `parity_check_x` -> `parity_matrix_x` and `parity_check_z` -> `parity_matrix_z`
+- **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
+- **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in non-Clifford functionality.
+- Various stabilizer data structures can now be constructed out of sequences of Paulis.
+- Most canonicalization routines can now act on sequences of Paulis.
+- `QuantumCliffordJuMPExt` is a new extension depending on the JuMP solver suite. It enables computing minimum distance for quantum LDPC codes via Mixed Integer Programming (MIP) using `JuMP`.
+- `QuantumCliffordOscarExt` is a new extension depending on the Oscar CAS. It provides more convenient ways to construct two-block-group-algebra codes and more.
+- Improvements to `GeneralizedStabilizer` API including support for products and tensor product for many Clifford and non-Clifford operators and states.
+- `expect` is now implemented for `GeneralizedStabilizer`.
+- `projectrand!` is now implemented for `GeneralizedStabilizer`.
+- `QuantumClifford` now depends on `QECCore`. `QECCore` is a new package separate from `QuantumClifford`, which specifies the interfaces error correction codes, together with declaring a number of the more essential ones. Naming changes:
+  - **(breaking)** `parity_checks_x` -> `parity_matrix_x` and `parity_checks_z` -> `parity_matrix_z`
   - `AbstractECC` -> `AbstractQECC`
   - `ClassicalCode` -> `AbstractCECC`
+  - Some codes are moved to `QECCore` from `QuantumClifford`, including `Toric`, `Surface`, `RepCode`, `CSS`, `Shor9`, `Steane7`, `Cleve8`, `Perfect5`, `Bitflip3`.
 - **(breaking)** `StabMixture` was renamed to `GeneralizedStabilizer`.
-- **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in nonclifford functionality.
-- `expect` is now implemented for `GeneralizedStabilizer`.
 - Constructing a `Destabilizer` out of a full-rank `Stabilizer` does not require a canonicalization anymore, i.e. `stabilizerview(Destabilizer(s))==s` is guaranteed.
 - The `maximally_mixed` function is now available for creating maximally mixed multi-qubit states.
-- `projectrand!` is now implemented for `GeneralizedStabilizer`.
-
-## unreleased
-
 - Much faster indexing and slicing of `PauliOperator`.
 
 ## v0.9.19 - 2025-04-08

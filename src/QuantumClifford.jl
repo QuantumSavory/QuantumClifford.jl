@@ -8,7 +8,7 @@ module QuantumClifford
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
 import LinearAlgebra
-using LinearAlgebra: inv, mul!, rank, Adjoint, dot
+using LinearAlgebra: inv, mul!, rank, Adjoint, dot, tr
 import DataStructures
 using DataStructures: DefaultDict, Accumulator
 using Combinatorics: combinations
@@ -122,6 +122,12 @@ function __init__()
                 potentially simplify the tableau and provide the index of the anticommuting
                 term in that tableau. This linear algebra operation is not defined for
                 `GeneralStabilizer` as there is no single tableau to provide an index into.""")
+            elseif exc.f === ECC.distance && length(argtypes)==1
+                print(io,"""
+                \nThe distance for this code is not in our database. Consider using the MIP-based method:
+                `import JuMP, HiGHS; distance(code, DistanceMIPAlgorithm(solver=HiGHS))` or another MIP solver""")
+            elseif exc.f === ECC.distance && length(argtypes)==2 && argtypes[2]===ECC.DistanceMIPAlgorithm
+                print(io,"""\nPlease first import `JuMP` to make MIP-based distance calculation available.""")
             end
         end
     end
@@ -163,12 +169,13 @@ struct Tableau{Tₚᵥ<:AbstractVector{UInt8}, Tₘ<:AbstractMatrix{<:Unsigned}}
     xzs::Tₘ
 end
 
-function Tableau(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ<:AbstractArray{UInt8,0},Tᵥₑ<:Unsigned,Tᵥ<:AbstractVector{Tᵥₑ}}
+function Tableau(paulis::Base.AbstractVecOrTuple{PauliOperator})
     r = length(paulis)
     n = nqubits(paulis[1])
-    tab = zero(Tableau{Vector{UInt8},Matrix{Tᵥₑ}},r,n)::Tableau{Vector{UInt8},Matrix{Tᵥₑ}} # typeassert for JET
+    T = eltype(paulis[1].xz)
+    tab = zero(Tableau{Vector{UInt8},Matrix{T}},r,n)
     for i in eachindex(paulis)
-        tab[i] = paulis[i]::PauliOperator{Tₚ,Tᵥ} # typeassert for JET
+        tab[i] = paulis[i]
     end
     tab
 end
@@ -391,7 +398,7 @@ struct Stabilizer{T<:Tableau} <: AbstractStabilizer
 end
 
 Stabilizer(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ<:AbstractVector{UInt8}, Tₘ<:AbstractMatrix{<:Unsigned}} = Stabilizer(Tableau(phases, nqubits, xzs))
-Stabilizer(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = Stabilizer(Tableau(paulis))
+Stabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator}) = Stabilizer(Tableau(paulis))
 Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xs, zs))
 Stabilizer(phases::AbstractVector{UInt8}, xzs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xzs))
 Stabilizer(xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tableau(xs,zs))
@@ -528,6 +535,8 @@ function Destabilizer(s::Stabilizer)
     end
 end
 
+Destabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator}) = Destabilizer(Stabilizer(Tableau(paulis)))
+
 Base.length(d::Destabilizer) = length(tab(d))÷2
 
 Base.copy(d::Destabilizer) = Destabilizer(copy(tab(d)))
@@ -554,6 +563,7 @@ function MixedStabilizer(s::Stabilizer{T}) where {T}
 end
 
 MixedStabilizer(s::Stabilizer,rank::Int) = MixedStabilizer(tab(s), rank)
+MixedStabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator}) = MixedStabilizer(Stabilizer(Tableau(paulis)))
 
 Base.length(d::MixedStabilizer) = length(tab(d))
 
@@ -654,6 +664,7 @@ end
 
 MixedDestabilizer(d::MixedStabilizer) = MixedDestabilizer(stabilizerview(d))
 MixedDestabilizer(d::MixedDestabilizer) = d
+MixedDestabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator}) = MixedDestabilizer(Stabilizer(Tableau(paulis)))
 
 Base.length(d::MixedDestabilizer) = length(tab(d))÷2
 

@@ -64,7 +64,10 @@ The number of physical qubits in a error correction code.
 
 See also: [`code_k`](@ref) and [`code_s`](@ref)
 """
-function code_n end
+code_n(c::AbstractQECC) = nqubits(parity_matrix(c))
+code_n(c::AbstractCECC) = nbits(parity_matrix(c))
+nqubits(pm::AbstractMatrix{Bool}) = size(pm, 2) ÷ 2
+nbits(pm::AbstractMatrix{Bool}) = size(pm, 2)
 
 """
     code_s(c::AbstractECC)
@@ -74,6 +77,8 @@ The number of stabilizers in a error correction code. They might not be all line
 See also: [`code_n`](@ref) and [`code_k`](@ref)
 """
 function code_s end
+code_s(c::AbstractQECC) = nstabilizers(parity_matrix(c))
+nstabilizers(pm::AbstractMatrix{Bool}) = size(pm, 1)
 
 """
     code_k(c::AbstractECC)
@@ -104,3 +109,11 @@ The code distance of a error correction code.
 See also: [`code_n`](@ref) and [`code_k`](@ref)
 """
 function distance end
+
+"""
+    AbstractDistanceAlg
+
+Abstract type representing algorithms for computing
+the minimum distance of quantum error correction codes.
+"""
+abstract type AbstractDistanceAlg end
