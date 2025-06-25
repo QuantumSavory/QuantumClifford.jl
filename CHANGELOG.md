@@ -5,10 +5,11 @@
 
 # News
 
-## v0.10.0 - 2025-06-23
+## v0.10.0 - 2025-06-25
 
 - **(breaking)** `LPCode` now supports non-commutative algebras via `A_repr` (right) and `B_repr` (left) representation maps, preserving CSS orthogonality for non-abelian group-based `LPCode`s.
 - **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
+- **(fix)** Paulis with imaginary phases had their phases incorrectly tracked.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in non-Clifford functionality.
 - Various stabilizer data structures can now be constructed out of sequences of Paulis.
 - Most canonicalization routines can now act on sequences of Paulis.
