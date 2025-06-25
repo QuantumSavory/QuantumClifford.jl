@@ -143,7 +143,7 @@ $FIELDS
     end
 end
 
-"""Parity matrix of a code, given as a stabilizer tableau."""
+"""Parity matrix of a code, given as a stabilizer tableau.""" # TODO this should not exist when the transition to QECCore is finished -- currently this is used only for "old" codes, still defined in QuantumClifford
 function parity_matrix(c::AbstractECC)
     paritym = stab_to_gf2(parity_checks(c::AbstractECC))
     return paritym
