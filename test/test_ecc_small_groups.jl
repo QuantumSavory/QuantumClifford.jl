@@ -7,7 +7,7 @@
         # [[72, 8, 9]]
         l = 36
         group_id = 2
-        G = small_group(l, group_id; DB = Hecke.DefaultSmallGroupDB())
+        G = small_group(l, group_id, DB = Hecke.DefaultSmallGroupDB())
         GA = group_algebra(GF(2), G)
         r = prod(gens(GA))
         @test r^36  ==  1 # presentation ⟨r|r³⁶⟩ satisfied
@@ -19,7 +19,7 @@
         # [[54, 6, 9]]
         l = 27
         group_id = 1
-        G = small_group(l, group_id; Hecke.DefaultSmallGroupDB())
+        G = small_group(l, group_id, DB = Hecke.DefaultSmallGroupDB())
         GA = group_algebra(GF(2), G)
         r = prod(gens(GA))
         @test r^27  ==  1 # presentation ⟨r|r²⁷⟩ satisfied
@@ -31,7 +31,7 @@
         # [[60, 6, 10]]
         l = 30
         group_id = 4
-        G = small_group(l, group_id; Hecke.DefaultSmallGroupDB())
+        G = small_group(l, group_id, DB = Hecke.DefaultSmallGroupDB())
         GA = group_algebra(GF(2), G)
         r = prod(gens(GA))
         @test r^30  ==  1 # presentation ⟨r|r³⁰⟩ satisfied
@@ -43,7 +43,7 @@
         # [[70, 8, 10]]
         l = 35
         group_id = 1
-        G = small_group(l, group_id; Hecke.DefaultSmallGroupDB())
+        G = small_group(l, group_id, DB = Hecke.DefaultSmallGroupDB())
         GA = group_algebra(GF(2), G)
         r = prod(gens(GA))
         @test r^35  ==  1 # presentation ⟨r|r³⁵⟩ satisfied
@@ -55,7 +55,7 @@
         # [[72, 8, 10]]
         l = 36
         group_id = 2
-        G = small_group(l, group_id; Hecke.DefaultSmallGroupDB())
+        G = small_group(l, group_id, DB = Hecke.DefaultSmallGroupDB())
         GA = group_algebra(GF(2), G)
         r = prod(gens(GA))
         @test r^36  ==  1 # presentation ⟨r|r³⁶⟩ satisfied
@@ -67,7 +67,7 @@
         # [[72, 10, 9]]
         l = 36
         group_id = 2
-        G = small_group(l, group_id; Hecke.DefaultSmallGroupDB())
+        G = small_group(l, group_id, DB = Hecke.DefaultSmallGroupDB())
         GA = group_algebra(GF(2), G)
         r = prod(gens(GA))
         @test r^36  ==  1 # presentation ⟨r|r³⁶⟩ satisfied
@@ -83,7 +83,7 @@
         n = 9
         l = 36
         group_id = 1
-        G = small_group(l, group_id; Hecke.DefaultSmallGroupDB())
+        G = small_group(l, group_id, DB = Hecke.DefaultSmallGroupDB())
         GA = group_algebra(GF(2), G)
         s, r = gens(GA)[1], gens(GA)[2]
         @test s^m == r^n == s^-1*r*s*r
@@ -97,7 +97,7 @@
         n = 8
         l = 40
         group_id = 1
-        G = small_group(l, group_id; Hecke.DefaultSmallGroupDB())
+        G = small_group(l, group_id, DB = Hecke.DefaultSmallGroupDB())
         GA = group_algebra(GF(2), G)
         s, r = gens(GA)[2], gens(GA)[1]
         @test s^m == r^n == r^-1*s*r*s
@@ -111,7 +111,7 @@
         n = 12
         l = 48
         group_id = 13
-        G = small_group(l, group_id; Hecke.DefaultSmallGroupDB())
+        G = small_group(l, group_id, DB = Hecke.DefaultSmallGroupDB())
         GA = group_algebra(GF(2), G)
         s = gens(GA)[1]
         r = gens(GA)[2]*gens(GA)[3]
@@ -126,7 +126,7 @@
         n = 24
         l = 48
         group_id = 5
-        G = small_group(l, group_id; Hecke.DefaultSmallGroupDB())
+        G = small_group(l, group_id, DB = Hecke.DefaultSmallGroupDB())
         GA = group_algebra(GF(2), G)
         r = gens(GA)[2]*gens(GA)[3]
         s = gens(GA)[1];
@@ -141,7 +141,7 @@
         n = 8
         l = 48
         group_id = 9
-        G = small_group(l, group_id; Hecke.DefaultSmallGroupDB())
+        G = small_group(l, group_id, DB = Hecke.DefaultSmallGroupDB())
         GA = group_algebra(GF(2), G)
         r = gens(GA)[1]*gens(GA)[2]
         s = gens(GA)[3]
