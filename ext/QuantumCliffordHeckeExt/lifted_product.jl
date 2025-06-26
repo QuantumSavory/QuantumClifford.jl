@@ -159,12 +159,20 @@ struct LPCode <: AbstractECC
     default to be the left regular representation for `GF(2)`-algebra."""
     B_repr::Function
 
-    function LPCode(A::GroupAlgebraElemMatrix, B::GroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]), A_repr::Function=x->representation_matrix(x, :right), B_repr::Function=x->representation_matrix(x, :left))
+    function LPCode(A::GroupAlgebraElemMatrix, B::GroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]), repr::Union{Function,Nothing}=nothing, A_repr::Function=x->representation_matrix(x, :right), B_repr::Function=x->representation_matrix(x, :left))
+        if repr !== nothing
+            is_commutative(GA) || throw(ArgumentError("The group algebra must be commutative when using single repr function"))
+            A_repr = B_repr = repr
+        end
         all(elem.parent == GA for elem in A) && all(elem.parent == GA for elem in B) || error("The base rings of all elements in both matrices must be the same as the group algebra")
         new(A, B, GA, A_repr, B_repr)
     end
 
-    function LPCode(c₁::LiftedCode, c₂::LiftedCode; GA::GroupAlgebra=c₁.GA, A_repr::Function=x->representation_matrix(x, :right), B_repr::Function=x->representation_matrix(x, :left))
+    function LPCode(c₁::LiftedCode, c₂::LiftedCode; GA::GroupAlgebra=c₁.GA,  repr::Union{Function,Nothing}=nothing, A_repr::Function=x->representation_matrix(x, :right), B_repr::Function=x->representation_matrix(x, :left))
+        if repr !== nothing
+            is_commutative(GA) || throw(ArgumentError("The group algebra must be commutative when using single repr function"))
+            A_repr = B_repr = repr
+        end
         c₁.GA == GA && c₂.GA == GA || error("The base rings of both lifted codes must be the same as the group algebra")
         new(c₁.A, c₂.A, GA, A_repr, B_repr)
     end
