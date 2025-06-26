@@ -166,8 +166,8 @@ include("pauli_operator.jl")
 """Internal Tableau type for storing a list of Pauli operators in a compact form.
 No special semantic meaning is attached to this type, it is just a convenient way to store a list of Pauli operators.
 E.g. it is not used to represent a stabilizer state, or a stabilizer group, or a Clifford circuit."""
-# TODO: PHASE-TYPE: Parametrise the phase eventually.
 struct Tableau{Tₚᵥ<:AbstractVector{PhaseType}, Tₘ<:AbstractMatrix{<:Unsigned}}
+# TODO: PHASE-TYPE: Parametrise the phase eventually.
     phases::Tₚᵥ
     nqubits::Int
     xzs::Tₘ
@@ -750,8 +750,8 @@ julia> prodphase(P"XXX", P"ZZZ")
 0x01
 ```
 """
-# TODO: PHASE-TYPE: Keep or change accordingly?
 @inline function prodphase(l::AbstractVector{T}, r::AbstractVector{T})::UInt8 where T<:Unsigned
+# TODO: PHASE-TYPE: Keep or change accordingly?
     res = 0
     len = length(l)÷2
     @inbounds @simd for i in 1:len

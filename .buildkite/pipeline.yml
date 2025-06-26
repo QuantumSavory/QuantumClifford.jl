@@ -28,6 +28,9 @@ steps:
           codecov: true
     command:
       - sed -i -e 's/PhaseType = UInt32/PhaseType = UInt8/g' src/QuantumClifford.jl
+      - sed -i -e 's/QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}/QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}/g' src/QuantumClifford.jl
+      - sed -i -e 's/(0, 0x00000002)/(0, 0x02)/g' src/project_trace_reset.jl
+      - sed -i -e 's/CliffordOperator{QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}, PauliOperator{Array{UInt32, 0}, Vector{UInt64}}}/CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}, PauliOperator{Array{UInt8, 0}, Vector{UInt64}}}/g' src/symbolic_cliffords.jl
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project='~' -e '
         using Pkg;
@@ -59,6 +62,9 @@ steps:
       JET_TEST: true
     command:
       - sed -i -e 's/PhaseType = UInt32/PhaseType = UInt8/g' src/QuantumClifford.jl
+      - sed -i -e 's/QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}/QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}/g' src/QuantumClifford.jl
+      - sed -i -e 's/(0, 0x00000002)/(0, 0x02)/g' src/project_trace_reset.jl
+      - sed -i -e 's/CliffordOperator{QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}, PauliOperator{Array{UInt32, 0}, Vector{UInt64}}}/CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}, PauliOperator{Array{UInt8, 0}, Vector{UInt64}}}/g' src/symbolic_cliffords.jl
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project='~' -e '
         using Pkg;
@@ -83,6 +89,9 @@ steps:
       - QuantumSavory/julia-xvfb#v1:
     command:
       - sed -i -e 's/PhaseType = UInt32/PhaseType = UInt8/g' src/QuantumClifford.jl
+      - sed -i -e 's/QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}/QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}/g' src/QuantumClifford.jl
+      - sed -i -e 's/(0, 0x00000002)/(0, 0x02)/g' src/project_trace_reset.jl
+      - sed -i -e 's/CliffordOperator{QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}, PauliOperator{Array{UInt32, 0}, Vector{UInt64}}}/CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}, PauliOperator{Array{UInt8, 0}, Vector{UInt64}}}/g' src/symbolic_cliffords.jl
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project=$(mktemp -d) -e '
         using Pkg;
@@ -110,6 +119,9 @@ steps:
       - QuantumSavory/julia-xvfb#v1:
     command:
       - sed -i -e 's/PhaseType = UInt32/PhaseType = UInt8/g' src/QuantumClifford.jl
+      - sed -i -e 's/QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}/QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}/g' src/QuantumClifford.jl
+      - sed -i -e 's/(0, 0x00000002)/(0, 0x02)/g' src/project_trace_reset.jl
+      - sed -i -e 's/CliffordOperator{QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}, PauliOperator{Array{UInt32, 0}, Vector{UInt64}}}/CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}, PauliOperator{Array{UInt8, 0}, Vector{UInt64}}}/g' src/symbolic_cliffords.jl
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project=$(mktemp -d) -e '
         using Pkg;
@@ -137,6 +149,9 @@ steps:
       - QuantumSavory/julia-xvfb#v1:
     command:
       - sed -i -e 's/PhaseType = UInt32/PhaseType = UInt8/g' src/QuantumClifford.jl
+      - sed -i -e 's/QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}/QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}/g' src/QuantumClifford.jl
+      - sed -i -e 's/(0, 0x00000002)/(0, 0x02)/g' src/project_trace_reset.jl
+      - sed -i -e 's/CliffordOperator{QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}, PauliOperator{Array{UInt32, 0}, Vector{UInt64}}}/CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}, PauliOperator{Array{UInt8, 0}, Vector{UInt64}}}/g' src/symbolic_cliffords.jl
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project=$(mktemp -d) -e '
         using Pkg;
