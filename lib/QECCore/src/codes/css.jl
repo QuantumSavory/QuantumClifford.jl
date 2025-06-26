@@ -1,12 +1,14 @@
-"""An arbitrary CSS error correcting code defined by its X and Z checks.
+"""
+    CSS <: AbstractCSSCode
+    CSS(Hx, Hz)
 
-```jldoctest
-julia> CSS([0 1 1 0; 1 1 0 0], [1 1 1 1]) |> parity_checks
-+ _XX_
-+ XX__
-+ ZZZZ
-```"""
-struct CSS <: AbstractECC
+An arbitrary CSS error correction code defined by its X and Z checks.
+
+### Fields
+- `Hx::Matrix{Bool}`: The parity check matrix of the X stabilizers.
+- `Hz::Matrix{Bool}`: The parity check matrix of the Z stabilizers.
+"""
+struct CSS <: AbstractCSSCode
     Hx::Matrix{Bool}
     Hz::Matrix{Bool}
     function CSS(Hx, Hz)
@@ -17,20 +19,18 @@ struct CSS <: AbstractECC
     end
 end
 
-function iscss(::Type{CSS})
-    return true
-end
-
-function parity_checks(c::CSS)
+function parity_matrix(c::CSS)
     extended_Hx = Matrix{Bool}(vcat(c.Hx, zeros(size(c.Hz))))
     extended_Hz = Matrix{Bool}(vcat(zeros(size(c.Hx)), c.Hz))
-    Stabilizer(fill(0x0, size(c.Hx, 1) + size(c.Hz, 1)), extended_Hx, extended_Hz)
+    return hcat(extended_Hx, extended_Hz)
 end
 
-parity_checks_x(c::CSS) = c.Hx
-
-parity_checks_z(c::CSS) = c.Hz
+parity_matrix_x(c::CSS) = c.Hx
+parity_matrix_z(c::CSS) = c.Hz
 
 code_n(c::CSS) = size(c.Hx,2)
-
 code_s(c::CSS) = size(c.Hx, 1) + size(c.Hz, 1)
+
+
+# Parity matrix for general CSS codes
+parity_matrix(c::AbstractCSSCode) = parity_matrix(CSS(parity_matrix_x(c), parity_matrix_z(c)))
