@@ -112,7 +112,6 @@ function _apply!(stab::AbstractStabilizer, ::sId1; phases::Val{B}=Val(true)) whe
     stab
 end
 
-# TODO: PHASE-TYPE: Modify the docstring typeof(t_op).
 """A "symbolic" general single-qubit operator which permits faster multiplication than an operator expressed as an explicit tableau.
 
 ```jldoctest
@@ -133,7 +132,7 @@ Z₂ ⟼ - _X_
 Z₃ ⟼ + __Z
 
 julia> typeof(t_op)
-CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}, PauliOperator{Array{UInt8, 0}, Vector{UInt64}}}
+CliffordOperator{QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}, PauliOperator{Array{UInt32, 0}, Vector{UInt64}}}
 
 julia> CliffordOperator(op, 1, compact=true) # You can also extract just the non-trivial part of the tableau
 X₁ ⟼ - Y

@@ -39,7 +39,7 @@ julia> p[1] = (true, true); p
 + YYZ
 ```
 """
-# TODO: PHASE-TYPE: Parameterise the phase eventually.
+# TODO: PHASE-TYPE: Parametrise the phase eventually.
 struct PauliOperator{Tₚ<:AbstractArray{PhaseType,0}, Tᵥ<:AbstractVector{<:Unsigned}} <: AbstractCliffordOperator
     phase::Tₚ
     nqubits::Int

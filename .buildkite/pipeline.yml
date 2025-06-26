@@ -14,12 +14,40 @@ steps:
       - JuliaCI/julia-coverage#v1:
           codecov: true
     command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
+  - label: "Package Tests -- UInt8"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    command:
       - sed -i -e 's/PhaseType = UInt32/PhaseType = UInt8/g' src/QuantumClifford.jl
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
   - label: "JET Tests"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      JET_TEST: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
+  - label: "JET Tests -- UInt8"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -41,6 +69,19 @@ steps:
           version: "1"
       - QuantumSavory/julia-xvfb#v1:
     command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project=$(mktemp -d) -e '
+        using Pkg;
+        pkg"dev .";
+        Pkg.add("QuantumSavory");
+        Pkg.build("QuantumSavory");
+        Pkg.test("QuantumSavory");'
+  - label: "Downstream QuantumSavory -- UInt8"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+    command:
       - sed -i -e 's/PhaseType = UInt32/PhaseType = UInt8/g' src/QuantumClifford.jl
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project=$(mktemp -d) -e '
@@ -55,6 +96,19 @@ steps:
           version: "1"
       - QuantumSavory/julia-xvfb#v1:
     command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project=$(mktemp -d) -e '
+        using Pkg;
+        pkg"dev .";
+        Pkg.add("BPGates");
+        Pkg.build("BPGates");
+        Pkg.test("BPGates");'
+  - label: "Downstream BPGates -- UInt8"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+    command:
       - sed -i -e 's/PhaseType = UInt32/PhaseType = UInt8/g' src/QuantumClifford.jl
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project=$(mktemp -d) -e '
@@ -64,6 +118,19 @@ steps:
         Pkg.build("BPGates");
         Pkg.test("BPGates");'
   - label: "Downstream QuantumSymbolics"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project=$(mktemp -d) -e '
+        using Pkg;
+        pkg"dev .";
+        Pkg.add("QuantumSymbolics");
+        Pkg.build("QuantumSymbolics");
+        Pkg.test("QuantumSymbolics");'
+  - label: "Downstream QuantumSymbolics -- UInt8"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"

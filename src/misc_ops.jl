@@ -6,7 +6,7 @@ import QuantumInterface: nsubsystems
 Particularly useful when acting on [`Register`](@ref).
 
 See also: [`apply!`](@ref), [`projectrand!`](@ref)."""
-# TODO: PHASE-TYPE: Parameterise the phase eventually.
+# TODO: PHASE-TYPE: Parametrise the phase eventually.
 struct PauliMeasurement{Tₚ<:AbstractArray{PhaseType,0}, Tᵥ<:AbstractVector{<:Unsigned}} <: AbstractMeasurement
     pauli::PauliOperator{Tₚ,Tᵥ}
     bit::Int

@@ -173,7 +173,7 @@ random_destabilizer(rng::AbstractRNG, r::Int, n::Int; phases::Bool=true) = Mixed
 random_destabilizer(r::Int, n::Int; phases::Bool=true) = random_destabilizer(GLOBAL_RNG,r,n; phases)
 
 # Reuse memory for faster generation of many random destabilizers
-# TODO: PHASE-TYPE: Parameterise the phase eventually.
+# TODO: PHASE-TYPE: Parametrise the phase eventually.
 struct RandDestabMemory{N,T<:Integer}
     F1::Matrix{Int8}
     F2::Matrix{Int8}

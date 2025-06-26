@@ -162,7 +162,7 @@ julia> state
 + Z__
 
 julia> anticom_index, result
-(0, 0x02)
+(0, 0x00000002)
 ```
 
 While not the best choice, `Stabilizer` can be used for mixed states,

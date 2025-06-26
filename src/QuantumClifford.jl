@@ -135,7 +135,7 @@ end
 
 const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you are attempting to create a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
 
-# TODO: PHASE-TYPE: Parameterise the phase eventually.
+# TODO: PHASE-TYPE: Parametrise the phase eventually.
 const PhaseType = UInt32
 
 # Predefined constants representing the permitted phases encoded
@@ -166,7 +166,7 @@ include("pauli_operator.jl")
 """Internal Tableau type for storing a list of Pauli operators in a compact form.
 No special semantic meaning is attached to this type, it is just a convenient way to store a list of Pauli operators.
 E.g. it is not used to represent a stabilizer state, or a stabilizer group, or a Clifford circuit."""
-# TODO: PHASE-TYPE: Parameterise the phase eventually.
+# TODO: PHASE-TYPE: Parametrise the phase eventually.
 struct Tableau{Tₚᵥ<:AbstractVector{PhaseType}, Tₘ<:AbstractMatrix{<:Unsigned}}
     phases::Tₚᵥ
     nqubits::Int
@@ -178,7 +178,7 @@ function Tableau(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ <: Abs
     Tableau(map(x -> convert(PhaseType, x), phases), nqubits, xzs)
 end
 
-# TODO: PHASE-TYPE: Parameterise the phase eventually.
+# TODO: PHASE-TYPE: Parametrise the phase eventually.
 function Tableau(paulis::Base.AbstractVecOrTuple{PauliOperator})
     r = length(paulis)
     n = nqubits(paulis[1])
@@ -261,7 +261,7 @@ function Base.setindex!(tab::Tableau, t::Tableau, i)
     tab
 end
 
-# TODO: PHASE-TYPE: Parameterise the phase eventually.
+# TODO: PHASE-TYPE: Parametrise the phase eventually.
 function Base.setindex!(tab::Tableau{Tₚᵥ,Tₘ}, (x,z)::Tuple{Bool,Bool}, i, j) where {Tₚᵥ<:AbstractVector{PhaseType}, Tₘₑ<:Unsigned, Tₘ<:AbstractMatrix{Tₘₑ}} # TODO this has code repetitions with the Pauli setindex
     if x
         tab.xzs[_div(Tₘₑ,j-1)+1,        i] |= Tₘₑ(0x1)<<_mod(Tₘₑ,j-1)
@@ -423,7 +423,7 @@ function Stabilizer(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ <: 
     Stabilizer(map(x -> convert(UInt8, x), phases), nqubits, xzs)
 end
 function Stabilizer(phases::AbstractVector{<: Unsigned}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
-    Stabilizer(map(x -> convert(UInt8, x), phases), xs, zx)
+    Stabilizer(map(x -> convert(UInt8, x), phases), xs, zs)
 end
 function Stabilizer(phases::AbstractVector{<: Unsigned}, xzs::AbstractMatrix{Bool})
     Stabilizer(map(x -> convert(UInt8, x), phases), xzs)
@@ -482,7 +482,6 @@ end
 
 Base.hash(s::T, h::UInt) where {T<:AbstractStabilizer} = hash(T, hash(tab(s), h))
 
-# TODO: PHASE-TYPE: Modify the docstring typeof(tab(tHadamard)).
 """Extract the underlying tableau structure.
 
 ```jldoctest
@@ -505,7 +504,7 @@ julia> tab(tHadamard)
 + X
 
 julia> typeof(tab(tHadamard))
-QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}
+QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}
 ```
 
 See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
