@@ -7,7 +7,7 @@
 
 ## v0.10.0 - 2025-06-25
 
-- **(fix)**  The `parity_checks`, `code_n`, and `code_s` methods were throwing errors and `code_k` was not defined for the classical `LiftedCode`s.
+- **(fix)** The `parity_checks`, `code_n`, and `code_s` methods were throwing method errors and `code_k` was not defined for the classical `LiftedCode`s.
 - **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
 - **(fix)** Paulis with imaginary phases had their phases incorrectly tracked.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in non-Clifford functionality.

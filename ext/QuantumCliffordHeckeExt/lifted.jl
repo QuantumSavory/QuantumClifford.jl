@@ -74,6 +74,8 @@ end
 Constructs a group algebra code by embedding a matrix of group elements into the
 specified group algebra `GA`, with optional custom representation  `repr`.
 
+# Example
+
 ```jldoctest
 julia> import Hecke: group_algebra, GF, abelian_group, gens, representation_matrix
 
