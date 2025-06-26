@@ -70,7 +70,29 @@ function LiftedCode(A::Matrix{GroupAlgebraElem{FqFieldElem, <: GroupAlgebra}}; G
     LiftedCode(A; GA=GA, repr=representation_matrix)
 end
 
-# TODO document and doctest example
+"""
+Constructs a group algebra code by embedding a matrix of group elements into the
+specified group algebra `GA`, with optional custom representation  `repr`.
+
+```jldoctest
+julia> import Hecke: group_algebra, GF, abelian_group, gens, representation_matrix
+
+julia> import QuantumClifford.ECC: LiftedCode, code_n, code_k, code_s
+
+julia> import QuantumClifford.ECC.QECCore: parity_matrix
+
+julia> l = 63; GA = group_algebra(GF(2), abelian_group(l)); x = gens(GA)[];
+
+julia> B = reshape([1 + x + x^6], (1, 1));
+
+julia> c = LiftedCode(B, repr = representation_matrix);
+
+julia> code = parity_matrix(c);
+
+julia> code_n(c), code_k(c), code_s(c)
+(63, 6, 63)
+```
+"""
 function LiftedCode(group_elem_array::Matrix{<: GroupOrAdditiveGroupElem}; GA::GroupAlgebra=group_algebra(GF(2), parent(group_elem_array[1,1])), repr::Union{Function, Nothing}=nothing)
     A = zeros(GA, size(group_elem_array)...)
     for i in axes(group_elem_array, 1), j in axes(group_elem_array, 2)
