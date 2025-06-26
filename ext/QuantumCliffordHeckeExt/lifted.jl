@@ -83,16 +83,29 @@ julia> import QuantumClifford.ECC: LiftedCode, code_n, code_k, code_s
 
 julia> import QuantumClifford.ECC.QECCore: parity_matrix
 
-julia> l = 63; GA = group_algebra(GF(2), abelian_group(l)); x = gens(GA)[];
+julia> l = 12; GA = group_algebra(GF(2), abelian_group(l)); x = gens(GA)[];
 
-julia> B = reshape([1 + x + x^6], (1, 1));
+julia> B = reshape([1 + x + x^3 + x^6], (1, 1));
 
 julia> c = LiftedCode(B, repr = representation_matrix);
 
-julia> code = parity_matrix(c);
+julia> code = parity_matrix(c)
+12×12 Matrix{Bool}:
+ 1  0  0  0  0  0  1  0  0  1  0  1
+ 1  1  0  0  0  0  0  1  0  0  1  0
+ 0  1  1  0  0  0  0  0  1  0  0  1
+ 1  0  1  1  0  0  0  0  0  1  0  0
+ 0  1  0  1  1  0  0  0  0  0  1  0
+ 0  0  1  0  1  1  0  0  0  0  0  1
+ 1  0  0  1  0  1  1  0  0  0  0  0
+ 0  1  0  0  1  0  1  1  0  0  0  0
+ 0  0  1  0  0  1  0  1  1  0  0  0
+ 0  0  0  1  0  0  1  0  1  1  0  0
+ 0  0  0  0  1  0  0  1  0  1  1  0
+ 0  0  0  0  0  1  0  0  1  0  1  1
 
 julia> code_n(c), code_k(c), code_s(c)
-(63, 6, 63)
+(12, 3, 12)
 ```
 """
 function LiftedCode(group_elem_array::Matrix{<: GroupOrAdditiveGroupElem}; GA::GroupAlgebra=group_algebra(GF(2), parent(group_elem_array[1,1])), repr::Union{Function, Nothing}=nothing)
@@ -122,7 +135,7 @@ julia> base_matrix = [0 0 0 0; 0 1 2 5; 0 6 3 1]; l = 3;
 
 julia> c = LiftedCode(base_matrix, l);
 
-julia> parity_matrix(c)
+julia> code = parity_matrix(c)
 9×12 Matrix{Bool}:
  1  0  0  1  0  0  1  0  0  1  0  0
  0  1  0  0  1  0  0  1  0  0  1  0
