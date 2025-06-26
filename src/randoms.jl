@@ -165,7 +165,7 @@ function random_destabilizer(rng::AbstractRNG, n::Int; phases::Bool=true)
 
     # random Pauli matrix just amounts to phases on the stabilizer tableau
     # TODO: PHASE-TYPE: Is this necessary?
-    phasesarray::Vector{PhaseType} = if phases rand(rng, convert(PhaseType, [0x0,0x2]), 2n) else zeros(PhaseType, 2n) end
+    phasesarray::Vector{PhaseType} = if phases rand(rng, map(x -> convert(PhaseType, x), [0x0,0x2]), 2n) else zeros(PhaseType, 2n) end
     return Destabilizer(Tableau(phasesarray, xzs))
 end
 random_destabilizer(n::Int; phases::Bool=true) = random_destabilizer(GLOBAL_RNG, n; phases)
@@ -199,7 +199,7 @@ struct RandDestabMemory{N,T<:Integer}
         U = zeros(Int8, 2n, 2n)
         xzs = falses(2n, 2n)
         phasesarray = zeros(PhaseType, 2n)
-        phase_options = convert(PhaseType, [0x0, 0x2])
+        phase_options = map(x -> convert(PhaseType, x), [0x0, 0x2])
         arr = collect(1:n)
         new{n,T}(F1, F2, hadamard, perm, had_idxs, perm_inds, U, xzs, phasesarray, phase_options, arr, n)
     end
