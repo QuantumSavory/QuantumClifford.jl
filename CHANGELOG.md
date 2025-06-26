@@ -1,9 +1,70 @@
 # Planned changes for v1.0.0:
 
-- `permute` will be a wrapper around to `QuantumInterface.permutesubsystems`. Documentation for `permute!` would be similarly updated
+- `permute` will be a wrapper around to `QuantumInterface.permutesystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
 
 # News
+
+## v0.10.0 - 2025-06-25
+
+- **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
+- **(fix)** Paulis with imaginary phases had their phases incorrectly tracked.
+- **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in non-Clifford functionality.
+- Various stabilizer data structures can now be constructed out of sequences of Paulis.
+- Most canonicalization routines can now act on sequences of Paulis.
+- `QuantumCliffordJuMPExt` is a new extension depending on the JuMP solver suite. It enables computing minimum distance for quantum LDPC codes via Mixed Integer Programming (MIP) using `JuMP`.
+- `QuantumCliffordOscarExt` is a new extension depending on the Oscar CAS. It provides more convenient ways to construct two-block-group-algebra codes and more.
+- Improvements to `GeneralizedStabilizer` API including support for products and tensor product for many Clifford and non-Clifford operators and states.
+- `expect` is now implemented for `GeneralizedStabilizer`.
+- `projectrand!` is now implemented for `GeneralizedStabilizer`.
+- `QuantumClifford` now depends on `QECCore`. `QECCore` is a new package separate from `QuantumClifford`, which specifies the interfaces error correction codes, together with declaring a number of the more essential ones. Naming changes:
+  - **(breaking)** `parity_checks_x` -> `parity_matrix_x` and `parity_checks_z` -> `parity_matrix_z`
+  - `AbstractECC` -> `AbstractQECC`
+  - `ClassicalCode` -> `AbstractCECC`
+  - Some codes are moved to `QECCore` from `QuantumClifford`, including `Toric`, `Surface`, `RepCode`, `CSS`, `Shor9`, `Steane7`, `Cleve8`, `Perfect5`, `Bitflip3`.
+- **(breaking)** `StabMixture` was renamed to `GeneralizedStabilizer`.
+- Constructing a `Destabilizer` out of a full-rank `Stabilizer` does not require a canonicalization anymore, i.e. `stabilizerview(Destabilizer(s))==s` is guaranteed.
+- The `maximally_mixed` function is now available for creating maximally mixed multi-qubit states.
+- Much faster indexing and slicing of `PauliOperator`.
+
+## v0.9.19 - 2025-04-08
+
+- `permutesystems` and `permutesystems!` are no implemented, deprecating `permute` and `permute!`
+
+## v0.9.18 - 2025-02-19
+
+- Fixes for rare crashes in the python BP decoders.
+- Less repetitive error messages.
+
+## v0.9.17 - 2025-02-18
+
+- New memory structure and matrix inversion function for `random_destabilizer`, to reduce allocations and speed up repeated generation of many random destabilizers.
+- Improvements to allocations in `apply!`
+
+## v0.9.16 - 2024-12-29
+
+- 100× faster unbiased `random_pauli`.
+- Enhancements to `GF(2)` Linear Algebra: unexported, experimental `gf2_row_echelon_with_pivots!`, `gf2_nullspace`, `gf2_rowspace_basis`.
+
+## v0.9.15 - 2024-12-22
+
+- `pftrajectories` now supports fast multiqubit measurements with `PauliMeasurement` in addition to the already supported single qubit measurements `sMX/Z/Y` and workarounds like `naive_syndrome_circuit`.
+
+## v0.9.14 - 2024-11-03
+
+- **(fix)** `affectedqubits()` on `sMX`, `sMY`, and `sMR*`
+- **(fix)** restrictive type-assert in `MixedDestabilizer` failing on views of tableaux
+- Implementing additional named two-qubit gates: `sSQRTXX, sInvSQRTXX, sSQRTYY, sInvSQRTYY`
+
+## v0.9.13 - 2024-10-30
+
+- New error-correction group theory tools:
+    - `canonicalize_noncomm` function to find a generating set with minimal anticommutivity
+    - `SubsystemCodeTableau` data structure to represent the output of `canonicalize_noncomm`
+    - `commutify` function to find a commutative version of a non-commutative set of Paulis with minimal changes
+    - `matroid_parent` to, for set of Paulis that doesn't represent a state, find a version
+    that does.
+- Implementing additional named two-qubit gates: `sSWAPCX, sInvSWAPCX, sCZSWAP, sCXSWAP, sISWAP, sInvISWAP, sSQRTZZ, sInvSQRTZZ`
 
 ## v0.9.12 - 2024-10-18
 
@@ -59,7 +120,7 @@
 - Gate errors are now conveniently supported by the various ECC benchmark setups in the `ECC` module.
 - Significant improvements to the low-level circuit compiler (the sumtype compactifier), leading to faster Pauli frame simulation of noisy circuits.
 - Bump `QuantumOpticsBase.jl` package extension compat bound.
-- **(fix)** Remove printing of spurious debug info from the PyBP decoder. 
+- **(fix)** Remove printing of spurious debug info from the PyBP decoder.
 - **(fix)** Failed compactification of gates now only raises a warning instead of throwing an error. Defaults to slower non-compactified gates.
 
 ## v0.9.3 - 2024-04-10
@@ -77,7 +138,7 @@
 - Implemented `iscss` function to identify whether a given code is known to be a CSS (Calderbank-Shor-Steane) code.
 - Added the classical Reed-Muller code in the ECC module.
 - Added the surface code to the ECC module.
- 
+
 ## v0.9.0 - 2024-03-19
 
 - **(breaking)** The defaults in `random_pauli` are now `realphase=true` and `nophase=true`.

@@ -101,7 +101,7 @@
                 @test canonicalize!(copy(ssr2v)[:,perm])[1:z] == canonicalize!(copy(newstate))
                 @test canonicalize!(msr2v) == c[1:z]
                 # Compare different datastractures
-                @test canonicalize!(copy(stabilizerview(mdr1)))==canonicalize!(copy(stabilizerview(msr1)))==canonicalize!(ssr1[1:mdr1.rank])
+                @test canonicalize!(copy(stabilizerview(mdr1)))==canonicalize!(copy(stabilizerview(msr1)))==canonicalize!(ssr1[1:rank(mdr1)])
             end
         end
     end
