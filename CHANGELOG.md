@@ -7,9 +7,7 @@
 
 ## v0.10.0 - 2025-06-25
 
- - Improvements to `LPCode`:
-    - **(fix)** `LPCode`'s single `repr` function did not to enforce CSS orthogonality for non-commutative group algebras, producing invalid stabilizer matrices in non-abelian group-based `LPCode` cases.
-    - Added separate `A_repr` (right regular representation) and `B_repr` (left regular representation) arguments in all `LPCode` constructors.
+- **(fix)** Fixed invalid stabilizers from CSS orthogonality violations in non-abelian `LPCode` by replacing `repr` with left/right regular representations (`A_repr/B_repr`) for non-commutative group algebras, preserving `repr` for commutative cases.
 - **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
 - **(fix)** Paulis with imaginary phases had their phases incorrectly tracked.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in non-Clifford functionality.
