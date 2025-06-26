@@ -84,7 +84,6 @@ function generator_polynomial end
 function generator end
 
 parity_checks(s::Stabilizer) = s
-parity_checks(c::AbstractCECC) = parity_matrix(c)
 parity_checks(c::AbstractECC) = Stabilizer(parity_matrix(c))
 Stabilizer(c::AbstractECC) = parity_checks(c)
 MixedDestabilizer(c::AbstractECC; kwarg...) = MixedDestabilizer(Stabilizer(c); kwarg...)
