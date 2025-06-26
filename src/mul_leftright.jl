@@ -113,14 +113,16 @@ function mul_ordered!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}
     rcnt1, rcnt2
 end
 
-function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}=Val(true))::UInt8 where {T<:Unsigned, B}
+# TODO: PHASE-TYPE: This should be dynamic!
+function mul_left!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}=Val(true))::PhaseType where {T<:Unsigned, B}
     rcnt1, rcnt2 = mul_ordered!(r, l; phases=phases)
-    return UInt8((rcnt1 ⊻ (rcnt2<<1))&0x3)
+    return convert(PhaseType, (rcnt1 ⊻ (rcnt2<<1))&0x3)
 end
 
-function mul_right!(l::AbstractVector{T}, r::AbstractVector{T}; phases::Val{B}=Val(true))::UInt8 where {T<:Unsigned, B}
+# TODO: PHASE-TYPE: This should be dynamic!
+function mul_right!(l::AbstractVector{T}, r::AbstractVector{T}; phases::Val{B}=Val(true))::PhaseType where {T<:Unsigned, B}
     rcnt1, rcnt2 = mul_ordered!(l, r; phases=phases)
-    return UInt8(((rcnt1 ⊻ (rcnt2<<1)) + rcnt1*2)&0x3) # TODO simplify
+    return convert(PhaseType, ((rcnt1 ⊻ (rcnt2<<1)) + rcnt1*2)&0x3) # TODO simplify
 end
 
 ##############################

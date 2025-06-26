@@ -39,10 +39,23 @@ julia> p[1] = (true, true); p
 + YYZ
 ```
 """
-struct PauliOperator{Tₚ<:AbstractArray{UInt8,0}, Tᵥ<:AbstractVector{<:Unsigned}} <: AbstractCliffordOperator
+# TODO: PHASE-TYPE: Parameterise the phase eventually.
+struct PauliOperator{Tₚ<:AbstractArray{PhaseType,0}, Tᵥ<:AbstractVector{<:Unsigned}} <: AbstractCliffordOperator
     phase::Tₚ
     nqubits::Int
     xz::Tᵥ
+end
+
+# CAUTION: For compatibility with existing usage. Eliminate eventually.
+function PauliOperator(phase::Tₚ, nqubits::Int, xz::Tᵥ) where {Tₚ <: AbstractArray{<: Unsigned, 0}, Tᵥ <: AbstractVector{<: Unsigned}}
+    PauliOperator(map(x -> convert(PhaseType, x), phase), nqubits, xz)
+end
+# CAUTION: These just pass things back to the existing UInt8 implementation.
+function PauliOperator(phase::Unsigned, nqubits::Int, xz::Tᵥ) where {Tᵥ <: AbstractVector{<: Unsigned}}
+    PauliOperator(convert(UInt8, phase), nqubits, xz)
+end
+function PauliOperator(phase::Unsigned, x::AbstractVector{Bool}, z::AbstractVector{Bool})
+    PauliOperator(convert(UInt8, phase), x, z)
 end
 
 PauliOperator(phase::UInt8, nqubits::Int, xz::Tᵥ) where Tᵥ<:AbstractVector{<:Unsigned} = PauliOperator(fill(UInt8(phase),()), nqubits, xz)
@@ -149,8 +162,10 @@ function Base.deleteat!(p::PauliOperator, subset)
 end
 
 _nchunks(i::Int,T::Type{<:Unsigned}) = 2*( (i-1) ÷ (8*sizeof(T)) + 1 )
-Base.zero(::Type{PauliOperator{Tₚ, Tᵥ}}, q) where {Tₚ,T<:Unsigned,Tᵥ<:AbstractVector{T}} = PauliOperator(zeros(UInt8), q, zeros(T, _nchunks(q,T)))
-Base.zero(::Type{PauliOperator}, q) = zero(PauliOperator{Array{UInt8, 0}, Vector{UInt}}, q)
+# TODO: PHASE-TYPE: This should be dynamic!
+Base.zero(::Type{PauliOperator{Tₚ, Tᵥ}}, q) where {Tₚ,T<:Unsigned,Tᵥ<:AbstractVector{T}} = PauliOperator(zeros(PhaseType), q, zeros(T, _nchunks(q,T)))
+# TODO: PHASE-TYPE: Figure out how to cleanly handle this.
+Base.zero(::Type{PauliOperator}, q) = zero(PauliOperator{Array{PhaseType, 0}, Vector{UInt}}, q)
 Base.zero(p::P) where {P<:PauliOperator} = zero(P, nqubits(p))
 
 """Zero-out the phases and single-qubit operators in a [`PauliOperator`](@ref)"""

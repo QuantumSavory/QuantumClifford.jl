@@ -112,6 +112,7 @@ function _apply!(stab::AbstractStabilizer, ::sId1; phases::Val{B}=Val(true)) whe
     stab
 end
 
+# TODO: PHASE-TYPE: Modify the docstring typeof(t_op).
 """A "symbolic" general single-qubit operator which permits faster multiplication than an operator expressed as an explicit tableau.
 
 ```jldoctest
