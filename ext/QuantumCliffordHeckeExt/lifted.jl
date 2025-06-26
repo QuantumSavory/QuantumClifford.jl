@@ -92,7 +92,7 @@ Constructs a group algebra code over `GF(2)` by lifting a matrix of cyclic shift
 ```jldoctest
 julia> import Hecke; import QuantumClifford.ECC: LiftedCode, code_n, code_k, code_s
 
-julia> import QuantumClifford.ECC.QECCore:parity_matrix
+julia> import QuantumClifford.ECC.QECCore: parity_matrix
 
 julia> base_matrix = [0 0 0 0; 0 1 2 5; 0 6 3 1]; l = 3;
 
