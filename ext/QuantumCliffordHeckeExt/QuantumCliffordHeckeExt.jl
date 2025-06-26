@@ -13,7 +13,7 @@ import Hecke: Group, GroupElem, AdditiveGroupElem,
 import Nemo
 import Nemo: characteristic, matrix_repr, GF, ZZ, lift, matrix
 
-import QuantumClifford.ECC: iscss, parity_checks,
+import QuantumClifford.ECC: iscss, parity_checks, parity_matrix,
     two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes, check_repr_commutation_relation,
     haah_cubic_codes
 

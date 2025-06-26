@@ -90,13 +90,15 @@ Constructs a group algebra code over `GF(2)` by lifting a matrix of cyclic shift
 # Example
 
 ```jldoctest
-julia> import Hecke; import QuantumClifford.ECC
+julia> import Hecke; import QuantumClifford.ECC: LiftedCode, code_n, code_k, code_s
+
+julia> import QuantumClifford.ECC.QECCore:parity_matrix
 
 julia> base_matrix = [0 0 0 0; 0 1 2 5; 0 6 3 1]; l = 3;
 
 julia> c = LiftedCode(base_matrix, l);
 
-julia> parity_checks(c)
+julia> parity_matrix(c)
 9×12 Matrix{Bool}:
  1  0  0  1  0  0  1  0  0  1  0  0
  0  1  0  0  1  0  0  1  0  0  1  0
@@ -131,7 +133,7 @@ function concat_lift_repr(repr, mat)
     return z
 end
 
-function parity_checks(c::LiftedCode)
+function parity_matrix(c::LiftedCode)
     return concat_lift_repr(c.repr, c.A)
 end
 
@@ -139,4 +141,4 @@ code_n(c::LiftedCode) = size(c.A, 2) * order(group(c.GA))
 
 code_s(c::LiftedCode) = size(c.A, 1) * order(group(c.GA))
 
-code_k(c::LiftedCode) = code_n(c) - rank(matrix(GF(2), parity_checks(c)))
+code_k(c::LiftedCode) = code_n(c) - rank(matrix(GF(2), parity_matrix(c)))
