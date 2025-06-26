@@ -201,10 +201,10 @@ struct NonCommutativeLift end
 
 function parity_matrix_xz(c::LPCode)
     lift_type = is_commutative(c.GA) ? CommutativeLift() : NonCommutativeLift()
-    _build_parity_checks(lift_type, c)
+    _build_parity_matrix_xz(lift_type, c)
 end
 
-function _build_parity_checks(::CommutativeLift, c::LPCode)
+function _build_parity_matrix_xz(::CommutativeLift, c::LPCode)
     A, B = c.A, c.B
     ma, na = size(A)
     mb, nb = size(B)
@@ -217,7 +217,7 @@ function _build_parity_checks(::CommutativeLift, c::LPCode)
     return hx, hz
 end
 
-function _build_parity_checks(::NonCommutativeLift, c::LPCode)
+function _build_parity_matrix_xz(::NonCommutativeLift, c::LPCode)
     A, B = c.A, c.B
     ma, na = size(A)
     mb, nb = size(B)
