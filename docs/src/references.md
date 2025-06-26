@@ -40,11 +40,6 @@ For quantum code construction routines:
 - [steane1999quantum](@cite)
 - [campbell2012magic](@cite)
 - [anderson2014fault](@cite)
-<<<<<<< BBQLDPC
-- [bravyi2024high](@cite)
-- [berthusen2024toward](@cite)
-- [wang2024coprime](@cite)
-=======
 - [wang2024coprime](@cite)
 - [voss2024multivariatebicyclecodes](@cite)
 - [lin2024quantum](@cite)
@@ -53,7 +48,7 @@ For quantum code construction routines:
 - [landahl2011color](@cite)
 - [wang2023abelian](@cite)
 - [naghipour2015quantum](@cite)
->>>>>>> master
+- [bravyi2024high](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)
