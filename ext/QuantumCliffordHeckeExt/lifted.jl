@@ -83,7 +83,35 @@ function LiftedCode(group_elem_array::Matrix{<: GroupOrAdditiveGroupElem}; GA::G
     end
 end
 
-# TODO document and doctest example
+"""
+Constructs a group algebra code over `GF(2)` by lifting a matrix of cyclic shifts
+(entries modulo `l`)  to the group algebra of the abelian group `ℤ/lℤ` of order `l`.
+
+# Example
+
+```jldoctest
+julia> import Hecke; import QuantumClifford.ECC
+
+julia> base_matrix = [0 0 0 0; 0 1 2 5; 0 6 3 1]; l = 3;
+
+julia> c = LiftedCode(base_matrix, l);
+
+julia> parity_checks(c)
+9×12 Matrix{Bool}:
+ 1  0  0  1  0  0  1  0  0  1  0  0
+ 0  1  0  0  1  0  0  1  0  0  1  0
+ 0  0  1  0  0  1  0  0  1  0  0  1
+ 1  0  0  0  0  1  0  1  0  0  1  0
+ 0  1  0  1  0  0  0  0  1  0  0  1
+ 0  0  1  0  1  0  1  0  0  1  0  0
+ 1  0  0  1  0  0  1  0  0  0  0  1
+ 0  1  0  0  1  0  0  1  0  1  0  0
+ 0  0  1  0  0  1  0  0  1  0  1  0
+
+julia> code_n(c), code_k(c), code_s(c)
+(12, 5, 9)
+```
+"""
 function LiftedCode(shift_array::Matrix{Int}, l::Int; GA::GroupAlgebra=group_algebra(GF(2), abelian_group(l)))
     A = zeros(GA, size(shift_array)...)
     for i in 1:size(shift_array, 1)
@@ -104,9 +132,11 @@ function concat_lift_repr(repr, mat)
 end
 
 function parity_checks(c::LiftedCode)
-    return lift(c.repr, c.A)
+    return concat_lift_repr(c.repr, c.A)
 end
 
-code_n(c::LiftedCode) = size(c.A, 2) * size(zero(c.GA), 2)
+code_n(c::LiftedCode) = size(c.A, 2) * order(group(c.GA))
 
-code_s(c::LiftedCode) = size(c.A, 1) * size(zero(c.GA), 1)
+code_s(c::LiftedCode) = size(c.A, 1) * order(group(c.GA))
+
+code_k(c::LiftedCode) = code_n(c) - rank(matrix(GF(2), parity_checks(c)))
