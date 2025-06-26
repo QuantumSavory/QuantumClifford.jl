@@ -46,7 +46,7 @@ struct PauliOperator{Tₚ<:AbstractArray{UInt32,0}, Tᵥ<:AbstractVector{<:Unsig
 end
 
 function PauliOperator(phase::Tₚ, nqubits::Int, xz::Tᵥ) where {Tₚ <: AbstractArray{<: Unsigned, 0}, Tᵥ <: AbstractVector{<: Unsigned}}
-    PauliOperator(convert.(UInt32, phase), nqubits, xz)
+    PauliOperator(map(x -> convert(UInt32, x), phase), nqubits, xz)
 end
 
 function PauliOperator(phase::Unsigned, nqubits::Int, xz::Tᵥ) where {Tᵥ <: AbstractVector{<: Unsigned}}

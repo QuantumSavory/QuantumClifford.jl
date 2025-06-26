@@ -170,7 +170,7 @@ struct Tableau{Tₚᵥ<:AbstractVector{UInt32}, Tₘ<:AbstractMatrix{<:Unsigned}
 end
 
 function Tableau(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ <: AbstractVector{<: Unsigned}, Tₘ <: AbstractMatrix{<: Unsigned}}
-    Tableau(convert.(UInt32, phases), nqubits, xzs)
+    Tableau(map(x -> convert(UInt32, x), phases), nqubits, xzs)
 end
 
 function Tableau(paulis::Base.AbstractVecOrTuple{PauliOperator})
@@ -185,11 +185,11 @@ function Tableau(paulis::Base.AbstractVecOrTuple{PauliOperator})
 end
 
 function Tableau(phases::AbstractVector{<: Unsigned}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
-    Tableau(convert.(UInt8, phases), xs, zs)
+    Tableau(map(x -> convert(UInt8, x), phases), xs, zs)
 end
 
 function Tableau(phases::AbstractVector{<: Unsigned}, xzs::AbstractMatrix{Bool})
-    Tableau(convert.(UInt8, phases), xzs)
+    Tableau(map(x -> convert(UInt8, x), phases), xzs)
 end
 
 function Tableau(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
@@ -410,15 +410,15 @@ struct Stabilizer{T<:Tableau} <: AbstractStabilizer
 end
 
 function Stabilizer(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ <: AbstractVector{<: Unsigned}, Tₘ <: AbstractMatrix{<: Unsigned}}
-    Stabilizer(convert.(UInt8, phases), nqubits, xzs)
+    Stabilizer(map(x -> convert(UInt8, x), phases), nqubits, xzs)
 end
 
 function Stabilizer(phases::AbstractVector{<: Unsigned}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
-    Stabilizer(convert.(UInt8, phases), xs, zx)
+    Stabilizer(map(x -> convert(UInt8, x), phases), xs, zx)
 end
 
 function Stabilizer(phases::AbstractVector{<: Unsigned}, xzs::AbstractMatrix{Bool})
-    Stabilizer(convert.(UInt8, phases), xzs)
+    Stabilizer(map(x -> convert(UInt8, x), phases), xzs)
 end
 
 Stabilizer(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ<:AbstractVector{UInt8}, Tₘ<:AbstractMatrix{<:Unsigned}} = Stabilizer(Tableau(phases, nqubits, xzs))
