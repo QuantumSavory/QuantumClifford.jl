@@ -151,7 +151,7 @@ end
             "The two Pauli operators should have the same length!"
             )
         )
-    mul_ordered!(
+    mul_device!(
         r.xz, r.phase, l.xz, l.phase;
         phases = phases, order_right_left = Val(true)
         )
@@ -175,7 +175,7 @@ end
             "The two Pauli operators should have the same length!"
             )
         )
-    mul_ordered!(
+    mul_device!(
         l.xz, l.phase, r.xz, r.phase;
         phases = phases, order_right_left = Val(false)
         )
@@ -199,7 +199,7 @@ end
             "The Pauli operator and the Tableau should have the same length!"
             )
         )
-    mul_ordered!(
+    mul_device!(
         r.xz, r.phase, (@view l.xzs[:, i]), (@view l.phases[i]);
         phases = phases, order_right_left = Val(true)
         )
@@ -225,7 +225,7 @@ end
             "The Pauli operator and the Tableau should have the same length!"
             )
         )
-    mul_ordered!(
+    mul_device!(
         l.xz, l.phase, (@view r.xzs[:, i]), (@view r.phases[i]);
         phases = phases, order_right_left = Val(false)
         )
@@ -255,7 +255,7 @@ end
             "The two Tableaux should have the same length!"
             )
         )
-    mul_ordered!(
+    mul_device!(
         (@view s.xzs[:, m]), (@view s.phases[m]),
         (@view t.xzs[:, i]), (@view t.phases[i]);
         phases = phases, order_right_left = Val(true)
@@ -274,7 +274,7 @@ end
     s::Tableau{S}, m, i; phases::Val{B} = Val(true)
     ) where {S <: AbstractGPUArray, B}
 
-    mul_ordered!(
+    mul_device!(
         (@view s.xzs[:, m]), (@view s.phases[m]),
         (@view s.xzs[:, i]), (@view s.phases[i]);
         phases = phases, order_right_left = Val(true)
@@ -323,7 +323,7 @@ end
             "The Pauli operator and the Tableau should have the same length!"
             )
         )
-    mul_ordered!(
+    mul_device!(
         s.xzs, s.phases, p.xz, p.phase;
         phases = phases, order_right_left = Val(true)
         )
@@ -354,7 +354,7 @@ end
             "The Pauli operator and the Tableau should have the same length!"
             )
         )
-    mul_ordered!(
+    mul_device!(
         s.xzs, s.phases, p.xz, p.phase;
         phases = phases, order_right_left = Val(false)
         )

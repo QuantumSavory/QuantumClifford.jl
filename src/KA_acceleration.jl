@@ -1,4 +1,3 @@
-using GPUArraysCore: AbstractGPUArray
 import KernelAbstractions as KA
 # Resolves issue due to KA comparing against the literal Symbol("@Const").
 using KernelAbstractions: @Const
@@ -67,8 +66,8 @@ const default_block_size = 256
 end
 
 # CAUTION: Keep in mind that mutable = order_right_left ? right : left.
-KA.@kernel inbounds = true unsafe_indices = true function kernel_mul_ordered!(
-    mutable_xzs, mutable_phases, @Const(const_xzs), @Const(const_phases),
+KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
+    mutable_xzs, mutable_phases, @Const(const_xzs),
     ::Val{order_right_left}, ::Val{phases}, ::Val{block_size}
     ) where {order_right_left, block_size, phases}
 
@@ -81,8 +80,8 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul_ordered!(
     j_const = size(const_xzs, 2) > 1 ? global_pos[2] : 1
     z_offset = KA.@uniform (size(const_xzs, 1) >> 1)
     if phases
-        low = zero(eltype(const_xzs))
-        high = zero(eltype(const_xzs))
+        low = KA.@uniform (zero(eltype(const_xzs)))
+        high = KA.@uniform (zero(eltype(const_xzs)))
     end
 
     if i <= z_offset
@@ -112,44 +111,60 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul_ordered!(
     end
 
     if phases
-        value::DeviceUnsigned = (count_ones(high) << 1) & 0x3
-        value += count_ones(low) & 0x3
+        value::DeviceUnsigned = (count_ones(high) << 1) + count_ones(low)
         buffer = KA.@localmem DeviceUnsigned (block_size,)
         index = KA.@index(Local, Linear)
         value = shared_memory_reduce!(
             +, buffer, value, index, Val(block_size)
             )
         if index == one(index)
-            if i == one(i)
-                value += const_phases[j_const] & 0x3
-            end
-            # This assumes bits(mutable_phases) >= bits(DeviceUnsigned).
             Atomix.@atomic mutable_phases[j_mutable] +=
                 convert(eltype(mutable_phases), value)
-            Atomix.@atomic mutable_phases[j_mutable] &=
-                convert(eltype(mutable_phases), 0x3)
         end
     end
 
 end
 
-function mul_ordered!(
-    mutable_xzs::AbstractGPUArray{T},
-    mutable_phases::AbstractGPUArray{<: Unsigned},
-    const_xzs::AbstractGPUArray{T},
-    const_phases::AbstractGPUArray{<: Unsigned};
-    order_right_left::Val{RL}, phases::Val{B} = Val(true)
-    ) where {T <: Unsigned, RL, B}
+KA.@kernel inbounds = true function kernel_combine_phases!(
+    mutable_phases, @Const(const_phases)
+    )
 
+    index = KA.@index(Global, Linear)
+    index_mutable = length(mutable_phases) > 1 ? index : 1
+    index_const = length(const_phases) > 1 ? index : 1
+    mutable_phases[index_mutable] =
+        (mutable_phases[index_mutable] + const_phases[index_const]) & 0x3
+
+end
+
+function mul_device!(
+    mutable_xzs::AbstractArray{T},
+    mutable_phases::AbstractArray{<: Unsigned},
+    const_xzs::AbstractArray{T},
+    const_phases::AbstractArray{<: Unsigned};
+    order_right_left::Val{RL}, phases::Val{B} = Val(true)
+    )::Nothing where {T <: Unsigned, RL, B}
+
+    backend = KA.get_backend(const_xzs)
     dim_x = size(const_xzs, 1) >> 1
     dim_y = max(size(mutable_xzs, 2), size(const_xzs, 2))
     # This resolves a race condition if doing mul(::Tableau, n, n).
-    length(const_phases) == 1 && (const_phases = copy(const_phases))
-    kernel = kernel_mul_ordered!(KA.get_backend(const_xzs), (default_block_size, 1))
-    kernel(
-        mutable_xzs, mutable_phases, const_xzs, const_phases,
+    if B && length(const_phases) == 1
+        const_phases = copy(const_phases)
+    end
+    mul! = kernel_mul!(backend, (default_block_size, 1))
+    mul!(
+        mutable_xzs, mutable_phases, const_xzs,
         order_right_left, phases, Val(default_block_size);
         workgroupsize = (default_block_size, 1), ndrange = (dim_x, dim_y)
         )
+    if B
+        combine_phases! = kernel_combine_phases!(backend, default_block_size)
+        combine_phases!(
+            mutable_phases, const_phases;
+            workgroupsize = default_block_size, ndrange = dim_y
+            )
+    end
+    return nothing
 
 end
