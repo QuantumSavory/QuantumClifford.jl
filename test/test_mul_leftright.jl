@@ -35,4 +35,236 @@
       @test np==cp
     end
   end
-end
+
+  @testset "OpenCL" begin
+    using pocl_jll, OpenCL
+    using KernelAbstractions: synchronize, get_backend
+    using QuantumClifford: mul_left!, mul_right!
+    # Small sizes for encoding issues, large sizes for race conditions.
+    test_sizes = [31, 32, 33, 63, 64, 65, 127, 128, 129,
+                  64 * 1023, 64 * 1024, 64 * 1025,
+                  64 * 2047, 64 * 2048, 64 * 2049]
+
+
+    for n in test_sizes
+      for _ in 1:5
+        h_p1 = random_pauli(n)
+        d_p1 = PauliOperator(CLArray(h_p1.phase), h_p1.nqubits, CLArray(h_p1.xz))
+        h_p2 = random_pauli(n)
+        d_p2 = PauliOperator(CLArray(h_p2.phase), h_p2.nqubits, CLArray(h_p2.xz))
+        h_s = random_stabilizer(n)
+        d_s = Stabilizer(Tableau(
+          CLArray(h_s.tab.phases), h_s.tab.nqubits, CLArray(h_s.tab.xzs)
+          ))
+        i = rand(1:n)
+        backend = get_backend(d_p1.phase)
+
+        d_o = mul_left!(copy(d_p2), d_p1)
+        h_o = mul_left!(copy(h_p2), h_p1)
+        synchronize(backend)
+        @test h_o.phase == Array(d_o.phase) skip = true
+        @test h_o.xz == Array(d_o.xz) skip = true
+
+        d_o = mul_right!(copy(d_p1), d_p2)
+        h_o = mul_right!(copy(h_p1), h_p2)
+        synchronize(backend)
+        @test h_o.phase == Array(d_o.phase) skip = true
+        @test h_o.xz == Array(d_o.xz) skip = true
+
+        d_L = mul_left!(copy(d_p2), d_p1)
+        d_R = mul_right!(copy(d_p2), d_p1)
+        synchronize(backend)
+        @test Array(d_L.phase) == (-1)^comm(h_p1, h_p2) .* Array(d_R.phase) skip = true
+        @test Array(d_L.xz) == Array(d_R.xz) skip = true
+
+        d_o = mul_left!(copy(d_p2), d_s, i)
+        h_o = mul_left!(copy(h_p2), h_s, i)
+        synchronize(backend)
+        @test h_o.phase == Array(d_o.phase) skip = true
+        @test h_o.xz == Array(d_o.xz) skip = true
+
+        d_o = mul_right!(copy(d_p2), d_s, i)
+        h_o = mul_right!(copy(h_p2), h_s, i)
+        synchronize(backend)
+        @test h_o.phase == Array(d_o.phase) skip = true
+        @test h_o.xz == Array(d_o.xz) skip = true
+
+        d_o = mul_left!(copy(d_s), d_p2)
+        h_o = mul_left!(copy(h_s), h_p2)
+        synchronize(backend)
+        @test h_o.phases[i] == Array(d_o.phases)[i] skip = true
+        @test (@view h_o.xzs[:, i]) == (@view Array(d_o.xzs)[:, i]) skip = true
+
+        d_o = mul_right!(copy(d_s), d_p2)
+        h_o = mul_right!(copy(h_s), h_p2)
+        synchronize(backend)
+        @test h_o.phases[i] == Array(d_o.phases)[i] skip = true
+        @test (@view h_o.xzs[:, i]) == (@view Array(d_o.xzs)[:, i]) skip = true
+
+        # Potential race condition.
+        d_o = mul_left!(copy(d_s), i, i)
+        h_o = mul_left!(copy(h_s), i, i)
+        synchronize(backend)
+        @test h_o.phases[i] == Array(d_o.phases)[i] skip = true
+        @test (@view h_o.xzs[:, i]) == (@view Array(d_o.xzs)[:, i]) skip = true
+      end
+    end
+  end
+
+  @testset "CUDA" begin
+    using CUDA
+    if length(CUDA.devices()) > 0
+
+      using KernelAbstractions: synchronize, get_backend
+      using QuantumClifford: mul_left!, mul_right!
+      # Small sizes for encoding issues, large sizes for race conditions.
+      test_sizes = [31, 32, 33, 63, 64, 65, 127, 128, 129,
+                    64 * 1023, 64 * 1024, 64 * 1025,
+                    64 * 2047, 64 * 2048, 64 * 2049]
+
+
+      for n in test_sizes
+        for _ in 1:5
+          h_p1 = random_pauli(n)
+          d_p1 = PauliOperator(CuArray(h_p1.phase), h_p1.nqubits, CuArray(h_p1.xz))
+          h_p2 = random_pauli(n)
+          d_p2 = PauliOperator(CuArray(h_p2.phase), h_p2.nqubits, CuArray(h_p2.xz))
+          h_s = random_stabilizer(n)
+          d_s = Stabilizer(Tableau(
+            CuArray(h_s.tab.phases), h_s.tab.nqubits, CuArray(h_s.tab.xzs)
+            ))
+          i = rand(1:n)
+          backend = get_backend(d_p1.phase)
+
+          d_o = mul_left!(copy(d_p2), d_p1)
+          h_o = mul_left!(copy(h_p2), h_p1)
+          synchronize(backend)
+          @test h_o.phase == Array(d_o.phase) skip = true
+          @test h_o.xz == Array(d_o.xz) skip = true
+
+          d_o = mul_right!(copy(d_p1), d_p2)
+          h_o = mul_right!(copy(h_p1), h_p2)
+          synchronize(backend)
+          @test h_o.phase == Array(d_o.phase) skip = true
+          @test h_o.xz == Array(d_o.xz) skip = true
+
+          d_L = mul_left!(copy(d_p2), d_p1)
+          d_R = mul_right!(copy(d_p2), d_p1)
+          synchronize(backend)
+          @test Array(d_L.phase) == (-1)^comm(h_p1, h_p2) .* Array(d_R.phase) skip = true
+          @test Array(d_L.xz) == Array(d_R.xz) skip = true
+
+          d_o = mul_left!(copy(d_p2), d_s, i)
+          h_o = mul_left!(copy(h_p2), h_s, i)
+          synchronize(backend)
+          @test h_o.phase == Array(d_o.phase) skip = true
+          @test h_o.xz == Array(d_o.xz) skip = true
+
+          d_o = mul_right!(copy(d_p2), d_s, i)
+          h_o = mul_right!(copy(h_p2), h_s, i)
+          synchronize(backend)
+          @test h_o.phase == Array(d_o.phase) skip = true
+          @test h_o.xz == Array(d_o.xz) skip = true
+
+          d_o = mul_left!(copy(d_s), d_p2)
+          h_o = mul_left!(copy(h_s), h_p2)
+          synchronize(backend)
+          @test h_o.phases[i] == Array(d_o.phases)[i] skip = true
+          @test (@view h_o.xzs[:, i]) == (@view Array(d_o.xzs)[:, i]) skip = true
+
+          d_o = mul_right!(copy(d_s), d_p2)
+          h_o = mul_right!(copy(h_s), h_p2)
+          synchronize(backend)
+          @test h_o.phases[i] == Array(d_o.phases)[i] skip = true
+          @test (@view h_o.xzs[:, i]) == (@view Array(d_o.xzs)[:, i]) skip = true
+
+          # Potential race condition.
+          d_o = mul_left!(copy(d_s), i, i)
+          h_o = mul_left!(copy(h_s), i, i)
+          synchronize(backend)
+          @test h_o.phases[i] == Array(d_o.phases)[i] skip = true
+          @test (@view h_o.xzs[:, i]) == (@view Array(d_o.xzs)[:, i]) skip = true
+        end
+      end
+
+    end
+  end
+
+  @testset "ROCm" begin
+    using AMDGPU
+    if length(AMDGPU.devices()) > 0
+
+      using KernelAbstractions: synchronize, get_backend
+      using QuantumClifford: mul_left!, mul_right!
+      # Small sizes for encoding issues, large sizes for race conditions.
+      test_sizes = [31, 32, 33, 63, 64, 65, 127, 128, 129,
+                    64 * 1023, 64 * 1024, 64 * 1025,
+                    64 * 2047, 64 * 2048, 64 * 2049]
+
+
+      for n in test_sizes
+        for _ in 1:5
+          h_p1 = random_pauli(n)
+          d_p1 = PauliOperator(ROCArray(h_p1.phase), h_p1.nqubits, ROCArray(h_p1.xz))
+          h_p2 = random_pauli(n)
+          d_p2 = PauliOperator(ROCArray(h_p2.phase), h_p2.nqubits, ROCArray(h_p2.xz))
+          h_s = random_stabilizer(n)
+          d_s = Stabilizer(Tableau(
+            ROCArray(h_s.tab.phases), h_s.tab.nqubits, ROCArray(h_s.tab.xzs)
+            ))
+          i = rand(1:n)
+          backend = get_backend(d_p1.phase)
+
+          d_o = mul_left!(copy(d_p2), d_p1)
+          h_o = mul_left!(copy(h_p2), h_p1)
+          synchronize(backend)
+          @test h_o.phase == Array(d_o.phase) skip = true
+          @test h_o.xz == Array(d_o.xz) skip = true
+
+          d_o = mul_right!(copy(d_p1), d_p2)
+          h_o = mul_right!(copy(h_p1), h_p2)
+          synchronize(backend)
+          @test h_o.phase == Array(d_o.phase) skip = true
+          @test h_o.xz == Array(d_o.xz) skip = true
+
+          d_L = mul_left!(copy(d_p2), d_p1)
+          d_R = mul_right!(copy(d_p2), d_p1)
+          synchronize(backend)
+          @test Array(d_L.phase) == (-1)^comm(h_p1, h_p2) .* Array(d_R.phase) skip = true
+          @test Array(d_L.xz) == Array(d_R.xz) skip = true
+
+          d_o = mul_left!(copy(d_p2), d_s, i)
+          h_o = mul_left!(copy(h_p2), h_s, i)
+          synchronize(backend)
+          @test h_o.phase == Array(d_o.phase) skip = true
+          @test h_o.xz == Array(d_o.xz) skip = true
+
+          d_o = mul_right!(copy(d_p2), d_s, i)
+          h_o = mul_right!(copy(h_p2), h_s, i)
+          synchronize(backend)
+          @test h_o.phase == Array(d_o.phase) skip = true
+          @test h_o.xz == Array(d_o.xz) skip = true
+
+          d_o = mul_left!(copy(d_s), d_p2)
+          h_o = mul_left!(copy(h_s), h_p2)
+          synchronize(backend)
+          @test h_o.phases[i] == Array(d_o.phases)[i] skip = true
+          @test (@view h_o.xzs[:, i]) == (@view Array(d_o.xzs)[:, i]) skip = true
+
+          d_o = mul_right!(copy(d_s), d_p2)
+          h_o = mul_right!(copy(h_s), h_p2)
+          synchronize(backend)
+          @test h_o.phases[i] == Array(d_o.phases)[i] skip = true
+          @test (@view h_o.xzs[:, i]) == (@view Array(d_o.xzs)[:, i]) skip = true
+
+          # Potential race condition.
+          d_o = mul_left!(copy(d_s), i, i)
+          h_o = mul_left!(copy(h_s), i, i)
+          synchronize(backend)
+          @test h_o.phases[i] == Array(d_o.phases)[i] skip = true
+          @test (@view h_o.xzs[:, i]) == (@view Array(d_o.xzs)[:, i]) skip = true
+        end
+      end
+
+    end
+  end
