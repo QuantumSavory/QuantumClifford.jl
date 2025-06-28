@@ -103,13 +103,13 @@
         @test code_n(c) == 74
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 11
 
-        c = generalized_bicycle_codes([0, 1, 2, 4, 5,   8], [0,1], 11)
+        c = generalized_bicycle_codes([0, 1, 2, 4, 5, 8], [0,1], 11)
         @test code_n(c) == 22
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
-        c = generalized_bicycle_codes([0, 2, 3, 6, 7,   9], [0,1], 13)
+        c = generalized_bicycle_codes([0, 2, 3, 6, 7, 9], [0,1], 13)
         @test code_n(c) == 26
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
-        c = generalized_bicycle_codes([0, 1, 2, 3, 4,   8], [0,1], 19)
+        c = generalized_bicycle_codes([0, 1, 2, 3, 4, 8], [0,1], 19)
         @test code_n(c) == 38
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 7
     end
