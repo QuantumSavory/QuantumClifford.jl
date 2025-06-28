@@ -29,7 +29,7 @@
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_qubit=1)) == 9
     end
 
-    @testset "Distance bounds for generalized bicycle codes"
+    @testset "generalized bicycle codes from arXiv:2203.17216"
         # codes taken from https://github.com/QEC-pages/GB-codes
         c = generalized_bicycle_codes([0, 2], [0, 1], 5)
         @test code_n(c) == 10
