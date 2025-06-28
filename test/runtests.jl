@@ -5,6 +5,7 @@ if Sys.iswindows() || Sys.ARCH != :x86_64
 elseif get(ENV, "GPU_TESTS", "") == "true"
     @info "running with GPU tests"
     Pkg.add("CUDA")
+    Pkg.add("AMDGPU")
 elseif VERSION < v"1.11"
     @info "skipping Oscar tests (not tested on Julia <1.11)"
     @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"

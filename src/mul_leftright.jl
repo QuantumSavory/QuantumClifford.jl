@@ -141,7 +141,7 @@ end
             )
         )
     mul_device!(
-        r.xz, r.phase, l.xz, l.phase;
+        r.phase, r.xz, l.phase, l.xz;
         phases = phases, order_right_left = Val(true)
         )
     return r
@@ -165,7 +165,7 @@ end
             )
         )
     mul_device!(
-        l.xz, l.phase, r.xz, r.phase;
+        l.phase, l.xz, r.phase, r.xz;
         phases = phases, order_right_left = Val(false)
         )
     return l
@@ -189,7 +189,7 @@ end
             )
         )
     mul_device!(
-        r.xz, r.phase, (@view l.xzs[:, i]), (@view l.phases[i]);
+        r.phase, r.xz, (@view l.phases[i]), (@view l.xzs[:, i]);
         phases = phases, order_right_left = Val(true)
         )
     return r
@@ -215,7 +215,7 @@ end
             )
         )
     mul_device!(
-        l.xz, l.phase, (@view r.xzs[:, i]), (@view r.phases[i]);
+        l.phase, l.xz, (@view r.phases[i]), (@view r.xzs[:, i]);
         phases = phases, order_right_left = Val(false)
         )
     return l
@@ -245,8 +245,8 @@ end
             )
         )
     mul_device!(
-        (@view s.xzs[:, m]), (@view s.phases[m]),
-        (@view t.xzs[:, i]), (@view t.phases[i]);
+        (@view s.phases[m]), (@view s.xzs[:, m]),
+        (@view t.phases[i]), (@view t.xzs[:, i]);
         phases = phases, order_right_left = Val(true)
         )
     return s
@@ -264,8 +264,8 @@ end
     ) where {S <: AbstractGPUArray, B}
 
     mul_device!(
-        (@view s.xzs[:, m]), (@view s.phases[m]),
-        (@view s.xzs[:, i]), (@view s.phases[i]);
+        (@view s.phases[m]), (@view s.xzs[:, m]),
+        (@view s.phases[i]), (@view s.xzs[:, i]);
         phases = phases, order_right_left = Val(true)
         )
     return s
@@ -313,7 +313,7 @@ end
             )
         )
     mul_device!(
-        s.xzs, s.phases, p.xz, p.phase;
+        s.phases, s.xzs, p.phase, p.xz;
         phases = phases, order_right_left = Val(true)
         )
     return s
@@ -344,7 +344,7 @@ end
             )
         )
     mul_device!(
-        s.xzs, s.phases, p.xz, p.phase;
+        s.phases, s.xzs, p.phase, p.xz;
         phases = phases, order_right_left = Val(false)
         )
     return s
