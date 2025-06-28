@@ -7,9 +7,27 @@ const DeviceUnsigned = UInt32
 # Cannot allocate shared memory if this is not known at compile time.
 const default_block_size = 256
 
+# Anonymous functions trigger recompilation so separate them out instead.
+sum_mod_4(x, y) = (x + y) & 0x3
+
 # For use whenever KA.@index(Global, NTuple) is unavailable.
 @inline global_index(block_index, block_dim, thread_index) =
     (block_index .- one(eltype(block_index))) .* block_dim .+ thread_index
+
+KA.@kernel inbounds = true function kernel_transform!(
+    f, target, @Const(auxiliary)
+    )
+
+    index = KA.@index(Global, Linear)
+    index_target = length(target) > 1 ? index : 1
+    index_auxiliary = length(auxiliary) > 1 ? index : 1
+    target[index_target] =
+        convert(
+            eltype(target),
+            f(target[index_target], auxiliary[index_auxiliary])
+            )
+
+end
 
 # CAUTION: Requires block_size == length(buffer) == prod(KA.@groupsize()).
 # CAUTION: Requires unsafe_indices = true if num_active_threads < block_size.
@@ -67,7 +85,7 @@ end
 
 # CAUTION: Keep in mind that mutable = order_right_left ? right : left.
 KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
-    mutable_xzs, mutable_phases, @Const(const_xzs),
+    mutable_phases, mutable_xzs, @Const(const_xzs),
     ::Val{order_right_left}, ::Val{phases}, ::Val{block_size}
     ) where {order_right_left, block_size, phases}
 
@@ -125,23 +143,11 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
 
 end
 
-KA.@kernel inbounds = true function kernel_combine_phases!(
-    mutable_phases, @Const(const_phases)
-    )
-
-    index = KA.@index(Global, Linear)
-    index_mutable = length(mutable_phases) > 1 ? index : 1
-    index_const = length(const_phases) > 1 ? index : 1
-    mutable_phases[index_mutable] =
-        (mutable_phases[index_mutable] + const_phases[index_const]) & 0x3
-
-end
-
 function mul_device!(
-    mutable_xzs::AbstractArray{T},
     mutable_phases::AbstractArray{<: Unsigned},
-    const_xzs::AbstractArray{T},
+    mutable_xzs::AbstractArray{T},
     const_phases::AbstractArray{<: Unsigned};
+    const_xzs::AbstractArray{T},
     order_right_left::Val{RL}, phases::Val{B} = Val(true)
     )::Nothing where {T <: Unsigned, RL, B}
 
@@ -154,14 +160,14 @@ function mul_device!(
     end
     mul! = kernel_mul!(backend, (default_block_size, 1))
     mul!(
-        mutable_xzs, mutable_phases, const_xzs,
+        mutable_phases, mutable_xzs, const_xzs,
         order_right_left, phases, Val(default_block_size);
         workgroupsize = (default_block_size, 1), ndrange = (dim_x, dim_y)
         )
     if B
-        combine_phases! = kernel_combine_phases!(backend, default_block_size)
-        combine_phases!(
-            mutable_phases, const_phases;
+        transform! = kernel_transform!(backend, default_block_size)
+        transform!(
+            sum_mod_4, mutable_phases, const_phases;
             workgroupsize = default_block_size, ndrange = dim_y
             )
     end
