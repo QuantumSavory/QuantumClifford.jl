@@ -80,7 +80,7 @@ export
     bell, ghz, maximally_mixed,
     single_z, single_x, single_y,
     # Graphs
-    graphstate, graphstate!, graph_gatesequence, graph_gate,
+    GraphState, GraphState!, graph_gate_sequence, graph_gate,
     # Group theory tools
     groupify, minimal_generating_set, pauligroup, normalizer, centralizer, contractor, delete_columns,
     canonicalize_noncomm, commutify, matroid_parent, SubsystemCodeTableau,

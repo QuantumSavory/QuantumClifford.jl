@@ -35,7 +35,8 @@ function stab_to_ket(s)
         There was an attempt to convert a non-square tableaux into a `QuantumOptics.Ket`.
         The Stabilizer tableau has to be square (i.e. pure), otherwise the conversion is impossible.
     """))
-    graph, hadamard_idx, iphase_idx, flips_idx = graphstate(s)
+    g = GraphState(s)
+    graph, hadamard_idx, iphase_idx, flips_idx = g.graph, g.h_idx, g.ip_idx, g.z_idx
     ket = tensor(fill(copy(_s₊),c)...) # TODO fix this is UGLY
     for (;src,dst) in edges(graph)
         apply!(ket, [src,dst], _cphase)

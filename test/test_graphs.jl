@@ -6,29 +6,36 @@
 
     for n in [1,test_sizes...]
         s = random_stabilizer(n)
-        g, h_idx, ip_idx, z_idx = graphstate(s)
-        gates = graph_gatesequence(h_idx, ip_idx, z_idx)
-        gate = graph_gate(h_idx, ip_idx, z_idx, nqubits(s))
+        g = GraphState(s)
+        gates = graph_gate_sequence(g)
+        gate = graph_gate(g)
+
         c0 = one(CliffordOperator,nqubits(s))
-        for gate in vcat(gates...) apply!(Stabilizer(tab(c0)), gate) end # TODO this wrapping in a Stabilizer hack is ugly; clean it up
+        for gate in gates apply!(Stabilizer(tab(c0)), gate) end
+        # Test aggregated gate is indeed the same as composing individual gates from gate sequences
         @test c0==gate
+
         s1 = copy(s)
-        for gate in vcat(gates...) apply!(s1, gate) end
-        @test canonicalize!(apply!(copy(s),c0)) == canonicalize!(s1) == canonicalize!(Stabilizer(g))
+        for gate in gates apply!(s1, gate) end
+        @test canonicalize!(apply!(s,c0)) == canonicalize!(s1) == canonicalize!(Stabilizer(g.graph))
     end
+
     # one more check, done manually, to ensure we are testing for cases
     # where canonicalize_gott! is causing index permutation
     # (a few of the random cases already cover that)
     s = S"- _XZ
           + _ZX
           + ZXZ"
-    g, h_idx, ip_idx, z_idx = graphstate(s)
-    gates = graph_gatesequence(h_idx, ip_idx, z_idx)
-    gate = graph_gate(h_idx, ip_idx, z_idx, nqubits(s))
+    g = GraphState(s)
+    gates = graph_gate_sequence(g)
+    gate = graph_gate(g)
+
     c0 = one(CliffordOperator,nqubits(s))
-    for gate in vcat(gates...) apply!(Stabilizer(tab(c0)), gate) end # TODO this wrapping in a Stabilizer hack is ugly; clean it up
+    for gate in gates apply!(Stabilizer(tab(c0)), gate) end
+    # Test aggregated gate is indeed the same as composing individual gates from gate sequences
     @test c0==gate
+
     s1 = copy(s)
-    for gate in vcat(gates...) apply!(s1, gate) end
-    @test canonicalize!(apply!(copy(s),c0)) == canonicalize!(s1) == canonicalize!(Stabilizer(g))
+    for gate in gates apply!(s1, gate) end
+    @test canonicalize!(apply!(s,c0)) == canonicalize!(s1) == canonicalize!(Stabilizer(g.graph))
 end

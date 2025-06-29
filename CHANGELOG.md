@@ -7,6 +7,7 @@
 
 ## v0.10.0 - 2025-06-25
 
+- **(breaking)** New API for graph state through `GraphState` struct.
 - **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
 - **(fix)** Paulis with imaginary phases had their phases incorrectly tracked.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in non-Clifford functionality.
