@@ -109,7 +109,7 @@ end
 
 code_k(c::AbstractECC) = code_k(parity_checks(c))
 
-# TODO: Use dedicated algorithms such as random information set to calculate the upper distance bound.
+# TODO Use dedicated algorithms such as random information set to calculate the upper distance bound.
 """
 $TYPEDEF
 
