@@ -7,8 +7,6 @@
 
     @testset "generalized bicycle codes from arXiv:2203.17216" begin
         # codes taken from https://github.com/QEC-pages/GB-codes
-        # TODO investigate wrapping https://github.com/QEC-pages/dist-m4ri for supporting dedicated
-        # quantum/classical code distance bounds (upper/lower) algorithms to verify 1000+ qubit support.
         c = generalized_bicycle_codes([0, 2], [0, 1], 5)
         @test code_n(c) == 10
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 3
