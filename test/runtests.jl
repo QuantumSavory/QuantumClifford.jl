@@ -13,6 +13,14 @@ else
     Pkg.add("Oscar")
 end
 
+if get(ENV, "SLOW_TESTS", "") == "true"
+    @info "Running only slow tests"
+    test_args = ["--tags=slow"]
+else
+    @info "Skipping slow tests (set SLOW_TESTS=true to include them)"
+    test_args = ["--tags=!slow"]
+end
+
 using TestItemRunner
 using QuantumClifford
 
