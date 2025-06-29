@@ -135,6 +135,9 @@ end
 
 const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you are attempting to create a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
 
+# TODO: PHASE-TYPE: Parametrise the phase eventually.
+const PhaseType = UInt32
+
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
 const _p  = 0x00
@@ -163,21 +166,36 @@ include("pauli_operator.jl")
 """Internal Tableau type for storing a list of Pauli operators in a compact form.
 No special semantic meaning is attached to this type, it is just a convenient way to store a list of Pauli operators.
 E.g. it is not used to represent a stabilizer state, or a stabilizer group, or a Clifford circuit."""
-struct Tableau{Tₚᵥ<:AbstractVector{UInt8}, Tₘ<:AbstractMatrix{<:Unsigned}}
+struct Tableau{Tₚᵥ<:AbstractVector{PhaseType}, Tₘ<:AbstractMatrix{<:Unsigned}}
+# TODO: PHASE-TYPE: Parametrise the phase eventually.
     phases::Tₚᵥ
     nqubits::Int
     xzs::Tₘ
 end
 
+# CAUTION: For compatibility with existing usage. Eliminate eventually.
+function Tableau(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ <: AbstractVector{<: Unsigned}, Tₘ <: AbstractMatrix{<: Unsigned}}
+    Tableau(map(x -> convert(PhaseType, x), phases), nqubits, xzs)
+end
+
+# TODO: PHASE-TYPE: Parametrise the phase eventually.
 function Tableau(paulis::Base.AbstractVecOrTuple{PauliOperator})
     r = length(paulis)
     n = nqubits(paulis[1])
     T = eltype(paulis[1].xz)
-    tab = zero(Tableau{Vector{UInt8},Matrix{T}},r,n)
+    tab = zero(Tableau{Vector{PhaseType},Matrix{T}},r,n)
     for i in eachindex(paulis)
         tab[i] = paulis[i]
     end
     tab
+end
+
+# CAUTION: These just pass things back to the existing UInt8 implementation.
+function Tableau(phases::AbstractVector{<: Unsigned}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
+    Tableau(map(x -> convert(UInt8, x), phases), xs, zs)
+end
+function Tableau(phases::AbstractVector{<: Unsigned}, xzs::AbstractMatrix{Bool})
+    Tableau(map(x -> convert(UInt8, x), phases), xzs)
 end
 
 function Tableau(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
@@ -243,7 +261,8 @@ function Base.setindex!(tab::Tableau, t::Tableau, i)
     tab
 end
 
-function Base.setindex!(tab::Tableau{Tₚᵥ,Tₘ}, (x,z)::Tuple{Bool,Bool}, i, j) where {Tₚᵥ<:AbstractVector{UInt8}, Tₘₑ<:Unsigned, Tₘ<:AbstractMatrix{Tₘₑ}} # TODO this has code repetitions with the Pauli setindex
+# TODO: PHASE-TYPE: Parametrise the phase eventually.
+function Base.setindex!(tab::Tableau{Tₚᵥ,Tₘ}, (x,z)::Tuple{Bool,Bool}, i, j) where {Tₚᵥ<:AbstractVector{PhaseType}, Tₘₑ<:Unsigned, Tₘ<:AbstractMatrix{Tₘₑ}} # TODO this has code repetitions with the Pauli setindex
     if x
         tab.xzs[_div(Tₘₑ,j-1)+1,        i] |= Tₘₑ(0x1)<<_mod(Tₘₑ,j-1)
     else
@@ -278,12 +297,14 @@ Base.hash(t::Tableau, h::UInt) = hash(t.nqubits, hash(t.phases, hash(t.xzs, h)))
 
 Base.copy(t::Tableau) = Tableau(copy(t.phases), t.nqubits, copy(t.xzs))
 
+# TODO: PHASE-TYPE: This should be dynamic!
 function Base.zero(::Type{Tableau{Tₚᵥ, Tₘ}}, r, q) where {Tₚᵥ,T<:Unsigned,Tₘ<:AbstractMatrix{T}}
-    phases = zeros(UInt8,r)
+    phases = zeros(PhaseType,r)
     xzs = zeros(UInt, _nchunks(q,T), r)
-    Tableau(phases, q, xzs)::Tableau{Vector{UInt8},Matrix{UInt}}
+    Tableau(phases, q, xzs)::Tableau{Vector{PhaseType},Matrix{UInt}}
 end
-Base.zero(::Type{Tableau}, r, q) = zero(Tableau{Vector{UInt8},Matrix{UInt}}, r, q)
+# TODO: PHASE-TYPE: Figure out how to cleanly handle this.
+Base.zero(::Type{Tableau}, r, q) = zero(Tableau{Vector{PhaseType},Matrix{UInt}}, r, q)
 Base.zero(::Type{T}, q) where {T<:Tableau}= zero(T, q, q)
 Base.zero(s::T) where {T<:Tableau} = zero(T, length(s), nqubits(s))
 
@@ -397,6 +418,17 @@ struct Stabilizer{T<:Tableau} <: AbstractStabilizer
     tab::T
 end
 
+# CAUTION: These just pass things back to the existing UInt8 implementation.
+function Stabilizer(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ <: AbstractVector{<: Unsigned}, Tₘ <: AbstractMatrix{<: Unsigned}}
+    Stabilizer(map(x -> convert(UInt8, x), phases), nqubits, xzs)
+end
+function Stabilizer(phases::AbstractVector{<: Unsigned}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
+    Stabilizer(map(x -> convert(UInt8, x), phases), xs, zs)
+end
+function Stabilizer(phases::AbstractVector{<: Unsigned}, xzs::AbstractMatrix{Bool})
+    Stabilizer(map(x -> convert(UInt8, x), phases), xzs)
+end
+
 Stabilizer(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ<:AbstractVector{UInt8}, Tₘ<:AbstractMatrix{<:Unsigned}} = Stabilizer(Tableau(phases, nqubits, xzs))
 Stabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator}) = Stabilizer(Tableau(paulis))
 Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xs, zs))
@@ -431,7 +463,8 @@ Base.hash(s::Stabilizer, h::UInt) = hash(tab(s), h)
 Base.copy(s::Stabilizer) = Stabilizer(copy(tab(s)))
 Base.zero(::Type{S}, q) where {S<:Stabilizer} = zero(S, q, q)
 Base.zero(::Type{Stabilizer{T}}, r, q) where {T<:Tableau} = Stabilizer(zero(T, r, q))
-Base.zero(::Type{Stabilizer}, r, q) = zero(Stabilizer{Tableau{Vector{UInt8},Matrix{UInt}}}, r, q)
+# TODO: PHASE-TYPE: Figure out how to cleanly handle this.
+Base.zero(::Type{Stabilizer}, r, q) = zero(Stabilizer{Tableau{Vector{PhaseType},Matrix{UInt}}}, r, q)
 Base.zero(s::S) where {S<:Stabilizer} = zero(S, length(s), nqubits(s))
 @inline zero!(s::Stabilizer,i) = zero!(tab(s),i)
 
@@ -471,7 +504,7 @@ julia> tab(tHadamard)
 + X
 
 julia> typeof(tab(tHadamard))
-QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}
+QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}
 ```
 
 See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
@@ -718,6 +751,7 @@ julia> prodphase(P"XXX", P"ZZZ")
 ```
 """
 @inline function prodphase(l::AbstractVector{T}, r::AbstractVector{T})::UInt8 where T<:Unsigned
+# TODO: PHASE-TYPE: Keep or change accordingly?
     res = 0
     len = length(l)÷2
     @inbounds @simd for i in 1:len
@@ -747,18 +781,22 @@ function _stim_prodphase(l::AbstractVector{T}, r::AbstractVector{T}) where T<: U
     s & 0x3
 end
 
+# TODO: PHASE-TYPE: Keep or change accordingly?
 @inline function prodphase(l::PauliOperator, r::PauliOperator)::UInt8
     (l.phase[]+r.phase[]+prodphase(l.xz,r.xz))&0x3
 end
 
+# TODO: PHASE-TYPE: Keep or change accordingly?
 @inline function prodphase(l::PauliOperator, r::Tableau, i)::UInt8
     (l.phase[]+r.phases[i]+prodphase(l.xz, (@view r.xzs[:,i])))&0x3
 end
 
+# TODO: PHASE-TYPE: Keep or change accordingly?
 @inline function prodphase(l::Tableau, r::PauliOperator, i)::UInt8
     (l.phases[i]+r.phase[]+prodphase((@view l.xzs[:,i]), r.xz))&0x3
 end
 
+# TODO: PHASE-TYPE: Keep or change accordingly?
 @inline function prodphase(l::Tableau, r::Tableau, i, j)::UInt8
     (l.phases[i]+r.phases[j]+prodphase((@view l.xzs[:,i]), (@view r.xzs[:,j])))&0x3
 end
@@ -787,6 +825,7 @@ See also: [`comm!`](@ref)
 """
 function comm end
 
+# TODO: PHASE-TYPE: Keep or change accordingly?
 @inline function comm(l::AbstractVector{T}, r::AbstractVector{T})::UInt8 where T<:Unsigned
     res = T(0)
     len = length(l)÷2
@@ -796,22 +835,27 @@ function comm end
     count_ones(res)&0x1
 end
 
+# TODO: PHASE-TYPE: Keep or change accordingly?
 @inline function comm(l::PauliOperator, r::PauliOperator)::UInt8
     comm(l.xz,r.xz)
 end
 
+# TODO: PHASE-TYPE: Keep or change accordingly?
 @inline function comm(l::PauliOperator, r::Tableau, i::Int)::UInt8
     comm(l.xz,(@view r.xzs[:,i]))
 end
 
+# TODO: PHASE-TYPE: Keep or change accordingly?
 @inline function comm(l::Tableau, r::PauliOperator, i::Int)::UInt8
     comm(r, l, i)
 end
 
+# TODO: PHASE-TYPE: Keep or change accordingly?
 @inline function comm(s::Tableau, l::Int, r::Int)::UInt8
     comm((@view s.xzs[:,l]),(@view s.xzs[:,r]))
 end
 
+# TODO: PHASE-TYPE: Keep or change accordingly?
 function comm(l::PauliOperator, r::Tableau)::Vector{UInt8}
     [comm(l,r,i) for i in 1:size(r,1)]
 end

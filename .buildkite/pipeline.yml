@@ -18,6 +18,23 @@ steps:
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
+  - label: "Package Tests -- UInt8"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    command:
+      - sed -i -e 's/PhaseType = UInt32/PhaseType = UInt8/g' src/QuantumClifford.jl
+      - sed -i -e 's/QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}/QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}/g' src/QuantumClifford.jl
+      - sed -i -e 's/(0, 0x00000002)/(0, 0x02)/g' src/project_trace_reset.jl
+      - sed -i -e 's/CliffordOperator{QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}, PauliOperator{Array{UInt32, 0}, Vector{UInt64}}}/CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}, PauliOperator{Array{UInt8, 0}, Vector{UInt64}}}/g' src/symbolic_cliffords.jl
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
   - label: "JET Tests"
     plugins:
       - JuliaCI/julia#v1:
@@ -33,12 +50,48 @@ steps:
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
+  - label: "JET Tests -- UInt8"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      JET_TEST: true
+    command:
+      - sed -i -e 's/PhaseType = UInt32/PhaseType = UInt8/g' src/QuantumClifford.jl
+      - sed -i -e 's/QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}/QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}/g' src/QuantumClifford.jl
+      - sed -i -e 's/(0, 0x00000002)/(0, 0x02)/g' src/project_trace_reset.jl
+      - sed -i -e 's/CliffordOperator{QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}, PauliOperator{Array{UInt32, 0}, Vector{UInt64}}}/CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}, PauliOperator{Array{UInt8, 0}, Vector{UInt64}}}/g' src/symbolic_cliffords.jl
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
   - label: "Downstream QuantumSavory"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
       - QuantumSavory/julia-xvfb#v1:
     command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project=$(mktemp -d) -e '
+        using Pkg;
+        pkg"dev .";
+        Pkg.add("QuantumSavory");
+        Pkg.build("QuantumSavory");
+        Pkg.test("QuantumSavory");'
+  - label: "Downstream QuantumSavory -- UInt8"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+    command:
+      - sed -i -e 's/PhaseType = UInt32/PhaseType = UInt8/g' src/QuantumClifford.jl
+      - sed -i -e 's/QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}/QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}/g' src/QuantumClifford.jl
+      - sed -i -e 's/(0, 0x00000002)/(0, 0x02)/g' src/project_trace_reset.jl
+      - sed -i -e 's/CliffordOperator{QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}, PauliOperator{Array{UInt32, 0}, Vector{UInt64}}}/CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}, PauliOperator{Array{UInt8, 0}, Vector{UInt64}}}/g' src/symbolic_cliffords.jl
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project=$(mktemp -d) -e '
         using Pkg;
@@ -59,12 +112,46 @@ steps:
         Pkg.add("BPGates");
         Pkg.build("BPGates");
         Pkg.test("BPGates");'
+  - label: "Downstream BPGates -- UInt8"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+    command:
+      - sed -i -e 's/PhaseType = UInt32/PhaseType = UInt8/g' src/QuantumClifford.jl
+      - sed -i -e 's/QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}/QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}/g' src/QuantumClifford.jl
+      - sed -i -e 's/(0, 0x00000002)/(0, 0x02)/g' src/project_trace_reset.jl
+      - sed -i -e 's/CliffordOperator{QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}, PauliOperator{Array{UInt32, 0}, Vector{UInt64}}}/CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}, PauliOperator{Array{UInt8, 0}, Vector{UInt64}}}/g' src/symbolic_cliffords.jl
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project=$(mktemp -d) -e '
+        using Pkg;
+        pkg"dev .";
+        Pkg.add("BPGates");
+        Pkg.build("BPGates");
+        Pkg.test("BPGates");'
   - label: "Downstream QuantumSymbolics"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
       - QuantumSavory/julia-xvfb#v1:
     command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project=$(mktemp -d) -e '
+        using Pkg;
+        pkg"dev .";
+        Pkg.add("QuantumSymbolics");
+        Pkg.build("QuantumSymbolics");
+        Pkg.test("QuantumSymbolics");'
+  - label: "Downstream QuantumSymbolics -- UInt8"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+    command:
+      - sed -i -e 's/PhaseType = UInt32/PhaseType = UInt8/g' src/QuantumClifford.jl
+      - sed -i -e 's/QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}/QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}/g' src/QuantumClifford.jl
+      - sed -i -e 's/(0, 0x00000002)/(0, 0x02)/g' src/project_trace_reset.jl
+      - sed -i -e 's/CliffordOperator{QuantumClifford.Tableau{Vector{UInt32}, Matrix{UInt64}}, PauliOperator{Array{UInt32, 0}, Vector{UInt64}}}/CliffordOperator{QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}, PauliOperator{Array{UInt8, 0}, Vector{UInt64}}}/g' src/symbolic_cliffords.jl
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project=$(mktemp -d) -e '
         using Pkg;

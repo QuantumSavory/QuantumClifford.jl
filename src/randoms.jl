@@ -164,7 +164,8 @@ function random_destabilizer(rng::AbstractRNG, n::Int; phases::Bool=true)
     xzs = mod.(F1 * U,2) .== 1
 
     # random Pauli matrix just amounts to phases on the stabilizer tableau
-    phasesarray::Vector{UInt8} = if phases rand(rng, [0x0,0x2], 2n) else zeros(UInt8, 2n) end
+    # TODO: PHASE-TYPE: Is this necessary?
+    phasesarray::Vector{PhaseType} = if phases rand(rng, map(x -> convert(PhaseType, x), [0x0,0x2]), 2n) else zeros(PhaseType, 2n) end
     return Destabilizer(Tableau(phasesarray, xzs))
 end
 random_destabilizer(n::Int; phases::Bool=true) = random_destabilizer(GLOBAL_RNG, n; phases)
@@ -172,6 +173,7 @@ random_destabilizer(rng::AbstractRNG, r::Int, n::Int; phases::Bool=true) = Mixed
 random_destabilizer(r::Int, n::Int; phases::Bool=true) = random_destabilizer(GLOBAL_RNG,r,n; phases)
 
 # Reuse memory for faster generation of many random destabilizers
+# TODO: PHASE-TYPE: Parametrise the phase eventually.
 struct RandDestabMemory{N,T<:Integer}
     F1::Matrix{Int8}
     F2::Matrix{Int8}
@@ -181,8 +183,8 @@ struct RandDestabMemory{N,T<:Integer}
     perm_inds::Vector{T}
     U::Matrix{Int8}
     xzs::BitMatrix
-    phasesarray::Vector{UInt8}
-    phase_options::Vector{UInt8}
+    phasesarray::Vector{PhaseType}
+    phase_options::Vector{PhaseType}
     arr::Vector{T}
     n::Int64
 
@@ -196,8 +198,8 @@ struct RandDestabMemory{N,T<:Integer}
         perm_inds = zeros(T, 2n)
         U = zeros(Int8, 2n, 2n)
         xzs = falses(2n, 2n)
-        phasesarray = zeros(UInt8, 2n)
-        phase_options = [0x0, 0x2]
+        phasesarray = zeros(PhaseType, 2n)
+        phase_options = map(x -> convert(PhaseType, x), [0x0, 0x2])
         arr = collect(1:n)
         new{n,T}(F1, F2, hadamard, perm, had_idxs, perm_inds, U, xzs, phasesarray, phase_options, arr, n)
     end

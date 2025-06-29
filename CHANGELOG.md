@@ -7,6 +7,7 @@
 
 ## v0.10.0 - 2025-06-25
 
+- **(breaking?)** the phase(s) field of the various types defined within QuantumClifford has been altered from `UInt8` to a new internal type alias, which presently matches `UInt32`. Existing functions may accept or return a mixture of the two, to be further unified at some point in the future.
 - **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
 - **(fix)** Paulis with imaginary phases had their phases incorrectly tracked.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in non-Clifford functionality.
