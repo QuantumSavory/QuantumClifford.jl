@@ -41,6 +41,8 @@ testfilter = ti -> begin
 
     if get(ENV, "SLOW_TESTS", "") != "true"
         push!(exclude, :slow)
+    else
+        return :slow in ti.tags
     end
 
     return all(!in(exclude), ti.tags)
