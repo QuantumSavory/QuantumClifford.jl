@@ -13,14 +13,6 @@ else
     Pkg.add("Oscar")
 end
 
-if get(ENV, "SLOW_TESTS", "") == "true"
-    @info "Running only slow tests"
-    test_args = ["--tags=slow"]
-else
-    @info "Skipping slow tests (set SLOW_TESTS=true to include them)"
-    test_args = ["--tags=!slow"]
-end
-
 using TestItemRunner
 using QuantumClifford
 
@@ -45,6 +37,10 @@ testfilter = ti -> begin
 
     if !(Base.Sys.islinux() & (Int===Int64))
         push!(exclude, :bitpack)
+    end
+
+    if get(ENV, "SLOW_TESTS", "") != "true"
+        push!(exclude, :slow)
     end
 
     return all(!in(exclude), ti.tags)
