@@ -30,7 +30,7 @@
     @test_nowarn code_k(c)
     @test_nowarn code_s(c)
     base_matrix = [0 0 0 0; 0 1 2 5; 0 6 3 1]; l = 3;
-    @test_nowarn LiftedCode(base_matrix, l);
+    c = LiftedCode(base_matrix, l);
     @test_nowarn parity_matrix(c)
     @test_nowarn code_n(c)
     @test_nowarn code_k(c)
