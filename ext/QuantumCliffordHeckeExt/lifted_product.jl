@@ -6,7 +6,60 @@ Lifted product codes ([panteleev2021degenerate](@cite), [panteleev2022asymptotic
 A lifted product code is defined by the hypergraph product of a base matrices `A` and the conjugate of another base matrix `B'`.
 Here, the hypergraph product is taken over a group algebra, of which the base matrices are consisting.
 
-The binary parity check matrix is obtained by applying `repr` to each element of the matrix resulted from the hypergraph product, which is mathematically a linear map from each group algebra element to a binary matrix.
+The binary parity check matrices are obtained by applying `A_repr` and `B_repr` representation maps to each element of the base matrices. These linear transformations convert group algebra elements to their matrix representations while preserving the CSS orthogonality condition.
+
+## Mathematical Framework
+
+Given classical parity-check matrices:
+
+- ``A \\in \\mathbb{F}_q^{m_a \\times n_a}``
+
+- ``B \\in \\mathbb{F}_q^{m_b \\times n_b}``
+
+The lifted product construction produces quantum CSS codes with parity-check matrices:
+
+```math
+\\begin{aligned}
+    H_X &= [A \\otimes I_{m_b}, -I_{m_a} \\otimes B] \\\\
+    H_Z &= [I_{n_a} \\otimes B^*, A^* \\otimes I_{n_b}]
+\\end{aligned}
+
+## CSS Orthogonality Condition
+
+For matrix blocks ``\\hat{a}_{ij}, \\hat{b}_{st} \\in R``, the requirement ``\\hat{H}_X\\hat{H}_Z^* = 0`` reduces to:
+
+```math
+\\begin{aligned}
+    \\hat{H}_X\\hat{H}_Z^* = 0 \\iff \\hat{a}_{ij}\\hat{b}_{st}^* = \\hat{b}_{st}^*\\hat{a}_{ij} \\quad \\forall i,j,s,t
+\\end{aligned}
+```
+### Commutative Algebra
+
+When `R` is *commutative*, a single representation suffices since all elements naturally commute. Here ``\\rho(a) = \\lambda(a)`` for all ``a \\in R``.
+
+### Non-Commutative Algebra
+
+When `R` is *non-commutative*, distinct representations are essential:
+
+- `A_repr` implements the right regular representation: ``\\rho(a)x = xa``
+
+- `B_repr` implements the left regular representation: ``\\lambda(b)x = bx``
+
+These ensure the critical commutation relation:
+
+```math
+\\begin{aligned}
+    \\rho(a)\\lambda(b) = \\lambda(b)\\rho(a)
+\\end{aligned}
+```
+
+which follows from the associative property:
+
+```math
+\\begin{aligned}
+    \\rho(a)\\lambda(b)(x) = b(xa) = (bx)a = \\lambda(b)\\rho(a)(x)
+\\end{aligned}
+```
 
 ## Constructors
 
@@ -98,53 +151,87 @@ struct LPCode <: AbstractECC
     """the group algebra for which elements in `A` and `B` are from."""
     GA::GroupAlgebra
     """
-    a function that converts a group algebra element to a binary matrix;
-    default to be the permutation representation for GF(2)-algebra."""
-    repr::Function
+    a function that converts a group algebra element to a binary matrix for `A`;
+    default to be the right regular representation for `GF(2)`-algebra."""
+    A_repr::Function
+    """
+    a function that converts a group algebra element to a binary matrix for B;
+    default to be the left regular representation for `GF(2)`-algebra."""
+    B_repr::Function
 
-    function LPCode(A::GroupAlgebraElemMatrix, B::GroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]), repr::Function)
+    function LPCode(A::GroupAlgebraElemMatrix, B::GroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]), repr::Union{Function,Nothing}=nothing, A_repr::Function=x->representation_matrix(x, :right), B_repr::Function=x->representation_matrix(x, :left))
+        if repr !== nothing
+            is_commutative(GA) || throw(ArgumentError("The group algebra must be commutative when using single repr function"))
+            A_repr = B_repr = repr
+        end
         all(elem.parent == GA for elem in A) && all(elem.parent == GA for elem in B) || error("The base rings of all elements in both matrices must be the same as the group algebra")
-        new(A, B, GA, repr)
+        new(A, B, GA, A_repr, B_repr)
     end
 
-    function LPCode(c₁::LiftedCode, c₂::LiftedCode; GA::GroupAlgebra=c₁.GA, repr::Function=c₁.repr)
-        # we are using the group algebra and the representation function of the first lifted code
+    function LPCode(c₁::LiftedCode, c₂::LiftedCode; GA::GroupAlgebra=c₁.GA,  repr::Union{Function,Nothing}=nothing, A_repr::Function=x->representation_matrix(x, :right), B_repr::Function=x->representation_matrix(x, :left))
+        if repr !== nothing
+            is_commutative(GA) || throw(ArgumentError("The group algebra must be commutative when using single repr function"))
+            A_repr = B_repr = repr
+        end
         c₁.GA == GA && c₂.GA == GA || error("The base rings of both lifted codes must be the same as the group algebra")
-        new(c₁.A, c₂.A, GA, repr)
+        new(c₁.A, c₂.A, GA, A_repr, B_repr)
     end
 end
 
 # TODO document and doctest example
 function LPCode(A::FqFieldGroupAlgebraElemMatrix, B::FqFieldGroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]))
-    LPCode(LiftedCode(A; GA=GA, repr=representation_matrix), LiftedCode(B; GA=GA, repr=representation_matrix); GA=GA, repr=representation_matrix)
+    LPCode(LiftedCode(A; GA=GA,repr=x->representation_matrix(x, :right)), LiftedCode(B; GA=GA, repr=x->representation_matrix(x, :left)); GA=GA, A_repr=x->representation_matrix(x, :right), B_repr=x->representation_matrix(x, :left))
 end
 
 # TODO document and doctest example
 function LPCode(group_elem_array1::Matrix{<: GroupOrAdditiveGroupElem}, group_elem_array2::Matrix{<: GroupOrAdditiveGroupElem}; GA::GroupAlgebra=group_algebra(GF(2), parent(group_elem_array1[1,1])))
-    LPCode(LiftedCode(group_elem_array1; GA=GA), LiftedCode(group_elem_array2; GA=GA); GA=GA, repr=representation_matrix)
+    LPCode(LiftedCode(group_elem_array1; GA=GA), LiftedCode(group_elem_array2; GA=GA); GA=GA, A_repr=x->representation_matrix(x, :right), B_repr=x->representation_matrix(x, :left))
 end
 
 # TODO document and doctest example
 function LPCode(shift_array1::Matrix{Int}, shift_array2::Matrix{Int}, l::Int; GA::GroupAlgebra=group_algebra(GF(2), abelian_group(l)))
-    LPCode(LiftedCode(shift_array1, l; GA=GA), LiftedCode(shift_array2, l; GA=GA); GA=GA, repr=representation_matrix)
+    LPCode(LiftedCode(shift_array1, l; GA=GA), LiftedCode(shift_array2, l; GA=GA); GA=GA, A_repr=x->representation_matrix(x, :right), B_repr=x->representation_matrix(x, :left))
 end
 
 iscss(::Type{LPCode}) = true
 
-function hgp(h₁::GroupAlgebraElemMatrix, h₂::GroupAlgebraElemMatrix)
-    r₁, n₁ = size(h₁)
-    r₂, n₂ = size(h₂)
+struct CommutativeLift end
+
+struct NonCommutativeLift end
+
+function parity_matrix_xz(c::LPCode)
+    lift_type = is_commutative(c.GA) ? CommutativeLift() : NonCommutativeLift()
+    _build_parity_matrix_xz(lift_type, c)
+end
+
+function _build_parity_matrix_xz(::CommutativeLift, c::LPCode)
+    A, B = c.A, c.B
+    ma, na = size(A)
+    mb, nb = size(B)
     # here we use `permutdims` instead of `transpose` to avoid recursive call
     # convert LinearAlgebra.I to Matrix to fix incompatibility with Julia 1.11.1
     # TODO the performance may be affected by this workaround for large codes
-    hx = hcat(kron(h₁, Matrix(LinearAlgebra.I(n₂))), kron(Matrix(LinearAlgebra.I(r₁)), permutedims(group_algebra_conj.(h₂))))
-    hz = hcat(kron(Matrix(LinearAlgebra.I(n₁)), h₂), kron(permutedims(group_algebra_conj.(h₁)), Matrix(LinearAlgebra.I(r₂))))
-    hx, hz
+    hx = [kron(A, Matrix(LinearAlgebra.I(mb))) kron(Matrix(LinearAlgebra.I(ma)), B)] # [A ⊗ I | I ⊗ B]
+    hz = [kron(Matrix(LinearAlgebra.I(na)), permutedims(group_algebra_conj.(B))) kron(permutedims(group_algebra_conj.(A)), Matrix(LinearAlgebra.I(nb)))] # [I ⊗ B* | A* ⊗ I]
+    hx, hz = concat_lift_repr(c.B_repr, hx), concat_lift_repr(c.B_repr, hz)
+    return hx, hz
 end
 
-function parity_matrix_xz(c::LPCode)
-    hx, hz = hgp(c.A, permutedims(group_algebra_conj.(c.B)))
-    hx, hz = concat_lift_repr(c.repr,hx), concat_lift_repr(c.repr,hz)
+function _build_parity_matrix_xz(::NonCommutativeLift, c::LPCode)
+    A, B = c.A, c.B
+    ma, na = size(A)
+    mb, nb = size(B)
+    # Apply regular representations to ensure CSS orthogonality for non-commutative algebras:
+    # Â = ρ(A) (right regular representation: x ↦ xa)
+    # B̂ = λ(B) (left regular representation: x ↦ bx)
+    Â = concat_lift_repr(c.A_repr, A) # ρ(A) right regular repr
+    B̂ = concat_lift_repr(c.B_repr, B) # λ(B) left regular repr
+    # Compute adjoints with representations:
+    # B̂* = λ(B*) and Â* = ρ(A*)
+    B̂_conj = concat_lift_repr(c.B_repr, permutedims(group_algebra_conj.(B))) # λ(B*)
+    Â_conj = concat_lift_repr(c.A_repr, permutedims(group_algebra_conj.(A))) # ρ(A*)
+    hx = [kron(Â, Matrix(LinearAlgebra.I(mb))) kron(Matrix(LinearAlgebra.I(ma)), B̂)] # [ρ(A) ⊗ I | I ⊗ λ(B)]
+    hz = [kron(Matrix(LinearAlgebra.I(na)), B̂_conj) kron(Â_conj, Matrix(LinearAlgebra.I(nb)))] # [I ⊗ λ(B*) | ρ(A*) ⊗ I]
     return hx, hz
 end
 
@@ -154,9 +241,9 @@ parity_matrix_z(c::LPCode) = parity_matrix_xz(c)[2]
 
 parity_checks(c::LPCode) = parity_checks(CSS(parity_matrix_xz(c)...))
 
-code_n(c::LPCode) = size(c.repr(zero(c.GA)), 2) * (size(c.A, 2) * size(c.B, 1) + size(c.A, 1) * size(c.B, 2))
+code_n(c::LPCode) = size(c.A_repr(zero(c.GA)), 2) * (size(c.A, 2) * size(c.B, 1) + size(c.A, 1) * size(c.B, 2))
 
-code_s(c::LPCode) = size(c.repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) + size(c.A, 2) * size(c.B, 2))
+code_s(c::LPCode) = size(c.A_repr(zero(c.GA)), 1) * (size(c.A, 1) * size(c.B, 1) + size(c.A, 2) * size(c.B, 2))
 
 """
 $TYPEDSIGNATURES

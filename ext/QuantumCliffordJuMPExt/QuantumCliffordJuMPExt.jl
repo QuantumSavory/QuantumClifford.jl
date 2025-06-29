@@ -5,7 +5,7 @@ using DocStringExtensions
 import JuMP
 import JuMP: @variable, @objective, @constraint, optimize!, Model, set_silent,
     sum, value, optimize!, is_solved_and_feasible, set_time_limit_sec, solution_summary,
-    termination_status, MOI.MEMORY_LIMIT, MOI.TIME_LIMIT
+    termination_status, MOI.MEMORY_LIMIT, MOI.TIME_LIMIT, MOI
 import QuantumClifford
 import QuantumClifford: stab_to_gf2, logicalxview, logicalzview, canonicalize!,
     MixedDestabilizer, Stabilizer
