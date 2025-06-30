@@ -1,16 +1,18 @@
 using Pkg
 if Sys.iswindows() || Sys.ARCH != :x86_64
     @info "skipping Oscar tests (they currently do not run on Windows OS or ARM CPU)"
-    @info "skipping GPU tests (set GPU_TESTS=true to test GPU (on non-Windows))"
-elseif get(ENV, "GPU_TESTS", "") == "true"
-    @info "running with GPU tests"
+    @info "skipping GPU tests (set GPU_CUDA_TESTS=true or GPU_AMDGPU_TESTS=true to test GPU (on non-Windows))"
+elseif get(ENV, "GPU_CUDA_TESTS", "") == "true"
+    @info "running with CUDA tests"
     Pkg.add("CUDA")
+elseif get(ENV, "GPU_AMDGPU_TESTS", "") == "true"
+    @info "running with AMDGPU tests"
     Pkg.add("AMDGPU")
 elseif VERSION < v"1.11"
     @info "skipping Oscar tests (not tested on Julia <1.11)"
-    @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"
+    @info "skipping GPU tests (set GPU_CUDA_TESTS=true or GPU_AMDGPU_TESTS=true to test GPU)"
 else
-    @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"
+    @info "skipping GPU tests (set GPU_CUDA_TESTS=true or GPU_AMDGPU_TESTS=true to test GPU)"
     Pkg.add("Oscar")
 end
 
@@ -32,8 +34,12 @@ testfilter = ti -> begin
         push!(exclude, :aqua)
     end
 
-    if get(ENV, "GPU_TESTS", "")!="true"
-        push!(exclude, :gpu)
+    if get(ENV, "GPU_CUDA_TESTS", "")!="true"
+        push!(exclude, :cuda)
+    end
+
+    if get(ENV, "GPU_AMDGPU_TESTS", "")!="true"
+        push!(exclude, :amdgpu)
     end
 
     if !(Base.Sys.islinux() & (Int===Int64))
