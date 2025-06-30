@@ -2,18 +2,21 @@ module QuantumCliffordOscarExt
 
 using DocStringExtensions
 
+import LinearAlgebra
+import LinearAlgebra: rank
 import Nemo
 import Nemo: FqFieldElem
 import Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra,
    GroupAlgebraElem, direct_product, sub
 import Oscar
 import Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup,
-    BasicGAPGroupElem, DirectProductGroup, cyclic_group
+    BasicGAPGroupElem, DirectProductGroup, cyclic_group, free_module, hom, transpose, tensor_product,
+    total_complex, map, summands, Generic.DirectSumModule
 
 import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
-export twobga_from_direct_product, twobga_from_fp_group
+export twobga_from_direct_product, twobga_from_fp_group, d_dimensional_surface_codes
 
 include("types.jl")
 include("direct_product.jl")
