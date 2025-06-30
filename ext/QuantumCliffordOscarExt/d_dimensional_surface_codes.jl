@@ -28,17 +28,113 @@ function _dual_repcode_chain_complex(L::Int)
     return chain_complex([∂D])
 end
 
-"""Construct a D-dimensional surface code using the hypergraph product of chain complexes.
+"""
 
-# TODOs documentation
+# D-dimensional Surface Code
+
+The construction uses chain complexes and ``\\mathbb{F}_2``-homology. For a quantum
+code, we take the hypergraph product of two `2`-term chain complexes.
+
+## Double Complex
+
+Given chain complexes `C` and `D`, we form a double complex:
+
+```math
+\\begin{aligned}
+C \\boxtimes D \\quad \\text{with} \\quad \\partial_i^v = \\partial_i^C \\otimes I_{D_i} \\quad \\text{and} \\quad \\partial_i^h = I_{C_i} \\otimes \\partial_i^D
+\\end{aligned}
+```
+
+## Total Complex
+
+The total complex is derived from a double complex by taking the direct
+sum of vector spaces and boundary maps that share the same dimension:
+
+```math
+\\begin{aligned}
+\text{Tot}(C \\boxtimes D)_i = \\bigoplus_{i=j+k} C_j \\otimes D_k = E_i
+\\end{aligned}
+```
+
+with boundary maps:
+
+```math
+\\begin{aligned}
+\\partial_i^E = \\bigoplus_{i=j+k} \\partial_j^v \\oplus \\partial_k^h
+\\end{aligned}
+```
 
 ## Subfamilies
 
-# [[L² + (L − 1)², 1, L]] 2D surface code
+### [[L² + (L − 1)², 1, L]] 2D surface code
 
-# [L³ + 2L(L − 1)², 1, min(L, L²)]] 3D surface code
+The `2D` surface code is constructed using the hypergraph product of two
+repetition codes.Thus, we obtain a new `3`-term chain complex:
 
-# [[6L⁴ − 12L³ + 10L² − 4L + 1, 1, L²]] 4D surface code
+```math
+\\begin{aligned}
+E_2 \\xrightarrow{\\partial_2^E} E_1 \\xrightarrow{\\partial_1^E} E_0
+\\end{aligned}
+```
+
+#### Chain Complex
+
+The construction is as follows:
+
+```math
+\\begin{aligned}
+C = \\left( C_1 \\xrightarrow{\\partial} C_0 \\right) \\quad \\text{and} \\quad D = \\left( D_1 \\xrightarrow{\\partial^T} D_0 \\right)
+\\end{aligned}
+```
+
+where ``\\partial`` is the ``(L-1) \\times L`` parity check matrix:
+
+```math
+\\begin{aligned}
+H = \\begin{pmatrix}
+1 & 1 & & \\\\
+ & 1 & \\ddots & \\\\
+ & & \\ddots & 1 \\\\
+ & & & 1
+\\end{pmatrix}
+\\end{aligned}
+```
+
+### [L³ + 2L(L − 1)², 1, min(L, L²)]] 3D surface code
+
+The `3D` surface code is obtained by taking the hypergraph product of a `2D` surface code
+with a repetition code. Thus, we obtain a new `4`-term chain complex:
+
+```math
+\\begin{aligned}
+F_3 \\xrightarrow{\\partial_3^F} F_2 \\xrightarrow{\\partial_2^F} F_1 \\xrightarrow{\\partial_1^F} F_0
+\\end{aligned}
+```
+
+#### Metachecks:
+
+- **Z-type** metachecks: ``M_Z^T = \\partial_3^F``
+
+### [[6L⁴ − 12L³ + 10L² − 4L + 1, 1, L²]] 4D surface code
+
+The `4D` surface code is constructed by taking the hypergraph product of a
+`3D` surface code with a repetition code.  Thus, we obtain a new `5`-term chain complex:
+
+```math
+\\begin{aligned}
+G_4 \\xrightarrow{\\partial_4^G} G_3 \\xrightarrow{\\partial_3^G} G_2 \\xrightarrow{\\partial_2^G} G_1 \\xrightarrow{\\partial_1^G} G_0
+\\end{aligned}
+```
+
+#### Metachecks:
+
+Both X and Z-type metachecks available:
+- ``M_Z^T = \\partial_4^G``
+- ``M_X = \\partial_1^G``
+
+!!! note
+    To obtain surface codes of greater dimensionality, we alternate between `C` and `D` and then form a
+    product with the chain complex representing the surface code in a dimension below.[Berthusen_2024](@cite).
 """
 function d_dimensional_surface_codes(D::Int, L::Int)
     D >= 2 || throw(ArgumentError("Dimension must be at least 2 to construct a valid D-dimensional surface code."))
