@@ -1,7 +1,6 @@
 # using LoopVectorization
 using HostCPUFeatures: pick_vector_width
 import SIMD
-using GPUArraysCore: AbstractGPUArray
 
 """Nonvectorized version of `mul_left!` used for unit tests."""
 function _mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
@@ -142,23 +141,6 @@ end
     r
 end
 
-@inline function mul_left!(
-    r::PauliOperator{R}, l::PauliOperator{L}; phases::Val{B} = Val(true)
-    ) where {R <: AbstractGPUArray, L <: AbstractGPUArray, B}
-
-    nqubits(l) == nqubits(r) || throw(
-        DimensionMismatch(
-            "The two Pauli operators should have the same length!"
-            )
-        )
-    mul_device!(
-        r.phase, r.xz, l.phase, l.xz;
-        phases = phases, order_right_left = Val(true)
-        )
-    return r
-
-end
-
 @inline function mul_right!(l::PauliOperator, r::PauliOperator; phases::Val{B}=Val(true)) where B
     nqubits(l)==nqubits(r) || throw(DimensionMismatch("The two Pauli operators should have the same length!")) # TODO skip this when @inbounds is set
     s = mul_right!(l.xz, r.xz, phases=phases)
@@ -166,121 +148,36 @@ end
     l
 end
 
-@inline function mul_right!(
-    l::PauliOperator{L}, r::PauliOperator{R}; phases::Val{B} = Val(true)
-    ) where {L <: AbstractGPUArray, R <: AbstractGPUArray, B}
-
-    nqubits(l) == nqubits(r) || throw(
-        DimensionMismatch(
-            "The two Pauli operators should have the same length!"
-            )
-        )
-    mul_device!(
-        l.phase, l.xz, r.phase, r.xz;
-        phases = phases, order_right_left = Val(false)
-        )
-    return l
-
-end
-
-@inline function mul_left!(r::PauliOperator, l::Tableau, i::Int; phases::Val{B}=Val(true)) where B
-    nqubits(l)==nqubits(r) || throw(DimensionMismatch("The Pauli operator and the Tableau should have the same length!"))
+@inline function mul_left!(r::PauliOperator, l::Tableau, i; phases::Val{B}=Val(true)) where B
     s = mul_left!(r.xz, (@view l.xzs[:,i]), phases=phases)
     B && (r.phase[] = (s+r.phase[]+l.phases[i])&0x3)
     r
 end
 
-@inline function mul_left!(
-    r::PauliOperator{R}, l::Tableau{L}, i::Int; phases::Val{B} = Val(true)
-    ) where {R <: AbstractGPUArray, L <: AbstractGPUArray, B}
+@inline mul_left!(r::PauliOperator, l::Stabilizer, i; phases::Val{B}=Val(true)) where B = mul_left!(r, tab(l), i; phases=phases)
 
-    nqubits(l) == nqubits(r) || throw(
-        DimensionMismatch(
-            "The Pauli operator and the Tableau should have the same length!"
-            )
-        )
-    mul_device!(
-        r.phase, r.xz, (@view l.phases[i]), (@view l.xzs[:, i]);
-        phases = phases, order_right_left = Val(true)
-        )
-    return r
-
-end
-
-@inline mul_left!(r::PauliOperator, l::Stabilizer, i::Int; phases::Val{B}=Val(true)) where B = mul_left!(r, tab(l), i; phases=phases)
-
-@inline function mul_right!(l::PauliOperator, r::Tableau, i::Int; phases::Val{B}=Val(true)) where B
-    nqubits(l)==nqubits(r) || throw(DimensionMismatch("The Pauli operator and the Tableau should have the same length!"))
+@inline function mul_right!(l::PauliOperator, r::Tableau, i; phases::Val{B}=Val(true)) where B
     s = mul_right!(l.xz, (@view r.xzs[:,i]), phases=phases)
     B && (l.phase[] = (s+l.phase[]+r.phases[i])&0x3)
     l
 end
 
-@inline function mul_right!(
-    l::PauliOperator{L}, r::Tableau{R}, i::Int; phases::Val{B} = Val(true)
-    ) where {L <: AbstractGPUArray, R <: AbstractGPUArray, B}
-
-    nqubits(l) == nqubits(r) || throw(
-        DimensionMismatch(
-            "The Pauli operator and the Tableau should have the same length!"
-            )
-        )
-    mul_device!(
-        l.phase, l.xz, (@view r.phases[i]), (@view r.xzs[:, i]);
-        phases = phases, order_right_left = Val(false)
-        )
-    return l
-
-end
-
-@inline mul_right!(l::PauliOperator, r::Stabilizer, i::Int; phases::Val{B}=Val(true)) where B = mul_right!(l, tab(r), i; phases=phases)
+@inline mul_right!(l::PauliOperator, r::Stabilizer, i; phases::Val{B}=Val(true)) where B = mul_right!(l, tab(r), i; phases=phases)
 
 ##############################
 # On Tableaux
 ##############################
 
 @inline function mul_left!(s::Tableau, m, t::Tableau, i; phases::Val{B}=Val(true)) where B
-    nqubits(s) == nqubits(t) || throw(DimensionMismatch("The two Tableaux should have the same length!"))
     extra_phase = mul_left!((@view s.xzs[:,m]), (@view t.xzs[:,i]); phases=phases)
     B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
     s
-end
-
-@inline function mul_left!(
-    s::Tableau{S}, m, t::Tableau{T}, i; phases::Val{B} = Val(true)
-    ) where {S <: AbstractGPUArray, T <: AbstractGPUArray, B}
-
-    nqubits(s) == nqubits(t) || throw(
-        DimensionMismatch(
-            "The two Tableaux should have the same length!"
-            )
-        )
-    mul_device!(
-        (@view s.phases[m]), (@view s.xzs[:, m]),
-        (@view t.phases[i]), (@view t.xzs[:, i]);
-        phases = phases, order_right_left = Val(true)
-        )
-    return s
-
 end
 
 @inline function mul_left!(s::Tableau, m, i; phases::Val{B}=Val(true)) where B
     extra_phase = mul_left!((@view s.xzs[:,m]), (@view s.xzs[:,i]); phases=phases)
     B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
     s
-end
-
-@inline function mul_left!(
-    s::Tableau{S}, m, i; phases::Val{B} = Val(true)
-    ) where {S <: AbstractGPUArray, B}
-
-    mul_device!(
-        (@view s.phases[m]), (@view s.xzs[:, m]),
-        (@view s.phases[i]), (@view s.xzs[:, i]);
-        phases = phases, order_right_left = Val(true)
-        )
-    return s
-
 end
 
 @inline function mul_left!(s::Stabilizer, m, i; phases::Val{B}=Val(true)) where B
@@ -306,29 +203,11 @@ end
 end
 
 @inline function mul_left!(s::Tableau, p::PauliOperator; phases::Val{B}=Val(true)) where B # TODO multithread
-    nqubits(s)==nqubits(p) || throw(DimensionMismatch("The Pauli operator and the Tableau should have the same length!"))
     @inbounds @simd for m in eachindex(s)
         extra_phase = mul_left!((@view s.xzs[:,m]), p.xz; phases=phases)
         B && (s.phases[m] = (extra_phase+s.phases[m]+p.phase[])&0x3)
     end
     s
-end
-
-@inline function mul_left!(
-    s::Tableau{S}, p::PauliOperator{P}; phases::Val{B} = Val(true)
-    ) where {S <: AbstractGPUArray, P <: AbstractGPUArray, B}
-
-    nqubits(s) == nqubits(p) || throw(
-        DimensionMismatch(
-            "The Pauli operator and the Tableau should have the same length!"
-            )
-        )
-    mul_device!(
-        s.phases, s.xzs, p.phase, p.xz;
-        phases = phases, order_right_left = Val(true)
-        )
-    return s
-
 end
 
 @inline function mul_left!(s::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
@@ -337,29 +216,11 @@ end
 end
 
 @inline function mul_right!(s::Tableau, p::PauliOperator; phases::Val{B}=Val(true)) where B # TODO multithread
-    nqubits(s)==nqubits(p) || throw(DimensionMismatch("The Pauli operator and the Tableau should have the same length!"))
     @inbounds @simd for m in eachindex(s)
         extra_phase = mul_right!((@view s.xzs[:,m]), p.xz; phases=phases)
         B && (s.phases[m] = (extra_phase+s.phases[m]+p.phase[])&0x3)
     end
     s
-end
-
-@inline function mul_right!(
-    s::Tableau{S}, p::PauliOperator{P}; phases::Val{B} = Val(true)
-    ) where {S <: AbstractGPUArray, P <: AbstractGPUArray, B}
-
-    nqubits(s) == nqubits(p) || throw(
-        DimensionMismatch(
-            "The Pauli operator and the Tableau should have the same length!"
-            )
-        )
-    mul_device!(
-        s.phases, s.xzs, p.phase, p.xz;
-        phases = phases, order_right_left = Val(false)
-        )
-    return s
-
 end
 
 @inline function mul_right!(s::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B

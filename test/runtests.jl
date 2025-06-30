@@ -1,19 +1,28 @@
-using Pkg
+AMDGPU_flag = false
+CUDA_flag = false
+Oscar_flag = false
+
 if Sys.iswindows() || Sys.ARCH != :x86_64
-    @info "skipping Oscar tests (they currently do not run on Windows OS or ARM CPU)"
-    @info "skipping GPU tests (set GPU_TESTS=true to test GPU (on non-Windows))"
-elseif get(ENV, "GPU_TESTS", "") == "true"
-    @info "running with GPU tests"
-    Pkg.add("CUDA")
-    Pkg.add("AMDGPU")
-elseif VERSION < v"1.11"
-    @info "skipping Oscar tests (not tested on Julia <1.11)"
-    @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"
+    @info "Skipping GPU tests -- only supported on x86_64 *NIX platforms."
+    @info "Skipping Oscar tests -- only supported on x86_64 *NIX platforms."
 else
-    @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"
-    Pkg.add("Oscar")
+    AMDGPU_flag = get(ENV, "AMDGPU_TESTS", "") == "true"
+    CUDA_flag = get(ENV, "CUDA_TESTS", "") == "true"
+    Oscar_flag = VERSION >= v"1.11"
+
+    AMDGPU_flag && @info "Running with AMDGPU tests."
+    CUDA_flag && @info "Running with CUDA tests."
+    !Oscar_flag && @info "Skipping Oscar tests -- not tested on Julia < 1.11"
+    if !(AMDGPU_flag || CUDA_flag)
+        @info "Skipping GPU tests -- must be explicitly enabled."
+        @info "Environment must set AMDGPU_TESTS and/or CUDA_TESTS = \"true\"."
+    end
 end
 
+using Pkg
+AMDGPU_flag && Pkg.add("AMDGPU")
+CUDA_flag && Pkg.add("CUDA")
+Oscar_flag && Pkg.add("Oscar")
 using TestItemRunner
 using QuantumClifford
 
@@ -33,10 +42,16 @@ testfilter = ti -> begin
         return :ecc in ti.tags
     end
 
-    if get(ENV, "GPU_TESTS", "") != "true"
-        push!(exclude, :gpu)
+    if !AMDGPU_flag
+        push!(exclude, :amdgpu)
     else
-        return :gpu in ti.tags
+        return :amdgpu in ti.tags
+    end
+
+    if !CUDA_flag
+        push!(exclude, :cuda)
+    else
+        return :cuda in ti.tags
     end
 
     if !(VERSION >= v"1.10")
