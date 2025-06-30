@@ -7,7 +7,9 @@ matrix_to_int(m::MatElem) = [Int(lift(ZZ, matrix(m)[i,j])) for i in 1:nrows(matr
 """Construct the chain complex for the repetition code of length L."""
 function _repcode_chain_complex(L::Int)
     F = GF(2)
-    H = matrix(F, 1, L, ones(Int, L))
+    H = parity_matrix(RepCode(L))
+    H = H[1:L-1, :] # (L-1) × L (A5)
+    H = matrix(F, H)
     V1 = free_module(F, L-1)
     V0 = free_module(F, L)
     ∂C = hom(V1, V0, H)
@@ -17,7 +19,9 @@ end
 """Construct the chain complex for the dual of the repetition code of length L."""
 function _dual_repcode_chain_complex(L::Int)
     F = GF(2)
-    H = matrix(F, 1, L, ones(Int, L))
+    H = parity_matrix(RepCode(L))
+    H = H[1:L-1, :] # (L-1) × L (A5)
+    H = matrix(F, H)
     V0 = free_module(F, L-1)
     V1 = free_module(F, L)
     ∂D = hom(V1, V0, transpose(H))
@@ -27,11 +31,14 @@ end
 """Construct a D-dimensional surface code using the hypergraph product of chain complexes.
 
 # TODOs documentation
-# 2D surface code
 
-# 3D surface code
+## Subfamilies
 
-# 4D surface code
+# [[L² + (L − 1)², 1, L]] 2D surface code
+
+# [L³ + 2L(L − 1)², 1, min(L, L²)]] 3D surface code
+
+# [[6L⁴ − 12L³ + 10L² − 4L + 1, 1, L²]] 4D surface code
 """
 function d_dimensional_surface_codes(D::Int, L::Int)
     D >= 2 || throw(ArgumentError("Dimension must be at least 2 to construct a valid D-dimensional surface code."))
@@ -67,4 +74,3 @@ function d_dimensional_surface_codes(D::Int, L::Int)
         return boundary_maps
     end
 end
-

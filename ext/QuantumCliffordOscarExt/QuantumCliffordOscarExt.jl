@@ -16,6 +16,9 @@ import Oscar.Generic.DirectSumModule
 
 import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group, d_dimensional_surface_codes
 
+import QECCore: AbstractECC, CSS, RepCode,
+    hgp, code_k, code_n, code_s, parity_matrix_x, parity_matrix_z, parity_matrix_xz, parity_matrix
+
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export twobga_from_direct_product, twobga_from_fp_group, d_dimensional_surface_codes
 
