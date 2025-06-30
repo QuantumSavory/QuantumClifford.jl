@@ -148,21 +148,21 @@ end
     l
 end
 
-@inline function mul_left!(r::PauliOperator, l::Tableau, i::Int; phases::Val{B}=Val(true)) where B
+@inline function mul_left!(r::PauliOperator, l::Tableau, i; phases::Val{B}=Val(true)) where B
     s = mul_left!(r.xz, (@view l.xzs[:,i]), phases=phases)
     B && (r.phase[] = (s+r.phase[]+l.phases[i])&0x3)
     r
 end
 
-@inline mul_left!(r::PauliOperator, l::Stabilizer, i::Int; phases::Val{B}=Val(true)) where B = mul_left!(r, tab(l), i; phases=phases)
+@inline mul_left!(r::PauliOperator, l::Stabilizer, i; phases::Val{B}=Val(true)) where B = mul_left!(r, tab(l), i; phases=phases)
 
-@inline function mul_right!(l::PauliOperator, r::Tableau, i::Int; phases::Val{B}=Val(true)) where B
+@inline function mul_right!(l::PauliOperator, r::Tableau, i; phases::Val{B}=Val(true)) where B
     s = mul_right!(l.xz, (@view r.xzs[:,i]), phases=phases)
     B && (l.phase[] = (s+l.phase[]+r.phases[i])&0x3)
     l
 end
 
-@inline mul_right!(l::PauliOperator, r::Stabilizer, i::Int; phases::Val{B}=Val(true)) where B = mul_right!(l, tab(r), i; phases=phases)
+@inline mul_right!(l::PauliOperator, r::Stabilizer, i; phases::Val{B}=Val(true)) where B = mul_right!(l, tab(r), i; phases=phases)
 
 ##############################
 # On Tableaux
