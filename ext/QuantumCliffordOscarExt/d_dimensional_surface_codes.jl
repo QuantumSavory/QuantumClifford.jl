@@ -1,9 +1,3 @@
-# Oscar/AA currently does not define this and it throws error, so I have defined the fix here and submitted PR to AA.
-rank(M::Oscar.Generic.DirectSumModule{T}) where T = sum(rank(summand) for summand in summands(M))
-
-# convert from oscar mat to regular mat type
-matrix_to_int(m::MatElem) = [Int(lift(ZZ, matrix(m)[i,j])) for i in 1:nrows(matrix(m)), j in 1:ncols(matrix(m))]
-
 """Construct the chain complex for the repetition code of length L."""
 function _repcode_chain_complex(L::Int)
     F = GF(2)
@@ -159,6 +153,7 @@ function d_dimensional_surface_codes(D::Int, L::Int)
         ϕ = map(current, d)
         push!(boundary_maps, matrix_to_int(matrix(ϕ)))
     end
+    # TODO: Maybe it's too soon to return the boundary maps as Int matrices, we can do Oscar operations on them.
     if D == 2
         return boundary_maps[1], boundary_maps[2] # Hx, Hz′
     elseif D == 3
