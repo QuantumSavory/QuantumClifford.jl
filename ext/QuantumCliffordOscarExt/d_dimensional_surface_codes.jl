@@ -1,5 +1,5 @@
-# Oscar/AA currently does not define this and it throws error, so I have defined the fix here.
-rank(M::Generic.DirectSumModule{T}) where T = sum(rank(summand) for summand in summands(M))
+# Oscar/AA currently does not define this and it throws error, so I have defined the fix here and submitted PR to AA.
+rank(M::Oscar.Generic.DirectSumModule{T}) where T = sum(rank(summand) for summand in summands(M))
 
 # convert from oscar mat to regular mat type
 matrix_to_int(m::MatElem) = [Int(lift(ZZ, matrix(m)[i,j])) for i in 1:nrows(matrix(m)), j in 1:ncols(matrix(m))]
@@ -24,6 +24,7 @@ function _dual_repcode_chain_complex(L::Int)
     return chain_complex([∂D])
 end
 
+# TODO:  Generalize this to D-dimensions
 """Construct a D-dimensional surface code using the hypergraph product of chain complexes.
 
 # TODOs
@@ -42,18 +43,20 @@ function d_dimensional_surface_codes(D::Int, L::Int)
     if D == 2
         dc = tensor_product(C, D_chain)
         E = total_complex(dc)
-        H_Z_T = matrix(map(E, 2))
-        H_X = matrix(map(E, 1))
-        return H_X, H_Z_T
+        Hz′ = matrix(map(E, 2))
+        Hx = matrix(map(E, 1))
+        Hx, Hz′ = matrix_to_int(Hx), matrix_to_int(Hz′)
+        return Hx, Hz′
     elseif D == 3
         dc_2d = tensor_product(C, D_chain)
         E_2d = total_complex(dc_2d)
         dc_3d = tensor_product(E_2d, D_chain)
         F_3d = total_complex(dc_3d)
-        M_Z_T = matrix(map(F_3d, 3))
-        H_Z_T = matrix(map(F_3d, 2))
-        H_X = matrix(map(F_3d, 1))
-        return H_X, H_Z_T, M_Z_T
+        Mz′ = matrix(map(F_3d, 3))
+        Hz′ = matrix(map(F_3d, 2))
+        Hx = matrix(map(F_3d, 1))
+        Hx, Hz′, Mz′ = matrix_to_int(Hx), matrix_to_int(Hz′), matrix_to_int(Mz′)
+        return Hx, Hz′, Mz′
     elseif D == 4
         dc_2d = tensor_product(C, D_chain)
         E_2d = total_complex(dc_2d)
@@ -61,12 +64,11 @@ function d_dimensional_surface_codes(D::Int, L::Int)
         F_3d = total_complex(dc_3d)
         dc_4d = tensor_product(F_3d, C)
         G_4d = total_complex(dc_4d)
-        M_Z_T = matrix(map(G_4d, 4))
-        H_Z_T = matrix(map(G_4d, 3))
-        H_X = matrix(map(G_4d, 2))
-        M_X = matrix(map(G_4d, 1))
-        n = size(H_X, 2)
-        return H_X, H_Z_T, M_X, M_Z_T
+        Mz′ = matrix(map(G_4d, 4))
+        Hz′ = matrix(map(G_4d, 3))
+        Hx = matrix(map(G_4d, 2))
+        Mx = matrix(map(G_4d, 1))
+        Hx, Hz′, Mx, Mz′ = matrix_to_int(Hx), matrix_to_int(Hz′), matrix_to_int(Mx), matrix_to_int(Mz′)
+        return Hx, Hz′, Mx, Mz′
     end
-    # Generalize this to D-dimensions
 end

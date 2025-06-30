@@ -7,13 +7,14 @@ import LinearAlgebra: rank
 import Nemo
 import Nemo: FqFieldElem
 import Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra,
-   GroupAlgebraElem, direct_product, sub
+   GroupAlgebraElem, direct_product, sub, ZZ, lift
 import Oscar
 import Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup,
     BasicGAPGroupElem, DirectProductGroup, cyclic_group, free_module, hom, transpose, tensor_product,
-    total_complex, map, summands, Generic.DirectSumModule
+    chain_complex, total_complex, map, summands, MatElem, matrix, nrows, ncols
+import Oscar.Generic.DirectSumModule
 
-import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group
+import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group, d_dimensional_surface_codes
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export twobga_from_direct_product, twobga_from_fp_group, d_dimensional_surface_codes
@@ -21,5 +22,6 @@ export twobga_from_direct_product, twobga_from_fp_group, d_dimensional_surface_c
 include("types.jl")
 include("direct_product.jl")
 include("group_presentation.jl")
+include("d_dimensional_surface_codes.jl")
 
 end # module

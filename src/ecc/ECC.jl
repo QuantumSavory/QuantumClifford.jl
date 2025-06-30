@@ -404,4 +404,6 @@ include("codes/color_codes.jl")
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
 
+include("codes/d_dimensional_surface.jl")
+
 end #module
