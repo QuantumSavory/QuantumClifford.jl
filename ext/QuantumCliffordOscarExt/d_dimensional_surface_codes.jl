@@ -24,10 +24,9 @@ function _dual_repcode_chain_complex(L::Int)
     return chain_complex([∂D])
 end
 
-# TODO:  Generalize this to D-dimensions
 """Construct a D-dimensional surface code using the hypergraph product of chain complexes.
 
-# TODOs
+# TODOs documentation
 # 2D surface code
 
 # 3D surface code
@@ -35,40 +34,37 @@ end
 # 4D surface code
 """
 function d_dimensional_surface_codes(D::Int, L::Int)
-    if D ∉ [2, 3, 4]
-        error("Only dimensions 2, 3, and 4 are currently supported")
-    end
+    D >= 2 || throw(ArgumentError("Dimension must be at least 2 to construct a valid D-dimensional surface code."))
     C = _repcode_chain_complex(L)
     D_chain = _dual_repcode_chain_complex(L)
+    current = C
+    sequence = [C]
+    for dim in 2:D
+        next_complex = if dim == 2
+            D_chain
+        elseif dim == 3
+            D_chain
+        else
+            dim % 2 == 0 ? C : D_chain
+        end
+        current = tensor_product(current, next_complex)
+        current = total_complex(current)
+        push!(sequence, current)
+    end
+    boundary_maps = []
+    for d in 1:D
+        ϕ = map(current, d)
+        push!(boundary_maps, matrix_to_int(matrix(ϕ)))
+    end
     if D == 2
-        dc = tensor_product(C, D_chain)
-        E = total_complex(dc)
-        Hz′ = matrix(map(E, 2))
-        Hx = matrix(map(E, 1))
-        Hx, Hz′ = matrix_to_int(Hx), matrix_to_int(Hz′)
-        return Hx, Hz′
+        return boundary_maps[1], boundary_maps[2] # Hx, Hz′
     elseif D == 3
-        dc_2d = tensor_product(C, D_chain)
-        E_2d = total_complex(dc_2d)
-        dc_3d = tensor_product(E_2d, D_chain)
-        F_3d = total_complex(dc_3d)
-        Mz′ = matrix(map(F_3d, 3))
-        Hz′ = matrix(map(F_3d, 2))
-        Hx = matrix(map(F_3d, 1))
-        Hx, Hz′, Mz′ = matrix_to_int(Hx), matrix_to_int(Hz′), matrix_to_int(Mz′)
-        return Hx, Hz′, Mz′
+        return boundary_maps[1], boundary_maps[2], boundary_maps[3] # Hx, Hz′, Mz′
     elseif D == 4
-        dc_2d = tensor_product(C, D_chain)
-        E_2d = total_complex(dc_2d)
-        dc_3d = tensor_product(E_2d, D_chain)
-        F_3d = total_complex(dc_3d)
-        dc_4d = tensor_product(F_3d, C)
-        G_4d = total_complex(dc_4d)
-        Mz′ = matrix(map(G_4d, 4))
-        Hz′ = matrix(map(G_4d, 3))
-        Hx = matrix(map(G_4d, 2))
-        Mx = matrix(map(G_4d, 1))
-        Hx, Hz′, Mx, Mz′ = matrix_to_int(Hx), matrix_to_int(Hz′), matrix_to_int(Mx), matrix_to_int(Mz′)
-        return Hx, Hz′, Mx, Mz′
+        return boundary_maps[2], boundary_maps[3], boundary_maps[1], boundary_maps[4] # Hx, Hz′, Mx, Mz′
+    else
+        # For D > 4, return all boundary maps
+        return boundary_maps
     end
 end
+
