@@ -9,7 +9,7 @@ KA.@kernel inbounds = true function kernel_transform!(
 	f!, target, @Const(auxiliary)
 	)
 
-	index = KA.@index(Global, Linear)
+	index = KA.@index(Global, NTuple)
 	f!(target, auxiliary, index)
 
 end
@@ -73,7 +73,8 @@ end
 ==============================================================================#
 
 # Anonymous functions trigger recompilation. Hence, Separate them out.
-@inline function mod_4_sum!(t, a, i)
+@inline function mod_4_sum!(t, a, pos)
+	i = pos[1]
 	j = length(a) > 1 ? i : 1
 	t[i] = (t[i] + a[j]) & 0x3
 end

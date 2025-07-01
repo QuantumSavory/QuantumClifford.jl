@@ -1,21 +1,35 @@
-using Pkg
+AMDGPU_flag = false
+CUDA_flag = false
+Oscar_flag = false
+
 if Sys.iswindows() || Sys.ARCH != :x86_64
-    @info "skipping Oscar tests (they currently do not run on Windows OS or ARM CPU)"
-    @info "skipping GPU tests (set GPU_CUDA_TESTS=true or GPU_AMDGPU_TESTS=true to test GPU (on non-Windows))"
-elseif get(ENV, "GPU_CUDA_TESTS", "") == "true"
-    @info "running with CUDA tests"
-    Pkg.add("CUDA")
-elseif get(ENV, "GPU_AMDGPU_TESTS", "") == "true"
-    @info "running with AMDGPU tests"
-    Pkg.add("AMDGPU")
-elseif VERSION < v"1.11"
-    @info "skipping Oscar tests (not tested on Julia <1.11)"
-    @info "skipping GPU tests (set GPU_CUDA_TESTS=true or GPU_AMDGPU_TESTS=true to test GPU)"
+    @info "Skipping GPU tests -- only supported on x86_64 *NIX platforms."
+    @info "Skipping Oscar tests -- only supported on x86_64 *NIX platforms."
 else
-    @info "skipping GPU tests (set GPU_CUDA_TESTS=true or GPU_AMDGPU_TESTS=true to test GPU)"
-    Pkg.add("Oscar")
+
+    if get(ENV, "TEST_AMDGPU", "") != ""
+        AMDGPU_flag = true
+        @info "Running with AMDGPU tests."
+    end
+    if get(ENV, "TEST_CUDA", "") != ""
+        CUDA_flag = true
+        @info "Running with CUDA tests."
+    end
+    if !(AMDGPU_flag || CUDA_flag)
+        @info "Skipping GPU tests -- must be explicitly enabled."
+        @info "Environment must set \"TEST_AMDGPU\" and/or \"TEST_CUDA\"."
+    end
+    Oscar_flag = VERSION >= v"1.11"
+    if !Oscar_flag
+        @info "Skipping Oscar tests -- not tested on Julia < 1.11"
+    end
+
 end
 
+using Pkg
+AMDGPU_flag && Pkg.add("AMDGPU")
+CUDA_flag && Pkg.add("CUDA")
+Oscar_flag && Pkg.add("Oscar")
 using TestItemRunner
 using QuantumClifford
 
@@ -34,12 +48,12 @@ testfilter = ti -> begin
         push!(exclude, :aqua)
     end
 
-    if get(ENV, "GPU_CUDA_TESTS", "")!="true"
-        push!(exclude, :cuda)
+    if !AMDGPU_flag
+        push!(exclude, :amdgpu)
     end
 
-    if get(ENV, "GPU_AMDGPU_TESTS", "")!="true"
-        push!(exclude, :amdgpu)
+    if !CUDA_flag
+        push!(exclude, :cuda)
     end
 
     if !(Base.Sys.islinux() & (Int===Int64))

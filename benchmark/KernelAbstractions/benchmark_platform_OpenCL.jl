@@ -1,16 +1,15 @@
-import pocl_jll
-using OpenCL: CLArray
-AT = CLArray
-import KernelAbstractions as KA
-backend = KA.get_backend(AT([0]))
-synchronize() = KA.synchronize(backend)
+include("benchmark_platform.jl")
 
-include("benchmark_KA_mul_leftright.jl")
-benchmark_mul_leftright(
-	AT, synchronize;
-	phases = Val(true), platform_name = "OpenCL"
-	)
-benchmark_mul_leftright(
-	AT, synchronize;
-	phases = Val(false), platform_name = "OpenCL"
-	)
+import pocl_jll
+using OpenCL: CLArray, cl.devices, cl.platforms, cl.finish, cl.queue
+AT = CLArray
+platform_name = "OpenCL"
+
+can_run = any(length(devices(platform)) > 0 for platform in platforms())
+
+if can_run
+	synchronize() = finish(queue())
+	benchmark_platform(AT, synchronize; platform_name = platform_name)
+else
+	@info "Unable to benchmark $platform_name. No suitable device was found."
+end

@@ -1,11 +1,12 @@
 
 #=============================================================================#
 # CAUTION: Keep in mind that mutable = order_right_left ? right : left.
+# TODO: Make the parameters keyword arguments once support becomes available.
 KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
 	mutable_phases, mutable_xzs, @Const(const_xzs), @Const(stride),
 	::Val{order_right_left}, ::Val{phases},
 	::Val{block_size}, ::Val{batch_size}
-	) where {order_right_left, block_size, phases, batch_size}
+	) where {order_right_left, phases, block_size, batch_size}
 
 	# unsafe_indices is required for shared_memory_reduce, do this manually.
 	global_pos = global_index(
@@ -55,8 +56,7 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
 			+, buffer, value, index, Val(block_size)
 			)
 		if index == one(index)
-			Atomix.@atomic mutable_phases[j_mutable] +=
-				convert(eltype(mutable_phases), value)
+			Atomix.@atomic mutable_phases[j_mutable] += value
 		end
 	end
 
@@ -346,7 +346,7 @@ end
 		}
 
 	return do_mul_left!(
-		s, m, t, i;
+		s, m, i;
 		phases = phases, block_size = block_size, batch_size = batch_size
 		)
 
@@ -383,7 +383,7 @@ end
 		}
 
 	return do_mul_right!(
-		s, m, t, i;
+		s, m, i;
 		phases = phases, block_size = block_size, batch_size = batch_size
 		)
 
