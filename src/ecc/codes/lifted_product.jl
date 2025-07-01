@@ -9,11 +9,20 @@ function LPCode(args...; kwargs...)
     return ext.LPCode(args...; kwargs...)
 end
 
-"""Implemented in a package extension with Hecke."""
+"""Implemented in a package extension with Hecke. Check the docs for the [Hecke extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Hecke.jl)"""
 function two_block_group_algebra_codes end
 
-"""Implemented in a package extension with Hecke."""
+"""Implemented in a package extension with Hecke. Check the docs for the [Hecke extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Hecke.jl)"""
 function generalized_bicycle_codes end
 
-"""Implemented in a package extension with Hecke."""
+"""Implemented in a package extension with Hecke. Check the docs for the [Hecke extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Hecke.jl)"""
 function bicycle_codes end
+
+"""Implemented in a package extension with Hecke. Check the docs for the [Hecke extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Hecke.jl)"""
+function haah_cubic_codes end
+
+"""Implemented in a package extension with Oscar. Check the docs for the [Oscar extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Oscar.jl)"""
+function twobga_from_direct_product end
+
+"""Implemented in a package extension with Oscar. Check the docs for the [Oscar extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Oscar.jl)"""
+function twobga_from_fp_group end

@@ -1,4 +1,6 @@
 @testitem "Stabilizers" begin
+    using QuantumClifford
+    using LinearAlgebra
     using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
     @testset "Pure and Mixed state initialization" begin
@@ -106,5 +108,37 @@
         @test_throws ArgumentError hcat(copy(s1), random_stabilizer(3))
         @test hcat(copy(tab(s1)), copy(tab(s2))) == T"-YZZY XXYX"
         @test hcat(copy(tab(s1)), copy(tab(s2)), copy(tab(s1)), copy(tab(s2))) == T"YZZYYZZY XXYXXXYX"
+    end
+
+    @testset "MixedDestabilizer over subarrays (#191)" begin
+        # Case 1: QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}
+        n = 6
+        stab = random_stabilizer(n)
+        regular_arr = MixedDestabilizer(stab; undoperm=true)
+        @test isa(regular_arr, MixedDestabilizer)
+        # Case 2: Tableau{SubArray{...}, SubArray{...}, Tuple{Base.Slice{...}}}
+        stab = random_stabilizer(n)
+        substab = @view stab[3:n]
+        md_via_subarr = MixedDestabilizer(substab; undoperm=true)
+        @test isa(md_via_subarr, MixedDestabilizer)
+    end
+
+    @testset "Consistency between Destabilizer and MixedDestabilizer" begin # They have different construction algorithms so a consistency check is in order
+        for n in test_sizes
+            s = random_stabilizer(n)
+            @test stabilizerview(Destabilizer(s))==s # Destabilizer is supposed to guarantee same stabilizer generators
+            @test canonicalize!(stabilizerview(MixedDestabilizer(s)))==canonicalize!(stabilizerview(Destabilizer(s)))
+        end
+    end
+
+    @testset "Construct out of Paulis" begin
+        paulis1 = [P"-XXX", P"ZZI"]
+        paulis2 = (P"-XXX", P"ZZI")
+        stab = canonicalize!(S"-XXX ZZI")
+        for T in [MixedDestabilizer, Stabilizer, Destabilizer, MixedDestabilizer]
+            for paulis in [paulis1, paulis2]
+                @test canonicalize!(stabilizerview(T(paulis))) == stab
+            end
+        end
     end
 end
