@@ -39,21 +39,41 @@ julia> p[1] = (true, true); p
 + YYZ
 ```
 """
-struct PauliOperator{Tₚ<:AbstractArray{UInt8,0}, Tᵥ<:AbstractVector{<:Unsigned}} <: AbstractCliffordOperator
-    phase::Tₚ
+struct PauliOperator{
+    P <: AbstractArray{<: Unsigned, 0}, XZ <: AbstractVector{<: Unsigned}
+    } <: AbstractCliffordOperator
+    phase::P
     nqubits::Int
-    xz::Tᵥ
+    xz::XZ
 end
 
-PauliOperator(phase::UInt8, nqubits::Int, xz::Tᵥ) where Tᵥ<:AbstractVector{<:Unsigned} = PauliOperator(fill(UInt8(phase),()), nqubits, xz)
-function PauliOperator(phase::UInt8, x::BitVector, z::BitVector)
-    phase = fill(UInt8(phase),())
-    xs = reinterpret(UInt,x.chunks)::Vector{UInt}
-    zs = reinterpret(UInt,z.chunks)::Vector{UInt}
-    xzs = cat(xs, zs, dims=1)
-    PauliOperator(phase, length(x), xzs)
+function PauliOperator(
+    phase::Unsigned, nqubits::Int, xz::AbstractVector{<: Unsigned}
+    )
+
+    p = similar(xz, typeof(phase), ())
+    fill!(p, phase)
+    return PauliOperator(p, nqubits, xz)
+
 end
-PauliOperator(phase::UInt8, x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator(phase, BitVector(x), BitVector(z))
+
+function PauliOperator(phase::Unsigned, x::BitVector, z::BitVector)
+    xs = reinterpret(UInt, x.chunks)
+    zs = reinterpret(UInt, z.chunks)
+    xz = cat(xs, zs; dims = 1)
+    p = similar(xz, typeof(phase), ())
+    fill!(p, phase)
+    return PauliOperator(p, length(x), xz)
+end
+
+function PauliOperator(
+    phase::Unsigned, x::AbstractVector{Bool}, z::AbstractVector{Bool}
+    )
+
+    return PauliOperator(phase, BitVector(x), BitVector(z))
+
+end
+
 PauliOperator(x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator(0x0, x, z)
 PauliOperator(xz::AbstractVector{Bool}) = PauliOperator(0x0, (@view xz[1:end÷2]), (@view xz[end÷2+1:end]))
 
@@ -138,9 +158,7 @@ Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.xz, h)
 Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
 
 function LinearAlgebra.inv(p::PauliOperator)
-  ph = p.phase[]
-  phin = xor((ph << 1) & ~(UInt8(1) << 2), ph)
-  return PauliOperator(phin, p.nqubits, copy(p.xz))
+    return PauliOperator(-p.phase, p.nqubits, copy(p.xz))
 end
 
 function Base.deleteat!(p::PauliOperator, subset)
@@ -149,15 +167,21 @@ function Base.deleteat!(p::PauliOperator, subset)
 end
 
 _nchunks(i::Int,T::Type{<:Unsigned}) = 2*( (i-1) ÷ (8*sizeof(T)) + 1 )
-Base.zero(::Type{PauliOperator{Tₚ, Tᵥ}}, q) where {Tₚ,T<:Unsigned,Tᵥ<:AbstractVector{T}} = PauliOperator(zeros(UInt8), q, zeros(T, _nchunks(q,T)))
+
+function Base.zero(::Type{PauliOperator{P, XZ}}, q) where {P, XZ}
+    return PauliOperator(
+        zeros(eltype(P)), q, zeros(eltype(XZ), _nchunks(q, eltype(XZ)))
+        )
+end
+
 Base.zero(::Type{PauliOperator}, q) = zero(PauliOperator{Array{UInt8, 0}, Vector{UInt}}, q)
 Base.zero(p::P) where {P<:PauliOperator} = zero(P, nqubits(p))
 
 """Zero-out the phases and single-qubit operators in a [`PauliOperator`](@ref)"""
-@inline function zero!(p::PauliOperator{Tₚ,Tᵥ}) where {Tₚ, Tᵥₑ<:Unsigned, Tᵥ<:AbstractVector{Tᵥₑ}}
-    fill!(p.xz, zero(Tᵥₑ))
-    p.phase[] = 0x0
-    p
+@inline function zero!(p::PauliOperator{P, XZ}) where {P, XZ}
+    fill!(p.phase, zero(eltype(P)))
+    fill!(p.xz, zero(eltype(XZ)))
+    return p
 end
 
 """
