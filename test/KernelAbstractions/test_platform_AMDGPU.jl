@@ -1,14 +1,18 @@
 @testitem "AMDGPU" tags = [:amdgpu] begin
 
-	using AMDGPU: ROCArray
-	AT = ROCArray
-	import KernelAbstractions as KA
-	backend = KA.get_backend(AT([0]))
-	synchronize() = KA.synchronize(backend)
+	include("test_platform.jl")
 
-	@testset "mul_leftright" begin
-		include("test_KA_mul_leftright.jl")
-		test_KA_mul_leftright(AT, synchronize)
+	using AMDGPU: ROCArray, synchronize, devices
+	AT = ROCArray
+
+	can_run = length(devices()) > 0
+
+	@testset "Device availability" begin
+		@test can_run
+	end
+
+	if can_run
+		test_platform(AT, synchronize)
 	end
 
 end

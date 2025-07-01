@@ -1,15 +1,20 @@
 @testitem "OpenCL" begin
 
-	import pocl_jll
-	using OpenCL: CLArray
-	AT = CLArray
-	import KernelAbstractions as KA
-	backend = KA.get_backend(AT([0]))
-	synchronize() = KA.synchronize(backend)
+	include("test_platform.jl")
 
-	@testset "mul_leftright" begin
-		include("test_KA_mul_leftright.jl")
-		test_KA_mul_leftright(AT, synchronize)
+	import pocl_jll
+	using OpenCL: CLArray, cl.devices, cl.platforms, cl.finish, cl.queue
+	AT = CLArray
+
+	can_run = any(length(devices(platform)) > 0 for platform in platforms())
+
+	@testset "Device availability" begin
+		@test can_run
+	end
+
+	if can_run
+		synchronize() = finish(queue())
+		test_platform(AT, synchronize)
 	end
 
 end

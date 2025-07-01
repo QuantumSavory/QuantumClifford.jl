@@ -1,15 +1,13 @@
-using CUDA: CuArray
-AT = CuArray
-import KernelAbstractions as KA
-backend = KA.get_backend(AT([0]))
-synchronize() = KA.synchronize(backend)
+include("benchmark_platform.jl")
 
-include("benchmark_KA_mul_leftright.jl")
-benchmark_mul_leftright(
-	AT, synchronize;
-	phases = Val(true), platform_name = "CUDA"
-	)
-benchmark_mul_leftright(
-	AT, synchronize;
-	phases = Val(false), platform_name = "CUDA"
-	)
+using CUDA: CuArray, synchronize, devices
+AT = CuArray
+platform_name = "CUDA"
+
+can_run = length(devices()) > 0
+
+if can_run
+	benchmark_platform(AT, synchronize; platform_name = platform_name)
+else
+	@info "Unable to benchmark $platform_name. No suitable device was found."
+end

@@ -181,7 +181,8 @@ end
 end
 
 @inline function mul_left!(s::Stabilizer, m, i; phases::Val{B}=Val(true)) where B
-    mul_left!(tab(s), m, i; phases)
+    mul_left!(tab(s), m, i; phases=phases)
+    s
 end
 
 @inline function mul_left!(s::Destabilizer, i, j; phases::Val{B}=Val(true)) where B
@@ -189,10 +190,12 @@ end
     mul_left!(t, j, i; phases=Val(false)) # Indices are flipped to preserve commutation constraints
     n = size(t,1)÷2
     mul_left!(t, i+n, j+n; phases=phases)
+    s
 end
 
 @inline function mul_left!(s::MixedStabilizer, i, j; phases::Val{B}=Val(true)) where B
     mul_left!(tab(s), i, j; phases=phases)
+    s
 end
 
 @inline function mul_left!(s::MixedDestabilizer, i, j; phases::Val{B}=Val(true)) where B
@@ -200,6 +203,7 @@ end
     mul_left!(t, j, i; phases=Val(false)) # Indices are flipped to preserve commutation constraints
     n = nqubits(t)
     mul_left!(t, i+n, j+n; phases=phases)
+    s
 end
 
 @inline function mul_left!(s::Tableau, p::PauliOperator; phases::Val{B}=Val(true)) where B # TODO multithread

@@ -1,15 +1,13 @@
-using AMDGPU: ROCArray
-AT = ROCArray
-import KernelAbstractions as KA
-backend = KA.get_backend(AT([0]))
-synchronize() = KA.synchronize(backend)
+include("benchmark_platform.jl")
 
-include("benchmark_KA_mul_leftright.jl")
-benchmark_mul_leftright(
-	AT, synchronize;
-	phases = Val(true), platform_name = "AMDGPU"
-	)
-benchmark_mul_leftright(
-	AT, synchronize;
-	phases = Val(false), platform_name = "AMDGPU"
-	)
+using AMDGPU: ROCArray, synchronize, devices
+AT = ROCArray
+platform_name = "AMDGPU"
+
+can_run = length(devices()) > 0
+
+if can_run
+	benchmark_platform(AT, synchronize; platform_name = platform_name)
+else
+	@info "Unable to benchmark $platform_name. No suitable device was found."
+end

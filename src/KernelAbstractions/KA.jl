@@ -1,3 +1,5 @@
+
+#=============================================================================#
 using GPUArraysCore: AbstractGPUArray
 import KernelAbstractions as KA
 # Resolves issue due to KA comparing against the literal Symbol("@Const").
@@ -13,3 +15,4 @@ const default_batch_size = 32
 
 include("utils.jl")
 include("mul_leftright.jl")
+#=============================================================================#
