@@ -1,4 +1,4 @@
-@testitem "ECC coprime Bivaraite Bicycle" begin
+@testitem "ECC coprime Bivaraite Bicycle" tags=[:ecc] begin
     using Nemo
     using Nemo: gcd
     using Hecke

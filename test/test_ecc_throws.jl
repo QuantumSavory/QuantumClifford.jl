@@ -1,4 +1,4 @@
-@testitem "ECC throws" begin
+@testitem "ECC throws" tags=[:ecc] begin
 
     using Hecke
     using Hecke: group_algebra, GF, abelian_group, gens, one, representation_matrix
