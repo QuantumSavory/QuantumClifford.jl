@@ -1094,7 +1094,7 @@ function _apply!(stab::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(
     s = tab(stab)
     B || return stab
     for i in eachindex(s)
-        s.phases[i] = (s.phases[i]+comm(p,s,i)<<1+p.phase[]<<1)&0x3
+        s.phases[i] = (s.phases[i]+comm(p,s,i)<<1)&0x3
     end
     stab
 end
@@ -1108,7 +1108,7 @@ function _apply!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Va
     end
     newp.phase .= p.phase
     for i in eachindex(s)
-        s.phases[i] = (s.phases[i]+comm(newp,s,i)<<1+newp.phase[]<<1)&0x3
+        s.phases[i] = (s.phases[i]+comm(newp,s,i)<<1)&0x3
     end
     stab
 end

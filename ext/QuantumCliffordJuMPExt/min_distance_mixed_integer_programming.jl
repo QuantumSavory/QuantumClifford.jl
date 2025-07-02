@@ -190,20 +190,11 @@ function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
         )
     end
     # Return appropriate result based on configuration
-    if alg.upper_bound
-        if alg.opt_summary
-            max_entry = argmax(x -> x.weight, values(weights))
-            return (max_entry.weight, max_entry.summary)
-        else
-            return maximum(values(weights))
-        end
+    if alg.opt_summary
+        min_entry = argmin(x -> x.weight, values(weights))
+        return (min_entry.weight, min_entry.summary)
     else
-        if alg.opt_summary
-            min_entry = argmin(x -> x.weight, values(weights))
-            return (min_entry.weight, min_entry.summary)
-        else
-            return minimum(values(weights))
-        end
+        return minimum(values(weights))
     end
 end
 
