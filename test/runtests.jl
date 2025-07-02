@@ -26,10 +26,10 @@ testfilter = ti -> begin
         return :jet in ti.tags
     end
 
-    if get(ENV, "SLOW_TEST", "") != "true"
-        push!(exclude, :slow)
+    if get(ENV, "ECC_TEST", "") != "true"
+        push!(exclude, :ecc)
     else
-        return :slow in ti.tags
+        return :ecc in ti.tags
     end
 
     if get(ENV, "GPU_TESTS", "") != "true"

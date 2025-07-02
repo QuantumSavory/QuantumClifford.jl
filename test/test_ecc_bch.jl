@@ -1,9 +1,8 @@
-@testitem "ECC BCH" begin
+@testitem "ECC BCH" tags=[:ecc] begin
     using LinearAlgebra
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC, BCH, generator_polynomial
     using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible
-
 
     using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate 
 
@@ -13,6 +12,7 @@
     # be found on pages 168 and 169 of Ch6 of Error Control Coding by Lin, Shu
     # and Costello, Daniel. The parameter 2 * t + 1 is usually called the designed
     # distance of the t-bit error correcting BCH code.
+
     function check_designed_distance(matrix, t)
         n_cols = size(matrix, 2)
         for num_cols in 1:2 * t
@@ -43,7 +43,7 @@
                 @test code_k(BCH(m, t)) == n - degree(generator_polynomial(BCH(m, t)))
                 # BCH code is cyclic as its generator polynomial, `g(x)` divides `xⁿ - 1`, so `mod (xⁿ - 1, g(x))` = 0.
                 gx = generator_polynomial(BCH(m, t))
-                GF2x, x = GF(2)["x"] 
+                GF2x, x = GF(2)["x"]
                 @test mod(x ^ n - 1, gx) == 0
             end
         end
@@ -72,7 +72,7 @@
         # where p is a prime number. The GF(2⁶)'s Conway polynomial is p(z) = z⁶ + z⁴ + z³ + z + 1. In contrast,
         # the polynomial given in https://web.ntpu.edu.tw/~yshan/BCH_code.pdf is p(z) = z⁶ + z + 1. Because both
         # polynomials are irreducible, they are also primitive polynomials for `GF(2⁶)`.
-
+    
         test_cases = [(6, 1), (6, 2), (6, 3), (6, 4), (6, 5), (6, 6), (6, 7)]
         @test defining_polynomial(GF2x, GF2⁶) == x ^ 6 + x ^ 4 + x ^ 3 + x + 1
         @test is_irreducible(defining_polynomial(GF2x, GF2⁶)) == true

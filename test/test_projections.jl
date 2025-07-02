@@ -316,8 +316,8 @@
         end
     end
 
-    # projext*! should accept AbstractStabilizer, or Stabilizer in particular
-    # This testset is not merged with the previous one as "measuring commutating operator out of the stabilizer"
+    # project*! should accept AbstractStabilizer, or Stabilizer in particular
+    # This testset is not merged with the previous one as "measuring commuting operator out of the stabilizer"
     # is not well supported for pure stabilizer state datastructure. See also "Datastructure Choice"
     @testset "Single Qubit Pure State Projections" begin
         for n in test_sizes
