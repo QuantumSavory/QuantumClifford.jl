@@ -1,4 +1,4 @@
-@testitem "Reed-Muller" begin
+@testitem "Reed-Muller" tags=[:ecc] begin
     using Test
     using Nemo: echelon_form, matrix, GF
     using LinearAlgebra
@@ -11,7 +11,7 @@
         distance = 2 ^ (m - r)
         for row in eachrow(matrix)
             count = sum(row)
-            if count < distance 
+            if count < distance
                 return false
             end
         end
@@ -50,7 +50,7 @@
                 H₁ = parity_checks(RecursiveReedMuller(r, m))
                 # parity_checks(RecursiveReedMuller(r, m)) is canonically equivalent to the parity_checks(ReedMuller(r, m)) under reduced row echelon form.
                 @test echelon_form(matrix(GF(2), Matrix{Int64}(H))) == echelon_form(matrix(GF(2), Matrix{Int64}(H₁)))
-                # dim(ReedMuller(m - r - 1, m)) = dim(ReedMuller(r, m)^⊥). 
+                # dim(ReedMuller(m - r - 1, m)) = dim(ReedMuller(r, m)^⊥).
                 # ReedMuller(m - r - 1, m) = ReedMuller(r, m)^⊥ ∴ parity check matrix (H) of ReedMuller(r, m) is the generator matrix (G) for ReedMuller(m - r - 1, m).
                 H₁ = parity_checks(ReedMuller(m - r - 1, m))
                 G₂ = generator(ReedMuller(r, m))
@@ -59,7 +59,7 @@
                 G₃ = generator(ReedMuller(m - r - 1, m))
                 H₄ = parity_checks(ReedMuller(r, m))
                 @test size(G₃) == size(H₄)
-                # dim(RecursiveReedMuller(m - r - 1, m)) = dim(RecursiveReedMuller(r, m)^⊥). 
+                # dim(RecursiveReedMuller(m - r - 1, m)) = dim(RecursiveReedMuller(r, m)^⊥).
                 # RecursiveReedMuller(m - r - 1, m) = RecursiveReedMuller(r, m)^⊥ ∴ parity check matrix (H) of RecursiveReedMuller(r, m) is the generator matrix (G) for RecursiveReedMuller(m - r - 1, m).
                 H₁ = parity_checks(RecursiveReedMuller(m - r - 1, m))
                 G₂ = generator(RecursiveReedMuller(r, m))

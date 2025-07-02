@@ -1,4 +1,4 @@
-@testitem "ECC GB" begin
+@testitem "ECC GB" tags=[:ecc] begin
     using Hecke
     using HiGHS
     using JuMP

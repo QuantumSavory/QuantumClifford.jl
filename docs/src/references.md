@@ -73,6 +73,7 @@ For minimum distance calculation of quantum codes:
 - [makhorin2008glpk](@cite)
 - [Lubin2023](@cite)
 - [huangfu2018parallelizing](@cite)
+- [wang2022distanceboundsgeneralizedbicycle](@cite)
 
 # References
 

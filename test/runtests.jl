@@ -20,19 +20,27 @@ using QuantumClifford
 testfilter = ti -> begin
     exclude = Symbol[]
 
-    if get(ENV, "JET_TEST", "")!="true"
+    if get(ENV, "JET_TEST", "") != "true"
         push!(exclude, :jet)
     else
         return :jet in ti.tags
     end
 
+    if get(ENV, "ECC_TEST", "") != "true"
+        push!(exclude, :ecc)
+    else
+        return :ecc in ti.tags
+    end
+
+    if get(ENV, "GPU_TESTS", "") != "true"
+        push!(exclude, :gpu)
+    else
+        return :gpu in ti.tags
+    end
+
     if !(VERSION >= v"1.10")
         push!(exclude, :doctests)
         push!(exclude, :aqua)
-    end
-
-    if get(ENV, "GPU_TESTS", "")!="true"
-        push!(exclude, :gpu)
     end
 
     if !(Base.Sys.islinux() & (Int===Int64))
