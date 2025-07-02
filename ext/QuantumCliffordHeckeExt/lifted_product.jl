@@ -309,7 +309,7 @@ we want. All examples are of codes discovered in [lin2023quantumtwoblockgroupalg
 
 Here is an example of `[[72, 8, 9]]` non-abelian 2BGA code with presentation `⟨r, s|s⁴, r⁹,s⁻¹rsr⟩`.
 
-```julia
+```jldoctest
 julia> using QuantumClifford.ECC; using QuantumClifford;
 
 julia> import Hecke: small_group, gens, group_algebra, GF, DefaultSmallGroupDB;
@@ -320,7 +320,7 @@ julia> l = 36;
 
 julia> group_id = 1;
 
-julia> G = small_group(l, group_id, Hecke.DefaultSmallGroupDB())
+julia> G = small_group(l, group_id; DB = Hecke.DefaultSmallGroupDB());
 
 julia> GA = group_algebra(GF(2), G);
 
