@@ -337,7 +337,9 @@ julia> a = 1 + s + r + s*r^6;
 
 julia> b = 1 + s^2*r + s^2*r^6 + r^2;
 
-julia> c = two_block_group_algebra_codes(a,b);
+julia> c = two_block_group_algebra_codes(a,b)
+ERROR: The CSS code just created is invalid -- its rows do not commute. This is either a bug in this library, or an inconsistent parity check matrices were provided to the CSS constructor.
+[...]
 
 julia> code_n(c), code_k(c)
 (72, 8)
