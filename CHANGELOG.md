@@ -5,6 +5,10 @@
 
 # News
 
+## v0.10.1 - dev
+
+- add documentation of using `LPCode` via `Hecke`'s (`small_group`)
+  
 ## v0.10.0 - 2025-07-02
 
 
