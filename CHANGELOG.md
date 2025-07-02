@@ -5,8 +5,9 @@
 
 # News
 
-## v0.10.0 - 2025-06-23
+## v0.10.0 - 2025-07-02
 
+- `project*!` family of functions now work on more tableau types.
 - Various stabilizer data structures can now be constructed out of sequences of Paulis.
 - Most canonicalization routines can now act on sequences of Paulis.
 - `QuantumCliffordJuMPExt` is a new extension depending on the JuMP solver suite. It enables computing minimum distance for quantum LDPC codes via Mixed Integer Programming (MIP) using `JuMP`.
