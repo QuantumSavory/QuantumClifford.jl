@@ -1,4 +1,5 @@
-abstract type AbstractPolynomialCode <: ClassicalCode end
+
+abstract type AbstractPolynomialCode <: AbstractCECC end
 
 """
 The family of Bose–Chaudhuri–Hocquenghem (BCH) codes, as discovered in 1959 by
@@ -10,7 +11,8 @@ specifies the degree of the finite (Galois) field `GF(2ᵐ)`, and `t`, a positiv
 integer that indicates the number of correctable errors. The binary parity check
 matrix can be obtained from the following matrix over ``GF(2ᵐ)`` field elements:
 
-\$\$
+```math
+\\begin{aligned}
 \\begin{matrix}
 1 & (\\alpha^1)^1 & (\\alpha^1)^2 & (\\alpha^1)^3 & \\dots & (\\alpha^1)^{n-1} \\\\
 1 & (\\alpha^3)^1 & (\\alpha^3)^2 & (\\alpha^3)^3 & \\dots & (\\alpha^3)^{n-1} \\\\
@@ -18,7 +20,8 @@ matrix can be obtained from the following matrix over ``GF(2ᵐ)`` field element
 \\vdots & \\vdots & \\vdots & \\vdots & \\ddots & \\vdots \\\\
 1 & (\\alpha^{2t-1})^1 & (\\alpha^{2t-1})^2 & (\\alpha^{2t-1})^3 & \\dots & (\\alpha^{2t-1})^{n-1}
 \\end{matrix}
-\$\$
+\\end{aligned}
+```
 
 The entries of the matrix are in `GF(2ᵐ)`. Each element in `GF(2ᵐ)` can be represented
 by an `m`-tuple (a binary column vector of length `m`). If each entry of `H` is replaced
