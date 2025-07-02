@@ -216,43 +216,34 @@ end
 
 iscss(::Type{LPCode}) = true
 
-struct CommutativeLift end
-
-struct NonCommutativeLift end
-
 function parity_matrix_xz(c::LPCode)
-    lift_type = is_commutative(c.GA) ? CommutativeLift() : NonCommutativeLift()
-    _build_parity_matrix_xz(lift_type, c)
-end
-
-function _build_parity_matrix_xz(::CommutativeLift, c::LPCode)
-    A, B = c.A, c.B
-    ma, na = size(A)
-    mb, nb = size(B)
-    # here we use `permutdims` instead of `transpose` to avoid recursive call
-    # convert LinearAlgebra.I to Matrix to fix incompatibility with Julia 1.11.1
-    # TODO the performance may be affected by this workaround for large codes
-    hx = [kron(A, Matrix(LinearAlgebra.I(mb))) kron(Matrix(LinearAlgebra.I(ma)), B)] # [A ⊗ I | I ⊗ B]
-    hz = [kron(Matrix(LinearAlgebra.I(na)), permutedims(group_algebra_conj.(B))) kron(permutedims(group_algebra_conj.(A)), Matrix(LinearAlgebra.I(nb)))] # [I ⊗ B* | A* ⊗ I]
-    hx, hz = concat_lift_repr(c.B_repr, hx), concat_lift_repr(c.B_repr, hz)
-    return hx, hz
-end
-
-function _build_parity_matrix_xz(::NonCommutativeLift, c::LPCode)
     A, B = c.A, c.B
     ma, na = size(A)
     mb, nb = size(B)
     # Apply regular representations to ensure CSS orthogonality for non-commutative algebras:
     # Â = ρ(A) (right regular representation: x ↦ xa)
     # B̂ = λ(B) (left regular representation: x ↦ bx)
-    Â = concat_lift_repr(c.A_repr, A) # ρ(A) right regular repr
-    B̂ = concat_lift_repr(c.B_repr, B) # λ(B) left regular repr
-    # Compute adjoints with representations:
-    # B̂* = λ(B*) and Â* = ρ(A*)
-    B̂_conj = concat_lift_repr(c.B_repr, permutedims(group_algebra_conj.(B))) # λ(B*)
-    Â_conj = concat_lift_repr(c.A_repr, permutedims(group_algebra_conj.(A))) # ρ(A*)
-    hx = [kron(Â, Matrix(LinearAlgebra.I(mb))) kron(Matrix(LinearAlgebra.I(ma)), B̂)] # [ρ(A) ⊗ I | I ⊗ λ(B)]
-    hz = [kron(Matrix(LinearAlgebra.I(na)), B̂_conj) kron(Â_conj, Matrix(LinearAlgebra.I(nb)))] # [I ⊗ λ(B*) | ρ(A*) ⊗ I]
+    Â, B̂ = is_commutative(c.GA) ? (A, B) : (concat_lift_repr(c.A_repr, A), concat_lift_repr(c.B_repr, B))
+    Â_conj, B̂_conj = if is_commutative(c.GA)
+        (permutedims(group_algebra_conj.(Â)), permutedims(group_algebra_conj.(B̂)))
+    else
+        # Compute adjoints with representations to ensure CSS orthogonality for non-commutative algebras:
+        # B̂* = λ(B*) and Â* = ρ(A*)
+        (concat_lift_repr(c.A_repr, permutedims(group_algebra_conj.(A))), # ρ(A*)
+         concat_lift_repr(c.B_repr, permutedims(group_algebra_conj.(B)))) # λ(B*)
+    end
+    # here we use `permutdims` instead of `transpose` to avoid recursive call
+    # convert LinearAlgebra.I to Matrix to fix incompatibility with Julia 1.11.1
+    # TODO the performance may be affected by this workaround for large codes
+    # For non-commutative algebras:
+    # [ρ(A) ⊗ I | I ⊗ λ(B)]
+    # [I ⊗ λ(B*) | ρ(A*) ⊗ I]
+    hx = [kron(Â, Matrix(LinearAlgebra.I(mb))) kron(Matrix(LinearAlgebra.I(ma)), B̂)]
+    hz = [kron(Matrix(LinearAlgebra.I(na)), B̂_conj) kron(Â_conj, Matrix(LinearAlgebra.I(nb)))]
+    # For commutative algebras:
+    # [A ⊗ I | I ⊗ B]
+    # [I ⊗ B* | A* ⊗ I]
+    hx, hz = is_commutative(c.GA) ? (concat_lift_repr(c.A_repr, hx), concat_lift_repr(c.B_repr, hz)) : (hx, hz)
     return hx, hz
 end
 
