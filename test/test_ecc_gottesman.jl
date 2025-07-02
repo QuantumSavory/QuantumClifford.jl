@@ -1,11 +1,8 @@
-using Test
-using QuantumClifford
-using QuantumClifford: mul_left!
-using QuantumClifford.ECC
-using QuantumClifford.ECC: AbstractECC
+@testitem "Gottesman codes should correct all single-qubit errors" tags=[:ecc] begin
+    using QuantumClifford: mul_left!
+    using QuantumClifford.ECC
+    using QuantumClifford.ECC: AbstractECC
 
-
-@testset "Gottesman codes should correct all single-qubit errors" begin
     for j in 3:12
         H = parity_checks(Gottesman(j))
         syndromes = Set([]) # the set automatically removes repeated entries

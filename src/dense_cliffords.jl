@@ -30,20 +30,22 @@ ERROR: DimensionMismatch: Input tableau should be of size 2n×n (top half is the
 ```jldoctest
 julia> d = Destabilizer(S"Y")
 𝒟ℯ𝓈𝓉𝒶𝒷
-+ Z
++ X
 𝒮𝓉𝒶𝒷
 + Y
 
 julia> CliffordOperator(d)
-X₁ ⟼ + Z
+X₁ ⟼ + X
 Z₁ ⟼ + Y
 ```
 """
-struct CliffordOperator{T<:Tableau} <: AbstractCliffordOperator
+struct CliffordOperator{T<:Tableau,P<:PauliOperator} <: AbstractCliffordOperator
     tab::T
+    buffer::P
     function CliffordOperator(tab::Tableau)
         if size(tab,1)==2*size(tab,2)
-            new{typeof(tab)}(tab)
+            p = zero!(tab[1])
+            new{typeof(tab),typeof(p)}(tab,p)
         #elseif size(stab,1)==size(stab,2) # TODO be able to work with squara tableaux (by reversing all row operations)
         #    destab = tab(Destabilizer(stab))
         #    new{typeof(destab.phases),typeof(destab.xzs)}(destab) # TODO be smarter about type signatures here... there should be a better way
@@ -62,7 +64,7 @@ CliffordOperator(op::CliffordOperator) = op
 CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Tableau(paulis))
 CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
 
-Base.:(==)(l::CliffordOperator, r::CliffordOperator) = l.tab == r.tab
+Base.:(==)(l::CliffordOperator, r::CliffordOperator) = tab(l) == tab(r)
 Base.hash(c::T, h::UInt) where {T<:CliffordOperator} = hash(T, hash(tab(c), h))
 
 Base.getindex(c::CliffordOperator, args...) = getindex(tab(c), args...)
@@ -82,19 +84,19 @@ function row_limit(str, limit=50)
 end
 
 digits_subchars = collect("₀₁₂₃₄₅₆₇₈₉")
-digits_substr(n,nwidth) = join(([digits_subchars[d+1] for d in reverse(digits(n, pad=nwidth))]))
+digits_substr(n::Int,nwidth::Int) = join(([digits_subchars[d+1] for d in reverse(digits(n, pad=nwidth))]))
 
 function Base.copy(c::CliffordOperator)
-    CliffordOperator(copy(c.tab))
+    CliffordOperator(copy(tab(c)))
 end
 
-@inline nqubits(c::CliffordOperator) = nqubits(c.tab)
+@inline nqubits(c::CliffordOperator) = nqubits(tab(c))
 
-Base.zero(c::CliffordOperator) = CliffordOperator(zero(c.tab))
+Base.zero(c::CliffordOperator) = CliffordOperator(zero(tab(c)))
 Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Tableau, 2n, n))
 
 function Base.:(*)(l::AbstractCliffordOperator, r::CliffordOperator)
-    tab = copy(r.tab)
+    tab = copy(QuantumClifford.tab(r))
     apply!(Stabilizer(tab),l) # TODO maybe not the most elegant way to perform apply!(::Tableau, gate)
     CliffordOperator(tab)
 end
@@ -104,17 +106,12 @@ function apply!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
     r
 end
 
-# TODO create Base.permute! and getindex(..., permutation_array)
-function permute(c::CliffordOperator,p) # TODO this is a slow stupid implementation
-    CliffordOperator(Tableau([c.tab[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
-end
-
 """Nonvectorized version of `apply!` used for unit tests."""
 function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true)
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
     s_tab = tab(stab)
     c_tab = tab(c)
-    new_stabrow = zero(s_tab[1])
+    new_stabrow = c.buffer
     for row_stab in eachindex(s_tab)
         zero!(new_stabrow)
         apply_row_kernel!(new_stabrow, row_stab, s_tab, c_tab, phases=Val(phases))
@@ -127,7 +124,7 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=V
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
     s_tab = tab(stab)
     c_tab = tab(c)
-    threadlocal=zero(c_tab[1])::PauliOperator # typeassert for JET
+    threadlocal = c.buffer
     @inbounds for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, phases=phases)
@@ -159,7 +156,7 @@ end
 function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{Int,1}; phases::Bool=true)
     s_tab = tab(stab)
     c_tab = tab(c)
-    new_stabrow = zero(PauliOperator,nqubits(c))
+    new_stabrow = c.buffer
     for row in eachindex(s_tab)
         zero!(new_stabrow)
         apply_row_kernel!(new_stabrow, row, s_tab, c_tab, indices_of_application; phases=Val(phases))
@@ -172,7 +169,7 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_appli
     #max(indices_of_application)<=nqubits(s) || throw(DimensionMismatch("")) # Too expensive to check every time
     s_tab = tab(stab)
     c_tab = tab(c)
-    threadlocal=zero(c_tab[1])::PauliOperator # typeassert for JET
+    threadlocal= c.buffer
     @inbounds for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, indices_of_application, phases=phases)

@@ -4,6 +4,7 @@ import LDPCDecoders
 using SparseArrays
 using QuantumClifford
 using QuantumClifford.ECC
+using QECCore
 import QuantumClifford.ECC: AbstractSyndromeDecoder, decode, parity_checks
 
 struct BeliefPropDecoder <: AbstractSyndromeDecoder # TODO all these decoders have the same fields, maybe we can factor out a common type
@@ -31,8 +32,8 @@ struct BitFlipDecoder <: AbstractSyndromeDecoder # TODO all these decoders have 
 end
 
 function BeliefPropDecoder(c; errorrate=nothing, maxiter=nothing)
-    Hx = parity_checks_x(c)
-    Hz = parity_checks_z(c)
+    Hx = parity_matrix_x(c)
+    Hz = parity_matrix_z(c)
     H = parity_checks(c)
     s, n = size(H)
     _, _, r = canonicalize!(Base.copy(H), ranks=true)
@@ -51,8 +52,8 @@ function BeliefPropDecoder(c; errorrate=nothing, maxiter=nothing)
 end
 
 function BitFlipDecoder(c; errorrate=nothing, maxiter=nothing)
-    Hx = parity_checks_x(c)
-    Hz = parity_checks_z(c)
+    Hx = parity_matrix_x(c)
+    Hz = parity_matrix_z(c)
     H = parity_checks(c)
     s, n = size(H)
     _, _, r = canonicalize!(Base.copy(H), ranks=true)
@@ -74,16 +75,16 @@ parity_checks(d::BeliefPropDecoder) = d.H
 parity_checks(d::BitFlipDecoder) = d.H
 
 function decode(d::BeliefPropDecoder, syndrome_sample)
-    row_x = syndrome_sample[1:d.cx]
-    row_z = syndrome_sample[d.cx+1:d.cx+d.cz]
+    row_x = @view syndrome_sample[1:d.cx]
+    row_z = @view syndrome_sample[d.cx+1:d.cx+d.cz]
     guess_z, success = LDPCDecoders.decode!(d.bpdecoderx, row_x)
     guess_x, success = LDPCDecoders.decode!(d.bpdecoderz, row_z)
     return vcat(guess_x, guess_z)
 end
 
 function decode(d::BitFlipDecoder, syndrome_sample)
-    row_x = syndrome_sample[1:d.cx]
-    row_z = syndrome_sample[d.cx+1:d.cx+d.cz]
+    row_x = @view syndrome_sample[1:d.cx]
+    row_z = @view syndrome_sample[d.cx+1:d.cx+d.cz]
     guess_z, success = LDPCDecoders.decode!(d.bfdecoderx, row_x)
     guess_x, success = LDPCDecoders.decode!(d.bfdecoderz, row_z)
     return vcat(guess_x, guess_z)

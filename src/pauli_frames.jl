@@ -11,11 +11,13 @@ struct PauliFrame{T,S} <: AbstractQCState
     measurements::S # TODO check if when looping over this we are actually looping over the fast axis
 end
 
-nqubits(f::PauliFrame) = nqubits(f.frame)
+nqubits(f::PauliFrame) = nqubits(f.frame) - 1 # dont count the ancilla qubit
 Base.length(f::PauliFrame) = size(f.measurements, 1)
 Base.eachindex(f::PauliFrame) = 1:length(f)
 Base.copy(f::PauliFrame) = PauliFrame(copy(f.frame), copy(f.measurements))
 Base.view(frame::PauliFrame, r) = PauliFrame(view(frame.frame, r), view(frame.measurements, r, :))
+
+tab(f::PauliFrame) = Tableau(f.frame.tab.phases, nqubits(f), f.frame.tab.xzs)
 
 fastrow(s::PauliFrame) = PauliFrame(fastrow(s.frame), s.measurements)
 fastcolumn(s::PauliFrame) = PauliFrame(fastcolumn(s.frame), s.measurements)
@@ -26,7 +28,8 @@ $(TYPEDSIGNATURES)
 Prepare an empty set of Pauli frames with the given number of `frames` and `qubits`. Preallocates spaces for `measurement` number of measurements.
 """
 function PauliFrame(frames, qubits, measurements)
-    stab = fastcolumn(zero(Stabilizer, frames, qubits)) # TODO this should really be a Tableau
+    # one extra qubit for ancilla measurements
+    stab = fastcolumn(zero(Stabilizer, frames, qubits + 1)) # TODO this should really be a Tableau
     bits = zeros(Bool, frames, measurements)
     frame = PauliFrame(stab, bits)
     initZ!(frame)
@@ -82,12 +85,8 @@ end
 function apply!(frame::PauliFrame, op::sMZ) # TODO sMY, and faster sMX
     op.bit == 0 && return frame
     i = op.qubit
-    xzs = frame.frame.tab.xzs
-    T = eltype(xzs)
-    lowbit = T(1)
-    ibig = _div(T,i-1)+1
-    ismall = _mod(T,i-1)
-    ismallm = lowbit<<(ismall)
+    xzs = tab(frame.frame).xzs
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
 
     @inbounds @simd for f in eachindex(frame)
         should_flip = !iszero(xzs[ibig,f] & ismallm)
@@ -99,12 +98,8 @@ end
 
 function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRY, and faster sMRX
     i = op.qubit
-    xzs = frame.frame.tab.xzs
-    T = eltype(xzs)
-    lowbit = T(1)
-    ibig = _div(T,i-1)+1
-    ismall = _mod(T,i-1)
-    ismallm = lowbit<<(ismall)
+    xzs = tab(frame.frame).xzs
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
 
     if op.bit != 0
         @inbounds @simd for f in eachindex(frame)
@@ -120,25 +115,59 @@ function apply!(frame::PauliFrame, op::sMRZ) # TODO sMRY, and faster sMRX
     return frame
 end
 
+function apply!(frame::PauliFrame, op::PauliMeasurement)
+    # this is inspired by ECC.naive_syndrome_circuit
+    n = nqubits(op.pauli)
+    for qubit in 1:n
+        if op.pauli[qubit] == (1, 0)
+            apply!(frame, sXCZ(qubit, n + 1))
+        elseif op.pauli[qubit] == (0, 1)
+            apply!(frame, sCNOT(qubit, n + 1))
+        elseif op.pauli[qubit] == (1, 1)
+            apply!(frame, sYCX(qubit, n + 1))
+        end
+    end
+    op.pauli.phase[] == 0 || apply!(frame, sX(n + 1))
+    apply!(frame, sMRZ(n + 1, op.bit))
+
+    return frame
+end
+
 function applynoise!(frame::PauliFrame,noise::UnbiasedUncorrelatedNoise,i::Int)
     p = noise.p
-    T = eltype(frame.frame.tab.xzs)
+    xzs = tab(frame.frame).xzs
 
-    lowbit = T(1)
-    ibig = _div(T,i-1)+1
-    ismall = _mod(T,i-1)
-    ismallm = lowbit<<(ismall)
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
     p = p/3
 
     @inbounds @simd for f in eachindex(frame)
         r = rand()
         if  r < p # X error
-            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
+            xzs[ibig,f] ⊻= ismallm
         elseif r < 2p # Z error
-            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
+            xzs[end÷2+ibig,f] ⊻= ismallm
         elseif r < 3p # Y error
-            frame.frame.tab.xzs[ibig,f] ⊻= ismallm
-            frame.frame.tab.xzs[end÷2+ibig,f] ⊻= ismallm
+            xzs[ibig,f] ⊻= ismallm
+            xzs[end÷2+ibig,f] ⊻= ismallm
+        end
+    end
+    return frame
+end
+
+function applynoise!(frame::PauliFrame,noise::PauliNoise,i::Int)
+    xzs = tab(frame.frame).xzs
+
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
+
+    @inbounds @simd for f in eachindex(frame)
+        r = rand()
+        if  r < noise.px # X error
+            xzs[ibig,f] ⊻= ismallm
+        elseif r < noise.px+noise.pz # Z error
+            xzs[end÷2+ibig,f] ⊻= ismallm
+        elseif r < noise.px+noise.pz+noise.py # Y error
+            xzs[ibig,f] ⊻= ismallm
+            xzs[end÷2+ibig,f] ⊻= ismallm
         end
     end
     return frame
@@ -175,7 +204,12 @@ function _pftrajectories(circuit;trajectories=5000,threads=true)
     ccircuit = if eltype(circuit) <: CompactifiedGate
         circuit
     else
-        compactify_circuit(circuit)
+        try
+            compactify_circuit(circuit)
+        catch err
+            @warn "Could not compactify the circuit, falling back to a slower version of the simulation. Consider reporting this issue to the package maintainers to improve performance. The offending gate was `$(err.args[2])`."
+            circuit
+        end
     end
     frames = _create_pauliframe(ccircuit; trajectories)
     nthr = min(Threads.nthreads(),trajectories÷(100))

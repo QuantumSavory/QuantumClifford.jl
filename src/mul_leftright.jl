@@ -56,14 +56,19 @@ function mul_ordered_lv!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val
 end
 =#
 
-function mul_ordered!(r::SubArray{T,1,P,I1,L1}, l::SubArray{T,1,P,I2,L2}; phases::Val{B}=Val(true)) where {T<:Unsigned, B, I1, I2, L1, L2, P<:Adjoint}
-    # This method exists because SIMD.jl does not play well with Adjoint
-    # Delete it and try `QuantumClifford.mul_left!(fastcolumn(random_stabilizer(194)), 2, 1)` # works fine for 192
+function mul_ordered!(r::SubArray{T,1,P,I2,false}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B, I2, P}
+    # This method exists because SIMD.jl requires fast linear indexing
+    # (which is not the case for Adjoint,
+    # e.g. when we use `fastcolumn`).
+    # The `false` in the SubArray parameters stands for
+    # "does not support fast linear indexing".
+    # See the other ::SubArray method below as well.
     _mul_ordered_nonvec!(r,l; phases=B)
 end
 
-function mul_ordered!(r::SubArray{T,1,P,I2,L2}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B, I2, L2, P<:Adjoint}
-    # This method exists because SIMD.jl does not play well with Adjoint
+function mul_ordered!(r::SubArray{T,1,P,Tuple{I1, I2},true}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B, P, I1<:Any, I2<:AbstractUnitRange}
+    # This method exists because SIMD.jl requires fast linear indexing
+    # that is NOT strided. See the other ::SubArray method above as well.
     _mul_ordered_nonvec!(r,l; phases=B)
 end
 
@@ -89,7 +94,7 @@ function mul_ordered!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val{B}
             r[i+len+lane] = newz1 = z1 ⊻ z2
             x1z2 = x1 & z2
             anti_comm = (x2 & z1) ⊻ x1z2
-            cnt2 ⊻= (newx1 ⊻ newz1 ⊻ x1z2) & anti_comm
+            cnt2 ⊻= (cnt1 ⊻ newx1 ⊻ newz1 ⊻ x1z2) & anti_comm
             cnt1 ⊻= anti_comm
         end
         for i in 1:length(cnt1)
@@ -162,6 +167,12 @@ end
 ##############################
 # On Tableaux
 ##############################
+
+@inline function mul_left!(s::Tableau, m, t::Tableau, i; phases::Val{B}=Val(true)) where B
+    extra_phase = mul_left!((@view s.xzs[:,m]), (@view t.xzs[:,i]); phases=phases)
+    B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
+    s
+end
 
 @inline function mul_left!(s::Tableau, m, i; phases::Val{B}=Val(true)) where B
     extra_phase = mul_left!((@view s.xzs[:,m]), (@view s.xzs[:,i]); phases=phases)

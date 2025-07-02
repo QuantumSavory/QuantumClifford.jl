@@ -128,6 +128,7 @@ function _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)
     state
 end
 
+canonicalize_clip!(ps::Base.AbstractVecOrTuple{PauliOperator}, args...; kwargs...) = canonicalize_clip!(Stabilizer(ps), args...; kwargs...)
 
 """
 $TYPEDSIGNATURES
@@ -139,7 +140,7 @@ It is the list of endpoints of a tableau in the clipped gauge.
 If `clip=true` (the default) the tableau is converted to the clipped gauge in-place before calculating the bigram.
 Otherwise, the clip gauge conversion is skipped (for cases where the input is already known to be in the correct gauge).
 
-Introduced in [nahum2017quantum](@cite), with a more detailed explanation of the algorithm in [li2019measurement](@cite) and [gullans2020quantum](@cite).
+Introduced in [nahum2017quantum](@cite), with a more detailed explanation of the algorithm in [li2019measurement](@cite) and [gullans2021quantum](@cite).
 
 See also: [`canonicalize_clip!`](@ref)
 """
@@ -186,7 +187,7 @@ function entanglement_entropy(state::AbstractStabilizer, subsystem_range::UnitRa
     # JET-XXX The ::Matrix{Int} should not be necessary, but they help with inference
     bg = bigram(state; clip=clip)::Matrix{Int}
     # If the state is mixed, this formula is valid only for contiguous regions that don't wrap around.
-    # See Eq. E7 of gullans2020quantum.
+    # See Eq. E7 of gullans2021quantum.
     # As subsystem_range is UnitRange, we know the formula will be valid.
     length(subsystem_range) - count(r->(r[1] in subsystem_range && r[2] in subsystem_range), eachrow(bg))
 end

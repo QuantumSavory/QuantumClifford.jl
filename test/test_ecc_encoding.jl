@@ -1,10 +1,10 @@
-using Test
-using QuantumClifford
-using QuantumClifford.ECC
+@testitem "encoding circuits - compare to algebraic construction of encoded state" tags=[:ecc] begin
+    using QuantumClifford
+    using QuantumClifford.ECC
 
-include("test_ecc_base.jl")
+    include("test_ecc_base.jl")
 
-@testset "encoding circuits - compare to algebraic construction of encoded state" begin
+
     # This test verifies that logical measurements on an encoded state match the physical pre-encoded state.
     # This test skips verifying the permutations of qubits during canonicalization are properly undone,
     # i.e. we modify the code we are testing so that the canonicalization does not need any permutations.
@@ -31,7 +31,7 @@ include("test_ecc_base.jl")
         pre_encₖ = one(Stabilizer, code_k(code))
 
         # n-k ancillary qubits in state zero prepended
-        pre_encₙ = one(Stabilizer, code_s(code)) ⊗ pre_encₖ
+        pre_encₙ = one(Stabilizer, code_n(code) - code_k(code)) ⊗ pre_encₖ
 
         # running the encoding circuit
         encodedₙ = mctrajectory!(pre_encₙ, circ)[1] |> canonicalize!

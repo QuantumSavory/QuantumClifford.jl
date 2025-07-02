@@ -4,3 +4,24 @@
 Modules = [QuantumClifford.ECC]
 Private = false
 ```
+
+## Implemented in an extension requiring `Hecke.jl`
+
+```@autodocs
+Modules = [QuantumCliffordHeckeExt]
+Private = false
+```
+
+## Implemented in an extension requiring `Oscar.jl`
+
+```@autodocs
+Modules = [QuantumCliffordOscarExt]
+Private = false
+```
+
+## Implemented in an extension requiring `JuMP.jl`
+
+```@autodocs
+Modules = [QuantumCliffordJuMPExt]
+Private = false
+```
