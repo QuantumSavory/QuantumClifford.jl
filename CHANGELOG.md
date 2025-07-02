@@ -8,6 +8,9 @@
 ## v0.10.0 - 2025-07-02
 
 
+- Quantum Tanner graph product codes:
+    - `Q(G×G)` Quantum expander code (Tanner graph `G`)
+    - General and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`)
 - **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
 - **(fix)** Paulis with imaginary phases had their phases incorrectly tracked.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in non-Clifford functionality.
