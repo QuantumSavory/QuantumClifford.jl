@@ -104,13 +104,17 @@ struct LPCode <: AbstractECC
 
     function LPCode(A::GroupAlgebraElemMatrix, B::GroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]), repr::Function)
         all(elem.parent == GA for elem in A) && all(elem.parent == GA for elem in B) || error("The base rings of all elements in both matrices must be the same as the group algebra")
-        new(A, B, GA, repr)
+        code = new(A, B, GA, repr)
+        QuantumClifford.check_allrowscommute(parity_checks(code)) || error("The Lifted Product Code just created is invalid -- its rows do not commute. This is either a bug in this library, or a non-commutative group algebra was used.")
+        code
     end
 
     function LPCode(c₁::LiftedCode, c₂::LiftedCode; GA::GroupAlgebra=c₁.GA, repr::Function=c₁.repr)
         # we are using the group algebra and the representation function of the first lifted code
         c₁.GA == GA && c₂.GA == GA || error("The base rings of both lifted codes must be the same as the group algebra")
-        new(c₁.A, c₂.A, GA, repr)
+        code = new(c₁.A, c₂.A, GA, repr)
+        QuantumClifford.check_allrowscommute(parity_checks(code)) || error("The Lifted Product Code just created is invalid -- its rows do not commute. This is either a bug in this library, or a non-commutative group algebra was used.")
+        code
     end
 end
 

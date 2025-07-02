@@ -124,8 +124,6 @@ Used with [`distance`](@ref) to select MIP as the method of finding the distance
 $FIELDS
 """
 @kwdef struct DistanceMIPAlgorithm <: AbstractDistanceAlg
-    """if `true` (default=`false`), uses the provided value as an upper bound for the code distance"""
-    upper_bound::Bool=false
     """index of the logical qubit to compute code distance for (nothing means compute for all logical qubits)"""
     logical_qubit::Union{Int, Nothing}=nothing
     """type of logical operator to consider (:X or :Z, defaults to :X) - both types yield identical distance results for CSS stabilizer codes."""
@@ -137,9 +135,9 @@ $FIELDS
     """time limit (in seconds) for the MIP solver's execution (default=60.0)"""
     time_limit::Float64=60.0
 
-    function DistanceMIPAlgorithm(upper_bound, logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
+    function DistanceMIPAlgorithm(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
         logical_operator_type ∈ (:X, :Z) || throw(ArgumentError("`logical_operator_type` must be :X or :Z"))
-        new(upper_bound, logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
+        new(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
     end
 end
 
