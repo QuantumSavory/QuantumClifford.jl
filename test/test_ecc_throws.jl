@@ -1,6 +1,6 @@
 @testitem "ECC throws" tags=[:ecc] begin
 
-    using QuantumClifford.ECC: ReedMuller, BCH, RecursiveReedMuller, Golay, Triangular488, Triangular666
+    using QuantumClifford.ECC: ReedMuller, BCH, RecursiveReedMuller, Golay, Triangular488, Triangular666, Goppa
 
     @test_throws ArgumentError ReedMuller(-1, 3)
     @test_throws ArgumentError ReedMuller(1, 0)
