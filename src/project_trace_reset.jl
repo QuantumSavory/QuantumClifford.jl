@@ -38,7 +38,7 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=tr
     @valbooldispatch _generate!(pauli, stabilizer; phases=Val(phases), saveindices=Val(saveindices)) phases saveindices
 end
 
-function _generate!(pauli::PauliOperator{Tₚ,Tᵥ}, stabilizer::Stabilizer{Tableau{Tₚᵥ,Tₘ}}; phases::Val{PHASES}=Val(true), saveindices::Val{SAVEIDX}=Val(true)) where {Tₚ<:AbstractArray{UInt8,0}, Tₚᵥ<:AbstractVector{UInt8}, Tₘₑ<:Unsigned, Tᵥ<:AbstractVector{Tₘₑ}, Tₘ<:AbstractMatrix{Tₘₑ}, PHASES, SAVEIDX} # TODO there is stuff that can be abstracted away here and in canonicalize!
+function _generate!(pauli::PauliOperator{Tₚ,Tᵥ}, stabilizer::Stabilizer{Tableau{Tₚᵥ,Tₘ}}; phases::Val{PHASES}=Val(true), saveindices::Val{SAVEIDX}=Val(true)) where {Tₚ, Tₚᵥ, Tₘₑ<:Unsigned, Tᵥ<:AbstractVector{Tₘₑ}, Tₘ<:AbstractMatrix{Tₘₑ}, PHASES, SAVEIDX} # TODO there is stuff that can be abstracted away here and in canonicalize!
     xzs = tab(stabilizer).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
