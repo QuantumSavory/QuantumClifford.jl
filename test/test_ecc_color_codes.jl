@@ -1,4 +1,4 @@
-@testitem "ECC Color Codes" begin
+@testitem "ECC Color Codes" tags=[:ecc] begin
     using Hecke
     using JuMP
     using HiGHS
