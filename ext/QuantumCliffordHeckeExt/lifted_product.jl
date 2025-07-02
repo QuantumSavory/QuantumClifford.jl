@@ -1,3 +1,6 @@
+right_repr_matrix(x) = representation_matrix(x, :right)
+left_repr_matrix(x) = representation_matrix(x, :left)
+
 """
 $TYPEDEF
 
@@ -24,15 +27,6 @@ The lifted product construction produces quantum CSS codes with parity-check mat
     H_Z &= [I_{n_a} \\otimes B^*, A^* \\otimes I_{n_b}]
 \\end{aligned}
 
-## CSS Orthogonality Condition
-
-For matrix blocks ``\\hat{a}_{ij}, \\hat{b}_{st} \\in R``, the requirement ``\\hat{H}_X\\hat{H}_Z^* = 0`` reduces to:
-
-```math
-\\begin{aligned}
-    \\hat{H}_X\\hat{H}_Z^* = 0 \\iff \\hat{a}_{ij}\\hat{b}_{st}^* = \\hat{b}_{st}^*\\hat{a}_{ij} \\quad \\forall i,j,s,t
-\\end{aligned}
-```
 ### Commutative Algebra
 
 When `R` is *commutative*, a single representation suffices since all elements naturally commute. Here ``\\rho(a) = \\lambda(a)`` for all ``a \\in R``.
@@ -159,20 +153,38 @@ struct LPCode <: AbstractECC
     default to be the left regular representation for `GF(2)`-algebra."""
     B_repr::Function
 
-    function LPCode(A::GroupAlgebraElemMatrix, B::GroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]), repr::Union{Function,Nothing}=nothing, A_repr::Function=x->representation_matrix(x, :right), B_repr::Function=x->representation_matrix(x, :left))
-        if repr !== nothing
-            is_commutative(GA) || throw(ArgumentError("The group algebra must be commutative when using single repr function"))
+    # TODO document and doctest example
+    function LPCode(
+        A::GroupAlgebraElemMatrix,
+        B::GroupAlgebraElemMatrix;
+        GA::GroupAlgebra=parent(A[1,1]),
+        A_repr::Function=right_repr_matrix,
+        B_repr::Function=left_repr_matrix,
+        repr::Union{Function,Nothing}=nothing
+    )
+        if repr !== nothing # override the default A_repr/B_repr (exists for backward compat)
+            is_commutative(GA) || throw(ArgumentError("The group algebra must be commutative when using a single `repr` function, which is not the case here. Please specify separate `A_repr` and `B_repr` instead of a single `repr`. The default choice of `A_repr=right_repr_matrix, B_repr=left_repr_matrix` is frequently sufficient."))
             A_repr = B_repr = repr
         end
         all(elem.parent == GA for elem in A) && all(elem.parent == GA for elem in B) || error("The base rings of all elements in both matrices must be the same as the group algebra")
         new(A, B, GA, A_repr, B_repr)
     end
 
-    function LPCode(c₁::LiftedCode, c₂::LiftedCode; GA::GroupAlgebra=c₁.GA,  repr::Union{Function,Nothing}=nothing, A_repr::Function=x->representation_matrix(x, :right), B_repr::Function=x->representation_matrix(x, :left))
-        if repr !== nothing
-            is_commutative(GA) || throw(ArgumentError("The group algebra must be commutative when using single repr function"))
+    # TODO document and doctest example
+    function LPCode(
+        c₁::LiftedCode,
+        c₂::LiftedCode;
+        GA::GroupAlgebra=c₁.GA,
+        A_repr::Function=c₁.repr,
+        B_repr::Function=c₂.repr,
+        repr::Union{Function,Nothing}=nothing
+    )
+        if repr !== nothing # override the default A_repr/B_repr (exists for backward compat)
+            is_commutative(GA) || throw(ArgumentError("The group algebra must be commutative when using a single `repr` function, which is not the case here. Please specify separate `A_repr` and `B_repr` instead of a single `repr`. The default choice of `A_repr=right_repr_matrix, B_repr=left_repr_matrix` is frequently sufficient."))
             A_repr = B_repr = repr
         end
+        # We are using the representation function of each lifted code.
+        # We are using their group algebras as well (asserting that they are the same).
         c₁.GA == GA && c₂.GA == GA || error("The base rings of both lifted codes must be the same as the group algebra")
         new(c₁.A, c₂.A, GA, A_repr, B_repr)
     end
@@ -180,17 +192,26 @@ end
 
 # TODO document and doctest example
 function LPCode(A::FqFieldGroupAlgebraElemMatrix, B::FqFieldGroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]))
-    LPCode(LiftedCode(A; GA=GA,repr=x->representation_matrix(x, :right)), LiftedCode(B; GA=GA, repr=x->representation_matrix(x, :left)); GA=GA, A_repr=x->representation_matrix(x, :right), B_repr=x->representation_matrix(x, :left))
+    LPCode(
+        LiftedCode(A; GA=GA, repr=right_repr_matrix),
+        LiftedCode(B; GA=GA, repr=left_repr_matrix)
+    )
 end
 
 # TODO document and doctest example
 function LPCode(group_elem_array1::Matrix{<: GroupOrAdditiveGroupElem}, group_elem_array2::Matrix{<: GroupOrAdditiveGroupElem}; GA::GroupAlgebra=group_algebra(GF(2), parent(group_elem_array1[1,1])))
-    LPCode(LiftedCode(group_elem_array1; GA=GA), LiftedCode(group_elem_array2; GA=GA); GA=GA, A_repr=x->representation_matrix(x, :right), B_repr=x->representation_matrix(x, :left))
+    LPCode(
+        LiftedCode(group_elem_array1; GA=GA, repr=right_repr_matrix),
+        LiftedCode(group_elem_array2; GA=GA, repr=left_repr_matrix)
+    )
 end
 
 # TODO document and doctest example
 function LPCode(shift_array1::Matrix{Int}, shift_array2::Matrix{Int}, l::Int; GA::GroupAlgebra=group_algebra(GF(2), abelian_group(l)))
-    LPCode(LiftedCode(shift_array1, l; GA=GA), LiftedCode(shift_array2, l; GA=GA); GA=GA, A_repr=x->representation_matrix(x, :right), B_repr=x->representation_matrix(x, :left))
+    LPCode(
+        LiftedCode(shift_array1, l; GA=GA, repr=right_repr_matrix),
+        LiftedCode(shift_array2, l; GA=GA, repr=left_repr_matrix)
+    )
 end
 
 iscss(::Type{LPCode}) = true
