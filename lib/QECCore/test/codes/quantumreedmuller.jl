@@ -1,12 +1,8 @@
-@testitem "Quantum Reed-Muller" tags=[:ecc] begin
+@testitem "Quantum Reed-Muller" begin
     using Test
     using Nemo: echelon_form, matrix, GF
-    using LinearAlgebra
-    using QuantumClifford
-    using QuantumClifford: canonicalize!, Stabilizer, stab_to_gf2
-    using QuantumClifford.ECC
-    using QuantumClifford.ECC: AbstractECC, QuantumReedMuller, Steane7, CSS
-    using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate, parity_matrix_x, parity_matrix_z
+    using QECCore.LinearAlgebra
+    using QECCore
 
     function designed_distance(mat)
         dist = 3
@@ -21,31 +17,36 @@
 
     @testset "Test QuantumReedMuller(r,m) properties" begin
         for m in 3:10
-            stab = parity_checks(QuantumReedMuller(m))
-            H = stab_to_gf2(stab)
+            H = parity_matrix(QuantumReedMuller(m))
             @test designed_distance(H) == true
-            # QuantumReedMuller(3) is the Steane7 code.
-            @test canonicalize!(parity_checks(Steane7())) == parity_checks(QuantumReedMuller(3))
             @test code_n(QuantumReedMuller(m)) == 2^m - 1
             @test code_k(QuantumReedMuller(m)) == 1
             @test distance(QuantumReedMuller(m)) == 3
-            @test H == stab_to_gf2(parity_checks(CSS(parity_matrix_x(QuantumReedMuller(m)), parity_matrix_z(QuantumReedMuller(m)))))
-            # [[15,1,3]] qrm code from table 1 of https://arxiv.org/pdf/1705.0010
-            qrm₁₅₁₃ = S"ZIZIZIZIZIZIZIZ
-                        IZZIIZZIIZZIIZZ
-                        IIIZZZZIIIIZZZZ
-                        IIIIIIIZZZZZZZZ
-                        IIZIIIZIIIZIIIZ
-                        IIIIZIZIIIIIZIZ
-                        IIIIIZZIIIIIIZZ
-                        IIIIIIIIIZZIIZZ
-                        IIIIIIIIIIIZZZZ
-                        IIIIIIIIZIZIZIZ
-                        XIXIXIXIXIXIXIX
-                        IXXIIXXIIXXIIXX
-                        IIIXXXXIIIIXXXX
-                        IIIIIIIXXXXXXXX"
-            @test canonicalize!(parity_checks(qrm₁₅₁₃)) == canonicalize!(parity_checks(QuantumReedMuller(4)))
+            @test H == parity_matrix(CSS(parity_matrix_x(QuantumReedMuller(m)), parity_matrix_z(QuantumReedMuller(m))))
         end
+    end
+
+
+    @testset "QuantumReedMuller equivalence to simple codes" begin
+        # QuantumReedMuller(3) is the Steane7 code.
+        # TODO: add function to check if two codes are equivalent, like @test canonicalize!(parity_checks(Steane7())) == parity_checks(QuantumReedMuller(3))
+        @test parity_matrix(Steane7()) == parity_matrix(QuantumReedMuller(3))[[3,2,1,6,5,4],:]
+        
+        # [[15,1,3]] qrm code from table 1 of https://arxiv.org/pdf/1705.0010
+        pm = [ 1  0  1  0  1  0  1  0  1  0  1  0  1  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0;
+        0  1  1  0  0  1  1  0  0  1  1  0  0  1  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0;
+        0  0  0  1  1  1  1  0  0  0  0  1  1  1  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0;
+        0  0  0  0  0  0  0  1  1  1  1  1  1  1  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0;
+        0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  1  0  0  0  1  0  0  0  1  0  0;
+        0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  1  0  0  0  1  0  0  0  1  0;
+        0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  1  0  0  0  1  0  0  0  1;
+        0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0  1  1  1  1;
+        0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  1  0  0  0  0  0  1  0  1;
+        0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  0  0  0  0  0  0  1  1;
+        0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1;
+        0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  1  0  1  0  1;
+        0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  0  0  1  1;
+        0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1  1]
+        @test parity_matrix(QuantumReedMuller(4)) == pm
     end
 end
