@@ -183,32 +183,38 @@
         num_qubits = [2,3,4,5] # exclusively multi-qubit
         for n in num_qubits  # Exponential cost in this term
             for repetition in 1:num_trials
-                stab = random_stabilizer(n)
-                pauli = random_pauli(n)
-                genstab = GeneralizedStabilizer(stab)
-                # Apply some (repeated) non-Clifford operations
-                i = rand(1:n)
-                nc = embed(n, i, pcT)
-                apply!(genstab, nc) # in-place
-                apply!(genstab, nc) # in-place
-                apply!(genstab, nc) # in-place
-                norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(genstab, pauli)
-                !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
-                @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
+                test_phases = [π/4, π/8, π/2, π, 2π]
+                for ϕ in test_phases
+                    stab = random_stabilizer(n)
+                    pauli = random_pauli(n)
+                    genstab = GeneralizedStabilizer(stab)
+                    # Apply some (repeated) non-Clifford operations
+                    i = rand(1:n)
+                    nc = embed(n, i, pcPhase(ϕ))
+                    apply!(genstab, nc) # in-place
+                    apply!(genstab, nc) # in-place
+                    apply!(genstab, nc) # in-place
+                    norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(genstab, pauli)
+                    !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
+                    @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
+                end
             end
         end
         for j in 1:10
             num_qubits = [2,3,4,5] # exclusively multi-qubit
             for n in num_qubits # exponential cost in this term
-                genstab = GeneralizedStabilizer(random_stabilizer(n))
-                p = random_pauli(n)
-                for i in 1:n
-                    apply!(genstab, embed(n, rand(1:n), pcT))
+                test_phases = [π/4, π/8, π/2, π, 2π]
+                for ϕ in test_phases
+                    genstab = GeneralizedStabilizer(random_stabilizer(n))
+                    p = random_pauli(n)
+                    for i in 1:n
+                        apply!(genstab, embed(n, rand(1:n), pcPhase(ϕ)))
+                    end
+                    projectrand!(genstab, p)
+                    # Check the trace after normalization
+                    trace = tr(genstab)
+                    !iszero(trace) && @assert trace ≈ 1
                 end
-                projectrand!(genstab, p)
-                # Check the trace after normalization
-                trace = tr(genstab)
-                !iszero(trace) && @assert trace ≈ 1
             end
         end
     end
@@ -280,36 +286,39 @@
     @testset "smaller test redundant to the ones above" begin
         for n in 1:5
             for rep in 1:2
-                s = random_stabilizer(n)
-                g = GeneralizedStabilizer(s)
-                apply!(g, embed(n, rand(1:n), pcT))
-                p = random_pauli(n; realphase=true)
-                gm, r = projectrand!(copy(g), p)
+            test_phases = [π/4, π/8, π/2, π, 2π]
+                for ϕ in test_phases
+                    s = random_stabilizer(n)
+                    g = GeneralizedStabilizer(s)
+                    nc = embed(n, rand(1:n), pcPhase(ϕ))
+                    p = random_pauli(n; realphase=true)
+                    gm, r = projectrand!(copy(g), p)
 
-                rho = Operator(g)
-                pqo = Operator(p)
-                id = identityoperator(pqo)
-                projp = (pqo+id)/2
-                projm = (-pqo+id)/2
+                    rho = Operator(g)
+                    pqo = Operator(p)
+                    id = identityoperator(pqo)
+                    projp = (pqo+id)/2
+                    projm = (-pqo+id)/2
 
-                @test projp+projm ≈ id
+                    @test projp+projm ≈ id
 
-                rhom = projm*rho*projm'
-                rhop = projp*rho*projp'
+                    rhom = projm*rho*projm'
+                    rhop = projp*rho*projp'
 
-                #@test rhom + rhop ≈ rho
+                    # @test rhom + rhop ≈ rho
 
-                @test (expect(p, g)+1)/2 ≈ tr(rhop)
+                    @test (expect(p, g)+1)/2 ≈ tr(rhop)
 
-                gm_notnorm, _ = QuantumClifford._projectrand_notnorm(copy(g), p, 0)
-                @test (expect(p, g)+1)/2 ≈ tr(gm_notnorm)
+                    gm_notnorm, _ = QuantumClifford._projectrand_notnorm(copy(g), p, 0)
+                    @test (expect(p, g)+1)/2 ≈ tr(gm_notnorm)
 
-                @test tr(rhop) ≈ tr(gm_notnorm)
+                    @test tr(rhop) ≈ tr(gm_notnorm)
 
-                if r == 0x2
-                    @test rhom / tr(rhom) ≈ Operator(gm)
-                else
-                    @test rhop / tr(rhop) ≈ Operator(gm)
+                    if r == 0x2
+                        @test rhom / tr(rhom) ≈ Operator(gm)
+                    else
+                        @test rhop / tr(rhop) ≈ Operator(gm)
+                    end
                 end
             end
         end
