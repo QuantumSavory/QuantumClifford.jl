@@ -232,19 +232,17 @@ function parity_matrix_xz(c::LPCode)
     ma, na = size(A)
     mb, nb = size(B)
     hx_raw, hz_raw = hgp(A, permutedims(group_algebra_conj.(B)))
-    # hx = [A⊗I | I⊗B*]
-    hx_block1_cols = na * mb # A⊗I
-    hx_block2_cols = ma * nb # I⊗B*
-    # hz = [I⊗B | A*⊗I]
-    hz_block1_cols = na * mb # I⊗B
-    hz_block2_cols = ma * nb # A*⊗I
+    # hx = [A ⊗ I | I ⊗ B]
+    hx_b₁cols = na*mb # A ⊗ I
+    # hz = [I ⊗ B* | A* ⊗ I]
+    hz_b₁cols = na*mb # I ⊗ B
     hx = hcat(
-        concat_lift_repr(c.A_repr, hx_raw[:, 1:hx_block1_cols]), # ρ(A⊗I)
-        concat_lift_repr(c.B_repr, hx_raw[:, hx_block1_cols+1:end]) # λ(I⊗B*)
+        concat_lift_repr(c.A_repr, hx_raw[:, 1:hx_b₁cols]), # ρ(A ⊗ I)
+        concat_lift_repr(c.B_repr, hx_raw[:, hx_b₁cols+1:end]) # λ(I ⊗ B*)
     )
     hz = hcat(
-        concat_lift_repr(c.B_repr, hz_raw[:, 1:hz_block1_cols]), # λ(I⊗B)
-        concat_lift_repr(c.A_repr, hz_raw[:, hz_block1_cols+1:end]) # ρ(A*⊗I)
+        concat_lift_repr(c.B_repr, hz_raw[:, 1:hz_b₁cols]), # λ(I ⊗ B)
+        concat_lift_repr(c.A_repr, hz_raw[:, hz_b₁cols+1:end]) # ρ(A* ⊗ I)
     )
     return hx, hz
 end

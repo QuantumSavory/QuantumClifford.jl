@@ -5,6 +5,11 @@
 
 # News
 
+## v0.10.1 - dev
+
+- The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations, particularly useful now that there is also an `Oscar` extension, which supports many non-abelian groups.
+
+
 ## v0.10.0 - 2025-07-02
 
 
