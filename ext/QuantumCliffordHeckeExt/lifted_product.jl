@@ -385,3 +385,36 @@ function haah_cubic_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
     b = sum(GA[n%dim(GA)+1] for n in b_shifts)
     two_block_group_algebra_codes(a, b)
 end
+
+"""
+Haah’s cubic code is defined as ``\\text{LP}(1 + x + y + z, 1 + xy + xz + yz)``
+where ``\\text{LP}`` is the lifted product code, and `x`, `y`, `z` are elements
+of the ring ``R = \\mathbb{F}_2[x, y, z] / (x^L - 1, y^L - 1, z^L - 1)``. Here
+``\\mathbb{F}_2`` is the finite field of order `2` and `L` is the lattice size.
+The ring ``R`` is the group algebra ``\\mathbb{F}_qG`` of a finite group `G`, where
+``G = (C_L)^3`` and ``C_L`` is the cyclic group of order `L`. This method of Haah's
+cubic code construction is outlined in Appendix B of [panteleev2022asymptotically](@cite).
+
+Here is an example of a `[[1024, 30, 13 ≤ d ≤ 32]]` Haah's cubic code from Appendix B,
+code D of [panteleev2021degenerate](@cite) on the `8 × 8 × 8` Lattice.
+
+```jldoctest
+julia> import Hecke; using QuantumClifford.ECC;
+
+julia> l = 8;
+
+julia> c = haah_cubic_codes(l);
+
+julia> code_n(c), code_k(c)
+(1024, 30)
+```
+
+See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref).
+"""
+function haah_cubic_codes(l::Int)
+    GA = group_algebra(GF(2), abelian_group([l,l,l]))
+    x, y, z = gens(GA)
+    c = [1 + x + y + z;;]
+    d = [1 + x*y + x*z + y*z;;]
+    LPCode(c,d)
+end
