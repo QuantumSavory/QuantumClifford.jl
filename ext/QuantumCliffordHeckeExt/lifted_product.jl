@@ -216,34 +216,36 @@ end
 
 iscss(::Type{LPCode}) = true
 
+function hgp(h₁::GroupAlgebraElemMatrix, h₂::GroupAlgebraElemMatrix)
+    r₁, n₁ = size(h₁)
+    r₂, n₂ = size(h₂)
+    # here we use `permutdims` instead of `transpose` to avoid recursive call
+    # convert LinearAlgebra.I to Matrix to fix incompatibility with Julia 1.11.1
+    # TODO the performance may be affected by this workaround for large codes
+    hx = hcat(kron(h₁, Matrix(LinearAlgebra.I(n₂))), kron(Matrix(LinearAlgebra.I(r₁)), permutedims(group_algebra_conj.(h₂))))
+    hz = hcat(kron(Matrix(LinearAlgebra.I(n₁)), h₂), kron(permutedims(group_algebra_conj.(h₁)), Matrix(LinearAlgebra.I(r₂))))
+    hx, hz
+end
+
 function parity_matrix_xz(c::LPCode)
     A, B = c.A, c.B
     ma, na = size(A)
     mb, nb = size(B)
-    # Apply regular representations to ensure CSS orthogonality for non-commutative algebras:
-    # Â = ρ(A) (right regular representation: x ↦ xa)
-    # B̂ = λ(B) (left regular representation: x ↦ bx)
-    Â, B̂ = is_commutative(c.GA) ? (A, B) : (concat_lift_repr(c.A_repr, A), concat_lift_repr(c.B_repr, B))
-    Â_conj, B̂_conj = if is_commutative(c.GA)
-        (permutedims(group_algebra_conj.(Â)), permutedims(group_algebra_conj.(B̂)))
-    else
-        # Compute adjoints with representations to ensure CSS orthogonality for non-commutative algebras:
-        # B̂* = λ(B*) and Â* = ρ(A*)
-        (concat_lift_repr(c.A_repr, permutedims(group_algebra_conj.(A))), # ρ(A*)
-         concat_lift_repr(c.B_repr, permutedims(group_algebra_conj.(B)))) # λ(B*)
-    end
-    # here we use `permutdims` instead of `transpose` to avoid recursive call
-    # convert LinearAlgebra.I to Matrix to fix incompatibility with Julia 1.11.1
-    # TODO the performance may be affected by this workaround for large codes
-    # For non-commutative algebras:
-    # [ρ(A) ⊗ I | I ⊗ λ(B)]
-    # [I ⊗ λ(B*) | ρ(A*) ⊗ I]
-    hx = [kron(Â, Matrix(LinearAlgebra.I(mb))) kron(Matrix(LinearAlgebra.I(ma)), B̂)]
-    hz = [kron(Matrix(LinearAlgebra.I(na)), B̂_conj) kron(Â_conj, Matrix(LinearAlgebra.I(nb)))]
-    # For commutative algebras:
-    # [A ⊗ I | I ⊗ B]
-    # [I ⊗ B* | A* ⊗ I]
-    hx, hz = is_commutative(c.GA) ? (concat_lift_repr(c.A_repr, hx), concat_lift_repr(c.B_repr, hz)) : (hx, hz)
+    hx_raw, hz_raw = hgp(A, permutedims(group_algebra_conj.(B)))
+    # hx = [A⊗I | I⊗B*]
+    hx_block1_cols = na * mb # A⊗I
+    hx_block2_cols = ma * nb # I⊗B*
+    # hz = [I⊗B | A*⊗I]
+    hz_block1_cols = na * mb # I⊗B
+    hz_block2_cols = ma * nb # A*⊗I
+    hx = hcat(
+        concat_lift_repr(c.A_repr, hx_raw[:, 1:hx_block1_cols]), # ρ(A⊗I)
+        concat_lift_repr(c.B_repr, hx_raw[:, hx_block1_cols+1:end]) # λ(I⊗B*)
+    )
+    hz = hcat(
+        concat_lift_repr(c.B_repr, hz_raw[:, 1:hz_block1_cols]), # λ(I⊗B)
+        concat_lift_repr(c.A_repr, hz_raw[:, hz_block1_cols+1:end]) # ρ(A*⊗I)
+    )
     return hx, hz
 end
 
