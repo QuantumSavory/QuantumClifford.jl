@@ -221,10 +221,12 @@
     @testset "Tensor products of generalized stabilizers" begin
         num_trials = 3
         num_qubits = [2,3] # exclusively multi-qubit
+        test_phases = [π/4, π/8, π/2]
         function apply_random_nc_ops!(genstab, n)
             for _ in 1:rand(1:5)
-                i = rand(1:n)
-                nc = embed(n, i, pcT)
+                for ϕ in test_phases
+                    i = rand(1:n)
+                    nc = embed(n, i, pcPhase(ϕ))
                 apply!(genstab, nc)
             end
         end
@@ -260,14 +262,17 @@
     @testset "Tensor products between paulichannels and paulis" begin
         num_trials = 3
         num_qubits = [2,3] # exclusively multi-qubit
+        test_phases = [π/4, π/8, π/2]
         for n in num_qubits
             for repetition in 1:num_trials
                 p = random_pauli(n)
                 i = rand(1:n)
-                nc = embed(n, i, pcT)
-                @test Operator(nc ⊗ p) ≈ Operator(nc) ⊗ Operator(p)
-                @test Operator(nc ⊗ nc) ≈ Operator(nc) ⊗ Operator(nc)
-                @test Operator(nc ⊗ nc ⊗ p) ≈ Operator(nc) ⊗ Operator(nc) ⊗ Operator(p)
+                for ϕ in test_phases
+                    nc = embed(n, i, pcPhase(ϕ))
+                    @test Operator(nc ⊗ p) ≈ Operator(nc) ⊗ Operator(p)
+                    @test Operator(nc ⊗ nc) ≈ Operator(nc) ⊗ Operator(nc)
+                    @test Operator(nc ⊗ nc ⊗ p) ≈ Operator(nc) ⊗ Operator(nc) ⊗ Operator(p)
+                end
             end
         end
     end
