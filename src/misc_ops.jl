@@ -6,8 +6,10 @@ import QuantumInterface: nsubsystems
 Particularly useful when acting on [`Register`](@ref).
 
 See also: [`apply!`](@ref), [`projectrand!`](@ref)."""
-struct PauliMeasurement{Tₚ<:AbstractArray{UInt8,0}, Tᵥ<:AbstractVector{<:Unsigned}} <: AbstractMeasurement
-    pauli::PauliOperator{Tₚ,Tᵥ}
+struct PauliMeasurement{
+    P <: AbstractArray{<: Unsigned, 0}, XZ <: AbstractVector{<: Unsigned}
+    } <: AbstractMeasurement
+    pauli::PauliOperator{P,XZ}
     bit::Int
 end
 
