@@ -117,3 +117,36 @@ Abstract type representing algorithms for computing
 the minimum distance of quantum error correction codes.
 """
 abstract type AbstractDistanceAlg end
+
+"""
+    meta_checks_x(c::AbstractCSSCode)
+
+Returns the `X`-metacheck matrix (`?` in chain complex notation) for a CSS code.
+This matrix verifies validity of `X`-syndromes (`Z`-error measurements).
+For codes without metachecks, returns an empty matrix.
+
+See also: [`meta_checks_z`](@ref), [`parity_matrix_x`](@ref)
+"""
+function meta_checks_x end
+
+"""
+    meta_checks_z(c::AbstractCSSCode)
+
+Returns the `Z`-metacheck matrix (`?` in chain complex notation) for a CSS code.
+This matrix verifies validity of `Z`-syndromes (`X`-error measurements).
+For codes without metachecks, returns an empty matrix.
+
+See also: [`meta_checks_x`](@ref), [`parity_matrix_z`](@ref)
+"""
+function meta_checks_z end
+
+"""
+    meta_checks(c::AbstractCSSCode)
+
+Returns both `X` and `Z` metacheck matrices as a tuple `(meta_checks_x, meta_checks_z)`.
+
+See also: [`meta_checks_x`](@ref), [`meta_checks_z`](@ref)
+"""
+function meta_checks(c::AbstractCSSCode)
+    (meta_checks_x(c), meta_checks_z(c))
+end
