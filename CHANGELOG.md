@@ -5,6 +5,11 @@
 
 # News
 
+## v0.10.1 - dev
+
+- `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
+
+
 ## v0.10.0 - 2025-07-02
 
 
