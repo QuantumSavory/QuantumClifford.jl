@@ -1,8 +1,10 @@
 # News
 
-## v0.1.2
+## v0.1.2 - dev
 
 - introduce `meta_checks_z`, `meta_checks_x`, and `meta_checks` for CSS codes built using chain complexes and homology.
+- Add `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` from `QuantumClifford.ECC`.
+
 
 ## v0.1.1
 

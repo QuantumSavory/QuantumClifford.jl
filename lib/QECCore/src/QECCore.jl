@@ -12,10 +12,10 @@ export AbstractECC, AbstractQECC, AbstractCECC, AbstractCSSCode, AbstractDistanc
 export Perfect5, Cleve8
 
 # CSS Codes
-export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS
+export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMuller
 
 # Classical Codes
-export RepCode
+export RepCode, ReedMuller, RecursiveReedMuller
 
 include("interface.jl")
 include("codes/util.jl")
@@ -28,6 +28,10 @@ include("codes/shorcode.jl")
 include("codes/steanecode.jl")
 include("codes/surface.jl")
 include("codes/bitflipcode.jl")
+
+include("codes/reedmuller.jl")
+include("codes/recursivereedmuller.jl")
+include("codes/quantumreedmuller.jl")
 
 function __init__()
     if isdefined(Base.Experimental, :register_error_hint)
