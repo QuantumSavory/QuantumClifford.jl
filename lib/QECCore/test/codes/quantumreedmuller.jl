@@ -1,6 +1,6 @@
 @testitem "Quantum Reed-Muller" begin
     using Test
-    using Nemo: echelon_form, matrix, GF
+    using Nemo: rref, matrix, GF
     using QECCore.LinearAlgebra
     using QECCore
 
@@ -29,8 +29,7 @@
 
     @testset "QuantumReedMuller equivalence to simple codes" begin
         # QuantumReedMuller(3) is the Steane7 code.
-        # TODO: add function to check if two codes are equivalent, like @test canonicalize!(parity_checks(Steane7())) == parity_checks(QuantumReedMuller(3))
-        @test parity_matrix(Steane7()) == parity_matrix(QuantumReedMuller(3))[[3,2,1,6,5,4],:]
+        @test rref(matrix(GF(2),parity_matrix(Steane7()))) == rref(matrix(GF(2),parity_matrix(QuantumReedMuller(3))))
         
         # [[15,1,3]] qrm code from table 1 of https://arxiv.org/pdf/1705.0010
         pm = [ 1  0  1  0  1  0  1  0  1  0  1  0  1  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0;
@@ -47,6 +46,6 @@
         0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  1  0  1  0  1;
         0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  0  0  1  1;
         0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  1  1  1]
-        @test parity_matrix(QuantumReedMuller(4)) == pm
+        @test rref(matrix(GF(2),parity_matrix(QuantumReedMuller(4)))) == rref(matrix(GF(2),pm))
     end
 end
