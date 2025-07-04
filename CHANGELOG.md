@@ -5,6 +5,11 @@
 
 # News
 
+## v0.10.1 - dev
+
+- introduce `meta_checks_z`, `meta_checks_x`, and `meta_checks` for CSS codes built using chain complexes and homology.
+
+
 ## v0.10.0 - 2025-07-02
 
 
