@@ -1,7 +1,7 @@
 using LinearAlgebra: Adjoint
 
 
-const PhaseInnerType = UInt8
+const PhaseInnerType = UInt32
 const MeasurementInnerType = Bool
 
 CUDAValue{T} = CuArray{T, 0, CUDA.Mem.DeviceBuffer} where {T}
