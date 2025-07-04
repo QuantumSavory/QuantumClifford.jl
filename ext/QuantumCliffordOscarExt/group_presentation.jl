@@ -57,8 +57,15 @@ julia> a = [one(G), r, s^3 * r^2, s^2 * r^3];
 julia> b = [one(G), r, s^4 * r^6, s^5 * r^3];
 
 julia> c = twobga_from_fp_group(a, b, GA);
-ERROR: The CSS code just created is invalid -- its rows do not commute. This is either a bug in this library, or an inconsistent parity check matrices were provided to the CSS constructor.
-[...]
+
+julia> order(G)
+48
+
+julia> code_n(c), code_k(c)
+(96, 12)
+
+julia> describe(G), small_group_identification(G)
+("C2 x (C3 : C8)", (48, 9))
 ```
 
 ### Cyclic Groups
@@ -106,7 +113,6 @@ where the order is `2m`.
 The [[24, 8, 3]] 2BGA code from Appendix C, Table III in [lin2024quantum](@cite) is constructed
 by specifying a group presentation below (giving the group `D₆ = C₆ ⋉ C₂`).
 
-Currently unsupported as it requires a non-commutative group algebra.
 
 ```jldoctest finitegrp
 julia> m = 6;
@@ -126,8 +132,15 @@ julia> a = [one(G), r^4];
 julia> b = [one(G), s*r^4, r^3, r^4, s*r^2, r];
 
 julia> c = twobga_from_fp_group(a, b, GA);
-ERROR: The CSS code just created is invalid -- its rows do not commute. This is either a bug in this library, or an inconsistent parity check matrices were provided to the CSS constructor.
-[...]
+
+julia> order(G)
+12
+
+julia> code_n(c), code_k(c)
+(24, 8)
+
+julia> describe(G), small_group_identification(G)
+("D12", (12, 4))
 ```
 
 !!! note
