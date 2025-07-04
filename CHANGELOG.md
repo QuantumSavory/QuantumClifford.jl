@@ -7,6 +7,7 @@
 
 ## v0.10.1 - dev
 
+- introduce `meta_checks_z`, `meta_checks_x`, and `meta_checks` for CSS codes built using chain complexes and homology.
 - `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
 
 
