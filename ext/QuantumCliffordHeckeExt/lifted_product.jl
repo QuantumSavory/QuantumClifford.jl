@@ -231,11 +231,10 @@ function parity_matrix_xz(c::LPCode)
     A, B = c.A, c.B
     ma, na = size(A)
     mb, nb = size(B)
-    hx_raw, hz_raw = hgp(A, permutedims(group_algebra_conj.(B)))
-    # hx = [A ⊗ I | I ⊗ B]
-    hx_b₁cols = na*mb # A ⊗ I
+    # hx = [A ⊗ I  | I  ⊗ B]
     # hz = [I ⊗ B* | A* ⊗ I]
-    hz_b₁cols = na*mb # I ⊗ B
+    hx_raw, hz_raw = hgp(A, permutedims(group_algebra_conj.(B)))
+    hx_b₁cols = hz_b₁cols = na*mb # size(A ⊗ I, 2) == size(I ⊗ B*, 2)
     hx = hcat(
         concat_lift_repr(c.A_repr, hx_raw[:, 1:hx_b₁cols]), # ρ(A ⊗ I)
         concat_lift_repr(c.B_repr, hx_raw[:, hx_b₁cols+1:end]) # λ(I ⊗ B*)
@@ -244,6 +243,8 @@ function parity_matrix_xz(c::LPCode)
         concat_lift_repr(c.B_repr, hz_raw[:, 1:hz_b₁cols]), # λ(I ⊗ B)
         concat_lift_repr(c.A_repr, hz_raw[:, hz_b₁cols+1:end]) # ρ(A* ⊗ I)
     )
+    # hx = [ρ(A ⊗  I) | λ(I  ⊗ B)]
+    # hz = [λ(I ⊗ B*) | ρ(A* ⊗ I)]
     return hx, hz
 end
 
