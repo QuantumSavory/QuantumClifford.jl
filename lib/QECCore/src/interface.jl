@@ -121,9 +121,12 @@ abstract type AbstractDistanceAlg end
 """
     meta_checks_x(c::AbstractCSSCode)
 
-Returns the `X`-metacheck matrix (`?` in chain complex notation) for a CSS code.
+Returns the `X`-metacheck matrix (``\partial`` boundary map in
+[chain complex](https://en.wikipedia.org/wiki/Chain_complex) notation) for a CSS code.
+
 This matrix verifies validity of `X`-syndromes (`Z`-error measurements).
-For codes without metachecks, returns an empty matrix.
+
+Only CSS codes built using chain complexes and homology have this method.
 
 See also: [`meta_checks_z`](@ref), [`parity_matrix_x`](@ref)
 """
@@ -132,9 +135,12 @@ function meta_checks_x end
 """
     meta_checks_z(c::AbstractCSSCode)
 
-Returns the `Z`-metacheck matrix (`?` in chain complex notation) for a CSS code.
+Returns the `Z`-metacheck matrix (``\partial`` boundary map in
+[chain complex](https://en.wikipedia.org/wiki/Chain_complex) notation) for a CSS code.
+
 This matrix verifies validity of `Z`-syndromes (`X`-error measurements).
-For codes without metachecks, returns an empty matrix.
+
+Only CSS codes built using chain complexes and homology have this method.
 
 See also: [`meta_checks_x`](@ref), [`parity_matrix_z`](@ref)
 """
@@ -143,7 +149,9 @@ function meta_checks_z end
 """
     meta_checks(c::AbstractCSSCode)
 
-Returns both `X` and `Z` metacheck matrices as a tuple `(meta_checks_x, meta_checks_z)`.
+Returns both `X` and `Z` metacheck matrices.
+
+Only CSS codes built using chain complexes and homology have this method.
 
 See also: [`meta_checks_x`](@ref), [`meta_checks_z`](@ref)
 """
