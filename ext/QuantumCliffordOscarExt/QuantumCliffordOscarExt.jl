@@ -4,6 +4,8 @@ using DocStringExtensions
 
 import LinearAlgebra
 import LinearAlgebra: rank
+import QuantumClifford
+import QuantumClifford: Stabilizer
 import Nemo
 import Nemo: FqFieldElem
 import Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra,
@@ -15,18 +17,17 @@ import Oscar: free_group, small_group_identification, describe, order, FPGroupEl
 import Oscar.Generic.DirectSumModule
 
 import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group,
-    d_dimensional_surface_codes, d_dimensional_toric_codes
+    d_dimensional_surface_codes, d_dimensional_toric_codes, pcms
 
-import QECCore: AbstractECC, CSS, RepCode,
+import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
     hgp, code_k, code_n, code_s, parity_matrix_x, parity_matrix_z, parity_matrix_xz, parity_matrix
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
-export twobga_from_direct_product, twobga_from_fp_group, d_dimensional_surface_codes, d_dimensional_toric_codes
+export twobga_from_direct_product, twobga_from_fp_group, d_dimensional_surface_codes, d_dimensional_toric_codes, DDimensionalCode, pcms
 
 include("types.jl")
 include("direct_product.jl")
 include("group_presentation.jl")
-include("d_dimensional_toric_codes.jl")
-include("d_dimensional_surface_codes.jl")
+include("d_dimensional_codes.jl")
 
 end # module
