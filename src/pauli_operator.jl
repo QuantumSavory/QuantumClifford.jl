@@ -154,7 +154,7 @@ Base.hash(p::PauliOperator, h::UInt) = hash(p.phase,hash(p.nqubits,hash(p.xz, h)
 Base.copy(p::PauliOperator) = PauliOperator(copy(p.phase),p.nqubits,copy(p.xz))
 
 function LinearAlgebra.inv(p::PauliOperator)
-    return PauliOperator(-p.phase, p.nqubits, copy(p.xz))
+    return PauliOperator(map(x -> -x & 0x3, p.phase), p.nqubits, copy(p.xz))
 end
 
 function Base.deleteat!(p::PauliOperator, subset)
@@ -162,9 +162,9 @@ function Base.deleteat!(p::PauliOperator, subset)
     return p
 end
 
-_nchunks(i::Int,T::Type{<:Unsigned}) = 2*( (i-1) ÷ (8*sizeof(T)) + 1 )
+_nchunks(i::Int,T::Type{<:Unsigned}) = 2 * ((i - 1) ÷ count_zeros(zero(T))) + 2
 
-function Base.zero(::Type{PauliOperator{P, XZ}}, q) where {P, XZ}
+function Base.zero(::Type{PauliOperator{P, XZ}}, q::Int) where {P, XZ}
     return PauliOperator(
         zeros(eltype(P)), q, zeros(eltype(XZ), _nchunks(q, eltype(XZ)))
     )

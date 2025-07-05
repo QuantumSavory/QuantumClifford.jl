@@ -240,7 +240,6 @@ function Base.setindex!(tab::Tableau, pauli::PauliOperator, i)
     tab
 end
 
-# TODO: Is this in any test file? This is incomplete and does not make sense.
 function Base.setindex!(tab::Tableau, t::Tableau, i)
     tab.phases[i] = t.phases
     tab.xzs[:,i] = t.xzs
@@ -282,7 +281,7 @@ Base.hash(t::Tableau, h::UInt) = hash(t.nqubits, hash(t.phases, hash(t.xzs, h)))
 
 Base.copy(t::Tableau) = Tableau(copy(t.phases), t.nqubits, copy(t.xzs))
 
-function Base.zero(::Type{Tableau{P, XZ}}, r, q) where {P, XZ}
+function Base.zero(::Type{Tableau{P, XZ}}, r::Integer, q::Int) where {P, XZ}
     return Tableau(
         zeros(eltype(P), r), q, zeros(eltype(XZ), _nchunks(q, eltype(XZ)), r)
     )

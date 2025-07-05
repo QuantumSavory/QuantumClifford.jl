@@ -223,7 +223,6 @@ function concrete_typeparams(t::Type{NoiseOp})
     ]
 end
 
-# TODO: Slay this dragon or keep it around? What restrictions does it impose?
 function concrete_typeparams(::Type{PauliMeasurement})
     return [
         (Array{UInt8,0}, Vector{UInt64}),
