@@ -236,7 +236,9 @@ const code_instance_args = Dict(
     :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, test_twobga_codes, other_lifted_product_codes)),
     :QuantumReedMuller => [3, 4, 5],
     :Triangular488 => [3, 5, 7, 9, 11],
-    :Triangular666 => [3, 5, 7, 9, 11]
+    :Triangular666 => [3, 5, 7, 9, 11],
+    :d_dimensional_surface_codes => [(2,2), (2, 3), (3,2), (3,3), (4,2)],
+    :d_dimensional_toric_codes => [(2,2), (2, 3), (3,2), (3,3), (4,2)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
