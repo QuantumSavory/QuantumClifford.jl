@@ -804,7 +804,11 @@ invsparsity(gate::AbstractPauliChannel) = count(!iszero, values(gate.paulichanne
 # Predefined Pauli Channels
 ##
 
-const pcT = UnitaryPauliChannel(
-    (I, Z),
-    ((1+exp(im*π/4))/2, (1-exp(im*π/4))/2)
-)
+function pcPhase(ϕ)
+    UnitaryPauliChannel(
+        (I, Z),
+        ((1 + exp(im*ϕ))/2, (1 - exp(im*ϕ))/2)
+    )
+end
+
+const pcT = pcPhase(π/4)
