@@ -164,11 +164,10 @@ end
 
 _nchunks(i::Int, ::Type{T}) where {T <: Unsigned} = 2 * ((i - 1) ÷ count_zeros(zero(T))) + 2
 
-function Base.zero(::Type{PauliOperator{PS, XZV}}, q) where {
-    P <: Unsigned, PS <: AbstractArray{P, 0},
-    XZ <: Unsigned, XZV <: AbstractVector{XZ}
-}
-    return PauliOperator(zeros(P), q, zeros(XZ, _nchunks(q, XZ)))
+function Base.zero(::Type{PauliOperator{P, XZ}}, q) where {P, XZ}
+    return PauliOperator{P, XZ}(
+        zeros(eltype(P)), q, zeros(eltype(XZ), _nchunks(q, eltype(XZ)))
+    )
 end
 
 Base.zero(::Type{PauliOperator}, q) = zero(PauliOperator{Array{UInt8, 0}, Vector{UInt}}, q)
