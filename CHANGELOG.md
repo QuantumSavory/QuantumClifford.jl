@@ -7,7 +7,9 @@
 
 ## v0.10.1 - dev
 
-- **(fix)** The `parity_checks`, `code_n`, and `code_s` methods were throwing method errors and `code_k` was not defined for the classical `LiftedCode`s.
+- **(fix)** The classical `LiftedCode` constructor had method errors in `parity_checks`, `code_n`, and `code_s`, and an undefined `code_k`.
+- `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
+
 
 ## v0.10.0 - 2025-07-02
 
