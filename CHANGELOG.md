@@ -16,7 +16,6 @@
 - **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
 - **(fix)** Paulis with imaginary phases had their phases incorrectly tracked.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in non-Clifford functionality.
-- tests: 2BGA codes via group presentation for cyclic group `Cₘₕ = Cₘ × C₂`
 - Various stabilizer data structures can now be constructed out of sequences of Paulis.
 - Most canonicalization routines can now act on sequences of Paulis.
 - `project*!` family of functions now work on more tableau types.
