@@ -13,7 +13,8 @@ import Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra,
 import Oscar
 import Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup,
     BasicGAPGroupElem, DirectProductGroup, cyclic_group, free_module, hom, transpose, tensor_product,
-    chain_complex, total_complex, map, summands, MatElem, matrix, nrows, ncols
+    chain_complex, total_complex, map, summands, MatElem, matrix, nrows, ncols, kernel, dim, range, image,
+    base_ring, ComplexOfMorphisms
 import Oscar.Generic.DirectSumModule
 
 import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group,

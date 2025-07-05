@@ -3,7 +3,7 @@
         using Oscar
         import QECCore: parity_matrix
         using QuantumClifford: stab_looks_good
-        using QuantumClifford.ECC: d_dimensional_surface_codes, d_dimensional_toric_codes
+        using QuantumClifford.ECC: d_dimensional_surface_codes, d_dimensional_toric_codes, code_n, code_k
 
         @testset "check stabilizers of D-dimensional surface codes" begin
             @testset "[[L² + (L − 1)², 1, L]] 2D surface code" begin
@@ -12,15 +12,17 @@
                     c = d_dimensional_surface_codes(D, L)
                     code = parity_matrix(c)
                     @test stab_looks_good(code, remove_redundant_rows=true)
+                    @test code_n(c) == L^2 + (L − 1)^2
                 end
             end
 
-            @testset "[L³ + 2L(L − 1)², 1, min(L, L²)]] 3D surface code" begin
+            @testset "[[L³ + 2L(L − 1)², 1, min(L, L²)]] 3D surface code" begin
                 for L in 2:3
                     D = 3
                     c = d_dimensional_surface_codes(D, L)
                     code = parity_matrix(c)
                     @test stab_looks_good(code, remove_redundant_rows=true)
+                    @test code_n(c) == L^3 + 2*L*(L − 1)^2
                 end
             end
 
@@ -30,6 +32,7 @@
                 c = d_dimensional_surface_codes(D, L)
                 code = parity_matrix(c)
                 @test stab_looks_good(code, remove_redundant_rows=true)
+                @test code_n(c) == 6*L^4 − 12*L^3 + 10*L^2 − 4*L + 1
             end
 
             @testset "5D surface code" begin

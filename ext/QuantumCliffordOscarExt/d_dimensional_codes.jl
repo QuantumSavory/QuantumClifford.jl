@@ -114,11 +114,13 @@ julia> code = parity_matrix(c)
 + ZZ__Z
 + __ZZZ
 
-julia> code_n(code), code_k(code)
-(5, 1)
+julia> import HiGHS; import JuMP;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(5, 1, 2)
 ```
 
-When L = 4, we get
+When `L = 4`, we get `[[25,1, 4]]` `2D` surface code from [Berthusen_2024](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore: parity_matrix;
@@ -153,8 +155,10 @@ julia> code = parity_matrix(c)
 + _____________ZZ________Z_
 + ______________ZZ________Z
 
-julia> code_n(code), code_k(code)
-(25, 1)
+julia> import HiGHS; import JuMP;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(25, 1, 4)
 ```
 
 #### Chain Complex
@@ -180,7 +184,7 @@ H = \\begin{pmatrix}
 \\end{aligned}
 ```
 
-### [L³ + 2L(L − 1)², 1, min(L, L²)]] 3D surface code
+### [[L³ + 2L(L − 1)², 1, min(L, L²)]] 3D surface code
 
 The `3D` surface code is obtained by taking the hypergraph product of a `2D` surface code
 with a repetition code. Thus, we obtain a new `4`-term chain complex:
@@ -221,8 +225,10 @@ julia> code = parity_matrix(c)
 + _____ZZ__ZZ_
 + _______ZZZ_Z
 
-julia> code_n(code), code_k(code)
-(12, 1)
+julia> import HiGHS; import JuMP;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(12, 1, 2)
 ```
 
 ### [[6L⁴ − 12L³ + 10L² − 4L + 1, 1, L²]] 4D surface code
@@ -247,10 +253,10 @@ julia> D = 4; L = 2;
 
 julia> c = d_dimensional_surface_codes(D, L);
 
-julia> code = parity_matrix(c);
+julia> import HiGHS; import JuMP;
 
-julia> code_n(code), code_k(code)
-(33, 1)
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(33, 1, 4)
 ```
 
 #### Metachecks
@@ -363,3 +369,46 @@ end
 function _parity_matrix_d_dimensional(c::DDimensionalCode)
     Stabilizer(CSS(parity_matrix_xz(c)...))
 end
+
+function _chain_dimensions(C::ComplexOfMorphisms)
+    rng = range(C)
+    [dim(C[i]) for i in rng]
+end
+
+function code_n(c::DDimensionalCode)
+    D, L = c.D, c.L
+    𝒞 = _repcode_chain_complex(L)
+    𝒟 = _dual_repcode_chain_complex(L)
+    current = 𝒞
+    for dim in 2:D
+        next = dim % 2 == 0 ? 𝒟 : 𝒞
+        current = tensor_product(current, next)
+        current = total_complex(current)
+    end
+    # dimensions of all chain spaces
+    dims = _chain_dimensions(current)
+    # [Berthusen_2024](@cite) specifies different selection rules based on dimension, at least up to 4D.
+    if D == 2
+        # 2D: sum E₁ total complex dimensions
+        return dims[2] # (see A11, page 9): L² + (L-1)²
+    elseif D == 3
+        # 3D: sum F₁ total complex dimensions
+        # F₁ = E₀ ⊗ D₁ ⊕ E₁ ⊗ D₀
+        return dims[3] # (see A21, page 10): L³ + 2L(L − 1)²
+    elseif D == 4
+        # 4D: sum G² total complex dimensions
+        # G² = F₁ ⊗ C₁ ⊕ F₂ ⊗ C₀
+        return dims[3] # (see A28, page 11): 6L⁴ − 12L³ + 10L² − 4L + 1
+    else
+        # General case: For odd D: take middle term, For even D: take middle three terms
+        middle = div(length(dims), 2) + 1
+        if D % 2 == 0
+            return sum(dims[middle-1:middle+1])
+        else
+            return dims[middle]
+        end
+    end
+end
+
+# All D-dimensional surface codes of [Berthusen_2024](@cite) have exactly 1 logical qubit
+code_k(c::DDimensionalCode) = 1

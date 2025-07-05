@@ -237,8 +237,8 @@ const code_instance_args = Dict(
     :QuantumReedMuller => [3, 4, 5],
     :Triangular488 => [3, 5, 7, 9, 11],
     :Triangular666 => [3, 5, 7, 9, 11],
-    :d_dimensional_surface_codes => [(2,2), (2, 3), (3,2), (3,3), (4,2)],
-    :d_dimensional_toric_codes => [(2,2), (2, 3), (3,2), (3,3), (4,2)]
+    :d_dimensional_surface_codes => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
+    :d_dimensional_toric_codes => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
