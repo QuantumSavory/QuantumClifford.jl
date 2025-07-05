@@ -225,9 +225,7 @@ julia> code = parity_matrix(c)
 + _____ZZ__ZZ_
 + _______ZZZ_Z
 
-julia> import HiGHS; import JuMP;
-
-julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+julia> code_n(c), code_k(c), distance(c)
 (12, 1, 2)
 ```
 
@@ -293,6 +291,7 @@ d_dimensional_toric_codes(D::Int, L::Int) = DDimensionalCode(D, L, :Toric)
 function parity_matrix_xz(c::DDimensionalCode)
     c.D >= 2 || throw(ArgumentError("Dimension must be at least 2 to construct a valid D-dimensional code."))
     hx, hz = c.type == :Surface ? _parity_matrix_xz_surface(c) : _parity_matrix_xz_toric(c)
+    # Oscar returns pcm hx', so we transpose it to convert it back to hx. See page 11, B2 for reference.
     return hx', hz
 end
 
@@ -412,3 +411,20 @@ end
 
 # All D-dimensional surface codes of [Berthusen_2024](@cite) have exactly 1 logical qubit
 code_k(c::DDimensionalCode) = 1
+
+function distance(c::DDimensionalCode)
+    D, L, code_type = c.D, c.L, c.type
+    if code_type == :Surface
+        if D == 2
+            return L # 2D surface code: [[L² + (L-1)², 1, L]]
+        elseif D == 3
+            return min(L, L^2) # 3D surface code: [[L³ + 2L(L-1)², 1, min(L,L²)]]
+        elseif D == 4
+            return L^2 # 4D surface code: [[6L⁴-12L³+10L²-4L+1, 1, L²]]
+        else
+            error("Surface code distance not implemented for D=$D > 4. See Berthusen et al. (A4) for the general algorithm.")
+        end
+    else
+        error("D-dimensional Toric code distance calculation not yet implemented. See Berthusen et al. (A4) for the general algorithm.")
+    end
+end
