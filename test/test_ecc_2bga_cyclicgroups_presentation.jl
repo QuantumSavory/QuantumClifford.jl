@@ -1,4 +1,4 @@
-@testitem "ECC 2BGA Table 2 via Presentation of Cyclic Groups" begin
+@testitem "ECC 2BGA Table 2 via Presentation of Cyclic Groups" tags=[:ecc] begin
     @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
         using JuMP
         using HiGHS
@@ -25,7 +25,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 16 && code_k(c) == 2
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
-            describe(small_group(2*m, 2))
             @test small_group_identification(G) == (order(G), 2)
 
             # [[16, 4, 4]]
@@ -35,7 +34,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 16 && code_k(c) == 4
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
-            describe(small_group(2*m, 2))
             @test small_group_identification(G) == (order(G), 2)
 
             # [[16, 8, 2]]
@@ -46,7 +44,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 16 && code_k(c) == 8
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
-            describe(small_group(2*m, 2))
             @test small_group_identification(G) == (order(G), 2)
 
             # [[24, 4, 5]]
@@ -63,7 +60,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 24 && code_k(c) == 4
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 5
-            describe(small_group(2*m, 5))
             @test small_group_identification(G) == (order(G), 5)
 
             # [[24, 12, 2]]
@@ -74,7 +70,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 24 && code_k(c) == 12
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
-            describe(small_group(2*m, 5))
             @test small_group_identification(G) == (order(G), 5)
 
             # [[32, 8, 4]]
@@ -91,7 +86,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 32 && code_k(c) == 8
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
-            describe(small_group(2*m, 5))
             @test small_group_identification(G) == (order(G), 5)
 
             # [[32, 16, 2]]
@@ -102,7 +96,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 32 && code_k(c) == 16
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
-            describe(small_group(2*m, 5))
             @test small_group_identification(G) == (order(G), 5)
 
             # [[40, 4, 8]]
@@ -119,7 +112,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 40 && code_k(c) == 4
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 8
-            describe(small_group(2*m, 5))
             @test small_group_identification(G) == (order(G), 5)
 
             # [[40, 8, 5]]
@@ -130,7 +122,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 40 && code_k(c) == 8
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 5
-            describe(small_group(2*m, 5))
             @test small_group_identification(G) == (order(G), 5)
 
             # [[40, 20, 2]]
@@ -141,7 +132,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 40 && code_k(c) == 20
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
-            describe(small_group(2*m, 5))
             @test small_group_identification(G) == (order(G), 5)
 
             # [[48, 8, 6]]
@@ -158,7 +148,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 48 && code_k(c) == 8
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
-            describe(small_group(2*m, 9))
             @test small_group_identification(G) == (order(G), 9)
 
             # [[48, 12, 4]]
@@ -169,7 +158,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 48 && code_k(c) == 12
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
-            describe(small_group(2*m, 9))
             @test small_group_identification(G) == (order(G), 9)
 
             # [[48, 16, 3]]
@@ -180,7 +168,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 48 && code_k(c) == 16
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 3
-            describe(small_group(2*m, 9))
             @test small_group_identification(G) == (order(G), 9)
 
             # [[48, 24, 2]]
@@ -191,7 +178,6 @@
             @test describe(G) == "C12 x C2"
             @test code_n(c) == 48 && code_k(c) == 24
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
-            describe(small_group(2*m, 9))
             @test small_group_identification(G) == (order(G), 9)
 
             # [[56, 8, 7]]
@@ -208,7 +194,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 56 && code_k(c) == 8
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 7
-            describe(small_group(2*m, 4))
             @test small_group_identification(G) == (order(G), 4)
 
             # [[56, 28, 2]]
@@ -219,7 +204,6 @@
             @test describe(G) == "C$m x C2"
             @test code_n(c) == 56 && code_k(c) == 28
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
-            describe(small_group(2*m, 4))
             @test small_group_identification(G) == (order(G), 4)
         end
     end
