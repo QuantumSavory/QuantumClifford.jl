@@ -162,12 +162,14 @@ function Base.deleteat!(p::PauliOperator, subset)
     return p
 end
 
-_nchunks(i::Int,T::Type{<:Unsigned}) = 2 * ((i - 1) ÷ count_zeros(zero(T))) + 2
+_nchunks(i::Int, ::Type{T}) where {T <: Unsigned} = 2 * ((i - 1) ÷ count_zeros(zero(T))) + 2
 
-function Base.zero(::Type{PauliOperator{P, XZ}}, q::Int) where {P, XZ}
-    return PauliOperator(
-        zeros(eltype(P)), q, zeros(eltype(XZ), _nchunks(q, eltype(XZ)))
-    )
+# This is hideous but JET despises using eltype.
+function Base.zero(::Type{PauliOperator{PS, XZV}}, q) where {
+    P <: Unsigned, PS <: AbstractArray{P, 0},
+    XZ <: Unsigned, XZV <: AbstractVector{XZ}
+}
+    return PauliOperator(zeros(P), q, zeros(XZ, _nchunks(q, XZ)))
 end
 
 Base.zero(::Type{PauliOperator}, q) = zero(PauliOperator{Array{UInt8, 0}, Vector{UInt}}, q)

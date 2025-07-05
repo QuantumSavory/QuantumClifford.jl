@@ -281,10 +281,12 @@ Base.hash(t::Tableau, h::UInt) = hash(t.nqubits, hash(t.phases, hash(t.xzs, h)))
 
 Base.copy(t::Tableau) = Tableau(copy(t.phases), t.nqubits, copy(t.xzs))
 
-function Base.zero(::Type{Tableau{P, XZ}}, r::Integer, q::Int) where {P, XZ}
-    return Tableau(
-        zeros(eltype(P), r), q, zeros(eltype(XZ), _nchunks(q, eltype(XZ)), r)
-    )
+# This is hideous but JET despises using eltype.
+function Base.zero(::Type{Tableau{PV, XZM}}, r, q) where {
+    P <: Unsigned, PV <: AbstractVector{P},
+    XZ <: Unsigned, XZM <: AbstractMatrix{XZ}
+}
+    return Tableau(zeros(P, r), q, zeros(XZ, _nchunks(q, XZ), r))
 end
 Base.zero(::Type{Tableau}, r, q) = zero(Tableau{Vector{UInt8},Matrix{UInt}}, r, q)
 Base.zero(::Type{T}, q) where {T<:Tableau}= zero(T, q, q)
