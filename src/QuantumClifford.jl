@@ -165,7 +165,7 @@ No special semantic meaning is attached to this type, it is just a convenient wa
 E.g. it is not used to represent a stabilizer state, or a stabilizer group, or a Clifford circuit."""
 struct Tableau{
     P <: AbstractVector{<: Unsigned}, XZ <: AbstractMatrix{<: Unsigned}
-    }
+}
     phases::P
     nqubits::Int
     xzs::XZ
@@ -285,7 +285,7 @@ Base.copy(t::Tableau) = Tableau(copy(t.phases), t.nqubits, copy(t.xzs))
 function Base.zero(::Type{Tableau{P, XZ}}, r, q) where {P, XZ}
     return Tableau(
         zeros(eltype(P), r), q, zeros(eltype(XZ), _nchunks(q, eltype(XZ)), r)
-        )
+    )
 end
 Base.zero(::Type{Tableau}, r, q) = zero(Tableau{Vector{UInt8},Matrix{UInt}}, r, q)
 Base.zero(::Type{T}, q) where {T<:Tableau}= zero(T, q, q)

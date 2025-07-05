@@ -8,7 +8,7 @@ Particularly useful when acting on [`Register`](@ref).
 See also: [`apply!`](@ref), [`projectrand!`](@ref)."""
 struct PauliMeasurement{
     P <: AbstractArray{<: Unsigned, 0}, XZ <: AbstractVector{<: Unsigned}
-    } <: AbstractMeasurement
+} <: AbstractMeasurement
     pauli::PauliOperator{P,XZ}
     bit::Int
 end

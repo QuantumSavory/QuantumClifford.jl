@@ -41,7 +41,7 @@ julia> p[1] = (true, true); p
 """
 struct PauliOperator{
     P <: AbstractArray{<: Unsigned, 0}, XZ <: AbstractVector{<: Unsigned}
-    } <: AbstractCliffordOperator
+} <: AbstractCliffordOperator
     phase::P
     nqubits::Int
     xz::XZ
@@ -49,12 +49,10 @@ end
 
 function PauliOperator(
     phase::Unsigned, nqubits::Int, xz::AbstractVector{<: Unsigned}
-    )
-
+)
     p = similar(xz, typeof(phase), ())
     fill!(p, phase)
     return PauliOperator(p, nqubits, xz)
-
 end
 
 function PauliOperator(phase::Unsigned, x::BitVector, z::BitVector)
@@ -68,10 +66,8 @@ end
 
 function PauliOperator(
     phase::Unsigned, x::AbstractVector{Bool}, z::AbstractVector{Bool}
-    )
-
+)
     return PauliOperator(phase, BitVector(x), BitVector(z))
-
 end
 
 PauliOperator(x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator(0x0, x, z)
@@ -171,7 +167,7 @@ _nchunks(i::Int,T::Type{<:Unsigned}) = 2*( (i-1) ÷ (8*sizeof(T)) + 1 )
 function Base.zero(::Type{PauliOperator{P, XZ}}, q) where {P, XZ}
     return PauliOperator(
         zeros(eltype(P)), q, zeros(eltype(XZ), _nchunks(q, eltype(XZ)))
-        )
+    )
 end
 
 Base.zero(::Type{PauliOperator}, q) = zero(PauliOperator{Array{UInt8, 0}, Vector{UInt}}, q)
