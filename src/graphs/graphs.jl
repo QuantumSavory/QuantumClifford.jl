@@ -1,13 +1,68 @@
-import Graphs
+include("./single_qubit_clifford.jl")
+
+import Graphs: Graphs, nv, AbstractGraph
+
+struct GraphState{G}
+    # Graph representing the graph state
+    graph::G
+    # Vertex Operators that need to be applied to a stabilizer state
+    # before the state is representable as a "pure" graph state
+    vops::Vector{SingleQubitCliffordGroup}
+end
+
+nqubits(g::GraphState{G}) where G = nv(g.graph)
+
+"""Return the underlying graph of the graph state"""
+graph(g::GraphState) = g.graph
+
+"""Return the VOPs (Vertex Operators) of the graph state"""
+vops(g::GraphState) = g.vops
+
+function GraphState(graph::G, h_idx::Vector{Int}, ip_idx::Vector{Int}, z_idx::Vector{Int}) where G
+    vops = ones(SingleQubitCliffordGroup, nv(graph))
+    for id in h_idx
+        vops[id] = sHadamard * vops[id]
+    end
+    for id in ip_idx
+        vops[id] = sInvPhase * vops[id]
+    end
+    for id in z_idx
+        vops[id] = sZ * vops[id]
+    end
+    GraphState{G}(graph, vops)
+end
+
+function GraphState(stab::Stabilizer)
+    GraphState(graphstate(stab)...)
+end
+
+function Stabilizer(self::GraphState{<:AbstractGraph})
+    s_raw = Stabilizer(self.graph)
+    for id in 1:length(self.vops)
+        apply!(s_raw, inv(self.vops[id]), [id])
+    end
+    s_raw
+end
 
 """An in-place version of [`graphstate`](@ref)."""
 function graphstate!(stab::Stabilizer)
     n = nqubits(stab)
-    stab, r, s, permx, permz = canonicalize_gott!(stab)
+    # canonicalization is in-place
+    _, r, _, permx, permz = canonicalize_gott!(stab)
+    # This is equivalent to saying perm(i) = (permz ∘ permx)(i)
+    # No typo above. permz ∘ permx because in Gottesman canonicalization
+    # we first do Gaussian elimination on the X half and then on the Z half
+    # when writing tableau in the matrix format.
     perm = permx[permz]
-    h_idx = [perm[i] for i in (r+1):n] # Qubits in which X ↔ Z is needed
-    ip_idx = [perm[i] for i in 1:n if stab[i,i]==(true,true)] # Qubits for which Y → X is needed
+
+    # Swap X ↔ Z in the (r+1):n columns so we have only X,Y,I diagonal and only Z off-diagonal
+    h_idx = [perm[i] for i in (r+1):n]
+    # Swap Y → X on the diagonal so we have only X, I on the diagonal
+    ip_idx = [perm[i] for i in 1:n if stab[i,i]==(true,true)]
+    # Since ZXZ = -X, apply Z on rows with negative phase to make all phases positive.
     phase_flips = [perm[i] for i in 1:n if phases(stab)[i]!=0x0]
+
+    # canonicalized stabilizer tableau serves as an adjacency matrix
     graph = Graphs.SimpleGraphFromIterator((
         Graphs.SimpleEdge(perm[i],perm[j])
         for i in 1:n, j in 1:n

@@ -80,7 +80,7 @@ export
     bell, ghz, maximally_mixed,
     single_z, single_x, single_y,
     # Graphs
-    graphstate, graphstate!, graph_gatesequence, graph_gate,
+    graphstate, graphstate!, graph_gatesequence, graph_gate, GraphState, SingleQubitCliffordGroup,
     # Group theory tools
     groupify, minimal_generating_set, pauligroup, normalizer, centralizer, contractor, delete_columns,
     canonicalize_noncomm, commutify, matroid_parent, SubsystemCodeTableau,
@@ -1418,7 +1418,7 @@ include("useful_states.jl")
 #
 include("experimental/Experimental.jl")
 #
-include("graphs.jl")
+include("./graphs/graphs.jl")
 #
 include("entanglement.jl")
 #
