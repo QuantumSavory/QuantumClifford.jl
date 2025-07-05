@@ -32,6 +32,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     haah_cubic_codes, twobga_from_fp_group, twobga_from_direct_product,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
     Triangular488, Triangular666,
+    d_dimensional_surface_codes, d_dimensional_toric_codes, DDimensionalCode, pcms,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -400,5 +401,8 @@ include("codes/color_codes.jl")
 # qLDPC
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
+
+# higher dimensional codes
+include("codes/d_dimensional_codes.jl")
 
 end #module
