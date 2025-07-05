@@ -448,6 +448,10 @@ function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases
     @valbooldispatch project_cond!(d,qubit,Val(isZ),Val((true,false));keep_result,phases=Val(phases)) phases
 end
 
+function projectX!(s::AbstractStabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    project!(s, single_x(nqubits(s), qubit) ; keep_result, phases)
+end
+
 """
 Measure a given qubit in the Z basis.
 A faster special-case version of [`project!`](@ref).
@@ -458,6 +462,10 @@ function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases
     @valbooldispatch project_cond!(d,qubit,Val(isX),Val((false,true));keep_result,phases=Val(phases))
 end
 
+function projectZ!(s::AbstractStabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    project!(s, single_z(nqubits(s), qubit) ; keep_result, phases)
+end
+
 """
 Measure a given qubit in the Y basis.
 A faster special-case version of [`project!`](@ref).
@@ -466,6 +474,10 @@ See also: [`project!`](@ref), [`projectYrand!`](@ref), [`projectX!`](@ref), [`pr
 """
 function projectY!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
     @valbooldispatch project_cond!(d,qubit,Val(isXorZ),Val((true,true));keep_result,phases=Val(phases))
+end
+
+function projectY!(s::AbstractStabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    project!(s, single_y(nqubits(s), qubit) ; keep_result, phases)
 end
 
 @inline isX(tab,row,col) = tab[row,col][1]

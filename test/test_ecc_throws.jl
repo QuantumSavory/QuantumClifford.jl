@@ -1,4 +1,4 @@
-@testitem "ECC throws" begin
+@testitem "ECC throws" tags=[:ecc] begin
 
     using QuantumClifford.ECC: ReedMuller, BCH, RecursiveReedMuller, Golay, Triangular488, Triangular666
 
