@@ -422,9 +422,9 @@ function distance(c::DDimensionalCode)
         elseif D == 4
             return L^2 # 4D surface code: [[6L⁴-12L³+10L²-4L+1, 1, L²]]
         else
-            error("Surface code distance not implemented for D=$D > 4. See Berthusen et al. (A4) for the general algorithm.")
+            throw(ArgumentError("Surface code distance not implemented for D=$D > 4. See Berthusen et al. (A4) for the general algorithm."))
         end
     else
-        error("D-dimensional Toric code distance calculation not yet implemented. See Berthusen et al. (A4) for the general algorithm.")
+        throw(ArgumentError("D-dimensional Toric code distance calculation not yet implemented. See Berthusen et al. (A4) for the general algorithm."))
     end
 end
