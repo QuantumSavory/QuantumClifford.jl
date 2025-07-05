@@ -5,13 +5,13 @@
 
 # News
 
-## v0.10.1 - dev
+## v0.10.1-dev
 
 - `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
-
+- The phase storage type can now be parameterized, instead of hardcoded to UInt8.
+- Drop support for Julia 1.9.
 
 ## v0.10.0 - 2025-07-02
-
 
 - **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
 - **(fix)** Paulis with imaginary phases had their phases incorrectly tracked.
