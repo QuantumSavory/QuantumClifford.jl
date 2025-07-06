@@ -1103,6 +1103,8 @@ function _apply!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Va
 end
 
 
+"""In `QuantumClifford` the `apply_inv!` function is used to apply the inverse of any quantum operation to 
+a stabilizer state, including unitary Clifford and Pauli operators"""
 function apply_inv! end
 
 function apply_inv!(stab::AbstractStabilizer, op::AbstractCliffordOperator; phases::Bool=true)
@@ -1113,10 +1115,10 @@ function apply_inv!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indi
 end
 
 function _apply_inv!(stab::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
-    # TODO
+    apply!(stab,p; phases=phases)
 end
 function _apply_inv!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Val{B}=Val(true)) where B
-    # TODO
+    apply!(stab,p,indices; phases=phases)
 end
 
 ##############################
