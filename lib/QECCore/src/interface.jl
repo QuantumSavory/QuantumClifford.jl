@@ -121,12 +121,62 @@ abstract type AbstractDistanceAlg end
 """
     metacheck_matrix_x(c::AbstractCSSCode)
 
-Returns the `X`-metacheck matrix (``\\partial_{Mx}`` boundary map in
-[chain complex](https://en.wikipedia.org/wiki/Chain_complex) notation) for a CSS code.
+Returns the `X`-metacheck matrix (``M_X = \\partial_{i-1}``) for a CSS code defined
+by a chain complex of length `l ≥ 4`, where qubits are placed on `i`-cells with
+``1 < i < l−1``. This matrix acts on `X`-syndromes (measurement outcomes of `Z`-type
+stabilizers) and enforces the constraint ``M_Xs_X = 0``, ensuring syndromes are valid
+codewords of a classical *metacode*.
 
-This matrix verifies validity of `X`-syndromes (`Z`-error measurements).
+### Chain Complexes and ``\\mathbb{F_2}`` Homology
+
+For a chain complex
+
+```math
+\\begin{aligned}
+C_{l-1} \\xrightarrow{\\partial_{l-1}} \\cdots \\xrightarrow{\\partial_{i+2}} C_{i+1} \\xrightarrow{\\partial_{i+1}} C_i \\xrightarrow{\\partial_i} C_{i-1} \\xrightarrow{\\partial_{i-1}} \\cdots \\xrightarrow{\\partial_1} C_0,
+\\end{aligned}
+```
+
+where
+
+- **Qubits** are placed on `i`-cells (``1 < i < l-1``):
+- **X-stabilizers** are given by the boundary map ``H_X = \\partial_i: C_i \\to C_{i-1}``.
+- **X-metachecks** are defined as ``M_X = \\partial_{i-1}: C_{i-1} \\to C_{i-2}``.
+
+with boundary condition
+
+```math
+\\begin{aligned}
+\\partial_{i-1} \\partial_i = 0
+\\end{aligned}
+```
+
+which implies ``M_XH_X = 0``, so valid syndromes (``\\mathrm{im}\\, H_X``) lie in ``\\ker M_X``.
+
+Invalid X-syndromes in ``\\ker M_X \\setminus \\mathrm{im}\\, H_X`` belong to the
+(`i-1`)-th homology group ``H_{i-1} = \\ker \\partial_{i-1} / \\mathrm{im}\\, \\partial_i``.
+
+### Example: 4D surface code
+
+In the 5-term chain complex used for the 4D surface code:
+
+```math
+\\begin{aligned}
+C_4 \\xrightarrow{\\partial_4} C_3 \\xrightarrow{\\partial_3} C_2 \\xrightarrow{\\partial_2} C_1 \\xrightarrow{\\partial_1} C_0
+\\end{aligned}
+```
+
+the metacheck matrix ``M_X = \\partial_1`` satisfies the following:
+
+- Acts on `X`-syndromes: ``s_X \\in C_1``.
+- It enforces ``M_Xs_X = 0``, i.e. only valid syndromes lie in ``\\ker M_X``.
+- It satisfies the boundary condition ``M_XH_X = 0`` (i.e., ``\\partial_1 \\partial_2 = 0``).
 
 Only CSS codes built using chain complexes and homology have this method.
+
+!!! note
+    For an introduction to chain complexes in quantum error correction
+    and the role of metachecks in single-shot QEC, see the documentation for [`metacheck_matrix`](@ref).
 
 See also: [`metacheck_matrix_z`](@ref), [`metacheck_matrix`](@ref), [`parity_matrix_x`](@ref)
 """
@@ -135,10 +185,55 @@ function metacheck_matrix_x end
 """
     metacheck_matrix_z(c::AbstractCSSCode)
 
-Returns the `Z`-metacheck matrix (``\\partial_{Mz}`` boundary map in
-[chain complex](https://en.wikipedia.org/wiki/Chain_complex) notation) for a CSS code.
+Returns the `Z`-metacheck matrix (``M_Z = \\partial_{i+2}^\\top``) for a CSS code
+defined by a chain complex of length `l ≥ 4`, where qubits are placed on `i`-cells
+(`1 < i < l−1`).  This matrix validates `Z`-syndromes (measurement outcomes of `X`-type
+stabilizers) by enforcing ``M_Zs_Z = 0``, ensuring syndromes are codewords of a classical *metacode*.
 
-This matrix verifies validity of `Z`-syndromes (`X`-error measurements).
+### Chain Complexes and ``\\mathbb{F_2}`` Homology
+
+For a chain complex
+
+```math
+\\begin{aligned}
+C_{l-1} \\xrightarrow{\\partial_{l-1}} \\cdots \\xrightarrow{\\partial_{i+2}} C_{i+1} \\xrightarrow{\\partial_{i+1}} C_i \\xrightarrow{\\partial_i} C_{i-1} \\xrightarrow{\\partial_{i-1}} \\cdots \\xrightarrow{\\partial_1} C_0,
+\\end{aligned}
+```
+
+where
+
+- **Qubits** are located on `i`-cells (`C_i`).
+- **Z-stabilizers** are given by the coboundary map ``H_Z = \\partial_{i+1}^\\top: C_i → C_{i+1}``.
+- **Z-metachecks** are defined as ``M_Z = \\partial_{i+2}^\\top: C_{i+2} → C_{i+1}``.
+
+with Boundary condition
+
+```math
+\\begin{aligned}
+\\partial_{i+2} \\partial_{i+1} = 0
+\\end{aligned}
+```
+
+which implies ``M_ZH_Z = 0``, so valid syndromes (``im H_Z``) lie in ``ker M_Z``.
+
+Invalid `Z`-syndromes in ``ker M_Z \\setminus im H_Z`` belong to the `(i+1)`-th cohomology
+group ``H^{i+1} = \\ker \\partial_{i+2}^\\top / \\mathrm{im} \\partial_{i+1}^\\top``.
+
+### Example: 4D Surface Code
+
+In the `5`-term chain complex used for the `4D` surface code:
+
+```math
+\\begin{aligned}
+C_4 \\xrightarrow{\\partial_4} C_3 \\xrightarrow{\\partial_3} C_2 \\xrightarrow{\\partial_2} C_1 \\xrightarrow{\\partial_1} C_0
+\\end{aligned}
+```
+
+the metacheck matrix ``M_Z = \\partial_4`` satisfies the following:
+
+- Acts on Z-syndromes: ``s_Z \\in C_3``,
+- It enforces ``M_Z\\cdot_Z = 0``, i.e. only valid syndromes lie in ``\\ker M_Z``.
+- It satisfies the boundary condition ``H_Z^\\top \\cdot M_Z^\\top = 0`` (i.e., \\partial_3 \\partial_4 = 0``,
 
 Only CSS codes built using chain complexes and homology have this method.
 
@@ -149,9 +244,215 @@ function metacheck_matrix_z end
 """
     metacheck_matrix(c::AbstractCSSCode)
 
-Returns both `X` and `Z` metacheck matrices.
+Return the `X`- and `Z`-metacheck matrices for CSS codes enabling **single-shot
+quantum error correction** — a fault-tolerant scheme that corrects both data and
+measurement errors using **one** round of syndrome measurements.
 
-Only CSS codes built using chain complexes and homology have this method.
+### Single-Shot QEC
+
+Single-shot QEC enables both physical errors on qubits and errors in syndrome measurements
+to be detected and corrected using only a *single round of noisy measurements*, without
+requiring repeated measurement rounds. A layer of redundancy is added to the measurement
+process itself. This redundancy is captured by *metasyndromes*: linear constraints that the
+noisy syndrome outcomes must satisfy if no measurement error has occurred. When violated, they
+indicate faults in the syndrome extraction layer itself.
+
+Traditional QEC combats measurement faults by repeating stabilizer measurements In contrast,
+**single-shot QEC** uses *spatial redundancy* via **metachecks** — extra linear constraints
+on syndrome outcomes ("checks of checks") to detect and correct measurement errors immediately.
+
+### Confinement and Single-Shot Decoding
+
+Metachecks enable single-shot decoding by providing a metacode for syndrome repair,
+but their role is best understood through the broader property of **confinement**:
+
+- A code has ``*(t,f)*-confinement if, for all errors *E* with ``|E|_{\\text{red}} ``\\leq t``,
+the syndrome weight satisfies ``f(|\\sigma(E)|) \\geq |E|_{\\text{red}}``, where
+``f: \\mathbb{Z} \\to \\mathbb{R}`` is an increasing function. This bounds the physical
+error weight by a function of the syndrome weight.
+
+Codes with metachecks (e.g., `D`-dimensional surface and toric codes) exhibit confinement
+because ``M_X/M_Z`` constrain syndromes to a metacode, but confinement can exist *without*
+metachecks (e.g., quantum expander codes). Thus, while metachecks are sufficient for single-shot
+QEC (via syndrome repair), they are not strictly necessary.
+
+### Repair-Syndrome Decoding
+
+To correct errors in CSS codes, a **two-stage** decoder can be employed when given a noisy
+syndrome measurement `z′`. This method separately addresses data qubit errors (e.g., `Z`-errors)
+and syndrome measurement errors (e.g., faulty `X`-stabilizer measurements). The same approach
+applies symmetrically for `X`-errors and `Z`-stabilizer measurements.
+
+#### Stage I: Syndrome Repair via Metachecks
+
+- The metacheck matrix ``M_X`` computes the metasyndrome ``s = M_Xz'``, identifying inconsistencies caused by measurement errors.
+- A classical decoder ``f^1_d : \\mathbb{F}^{n_{i-2}}_2 \\rightarrow \\mathbb{F}^{n_{i-1}}_2`` estimates the noiseless syndrome ``z`` from ``s``, effectively "repairing" the syndrome.
+
+#### Stage II: Data Qubit Correction
+
+A second decoder ``f^2_d : \\mathbb{F}^{n_{i-1}}_2 \\rightarrow \\mathbb{F}^n_2``​ uses the
+corrected syndrome `z` to compute a noise vector `n` such that ``H_{X}n = z``, determining
+the most likely data qubit errors.
+
+The correction can fail in two ways:
+- **Invalid Syndrome**: The repaired `z` lies outside the valid syndrome space ``im(H_X​``).
+- **Logical Error**: The correction `n` corresponds to a nontrivial logical operator (i.e., ``n \\in \\ker(H_X)``).
+
+To mitigate the first failure (i.e. invalid syndrome), we can modify the metacheck matrix to
+
+```math
+\\begin{aligned}
+M' = \\begin{pmatrix}
+M_X \\\\
+L_M
+\\end{pmatrix}
+\\end{aligned}
+```
+
+where ``L_M`` spans the cohomology group ``H^{i-1}``. However, if ``L_M`` is non-sparse
+(common in topological codes), decoding efficiency may suffer.
+
+!!! note The modified metacheck matrix ``M'`` is only employed when the initial decoding
+    attempt yields an invalid syndrome (``z \\notin \\text{im}(H_X)``). This approach
+    helps maintain decoder efficiency, particularly for topological codes where ``L_M`` is
+    typically non-sparse. However, the overall performance of two-stage decoders remains
+    fundamentally constrained by the metacode's threshold, often resulting in suboptimal
+    error correction capability.
+
+### Single-Stage Decoding
+
+Single-stage decoding provides a unified framework for correcting both data qubit errors
+(`e`) and syndrome measurement errors (`s_e`) simultaneously. Given an observed syndrome
+``s = H_X e + s_e``, where `H_X` is the `X`-stabilizer matrix, the decoder seeks the most
+probable error configuration ``e' = \\begin{pmatrix}e \\\\ s_e\\end{pmatrix}`` that satisfies
+the extended parity-check equation:
+
+```math
+\\begin{aligned}
+H' e' = s \\quad \\text{where} \\quad H' = \\begin{pmatrix}H_X & I_r\\end{pmatrix}
+\\end{aligned}
+```
+
+The Tanner graph ``T(H')`` for this system is constructed by augmenting the original Tanner
+graph ``T(H_X)`` with additional variable nodes ``\\{v_i^m\\}_{i=1}^r`` representing potential
+measurement errors. Each check node ``f_i`` gains a corresponding edge ``(v_i^m, f_i)``, creating
+a structure where measurement errors appear explicitly in the decoding graph.
+
+The decoding framework can be further enhanced by explicitly incorporating *metachecks* through
+the extended matrix:
+
+```math
+\\begin{aligned}
+\\begin{equation}
+H_M = \begin{pmatrix}
+H_X & I_r \\\\
+0 & M
+\\end{pmatrix}
+\\end{equation}
+\\end{aligned}
+```
+
+where ``M`` is the metacheck matrix. Though these metachecks are implicitly present as linear
+combinations in ``T(H')``, their explicit inclusion significantly improves decoder performance.
+
+The single-stage decoding approach offers several key advantages over two-stage methods:
+
+- elimination of metacode failures (since ``s + s_e \\in \\text{im}(H_X)`` by construction)
+- avoidance of non-sparse ``L_M`` matrices that degrade decoder performance
+- improved thresholds for topological codes.
+
+### Chain Complexes and ``\\mathbb{F_2}`` Homology
+
+A chain complex is a sequence of vector spaces connected by linear maps (**boundary operators**)
+
+```math
+\\begin{aligned}
+\\cdots \\rightarrow C_{i+1} \\xrightarrow{\\partial_{i+1}} C_i \\xrightarrow{\\partial_i} C_{i-1} \\rightarrow \\cdots
+\\end{aligned}
+```
+
+satisfying the condition
+
+```math
+\\begin{aligned}
+\\partial_{i} \\circ \\partial_{i+1} = 0
+\\end{aligned}
+```
+
+For a standard CSS code, we often work with a `3`-term chain complex:
+
+```math
+\\begin{aligned}
+C_2 \\xrightarrow{\\partial_2} C_1 \\xrightarrow{\\partial_1} C_0
+\\end{aligned}
+```
+
+where
+
+- ``\\partial_2 = H_Z^\\top`` (Z-type parity checks),
+- ``\\partial_1 = H_X`` (X-type parity checks),
+- and the condition ``\\partial_1 \\circ \\partial_2 = 0`` ensures commutativity of checks, i.e., ``H_XH_Z^\\top = 0``.
+
+### CSS codes using Homological Algebra
+
+Quantum CSS codes can be described using the framework of [chain complexes](https://en.wikipedia.org/wiki/Chain_complex).
+
+For a chain complex
+
+```math
+\\begin{aligned}
+C_{l-1} \\xrightarrow{\\partial_{l-1}} \\cdots \\xrightarrow{\\partial_{i+2}} C_{i+1} \\xrightarrow{\\partial_{i+1}} C_i \\xrightarrow{\\partial_i} C_{i-1} \\xrightarrow{\\partial_{i-1}} \\cdots \\xrightarrow{\\partial_1} C_0,
+\\end{aligned}
+```
+
+where
+
+- **Qubits** are located on `i`-cells (`C_i`).
+- **X-stabilizers** are given by the boundary map ``H_X = \\partial_i: C_i → C_{i-1}``.
+- **Z-stabilizers** are given by the coboundary map ``H_Z = \\partial_{i+1}^T: C_i → C_{i+1}``.
+- **X-metachecks** are defined as ``M_X = \\partial_{i-1}: C_{i-1} → C_{i-2}``.
+- **Z-metachecks** are defined as ``M_Z = \\partial_{i+2}^T: C_{i+2} → C_{i+1}``.
+
+The boundary conditions ``\\partial_{i-1} \\partial_i = 0`` (i.e., ``M_X H_X = 0``) guarantee that valid syndromes
+(`im H_X`) lie in `ker M_X`. 
+
+Invalid syndromes in `ker M_X \\setminus im H_X` belong to the `(i−1)`-th homology group
+``H_{i-1} = \\ker \\partial_{i-1} / \\mathrm{im} \\partial_i``, while invalid `Z`-syndromes in
+`ker M_Z \\setminus im H_Z` belong to the `(i+1)`-th cohomology group.
+
+!!! note A code can be designed to incorporate syndromes within a metacode by employing
+    a chain complex of minimum length three—sufficient for encoding either `X` or `Z` syndromes.
+    If the goal is to include both `X` and `Z` syndromes in the metacode, the chain complex must
+    extend to at least length four.
+
+### Metachecks in Higher-Dimensional Complexes
+
+In D-dimensional codes, such as the `4D` surface code, we consider a `5`-term chain complex:
+
+```math
+\\begin{aligned}
+C_4 \\xrightarrow{\\partial_4} C_3 \\xrightarrow{\\partial_3} C_2 \\xrightarrow{\\partial_2} C_1 \\xrightarrow{\\partial_1} C_0
+\\end{aligned}
+```
+
+In this chain complex framework:
+
+- Standard parity checks are: ``\\partial_3 = H_Z^\\top``, and ``\\partial_2 = H_X``
+- Metachecks correspond to: ``\\partial_4 = M_Z^\\top``, and ``\\partial_1 = M_X``
+
+#### Syndrome Validation
+
+The matrices `M_X` and `M_Z` enforce syndrome validity via boundary conditions from the chain complex:
+
+```math
+\\begin{aligned}
+M_Xs_X = 0 \\quad &\\text{for X-syndromes } (s_X \\in C_1) \\\\
+M_Zs_Z = 0 \\quad &\\text{for Z-syndromes } (s_Z \\in C_3)
+\\end{aligned}
+```
+
+!!! note
+    Only CSS codes built using chain complexes and homology have this method.
 
 See also: [`metacheck_matrix_x`](@ref), [`metacheck_matrix_z`](@ref)
 """
