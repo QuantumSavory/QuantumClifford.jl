@@ -38,7 +38,7 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=tr
     @valbooldispatch _generate!(pauli, stabilizer; phases=Val(phases), saveindices=Val(saveindices)) phases saveindices
 end
 
-function _generate!(pauli::PauliOperator{Tₚ,Tᵥ}, stabilizer::Stabilizer{Tableau{Tₚᵥ,Tₘ}}; phases::Val{PHASES}=Val(true), saveindices::Val{SAVEIDX}=Val(true)) where {Tₚ<:AbstractArray{UInt8,0}, Tₚᵥ<:AbstractVector{UInt8}, Tₘₑ<:Unsigned, Tᵥ<:AbstractVector{Tₘₑ}, Tₘ<:AbstractMatrix{Tₘₑ}, PHASES, SAVEIDX} # TODO there is stuff that can be abstracted away here and in canonicalize!
+function _generate!(pauli::PauliOperator{Tₚ,Tᵥ}, stabilizer::Stabilizer{Tableau{Tₚᵥ,Tₘ}}; phases::Val{PHASES}=Val(true), saveindices::Val{SAVEIDX}=Val(true)) where {Tₚ, Tₚᵥ, Tₘₑ<:Unsigned, Tᵥ<:AbstractVector{Tₘₑ}, Tₘ<:AbstractMatrix{Tₘₑ}, PHASES, SAVEIDX} # TODO there is stuff that can be abstracted away here and in canonicalize!
     xzs = tab(stabilizer).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
@@ -448,6 +448,10 @@ function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases
     @valbooldispatch project_cond!(d,qubit,Val(isZ),Val((true,false));keep_result,phases=Val(phases)) phases
 end
 
+function projectX!(s::AbstractStabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    project!(s, single_x(nqubits(s), qubit) ; keep_result, phases)
+end
+
 """
 Measure a given qubit in the Z basis.
 A faster special-case version of [`project!`](@ref).
@@ -458,6 +462,10 @@ function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases
     @valbooldispatch project_cond!(d,qubit,Val(isX),Val((false,true));keep_result,phases=Val(phases))
 end
 
+function projectZ!(s::AbstractStabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    project!(s, single_z(nqubits(s), qubit) ; keep_result, phases)
+end
+
 """
 Measure a given qubit in the Y basis.
 A faster special-case version of [`project!`](@ref).
@@ -466,6 +474,10 @@ See also: [`project!`](@ref), [`projectYrand!`](@ref), [`projectX!`](@ref), [`pr
 """
 function projectY!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
     @valbooldispatch project_cond!(d,qubit,Val(isXorZ),Val((true,true));keep_result,phases=Val(phases))
+end
+
+function projectY!(s::AbstractStabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    project!(s, single_y(nqubits(s), qubit) ; keep_result, phases)
 end
 
 @inline isX(tab,row,col) = tab[row,col][1]

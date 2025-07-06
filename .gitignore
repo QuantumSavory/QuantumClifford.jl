@@ -8,3 +8,4 @@ scratch/
 test/.CondaPkg/
 docs/.CondaPkg/
 .DS_Store
+.syncthing*

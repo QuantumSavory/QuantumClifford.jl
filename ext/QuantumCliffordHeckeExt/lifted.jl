@@ -20,6 +20,10 @@ A lifted code can be constructed via the following approaches:
 
 The default `GA` is the group algebra of `A[1, 1]`, the default representation `repr` is the permutation representation.
 
+Below is a list of all constructors:
+
+$METHODLIST
+
 ## The representation function `repr`
 
 We use the default representation function `Hecke.representation_matrix` to convert a `GF(2)`-group algebra element to a binary matrix.
@@ -35,11 +39,13 @@ However, we can find a `4×4` matrix representation for the group,
 e.g. by using the typical [`2×2` representation](https://en.wikipedia.org/wiki/Dihedral_group)
 and converting it into binary representation by replacing "1" with the Pauli I, and "-1" with the Pauli X matrix.
 
-See also: [`LPCode`](@ref).
+See also: [`QuantumClifford.ECC.LPCode`](@ref).
+
+All fields:
 
 $TYPEDFIELDS
 """
-struct LiftedCode <: ClassicalCode
+struct LiftedCode <: AbstractCECC
     """the base matrix of the code, whose elements are in a group algebra."""
     A::GroupAlgebraElemMatrix
     """the group algebra for which elements in `A` are from."""
@@ -55,9 +61,10 @@ struct LiftedCode <: ClassicalCode
     end
 end
 
-"""
-`LiftedCode` constructor using the default `GF(2)` representation (coefficients converted to a permutation matrix by `representation_matrix` provided by Hecke).
-""" # TODO doctest example
+#"""
+#`LiftedCode` constructor using the default `GF(2)` representation (coefficients converted to a permutation matrix by `representation_matrix` provided by Hecke).
+#"""
+# TODO doctest example and document the other constructors below
 function LiftedCode(A::Matrix{GroupAlgebraElem{FqFieldElem, <: GroupAlgebra}}; GA::GroupAlgebra=parent(A[1,1]))
     !(characteristic(base_ring(A[1, 1])) == 2) && error("The default permutation representation applies only to GF(2) group algebra; otherwise, a custom representation function should be provided")
     LiftedCode(A; GA=GA, repr=representation_matrix)
