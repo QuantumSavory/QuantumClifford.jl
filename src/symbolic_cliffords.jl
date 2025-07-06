@@ -110,10 +110,10 @@ end
 @qubitop1 Z            (x   ,z   , x!=0)         (x   ,z   , x!=0)
 @qubitop1 SQRTX        (x⊻z ,z   , x==0 && z!=0) (x⊻z ,z   , x!=0 && z!=0)
 @qubitop1 InvSQRTX     (x⊻z ,z   , x!=0 && z!=0) (x⊻z ,z   , x==0 && z!=0)
-@qubitop1 SQRTY        (z   ,x   , z==0)         (z   ,x   , z!=0 && x==0)
-@qubitop1 InvSQRTY     (z   ,x   , z!=0 && x==0) (z   ,x   , z==0) 
-@qubitop1 CXYZ         (x⊻z ,x   , z==0 && x==0) (z   ,x⊻z , z==0 && x==0)
-@qubitop1 CZYX         (z   ,x⊻z , z==0 && x==0) (x⊻z ,x   , z==0 && x==0)
+@qubitop1 SQRTY        (z   ,x   , x!=0 && z==0) (z   ,x   , z!=0 && x==0)
+@qubitop1 InvSQRTY     (z   ,x   , z!=0 && x==0) (z   ,x   , x!=0 && z==0) 
+@qubitop1 CXYZ         (x⊻z ,x   , false)        (z   ,x⊻z , false)
+@qubitop1 CZYX         (z   ,x⊻z , false)        (x⊻z ,x   , false)
 
 """A "symbolic" single-qubit Identity operation.
 
