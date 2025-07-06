@@ -1,7 +1,7 @@
 module ECC
 
 using QECCore
-import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z,parity_matrix
+import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -22,12 +22,13 @@ using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqP
 
 export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
+    metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode, LiftedCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
-    Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
+    Toric, Gottesman, Surface, Concat, CircuitCode,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     haah_cubic_codes, twobga_from_fp_group, twobga_from_direct_product,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
@@ -393,9 +394,6 @@ include("codes/util.jl")
 include("codes/gottesman.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
-include("codes/quantumreedmuller.jl")
-include("codes/classical/reedmuller.jl")
-include("codes/classical/recursivereedmuller.jl")
 include("codes/classical/bch.jl")
 include("codes/classical/golay.jl")
 include("codes/color_codes.jl")
