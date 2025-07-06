@@ -326,6 +326,8 @@
 
     @testset "pcPhase" begin
         ref_ph(ϕ) = [1 0; 0 exp(im*ϕ)]
+        qo_basis = SpinBasis(1//2)
+        Id = identityoperator(qo_basis)
         function qo_ph(ϕ)
             U = copy(sparse(Id))
             U.data[2, 2] = exp(im * ϕ)
@@ -340,7 +342,7 @@
                 ϕ = 2π*rand()
                 q = rand(1:n)
                 qc = dense(Operator(embed(n, q, pcPhase(ϕ)))).data
-                basis = tensor([b for _ in 1:n]...)
+                basis = tensor([qo_basis for _ in 1:n]...)
                 qo = dense(embed(basis, Dict(q => qo_ph(ϕ)))).data
                 @test qc ≈ qo
             end
