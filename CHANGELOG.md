@@ -7,6 +7,7 @@
 
 ## v0.10.1-dev
 
+- **(fix)** The classical `LiftedCode` constructor had method errors in `parity_checks`, `code_n`, and `code_s`, and an undefined `code_k`.
 - introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
 - The phase storage type can now be parameterized, instead of hardcoded to UInt8.
