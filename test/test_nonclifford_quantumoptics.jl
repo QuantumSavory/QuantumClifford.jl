@@ -323,4 +323,27 @@
             end
         end
     end
+
+    @testset "pcPhase" begin
+        ref_ph(ϕ) = [1 0; 0 exp(im*ϕ)]
+        function qo_ph(ϕ)
+            U = copy(sparse(Id))
+            U.data[2, 2] = exp(im * ϕ)
+            return U
+        end
+        for _ in 1:10
+            ϕ = 2π*rand()
+            @test Operator(pcPhase(ϕ)).data ≈ dense(qo_ph(ϕ)).data ≈ ref_ph(ϕ)
+        end
+        for n in 2:5
+            for _ in 1:10
+                ϕ = 2π*rand()
+                q = rand(1:n)
+                qc = dense(Operator(embed(n, q, pcPhase(ϕ)))).data
+                basis = tensor([b for _ in 1:n]...)
+                qo = dense(embed(basis, Dict(q => qo_ph(ϕ)))).data
+                @test qc ≈ qo
+            end
+        end
+    end
 end
