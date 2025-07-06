@@ -1,11 +1,9 @@
 @testitem "Reed-Muller" tags=[:ecc] begin
     using Test
     using Nemo: echelon_form, matrix, GF
-    using LinearAlgebra
-    using QuantumClifford
-    using QuantumClifford.ECC
-    using QuantumClifford.ECC: AbstractECC, ReedMuller, generator, RecursiveReedMuller
-    using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate
+    using QECCore.LinearAlgebra
+    using QECCore
+    using QECCore: generator
 
     function designed_distance(matrix, m, r)
         distance = 2 ^ (m - r)
@@ -46,27 +44,27 @@
                 H₁ = generator(RecursiveReedMuller(r, m))
                 # generator(RecursiveReedMuller(r, m)) is canonically equivalent to the generator(ReedMuller(r, m)) under reduced row echelon form.
                 @test echelon_form(matrix(GF(2), Matrix{Int64}(H))) == echelon_form(matrix(GF(2), Matrix{Int64}(H₁)))
-                H = parity_checks(ReedMuller(r, m))
-                H₁ = parity_checks(RecursiveReedMuller(r, m))
-                # parity_checks(RecursiveReedMuller(r, m)) is canonically equivalent to the parity_checks(ReedMuller(r, m)) under reduced row echelon form.
+                H = parity_matrix(ReedMuller(r, m))
+                H₁ = parity_matrix(RecursiveReedMuller(r, m))
+                # parity_matrix(RecursiveReedMuller(r, m)) is canonically equivalent to the parity_matrix(ReedMuller(r, m)) under reduced row echelon form.
                 @test echelon_form(matrix(GF(2), Matrix{Int64}(H))) == echelon_form(matrix(GF(2), Matrix{Int64}(H₁)))
                 # dim(ReedMuller(m - r - 1, m)) = dim(ReedMuller(r, m)^⊥).
                 # ReedMuller(m - r - 1, m) = ReedMuller(r, m)^⊥ ∴ parity check matrix (H) of ReedMuller(r, m) is the generator matrix (G) for ReedMuller(m - r - 1, m).
-                H₁ = parity_checks(ReedMuller(m - r - 1, m))
+                H₁ = parity_matrix(ReedMuller(m - r - 1, m))
                 G₂ = generator(ReedMuller(r, m))
                 @test size(H₁) == size(G₂)
                 @test echelon_form(matrix(GF(2), Matrix{Int64}(H₁))) == echelon_form(matrix(GF(2), Matrix{Int64}(G₂)))
                 G₃ = generator(ReedMuller(m - r - 1, m))
-                H₄ = parity_checks(ReedMuller(r, m))
+                H₄ = parity_matrix(ReedMuller(r, m))
                 @test size(G₃) == size(H₄)
                 # dim(RecursiveReedMuller(m - r - 1, m)) = dim(RecursiveReedMuller(r, m)^⊥).
                 # RecursiveReedMuller(m - r - 1, m) = RecursiveReedMuller(r, m)^⊥ ∴ parity check matrix (H) of RecursiveReedMuller(r, m) is the generator matrix (G) for RecursiveReedMuller(m - r - 1, m).
-                H₁ = parity_checks(RecursiveReedMuller(m - r - 1, m))
+                H₁ = parity_matrix(RecursiveReedMuller(m - r - 1, m))
                 G₂ = generator(RecursiveReedMuller(r, m))
                 @test echelon_form(matrix(GF(2), Matrix{Int64}(H₄))) == echelon_form(matrix(GF(2), Matrix{Int64}(G₃)))
                 @test echelon_form(matrix(GF(2), Matrix{Int64}(H₁))) == echelon_form(matrix(GF(2), Matrix{Int64}(G₂)))
                 G₃ = generator(RecursiveReedMuller(m - r - 1, m))
-                H₄ = parity_checks(RecursiveReedMuller(r, m))
+                H₄ = parity_matrix(RecursiveReedMuller(r, m))
                 @test size(G₃) == size(H₄)
                 @test echelon_form(matrix(GF(2), Matrix{Int64}(H₄))) == echelon_form(matrix(GF(2), Matrix{Int64}(G₃)))
             end
