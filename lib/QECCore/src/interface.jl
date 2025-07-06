@@ -119,7 +119,7 @@ the minimum distance of quantum error correction codes.
 abstract type AbstractDistanceAlg end
 
 """
-    meta_checks_x(c::AbstractCSSCode)
+    metacheck_matrix_x(c::AbstractCSSCode)
 
 Returns the `X`-metacheck matrix (``\\partial_{Mx}`` boundary map in
 [chain complex](https://en.wikipedia.org/wiki/Chain_complex) notation) for a CSS code.
@@ -128,12 +128,12 @@ This matrix verifies validity of `X`-syndromes (`Z`-error measurements).
 
 Only CSS codes built using chain complexes and homology have this method.
 
-See also: [`meta_checks_z`](@ref), [`meta_checks`](@ref), [`parity_matrix_x`](@ref)
+See also: [`metacheck_matrix_z`](@ref), [`metacheck_matrix`](@ref), [`parity_matrix_x`](@ref)
 """
-function meta_checks_x end
+function metacheck_matrix_x end
 
 """
-    meta_checks_z(c::AbstractCSSCode)
+    metacheck_matrix_z(c::AbstractCSSCode)
 
 Returns the `Z`-metacheck matrix (``\\partial_{Mz}`` boundary map in
 [chain complex](https://en.wikipedia.org/wiki/Chain_complex) notation) for a CSS code.
@@ -142,19 +142,17 @@ This matrix verifies validity of `Z`-syndromes (`X`-error measurements).
 
 Only CSS codes built using chain complexes and homology have this method.
 
-See also: [`meta_checks_x`](@ref), [`meta_checks`](@ref), [`parity_matrix_z`](@ref)
+See also: [`metacheck_matrix_x`](@ref), [`metacheck_matrix`](@ref), [`parity_matrix_z`](@ref)
 """
-function meta_checks_z end
+function metacheck_matrix_z end
 
 """
-    meta_checks(c::AbstractCSSCode)
+    metacheck_matrix(c::AbstractCSSCode)
 
 Returns both `X` and `Z` metacheck matrices.
 
 Only CSS codes built using chain complexes and homology have this method.
 
-See also: [`meta_checks_x`](@ref), [`meta_checks_z`](@ref)
+See also: [`metacheck_matrix_x`](@ref), [`metacheck_matrix_z`](@ref)
 """
-function meta_checks(c::AbstractCSSCode)
-    (meta_checks_x(c), meta_checks_z(c))
-end
+function metacheck_matrix end
