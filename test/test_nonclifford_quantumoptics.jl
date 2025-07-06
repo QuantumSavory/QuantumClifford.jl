@@ -330,7 +330,7 @@
         Id = identityoperator(qo_basis)
         function qo_ph(ϕ)
             U = copy(sparse(Id))
-            U.data[2, 2] = exp(im * ϕ)
+            U.data[2, 2] = exp(im*ϕ)
             return U
         end
         for _ in 1:10
