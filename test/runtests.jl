@@ -6,8 +6,8 @@ if Sys.iswindows() || Sys.ARCH != :x86_64
     @info "Skipping GPU tests -- only supported on x86_64 *NIX platforms."
     @info "Skipping Oscar tests -- only supported on x86_64 *NIX platforms."
 else
-    AMDGPU_flag = get(ENV, "AMDGPU_TESTS", "") == "true"
-    CUDA_flag = get(ENV, "CUDA_TESTS", "") == "true"
+    AMDGPU_flag = get(ENV, "AMDGPU_TEST", "") == "true"
+    CUDA_flag = get(ENV, "CUDA_TEST", "") == "true"
     Oscar_flag = VERSION >= v"1.11"
 
     AMDGPU_flag && @info "Running with AMDGPU tests."
@@ -15,7 +15,7 @@ else
     !Oscar_flag && @info "Skipping Oscar tests -- not tested on Julia < 1.11"
     if !(AMDGPU_flag || CUDA_flag)
         @info "Skipping GPU tests -- must be explicitly enabled."
-        @info "Environment must set AMDGPU_TESTS and/or CUDA_TESTS = \"true\"."
+        @info "Environment must set AMDGPU_TEST xor CUDA_TEST to \"true\"."
     end
 end
 

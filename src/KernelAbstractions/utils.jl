@@ -1,15 +1,18 @@
 
 #=============================================================================#
 # For use whenever KA.@index(Global, NTuple) is unavailable.
+# At the moment, JET always complains unless unsafe_indices = true is set.
 @inline global_index(block_index, block_dim, thread_index) =
 	(block_index .- one(eltype(block_index))) .* block_dim .+ thread_index
 
 # This would have been called "map" but that name is already reserved.
-KA.@kernel inbounds = true function kernel_transform!(
+KA.@kernel inbounds = true unsafe_indices = true function kernel_transform!(
 	f!, target, @Const(auxiliary)
 	)
 
-	index = KA.@index(Global, NTuple)
+	index = global_index(
+		KA.@index(Group, NTuple), KA.@groupsize(), KA.@index(Local, NTuple)
+		)
 	f!(target, auxiliary, index)
 
 end
@@ -27,8 +30,7 @@ end
 	# This branch is a power of 2, take the quick route.
 	if count_ones(block_size) == one(block_size)
 
-	# This is absolutely hideous but only for-loop unrolling is supported.
-	# TODO: Confirm whether this unrolls as desired.
+	# This is messy but only for-loop unrolling is supported.
 	KA.Extras.@unroll for bit = one(block_size) : trailing_zeros(block_size)
 		stride = KA.@uniform ((2)^(trailing_zeros(block_size) - bit))
 		# The call to KA.@synchronize is ALL or NOTHING.
@@ -75,7 +77,9 @@ end
 # Anonymous functions trigger recompilation. Hence, Separate them out.
 @inline function mod_4_sum!(t, a, pos)
 	i = pos[1]
-	j = length(a) > 1 ? i : 1
-	t[i] = (t[i] + a[j]) & 0x3
+	if i <= length(t)
+		j = length(a) > 1 ? i : 1
+		@inbounds t[i] = (t[i] + a[j]) & 0x3
+	end
 end
 #=============================================================================#
