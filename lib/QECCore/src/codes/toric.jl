@@ -1,6 +1,5 @@
 """
-    Toric <: AbstractCSSCode
-    Toric(dx, dz)
+    $TYPEDEF
 
 The Toric code [kitaev2003fault](@cite).
 Illustration of a 2x2 toric code, where qubits are located on the edges:
@@ -27,11 +26,12 @@ __ZZZ_Z_
 ```
 
 ### Fields
-- `dx::Int`: The number of qubits in the x direction.
-- `dz::Int`: The number of qubits in the z direction.
+    $TYPEDFIELDS
 """
 struct Toric <: AbstractCSSCode
+    """The number of qubits in the x direction."""
     dx::Int
+    """The number of qubits in the z direction."""
     dz::Int
 end
 

@@ -1,6 +1,5 @@
 """
-    QuantumReedMuller <: AbstractCSSCode
-    QuantumReedMuller(m)
+    $TYPEDEF
 
 The family of `[[2ᵐ - 1, 1, 3]]` CSS Quantum-Reed-Muller codes, as discovered by Steane in his 1999 paper [steane1999quantum](@cite).
 
@@ -15,9 +14,10 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/quan
 See also: [`ReedMuller`](@ref) and [`RecursiveReedMuller`](@ref)
 
 ### Fields
-- `m`: The log-length of the code.
+    $TYPEDFIELDS
 """
 struct QuantumReedMuller <: AbstractCSSCode
+    """The log-length of the code."""
     m::Int
     function QuantumReedMuller(m)
         if  m < 3

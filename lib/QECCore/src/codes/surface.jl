@@ -1,6 +1,5 @@
 """
-    Surface <: AbstractCSSCode
-    Surface(dx, dz)
+    $TYPEDEF
 
 The planar surface code refers to the code [kitaev2003fault](@cite) in a 2D lattice with open boundaries.
 Illustration of a 3×2 surface code, where qubits are located on the edges:
@@ -31,11 +30,13 @@ ____ZZ_Z
 More information can be seen in [fowler2012surface](@cite).
 
 ### Fields
-- `dx::Int`: The number of qubits in the x direction.
-- `dz::Int`: The number of qubits in the z direction.
+    $TYPEDFIELDS
+
 """
 struct Surface <: AbstractCSSCode
+    """The number of qubits in the x direction."""
     dx::Int
+    """The number of qubits in the z direction."""
     dz::Int
 end
 

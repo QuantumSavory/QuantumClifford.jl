@@ -1,13 +1,13 @@
 """
-    RepCode <: AbstractCECC
-    RepCode(n)
+    $TYPEDEF
 
 Repetition code is a classical error correction code that repeats the same bit `n` times.
 
 ### Fields
-- `n::Int`: The number of times to repeat the bit.
+    $TYPEDFIELDS
 """
 struct RepCode <: AbstractCECC
+    """The number of times to repeat the bit."""
     n::Int
 end
 

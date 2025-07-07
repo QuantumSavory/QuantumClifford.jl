@@ -1,6 +1,5 @@
 """
-    RecursiveReedMuller <: AbstractCECC
-    RecursiveReedMuller(r, m)
+    $TYPEDEF
 
 A construction of the Reed-Muller class of codes using the recursive definition.
 
@@ -24,11 +23,12 @@ In addition, the dimension of `RM(m - r - 1, m)` equals the dimension of the dua
 See also: [`ReedMuller`](@ref) and [`QuantumReedMuller`](@ref)
 
 ### Fields
-- `r`: The order of the code.
-- `m`: The log-length of the code.
+    $TYPEDFIELDS
 """
 struct RecursiveReedMuller <: AbstractCECC
+    """The order of the code."""
     r::Int
+    """The log-length of the code."""
     m::Int
 
     function RecursiveReedMuller(r, m)

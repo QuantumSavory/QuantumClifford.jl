@@ -1,5 +1,5 @@
 """
-    Cleve8 <: AbstractQECC
+    $TYPEDEF
 
 A pedagogical example of a quantum error correcting [8,3] code used in [cleve1997efficient](@cite).
 """

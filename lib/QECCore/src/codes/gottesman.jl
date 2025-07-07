@@ -1,11 +1,19 @@
-"""The family of `[[2ʲ, 2ʲ - j - 2, 3]]` Gottesman codes, also known as quantum Hamming codes, as described in [Gottesman's 1997 PhD thesis](@cite gottesman1997stabilizer) and in [gottesman1996class](@cite).
+"""
+    $TYPEDEF
+
+The family of `[[2ʲ, 2ʲ - j - 2, 3]]` Gottesman codes, also known as quantum Hamming codes, as described in [Gottesman's 1997 PhD thesis](@cite gottesman1997stabilizer) and in [gottesman1996class](@cite).
 
 You might be interested in consulting [yu2013all](@cite) and [chao2018quantum](@cite) as well.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/quantum_hamming)
+
+### Fields
+    $TYPEDFIELDS
 """
 struct Gottesman <: AbstractQECC
+    """The parameter `j` of the code."""
     j::Int
+
     function Gottesman(j)
         (j >= 3 && j < 21) || error("In `Gottesman(j)`, `j` must be ≥  3 in order to obtain a valid code and < 21 to remain tractable")
         new(j)
