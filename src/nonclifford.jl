@@ -1,18 +1,3 @@
-#=
-1. adding tests for basic correctness
-2. single qubit gates / channels (and tests)
-3. embedding single qubit gates - Stefan
-4. pretty printing - Stefan
-5. good docstrings
-6. some superficial documentation
-7. picking names
-8. conversion into density matrices (QuantumOptics.jl) - Stefan
-9. special small gates
-10. make an overleaf for a paper
-=#
-
-using LinearAlgebra
-
 """
 $(TYPEDEF)
 
@@ -297,9 +282,10 @@ To convert χ′ into a probability of projecting on the +1 eigenvalue branch:
 \\text{probability}_{1} = \\frac{\\text{real}(\\chi') + 1}{2}
 ```
 
-!!! note Because the possible measurement results are themselves not stabilizer states anymore,
-we can not use the `project!` API, which assumes a stabilizer tableau and reports detailed
-information about whether the tableau and measurement commute or anticommute.
+!!! note
+    Because the possible measurement results are themselves not stabilizer states anymore,
+    we can not use the `project!` API, which assumes a stabilizer tableau and reports detailed
+    information about whether the tableau and measurement commute or anticommute.
 
 ```jldoctest genstab
 julia> sm = GeneralizedStabilizer(S"-X");
@@ -818,7 +804,11 @@ invsparsity(gate::AbstractPauliChannel) = count(!iszero, values(gate.paulichanne
 # Predefined Pauli Channels
 ##
 
-const pcT = UnitaryPauliChannel(
-    (I, Z),
-    ((1+exp(im*π/4))/2, (1-exp(im*π/4))/2)
-)
+function pcPhase(ϕ)
+    UnitaryPauliChannel(
+        (I, Z),
+        ((1 + exp(im*ϕ))/2, (1 - exp(im*ϕ))/2)
+    )
+end
+
+const pcT = pcPhase(π/4)
