@@ -1,9 +1,11 @@
-@testitem "ECC Color Codes" tags=[:ecc] begin
+@testitem "ECC Color Codes" begin
+    using QECCore
+    using Test
     using Hecke
     using JuMP
     using HiGHS
     using Hecke: group_algebra, GF, abelian_group, gens
-    using QuantumClifford.ECC: Triangular488, Triangular666, distance, DistanceMIPAlgorithm
+    import QuantumClifford.ECC: distance, DistanceMIPAlgorithm
 
     @testset "Minimum Distance test of Color Codes" begin
         d = [3, 5, 7, 9, 11]

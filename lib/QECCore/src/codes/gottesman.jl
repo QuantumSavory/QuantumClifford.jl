@@ -4,7 +4,7 @@ You might be interested in consulting [yu2013all](@cite) and [chao2018quantum](@
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/quantum_hamming)
 """
-struct Gottesman <: AbstractECC
+struct Gottesman <: AbstractQECC
     j::Int
     function Gottesman(j)
         (j >= 3 && j < 21) || error("In `Gottesman(j)`, `j` must be ≥  3 in order to obtain a valid code and < 21 to remain tractable")
@@ -14,15 +14,15 @@ end
 
 code_n(c::Gottesman) = 2^c.j
 
-function parity_checks(c::Gottesman)
+function parity_matrix(c::Gottesman)
     j = c.j
     s = j+2
     n = 2^j
 
-    H = zero(Stabilizer, s, n)
+    H = zeros(Bool, s, 2*n)
     for i in 1:n
-        H[1, i] = (true, false)
-        H[2, i] = (false, true)
+        H[1, i] = true
+        H[2, i+n] = true
     end
     for i in 0:n-1 # column of H, corresponds to a single qubit error that is detectable)
         Xⁱ = i
@@ -33,7 +33,8 @@ function parity_checks(c::Gottesman)
             Zⁱ = ~Zⁱ
         end
         for b in 0:j-1 # which check to consider (row of H), also which bit to extract
-            H[s-b,i+1] = isone((Zⁱ>>b)&0x1), isone((Xⁱ>>b)&0x1)
+            H[s-b,i+1] = isone((Zⁱ>>b)&0x1)
+            H[s-b,i+n+1] = isone((Xⁱ>>b)&0x1)
         end
     end
     H

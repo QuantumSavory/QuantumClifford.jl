@@ -1,4 +1,4 @@
-abstract type ColorCode <: AbstractECC end
+abstract type ColorCode <: AbstractCSSCode end
 
 """Planar color codes that encode a single logical qubit."""
 abstract type TriangularCode <: ColorCode end
@@ -103,10 +103,6 @@ end
 
 Triangular488() = Triangular488(3) # smallest d
 Triangular666() = Triangular666(3) # smallest d
-
-function iscss(::Type{TriangularCode})
-    return true
-end
 
 parity_matrix_x(c::TriangularCode) = _colorcode_get_check_matrix(c)
 parity_matrix_z(c::TriangularCode) = _colorcode_get_check_matrix(c)
@@ -276,10 +272,6 @@ end
 function _colorcode_get_qubit_indices(matrix::Matrix{Bool})
     for j in 1:size(matrix)[1] println(findall(>(0),matrix[j,:])) end
     return
-end
-
-function iscss(::ColorCode)
-    return true
 end
 
 # From https://arxiv.org/abs/1108.5738 Fig. 2's caption:

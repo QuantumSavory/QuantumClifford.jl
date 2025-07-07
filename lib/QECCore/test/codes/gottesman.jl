@@ -1,8 +1,10 @@
-@testitem "Gottesman codes should correct all single-qubit errors" tags=[:ecc] begin
-    using QuantumClifford: mul_left!
-    using QuantumClifford.ECC
-    using QuantumClifford.ECC: AbstractECC
+@testitem "Gottesman codes should correct all single-qubit errors" begin
+    using QECCore
+    using Test
+    import QuantumClifford: single_x, single_y, single_z, comm, nqubits
+    import QuantumClifford.ECC: parity_checks
 
+    @testset "Gottesman codes should correct all single-qubit errors" begin
     for j in 3:12
         H = parity_checks(Gottesman(j))
         syndromes = Set([]) # the set automatically removes repeated entries
@@ -13,6 +15,7 @@
                 push!(syndromes, syndrome)
             end
         end
-        @test length(syndromes) == 3*nqubits(H)
+            @test length(syndromes) == 3*nqubits(H)
+        end
     end
 end

@@ -64,7 +64,7 @@ function generator(g::Golay)
     end
 end
 
-function parity_checks(g::Golay)
+function parity_matrix(g::Golay)
     if g.n == 24
         A₂₄ = _create_A₂₄_golay(24)
         I₁₂ = LinearAlgebra.Diagonal(ones(Int, g.n ÷ 2))

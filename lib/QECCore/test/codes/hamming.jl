@@ -1,11 +1,11 @@
-@testitem "ECC Hamming" tags=[:ecc] begin
+@testitem "ECC Hamming" begin
 
-    using LinearAlgebra
-    using QuantumClifford
-    using QuantumClifford.ECC: Hamming, code_n, code_k, distance
+    using QECCore.LinearAlgebra
+    using QECCore
     using Nemo: matrix, GF, echelon_form
+    using Test
 
-    using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate, parity_matrix
+    # using QECCore: code_k, code_n, distance, rate, parity_matrix
 
     function minimum_distance(H)
         n = size(H, 2)
@@ -36,7 +36,7 @@
         for r in r_vals
             H = parity_matrix(Hamming(r))
             H = Matrix{Bool}(H)
-            @test minimum_distance(parity_matrix(Hamming(r))) == 3
+            @test minimum_distance(H) == 3
         end
         # Example taken from [huffman2010fundamentals](@cite).
         @test Matrix{Bool}(parity_matrix(Hamming(3))) == [0  0  0  1  1  1  1;

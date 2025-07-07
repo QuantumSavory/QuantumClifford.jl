@@ -9,13 +9,13 @@ export distance, parity_matrix, code_n, code_s, code_k, parity_matrix_x, parity_
 export AbstractECC, AbstractQECC, AbstractCECC, AbstractCSSCode, AbstractDistanceAlg
 
 # QEC Codes
-export Perfect5, Cleve8
+export Perfect5, Cleve8, Gottesman
 
 # CSS Codes
-export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMuller
+export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMuller, Triangular488, Triangular666
 
 # Classical Codes
-export RepCode, ReedMuller, RecursiveReedMuller
+export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming
 
 include("interface.jl")
 include("codes/util.jl")
@@ -28,6 +28,10 @@ include("codes/shorcode.jl")
 include("codes/steanecode.jl")
 include("codes/surface.jl")
 include("codes/bitflipcode.jl")
+include("codes/gottesman.jl")
+include("codes/golay.jl")
+include("codes/color_codes.jl")
+include("codes/hamming.jl")
 
 include("codes/reedmuller.jl")
 include("codes/recursivereedmuller.jl")
