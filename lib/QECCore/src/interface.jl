@@ -352,7 +352,7 @@ Associated with a chain complex is a **cochain complex** with *coboundary operat
 
 ```math
 \\begin{aligned}
-\{0\\} \\xrightarrow{\\delta^{-1}} C^0 \\xrightarrow{\\delta^0} C^1 \\xrightarrow{\\delta^1} \\cdots \\xrightarrow{\\delta^{l-1}} C^l \\xrightarrow{\\delta^l} \\{0\\}
+\\{0\\} \\xrightarrow{\\delta^{-1}} C^0 \\xrightarrow{\\delta^0} C^1 \\xrightarrow{\\delta^1} \\cdots \\xrightarrow{\\delta^{l-1}} C^l \\xrightarrow{\\delta^l} \\{0\\}
 \\end{aligned}
 ```
 
