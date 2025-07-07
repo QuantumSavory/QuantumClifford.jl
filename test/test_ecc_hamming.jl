@@ -1,4 +1,4 @@
-@testitem "ECC Hamming" begin
+@testitem "ECC Hamming" tags=[:ecc] begin
 
     using LinearAlgebra
     using QuantumClifford
