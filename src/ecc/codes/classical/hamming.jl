@@ -16,8 +16,10 @@ with parameters `[2ʳ − 1, 2ʳ − 1 − r, 3]` The minimum Hamming distance o
 code is 3, as detailed in [huffman2010fundamentals](@cite).
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/hamming).
+
+
 """
-struct Hamming <: ClassicalCode
+struct Hamming <: AbstractCECC
     r::Int
     function Hamming(r)
         if r < 2
@@ -27,27 +29,25 @@ struct Hamming <: ClassicalCode
     end
 end
 
-function parity_checks(h::Hamming)
-    n = 2^h.r - 1 # Number of columns in H
-    max_elem = n * h.r # Max non-zero entries in H
-    # Pre-allocate arrays for sparse matrix indices and values
+function parity_matrix(h::Hamming)
+    n = 2^h.r - 1
+    max_elem = n * h.r
     rows = Vector{Int}(undef, max_elem)
     cols = Vector{Int}(undef, max_elem)
     vals = Vector{Int}(undef, max_elem)
-    idx = 1 # Tracks position in arrays
+    idx = 1
     @inbounds for j in 1:n
-        mask = 1 << (h.r - 1) # Initialize mask for MSB
+        mask = 1 << (h.r - 1)
         @simd for i in 1:h.r
-            if j & mask != 0 # Check if the i-th bit is 1
+            if j & mask != 0
                 rows[idx] = i
                 cols[idx] = j
                 vals[idx] = 1
                 idx += 1
             end
-            mask >>= 1 # Shift mask to next bit
+            mask >>= 1
         end
     end
-    # Resize arrays to actual number of non-zero elements
     rows = rows[1:idx-1]
     cols = cols[1:idx-1]
     vals = vals[1:idx-1]
