@@ -127,34 +127,9 @@ by a chain complex of length `l ≥ 4`, where qubits are placed on `i`-cells wit
 stabilizers) and enforces the constraint ``M_Xs_X = 0``, ensuring syndromes are valid
 codewords of a classical *metacode*.
 
-### Chain Complexes and ``\\mathbb{F_2}`` Homology
-
-For a chain complex
-
-```math
-\\begin{aligned}
-C_{l-1} \\xrightarrow{\\partial_{l-1}} \\cdots \\xrightarrow{\\partial_{i+2}} C_{i+1} \\xrightarrow{\\partial_{i+1}} C_i \\xrightarrow{\\partial_i} C_{i-1} \\xrightarrow{\\partial_{i-1}} \\cdots \\xrightarrow{\\partial_1} C_0,
-\\end{aligned}
-```
-
-where
-
-- **Qubits** are placed on `i`-cells (``1 < i < l-1``):
-- **X-stabilizers** are given by the boundary map ``H_X = \\partial_i: C_i \\to C_{i-1}``.
-- **X-metachecks** are defined as ``M_X = \\partial_{i-1}: C_{i-1} \\to C_{i-2}``.
-
-with boundary condition
-
-```math
-\\begin{aligned}
-\\partial_{i-1} \\partial_i = 0
-\\end{aligned}
-```
-
-which implies ``M_XH_X = 0``, so valid syndromes (``\\mathrm{im}\\, H_X``) lie in ``\\ker M_X``.
-
-Invalid X-syndromes in ``\\ker M_X \\setminus \\mathrm{im}\\, H_X`` belong to the
-(`i-1`)-th homology group ``H_{i-1} = \\ker \\partial_{i-1} / \\mathrm{im}\\, \\partial_i``.
+!!! note
+    For an introduction to chain complexes in quantum error correction and the role
+    of metachecks in single-shot QEC, see the documentation for [`metacheck_matrix`](@ref).
 
 ### Example: 4D surface code
 
@@ -174,10 +149,6 @@ the metacheck matrix ``M_X = \\partial_1`` satisfies the following:
 
 Only CSS codes built using chain complexes and homology have this method.
 
-!!! note
-    For an introduction to chain complexes in quantum error correction
-    and the role of metachecks in single-shot QEC, see the documentation for [`metacheck_matrix`](@ref).
-
 See also: [`metacheck_matrix_z`](@ref), [`metacheck_matrix`](@ref), [`parity_matrix_x`](@ref)
 """
 function metacheck_matrix_x end
@@ -190,34 +161,9 @@ defined by a chain complex of length `l ≥ 4`, where qubits are placed on `i`-c
 (`1 < i < l−1`).  This matrix validates `Z`-syndromes (measurement outcomes of `X`-type
 stabilizers) by enforcing ``M_Zs_Z = 0``, ensuring syndromes are codewords of a classical *metacode*.
 
-### Chain Complexes and ``\\mathbb{F_2}`` Homology
-
-For a chain complex
-
-```math
-\\begin{aligned}
-C_{l-1} \\xrightarrow{\\partial_{l-1}} \\cdots \\xrightarrow{\\partial_{i+2}} C_{i+1} \\xrightarrow{\\partial_{i+1}} C_i \\xrightarrow{\\partial_i} C_{i-1} \\xrightarrow{\\partial_{i-1}} \\cdots \\xrightarrow{\\partial_1} C_0,
-\\end{aligned}
-```
-
-where
-
-- **Qubits** are located on `i`-cells (`C_i`).
-- **Z-stabilizers** are given by the coboundary map ``H_Z = \\partial_{i+1}^\\top: C_i → C_{i+1}``.
-- **Z-metachecks** are defined as ``M_Z = \\partial_{i+2}^\\top: C_{i+2} → C_{i+1}``.
-
-with Boundary condition
-
-```math
-\\begin{aligned}
-\\partial_{i+2} \\partial_{i+1} = 0
-\\end{aligned}
-```
-
-which implies ``M_ZH_Z = 0``, so valid syndromes (``im H_Z``) lie in ``ker M_Z``.
-
-Invalid `Z`-syndromes in ``ker M_Z \\setminus im H_Z`` belong to the `(i+1)`-th cohomology
-group ``H^{i+1} = \\ker \\partial_{i+2}^\\top / \\mathrm{im} \\partial_{i+1}^\\top``.
+!!! note
+    For an introduction to chain complexes in quantum error correction and the role
+    of metachecks in single-shot QEC, see the documentation for [`metacheck_matrix`](@ref).
 
 ### Example: 4D Surface Code
 
@@ -363,45 +309,75 @@ The single-stage decoding approach offers several key advantages over two-stage 
 
 ### Chain Complexes and ``\\mathbb{F_2}`` Homology
 
-A chain complex is a sequence of vector spaces connected by linear maps (**boundary operators**)
+A chain complex of length `l` is a sequence of vector spaces connected by boundary maps:
 
 ```math
 \\begin{aligned}
-\\cdots \\rightarrow C_{i+1} \\xrightarrow{\\partial_{i+1}} C_i \\xrightarrow{\\partial_i} C_{i-1} \\rightarrow \\cdots
-\\end{aligned}
-```
-
-satisfying the condition
-
-```math
-\\begin{aligned}
-\\partial_{i} \\circ \\partial_{i+1} = 0
-\\end{aligned}
-```
-
-For a standard CSS code, we often work with a `3`-term chain complex:
-
-```math
-\\begin{aligned}
-C_2 \\xrightarrow{\\partial_2} C_1 \\xrightarrow{\\partial_1} C_0
+\\{0\\} \\xrightarrow{\\partial_{l+1}} C_l \\xrightarrow{\\partial_l} C_{l-1} \\xrightarrow{\\partial_{l-1}} \\cdots \\xrightarrow{\\partial_1} C_0 \\xrightarrow{\\partial_0} \\{0\\}
 \\end{aligned}
 ```
 
 where
 
-- ``\\partial_2 = H_Z^\\top`` (Z-type parity checks),
-- ``\\partial_1 = H_X`` (X-type parity checks),
-- and the condition ``\\partial_1 \\circ \\partial_2 = 0`` ensures commutativity of checks, i.e., ``H_XH_Z^\\top = 0``.
+- Each ``C_i`` is called an *i-cell*.
+- The image of ``\\partial_{i+1}``, denoted ``\\mathrm{im}\\partial_{i+1}``, consists of *i-boundaries*.
+- The kernel of ``\\partial_i``, denoted ``\\ker\\partial_i``, consists of *i-cycles*.
+
+The boundary maps satisfy the constraint:
+
+```math
+\\begin{aligned}
+\\partial_i \\circ \\partial_{i+1} = 0 \\quad \\text{for all } i \\in \\{0, \\dots, l\\}
+\\end{aligned}
+```
+
+Because ``\\partial_i \\circ \\partial_{i+1} = 0``, every boundary is a cycle:
+
+```math
+\\begin{aligned}
+\\mathrm{im}\\partial_{i+1} \\subseteq \\ker\\partial_i
+\\end{aligned}
+```
+
+The **i-th homology group** measures the difference between cycles and boundaries:
+
+```math
+\\begin{aligned}
+H_i = \\frac{\\ker\\partial_i}{\\mathrm{im}\\partial_{i+1}}
+\\end{aligned}
+```
+
+Associated with a chain complex is a **cochain complex** with *coboundary operators*
+``\\delta^i: C^i \\to C^{i+1}``, typically defined as the transpose (or dual) of the boundary maps:
+
+```math
+\\begin{aligned}
+\{0\\} \\xrightarrow{\\delta^{-1}} C^0 \\xrightarrow{\\delta^0} C^1 \\xrightarrow{\\delta^1} \\cdots \\xrightarrow{\\delta^{l-1}} C^l \\xrightarrow{\\delta^l} \\{0\\}
+\\end{aligned}
+```
+
+where
+
+- ``\\ker\\delta^i`` consists of *i-cocycles*.
+- ``\\mathrm{im}\\delta^{i-1}`` consists of *i-coboundaries*.
+
+The **i-th cohomology group** is:
+
+```math
+\\begin{aligned}
+H^i = \\frac{\\ker\\delta^i}{\\mathrm{im}\\delta^{i-1}}
+\\end{aligned}
+```
 
 ### CSS codes using Homological Algebra
 
 Quantum CSS codes can be described using the framework of [chain complexes](https://en.wikipedia.org/wiki/Chain_complex).
 
-For a chain complex
+For a chain complex of length `l`:
 
 ```math
 \\begin{aligned}
-C_{l-1} \\xrightarrow{\\partial_{l-1}} \\cdots \\xrightarrow{\\partial_{i+2}} C_{i+1} \\xrightarrow{\\partial_{i+1}} C_i \\xrightarrow{\\partial_i} C_{i-1} \\xrightarrow{\\partial_{i-1}} \\cdots \\xrightarrow{\\partial_1} C_0,
+\\{0\\} \\xrightarrow{\\partial_{l+1}} C_l \\xrightarrow{\\partial_l} C_{l-1} \\xrightarrow{\\partial_{l-1}} \\cdots \\xrightarrow{\\partial_1} C_0 \\xrightarrow{\\partial_0} \\{0\\}
 \\end{aligned}
 ```
 
