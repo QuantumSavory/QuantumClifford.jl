@@ -1,4 +1,4 @@
-@testitem "ECC Golay" begin
+@testitem "ECC Golay" tags=[:ecc] begin
 
     using LinearAlgebra
     using QuantumClifford.ECC

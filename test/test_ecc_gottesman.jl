@@ -1,4 +1,4 @@
-@testitem "Gottesman codes should correct all single-qubit errors" begin
+@testitem "Gottesman codes should correct all single-qubit errors" tags=[:ecc] begin
     using QuantumClifford: mul_left!
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
