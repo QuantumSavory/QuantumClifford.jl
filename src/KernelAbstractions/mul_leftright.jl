@@ -63,8 +63,10 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
 end
 
 function mul_device!(
-	mutable_phases::AbstractArray{<: Unsigned}, mutable_xzs::AbstractArray{T},
-	const_phases::AbstractArray{<: Unsigned}, const_xzs::AbstractArray{T};
+	mutable_phases::AbstractGPUArray{<: Unsigned},
+	mutable_xzs::AbstractGPUArray{T},
+	const_phases::AbstractGPUArray{<: Unsigned},
+	const_xzs::AbstractGPUArray{T};
 	order_right_left::Val{RL}, phases::Val{B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
 	batch_size::Val{batch_SZ} = Val(default_batch_size)
