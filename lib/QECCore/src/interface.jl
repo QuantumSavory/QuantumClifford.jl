@@ -203,7 +203,7 @@ process itself. This redundancy is captured by *metasyndromes*: linear constrain
 noisy syndrome outcomes must satisfy if no measurement error has occurred. When violated, they
 indicate faults in the syndrome extraction layer itself.
 
-Traditional QEC combats measurement faults by repeating stabilizer measurements In contrast,
+Traditional QEC combats measurement faults by repeating stabilizer measurements. In contrast,
 **single-shot QEC** uses *spatial redundancy* via **metachecks** — extra linear constraints
 on syndrome outcomes ("checks of checks") to detect and correct measurement errors immediately.
 
@@ -373,24 +373,23 @@ H^i = \\frac{\\ker\\delta^i}{\\mathrm{im}\\delta^{i-1}}
 
 Quantum CSS codes can be described using the framework of [chain complexes](https://en.wikipedia.org/wiki/Chain_complex).
 
-For a chain complex of length `l`:
+For a chain complex of length `l ≥ 4` , where qubits are placed on `i`-cells (`C_i`) with (`1 < i < l−1`):
 
 ```math
 \\begin{aligned}
-\\{0\\} \\xrightarrow{\\partial_{l+1}} C_l \\xrightarrow{\\partial_l} C_{l-1} \\xrightarrow{\\partial_{l-1}} \\cdots \\xrightarrow{\\partial_1} C_0 \\xrightarrow{\\partial_0} \\{0\\}
+C_{l-1} \\xrightarrow{\\partial_{l-1}} \\cdots \\xrightarrow{\\partial_{i+2}} C_{i+1} \\xrightarrow{\\partial_{i+1}} C_i \\xrightarrow{\\partial_i} C_{i-1} \\xrightarrow{\\partial_{i-1}} \\cdots \\xrightarrow{\\partial_1} C_0,
 \\end{aligned}
 ```
 
 where
 
-- **Qubits** are located on `i`-cells (`C_i`).
 - **X-stabilizers** are given by the boundary map ``H_X = \\partial_i: C_i → C_{i-1}``.
 - **Z-stabilizers** are given by the coboundary map ``H_Z = \\partial_{i+1}^T: C_i → C_{i+1}``.
 - **X-metachecks** are defined as ``M_X = \\partial_{i-1}: C_{i-1} → C_{i-2}``.
 - **Z-metachecks** are defined as ``M_Z = \\partial_{i+2}^T: C_{i+2} → C_{i+1}``.
 
 The boundary conditions ``\\partial_{i-1} \\partial_i = 0`` (i.e., ``M_X H_X = 0``) guarantee that valid syndromes
-(`im H_X`) lie in `ker M_X`. 
+(`im H_X`) lie in `ker M_X`.
 
 Invalid syndromes in `ker M_X \\setminus im H_X` belong to the `(i−1)`-th homology group
 ``H_{i-1} = \\ker \\partial_{i-1} / \\mathrm{im} \\partial_i``, while invalid `Z`-syndromes in
@@ -427,8 +426,7 @@ M_Zs_Z = 0 \\quad &\\text{for Z-syndromes } (s_Z \\in C_3)
 \\end{aligned}
 ```
 
-!!! note
-    Only CSS codes built using chain complexes and homology have this method.
+Only CSS codes built using chain complexes and homology have this method.
 
 See also: [`metacheck_matrix_x`](@ref), [`metacheck_matrix_z`](@ref)
 """
