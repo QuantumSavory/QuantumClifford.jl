@@ -377,7 +377,7 @@ For a chain complex of length `l ≥ 4` , where qubits are placed on `i`-cells (
 
 ```math
 \\begin{aligned}
-C_{l-1} \\xrightarrow{\\partial_{l-1}} \\cdots \\xrightarrow{\\partial_{i+2}} C_{i+1} \\xrightarrow{\\partial_{i+1}} C_i \\xrightarrow{\\partial_i} C_{i-1} \\xrightarrow{\\partial_{i-1}} \\cdots \\xrightarrow{\\partial_1} C_0,
+C_{l-1} \\xrightarrow{\\partial_{l-1}} \\cdots \\xrightarrow{\\partial_{i+2}} C_{i+1} \\xrightarrow{\\partial_{i+1}} C_i \\xrightarrow{\\partial_i} C_{i-1} \\xrightarrow{\\partial_{i-1}} \\cdots \\xrightarrow{\\partial_1} C_0
 \\end{aligned}
 ```
 
