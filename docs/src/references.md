@@ -46,6 +46,8 @@ For quantum code construction routines:
 - [bravyi2024high](@cite)
 - [haah2011local](@cite)
 - [landahl2011color](@cite)
+- [wang2023abelian](@cite)
+- [naghipour2015quantum](@cite)
 - [eberhardt2024logical](@cite)
 
 For classical code construction routines:
@@ -61,6 +63,18 @@ For classical code construction routines:
 - [golay1949notes](@cite)
 - [huffman2010fundamentals](@cite)
 - [bhatia2018mceliece](@cite)
+
+For minimum distance calculation of quantum codes:
+- [vardy1997intractability](@cite)
+- [Sabo:2022smk](@cite)
+- [kapshikar2023hardness](@cite)
+- [landahl2011color](@cite)
+- [white2006new](@cite)
+- [pryadko2023qdistrnd](@cite)
+- [makhorin2008glpk](@cite)
+- [Lubin2023](@cite)
+- [huangfu2018parallelizing](@cite)
+- [wang2022distanceboundsgeneralizedbicycle](@cite)
 
 # References
 

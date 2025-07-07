@@ -64,7 +64,10 @@ The number of physical qubits in a error correction code.
 
 See also: [`code_k`](@ref) and [`code_s`](@ref)
 """
-function code_n end
+code_n(c::AbstractQECC) = nqubits(parity_matrix(c))
+code_n(c::AbstractCECC) = nbits(parity_matrix(c))
+nqubits(pm::AbstractMatrix{Bool}) = size(pm, 2) ÷ 2
+nbits(pm::AbstractMatrix{Bool}) = size(pm, 2)
 
 """
     code_s(c::AbstractECC)
@@ -74,6 +77,8 @@ The number of stabilizers in a error correction code. They might not be all line
 See also: [`code_n`](@ref) and [`code_k`](@ref)
 """
 function code_s end
+code_s(c::AbstractQECC) = nstabilizers(parity_matrix(c))
+nstabilizers(pm::AbstractMatrix{Bool}) = size(pm, 1)
 
 """
     code_k(c::AbstractECC)
@@ -104,3 +109,50 @@ The code distance of a error correction code.
 See also: [`code_n`](@ref) and [`code_k`](@ref)
 """
 function distance end
+
+"""
+    AbstractDistanceAlg
+
+Abstract type representing algorithms for computing
+the minimum distance of quantum error correction codes.
+"""
+abstract type AbstractDistanceAlg end
+
+"""
+    metacheck_matrix_x(c::AbstractCSSCode)
+
+Returns the `X`-metacheck matrix (``\\partial_{Mx}`` boundary map in
+[chain complex](https://en.wikipedia.org/wiki/Chain_complex) notation) for a CSS code.
+
+This matrix verifies validity of `X`-syndromes (`Z`-error measurements).
+
+Only CSS codes built using chain complexes and homology have this method.
+
+See also: [`metacheck_matrix_z`](@ref), [`metacheck_matrix`](@ref), [`parity_matrix_x`](@ref)
+"""
+function metacheck_matrix_x end
+
+"""
+    metacheck_matrix_z(c::AbstractCSSCode)
+
+Returns the `Z`-metacheck matrix (``\\partial_{Mz}`` boundary map in
+[chain complex](https://en.wikipedia.org/wiki/Chain_complex) notation) for a CSS code.
+
+This matrix verifies validity of `Z`-syndromes (`X`-error measurements).
+
+Only CSS codes built using chain complexes and homology have this method.
+
+See also: [`metacheck_matrix_x`](@ref), [`metacheck_matrix`](@ref), [`parity_matrix_z`](@ref)
+"""
+function metacheck_matrix_z end
+
+"""
+    metacheck_matrix(c::AbstractCSSCode)
+
+Returns both `X` and `Z` metacheck matrices.
+
+Only CSS codes built using chain complexes and homology have this method.
+
+See also: [`metacheck_matrix_x`](@ref), [`metacheck_matrix_z`](@ref)
+"""
+function metacheck_matrix end

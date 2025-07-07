@@ -4,6 +4,40 @@ abstract type ColorCode <: AbstractECC end
 abstract type TriangularCode <: ColorCode end
 
 """Triangular code following the 4.8.8 tiling. Constructor take a distance d as input.
+
+# Example
+
+Here is `[[17,1, 5]]` color code following the `4.8.8` tiling:
+
+```jldoctest
+julia> import HiGHS; import JuMP; # hide
+
+julia> using QuantumClifford.ECC: Triangular666, DistanceMIPAlgorithm; # hide
+
+julia> c = Triangular488(5);
+
+julia> code = Stabilizer(c)
++ XXXX_____________
++ X_X_XX___________
++ __XX_XX__XX__XX__
++ ____XX__XX_______
++ ______XX__XX_____
++ _______X___X___XX
++ ________XX__XX___
++ __________XX__XX_
++ ZZZZ_____________
++ Z_Z_ZZ___________
++ __ZZ_ZZ__ZZ__ZZ__
++ ____ZZ__ZZ_______
++ ______ZZ__ZZ_____
++ _______Z___Z___ZZ
++ ________ZZ__ZZ___
++ __________ZZ__ZZ_
+
+julia> distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+5
+```
+
 More information can be seen in [landahl2011color](@cite)"""
 struct Triangular488 <: TriangularCode
     d::Int
@@ -18,6 +52,42 @@ struct Triangular488 <: TriangularCode
 end
 
 """Triangular code following the 6.6.6 tiling. Constructor take a distance d as input.
+
+# Example
+
+Here is `[[19,1, 5]]` color code following the `6.6.6` tiling:
+
+```jldoctest
+julia> import HiGHS; import JuMP; # hide
+
+julia> using QuantumClifford.ECC: Triangular666, DistanceMIPAlgorithm; # hide
+
+julia> c = Triangular666(5);
+
+julia> code = Stabilizer(c)
++ XXXX_______________
++ _X_X_XX____________
++ __XXXX_XX__________
++ ____X__X__XX_______
++ _________X___X___XX
++ _____XX_XX__XX_____
++ _______XX__XX__XX__
++ __________XX__XX___
++ ____________XX__XX_
++ ZZZZ_______________
++ _Z_Z_ZZ____________
++ __ZZZZ_ZZ__________
++ ____Z__Z__ZZ_______
++ _________Z___Z___ZZ
++ _____ZZ_ZZ__ZZ_____
++ _______ZZ__ZZ__ZZ__
++ __________ZZ__ZZ___
++ ____________ZZ__ZZ_
+
+julia> distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+5
+```
+
 More information can be seen in [landahl2011color](@cite)"""
 struct Triangular666 <: TriangularCode
     d::Int
@@ -34,12 +104,19 @@ end
 Triangular488() = Triangular488(3) # smallest d
 Triangular666() = Triangular666(3) # smallest d
 
+function iscss(::Type{TriangularCode})
+    return true
+end
+
+parity_matrix_x(c::TriangularCode) = _colorcode_get_check_matrix(c)
+parity_matrix_z(c::TriangularCode) = _colorcode_get_check_matrix(c)
+
 function parity_checks(c::TriangularCode)
     matrix = _colorcode_get_check_matrix(c)
     return parity_checks(CSS(matrix, matrix))
 end
 
-function _colorcode_get_check_matrix(c::Triangular666) 
+function _colorcode_get_check_matrix(c::Triangular666)
     n = code_n(c)
     num_checks = (n-1)÷2
     num_layers = (c.d-1)÷2
@@ -88,11 +165,11 @@ function _colorcode_get_check_matrix(c::Triangular666)
         for j in 1:(layer-1)
             init_pos = i+(j-1)*2+(layer-1)*2+1
             checks[checks_written+1, init_pos] = 1
-            checks[checks_written+1, init_pos+1] = 1 
-            checks[checks_written+1, init_pos+2*layer] = 1 
-            checks[checks_written+1, init_pos+2*layer+1] = 1 
-            checks[checks_written+1, init_pos+4*layer] = 1 
-            checks[checks_written+1, init_pos+4*layer+1] = 1 
+            checks[checks_written+1, init_pos+1] = 1
+            checks[checks_written+1, init_pos+2*layer] = 1
+            checks[checks_written+1, init_pos+2*layer+1] = 1
+            checks[checks_written+1, init_pos+4*layer] = 1
+            checks[checks_written+1, init_pos+4*layer+1] = 1
 
             checks_written += 1
         end
@@ -120,7 +197,7 @@ function _colorcode_get_check_matrix(c::Triangular488)
     num_checks = (n-1)÷2
     num_layers = (c.d-1)÷2
     checks = zeros(Bool, num_checks, n)
-    
+
     i = 1
     checks_written = 0
     for layer in 1:num_layers
@@ -190,7 +267,7 @@ function _colorcode_get_check_matrix(c::Triangular488)
             checks_written += 1
         end
 
-        i += 4*layer  
+        i += 4*layer
     end
     return checks
 end
@@ -206,6 +283,6 @@ function iscss(::ColorCode)
 end
 
 # From https://arxiv.org/abs/1108.5738 Fig. 2's caption:
-code_n(c::Triangular488) = 0.5*c.d^2+c.d-0.5 |> Int
-code_n(c::Triangular666) = 0.75*c.d^2+.25 |> Int
+code_n(c::Triangular488) = (c.d^2+2c.d-1)÷2
+code_n(c::Triangular666) = (3*c.d^2+1)÷4
 code_k(c::TriangularCode) = 1
