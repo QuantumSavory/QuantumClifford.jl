@@ -233,7 +233,8 @@
                 for ϕ in test_phases
                     i = rand(1:n)
                     nc = embed(n, i, pcPhase(ϕ))
-                apply!(genstab, nc)
+                    apply!(genstab, nc)
+                end
             end
         end
         for n in num_qubits
