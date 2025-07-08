@@ -44,7 +44,8 @@ test_gb_codes = [
 ]
 
 test_hcubic_codes = [
-    haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 3)
+    haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 3),
+    haah_cubic_codes(8), # (D) [[1024, 30, 13 ≤ d ≤ 32]] Appendix B of [panteleev2021degenerate](@cite).
 ]
 
 # honeycomb color codes from [eberhardt2024logical](@cite).

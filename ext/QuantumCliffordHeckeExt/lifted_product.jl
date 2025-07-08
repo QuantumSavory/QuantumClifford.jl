@@ -172,7 +172,8 @@ then you pick two polynomials made of the group generators,
 and then, behind the scenes, these two polynomials `a` and `b` are piped
 to the lifted product code constructor as the elements of `1×1` matrices.
 
-See also: [`QuantumClifford.ECC.LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
+See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref),
+[`honeycomb_color_codes`](@ref).
 
 ## Examples of 2BGA code subfamilies
 
@@ -288,10 +289,6 @@ julia> import HiGHS
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (108, 12, 6)
 ```
-
-See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref),
-[`honeycomb_color_codes`](@ref).
-
 """
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
     LPCode([a;;], [b;;])
@@ -350,8 +347,7 @@ where `a` and `b` are conjugate to each other.
 The order of the cyclic group is `l`, and the shifts `a_shifts` and `b_shifts` are reverse to each other.
 Thus you need to provide only the `a_shifts` and the rest of the conversions and conjugations are taken care of.
 
-See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`haah_cubic_codes`](@ref),
-[`honeycomb_color_codes`](@ref).
+See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
 """ # TODO doctest example
 function bicycle_codes(a_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
@@ -383,16 +379,46 @@ julia> c = haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 6);
 julia> code_n(c), code_k(c)
 (432, 8)
 ```
-
-See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref),
-[`honeycomb_color_codes`](@ref).
-
 """
 function haah_cubic_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group([l,l,l]))
     a = sum(GA[n%dim(GA)+1] for n in a_shifts)
     b = sum(GA[n%dim(GA)+1] for n in b_shifts)
     two_block_group_algebra_codes(a, b)
+end
+
+"""
+Haah’s cubic code is defined as ``\\text{LP}(1 + x + y + z, 1 + xy + xz + yz)``
+where ``\\text{LP}`` is the lifted product code, and `x`, `y`, `z` are elements
+of the ring ``R = \\mathbb{F}_2[x, y, z] / (x^L - 1, y^L - 1, z^L - 1)``. Here
+``\\mathbb{F}_2`` is the finite field of order `2` and `L` is the lattice size.
+The ring ``R`` is the group algebra ``\\mathbb{F}_qG`` of a finite group `G`, where
+``G = (C_L)^3`` and ``C_L`` is the cyclic group of order `L`. This method of Haah's
+cubic code construction is outlined in Appendix B of [panteleev2022asymptotically](@cite).
+
+Here is an example of a `[[1024, 30, 13 ≤ d ≤ 32]]` Haah's cubic code from Appendix B,
+code D of [panteleev2021degenerate](@cite) on the `8 × 8 × 8` Lattice.
+
+```jldoctest
+julia> import Hecke; using QuantumClifford.ECC;
+
+julia> l = 8;
+
+julia> c = haah_cubic_codes(l);
+
+julia> code_n(c), code_k(c)
+(1024, 30)
+```
+
+See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref),
+[`honeycomb_color_codes`](@ref).
+"""
+function haah_cubic_codes(l::Int)
+    GA = group_algebra(GF(2), abelian_group([l,l,l]))
+    x, y, z = gens(GA)
+    c = [1 + x + y + z;;]
+    d = [1 + x*y + x*z + y*z;;]
+    LPCode(c,d)
 end
 
 """
