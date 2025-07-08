@@ -398,7 +398,8 @@ end
 """
 The honeycomb color codes [eberhardt2024logical](@cite) are exactly the Bivariate
 Bicycle (BB) codes defined by the polynomials `c = 1 + x + xy` and `d = 1 + y + xy`,
-provided that both `ℓ` and `m` are divisible by three.
+provided that both `ℓ` and `m` are divisible by three. This `6.6.6` code is an example of BB
+code, as it represents a special case.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/triangular_color).
 
