@@ -29,5 +29,5 @@ function check_repr_regular_linear(GA::GroupAlgebra)
     R_a = representation_matrix(a, :right)
     R_b = representation_matrix(b, :right)
     R_ba = representation_matrix(b*a, :right)
-    return L_a * L_b == L_ab && R_a * R_b == R_ba
+    return L_a*L_b == L_ab && R_a*R_b == R_ba
 end
