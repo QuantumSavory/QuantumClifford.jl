@@ -1,5 +1,3 @@
-abstract type ClassicalCode end
-
 """
 The family of `[2ʳ - 1, 2ʳ - 1 - r, 3]` Hamming binary codes were discovered
 by Richard W. Hamming in his 1950 paper [hamming1950error](@cite) as a way of
