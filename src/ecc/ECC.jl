@@ -32,7 +32,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     haah_cubic_codes, twobga_from_fp_group, twobga_from_direct_product,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
-    Triangular488, Triangular666,
+    Triangular488, Triangular666, honeycomb_color_codes,
     d_dimensional_surface_codes, d_dimensional_toric_codes, DDimensionalCode, pcms,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
@@ -397,6 +397,7 @@ include("codes/concat.jl")
 include("codes/random_circuit.jl")
 include("codes/classical/bch.jl")
 include("codes/classical/golay.jl")
+include("codes/classical/hamming.jl")
 include("codes/color_codes.jl")
 
 # qLDPC

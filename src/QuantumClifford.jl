@@ -92,7 +92,7 @@ export
     # petrajectories
     petrajectories, applybranches,
     # nonclifford
-    GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT,
+    GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
@@ -163,24 +163,27 @@ include("pauli_operator.jl")
 """Internal Tableau type for storing a list of Pauli operators in a compact form.
 No special semantic meaning is attached to this type, it is just a convenient way to store a list of Pauli operators.
 E.g. it is not used to represent a stabilizer state, or a stabilizer group, or a Clifford circuit."""
-struct Tableau{Tₚᵥ<:AbstractVector{UInt8}, Tₘ<:AbstractMatrix{<:Unsigned}}
-    phases::Tₚᵥ
+struct Tableau{
+    P <: AbstractVector{<: Unsigned}, XZ <: AbstractMatrix{<: Unsigned}
+}
+    phases::P
     nqubits::Int
-    xzs::Tₘ
+    xzs::XZ
 end
 
 function Tableau(paulis::Base.AbstractVecOrTuple{PauliOperator})
     r = length(paulis)
     n = nqubits(paulis[1])
-    T = eltype(paulis[1].xz)
-    tab = zero(Tableau{Vector{UInt8},Matrix{T}},r,n)
+    P = eltype(paulis[1].phase)
+    XZ = eltype(paulis[1].xz)
+    tab = zero(Tableau{Vector{P},Matrix{XZ}},r,n)
     for i in eachindex(paulis)
         tab[i] = paulis[i]
     end
     tab
 end
 
-function Tableau(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
+function Tableau(phases::AbstractVector{<: Unsigned}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
     r_xs = size(xs, 1)
     r_zs = size(zs, 1)
     if length(phases) != r_xs || r_xs != r_zs
@@ -195,7 +198,7 @@ function Tableau(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::Ab
     )
 end
 
-Tableau(phases::AbstractVector{UInt8}, xzs::AbstractMatrix{Bool}) = Tableau(phases, xzs[:,1:end÷2], xzs[:,end÷2+1:end])
+Tableau(phases::AbstractVector{<: Unsigned}, xzs::AbstractMatrix{Bool}) = Tableau(phases, xzs[:,1:end÷2], xzs[:,end÷2+1:end])
 
 Tableau(xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Tableau(zeros(UInt8, size(xs,1)), xs, zs)
 
@@ -243,7 +246,7 @@ function Base.setindex!(tab::Tableau, t::Tableau, i)
     tab
 end
 
-function Base.setindex!(tab::Tableau{Tₚᵥ,Tₘ}, (x,z)::Tuple{Bool,Bool}, i, j) where {Tₚᵥ<:AbstractVector{UInt8}, Tₘₑ<:Unsigned, Tₘ<:AbstractMatrix{Tₘₑ}} # TODO this has code repetitions with the Pauli setindex
+function Base.setindex!(tab::Tableau{Tₚᵥ,Tₘ}, (x,z)::Tuple{Bool,Bool}, i, j) where {Tₚᵥ, Tₘₑ<:Unsigned, Tₘ<:AbstractMatrix{Tₘₑ}} # TODO this has code repetitions with the Pauli setindex
     if x
         tab.xzs[_div(Tₘₑ,j-1)+1,        i] |= Tₘₑ(0x1)<<_mod(Tₘₑ,j-1)
     else
@@ -278,20 +281,21 @@ Base.hash(t::Tableau, h::UInt) = hash(t.nqubits, hash(t.phases, hash(t.xzs, h)))
 
 Base.copy(t::Tableau) = Tableau(copy(t.phases), t.nqubits, copy(t.xzs))
 
-function Base.zero(::Type{Tableau{Tₚᵥ, Tₘ}}, r, q) where {Tₚᵥ,T<:Unsigned,Tₘ<:AbstractMatrix{T}}
-    phases = zeros(UInt8,r)
-    xzs = zeros(UInt, _nchunks(q,T), r)
-    Tableau(phases, q, xzs)::Tableau{Vector{UInt8},Matrix{UInt}}
+function Base.zero(::Type{Tableau{PV, XZM}}, r, q) where {
+    P <: Unsigned, PV <: AbstractVector{P},
+    XZ <: Unsigned, XZM <: AbstractMatrix{XZ}
+}
+    return Tableau(zeros(P, r), q, zeros(XZ, _nchunks(q, XZ), r))
 end
 Base.zero(::Type{Tableau}, r, q) = zero(Tableau{Vector{UInt8},Matrix{UInt}}, r, q)
 Base.zero(::Type{T}, q) where {T<:Tableau}= zero(T, q, q)
 Base.zero(s::T) where {T<:Tableau} = zero(T, length(s), nqubits(s))
 
 """Zero-out a given row of a [`Tableau`](@ref)"""
-@inline function zero!(t::Tableau,i)
-    t.xzs[:,i] .= zero(eltype(t.xzs))
-    t.phases[i] = 0x0
-    t
+@inline function zero!(t::Tableau{P, XZ}, i) where {P, XZ}
+    fill!((@view t.phases[i]), zero(eltype(P)))
+    fill!((@view t.xzs[:, i]), zero(eltype(XZ)))
+    return t
 end
 
 ##############################
@@ -397,10 +401,10 @@ struct Stabilizer{T<:Tableau} <: AbstractStabilizer
     tab::T
 end
 
-Stabilizer(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ<:AbstractVector{UInt8}, Tₘ<:AbstractMatrix{<:Unsigned}} = Stabilizer(Tableau(phases, nqubits, xzs))
+Stabilizer(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ<:AbstractVector{<: Unsigned}, Tₘ<:AbstractMatrix{<:Unsigned}} = Stabilizer(Tableau(phases, nqubits, xzs))
 Stabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator}) = Stabilizer(Tableau(paulis))
-Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xs, zs))
-Stabilizer(phases::AbstractVector{UInt8}, xzs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xzs))
+Stabilizer(phases::AbstractVector{<: Unsigned}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xs, zs))
+Stabilizer(phases::AbstractVector{<: Unsigned}, xzs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xzs))
 Stabilizer(xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tableau(xs,zs))
 Stabilizer(xzs::AbstractMatrix{Bool}) = Stabilizer(Tableau(xzs))
 Stabilizer(s::Stabilizer) = s
