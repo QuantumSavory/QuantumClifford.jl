@@ -157,5 +157,13 @@ function ghz(n::Int)
     s
 end
 
+"""
+Prepare a maximally mixed state of n qubits.
+"""
+function maximally_mixed(n)
+    tab = vcat(one(Stabilizer,n; basis=:X).tab, one(Stabilizer,n; basis=:Z).tab)
+    return MixedDestabilizer(tab, 0)
+end
+
 # TODO document these explicitly
 # TODO cluster states, toric code, planar code, other codes from python libraries

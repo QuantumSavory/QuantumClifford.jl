@@ -34,7 +34,7 @@
                 rs = random_stabilizer(nrows,n)
                 c = canonicalize!(copy(rs))
                 g, _, _, perm1, perm2 = canonicalize_gott!(copy(rs))
-                c1 = canonicalize!(permute!(permute!(copy(rs),perm1),perm2))
+                c1 = canonicalize!(permutesystems!(permutesystems!(copy(rs),perm1),perm2))
                 cg = canonicalize!(copy(g))
                 @test cg == c1
                 @test stab_looks_good(g)
@@ -82,4 +82,17 @@ end
     msa1 = canonicalize!(canonicalize_rref!(copy(mss))[1])
     msa2 = canonicalize!(copy(mss))
     @test stabilizerview(msa1) == stabilizerview(msa2) == sa1
+end
+
+@testitem "canonicalization of vectors of Paulis" begin
+    using QuantumClifford
+    p1 = [P"+XXX", P"-ZZI"]
+    p2 = (P"+XXX", P"-ZZI")
+    t = T"+XXX -ZZI"
+    s = S"+XXX -ZZI"
+    @test canonicalize!(p1) == canonicalize!(p2) == canonicalize!(copy(s))
+    @test canonicalize_gott!(p1) == canonicalize_gott!(p2) == canonicalize_gott!(copy(s))
+    @test canonicalize_rref!(p1) == canonicalize_rref!(p2) == canonicalize_rref!(copy(s))
+    @test canonicalize_clip!(p1) == canonicalize_clip!(p2) == canonicalize_clip!(copy(s))
+    @test canonicalize_noncomm(p1) == canonicalize_noncomm(p2) == canonicalize_noncomm(t)
 end

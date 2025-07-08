@@ -5,6 +5,7 @@ struct Register{T<:Tableau} <: AbstractQCState # TODO simplify type parameters (
     Register(s::MixedDestabilizer{T}, bits) where {T} = new{T}(s,bits)
 end
 
+Register(s::Register) = s
 Register(s,bits) = Register(MixedDestabilizer(s), bits)
 Register(s) = Register(s, Bool[])
 Register(s::MixedDestabilizer,nbits::Int) = Register(s, falses(nbits))
@@ -31,7 +32,8 @@ quantumstate(r::Register) = r.stab
 
 tab(r::Register) = tab(quantumstate(r))
 
-tensor(regs::Register...) = Register(tensor((quantumstate(r) for r in regs)...), [bit for r in regs for bit in r.bits])
+tensor(regs::Register...) = Register(tensor(quantumstate.(regs)...), [bit for r in regs for bit in r.bits])
+tensor(args::Union{Register, AbstractStabilizer}...) = tensor(Register.(args)...)
 
 function apply!(r::Register, op, args...; kwargs...)
     apply!(quantumstate(r), op, args...; kwargs...)
