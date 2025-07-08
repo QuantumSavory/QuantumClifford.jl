@@ -172,7 +172,8 @@ then you pick two polynomials made of the group generators,
 and then, behind the scenes, these two polynomials `a` and `b` are piped
 to the lifted product code constructor as the elements of `1×1` matrices.
 
-See also: [`QuantumClifford.ECC.LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
+See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref),
+[`honeycomb_color_codes`](@ref).
 
 ## Examples of 2BGA code subfamilies
 
@@ -409,7 +410,8 @@ julia> code_n(c), code_k(c)
 (1024, 30)
 ```
 
-See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref).
+See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref),
+[`honeycomb_color_codes`](@ref).
 """
 function haah_cubic_codes(l::Int)
     GA = group_algebra(GF(2), abelian_group([l,l,l]))
@@ -417,4 +419,35 @@ function haah_cubic_codes(l::Int)
     c = [1 + x + y + z;;]
     d = [1 + x*y + x*z + y*z;;]
     LPCode(c,d)
+end
+
+"""
+The honeycomb color codes [eberhardt2024logical](@cite) are exactly the Bivariate
+Bicycle (BB) codes defined by the polynomials `c = 1 + x + xy` and `d = 1 + y + xy`,
+provided that both `ℓ` and `m` are divisible by three. This `6.6.6` code is an example of BB
+code, as it represents a special case.
+
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/triangular_color).
+
+```jldoctest
+julia> import Hecke; using QuantumClifford.ECC;
+
+julia> ℓ = 9; m = 6;
+
+julia> c = honeycomb_color_codes(ℓ, m);
+
+julia> code_n(c), code_k(c)
+(108, 4)
+```
+
+See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref),
+[`honeycomb_color_codes`](@ref).
+"""
+function honeycomb_color_codes(ℓ::Int, m::Int)
+    (ℓ % 3 == 0 && m % 3 == 0) || throw(ArgumentError("Both ℓ and m must be divisible by 3"))
+    GA = group_algebra(GF(2), abelian_group([ℓ, m]))
+    x, y = gens(GA)
+    c = 1 + x + x*y
+    d = 1 + y + x*y
+    two_block_group_algebra_codes(c, d)
 end
