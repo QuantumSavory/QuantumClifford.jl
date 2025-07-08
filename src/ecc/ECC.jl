@@ -396,6 +396,7 @@ include("codes/concat.jl")
 include("codes/random_circuit.jl")
 include("codes/classical/bch.jl")
 include("codes/classical/golay.jl")
+include("codes/classical/hamming.jl")
 include("codes/color_codes.jl")
 
 # qLDPC
