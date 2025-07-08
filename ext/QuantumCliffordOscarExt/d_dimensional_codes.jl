@@ -51,15 +51,101 @@ function _repcode_chain_complex_full(L::Int)
 end
 
 """
+Constructs the D-dimensional surface code using chain complexes and ``\\mathbb{F}_2``-homology.
 
-# D-dimensional Surface Code
+## Homological Algebra Foundations of Quantum Error Correction
 
-The construction uses chain complexes and ``\\mathbb{F}_2``-homology. For a quantum
-code, we take the hypergraph product of two `2`-term chain complexes.
+The theory of chain complexes over ``\\mathbb{F}_2`` provides a unified framework for
+understanding error-correcting codes, where classical ``[n, k, d]`` codes correspond to
+`2`-term complexes and quantum CSS codes arise naturally as `3`-term complexes satisfying
+the commutativity condition ``H_Z^T H_X = 0``. This approach reveals deep connections between:
+
+- Homological algebra and code parameters
+- Boundary operators and parity check matrices
+- Chain complex [exactness](https://en.wikipedia.org/wiki/Exact_sequence) and code commutativity conditions
+
+## Chain Complex Structure
+
+A chain complex `C` is defined by:
+
+```math
+\\begin{aligned}
+C : C_n \\xrightarrow{\\partial_n} C_{n-1} \\xrightarrow{\\partial_{n-1}} \\cdots \\xrightarrow{\\partial_2} C_1 \\xrightarrow{\\partial_1} C_0
+\\end{aligned}
+```
+
+with boundary operators satisfying ``\\partial_i \\circ \\partial_{i+1} = 0``. We define:
+
+- **i-chains**: Elements of ``C_i``
+- **i-cycles**: ``Z_i(C) := \\ker \\partial_i``
+- **i-boundaries**: ``B_i(C) := \\mathrm{im} \\partial_{i+1}``
+- **i-th homology**: ``H_i(C) := Z_i(C)/B_i(C)``
+
+The dual complex has:
+
+- **i-cocycles**: ``Z^i(C) := \\ker \\partial_{i+1}^T``
+- **i-coboundaries**: ``B^i(C) := \\mathrm{im} \\partial_i^T``
+- **i-th cohomology**: ``H^i(C) := Z^i(C)/B^i(C)``
+
+### Classical QECs via Chain Complexes and ``\\mathbb{F_2}`` Homology
+
+An ``[n,k,d]`` classical code corresponds to a `2`-term complex:
+
+```math
+\\begin{aligned}
+0 \\rightarrow C_1 \\xrightarrow{\\partial_1 = H} C_0 \\rightarrow 0
+\\end{aligned}
+```
+
+where
+
+- ``C_1 = \\mathbb{F}_2^n`` (codeword space)
+- ``C_0 = \\mathbb{F}_2^{n-k}`` (syndrome space)
+- ``H`` is the parity check matrix
+
+### Quantum CSS via Chain Complexes and ``\\mathbb{F_2}`` Homology
+
+Quantum CSS codes extend this to `3`-term complexes:
+
+```math
+\\begin{aligned}
+C_2 \\xrightarrow{\\partial_2 = H_Z^T} C_1 \\xrightarrow{\\partial_1 = H_X} C_0
+\\end{aligned}
+```
+
+where
+
+- ``C_1 = \\mathbb{F}_2^n`` (physical qubits)
+- ``C_2 = \\mathbb{F}_2^{m_Z}`` (`Z`-stabilizers)
+- ``C_0 = \\mathbb{F}_2^{m_X}`` (`X`-stabilizers)
+
+with the condition ``\\partial_1 \\partial_2 = H_Z^TH_X = 0`` ensuring that CSS orthogonality is satisfied.
+
+For any chain complex, selecting two consecutive boundary operators
+defines a valid CSS code. When qubits are identified with the space ``C_i``,
+the code parameters are:
+
+- number of physical qubits: ``n = \\dim C_i``
+- number of logical qubits: ``k = \\dim H_i(C) = \\dim H^i(C)``
+- code distance: ``d = \\min\\{\\text{wt}(v) | v \\in (H_i(C) \\cup H^i(C))\\backslash\\{0\\}\\}``
+
+!!! note
+    Quantum error-correcting codes, which are represented as `3`-term chain complexes, can be
+    constructed by applying the homological or hypergraph product to two `2`-term chain complexes.
+
+## D-dimensional Surface Code
+
+We provide an explicit construction of the D-dimensional surface code
+within the framework of chain complexes and homology over ``\\mathbb{F_2}``.
+
+The quantum code is obtained by applying the homological product (or hypergraph
+product) to two `2`-term chain complexes. Our construction relies on taking the
+hypergraph product of these complexes.
 
 ## Double Complex
 
-Given chain complexes `C` and `D`, we form a double complex:
+Given chain complexes `C` and `D`, we construct a double complex derived from
+the tensor product of two `2`-term chain complexes:
 
 ```math
 \\begin{aligned}
@@ -85,6 +171,9 @@ with boundary maps:
 \\partial_i^E = \\bigoplus_{i=j+k} \\partial_j^v \\oplus \\partial_k^h
 \\end{aligned}
 ```
+
+The resulting chain complex, called the tensor product of `C` and `D`, `C ⊗ D`, enables
+the construction of a CSS code when selecting any three consecutive terms in its sequence.
 
 ## Subfamilies
 
