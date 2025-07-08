@@ -292,7 +292,7 @@ F_3 \\xrightarrow{\\partial_3^F} F_2 \\xrightarrow{\\partial_2^F} F_1 \\xrightar
 
 Here is an example of `[[12, 1, 2]]` `3D` Surface code with `L = 2` from [Berthusen_2024](@cite).
 
-```jldoctest
+```jldoctest threeDsurface
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore: parity_matrix;
 
 julia> D = 3; L = 2;
@@ -314,8 +314,23 @@ julia> code = parity_matrix(c)
 + _____ZZ__ZZ_
 + _______ZZZ_Z
 
-julia> code_n(c), code_k(c), distance(c)
-(12, 1, 2)
+julia> code_n(c), code_k(c)
+(12, 1)
+```
+
+!!! note
+    For the `3D` surface code, there is an asymmetry between the `Z`- and `X`-bases [Berthusen_2024](@cite).
+    Specifically, the `Z`-distance (``d_Z``) is `2`, whereas the `X`-distance (``d_X``) is `4`. As a result,
+    the code has the parameters `[[12, 1, 2]]`
+
+```jldoctest threeDsurface
+julia> import HiGHS; import JuMP;
+
+julia> dx = distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+4
+
+julia> dz = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z))
+2
 ```
 
 ### [[6L⁴ − 12L³ + 10L² − 4L + 1, 1, L²]] 4D surface code
@@ -500,20 +515,3 @@ end
 
 # All D-dimensional surface codes of [Berthusen_2024](@cite) have exactly 1 logical qubit
 code_k(c::DDimensionalCode) = 1
-
-function distance(c::DDimensionalCode)
-    D, L, code_type = c.D, c.L, c.type
-    if code_type == :Surface
-        if D == 2
-            return L # 2D surface code: [[L² + (L-1)², 1, L]]
-        elseif D == 3
-            return min(L, L^2) # 3D surface code: [[L³ + 2L(L-1)², 1, min(L,L²)]]
-        elseif D == 4
-            return L^2 # 4D surface code: [[6L⁴-12L³+10L²-4L+1, 1, L²]]
-        else
-            throw(ArgumentError("Surface code distance not implemented for D=$D > 4. See Berthusen et al. (A4) for the general algorithm."))
-        end
-    else
-        throw(ArgumentError("D-dimensional Toric code distance calculation not yet implemented. See Berthusen et al. (A4) for the general algorithm."))
-    end
-end
