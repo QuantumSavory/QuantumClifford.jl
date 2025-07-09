@@ -1422,7 +1422,7 @@ include("useful_states.jl")
 #
 include("experimental/Experimental.jl")
 #
-include("graphs.jl")
+include("./graphs/graphs.jl")
 #
 include("entanglement.jl")
 #
