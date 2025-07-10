@@ -21,11 +21,11 @@ An `[[16, 6, 4]]` Delfosse-Reichardt code of from `[[8p, 6(p−1), 4]]` code fam
 from [delfosse2020short](@cite).
 
 ```jldoctest
-julia> using QuantumClifford; using QuantumClifford.ECC; # hide
+julia> using QuantumClifford; using QuantumClifford.ECC: DelfosseReichardt, code_n, code_k; import QECCore: parity_matrix # hide
 
 julia> p = 2; r = 1; m = 3;
 
-julia> c = parity_checks(DelfosseReichardt(p,r,m))
+julia> c = parity_matrix(DelfosseReichardt(p,r,m))
 + XXXXXXXX________
 + ________XXXXXXXX
 + XXXX____XXXX____
@@ -46,11 +46,11 @@ julia> code_n(c), code_k(c)
 An `[[32, 20, 4]]` Delfosse-Reichardt code of from `[[16p, 14p − 8, 4]]` code family
 
 ```jldoctest
-julia> using QuantumClifford; using QuantumClifford.ECC; # hide
+julia> using QuantumClifford; using QuantumClifford.ECC: DelfosseReichardt, code_n, code_k; import QECCore: parity_matrix # hide
 
 julia> p = 2; r = 2; m = 4;
 
-julia> c = parity_checks(DelfosseReichardt(p,r,m))
+julia> c = parity_matrix(DelfosseReichardt(p,r,m))
 + XXXXXXXXXXXXXXXX________________
 + ________________XXXXXXXXXXXXXXXX
 + XXXXXXXX________XXXXXXXX________
@@ -68,7 +68,7 @@ julia> code_n(c), code_k(c)
 (32, 20)
 ```
 """
-struct DelfosseReichardt <: AbstractECC
+struct DelfosseReichardt <: AbstractCSSCode
     blocks::Int
     r::Int
     m::Int
@@ -81,13 +81,9 @@ struct DelfosseReichardt <: AbstractECC
     end
 end
 
-function iscss(::Type{DelfosseReichardt})
-    return true
-end
-
 function _generalize_delfosse_reichardt_code(blocks::Int, r::Int, m::Int)
-    # base matrix: Reed-Muller paritycheck matrix
-    H = parity_checks(ReedMuller(r,m))
+    # base matrix: Reed-Muller parity check matrix
+    H = parity_matrix(ReedMuller(r,m))
     r, c = size(H)
     new_c = blocks*c
     extended_H = zeros(Bool, r+blocks-1, new_c)
@@ -112,7 +108,7 @@ function _generalize_delfosse_reichardt_code(blocks::Int, r::Int, m::Int)
     return extended_H
 end
 
-function parity_checks(c::DelfosseReichardt)
+function parity_matrix(c::DelfosseReichardt)
     extended_mat = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)
     hx, hz = extended_mat, extended_mat
     code = CSS(hx, hz)
@@ -123,6 +119,6 @@ code_n(c::DelfosseReichardt) = 8*c.blocks*c.r
 
 code_k(c::DelfosseReichardt) = (8*c.r − 2)*c.blocks − 2*c.m
 
-parity_checks_x(c::DelfosseReichardt) = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)
+parity_matrix_x(c::DelfosseReichardt) = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)
 
-parity_checks_z(c::DelfosseReichardt) = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)
+parity_matrix_z(c::DelfosseReichardt) = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)
