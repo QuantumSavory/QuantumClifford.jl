@@ -1,12 +1,13 @@
 @testitem "ECC [[8rp, (8r − 2)p − 2m, 4]] Delfosse-Reichardt code" begin
 
+    using JuMP
+    using HiGHS
     using LinearAlgebra
     using QuantumClifford
     using QuantumClifford.ECC
-    using HiGHS
-    using JuMP
-    using QuantumClifford.ECC: DelfosseReichardt, _generalize_delfosse_reichardt_code, DistanceMIPAlgorithm
     using Nemo: matrix, GF, echelon_form
+    using QuantumClifford.ECC: DelfosseReichardt, _generalize_delfosse_reichardt_code, DistanceMIPAlgorithm
+    using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate, parity_matrix
 
     @testset "Testing [[8rp, (8r − 2)p − 2m, 4]] DelfosseRepCode properties" begin
         # TODO use MIP solver to test minimum distance
