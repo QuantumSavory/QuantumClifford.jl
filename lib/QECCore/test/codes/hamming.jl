@@ -5,8 +5,6 @@
     using Nemo: matrix, GF, echelon_form
     using Test
 
-    # using QECCore: code_k, code_n, distance, rate, parity_matrix
-
     function minimum_distance(H)
         n = size(H, 2)
         min_dist = n + 1
