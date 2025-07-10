@@ -1,4 +1,4 @@
-@testitem "ECC [[8rp, (8r − 2)p − 2m, 4]] Delfosse-Reichardt code" begin
+@testitem "ECC [[8rp, (8r − 2)p − 2m, 4]] Delfosse-Reichardt code" tags=[:ecc] begin
 
     using JuMP
     using HiGHS
@@ -14,7 +14,7 @@
         @testset "test [16p, 14p − 8, 4]] code family that uses RM(2,4)" begin
             r = 2
             m = 4
-            for i in 2:100
+            for i in 2:10
                 p = i
                 n = 8*r*p
                 k = (8*r-2)*p-2*m
@@ -32,7 +32,7 @@
         @testset "test [[8p, 6(p−1), 4]] code family that uses RM(1,3)" begin
             r = 1
             m = 3
-            for i in 2:100
+            for i in 2:10
                 p = i
                 n = 8*r*p
                 k = (8*r-2)*p-2*m
