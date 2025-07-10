@@ -1,6 +1,5 @@
 """
-    Surface <: AbstractCSSCode
-    Surface(dx, dz)
+    $TYPEDEF
 
 The planar surface code refers to the code [kitaev2003fault](@cite) in a 2D lattice with open boundaries.
 Illustration of a 3×2 surface code, where qubits are located on the edges:
@@ -15,7 +14,7 @@ Illustration of a 3×2 surface code, where qubits are located on the edges:
 
 The surface code has open boundary conditions, unlike the toric code. To this end, we remove qubits (denoted by "o") and parity checks on the right and bottom sides.
 
-Faces like `(1,4,7)` have X checks, and crosses like `(1,2,7)` have Z checks. Due to the removal of the bottom and right sides, we have some 3-qubit checks on the boundaries.
+Faces like `(1,4,7)` have `X` checks, and crosses like `(1,2,7)` have `Z` checks. Due to the removal of the bottom and right sides, we have some 3-qubit checks on the boundaries.
 
 The parity checks of `Surface(3,2)` are:
 ```
@@ -31,11 +30,13 @@ ____ZZ_Z
 More information can be seen in [fowler2012surface](@cite).
 
 ### Fields
-- `dx::Int`: The number of qubits in the x direction.
-- `dz::Int`: The number of qubits in the z direction.
+    $TYPEDFIELDS
+
 """
 struct Surface <: AbstractCSSCode
+    """The number of qubits in the `x` direction."""
     dx::Int
+    """The number of qubits in the `z` direction."""
     dz::Int
 end
 

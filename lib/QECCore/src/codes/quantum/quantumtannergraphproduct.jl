@@ -1,15 +1,10 @@
-using Graphs
-using Graphs: Graph, SimpleGraph, add_edge!, neighbors, src, dst, has_edge
-using SparseArrays
-using LinearAlgebra
-
 """
 Constructs a *Tanner graph* from a given parity-check matrix `H`, where
 rows correspond to *check nodes* and columns to *variable nodes*.
 
 The resulting *bipartite* graph indexes variable nodes as `1:n` and check
 nodes as `n+1:n+m` for an `m × n` matrix `H`."""
-function tanner_graph_from_parity_matrix(H::SparseMatrixCSC{Bool,Int})
+function tanner_graph_from_parity_matrix(H::AbstractMatrix)
     m, n = size(H)
     g = SimpleGraph(n + m)
     var_nodes = collect(1:n)
@@ -92,13 +87,13 @@ The `𝑄(𝐺₁ × 𝐺₂)` quantum LDPC codes represent a broader generaliza
 expander codes** which are derived from the Leverrier-Tillich-Zémor construction [tillich2013quantum](@cite).
 
 ```jldoctest examples
-julia> using QuantumClifford; using QuantumClifford.ECC; # hide
+julia> using QuantumClifford; using QuantumClifford.ECC; using QECCore
 
 julia> using SparseArrays; # hide
 
-julia> H1 = sparse(Bool[1 0 1 0; 0 1 0 1; 1 1 0 0]);
+julia> H1 = [1 0 1 0; 0 1 0 1; 1 1 0 0];
 
-julia> H2 = sparse(Bool[1 1 0;0 1 1]);
+julia> H2 = [1 1 0;0 1 1];
 
 julia> c = parity_checks(QuantumTannerGraphProduct(H1, H2))
 + X_____X_____X_____
@@ -127,7 +122,7 @@ The `𝑄(𝐺₁ × 𝐺₂)` code is more general than the standard quantum ex
 corresponds to the specific case where `G = G1 = G2`​.
 
 ```jldoctest examples
-julia> H = sparse(parity_checks(RepCode(3)));
+julia> H = parity_matrix(RepCode(3));
 
 julia> c = parity_checks(QuantumTannerGraphProduct(H, H))
 + X__X_____X_X______
@@ -151,18 +146,20 @@ julia> c = parity_checks(QuantumTannerGraphProduct(H, H))
 ```
 
 """
-struct QuantumTannerGraphProduct <: AbstractECC
+struct QuantumTannerGraphProduct <: AbstractCSSCode
+    """The classical seed code for the the quantum tanner graph code."""
     H1::AbstractMatrix
+    """The classical seed code for the the quantum tanner graph code."""
     H2::AbstractMatrix
 end
 
-parity_checks_xz(c::QuantumTannerGraphProduct) = hgp(c.H1, c.H2)
+parity_matrix_xz(c::QuantumTannerGraphProduct) = hgp(c.H1, c.H2)
 
 """ Constructs a 𝑄(𝐺₁ × 𝐺₂) quantum Tanner graph product code
 using cyclic Tanner graphs of length `2m`.
 
 ```jldoctest
-julia> using QuantumClifford; using QuantumClifford.ECC; # hide
+julia> using QuantumClifford; using QuantumClifford.ECC;
 
 julia> m = 10;
 
@@ -172,16 +169,16 @@ julia> code_n(c), code_k(c)
 (800, 2)
 ```
 """
-struct CyclicQuantumTannerGraphProduct <: AbstractECC
+struct CyclicQuantumTannerGraphProduct <: AbstractCSSCode
     m::Int
     function CyclicQuantumTannerGraphProduct(m::Int)
-        m > 0 || throw(ArgumentError("m must be positive"))
+        m > 0 || throw(ArgumentError("m must be positive."))
         new(m)
     end
 end
 
-function parity_checks_xz(Q::CyclicQuantumTannerGraphProduct)
-    n = 2 * Q.m
+function parity_matrix_xz(Q::CyclicQuantumTannerGraphProduct)
+    n = 2*Q.m
     G1 = cycle_tanner_graph(n)
     G2 = cycle_tanner_graph(n)
     H1 = parity_matrix_from_tanner_graph(G1.graph, G1.left, G1.right)
@@ -189,12 +186,7 @@ function parity_checks_xz(Q::CyclicQuantumTannerGraphProduct)
     return hgp(H1, H2)
 end
 
-iscss(::Type{<:Union{QuantumTannerGraphProduct,CyclicQuantumTannerGraphProduct}}) = true
 
-parity_checks_x(c::Union{QuantumTannerGraphProduct,CyclicQuantumTannerGraphProduct}) = parity_checks_xz(c)[1]
-parity_checks_z(c::Union{QuantumTannerGraphProduct,CyclicQuantumTannerGraphProduct}) = parity_checks_xz(c)[2]
+parity_matrix_x(c::Union{QuantumTannerGraphProduct,CyclicQuantumTannerGraphProduct}) = parity_matrix_xz(c)[1]
 
-function parity_checks(c::Union{QuantumTannerGraphProduct,CyclicQuantumTannerGraphProduct})
-    hx, hz = parity_checks_xz(c)
-    return parity_checks(CSS(hx, hz))
-end
+parity_matrix_z(c::Union{QuantumTannerGraphProduct,CyclicQuantumTannerGraphProduct}) = parity_matrix_xz(c)[2]

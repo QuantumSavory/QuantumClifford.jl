@@ -7,22 +7,22 @@
 
 ## v0.10.1-dev
 
+- Quantum Tanner graph product codes: general and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`)
 - introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
 - The phase storage type can now be parameterized, instead of hardcoded to UInt8.
 - Drop support for Julia 1.9.
 - Add convenience wrappers for code families: `honeycomb_color_codes` and `haah_cubic_codes` via `LPCode` construction.
+- Some codes are moved to `QECCore` from `QuantumClifford`, including `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`.
 
 ### Private API
 
 These changes affect internal implementation details - external packages should not rely on these!
+- Add `check_repr_regular_linear` to verify `F`-linear regular representation for group algebra elements.
 - Add `[2ʳ-1, 2ʳ-1-r, 3]` Hamming code.
 
 ## v0.10.0 - 2025-07-02
 
-- Quantum Tanner graph product codes:
-    - `Q(G×G)` Quantum expander code (Tanner graph `G`)
-    - General and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`)
 - **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
 - **(fix)** Paulis with imaginary phases had their phases incorrectly tracked.
 - **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in non-Clifford functionality.

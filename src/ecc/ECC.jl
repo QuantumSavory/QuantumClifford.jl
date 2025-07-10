@@ -1,7 +1,7 @@
 module ECC
 
 using QECCore
-import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix
+import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -392,19 +392,12 @@ include("decoder_pipeline.jl")
 
 include("codes/util.jl")
 
-include("codes/gottesman.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
 include("codes/classical/bch.jl")
-include("codes/classical/golay.jl")
-include("codes/classical/hamming.jl")
-include("codes/color_codes.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
-
-# qexpander
-include("codes/quantumtannergraphproductcode.jl")
 
 end #module
