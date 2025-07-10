@@ -11,6 +11,7 @@ function _apply_vop!(vops::Vector{SingleQubitOperator}, op::AbstractSingleQubitO
     # A trick that performs slightly better than directly op_prime * CliffordOperator(vops[q])
     # as converting to `CliffordOperator` is expensive
     vops[q] = SingleQubitOperator(op_prime * (vops[q] * clifford_id1))
+    return vops
 end
 
 # NOTE: Not tested yet, so commented out for now
@@ -25,9 +26,17 @@ end
 struct GraphState{G, S}
     # Graph representing the graph state
     graph::G
-    # Vertex Operators that need to be applied to a stabilizer state
-    # before the state is representable as a "pure" graph state
+    # Vertex Operators that need to be applied to convert from a "pure" graph state
+    # to general a stabilizer state
     vops::Vector{S}
+end
+
+Base.copy(g::GraphState) = GraphState(copy(g.graph), copy(g.vops))
+
+# Applying a single qubit gate
+function apply!(gs::GraphState, op::AbstractSingleQubitOperator; phases::Bool = true)
+    _apply_vop!(gs.vops, op; phases)
+    return gs
 end
 
 nqubits(g::GraphState) = nv(g.graph)
@@ -40,14 +49,17 @@ vops(g::GraphState) = g.vops
 
 function GraphState(graph::G, h_idx::Vector{Int}, ip_idx::Vector{Int}, z_idx::Vector{Int}) where G
     vops = [SingleQubitOperator(sId1(1)) for _ in 1:nv(graph)]
-    for id in h_idx
-        _apply_vop!(vops, sHadamard(id))
-    end
-    for id in ip_idx
-        _apply_vop!(vops, sInvPhase(id))
-    end
+    # Apply the inverse of Z, InvPhase, H in this order to construct VOPs
+    # Remember our definition of VOPs is the operator that converts "pure" graph states
+    # to the wanted stabilizer state
     for id in z_idx
         _apply_vop!(vops, sZ(id))
+    end
+    for id in ip_idx
+        _apply_vop!(vops, sPhase(id))
+    end
+    for id in h_idx
+        _apply_vop!(vops, sHadamard(id))
     end
     GraphState{G, SingleQubitOperator}(graph, vops)
 end
@@ -58,8 +70,9 @@ end
 
 function Stabilizer(self::GraphState{<:AbstractGraph})
     s_raw = Stabilizer(self.graph)
+    # Apply VOPs to convert to the stabilizer state
     for id in eachindex(self.vops)
-        apply!(s_raw, SingleQubitOperator(inv(self.vops[id]), id))
+        apply!(s_raw, SingleQubitOperator(self.vops[id], id))
     end
     s_raw
 end
