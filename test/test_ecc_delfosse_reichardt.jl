@@ -3,7 +3,9 @@
     using LinearAlgebra
     using QuantumClifford
     using QuantumClifford.ECC
-    using QuantumClifford.ECC: DelfosseReichardt, _generalize_delfosse_reichardt_code
+    using HiGHS
+    using JuMP
+    using QuantumClifford.ECC: DelfosseReichardt, _generalize_delfosse_reichardt_code, DistanceMIPAlgorithm
     using Nemo: matrix, GF, echelon_form
 
     @testset "Testing [[8rp, (8r − 2)p − 2m, 4]] DelfosseRepCode properties" begin
@@ -15,11 +17,13 @@
                 p = i
                 n = 8*r*p
                 k = (8*r-2)*p-2*m
-                stab = parity_checks(DelfosseReichardt(p,r,m))
+                c = DelfosseReichardt(p,r,m)
+                stab = parity_matrix(c)
                 H = stab_to_gf2(stab)
                 mat = matrix(GF(2), H)
                 computed_rank = rank(mat)
                 @test computed_rank == n - k
+                @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
             end
         end
 
@@ -31,11 +35,13 @@
                 p = i
                 n = 8*r*p
                 k = (8*r-2)*p-2*m
-                stab = parity_checks(DelfosseReichardt(p,r,m))
+                c = DelfosseReichardt(p,r,m)
+                stab = parity_matrix(c)
                 H = stab_to_gf2(stab)
                 mat = matrix(GF(2), H)
                 computed_rank = rank(mat)
                 @test computed_rank == n - k
+                @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
             end
         end
 
