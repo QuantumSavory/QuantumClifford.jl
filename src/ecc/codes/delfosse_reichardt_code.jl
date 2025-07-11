@@ -21,11 +21,11 @@ An `[[16, 6, 4]]` Delfosse-Reichardt code of from `[[8p, 6(p−1), 4]]` code fam
 from [delfosse2020short](@cite).
 
 ```jldoctest
-julia> using QuantumClifford; using QuantumClifford.ECC: DelfosseReichardt, code_n, code_k; import QECCore: parity_matrix # hide
+julia> using QuantumClifford; using QuantumClifford.ECC: DelfosseReichardt, code_n, code_k, parity_checks; # hide
 
 julia> p = 2; r = 1; m = 3;
 
-julia> c = parity_matrix(DelfosseReichardt(p,r,m))
+julia> c = parity_checks(DelfosseReichardt(p, r, m))
 + XXXXXXXX________
 + ________XXXXXXXX
 + XXXX____XXXX____
@@ -46,11 +46,11 @@ julia> code_n(c), code_k(c)
 An `[[32, 20, 4]]` Delfosse-Reichardt code of from `[[16p, 14p − 8, 4]]` code family
 
 ```jldoctest
-julia> using QuantumClifford; using QuantumClifford.ECC: DelfosseReichardt, code_n, code_k; import QECCore: parity_matrix # hide
+julia> using QuantumClifford; using QuantumClifford.ECC: DelfosseReichardt, code_n, code_k, parity_checks; # hide
 
 julia> p = 2; r = 2; m = 4;
 
-julia> c = parity_matrix(DelfosseReichardt(p,r,m))
+julia> c = parity_checks(DelfosseReichardt(p, r, m))
 + XXXXXXXXXXXXXXXX________________
 + ________________XXXXXXXXXXXXXXXX
 + XXXXXXXX________XXXXXXXX________
