@@ -128,8 +128,8 @@ $FIELDS
 @kwdef struct DistanceMIPAlgorithm <: AbstractDistanceAlg
     """index of the logical qubit to compute code distance for (nothing means compute for all logical qubits)"""
     logical_qubit::Union{Int, Nothing}=nothing
-    """type of logical operator to consider (:X or :Z, defaults to :X) - both types yield identical distance results for CSS stabilizer codes."""
-    logical_operator_type::Symbol=:X
+    """type of logical operator to consider (:X or :Z, defaults to :minXZ)."""
+    logical_operator_type::Symbol=:minXZ
     """`JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`)"""
     solver::Module
     """when `true` (default=`false`), prints the MIP solver's solution summary"""
@@ -138,7 +138,7 @@ $FIELDS
     time_limit::Float64=60.0
 
     function DistanceMIPAlgorithm(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
-        logical_operator_type ∈ (:X, :Z) || throw(ArgumentError("`logical_operator_type` must be :X or :Z"))
+        logical_operator_type ∈ (:X, :Z, :minXZ) || throw(ArgumentError("`logical_operator_type` must be :X or :Z or :minXZ"))
         new(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
     end
 end

@@ -106,9 +106,6 @@ julia> parity_checks(c)
 + _______ZZ____Z____
 + _________ZZ___Z___
 + __________ZZ___Z__
-
-julia> code_n(c), code_k(c)
-(18, 1)
 ```
 
 # Quantum Expander code
@@ -141,9 +138,6 @@ julia> parity_checks(c)
 + ______ZZ____Z__Z__
 + _______ZZ____Z__Z_
 + ______Z_Z_____Z__Z
-
-julia> code_n(c), code_k(c)
-(18, 2)
 ```
 
 """
