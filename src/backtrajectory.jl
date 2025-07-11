@@ -34,7 +34,10 @@ function prepend_inv! end
 
 
 # FAST versions of prepend! and prepend_inv! for CliffordOperator - TODO
-prepend!(l::CliffordOperator, r; phases) = prepend!(l, CliffordOperator(r, nqubits(l)); phases=phases)
+function prepend!(l::CliffordOperator, r; phases)
+    @warn "Slow prepend! operation"
+    prepend!(l, CliffordOperator(r, nqubits(l)); phases=phases)
+end
 
 function prepend!(l::CliffordOperator, r::CliffordOperator; phases=false)
     nqubits(l)==nqubits(r) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
@@ -71,14 +74,43 @@ end
     new_lrow
 end
 
+
+function prepend_inv!(l::CliffordOperator, r; phases=false)
+    @warn "Slow prepend_inv! operation"
+    prepend!(l, inv(CliffordOperator(r, nqubits(l))); phases=phases)
+end
 function prepend_inv!(l::CliffordOperator, r::CliffordOperator; phases=false)
     prepend!(l, inv(r); phases=phases)
 end
 
-# SLOW
-function prepend_inv!(l::CliffordOperator, r; phases=false)
-    prepend!(l, inv(CliffordOperator(r, nqubits(l))); phases=phases)
+# Symbolic
+function prepend!(l::CliffordOperator, r::sX; phases=false)
+    tab(l).phases[nqubits(l)+r.q] ⊻= 0x02
+    return l
 end
+function prepend!(l::CliffordOperator, r::sY; phases=false)
+    tab(l).phases[r.q] ⊻= 0x02
+    tab(l).phases[nqubits(l)+r.q] ⊻= 0x02
+    return l
+end
+function prepend!(l::CliffordOperator, r::sZ; phases=false)
+    tab(l).phases[r.q] ⊻= 0x02
+    return l
+end
+
+function prepend_inv!(l::CliffordOperator, r::sX; phases=false)
+    tab(l).phases[nqubits(l)+r.q] ⊻= 0x02
+    return l
+end
+function prepend_inv!(l::CliffordOperator, r::sY; phases=false)
+    error("Not implemented: prepend_inv!(l, r::sY)")
+    return l
+end
+function prepend_inv!(l::CliffordOperator, r::sZ; phases=false)
+    tab(l).phases[r.q] ⊻= 0x02
+    return l
+end
+
 
 """
 Simulates measurement results of a Clifford circuit acting on an `n`-qubit |0⟩^⊗n state using the stabilizer tableau backtracking method,
