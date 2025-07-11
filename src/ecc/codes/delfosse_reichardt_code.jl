@@ -108,13 +108,6 @@ function _generalize_delfosse_reichardt_code(blocks::Int, r::Int, m::Int)
     return extended_H
 end
 
-function parity_matrix(c::DelfosseReichardt)
-    extended_mat = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)
-    hx, hz = extended_mat, extended_mat
-    code = CSS(hx, hz)
-    Stabilizer(code)
-end
-
 code_n(c::DelfosseReichardt) = 8*c.blocks*c.r
 
 code_k(c::DelfosseReichardt) = (8*c.r − 2)*c.blocks − 2*c.m
