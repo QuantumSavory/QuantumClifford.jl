@@ -2,7 +2,7 @@ using Test
 using QuantumClifford.ECC.QECCore
 using QuantumClifford
 using QuantumClifford.ECC
-using QuantumClifford.ECC: check_repr_commutation_relation, check_repr_regular_linear, DelfosseReichardtRepCode
+using QuantumClifford.ECC: check_repr_commutation_relation, check_repr_regular_linear
 using InteractiveUtils
 
 import Nemo: GF

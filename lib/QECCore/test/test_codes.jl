@@ -58,4 +58,8 @@
     @testset "hamming" begin
         include("codes/hamming.jl")
     end
+
+    @testset "Delfosse-Reichardt Repetition Code" begin
+        include("codes/delfosse_reichardt_repcode.jl")
+    end
 end

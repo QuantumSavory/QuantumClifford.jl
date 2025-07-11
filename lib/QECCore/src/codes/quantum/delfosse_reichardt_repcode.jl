@@ -1,4 +1,6 @@
 """
+    $TYPEDEF
+
 The `[[4p, 2(p − 2), 4]]` Delfosse-Reichardt repetition code is derived from the
 classical `[4, 1, 4]` repetition code and is used to construct quantum stabilizer code.
 
@@ -6,13 +8,13 @@ The `[4, 1, 4]` repetition code is a classical error-correcting code where each 
 is repeated four times to improve error detection and correction. It is defined by
 the following parity-check matrix:
 
-\$\$
+```math
 \\begin{pmatrix}
 1 & 1 & 1 & 1 \\\\
 0 & 0 & 1 & 1 \\\\
 0 & 1 & 0 & 1
 \\end{pmatrix}
-\$\$
+```
 
 The `[[4p, 2(p − 2), 4]]` codes were introduced by Delfosse and Reichardt in the
 paper *Short Shor-style syndrome sequences* [delfosse2020short](@cite). The parameter
@@ -22,7 +24,7 @@ valid, `p` must be a multiple of 2.
 An `[[24, 8, 4]]` Delfosse-Reichardt repetition code from [delfosse2020short](@cite).
 
 ```jldoctest
-julia> using QuantumClifford; using QuantumClifford.ECC: DelfosseReichardtRepCode, code_n, code_k; # hide
+julia> using QuantumClifford; using QuantumClifford.ECC # hide
 
 julia> c = parity_checks(DelfosseReichardtRepCode(6))
 + XXXX____________________
@@ -45,8 +47,12 @@ julia> c = parity_checks(DelfosseReichardtRepCode(6))
 julia> code_n(c), code_k(c)
 (24, 8)
 ```
+
+### Fields
+    $TYPEDFIELDS
 """
 struct DelfosseReichardtRepCode <: AbstractCSSCode
+    """The number of blocks in the Delfosse-Reichardt Repetition code."""
     blocks::Int
     function DelfosseReichardtRepCode(blocks)
         blocks < 2 && throw(ArgumentError("The number of blocks must be at least 2 to construct a valid code."))
@@ -71,10 +77,17 @@ function _extend_414_repetition_code(blocks::Int)
     return H
 end
 
-code_n(c::DelfosseReichardtRepCode) = 4*c.blocks
+function parity_matrix_xz(c::DelfosseReichardtRepCode)
+    extended_mat = _extend_414_repetition_code(c.blocks)
+    return extended_mat, extended_mat
+end
 
-code_k(c::DelfosseReichardtRepCode) = 2*(c.blocks - 2)
+parity_matrix(c::DelfosseReichardtRepCode) = parity_matrix(CSS(parity_matrix_xz(c)...))
 
 parity_checks_x(c::DelfosseReichardtRepCode) = _extend_414_repetition_code(c.blocks)
 
 parity_checks_z(c::DelfosseReichardtRepCode) = _extend_414_repetition_code(c.blocks)
+
+code_n(c::DelfosseReichardtRepCode) = 4*c.blocks
+
+code_k(c::DelfosseReichardtRepCode) = 2*(c.blocks - 2)

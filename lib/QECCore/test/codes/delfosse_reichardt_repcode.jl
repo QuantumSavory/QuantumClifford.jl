@@ -1,20 +1,26 @@
-@testitem "ECC [[4p, 2(p − 2), 4]] DelfosseReichardtRepCode" begin
+@testitem "[[4p, 2(p − 2), 4]] Delfosse-Reichardt RepCode" begin
 
-    using LinearAlgebra
+    using JuMP
+    using HiGHS
+    using QuantumClifford
     using QuantumClifford.ECC
-    using QuantumClifford.ECC: DelfosseReichardtRepCode, _extend_414_repetition_code, logz_ops, logx_ops
     using Nemo: matrix, GF
+    using QECCore.LinearAlgebra
+    using QECCore
+    using QECCore: _extend_414_repetition_code
 
-    @testset "Testing [[4p, 2(p − 2), 4]] DelfosseRepCode properties" begin
+    @testset "Testing [[4p, 2(p − 2), 4]] Delfosse-Reichardt RepCode properties" begin
         for i in 1:50
             p = 2*i
             n = 4*p
             k = 2*(p - 2)
-            stab = parity_checks(DelfosseReichardtRepCode(p))
+            c = DelfosseReichardtRepCode(p)
+            stab = parity_checks(c)
             H = stab_to_gf2(stab)
             mat = matrix(GF(2), H)
             computed_rank = rank(mat)
             @test computed_rank == n - k
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
         end
 
         # crosscheck parity check matrices from VIII. 1 Generalizing the [4, 1, 4]
