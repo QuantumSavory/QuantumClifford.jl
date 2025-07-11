@@ -116,7 +116,7 @@ function _generalize_delfosse_reichardt_code(blocks::Int, r::Int, m::Int)
     return extended_H
 end
 
-function parity_matrix_xz(c::DelfosseReichard)
+function parity_matrix_xz(c::DelfosseReichardt)
     extended_mat = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)
     return extended_mat, extended_mat
 end
