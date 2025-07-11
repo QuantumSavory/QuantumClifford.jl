@@ -7,10 +7,9 @@
     using QuantumClifford.ECC
     using Nemo: matrix, GF, echelon_form
     using QuantumClifford.ECC: DelfosseReichardt, _generalize_delfosse_reichardt_code, DistanceMIPAlgorithm
-    using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate, parity_matrix
+    using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate
 
     @testset "Testing [[8rp, (8r − 2)p − 2m, 4]] DelfosseRepCode properties" begin
-        # TODO use MIP solver to test minimum distance
         @testset "test [16p, 14p − 8, 4]] code family that uses RM(2,4)" begin
             r = 2
             m = 4
@@ -19,7 +18,7 @@
                 n = 8*r*p
                 k = (8*r-2)*p-2*m
                 c = DelfosseReichardt(p,r,m)
-                stab = parity_matrix(c)
+                stab = parity_checks(c)
                 H = stab_to_gf2(stab)
                 mat = matrix(GF(2), H)
                 computed_rank = rank(mat)
@@ -37,7 +36,7 @@
                 n = 8*r*p
                 k = (8*r-2)*p-2*m
                 c = DelfosseReichardt(p,r,m)
-                stab = parity_matrix(c)
+                stab = parity_checks(c)
                 H = stab_to_gf2(stab)
                 mat = matrix(GF(2), H)
                 computed_rank = rank(mat)
