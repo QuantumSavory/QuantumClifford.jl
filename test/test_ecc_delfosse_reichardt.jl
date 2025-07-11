@@ -27,7 +27,6 @@
             end
         end
 
-        # TODO use MIP solver to test minimum distance
         @testset "test [[8p, 6(p−1), 4]] code family that uses RM(1,3)" begin
             r = 1
             m = 3
