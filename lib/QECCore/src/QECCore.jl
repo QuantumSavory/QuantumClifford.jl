@@ -7,6 +7,8 @@ using Graphs
 
 using DocStringExtensions
 
+using DocStringExtensions
+
 # interfaces
 export distance, parity_matrix, code_n, code_s, code_k, parity_matrix_x, parity_matrix_z, parity_matrix_xz, rate, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix
 export AbstractECC, AbstractQECC, AbstractCECC, AbstractCSSCode, AbstractDistanceAlg
@@ -15,6 +17,7 @@ export AbstractECC, AbstractQECC, AbstractCECC, AbstractCSSCode, AbstractDistanc
 export Perfect5, Cleve8, Gottesman
 
 # CSS Codes
+
 export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMuller, Triangular488, Triangular666, QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct
 
 # Classical Codes
