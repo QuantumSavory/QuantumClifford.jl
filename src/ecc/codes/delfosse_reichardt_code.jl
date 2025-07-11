@@ -1,14 +1,17 @@
 """
+    $TYPEDEF
+
 The `[[8rp, (8r − 2)p − 2m, 4]]` Delfosse-Reichardt code is derived from the classical
 Reed-Muller code and is used to construct quantum stabilizer code.
 
 Delfosse and Reichardt utilize the `[8, 4, 4]` Reed-Muller code to construct `[[8p, 6(p−1), 4]]`
 self-dual CSS quantum codes for `p≥2`, and the `[16, 11, 4]` Reed-Muller code to construct
-`[[16p, 14p − 8, 4]]` self-dual CSS quantum codes for `p≥1`. To improve the generality of
-the code construction, we proposed that these codes be generalized using the Reed-Muller code
-as the base matrix. Rather than hardcoding the `[8, 4, 4]` or `[16, 11, 4]` Reed-Muller codes,
-users should be able to input parameters `r` and `m`, thus enhancing the versatility of the
-code. This leads to the following generalized code: `[[8rp, (8r − 2)p − 2m, 4]]` Delfosse-Reichardt
+`[[16p, 14p − 8, 4]]` self-dual CSS quantum codes for `p≥1`. 
+
+To improve the generality of the code construction, we proposed that these codes be generalized
+using the Reed-Muller code as the base matrix. Rather than hardcoding the `[8, 4, 4]` or `[16, 11, 4]`
+Reed-Muller codes, users should be able to input parameters `r` and `m`, thus enhancing the versatility
+of the code. This leads to the following generalized code: `[[8rp, (8r − 2)p − 2m, 4]]` Delfosse-Reichardt
 code.
 
 The `[[8p, 6(p − 1), 4]]` and `[[16p, 14p − 8, 4]]` codes were introduced by Delfosse and
@@ -43,7 +46,7 @@ julia> code_n(c), code_k(c)
 
 # [[16p, 14p − 8, 4]] code family
 
-An `[[32, 20, 4]]` Delfosse-Reichardt code of from `[[16p, 14p − 8, 4]]` code family
+An `[[32, 20, 4]]` Delfosse-Reichardt code of from `[[16p, 14p − 8, 4]]` code family.
 
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC: DelfosseReichardt, code_n, code_k, parity_checks; # hide
@@ -67,10 +70,16 @@ julia> c = parity_checks(DelfosseReichardt(p, r, m))
 julia> code_n(c), code_k(c)
 (32, 20)
 ```
+
+### Fields
+    $TYPEDFIELDS
 """
 struct DelfosseReichardt <: AbstractCSSCode
+    """The number of blocks in the Delfosse-Reichardt CSS code."""
     blocks::Int
+    """The order of the classical Reed-Muller code."""
     r::Int
+    """The log-length of the classical Reed-Muller code."""
     m::Int
     function DelfosseReichardt(blocks,r,m)
         blocks < 2 && throw(ArgumentError("The number of blocks must be at least 2 to construct a valid code."))
