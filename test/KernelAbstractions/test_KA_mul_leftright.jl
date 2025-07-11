@@ -2,18 +2,11 @@ import QuantumClifford as QC
 using GPUArrays: AllocCache, @cached, unsafe_free!
 
 @inline function test_KA_mul_leftright(AT, synchronize)
-	# Small sizes for encoding issues, large sizes for race conditions.
-	test_sizes = [
-		31, 32, 33, 63, 64, 65, 127, 128, 129,
-		64 * 1023, 64 * 1024, 64 * 1025, 64 * 2047, 64 * 2048, 64 * 2049
-		]
-	u32(z) = map(x -> UInt32(x), z)
-
 	cache = AllocCache()
 	for n in test_sizes
 		# Keep the memory usage sane.
 		rows = min(1024, n)
-		for _ in 1:16
+		for _ in cycle_range
 			@cached cache begin
 				h_p1 = QC.random_pauli(n)
 				d_p1 = QC.PauliOperator(

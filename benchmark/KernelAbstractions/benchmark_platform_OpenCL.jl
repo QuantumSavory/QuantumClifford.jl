@@ -2,10 +2,10 @@ include("benchmark_platform.jl")
 
 import pocl_jll
 using OpenCL: CLArray, cl.devices, cl.platforms, cl.finish, cl.queue
-AT = CLArray
-platform_name = "OpenCL"
+const AT = CLArray
+const platform_name = "OpenCL"
 
-can_run = any(length(devices(platform)) > 0 for platform in platforms())
+const can_run = any(length(devices(platform)) > 0 for platform in platforms())
 
 if can_run
 	synchronize() = finish(queue())

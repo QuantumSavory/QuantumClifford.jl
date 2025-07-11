@@ -1,11 +1,11 @@
-@testitem "AMDGPU" tags = [:amdgpu] begin
+@testitem "ROCm" tags = [:rocm] begin
 
 	include("test_platform.jl")
 
 	using AMDGPU: ROCArray, synchronize, devices
-	AT = ROCArray
+	const AT = ROCArray
 
-	can_run = length(devices()) > 0
+	const can_run = length(devices()) > 0
 
 	@testset "Device availability" begin
 		@test can_run

@@ -1,10 +1,10 @@
 include("benchmark_platform.jl")
 
 using AMDGPU: ROCArray, synchronize, devices
-AT = ROCArray
-platform_name = "AMDGPU"
+const AT = ROCArray
+const platform_name = "ROCm"
 
-can_run = length(devices()) > 0
+const can_run = length(devices()) > 0
 
 if can_run
 	benchmark_platform(AT, synchronize; platform_name = platform_name)

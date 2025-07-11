@@ -26,11 +26,6 @@ end
 	phases::Val{B} = Val(true), platform_name = string(AT)
 	) where {B}
 
-	# There are 2 bits in each qubit, 4 qubits in each byte.
-	MiB = 4 * 1024 * 1024
-	# Avoid consuming too much memory, 1 GiB is plenty.
-	n_MiB = [2^i for i = 1:10]
-	batch_sizes = [1, 4, 8, 16, 32, 64]
 	host_time = zeros(Float64, length(n_MiB))
 	device_time = zeros(Float64, length(batch_sizes), length(n_MiB))
 
@@ -38,9 +33,12 @@ end
 	cache = AllocCache()
 	for (i, n) in enumerate(n_MiB)
 		@cached cache begin
-			h_p = QC.random_pauli(n * MiB)
-			d_p_phase = AT(map(x -> UInt32(x), h_p.phase))
-			d_p = QC.PauliOperator(d_p_phase, h_p.nqubits, AT(h_p.xz))
+			# Each qubit requires 2 bits.
+			h_p = QC.PauliOperator(
+				zeros(Cuchar), n * MiB >> 1,
+				zeros(UInt, cld(n * MiB, bit_count(UInt)))
+				)
+			d_p = QC.PauliOperator(AT(u32(h_p.phase)), h_p.nqubits, AT(h_p.xz))
 			synchronize()
 			# Trigger compilation before benchmarking.
 			host_f(h_p, h_p; phases = phases)

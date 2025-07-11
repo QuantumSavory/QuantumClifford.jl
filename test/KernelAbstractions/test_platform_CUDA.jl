@@ -3,9 +3,9 @@
 	include("test_platform.jl")
 
 	using CUDA: CuArray, synchronize, devices
-	AT = CuArray
+	const AT = CuArray
 
-	can_run = length(devices()) > 0
+	const can_run = length(devices()) > 0
 
 	@testset "Device availability" begin
 		@test can_run

@@ -10,10 +10,10 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_transform!(
 	f!, target, @Const(auxiliary)
 	)
 
-	index = global_index(
+	global_position = global_index(
 		KA.@index(Group, NTuple), KA.@groupsize(), KA.@index(Local, NTuple)
 		)
-	f!(target, auxiliary, index)
+	f!(target, auxiliary, global_position)
 
 end
 
@@ -71,15 +71,15 @@ end
 end
 
 #==============================================================================
-							COMMON COMPUTATIONS
+COMMON TRANSFORMATIONS
 ==============================================================================#
-
 # Anonymous functions trigger recompilation. Hence, Separate them out.
-@inline function mod_4_sum!(t, a, pos)
-	i = pos[1]
-	if i <= length(t)
-		j = length(a) > 1 ? i : 1
-		@inbounds t[i] = (t[i] + a[j]) & 0x3
+
+@inline function mod_4_sum!(target, auxiliary, global_position)
+	i = global_position[1]
+	if i <= length(target)
+		j = length(auxiliary) > 1 ? i : 1
+		@inbounds target[i] = (target[i] + auxiliary[j]) & 0x3
 	end
 end
 #=============================================================================#

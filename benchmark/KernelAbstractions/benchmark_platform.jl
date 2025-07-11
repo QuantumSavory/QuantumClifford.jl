@@ -1,3 +1,5 @@
+include("definitions.jl")
+include("utilities.jl")
 include("benchmark_KA_mul_leftright.jl")
 
 @inline function benchmark_platform(
