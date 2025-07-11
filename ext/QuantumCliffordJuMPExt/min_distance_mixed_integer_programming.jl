@@ -159,8 +159,17 @@ are as follows:
 function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
     logical_qubits = isnothing(alg.logical_qubit) ? (1:code_k(code)) : (alg.logical_qubit:alg.logical_qubit)
     isnothing(alg.logical_qubit) || (1 <= alg.logical_qubit <= code_k(code)) || throw(ArgumentError("Logical qubit out of range"))
+    if alg.logical_operator_type == :minXZ
+        dX = _compute_distance(code, logical_qubits, :X, alg)
+        dZ = _compute_distance(code, logical_qubits, :Z, alg)
+        return min(dX, dZ)
+    else
+        return _compute_distance(code, logical_qubits, alg.logical_operator_type, alg)
+    end
+end
+
+function _compute_distance(code, logical_qubits, logical_operator_type, alg)
     # Get the appropriate logical operators and matrices based on operator type
-    logical_operator_type = alg.logical_operator_type
     l, H, h = if logical_operator_type == :X
         l_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(logx_ops(code)))
         H_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(code)))

@@ -58,4 +58,8 @@
     @testset "hamming" begin
         include("codes/hamming.jl")
     end
+
+    @testset "Quantum Tanner Graph Codes" begin
+        include("codes/quantumtannergraphproduct.jl")
+    end
 end
