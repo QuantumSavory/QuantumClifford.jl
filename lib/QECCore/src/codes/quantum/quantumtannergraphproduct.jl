@@ -18,9 +18,8 @@ end
 """Reconstructs the parity-check matrix from a Tanner graph `g`.
 
 !!! note
-    The first block of vertices corresponds to variable nodes and
-    the remaining to check nodes. The function returns a parity check
-    matrix `H` of size `(number of check nodes) × (number of variable nodes).`
+    The first block of vertices corresponds to variable nodes and the remaining
+    to check nodes. The function returns a parity check matrix `H` of size `(number of check nodes) × (number of variable nodes).`
 """
 function parity_matrix_from_tanner_graph(g::Graph, var_nodes::Vector{Int}, check_nodes::Vector{Int})
     n_vars = length(var_nodes)
@@ -35,16 +34,11 @@ function parity_matrix_from_tanner_graph(g::Graph, var_nodes::Vector{Int}, check
 end
 
 """
-Constructs a bipartite Tanner graph representing the cycle code
-of length `n`.
+Constructs a bipartite Tanner graph representing the cycle code of length `n`.
 
-- The graph consists of `n` variable nodes and `n` check nodes,
-totaling `2n` nodes.
-- Each check node `i` (for `i` in `1...n`) connects to variable nodes `i`
- and (i+1 \\mod n).
-
-This structure results in a parity-check matrix `H`, where each row contains
-exactly two `1`s, encoding the edges of a length-`n` cycle.
+The graph consists of `n` variable nodes and `n` check nodes, totaling `2n` nodes. Each check
+node `i` (for `i` in `1...n`) connects to variable nodes `i` and (``i+1 \\mod n``). This structure
+results in a parity-check matrix `H`, where each row contains exactly two `1`s, encoding the edges of a length-`n` cycle.
 """
 function cycle_tanner_graph(n::Int)
     g = SimpleGraph(2n)
@@ -185,7 +179,6 @@ function parity_matrix_xz(Q::CyclicQuantumTannerGraphProduct)
     H2 = parity_matrix_from_tanner_graph(G2.graph, G2.left, G2.right)
     return hgp(H1, H2)
 end
-
 
 parity_matrix_x(c::Union{QuantumTannerGraphProduct,CyclicQuantumTannerGraphProduct}) = parity_matrix_xz(c)[1]
 
