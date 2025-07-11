@@ -1,19 +1,9 @@
 """
 $TYPEDSIGNATURES
 
-Compute the distance of a code using mixed integer programming.
-See [`QuantumClifford.ECC.DistanceMIPAlgorithm`](@ref) for configuration options.
-
-Computes the minimum Hamming weight of a binary vector `x` by solving an **mixed
-integer program (MIP)** that satisfies the following constraints:
-
-- ``\\text{stab} \\cdot x \\equiv 0 \\pmod{2}``: The binary vector `x` must have an
-even overlap with each `X`-check of the stabilizer binary representation `stab`.
-- ``\\text{logicOp} \\cdot x \\equiv 1 \\pmod{2}``: The binary vector `x` must have
-an odd overlap with logical-`X` operator `logicOp` on the `i`-th logical qubit.
-
-Specifically, it calculates the minimum Hamming weight ``d_{Z}`` for the `Z`-type
-logical operator. The minimum distance for `X`-type logical operators is the same.
+Computes the true code distance of a Calderbank-Shor-Steane code by solving two
+independent **Mixed Integer Programs** for `X`-type (``d_X``) and `Z`-type (``d_Z``)
+distances. The overall distance is ``d = \\min(d_X, d_Z)``.
 
 ### Background on Minimum Distance
 
@@ -73,34 +63,48 @@ For a more in-depth background on minimum distance, see Chapter 3 of [Sabo:2022s
 
 ### Mixed Integer Programming
 
-The MIP minimizes the Hamming weight `w(x)`, defined as the number of nonzero
-elements in `x`, while satisfying the constraints:
+We computes the code distance for CSS (Calderbank-Shor-Steane) codes by solving independent Mixed
+Integer Programs (MIPs). The *distance* determines the error correction capability of the code and
+is derived from the smallest-weight logical operators that evade detection by stabilizers.
+
+The distance is computed separately for `X`-type (``d_X``) and `Z`-type (``d_Z``) logical operators, then
+combined to give the true code distance: ``d = \\min(d_X, d_Z)``.
+
+#### `X-type` Distance (``d_X``)
+
+Finds the minimum number of `Z`-errors (phase flips) that implement a non-trivial `X`-logical operator (undetectable by `X`-stabilizers).
 
 ```math
-\\begin{aligned}
-    \\text{Minimize} \\quad & w(x) = \\sum_{i=1}^n x_i, \\\\
-    \\text{subject to} \\quad & \\text{stab} \\cdot x \\equiv 0 \\pmod{2}, \\\\
-                            & \\text{logicOp} \\cdot x \\equiv 1 \\pmod{2}, \\\\
-                            & x_i \\in \\{0, 1\\} \\quad \\text{for all } i.
-\\end{aligned}
+\\begin{align*}
+\\text{Minimize} \\quad & \\sum_{i=1}^n e_{Z,i} \\quad \\text{(Hamming weight of Z-errors)} \\\\
+\\text{Subject to} \\quad & \\mathbf{H_X} \\cdot \\mathbf{e}_Z \\equiv \\mathbf{0} \\pmod{2} \\quad \\text{(Commutes with X-stabilizers)} \\\\
+                      & \\mathbf{L_X} \\cdot \\mathbf{e}_Z \\equiv 1 \\pmod{2} \\quad \\text{(Anti-commutes with X-logical)} \\\\
+                      & e_{Z,i} \\in \\{0,1\\} \\quad \text{(Binary error variables)}
+\\end{align*}
 ```
 
 Here:
-- ``\\text{stab}`` is the binary matrix representing the stabilizer group.
-- ``\\text{logicOp}`` is the binary vector representing the logical-`X` operator.
-- `x` is the binary vector (decision variable) being optimized.
+- ``\mathbf{H_X}`` represent `X`-stabilizer matrix)
+- ``\mathbf{L_X}`` represent `X`-logical operators).
+- ``\mathbf{e_Z}`` are binary vector representing `Z`-error locations.
 
-The optimal solution ``w_{i}`` for each logical-`X` operator corresponds to the
-minimum weight of a Pauli `Z`-type operator satisfying the above conditions.
-The `Z`-type distance is given by:
+#### `Z-type` Distance (``d_Z``)
+
+Finds the minimum number of `X`-errors (bit flips) that implement a non-trivial `Z`-logical operator (undetectable by `Z`-stabilizers).
 
 ```math
-\\begin{aligned}
-    d_Z = \\min(w_1, w_2, \\dots, w_k),
-\\end{aligned}
+\\begin{align*}
+\\text{Minimize} \\quad & \\sum_{i=1}^n e_{X,i} \\quad \\text{(Hamming weight of X-errors)} \\\\
+\\text{Subject to} \\quad & \\mathbf{H_Z} \\cdot \\mathbf{e}_X \\equiv \\mathbf{0} \\pmod{2} \\quad \\text{(Commutes with Z-stabilizers)} \\\\
+                      & \\mathbf{L_Z} \\cdot \\mathbf{e}_X \\equiv 1 \\pmod{2} \\quad \\text{(Anti-commutes with Z-logical)} \\\\
+                      & e_{X,i} \\in \\{0,1\\} \\quad \\text{(Binary error variables)}
+\\end{align*}
 ```
 
-where `k` is the number of logical qubits.
+Here:
+- ``\mathbf{H_Z}`` represent `Z`-stabilizer matrix)
+- ``\mathbf{L_Z}`` represent `Z`-logical operators).
+- ``\mathbf{e_X}`` are binary vector representing `X`-error locations.
 
 # Example
 
@@ -159,8 +163,17 @@ are as follows:
 function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
     logical_qubits = isnothing(alg.logical_qubit) ? (1:code_k(code)) : (alg.logical_qubit:alg.logical_qubit)
     isnothing(alg.logical_qubit) || (1 <= alg.logical_qubit <= code_k(code)) || throw(ArgumentError("Logical qubit out of range"))
+    if alg.logical_operator_type == :minXZ
+        dX = _compute_distance(code, logical_qubits, :X, alg)
+        dZ = _compute_distance(code, logical_qubits, :Z, alg)
+        return min(dX, dZ)
+    else
+        return _compute_distance(code, logical_qubits, alg.logical_operator_type, alg)
+    end
+end
+
+function _compute_distance(code, logical_qubits, logical_operator_type, alg)
     # Get the appropriate logical operators and matrices based on operator type
-    logical_operator_type = alg.logical_operator_type
     l, H, h = if logical_operator_type == :X
         l_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(logx_ops(code)))
         H_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(code)))
