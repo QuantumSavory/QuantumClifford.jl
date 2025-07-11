@@ -1,9 +1,12 @@
 """
 $TYPEDSIGNATURES
 
-Computes the true code distance of a Calderbank-Shor-Steane code by solving two
-independent **Mixed Integer Programs** for `X`-type (``d_X``) and `Z`-type (``d_Z``)
-distances. The overall distance is ``d = \\min(d_X, d_Z)``.
+Compute the distance of a code using mixed integer programming.
+See [`QuantumClifford.ECC.DistanceMIPAlgorithm`](@ref) for configuration options.
+
+Specifically, it computes the minimum distance of a Calderbank-Shor-Steane code by
+solving two independent **Mixed Integer Programs** for `X`-type (``d_X``) and `Z`-type
+(``d_Z``) distances. The code distance is ``d = \\min(d_X, d_Z)``.
 
 ### Background on Minimum Distance
 
@@ -63,12 +66,12 @@ For a more in-depth background on minimum distance, see Chapter 3 of [Sabo:2022s
 
 ### Mixed Integer Programming
 
-We computes the code distance for CSS (Calderbank-Shor-Steane) codes by solving independent Mixed
-Integer Programs (MIPs). The *distance* determines the error correction capability of the code and
-is derived from the smallest-weight logical operators that evade detection by stabilizers.
+The *distance* determines the error correction capability of the code and is derived from
+the smallest-weight logical operators that evade detection by stabilizers. We compute the
+minimum code distance for CSS (Calderbank-Shor-Steane) codes by solving MIPs. 
 
-The distance is computed separately for `X`-type (``d_X``) and `Z`-type (``d_Z``) logical operators, then
-combined to give the true code distance: ``d = \\min(d_X, d_Z)``.
+The distance is computed separately for `X`-type (``d_X``) and `Z`-type (``d_Z``) logical
+operators, then combined to give the true code distance: ``d = \\min(d_X, d_Z)``.
 
 #### `X-type` Distance (``d_X``)
 
