@@ -17,6 +17,7 @@
 ### Private API
 
 These changes affect internal implementation details - external packages should not rely on these!
+- Add `check_repr_regular_linear` to verify `F`-linear regular representation for group algebra elements.
 - Add `[2ʳ-1, 2ʳ-1-r, 3]` Hamming code.
 
 ## v0.10.0 - 2025-07-02
