@@ -2,9 +2,9 @@
 
 ## v0.1.2 - dev
 
-- Quantum Tanner graph product codes: general and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`)
 - introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - Move the following codes from `QuantumClifford.ECC` to `QECCore`: `ReedMuller`, `RecursiveReedMuller`, `QuantumReedMuller`, `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`.
+- Quantum Tanner graph product codes: general and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`).
 
 ## v0.1.1
 

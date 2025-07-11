@@ -7,7 +7,7 @@
 
 ## v0.10.1-dev
 
-- Quantum Tanner graph product codes: general and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`)
+- Quantum Tanner graph product codes: general and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`).
 - introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
 - The phase storage type can now be parameterized, instead of hardcoded to UInt8.
