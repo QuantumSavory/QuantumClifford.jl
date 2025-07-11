@@ -64,11 +64,42 @@ julia> distance(Steane7())
 
 For a more in-depth background on minimum distance, see Chapter 3 of [Sabo:2022smk](@cite).
 
+### Quantum Error Correction and Code Distance
+
+The foundation of quantum error correction lies in protecting logical quantum information
+from physical errors by encoding it across multiple qubits. A quantum code's performance is
+fundamentally characterized by its distance (`d`), which quantifies the code's ability to detect
+and correct errors. In practical terms, the distance represents the minimum number of physical
+qubit errors required to cause an undetectable logical error - one that corrupts encoded
+information while evading the code's error detection mechanisms.
+
+### Fundamentals of Quantum Code Distance
+
+The distance `d` of a quantum error-correcting code represents its robustness against
+physical errors and is formally defined as:
+
+```math
+\\begin{align*}
+\\begin{equation}
+d = \\min_{P \\in N(S)\\setminus S} \\mathrm{wt}(P)
+\\end{equation}
+\\end{align*}
+```
+
+where:
+
+- ``N(S)`` denotes the normalizer of the stabilizer group `S`
+- ``\\mathrm{wt}(P)`` represents the weight of Pauli operator `P` (number of non-identity components)
+`` The minimization is taken over all logical operators that are not stabilizers.
+
+This reveals essential property that the distance equals the smallest number of qubits that must be
+affected to produce a logical error undetectable by stabilizer measurements. The normalizer condition
+``P \\in N(S)`` ensures the operator commutes with all stabilizers, while ``P \\notin S`` guarantees it
+performs a non-trivial logical operation.
+
 ### Mixed Integer Programming
 
-The *distance* determines the error correction capability of the code and is derived from
-the smallest-weight non-trivial logical operators that evade detection by stabilizers. We
-compute the minimum code distance for CSS (Calderbank-Shor-Steane) codes by solving MIPs. 
+We compute the minimum code distance for CSS (Calderbank-Shor-Steane) codes by solving MIPs. 
 
 The distance is computed separately for `X`-type (``d_X``) and `Z`-type (``d_Z``) logical
 operators, then combined to give the true code distance: ``d = \\min(d_X, d_Z)``.
