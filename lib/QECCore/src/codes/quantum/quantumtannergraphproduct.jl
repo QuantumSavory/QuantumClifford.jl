@@ -86,7 +86,9 @@ julia> H1 = [1 0 1 0; 0 1 0 1; 1 1 0 0];
 
 julia> H2 = [1 1 0;0 1 1];
 
-julia> c = parity_checks(QuantumTannerGraphProduct(H1, H2))
+julia> c = QuantumTannerGraphProduct(H1, H2);
+
+julia> parity_checks(c)
 + X_____X_____X_____
 + _X_____X____XX____
 + __X_____X____X____
@@ -104,6 +106,9 @@ julia> c = parity_checks(QuantumTannerGraphProduct(H1, H2))
 + _______ZZ____Z____
 + _________ZZ___Z___
 + __________ZZ___Z__
+
+julia> code_n(c), code_k(c)
+(18, 1)
 ```
 
 # Quantum Expander code
@@ -115,7 +120,9 @@ corresponds to the specific case where `G = G1 = G2`​.
 ```jldoctest examples
 julia> H = parity_matrix(RepCode(3));
 
-julia> c = parity_checks(QuantumTannerGraphProduct(H, H))
+julia> c = QuantumTannerGraphProduct(H, H);
+
+julia> parity_checks(c)
 + X__X_____X_X______
 + _X__X____XX_______
 + __X__X____XX______
@@ -134,6 +141,9 @@ julia> c = parity_checks(QuantumTannerGraphProduct(H, H))
 + ______ZZ____Z__Z__
 + _______ZZ____Z__Z_
 + ______Z_Z_____Z__Z
+
+julia> code_n(c), code_k(c)
+(18, 2)
 ```
 
 """
