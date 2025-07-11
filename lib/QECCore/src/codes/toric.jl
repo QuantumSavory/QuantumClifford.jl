@@ -13,7 +13,7 @@ Illustration of a 2x2 toric code, where qubits are located on the edges:
 
 It is important to note that the toric code has periodic boundary conditions, which means that the top and bottom sides are essentially glued together, as are the left and right sides.
 
-Faces like `(1,3,5,6)` have X checks, and crosses like `(1,2,5,7)` have Z checks.
+Faces like `(1,3,5,6)` have `X` checks, and crosses like `(1,2,5,7)` have `Z` checks.
 
 The parity checks of `Toric(2,2)` are:
 ```
@@ -29,9 +29,9 @@ __ZZZ_Z_
     $TYPEDFIELDS
 """
 struct Toric <: AbstractCSSCode
-    """The number of qubits in the x direction."""
+    """The number of qubits in the `x` direction."""
     dx::Int
-    """The number of qubits in the z direction."""
+    """The number of qubits in the `z` direction."""
     dz::Int
 end
 

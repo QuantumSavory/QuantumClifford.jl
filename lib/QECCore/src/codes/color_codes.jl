@@ -6,7 +6,7 @@ abstract type TriangularCode <: ColorCode end
 """
     $TYPEDEF
 
-Triangular code following the 4.8.8 tiling. Constructor take a distance d as input.
+Triangular code following the `4.8.8` tiling. Constructor take a distance `d` as input.
 
 ### Example
 
@@ -41,7 +41,7 @@ julia> distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 5
 ```
 
-More information can be seen in [landahl2011color](@cite)\
+More information can be seen in [landahl2011color](@cite)
 
 ### Fields
     $TYPEDFIELDS
@@ -63,7 +63,7 @@ end
 """
     $TYPEDEF
 
-Triangular code following the 6.6.6 tiling. Constructor take a distance d as input.
+Triangular code following the `6.6.6` tiling. Constructor take a distance `d` as input.
 
 ### Example
 

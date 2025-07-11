@@ -1,15 +1,15 @@
 """
     $TYPEDEF
 
-An arbitrary CSS error correction code defined by its X and Z checks.
+An arbitrary CSS error correction code defined by its `X` and `Z` checks.
 
 ### Fields
     $TYPEDFIELDS
 """
 struct CSS <: AbstractCSSCode
-    """The parity check matrix of the X stabilizers."""
+    """The parity check matrix of the `X` stabilizers."""
     Hx::Matrix{Bool}
-    """The parity check matrix of the Z stabilizers."""
+    """The parity check matrix of the `Z` stabilizers."""
     Hz::Matrix{Bool}
     function CSS(Hx, Hz)
         n = size(Hx, 2)

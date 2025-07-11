@@ -3,7 +3,7 @@
 ## v0.1.2 - dev
 
 - introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
-- Add `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` from `QuantumClifford.ECC`.
+- Move the following codes from `QuantumClifford.ECC` to `QECCore`: `ReedMuller`, `RecursiveReedMuller`, `QuantumReedMuller`, `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`.
 
 ## v0.1.1
 
