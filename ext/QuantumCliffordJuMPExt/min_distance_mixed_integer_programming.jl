@@ -84,9 +84,9 @@ Finds the minimum number of `Z`-errors (phase flips) that implement a non-trivia
 ```
 
 Here:
-- ``\mathbf{H_X}`` represent `X`-stabilizer matrix)
-- ``\mathbf{L_X}`` represent `X`-logical operators).
-- ``\mathbf{e_Z}`` are binary vector representing `Z`-error locations.
+- ``\\mathbf{H_X}`` represent `X`-stabilizer matrix)
+- ``\\mathbf{L_X}`` represent `X`-logical operators).
+- ``\\mathbf{e_Z}`` are binary vector representing `Z`-error locations.
 
 #### `Z-type` Distance (``d_Z``)
 
@@ -102,9 +102,9 @@ Finds the minimum number of `X`-errors (bit flips) that implement a non-trivial 
 ```
 
 Here:
-- ``\mathbf{H_Z}`` represent `Z`-stabilizer matrix)
-- ``\mathbf{L_Z}`` represent `Z`-logical operators).
-- ``\mathbf{e_X}`` are binary vector representing `X`-error locations.
+- ``\\mathbf{H_Z}`` represent `Z`-stabilizer matrix)
+- ``\\mathbf{L_Z}`` represent `Z`-logical operators).
+- ``\\mathbf{e_X}`` are binary vector representing `X`-error locations.
 
 # Example
 
