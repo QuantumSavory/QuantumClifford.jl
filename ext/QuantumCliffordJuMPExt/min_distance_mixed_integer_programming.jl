@@ -102,8 +102,8 @@ operators, then combined to give the true code distance: ``d = \\min(d_X, d_Z)``
 
 #### `X-type` Distance (``d_X``)
 
-Finds the minimum number of `Z`-errors (phase flips) that implement a non-trivial `X`-logical
-operator (undetectable by `X`-stabilizers).
+It is defined as the minimum number of `Z`-errors (phase flips) required to implement a non-trivial `X`-logical operator, where the errors must both commute with all `X`-stabilizers and anti-commute with at least one `X`-logical operator.
+
 
 ```math
 \\begin{align*}
@@ -121,8 +121,7 @@ Here:
 
 #### `Z-type` Distance (``d_Z``)
 
-Finds the minimum number of `X`-errors (bit flips) that implement a non-trivial `Z`-logical
-operator (undetectable by `Z`-stabilizers).
+It is defined as the minimum number of `X`-errors (bit flips) required to implement a non-trivial `Z`-logical operator, where the errors must both commute with all `Z`-stabilizers and anti-commute with at least one `Z`-logical operator.
 
 ```math
 \\begin{align*}
