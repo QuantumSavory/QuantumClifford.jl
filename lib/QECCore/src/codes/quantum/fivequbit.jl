@@ -1,7 +1,7 @@
 """
-    Perfect5 <: AbstractQECC
+    $TYPEDEF
 
-Perfect5 code [lafiamme1996perfect](@cite) is the smallest qubit stabilizer code to correct a single-qubit error.
+`Perfect5` code [lafiamme1996perfect](@cite) is the smallest qubit stabilizer code to correct a single-qubit error.
 """
 struct Perfect5 <: AbstractQECC end
 
