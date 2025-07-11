@@ -1,4 +1,6 @@
 """
+    $TYPEDEF
+
 The family of `[2ʳ - 1, 2ʳ - 1 - r, 3]` Hamming binary codes were discovered
 by Richard W. Hamming in his 1950 paper [hamming1950error](@cite) as a way of
 automatically correcting errors introduced by punched card readers. In his
@@ -12,6 +14,9 @@ with parameters `[2ʳ − 1, 2ʳ − 1 − r, 3]` The minimum Hamming distance o
 code is 3, as detailed in [huffman2010fundamentals](@cite).
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/hamming).
+
+### Fields
+    $TYPEDFIELDS
 """
 struct Hamming <: AbstractCECC
     r::Int
