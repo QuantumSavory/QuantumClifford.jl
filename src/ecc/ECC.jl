@@ -391,14 +391,10 @@ include("decoder_pipeline.jl")
 
 include("codes/util.jl")
 
-include("codes/gottesman.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
 include("codes/delfosse_reichardt_code.jl")
 include("codes/classical/bch.jl")
-include("codes/classical/golay.jl")
-include("codes/classical/hamming.jl")
-include("codes/color_codes.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
