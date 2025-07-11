@@ -106,6 +106,11 @@ function apply!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
     r
 end
 
+function apply_inv!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
+    @valbooldispatch _apply_inv!(Stabilizer(tab(r)),l,phases=Val(phases)) phases
+    r
+end
+
 """Nonvectorized version of `apply!` used for unit tests."""
 function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true)
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
@@ -130,6 +135,10 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=V
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, phases=phases)
     end
     stab
+end
+
+function _apply_inv!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=Val(true)) where B
+    _apply!(stab, inv(c); phases=phases)
 end
 
 # TODO Added a lot of type assertions to help Julia infer types, but they are much too strict for cases where bitpacking varies (check tests)
@@ -175,6 +184,10 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_appli
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, indices_of_application, phases=phases)
     end
     stab
+end
+
+function _apply_inv!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{Int,1}; phases::Val{B}=Val(true)) where B
+    _apply!(stab, inv(c), indices_of_application; phases=phases)
 end
 
 @inline function apply_row_kernel!(new_stabrow, row, s_tab, c_tab, indices_of_application; phases::Val{B}=Val(true)) where B
