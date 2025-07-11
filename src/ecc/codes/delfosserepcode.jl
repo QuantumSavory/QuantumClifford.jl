@@ -22,7 +22,7 @@ valid, `p` must be a multiple of 2.
 An `[[24, 8, 4]]` Delfosse-Reichardt repetition code from [delfosse2020short](@cite).
 
 ```jldoctest
-julia> using QuantumClifford; using QuantumClifford.ECC; # hide
+julia> using QuantumClifford; using QuantumClifford.ECC: DelfosseReichardtRepCode, code_n, code_k; # hide
 
 julia> c = parity_checks(DelfosseReichardtRepCode(6))
 + XXXX____________________
@@ -46,17 +46,13 @@ julia> code_n(c), code_k(c)
 (24, 8)
 ```
 """
-struct DelfosseReichardtRepCode <: AbstractECC
+struct DelfosseReichardtRepCode <: AbstractCSSCode
     blocks::Int
     function DelfosseReichardtRepCode(blocks)
         blocks < 2 && throw(ArgumentError("The number of blocks must be at least 2 to construct a valid code."))
         blocks % 2 != 0 && throw(ArgumentError("The number of blocks must be a multiple of 2."))
         new(blocks)
     end
-end
-
-function iscss(::Type{DelfosseReichardtRepCode})
-    return true
 end
 
 function _extend_414_repetition_code(blocks::Int)
@@ -73,13 +69,6 @@ function _extend_414_repetition_code(blocks::Int)
     end
     H[end, 1:n] .= (1:n) .% 2 .== 0
     return H
-end
-
-function parity_checks(c::DelfosseReichardtRepCode)
-    extended_mat = _extend_414_repetition_code(c.blocks)
-    hx, hz = extended_mat, extended_mat
-    code = CSS(hx, hz)
-    Stabilizer(code)
 end
 
 code_n(c::DelfosseReichardtRepCode) = 4*c.blocks
