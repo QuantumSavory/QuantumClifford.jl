@@ -1,6 +1,6 @@
 """
-Constructs a *Tanner graph* from a given parity-check matrix `H`, where
-rows correspond to *check nodes* and columns to *variable nodes*.
+Constructs a *Tanner graph* from a given parity-check matrix `H`, where rows
+correspond to *check nodes* and columns to *variable nodes*.
 
 The resulting *bipartite* graph indexes variable nodes as `1:n` and check
 nodes as `n+1:n+m` for an `m × n` matrix `H`."""
@@ -18,8 +18,8 @@ end
 """Reconstructs the parity-check matrix from a Tanner graph `g`.
 
 !!! note
-    The first block of vertices corresponds to variable nodes and the remaining
-    to check nodes. The function returns a parity check matrix `H` of size `(number of check nodes) × (number of variable nodes).`
+    The first block of vertices corresponds to variable nodes and the remaining to check nodes. It
+    returns a parity check matrix `H` of size `(number of check nodes) × (number of variable nodes).`
 """
 function parity_matrix_from_tanner_graph(g::Graph, var_nodes::Vector{Int}, check_nodes::Vector{Int})
     n_vars = length(var_nodes)
@@ -34,11 +34,11 @@ function parity_matrix_from_tanner_graph(g::Graph, var_nodes::Vector{Int}, check
 end
 
 """
-Constructs a bipartite Tanner graph representing the cycle code of length `n`.
-
-The graph consists of `n` variable nodes and `n` check nodes, totaling `2n` nodes. Each check
-node `i` (for `i` in `1...n`) connects to variable nodes `i` and (``i+1 \\mod n``). This structure
-results in a parity-check matrix `H`, where each row contains exactly two `1`s, encoding the edges of a length-`n` cycle.
+Constructs a bipartite Tanner graph representing the cycle code of length `n`. The graph
+consists of `n` variable nodes and `n` check nodes, totaling `2n` nodes. Each check node `i`
+(for `i` in `1...n`) connects to variable nodes `i` and (``i+1 \\mod n``). This structure results
+in a parity-check matrix `H`, where each row contains exactly two `1`s, encoding the edges of a
+length-`n` cycle.
 """
 function cycle_tanner_graph(n::Int)
     g = SimpleGraph(2n)
@@ -53,20 +53,17 @@ function cycle_tanner_graph(n::Int)
 end
 
 """
-Represents the CSS quantum code `Q(G₁ × G₂)` constructed from two binary
-codes with parity-check matrices `H₁` and `H₂`, using the hypergraph product
-formulation introduced by [tillich2013quantum](@cite).
+Represents the CSS quantum code `Q(G₁ × G₂)` constructed from two binary codes with
+parity-check matrices `H₁` and `H₂`, using the hypergraph product formulation introduced
+by [tillich2013quantum](@cite).
 
 This construction corresponds to a specific product of Tanner graphs:
-- Let `G₁ = T(V₁, C₁, E₁)` and `G₂ = T(V₂, C₂, E₂)` be the Tanner graphs of
-`H₁` and `H₂`.
-- The product graph `G₁ × G₂` has vertex set `(V₁ × V₂) ∪ (C₁ × C₂)` and
-check set `(C₁ × V₂) ∪ (V₁ × C₂)`.
-- The Tanner subgraphs `G₁ ×ₓ G₂` and `G₁ ×𝓏 G₂` define classical codes
-`Cₓ` and `C𝓏` used in the CSS construction.
+- Let `G₁ = T(V₁, C₁, E₁)` and `G₂ = T(V₂, C₂, E₂)` be the Tanner graphs of `H₁` and `H₂`.
+- The product graph `G₁ × G₂` has vertex set `(V₁ × V₂) ∪ (C₁ × C₂)` and check set `(C₁ × V₂) ∪ (V₁ × C₂)`.
+- The Tanner subgraphs `G₁ ×ₓ G₂` and `G₁ ×𝓏 G₂` define classical codes `Cₓ` and `C𝓏` used in the CSS construction.
 
-The `hgp(H₁, H₂)` function algebraically realizes this graph-theoretic product using
-Kronecker operations, yielding the `X`- and `Z`-type parity-check matrices:
+The `hgp(H₁, H₂)` function algebraically realizes this graph-theoretic product using Kronecker operations,
+yielding the `X`- and `Z`-type parity-check matrices:
 
 - `H_X = [H₁ ⊗ I  |  I ⊗ H₂ᵗ]` corresponds to `G₁ ×ₓ G₂`
 - `H_Z = [I ⊗ H₂  |  H₁ᵗ ⊗ I]` corresponds to `G₁ ×𝓏 G₂`
@@ -77,8 +74,8 @@ See: [tillich2013quantum](@cite), Section 4.3 — “The hypergraph connection, 
 
 # 𝑄(𝐺₁ × 𝐺₂)
 
-The `𝑄(𝐺₁ × 𝐺₂)` quantum LDPC codes represent a broader generalization of **quantum
-expander codes** which are derived from the Leverrier-Tillich-Zémor construction [tillich2013quantum](@cite).
+The `𝑄(𝐺₁ × 𝐺₂)` quantum LDPC codes represent a broader generalization of **quantum expander codes**
+which are derived from the Leverrier-Tillich-Zémor construction [tillich2013quantum](@cite).
 
 ```jldoctest examples
 julia> using QuantumClifford; using QuantumClifford.ECC; using QECCore
@@ -149,8 +146,7 @@ end
 
 parity_matrix_xz(c::QuantumTannerGraphProduct) = hgp(c.H1, c.H2)
 
-""" Constructs a 𝑄(𝐺₁ × 𝐺₂) quantum Tanner graph product code
-using cyclic Tanner graphs of length `2m`.
+""" Constructs a 𝑄(𝐺₁ × 𝐺₂) quantum Tanner graph product code using cyclic Tanner graphs of length `2m`.
 
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC;
