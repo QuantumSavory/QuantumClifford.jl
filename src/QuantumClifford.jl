@@ -40,7 +40,7 @@ export
     # Linear Algebra
     tensor, tensor_pow,
     logdot, expect,
-    apply!,
+    apply!, apply_inv!,
     permutesystems, permutesystems!,
     # Low Level Function Interface
     generate!, project!, reset_qubits!, traceout!,
@@ -91,6 +91,8 @@ export
     mctrajectory!, mctrajectories, applywstatus!,
     # petrajectories
     petrajectories, applybranches,
+    # backtrajectory
+    backtrajectory,
     # nonclifford
     GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase,
     # makie plotting -- defined only when extension is loaded
@@ -1117,6 +1119,25 @@ function _apply!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Va
     stab
 end
 
+
+"""In `QuantumClifford` the `apply_inv!` function is used to apply the inverse of any quantum operation to 
+a stabilizer state, including unitary Clifford and Pauli operators"""
+function apply_inv! end
+
+function apply_inv!(stab::AbstractStabilizer, op::AbstractCliffordOperator; phases::Bool=true)
+    @valbooldispatch _apply_inv!(stab,op; phases=Val(phases)) phases
+end
+function apply_inv!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices; phases::Bool=true)
+    @valbooldispatch _apply_inv!(stab,op,indices; phases=Val(phases)) phases
+end
+
+function _apply_inv!(stab::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
+    apply!(stab,p; phases=phases)
+end
+function _apply_inv!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Val{B}=Val(true)) where B
+    apply!(stab,p,indices; phases=phases)
+end
+
 ##############################
 # Conversion and promotion
 ##############################
@@ -1410,6 +1431,7 @@ include("linalg.jl")
 include("operator_traits.jl")
 include("mctrajectory.jl")
 include("petrajectory.jl")
+include("backtrajectory.jl")
 include("misc_ops.jl")
 include("classical_register.jl")
 include("noise.jl")
