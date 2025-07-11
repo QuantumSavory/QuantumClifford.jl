@@ -19,19 +19,66 @@ function expand_circuit(circuit::Vector{<:AbstractOperation})
 end
 
 
-# SLOW versions of prepend! and prepend_inv! for CliffordOperator
 """the `prepend!` function is used to prepend any quantum operation to unitary Clifford operations"""
 function prepend! end
-function prepend!(l::CliffordOperator, r::AbstractCliffordOperator; phases=false)
-    apply!(CliffordOperator(r, nqubits(l)), l; phases=phases)
-end
-
 """the prepend_inv! function is used to prepend the inverse of a quantum operation to unitary Clifford operations"""
 function prepend_inv! end
-function prepend_inv!(l::CliffordOperator, r::AbstractCliffordOperator; phases=false)
-    apply!(inv(CliffordOperator(r, nqubits(l))), l; phases=phases)
+
+# # SLOW versions of prepend! and prepend_inv! for CliffordOperator
+# function prepend!(l::CliffordOperator, r::AbstractCliffordOperator; phases=false)
+#     apply!(CliffordOperator(r, nqubits(l)), l; phases=phases)
+# end
+# function prepend_inv!(l::CliffordOperator, r::AbstractCliffordOperator; phases=false)
+#     apply!(inv(CliffordOperator(r, nqubits(l))), l; phases=phases)
+# end
+
+
+# FAST versions of prepend! and prepend_inv! for CliffordOperator - TODO
+prepend!(l::CliffordOperator, r; phases) = prepend!(l, CliffordOperator(r, nqubits(l)); phases=phases)
+
+function prepend!(l::CliffordOperator, r::CliffordOperator; phases=false)
+    nqubits(l)==nqubits(r) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
+    l_tab = tab(l)
+    r_tab = tab(r)
+    threadlocal = l.buffer
+    new_xzs = Vector{typeof(threadlocal)}(undef, length(l_tab))
+    @inbounds for row_r in eachindex(r_tab)
+        zero!(threadlocal)
+        prepend_row_kernel!(threadlocal, row_r, l_tab, r_tab, phases=phases)
+        new_xzs[row_r] = copy(threadlocal)
+    end
+    @inbounds for row_l in eachindex(l_tab)
+        l_tab[row_l] = new_xzs[row_l]
+    end
+    l
 end
 
+@inline function prepend_row_kernel!(new_lrow, row, l_tab, r_tab; phases=true)
+    phases && (new_lrow.phase[] = r_tab.phases[row])
+    n = nqubits(l_tab)
+    for qubit in 1:n
+        x,z = r_tab[row,qubit]
+        if phases&&x&&z
+            new_lrow.phase[] -= 0x1
+        end
+        if x
+            mul_left!(new_lrow, l_tab, qubit, phases=Val(phases))
+        end
+        if z
+            mul_left!(new_lrow, l_tab, qubit+n, phases=Val(phases))
+        end
+    end
+    new_lrow
+end
+
+function prepend_inv!(l::CliffordOperator, r::CliffordOperator; phases=false)
+    prepend!(l, inv(r); phases=phases)
+end
+
+# SLOW
+function prepend_inv!(l::CliffordOperator, r; phases=false)
+    prepend!(l, inv(CliffordOperator(r, nqubits(l))); phases=phases)
+end
 
 """
 Simulates measurement results of a Clifford circuit acting on an `n`-qubit |0⟩^⊗n state using the stabilizer tableau backtracking method,
@@ -55,7 +102,7 @@ function backtrajectory(circuit0::Vector{<:AbstractOperation}, n::Int)
     
     for op in circuit
         if op isa AbstractCliffordOperator
-            T = prepend_inv!(T, op; phases=true)    # VERY INEFFICIENT - need a fast prepend_inv!
+            T = prepend_inv!(T, op; phases=true)
         elseif op isa sMZ
             pivot = 0   
             for c in 1:n
