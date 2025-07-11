@@ -1,13 +1,13 @@
-@testitem "ECC [[8rp, (8r − 2)p − 2m, 4]] Delfosse-Reichardt code" tags=[:ecc] begin
+@testitem "[[8rp, (8r − 2)p − 2m, 4]] Delfosse-Reichardt code" begin
 
     using JuMP
     using HiGHS
-    using LinearAlgebra
     using QuantumClifford
     using QuantumClifford.ECC
     using Nemo: matrix, GF, echelon_form
-    using QuantumClifford.ECC: DelfosseReichardt, _generalize_delfosse_reichardt_code, DistanceMIPAlgorithm
-    using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate
+    using QECCore
+    using QECCore.LinearAlgebra
+    using QECCore: _generalize_delfosse_reichardt_code
 
     @testset "Testing [[8rp, (8r − 2)p − 2m, 4]] DelfosseRepCode properties" begin
         @testset "test [16p, 14p − 8, 4]] code family that uses RM(2,4)" begin

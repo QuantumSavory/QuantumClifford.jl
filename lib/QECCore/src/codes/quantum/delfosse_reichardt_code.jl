@@ -6,17 +6,16 @@ Reed-Muller code and is used to construct quantum stabilizer code.
 
 Delfosse and Reichardt utilize the `[8, 4, 4]` Reed-Muller code to construct `[[8p, 6(p−1), 4]]`
 self-dual CSS quantum codes for `p≥2`, and the `[16, 11, 4]` Reed-Muller code to construct
-`[[16p, 14p − 8, 4]]` self-dual CSS quantum codes for `p≥1`. 
-
-To improve the generality of the code construction, we proposed that these codes be generalized
-using the Reed-Muller code as the base matrix. Rather than hardcoding the `[8, 4, 4]` or `[16, 11, 4]`
-Reed-Muller codes, users should be able to input parameters `r` and `m`, thus enhancing the versatility
-of the code. This leads to the following generalized code: `[[8rp, (8r − 2)p − 2m, 4]]` Delfosse-Reichardt
-code.
+`[[16p, 14p − 8, 4]]` self-dual CSS quantum codes for `p ≥ 1`. 
 
 The `[[8p, 6(p − 1), 4]]` and `[[16p, 14p − 8, 4]]` codes were introduced by Delfosse and
 Reichardt in the paper *Short Shor-style syndrome sequences* [delfosse2020short](@cite). The
 parameter `p` specifies the **number of blocks** in the code construction.
+
+To improve the generality of the code construction, we propose using arbitrary Reed-Muller codes 
+as base matrices. Rather than hardcoding the `[8, 4, 4]` or `[16, 11, 4]` codes, users can specify 
+the parameters `r` and `m`. This leads to a generalized Delfosse-Reichardt code with parameters 
+`[[8rp, (8r − 2)p − 2m, 4]]`.
 
 # [[8p, 6(p−1), 4]] code family
 
@@ -24,7 +23,7 @@ An `[[16, 6, 4]]` Delfosse-Reichardt code of from `[[8p, 6(p−1), 4]]` code fam
 from [delfosse2020short](@cite).
 
 ```jldoctest
-julia> using QuantumClifford; using QuantumClifford.ECC: DelfosseReichardt, code_n, code_k, parity_checks; # hide
+julia> using QuantumClifford; using QuantumClifford.ECC; # hide
 
 julia> p = 2; r = 1; m = 3;
 
@@ -49,7 +48,7 @@ julia> code_n(c), code_k(c)
 An `[[32, 20, 4]]` Delfosse-Reichardt code of from `[[16p, 14p − 8, 4]]` code family.
 
 ```jldoctest
-julia> using QuantumClifford; using QuantumClifford.ECC: DelfosseReichardt, code_n, code_k, parity_checks; # hide
+julia> using QuantumClifford; using QuantumClifford.ECC; # hide
 
 julia> p = 2; r = 2; m = 4;
 
@@ -91,7 +90,7 @@ struct DelfosseReichardt <: AbstractCSSCode
 end
 
 function _generalize_delfosse_reichardt_code(blocks::Int, r::Int, m::Int)
-    # base matrix: Reed-Muller parity check matrix
+    # base matrix: Reed-Muller parity matrix
     H = parity_matrix(ReedMuller(r,m))
     r, c = size(H)
     new_c = blocks*c
@@ -117,10 +116,15 @@ function _generalize_delfosse_reichardt_code(blocks::Int, r::Int, m::Int)
     return extended_H
 end
 
+function parity_matrix_xz(c::DelfosseReichard)
+    extended_mat = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)
+    return extended_mat, extended_mat
+end
+
+parity_matrix_x(c::DelfosseReichardt) = parity_matrix_xz(c)[1]
+
+parity_matrix_z(c::DelfosseReichardt) = parity_matrix_xz(c)[2]
+
 code_n(c::DelfosseReichardt) = 8*c.blocks*c.r
 
 code_k(c::DelfosseReichardt) = (8*c.r − 2)*c.blocks − 2*c.m
-
-parity_matrix_x(c::DelfosseReichardt) = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)
-
-parity_matrix_z(c::DelfosseReichardt) = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)
