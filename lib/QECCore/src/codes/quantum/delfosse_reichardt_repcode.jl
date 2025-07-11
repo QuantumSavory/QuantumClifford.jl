@@ -82,11 +82,9 @@ function parity_matrix_xz(c::DelfosseReichardtRepCode)
     return extended_mat, extended_mat
 end
 
-parity_matrix(c::DelfosseReichardtRepCode) = parity_matrix(CSS(parity_matrix_xz(c)...))
+parity_matrix_x(c::DelfosseReichardtRepCode) = parity_matrix_xz(c)[1]
 
-parity_checks_x(c::DelfosseReichardtRepCode) = _extend_414_repetition_code(c.blocks)
-
-parity_checks_z(c::DelfosseReichardtRepCode) = _extend_414_repetition_code(c.blocks)
+parity_matrix_z(c::DelfosseReichardtRepCode) = parity_matrix_xz(c)[2]
 
 code_n(c::DelfosseReichardtRepCode) = 4*c.blocks
 
