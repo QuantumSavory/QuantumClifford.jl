@@ -184,36 +184,44 @@
         for n in num_qubits  # Exponential cost in this term
             for repetition in 1:num_trials
                 test_phases = [π/4, π/8, π/2, π, 2π]
+                test_gates = [pcPhase, pcRx]
                 for ϕ in test_phases
-                    stab = random_stabilizer(n)
-                    pauli = random_pauli(n)
-                    genstab = GeneralizedStabilizer(stab)
-                    # Apply some (repeated) non-Clifford operations
-                    i = rand(1:n)
-                    nc = embed(n, i, pcPhase(ϕ))
-                    apply!(genstab, nc) # in-place
-                    apply!(genstab, nc) # in-place
-                    apply!(genstab, nc) # in-place
-                    norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(genstab, pauli)
-                    !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
-                    @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
+                    for gates in test_gates
+                        stab = random_stabilizer(n)
+                        pauli = random_pauli(n)
+                        genstab = GeneralizedStabilizer(stab)
+                        # Apply some (repeated) non-Clifford operations
+                        i = rand(1:n)
+                        nc = embed(n, i, gates(ϕ))
+                        apply!(genstab, nc) # in-place
+                        apply!(genstab, nc) # in-place
+                        apply!(genstab, nc) # in-place
+                        norm_qo_state_after_proj, norm_result1, norm_result2 = _projrand(genstab, pauli)
+                        !(iszero(norm_qo_state_after_proj)) && @test real(tr(norm_qo_state_after_proj)) ≈ 1
+                        @test norm_qo_state_after_proj ≈ norm_result2 || norm_qo_state_after_proj ≈ norm_result1
+                    end
                 end
             end
         end
+
         for j in 1:10
             num_qubits = [2,3,4,5] # exclusively multi-qubit
             for n in num_qubits # exponential cost in this term
                 test_phases = [π/4, π/8, π/2, π, 2π]
-                for ϕ in test_phases
-                    genstab = GeneralizedStabilizer(random_stabilizer(n))
-                    p = random_pauli(n)
-                    for i in 1:n
-                        apply!(genstab, embed(n, rand(1:n), pcPhase(ϕ)))
+                test_gates = [pcPhase, pcRx]
+                    for ϕ in test_phases
+                        for gates in test_gates
+                            genstab = GeneralizedStabilizer(random_stabilizer(n))
+                            p = random_pauli(n)
+                            for i in 1:n
+                                apply!(genstab, embed(n, rand(1:n), gates(ϕ)))
+                            end
+                            projectrand!(genstab, p)
+                            # Check the trace after normalization
+                            trace = tr(genstab)
+                            !iszero(trace) && @assert trace ≈ 1
+                        end
                     end
-                    projectrand!(genstab, p)
-                    # Check the trace after normalization
-                    trace = tr(genstab)
-                    !iszero(trace) && @assert trace ≈ 1
                 end
             end
         end
@@ -274,11 +282,14 @@
             for repetition in 1:num_trials
                 p = random_pauli(n)
                 i = rand(1:n)
+                test_gates = [pcPhase, pcRx]
                 for ϕ in test_phases
-                    nc = embed(n, i, pcPhase(ϕ))
-                    @test Operator(nc ⊗ p) ≈ Operator(nc) ⊗ Operator(p)
-                    @test Operator(nc ⊗ nc) ≈ Operator(nc) ⊗ Operator(nc)
-                    @test Operator(nc ⊗ nc ⊗ p) ≈ Operator(nc) ⊗ Operator(nc) ⊗ Operator(p)
+                    for gates in test_gates
+                        nc = embed(n, i, gates(ϕ))
+                        @test Operator(nc ⊗ p) ≈ Operator(nc) ⊗ Operator(p)
+                        @test Operator(nc ⊗ nc) ≈ Operator(nc) ⊗ Operator(nc)
+                        @test Operator(nc ⊗ nc ⊗ p) ≈ Operator(nc) ⊗ Operator(nc) ⊗ Operator(p)
+                    end
                 end
             end
         end
@@ -288,37 +299,40 @@
         for n in 1:5
             for rep in 1:2
             test_phases = [π/4, π/8, π/2, π, 2π]
+            test_gates = [pcPhase, pcRx]
                 for ϕ in test_phases
-                    s = random_stabilizer(n)
-                    g = GeneralizedStabilizer(s)
-                    nc = embed(n, rand(1:n), pcPhase(ϕ))
-                    p = random_pauli(n; realphase=true)
-                    gm, r = projectrand!(copy(g), p)
+                    for gates in test_gates
+                        s = random_stabilizer(n)
+                        g = GeneralizedStabilizer(s)
+                        nc = embed(n, rand(1:n), gates(ϕ))
+                        p = random_pauli(n; realphase=true)
+                        gm, r = projectrand!(copy(g), p)
 
-                    rho = Operator(g)
-                    pqo = Operator(p)
-                    id = identityoperator(pqo)
-                    projp = (pqo+id)/2
-                    projm = (-pqo+id)/2
+                        rho = Operator(g)
+                        pqo = Operator(p)
+                        id = identityoperator(pqo)
+                        projp = (pqo+id)/2
+                        projm = (-pqo+id)/2
 
-                    @test projp+projm ≈ id
+                        @test projp+projm ≈ id
 
-                    rhom = projm*rho*projm'
-                    rhop = projp*rho*projp'
+                        rhom = projm*rho*projm'
+                        rhop = projp*rho*projp'
 
-                    # @test rhom + rhop ≈ rho
+                        # @test rhom + rhop ≈ rho
 
-                    @test (expect(p, g)+1)/2 ≈ tr(rhop)
+                        @test (expect(p, g)+1)/2 ≈ tr(rhop)
 
-                    gm_notnorm, _ = QuantumClifford._projectrand_notnorm(copy(g), p, 0)
-                    @test (expect(p, g)+1)/2 ≈ tr(gm_notnorm)
+                        gm_notnorm, _ = QuantumClifford._projectrand_notnorm(copy(g), p, 0)
+                        @test (expect(p, g)+1)/2 ≈ tr(gm_notnorm)
 
-                    @test tr(rhop) ≈ tr(gm_notnorm)
+                        @test tr(rhop) ≈ tr(gm_notnorm)
 
-                    if r == 0x2
-                        @test rhom / tr(rhom) ≈ Operator(gm)
-                    else
-                        @test rhop / tr(rhop) ≈ Operator(gm)
+                        if r == 0x2
+                            @test rhom / tr(rhom) ≈ Operator(gm)
+                        else
+                            @test rhop / tr(rhop) ≈ Operator(gm)
+                        end
                     end
                 end
             end
@@ -348,5 +362,39 @@
                 @test qc ≈ qo
             end
         end
+    end
+    
+    @testset "pcRx" begin
+        # from https://en.wikipedia.org/wiki/List_of_quantum_logic_gates#Rotation_operator_gates
+        ref_rx(θ) = [cos(θ/2) -im*sin(θ/2); -im*sin(θ/2) cos(θ/2)]
+        qo_basis = SpinBasis(1//2)
+        Id = identityoperator(qo_basis)
+        function qo_rx(θ)
+            U = copy(sparse(Id))
+            U.data[1,1] = cos(θ/2)
+            U.data[1,2] = -im*sin(θ/2)
+            U.data[2,1] = -im*sin(θ/2)
+            U.data[2,2] = cos(θ/2)
+            return U
+        end
+        for _ in 1:10
+            # This rotations have a period of 4π.
+            θ = 4π*rand() 
+            @test Operator(pcRx(θ)).data ≈ dense(qo_rx(θ)).data ≈ ref_rx(θ)
+        end
+        for n in 2:5
+            for _ in 1:5
+                θ = 4π*rand()
+                q = rand(1:n)
+                qc = dense(Operator(embed(n, q, pcRx(θ)))).data 
+                b = tensor([qo_basis for _ in 1:n]...)
+                qo = dense(embed(b, Dict(q => qo_rx(θ)))).data
+                @test qc ≈ qo
+            end
+        end
+        θ1, θ2 = 2π*rand(), 2π*rand()
+        composed = Operator(pcRx(θ1)) * Operator(pcRx(θ2))
+        expected = Operator(pcRx(θ1 + θ2))
+        @test composed.data ≈ expected.data rtol=1e-10
     end
 end

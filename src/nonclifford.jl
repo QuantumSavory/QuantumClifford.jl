@@ -812,3 +812,10 @@ function pcPhase(ϕ)
 end
 
 const pcT = pcPhase(π/4)
+
+function pcRx(θ)
+    UnitaryPauliChannel(
+        (I, X),
+        (cos(θ/2), -im*sin(θ/2))
+    )
+end
