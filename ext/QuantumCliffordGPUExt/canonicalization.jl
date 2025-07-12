@@ -1,7 +1,6 @@
 using CUDA
 using LinearAlgebra
 using QuantumClifford  
-import QuantumClifford: to_cpu,to_gpu,canonicalize!
 const MIN_BLOCKS = 36
 
 function swap_columns_and_phases_kernel!(d_mat::CuDeviceArray{T,2}, 
@@ -215,8 +214,3 @@ function canonicalize!(stab::Stabilizer{<:QuantumClifford.Tableau{<:CuArray{UInt
     CUDA.synchronize()
     return stab
 end
-
-cpu_stab = random_stabilizer(5)                 
-gpu_stab = to_gpu(cpu_stab)                 
-gpu_result = canonicalize!(copy(gpu_stab)) 
-cpu_from_gpu = to_cpu(gpu_result)
