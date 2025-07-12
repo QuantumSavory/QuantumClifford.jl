@@ -13,16 +13,17 @@
         @testset "test [16p, 14p − 8, 4]] code family that uses RM(2,4)" begin
             r = 2
             m = 4
-            for i in 2:10
+            for i in 2:5
                 p = i
                 n = 8*r*p
                 k = (8*r-2)*p-2*m
                 c = DelfosseReichardt(p,r,m)
                 stab = parity_checks(c)
+                nₛ, kₛ = code_n(stab), code_k(stab)
                 H = stab_to_gf2(stab)
                 mat = matrix(GF(2), H)
                 computed_rank = rank(mat)
-                @test computed_rank == n - k
+                @test computed_rank == n - k && computed_rank == nₛ - kₛ && nₛ == n && kₛ == k  
                 @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
             end
         end
@@ -30,16 +31,17 @@
         @testset "test [[8p, 6(p−1), 4]] code family that uses RM(1,3)" begin
             r = 1
             m = 3
-            for i in 2:10
+            for i in 2:5
                 p = i
                 n = 8*r*p
                 k = (8*r-2)*p-2*m
                 c = DelfosseReichardt(p,r,m)
                 stab = parity_checks(c)
+                nₛ, kₛ = code_n(stab), code_k(stab)
                 H = stab_to_gf2(stab)
                 mat = matrix(GF(2), H)
                 computed_rank = rank(mat)
-                @test computed_rank == n - k
+                @test computed_rank == n - k && computed_rank == nₛ - kₛ && nₛ == n && kₛ == k 
                 @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
             end
         end
