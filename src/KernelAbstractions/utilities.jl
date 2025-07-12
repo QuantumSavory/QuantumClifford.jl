@@ -17,12 +17,12 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_transform!(
 
 end
 
-# CAUTION: Requires block_size == length(buffer) == prod(KA.@groupsize()).
-# CAUTION: Requires unsafe_indices = true if num_active_threads < block_size.
+# CAUTION: Requires block_size == length(buffer) == prod(KA.@groupsize())
+# CAUTION: Requires unsafe_indices = true if num_active_threads < block_size
 # TODO: Overhaul once __ctx__ is no longer necessary for runtime queries.
 # TODO: Revisit once warp level primitives are supported.
 @inline function shared_memory_reduce!(
-	f, buffer::AbstractArray{T}, value::T, index, ::Val{block_size}
+	f, buffer::AbstractArray{T}, value::T, index::Integer, ::Val{block_size}
 	) where {T, block_size}
 
 	@inbounds buffer[index] = value
@@ -76,10 +76,17 @@ COMMON TRANSFORMATIONS
 # Anonymous functions trigger recompilation. Hence, Separate them out.
 
 @inline function mod_4_sum!(target, auxiliary, global_position)
-	i = global_position[1]
+	@inbounds i = global_position[1]
 	if i <= length(target)
-		j = length(auxiliary) > 1 ? i : 1
+		@inbounds j = length(auxiliary) > 1 ? i : 1
 		@inbounds target[i] = (target[i] + auxiliary[j]) & 0x3
+	end
+end
+
+@inline function mod_4_identity!(target, auxiliary, global_position)
+	@inbounds i = global_position[1]
+	if i <= length(target)
+		@inbounds target[i] &= 0x3
 	end
 end
 #=============================================================================#

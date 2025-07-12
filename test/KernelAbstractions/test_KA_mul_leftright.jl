@@ -95,7 +95,7 @@ using GPUArrays: AllocCache, @cached, unsafe_free!
 						Array((@view d_o.tab.xzs[:, i]))
 				end
 
-				# Potential race condition.
+				# Potential aliasing problem.
 				d_o = QC.mul_left!(copy(d_s), i, i)
 				h_o = QC.mul_left!(copy(h_s), i, i)
 				synchronize()

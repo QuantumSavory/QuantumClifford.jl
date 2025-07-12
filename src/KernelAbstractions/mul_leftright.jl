@@ -1,6 +1,6 @@
 
 #=============================================================================#
-# CAUTION: Keep in mind that mutable = order_right_left ? right : left.
+# CAUTION: Keep in mind that mutable = order_right_left ? right : left
 # TODO: Make the parameters keyword arguments once support becomes available.
 KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
 	mutable_phases, mutable_xzs, @Const(const_xzs), @Const(stride),
@@ -13,12 +13,12 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
 		KA.@index(Group, NTuple), KA.@groupsize(), KA.@index(Local, NTuple)
 		)
 	start = global_position[1]
-	j_mutable = global_position[2]
-	j_const = 1
-	count = KA.@uniform (size(const_xzs, 1) >> 1)
+	j_mutable = size(mutable_xzs, 2) > 1 ? global_position[2] : 1
+	j_const = size(const_xzs, 2) > 1 ? global_position[2] : 1
+	count = KA.@uniform (size(mutable_xzs, 1) >> 1)
 	if phases
-		low = KA.@uniform (zero(eltype(const_xzs)))
-		high = KA.@uniform (zero(eltype(const_xzs)))
+		low = KA.@uniform (zero(eltype(mutable_xzs)))
+		high = KA.@uniform (zero(eltype(mutable_xzs)))
 	end
 
 	for (i, _) in zip(start : stride : count, one(batch_size) : batch_size)
@@ -60,6 +60,7 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
 
 end
 
+# CAUTION: Requires either rows(const) == 1 or rows(const) == rows(mutable)
 function device_mul!(
 	mutable_phases::AbstractGPUArray{<: Unsigned},
 	mutable_xzs::AbstractGPUArray{T},
@@ -73,9 +74,11 @@ function device_mul!(
 	backend = KA.get_backend(mutable_xzs)
 	dim_x = max(block_SZ, cld(size(mutable_xzs, 1) >> 1, batch_SZ))
 	dim_y = size(mutable_xzs, 2)
-	# This resolves a race condition if the phases alias each other.
 	if phase_B
-		const_phases = copy(const_phases)
+		transform! = kernel_transform!(backend)
+		transform!(
+			mod_4_sum!, mutable_phases, const_phases; ndrange = dim_y
+			)
 	end
 	mul! = kernel_mul!(backend, (block_SZ, 1))
 	mul!(
@@ -84,26 +87,25 @@ function device_mul!(
 		workgroupsize = (block_SZ, 1), ndrange = (dim_x, dim_y)
 		)
 	if phase_B
-		transform! = kernel_transform!(backend)
-		transform!(mod_4_sum!, mutable_phases, const_phases; ndrange = dim_y)
+		transform!(
+			mod_4_identity!, mutable_phases, const_phases; ndrange = dim_y
+			)
 	end
 	return nothing
 
 end
 
-# CAUTION: Meta-programming is utilised to combine left/right definitions.
-for (direction, right_left) in ((:left!, true), (:right!, false))
-
-# Avoid creating messy variables in the outermost scope.
-local sym = :mul_
-local prefix_sym = :do_mul_
+# CAUTION: Meta-programming is utilised to in order to avoid repetition.
+for (safe_f_sym, unsafe_f_sym, right_left) in (
+	(:mul_left!, :do_mul_left!, true), (:mul_right!, :do_mul_right!, false)
+	)
 
 #==============================================================================
 RETURNS PAULI OPERATOR
 ==============================================================================#
 
 # PauliOperator - PauliOperator
-@eval @inline function $(Symbol(sym, direction))(
+@eval @inline function $safe_f_sym(
 	u::DevicePauliOperator, v::DevicePauliOperator;
 	phases::Val{phase_B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
@@ -111,6 +113,20 @@ RETURNS PAULI OPERATOR
 	) where {phase_B, block_SZ, batch_SZ}
 
 	u.nqubits == v.nqubits || throw(DimensionMismatch(THROW_NQUBITS))
+	return $unsafe_f_sym(
+		u, v;
+		phases = phases, block_size = block_size, batch_size = batch_size
+		)
+
+end
+
+@eval @inline function $unsafe_f_sym(
+	u::DevicePauliOperator, v::DevicePauliOperator;
+	phases::Val{phase_B} = Val(true),
+	block_size::Val{block_SZ} = Val(default_block_size),
+	batch_size::Val{batch_SZ} = Val(default_batch_size)
+	) where {phase_B, block_SZ, batch_SZ}
+
 	device_mul!(
 		u.phase, u.xz, v.phase, v.xz;
 		order_right_left = Val($right_left), phases = phases,
@@ -120,49 +136,37 @@ RETURNS PAULI OPERATOR
 
 end
 
-@eval @inline function $(Symbol(prefix_sym, direction))(
-	u::DevicePauliOperator, v::DevicePauliOperator;
+for (T_v_sym, v_tab_sym) in (
+	(:DeviceTableau, :v), (:DeviceAbstractStabilizer, :(v.tab))
+	)
+
+# PauliOperator - Tableau/AbstractStabilizer[i]
+@eval @inline function $safe_f_sym(
+	u::DevicePauliOperator, v::$T_v_sym, i::Integer;
 	phases::Val{phase_B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
 	batch_size::Val{batch_SZ} = Val(default_batch_size)
 	) where {phase_B, block_SZ, batch_SZ}
 
-	device_mul!(
-		u.phase, u.xz, v.phase, v.xz;
-		order_right_left = Val($right_left), phases = phases,
-		block_size = block_size, batch_size = batch_size
+	1 <= i <= length($v_tab_sym.phases) || throw(BoundsError(THROW_BOUNDS))
+	u.nqubits == $v_tab_sym.nqubits || throw(DimensionMismatch(THROW_NQUBITS))
+	return $unsafe_f_sym(
+		u, v, i;
+		phases = phases, block_size = block_size, batch_size = batch_size
 		)
-	return u
 
 end
 
-# PauliOperator - Tableau[i]
-@eval @inline function $(Symbol(sym, direction))(
-	u::DevicePauliOperator, v::DeviceTableau, i;
-	phases::Val{phase_B} = Val(true),
-	block_size::Val{block_SZ} = Val(default_block_size),
-	batch_size::Val{batch_SZ} = Val(default_batch_size)
-	) where {phase_B, block_SZ, batch_SZ}
-
-	u.nqubits == v.nqubits || throw(DimensionMismatch(THROW_NQUBITS))
-	device_mul!(
-		u.phase, u.xz, (@view v.phases[i]), (@view v.xzs[:, i]);
-		order_right_left = Val($right_left), phases = phases,
-		block_size = block_size, batch_size = batch_size
-		)
-	return u
-
-end
-
-@eval @inline function $(Symbol(prefix_sym, direction))(
-	u::DevicePauliOperator, v::DeviceTableau, i;
+@eval @inline function $unsafe_f_sym(
+	u::DevicePauliOperator, v::$T_v_sym, i::Integer;
 	phases::Val{phase_B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
 	batch_size::Val{batch_SZ} = Val(default_batch_size)
 	) where {phase_B, block_SZ, batch_SZ}
 
 	@inbounds device_mul!(
-		u.phase, u.xz, (@view v.phases[i]), (@view v.xzs[:, i]);
+		u.phase, u.xz,
+		(@view $v_tab_sym.phases[i]), (@view $v_tab_sym.xzs[:, i]);
 		order_right_left = Val($right_left), phases = phases,
 		block_size = block_size, batch_size = batch_size
 		)
@@ -170,50 +174,42 @@ end
 
 end
 
-# PauliOperator - AbstractStabilizer[i]
-@eval @inline function $(Symbol(sym, direction))(
-	u::DevicePauliOperator, v::DeviceAbstractStabilizer, i;
-	phases::Val{phase_B} = Val(true),
-	block_size::Val{block_SZ} = Val(default_block_size),
-	batch_size::Val{batch_SZ} = Val(default_batch_size)
-	) where {phase_B, block_SZ, batch_SZ}
-
-	$(Symbol(sym, direction))(
-		u, v.tab, i;
-		phases = phases, block_size = block_size, batch_size = batch_size
-		)
-
-end
-
-@eval @inline function $(Symbol(prefix_sym, direction))(
-	u::DevicePauliOperator, v::DeviceAbstractStabilizer, i;
-	phases::Val{phase_B} = Val(true),
-	block_size::Val{block_SZ} = Val(default_block_size),
-	batch_size::Val{batch_SZ} = Val(default_batch_size)
-	) where {phase_B, block_SZ, batch_SZ}
-
-	return $(Symbol(prefix_sym, direction))(
-		u, v.tab, i;
-		phases = phases, block_size = block_size, batch_size = batch_size
-		)
-
+# Marks the end for (T_v_sym, v_tab_sym)
 end
 
 #==============================================================================
-RETURNS TABLEAU
+RETURNS TABLEAU / ABSTRACT STABILIZER
 ==============================================================================#
 
-# Tableau - PauliOperator
-@eval @inline function $(Symbol(sym, direction))(
-	u::DeviceTableau, v::DevicePauliOperator;
+for (T_u_sym, u_tab_sym) in (
+	(:DeviceTableau, :u), (:DeviceAbstractStabilizer, :(u.tab))
+	)
+
+# Tableau/AbstractStabilizer - PauliOperator
+@eval @inline function $safe_f_sym(
+	u::$T_u_sym, v::DevicePauliOperator;
 	phases::Val{phase_B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
 	batch_size::Val{batch_SZ} = Val(default_batch_size)
 	) where {phase_B, block_SZ, batch_SZ}
 
-	u.nqubits == v.nqubits || throw(DimensionMismatch(THROW_NQUBITS))
+	$u_tab_sym.nqubits == v.nqubits || throw(DimensionMismatch(THROW_NQUBITS))
+	return $unsafe_f_sym(
+		u, v;
+		phases = phases, block_size = block_size, batch_size = batch_size
+		)
+
+end
+
+@eval @inline function $unsafe_f_sym(
+	u::$T_u_sym, v::DevicePauliOperator;
+	phases::Val{phase_B} = Val(true),
+	block_size::Val{block_SZ} = Val(default_block_size),
+	batch_size::Val{batch_SZ} = Val(default_batch_size)
+	) where {phase_B, block_SZ, batch_SZ}
+
 	device_mul!(
-		u.phases, u.xzs, v.phase, v.xz;
+		$u_tab_sym.phases, $u_tab_sym.xzs, v.phase, v.xz;
 		order_right_left = Val($right_left), phases = phases,
 		block_size = block_size, batch_size = batch_size
 		)
@@ -221,51 +217,33 @@ RETURNS TABLEAU
 
 end
 
-@eval @inline function $(Symbol(prefix_sym, direction))(
-	u::DeviceTableau, v::DevicePauliOperator;
+# Tableau/AbstractStabilizer[i] - PauliOperator
+@eval @inline function $safe_f_sym(
+	u::$T_u_sym, i::Integer, v::DevicePauliOperator;
 	phases::Val{phase_B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
 	batch_size::Val{batch_SZ} = Val(default_batch_size)
 	) where {phase_B, block_SZ, batch_SZ}
 
-	device_mul!(
-		u.phases, u.xzs, v.phase, v.xz;
-		order_right_left = Val($right_left), phases = phases,
-		block_size = block_size, batch_size = batch_size
+	1 <= i <= length($u_tab_sym.phases) || throw(BoundsError(THROW_BOUNDS))
+	$u_tab_sym.nqubits == v.nqubits || throw(DimensionMismatch(THROW_NQUBITS))
+	return $unsafe_f_sym(
+		u, i, v;
+		phases = phases, block_size = block_size, batch_size = batch_size
 		)
-	return u
 
 end
 
-# Tableau[m] - Tableau[n]
-@eval @inline function $(Symbol(sym, direction))(
-	u::DeviceTableau, m, v::DeviceTableau, n;
-	phases::Val{phase_B} = Val(true),
-	block_size::Val{block_SZ} = Val(default_block_size),
-	batch_size::Val{batch_SZ} = Val(default_batch_size)
-	) where {phase_B, block_SZ, batch_SZ}
-
-	u.nqubits == v.nqubits || throw(DimensionMismatch(THROW_NQUBITS))
-	device_mul!(
-		(@view u.phases[m]), (@view u.xzs[:, m]),
-		(@view v.phases[n]), (@view v.xzs[:, n]);
-		order_right_left = Val($right_left), phases = phases,
-		block_size = block_size, batch_size = batch_size
-		)
-	return u
-
-end
-
-@eval @inline function $(Symbol(prefix_sym, direction))(
-	u::DeviceTableau, m, v::DeviceTableau, n;
+@eval @inline function $unsafe_f_sym(
+	u::$T_u_sym, i::Integer, v::DevicePauliOperator;
 	phases::Val{phase_B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
 	batch_size::Val{batch_SZ} = Val(default_batch_size)
 	) where {phase_B, block_SZ, batch_SZ}
 
 	@inbounds device_mul!(
-		(@view u.phases[m]), (@view u.xzs[:, m]),
-		(@view v.phases[n]), (@view v.xzs[:, n]);
+		(@view $u_tab_sym.phases[i]), (@view $u_tab_sym.xzs[:, i]),
+		v.phase, v.xz;
 		order_right_left = Val($right_left), phases = phases,
 		block_size = block_size, batch_size = batch_size
 		)
@@ -273,64 +251,34 @@ end
 
 end
 
-# Tableau[m] - AbstractStabilizer[n]
-@eval @inline function $(Symbol(sym, direction))(
-	u::DeviceTableau, m, v::DeviceAbstractStabilizer, n;
+# CAUTION: (Mixed)Destabilizer is handled separately.
+# Tableau/AbstractStabilizer[i] - Self[j]
+@eval @inline function $safe_f_sym(
+	u::$T_u_sym, i::Integer, j::Integer;
 	phases::Val{phase_B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
 	batch_size::Val{batch_SZ} = Val(default_batch_size)
 	) where {phase_B, block_SZ, batch_SZ}
 
-	return $(Symbol(sym, direction))(
-		u, m, v.tab, n;
+	len = length($u_tab_sym.phases)
+	1 <= i <= len && 1 <= j <= len || throw(BoundsError(THROW_BOUNDS))
+	return $unsafe_f_sym(
+		u, i, j;
 		phases = phases, block_size = block_size, batch_size = batch_size
 		)
 
 end
 
-@eval @inline function $(Symbol(prefix_sym, direction))(
-	u::DeviceTableau, m, v::DeviceAbstractStabilizer, n;
-	phases::Val{phase_B} = Val(true),
-	block_size::Val{block_SZ} = Val(default_block_size),
-	batch_size::Val{batch_SZ} = Val(default_batch_size)
-	) where {phase_B, block_SZ, batch_SZ}
-
-	return $(Symbol(prefix_sym, direction))(
-		u, m, v.tab, n;
-		phases = phases, block_size = block_size, batch_size = batch_size
-		)
-
-end
-
-# Tableau[m] - Self[n]
-@eval @inline function $(Symbol(sym, direction))(
-	u::DeviceTableau, m, n;
-	phases::Val{phase_B} = Val(true),
-	block_size::Val{block_SZ} = Val(default_block_size),
-	batch_size::Val{batch_SZ} = Val(default_batch_size)
-	) where {phase_B, block_SZ, batch_SZ}
-
-
-	device_mul!(
-		(@view u.phases[m]), (@view u.xzs[:, m]),
-		(@view u.phases[n]), (@view u.xzs[:, n]);
-		order_right_left = Val($right_left), phases = phases,
-		block_size = block_size, batch_size = batch_size
-		)
-	return u
-
-end
-
-@eval @inline function $(Symbol(prefix_sym, direction))(
-	u::DeviceTableau, m, n;
+@eval @inline function $unsafe_f_sym(
+	u::$T_u_sym, i::Integer, j::Integer;
 	phases::Val{phase_B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
 	batch_size::Val{batch_SZ} = Val(default_batch_size)
 	) where {phase_B, block_SZ, batch_SZ}
 
 	@inbounds device_mul!(
-		(@view u.phases[m]), (@view u.xzs[:, m]),
-		(@view u.phases[n]), (@view u.xzs[:, n]);
+		(@view $u_tab_sym.phases[i]), (@view $u_tab_sym.xzs[:, i]),
+		(@view $u_tab_sym.phases[j]), (@view $u_tab_sym.xzs[:, j]);
 		order_right_left = Val($right_left), phases = phases,
 		block_size = block_size, batch_size = batch_size
 		)
@@ -338,196 +286,164 @@ end
 
 end
 
-#==============================================================================
-RETURNS (MIXED) (DE)STABILIZER
-==============================================================================#
+for (T_v_sym, v_tab_sym) in (
+	(:DeviceTableau, :v), (:DeviceAbstractStabilizer, :(v.tab))
+	)
 
-# AbstractStabilizer - PauliOperator
-@eval @inline function $(Symbol(sym, direction))(
-	u::DeviceAbstractStabilizer, v::DevicePauliOperator;
+# Tableau/AbstractStabilizer - Tableau/AbstractStabilizer
+@eval @inline function $safe_f_sym(
+	u::$T_u_sym, v::$T_v_sym;
 	phases::Val{phase_B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
 	batch_size::Val{batch_SZ} = Val(default_batch_size)
 	) where {phase_B, block_SZ, batch_SZ}
 
-
-	$(Symbol(sym, direction))(
-		u.tab, v;
+	length($u_tab_sym.phases) == length($v_tab_sym.phases) ||
+		throw(DimensionMismatch(THROW_SIZE))
+	$u_tab_sym.nqubits == $v_tab_sym.nqubits ||
+		throw(DimensionMismatch(THROW_NQUBITS))
+	return $unsafe_f_sym(
+		u, v;
 		phases = phases, block_size = block_size, batch_size = batch_size
+		)
+
+end
+
+@eval @inline function $unsafe_f_sym(
+	u::$T_u_sym, v::$T_v_sym;
+	phases::Val{phase_B} = Val(true),
+	block_size::Val{block_SZ} = Val(default_block_size),
+	batch_size::Val{batch_SZ} = Val(default_batch_size)
+	) where {phase_B, block_SZ, batch_SZ}
+
+	device_mul!(
+		$u_tab_sym.phases, $u_tab_sym.xzs, $v_tab_sym.phases, $v_tab_sym.xzs;
+		order_right_left = Val($right_left), phases = phases,
+		block_size = block_size, batch_size = batch_size
 		)
 	return u
 
 end
 
-@eval @inline function $(Symbol(prefix_sym, direction))(
-	u::DeviceAbstractStabilizer, v::DevicePauliOperator;
+# Tableau/AbstractStabilizer - Tableau/AbstractStabilizer[i]
+@eval @inline function $safe_f_sym(
+	u::$T_u_sym, v::$T_v_sym, i::Integer;
 	phases::Val{phase_B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
 	batch_size::Val{batch_SZ} = Val(default_batch_size)
 	) where {phase_B, block_SZ, batch_SZ}
 
-
-	$(Symbol(prefix_sym, direction))(
-		u.tab, v;
+	1 <= i <= length($v_tab_sym.phases) || throw(BoundsError(THROW_BOUNDS))
+	$u_tab_sym.nqubits == $v_tab_sym.nqubits ||
+		throw(DimensionMismatch(THROW_NQUBITS))
+	return $unsafe_f_sym(
+		u, v, i;
 		phases = phases, block_size = block_size, batch_size = batch_size
+		)
+
+end
+
+@eval @inline function $unsafe_f_sym(
+	u::$T_u_sym, v::$T_v_sym, i::Integer;
+	phases::Val{phase_B} = Val(true),
+	block_size::Val{block_SZ} = Val(default_block_size),
+	batch_size::Val{batch_SZ} = Val(default_batch_size)
+	) where {phase_B, block_SZ, batch_SZ}
+
+	@inbounds device_mul!(
+		$u_tab_sym.phases, $u_tab_sym.xzs,
+		(@view $v_tab_sym.phases[i]), (@view $v_tab_sym.xzs[:, i]);
+		order_right_left = Val($right_left), phases = phases,
+		block_size = block_size, batch_size = batch_size
 		)
 	return u
 
 end
 
-# AbstractStabilizer[m] - Tableau[n]
-@eval @inline function $(Symbol(sym, direction))(
-	u::DeviceAbstractStabilizer, m, v::DeviceTableau, n;
+# Tableau/AbstractStabilizer[i] - Tableau/AbstractStabilizer[j]
+@eval @inline function $safe_f_sym(
+	u::$T_u_sym, i::Integer, v::$T_v_sym, j::Integer;
 	phases::Val{phase_B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
 	batch_size::Val{batch_SZ} = Val(default_batch_size)
 	) where {phase_B, block_SZ, batch_SZ}
 
-
-	$(Symbol(sym, direction))(
-		u.tab, m, v, n;
+	1 <= i <= length($u_tab_sym.phases) &&
+		1 <= j <= length($v_tab_sym.phases) ||
+			throw(BoundsError(THROW_BOUNDS))
+	$u_tab_sym.nqubits == $v_tab_sym.nqubits ||
+		throw(DimensionMismatch(THROW_NQUBITS))
+	return $unsafe_f_sym(
+		u, i, v, j;
 		phases = phases, block_size = block_size, batch_size = batch_size
+		)
+
+end
+
+@eval @inline function $unsafe_f_sym(
+	u::$T_u_sym, i::Integer, v::$T_v_sym, j::Integer;
+	phases::Val{phase_B} = Val(true),
+	block_size::Val{block_SZ} = Val(default_block_size),
+	batch_size::Val{batch_SZ} = Val(default_batch_size)
+	) where {phase_B, block_SZ, batch_SZ}
+
+	@inbounds device_mul!(
+		(@view $u_tab_sym.phases[i]), (@view $u_tab_sym.xzs[:, i]),
+		(@view $v_tab_sym.phases[j]), (@view $v_tab_sym.xzs[:, j]);
+		order_right_left = Val($right_left), phases = phases,
+		block_size = block_size, batch_size = batch_size
 		)
 	return u
 
 end
 
-@eval @inline function $(Symbol(prefix_sym, direction))(
-	u::DeviceAbstractStabilizer, m, v::DeviceTableau, n;
-	phases::Val{phase_B} = Val(true),
-	block_size::Val{block_SZ} = Val(default_block_size),
-	batch_size::Val{batch_SZ} = Val(default_batch_size)
-	) where {phase_B, block_SZ, batch_SZ}
-
-
-	$(Symbol(prefix_sym, direction))(
-		u.tab, m, v, n;
-		phases = phases, block_size = block_size, batch_size = batch_size
-		)
-	return u
-
+# Marks the end for (T_v_sym, v_tab_sym)
 end
 
-# AbstractStabilizer[m] - AbstractStabilizer[n]
-@eval @inline function $(Symbol(sym, direction))(
-	u::DeviceAbstractStabilizer, m, v::DeviceAbstractStabilizer, n;
-	phases::Val{phase_B} = Val(true),
-	block_size::Val{block_SZ} = Val(default_block_size),
-	batch_size::Val{batch_SZ} = Val(default_batch_size)
-	) where {phase_B, block_SZ, batch_SZ}
-
-	$(Symbol(sym, direction))(
-		u.tab, m, v.tab, n;
-		phases = phases, block_size = block_size, batch_size = batch_size
-		)
-	return u
-
-end
-
-@eval @inline function $(Symbol(prefix_sym, direction))(
-	u::DeviceAbstractStabilizer, m, v::DeviceAbstractStabilizer, n;
-	phases::Val{phase_B} = Val(true),
-	block_size::Val{block_SZ} = Val(default_block_size),
-	batch_size::Val{batch_SZ} = Val(default_batch_size)
-	) where {phase_B, block_SZ, batch_SZ}
-
-	$(Symbol(prefix_sym, direction))(
-		u.tab, m, v.tab, n;
-		phases = phases, block_size = block_size, batch_size = batch_size
-		)
-	return u
-
-end
-
-#==============================================================================
-RETURNS (MIXED) STABILIZER
-==============================================================================#
-
-# (Mixed)Stabilizer[m] - Self[n]
-@eval @inline function $(Symbol(sym, direction))(
-	u::DeviceUnionStabilizer, m, n;
-	phases::Val{phase_B} = Val(true),
-	block_size::Val{block_SZ} = Val(default_block_size),
-	batch_size::Val{batch_SZ} = Val(default_batch_size)
-	) where {phase_B, block_SZ, batch_SZ}
-
-
-	$(Symbol(sym, direction))(
-		u.tab, m, n;
-		phases = phases, block_size = block_size, batch_size = batch_size
-		)
-	return u
-
-end
-
-@eval @inline function $(Symbol(prefix_sym, direction))(
-	u::DeviceUnionStabilizer, m, n;
-	phases::Val{phase_B} = Val(true),
-	block_size::Val{block_SZ} = Val(default_block_size),
-	batch_size::Val{batch_SZ} = Val(default_batch_size)
-	) where {phase_B, block_SZ, batch_SZ}
-
-	$(Symbol(prefix_sym, direction))(
-		u.tab, m, n;
-		phases = phases, block_size = block_size, batch_size = batch_size
-		)
-	return u
-
+# Marks the end for (T_u_sym, u_tab_sym)
 end
 
 #==============================================================================
 RETURNS (MIXED) DESTABILIZER
 ==============================================================================#
 
-# (Mixed)Destabilizer[m] - Self[n]
-@eval @inline function $(Symbol(sym, direction))(
-	u::DeviceUnionDestabilizer, m, n;
+# CAUTION: Requires special handling.
+# (Mixed)Destabilizer[i] - Self[j]
+@eval @inline function $safe_f_sym(
+	u::DeviceUnionDestabilizer, i::Integer, j::Integer;
 	phases::Val{phase_B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
 	batch_size::Val{batch_SZ} = Val(default_batch_size)
 	) where {phase_B, block_SZ, batch_SZ}
 
-	p, nqubits, xzs = u.tab.phases, u.tab.nqubits, u.tab.xzs
-	# Swapping the order of the indices is intentional.
-	a_phase, a_xz = (@view p[n]), (@view xzs[:, n])
-	b_phase, b_xz = (@view p[m]), (@view xzs[:, m])
-	# This trick enables supporting CartesianIndex.
-	p, xzs = (@view p[nqubits + 1 : end]), (@view xzs[nqubits + 1 : end])
-	c_phase, c_xz = (@view p[m]), (@view xzs[:, m])
-	d_phase, d_xz = (@view p[n]), (@view xzs[:, n])
-	device_mul!(
-		a_phase, a_xz, b_phase, b_xz;
-		order_right_left = Val($right_left), phases = Val(false),
-		block_size = block_size, batch_size = batch_size
+	len, n = length(u.tab.phases), u.tab.nqubits
+	1 <= i <= len && 1 <= i + n <= len && 1 <= j <= len && 1 <= j + n <= len ||
+		throw(BoundsError(THROW_BOUNDS))
+	return $unsafe_f_sym(
+		u, i, j;
+		phases = phases, block_size = block_size, batch_size = batch_size
 		)
-	device_mul!(
-		c_phase, c_xz, d_phase, d_xz;
-		order_right_left = Val($right_left), phases = phases,
-		block_size = block_size, batch_size = batch_size
-		)
-	return u
 
 end
 
-@eval @inline function $(Symbol(prefix_sym, direction))(
-	u::DeviceUnionDestabilizer, m, n;
+@eval @inline function $unsafe_f_sym(
+	u::DeviceUnionDestabilizer, i::Integer, j::Integer;
 	phases::Val{phase_B} = Val(true),
 	block_size::Val{block_SZ} = Val(default_block_size),
 	batch_size::Val{batch_SZ} = Val(default_batch_size)
 	) where {phase_B, block_SZ, batch_SZ}
 
-	p, nqubits, xzs = u.tab.phases, u.tab.nqubits, u.tab.xzs
+	p, n, xzs = u.tab.phases, u.tab.nqubits, u.tab.xzs
 	# Swapping the order of the indices is intentional.
 	@inbounds device_mul!(
-		(@view p[n]), (@view xzs[:, n]), (@view p[m]), (@view xzs[:, m]);
+		(@view p[j]), (@view xzs[:, j]),
+		(@view p[i]), (@view xzs[:, i]);
 		order_right_left = Val($right_left), phases = Val(false),
 		block_size = block_size, batch_size = batch_size
 		)
-	# This trick enables supporting CartesianIndex.
-	@inbounds p, xzs =
-		(@view p[nqubits + 1 : end]), (@view xzs[nqubits + 1 : end])
 	@inbounds device_mul!(
-		(@view p[m]), (@view xzs[:, m]), (@view p[n]), (@view xzs[:, n]);
+		(@view p[i + n]), (@view xzs[:, i + n]),
+		(@view p[j + n]), (@view xzs[:, j + n]);
 		order_right_left = Val($right_left), phases = phases,
 		block_size = block_size, batch_size = batch_size
 		)
