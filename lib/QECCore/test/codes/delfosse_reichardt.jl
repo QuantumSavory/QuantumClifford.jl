@@ -3,6 +3,7 @@
     using JuMP
     using HiGHS
     using QuantumClifford
+    using QuantumClifford: stab_looks_good
     using QuantumClifford.ECC
     using Nemo: matrix, GF, echelon_form
     using QECCore
@@ -23,8 +24,9 @@
                 H = stab_to_gf2(stab)
                 mat = matrix(GF(2), H)
                 computed_rank = rank(mat)
-                @test computed_rank == n - k && computed_rank == nₛ - kₛ && nₛ == n && kₛ == k  
+                @test computed_rank == n - k && computed_rank == nₛ - kₛ && nₛ == n && kₛ == k
                 @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
+                @test stab_looks_good(stab, remove_redundant_rows=true)
             end
         end
 
@@ -41,8 +43,9 @@
                 H = stab_to_gf2(stab)
                 mat = matrix(GF(2), H)
                 computed_rank = rank(mat)
-                @test computed_rank == n - k && computed_rank == nₛ - kₛ && nₛ == n && kₛ == k 
+                @test computed_rank == n - k && computed_rank == nₛ - kₛ && nₛ == n && kₛ == k
                 @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
+                @test stab_looks_good(stab, remove_redundant_rows=true)
             end
         end
 
