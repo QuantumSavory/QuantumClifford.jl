@@ -19,10 +19,9 @@
             n = 6000  # Large enough to see GPU benefit
             cpu_stab = random_stabilizer(n)
             gpu_stab = to_gpu(cpu_stab)
-            # warmup to ensure accurate timings for gpu function
             canonicalize!(copy(gpu_stab))
             gpu_time = @elapsed canonicalize!(copy(gpu_stab))
-            # Sanity check, note that for 6000 size Stabilizer cpu version takes 1900-2400 ms average
+            # Sanity check, note that for 6000 size Stabilizer cpu version takes 1900-2400 ms on average
             @test gpu_time*1000 < 1900 
         end
         
