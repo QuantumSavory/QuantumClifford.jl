@@ -1,4 +1,7 @@
-"""The family of Reed-Muller codes, as discovered by Muller in his 1954 paper [muller1954application](@cite) and Reed who proposed the first efficient decoding algorithm [reed1954class](@cite).
+"""
+    $TYPEDEF
+
+The family of Reed-Muller codes, as discovered by Muller in his 1954 paper [muller1954application](@cite) and Reed who proposed the first efficient decoding algorithm [reed1954class](@cite).
 
 Let `m` be a positive integer and `r` a nonnegative integer with `r ≤ m`. These linear codes, denoted as `RM(r, m)`, have order `r` (where `0 ≤ r ≤ m`) and codeword length `n` of `2ᵐ`.
 
@@ -12,10 +15,15 @@ The dimension of `RM(m - r - 1, m)` equals the dimension of the dual of `RM(r, m
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed_muller).
 
-See also: `RecursiveReedMuller`
+See also: [`RecursiveReedMuller`](@ref) and [`QuantumReedMuller`](@ref)
+
+### Fields
+    $TYPEDFIELDS
 """
 struct ReedMuller <: AbstractCECC
+    """The order of the code."""
     r::Int
+    """The log-length of the code."""
     m::Int
 
     function ReedMuller(r, m)
@@ -46,7 +54,7 @@ function generator(c::ReedMuller)
     return G 
 end
 
-function parity_checks(c::ReedMuller)
+function parity_matrix(c::ReedMuller)
     H = generator(ReedMuller(c.m - c.r - 1, c.m))
     return H
 end

@@ -104,13 +104,17 @@ struct LPCode <: AbstractECC
 
     function LPCode(A::GroupAlgebraElemMatrix, B::GroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1,1]), repr::Function)
         all(elem.parent == GA for elem in A) && all(elem.parent == GA for elem in B) || error("The base rings of all elements in both matrices must be the same as the group algebra")
-        new(A, B, GA, repr)
+        code = new(A, B, GA, repr)
+        QuantumClifford.check_allrowscommute(parity_checks(code)) || error("The Lifted Product Code just created is invalid -- its rows do not commute. This is either a bug in this library, or a non-commutative group algebra was used.")
+        code
     end
 
     function LPCode(c₁::LiftedCode, c₂::LiftedCode; GA::GroupAlgebra=c₁.GA, repr::Function=c₁.repr)
         # we are using the group algebra and the representation function of the first lifted code
         c₁.GA == GA && c₂.GA == GA || error("The base rings of both lifted codes must be the same as the group algebra")
-        new(c₁.A, c₂.A, GA, repr)
+        code = new(c₁.A, c₂.A, GA, repr)
+        QuantumClifford.check_allrowscommute(parity_checks(code)) || error("The Lifted Product Code just created is invalid -- its rows do not commute. This is either a bug in this library, or a non-commutative group algebra was used.")
+        code
     end
 end
 
@@ -168,7 +172,8 @@ then you pick two polynomials made of the group generators,
 and then, behind the scenes, these two polynomials `a` and `b` are piped
 to the lifted product code constructor as the elements of `1×1` matrices.
 
-See also: [`QuantumClifford.ECC.LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
+See also: [`LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref),
+[`honeycomb_color_codes`](@ref).
 
 ## Examples of 2BGA code subfamilies
 
@@ -380,4 +385,69 @@ function haah_cubic_codes(a_shifts::Array{Int}, b_shifts::Array{Int}, l::Int)
     a = sum(GA[n%dim(GA)+1] for n in a_shifts)
     b = sum(GA[n%dim(GA)+1] for n in b_shifts)
     two_block_group_algebra_codes(a, b)
+end
+
+"""
+Haah’s cubic code is defined as ``\\text{LP}(1 + x + y + z, 1 + xy + xz + yz)``
+where ``\\text{LP}`` is the lifted product code, and `x`, `y`, `z` are elements
+of the ring ``R = \\mathbb{F}_2[x, y, z] / (x^L - 1, y^L - 1, z^L - 1)``. Here
+``\\mathbb{F}_2`` is the finite field of order `2` and `L` is the lattice size.
+The ring ``R`` is the group algebra ``\\mathbb{F}_qG`` of a finite group `G`, where
+``G = (C_L)^3`` and ``C_L`` is the cyclic group of order `L`. This method of Haah's
+cubic code construction is outlined in Appendix B of [panteleev2022asymptotically](@cite).
+
+Here is an example of a `[[1024, 30, 13 ≤ d ≤ 32]]` Haah's cubic code from Appendix B,
+code D of [panteleev2021degenerate](@cite) on the `8 × 8 × 8` Lattice.
+
+```jldoctest
+julia> import Hecke; using QuantumClifford.ECC;
+
+julia> l = 8;
+
+julia> c = haah_cubic_codes(l);
+
+julia> code_n(c), code_k(c)
+(1024, 30)
+```
+
+See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref),
+[`honeycomb_color_codes`](@ref).
+"""
+function haah_cubic_codes(l::Int)
+    GA = group_algebra(GF(2), abelian_group([l,l,l]))
+    x, y, z = gens(GA)
+    c = [1 + x + y + z;;]
+    d = [1 + x*y + x*z + y*z;;]
+    LPCode(c,d)
+end
+
+"""
+The honeycomb color codes [eberhardt2024logical](@cite) are exactly the Bivariate
+Bicycle (BB) codes defined by the polynomials `c = 1 + x + xy` and `d = 1 + y + xy`,
+provided that both `ℓ` and `m` are divisible by three. This `6.6.6` code is an example of BB
+code, as it represents a special case.
+
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/triangular_color).
+
+```jldoctest
+julia> import Hecke; using QuantumClifford.ECC;
+
+julia> ℓ = 9; m = 6;
+
+julia> c = honeycomb_color_codes(ℓ, m);
+
+julia> code_n(c), code_k(c)
+(108, 4)
+```
+
+See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_block_group_algebra_codes`](@ref),
+[`honeycomb_color_codes`](@ref).
+"""
+function honeycomb_color_codes(ℓ::Int, m::Int)
+    (ℓ % 3 == 0 && m % 3 == 0) || throw(ArgumentError("Both ℓ and m must be divisible by 3"))
+    GA = group_algebra(GF(2), abelian_group([ℓ, m]))
+    x, y = gens(GA)
+    c = 1 + x + x*y
+    d = 1 + y + x*y
+    two_block_group_algebra_codes(c, d)
 end

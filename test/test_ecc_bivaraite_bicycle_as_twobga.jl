@@ -1,4 +1,4 @@
-@testitem "ECC Bivaraite Bicycle as 2BGA" begin
+@testitem "ECC Bivaraite Bicycle as 2BGA" tags=[:ecc] begin
     using Hecke
     using HiGHS
     using JuMP
