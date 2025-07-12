@@ -1,13 +1,101 @@
-import Graphs
+import Graphs: Graphs, nv, AbstractGraph
+
+const clifford_id1 = one(CliffordOperator, 1)
+
+# elided as it's a non-public API and might introduce unexpected behavior for downstream users
+# we didn't wrap it inside a new struct as that introduces boiler plate for show etc.
+function _apply_vop!(vops::Vector{SingleQubitOperator}, op::AbstractSingleQubitOperator; phases::Bool=true)
+    q = affectedqubits(op)[1]
+    # Convert into a single qubit operator acting on index 1
+    op_prime = SingleQubitOperator(SingleQubitOperator(op), 1)
+    # A trick that performs slightly better than directly op_prime * CliffordOperator(vops[q])
+    # as converting to `CliffordOperator` is expensive
+    vops[q] = SingleQubitOperator(op_prime * (vops[q] * clifford_id1))
+    return vops
+end
+
+# NOTE: Not tested yet, so commented out for now
+# function _apply_vop_right!(vops::Vector{SingleQubitOperator}, op::AbstractSingleQubitOperator; phases::Bool=true)
+#     q = affectedqubits(op)[1]
+#     # Convert into a single qubit operator acting on index 1
+#     op_prime = SingleQubitOperator(SingleQubitOperator(op), 1)
+#     vops[q] = SingleQubitOperator(vops[q] * (op_prime * clifford_id1))
+# end
+
+# TODO: Implement sanity_check like the one in Stim
+struct GraphState{G, S}
+    # Graph representing the graph state
+    graph::G
+    # Vertex Operators that need to be applied to convert from a "pure" graph state
+    # to general a stabilizer state
+    vops::Vector{S}
+end
+
+Base.copy(g::GraphState) = GraphState(copy(g.graph), copy(g.vops))
+
+# Applying a single qubit gate
+function apply!(gs::GraphState, op::AbstractSingleQubitOperator; phases::Bool = true)
+    _apply_vop!(gs.vops, op; phases)
+    return gs
+end
+
+nqubits(g::GraphState) = nv(g.graph)
+
+"""Return the underlying graph of the graph state"""
+graph(g::GraphState) = g.graph
+
+"""Return the VOPs (Vertex Operators) of the graph state"""
+vops(g::GraphState) = g.vops
+
+function GraphState(graph::G, h_idx::Vector{Int}, ip_idx::Vector{Int}, z_idx::Vector{Int}) where G
+    vops = [SingleQubitOperator(sId1(1)) for _ in 1:nv(graph)]
+    # Apply the inverse of Z, InvPhase, H in this order to construct VOPs
+    # Remember our definition of VOPs is the operator that converts "pure" graph states
+    # to the wanted stabilizer state
+    for id in z_idx
+        _apply_vop!(vops, sZ(id))
+    end
+    for id in ip_idx
+        _apply_vop!(vops, sPhase(id))
+    end
+    for id in h_idx
+        _apply_vop!(vops, sHadamard(id))
+    end
+    GraphState{G, SingleQubitOperator}(graph, vops)
+end
+
+function GraphState(stab::Stabilizer)
+    GraphState(graphstate(stab)...)
+end
+
+function Stabilizer(self::GraphState{<:AbstractGraph})
+    s_raw = Stabilizer(self.graph)
+    # Apply VOPs to convert to the stabilizer state
+    for id in eachindex(self.vops)
+        apply!(s_raw, SingleQubitOperator(self.vops[id], id))
+    end
+    s_raw
+end
 
 """An in-place version of [`graphstate`](@ref)."""
 function graphstate!(stab::Stabilizer)
     n = nqubits(stab)
-    stab, r, s, permx, permz = canonicalize_gott!(stab)
+    # canonicalization is in-place
+    _, r, _, permx, permz = canonicalize_gott!(stab)
+    # This is equivalent to saying perm(i) = (permz ∘ permx)(i)
+    # No typo above. permz ∘ permx because in Gottesman canonicalization
+    # we first do Gaussian elimination on the X half and then on the Z half
+    # when writing tableau in the matrix format.
     perm = permx[permz]
-    h_idx = [perm[i] for i in (r+1):n] # Qubits in which X ↔ Z is needed
-    ip_idx = [perm[i] for i in 1:n if stab[i,i]==(true,true)] # Qubits for which Y → X is needed
+
+    # Swap X ↔ Z in the (r+1):n columns so we have only X,Y,I diagonal and only Z off-diagonal
+    h_idx = [perm[i] for i in (r+1):n]
+    # Swap Y → X on the diagonal so we have only X, I on the diagonal
+    ip_idx = [perm[i] for i in 1:n if stab[i,i]==(true,true)]
+    # Since ZXZ = -X, apply Z on rows with negative phase to make all phases positive.
     phase_flips = [perm[i] for i in 1:n if phases(stab)[i]!=0x0]
+
+    # canonicalized stabilizer tableau serves as an adjacency matrix
     graph = Graphs.SimpleGraphFromIterator((
         Graphs.SimpleEdge(perm[i],perm[j])
         for i in 1:n, j in 1:n
