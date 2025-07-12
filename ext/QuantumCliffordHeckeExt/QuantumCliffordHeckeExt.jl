@@ -7,7 +7,8 @@ using DocStringExtensions
 import QuantumClifford, LinearAlgebra
 import Hecke: Group, GroupElem, AdditiveGroupElem,
     GroupAlgebra, GroupAlgebraElem, FqFieldElem, representation_matrix, dim, base_ring,
-    multiplication_table, coefficients, abelian_group, group_algebra, rand, gens
+    multiplication_table, coefficients, abelian_group, group_algebra, rand, gens, order,
+    is_commutative
 import Nemo
 import Nemo: characteristic, matrix_repr, GF, ZZ, lift
 
