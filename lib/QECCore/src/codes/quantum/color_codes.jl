@@ -1,11 +1,14 @@
-abstract type ColorCode <: AbstractECC end
+abstract type ColorCode <: AbstractCSSCode end
 
 """Planar color codes that encode a single logical qubit."""
 abstract type TriangularCode <: ColorCode end
 
-"""Triangular code following the 4.8.8 tiling. Constructor take a distance d as input.
+"""
+    $TYPEDEF
 
-# Example
+Triangular code following the `4.8.8` tiling. Constructor take a distance `d` as input.
+
+### Example
 
 Here is `[[17,1, 5]]` color code following the `4.8.8` tiling:
 
@@ -38,9 +41,15 @@ julia> distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 5
 ```
 
-More information can be seen in [landahl2011color](@cite)"""
+More information can be seen in [landahl2011color](@cite)
+
+### Fields
+    $TYPEDFIELDS
+"""
 struct Triangular488 <: TriangularCode
+    """The distance of the code."""
     d::Int
+
     function Triangular488(d)
         if d%2!=1
             throw(ArgumentError("Only odd distance triangular color codes are allowed.\nRefer to https://arxiv.org/abs/1108.5738"))
@@ -51,9 +60,12 @@ struct Triangular488 <: TriangularCode
     end
 end
 
-"""Triangular code following the 6.6.6 tiling. Constructor take a distance d as input.
+"""
+    $TYPEDEF
 
-# Example
+Triangular code following the `6.6.6` tiling. Constructor take a distance `d` as input.
+
+### Example
 
 Here is `[[19,1, 5]]` color code following the `6.6.6` tiling:
 
@@ -88,8 +100,13 @@ julia> distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 5
 ```
 
-More information can be seen in [landahl2011color](@cite)"""
+More information can be seen in [landahl2011color](@cite)
+
+### Fields
+    $TYPEDFIELDS
+"""
 struct Triangular666 <: TriangularCode
+    """The distance of the code."""
     d::Int
     function Triangular666(d)
         if d%2!=1
@@ -103,10 +120,6 @@ end
 
 Triangular488() = Triangular488(3) # smallest d
 Triangular666() = Triangular666(3) # smallest d
-
-function iscss(::Type{TriangularCode})
-    return true
-end
 
 parity_matrix_x(c::TriangularCode) = _colorcode_get_check_matrix(c)
 parity_matrix_z(c::TriangularCode) = _colorcode_get_check_matrix(c)
@@ -276,10 +289,6 @@ end
 function _colorcode_get_qubit_indices(matrix::Matrix{Bool})
     for j in 1:size(matrix)[1] println(findall(>(0),matrix[j,:])) end
     return
-end
-
-function iscss(::ColorCode)
-    return true
 end
 
 # From https://arxiv.org/abs/1108.5738 Fig. 2's caption:

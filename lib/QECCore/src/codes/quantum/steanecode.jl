@@ -1,7 +1,7 @@
 # TODO Steane5 qubit code
 
 """
-    Steane7 <: AbstractCSSCode
+    $TYPEDEF
 
 Steane code [steane1996error](@cite).
 """

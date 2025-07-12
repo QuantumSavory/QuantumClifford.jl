@@ -1,6 +1,7 @@
 [default.extend-words]
 ket = "ket"
 anc = "anc"
+ba = "ba"
 hom = "hom"
 
 [type.ipynb]
