@@ -1,8 +1,7 @@
 @testitem "ECC Golay" begin
-
-    using LinearAlgebra
-    using QuantumClifford.ECC
-    using QuantumClifford.ECC: AbstractECC, Golay, generator
+    using QECCore.LinearAlgebra
+    using QECCore
+    using QECCore: generator
     using Nemo: matrix, GF, echelon_form
 
     # Theorem: Let `C` be a binary linear code. If `C` is self-orthogonal and
@@ -64,18 +63,18 @@
     @testset "Testing binary Golay codes properties" begin
         test_cases = [(24, 12), (23, 12)]
         for (n, k) in test_cases
-            H = parity_checks(Golay(n))
-            mat = matrix(GF(2), parity_checks(Golay(n)))
+            H = parity_matrix(Golay(n))
+            mat = matrix(GF(2), parity_matrix(Golay(n)))
             computed_rank = rank(mat)
             @test computed_rank == n - k
         end
 
         # [24, 12, 8] binary Golay code is a self-dual code [huffman2010fundamentals](@cite).
-        H = parity_checks(Golay(24))
+        H = parity_matrix(Golay(24))
         @test code_weight_property(H) == true
         @test H[:, (12 + 1):end]  == H[:, (12 + 1):end]'
         # Example taken from [huffman2010fundamentals](@cite).
-        @test parity_checks(Golay(24)) == [0  1  1  1  1  1  1  1  1  1  1  1  1  0  0  0  0  0  0  0  0  0  0  0;
+        @test parity_matrix(Golay(24)) == [0  1  1  1  1  1  1  1  1  1  1  1  1  0  0  0  0  0  0  0  0  0  0  0;
                                            1  1  1  0  1  1  1  0  0  0  1  0  0  1  0  0  0  0  0  0  0  0  0  0;
                                            1  1  0  1  1  1  0  0  0  1  0  1  0  0  1  0  0  0  0  0  0  0  0  0;
                                            1  0  1  1  1  0  0  0  1  0  1  1  0  0  0  1  0  0  0  0  0  0  0  0;
@@ -90,10 +89,10 @@
 
         # minimum distance test
         # [24, 12, 8]
-        H = parity_checks(Golay(24))
+        H = parity_matrix(Golay(24))
         @test minimum_distance(H) == 8
         # [23, 12, 7]
-        H = parity_checks(Golay(23))
+        H = parity_matrix(Golay(23))
         @test minimum_distance(H) == 7
 
         # cross-verifying the canonical equivalence of bordered reverse circulant matrix (A)
@@ -111,10 +110,10 @@
              0 1 1 0 1 1 1 0 0 0 1 1;
              1 1 1 1 1 1 1 1 1 1 1 0]
 
-        H = parity_checks(Golay(24))
+        H = parity_matrix(Golay(24))
         @test echelon_form(matrix(GF(2), A)) == echelon_form(matrix(GF(2), H[1:12, 1:12]))
         # test self-duality for extended Golay code, G == H
-        @test echelon_form(matrix(GF(2), generator(Golay(24)))) == echelon_form(matrix(GF(2), parity_checks(Golay(24))))
+        @test echelon_form(matrix(GF(2), generator(Golay(24)))) == echelon_form(matrix(GF(2), parity_matrix(Golay(24))))
 
         # All punctured and extended matrices are equivalent to the H₂₄. Test each column for puncturing and extending.
         for i in 1:24
