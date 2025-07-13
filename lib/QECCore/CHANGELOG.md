@@ -4,7 +4,7 @@
 
 - introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - Move the following codes from `QuantumClifford.ECC` to `QECCore`: `ReedMuller`, `RecursiveReedMuller`, `QuantumReedMuller`, `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`.
-- `[[8rp, (8r − 2)p − 2m, 4]]` Delfosse-Reichardt code.
+- `Delfosse-Reichardt` codes from classical self-orthogonal `Reed-Muller` seed codes.
 
 ## v0.1.1
 

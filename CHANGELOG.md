@@ -13,7 +13,7 @@
 - Drop support for Julia 1.9.
 - Add convenience wrappers for code families: `honeycomb_color_codes` and `haah_cubic_codes` via `LPCode` construction.
 - Some codes are moved to `QECCore` from `QuantumClifford`, including `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`.
-- `[[8rp, (8r − 2)p − 2m, 4]]` Delfosse-Reichardt code.
+- `Delfosse-Reichardt` codes from classical self-orthogonal `Reed-Muller` seed codes.
 
 ### Private API
 

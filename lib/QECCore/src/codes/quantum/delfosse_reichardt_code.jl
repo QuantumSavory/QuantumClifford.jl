@@ -11,14 +11,16 @@ families of:
 Delfosse and Reichardt ([delfosse2020short](@cite)) utilize the `[8, 4, 4]` Reed-Muller code
 to construct `[[8p, 6(p−1), 4]]` self-dual CSS quantum codes for `p≥2`, and the `[16, 11, 4]`
 Reed-Muller code to construct `[[16p, 14p − 8, 4]]` self-dual CSS quantum codes for `p ≥ 1`. 
-The parameter `p` specifies the **number of blocks** in the code construction. To generalize
-the code construction, we extended the approach by using self-orthogonal `Reed-Muller` codes as
-base matrices for the `Delfosse-Reichardt` code.
+The parameter `p` specifies the **number of blocks** in the code construction.
+
+To generalize the code construction, we extended the approach by using self-orthogonal `Reed-Muller`
+codes as base matrices for the `Delfosse-Reichardt` code.
 
 !!! note
-    Generalization to higher-order RM codes remains an *open problem*, as highlighted in
-    [delfosse2020short](@cite): "Find a minimum-length sequence of parity check measurements
-    for distance-`7` fault-tolerant error correction with distance-`8` Reed-Muller codes."
+    Single-shot distance-3 fault tolerance uses two Reed-Muller subfamilies: *repetition* codes
+    and *extended Hamming* codes. Their structure may enable `distance > 4` fault-tolerant sequences,
+    raising a key *open problem* [delfosse2020short](@cite): "Find a minimum-length sequence of parity
+    check measurements for distance-`7` fault-tolerant error correction with distance-`8` Reed-Muller codes."
 
 # [[8p, 6(p−1), 4]] code family
 
@@ -98,14 +100,15 @@ struct DelfosseReichardt <: AbstractCSSCode
 end
 
 """
-Search for good parameters of `self-orthogonal` Reed-Muller codes.
+Search for parameters `(r,m)` of *self-orthogonal* `Reed-Muller` codes where the code `RM(r,m)`
+satisfies ``H \\times H^\\top \\equiv 0 \\pmod{2}``. Skips the trivial case `RM(0,1)` which produces
+a code with `k=0` logical qubits.
 
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC; using QECCore: search_self_orthogonal_rm_codes; # hide
 
 julia> search_self_orthogonal_rm_codes(6)
 12-element Vector{Tuple{Int64, Int64}}:
- (0, 1)
  (1, 2)
  (1, 3)
  (2, 3)
@@ -118,11 +121,42 @@ julia> search_self_orthogonal_rm_codes(6)
  (4, 6)
  (5, 6)
 ```
+
+Here is an example using a *self-orthogonal* classical `RM(3,5)` seed code
+to demonstrate the generalization of the `Delfosse-Reichardt` construction.
+
+```jldoctest
+julia> using QuantumClifford; using QuantumClifford.ECC; # hide
+
+julia> p = 2; r = 3; m = 5;
+
+julia> c = parity_checks(DelfosseReichardt(p, r, m))
++ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX________________________________
++ ________________________________XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
++ XXXXXXXXXXXXXXXX________________XXXXXXXXXXXXXXXX________________
++ XXXXXXXX________XXXXXXXX________XXXXXXXX________XXXXXXXX________
++ XXXX____XXXX____XXXX____XXXX____XXXX____XXXX____XXXX____XXXX____
++ XX__XX__XX__XX__XX__XX__XX__XX__XX__XX__XX__XX__XX__XX__XX__XX__
++ X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_
++ ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ________________________________
++ ________________________________ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
++ ZZZZZZZZZZZZZZZZ________________ZZZZZZZZZZZZZZZZ________________
++ ZZZZZZZZ________ZZZZZZZZ________ZZZZZZZZ________ZZZZZZZZ________
++ ZZZZ____ZZZZ____ZZZZ____ZZZZ____ZZZZ____ZZZZ____ZZZZ____ZZZZ____
++ ZZ__ZZ__ZZ__ZZ__ZZ__ZZ__ZZ__ZZ__ZZ__ZZ__ZZ__ZZ__ZZ__ZZ__ZZ__ZZ__
++ Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_Z_
+
+julia> code_n(c), code_k(c)
+(64, 50)
+```
+
 """
 function search_self_orthogonal_rm_codes(maxₘ::Int)
     good_params = Tuple{Int, Int}[] 
     for m in 1:maxₘ
         for r in 0:m
+            # Skip RM(0,1) as it produces a trivial code (k=0)
+            (r == 0 && m == 1) && continue
             try
                 RM = ReedMuller(r, m)
                 H = parity_matrix(RM)

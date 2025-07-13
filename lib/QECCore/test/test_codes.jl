@@ -60,6 +60,6 @@
     end
 
     @testset "Delfosse-Reichardt Code" begin
-        include("codes/delfosse_reichardt.jl")
+        include("codes/delfosse_reichardt_code.jl")
     end
 end
