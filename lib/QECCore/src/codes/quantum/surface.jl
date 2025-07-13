@@ -61,6 +61,4 @@ end
 parity_matrix_x(c::Surface) = parity_matrix_xz(c)[1]
 parity_matrix_z(c::Surface) = parity_matrix_xz(c)[2]
 
-parity_matrix(c::Surface) = parity_matrix(CSS(parity_matrix_xz(c)...))
-
 distance(c::Surface) = min(c.dx, c.dz)
