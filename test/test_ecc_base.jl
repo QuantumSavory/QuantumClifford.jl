@@ -245,7 +245,7 @@ const code_instance_args = Dict(
     :QuantumReedMuller => [3, 4, 5],
     :Triangular488 => [3, 5, 7, 9, 11],
     :Triangular666 => [3, 5, 7, 9, 11],
-    :DelfosseReichardt => [(2,1,3), (2,2,4)],
+    :DelfosseReichardt => [(2,1,3), (2,2,4), (2,3,5)],
 )
 
 function all_testablable_code_instances(;maxn=nothing)
