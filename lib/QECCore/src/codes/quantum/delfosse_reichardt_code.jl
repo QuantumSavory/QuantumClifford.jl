@@ -1,23 +1,19 @@
 """
     $TYPEDEF
 
-The `[[8rp, (8r − 2)p − 2m, 4]]` Delfosse-Reichardt code is derived from the classical
-Reed-Muller codes. For parameters `(r,m)` = `(1,3)` and `(2,4)`, constructs families of:
+The Delfosse-Reichardt code is derived from the classical *self-orthogonal* Reed-Muller
+codes. For parameters `(r,m)` = `(1,3)` and `(2,4)`, [delfosse2020short](@cite) constructs
+families of:
 
-- `[[8p, 6(p-1), 4]]` codes requiring `8` measurement round [delfosse2020short](@cite).
-- `[[16p, 14p-8, 4]]` codes requiring `10` measurement rounds [delfosse2020short](@cite).
+- `[[8p, 6(p-1), 4]]` codes requiring `8` measurement rounds.
+- `[[16p, 14p-8, 4]]` codes requiring `10` measurement rounds.
 
 Delfosse and Reichardt ([delfosse2020short](@cite)) utilize the `[8, 4, 4]` Reed-Muller code
 to construct `[[8p, 6(p−1), 4]]` self-dual CSS quantum codes for `p≥2`, and the `[16, 11, 4]`
 Reed-Muller code to construct `[[16p, 14p − 8, 4]]` self-dual CSS quantum codes for `p ≥ 1`. 
-The parameter `p` specifies the **number of blocks** in the code construction.
-
-To improve the generality of the code construction, we extended the approach by using
-`Reed-Muller` codes `RM(1,3)` and `RM(2,4)` as base matrices for the `Delfosse-Reichardt`
-code. Instead of requiring separate implementations that utilized `[8, 4, 4]` and `[16, 11, 4]`
-classical codes, we specify parameters `r` and `m` to select between `RM(1,3)` or `RM(2,4)`
-as the underlying structure. This generalization leads to a new family of `Delfosse-Reichardt`
-codes with parameters `[[8rp, (8r − 2)p − 2m, 4]]`.
+The parameter `p` specifies the **number of blocks** in the code construction. To generalize
+the code construction, we extended the approach by using self-orthogonal `Reed-Muller` codes as
+base matrices for the `Delfosse-Reichardt` code.
 
 !!! note
     Generalization to higher-order RM codes remains an *open problem*, as highlighted in
@@ -92,8 +88,53 @@ struct DelfosseReichardt <: AbstractCSSCode
         if r < 0 || r > m
             throw(ArgumentError("Invalid parameters: r must be non-negative and r ≤ m in order to valid code."))
         end
+        if !iszero(mod.(parity_matrix(ReedMuller(r,m))*parity_matrix(ReedMuller(r,m))',2))
+            throw(ArgumentError("The `Reed-Muller` parity check matrix must be 'self-orthogonal' to construct a self-dual
+            CSS `DelfosseReichardt` code. Use `search_self_orthogonal_rm_codes` to search for good parameters for `Reed-Muller` codes
+            that provide `self-orthogonal` seeds."))
+        end
         new(blocks,r,m)
     end
+end
+
+"""
+Search for good parameters of `self-orthogonal` Reed-Muller codes.
+
+```jldoctest
+julia> using QuantumClifford; using QuantumClifford.ECC; using QECCore: search_self_orthogonal_rm_codes; # hide
+
+julia> search_self_orthogonal_rm_codes(6)
+12-element Vector{Tuple{Int64, Int64}}:
+ (0, 1)
+ (1, 2)
+ (1, 3)
+ (2, 3)
+ (2, 4)
+ (3, 4)
+ (2, 5)
+ (3, 5)
+ (4, 5)
+ (3, 6)
+ (4, 6)
+ (5, 6)
+```
+"""
+function search_self_orthogonal_rm_codes(maxₘ::Int)
+    good_params = Tuple{Int, Int}[] 
+    for m in 1:maxₘ
+        for r in 0:m
+            try
+                RM = ReedMuller(r, m)
+                H = parity_matrix(RM)
+                if all(iszero, mod.(H*H', 2))
+                    push!(good_params, (r, m))
+                end
+            catch
+                continue 
+            end
+        end
+    end
+    return good_params
 end
 
 function _generalize_delfosse_reichardt_code(blocks::Int, r::Int, m::Int)
@@ -131,7 +172,3 @@ end
 parity_matrix_x(c::DelfosseReichardt) = parity_matrix_xz(c)[1]
 
 parity_matrix_z(c::DelfosseReichardt) = parity_matrix_xz(c)[2]
-
-code_n(c::DelfosseReichardt) = 8*c.blocks*c.r
-
-code_k(c::DelfosseReichardt) = (8*c.r − 2)*c.blocks − 2*c.m

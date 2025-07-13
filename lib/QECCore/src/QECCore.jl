@@ -19,6 +19,9 @@ export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMul
 # Classical Codes
 export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming
 
+# utilities
+export search_self_orthogonal_rm_codes
+
 include("interface.jl")
 include("codes/util.jl")
 
