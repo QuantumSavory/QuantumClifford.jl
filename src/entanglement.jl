@@ -128,6 +128,7 @@ function _canonicalize_clip!(state::AbstractStabilizer; phases::Val{B}=Val(true)
     state
 end
 
+canonicalize_clip!(ps::Base.AbstractVecOrTuple{PauliOperator}, args...; kwargs...) = canonicalize_clip!(Stabilizer(ps), args...; kwargs...)
 
 """
 $TYPEDSIGNATURES
