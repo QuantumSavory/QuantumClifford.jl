@@ -206,3 +206,5 @@ end
 parity_matrix_x(c::DelfosseReichardt) = parity_matrix_xz(c)[1]
 
 parity_matrix_z(c::DelfosseReichardt) = parity_matrix_xz(c)[2]
+
+distance(c::DelfosseReichardt) = 4
