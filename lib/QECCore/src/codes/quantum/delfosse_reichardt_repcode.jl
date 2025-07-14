@@ -28,7 +28,7 @@ julia> using QuantumClifford; using QuantumClifford.ECC # hide
 
 julia> p = 6;
 
-julia> c = parity_checks(DelfosseReichardtRepCode(6))
+julia> c = parity_checks(DelfosseReichardtRepCode(p))
 + XXXX____________________
 + ____XXXX________________
 + ________XXXX____________
@@ -55,32 +55,32 @@ julia> code_n(c), code_k(c)
 """
 struct DelfosseReichardtRepCode <: AbstractCSSCode
     """The number of blocks in the Delfosse-Reichardt Repetition code."""
-    blocks::Int
-    function DelfosseReichardtRepCode(blocks)
-        blocks < 2 && throw(ArgumentError("The number of blocks must be at least 2 to construct a valid code."))
-        blocks % 2 != 0 && throw(ArgumentError("The number of blocks must be a multiple of 2."))
-        new(blocks)
+    p::Int
+    function DelfosseReichardtRepCode(p)
+        p < 2 && throw(ArgumentError("The number of blocks must be at least 2 to construct a valid code."))
+        p % 2 != 0 && throw(ArgumentError("The number of blocks must be a multiple of 2."))
+        new(p)
     end
 end
 
-function _extend_414_repetition_code(blocks::Int)
-    n = 4*blocks
-    H = zeros(Bool, 2+blocks, n)
-    @simd for i in 1:blocks
+function _extend_414_repetition_code(p::Int)
+    n = 4*p
+    H = zeros(Bool, 2+p, n)
+    @inbounds @simd for i in 1:p
         H[i, (4*(i-1)+1):(4*i)] .= 1
     end
-    @simd for i in 1:blocks
-        H[blocks+1, (4*(i-1)+3):(4*(i-1)+4)] .= 1
+    @inbounds @simd for i in 1:p
+        H[p+1, (4*(i-1)+3):(4*(i-1)+4)] .= 1
     end
-    @simd for i in 1:blocks
-        H[blocks+2, (4*(i-1)+2):(4*(i-1)+4):2] .= 1
+    @inbounds @simd for i in 1:p
+        H[p+2, (4*(i-1)+2):(4*(i-1)+4):2] .= 1
     end
     H[end, 1:n] .= (1:n) .% 2 .== 0
     return H
 end
 
 function parity_matrix_xz(c::DelfosseReichardtRepCode)
-    extended_mat = _extend_414_repetition_code(c.blocks)
+    extended_mat = _extend_414_repetition_code(c.p)
     return extended_mat, extended_mat
 end
 
@@ -88,6 +88,8 @@ parity_matrix_x(c::DelfosseReichardtRepCode) = parity_matrix_xz(c)[1]
 
 parity_matrix_z(c::DelfosseReichardtRepCode) = parity_matrix_xz(c)[2]
 
-code_n(c::DelfosseReichardtRepCode) = 4*c.blocks
+code_n(c::DelfosseReichardtRepCode) = 4*c.p
 
-code_k(c::DelfosseReichardtRepCode) = 2*(c.blocks - 2)
+code_k(c::DelfosseReichardtRepCode) = 2*(c.p - 2)
+
+distance(c::DelfosseReichardtRepCode) = 4
