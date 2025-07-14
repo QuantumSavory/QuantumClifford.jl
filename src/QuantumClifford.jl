@@ -92,7 +92,7 @@ export
     # petrajectories
     petrajectories, applybranches,
     # nonclifford
-    GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT,
+    GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
@@ -1422,7 +1422,7 @@ include("useful_states.jl")
 #
 include("experimental/Experimental.jl")
 #
-include("graphs.jl")
+include("./graphs/graphs.jl")
 #
 include("entanglement.jl")
 #

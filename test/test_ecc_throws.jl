@@ -2,7 +2,7 @@
 
     using Hecke
     using Hecke: group_algebra, GF, abelian_group, gens, one, representation_matrix
-    using QuantumClifford.ECC: ReedMuller, BCH, RecursiveReedMuller, Golay, Triangular488, Triangular666, LiftedCode, code_k, code_n, code_s, parity_matrix
+    using QuantumClifford.ECC: ReedMuller, BCH, RecursiveReedMuller, Golay, Triangular488, Triangular666, Hamming, LiftedCode, code_k, code_n, code_s, parity_matrix
 
     @test_throws ArgumentError ReedMuller(-1, 3)
     @test_throws ArgumentError ReedMuller(1, 0)
@@ -22,6 +22,8 @@
 
     @test_throws ArgumentError Golay(21)
 
+    @test_throws ArgumentError Hamming(1)
+  
     @test_throws ArgumentError Triangular488(8)
     @test_throws ArgumentError Triangular488(1)
     @test_throws ArgumentError Triangular666(8)

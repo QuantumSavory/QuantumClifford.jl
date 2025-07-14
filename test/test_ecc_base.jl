@@ -2,7 +2,7 @@ using Test
 using QuantumClifford.ECC.QECCore
 using QuantumClifford
 using QuantumClifford.ECC
-using QuantumClifford.ECC: check_repr_commutation_relation
+using QuantumClifford.ECC: check_repr_commutation_relation, check_repr_regular_linear
 using InteractiveUtils
 
 import Nemo: GF
@@ -44,7 +44,14 @@ test_gb_codes = [
 ]
 
 test_hcubic_codes = [
-    haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 3)
+    haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 3),
+    haah_cubic_codes(8), # (D) [[1024, 30, 13 ≤ d ≤ 32]] Appendix B of [panteleev2021degenerate](@cite).
+]
+
+# honeycomb color codes from [eberhardt2024logical](@cite).
+test_honeycomb_color_codes = [
+    honeycomb_color_codes(6 , 6), honeycomb_color_codes(9 , 6),
+    honeycomb_color_codes(12, 6), honeycomb_color_codes(12, 9),
 ]
 
 other_lifted_product_codes = []
@@ -53,6 +60,7 @@ other_lifted_product_codes = []
 l = 63
 GA = group_algebra(GF(2), abelian_group(l))
 @test check_repr_commutation_relation(GA) # TODO use this check more pervasively throughout the test suite
+@test check_repr_regular_linear(GA) # TODO use this check more pervasively throughout the test suite
 A = zeros(GA, 7, 7)
 x = gens(GA)[]
 A[LinearAlgebra.diagind(A)] .= x^27
@@ -233,10 +241,11 @@ const code_instance_args = Dict(
     :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
     :CircuitCode => random_circuit_code_args,
     :QuantumReedMuller => [3, 4, 5],
-    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, test_twobga_codes, other_lifted_product_codes)),
+    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, test_twobga_codes, test_honeycomb_color_codes, other_lifted_product_codes)),
     :QuantumReedMuller => [3, 4, 5],
     :Triangular488 => [3, 5, 7, 9, 11],
-    :Triangular666 => [3, 5, 7, 9, 11]
+    :Triangular666 => [3, 5, 7, 9, 11],
+    :DelfosseReichardt => [(2,1,3), (2,2,4), (4,3,5), (4,3,6)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
