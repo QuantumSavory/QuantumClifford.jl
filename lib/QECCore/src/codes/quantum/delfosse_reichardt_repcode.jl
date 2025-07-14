@@ -26,6 +26,8 @@ An `[[24, 8, 4]]` Delfosse-Reichardt repetition code from [delfosse2020short](@c
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC # hide
 
+julia> p = 6;
+
 julia> c = parity_checks(DelfosseReichardtRepCode(6))
 + XXXX____________________
 + ____XXXX________________
