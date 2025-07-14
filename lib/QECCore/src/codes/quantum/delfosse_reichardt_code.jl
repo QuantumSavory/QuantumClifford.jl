@@ -9,7 +9,7 @@ families of:
 - `[[16p, 14p-8, 4]]` codes requiring `10` measurement rounds.
 
 Delfosse and Reichardt ([delfosse2020short](@cite)) utilize the `[8, 4, 4]` Reed-Muller code
-to construct `[[8p, 6(p−1), 4]]` self-dual CSS quantum codes for `p≥2`, and the `[16, 11, 4]`
+to construct `[[8p, 6(p−1), 4]]` self-dual CSS quantum codes for `p ≥ 2`, and the `[16, 11, 4]`
 Reed-Muller code to construct `[[16p, 14p − 8, 4]]` self-dual CSS quantum codes for `p ≥ 1`. 
 The parameter `p` specifies the **number of blocks** in the code construction.
 
@@ -80,13 +80,13 @@ julia> code_n(c), code_k(c)
 """
 struct DelfosseReichardt <: AbstractCSSCode
     """The number of blocks in the Delfosse-Reichardt CSS code."""
-    blocks::Int
+    p::Int
     """The order of the classical Reed-Muller code."""
     r::Int
     """The log-length of the classical Reed-Muller code."""
     m::Int
-    function DelfosseReichardt(blocks,r,m)
-        blocks < 2 && throw(ArgumentError("The number of blocks must be at least 2 to construct a valid code."))
+    function DelfosseReichardt(p,r,m)
+        p < 2 && throw(ArgumentError("The number of blocks must be at least 2 to construct a valid code."))
         if r < 0 || r > m
             throw(ArgumentError("Invalid parameters: r must be non-negative and r ≤ m in order to valid code."))
         end
@@ -95,7 +95,7 @@ struct DelfosseReichardt <: AbstractCSSCode
             CSS `DelfosseReichardt` code. Use `search_self_orthogonal_rm_codes` to search for good parameters for `Reed-Muller` codes
             that provide `self-orthogonal` seeds."))
         end
-        new(blocks,r,m)
+        new(p,r,m)
     end
 end
 
@@ -171,15 +171,15 @@ function search_self_orthogonal_rm_codes(maxₘ::Int)
     return good_params
 end
 
-function _generalize_delfosse_reichardt_code(blocks::Int, r::Int, m::Int)
+function _generalize_delfosse_reichardt_code(p::Int, r::Int, m::Int)
     # base matrix: Reed-Muller parity matrix
     H = parity_matrix(ReedMuller(r,m))
     r, c = size(H)
-    new_c = blocks*c
-    extended_H = zeros(Bool, r+blocks-1, new_c)
+    new_c = p*c
+    extended_H = zeros(Bool, r+p-1, new_c)
     # Create the first 'blocks' rows with 1s for the appropriate block
-    for row in 1:blocks
-        @inbounds @simd for block in 0:(blocks-1)
+    for row in 1:p
+        @inbounds @simd for block in 0:(p-1)
             start_c = block*c+1
             end_c = start_c+c-1
             if block == (row - 1)
@@ -188,18 +188,18 @@ function _generalize_delfosse_reichardt_code(blocks::Int, r::Int, m::Int)
         end
     end
     # Copy remaining rows directly to each block
-    for row in (blocks+1):r+blocks-1
-        @inbounds @simd for block in 0:(blocks-1)
+    for row in (p+1):r+p-1
+        @inbounds @simd for block in 0:(p-1)
             start_c = block*c+1
             end_c = start_c+c-1
-            @views extended_H[row, start_c:end_c] .= H[row-blocks+1, :]
+            @views extended_H[row, start_c:end_c] .= H[row-p+1, :]
         end
     end
     return extended_H
 end
 
 function parity_matrix_xz(c::DelfosseReichardt)
-    extended_mat = _generalize_delfosse_reichardt_code(c.blocks, c.r, c.m)
+    extended_mat = _generalize_delfosse_reichardt_code(c.p, c.r, c.m)
     return extended_mat, extended_mat
 end
 
