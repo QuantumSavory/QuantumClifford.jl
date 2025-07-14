@@ -124,11 +124,6 @@ Triangular666() = Triangular666(3) # smallest d
 parity_matrix_x(c::TriangularCode) = _colorcode_get_check_matrix(c)
 parity_matrix_z(c::TriangularCode) = _colorcode_get_check_matrix(c)
 
-function parity_checks(c::TriangularCode)
-    matrix = _colorcode_get_check_matrix(c)
-    return parity_checks(CSS(matrix, matrix))
-end
-
 function _colorcode_get_check_matrix(c::Triangular666)
     n = code_n(c)
     num_checks = (n-1)÷2
