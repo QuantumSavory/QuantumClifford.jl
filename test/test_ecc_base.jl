@@ -245,6 +245,8 @@ const code_instance_args = Dict(
     :QuantumReedMuller => [3, 4, 5],
     :Triangular488 => [3, 5, 7, 9, 11],
     :Triangular666 => [3, 5, 7, 9, 11],
+    :DelfosseReichardt => [(2,1,3), (2,2,4), (4,3,5), (4,3,6)],
+    :DelfosseReichardtRepCode => [4, 6, 8, 10],
     :d_dimensional_surface_codes => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
     :d_dimensional_toric_codes => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)]
 )
