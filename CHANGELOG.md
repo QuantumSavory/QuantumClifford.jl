@@ -15,6 +15,7 @@
 - Some codes are moved to `QECCore` from `QuantumClifford`, including `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`.
 - Add `Delfosse-Reichardt` codes from classical self-orthogonal `Reed-Muller` seed codes to `QECCore`.
 - Add `[[4p, 2(p − 2), 4]]` Delfosse-Reichardt repetition code to `QECCore`.
+- Add `[[8p, 4p − 2, 3]]` Delfosse-Reichardt Generalized `[[8,2,3]]` code and `SmallestColorCode` to `QECCore`.
 
 
 ### Private API
