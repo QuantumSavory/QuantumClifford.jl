@@ -50,6 +50,8 @@ For quantum code construction routines:
 - [naghipour2015quantum](@cite)
 - [eberhardt2024logical](@cite)
 - [delfosse2020short](@cite)
+- [arnault2025upperboundsminimumdistance](@cite)
+- [tillich2006minimum](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)

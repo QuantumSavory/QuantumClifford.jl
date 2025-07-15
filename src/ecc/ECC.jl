@@ -31,6 +31,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     Toric, Gottesman, Surface, Concat, CircuitCode,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     haah_cubic_codes, twobga_from_fp_group, twobga_from_direct_product,
+    TZQLDPC, random_tzqldpc_code,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
     Triangular488, Triangular666, honeycomb_color_codes, DelfosseReichardt,
     DelfosseReichardtRepCode,
@@ -399,5 +400,6 @@ include("codes/classical/bch.jl")
 # qLDPC
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
+include("codes/tzqldpc.jl")
 
 end #module
