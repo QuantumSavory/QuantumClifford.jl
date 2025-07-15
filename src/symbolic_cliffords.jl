@@ -57,7 +57,7 @@ Base.@propagate_inbounds setzbit(xzs::AbstractMatrix{T}, r::Int, c::Int, z::T, s
 # Single-qubit gates
 ##############################
 
-function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) where {B, G<:AbstractSingleQubitOperator}
+function _apply!(stab::AbstractStabilizer, gate::AbstractSingleQubitOperator; phases::Val{B}=Val(true)) where {B}
     s = tab(stab)
     c = gate.q
     @inbounds @simd for r in eachindex(s)
@@ -285,7 +285,7 @@ LinearAlgebra.inv(p::sCXYZ)       = sCZYX(p.q)
 # Two-qubit gates
 ##############################
 
-function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) where {B, G<:AbstractTwoQubitOperator}
+function _apply!(stab::AbstractStabilizer, gate::AbstractTwoQubitOperator; phases::Val{B}=Val(true)) where {B}
     s = tab(stab)
     q1 = gate.q1
     q2 = gate.q2
