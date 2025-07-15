@@ -10,11 +10,11 @@
     using QECCore
 
     function _consistency_check(p)
-        H = parity_checks(SmallestColorCode())
+        H = parity_checks(EightTwoThree())
         rows, cols = size(H)
         tab = zero(Stabilizer, rows - 2, cols)
-        H_rep₁ = parity_checks(SmallestColorCode())[1:4, :]
-        H_rep₂ = parity_checks(SmallestColorCode())[5:6, :]
+        H_rep₁ = parity_checks(EightTwoThree())[1:4, :]
+        H_rep₂ = parity_checks(EightTwoThree())[5:6, :]
         rows = [hcat(fill(tab, i - 1)..., H_rep₁, fill(tab, p - i)...) for i in 1:p]
         D = vcat(rows...)
         E = hcat(fill(H_rep₂, p)...)

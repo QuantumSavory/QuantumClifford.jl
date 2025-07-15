@@ -42,7 +42,7 @@ struct DelfosseReichardt823 <: AbstractQECC
 end
 
 function parity_matrix(c::DelfosseReichardt823)
-    H = parity_matrix(SmallestColorCode())
+    H = parity_matrix(EightTwoThree())
     n = size(H,2)÷2
     Hx = H[:, 1:n]
     Hz = H[:, n+1:2n]
