@@ -1076,9 +1076,12 @@ Base.hcat(stabs::Stabilizer{T}...) where {T} = Stabilizer(hcat((tab(s) for s in 
 # Unitary Clifford Operations
 ##############################
 
-"""In `QuantumClifford` the `apply!` function is used to apply any quantum operation to a stabilizer state,
-including unitary Clifford operations, Pauli measurements, and noise.
-Thus, this function may result in a random/stochastic result (e.g. with measurements or noise)."""
+"""
+    apply!
+
+Apply any quantum operation to a stabilizer state, including unitary Clifford 
+operations, Pauli measurements, and noise. 
+May result in a random/stochastic result (e.g. with measurements or noise)."""
 function apply! end
 
 function Base.:(*)(p::AbstractCliffordOperator, s::AbstractStabilizer; phases::Bool=true)
