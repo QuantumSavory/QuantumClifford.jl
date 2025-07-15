@@ -33,8 +33,6 @@ See also: [`two_block_group_algebra_codes`](@ref), [`twobga_from_direct_product`
 The [[96, 12, 10]] 2BGA code from Table I in [lin2024quantum](@cite) has the group presentation
 `⟨r, s | s⁶ = r⁸ = r⁻¹srs = 1⟩` (the group `C₂ × (C₃ ⋉ C₈)`).
 
-Currently unsupported as it requires a non-commutative group algebra.
-
 ```jldoctest finitegrp
 julia> import Oscar: free_group, small_group_identification, describe, order
 
