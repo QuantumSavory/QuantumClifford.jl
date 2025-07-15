@@ -1,4 +1,19 @@
 """
+Represents a bipartite Tanner graph used in classical coding theory. It
+connects *variable nodes* (codeword bits or qubits) to *check nodes*
+(parity constraints) and serves as the foundation for constructing
+product graphs in quantum CSS codes.
+"""
+struct BipartiteGraph
+    """The underlying undirected graph (from `Graphs.jl`)."""
+    g::Graph
+    """Indices of variable nodes."""
+    var_nodes::Vector{Int}
+    """Indices of check nodes."""
+    check_nodes::Vector{Int}
+end
+
+"""
 Constructs a *Tanner graph* from a given parity-check matrix `H`, where rows
 correspond to *check nodes* and columns to *variable nodes*.
 
@@ -12,7 +27,7 @@ function tanner_graph_from_parity_matrix(H::AbstractMatrix)
     for row in 1:m, col in 1:n
         H[row, col] && add_edge!(g, col, n + row)
     end
-    return (graph=g, left=var_nodes, right=check_nodes)
+    return BipartiteGraph(g, var_nodes, check_nodes)
 end
 
 """Reconstructs the parity-check matrix from a Tanner graph `g`.
@@ -21,13 +36,13 @@ end
     The first block of vertices corresponds to variable nodes and the remaining to check nodes. It
     returns a parity check matrix `H` of size `(number of check nodes) × (number of variable nodes).`
 """
-function parity_matrix_from_tanner_graph(g::Graph, var_nodes::Vector{Int}, check_nodes::Vector{Int})
-    n_vars = length(var_nodes)
-    n_checks = length(check_nodes)
+function parity_matrix_from_tanner_graph(bg::BipartiteGraph)
+    n_vars = length(bg.var_nodes)
+    n_checks = length(bg.check_nodes)
     H = spzeros(Bool, n_checks, n_vars)
-    for (check_idx, check_node) in enumerate(check_nodes)
-        for neighbor in neighbors(g, check_node)
-            neighbor in var_nodes && (H[check_idx, neighbor] = true)
+    for (check_idx, check_node) in enumerate(bg.check_nodes)
+        for neighbor in neighbors(bg.g, check_node)
+            neighbor in bg.var_nodes && (H[check_idx, neighbor] = true)
         end
     end
     return H
@@ -42,17 +57,19 @@ length-`n` cycle.
 """
 function cycle_tanner_graph(n::Int)
     g = SimpleGraph(2n)
-    left_nodes = collect(1:n)
-    right_nodes = collect(n+1:2n)
+    var_nodes = collect(1:n)
+    check_nodes = collect(n+1:2n)
     for i in 1:n
         check_node = n + i
         add_edge!(g, i, check_node)
         add_edge!(g, mod1(i+1, n), check_node)
     end
-    return (graph=g, left=left_nodes, right=right_nodes)
+    return BipartiteGraph(g, var_nodes, check_nodes)
 end
 
 """
+    $TYPEDEF
+
 Represents the CSS quantum code `Q(G₁ × G₂)` constructed from two binary codes with
 parity-check matrices `H₁` and `H₂`, using the hypergraph product formulation introduced
 by [tillich2013quantum](@cite).
@@ -79,8 +96,6 @@ which are derived from the Leverrier-Tillich-Zémor construction [tillich2013qua
 
 ```jldoctest examples
 julia> using QuantumClifford; using QuantumClifford.ECC; using QECCore
-
-julia> using SparseArrays; # hide
 
 julia> H1 = [1 0 1 0; 0 1 0 1; 1 1 0 0];
 
@@ -110,7 +125,7 @@ julia> parity_checks(c)
 
 # Quantum Expander code
 
-The `𝑄(𝐺₁ × 𝐺₂)` code is more general than the standard quantum expander code
+The `𝑄(𝐺₁ × 𝐺₂)` code is more general than the **standard quantum expander code**
 [leverrier2015quantum](@cite) construction. The quantum expander code construction
 corresponds to the specific case where `G = G1 = G2`​.
 
@@ -140,17 +155,22 @@ julia> parity_checks(c)
 + ______Z_Z_____Z__Z
 ```
 
+### Fields
+    $TYPEDFIELDS
 """
 struct QuantumTannerGraphProduct <: AbstractCSSCode
-    """The classical seed code for the the quantum tanner graph code."""
+    """The first classical seed code for the the quantum tanner graph code."""
     H1::AbstractMatrix
-    """The classical seed code for the the quantum tanner graph code."""
+    """The second classical seed code for the the quantum tanner graph code."""
     H2::AbstractMatrix
 end
 
 parity_matrix_xz(c::QuantumTannerGraphProduct) = hgp(c.H1, c.H2)
 
-""" Constructs a 𝑄(𝐺₁ × 𝐺₂) quantum Tanner graph product code using cyclic Tanner graphs of length `2m`.
+"""
+    $TYPEDEF
+
+Constructs a `𝑄(𝐺₁ × 𝐺₂)` quantum Tanner graph product code using cyclic Tanner graphs of length `2m`.
 
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC;
@@ -162,6 +182,9 @@ julia> c = parity_checks(CyclicQuantumTannerGraphProduct(m));
 julia> code_n(c), code_k(c)
 (800, 2)
 ```
+
+### Fields
+    $TYPEDFIELDS
 """
 struct CyclicQuantumTannerGraphProduct <: AbstractCSSCode
     m::Int
@@ -175,8 +198,8 @@ function parity_matrix_xz(Q::CyclicQuantumTannerGraphProduct)
     n = 2*Q.m
     G1 = cycle_tanner_graph(n)
     G2 = cycle_tanner_graph(n)
-    H1 = parity_matrix_from_tanner_graph(G1.graph, G1.left, G1.right)
-    H2 = parity_matrix_from_tanner_graph(G2.graph, G2.left, G2.right)
+    H1 = parity_matrix_from_tanner_graph(G1)
+    H2 = parity_matrix_from_tanner_graph(G2)
     return hgp(H1, H2)
 end
 
