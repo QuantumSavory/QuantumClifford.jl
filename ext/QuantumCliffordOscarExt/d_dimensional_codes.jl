@@ -13,8 +13,6 @@ struct DDimensionalCode <: AbstractCSSCode
     end
 end
 
-iscss(::Type{DDimensionalCode}) = true
-
 """Construct the chain complex for the repetition code of length L."""
 function _repcode_chain_complex(L::Int)
     F = GF(2)
