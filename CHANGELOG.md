@@ -11,6 +11,17 @@
 - `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
 - The phase storage type can now be parameterized, instead of hardcoded to UInt8.
 - Drop support for Julia 1.9.
+- Add convenience wrappers for code families: `honeycomb_color_codes` and `haah_cubic_codes` via `LPCode` construction.
+- Some codes are moved to `QECCore` from `QuantumClifford`, including `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`.
+- Add `Delfosse-Reichardt` codes from classical self-orthogonal `Reed-Muller` seed codes to `QECCore`.
+- Add `[[4p, 2(p − 2), 4]]` Delfosse-Reichardt repetition code to `QECCore`.
+
+
+### Private API
+
+These changes affect internal implementation details - external packages should not rely on these!
+- Add `check_repr_regular_linear` to verify `F`-linear regular representation for group algebra elements.
+- Add `[2ʳ-1, 2ʳ-1-r, 3]` Hamming code.
 
 ## v0.10.0 - 2025-07-02
 
