@@ -248,6 +248,13 @@ function parity_matrix_xz(c::LPCode)
     return hx, hz
 end
 
+"""A simpler (older) implementation of the parity check matrix representation routine, used purely for testing. Valid only for commuting algebras."""
+function _parity_matrix_xz_if_comm_algebra(c::LPCode)
+    hx, hz = hgp(c.A, permutedims(group_algebra_conj.(c.B)))
+    hx, hz = concat_lift_repr(c.A_repr,hx), concat_lift_repr(c.A_repr,hz)
+    return hx, hz
+end
+
 parity_matrix_x(c::LPCode) = parity_matrix_xz(c)[1]
 
 parity_matrix_z(c::LPCode) = parity_matrix_xz(c)[2]
