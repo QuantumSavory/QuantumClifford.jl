@@ -130,4 +130,15 @@
             @test canonicalize!(stabilizerview(MixedDestabilizer(s)))==canonicalize!(stabilizerview(Destabilizer(s)))
         end
     end
+
+    @testset "Construct out of Paulis" begin
+        paulis1 = [P"-XXX", P"ZZI"]
+        paulis2 = (P"-XXX", P"ZZI")
+        stab = canonicalize!(S"-XXX ZZI")
+        for T in [MixedDestabilizer, Stabilizer, Destabilizer, MixedDestabilizer]
+            for paulis in [paulis1, paulis2]
+                @test canonicalize!(stabilizerview(T(paulis))) == stab
+            end
+        end
+    end
 end

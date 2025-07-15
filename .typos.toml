@@ -2,6 +2,7 @@
 ket = "ket"
 anc = "anc"
 mor = "mor"
+ba = "ba"
 ois = "ois"
 
 [type.ipynb]
