@@ -9,12 +9,20 @@
     using QECCore.LinearAlgebra
     using QECCore
 
+    # The `[[8, 2, 3]]` non-CSS code serves as the seed code for constructing Delfosse-Reichardt generalized `[[8p, 4p − 2, 3]]`codes.
+    _seed₈₂₃ = Bool[0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0;
+                    1  1  1  1  0  0  0  0  0  0  0  0  0  0  0  0;
+                    0  0  0  0  0  0  0  0  0  0  0  0  1  1  1  1;
+                    0  0  0  0  1  1  1  1  0  0  0  0  0  0  0  0;
+                    0  1  1  0  0  1  1  0  0  0  1  1  0  0  1  1;
+                    0  0  1  1  0  0  1  1  0  1  0  1  0  1  0  1]
+
     function _consistency_check(p)
-        H = parity_checks(EightTwoThree())
+        H = Stabilizer(_seed₈₂₃)
         rows, cols = size(H)
         tab = zero(Stabilizer, rows - 2, cols)
-        H_rep₁ = parity_checks(EightTwoThree())[1:4, :]
-        H_rep₂ = parity_checks(EightTwoThree())[5:6, :]
+        H_rep₁ = H[1:4, :]
+        H_rep₂ = H[5:6, :]
         rows = [hcat(fill(tab, i - 1)..., H_rep₁, fill(tab, p - i)...) for i in 1:p]
         D = vcat(rows...)
         E = hcat(fill(H_rep₂, p)...)

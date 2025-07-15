@@ -6,6 +6,26 @@ quantum `[[8,2,3]]` code. These codes were introduced by Delfosse and Reichardt 
 *Short Shor-style syndrome sequences* [delfosse2020short](@cite). The parameter `p` specifies
 the **number of blocks** in the code construction.
 
+The `[[8, 2, 3]]` non-CSS code serves as the seed code for constructing Delfosse-Reichardt
+generalized `[[8p, 4p − 2, 3]]`codes.
+
+```jldoctest
+julia> using QuantumClifford; using QuantumClifford.ECC; # hide
+
+julia> p = 1;
+
+julia> c = parity_checks(DelfosseReichardt823(p))
++ ZZZZ____
++ XXXX____
++ ____ZZZZ
++ ____XXXX
++ _XYZ_XYZ
++ _ZXY_ZXY
+
+julia> code_n(c), code_k(c)
+(8, 2)
+```
+
 An `[[16, 6, 3]]` Delfosse-Reichardt Generalized `[[8,2,3]]` code from [delfosse2020short](@cite).
 
 ```jldoctest
@@ -41,8 +61,16 @@ struct DelfosseReichardt823 <: AbstractQECC
     end
 end
 
+# The `[[8, 2, 3]]` non-CSS code serves as the seed code for constructing Delfosse-Reichardt generalized `[[8p, 4p − 2, 3]]`codes.
+_seed₈₂₃ = Bool[0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0;
+                1  1  1  1  0  0  0  0  0  0  0  0  0  0  0  0;
+                0  0  0  0  0  0  0  0  0  0  0  0  1  1  1  1;
+                0  0  0  0  1  1  1  1  0  0  0  0  0  0  0  0;
+                0  1  1  0  0  1  1  0  0  0  1  1  0  0  1  1;
+                0  0  1  1  0  0  1  1  0  1  0  1  0  1  0  1]
+
 function parity_matrix(c::DelfosseReichardt823)
-    H = parity_matrix(EightTwoThree())
+    H = _seed₈₂₃
     n = size(H,2)÷2
     Hx = H[:, 1:n]
     Hz = H[:, n+1:2n]
