@@ -71,7 +71,7 @@ function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) wh
     stab
 end
 
-function _apply_inv!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) where {B, G<:AbstractSingleQubitOperator}
+function _apply_inv!(stab::AbstractStabilizer, gate::AbstractSingleQubitOperator; phases::Val{B}=Val(true)) where {B} # code repetition with the corresponding `_apply`
     s = tab(stab)
     c = gate.q
     @inbounds @simd for r in eachindex(s)
@@ -202,9 +202,6 @@ function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{
     end
     stab
 end
-function _apply_inv!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{B}=Val(true)) where B
-    # TODO
-end
 
 SingleQubitOperator(h::sHadamard)           = SingleQubitOperator(h.q, false, true , true , false, false, false)
 SingleQubitOperator(p::sPhase)              = SingleQubitOperator(p.q, true , true , false, true , false, false)
@@ -313,7 +310,7 @@ function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) wh
     stab
 end
 
-function _apply_inv!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) where {B, G<:AbstractTwoQubitOperator}
+function _apply_inv!(stab::AbstractStabilizer, gate::AbstractTwoQubitOperator; phases::Val{B}=Val(true)) where {B} # code repetition with the corresponding `_apply`
     s = tab(stab)
     q1 = gate.q1
     q2 = gate.q2
