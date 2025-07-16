@@ -454,14 +454,14 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 ```
 
 !!! danger
-    When both `Oscar` and `Hecke` are loaded, `Oscar`'s `small_group` implementation
+    When both `Oscar` and `Hecke` are imported, `Oscar`'s `small_group` implementation
     takes precedence. This matters specifically when using `Hecke.small_group` to construct
     groups, as it produces a `MultTableGroup` whose generators satisfy the user-provided
     presentation. By contrast, `Oscar`'s implementation yields a `PcGroup` with potentially
-    different set of generators that may not satisfy these presentation relations. For codes
-    where satisfying the group presentations is essential (particularly when using `Hecke`'s
-    `small_group`), we recommend either: (1) working without `Oscar` loaded, or (2) explicitly
-    invoking `Hecke`'s implementation through Hecke.DefaultSmallGroupDB`.
+    different set of generators that may not satisfy the group presentation. For codes where
+    satisfying the group presentations is essential (particularly when using `Hecke`'s `small_group`),
+    we recommend either: (1) working without using `Oscar`, or (2) explicitly invoking `Hecke`'s
+    implementation through `Hecke.DefaultSmallGroupDB`.
 
 See also: [`QuantumClifford.ECC.LPCode`](@ref), [`generalized_bicycle_codes`](@ref), [`bicycle_codes`](@ref), [`haah_cubic_codes`](@ref).
 """
