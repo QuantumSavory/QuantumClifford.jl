@@ -35,8 +35,8 @@ PyQDecoders = "17f5de1a-9b79-4409-a58d-4d45812840f7"
 Quantikz = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
 QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
 
-[sources]
-QECCore = {path = "lib/QECCore"}
+[sources.QECCore]
+path = "lib/QECCore"
 
 [extensions]
 QuantumCliffordGPUExt = "CUDA"
@@ -56,7 +56,7 @@ Combinatorics = "1.0"
 DataStructures = "0.18"
 DocStringExtensions = "0.9"
 Graphs = "1.9"
-Hecke = "0.32, 0.33, 0.34, 0.35, 0.36"
+Hecke = "0.32, 0.33, 0.34, 0.35, 0.36, 0.37"
 HostCPUFeatures = "0.1.6"
 ILog2 = "0.2.3, 1, 2"
 InteractiveUtils = "1.10"
