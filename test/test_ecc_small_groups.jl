@@ -1,4 +1,4 @@
-@testitem "ECC 2BGA Hecke Small Groups" begin
+@testitem "ECC 2BGA Hecke Small Groups" tags=[:ecc] begin
     @static if Sys.iswindows() && VERSION < v"1.11"
         import Hecke: group_algebra, GF, abelian_group, gens, quo, one, small_group, prod
         using QuantumClifford.ECC
