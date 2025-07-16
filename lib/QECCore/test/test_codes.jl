@@ -66,4 +66,8 @@
     @testset "Delfosse-Reichardt Code" begin
         include("codes/delfosse_reichardt_code.jl")
     end
+
+    @testset "Delfosse-Reichardt Generalized [[8,2,3]] Code" begin
+        include("codes/delfosse_reichardt_823_code.jl")
+    end
 end
