@@ -421,7 +421,7 @@ Here is an example of `[[72, 8, 9]]` non-abelian 2BGA code with presentation `âŸ
 ```jldoctest
 julia> using QuantumClifford.ECC; using QuantumClifford;
 
-julia> import Hecke: small_group, gens, group_algebra, GF, DefaultSmallGroupDB;
+julia> import Hecke: small_group, gens, group_algebra, GF, DefaultSmallGroupDB, MultTableGroup;
 
 julia> m, n = 4, 9;
 
@@ -430,6 +430,9 @@ julia> l = 36;
 julia> group_id = 1;
 
 julia> G = small_group(l, group_id; DB = DefaultSmallGroupDB());
+
+julia> typeof(G)
+MultTableGroup
 
 julia> GA = group_algebra(GF(2), G);
 
@@ -442,9 +445,12 @@ julia> a = 1 + s + r + s*r^6;
 
 julia> b = 1 + s^2*r + s^2*r^6 + r^2;
 
-julia> c = two_block_group_algebra_codes(a,b)
-ERROR: The CSS code just created is invalid -- its rows do not commute. This is either a bug in this library, or an inconsistent parity check matrices were provided to the CSS constructor.
-[...]
+julia> c = two_block_group_algebra_codes(a,b);
+
+julia> import HiGHS
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(72, 8, 9)
 ```
 
 !!! danger

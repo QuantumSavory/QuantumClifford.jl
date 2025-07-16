@@ -17,7 +17,7 @@
 - Add `Delfosse-Reichardt` codes from classical self-orthogonal `Reed-Muller` seed codes to `QECCore`.
 - Add `[[4p, 2(p − 2), 4]]` Delfosse-Reichardt repetition `DelfosseReichardtRepCode` code to `QECCore`.
 - Add `[[8p, 4p − 2, 3]]` Delfosse-Reichardt Generalized `[[8,2,3]]` `DelfosseReichardt823` code to `QECCore`.
-- add documentation of using `LPCode` via `Hecke`'s (`small_group`)
+- Add documentation of using `LPCode` via `Hecke`'s `small_group`.
 
 ### Private API
 

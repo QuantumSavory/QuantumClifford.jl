@@ -92,6 +92,7 @@
             b = 1 + s^2*r + s^2*r^6 + r^2
             c = two_block_group_algebra_codes(a,b)
             @test code_n(c) == 72 && code_k(c) == 8
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true)
 
             # [[80, 8, 10]]
             m = 5
@@ -106,6 +107,7 @@
             b = 1 + r^2 + s*r^4 + s^3*r^2
             c = two_block_group_algebra_codes(a,b)
             @test code_n(c) == 80 && code_k(c) == 8
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true)
 
             # [[96, 10, 12]]
             m = 4
@@ -121,6 +123,7 @@
             b = 1 + s^2*r^9 + r^7 + r^2
             c = two_block_group_algebra_codes(a,b)
             @test code_n(c) == 96 && code_k(c) == 10
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true)
 
             # [[96, 11, 9]]
             m = 2
@@ -136,6 +139,7 @@
             b = 1 + r^9 + s*r^18 + r^7
             c = two_block_group_algebra_codes(a,b)
             @test code_n(c) == 96 && code_k(c) == 11
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true)
 
             # [[96, 12, 10]]
             m = 6
@@ -151,6 +155,7 @@
             b = 1 + r + s^4*r^6 + s^5*r^3
             c = two_block_group_algebra_codes(a,b)
             @test code_n(c) == 96 && code_k(c) == 12
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true)
         end
     end
 end
