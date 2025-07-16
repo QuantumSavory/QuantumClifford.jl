@@ -1,4 +1,6 @@
 """
+    $TYPEDEF
+
 The family of classical binary Golay codes were discovered by Edouard Golay
 in his 1949 paper [golay1949notes](@cite), where he described the binary
 `[23, 12, 7]` Golay code.
@@ -19,8 +21,12 @@ and then extending any column in​ with an overall parity check `H₂₃` recon
 the original parity check matrix `H₂₄`. Thus, all punctured codes are equivalent.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/golay).
+
+### Fields
+    $TYPEDFIELDS
 """
 struct Golay <: AbstractCECC
+    """The number of bits in the code."""
     n::Int
 
     function Golay(n)
@@ -64,7 +70,7 @@ function generator(g::Golay)
     end
 end
 
-function parity_checks(g::Golay)
+function parity_matrix(g::Golay)
     if g.n == 24
         A₂₄ = _create_A₂₄_golay(24)
         I₁₂ = LinearAlgebra.Diagonal(ones(Int, g.n ÷ 2))

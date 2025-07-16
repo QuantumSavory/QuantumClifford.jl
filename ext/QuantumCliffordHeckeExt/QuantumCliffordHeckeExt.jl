@@ -7,21 +7,21 @@ using DocStringExtensions
 import QuantumClifford, LinearAlgebra
 import Hecke: Group, GroupElem, AdditiveGroupElem,
     GroupAlgebra, GroupAlgebraElem, FqFieldElem, representation_matrix, dim, base_ring,
-    multiplication_table, coefficients, abelian_group, group_algebra, rand, small_group,
-    gens, quo, order, DefaultSmallGroupDB
+    multiplication_table, coefficients, abelian_group, group_algebra, rand, gens, order,
+    is_commutative, DefaultSmallGroupDB
 import Nemo
 import Nemo: characteristic, matrix_repr, GF, ZZ, lift
 
 import QuantumClifford.ECC: iscss, parity_checks,
     two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes, check_repr_commutation_relation,
-    haah_cubic_codes
+    haah_cubic_codes, honeycomb_color_codes, check_repr_regular_linear
 
 import QECCore: AbstractECC, CSS,
     hgp, code_k, code_n, code_s, parity_matrix_x, parity_matrix_z, parity_matrix_xz
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export hgp, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes, haah_cubic_codes,
-    LPCode, LiftedCode
+    LPCode, LiftedCode, honeycomb_color_codes
 
 include("util.jl")
 include("types.jl")
