@@ -26,12 +26,13 @@ The lifted product construction produces quantum CSS codes with parity-check mat
     H_X &= [A \\otimes I_{m_b}, -I_{m_a} \\otimes B] \\\\
     H_Z &= [I_{n_a} \\otimes B^*, A^* \\otimes I_{n_b}]
 \\end{aligned}
+```
 
-### Commutative Algebra
+### Commutative Group Algebra
 
 When `R` is *commutative*, a single representation suffices since all elements naturally commute. Here ``\\rho(a) = \\lambda(a)`` for all ``a \\in R``.
 
-### Non-Commutative Algebra
+### Non-Commutative Group Algebra
 
 When `R` is *non-commutative*, distinct representations are essential:
 
@@ -47,7 +48,7 @@ These ensure the critical commutation relation:
 \\end{aligned}
 ```
 
-which follows from the associative property:
+which follows from the *associative* property:
 
 ```math
 \\begin{aligned}
