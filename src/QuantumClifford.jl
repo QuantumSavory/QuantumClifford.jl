@@ -40,7 +40,7 @@ export
     # Linear Algebra
     tensor, tensor_pow,
     logdot, expect,
-    apply!,
+    apply!, apply_inv!,
     permutesystems, permutesystems!,
     # Low Level Function Interface
     generate!, project!, reset_qubits!, traceout!,
@@ -1076,9 +1076,12 @@ Base.hcat(stabs::Stabilizer{T}...) where {T} = Stabilizer(hcat((tab(s) for s in 
 # Unitary Clifford Operations
 ##############################
 
-"""In `QuantumClifford` the `apply!` function is used to apply any quantum operation to a stabilizer state,
-including unitary Clifford operations, Pauli measurements, and noise.
-Thus, this function may result in a random/stochastic result (e.g. with measurements or noise)."""
+"""
+    apply!
+
+Apply any quantum operation to a stabilizer state, including unitary Clifford 
+operations, Pauli measurements, and noise. 
+May result in a random/stochastic result (e.g. with measurements or noise)."""
 function apply! end
 
 function Base.:(*)(p::AbstractCliffordOperator, s::AbstractStabilizer; phases::Bool=true)
@@ -1115,6 +1118,28 @@ function _apply!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Va
         s.phases[i] = (s.phases[i]+comm(newp,s,i)<<1)&0x3
     end
     stab
+end
+
+
+"""
+    apply_inv!
+    
+Apply the inverse of any quantum operation to a stabilizer state.
+"""
+function apply_inv! end
+
+function apply_inv!(stab::AbstractStabilizer, op::AbstractCliffordOperator; phases::Bool=true)
+    @valbooldispatch _apply_inv!(stab,op; phases=Val(phases)) phases
+end
+function apply_inv!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices; phases::Bool=true)
+    @valbooldispatch _apply_inv!(stab,op,indices; phases=Val(phases)) phases
+end
+
+function _apply_inv!(stab::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
+    apply!(stab,p; phases=phases)
+end
+function _apply_inv!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Val{B}=Val(true)) where B
+    apply!(stab,p,indices; phases=phases)
 end
 
 ##############################
