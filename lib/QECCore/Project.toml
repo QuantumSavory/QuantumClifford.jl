@@ -1,0 +1,17 @@
+name = "QECCore"
+uuid = "b50d4dc9-2544-401f-bae9-a24ba40d0c7a"
+authors = ["Zhongyi Ni <zhongyini1997@gmail.com>", "Developers from QuantumSavory organization"]
+version = "0.1.1"
+
+[deps]
+Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+
+[compat]
+Combinatorics = "1.0"
+DocStringExtensions = "0.9"
+LinearAlgebra = "1.9"
+SparseArrays = "1.9"
+julia = "1.9"

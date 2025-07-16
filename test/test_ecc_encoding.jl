@@ -1,4 +1,4 @@
-@testitem "encoding circuits - compare to algebraic construction of encoded state" begin
+@testitem "encoding circuits - compare to algebraic construction of encoded state" tags=[:ecc] begin
     using QuantumClifford
     using QuantumClifford.ECC
 

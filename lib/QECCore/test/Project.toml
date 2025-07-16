@@ -1,0 +1,8 @@
+[deps]
+Nemo = "2edaba10-b0f1-5616-af89-8c11ac63239a"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
+QuantumClifford = "0525e862-1e90-11e9-3e4d-1b39d7109de1"
+Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"
