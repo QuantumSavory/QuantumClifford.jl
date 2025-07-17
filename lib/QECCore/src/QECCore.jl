@@ -14,7 +14,8 @@ export AbstractECC, AbstractQECC, AbstractCECC, AbstractCSSCode, AbstractDistanc
 export Perfect5, Cleve8, Gottesman
 
 # CSS Codes
-export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMuller, Triangular488, Triangular666, DelfosseReichardt
+export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMuller, Triangular488, Triangular666,
+DelfosseReichardt, DelfosseReichardtRepCode, DelfosseReichardt823
 
 # Classical Codes
 export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming
@@ -49,6 +50,8 @@ include("codes/quantum/quantumreedmuller.jl")
 
 # Delfosse-Reichardt Codes
 include("codes/quantum/delfosse_reichardt_code.jl")
+include("codes/quantum/delfosse_reichardt_repcode.jl")
+include("codes/quantum/delfosse_reichardt_823_code.jl")
 
 function __init__()
     if isdefined(Base.Experimental, :register_error_hint)

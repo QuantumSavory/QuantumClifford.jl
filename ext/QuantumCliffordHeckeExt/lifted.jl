@@ -151,14 +151,14 @@ julia> code_n(c), code_k(c), code_s(c)
 (12, 5, 9)
 ```
 """
-function LiftedCode(shift_array::Matrix{Int}, l::Int; GA::GroupAlgebra=group_algebra(GF(2), abelian_group(l)))
+function LiftedCode(shift_array::Matrix{Int}, l::Int; GA::GroupAlgebra=group_algebra(GF(2), abelian_group(l)), repr=representation_matrix)
     A = zeros(GA, size(shift_array)...)
     for i in 1:size(shift_array, 1)
         for j in 1:size(shift_array, 2)
             A[i, j] = GA[shift_array[i, j]%l+1]
         end
     end
-    return LiftedCode(A; GA=GA, repr=representation_matrix)
+    return LiftedCode(A; GA, repr)
 end
 
 lift_to_bool(x) = Bool(Int(lift(ZZ,x)))
