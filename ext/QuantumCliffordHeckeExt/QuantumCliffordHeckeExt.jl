@@ -10,7 +10,7 @@ import LinearAlgebra: rank
 import Hecke: Group, GroupElem, AdditiveGroupElem,
     GroupAlgebra, GroupAlgebraElem, FqFieldElem, representation_matrix, dim, base_ring,
     multiplication_table, coefficients, abelian_group, group_algebra, rand, gens, order,
-    is_commutative
+    is_commutative, group
 import Nemo
 import Nemo: characteristic, matrix_repr, GF, ZZ, lift, matrix
 
