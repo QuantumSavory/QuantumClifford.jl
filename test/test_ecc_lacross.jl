@@ -1,247 +1,146 @@
 @testitem "ECC Lacross" begin
-    using Nemo
-    using LinearAlgebra
+    using JuMP
+    using HiGHS
+    using Hecke
     using QuantumClifford
-    using QuantumClifford: stab_looks_good
+    using QuantumClifford: stab_looks_good, gf2_row_echelon_with_pivots!
     using QuantumClifford.ECC
-    using QuantumClifford.ECC: Lacross, code_k, code_n, parity_checks, stab_to_gf2
+    using Nemo: matrix, GF
+    using QECCore
+    
+    function _scratch_matrix(n, k, coeffs)
+        first_row = zeros(Int, n)
+        first_row[1] = 1 # constant term (x⁰)
+        for i in 1:k
+            first_row[i+1] = coeffs[i] # coefficients for x¹, x², ..., xᵏ
+        end
+        H = zeros(Int, n, n)
+        H[1, :] = first_row
+        for i in 2:n
+            H[i, :] = circshift(H[i-1, :], 1)
+        end
+        return H
+    end
 
-    # TODO Test minimum distance of La Cross quantum LDPC codes
+    function _hecke_circulant_matrix(n, h)
+        R = parent(h)
+        x = gen(R)
+        _, proj = residue_ring(R, R(x)^n-1)
+        h = proj(h)
+        lifted_h = lift(h)
+        coeffs = Int[lift(ZZ, coeff(lifted_h, i)) for i in 0:n-1]
+        H = zero_matrix(GF(2), n, n)
+        for i in 1:n
+            for j in 1:n
+                H[i, j] = coeffs[mod1(j-i+1, n)]
+            end
+        end
+        H = [Int(lift(ZZ, H[i,j])) for i in 1:nrows(H), j in 1:ncols(H)]
+        return H
+    end
+
+    @testset "circulant matrix consistency check" begin
+        for _ in 1:20
+            n = rand(1:20)
+            k = rand(0:n-1)
+            coeffs = rand([0, 1], k)
+            @testset "(n=$n, k=$k)" begin
+                H = _scratch_matrix(n, k, coeffs)
+                R, x = polynomial_ring(GF(2), "x")
+                h = isempty(coeffs) ? x^0 : sum(coeffs[i]*x^i for i in 1:k) + x^0
+                Hₕ = _hecke_circulant_matrix(n, h)
+                @test H == Hₕ
+            end
+        end
+    end
+
     @testset "Reproduce Figure 3 of [pecorari2025high](@cite)" begin
         @testset "Reproduce Figure 3(a) of [pecorari2025high](@cite)" begin
             # [[52, 4, 4]]
             n = 6
-            k = 2
-            coeffs = [1,1]
+            F = GF(2)
+            R, x = polynomial_ring(F, "x")
+            h = 1 + x + x^2;
             full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
+            c = Lacross(n, h, full_rank)
             mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
             computed_rank = rank(mat)
             @test computed_rank == code_n(c) - code_k(c)
             @test code_n(c) == 52 && code_k(c) == 4
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
-
-            # [[100, 4, 5]]
-            n = 8
-            k = 2
-            coeffs = [0,1]
-            full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
-            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
-            computed_rank = rank(mat)
-            @test computed_rank == code_n(c) - code_k(c)
-            @test code_n(c) == 100 && code_k(c) == 4
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
 
             # [[130, 4, 6]]
             n = 9
-            k = 2
-            coeffs = [1,1]
             full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
+            c = Lacross(n, h, full_rank)
             mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
             computed_rank = rank(mat)
             @test computed_rank == code_n(c) - code_k(c)
             @test code_n(c) == 130 && code_k(c) == 4
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
-
-            # [[164, 4, 6]]
-            n = 10
-            k = 2
-            coeffs = [0,1]
-            full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
-            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
-            computed_rank = rank(mat)
-            @test computed_rank == code_n(c) - code_k(c)
-            @test code_n(c) == 164 && code_k(c) == 4
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
 
             # [[244, 4, 8]]
             n = 12
-            k = 2
-            coeffs = [1,1]
             full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
+            c = Lacross(n, h, full_rank)
             mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
             computed_rank = rank(mat)
             @test computed_rank == code_n(c) - code_k(c)
             @test code_n(c) == 244 && code_k(c) == 4
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 8
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
         end
 
         @testset "Reproduce Figure 3(b) of [pecorari2025high](@cite)" begin
             # [[65, 9, 4]]
             n = 7
-            k = 3
-            coeffs = [1,0,1]
+            F = GF(2)
+            R, x = polynomial_ring(F, "x")
+            h = 1 + x + x^3;
             full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
+            c = Lacross(n, h, full_rank)
             mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
             computed_rank = rank(mat)
             @test computed_rank == code_n(c) - code_k(c)
             @test code_n(c) == 65 && code_k(c) == 9
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
 
             # [[98, 18, 4]]
-            n = 7
-            k = 3
-            coeffs = [1,0,1]
             full_rank = false
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
+            c = Lacross(n, h, full_rank)
             mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
             computed_rank = rank(mat)
             @test computed_rank == code_n(c) - code_k(c)
             @test code_n(c) == 98 && code_k(c) == 18
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
-
-            # [[117, 9, 4]]
-            n = 9
-            k = 3
-            coeffs = [0,0,1]
-            full_rank =  true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
-            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
-            computed_rank = rank(mat)
-            @test computed_rank == code_n(c) - code_k(c)
-            @test code_n(c) == 117 && code_k(c) == 9
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
-
-            # [[244, 4, 8]]
-            n = 12
-            k = 3
-            coeffs = [1,1,0]
-            full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
-            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
-            computed_rank = rank(mat)
-            @test computed_rank == code_n(c) - code_k(c)
-            @test code_n(c) == 244 && code_k(c) == 4
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
-
-            # [[225, 9, 6]]
-            n = 12
-            k = 3
-            coeffs = [1,1,1]
-            full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
-            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
-            computed_rank = rank(mat)
-            @test computed_rank == code_n(c) - code_k(c)
-            @test code_n(c) == 225 && code_k(c) == 9
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
-
-            # [[317, 9, 8]]
-            n = 14
-            k = 3
-            coeffs = [1,0,1]
-            full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
-            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
-            computed_rank = rank(mat)
-            @test computed_rank == code_n(c) - code_k(c)
-            @test code_n(c) == 317 && code_k(c) == 9
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
-
-            # [[369, 9, 8]]
-            n = 15
-            k = 3
-            coeffs = [0,0,1]
-            full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
-            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
-            computed_rank = rank(mat)
-            @test computed_rank == code_n(c) - code_k(c)
-            @test code_n(c) == 369 && code_k(c) == 9
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
-
-            # [[52, 4, 4]]
-            n = 6
-            k = 3
-            coeffs = [1,1,0]
-            full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
-            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
-            computed_rank = rank(mat)
-            @test computed_rank == code_n(c) - code_k(c)
-            @test code_n(c) == 52 && code_k(c) == 4
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
-        end
-
-        @testset "Reproduce Figure 3(c) of [pecorari2025high](@cite)" begin
-            # [[136, 16, 5]]
-            n = 10
-            k = 4
-            coeffs = [1,1,1,1]
-            full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
-            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
-            computed_rank = rank(mat)
-            @test computed_rank == code_n(c) - code_k(c)
-            @test code_n(c) == 136 && code_k(c) == 16
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
-
-            # [[208, 16, 6]]
-            n = 12
-            k = 4
-            coeffs = [0,0,0,1]
-            full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
-            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
-            computed_rank = rank(mat)
-            @test computed_rank == code_n(c) - code_k(c)
-            @test code_n(c) == 208 && code_k(c) == 16
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
-
-            # [[296, 16, 7]]
-            n = 14
-            k = 4
-            coeffs = [1,1,0,1]
-            full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
-            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
-            computed_rank = rank(mat)
-            @test computed_rank == code_n(c) - code_k(c)
-            @test code_n(c) == 296 && code_k(c) == 16
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
-
-            # [[400, 16, 8]]
-            n = 16
-            k = 4
-            coeffs = [0,0,0,1]
-            full_rank = true
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
-            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
-            computed_rank = rank(mat)
-            @test computed_rank == code_n(c) - code_k(c)
-            @test code_n(c) == 400 && code_k(c) == 16
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
         end
 
         @testset "cross-checks from pg.4 of https://arxiv.org/pdf/2404.13010" begin
             # [[117, 9, d]]
             n = 9
-            k = 3
-            coeffs = [0,0,1]
+            F = GF(2)
+            R, x = polynomial_ring(F, "x")
+            h = 1 + x^3;
             full_rank = true # corresponds to code with open boundary conditions
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
+            c = Lacross(n, h, full_rank)
             mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
             computed_rank = rank(mat)
             @test computed_rank == code_n(c) - code_k(c)
             @test code_n(c) == 117 && code_k(c) == 9
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
 
             # [[162, 18, d]]
-            n = 9
-            k = 3
-            coeffs = [0,0,1]
             full_rank = false # corresponds to code with periodic boundary conditions
-            c = parity_checks(Lacross(n,k,coeffs,full_rank))
+            c = Lacross(n, h, full_rank)
             mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
             computed_rank = rank(mat)
             @test computed_rank == code_n(c) - code_k(c)
             @test code_n(c) == 162 && code_k(c) == 18
-            @test stab_looks_good(copy(c), remove_redundant_rows=true) == true
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
         end
     end
 end

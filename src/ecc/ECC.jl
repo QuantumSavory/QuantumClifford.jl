@@ -399,6 +399,5 @@ include("codes/classical/bch.jl")
 # qLDPC
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
-include("codes/lacross.jl")
 
 end #module

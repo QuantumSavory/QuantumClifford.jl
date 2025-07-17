@@ -29,3 +29,13 @@ function twobga_from_fp_group end
 
 """Implemented in a package extension with Hecke."""
 function honeycomb_color_codes end
+
+"""Lacross codes ([pecorari2025high](@cite))
+Implemented as a package extension with Hecke. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
+function Lacross(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
+    if isnothing(ext)
+        throw("The `Lacross` quantum LDPC code depends on the package `Hecke` but you have not installed or imported it yet. Immediately after you import `Hecke`, the `Lacross` will be available.")
+    end
+    return ext.Lacross(args...; kwargs...)
+end

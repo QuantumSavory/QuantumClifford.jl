@@ -7,7 +7,7 @@ using InteractiveUtils
 
 import Nemo: GF
 import LinearAlgebra
-import Hecke: group_algebra, abelian_group, gens, quo, one, small_group
+import Hecke: group_algebra, abelian_group, gens, quo, one, small_group, polynomial_ring, GF
 
 # generate instances of all implemented codes to make sure nothing skips being checked
 
@@ -186,6 +186,11 @@ test_bb_codes = [bb1, bb2, bb3]
 
 test_twobga_codes = []
 
+# La-cross code polynomial
+F = GF(2)
+R, x = polynomial_ring(F, "x")
+h = 1 + x + x^3;
+
 @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
   import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order, gens, quo
   function load_oscar_codes()
@@ -317,7 +322,7 @@ const code_instance_args = Dict(
     :DelfosseReichardt => [(2,1,3), (2,2,4), (4,3,5), (4,3,6)],
     :DelfosseReichardtRepCode => [4, 6, 8, 10],
     :DelfosseReichardt823 => [1, 2, 3, 4, 5],
-    :Lacross => [(7,3,[1,0,1],false), (7,3,[1,0,1],true)]
+    :Lacross => [(7,h,false), (7,h,true)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
