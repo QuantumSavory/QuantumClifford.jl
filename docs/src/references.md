@@ -50,6 +50,7 @@ For quantum code construction routines:
 - [naghipour2015quantum](@cite)
 - [eberhardt2024logical](@cite)
 - [delfosse2020short](@cite)
+- [Berthusen_2024](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)
