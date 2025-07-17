@@ -7,6 +7,7 @@
 
 ## v0.10.1-dev
 
+- **(fix)** The classical `LiftedCode` constructor had method errors in `parity_checks`, `code_n`, and `code_s`, and an undefined `code_k`.
 - The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations — particularly useful now that there is also an `Oscar` extension, which provides many non-abelian group constructors.
 - introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
