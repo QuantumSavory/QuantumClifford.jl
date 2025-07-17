@@ -4,12 +4,17 @@ using QuantumClifford
 using QuantumClifford.ECC
 using QuantumClifford.ECC: check_repr_commutation_relation, check_repr_regular_linear
 using InteractiveUtils
+using SparseArrays
 
 import Nemo: GF
 import LinearAlgebra
 import Hecke: group_algebra, abelian_group, gens, quo, one, small_group, polynomial_ring, GF
 
 # generate instances of all implemented codes to make sure nothing skips being checked
+
+const H1 = sparse(Bool[1 0 1 0; 0 1 0 1; 1 1 0 0]);
+
+const H2 = sparse(Bool[1 1 0;0 1 1]);
 
 # We do not include smaller random circuit code because some of them has a bad distance and fails the TableDecoder test
 const random_brickwork_circuit_args = repeat([((20,), 50, [1]), ((20,), 50, 1:2:20), ((5, 5), 50, [1]), ((3, 3, 3), 50, [1])], 10)
@@ -322,6 +327,8 @@ const code_instance_args = Dict(
     :DelfosseReichardt => [(2,1,3), (2,2,4), (4,3,5), (4,3,6)],
     :DelfosseReichardtRepCode => [4, 6, 8, 10],
     :DelfosseReichardt823 => [1, 2, 3, 4, 5],
+    :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
+    :CyclicQuantumTannerGraphProduct => [1, 2, 3, 4, 5],
     :Lacross => [(7,h,false), (7,h,true)]
 )
 

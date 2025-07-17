@@ -8,7 +8,7 @@
 ## v0.10.1-dev
 
 - The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations — particularly useful now that there is also an `Oscar` extension, which provides many non-abelian group constructors.
-- introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
+- Introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
 - The phase storage type can now be parameterized, instead of hardcoded to UInt8.
 - Drop support for Julia 1.9.
@@ -17,6 +17,7 @@
 - Add `Delfosse-Reichardt` codes from classical self-orthogonal `Reed-Muller` seed codes to `QECCore`.
 - Add `[[4p, 2(p − 2), 4]]` Delfosse-Reichardt repetition `DelfosseReichardtRepCode` code to `QECCore`.
 - Add `[[8p, 4p − 2, 3]]` Delfosse-Reichardt Generalized `[[8,2,3]]` `DelfosseReichardt823` code to `QECCore`.
+- Add Quantum Tanner graph product codes: general and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`) to `QECCore`.
 
 ### Private API
 
