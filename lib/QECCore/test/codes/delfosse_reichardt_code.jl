@@ -1,4 +1,4 @@
-@testitem "[[8rp, (8r − 2)p − 2m, 4]] Delfosse-Reichardt code" begin
+@testitem "Generalized Delfosse-Reichardt code" begin
 
     using JuMP
     using HiGHS
@@ -10,7 +10,7 @@
     using QECCore.LinearAlgebra
     using QECCore: _generalize_delfosse_reichardt_code, search_self_orthogonal_rm_codes
 
-    @testset "Testing Delfosse-Reichardt code properties" begin
+    @testset "Testing Generalized Delfosse-Reichardt code properties" begin
         # from https://arxiv.org/pdf/2008.05051"
         code_families = [
             (2, 4),  # [[16p, 14p-8, 4]] code family
