@@ -1,4 +1,4 @@
-@testitem "ECC code properties" begin
+@testitem "ECC code properties" tags=[:ecc] begin
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
 

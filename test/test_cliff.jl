@@ -28,13 +28,13 @@
                 for rep in 1:5
                     p = randperm(nqubits(c))
                     s = random_stabilizer(nqubits(c))
-                    @test permute(c,p)*s[:,p] == (c*s)[:,p]
+                    @test permutesystems(c,p)*s[:,p] == (c*s)[:,p]
                 end
             end
             for i in 1:5
                 p = randperm(125)
                 c = rand([tId1, tHadamard, tPhase], 125)
-                @test ⊗(c[p]...) == permute(⊗(c...), p)
+                @test ⊗(c[p]...) == permutesystems(⊗(c...), p)
             end
         end
         @testset "Tensor products" begin

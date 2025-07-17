@@ -17,7 +17,8 @@
     @test_throws DimensionMismatch mul_left!(P"X", P"XX")
     @test_throws DimensionMismatch mul_right!(P"X", P"XX")
 
-    @test_throws ArgumentError StabMixture(S"XX")
+    @test_throws ArgumentError GeneralizedStabilizer(S"XX")
+    @test_throws DimensionMismatch apply!(GeneralizedStabilizer(random_stabilizer(2)), pcT)
 
     @test_throws ArgumentError UnitaryPauliChannel([P"X"], [1,2])
     @test_throws ArgumentError UnitaryPauliChannel([P"X",P"XX"], [1,2])
