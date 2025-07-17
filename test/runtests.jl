@@ -1,18 +1,33 @@
-using Pkg
+CUDA_flag = false
+OpenCL_flag = false
+ROCm_flag = false
+Oscar_flag = false
+
 if Sys.iswindows() || Sys.ARCH != :x86_64
-    @info "skipping Oscar tests (they currently do not run on Windows OS or ARM CPU)"
-    @info "skipping GPU tests (set GPU_TESTS=true to test GPU (on non-Windows))"
-elseif get(ENV, "GPU_TESTS", "") == "true"
-    @info "running with GPU tests"
-    Pkg.add("CUDA")
-elseif VERSION < v"1.11"
-    @info "skipping Oscar tests (not tested on Julia <1.11)"
-    @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"
+    @info "Skipping GPU tests -- only supported on x86_64 *NIX platforms."
+    @info "Skipping OpenCL tests -- only supported on x86_64 *NIX platforms."
+    @info "Skipping Oscar tests -- only supported on x86_64 *NIX platforms."
 else
-    @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"
-    Pkg.add("Oscar")
+    CUDA_flag = get(ENV, "CUDA_TEST", "") == "true"
+    OpenCL_flag = true
+    ROCm_flag = get(ENV, "ROCm_TEST", "") == "true"
+    Oscar_flag = VERSION >= v"1.11"
+
+    CUDA_flag && @info "Running with CUDA tests."
+    OpenCL_flag && @info "Running with OpenCL tests."
+    ROCm_flag && @info "Running with ROCm tests."
+    !Oscar_flag && @info "Skipping Oscar tests -- not tested on Julia < 1.11"
+    if !(ROCm_flag || CUDA_flag)
+        @info "Skipping GPU tests -- must be explicitly enabled."
+        @info "Environment must set ROCm_TEST=true xor CUDA_TEST=true."
+    end
 end
 
+using Pkg
+CUDA_flag && Pkg.add("CUDA")
+OpenCL_flag && (Pkg.add("pocl_jll"); Pkg.add("OpenCL"))
+ROCm_flag && Pkg.add("AMDGPU")
+Oscar_flag && Pkg.add("Oscar")
 using TestItemRunner
 using QuantumClifford
 
@@ -32,10 +47,21 @@ testfilter = ti -> begin
         return :ecc in ti.tags
     end
 
-    if get(ENV, "GPU_TESTS", "") != "true"
-        push!(exclude, :gpu)
+
+    if !CUDA_flag
+        push!(exclude, :cuda)
     else
-        return :gpu in ti.tags
+        return :cuda in ti.tags
+    end
+
+    if !OpenCL_flag
+        push!(exclude, :opencl)
+    end
+
+    if !ROCm_flag
+        push!(exclude, :rocm)
+    else
+        return :rocm in ti.tags
     end
 
     if !(VERSION >= v"1.10")
