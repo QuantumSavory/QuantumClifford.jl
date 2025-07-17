@@ -1,8 +1,7 @@
 """
-Represents a bipartite Tanner graph used in classical coding theory. It
-connects *variable nodes* (codeword bits or qubits) to *check nodes*
-(parity constraints) and serves as the foundation for constructing
-product graphs in quantum CSS codes.
+Represents a *bipartite* Tanner graph used in classical coding theory. It connects *variable
+nodes* (codeword bits or qubits) to *check nodes* (parity constraints) and serves as the
+foundation for constructing Tanner graphs in quantum CSS codes.
 """
 struct BipartiteGraph
     """The underlying undirected graph (from `Graphs.jl`)."""
@@ -14,10 +13,8 @@ struct BipartiteGraph
 end
 
 """
-Constructs a *Tanner graph* from a given parity-check matrix `H`, where rows
-correspond to *check nodes* and columns to *variable nodes*.
-
-The resulting *bipartite* graph indexes variable nodes as `1:n` and check
+Constructs a *Tanner graph* from a given parity-check matrix `H`, where rows correspond to *check nodes*
+and columns to *variable nodes*. The resulting *bipartite* graph indexes variable nodes as `1:n` and check
 nodes as `n+1:n+m` for an `m × n` matrix `H`."""
 function tanner_graph_from_parity_matrix(H::AbstractMatrix)
     m, n = size(H)
