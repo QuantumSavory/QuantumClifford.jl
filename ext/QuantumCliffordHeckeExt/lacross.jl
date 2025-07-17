@@ -115,6 +115,7 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/lacr
 struct Lacross <: AbstractCSSCode
     """The block length of the classical seed code"""
     n::Int
+    """The seed vector is represented with a degree-`n` polynomial of the form ``h(x) = \\sum_{i=0}^{n-1} c_i x^i``"""
     h::FqPolyRingElem
     """A flag indicating whether to use the full-rank rectangular matrix (true) or the original circulant matrix (false)."""
     full_rank::Bool
@@ -140,8 +141,8 @@ function parity_matrix_xz(c::Lacross)
     end
     H = [Int(lift(ZZ, H[i,j])) for i in 1:nrows(H), j in 1:ncols(H)]
     if c.full_rank == true
-        rank = gf2_row_echelon_with_pivots!(H)[2]
-        H = H[1:rank, :]
+        k = degree(c.h)
+        H = H[1:c.n-k, :]
         hx, hz = hgp(H,H)
         return hx, hz
     else

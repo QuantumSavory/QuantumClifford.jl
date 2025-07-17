@@ -1,4 +1,4 @@
-@testitem "ECC Lacross" begin
+@testitem "ECC Lacross" tags=[:ecc] begin
     using JuMP
     using HiGHS
     using Hecke
@@ -7,7 +7,7 @@
     using QuantumClifford.ECC
     using Nemo: matrix, GF
     using QECCore
-    
+
     function _scratch_matrix(n, k, coeffs)
         first_row = zeros(Int, n)
         first_row[1] = 1 # constant term (x⁰)
@@ -56,11 +56,24 @@
 
     @testset "Reproduce Figure 3 of [pecorari2025high](@cite)" begin
         @testset "Reproduce Figure 3(a) of [pecorari2025high](@cite)" begin
-            # [[52, 4, 4]]
-            n = 6
+            k = 2
             F = GF(2)
             R, x = polynomial_ring(F, "x")
-            h = 1 + x + x^2;
+            h = 1 + x + x^k
+
+            # [[34, 4, 3]]
+            n = 5
+            full_rank = true
+            c = Lacross(n, h, full_rank)
+            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == 34 && code_k(c) == 4
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 3
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
+
+            # [[52, 4, 4]]
+            n = 6
             full_rank = true
             c = Lacross(n, h, full_rank)
             mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
@@ -68,6 +81,17 @@
             @test computed_rank == code_n(c) - code_k(c)
             @test code_n(c) == 52 && code_k(c) == 4
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
+
+            # [[100, 4, 5]]
+            n = 8
+            full_rank = true
+            c = Lacross(n, h, full_rank)
+            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == 100 && code_k(c) == 4
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 5
             @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
 
             # [[130, 4, 6]]
@@ -78,6 +102,17 @@
             computed_rank = rank(mat)
             @test computed_rank == code_n(c) - code_k(c)
             @test code_n(c) == 130 && code_k(c) == 4
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
+
+            # [[164, 4, 6]]
+            n = 10
+            full_rank = true
+            c = Lacross(n, h, full_rank)
+            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == 164 && code_k(c) == 4
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
             @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
 
@@ -94,11 +129,13 @@
         end
 
         @testset "Reproduce Figure 3(b) of [pecorari2025high](@cite)" begin
-            # [[65, 9, 4]]
-            n = 7
+            k = 3
             F = GF(2)
             R, x = polynomial_ring(F, "x")
-            h = 1 + x + x^3;
+            h = 1 + x + x^k
+
+            # [[65, 9, 4]]
+            n = 7
             full_rank = true
             c = Lacross(n, h, full_rank)
             mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
@@ -116,6 +153,124 @@
             @test computed_rank == code_n(c) - code_k(c)
             @test code_n(c) == 98 && code_k(c) == 18
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
+
+            # [[117, 9, 4]]
+            n = 9
+            full_rank = true
+            c = Lacross(n, h, full_rank)
+            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == 117 && code_k(c) == 9
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
+
+            # [[149, 9, 5]]
+            n = 10
+            full_rank = true
+            c = Lacross(n, h, full_rank)
+            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == 149 && code_k(c) == 9
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 5
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
+
+            # [[225, 9, 6]]
+            n = 12
+            full_rank = true
+            c = Lacross(n, h, full_rank)
+            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == 225 && code_k(c) == 9
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
+
+            # [[317, 9, 8]]
+            n = 14
+            full_rank = true
+            c = Lacross(n, h, full_rank)
+            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == 317 && code_k(c) == 9
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 8
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
+
+            # [[369, 9, 8]]
+            n = 15
+            full_rank = true
+            c = Lacross(n, h, full_rank)
+            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == 369 && code_k(c) == 9
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 8
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
+        end
+
+
+        @testset "Reproduce Figure 3(c) of [pecorari2025high](@cite)" begin
+            k = 4
+            F = GF(2)
+            R, x = polynomial_ring(F, "x")
+            h = 1 + x + x^k
+
+            # [[106, 16, 4]]
+            n = 9
+            full_rank = true
+            c = Lacross(n, h, full_rank)
+            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == 106 && code_k(c) == 16
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 3 # distance approximate
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
+
+            # [[136, 16, 5]]
+            n = 10
+            full_rank = true
+            c = Lacross(n, h, full_rank)
+            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == 136 && code_k(c) == 16
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4 # distance approximate
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
+
+            # [[208, 16, 6]]
+            n = 12
+            full_rank = true
+            c = Lacross(n, h, full_rank)
+            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == 208 && code_k(c) == 16
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 5 # distance approximate
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
+
+            # [[296, 16, 7]]
+            n = 14
+            full_rank = true
+            c = Lacross(n, h, full_rank)
+            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == 296 && code_k(c) == 16
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 7
+            @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
+
+            # [[400, 16, 8]]
+            n = 16
+            full_rank = true
+            c = Lacross(n, h, full_rank)
+            mat = matrix(GF(2), stab_to_gf2(parity_checks(c)))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == 400 && code_k(c) == 16
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 8
             @test stab_looks_good(parity_checks(c), remove_redundant_rows=true) == true
         end
 

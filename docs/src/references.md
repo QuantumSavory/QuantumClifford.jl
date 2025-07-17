@@ -51,6 +51,7 @@ For quantum code construction routines:
 - [eberhardt2024logical](@cite)
 - [delfosse2020short](@cite)
 - [pecorari2025high](@cite)
+- [berthusen2025adaptivesyndromeextraction](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)
