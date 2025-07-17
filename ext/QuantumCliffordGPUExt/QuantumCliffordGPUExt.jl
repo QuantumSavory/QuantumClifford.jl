@@ -2,7 +2,7 @@ module QuantumCliffordGPUExt
 
 using CUDA
 using QuantumClifford
-import QuantumClifford: to_cpu, to_gpu, _apply!, apply!, pftrajectories, fastcolumn, fastrow, applynoise!
+import QuantumClifford: to_cpu, to_gpu, _apply!, apply!, pftrajectories, fastcolumn, fastrow, applynoise!, canonicalize!
 
 include("utils.jl")
 include("types.jl")
@@ -11,5 +11,5 @@ include("apply.jl")
 include("pauli_frames.jl")
 include("fastmemlayout.jl")
 include("apply_noise.jl")
-
+include("canonicalization.jl")
 end
