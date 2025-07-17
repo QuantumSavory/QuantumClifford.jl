@@ -322,7 +322,8 @@ const code_instance_args = Dict(
     :DelfosseReichardt => [(2,1,3), (2,2,4), (4,3,5), (4,3,6)],
     :DelfosseReichardtRepCode => [4, 6, 8, 10],
     :DelfosseReichardt823 => [1, 2, 3, 4, 5],
-    :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)]
+    :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
+    :CyclicQuantumTannerGraphProduct => [1, 2, 3, 4, 5]
 )
 
 function all_testablable_code_instances(;maxn=nothing)

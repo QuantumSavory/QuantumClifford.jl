@@ -48,8 +48,8 @@ end
 """
 Constructs a bipartite Tanner graph representing the cycle code of length `n`. The graph
 consists of `n` variable nodes and `n` check nodes, totaling `2n` nodes. Each check node `i`
-(for `i` in `1...n`) connects to variable nodes `i` and (``i+1 \\mod n``). This structure results
-in a parity-check matrix `H`, where each row contains exactly two `1`s, encoding the edges of a
+(for `i` in `1...n`) connects to variable nodes `i` and (``i+1 \\mod n``). This results in a
+parity-check matrix `H`, where each row contains exactly two `1`s, encoding the edges of a
 length-`n` cycle.
 """
 function cycle_tanner_graph(n::Int)
@@ -96,11 +96,9 @@ julia> using QuantumClifford; using QuantumClifford.ECC; using QECCore
 
 julia> H1 = [1 0 1 0; 0 1 0 1; 1 1 0 0];
 
-julia> H2 = [1 1 0;0 1 1];
+julia> H2 = [1 1 0; 0 1 1];
 
-julia> c = QuantumTannerGraphProduct(H1, H2);
-
-julia> parity_checks(c)
+julia> c = parity_checks(QuantumTannerGraphProduct(H1, H2))
 + X_____X_____X_____
 + _X_____X____XX____
 + __X_____X____X____
@@ -118,6 +116,9 @@ julia> parity_checks(c)
 + _______ZZ____Z____
 + _________ZZ___Z___
 + __________ZZ___Z__
+
+julia>  code_n(c), code_k(c)
+(18, 1)
 ```
 
 # Quantum Expander code
@@ -129,9 +130,7 @@ corresponds to the specific case where `G = G1 = G2`​.
 ```jldoctest examples
 julia> H = parity_matrix(RepCode(3));
 
-julia> c = QuantumTannerGraphProduct(H, H);
-
-julia> parity_checks(c)
+julia> c = parity_checks(QuantumTannerGraphProduct(H, H))
 + X__X_____X_X______
 + _X__X____XX_______
 + __X__X____XX______
@@ -150,6 +149,9 @@ julia> parity_checks(c)
 + ______ZZ____Z__Z__
 + _______ZZ____Z__Z_
 + ______Z_Z_____Z__Z
+
+julia>  code_n(c), code_k(c)
+(18, 2)
 ```
 
 ### Fields
@@ -171,6 +173,21 @@ Constructs a `𝑄(𝐺₁ × 𝐺₂)` quantum Tanner graph product code using 
 
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC;
+
+julia> m = 1;
+
+julia> c = parity_checks(CyclicQuantumTannerGraphProduct(m))
++ X_X_XX__
++ _X_XXX__
++ X_X___XX
++ _X_X__XX
++ ZZ__Z_Z_
++ ZZ___Z_Z
++ __ZZZ_Z_
++ __ZZ_Z_Z
+
+julia> code_n(c), code_k(c)
+(8, 2)
 
 julia> m = 10;
 
