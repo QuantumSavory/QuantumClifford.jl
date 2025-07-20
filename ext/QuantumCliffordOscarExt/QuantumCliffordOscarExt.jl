@@ -18,13 +18,13 @@ import Oscar: free_group, small_group_identification, describe, order, FPGroupEl
 import Oscar.Generic.DirectSumModule
 
 import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group,
-    d_dimensional_surface_codes, d_dimensional_toric_codes, pcms
+    boundary_maps
 
 import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
     hgp, code_k, code_n, code_s, distance, parity_matrix_x, parity_matrix_z, parity_matrix_xz, parity_matrix
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
-export twobga_from_direct_product, twobga_from_fp_group, d_dimensional_surface_codes, d_dimensional_toric_codes, DDimensionalCode, pcms
+export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps
 
 include("types.jl")
 include("direct_product.jl")

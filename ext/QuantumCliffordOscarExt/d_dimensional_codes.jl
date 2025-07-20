@@ -1,17 +1,4 @@
-struct DDimensionalCode <: AbstractCSSCode
-    """Dimension of the code (must be ≥ 2)"""
-    D::Int
-    """Size parameter determining the code family. For surface codes: number of physical qubits along each dimension."""
-    L::Int
-    """Code type, either `:Surface` or `:Toric`."""
-    type::Symbol
-
-    function DDimensionalCode(D::Int, L::Int, type::Symbol)
-        D ≥ 2 || throw(ArgumentError("Dimension must be at least 2 (got D=$D)"))
-        type ∈ (:Surface, :Toric) || throw(ArgumentError("Code type must be :Surface or :Toric (got :$type)"))
-        new(D, L, type)
-    end
-end
+abstract type DDimensionalCode <: AbstractCSSCode end
 
 """Construct the chain complex for the repetition code of length L."""
 function _repcode_chain_complex(L::Int)
@@ -49,6 +36,8 @@ function _repcode_chain_complex_full(L::Int)
 end
 
 """
+    $TYPEDEF
+
 Constructs the D-dimensional surface code using chain complexes and ``\\mathbb{F}_2``-homology.
 
 ## Homological Algebra Foundations of Quantum Error Correction
@@ -189,13 +178,13 @@ E_2 \\xrightarrow{\\partial_2^E} E_1 \\xrightarrow{\\partial_1^E} E_0
 ### Examples
 
 ```jldoctest
-julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore: parity_matrix;
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
 julia> D = 2; L = 2;
 
-julia> c = d_dimensional_surface_codes(D, L);
+julia> c = DDimensionalSurfaceCode(D, L);
 
-julia> code = parity_matrix(c)
+julia> code = parity_checks(c)
 + X_X_X
 + _X_XX
 + ZZ__Z
@@ -210,13 +199,13 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 When `L = 4`, we get `[[25,1, 4]]` `2D` surface code from [Berthusen_2024](@cite).
 
 ```jldoctest
-julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore: parity_matrix;
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
 julia> D = 2; L = 4;
 
-julia> c = d_dimensional_surface_codes(D, L);
+julia> c = DDimensionalSurfaceCode(D, L);
 
-julia> code = parity_matrix(c)
+julia> code = parity_checks(c)
 + X___X___________X________
 + _X___X__________XX_______
 + __X___X__________XX______
@@ -291,26 +280,26 @@ F_3 \\xrightarrow{\\partial_3^F} F_2 \\xrightarrow{\\partial_2^F} F_1 \\xrightar
 Here is an example of `[[12, 1, 2]]` `3D` Surface code with `L = 2` from [Berthusen_2024](@cite).
 
 ```jldoctest threeDsurface
-julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore: parity_matrix;
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
 julia> D = 3; L = 2;
 
-julia> c = d_dimensional_surface_codes(D, L);
+julia> c = DDimensionalSurfaceCode(D, L);
 
-julia> code = parity_matrix(c)
-+ X_X_X_______
-+ _X_XX_______
-+ _____X_X_X__
-+ ______X_XX__
-+ X____X____X_
-+ _X____X___X_
-+ __X____X___X
-+ ___X____X__X
-+ ____X____XXX
-+ ZZ__Z_____Z_
-+ __ZZZ______Z
-+ _____ZZ__ZZ_
-+ _______ZZZ_Z
+julia> code = parity_checks(c)
++ XX__X_____X_
++ __XXX______X
++ _____XX__XX_
++ _______XXX_X
++ Z_Z_Z_______
++ _Z_ZZ_______
++ _____Z_Z_Z__
++ ______Z_ZZ__
++ Z____Z____Z_
++ _Z____Z___Z_
++ __Z____Z___Z
++ ___Z____Z__Z
++ ____Z____ZZZ
 
 julia> code_n(c), code_k(c)
 (12, 1)
@@ -318,16 +307,16 @@ julia> code_n(c), code_k(c)
 
 !!! note
     For the `3D` surface code, there is an asymmetry between the `Z`- and `X`-bases [Berthusen_2024](@cite).
-    Specifically, the `Z`-distance (``d_Z``) is `2`, whereas the `X`-distance (``d_X``) is `4`. As a result,
-    the code has the parameters `[[12, 1, 2]]`
+    Specifically, the `Z`-distance (``d_Z``) is `4`, whereas the `X`-distance (``d_X``) is `2`. As a result,
+    the code has the parameters `[[12, 1, 2]]`.
 
 ```jldoctest threeDsurface
 julia> import HiGHS; import JuMP;
 
-julia> dx = distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+julia> dz = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z))
 4
 
-julia> dz = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z))
+julia> dx = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:X))
 2
 ```
 
@@ -347,11 +336,11 @@ G_4 \\xrightarrow{\\partial_4^G} G_3 \\xrightarrow{\\partial_3^G} G_2 \\xrightar
 Here is an example of `[[33, 1, 4]]` `4D` Surface code with `L = 2` from [Berthusen_2024](@cite).
 
 ```jldoctest
-julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore: parity_matrix;
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
 julia> D = 4; L = 2;
 
-julia> c = d_dimensional_surface_codes(D, L);
+julia> c = DDimensionalSurfaceCode(D, L);
 
 julia> import HiGHS; import JuMP;
 
@@ -368,42 +357,23 @@ Both X and Z-type metachecks available:
 !!! note
     To obtain surface codes of greater dimensionality, we alternate between `C` and `D` and then form a
     product with the chain complex representing the surface code in a dimension below.[Berthusen_2024](@cite).
+
+### Fields
+    $TYPEDFIELDS
 """
-d_dimensional_surface_codes(D::Int, L::Int) = DDimensionalCode(D, L, :Surface)
+struct DDimensionalSurfaceCode <: DDimensionalCode
+    """Dimension of the code (must be ≥ 2)"""
+    D::Int
+    """Size parameter determining the code family."""
+    L::Int
 
-"""
-The D-dimensional toric code is obtained by taking the **iterated tensor product** of a single chain complex:
-
-```math
-\\begin{aligned}
-C = \\left( \\mathbb{F}_2^L \\xrightarrow{H} \\mathbb{F}_2^L \\right)
-\\end{aligned}
-```
-
-where `H` is the ``L \\times L`` parity check matrix of the repetition code. The total complex
-is built by taking the tensor product ``C^{\\otimes D}`` and forming the associated total complex via direct sums.
-
-!!! note
-    D-dimensional toric code construction differs from the surface code as we
-    use the full ``L \\times L`` repetition code (rather than ``(L-1) \\times L``). The
-    tensor products with identical complexes (rather than alternating complexes) are used.
-"""
-d_dimensional_toric_codes(D::Int, L::Int) = DDimensionalCode(D, L, :Toric)
-
-function parity_matrix_xz(c::DDimensionalCode)
-    c.D >= 2 || throw(ArgumentError("Dimension must be at least 2 to construct a valid D-dimensional code."))
-    hx, hz = c.type == :Surface ? _parity_matrix_xz_surface(c) : _parity_matrix_xz_toric(c)
-    # Oscar returns pcm hx', so we transpose it to convert it back to hx. See page 11, B2 for reference.
-    return hx', hz
+    function DDimensionalSurfaceCode(D::Int, L::Int)
+        D ≥ 2 || throw(ArgumentError("Dimension must be at least 2 (got D=$D)"))
+        new(D, L)
+    end
 end
 
-function pcms(c::DDimensionalCode)
-    c.D >= 2 || throw(ArgumentError("Dimension must be at least 2 to construct a valid D-dimensional code."))
-    pcms = c.type == :Surface ? _pcms_surface(c) : _pcms_toric(c)
-    return pcms
-end
-
-function _pcms_surface(c::DDimensionalCode)
+function _boundary_maps_surface(c::DDimensionalSurfaceCode)
     D, L = c.D, c.L
     C = _repcode_chain_complex(L)
     D_chain = _dual_repcode_chain_complex(L)
@@ -429,16 +399,50 @@ function _pcms_surface(c::DDimensionalCode)
     return boundary_maps
 end
 
-function _parity_matrix_xz_surface(c::DDimensionalCode)
-    boundary_maps = _pcms_surface(c)
-    return c.D == 2 ? (boundary_maps[1], boundary_maps[2]) : (boundary_maps[2], boundary_maps[3])
+function _parity_matrix_xz_surface(c::DDimensionalSurfaceCode)
+    # 2D codes: Oscar returns pcm hx', so we transpose it to convert it back to hx. # See page 11, B2 for reference.
+    # 3D and beyond codes: Oscar returns pcm hz', so we transpose it to convert it back to hz. See page 11, 12 - B3, B4, B6, and B7 for reference.
+    b = _boundary_maps_surface(c)
+    c.D == 2 ? (b[1]', b[2]) : (b[3], b[2]')
 end
 
-parity_matrix_x(c::DDimensionalCode) = parity_matrix_xz(c)[1]
+parity_matrix_xz(c::DDimensionalSurfaceCode) = _parity_matrix_xz_surface(c)
 
-parity_matrix_z(c::DDimensionalCode) = parity_matrix_xz(c)[2]
+"""
+    $TYPEDEF
 
-function _pcms_toric(c::DDimensionalCode)
+The D-dimensional toric code is obtained by taking the **iterated tensor product** of a single chain complex:
+
+```math
+\\begin{aligned}
+C = \\left( \\mathbb{F}_2^L \\xrightarrow{H} \\mathbb{F}_2^L \\right)
+\\end{aligned}
+```
+
+where `H` is the ``L \\times L`` parity check matrix of the repetition code. The total complex
+is built by taking the tensor product ``C^{\\otimes D}`` and forming the associated total complex via direct sums.
+
+!!! note
+    D-dimensional toric code construction differs from the surface code as we
+    use the full ``L \\times L`` repetition code (rather than ``(L-1) \\times L``). The
+    tensor products with identical complexes (rather than alternating complexes) are used.
+
+### Fields
+    $TYPEDFIELDS
+"""
+struct DDimensionalToricCode <: DDimensionalCode
+    """Dimension of the code (must be ≥ 2)."""
+    D::Int
+    """Size parameter determining the code family."""
+    L::Int
+    
+    function DDimensionalToricCode(D::Int, L::Int)
+        D ≥ 2 || throw(ArgumentError("Dimension must be at least 2 (got D=$D)"))
+        new(D, L)
+    end
+end
+
+function _boundary_maps_toric(c::DDimensionalToricCode)
     c.D >= 2 || throw(ArgumentError("Dimension must be at least 2 to construct a valid D-dimensional toric code."))
     D, L = c.D, c.L
     # we use the full repetition code chain complex
@@ -456,20 +460,18 @@ function _pcms_toric(c::DDimensionalCode)
     return boundary_maps
 end
 
-function _parity_matrix_xz_toric(c::DDimensionalCode)
-    boundary_maps = _pcms_toric(c)
-    return c.D == 2 ? (boundary_maps[1], boundary_maps[2]) : (boundary_maps[2], boundary_maps[3])
+function _parity_matrix_xz_toric(c::DDimensionalToricCode)
+    # 2D codes: Oscar returns pcm hx', so we transpose it to convert it back to hx. # See page 11, B2 for reference.
+    # 3D and beyond codes: Oscar returns pcm hz', so we transpose it to convert it back to hz. See page 11, 12 - B3, B4, B6, and B7 for reference.
+    b = _boundary_maps_toric(c)
+    c.D == 2 ? (b[1]', b[2]) : (b[3], b[2]')
 end
 
-function parity_matrix(c::DDimensionalCode)
-    c.D >= 2 || throw(ArgumentError("Dimension must be at least 2 to construct a valid D-dimensional code."))
-    s = _parity_matrix_d_dimensional(c)
-    return s
-end
+parity_matrix_xz(c::DDimensionalToricCode) = _parity_matrix_xz_toric(c)
 
-function _parity_matrix_d_dimensional(c::DDimensionalCode)
-    Stabilizer(CSS(parity_matrix_xz(c)...))
-end
+parity_matrix_x(c::DDimensionalCode) = parity_matrix_xz(c)[1]
+
+parity_matrix_z(c::DDimensionalCode) = parity_matrix_xz(c)[2]
 
 function _chain_dimensions(C::ComplexOfMorphisms)
     rng = range(C)
@@ -513,3 +515,67 @@ end
 
 # All D-dimensional surface codes of [Berthusen_2024](@cite) have exactly 1 logical qubit
 code_k(c::DDimensionalCode) = 1
+
+"""
+$TYPEDEF
+
+Returns all boundary maps of the chain complex, including both *parity check*
+and *metacheck* matrices.
+
+Here are the boundarp maps of `[[12, 1, 2]]` `3D` Surface code with
+`L = 2` from [Berthusen_2024](@cite).
+
+```jldoctest boundarymaps
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC: DDimensionalSurfaceCode, boundary_maps;
+
+julia> D = 3; L = 2;
+
+julia> c = DDimensionalSurfaceCode(D, L);
+
+julia> Mz, Hz, Hx = boundary_maps(c);
+```
+
+The parity check matrices of `[[12, 1, 2]]` `3D` Surface code are
+
+```jldoctest boundarymaps
+julia> Hx
+4×12 Matrix{Int64}:
+ 1  1  0  0  1  0  0  0  0  0  1  0
+ 0  0  1  1  1  0  0  0  0  0  0  1
+ 0  0  0  0  0  1  1  0  0  1  1  0
+ 0  0  0  0  0  0  0  1  1  1  0  1
+```
+
+!!! note
+    For `3D` and higher-dimensional codes, `Oscar` returns `Z`-type parity check
+    matrix as transpose (``H_Z^T``). We transpose it to convert it back to ``H_Z``.
+    See `B3`, page `11` of [Berthusen_2024](@cite).
+
+```jldoctest boundarymaps
+julia> Hz'
+9×12 adjoint(::Matrix{Int64}) with eltype Int64:
+ 1  0  1  0  1  0  0  0  0  0  0  0
+ 0  1  0  1  1  0  0  0  0  0  0  0
+ 0  0  0  0  0  1  0  1  0  1  0  0
+ 0  0  0  0  0  0  1  0  1  1  0  0
+ 1  0  0  0  0  1  0  0  0  0  1  0
+ 0  1  0  0  0  0  1  0  0  0  1  0
+ 0  0  1  0  0  0  0  1  0  0  0  1
+ 0  0  0  1  0  0  0  0  1  0  0  1
+ 0  0  0  0  1  0  0  0  0  1  1  1
+```
+
+Along with the `Z`- and `X`-type parity check matrices, we have a metacheck matrix
+specifically for the `Z`-type checks. The classical code derived from this metacheck
+matrix has a distance of `d = 2` meaning it can identify (but not correct) a single error
+in the `Z`-type syndrome measurements. See page `12` of [Berthusen_2024](@cite) for details.
+
+```jldoctest boundarymaps
+julia> Mz'
+2×9 adjoint(::Matrix{Int64}) with eltype Int64:
+ 1  0  1  0  1  0  1  0  1
+ 0  1  0  1  0  1  0  1  1
+```
+"""
+boundary_maps(c::DDimensionalSurfaceCode) = _boundary_maps_surface(c)
+boundary_maps(c::DDimensionalToricCode) = _boundary_maps_toric(c)

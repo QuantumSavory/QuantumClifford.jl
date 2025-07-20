@@ -1,19 +1,24 @@
 """Implemented in a package extension with Oscar. Check the docs for the [Oscar extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Oscar.jl)"""
-function d_dimensional_surface_codes end
+function boundary_maps end
 
-"""Implemented in a package extension with Oscar. Check the docs for the [Oscar extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Oscar.jl)"""
-function d_dimensional_toric_codes end
-
-"""Implemented in a package extension with Oscar. Check the docs for the [Oscar extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Oscar.jl)"""
-function pcms end
-
-"""D-Dimensional codes ([Berthusen_2024](@cite))
+"""D-Dimensional Surface codes ([Berthusen_2024](@cite))
 
 Implemented as a package extension with Oscar. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
-function DDimensionalCode(args...; kwargs...)
+function DDimensionalSurfaceCode(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
     if isnothing(ext)
-        throw("The `DDimensional` depends on the package `Oscar` but you have not installed or imported it yet. Immediately after you import `Oscar`, the `DDimensional` will be available.")
+        throw("The `DDimensionalSurfaceCode` depends on the package `Oscar` but you have not installed or imported it yet. Immediately after you import `Oscar`, the `DDimensionalSurfaceCode` will be available.")
     end
-    return ext.DDimensionalCode(args...; kwargs...)
+    return ext.DDimensionalSurfaceCode(args...; kwargs...)
+end
+
+"""D-Dimensional Toric codes ([Berthusen_2024](@cite))
+
+Implemented as a package extension with Oscar. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
+function DDimensionalToricCode(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
+    if isnothing(ext)
+        throw("The `DDimensionalToricCode` depends on the package `Oscar` but you have not installed or imported it yet. Immediately after you import `Oscar`, the `DDimensionalToricCode` will be available.")
+    end
+    return ext.DDimensionalToricCode(args...; kwargs...)
 end
