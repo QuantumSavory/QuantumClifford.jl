@@ -4,7 +4,6 @@ using SparseArrays
 using LinearAlgebra
 using Combinatorics
 using Graphs
-using Nemo
 
 using DocStringExtensions
 

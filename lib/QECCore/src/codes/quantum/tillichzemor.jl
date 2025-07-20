@@ -1,8 +1,9 @@
 """
     $TYPEDEF
 
-The **quantum Tillich Zémor code** is a novel quantum LDPC code is constructed
-using the hypergraph product of two classical seed **(n, m, r)-Structured LDPC** codes.
+The `[[n² + m²,(n - rank([C ∣ M]))² + (m − rank([C ∣ M]ᵀ))², d]]` **quantum
+Tillich Zémor code** is a novel quantum LDPC code is constructed using the
+hypergraph product of two classical seed **(n, m, r)-Structured LDPC** codes.
 
 # Structured LDPC
 
@@ -64,17 +65,17 @@ m \\geq r \\quad \\text{and} \\quad (n - m)r \\geq m
 These conditions ensure that the matrix `M` can be constructed with the required properties.
 
 
-# Quantum Structured LDPC
+# Quantum Structured LDPC codes
 
 We introduce a novel construction of quantum LDPC codes, inspired by classical
 structured LDPC seed codes. Leveraging the advantages of classical structured LDPC
 codes—namely, their linear-time encoding and sub-linear scaling of minimum distance
-—we present the **quantum Tillich Zémor** code. Our approach employs structure
-parity-check matrices of the form ``H = [C \\mid M]``, where `C` serves as the circulant
-core matrix and `M` is meticulously designed to maintain crucial code properties while
-enabling efficient encoding. This QECC emphasizes the potential of using structured
-classical LDPC codes as a robust framework for develop ing scalable and effective QECCs,
-particularly the quantum Tillich-Zémor code.
+—we present the `[[n² + m²,(n - rank([C ∣ M]))² + (m − rank([C ∣ M]ᵀ))², d]]` **quantum
+Tillich Zémor** code. Our approach employs structure parity-check matrices of the form
+``H = [C \\mid M]``, where `C` serves as the circulant core matrix and `M` is meticulously
+designed to maintain crucial code properties while enabling efficient encoding. This QECC
+emphasizes the potential of using structured classical LDPC codes as a robust framework for
+develop ing scalable and effective QECCs, particularly the quantum Tillich-Zémor code.
 
 # Examples
 
@@ -116,7 +117,7 @@ julia> n, m, r = 100, 40, 40;
 
 julia> c = TillichZemor(n, m, r);
 
-julia>  code_n(c), code_k(c)
+julia> code_n(c), code_k(c)
 (11600, 3722)
 ```
 
@@ -181,15 +182,3 @@ parity_matrix_x(c::TillichZemor) = parity_matrix_xz(c)[1]
 parity_matrix_z(c::TillichZemor) = parity_matrix_xz(c)[2]
 
 code_n(c::TillichZemor) = c.n^2 + c.m^2
-
-function code_k(c::TillichZemor)
-    C = _create_circulant_matrix(c.m)
-    M = _create_matrix_M_deterministic(c.m, c.n, c.r)
-    H = hcat(C, M)
-    H_gf2 = matrix(GF(2), H)
-    Ht_gf2 = transpose(H_gf2)
-    k = c.n - rank(H_gf2)
-    kT = c.m - rank(Ht_gf2) # c.m == size(H, 1)
-    k_q = k^2 + kT^2
-    return k_q
-end
