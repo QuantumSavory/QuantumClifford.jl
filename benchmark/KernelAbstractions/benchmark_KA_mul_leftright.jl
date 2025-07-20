@@ -59,7 +59,7 @@ end
 	unsafe_free!(cache)
 
 	device_cat = [device_time[i, :] for i = 1 : length(batch_sizes)]
-	title = "Performance uplift (phases = $B)"
+	title = "Performance uplift - multiplication (phases = $B)"
 	xlabel = "Pauli operator size (MiB)"
 	label = hcat(("Device - batch = " .* string.(batch_sizes))..., "Host")
 
@@ -68,7 +68,7 @@ end
 		xticks = n_MiB, xscale = :log2, yscale = :log10,
 		title = title, label = label, xlabel = xlabel, ylabel = "Runtime (ms)"
 		)
-	savefig("runtime_" * platform_name * "_phase_$B.png")
+	savefig("runtime_mul_" * platform_name * "_phase_$B.png")
 
 	scatter(
 		n_MiB, map(x -> host_time ./ x, device_cat);
@@ -76,6 +76,6 @@ end
 		label = hcat(label[1 : end - 1]...), xlabel = xlabel,
 		ylabel = "Ratio (host/device)"
 		)
-	savefig("ratio_" * platform_name * "_phase_$B.png")
+	savefig("ratio_mul_" * platform_name * "_phase_$B.png")
 
 end

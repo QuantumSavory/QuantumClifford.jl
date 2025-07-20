@@ -78,7 +78,7 @@ COMMON TRANSFORMATIONS
 @inline function mod_4_sum!(target, auxiliary, global_position)
 	@inbounds i = global_position[1]
 	if i <= length(target)
-		@inbounds j = length(auxiliary) > 1 ? i : 1
+		@inbounds j = ifelse(length(auxiliary) > 1, i, 1)
 		@inbounds target[i] = (target[i] + auxiliary[j]) & 0x3
 	end
 end

@@ -13,8 +13,8 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
 		KA.@index(Group, NTuple), KA.@groupsize(), KA.@index(Local, NTuple)
 		)
 	start = global_position[1]
-	j_mutable = size(mutable_xzs, 2) > 1 ? global_position[2] : 1
-	j_const = size(const_xzs, 2) > 1 ? global_position[2] : 1
+	j_mutable = ifelse(size(mutable_xzs, 2) > 1, global_position[2], 1)
+	j_const = ifelse(size(const_xzs, 2) > 1, global_position[2], 1)
 	count = KA.@uniform (size(mutable_xzs, 1) >> 1)
 	if phases
 		low = KA.@uniform (zero(eltype(mutable_xzs)))
@@ -88,7 +88,7 @@ function device_mul!(
 		)
 	if phase_B
 		transform!(
-			mod_4_identity!, mutable_phases, const_phases; ndrange = dim_y
+			mod_4_identity!, mutable_phases, nothing; ndrange = dim_y
 			)
 	end
 	return nothing
@@ -451,6 +451,6 @@ end
 
 end
 
-# Marks the end for (direction, right_left)
+# Marks the end for (safe_f_sym, unsafe_f_sym, right_left)
 end
 #=============================================================================#
