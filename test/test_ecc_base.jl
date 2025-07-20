@@ -324,8 +324,8 @@ const code_instance_args = Dict(
     :DelfosseReichardt823 => [1, 2, 3, 4, 5],
     :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
     :CyclicQuantumTannerGraphProduct => [1, 2, 3, 4, 5],
-    :TZQLDPC => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
-    :random_tzqldpc_code => [(6,4,3), (7,5,3), (8,6,3)]
+    :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
+    :random_TillichZemor_code => [(6,4,3), (7,5,3), (8,6,3)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)

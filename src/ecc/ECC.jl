@@ -19,6 +19,7 @@ using Combinatorics: combinations
 using SparseArrays: sparse
 using Statistics: std
 using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
+using Random: AbstractRNG, GLOBAL_RNG, randperm
 
 export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
@@ -31,7 +32,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     Toric, Gottesman, Surface, Concat, CircuitCode,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     haah_cubic_codes, twobga_from_fp_group, twobga_from_direct_product,
-    TZQLDPC, random_tzqldpc_code,
+    TillichZemor, random_TillichZemor_code,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
     Triangular488, Triangular666, honeycomb_color_codes, DelfosseReichardt,
     DelfosseReichardtRepCode, DelfosseReichardt823, QuantumTannerGraphProduct,
@@ -396,11 +397,12 @@ include("codes/util.jl")
 
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
+include("codes/random_tillichzemor.jl")
+
 include("codes/classical/bch.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
-include("codes/tzqldpc.jl")
 
 end #module
