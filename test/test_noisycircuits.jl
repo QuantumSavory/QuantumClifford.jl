@@ -302,7 +302,7 @@
             good_state = parity_checks(Steane7()) #passing in a code instead of a state within codespace
             verify = VerifyOp(good_state, 1:7)
             reg = Register(one(MixedDestabilizer,7),6) #dummy register to pass into applywstatus!
-            ecirc = naive_encoding_circuit(code)
+        
             
             @test_throws ArgumentError applywstatus!(reg, verify) #should throw an error since good_state isn't a logical state
             
