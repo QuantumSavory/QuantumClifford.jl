@@ -1,4 +1,10 @@
 using Pkg
+
+Pkg.add(["Oscar", "GPUArrays", "OpenCL", "pocl_jll"])
+
+using Oscar, GPUArrays, OpenCL, pocl_jll
+
+
 if Sys.iswindows() || Sys.ARCH != :x86_64
     @info "skipping Oscar tests (they currently do not run on Windows OS or ARM CPU)"
     @info "skipping GPU tests (set GPU_TESTS=true to test GPU (on non-Windows))"
