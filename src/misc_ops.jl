@@ -6,8 +6,10 @@ import QuantumInterface: nsubsystems
 Particularly useful when acting on [`Register`](@ref).
 
 See also: [`apply!`](@ref), [`projectrand!`](@ref)."""
-struct PauliMeasurement{Tₚ<:AbstractArray{UInt8,0}, Tᵥ<:AbstractVector{<:Unsigned}} <: AbstractMeasurement
-    pauli::PauliOperator{Tₚ,Tᵥ}
+struct PauliMeasurement{
+    P <: AbstractArray{<: Unsigned, 0}, XZ <: AbstractVector{<: Unsigned}
+} <: AbstractMeasurement
+    pauli::PauliOperator{P,XZ}
     bit::Int
 end
 
@@ -132,9 +134,15 @@ end
 # TODO this one needs more testing
 function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
     # TODO QuantumClifford should implement some submatrix comparison
+    r,n = size(v.good_state)
+    if(r!=n)
+        throw(ArgumentError("""The argument you have provided for good_state is not a logical state within the codespace. Expected a pure $n - qubit stabilizer state (i.e. $n independent stabilizer generators on $n qubits), but good_state has only $r independent stabilizer generators."""))
+    end
     canonicalize_rref!(quantumstate(s),v.indices) # Document why rref is used
     sv = tab(s)
     good_state = tab(v.good_state)
+    
+    
     for i in eachindex(good_state)
         (sv.phases[end-i+1]==good_state.phases[end-i+1]) || return s, false_success_stat
         for (j,q) in zip(eachindex(good_state),v.indices)

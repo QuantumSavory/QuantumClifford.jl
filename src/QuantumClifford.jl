@@ -8,14 +8,18 @@ module QuantumClifford
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
 import LinearAlgebra
-using LinearAlgebra: inv, mul!, rank, Adjoint, dot
+using LinearAlgebra: inv, mul!, rank, Adjoint, dot, tr
 import DataStructures
 using DataStructures: DefaultDict, Accumulator
 using Combinatorics: combinations
 using Base.Cartesian
 using DocStringExtensions
 
-import QuantumInterface: tensor, ⊗, tensor_pow, apply!, nqubits, expect, project!, reset_qubits!, traceout!, ptrace, apply!, projectX!, projectY!, projectZ!, entanglement_entropy, embed
+import QuantumInterface: tensor, ⊗, tensor_pow,
+    nqubits, expect, project!, reset_qubits!, traceout!, ptrace,
+    apply!, projectX!, projectY!, projectZ!,
+    embed, permutesystems,
+    entanglement_entropy
 
 export
     @P_str, PauliOperator, ⊗, I, X, Y, Z,
@@ -26,7 +30,7 @@ export
     nqubits,
     stabilizerview, destabilizerview, logicalxview, logicalzview, phases,
     fastcolumn, fastrow,
-    bitview, quantumstate, tab,
+    bitview, quantumstate, tab, rank,
     BadDataStructure,
     affectedqubits, #TODO move to QuantumInterface?
     # GF2
@@ -37,13 +41,14 @@ export
     tensor, tensor_pow,
     logdot, expect,
     apply!,
+    permutesystems, permutesystems!,
     # Low Level Function Interface
     generate!, project!, reset_qubits!, traceout!,
     projectX!, projectY!, projectZ!,
     projectrand!, projectXrand!, projectYrand!, projectZrand!,
     puttableau!, embed,
     # Clifford Ops
-    CliffordOperator, @C_str, permute,
+    CliffordOperator, @C_str,
     tCNOT, tCPHASE, tSWAP, tHadamard, tPhase, tId1,
     # Symbolic Clifford Ops
     AbstractSymbolicOperator, AbstractSingleQubitOperator, AbstractTwoQubitOperator,
@@ -51,7 +56,8 @@ export
     sHadamardXY, sHadamardYZ, sSQRTX, sInvSQRTX, sSQRTY, sInvSQRTY, sCXYZ, sCZYX,
     sCNOT, sCPHASE, sSWAP,
     sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZCX, sZCY, sZCZ,
-    sZCrY, sInvZCrY,
+    sZCrY, sInvZCrY, sSWAPCX, sInvSWAPCX, sCZSWAP, sCXSWAP, sISWAP, sInvISWAP,
+    sSQRTZZ, sInvSQRTZZ, sSQRTXX, sInvSQRTXX, sSQRTYY, sInvSQRTYY,
     # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
@@ -71,12 +77,13 @@ export
     # Pauli frames
     PauliFrame, pftrajectories, pfmeasurements,
     # Useful States
-    bell, ghz,
+    bell, ghz, maximally_mixed,
     single_z, single_x, single_y,
     # Graphs
     graphstate, graphstate!, graph_gatesequence, graph_gate,
     # Group theory tools
     groupify, minimal_generating_set, pauligroup, normalizer, centralizer, contractor, delete_columns,
+    canonicalize_noncomm, commutify, matroid_parent, SubsystemCodeTableau,
     # Clipped Gauge
     canonicalize_clip!, bigram, entanglement_entropy,
     # mctrajectories
@@ -85,7 +92,7 @@ export
     # petrajectories
     petrajectories, applybranches,
     # nonclifford
-    StabMixture, UnitaryPauliChannel, PauliChannel, pcT,
+    GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
@@ -102,6 +109,28 @@ function __init__()
     BIG_INT_MINUS_ONE[] = BigInt(-1)
     BIG_INT_TWO[] = BigInt(2)
     BIG_INT_FOUR[] = BigInt(4)
+
+    # Register error hint for the `project!` method for GeneralizedStabilizer
+    if isdefined(Base.Experimental, :register_error_hint)
+        Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
+            if exc.f === project! && argtypes[1] <: GeneralizedStabilizer
+                print(io, """
+                \nThe method `project!` is not appropriate for use with`GeneralizedStabilizer`.
+                You probably are looking for `projectrand!`.
+                `project!` in this library is a low-level "linear algebra" method to verify
+                whether a measurement operator commutes with a set of stabilizers, and to
+                potentially simplify the tableau and provide the index of the anticommuting
+                term in that tableau. This linear algebra operation is not defined for
+                `GeneralStabilizer` as there is no single tableau to provide an index into.""")
+            elseif exc.f === ECC.distance && length(argtypes)==1
+                print(io,"""
+                \nThe distance for this code is not in our database. Consider using the MIP-based method:
+                `import JuMP, HiGHS; distance(code, DistanceMIPAlgorithm(solver=HiGHS))` or another MIP solver""")
+            elseif exc.f === ECC.distance && length(argtypes)==2 && argtypes[2]===ECC.DistanceMIPAlgorithm
+                print(io,"""\nPlease first import `JuMP` to make MIP-based distance calculation available.""")
+            end
+        end
+    end
 end
 
 const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you are attempting to create a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
@@ -134,23 +163,27 @@ include("pauli_operator.jl")
 """Internal Tableau type for storing a list of Pauli operators in a compact form.
 No special semantic meaning is attached to this type, it is just a convenient way to store a list of Pauli operators.
 E.g. it is not used to represent a stabilizer state, or a stabilizer group, or a Clifford circuit."""
-struct Tableau{Tₚᵥ<:AbstractVector{UInt8}, Tₘ<:AbstractMatrix{<:Unsigned}}
-    phases::Tₚᵥ
+struct Tableau{
+    P <: AbstractVector{<: Unsigned}, XZ <: AbstractMatrix{<: Unsigned}
+}
+    phases::P
     nqubits::Int
-    xzs::Tₘ
+    xzs::XZ
 end
 
-function Tableau(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ<:AbstractArray{UInt8,0},Tᵥₑ<:Unsigned,Tᵥ<:AbstractVector{Tᵥₑ}}
+function Tableau(paulis::Base.AbstractVecOrTuple{PauliOperator})
     r = length(paulis)
     n = nqubits(paulis[1])
-    tab = zero(Tableau{Vector{UInt8},Matrix{Tᵥₑ}},r,n)::Tableau{Vector{UInt8},Matrix{Tᵥₑ}} # typeassert for JET
+    P = eltype(paulis[1].phase)
+    XZ = eltype(paulis[1].xz)
+    tab = zero(Tableau{Vector{P},Matrix{XZ}},r,n)
     for i in eachindex(paulis)
-        tab[i] = paulis[i]::PauliOperator{Tₚ,Tᵥ} # typeassert for JET
+        tab[i] = paulis[i]
     end
     tab
 end
 
-function Tableau(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
+function Tableau(phases::AbstractVector{<: Unsigned}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool})
     r_xs = size(xs, 1)
     r_zs = size(zs, 1)
     if length(phases) != r_xs || r_xs != r_zs
@@ -165,7 +198,7 @@ function Tableau(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::Ab
     )
 end
 
-Tableau(phases::AbstractVector{UInt8}, xzs::AbstractMatrix{Bool}) = Tableau(phases, xzs[:,1:end÷2], xzs[:,end÷2+1:end])
+Tableau(phases::AbstractVector{<: Unsigned}, xzs::AbstractMatrix{Bool}) = Tableau(phases, xzs[:,1:end÷2], xzs[:,end÷2+1:end])
 
 Tableau(xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Tableau(zeros(UInt8, size(xs,1)), xs, zs)
 
@@ -173,7 +206,7 @@ Tableau(xzs::AbstractMatrix{Bool}) = Tableau(zeros(UInt8, size(xzs,1)), xzs[:,1:
 
 Tableau(t::Tableau) = t
 
-function _T_str(a) # TODO this can be optimized by not creating intermediary PauliOperator objects
+function _T_str(a::Union{String,SubString{String}}) # TODO this can be optimized by not creating intermediary PauliOperator objects
     paulis = [_P_str(strip(s.match)) for s in eachmatch(r"[+-]?\h*[i]?\h*[XYZI_]+", a)]
     Tableau(paulis)
 end
@@ -213,7 +246,7 @@ function Base.setindex!(tab::Tableau, t::Tableau, i)
     tab
 end
 
-function Base.setindex!(tab::Tableau{Tₚᵥ,Tₘ}, (x,z)::Tuple{Bool,Bool}, i, j) where {Tₚᵥ<:AbstractVector{UInt8}, Tₘₑ<:Unsigned, Tₘ<:AbstractMatrix{Tₘₑ}} # TODO this has code repetitions with the Pauli setindex
+function Base.setindex!(tab::Tableau{Tₚᵥ,Tₘ}, (x,z)::Tuple{Bool,Bool}, i, j) where {Tₚᵥ, Tₘₑ<:Unsigned, Tₘ<:AbstractMatrix{Tₘₑ}} # TODO this has code repetitions with the Pauli setindex
     if x
         tab.xzs[_div(Tₘₑ,j-1)+1,        i] |= Tₘₑ(0x1)<<_mod(Tₘₑ,j-1)
     else
@@ -229,18 +262,18 @@ end
 
 Base.firstindex(tab::Tableau) = 1
 
-Base.lastindex(tab::Tableau) = length(tab.phases)
+Base.lastindex(tab::Tableau) = length(tab.phases)::Int
 Base.lastindex(tab::Tableau, i) = size(tab)[i]
 
-Base.eachindex(tab::Tableau) = Base.OneTo(lastindex(tab.phases))
+Base.eachindex(tab::Tableau) = Base.OneTo(lastindex(tab.phases)::Int)
 
 Base.axes(tab::Tableau) = (Base.OneTo(lastindex(tab)), Base.OneTo(nqubits(tab)))
 Base.axes(tab::Tableau,i) = axes(tab)[i]
 
-Base.size(tab::Tableau) = (length(tab.phases),nqubits(tab))
+Base.size(tab::Tableau) = (length(tab.phases)::Int, nqubits(tab))
 Base.size(tab::Tableau,i) = size(tab)[i]
 
-Base.length(tab::Tableau) = length(tab.phases)
+Base.length(tab::Tableau) = length(tab.phases)::Int
 
 Base.:(==)(l::Tableau, r::Tableau) = r.nqubits==l.nqubits && r.phases==l.phases && r.xzs==l.xzs
 
@@ -248,20 +281,21 @@ Base.hash(t::Tableau, h::UInt) = hash(t.nqubits, hash(t.phases, hash(t.xzs, h)))
 
 Base.copy(t::Tableau) = Tableau(copy(t.phases), t.nqubits, copy(t.xzs))
 
-function Base.zero(::Type{Tableau{Tₚᵥ, Tₘ}}, r, q) where {Tₚᵥ,T<:Unsigned,Tₘ<:AbstractMatrix{T}}
-    phases = zeros(UInt8,r)
-    xzs = zeros(UInt, _nchunks(q,T), r)
-    Tableau(phases, q, xzs)::Tableau{Vector{UInt8},Matrix{UInt}}
+function Base.zero(::Type{Tableau{PV, XZM}}, r, q) where {
+    P <: Unsigned, PV <: AbstractVector{P},
+    XZ <: Unsigned, XZM <: AbstractMatrix{XZ}
+}
+    return Tableau(zeros(P, r), q, zeros(XZ, _nchunks(q, XZ), r))
 end
 Base.zero(::Type{Tableau}, r, q) = zero(Tableau{Vector{UInt8},Matrix{UInt}}, r, q)
 Base.zero(::Type{T}, q) where {T<:Tableau}= zero(T, q, q)
 Base.zero(s::T) where {T<:Tableau} = zero(T, length(s), nqubits(s))
 
 """Zero-out a given row of a [`Tableau`](@ref)"""
-@inline function zero!(t::Tableau,i)
-    t.xzs[:,i] .= zero(eltype(t.xzs))
-    t.phases[i] = 0x0
-    t
+@inline function zero!(t::Tableau{P, XZ}, i) where {P, XZ}
+    fill!((@view t.phases[i]), zero(eltype(P)))
+    fill!((@view t.xzs[:, i]), zero(eltype(XZ)))
+    return t
 end
 
 ##############################
@@ -367,10 +401,10 @@ struct Stabilizer{T<:Tableau} <: AbstractStabilizer
     tab::T
 end
 
-Stabilizer(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ<:AbstractVector{UInt8}, Tₘ<:AbstractMatrix{<:Unsigned}} = Stabilizer(Tableau(phases, nqubits, xzs))
-Stabilizer(paulis::AbstractVector{PauliOperator{Tₚ,Tᵥ}}) where {Tₚ,Tᵥ} = Stabilizer(Tableau(paulis))
-Stabilizer(phases::AbstractVector{UInt8}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xs, zs))
-Stabilizer(phases::AbstractVector{UInt8}, xzs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xzs))
+Stabilizer(phases::Tₚᵥ, nqubits::Int, xzs::Tₘ) where {Tₚᵥ<:AbstractVector{<: Unsigned}, Tₘ<:AbstractMatrix{<:Unsigned}} = Stabilizer(Tableau(phases, nqubits, xzs))
+Stabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator}) = Stabilizer(Tableau(paulis))
+Stabilizer(phases::AbstractVector{<: Unsigned}, xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xs, zs))
+Stabilizer(phases::AbstractVector{<: Unsigned}, xzs::AbstractMatrix{Bool}) = Stabilizer(Tableau(phases, xzs))
 Stabilizer(xs::AbstractMatrix{Bool}, zs::AbstractMatrix{Bool}) = Stabilizer(Tableau(xs,zs))
 Stabilizer(xzs::AbstractMatrix{Bool}) = Stabilizer(Tableau(xzs))
 Stabilizer(s::Stabilizer) = s
@@ -378,7 +412,7 @@ macro S_str(a)
     quote Stabilizer(_T_str($a)) end
 end
 Base.getindex(stab::Stabilizer, i::Int) = tab(stab)[i]
-Base.getindex(stab::Stabilizer, i) = Stabilizer(tab(stab)[i])
+Base.getindex(stab::Stabilizer, i) = Stabilizer(tab(stab)[i]::Tableau)
 @inline Base.getindex(stab::Stabilizer, r::Int, c) = tab(stab)[r,c]
 Base.getindex(stab::Stabilizer, r, c) = Stabilizer(tab(stab)[r,c])
 Base.view(stab::Stabilizer, r) = Stabilizer(view(tab(stab),r))
@@ -455,22 +489,57 @@ tab(s::AbstractStabilizer) = s.tab
 
 """
 A tableau representation of a pure stabilizer state. The tableau tracks the
-destabilizers as well, for efficient projections. On initialization there are
+destabilizers as well, for efficient projections.
+
+For full-rank tableaux, the stabilizer part of the tableau is guaranteed to be kept the same as the input stabilizer tableau given to the constructor (a guarantee not kept by [`MixedDestabilizer`](@ref)).
+
+On initialization there are
 no checks that the provided state is indeed pure. This enables the use of this
-data structure for mixed stabilizer state, but a better choice would be to use
+data structure for mixed stabilizer state, but usually a better choice would be
 [`MixedDestabilizer`](@ref).
-""" # TODO clean up and document constructor
+
+```
+julia> Destabilizer(S"ZZI XXX")
+𝒟ℯ𝓈𝓉𝒶𝒷
++ Z__
++ _X_
+𝒮𝓉𝒶𝒷━
++ XXX
++ ZZ_
+
+julia> Destabilizer(S"ZZI XXX IZZ")
+𝒟ℯ𝓈𝓉𝒶𝒷
++ X__
++ _Z_
++ __X
+𝒮𝓉𝒶𝒷━
++ ZZ_
++ XXX
++ _ZZ
+```
+"""
 struct Destabilizer{T<:Tableau} <: AbstractStabilizer
     tab::T
 end
 
 function Destabilizer(s::Stabilizer)
     row, col = size(s)
-    row>col && error(DomainError("The input stabilizer has more rows than columns, making it inconsistent or overdetermined."))
-    mixed_destab = MixedDestabilizer(s)
-    t = vcat(tab(destabilizerview(mixed_destab)),tab(stabilizerview(mixed_destab)))
-    Destabilizer(t)
+    if row<col
+        mixed_destab = MixedDestabilizer(s)
+        t = vcat(tab(destabilizerview(mixed_destab)),tab(stabilizerview(mixed_destab)))
+        return Destabilizer(t)
+    elseif row==col
+        maxmix = maximally_mixed(col)
+        for row in s
+            project!(maxmix, row)
+        end
+        return Destabilizer(maxmix.tab)
+    else
+        error(DomainError("The input stabilizer has more rows than columns, making it inconsistent or overdetermined."))
+    end
 end
+
+Destabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator}) = Destabilizer(Stabilizer(Tableau(paulis)))
 
 Base.length(d::Destabilizer) = length(tab(d))÷2
 
@@ -497,11 +566,12 @@ function MixedStabilizer(s::Stabilizer{T}) where {T}
     MixedStabilizer(spadded,zr)
 end
 
-MixedStabilizer(s::Stabilizer,rank::Int) = MixedStabilizer(tab(s),rank)
+MixedStabilizer(s::Stabilizer,rank::Int) = MixedStabilizer(tab(s), rank)
+MixedStabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator}) = MixedStabilizer(Stabilizer(Tableau(paulis)))
 
-Base.length(d::MixedStabilizer) = length(d.tab)
+Base.length(d::MixedStabilizer) = length(tab(d))
 
-Base.copy(ms::MixedStabilizer) = MixedStabilizer(copy(ms.tab),ms.rank)
+Base.copy(ms::MixedStabilizer) = MixedStabilizer(copy(tab(ms)), rank(ms))
 
 ##############################
 # Mixed Destabilizer states
@@ -569,8 +639,8 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false)
         t[n+r+s+1:end] = sZ # The other logical set in the tableau
     end
     if undoperm
-        t = t[:,invperm(permx[permz])]::T
-        return MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
+        t = t[:,invperm(permx[permz])]
+        return MixedDestabilizer(t, r+s)
     end
     if reportperm
         return (MixedDestabilizer(t, r+s)::MixedDestabilizer{T}, r, permx, permz)
@@ -580,7 +650,7 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false)
 end
 
 function MixedDestabilizer(d::Destabilizer, r::Int)
-    l,n = size(d.tab)
+    l,n = size(tab(d))
     if l==2n
         MixedDestabilizer(tab(d), r)
     else
@@ -588,7 +658,7 @@ function MixedDestabilizer(d::Destabilizer, r::Int)
     end
 end
 function MixedDestabilizer(d::Destabilizer)
-    l,n = size(d.tab)
+    l,n = size(tab(d))
     if l==2n
         MixedDestabilizer(d, nqubits(d))
     else
@@ -598,10 +668,11 @@ end
 
 MixedDestabilizer(d::MixedStabilizer) = MixedDestabilizer(stabilizerview(d))
 MixedDestabilizer(d::MixedDestabilizer) = d
+MixedDestabilizer(paulis::Base.AbstractVecOrTuple{PauliOperator}) = MixedDestabilizer(Stabilizer(Tableau(paulis)))
 
-Base.length(d::MixedDestabilizer) = length(d.tab)÷2
+Base.length(d::MixedDestabilizer) = length(tab(d))÷2
 
-Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
+Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(tab(d)),rank(d))
 
 ##############################
 # Subtableau views
@@ -610,17 +681,17 @@ Base.copy(d::MixedDestabilizer) = MixedDestabilizer(copy(d.tab),d.rank)
 """A view of the subtableau corresponding to the stabilizer. See also [`tab`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
 @inline stabilizerview(s::Stabilizer) = s
 @inline stabilizerview(s::Destabilizer) = Stabilizer(@view tab(s)[end÷2+1:end])
-@inline stabilizerview(s::MixedStabilizer) = Stabilizer(@view tab(s)[1:s.rank])
-@inline stabilizerview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[end÷2+1:end÷2+s.rank])
+@inline stabilizerview(s::MixedStabilizer) = Stabilizer(@view tab(s)[1:rank(s)])
+@inline stabilizerview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[end÷2+1:end÷2+rank(s)])
 
 """A view of the subtableau corresponding to the destabilizer. See also [`tab`](@ref), [`stabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)"""
 @inline destabilizerview(s::Destabilizer) = Stabilizer(@view tab(s)[1:end÷2])
-@inline destabilizerview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[1:s.rank])
+@inline destabilizerview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[1:rank(s)])
 
 """A view of the subtableau corresponding to the logical X operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalzview`](@ref)"""
-@inline logicalxview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[s.rank+1:end÷2])
+@inline logicalxview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[rank(s)+1:end÷2])
 """A view of the subtableau corresponding to the logical Z operators. See also [`tab`](@ref), [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref)"""
-@inline logicalzview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[end÷2+s.rank+1:end])
+@inline logicalzview(s::MixedDestabilizer) = Stabilizer(@view tab(s)[end÷2+rank(s)+1:end])
 
 """The number of qubits of a given state."""
 @inline nqubits(s::AbstractStabilizer) = nqubits(tab(s))
@@ -910,18 +981,28 @@ function unsafe_bitfindnext_(chunks::AbstractVector{T}, start::Int) where T<:Uns
     return nothing
 end
 
-"""Permute the qubits (i.e., columns) of the tableau in place."""
-function Base.permute!(s::Tableau, perm::AbstractVector)
-    for r in 1:size(s,1)
-        s[r] = s[r][perm] # TODO make a local temporary buffer row instead of constantly allocating new rows
-    end
-    s
-end
+"""
+$(TYPEDSIGNATURES)
 
-"""Permute the qubits (i.e., columns) of the state in place."""
-function Base.permute!(s::AbstractStabilizer, perm::AbstractVector)
-    permute!(tab(s), perm)
-    s
+Computes bitmask indices for an unsigned integer at index `i`
+within the binary structure of a `Tableau` or `PauliOperator`.
+
+For `Tableau`, the method operates on the `.xzs` field, while
+for `PauliOperator`, it uses the `.xz` field. It calculates
+the following values based on the index `i`:
+
+- `lowbit`, the lowest bit.
+- `ibig`, the index of the word containing the bit.
+- `ismall`, the position of the bit within the word.
+- `ismallm`, a bitmask isolating the specified bit.
+"""
+@inline function get_bitmask_idxs(xzs::AbstractArray{<:Unsigned}, i::Int)
+    T = eltype(xzs)
+    lowbit = T(1)
+    ibig = _div(T, i-1) + 1
+    ismall = _mod(T, i-1)
+    ismallm = lowbit << ismall
+    return lowbit, ibig, ismall, ismallm
 end
 
 function check_allrowscommute(stabilizer::Tableau)
@@ -1017,7 +1098,7 @@ function _apply!(stab::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(
     s = tab(stab)
     B || return stab
     for i in eachindex(s)
-        s.phases[i] = (s.phases[i]+comm(p,s,i)<<1+p.phase[]<<1)&0x3
+        s.phases[i] = (s.phases[i]+comm(p,s,i)<<1)&0x3
     end
     stab
 end
@@ -1031,7 +1112,7 @@ function _apply!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Va
     end
     newp.phase .= p.phase
     for i in eachindex(s)
-        s.phases[i] = (s.phases[i]+comm(newp,s,i)<<1+newp.phase[]<<1)&0x3
+        s.phases[i] = (s.phases[i]+comm(newp,s,i)<<1)&0x3
     end
     stab
 end
@@ -1140,6 +1221,69 @@ function gf2_H_to_G(H)
     end
     G = hcat(P,I)
     G[:,invperm(sindx)]
+end
+
+"""Performs in-place Gaussian elimination on a binary matrix and returns
+its *row echelon form*,*rank*, the *transformation matrix*, and the *pivot
+columns*. The transformation matrix that converts the original matrix into
+the row echelon form. The `full` parameter controls the extent of elimination:
+if `true`, only rows below the pivot are affected; if `false`, both above and
+below the pivot are eliminated."""
+function gf2_row_echelon_with_pivots!(M::AbstractMatrix{Int}; full=false)
+    r, c = size(M)
+    N = Matrix{Int}(LinearAlgebra.I, r, r)
+    p = 1
+    pivots = Int[]
+    for col in 1:c
+        @inbounds for row in p:r
+            if M[row, col] == 1
+                if row != p
+                    M[[row, p], :] .= M[[p, row], :]
+                    N[[row, p], :] .= N[[p, row], :]
+                end
+                break
+            end
+        end
+        if M[p, col] == 1
+            if !full
+                elim_range = p+1:r
+            else
+                elim_range = 1:r
+            end
+            @simd for j in elim_range
+                @inbounds if j != p && M[j, col] == 1
+                    M[j, :] .= (M[j, :] .+ M[p, :]) .% 2
+                    N[j, :] .= (N[j, :] .+ N[p, :]) .% 2
+                end
+            end
+            p += 1
+            push!(pivots, col)
+        end
+        if p > r
+            break
+        end
+    end
+    rank = p - 1
+    return M, rank, N, pivots
+end
+
+"""The nullspace of a binary matrix."""
+function gf2_nullspace(H::AbstractMatrix{Int})
+    m = size(H',1)
+    _, matrix_rank, transformation_matrix, _ = gf2_row_echelon_with_pivots!(copy(H)')
+    if m == matrix_rank
+        # By the rank-nullity theorem, if rank(M) = m, then nullity(M) = 0
+        return zeros(Bool, 1, m)
+    end
+    # Extract the nullspace from the transformation matrix
+    return transformation_matrix[matrix_rank+1:end, :]
+end
+
+"""The basis for the row space of the binary matrix."""
+function gf2_rowspace_basis(H::AbstractMatrix{Int})
+    pivots = gf2_row_echelon_with_pivots!(copy(H)')[4]
+    # Extract the rows corresponding to the pivot columns
+    H[pivots,:]
 end
 
 ##############################
@@ -1260,6 +1404,7 @@ include("fastmemlayout.jl")
 include("dense_cliffords.jl")
 # special one- and two- qubit operators
 include("symbolic_cliffords.jl")
+# linear algebra and array-like operations
 include("linalg.jl")
 # circuits
 include("operator_traits.jl")
@@ -1277,7 +1422,7 @@ include("useful_states.jl")
 #
 include("experimental/Experimental.jl")
 #
-include("graphs.jl")
+include("./graphs/graphs.jl")
 #
 include("entanglement.jl")
 #

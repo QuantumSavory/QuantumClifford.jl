@@ -5,3 +5,7 @@ LocalPreferences.toml
 scratch/
 *.cov
 .vscode
+test/.CondaPkg/
+docs/.CondaPkg/
+.DS_Store
+.syncthing*

@@ -1,4 +1,4 @@
-@testitem "ECC Decoder" begin
+@testitem "ECC Decoder" tags=[:ecc] begin
     using QuantumClifford.ECC
 
     import PyQDecoders
@@ -44,7 +44,6 @@
             NaiveSyndromeECCSetup(noise, 0),
             ShorSyndromeECCSetup(noise, 0),
         ]
-        # lifted product codes currently trigger errors in syndrome circuits
 
         for c in codes
             for s in setups
