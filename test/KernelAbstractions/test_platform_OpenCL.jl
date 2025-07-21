@@ -15,8 +15,10 @@
 	end
 
 	if can_run
+		@info "Commencing OpenCL platform test."
 		synchronize() = finish(queue())
 		test_platform(AT, synchronize)
+		@info "Concluding OpenCL platform test."
 	end
 
 end
