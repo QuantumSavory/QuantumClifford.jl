@@ -45,6 +45,4 @@ end
 parity_matrix_x(c::Toric) = parity_matrix_xz(c)[1]
 parity_matrix_z(c::Toric) = parity_matrix_xz(c)[2]
 
-parity_matrix(c::Toric) = parity_matrix(CSS(parity_matrix_xz(c)...))
-
 distance(c::Toric) = min(c.dx, c.dz)
