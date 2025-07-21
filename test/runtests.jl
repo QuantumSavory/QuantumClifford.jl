@@ -9,7 +9,7 @@ if Sys.iswindows() || Sys.ARCH != :x86_64
     @info "Skipping Oscar tests -- only supported on x86_64 *NIX platforms."
 else
     CUDA_flag = get(ENV, "CUDA_TEST", "") == "true"
-    # OpenCL_flag = true
+    OpenCL_flag = true
     ROCm_flag = get(ENV, "ROCm_TEST", "") == "true"
     Oscar_flag = VERSION >= v"1.11"
 
@@ -27,6 +27,7 @@ using Pkg
 CUDA_flag && Pkg.add("CUDA")
 OpenCL_flag && (Pkg.add("pocl_jll"); Pkg.add("OpenCL"))
 ROCm_flag && Pkg.add("AMDGPU")
+any((CUDA_flag, OpenCL_flag, ROCm_flag)) && Pkg.add("GPUArrays")
 Oscar_flag && Pkg.add("Oscar")
 using TestItemRunner
 using QuantumClifford
@@ -56,6 +57,8 @@ testfilter = ti -> begin
 
     if !OpenCL_flag
         push!(exclude, :opencl)
+    else
+        return :opencl in ti.tags
     end
 
     if !ROCm_flag
