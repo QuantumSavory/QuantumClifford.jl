@@ -19,7 +19,6 @@ using Combinatorics: combinations
 using SparseArrays: sparse
 using Statistics: std
 using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
-using Random: AbstractRNG, GLOBAL_RNG, randperm
 
 export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
@@ -397,7 +396,6 @@ include("codes/util.jl")
 
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
-
 include("codes/classical/bch.jl")
 
 # qLDPC

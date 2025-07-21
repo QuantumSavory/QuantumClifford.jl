@@ -125,7 +125,7 @@ julia> code_n(c), code_k(c)
     $TYPEDFIELDS
 """
 struct TillichZemor{M} <: AbstractCSSCode where {M <: Union{Nothing,Tuple{AbstractMatrix,AbstractMatrix}}}
-    """The block length of the classical seed code."""
+    """The block length of the classical **(n, m, r)-Structured LDPC** seed code."""
     n::Int
     """The number of check nodes (rows in the parity-check matrix `H`)."""
     m::Int
@@ -133,7 +133,8 @@ struct TillichZemor{M} <: AbstractCSSCode where {M <: Union{Nothing,Tuple{Abstra
     r::Int
     """The `X`-type and `Z`-type parity check matrices generated via the hypergraph product of the classical
     parity check matrix `H = [C | M]`. For randomized constructions via `random_TillichZemor_code`, these
-    store the matrices from the randomly generated seed code."""
+    matrices are derived from the hypergraph product of a randomly generated **(n, m, r)-Structured LDPC**
+    seed code."""
     matrices::M
 
     function TillichZemor(n::Int, m::Int, r::Int, matrices::M=nothing) where {M <: Union{Nothing,Tuple{AbstractMatrix,AbstractMatrix}}}
