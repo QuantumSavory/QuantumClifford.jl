@@ -4,6 +4,7 @@ using SparseArrays
 using LinearAlgebra
 using Combinatorics
 using Graphs
+using Random: GLOBAL_RNG, AbstractRNG, randperm, rand
 
 using DocStringExtensions
 
@@ -17,7 +18,7 @@ export Perfect5, Cleve8, Gottesman
 # CSS Codes
 export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMuller, Triangular488, Triangular666,
 DelfosseReichardt, DelfosseReichardtRepCode, DelfosseReichardt823, QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
-TillichZemor
+TillichZemor, random_TillichZemor_code
 
 # Classical Codes
 export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming

@@ -397,7 +397,6 @@ include("codes/util.jl")
 
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
-include("codes/random_tillichzemor.jl")
 
 include("codes/classical/bch.jl")
 

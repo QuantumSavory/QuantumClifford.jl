@@ -124,16 +124,21 @@ julia> code_n(c), code_k(c)
 ### Fields
     $TYPEDFIELDS
 """
-struct TillichZemor <: AbstractCSSCode
+struct TillichZemor{M} <: AbstractCSSCode where {M <: Union{Nothing,Tuple{AbstractMatrix,AbstractMatrix}}}
     """The block length of the classical seed code."""
     n::Int
     """The number of check nodes (rows in the parity-check matrix `H`)."""
     m::Int
     """The column weight parameter for matrix `M` (each column of M must have exactly `r` ones)."""
     r::Int
-    function TillichZemor(n, m, r)
+    """The `X`-type and `Z`-type parity check matrices generated via the hypergraph product of the classical
+    parity check matrix `H = [C | M]`. For randomized constructions via `random_TillichZemor_code`, these
+    store the matrices from the randomly generated seed code."""
+    matrices::M
+
+    function TillichZemor(n::Int, m::Int, r::Int, matrices::M=nothing) where {M <: Union{Nothing,Tuple{AbstractMatrix,AbstractMatrix}}}
         (m ≥ r && (n - m)*r ≥ m) || throw(ArgumentError(("Conditions for the existence of `M` in `H = [C | M]` are not satisfied.")))
-        new(n, m, r)
+        new{M}(n, m, r, matrices)
     end
 end
 
@@ -168,13 +173,60 @@ function _create_matrix_M_deterministic(m::Int, n::Int, r::Int)
     return M
 end
 
-function parity_matrix_xz(c::TillichZemor)
+function parity_matrix_xz(c::TillichZemor{Nothing})::Tuple{AbstractMatrix,AbstractMatrix}
     C = _create_circulant_matrix(c.m)
     M = _create_matrix_M_deterministic(c.m, c.n, c.r)
     # The parity-check matrix H = [C | M]
     H = hcat(C, M)
     hx, hz = hgp(H,H)
     return hx, hz
+end
+
+function _create_matrix_M_random(rng::AbstractRNG, m::Int, n::Int, r::Int)
+    M = zeros(Int, m, n - m)
+    for col in 1:(n - m)
+        # Randomly select r distinct rows to place ones
+        rows = randperm(rng, m)[1:r]
+        M[rows, col] .= 1
+    end
+    # Ensure no row is all zeros
+    for row in 1:m
+        if all(M[row, :] .== 0)
+            # Randomly select a column and set this row to 1
+            col = rand(rng, 1:(n - m))
+            M[row, col] = 1
+        end
+    end
+    return M
+end
+
+function _construct_parity_check_matrix(rng::AbstractRNG, n::Int, m::Int, r::Int)
+    (m ≥ r && (n - m)*r ≥ m) || throw(ArgumentError(("Conditions for the existence of `M` in `H = [C | M]` are not satisfied.")))
+    C = _create_circulant_matrix(m)
+    M = _create_matrix_M_random(rng, m, n, r)
+    # The parity-check matrix H = [C | M]
+    H = hcat(C, M)
+    return H
+end
+
+"""
+The **random Tillich Zémor code** is a quantum LDPC code constructed using the
+hypergraph product of two classical seed **(n, m, r)-Structured LDPC** codes.
+"""
+function random_TillichZemor_code(rng::AbstractRNG, n::Int, m::Int, r::Int)
+    H = _construct_parity_check_matrix(rng, n, m, r)
+    hx, hz = hgp(H, H)
+    TillichZemor(n, m, r, (hx, hz))
+end
+
+function random_TillichZemor_code(n::Int, m::Int, r::Int)
+    H = _construct_parity_check_matrix(GLOBAL_RNG, n, m, r)
+    hx, hz = hgp(H, H)
+    TillichZemor(n, m, r, (hx, hz))
+end
+
+function parity_matrix_xz(c::TillichZemor{<:Tuple})::Tuple{AbstractMatrix,AbstractMatrix}
+    return c.matrices
 end
 
 parity_matrix_x(c::TillichZemor) = parity_matrix_xz(c)[1]
