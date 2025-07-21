@@ -1,6 +1,5 @@
 """
-    ReedMuller <: AbstractCECC
-    ReedMuller(r, m)
+    $TYPEDEF
 
 The family of Reed-Muller codes, as discovered by Muller in his 1954 paper [muller1954application](@cite) and Reed who proposed the first efficient decoding algorithm [reed1954class](@cite).
 
@@ -19,11 +18,12 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/reed
 See also: [`RecursiveReedMuller`](@ref) and [`QuantumReedMuller`](@ref)
 
 ### Fields
-- `r`: The order of the code.
-- `m`: The log-length of the code.
+    $TYPEDFIELDS
 """
 struct ReedMuller <: AbstractCECC
+    """The order of the code."""
     r::Int
+    """The log-length of the code."""
     m::Int
 
     function ReedMuller(r, m)

@@ -4,7 +4,7 @@
     using QuantumClifford.ECC: AbstractECC, BCH, generator_polynomial
     using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible
 
-    using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate 
+    using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate, parity_matrix
 
     # To prove that t-bit error correcting BCH code indeed has minimum distance
     # of at least 2 * t + 1, it is shown that no 2 * t or fewer columns of its
@@ -34,10 +34,10 @@
             lower_bound = round(Int, (2^m - 1) / m)
             @test lower_bound < n
             for t in [1,2]
-                H = parity_checks(BCH(m, t))
+                H = parity_matrix(BCH(m, t))
                 @test check_designed_distance(H, t) == true
                 # n - k == degree of generator polynomial, `g(x)` == rank of binary parity check matrix, `H`.
-                mat = matrix(GF(2), parity_checks(BCH(m, t)))
+                mat = matrix(GF(2), parity_matrix(BCH(m, t)))
                 computed_rank = rank(mat)
                 @test computed_rank == degree(generator_polynomial(BCH(m, t)))
                 @test code_k(BCH(m, t)) == n - degree(generator_polynomial(BCH(m, t)))
@@ -49,7 +49,7 @@
         end
 
         #example taken from Ch6 of Error Control Coding by Lin, Shu and Costello, Daniel
-        @test parity_checks(BCH(4, 2))  ==    [1  0  0  0  1  0  0  1  1  0  1  0  1  1  1;
+        @test parity_matrix(BCH(4, 2))  ==    [1  0  0  0  1  0  0  1  1  0  1  0  1  1  1;
                                                0  1  0  0  1  1  0  1  0  1  1  1  1  0  0;
                                                0  0  1  0  0  1  1  0  1  0  1  1  1  1  0;
                                                0  0  0  1  0  0  1  1  0  1  0  1  1  1  1;
@@ -89,7 +89,7 @@
         results = [57 51 45 39 36 30 24]
         for (result, (m, t)) in zip(results, test_cases)
             @test code_k(BCH(m, t)) == result
-            @test check_designed_distance(parity_checks(BCH(m, t)), t) == true
+            @test check_designed_distance(parity_matrix(BCH(m, t)), t) == true
         end
 
         # Reproduce some results from Table, page 8-9 of https://web.ntpu.edu.tw/~yshan/BCH_code.pdf.

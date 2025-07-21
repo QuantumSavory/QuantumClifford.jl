@@ -1,7 +1,7 @@
 module ECC
 
 using QECCore
-import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix
+import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -32,7 +32,9 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     haah_cubic_codes, twobga_from_fp_group, twobga_from_direct_product,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
-    Triangular488, Triangular666,
+    Triangular488, Triangular666, honeycomb_color_codes, DelfosseReichardt,
+    DelfosseReichardtRepCode, DelfosseReichardt823, QuantumTannerGraphProduct,
+    CyclicQuantumTannerGraphProduct,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -391,12 +393,9 @@ include("decoder_pipeline.jl")
 
 include("codes/util.jl")
 
-include("codes/gottesman.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
 include("codes/classical/bch.jl")
-include("codes/classical/golay.jl")
-include("codes/color_codes.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
