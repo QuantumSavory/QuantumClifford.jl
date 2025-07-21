@@ -11,7 +11,7 @@ else
     CUDA_flag = get(ENV, "CUDA_TEST", "") == "true"
     OpenCL_flag = true
     ROCm_flag = get(ENV, "ROCm_TEST", "") == "true"
-    Oscar_flag = VERSION >= v"1.11"
+    # Oscar_flag = VERSION >= v"1.11"
 
     CUDA_flag && @info "Running with CUDA tests."
     OpenCL_flag && @info "Running with OpenCL tests."
