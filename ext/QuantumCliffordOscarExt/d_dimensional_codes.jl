@@ -1,6 +1,6 @@
 abstract type DDimensionalCode <: AbstractCSSCode end
 
-"""Construct the chain complex for the repetition code of length L."""
+"""Construct the chain complex for the repetition code of length `L`."""
 function _repcode_chain_complex(L::Int)
     F = GF(2)
     H = parity_matrix(RepCode(L))
@@ -12,7 +12,7 @@ function _repcode_chain_complex(L::Int)
     return chain_complex([∂C])
 end
 
-"""Construct the chain complex for the dual of the repetition code of length L."""
+"""Construct the chain complex for the dual of the repetition code of length `L`."""
 function _dual_repcode_chain_complex(L::Int)
     F = GF(2)
     H = parity_matrix(RepCode(L))
@@ -24,7 +24,7 @@ function _dual_repcode_chain_complex(L::Int)
     return chain_complex([∂D])
 end
 
-"""Construct the chain complex for the repetition code of length L."""
+"""Construct the chain complex for the repetition code of length `L`."""
 function _repcode_chain_complex_full(L::Int)
     F = GF(2)
     H = parity_matrix(RepCode(L))
@@ -38,7 +38,7 @@ end
 """
     $TYPEDEF
 
-Constructs the D-dimensional surface code using chain complexes and ``\\mathbb{F}_2``-homology.
+Constructs the `D`-dimensional surface code using chain complexes and ``\\mathbb{F}_2``-homology.
 
 ## Homological Algebra Foundations of Quantum Error Correction
 
@@ -120,9 +120,9 @@ the code parameters are:
     Quantum error-correcting codes, which are represented as `3`-term chain complexes, can be
     constructed by applying the homological or hypergraph product to two `2`-term chain complexes.
 
-## D-dimensional Surface Code
+## D-dimensional Surface Code ([Berthusen_2024](@cite), [Zeng_2019](@cite))
 
-We provide an explicit construction of the D-dimensional surface code
+We provide an explicit construction of the `D`-dimensional surface code
 within the framework of chain complexes and homology over ``\\mathbb{F_2}``.
 
 The quantum code is obtained by applying the homological product (or hypergraph
@@ -164,7 +164,7 @@ the construction of a CSS code when selecting any three consecutive terms in its
 
 ## Subfamilies
 
-### [[L² + (L − 1)², 1, L]] 2D surface code
+### [[L² + (L − 1)², 1, L]] 2D Surface Code
 
 The `2D` surface code is constructed using the hypergraph product of two
 repetition codes.Thus, we obtain a new `3`-term chain complex:
@@ -260,7 +260,7 @@ H = \\begin{pmatrix}
 \\end{aligned}
 ```
 
-### [[L³ + 2L(L − 1)², 1, min(L, L²)]] 3D surface code
+### [[L³ + 2L(L − 1)², 1, min(L, L²)]] 3D Surface Code
 
 The `3D` surface code is obtained by taking the hypergraph product of a `2D` surface code
 with a repetition code. Thus, we obtain a new `4`-term chain complex:
@@ -320,7 +320,7 @@ julia> dx = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type
 2
 ```
 
-### [[6L⁴ − 12L³ + 10L² − 4L + 1, 1, L²]] 4D surface code
+### [[6L⁴ − 12L³ + 10L² − 4L + 1, 1, L²]] 4D Surface Code
 
 The `4D` surface code is constructed by taking the hypergraph product of a
 `3D` surface code with a repetition code.  Thus, we obtain a new `5`-term chain complex:
@@ -354,26 +354,33 @@ Both X and Z-type metachecks available:
 - ``M_Z^T = \\partial_4^G``
 - ``M_X = \\partial_1^G``
 
+To obtain surface codes of greater dimensionality, we alternate between `C` and `D` and then form a
+product with the chain complex representing the `DDimensionalSurfaceCode` [Berthusen_2024](@cite).
+
 !!! note
-    To obtain surface codes of greater dimensionality, we alternate between `C` and `D` and then form a
-    product with the chain complex representing the surface code in a dimension below.[Berthusen_2024](@cite).
+    The procedure described above for the `DDimensionalSurfaceCode` can alternatively be performed
+    using an `L × L` repetition code and only the chain complex `C`. In this case, the result would
+    be the `DDimensionalToricCode`
+
+See also: [`DDimensionalToricCode`](@ref)
 
 ### Fields
     $TYPEDFIELDS
 """
 struct DDimensionalSurfaceCode <: DDimensionalCode
-    """Dimension of the code (must be ≥ 2)"""
+    """Dimension of the Surface code (must be ≥ 2)."""
     D::Int
-    """Size parameter determining the code family."""
+    """Size parameter determining the `D`-dimensional Surface code family, constructed via hypergraph product of 
+    `(L - 1) × L` repetition code chain complexes."""
     L::Int
 
     function DDimensionalSurfaceCode(D::Int, L::Int)
-        D ≥ 2 || throw(ArgumentError("Dimension must be at least 2 (got D=$D)"))
+        D ≥ 2 || throw(ArgumentError("Dimension of the Surface code must be at least 2 (got D=$D)."))
         new(D, L)
     end
 end
 
-function _boundary_maps_surface(c::DDimensionalSurfaceCode)
+function _total_complex_surface(c::DDimensionalSurfaceCode)
     D, L = c.D, c.L
     C = _repcode_chain_complex(L)
     D_chain = _dual_repcode_chain_complex(L)
@@ -391,8 +398,13 @@ function _boundary_maps_surface(c::DDimensionalSurfaceCode)
         current = total_complex(current)
         push!(sequence, current)
     end
+    return current
+end
+
+function _boundary_maps_surface(c::DDimensionalSurfaceCode)
+    current = _total_complex_surface(c)
     boundary_maps = Vector{Matrix{Int}}()
-    for d in 1:D
+    for d in 1:c.D
         ϕ = map(current, d)
         push!(boundary_maps, matrix_to_int(matrix(ϕ)))
     end
@@ -411,7 +423,9 @@ parity_matrix_xz(c::DDimensionalSurfaceCode) = _parity_matrix_xz_surface(c)
 """
     $TYPEDEF
 
-The D-dimensional toric code is obtained by taking the **iterated tensor product** of a single chain complex:
+## D-dimensional Toric Code ([Berthusen_2024](@cite), [Zeng_2019](@cite))
+
+The `D`-dimensional toric code is obtained by taking the **iterated tensor product** of a single chain complex:
 
 ```math
 \\begin{aligned}
@@ -427,23 +441,82 @@ is built by taking the tensor product ``C^{\\otimes D}`` and forming the associa
     use the full ``L \\times L`` repetition code (rather than ``(L-1) \\times L``). The
     tensor products with identical complexes (rather than alternating complexes) are used.
 
+## Subfamilies
+
+### 2D Toric Code
+
+```jldoctest twoDtoric
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
+
+julia> D = 2; L = 2;
+
+julia> c = DDimensionalToricCode(D, L);
+
+julia> code = parity_checks(c)
++ X_X_XX__
++ _X_XXX__
++ X_X___XX
++ _X_X__XX
++ ZZ__Z_Z_
++ ZZ___Z_Z
++ __ZZZ_Z_
++ __ZZ_Z_Z
+
+julia> import HiGHS; import JuMP;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(8, 2, 2)
+```
+
+### 3D Toric Code
+
+```jldoctest threeDtoric
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
+
+julia> D = 3; L = 2;
+
+julia> c = DDimensionalToricCode(D, L);
+
+julia> import HiGHS; import JuMP;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(24, 3, 2)
+```
+
+### 4D Toric Code
+
+```jldoctest fourDtoric
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
+
+julia> D = 4; L = 2;
+
+julia> c = DDimensionalToricCode(D, L);
+
+julia> import HiGHS; import JuMP;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(96, 6, 4)
+```
+
+See also: [`DDimensionalSurfaceCode`](@ref)
+
 ### Fields
     $TYPEDFIELDS
 """
 struct DDimensionalToricCode <: DDimensionalCode
-    """Dimension of the code (must be ≥ 2)."""
+    """Dimension of the Toric code (must be ≥ 2)."""
     D::Int
-    """Size parameter determining the code family."""
+    """Size parameter determining the `D`-dimensional Toric code family, constructed via hypergraph product of 
+    `L × L` repetition code chain complexes."""
     L::Int
     
     function DDimensionalToricCode(D::Int, L::Int)
-        D ≥ 2 || throw(ArgumentError("Dimension must be at least 2 (got D=$D)"))
+        D ≥ 2 || throw(ArgumentError("Dimension of the Toric code must be at least 2 (got D=$D)."))
         new(D, L)
     end
 end
 
-function _boundary_maps_toric(c::DDimensionalToricCode)
-    c.D >= 2 || throw(ArgumentError("Dimension must be at least 2 to construct a valid D-dimensional toric code."))
+function _total_complex_toric(c::DDimensionalToricCode)
     D, L = c.D, c.L
     # we use the full repetition code chain complex
     C = _repcode_chain_complex_full(L)
@@ -452,8 +525,13 @@ function _boundary_maps_toric(c::DDimensionalToricCode)
         current = tensor_product(current, C)
         current = total_complex(current)
     end
+    return current
+end
+
+function _boundary_maps_toric(c::DDimensionalToricCode)
+    current = _total_complex_toric(c)
     boundary_maps = Vector{Matrix{Int}}()
-    for d in 1:D
+    for d in 1:c.D
         ϕ = map(current, d)
         push!(boundary_maps, matrix_to_int(matrix(ϕ)))
     end
@@ -479,31 +557,24 @@ function _chain_dimensions(C::ComplexOfMorphisms)
 end
 
 function code_n(c::DDimensionalCode)
-    D, L = c.D, c.L
-    𝒞 = _repcode_chain_complex(L)
-    𝒟 = _dual_repcode_chain_complex(L)
-    current = 𝒞
-    for dim in 2:D
-        next = dim % 2 == 0 ? 𝒟 : 𝒞
-        current = tensor_product(current, next)
-        current = total_complex(current)
-    end
+    current = isa(c, DDimensionalToricCode) ? _total_complex_toric(c) : _total_complex_surface(c)
     # dimensions of all chain spaces
     dims = _chain_dimensions(current)
     # [Berthusen_2024](@cite) specifies different selection rules based on dimension, at least up to 4D.
+    D = c.D
     if D == 2
         # 2D: sum E₁ total complex dimensions
-        return dims[2] # (see A11, page 9): L² + (L-1)²
+        return dims[2] # (see A11, page 9): For DDimensionalSurfaceCode L² + (L-1)²
     elseif D == 3
         # 3D: sum F₁ total complex dimensions
         # F₁ = E₀ ⊗ D₁ ⊕ E₁ ⊗ D₀
-        return dims[3] # (see A21, page 10): L³ + 2L(L − 1)²
+        return dims[2] # (see A21, page 10): For DDimensionalSurfaceCode L³ + 2L(L − 1)²
     elseif D == 4
         # 4D: sum G² total complex dimensions
         # G² = F₁ ⊗ C₁ ⊕ F₂ ⊗ C₀
-        return dims[3] # (see A28, page 11): 6L⁴ − 12L³ + 10L² − 4L + 1
+        return dims[3] # (see A28, page 11): For DDimensionalSurfaceCode 6L⁴ − 12L³ + 10L² − 4L + 1
     else
-        # General case: For odd D: take middle term, For even D: take middle three terms
+        # TODO Investigate for dimension > 4? For odd D: take middle term, For even D: take middle three terms.
         middle = div(length(dims), 2) + 1
         if D % 2 == 0
             return sum(dims[middle-1:middle+1])
@@ -513,8 +584,28 @@ function code_n(c::DDimensionalCode)
     end
 end
 
-# All D-dimensional surface codes of [Berthusen_2024](@cite) have exactly 1 logical qubit
-code_k(c::DDimensionalCode) = 1
+function code_k(c::DDimensionalCode)
+    # [Berthusen_2024](@cite) uses the following left-to-right notation:
+    #   D=2: E₂ → E₁ → E₀                  (qubits in E₁, compute dim H₁(E))
+    #   D=3: F₃ → F₂ → F₁ → F₀       (A16) (qubits in F₁, compute dim H₁(F))
+    #   D=4: G₄ → G₃ → G₂ → G₁ → G₀  (A23) (qubits in G₂, compute dim H₂(G))
+    # Oscar represents the same chain complex with right-to-left notation:
+    #   D=2: current_0 ← current_1 ← current_2
+    #   D=3: current_0 ← current_1 ← current_2 ← current_3
+    #   D=4: current_0 ← current_1 ← current_2 ← current_3 ← current_4
+    current = isa(c, DDimensionalToricCode) ? _total_complex_toric(c) : _total_complex_surface(c)
+    i = c.D == 2 ? 1 : 2 # For codes with D ≥ 3: Hx is boundary_maps(c)[3], boundary_maps(c)[2] is Hz'.
+    # TODO Does this hold for dimension > 4?
+    ∂ᵢ = map(current, i)
+    ∂ᵢ₊₁ = map(current, i+1)
+    ker_∂ᵢ = kernel(∂ᵢ)[1]
+    im_∂ᵢ₊₁ = image(∂ᵢ₊₁)[1]
+    dim_ker = dim(ker_∂ᵢ)
+    dim_im = dim(im_∂ᵢ₊₁)
+    # number of logical qubits == dim ker ∂ᵢ - dim im ∂ᵢ₊₁
+    k = dim_ker - dim_im
+    return k
+end
 
 """
 $TYPEDEF
