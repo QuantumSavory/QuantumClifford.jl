@@ -75,7 +75,7 @@ The dual complex has:
 - **i-coboundaries**: ``B^i(C) := \\mathrm{im} \\partial_i^T``
 - **i-th cohomology**: ``H^i(C) := Z^i(C)/B^i(C)``
 
-### Classical EECs via Chain Complexes and ``\\mathbb{F_2}`` Homology
+### Classical Codes via Chain Complexes and ``\\mathbb{F_2}`` Homology
 
 An ``[n,k,d]`` classical code corresponds to a `2`-term complex:
 
@@ -91,7 +91,7 @@ where
 - ``C_0 = \\mathbb{F}_2^{n-k}`` (syndrome space)
 - ``H`` is the parity check matrix
 
-### Quantum CSS via Chain Complexes and ``\\mathbb{F_2}`` Homology
+### Quantum CSS Codes via Chain Complexes and ``\\mathbb{F_2}`` Homology
 
 Quantum CSS codes extend this to `3`-term complexes:
 
