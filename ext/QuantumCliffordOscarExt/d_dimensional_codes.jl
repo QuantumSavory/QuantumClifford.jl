@@ -38,7 +38,8 @@ end
 """
     $TYPEDEF
 
-Constructs the `D`-dimensional surface code using chain complexes and ``\\mathbb{F}_2``-homology.
+Constructs the `D`-dimensional surface code using [chain complexes](https://en.wikipedia.org/wiki/Chain_complex)
+and ``\\mathbb{F}_2``-[homology](https://en.wikipedia.org/wiki/Homology_(mathematics)).
 
 ## Homological Algebra Foundations of Quantum Error Correction
 
@@ -74,7 +75,7 @@ The dual complex has:
 - **i-coboundaries**: ``B^i(C) := \\mathrm{im} \\partial_i^T``
 - **i-th cohomology**: ``H^i(C) := Z^i(C)/B^i(C)``
 
-### Classical QECs via Chain Complexes and ``\\mathbb{F_2}`` Homology
+### Classical Codes via Chain Complexes and ``\\mathbb{F_2}`` Homology
 
 An ``[n,k,d]`` classical code corresponds to a `2`-term complex:
 
@@ -90,7 +91,7 @@ where
 - ``C_0 = \\mathbb{F}_2^{n-k}`` (syndrome space)
 - ``H`` is the parity check matrix
 
-### Quantum CSS via Chain Complexes and ``\\mathbb{F_2}`` Homology
+### Quantum CSS Codes via Chain Complexes and ``\\mathbb{F_2}`` Homology
 
 Quantum CSS codes extend this to `3`-term complexes:
 
@@ -131,8 +132,8 @@ hypergraph product of these complexes.
 
 ## Double Complex
 
-Given chain complexes `C` and `D`, we construct a double complex derived from
-the tensor product of two `2`-term chain complexes:
+Given chain complexes `C` and `D`, we construct a [double complex](https://en.wikipedia.org/wiki/Double_complex)
+derived from the tensor product of two `2`-term chain complexes:
 
 ```math
 \\begin{aligned}
@@ -147,7 +148,7 @@ sum of vector spaces and boundary maps that share the same dimension:
 
 ```math
 \\begin{aligned}
-\text{Tot}(C \\boxtimes D)_i = \\bigoplus_{i=j+k} C_j \\otimes D_k = E_i
+\\text{Tot}(C \\boxtimes D)_i = \\bigoplus_{i=j+k} C_j \\otimes D_k = E_i
 \\end{aligned}
 ```
 
@@ -159,7 +160,7 @@ with boundary maps:
 \\end{aligned}
 ```
 
-The resulting chain complex, called the tensor product of `C` and `D`, `C ⊗ D`, enables
+The resulting chain complex, called the tensor product of ``C`` and ``D``, ``C ⊗ D``, enables
 the construction of a CSS code when selecting any three consecutive terms in its sequence.
 
 ## Subfamilies
@@ -175,7 +176,7 @@ E_2 \\xrightarrow{\\partial_2^E} E_1 \\xrightarrow{\\partial_1^E} E_0
 \\end{aligned}
 ```
 
-### Examples
+#### Examples
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
@@ -275,7 +276,7 @@ F_3 \\xrightarrow{\\partial_3^F} F_2 \\xrightarrow{\\partial_2^F} F_1 \\xrightar
 
 - **Z-type** metachecks: ``M_Z^T = \\partial_3^F``
 
-### Examples
+#### Example
 
 Here is an example of `[[12, 1, 2]]` `3D` Surface code with `L = 2` from [Berthusen_2024](@cite).
 
@@ -331,7 +332,7 @@ G_4 \\xrightarrow{\\partial_4^G} G_3 \\xrightarrow{\\partial_3^G} G_2 \\xrightar
 \\end{aligned}
 ```
 
-### [[33, 1, 4]]
+#### [[33, 1, 4]]
 
 Here is an example of `[[33, 1, 4]]` `4D` Surface code with `L = 2` from [Berthusen_2024](@cite).
 
@@ -623,7 +624,7 @@ $TYPEDEF
 Returns all boundary maps of the chain complex, including both *parity check*
 and *metacheck* matrices.
 
-Here are the boundarp maps of `[[12, 1, 2]]` `3D` Surface code with
+Here are the boundary maps of `[[12, 1, 2]]` `3D` Surface code with
 `L = 2` from [Berthusen_2024](@cite).
 
 ```jldoctest boundarymaps
@@ -697,7 +698,7 @@ satisfy the condition ``\\partial_{i+1} \\partial_i = 0``. This guarantees that:
 
 ```math
 \\begin{aligned}
-M_Z H_Z = 0 \\quad \text{and} \\quad M_X H_X = 0,
+M_Z H_Z = 0 \\quad \\text{and} \\quad M_X H_X = 0,
 \\end{aligned}
 ```
 
