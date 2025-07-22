@@ -7,6 +7,8 @@
 
 ## v0.10.1-dev
 
+- The D-dimensional Surface and Toric codes are now implemented using `Oscar`'s chain complexes and `GF2` homology in the ECC submodule.
+- Implementing `apply_inv!` for direct application of the inverse of a given gate.
 - The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations — particularly useful now that there is also an `Oscar` extension, which provides many non-abelian group constructors.
 - Introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
