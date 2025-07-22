@@ -65,6 +65,21 @@ steps:
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
+  - label: "OpenCL Tests"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      OpenCL_TEST: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
   - label: "Downstream QuantumSavory"
     plugins:
       - JuliaCI/julia#v1:

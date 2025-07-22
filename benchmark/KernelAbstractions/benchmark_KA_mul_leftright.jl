@@ -1,19 +1,19 @@
-import QuantumClifford as QC
-using GPUArrays: AllocCache, @cached, unsafe_free!
 using BenchmarkTools: @belapsed
+using GPUArrays: AllocCache, @cached, unsafe_free!
 using Plots: scatter, savefig
+using QuantumClifford: mul_left!, mul_right!
 
-@inline host_f(x, y; phases::Val{B} = Val(true)) where {B} =
-	QC.mul_left!(x, y; phases = phases)
+@inline host_f(x, y; phases::Val{phase_B} = Val(true)) where {phase_B} =
+	mul_left!(x, y; phases = phases)
 
 @inline function device_f(
 	x, y, synchronize;
-	phases::Val{B} = Val(true),
-	block_size::Val{block_SZ} = Val(QC.default_block_size),
-	batch_size::Val{batch_SZ} = Val(QC.default_batch_size)
-	) where {B, block_SZ, batch_SZ}
+	phases::Val{phase_B} = Val(true),
+	block_size::Val{block_SZ} = Val(default_block_size),
+	batch_size::Val{batch_SZ} = Val(default_batch_size)
+	) where {phase_B, block_SZ, batch_SZ}
 
-	QC.mul_left!(
+	mul_left!(
 		x, y;
 		phases = phases, block_size = block_size, batch_size = batch_size
 		)
@@ -23,8 +23,8 @@ end
 
 @inline function benchmark_KA_mul_leftright(
 	AT, synchronize;
-	phases::Val{B} = Val(true), platform_name = string(AT)
-	) where {B}
+	phases::Val{phase_B} = Val(true), platform_name = string(AT)
+	) where {phase_B}
 
 	host_time = zeros(Float64, length(n_MiB))
 	device_time = zeros(Float64, length(batch_sizes), length(n_MiB))
@@ -34,11 +34,11 @@ end
 	for (i, n) in enumerate(n_MiB)
 		@cached cache begin
 			# Each qubit requires 2 bits.
-			h_p = QC.PauliOperator(
+			h_p = PauliOperator(
 				zeros(Cuchar), n * MiB >> 1,
 				zeros(UInt, cld(n * MiB, bit_count(UInt)))
 				)
-			d_p = QC.PauliOperator(AT(u32(h_p.phase)), h_p.nqubits, AT(h_p.xz))
+			d_p = PauliOperator(AT(u32(h_p.phase)), h_p.nqubits, AT(h_p.xz))
 			synchronize()
 			# Trigger compilation before benchmarking.
 			host_f(h_p, h_p; phases = phases)
@@ -59,7 +59,7 @@ end
 	unsafe_free!(cache)
 
 	device_cat = [device_time[i, :] for i = 1 : length(batch_sizes)]
-	title = "Performance uplift - multiplication (phases = $B)"
+	title = "Performance uplift - multiplication (phases = $phase_B)"
 	xlabel = "Pauli operator size (MiB)"
 	label = hcat(("Device - batch = " .* string.(batch_sizes))..., "Host")
 
@@ -68,7 +68,7 @@ end
 		xticks = n_MiB, xscale = :log2, yscale = :log10,
 		title = title, label = label, xlabel = xlabel, ylabel = "Runtime (ms)"
 		)
-	savefig("runtime_mul_" * platform_name * "_phase_$B.png")
+	savefig("runtime_mul_" * platform_name * "_phase_$phase_B.png")
 
 	scatter(
 		n_MiB, map(x -> host_time ./ x, device_cat);
@@ -76,6 +76,6 @@ end
 		label = hcat(label[1 : end - 1]...), xlabel = xlabel,
 		ylabel = "Ratio (host/device)"
 		)
-	savefig("ratio_mul_" * platform_name * "_phase_$B.png")
+	savefig("ratio_mul_" * platform_name * "_phase_$phase_B.png")
 
 end

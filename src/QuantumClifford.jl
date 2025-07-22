@@ -1437,7 +1437,5 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
-# KernelAbstractions accelerated operations
-include("KernelAbstractions/KA.jl")
 
 end #module

@@ -1,33 +1,38 @@
 CUDA_flag = false
-OpenCL_flag = false
 ROCm_flag = false
+OpenCL_flag = false
 Oscar_flag = false
 
 if Sys.iswindows() || Sys.ARCH != :x86_64
-    @info "Skipping GPU tests -- only supported on x86_64 *NIX platforms."
-    @info "Skipping OpenCL tests -- only supported on x86_64 *NIX platforms."
-    @info "Skipping Oscar tests -- only supported on x86_64 *NIX platforms."
+    @info "Skipping Oscar tests -- only supported x86_64 *NIX platforms."
+else
+    Oscar_flag = VERSION >= v"1.11"
+    !Oscar_flag && @info "Skipping Oscar tests -- not tested on Julia < 1.11"
+end
+
+if Sys.iswindows()
+    @info "Skipping GPU/OpenCL tests -- only supported on *NIX platforms."
 else
     CUDA_flag = get(ENV, "CUDA_TEST", "") == "true"
-    OpenCL_flag = true
     ROCm_flag = get(ENV, "ROCm_TEST", "") == "true"
-    Oscar_flag = VERSION >= v"1.11"
+    OpenCL_flag = get(ENV, "OpenCL_TEST", "") == "true"
 
     CUDA_flag && @info "Running with CUDA tests."
-    OpenCL_flag && @info "Running with OpenCL tests."
     ROCm_flag && @info "Running with ROCm tests."
-    !Oscar_flag && @info "Skipping Oscar tests -- not tested on Julia < 1.11"
-    if !(ROCm_flag || CUDA_flag)
-        @info "Skipping GPU tests -- must be explicitly enabled."
-        @info "Environment must set ROCm_TEST=true xor CUDA_TEST=true."
+    OpenCL_flag && @info "Running with OpenCL tests."
+    if !any((CUDA_flag, ROCm_flag, OpenCL_flag))
+        @info "Skipping GPU/OpenCL tests -- must be explicitly enabled."
+        @info "Environment must uniquely set [CUDA, ROCm, OpenCL]_TEST=true."
     end
 end
 
 using Pkg
 CUDA_flag && Pkg.add("CUDA")
-OpenCL_flag && (Pkg.add("pocl_jll"); Pkg.add("OpenCL"))
 ROCm_flag && Pkg.add("AMDGPU")
-any((CUDA_flag, OpenCL_flag, ROCm_flag)) && Pkg.add("GPUArrays")
+OpenCL_flag && Pkg.add(["pocl_jll", "OpenCL"])
+if any((CUDA_flag, ROCm_flag, OpenCL_flag))
+    Pkg.add(["Atomix", "GPUArraysCore", "GPUArrays", "KernelAbstractions"])
+end
 Oscar_flag && Pkg.add("Oscar")
 using TestItemRunner
 using QuantumClifford
@@ -36,35 +41,34 @@ using QuantumClifford
 testfilter = ti -> begin
     exclude = Symbol[]
 
-    if get(ENV, "JET_TEST", "") != "true"
-        push!(exclude, :jet)
-    else
+    if get(ENV, "JET_TEST", "") == "true"
         return :jet in ti.tags
+    else
+        push!(exclude, :jet)
     end
 
-    if get(ENV, "ECC_TEST", "") != "true"
-        push!(exclude, :ecc)
-    else
+    if get(ENV, "ECC_TEST", "") == "true"
         return :ecc in ti.tags
+    else
+        push!(exclude, :ecc)
     end
 
-
-    if !CUDA_flag
-        push!(exclude, :cuda)
-    else
+    if CUDA_flag
         return :cuda in ti.tags
+    else
+        push!(exclude, :cuda)
     end
 
-    if !OpenCL_flag
-        push!(exclude, :opencl)
-    else
-        return :opencl in ti.tags
-    end
-
-    if !ROCm_flag
-        push!(exclude, :rocm)
-    else
+    if ROCm_flag
         return :rocm in ti.tags
+    else
+        push!(exclude, :rocm)
+    end
+
+    if OpenCL_flag
+        return :opencl in ti.tags
+    else
+        push!(exclude, :opencl)
     end
 
     if !(VERSION >= v"1.10")

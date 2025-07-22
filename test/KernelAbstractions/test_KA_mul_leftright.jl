@@ -1,5 +1,5 @@
-import QuantumClifford as QC
 using GPUArrays: AllocCache, @cached, unsafe_free!
+using QuantumClifford: mul_left!, mul_right!
 
 @inline function test_KA_mul_leftright(AT, synchronize)
 	cache = AllocCache()
@@ -8,23 +8,23 @@ using GPUArrays: AllocCache, @cached, unsafe_free!
 		rows = min(1024, n)
 		for _ in cycle_range
 			@cached cache begin
-				h_p1 = QC.random_pauli(n)
-				d_p1 = QC.PauliOperator(
+				h_p1 = random_pauli(n)
+				d_p1 = PauliOperator(
 					AT(u32(h_p1.phase)), h_p1.nqubits, AT(h_p1.xz)
 					)
-				h_p2 = QC.random_pauli(n)
-				d_p2 = QC.PauliOperator(
+				h_p2 = random_pauli(n)
+				d_p2 = PauliOperator(
 					AT(u32(h_p2.phase)), h_p2.nqubits, AT(h_p2.xz)
 					)
-				h_s = QC.Stabilizer(
-					QC.Tableau(
+				h_s = Stabilizer(
+					Tableau(
 						rand(eltype(h_p1.phase), rows) .& 0x3,
 						n,
 						rand(eltype(h_p1.xz), (length(h_p1.xz), rows))
 						)
 					)
-				d_s = QC.Stabilizer(
-					QC.Tableau(
+				d_s = Stabilizer(
+					Tableau(
 						AT(u32(h_s.tab.phases)),
 						h_s.tab.nqubits,
 						AT(h_s.tab.xzs)
@@ -32,51 +32,51 @@ using GPUArrays: AllocCache, @cached, unsafe_free!
 					)
 				i = rand(1:rows)
 
-				d_o = QC.mul_left!(copy(d_p2), d_p1)
-				h_o = QC.mul_left!(copy(h_p2), h_p1)
+				d_o = mul_left!(copy(d_p2), d_p1)
+				h_o = mul_left!(copy(h_p2), h_p1)
 				synchronize()
 				@test begin
 					h_o.phase == Array(d_o.phase)
 					h_o.xz == Array(d_o.xz)
 				end
 
-				d_o = QC.mul_right!(copy(d_p1), d_p2)
-				h_o = QC.mul_right!(copy(h_p1), h_p2)
+				d_o = mul_right!(copy(d_p1), d_p2)
+				h_o = mul_right!(copy(h_p1), h_p2)
 				synchronize()
 				@test begin
 					h_o.phase == Array(d_o.phase)
 					h_o.xz == Array(d_o.xz)
 				end
 
-				d_L = QC.mul_left!(copy(d_p2), d_p1)
-				d_R = QC.mul_right!(copy(d_p2), d_p1)
+				d_L = mul_left!(copy(d_p2), d_p1)
+				d_R = mul_right!(copy(d_p2), d_p1)
 				synchronize()
 				@test begin
 					all(
 						(Array(d_L.phase) .- Array(d_R.phase)) .& 0x3
-						.== 2 * QC.comm(h_p1, h_p2)
+						.== 2 * comm(h_p1, h_p2)
 						)
 					Array(d_L.xz) == Array(d_R.xz)
 				end
 
-				d_o = QC.mul_left!(copy(d_p2), d_s, i)
-				h_o = QC.mul_left!(copy(h_p2), h_s, i)
+				d_o = mul_left!(copy(d_p2), d_s, i)
+				h_o = mul_left!(copy(h_p2), h_s, i)
 				synchronize()
 				@test begin
 					h_o.phase == Array(d_o.phase)
 					h_o.xz == Array(d_o.xz)
 				end
 
-				d_o = QC.mul_right!(copy(d_p2), d_s, i)
-				h_o = QC.mul_right!(copy(h_p2), h_s, i)
+				d_o = mul_right!(copy(d_p2), d_s, i)
+				h_o = mul_right!(copy(h_p2), h_s, i)
 				synchronize()
 				@test begin
 					h_o.phase == Array(d_o.phase)
 					h_o.xz == Array(d_o.xz)
 				end
 
-				d_o = QC.mul_left!(copy(d_s), d_p2)
-				h_o = QC.mul_left!(copy(h_s), h_p2)
+				d_o = mul_left!(copy(d_s), d_p2)
+				h_o = mul_left!(copy(h_s), h_p2)
 				synchronize()
 				@test begin
 					(@view h_o.tab.phases[i]) ==
@@ -85,8 +85,8 @@ using GPUArrays: AllocCache, @cached, unsafe_free!
 						Array((@view d_o.tab.xzs[:, i]))
 				end
 
-				d_o = QC.mul_right!(copy(d_s), d_p2)
-				h_o = QC.mul_right!(copy(h_s), h_p2)
+				d_o = mul_right!(copy(d_s), d_p2)
+				h_o = mul_right!(copy(h_s), h_p2)
 				synchronize()
 				@test begin
 					(@view h_o.tab.phases[i]) ==
@@ -96,8 +96,8 @@ using GPUArrays: AllocCache, @cached, unsafe_free!
 				end
 
 				# Potential aliasing problem.
-				d_o = QC.mul_left!(copy(d_s), i, i)
-				h_o = QC.mul_left!(copy(h_s), i, i)
+				d_o = mul_left!(copy(d_s), i, i)
+				h_o = mul_left!(copy(h_s), i, i)
 				synchronize()
 				@test begin
 					(@view h_o.tab.phases[i]) ==

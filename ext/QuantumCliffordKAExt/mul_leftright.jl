@@ -1,5 +1,8 @@
 
 #=============================================================================#
+# TODO: include the unsafe functions once the main package establishes them.
+import QuantumClifford: mul_left!, mul_right!
+
 # CAUTION: Keep in mind that mutable = order_right_left ? right : left
 # TODO: Make the parameters keyword arguments once support becomes available.
 KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
@@ -54,7 +57,7 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
 		index = KA.@index(Local, Linear)
 		value = shared_memory_reduce!(+, buffer, value, index, Val(block_size))
 		if index == one(index)
-			Atomix.@atomic mutable_phases[j_mutable] += value
+			@atomic mutable_phases[j_mutable] += value
 		end
 	end
 
@@ -417,7 +420,7 @@ RETURNS (MIXED) DESTABILIZER
 	) where {phase_B, block_SZ, batch_SZ}
 
 	len, n = length(u.tab.phases), u.tab.nqubits
-	1 <= i <= len && 1 <= i + n <= len && 1 <= j <= len && 1 <= j + n <= len ||
+	all(x -> 1 <= x <= len, (i, j, i + n, j + n)) ||
 		throw(BoundsError(THROW_BOUNDS))
 	return $unsafe_f_sym(
 		u, i, j;
