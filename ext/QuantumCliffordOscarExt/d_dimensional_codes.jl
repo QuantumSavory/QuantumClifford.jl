@@ -360,7 +360,7 @@ product with the chain complex representing the `DDimensionalSurfaceCode` [Berth
 !!! note
     The procedure described above for the `DDimensionalSurfaceCode` can alternatively be performed
     using an `L × L` repetition code and only the chain complex `C`. In this case, the result would
-    be the `DDimensionalToricCode`
+    be the `DDimensionalToricCode`.
 
 See also: [`DDimensionalToricCode`](@ref)
 
@@ -607,6 +607,16 @@ function code_k(c::DDimensionalCode)
     return k
 end
 
+function metacheck_matrix_x(c::DDimensionalCode)
+    c.D ≥ 4 || throw(ArgumentError("`X`-metachecks (`Mx`) require `D ≥ 4` (D=$(c.D))"))
+    return Matrix(boundary_maps(c)[4]) # Mx
+end
+
+function metacheck_matrix_z(c::DDimensionalCode)
+    c.D ≥ 3 || throw(ArgumentError("`Z`-metachecks (`Mz`) require `D ≥ 3` (D=$(c.D))"))
+    return Matrix(boundary_maps(c)[1]') # Mz
+end
+
 """
 $TYPEDEF
 
@@ -617,7 +627,9 @@ Here are the boundarp maps of `[[12, 1, 2]]` `3D` Surface code with
 `L = 2` from [Berthusen_2024](@cite).
 
 ```jldoctest boundarymaps
-julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC: DDimensionalSurfaceCode, boundary_maps;
+julia> using Oscar; using QuantumClifford; using QECCore;
+
+julia> using QuantumClifford.ECC: DDimensionalSurfaceCode, boundary_maps, metacheck_matrix_z;
 
 julia> D = 3; L = 2;
 
@@ -667,6 +679,37 @@ julia> Mz'
  1  0  1  0  1  0  1  0  1
  0  1  0  1  0  1  0  1  1
 ```
+
+We can use `metacheck_matrix_z` directly instead of using `boundary_maps`.
+
+```jldoctest boundarymaps
+julia> metacheck_matrix_z(c)
+2×9 Matrix{Int64}:
+ 1  0  1  0  1  0  1  0  1
+ 0  1  0  1  0  1  0  1  1
+```
+
+# Metachecks in CSS Codes
+
+The parity-check matrices ``M_Z`` and ``M_X`` are called *metachecks* in CSS
+codes. These matrices emerge from the constraints imposed by boundary maps, which
+satisfy the condition ``\\partial_{i+1} \\partial_i = 0``. This guarantees that:
+
+```math
+\\begin{aligned}
+M_Z H_Z = 0 \\quad \text{and} \\quad M_X H_X = 0,
+\\end{aligned}
+```
+
+meaning that:
+
+- Valid ``Z``-type syndromes must be in ``\\ker M_Z``
+- Valid ``X``-type syndromes must be in ``\\ker M_X``
+
+When measurement errors occur, they distort the syndrome vector ``\\mathbf{s}``,
+generating a detectable *metasyndrome*. By examining ``\\mathbf{m}``, we can identify
+and correct errors in ``\\mathbf{s}`` before proceeding with standard decoding. This
+technique is called *syndrome repair decoding* [Higgott_2023](@cite).
 """
 boundary_maps(c::DDimensionalSurfaceCode) = _boundary_maps_surface(c)
 boundary_maps(c::DDimensionalToricCode) = _boundary_maps_toric(c)

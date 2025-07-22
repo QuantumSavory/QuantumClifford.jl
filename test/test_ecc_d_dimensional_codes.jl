@@ -1,7 +1,7 @@
 @testitem "ECC D-dimensional Surface Code" tags=[:ecc] begin
     @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
         using Oscar
-        import QECCore
+        using QECCore
         import HiGHS
         import JuMP
         using Nemo: matrix, GF
@@ -38,6 +38,7 @@
                     @test computed_rank == n - k
                     @test stab_looks_good(code, remove_redundant_rows=true)
                     @test n == L^3 + 2*L*(L − 1)^2 == code_n(c) && k == 1 == code_k(c)
+                    @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
                     @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:X)) == L
                     @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z)) == L^2
                 end
@@ -55,6 +56,8 @@
                 computed_rank = rank(mat)
                 @test computed_rank == n - k
                 @test stab_looks_good(code, remove_redundant_rows=true)
+                @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
+                @test iszero(mod.(metacheck_matrix_x(c)*parity_matrix_x(c), 2))
                 @test n == 6*L^4 − 12*L^3 + 10*L^2 − 4*L + 1 == code_n(c) && k == 1 == code_k(c)
                 @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == L^2
                 @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z)) == L^2
@@ -91,6 +94,7 @@
                     @test computed_rank == n - k
                     @test code_n(c) == n && code_k(c) == k
                     @test stab_looks_good(code, remove_redundant_rows=true)
+                    @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
                     @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:X)) == L
                     @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z)) == L^2
                 end
@@ -109,6 +113,8 @@
                 @test computed_rank == n - k
                 @test code_n(c) == n && code_k(c) == k
                 @test stab_looks_good(code, remove_redundant_rows=true)
+                @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
+                @test iszero(mod.(metacheck_matrix_x(c)*parity_matrix_x(c), 2))
                 @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == L^2
                 @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z)) == L^2
             end

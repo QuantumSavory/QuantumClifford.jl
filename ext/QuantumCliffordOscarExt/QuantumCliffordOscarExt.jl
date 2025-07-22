@@ -21,7 +21,8 @@ import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_pr
     boundary_maps
 
 import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
-    hgp, code_k, code_n, code_s, distance, parity_matrix_x, parity_matrix_z, parity_matrix_xz, parity_matrix
+    hgp, code_k, code_n, code_s, distance, parity_matrix_x, parity_matrix_z, parity_matrix_xz, parity_matrix,
+    metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps
