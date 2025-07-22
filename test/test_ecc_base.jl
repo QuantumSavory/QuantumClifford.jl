@@ -329,6 +329,8 @@ const code_instance_args = Dict(
     :DelfosseReichardt823 => [1, 2, 3, 4, 5],
     :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
     :CyclicQuantumTannerGraphProduct => [1, 2, 3, 4, 5],
+    :DDimensionalSurfaceCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
+    :DDimensionalToricCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)]
     :Lacross => [(7,h,false), (7,h,true)]
 )
 
