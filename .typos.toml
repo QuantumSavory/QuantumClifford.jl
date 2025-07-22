@@ -3,6 +3,7 @@ ket = "ket"
 anc = "anc"
 ba = "ba"
 hom = "hom"
+IY = "IY"
 mor = "mor"
 
 [type.ipynb]
