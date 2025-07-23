@@ -1,4 +1,6 @@
 """
+    $TYPEDEF
+
 A construction of the Reed-Muller class of codes using the recursive definition.
 
 The Plotkin `(u, u + v)` construction defines a recursive relation between generator matrices of Reed-Muller `(RM)` codes [abbe2020reed](@cite). To derive the generator matrix `G(m, r)` for `RM(r, m)`, the generator matrices of lower-order codes are utilized:
@@ -18,10 +20,15 @@ Here, the matrix 0 denotes an all-zero matrix with dimensions matching `G(r - 1,
 
 In addition, the dimension of `RM(m - r - 1, m)` equals the dimension of the dual of `RM(r, m)`. Thus, `RM(m - r - 1, m) = RM(r, m)^⊥` shows that the [dual code](https://en.wikipedia.org/wiki/Dual_code) of `RM(r, m)` is `RM(m − r − 1, m)`, indicating the parity check matrix of `RM(r, m)` is the generator matrix for `RM(m - r - 1, m)`.
 
-See also: `ReedMuller`
+See also: [`ReedMuller`](@ref) and [`QuantumReedMuller`](@ref)
+
+### Fields
+    $TYPEDFIELDS
 """
 struct RecursiveReedMuller <: AbstractCECC
+    """The order of the code."""
     r::Int
+    """The log-length of the code."""
     m::Int
 
     function RecursiveReedMuller(r, m)
@@ -50,7 +57,7 @@ function generator(c::RecursiveReedMuller)
     return _recursiveReedMuller(c.r, c.m)
 end
 
-function parity_checks(c::RecursiveReedMuller)
+function parity_matrix(c::RecursiveReedMuller)
     H = generator(RecursiveReedMuller(c.m - c.r - 1, c.m))
     return H
 end
