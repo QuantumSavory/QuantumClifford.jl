@@ -2,6 +2,9 @@ using Pkg
 if Sys.iswindows() || Sys.ARCH != :x86_64
     @info "skipping Oscar tests (they currently do not run on Windows OS or ARM CPU)"
     @info "skipping GPU tests (set GPU_TESTS=true to test GPU (on non-Windows))"
+elseif get(ENV, "CUDA_TEST", "") == "true"
+    @info "running with CUDA tests"
+    Pkg.add("CUDA")
 elseif get(ENV, "GPU_TESTS", "") == "true"
     @info "running with GPU tests"
     Pkg.add("CUDA")
@@ -19,6 +22,12 @@ using QuantumClifford
 # filter for the test
 testfilter = ti -> begin
     exclude = Symbol[]
+
+    if get(ENV, "CUDA_TEST", "") != "true"
+        push!(exclude, :cuda)
+    else
+        return :cuda in ti.tags
+    end
 
     if get(ENV, "JET_TEST", "") != "true"
         push!(exclude, :jet)
