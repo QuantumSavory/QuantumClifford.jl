@@ -1,8 +1,9 @@
 using Test
 using QuantumClifford.ECC.QECCore
 using QuantumClifford
-using QuantumClifford.ECC
-using QuantumClifford.ECC: check_repr_commutation_relation, check_repr_regular_linear
+using QuantumClifford.ECC: 
+using QuantumClifford.ECC: check_repr_commutation_relation, check_repr_regular_linear, Gottesman4
+
 using InteractiveUtils
 using SparseArrays
 
@@ -325,9 +326,9 @@ const code_instance_args = Dict(
     :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
     :CyclicQuantumTannerGraphProduct => [1, 2, 3, 4, 5],
     :DDimensionalSurfaceCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
-    :DDimensionalToricCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)]
+    :DDimensionalToricCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
+    :Gottesman4 => [4, 5, 6, 7, 8]
 )
-
 function all_testablable_code_instances(;maxn=nothing)
     codeinstances = []
     i = 1
