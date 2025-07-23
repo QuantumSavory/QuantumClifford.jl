@@ -46,13 +46,16 @@ function apply_right!(l::CliffordOperator, r::sHadamardYZ)
     return l
 end
 
-# function apply_right!(l::CliffordOperator, r::sPhase)
-#     return l
-# end
+function apply_right!(l::CliffordOperator, r::sPhase)
+    l[r.q] = mul_right_log_i!(l[r.q], l[nqubits(l)+r.q])
+    apply_right!(l, sZ(r.q))
+    return l
+end
 
-# function apply_right!(l::CliffordOperator, r::sInvPhase)
-#     return l
-# end
+function apply_right!(l::CliffordOperator, r::sInvPhase)
+    l[r.q] = mul_right_log_i!(l[r.q], l[nqubits(l)+r.q])
+    return l
+end
 
 function apply_right!(l::CliffordOperator, r::sX)
     phases(tab(l))[nqubits(l)+r.q] ⊻= 0x02
@@ -104,13 +107,18 @@ function apply_right!(l::CliffordOperator, r::sInvSQRTZ)
     return l
 end
 
-# function apply_right!(l::CliffordOperator, r::sCXYZ)
-#     return l
-# end
+function apply_right!(l::CliffordOperator, r::sCXYZ)
+    rowswap!(tab(l), r.q, nqubits(l)+r.q)
+    l[r.q] = mul_right_log_i!(l[r.q], l[nqubits(l)+r.q])
+    return l
+end
 
-# function apply_right!(l::CliffordOperator, r::sCZYX)
-#     return l
-# end
+function apply_right!(l::CliffordOperator, r::sCZYX)
+    rowswap!(tab(l), r.q, nqubits(l)+r.q)
+    l[nqubits(l)+r.q] = mul_right_log_i!(l[nqubits(l)+r.q], l[r.q])
+    apply_right!(l, sX(r.q))
+    return l
+end
 
 function apply_right!(l::CliffordOperator, ::sId1)
     return l
@@ -128,6 +136,7 @@ function apply_right!(l::CliffordOperator, r::sSWAP)
 end
 
 # function apply_right!(l::CliffordOperator, r::sSWAPCX)
+#     rowswap!(tab(l), r.q1, r.q2)
 #     return l
 # end
 

@@ -47,8 +47,8 @@
             @test isequal(apply_right!(copy(l), sHadamard(q1)), apply_right_slow!(l, sHadamard(q1)))
             @test isequal(apply_right!(copy(l), sHadamardXY(q1)), apply_right_slow!(l, sHadamardXY(q1)))
             @test isequal(apply_right!(copy(l), sHadamardYZ(q1)), apply_right_slow!(l, sHadamardYZ(q1)))
-            # @test isequal(apply_right!(copy(l), sPhase(q1)), apply_right_slow!(l, sPhase(q1)))
-            # @test isequal(apply_right!(copy(l), sInvPhase(q1)), apply_right_slow!(l, sInvPhase(q1)))
+            @test isequal(apply_right!(copy(l), sPhase(q1)), apply_right_slow!(l, sPhase(q1)))
+            @test isequal(apply_right!(copy(l), sInvPhase(q1)), apply_right_slow!(l, sInvPhase(q1)))
             @test isequal(apply_right!(copy(l), sX(q1)), apply_right_slow!(l, sX(q1)))
             @test isequal(apply_right!(copy(l), sY(q1)), apply_right_slow!(l, sY(q1)))
             @test isequal(apply_right!(copy(l), sZ(q1)), apply_right_slow!(l, sZ(q1)))
@@ -58,8 +58,8 @@
             @test isequal(apply_right!(copy(l), sInvSQRTY(q1)), apply_right_slow!(l, sInvSQRTY(q1)))
             # @test isequal(apply_right!(copy(l), sSQRTZ(q1)), apply_right_slow!(l, sSQRTZ(q1)))
             # @test isequal(apply_right!(copy(l), sInvSQRTZ(q1)), apply_right_slow!(l, sInvSQRTZ(q1)))
-            # @test isequal(apply_right!(copy(l), sCXYZ(q1)), apply_right_slow!(l, sCXYZ(q1)))
-            # @test isequal(apply_right!(copy(l), sCZYX(q1)), apply_right_slow!(l, sCZYX(q1)))
+            @test isequal(apply_right!(copy(l), sCXYZ(q1)), apply_right_slow!(l, sCXYZ(q1)))
+            @test isequal(apply_right!(copy(l), sCZYX(q1)), apply_right_slow!(l, sCZYX(q1)))
             @test isequal(apply_right!(copy(l), sId1(q1)), apply_right_slow!(l, sId1(q1)))
         end
     end
