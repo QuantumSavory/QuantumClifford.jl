@@ -11,11 +11,10 @@ const FqFieldGroupAlgebraElemMatrix = Union{
 }
 
 """
-Compute the adjoint of a group algebra element.
-The adjoint is defined as the conjugate of the element in the group algebra,
-i.e. the inverse of the element in the associated group.
+Compute the conjugate of a group algebra element.
+The conjugate is defined by inversing elements in the associated group.
 """
-function _adjoint(a::GroupAlgebraElem{T}) where T # TODO Is this used? Should it be deleted?
+function group_algebra_conj(a::GroupAlgebraElem{T}) where T
     A = parent(a)
     d = dim(A)
     v = Vector{T}(undef, d)

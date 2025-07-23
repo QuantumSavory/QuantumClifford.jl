@@ -1,4 +1,4 @@
-@testitem "ECC code properties" begin
+@testitem "ECC code properties" tags=[:ecc] begin
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
 
@@ -33,7 +33,7 @@
             @test code_s(code) + code_k(code) >= code_n(code) # possibly exist redundant checks
             _, _, rank = canonicalize!(copy(H), ranks=true)
             @test rank <= size(H, 1)
-            @test QuantumClifford.stab_looks_good(copy(H))
+            @test QuantumClifford.stab_looks_good(copy(H), remove_redundant_rows=true)
         end
     end
 end

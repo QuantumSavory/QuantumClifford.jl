@@ -41,21 +41,21 @@ To install it use:
 ```
 
 Works efficiently with
-[pure](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Stabilizers-1) and
-[mixed stabilizer](https://quantumsavory.github.io/QuantumClifford.jl/dev/mixed/#Mixed-Stabilizer-States-1)
+[pure](https://qc.quantumsavory.org/dev/stab-algebra-manual/#Stabilizers) and
+[mixed stabilizer](https://qc.quantumsavory.org/dev/mixed/#Mixed-Stabilizer-States)
 states of thousands of qubits
 as well as
-[sparse or dense Clifford operations](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Clifford-Operators-1)
+[sparse or dense Clifford operations](https://qc.quantumsavory.org/dev/stab-algebra-manual/#Clifford-Operators)
 acting upon them.
 
-Implements [Pauli frames](https://quantumsavory.github.io/QuantumClifford.jl/dev/ecc_example_sim/) for fast sampling.
+Implements [Pauli frames](https://qc.quantumsavory.org/dev/ecc_example_sim/) for fast sampling.
 
 Provides
-[canonicalization](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Canonicalization-of-Stabilizers-1),
-[projection](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Projective-Measurements-1), and
-[generation](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Generating-a-Pauli-Operator-with-Stabilizer-Generators-1) operations,
+[canonicalization](https://qc.quantumsavory.org/dev/stab-algebra-manual/#Canonicalization-of-Stabilizers),
+[projection](http://qc.quantumsavory.org/dev/stab-algebra-manual/#Projective-Measurements), and
+[generation](https://qc.quantumsavory.org/dev/stab-algebra-manual/#Generating-a-Pauli-Operator-with-Stabilizer-Generators) operations,
 as well as
-[partial traces](https://quantumsavory.github.io/QuantumClifford.jl/dev/manual/#Partial-Traces-1).
+[partial traces](https://qc.quantumsavory.org/dev/stab-algebra-manual/#Partial-Traces).
 
 ```jldoctest
 julia> P"X" * P"Z"
@@ -185,3 +185,18 @@ Platform Info:
 
 More detailed benchmarks can be seen at [github.com/QuantumSavory/QuantumCliffordBenchmarksLog](https://github.com/QuantumSavory/QuantumCliffordBenchmarksLog).
 </details>
+
+## Office Hours
+
+Office hours are held every Friday from 12:30 – 1:30 PM Eastern Time via [Zoom](https://umass-amherst.zoom.us/j/95986275946?pwd=6h7Wbai1bXIai0XQsatNRWaVbQlTDr.1). Before joining, make sure to check the [Julia community events calendar](https://julialang.org/community/#events) to confirm whether office hours are happening, rescheduled, or canceled for the week. Feel free to bring any questions or suggestions!
+
+## Support
+
+QuantumClifford.jl is developed by [many volunteers](https://github.com/QuantumSavory/QuantumClifford.jl/graphs/contributors), managed at [Prof. Krastanov's lab](https://lab.krastanov.org/) at [University of Massachusetts Amherst](https://www.umass.edu/quantum/).
+
+The development effort is supported by The [NSF Engineering and Research Center for Quantum Networks](https://cqn-erc.arizona.edu/), and
+by NSF Grant 2346089 "Research Infrastructure: CIRC: New: Full-stack Codesign Tools for Quantum Hardware".
+
+## Bounties
+
+[We run many bug bounties and encourage submissions from novices (we are happy to help onboard you in the field).](https://github.com/QuantumSavory/.github/blob/main/BUG_BOUNTIES.md)
