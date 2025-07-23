@@ -8,7 +8,7 @@ import Nemo: GF, matrix, rank, transpose
 
 import QECCore: code_k, parity_matrix_x, parity_matrix_z
 
-function QECCore.code_k(c::AbstractQECC)
+function QECCore.code_k(c::AbstractCSSCode)
     n = code_n(c)
     F₂ = GF(2)
     rank_Hx = rank(matrix(F₂, parity_matrix_x(c)))
