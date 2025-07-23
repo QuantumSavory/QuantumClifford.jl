@@ -6,6 +6,24 @@ function apply_right!(l::CliffordOperator, r::AbstractCliffordOperator; phases=t
     apply!(CliffordOperator(r, nqubits(l)), l; phases=phases)
 end
 
+# helper
+function mul_right_log_i!(l::PauliOperator, r::PauliOperator)
+    x = mul_right!(l, r; phases=Val(true))
+    x.phase[] = x.phase[] & 0x02
+    return x
+end
+
+# new symbolics
+"""A \"symbolic\" single-qubit SQRTZ. See also : [`SingleQubitOperator`](@ref), [`AbstractSymbolicOperator`](@ref)"""
+struct sSQRTZ <: AbstractSingleQubitOperator
+    q::Int
+    sSQRTZ(q) = if q<0 throw(NoZeroQubit) else new(q) end
+end
+"""A \"symbolic\" single-qubit InvSQRTZ. See also : [`SingleQubitOperator`](@ref), [`AbstractSymbolicOperator`](@ref)"""
+struct sInvSQRTZ <: AbstractSingleQubitOperator
+    q::Int
+    sInvSQRTZ(q) = if q<0 throw(NoZeroQubit) else new(q) end
+end
 
 ##############################
 # Single-qubit gates
@@ -17,21 +35,20 @@ function apply_right!(l::CliffordOperator, r::sHadamard)
 end
 
 function apply_right!(l::CliffordOperator, r::sHadamardXY)
-    mul_right!(l[r.q], l[nqubits(l)+r.q]; phases=Val(false))
+    l[r.q] = mul_right_log_i!(l[r.q], l[nqubits(l)+r.q])
     apply_right!(l, sY(r.q))
     return l
 end
 
 function apply_right!(l::CliffordOperator, r::sHadamardYZ)
-    mul_right!(l[nqubits(l)+r.q], l[r.q]; phases=Val(false))
+    l[nqubits(l)+r.q] = mul_right_log_i!(l[nqubits(l)+r.q], l[r.q])
     apply_right!(l, sZ(r.q))
     return l
 end
 
-function apply_right!(l::CliffordOperator, r::sPhase)
-    mul_right!(l[r.q], l[nqubits(l)+r.q]; phases=Val(true))
-    return l
-end
+# function apply_right!(l::CliffordOperator, r::sPhase)
+#     return l
+# end
 
 # function apply_right!(l::CliffordOperator, r::sInvPhase)
 #     return l
@@ -60,7 +77,7 @@ function apply_right!(l::CliffordOperator, r::sSQRTX)
 end
 
 function apply_right!(l::CliffordOperator, r::sInvSQRTX)
-    mul_right!(l[nqubits(l)+r.q], l[r.q]; phases=Val(false))
+    l[nqubits(l)+r.q] = mul_right_log_i!(l[nqubits(l)+r.q], l[r.q])
     return l
 end
 
@@ -76,6 +93,17 @@ function apply_right!(l::CliffordOperator, r::sInvSQRTY)
     return l
 end
 
+function apply_right!(l::CliffordOperator, r::sSQRTZ)
+    apply_right!(l, sInvSQRTZ(r.q))
+    apply_right!(l, sZ(r.q))
+    return l
+end
+
+function apply_right!(l::CliffordOperator, r::sInvSQRTZ)
+    l[r.q] = mul_right_log_i!(l[r.q], l[nqubits(l)+r.q])
+    return l
+end
+
 # function apply_right!(l::CliffordOperator, r::sCXYZ)
 #     return l
 # end
@@ -84,7 +112,7 @@ end
 #     return l
 # end
 
-function apply_right!(l::CliffordOperator, r::sId1)
+function apply_right!(l::CliffordOperator, ::sId1)
     return l
 end
 
@@ -140,8 +168,8 @@ end
 # end
 
 function apply_right!(l::CliffordOperator, r::sZCX)
-    mul_right!(l[nqubits(l)+r.q2], l[nqubits(l)+r.q1]; phases=Val(true))
-    mul_right!(l[r.q1], l[r.q2]; phases=Val(true))
+    l[nqubits(l)+r.q2] = mul_right!(l[nqubits(l)+r.q2], l[nqubits(l)+r.q1]; phases=Val(true))
+    l[r.q1] = mul_right!(l[r.q1], l[r.q2]; phases=Val(true))
     return l
 end
 
@@ -153,14 +181,14 @@ function apply_right!(l::CliffordOperator, r::sZCY)
 end
 
 function apply_right!(l::CliffordOperator, r::sZCZ)
-    mul_right!(l[r.q2], l[nqubits(l)+r.q1]; phases=Val(true))
-    mul_right!(l[r.q1], l[nqubits(l)+r.q2]; phases=Val(true))
+    l[r.q2] = mul_right!(l[r.q2], l[nqubits(l)+r.q1]; phases=Val(true))
+    l[r.q1] = mul_right!(l[r.q1], l[nqubits(l)+r.q2]; phases=Val(true))
     return l
 end
 
 function apply_right!(l::CliffordOperator, r::sXCX)
-    mul_right!(l[nqubits(l)+r.q2], l[r.q1]; phases=Val(true))
-    mul_right!(l[nqubits(l)+r.q1], l[r.q2]; phases=Val(true))
+    l[nqubits(l)+r.q2] = mul_right!(l[nqubits(l)+r.q2], l[r.q1]; phases=Val(true))
+    l[nqubits(l)+r.q1] = mul_right!(l[nqubits(l)+r.q1], l[r.q2]; phases=Val(true))
     return l
 end
 
@@ -208,10 +236,10 @@ function apply_right!(l::CliffordOperator, r::sSQRTZZ)
 end
 
 function apply_right!(l::CliffordOperator, r::sInvSQRTZZ)
-    mul_right!(l[r.q1], l[nqubits(l)+r.q1]; phases=Val(false))
-    mul_right!(l[r.q1], l[nqubits(l)+r.q2]; phases=Val(false))
-    mul_right!(l[r.q2], l[nqubits(l)+r.q1]; phases=Val(false))
-    mul_right!(l[r.q2], l[nqubits(l)+r.q2]; phases=Val(false))
+    l[r.q1] = mul_right_log_i!(l[r.q1], l[nqubits(l)+r.q1])
+    l[r.q1] = mul_right_log_i!(l[r.q1], l[nqubits(l)+r.q2])
+    l[r.q2] = mul_right_log_i!(l[r.q2], l[nqubits(l)+r.q1])
+    l[r.q2] = mul_right_log_i!(l[r.q2], l[nqubits(l)+r.q2])
     return l
 end
 
@@ -223,10 +251,10 @@ function apply_right!(l::CliffordOperator, r::sSQRTXX)
 end
 
 function apply_right!(l::CliffordOperator, r::sInvSQRTXX)
-    mul_right!(l[nqubits(l)+r.q1], l[r.q1]; phases=Val(false))
-    mul_right!(l[nqubits(l)+r.q1], l[r.q2]; phases=Val(false))
-    mul_right!(l[nqubits(l)+r.q2], l[r.q1]; phases=Val(false))
-    mul_right!(l[nqubits(l)+r.q2], l[r.q2]; phases=Val(false))
+    l[nqubits(l)+r.q1] = mul_right_log_i!(l[nqubits(l)+r.q1], l[r.q1])
+    l[nqubits(l)+r.q1] = mul_right_log_i!(l[nqubits(l)+r.q1], l[r.q2])
+    l[nqubits(l)+r.q2] = mul_right_log_i!(l[nqubits(l)+r.q2], l[r.q1])
+    l[nqubits(l)+r.q2] = mul_right_log_i!(l[nqubits(l)+r.q2], l[r.q2])
     return l
 end
 
@@ -238,12 +266,12 @@ function apply_right!(l::CliffordOperator, r::sSQRTYY)
 end
 
 function apply_right!(l::CliffordOperator, r::sInvSQRTYY)
-    mul_right!(l[r.q1], l[nqubits(l)+r.q1]; phases=Val(false))
-    mul_right!(l[nqubits(l)+r.q1], l[nqubits(l)+r.q2]; phases=Val(false))
-    mul_right!(l[nqubits(l)+r.q1], l[r.q2]; phases=Val(false))
-    mul_right!(l[r.q2], l[r.q1]; phases=Val(false))
-    mul_right!(l[nqubits(l)+r.q2], l[r.q1]; phases=Val(false))
-    mul_right!(l[r.q1], l[nqubits(l)+r.q1]; phases=Val(false))
+    l[r.q1] = mul_right_log_i!(l[r.q1], l[nqubits(l)+r.q1])
+    l[nqubits(l)+r.q1] = mul_right_log_i!(l[nqubits(l)+r.q1], l[nqubits(l)+r.q2])
+    l[nqubits(l)+r.q1] = mul_right_log_i!(l[nqubits(l)+r.q1], l[r.q2])
+    l[r.q2] = mul_right_log_i!(l[r.q2], l[r.q1])
+    l[nqubits(l)+r.q2] = mul_right_log_i!(l[nqubits(l)+r.q2], l[r.q1])
+    l[r.q1] = mul_right_log_i!(l[r.q1], l[nqubits(l)+r.q1])
     rowswap!(tab(l), r.q1, nqubits(l)+r.q1)
     rowswap!(tab(l), r.q2, nqubits(l)+r.q2)
     apply_right!(l, sZ(r.q2))
