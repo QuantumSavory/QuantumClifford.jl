@@ -6,6 +6,19 @@
     using Nemo: matrix, GF
     using QECCore.LinearAlgebra
     using QECCore
+    using QECCore: _create_circulant_matrix, _create_matrix_M_deterministic
+
+    function _theoretical_code_k(c::TillichZemor)
+        C = _create_circulant_matrix(c.m)
+        M = _create_matrix_M_deterministic(c.m, c.n, c.r)
+        H = hcat(C, M)
+        H_gf2 = matrix(GF(2), H)
+        Ht_gf2 = transpose(H_gf2)
+        k = c.n - rank(H_gf2)
+        kT = c.m - rank(Ht_gf2)  # c.m == size(H, 1)
+        k_q = k^2 + kT^2
+        return k_q
+    end
 
     @testset "Testing Quantum Tillich-Zemor properties" begin
         for n in 4:2:20
@@ -21,7 +34,7 @@
                         @test computed_rank == nₛ - kₛ
                         @test stab_looks_good(stab, remove_redundant_rows=true)
                         # test the derivation of [[N, K, _ ]] formules for these novel codes.
-                        @test code_n(c) == nₛ && code_k(c) == kₛ
+                        @test code_n(c) == nₛ && code_k(c) == kₛ == _theoretical_code_k(c)
                     end
                 end
             end
