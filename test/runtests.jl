@@ -11,7 +11,7 @@ else
 end
 
 if Sys.iswindows()
-    @info "Skipping GPU/OpenCL tests -- only supported on *NIX platforms."
+    @info "Skipping GPU/OpenCL tests -- only executed on *NIX platforms."
 else
     CUDA_flag = get(ENV, "CUDA_TEST", "") == "true"
     ROCm_flag = get(ENV, "ROCm_TEST", "") == "true"
