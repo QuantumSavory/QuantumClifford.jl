@@ -52,6 +52,8 @@ For quantum code construction routines:
 - [delfosse2020short](@cite)
 - [Berthusen_2024](@cite)
 - [Zeng_2019](@cite)
+- [pecorari2025high](@cite)
+- [berthusen2025adaptivesyndromeextraction](@cite)
 - [arnault2025upperboundsminimumdistance](@cite)
 - [tillich2006minimum](@cite)
 
