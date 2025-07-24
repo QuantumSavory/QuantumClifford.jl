@@ -46,34 +46,53 @@ and ``\\mathbb{F}_2``-[homology](https://en.wikipedia.org/wiki/Homology_(mathema
 The theory of chain complexes over ``\\mathbb{F}_2`` provides a unified framework for
 understanding error-correcting codes, where classical ``[n, k, d]`` codes correspond to
 `2`-term complexes and quantum CSS codes arise naturally as `3`-term complexes satisfying
-the commutativity condition ``H_Z^T H_X = 0``. This approach reveals deep connections between:
+the commutativity condition ``H_Z^T H_X = 0``. The homological framework reveals that:
 
-- Homological algebra and code parameters
-- Boundary operators and parity check matrices
-- Chain complex [exactness](https://en.wikipedia.org/wiki/Exact_sequence) and code commutativity conditions
+- Quantum CSS codes arise from chain complexes where boundary operators correspond to parity checks.
+- Logical operators correspond to homology classes.
+- Higher-dimensional codes can be constructed through products of complexes.
 
 ## Chain Complex Structure
 
-A chain complex `C` is defined by:
+A **chain complex** ``C`` of length ``n`` is a sequence of finite-dimensional vector spaces
+``C_j`` over ``\\mathbb{F}_2`` connected by boundary operators that are linear transformations
+``\\partial_j \\colon C_j \\to C_{j-1}``:
 
 ```math
 \\begin{aligned}
-C : C_n \\xrightarrow{\\partial_n} C_{n-1} \\xrightarrow{\\partial_{n-1}} \\cdots \\xrightarrow{\\partial_2} C_1 \\xrightarrow{\\partial_1} C_0
+C : \\{0\\} \\longrightarrow C_n \\xrightarrow{\\partial_n} C_{n-1} \\xrightarrow{\\partial_{n-1}} \\cdots \\xrightarrow{\\partial_2} C_1 \\xrightarrow{\\partial_1} C_0 \\longrightarrow \\{0\\}
 \\end{aligned}
 ```
 
-with boundary operators satisfying ``\\partial_i \\circ \\partial_{i+1} = 0``. We define:
+with boundary operators satisfying ``\\partial_i \\circ \\partial_{i+1} = 0``
+(equivalently, ``\\text{im}\\, \\partial_{j+1} \\subseteq \\ker \\partial_j)``.We define:
 
 - **i-chains**: Elements of ``C_i``
 - **i-cycles**: ``Z_i(C) := \\ker \\partial_i``
 - **i-boundaries**: ``B_i(C) := \\mathrm{im} \\partial_{i+1}``
 - **i-th homology**: ``H_i(C) := Z_i(C)/B_i(C)``
 
-The dual complex has:
+## Cohomology of the Dual Complex
 
-- **i-cocycles**: ``Z^i(C) := \\ker \\partial_{i+1}^T``
-- **i-coboundaries**: ``B^i(C) := \\mathrm{im} \\partial_i^T``
-- **i-th cohomology**: ``H^i(C) := Z^i(C)/B^i(C)``
+Given a chain complex ``C`` with boundary operators ``\\partial_j``, its **cochain complex**
+``\\widetilde{C}`` is the *dual* sequence with coboundary maps ``\\delta^i = \\partial_{i+1}^T``:
+
+```math
+\\begin{aligned}
+\\widetilde{C} : \\{0\\} \\longleftarrow C_0^* \\xleftarrow{\\partial_1^T} C_1^* \\xleftarrow{\\partial_2^T} \\cdots \\xleftarrow{\\partial_n^T} C_n^* \\longleftarrow \\{0\\}
+\\end{aligned}
+```
+
+where
+
+- **i-cocycles**: ``Z^i(\\widetilde{C}) := \\ker \\partial_{i+1}^T``
+- **i-coboundaries**: ``B^i(\\widetilde{C}) := \\mathrm{im} \\partial_i^T``
+- **i-th cohomology**: ``H^i(\\widetilde{C}) := Z^i(\\widetilde{C})/B^i(\\widetilde{C})``
+
+!!! note
+    The cohomology group ``H^i(\\widetilde{C}) = H(\\partial_{i+1}^T, \\partial_i^T)`` has the same
+    rank as the homology group ``H_i(C)`` and corresponds to ``X``-type logical operators in the CSS code
+    ``CSS(\\partial_i, \\partial_{i+1}^T)``, while ``H_i(C)`` corresponds to ``Z``-type operators. 
 
 ### Classical Codes via Chain Complexes and ``\\mathbb{F_2}`` Homology
 
@@ -81,7 +100,7 @@ An ``[n,k,d]`` classical code corresponds to a `2`-term complex:
 
 ```math
 \\begin{aligned}
-0 \\rightarrow C_1 \\xrightarrow{\\partial_1 = H} C_0 \\rightarrow 0
+\\{0\\} \\longrightarrow C_1 \\xrightarrow{\\partial_1 = H} C_0 \\longrightarrow \\{0\\}
 \\end{aligned}
 ```
 
@@ -97,7 +116,7 @@ Quantum CSS codes extend this to `3`-term complexes:
 
 ```math
 \\begin{aligned}
-C_2 \\xrightarrow{\\partial_2 = H_Z^T} C_1 \\xrightarrow{\\partial_1 = H_X} C_0
+\\{0\\} \\longrightarrow C_2 \\xrightarrow{\\partial_2 = H_Z^T} C_1 \\xrightarrow{\\partial_1 = H_X} C_0 \\longrightarrow \\{0\\}
 \\end{aligned}
 ```
 
