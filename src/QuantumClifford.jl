@@ -91,6 +91,8 @@ export
     mctrajectory!, mctrajectories, applywstatus!,
     # petrajectories
     petrajectories, applybranches,
+    # backtrajectory
+    backtrajectory,
     # nonclifford
     GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase,
     # makie plotting -- defined only when extension is loaded
@@ -1435,6 +1437,7 @@ include("linalg.jl")
 include("operator_traits.jl")
 include("mctrajectory.jl")
 include("petrajectory.jl")
+include("backtrajectory.jl")
 include("misc_ops.jl")
 include("classical_register.jl")
 include("noise.jl")
