@@ -444,7 +444,7 @@ is built by taking the tensor product ``C^{\\otimes D}`` and forming the associa
 
 ## Subfamilies
 
-### 2D Toric Code
+### [[2L², 2, L]] 2D Toric Code
 
 ```jldoctest twoDtoric
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
@@ -469,7 +469,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (8, 2, 2)
 ```
 
-### 3D Toric Code
+### [[3L³, 3, min(L, L²)]] 3D Toric Code
 
 ```jldoctest threeDtoric
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
@@ -484,7 +484,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (24, 3, 2)
 ```
 
-### 4D Toric Code
+### [[6L⁴, 6, L²]] 4D Toric Code
 
 ```jldoctest fourDtoric
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
