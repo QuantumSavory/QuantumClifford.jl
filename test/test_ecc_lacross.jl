@@ -1,4 +1,4 @@
-@testitem "ECC Lacross" tags=[:ecc] begin
+@testitem "ECC La-cross" tags=[:ecc] begin
     using JuMP
     using HiGHS
     using Hecke
@@ -64,7 +64,7 @@
             # [[34, 4, 3]]
             n = 5
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -76,7 +76,7 @@
             # [[52, 4, 4]]
             n = 6
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -88,7 +88,7 @@
             # [[100, 4, 5]]
             n = 8
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -100,7 +100,7 @@
             # [[130, 4, 6]]
             n = 9
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -112,7 +112,7 @@
             # [[164, 4, 6]]
             n = 10
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -124,7 +124,7 @@
             # [[244, 4, 8]]
             n = 12
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -143,7 +143,7 @@
             # [[65, 9, 4]]
             n = 7
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -154,7 +154,7 @@
 
             # [[98, 18, 4]]
             full_rank = false
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -166,7 +166,7 @@
             # [[117, 9, 4]]
             n = 9
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -178,7 +178,7 @@
             # [[149, 9, 5]]
             n = 10
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -190,7 +190,7 @@
             # [[225, 9, 6]]
             n = 12
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -202,7 +202,7 @@
             # [[317, 9, 8]]
             n = 14
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -214,7 +214,7 @@
             # [[369, 9, 8]]
             n = 15
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -233,7 +233,7 @@
             # [[106, 16, 4]]
             n = 9
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -245,7 +245,7 @@
             # [[136, 16, 5]]
             n = 10
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -257,7 +257,7 @@
             # [[208, 16, 6]]
             n = 12
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -269,7 +269,7 @@
             # [[296, 16, 7]]
             n = 14
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -281,7 +281,7 @@
             # [[400, 16, 8]]
             n = 16
             full_rank = true
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -298,7 +298,7 @@
             R, x = polynomial_ring(F, "x")
             h = 1 + x^3;
             full_rank = true # corresponds to code with open boundary conditions
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -308,7 +308,7 @@
 
             # [[162, 18, d]]
             full_rank = false # corresponds to code with periodic boundary conditions
-            c = Lacross(n, h, full_rank)
+            c = LaCross(n, h, full_rank)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)

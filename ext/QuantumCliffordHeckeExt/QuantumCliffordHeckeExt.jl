@@ -24,7 +24,7 @@ import QECCore: AbstractECC, CSS,
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export hgp, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes, haah_cubic_codes,
-    LPCode, LiftedCode, honeycomb_color_codes, Lacross
+    LPCode, LiftedCode, honeycomb_color_codes, LaCross
 
 include("util.jl")
 include("types.jl")

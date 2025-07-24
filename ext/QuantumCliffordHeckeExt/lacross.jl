@@ -91,7 +91,7 @@ julia> R, x = polynomial_ring(F, "x");
 
 julia> h = 1 + x + x^k;
 
-julia> c = Lacross(n, h, false);
+julia> c = LaCross(n, h, false);
 
 julia> import HiGHS;
 
@@ -105,7 +105,7 @@ Here is `[[65, 9, 4]]` La-cross code from with ``h(x) = 1 + x + x^3``, `n = 7`, 
 and full rank seed *rectangular* circulant matrix from Appendix A of [pecorari2025high](@cite).
 
 ```jldoctest lacrosseg
-julia> c = Lacross(n, h, true);
+julia> c = LaCross(n, h, true);
 
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (65, 9, 4)
@@ -123,7 +123,7 @@ julia> h = 1 + x + x^k;
 
 julia> full_rank = true;
 
-julia> c = Lacross(n, h, full_rank);
+julia> c = LaCross(n, h, full_rank);
 
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (400, 16, 8)
@@ -134,20 +134,20 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/lacr
 ### Fields
     $TYPEDFIELDS
 """
-struct Lacross <: AbstractCSSCode
+struct LaCross <: AbstractCSSCode
     """The block length of the classical seed code."""
     n::Int
     """The seed vector is represented with a degree-`n` polynomial of the form ``h(x) = \\sum_{i=0}^{n-1} c_i x^i``."""
     h::FqPolyRingElem
     """A flag indicating whether to use the full-rank rectangular matrix (`true`) or the original circulant matrix (`false`)."""
     full_rank::Bool
-    function Lacross(n, h, full_rank)
+    function LaCross(n, h, full_rank)
         n <= 0 && throw(ArgumentError("Block length must be positive."))
         new(n, h, full_rank)
     end
 end
 
-function parity_matrix_xz(c::Lacross)
+function parity_matrix_xz(c::LaCross)
     F = GF(2)
     R = parent(c.h)
     x = gen(R)
@@ -173,10 +173,10 @@ function parity_matrix_xz(c::Lacross)
     end
 end
 
-parity_matrix_x(c::Lacross) = parity_matrix_xz(c)[1]
+parity_matrix_x(c::LaCross) = parity_matrix_xz(c)[1]
 
-parity_matrix_z(c::Lacross) = parity_matrix_xz(c)[2]
+parity_matrix_z(c::LaCross) = parity_matrix_xz(c)[2]
 
-code_k(c::Lacross) = c.full_rank ? degree(c.h)^2 : 2*degree(c.h)^2
+code_k(c::LaCross) = c.full_rank ? degree(c.h)^2 : 2*degree(c.h)^2
 
-code_n(c::Lacross) = c.full_rank ? (c.n-degree(c.h))^2+c.n^2 : 2*c.n^2
+code_n(c::LaCross) = c.full_rank ? (c.n-degree(c.h))^2+c.n^2 : 2*c.n^2

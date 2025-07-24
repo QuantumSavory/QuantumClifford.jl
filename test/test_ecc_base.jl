@@ -333,7 +333,7 @@ const code_instance_args = Dict(
     :CyclicQuantumTannerGraphProduct => [1, 2, 3, 4, 5],
     :DDimensionalSurfaceCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
     :DDimensionalToricCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
-    :Lacross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false), (7,h₃,true), (9,h₃,true), (9,h₄,true), (10,h₄,true), (12,h₄,true)]
+    :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false), (7,h₃,true), (9,h₃,true), (9,h₄,true), (10,h₄,true), (12,h₄,true)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
