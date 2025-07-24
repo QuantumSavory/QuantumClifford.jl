@@ -194,7 +194,9 @@ test_twobga_codes = []
 # La-cross code polynomial
 F = GF(2)
 R, x = polynomial_ring(F, "x")
-h = 1 + x + x^3;
+h₂ = 1 + x + x^2
+h₃ = 1 + x + x^3
+h₄ = 1 + x + x^4
 
 @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
   import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order, gens, quo
@@ -330,8 +332,8 @@ const code_instance_args = Dict(
     :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
     :CyclicQuantumTannerGraphProduct => [1, 2, 3, 4, 5],
     :DDimensionalSurfaceCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
-    :DDimensionalToricCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)]
-    :Lacross => [(7,h,false), (7,h,true)]
+    :DDimensionalToricCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
+    :Lacross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false), (7,h₃,true), (9,h₃,true), (9,h₄,true), (10,h₄,true), (12,h₄,true)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)

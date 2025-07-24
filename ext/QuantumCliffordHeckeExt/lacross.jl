@@ -1,12 +1,12 @@
 """
     $TYPEDEF
 
-The **La-Cross** code is a quantum LDPC code constructed using the hypergraph product
+The **La-cross** code is a quantum LDPC code constructed using the hypergraph product
 of two classical seed LDPC codes. It is characterized by its parity check matrix `H`,
 which is derived from **circulant** matrices with *specific* properties. These codes were
 introduced in [pecorari2025high](@cite).
 
-The La-Cross code has two families: one for **periodic boundary** conditions and one for
+The La-cross code has two families: one for **periodic boundary** conditions and one for
 **open boundary** conditions:
 
 ```@raw html
@@ -28,7 +28,7 @@ graph TD
     a quantum code with stabilizers stretching up to the array extent, i.e. with **open boundary
     conditions**.
 
-# Cyclic codes and circulant matrices
+# Cyclic Codes and Circulant Matrices
 
 A **cyclic code** is a linear code in which codewords remain valid under cyclic
 shifts. A **circulant matrix** is a square matrix where each row is a cyclic shift
@@ -59,23 +59,25 @@ divisors of ``x^n - 1`` with a leading coefficient of 1. Consequently, the funda
 building blocks of cyclic codes correspond to the factorization of ``x^n - 1``.
 
 !!! note
-    For `k = 1`, the generator polynomial `h(x) = 1 + x` defines the **repetition code**.
+    For `k = 1`, the generator polynomial ``h(x) = 1 + x`` defines the **repetition code**.
 
-# Polynomial representation
+# Polynomial Representation
 
 The first row of a circulant matrix ``H = \\text{circ}(c_0, c_1, c_2, \\dots, c_{n-1})``
 can be mapped to the coefficients of a polynomial ``h(x)``. For instance, if the first
 row is ``[1, 1, 0, 1]``, the polynomial is: ``h(x) = 1 + x + x^3``. This polynomial-based
-representation aids in the analysis and design of cyclic codes.
+representation aids in the analysis and design of cyclic codes. For our implementation of
+La-cross codes, we leverage `Hecke.polynomial_ring` to work directly with polynomial rings
+rather than manipulating coefficient arrays explicitly.
 
 !!! The **next-to-next-to-nearest neighbor** connectivity implies the use of a *degree-3*
 seed polynomial ``h(x) = 1 + x + x^2 + x^3`` in the ring ``\\mathbb{F}_2[x]/(x^n - 1)`` for
 a specific code length `n`. Additionally, the condition of low stabilizer weight requires
 the polynomial ``1 + x + x^3``.
 
-# [[2n², 2k², d]] La-Cross code
+## [[2n², 2k², d]] La-cross Code
 
-Here is `[[98, 18, 4]]` La-cross code from with `h(x) = 1 + x + x^3`, `n = 7`,
+Here is `[[98, 18, 4]]` La-cross code from with ``h(x) = 1 + x + x^3``, `n = 7`,
 and `k = 3` from Appendix A of [pecorari2025high](@cite).
 
 ```jldoctest lacrosseg
@@ -83,28 +85,48 @@ julia> using QuantumClifford; using QuantumClifford.ECC; # hide
 
 julia> import Hecke: GF, polynomial_ring;
 
-julia> n = 7; F = GF(2);
+julia> n = 7; k = 3; F = GF(2);
 
 julia> R, x = polynomial_ring(F, "x");
 
-julia> h = 1 + x + x^3;
+julia> h = 1 + x + x^k;
 
-julia> c = parity_checks(Lacross(n, h, false));
+julia> c = Lacross(n, h, false);
 
-julia> code_n(c), code_k(c)
-(98, 18)
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(98, 18, 4)
 ```
 
-# [[(n - k)² + n², k², d]] La-Cross code
+## [[(n - k)² + n², k², d]] La-cross Code
 
-Here is `[[65, 9, 4]]` La-cross code from with `h(x) = 1 + x + x^3`, `n = 7`, `k = 3`
+Here is `[[65, 9, 4]]` La-cross code from with ``h(x) = 1 + x + x^3``, `n = 7`, `k = 3`
 and full rank seed *rectangular* circulant matrix from Appendix A of [pecorari2025high](@cite).
 
 ```jldoctest lacrosseg
-julia> c = parity_checks(Lacross(n, h, true));
+julia> c = Lacross(n, h, true);
 
-julia> code_n(c), code_k(c)
-(65, 9)
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(65, 9, 4)
+```
+
+Here is `[[400, 16, 8]]` La-cross code from with ``h(x) = 1 + x + x^4``, `n = 16`, `k = 4`
+from [pecorari2025high](@cite).
+
+```jldoctest lacrosseg
+julia> n = 16; k = 4;
+
+julia> R, x = polynomial_ring(F, "x");
+
+julia> h = 1 + x + x^k;
+
+julia> full_rank = true;
+
+julia> c = Lacross(n, h, full_rank);
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(400, 16, 8)
 ```
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/lacross).
@@ -113,11 +135,11 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/lacr
     $TYPEDFIELDS
 """
 struct Lacross <: AbstractCSSCode
-    """The block length of the classical seed code"""
+    """The block length of the classical seed code."""
     n::Int
-    """The seed vector is represented with a degree-`n` polynomial of the form ``h(x) = \\sum_{i=0}^{n-1} c_i x^i``"""
+    """The seed vector is represented with a degree-`n` polynomial of the form ``h(x) = \\sum_{i=0}^{n-1} c_i x^i``."""
     h::FqPolyRingElem
-    """A flag indicating whether to use the full-rank rectangular matrix (true) or the original circulant matrix (false)."""
+    """A flag indicating whether to use the full-rank rectangular matrix (`true`) or the original circulant matrix (`false`)."""
     full_rank::Bool
     function Lacross(n, h, full_rank)
         n <= 0 && throw(ArgumentError("Block length must be positive."))
