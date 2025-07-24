@@ -48,7 +48,7 @@ steps:
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
-  - label: "CUDA Tests"
+  - label: "CUDA Tests retry"
     agents:
       queue: cuda
     plugins:
