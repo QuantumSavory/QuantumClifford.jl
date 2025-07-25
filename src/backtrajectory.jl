@@ -1,3 +1,31 @@
+# new symbolics
+abstract type AbstractReset <: AbstractOperation end
+
+"""Reset a qubit to the |+⟩ state.
+
+See also: [`sMRX`](@ref), [`Reset`](@ref)"""
+struct sRX <: AbstractReset
+    qubit::Int
+    sRX(q) = if q<=0 throw(NoZeroQubit) else new(q) end
+end
+
+"""Reset a qubit to the |i₊⟩ state.
+
+See also: [`sMRY`](@ref), [`Reset`](@ref)"""
+struct sRY <: AbstractReset
+    qubit::Int
+    sRY(q) = if q<=0 throw(NoZeroQubit) else new(q) end
+end
+
+"""Reset a qubit to the |0⟩ state.
+
+See also: [`sMRZ`](@ref), [`Reset`](@ref)"""
+struct sRZ <: AbstractReset
+    qubit::Int
+    sRZ(q) = if q<=0 throw(NoZeroQubit) else new(q) end
+end
+
+
 """
 Simulates measurement results of a Clifford circuit acting on an `n`-qubit |0⟩^⊗n state using the stabilizer tableau backtracking method,
 as described by Gidney (2021).
@@ -28,6 +56,8 @@ function backtrajectory(circuit::Vector{<:AbstractOperation}, n::Int)
             push!(results, do_MRY!(T, op))
         elseif op isa sMRZ
             push!(results, do_MRZ!(T, op))
+        elseif op isa AbstractReset
+            do_reset!(T, op)
         else
             error("Unsupported operation: $(typeof(op))")
         end
@@ -48,6 +78,12 @@ function do_MRX!(T, op::sMRX)
     phases(tab(T))[op.qubit] = 0x00
     phases(tab(T))[nqubits(T)+op.qubit] = 0x00
     return result
+end
+
+function do_reset!(T, op::sRX)
+    collapse_x!(T, op.qubit)
+    phases(tab(T))[op.qubit] = 0x00
+    phases(tab(T))[nqubits(T)+op.qubit] = 0x00
 end
 
 function collapse_x!(T, q::Int)
@@ -72,6 +108,13 @@ function do_MRY!(T, op::sMRY)
         phases(tab(T))[nqubits(T)+op.qubit] ⊻= 0x02
     end
     return result
+end
+
+function do_reset!(T, op::sRY)
+    collapse_y!(T, op.qubit)
+    if eval_y_obs(T, op.qubit).phase[] != 0x00
+        phases(tab(T))[nqubits(T)+op.qubit] ⊻= 0x02
+    end
 end
 
 function collapse_y!(T, q::Int)
@@ -109,6 +152,12 @@ function do_MRZ!(T, op::sMRZ)
     phases(tab(T))[op.qubit] = 0x00
     phases(tab(T))[nqubits(T)+op.qubit] = 0x00
     return result
+end
+
+function do_reset!(T, op::sRZ)
+    collapse_z!(T, op.qubit)
+    phases(tab(T))[op.qubit] = 0x00
+    phases(tab(T))[nqubits(T)+op.qubit] = 0x00
 end
 
 function collapse_z!(T, q::Int)
@@ -174,6 +223,8 @@ function backtrajectory(circuit::Vector{<:AbstractOperation})
         elseif op isa AbstractTwoQubitOperator
             n = max(n, op.q1, op.q2)
         elseif op isa AbstractMeasurement
+            n = max(n, op.qubit)
+        elseif op isa AbstractReset
             n = max(n, op.qubit)
         elseif typeof(op) in [sMRX, sMRY, sMRZ]
             n = max(n, op.qubit)
