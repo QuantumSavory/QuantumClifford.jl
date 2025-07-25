@@ -74,9 +74,9 @@ function collapse_x!(T, q::Int)
         return
     end
 
-    apply!(T, sHadamard(q); phases=true)
+    apply_right!(T, sHadamard(q))
     collapse_z!(T, q)
-    apply!(T, sHadamard(q); phases=true)
+    apply_right!(T, sHadamard(q))
 end
 
 function do_MZ!(T, op::sMZ)
