@@ -2,6 +2,7 @@
     using CUDA
     using QuantumClifford
     using Random
+    using QuantumClifford: to_cpu, to_gpu
     
     if CUDA.functional()
         @testset "GPU canonicalize! correctness" begin
