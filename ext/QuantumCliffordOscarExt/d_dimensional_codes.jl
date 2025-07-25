@@ -140,6 +140,9 @@ the code parameters are:
     Quantum error-correcting codes, which are represented as `3`-term chain complexes, can be
     constructed by applying the homological or hypergraph product to two `2`-term chain complexes.
 
+For a detailed explanation, see the ECC Zoo's writeup on the 
+[CSS-to-homology correspondence](https://errorcorrectionzoo.org/c/qubit_css#defterm-Qubit_20XCSS-to-homology_20Xcorrespondence).
+
 ## D-dimensional Surface Code ([Berthusen_2024](@cite), [Zeng_2019](@cite))
 
 We provide an explicit construction of the `D`-dimensional surface code

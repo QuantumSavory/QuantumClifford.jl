@@ -58,7 +58,7 @@ This establishes a mapping between ``\\mathbb{F}_2^n`` and the quotient ring
 ``\\mathbb{F}_2[x]/(x^n - 1)``, where cyclic shifts in ``\\mathbb{F}_2^n`` correspond
 to multiplications by `x` in the polynomial ring. Since multiplication by `x` preserves
 the ideal structure of ``\\mathbb{F}_2[x]/(x^n - 1)``, cyclic codes correspond to
-ideals in this ring. These ideals are in one-to-one correspondence with unitary``mod-2``
+ideals in this ring. These ideals are in one-to-one correspondence with unitary ``mod-2``
 divisors of ``x^n - 1`` with a leading coefficient of 1. Consequently, the fundamental
 building blocks of cyclic codes correspond to the factorization of ``x^n - 1``.
 
