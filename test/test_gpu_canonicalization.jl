@@ -1,4 +1,4 @@
-@testitem "GPU Canonicalization" tags=[:gpu] begin
+@testitem "GPU Canonicalization" tags=[:cuda] begin
     using CUDA
     using QuantumClifford
     using Random
