@@ -18,10 +18,16 @@ function backtrajectory(circuit::Vector{<:AbstractOperation}, n::Int)
             apply_right!(T, op)
         elseif op isa sMX
             push!(results, do_MX!(T, op))
-        # elseif op isa sMY
-            # push!(results, do_MY!(T, op))
+        elseif op isa sMY
+            push!(results, do_MY!(T, op))
         elseif op isa sMZ
             push!(results, do_MZ!(T, op))
+        elseif op isa sMRX
+            push!(results, do_MRX!(T, op))
+        elseif op isa sMRY
+            push!(results, do_MRY!(T, op))
+        elseif op isa sMRZ
+            push!(results, do_MRZ!(T, op))
         else
             error("Unsupported operation: $(typeof(op))")
         end
@@ -31,57 +37,78 @@ function backtrajectory(circuit::Vector{<:AbstractOperation}, n::Int)
 end
 
 
-# function do_MY!(T, op::sMY)
-#     collapse_y!(T, op.qubit)
-#     return eval_y_obs(T, q)
-# end
-
-# function collapse_y!(T, q::Int)
-#     if is_deterministic_y(T, q)
-#         return
-#     end
-
-#     apply!(T, sHadamardYZ(q); phases=true)
-#     collapse_z!(T, q)
-#     apply!(T, sHadamardYZ(q); phases=true)
-# end
-
-# function eval_y_obs(T, q::Int)
-#     result = T[q]
-#     log_i = mul_right!(result, T[nqubits(T)+q])
-#     log_i += 1
-#     @assert log_i & 1 == 0
-#     if log_i & 2
-#         result.phase[] 
-#     end
-#     return result
-# end
-
 function do_MX!(T, op::sMX)
     collapse_x!(T, op.qubit)
     return phases(tab(T))[op.qubit] == 0x00 ? 1 : -1
 end
 
-# function do_MRX!(T, op::sMRX)
-#     collapse_x!(T, op.qubit)
-#     result = phases(tab(T))[op.qubit] == 0x00 ? 1 : -1
-#     # change the signs to zero
-#     return result
-# end
+function do_MRX!(T, op::sMRX)
+    collapse_x!(T, op.qubit)
+    result = phases(tab(T))[op.qubit] == 0x00 ? 1 : -1
+    phases(tab(T))[op.qubit] = 0x00
+    phases(tab(T))[nqubits(T)+op.qubit] = 0x00
+    return result
+end
 
 function collapse_x!(T, q::Int)
     if is_deterministic_x(T, q)
         return
     end
-
+    
     apply_right!(T, sHadamard(q))
     collapse_z!(T, q)
     apply_right!(T, sHadamard(q))
 end
 
+function do_MY!(T, op::sMY)
+    collapse_y!(T, op.qubit)
+    return eval_y_obs(T, op.qubit).phase[] == 0x00 ? 1 : -1
+end
+
+function do_MRY!(T, op::sMRY)
+    collapse_y!(T, op.qubit)
+    result = eval_y_obs(T, op.qubit).phase[] == 0x00 ? 1 : -1
+    if result == -1
+        phases(tab(T))[nqubits(T)+op.qubit] ⊻= 0x02
+    end
+    return result
+end
+
+function collapse_y!(T, q::Int)
+    if is_deterministic_y(T, q)
+        return
+    end
+
+    apply_right!(T, sHadamardYZ(q))
+    collapse_z!(T, q)
+    apply_right!(T, sHadamardYZ(q))
+end
+
+function eval_y_obs(T, q::Int)
+    result = T[q]
+    @assert result.phase[] & 0x01 == 0
+    og_result_sign = result.phase[]
+    mul_right!(result, T[nqubits(T)+q]; phases=Val(true))
+    log_i = result.phase[] + 1
+    @assert log_i & 0x01 == 0
+    if log_i & 2 != 0
+        og_result_sign ⊻= 0x02
+    end
+    result.phase[] = og_result_sign
+    return result
+end
+
 function do_MZ!(T, op::sMZ)
     collapse_z!(T, op.qubit)
-    return phases(tab(T))[op.qubit+nqubits(T)] == 0x00 ? 1 : -1
+    return phases(tab(T))[nqubits(T)+op.qubit] == 0x00 ? 1 : -1
+end
+
+function do_MRZ!(T, op::sMRZ)
+    collapse_z!(T, op.qubit)
+    result = phases(tab(T))[nqubits(T)+op.qubit] == 0x00 ? 1 : -1
+    phases(tab(T))[op.qubit] = 0x00
+    phases(tab(T))[nqubits(T)+op.qubit] = 0x00
+    return result
 end
 
 function collapse_z!(T, q::Int)
@@ -147,6 +174,8 @@ function backtrajectory(circuit::Vector{<:AbstractOperation})
         elseif op isa AbstractTwoQubitOperator
             n = max(n, op.q1, op.q2)
         elseif op isa AbstractMeasurement
+            n = max(n, op.qubit)
+        elseif typeof(op) in [sMRX, sMRY, sMRZ]
             n = max(n, op.qubit)
         else
             error("Unsupported operation: $(typeof(op))")
