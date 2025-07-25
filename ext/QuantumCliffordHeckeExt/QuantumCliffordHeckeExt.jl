@@ -4,8 +4,7 @@ using QECCore
 import QECCore: code_n, code_s, code_k, rate, distance
 using DocStringExtensions
 
-import QuantumClifford
-import LinearAlgebra
+import QuantumClifford, LinearAlgebra
 
 import Hecke: Group, GroupElem, AdditiveGroupElem,
     GroupAlgebra, GroupAlgebraElem, FqFieldElem, representation_matrix, dim, base_ring,
@@ -13,7 +12,7 @@ import Hecke: Group, GroupElem, AdditiveGroupElem,
     is_commutative, FqPolyRingElem, residue_ring, coeff, zero_matrix, mod1, lift, ZZ, gen,
     matrix, ncols, nrows, degree, group
 import Nemo
-import Nemo: characteristic, matrix_repr, GF, ZZ, lift, matrix
+import Nemo: characteristic, matrix_repr, GF, ZZ, lift, matrix, rank
 
 import QuantumClifford.ECC: iscss, parity_checks, parity_matrix,
     two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes, check_repr_commutation_relation,
