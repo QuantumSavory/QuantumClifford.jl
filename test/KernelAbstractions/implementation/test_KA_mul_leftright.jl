@@ -11,7 +11,7 @@ using QuantumClifford: mul_left!, mul_right!
     for _ in cycle_range
     @cached cache begin
 
-        # Pauli
+        # PauliOperator
         h_p1 = random_pauli(n)
         d_p1 = PauliOperator(AT(u32(h_p1.phase)), h_p1.nqubits, AT(h_p1.xz))
         h_p2 = random_pauli(n)
@@ -88,7 +88,7 @@ using QuantumClifford: mul_left!, mul_right!
 
         for (h_v, d_v) in ((h_s.tab, d_s.tab), (h_s, d_s))
 
-        # Pauli - Tableau/AbstractStabilizer[i]
+        # PauliOperator - Tableau/AbstractStabilizer[i]
         h_o = mul!(copy(h_p1), h_v, i)
         d_o = mul!(copy(d_p1), d_v, i)
         synchronize()
@@ -102,7 +102,16 @@ using QuantumClifford: mul_left!, mul_right!
 
         for (h_u, d_u) in ((h_s.tab, d_s.tab), (h_s, d_s))
 
-        # Tableau/AbstractStabilizer[i] - Pauli
+        # Tableau/AbstractStabilizer - PauliOperator
+        h_o = mul!(copy(h_u), h_p1)
+        d_o = mul!(copy(d_u), d_p1)
+        synchronize()
+        @test begin
+            phases(h_o, i) == Array(phases(d_o, i))
+            xzs(h_o, i) == Array(xzs(d_o, i))
+        end
+
+        # Tableau/AbstractStabilizer[i] - PauliOperator
         h_o = mul!(copy(get_pauli(h_u, i)), h_p1)
         d_o = mul!(copy(d_u), i, d_p1)
         synchronize()
@@ -155,7 +164,7 @@ using QuantumClifford: mul_left!, mul_right!
         # Marks the end for (h_u, d_u)
         end
 
-        # MixedDestabilizer[i] - Self[j]
+        # (Mixed)Destabilizer[i] - Self[j]
         h_o1 = mul!(
             copy(get_pauli(h_d, j)), get_pauli(h_d, i);
             phases = Val(false)
