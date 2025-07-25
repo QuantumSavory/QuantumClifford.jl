@@ -31,5 +31,6 @@ include("types.jl")
 include("direct_product.jl")
 include("group_presentation.jl")
 include("d_dimensional_codes.jl")
+include("homological_product_codes.jl")
 
 end # module
