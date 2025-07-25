@@ -215,23 +215,28 @@ end
 #     return backtrajectory(circuit0, nqubits(state))
 # end
 
-function backtrajectory(circuit::Vector{<:AbstractOperation})
-    n = 0
-    for op in circuit
-        if op isa AbstractSingleQubitOperator
-            n = max(n, op.q)
-        elseif op isa AbstractTwoQubitOperator
-            n = max(n, op.q1, op.q2)
-        elseif op isa AbstractMeasurement
-            n = max(n, op.qubit)
-        elseif op isa AbstractReset
-            n = max(n, op.qubit)
-        elseif typeof(op) in [sMRX, sMRY, sMRZ]
-            n = max(n, op.qubit)
-        else
-            error("Unsupported operation: $(typeof(op))")
-        end
-    end
+# function backtrajectory(circuit::Vector{<:AbstractOperation})
+#     n = 0
+#     for op in circuit
+#         if op isa AbstractSingleQubitOperator
+#             n = max(n, op.q)
+#         elseif op isa AbstractTwoQubitOperator
+#             n = max(n, op.q1, op.q2)
+#         elseif op isa AbstractMeasurement
+#             n = max(n, op.qubit)
+#         elseif op isa AbstractReset
+#             n = max(n, op.qubit)
+#         elseif typeof(op) in [sMRX, sMRY, sMRZ]
+#             n = max(n, op.qubit)
+#         else
+#             error("Unsupported operation: $(typeof(op))")
+#         end
+#     end
 
+#     return backtrajectory(circuit, n)
+# end
+
+function backtrajectory(circuit::Vector{<:AbstractOperation})
+    n = maximum(Iterators.flatten(affectedqubits.(circuit)))
     return backtrajectory(circuit, n)
 end
