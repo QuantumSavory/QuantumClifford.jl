@@ -1,13 +1,14 @@
-include("benchmark_platform.jl")
+include("implementation/benchmark_platform.jl")
 
-using AMDGPU: ROCArray, synchronize, devices
+using Dates: value, now, UNIXEPOCH
+using AMDGPU: ROCArray, devices, synchronize
 const AT = ROCArray
-const platform_name = "ROCm"
+const path = "ROCm_benchmark_" * string(value(now()) - UNIXEPOCH)
 
 const can_run = length(devices()) > 0
 
 if can_run
-	benchmark_platform(AT, synchronize; platform_name = platform_name)
+    benchmark_platform(AT, synchronize, path)
 else
-	@info "Unable to benchmark $platform_name. No suitable device was found."
+    @info "Unable to run ROCm benchmark. No suitable device was found."
 end
