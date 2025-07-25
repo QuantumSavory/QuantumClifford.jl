@@ -58,4 +58,24 @@
     @testset "hamming" begin
         include("codes/hamming.jl")
     end
+
+    @testset "Delfosse-Reichardt Repetition Code" begin
+        include("codes/delfosse_reichardt_repcode.jl")
+    end
+
+    @testset "Delfosse-Reichardt Code" begin
+        include("codes/delfosse_reichardt_code.jl")
+    end
+
+    @testset "Delfosse-Reichardt Generalized [[8,2,3]] Code" begin
+        include("codes/delfosse_reichardt_823_code.jl")
+    end
+
+    @testset "Quantum Tanner Graph Codes" begin
+        include("codes/quantumtannergraphproduct.jl")
+    end
+
+    @testset "Quantum Tillich-Zemor Codes" begin
+        include("codes/tillichzemor.jl")
+    end
 end

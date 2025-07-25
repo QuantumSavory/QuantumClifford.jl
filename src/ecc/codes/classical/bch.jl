@@ -93,7 +93,7 @@ function generator_polynomial(b::BCH)
     return gx
 end
 
-function parity_checks(b::BCH)
+function parity_matrix(b::BCH)
     GF2ʳ, a = finite_field(2, b.m, "a")
     HField = Matrix{FqFieldElem}(undef, b.t, 2 ^ b.m - 1)
     for i in 1:b.t

@@ -6,12 +6,23 @@ version = "0.1.1"
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+
+[weakdeps]
+Nemo = "2edaba10-b0f1-5616-af89-8c11ac63239a"
+
+[extensions]
+QECCoreNemoExt = "Nemo"
 
 [compat]
 Combinatorics = "1.0"
 DocStringExtensions = "0.9"
+Graphs = "1.9"
 LinearAlgebra = "1.9"
+Nemo = "0.45.5, 0.46, 0.47, 0.48, 0.49, 0.50, 0.51"
 SparseArrays = "1.9"
+Random = "1.10"
 julia = "1.9"
