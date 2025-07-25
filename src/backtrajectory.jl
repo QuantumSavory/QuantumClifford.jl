@@ -117,6 +117,11 @@ function collapse_z!(T, q::Int)
         apply!(T, sHadamardYZ(pivot); phases=true)
     end
 
+    # Assign a measurement result.
+    if rand(Bool) #TODO: maybe support a RNG
+        apply!(T, sX(pivot); phases=true)
+    end
+
     return pivot
 end
 
