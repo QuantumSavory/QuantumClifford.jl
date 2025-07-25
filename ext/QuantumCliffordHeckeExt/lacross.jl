@@ -6,18 +6,22 @@ of two classical seed LDPC codes. It is characterized by its parity check matrix
 which is derived from **circulant** matrices with *specific* properties. These codes were
 introduced in [pecorari2025high](@cite).
 
-The La-cross code has two families: one for **periodic boundary** conditions and one for
-**open boundary** conditions:
+The La-cross code has two families, distinguished by their boundary conditions:
 
-```@raw html
-<div class="mermaid">
-graph TD
-    A[La-cross Code Families] --> B[Periodic Boundary]
-    A --> C[Open Boundary]
+- **Periodic** boundary (`full_rank = false`):
 
-    B -- full_rank = false --> D[⟦2n², 2k², d⟧]
-    C -- full_rank = true --> E[⟦❨n - k❩² + n², k², d⟧]
-</div>
+```math
+\\begin{aligned}
+\\left[\\left[2n^2, 2k^2, d \\right]\\right]
+\\end{aligned}
+```
+
+- **Open** boundary (`full_rank = true`): 
+
+```math
+\\begin{aligned}
+\\left[\\left[(n - k)^2 + n^2, k^2, d \\right]\\right]
+\\end{aligned}
 ```
 
 !!! note
@@ -54,7 +58,7 @@ This establishes a mapping between ``\\mathbb{F}_2^n`` and the quotient ring
 ``\\mathbb{F}_2[x]/(x^n - 1)``, where cyclic shifts in ``\\mathbb{F}_2^n`` correspond
 to multiplications by `x` in the polynomial ring. Since multiplication by `x` preserves
 the ideal structure of ``\\mathbb{F}_2[x]/(x^n - 1)``, cyclic codes correspond to
-ideals in this ring. These ideals are in one-to-one correspondence with unitary``mod-2``
+ideals in this ring. These ideals are in one-to-one correspondence with unitary ``mod-2``
 divisors of ``x^n - 1`` with a leading coefficient of 1. Consequently, the fundamental
 building blocks of cyclic codes correspond to the factorization of ``x^n - 1``.
 
@@ -70,10 +74,11 @@ representation aids in the analysis and design of cyclic codes. For our implemen
 La-cross codes, we leverage `Hecke.polynomial_ring` to work directly with polynomial rings
 rather than manipulating coefficient arrays explicitly.
 
-!!! The **next-to-next-to-nearest neighbor** connectivity implies the use of a *degree-3*
-seed polynomial ``h(x) = 1 + x + x^2 + x^3`` in the ring ``\\mathbb{F}_2[x]/(x^n - 1)`` for
-a specific code length `n`. Additionally, the condition of low stabilizer weight requires
-the polynomial ``1 + x + x^3``.
+!!! note
+    The **next-to-next-to-nearest neighbor** connectivity implies the use of a *degree-3*
+    seed polynomial ``h(x) = 1 + x + x^2 + x^3`` in the ring ``\\mathbb{F}_2[x]/(x^n - 1)`` for
+    a specific code length `n`. Additionally, the condition of low stabilizer weight requires
+    the polynomial ``1 + x + x^3``.
 
 ## [[2n², 2k², d]] La-cross Code
 

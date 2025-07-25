@@ -65,7 +65,7 @@
         end
 
         @testset "Check properties of D-dimensional Toric codes" begin
-            @testset "2D Toric code" begin
+            @testset "[[2L², 2, L]] 2D Toric code" begin
                 for L in 2:5
                     D = 2
                     c = DDimensionalToricCode(D, L)
@@ -75,14 +75,14 @@
                     mat = matrix(GF(2), H)
                     computed_rank = rank(mat)
                     @test computed_rank == n - k
-                    @test code_n(c) == n && code_k(c) == k
+                    @test code_n(c) == n == 2*L^2 && code_k(c) == k == 2
                     @test stab_looks_good(code, remove_redundant_rows=true)
                     @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == L
                     @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z)) == L
                 end
             end
 
-            @testset "3D Toric code" begin
+            @testset "[[3L³, 3, min(L, L²)]] 3D Toric code" begin
                 for L in 2:3
                     D = 3
                     c = DDimensionalToricCode(D, L)
@@ -92,7 +92,7 @@
                     mat = matrix(GF(2), H)
                     computed_rank = rank(mat)
                     @test computed_rank == n - k
-                    @test code_n(c) == n && code_k(c) == k
+                    @test code_n(c) == n == 3*L^3 && code_k(c) == k == 3
                     @test stab_looks_good(code, remove_redundant_rows=true)
                     @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
                     @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:X)) == L
@@ -100,7 +100,7 @@
                 end
             end
 
-            @testset "4D Toric code" begin
+            @testset "[[6L⁴, 6, L²]] 4D Toric code" begin
                 # Testing only one instance of 4D codes due to longer execution time.
                 L = 2
                 D = 4
@@ -111,7 +111,7 @@
                 mat = matrix(GF(2), H)
                 computed_rank = rank(mat)
                 @test computed_rank == n - k
-                @test code_n(c) == n && code_k(c) == k
+                @test code_n(c) == n == 6*L^4 && code_k(c) == k == 6
                 @test stab_looks_good(code, remove_redundant_rows=true)
                 @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
                 @test iszero(mod.(metacheck_matrix_x(c)*parity_matrix_x(c), 2))
