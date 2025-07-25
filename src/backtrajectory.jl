@@ -97,7 +97,7 @@ function collapse_z!(T, q::Int)
     while pivot <= n && getxbit(t, n+q, pivot) == 0
         pivot += 1
     end
-    if pivot == n+1
+    if pivot >= n+1
         # No anti-commuting stabilizer generator. Measurement is deterministic.
         return -1
     end
@@ -134,7 +134,7 @@ end
 #     return backtrajectory(circuit0, nqubits(state))
 # end
 
-function backtrajectory(circuit::Vector{AbstractOperation})
+function backtrajectory(circuit::Vector{<:AbstractOperation})
     n = 0
     for op in circuit
         if op isa AbstractSingleQubitOperator
