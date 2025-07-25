@@ -44,12 +44,8 @@ function backtrajectory(circuit::Vector{<:AbstractOperation}, n::Int)
     for op in circuit
         if op isa AbstractCliffordOperator
             apply_right!(T, op)
-        elseif op isa sMX
-            push!(results, do_MX!(T, op))
-        elseif op isa sMY
-            push!(results, do_MY!(T, op))
-        elseif op isa sMZ
-            push!(results, do_MZ!(T, op))
+        elseif op isa AbstractMeasurement
+            push!(results, do_measure!(T, op))
         elseif op isa sMRX
             push!(results, do_MRX!(T, op))
         elseif op isa sMRY
@@ -67,7 +63,7 @@ function backtrajectory(circuit::Vector{<:AbstractOperation}, n::Int)
 end
 
 
-function do_MX!(T, op::sMX)
+function do_measure!(T, op::sMX)
     collapse_x!(T, op.qubit)
     return phases(tab(T))[op.qubit] == 0x00 ? 1 : -1
 end
@@ -96,7 +92,7 @@ function collapse_x!(T, q::Int)
     apply_right!(T, sHadamard(q))
 end
 
-function do_MY!(T, op::sMY)
+function do_measure!(T, op::sMY)
     collapse_y!(T, op.qubit)
     return eval_y_obs(T, op.qubit).phase[] == 0x00 ? 1 : -1
 end
@@ -141,7 +137,7 @@ function eval_y_obs(T, q::Int)
     return result
 end
 
-function do_MZ!(T, op::sMZ)
+function do_measure!(T, op::sMZ)
     collapse_z!(T, op.qubit)
     return phases(tab(T))[nqubits(T)+op.qubit] == 0x00 ? 1 : -1
 end
@@ -207,6 +203,20 @@ end
 
 @inline getxbytes(T, r) = tab(T).xzs[1:2:end,r]
 @inline getzbytes(T, r) = tab(T).xzs[2:2:end,r]
+
+
+# function do_measure!(T, op::PauliMeasurement)
+#     h_xz = []
+#     h_yz = []
+#     cnot = []
+#     meas = []
+
+#     start = 0
+
+# end
+
+# function do_set!(T, state)
+# end
 
 
 # function backtrajectory(circuit0::Vector{AbstractOperation}, state::AbstractStabilizer)
