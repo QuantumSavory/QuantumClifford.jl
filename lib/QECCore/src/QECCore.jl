@@ -18,7 +18,7 @@ export Perfect5, Cleve8, Gottesman
 # CSS Codes
 export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMuller, Triangular488, Triangular666,
 DelfosseReichardt, DelfosseReichardtRepCode, DelfosseReichardt823, QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
-TillichZemor, random_TillichZemor_code
+TillichZemor, random_TillichZemor_code, CirculantBivariateBicycle
 
 # Classical Codes
 export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming
@@ -47,6 +47,7 @@ include("codes/quantum/gottesman.jl")
 include("codes/quantum/color_codes.jl")
 include("codes/quantum/quantumtannergraphproduct.jl")
 include("codes/quantum/tillichzemor.jl")
+include("codes/quantum/circulant_bivariate_bicycle.jl")
 
 # Reed-Muller Codes
 include("codes/classical/reedmuller.jl")

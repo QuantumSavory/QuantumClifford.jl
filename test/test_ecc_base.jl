@@ -321,7 +321,6 @@ const code_instance_args = Dict(
     :CSS => (c -> (parity_matrix_x(c), parity_matrix_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
     :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
     :CircuitCode => random_circuit_code_args,
-    :QuantumReedMuller => [3, 4, 5],
     :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, test_twobga_codes, test_honeycomb_color_codes, test_nonabelian_codes, other_lifted_product_codes)),
     :QuantumReedMuller => [3, 4, 5],
     :Triangular488 => [3, 5, 7, 9, 11],
@@ -336,7 +335,7 @@ const code_instance_args = Dict(
     :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false), (7,h₃,true), (9,h₃,true), (9,h₄,true), (10,h₄,true), (12,h₄,true)],
     :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
     :random_TillichZemor_code => [(6,4,3), (7,5,3), (8,6,3)],
-    :circulant_bivariate_bicycle => [(9,6,[3,1,2],[3,1,2]),(15,3,[9,1,2],[0,2,7]),(6,6,[3,1,2],[3,1,2]),(14,7,[6,5,6],[0,4,13]),(15,5,[5,2,3],[2,7,6])]
+    :CirculantBivariateBicycle => [(9,6,[3,1,2],[3,1,2]),(15,3,[9,1,2],[0,2,7]),(6,6,[3,1,2],[3,1,2]),(14,7,[6,5,6],[0,4,13]),(15,5,[5,2,3],[2,7,6])]
 )
 
 function all_testablable_code_instances(;maxn=nothing)

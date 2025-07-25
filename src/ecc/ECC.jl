@@ -37,7 +37,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     DelfosseReichardtRepCode, DelfosseReichardt823, LaCross,
     QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
     DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps,
-    circulant_bivariate_bicycle,
+    CirculantBivariateBicycle,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -403,7 +403,6 @@ include("codes/classical/bch.jl")
 # qLDPC
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
-include("codes/circulant_bivariate_bicycle.jl")
 
 # higher dimensional codes
 include("codes/d_dimensional_codes.jl")
