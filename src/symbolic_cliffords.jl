@@ -1,4 +1,5 @@
 using Random: AbstractRNG, GLOBAL_RNG
+using AutoHashEquals
 
 """Supertype of all symbolic operators. Subtype of `AbstractCliffordOperator`"""
 abstract type AbstractSymbolicOperator <: AbstractCliffordOperator end
@@ -145,7 +146,7 @@ Or simply consult `subtypes(QuantumClifford.AbstractSingleQubitOperator)` and
 `subtypes(QuantumClifford.AbstractTwoQubitOperator)` for a full list.
 You can think of the `s` prefix as "symbolic" or "sparse".
 """
-struct SingleQubitOperator <: AbstractSingleQubitOperator
+@auto_hash_equals struct SingleQubitOperator <: AbstractSingleQubitOperator
     q::Int
     xx::Bool
     xz::Bool
