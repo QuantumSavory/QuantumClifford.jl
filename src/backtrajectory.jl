@@ -17,30 +17,27 @@ function backtrajectory(circuit::Vector{<:AbstractOperation}, n::Int)
         if op isa AbstractCliffordOperator
             apply_right!(T, op)
         elseif op isa AbstractMeasurement
-            push!(results, do_measure!(T, op))
-        elseif op isa sMRX
-            push!(results, do_MRX!(T, op))
-        elseif op isa sMRY
-            push!(results, do_MRY!(T, op))
-        elseif op isa sMRZ
-            push!(results, do_MRZ!(T, op))
+            push!(results, do_op!(T, op))
+        elseif typeof(op) ∈ [sMRX, sMRY, sMRZ]
+            push!(results, do_op!(T, op))
         elseif op isa AbstractReset
-            do_reset!(T, op)
+            do_op!(T, op)
         else
             error("Unsupported operation: $(typeof(op))")
         end
     end
 
-    return results
+    final_state = apply_inv!(one(Stabilizer, n), T)
+    return results, final_state
 end
 
 
-function do_measure!(T, op::sMX)
+function do_op!(T, op::sMX)
     collapse_x!(T, op.qubit)
     return phases(tab(T))[op.qubit] == 0x00 ? 1 : -1
 end
 
-function do_MRX!(T, op::sMRX)
+function do_op!(T, op::sMRX)
     collapse_x!(T, op.qubit)
     result = phases(tab(T))[op.qubit] == 0x00 ? 1 : -1
     phases(tab(T))[op.qubit] = 0x00
@@ -48,7 +45,7 @@ function do_MRX!(T, op::sMRX)
     return result
 end
 
-function do_reset!(T, op::sRX)
+function do_op!(T, op::sRX)
     collapse_x!(T, op.qubit)
     phases(tab(T))[op.qubit] = 0x00
     phases(tab(T))[nqubits(T)+op.qubit] = 0x00
@@ -64,12 +61,12 @@ function collapse_x!(T, q::Int)
     apply_right!(T, sHadamard(q))
 end
 
-function do_measure!(T, op::sMY)
+function do_op!(T, op::sMY)
     collapse_y!(T, op.qubit)
     return eval_y_obs(T, op.qubit).phase[] == 0x00 ? 1 : -1
 end
 
-function do_MRY!(T, op::sMRY)
+function do_op!(T, op::sMRY)
     collapse_y!(T, op.qubit)
     result = eval_y_obs(T, op.qubit).phase[] == 0x00 ? 1 : -1
     if result == -1
@@ -78,7 +75,7 @@ function do_MRY!(T, op::sMRY)
     return result
 end
 
-function do_reset!(T, op::sRY)
+function do_op!(T, op::sRY)
     collapse_y!(T, op.qubit)
     if eval_y_obs(T, op.qubit).phase[] != 0x00
         phases(tab(T))[nqubits(T)+op.qubit] ⊻= 0x02
@@ -109,12 +106,12 @@ function eval_y_obs(T, q::Int)
     return result
 end
 
-function do_measure!(T, op::sMZ)
+function do_op!(T, op::sMZ)
     collapse_z!(T, op.qubit)
     return phases(tab(T))[nqubits(T)+op.qubit] == 0x00 ? 1 : -1
 end
 
-function do_MRZ!(T, op::sMRZ)
+function do_op!(T, op::sMRZ)
     collapse_z!(T, op.qubit)
     result = phases(tab(T))[nqubits(T)+op.qubit] == 0x00 ? 1 : -1
     phases(tab(T))[op.qubit] = 0x00
@@ -122,7 +119,7 @@ function do_MRZ!(T, op::sMRZ)
     return result
 end
 
-function do_reset!(T, op::sRZ)
+function do_op!(T, op::sRZ)
     collapse_z!(T, op.qubit)
     phases(tab(T))[op.qubit] = 0x00
     phases(tab(T))[nqubits(T)+op.qubit] = 0x00
@@ -177,7 +174,7 @@ end
 @inline getzbytes(T, r) = tab(T).xzs[2:2:end,r]
 
 
-function do_measure!(T, op::PauliMeasurement)
+function do_op!(T, op::PauliMeasurement)
     if all(iszero.(op.pauli.xz))
         return op.pauli.phase[] & 0x02 == 0x00 ? 1 : -1
     end
@@ -214,7 +211,7 @@ function do_measure!(T, op::PauliMeasurement)
     for (q1, q2) in cnot
         apply_right!(T, sCNOT(q1, q2))
     end
-    result = do_measure!(T, sMZ(meas))
+    result = do_op!(T, sMZ(meas))
     for (q1, q2) in reverse(cnot)
         apply_right!(T, sCNOT(q1, q2))
     end
@@ -228,19 +225,15 @@ function do_measure!(T, op::PauliMeasurement)
     return result
 end
 
-# function do_set!(T, state)
-# end
-
-# function do_reset(T, op::Reset)
+# function do_op!(T, op::Reset)
 # end
 
 # function backtrajectory(circuit::Vector{AbstractOperation}, state::AbstractStabilizer)
-#     # TODO - Figure out if to use Reset or Gates
 #     pushfirst!(circuit, Reset(state, 1:nqubits(state)))
 #     return backtrajectory(circuit, nqubits(state))
 # end
 
 function backtrajectory(circuit::Vector{<:AbstractOperation})
-    n = maximum(Iterators.flatten(affectedqubits.(circuit)))
+    n = maximum(Iterators.flatten(affectedqubits.(circuit)); init=1)
     return backtrajectory(circuit, n)
 end
