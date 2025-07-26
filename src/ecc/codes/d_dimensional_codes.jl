@@ -22,3 +22,15 @@ function DDimensionalToricCode(args...; kwargs...)
     end
     return ext.DDimensionalToricCode(args...; kwargs...)
 end
+
+
+"""Homological Product codes.
+
+Implemented as a package extension with `Oscar`. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
+function HomologicalProductCode(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
+    if isnothing(ext)
+        throw("The `HomologicalProductCode` depends on the package `Oscar` but you have not installed or imported it yet. Immediately after you import `Oscar`, the `HomologicalProductCode` will be available.")
+    end
+    return ext.HomologicalProductCode(args...; kwargs...)
+end
