@@ -393,6 +393,13 @@ julia> import HiGHS
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (108, 12, 6)
 ```
+
+```jldoctest
+julia> using QuantumClifford.ECC; using QuantumClifford;
+
+julia> using Oscar;
+```
+
 """
 function two_block_group_algebra_codes(a::GroupAlgebraElem, b::GroupAlgebraElem)
     LPCode([a;;], [b;;])
