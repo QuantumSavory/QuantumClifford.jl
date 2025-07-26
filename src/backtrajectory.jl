@@ -1,31 +1,3 @@
-# new symbolics
-abstract type AbstractReset <: AbstractOperation end
-
-"""Reset a qubit to the |+⟩ state.
-
-See also: [`sMRX`](@ref), [`Reset`](@ref)"""
-struct sRX <: AbstractReset
-    qubit::Int
-    sRX(q) = if q<=0 throw(NoZeroQubit) else new(q) end
-end
-
-"""Reset a qubit to the |i₊⟩ state.
-
-See also: [`sMRY`](@ref), [`Reset`](@ref)"""
-struct sRY <: AbstractReset
-    qubit::Int
-    sRY(q) = if q<=0 throw(NoZeroQubit) else new(q) end
-end
-
-"""Reset a qubit to the |0⟩ state.
-
-See also: [`sMRZ`](@ref), [`Reset`](@ref)"""
-struct sRZ <: AbstractReset
-    qubit::Int
-    sRZ(q) = if q<=0 throw(NoZeroQubit) else new(q) end
-end
-
-
 """
 Simulates measurement results of a Clifford circuit acting on an `n`-qubit |0⟩^⊗n state using the stabilizer tableau backtracking method,
 as described by Gidney (2021).
@@ -205,45 +177,67 @@ end
 @inline getzbytes(T, r) = tab(T).xzs[2:2:end,r]
 
 
-# function do_measure!(T, op::PauliMeasurement)
-#     h_xz = []
-#     h_yz = []
-#     cnot = []
-#     meas = []
+function do_measure!(T, op::PauliMeasurement)
+    if all(iszero.(op.pauli.xz))
+        return op.pauli.phase[] & 0x02 == 0x00 ? 1 : -1
+    end
 
-#     start = 0
+    h_xz = []
+    h_yz = []
+    cnot = []
+    meas = 0
 
-# end
+    for q in nqubits(op.pauli)
+        x, z = op.pauli[q]
+        if x
+            if z
+                push!(h_yz, q)
+            else
+                push!(h_xz, q)
+            end
+        end
+
+        if iszero(meas)
+            meas = q
+        else
+            push!(cnot, (q, meas))
+        end
+    end
+    @assert meas > 0
+
+    for q in h_xz
+        apply_right!(T, sHadamard(q))
+    end
+    for q in h_yz
+        apply_right!(T, sHadamardYZ(q))
+    end
+    for (q1, q2) in cnot
+        apply_right!(T, sCNOT(q1, q2))
+    end
+    result = do_measure!(T, sMZ(meas))
+    for (q1, q2) in reverse(cnot)
+        apply_right!(T, sCNOT(q1, q2))
+    end
+    for q in reverse(h_yz)
+        apply_right!(T, sHadamardYZ(q))
+    end
+    for q in reverse(h_xz)
+        apply_right!(T, sHadamard(q))
+    end
+
+    return result
+end
 
 # function do_set!(T, state)
 # end
 
-
-# function backtrajectory(circuit0::Vector{AbstractOperation}, state::AbstractStabilizer)
-#     # TODO - Figure out if to use Reset or Gates
-#     pushfirst!(circuit0, Reset(state, 1:nqubits(state)))
-#     return backtrajectory(circuit0, nqubits(state))
+# function do_reset(T, op::Reset)
 # end
 
-# function backtrajectory(circuit::Vector{<:AbstractOperation})
-#     n = 0
-#     for op in circuit
-#         if op isa AbstractSingleQubitOperator
-#             n = max(n, op.q)
-#         elseif op isa AbstractTwoQubitOperator
-#             n = max(n, op.q1, op.q2)
-#         elseif op isa AbstractMeasurement
-#             n = max(n, op.qubit)
-#         elseif op isa AbstractReset
-#             n = max(n, op.qubit)
-#         elseif typeof(op) in [sMRX, sMRY, sMRZ]
-#             n = max(n, op.qubit)
-#         else
-#             error("Unsupported operation: $(typeof(op))")
-#         end
-#     end
-
-#     return backtrajectory(circuit, n)
+# function backtrajectory(circuit::Vector{AbstractOperation}, state::AbstractStabilizer)
+#     # TODO - Figure out if to use Reset or Gates
+#     pushfirst!(circuit, Reset(state, 1:nqubits(state)))
+#     return backtrajectory(circuit, nqubits(state))
 # end
 
 function backtrajectory(circuit::Vector{<:AbstractOperation})
