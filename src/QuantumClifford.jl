@@ -40,7 +40,7 @@ export
     # Linear Algebra
     tensor, tensor_pow,
     logdot, expect,
-    apply!, apply_inv!,
+    apply!, apply_inv!, apply_right!,
     permutesystems, permutesystems!,
     # Low Level Function Interface
     generate!, project!, reset_qubits!, traceout!,
@@ -1462,5 +1462,6 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
+include("apply_right.jl")
 
 end #module
