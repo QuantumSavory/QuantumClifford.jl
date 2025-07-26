@@ -55,6 +55,10 @@
         include("codes/golay.jl")
     end
 
+    @testset "gallager" begin
+        include("codes/gallager.jl")
+    end
+
     @testset "hamming" begin
         include("codes/hamming.jl")
     end

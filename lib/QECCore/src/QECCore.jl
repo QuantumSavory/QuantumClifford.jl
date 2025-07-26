@@ -21,7 +21,7 @@ DelfosseReichardt, DelfosseReichardtRepCode, DelfosseReichardt823, QuantumTanner
 TillichZemor, random_TillichZemor_code
 
 # Classical Codes
-export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming
+export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, random_gallager_ldpc_code
 
 # utilities
 export search_self_orthogonal_rm_codes
@@ -31,8 +31,9 @@ include("codes/util.jl")
 
 # Classical Codes
 include("codes/classical/hamming.jl")
-include("codes/classical/reptetion.jl")
+include("codes/classical/repetition.jl")
 include("codes/classical/golay.jl")
+include("codes/classical/gallager.jl")
 
 # Quantum Codes
 include("codes/quantum/css.jl")
