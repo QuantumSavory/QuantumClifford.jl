@@ -395,7 +395,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 ```
 
 ```jldoctest
-julia> using QuantumClifford.ECC; using QuantumClifford;
+julia> using QuantumClifford.ECC; using QuantumClifford; import Hecke;
 
 julia> using Oscar;
 
