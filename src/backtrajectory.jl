@@ -9,17 +9,19 @@ while random measurements are simplified and simulated with randomized gate inse
 Reference:
 Gidney, C. (2021). Stim: A fast stabilizer circuit simulator. *Quantum*, 5, 497. https://doi.org/10.22331/q-2021-07-06-497
 """
-function backtrajectory(circuit::Vector{<:AbstractOperation}, n::Int)
+function backtrajectory(circuit::Vector{<:AbstractOperation}, n::Int, m::Int=0)
     T = one(CliffordOperator, n)
-    results = Int8[]
+    result = Register(one(Stabilizer, n), falses(m))
 
     for op in circuit
         if op isa AbstractCliffordOperator
             apply_right!(T, op)
         elseif op isa AbstractMeasurement
-            push!(results, do_op!(T, op))
+            res = do_op!(T, op)
+            op.bit!=0 && (bitview(result)[op.bit] = res)
         elseif typeof(op) ∈ [sMRX, sMRY, sMRZ]
-            push!(results, do_op!(T, op))
+            res = do_op!(T, op)
+            op.bit!=0 && (bitview(result)[op.bit] = res)
         elseif op isa AbstractReset
             do_op!(T, op)
         else
@@ -27,19 +29,26 @@ function backtrajectory(circuit::Vector{<:AbstractOperation}, n::Int)
         end
     end
 
-    final_state = apply_inv!(one(Stabilizer, n), T)
-    return results, final_state
+    apply_inv!(result, T)
+    return result
 end
+
+function backtrajectory(circuit::Vector{<:AbstractOperation})
+    n = maximum(Iterators.flatten(affectedqubits.(circuit)); init=1)
+    m = maximum(Iterators.flatten(affectedbits.(circuit)); init=0)
+    return backtrajectory(circuit, n, m)
+end
+
 
 
 function do_op!(T, op::sMX)
     collapse_x!(T, op.qubit)
-    return phases(tab(T))[op.qubit] == 0x00 ? 1 : -1
+    return phases(tab(T))[op.qubit] != 0x00
 end
 
 function do_op!(T, op::sMRX)
     collapse_x!(T, op.qubit)
-    result = phases(tab(T))[op.qubit] == 0x00 ? 1 : -1
+    result = phases(tab(T))[op.qubit] != 0x00
     phases(tab(T))[op.qubit] = 0x00
     phases(tab(T))[nqubits(T)+op.qubit] = 0x00
     return result
@@ -63,13 +72,13 @@ end
 
 function do_op!(T, op::sMY)
     collapse_y!(T, op.qubit)
-    return eval_y_obs(T, op.qubit).phase[] == 0x00 ? 1 : -1
+    return eval_y_obs(T, op.qubit).phase[] != 0x00
 end
 
 function do_op!(T, op::sMRY)
     collapse_y!(T, op.qubit)
-    result = eval_y_obs(T, op.qubit).phase[] == 0x00 ? 1 : -1
-    if result == -1
+    result = eval_y_obs(T, op.qubit).phase[] != 0x00
+    if !result
         phases(tab(T))[nqubits(T)+op.qubit] ⊻= 0x02
     end
     return result
@@ -108,12 +117,12 @@ end
 
 function do_op!(T, op::sMZ)
     collapse_z!(T, op.qubit)
-    return phases(tab(T))[nqubits(T)+op.qubit] == 0x00 ? 1 : -1
+    return phases(tab(T))[nqubits(T)+op.qubit] != 0x00
 end
 
 function do_op!(T, op::sMRZ)
     collapse_z!(T, op.qubit)
-    result = phases(tab(T))[nqubits(T)+op.qubit] == 0x00 ? 1 : -1
+    result = phases(tab(T))[nqubits(T)+op.qubit] != 0x00
     phases(tab(T))[op.qubit] = 0x00
     phases(tab(T))[nqubits(T)+op.qubit] = 0x00
     return result
@@ -176,7 +185,7 @@ end
 
 function do_op!(T, op::PauliMeasurement)
     if all(iszero.(op.pauli.xz))
-        return op.pauli.phase[] & 0x02 == 0x00 ? 1 : -1
+        return op.pauli.phase[] & 0x02 != 0x00
     end
 
     h_xz = []
@@ -232,8 +241,3 @@ end
 #     pushfirst!(circuit, Reset(state, 1:nqubits(state)))
 #     return backtrajectory(circuit, nqubits(state))
 # end
-
-function backtrajectory(circuit::Vector{<:AbstractOperation})
-    n = maximum(Iterators.flatten(affectedqubits.(circuit)); init=1)
-    return backtrajectory(circuit, n)
-end
