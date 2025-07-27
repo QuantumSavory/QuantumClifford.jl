@@ -15,7 +15,7 @@ import Oscar: free_group, small_group_identification, describe, order, FPGroupEl
     BasicGAPGroupElem, DirectProductGroup, cyclic_group, free_module, hom, transpose, tensor_product,
     chain_complex, total_complex, map, summands, MatElem, matrix, nrows, ncols, kernel, dim, range, image,
     base_ring, ComplexOfMorphisms, coefficients, zero_matrix, hcat, circshift, size, zeros, enumerate
-using Oscar.Generic.MatSpaceElem
+import Oscar.Generic.MatSpaceElem
 
 import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group,
     boundary_maps, quasi_cyclic_code
