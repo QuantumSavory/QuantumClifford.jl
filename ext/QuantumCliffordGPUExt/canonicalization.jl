@@ -4,8 +4,8 @@ using QuantumClifford
 const MIN_BLOCKS = 36
 
 function swap_columns_and_phases_kernel!(d_mat::CuDeviceArray{T,2}, 
-                                        d_phases::CuDeviceArray{UInt8,1}, 
-                                        col1::Integer, col2::Integer, N::Integer) where {T}
+                                        d_phases::CuDeviceArray{P,1}, 
+                                        col1::Integer, col2::Integer, N::Integer) where {T, P}
     idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     if idx <= N
         temp = d_mat[idx, col1]
@@ -20,8 +20,8 @@ function swap_columns_and_phases_kernel!(d_mat::CuDeviceArray{T,2},
     return
 end
 
-function gpu_swap_columns_and_phases!(d_mat::CuArray{T,2}, d_phases::CuVector{UInt8}, 
-                                     col1::Integer, col2::Integer) where {T}
+function gpu_swap_columns_and_phases!(d_mat::CuArray{T,2}, d_phases::CuVector{P}, 
+                                     col1::Integer, col2::Integer) where {T, P}
     N = size(d_mat, 1)
     threads = 256 
     blocks = max(cld(N, threads), MIN_BLOCKS)
@@ -49,35 +49,13 @@ function gpu_swap_columns!(d_mat::CuArray{T,2}, col1::Integer, col2::Integer) wh
     return
 end
 
-@inline function gpu_compute_phase(d_mat::CuDeviceArray{T,2}, pivot_col::Integer, 
-                                  target_col::Integer, nblocks::Integer)::UInt8 where {T}
-    cnt1 = zero(T)
-    cnt2 = zero(T)
-    @inbounds for i in 1:nblocks
-        x1 = d_mat[i, pivot_col]
-        z1 = d_mat[nblocks + i, pivot_col]
-        x2 = d_mat[i, target_col]
-        z2 = d_mat[nblocks + i, target_col]
-        newx = x1 ⊻ x2
-        newz = z1 ⊻ z2
-        x1z2 = x1 & z2
-        anti = (x2 & z1) ⊻ x1z2
-        inner = (cnt1 ⊻ newx) ⊻ newz ⊻ x1z2
-        cnt2 = cnt2 ⊻ (inner & anti)
-        cnt1 = cnt1 ⊻ anti
-    end
-    rcnt1 = count_ones(cnt1)
-    rcnt2 = count_ones(cnt2)    
-    return UInt8((rcnt1 ⊻ (rcnt2 << 1)) & 0x3)
-end
-
 function pivot_search_kernel!(d_mat::CuDeviceArray{T,2}, pivot_row::Integer, bit::T, 
                              current_col::Integer, r::Integer, d_result) where {T}
     idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x + current_col - 1
     
     if idx <= r
-        if (d_mat[pivot_row, idx] & bit) != zero(T)
-            CUDA.atomic_min!(pointer(d_result), Int32(idx))
+        if (d_mat[pivot_row, idx] & bit) != T(0)
+            CUDA.atomic_min!(pointer(d_result), idx)
         end
     end
     return
@@ -89,7 +67,7 @@ function gpu_pivot_search!(d_mat::CuArray{T,2}, pivot_row::Integer, bit::T,
     if n_cols <= 0
         return 0
     end
-    d_result = CUDA.fill(Int32(r + 1), 1)
+    d_result = CUDA.fill(r + 1, 1)
     threads = min(256, n_cols)
     blocks = cld(n_cols, threads)
     @cuda threads=threads blocks=blocks pivot_search_kernel!(
@@ -98,10 +76,10 @@ function gpu_pivot_search!(d_mat::CuArray{T,2}, pivot_row::Integer, bit::T,
     return result > r ? 0 : Int(result)
 end
 
-function update_kernel!(d_mat::CuDeviceArray{T,2}, d_phases::CuDeviceArray{UInt8,1},
+function update_kernel!(d_mat::CuDeviceArray{T,2}, d_phases::CuDeviceArray{P,1},
                        current_col::Integer, pivot_row::Integer, bit::T,
                        r::Integer, total_blocks::Integer, nblocks::Integer, 
-                       update_phase::Bool) where {T}
+                       update_phase::Bool) where {T, P}
     s_pivot = @cuDynamicSharedMem(T, total_blocks)
     tid = threadIdx().x
     for idx in tid:blockDim().x:total_blocks
@@ -110,9 +88,9 @@ function update_kernel!(d_mat::CuDeviceArray{T,2}, d_phases::CuDeviceArray{UInt8
     sync_threads()
     m = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     if m <= r && m != current_col
-        if (d_mat[pivot_row, m] & bit) != zero(T)
-            cnt1 = zero(T)
-            cnt2 = zero(T)
+        if (d_mat[pivot_row, m] & bit) != T(0)
+            cnt1 = T(0)
+            cnt2 = T(0)
             @inbounds for i in 1:nblocks
                 x1 = s_pivot[i]
                 z1 = s_pivot[nblocks + i]
@@ -130,22 +108,22 @@ function update_kernel!(d_mat::CuDeviceArray{T,2}, d_phases::CuDeviceArray{UInt8
             rcnt2 = count_ones(cnt2)
             rcnt2_shifted = rcnt2 << 1
             extra_phase_val = rcnt1 ⊻ rcnt2_shifted
-            extra_phase = UInt8(extra_phase_val & 0x3)
+            extra_phase = P(extra_phase_val & 0x3)
             @inbounds for b in 1:total_blocks
                 d_mat[b, m] = d_mat[b, m] ⊻ s_pivot[b]
             end
             if update_phase
-                d_phases[m] = (d_phases[m] + d_phases[current_col] + extra_phase) & UInt8(0x3)
+                d_phases[m] = (d_phases[m] + d_phases[current_col] + extra_phase) & P(0x3)
             end
         end
     end
     return
 end
 
-function gpu_update_kernel!(d_mat::CuArray{T,2}, d_phases::CuVector{UInt8},
+function gpu_update_kernel!(d_mat::CuArray{T,2}, d_phases::CuVector{P},
                            current_col::Integer, pivot_row::Integer, bit::T,
                            r::Integer, total_blocks::Integer, nblocks::Integer, 
-                           update_phase::Bool) where {T}
+                           update_phase::Bool) where {T, P}
     threads = 256
     blocks = max(cld(r, threads), MIN_BLOCKS)
     shmem_size = sizeof(T) * total_blocks
@@ -155,20 +133,18 @@ function gpu_update_kernel!(d_mat::CuArray{T,2}, d_phases::CuVector{UInt8},
     return
 end
 
-function gpu_canonicalize!(tableau::QuantumClifford.Tableau{<:CuArray{UInt8}, <:CuArray{T}}, phases::Bool) where {T<:Unsigned}
-    d_mat_orig = tableau.xzs
+function gpu_canonicalize!(tableau::QuantumClifford.Tableau{<:CuArray{P}, <:CuArray{T}}, phases::Bool) where {T, P}
+    d_mat = tableau.xzs
     d_phases = tableau.phases
     nqubits = tableau.nqubits
-    r = size(d_mat_orig, 2)    
-    d_mat_flat = reinterpret(UInt64, reshape(d_mat_orig, (:,)))
-    elements_per_row = size(d_mat_orig, 1) ÷ (sizeof(UInt64) ÷ sizeof(T))
-    d_mat = reshape(d_mat_flat, (elements_per_row, size(d_mat_orig, 2)))    
-    nblocks = cld(nqubits, 64)
+    r = size(d_mat, 2)
+    nblocks = size(d_mat, 1) ÷ 2
     total_blk = 2 * nblocks
-    current_col = 1    
+    bits_per_chunk = sizeof(T) * 8
+    current_col = 1
     for j in 1:nqubits
-        pivot_row = (j - 1) ÷ 64 + 1
-        bit = UInt64(1) << ((j - 1) % 64)
+        pivot_row = (j - 1) ÷ bits_per_chunk + 1
+        bit = T(1) << ((j - 1) % bits_per_chunk)
         pivot = gpu_pivot_search!(d_mat, pivot_row, bit, current_col, r)
         if pivot == 0
             continue
@@ -186,10 +162,10 @@ function gpu_canonicalize!(tableau::QuantumClifford.Tableau{<:CuArray{UInt8}, <:
         if current_col > r
             break
         end
-    end    
+    end
     for j in 1:nqubits
-        pivot_row = nblocks + (j - 1) ÷ 64 + 1
-        bit = UInt64(1) << ((j - 1) % 64)
+        pivot_row = nblocks + (j - 1) ÷ bits_per_chunk + 1
+        bit = T(1) << ((j - 1) % bits_per_chunk)
         pivot = gpu_pivot_search!(d_mat, pivot_row, bit, current_col, r)
         if pivot == 0
             continue
@@ -211,7 +187,7 @@ function gpu_canonicalize!(tableau::QuantumClifford.Tableau{<:CuArray{UInt8}, <:
     return tableau
 end
 
-function canonicalize!(stab::Stabilizer{<:QuantumClifford.Tableau{<:CuArray{UInt8}, <:CuArray{T}}}; phases::Bool=true) where {T<:Unsigned}
+function canonicalize!(stab::Stabilizer{<:QuantumClifford.Tableau{<:CuArray{P}, <:CuArray{T}}}; phases::Bool=true) where {T, P}
     gpu_canonicalize!(tab(stab), phases)
     CUDA.synchronize()
     return stab
