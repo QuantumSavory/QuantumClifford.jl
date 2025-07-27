@@ -1,18 +1,17 @@
 using CUDA
 using LinearAlgebra
 using QuantumClifford  
-const MIN_BLOCKS = 36
-
-function swap_columns_and_phases_kernel!(d_mat::CuDeviceArray{T,2}, 
-                                        d_phases::CuDeviceArray{P,1}, 
-                                        col1::Integer, col2::Integer, N::Integer) where {T, P}
+function swap_columns_kernel!(d_mat::CuDeviceArray{T,2}, 
+                             d_phases::CuDeviceArray{P,1}, 
+                             col1::Integer, col2::Integer, N::Integer,
+                             update_phases::Bool) where {T, P}
     idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     if idx <= N
         temp = d_mat[idx, col1]
         d_mat[idx, col1] = d_mat[idx, col2]
         d_mat[idx, col2] = temp
     end
-    if idx == 1
+    if update_phases && idx == 1
         temp_phase = d_phases[col1]
         d_phases[col1] = d_phases[col2]
         d_phases[col2] = temp_phase
@@ -20,32 +19,13 @@ function swap_columns_and_phases_kernel!(d_mat::CuDeviceArray{T,2},
     return
 end
 
-function gpu_swap_columns_and_phases!(d_mat::CuArray{T,2}, d_phases::CuVector{P}, 
-                                     col1::Integer, col2::Integer) where {T, P}
-    N = size(d_mat, 1)
-    threads = 256 
-    blocks = max(cld(N, threads), MIN_BLOCKS)
-    @cuda threads=threads blocks=blocks swap_columns_and_phases_kernel!(
-        d_mat, d_phases, col1, col2, N)
-    return
-end
-
-function swap_columns_kernel!(d_mat::CuDeviceArray{T,2}, 
-                             col1::Integer, col2::Integer, N::Integer) where {T}
-    idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-    if idx <= N
-        temp = d_mat[idx, col1]
-        d_mat[idx, col1] = d_mat[idx, col2]
-        d_mat[idx, col2] = temp
-    end
-    return
-end
-
-function gpu_swap_columns!(d_mat::CuArray{T,2}, col1::Integer, col2::Integer) where {T}
+function gpu_swap_columns!(d_mat::CuArray{T,2}, d_phases::CuVector{P}, 
+                          col1::Integer, col2::Integer, update_phases::Bool) where {T, P}
     N = size(d_mat, 1)
     threads = 256
-    blocks = max(cld(N, threads), MIN_BLOCKS)
-    @cuda threads=threads blocks=blocks swap_columns_kernel!(d_mat, col1, col2, N)
+    blocks = cld(N, threads)
+    @cuda threads=threads blocks=blocks swap_columns_kernel!(
+        d_mat, d_phases, col1, col2, N, update_phases)
     return
 end
 
@@ -125,7 +105,7 @@ function gpu_update_kernel!(d_mat::CuArray{T,2}, d_phases::CuVector{P},
                            r::Integer, total_blocks::Integer, nblocks::Integer, 
                            update_phase::Bool) where {T, P}
     threads = 256
-    blocks = max(cld(r, threads), MIN_BLOCKS)
+    blocks = cld(r, threads)
     shmem_size = sizeof(T) * total_blocks
     @cuda threads=threads blocks=blocks shmem=shmem_size update_kernel!(
         d_mat, d_phases, current_col, pivot_row, bit, r,
@@ -137,10 +117,10 @@ function gpu_canonicalize!(tableau::QuantumClifford.Tableau{<:CuArray{P}, <:CuAr
     d_mat = tableau.xzs
     d_phases = tableau.phases
     nqubits = tableau.nqubits
-    r = size(d_mat, 2)
+    r = size(d_mat, 2)    
     nblocks = size(d_mat, 1) ÷ 2
     total_blk = 2 * nblocks
-    bits_per_chunk = sizeof(T) * 8
+    bits_per_chunk = count_zeros(zero(T))
     current_col = 1
     for j in 1:nqubits
         pivot_row = (j - 1) ÷ bits_per_chunk + 1
@@ -150,11 +130,7 @@ function gpu_canonicalize!(tableau::QuantumClifford.Tableau{<:CuArray{P}, <:CuAr
             continue
         end
         if pivot != current_col
-            if phases
-                gpu_swap_columns_and_phases!(d_mat, d_phases, pivot, current_col)
-            else
-                gpu_swap_columns!(d_mat, pivot, current_col)
-            end
+            gpu_swap_columns!(d_mat, d_phases, pivot, current_col, phases)
         end
         gpu_update_kernel!(d_mat, d_phases, current_col, pivot_row, bit,
                           r, total_blk, nblocks, phases)
@@ -162,7 +138,7 @@ function gpu_canonicalize!(tableau::QuantumClifford.Tableau{<:CuArray{P}, <:CuAr
         if current_col > r
             break
         end
-    end
+    end    
     for j in 1:nqubits
         pivot_row = nblocks + (j - 1) ÷ bits_per_chunk + 1
         bit = T(1) << ((j - 1) % bits_per_chunk)
@@ -171,11 +147,7 @@ function gpu_canonicalize!(tableau::QuantumClifford.Tableau{<:CuArray{P}, <:CuAr
             continue
         end
         if pivot != current_col
-            if phases
-                gpu_swap_columns_and_phases!(d_mat, d_phases, pivot, current_col)
-            else
-                gpu_swap_columns!(d_mat, pivot, current_col)
-            end
+            gpu_swap_columns!(d_mat, d_phases, pivot, current_col, phases)
         end
         gpu_update_kernel!(d_mat, d_phases, current_col, pivot_row, bit,
                           r, total_blk, nblocks, phases)
