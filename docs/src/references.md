@@ -58,6 +58,7 @@ For quantum code construction routines:
 - [tillich2006minimum](@cite)
 - [Quintavalle_2021](@cite)
 - [xu2024fastparallelizablelogicalcomputation](@cite)
+- [bravyi2013homologicalproductcodes](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)

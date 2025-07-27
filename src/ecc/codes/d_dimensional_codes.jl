@@ -26,7 +26,7 @@ function DDimensionalToricCode(args...; kwargs...)
     return ext.DDimensionalToricCode(args...; kwargs...)
 end
 
-"""Homological Product codes ([uintavalle_2021](@cite), [xu2024fastparallelizablelogicalcomputation](@cite)).
+"""Homological Product codes ([Quintavalle_2021](@cite), [xu2024fastparallelizablelogicalcomputation](@cite)).
 
 Implemented as a package extension with `Oscar`. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
 function HomologicalProductCode(args...; kwargs...)
