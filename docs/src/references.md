@@ -57,6 +57,7 @@ For quantum code construction routines:
 - [arnault2025upperboundsminimumdistance](@cite)
 - [tillich2006minimum](@cite)
 - [Quintavalle_2021](@cite)
+- [xu2024fastparallelizablelogicalcomputation](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)
