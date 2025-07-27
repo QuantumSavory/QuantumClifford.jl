@@ -1,3 +1,21 @@
+"""Convert a polynomial parity-check matrix to binary quasi-cyclic form."""
+function quasi_cyclic_code(H::Generic.MatSpaceElem, l::Int)
+    F = GF(2)
+    r, n = size(H)
+    H_bin = zero_matrix(F, r*l, n*l)
+    for i in 1:r, j in 1:n
+        cfs = zeros(F, l)
+        for (k, c) in enumerate(coefficients(H[i,j]))
+            cfs[k] = c
+        end
+        circ = hcat([circshift(cfs, s) for s in 0:l-1]...)
+        rows = (1:l) .+ (i-1)*l
+        cols = (1:l) .+ (j-1)*l
+        H_bin[rows, cols] = matrix(F, circ)
+    end
+    return H_bin
+end
+
 """
 Constructs a `D`-dimensional CSS quantum code (`D ≥ 2`) from `D` classical 
 parity-check matrices via iterated *homological* products.
@@ -14,6 +32,54 @@ julia> import HiGHS; import JuMP;
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (81, 3, 9)
 ```
+
+Here is the `[[117, 9, 4]]` Homological product code construct from classical
+quasi-cyclic code from `Table III` of [xu2024fastparallelizablelogicalcomputation](@cite)).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
+
+julia> R, x = polynomial_ring(GF(2), "x");
+
+julia> l = 3;
+
+julia> H_poly = matrix(R, 2, 3, 
+                      [x^2 x^2 x^2;
+                       x   x^2  0]);
+
+julia> H = quasi_cyclic_code(H_poly, l);
+
+julia> c = HomologicalProductCode([H,transpose(H)]);
+
+julia> import HiGHS; import JuMP;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(117, 9, 4)
+```
+
+Here is the `[[625, 25, 9]]` Homological product code construct from classical
+quasi-cyclic code from `Table III` of [xu2024fastparallelizablelogicalcomputation](@cite)).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
+
+julia> R, x = polynomial_ring(GF(2), "x");
+
+julia> l = 5;
+
+julia> H_poly = matrix(R, 3, 4, 
+                      [x^4   0 x^4  x^3;
+                       0   x^3 x^3  x^4;
+                       x^3 x^4   0  x^3]);
+
+julia> H = quasi_cyclic_code(H_poly, l);
+
+julia> c = HomologicalProductCode([H,transpose(H)]);
+
+julia> code_n(c), code_k(c)
+(625, 25)
+```
+
 """
 struct HomologicalProductCode{T<:MatElem} <: AbstractCSSCode
     boundary_maps::Vector{T}
