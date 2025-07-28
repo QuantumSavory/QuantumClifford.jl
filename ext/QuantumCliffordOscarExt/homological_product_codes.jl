@@ -1,4 +1,4 @@
-"""Convert a polynomial parity-check matrix to binary quasi-cyclic form."""
+"""Convert a polynomial parity-check matrix or generator check matrix to binary quasi-cyclic form."""
 function quasi_cyclic_code(H::Oscar.Generic.MatSpaceElem, l::Int)
     F = GF(2)
     r, n = size(H)

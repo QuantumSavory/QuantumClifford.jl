@@ -184,4 +184,5 @@
         G_poly = matrix(R, 1, 4, [1 x+x^2+x^3 1+x^2+x^3 x+x^2])
         G = quasi_cyclic_code(G_poly, l)
         @test iszero(H*transpose(G))
+    end
 end
