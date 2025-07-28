@@ -1429,6 +1429,8 @@ include("fastmemlayout.jl")
 include("dense_cliffords.jl")
 # special one- and two- qubit operators
 include("symbolic_cliffords.jl")
+# apply right operations
+include("apply_right.jl")
 # linear algebra and array-like operations
 include("linalg.jl")
 # circuits
@@ -1460,6 +1462,5 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
-include("apply_right.jl")
 
 end #module
