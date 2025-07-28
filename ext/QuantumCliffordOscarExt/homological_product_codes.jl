@@ -146,12 +146,50 @@ parity_matrix_x(hp::HomologicalProductCode) = boundary_maps(hp)[2]
 
 parity_matrix_z(hp::HomologicalProductCode) = boundary_maps(hp)[1]'
 
+"""
+Constructs the *Double Homological Product code* from [Campbell_2019](@cite).
+
+Here is `[[241, 1, 9]]` double homological product code from Table I of [Campbell_2019](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
+
+julia> δ = [1 1 0;
+            0 1 1];
+
+julia> c = DoubleHomologicalProductCode(δ);
+
+julia> import HiGHS; import JuMP;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(214, 1, 9)
+```
+
+Here is `[[486, 6, 9]]` double homological product code from Table I of [Campbell_2019](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
+
+julia> δ = [1 1 0;
+            0 1 1;
+            1 0 1];
+
+julia> c = DoubleHomologicalProductCode(δ);
+
+julia> import HiGHS; import JuMP;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(486, 6, 9)
+```
+"""
 struct DoubleHomologicalProductCode <: AbstractCSSCode
     H::AbstractMatrix
 end
 
 function boundary_maps(c::DoubleHomologicalProductCode)
     R = GF(2)
+    n = size(c.H, 2)
+    m = size(c.H, 1)
     δ₀ = matrix(R, c.H)
     # see Eq. 43
     # δ̃₋₁ = (I ⊗ δ₀ᵀ) ⊕ (δ₀ ⊗ I)
@@ -225,13 +263,13 @@ function boundary_maps(c::DoubleHomologicalProductCode)
         kronecker_product(identity_matrix(R, ñ₋₁), transpose(δ̃₋₁))
     )
     @assert iszero(δ̌₁*δ̌₀)
-    return δ̌₋₂, δ̌₋₁, δ̌₀, δ̌₁
+    return fq_to_int(δ̌₋₂), fq_to_int(δ̌₋₁), fq_to_int(δ̌₀), fq_to_int(δ̌₁)
 end
 
 function parity_matrix_xz(c::DoubleHomologicalProductCode)
     _, δ̌₋₁, δ̌₀, _ = boundary_maps(c)
-    hx = fq_to_int(δ̌₀)
-    hz = fq_to_int(transpose(δ̌₋₁))
+    hx = δ̌₀
+    hz = δ̌₋₁'
     return hx, hz
 end
 

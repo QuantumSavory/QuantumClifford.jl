@@ -1,13 +1,13 @@
 # convert from oscar mat to regular mat type
 matrix_to_int(m::MatElem) = [Int(lift(ZZ, matrix(m)[i,j])) for i in 1:nrows(matrix(m)), j in 1:ncols(matrix(m))]
 
-function fq_to_int(m::FqMatrix)
-    m, n = size(m)
-    H = zeros(Int, m, n)
-    for i in 1:m, j in 1:n
-        H[i,j] = iszero(m[i,j]) ? 0 : 1
+function fq_to_int(δ::FqMatrix)
+    m, n = size(δ)
+    int_δ = Matrix{Int}(undef, m, n)
+    @inbounds for j in 1:n, i in 1:m
+        int_δ[i,j] = iszero(δ[i,j]) ? 0 : 1
     end
-    return H
+    return int_δ
 end
 
 const VectorFPGroupElem = Vector{FPGroupElem}
