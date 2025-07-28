@@ -36,3 +36,15 @@ function HomologicalProductCode(args...; kwargs...)
     end
     return ext.HomologicalProductCode(args...; kwargs...)
 end
+
+"""Double Homological Product codes ([Campbell_2019](@cite)).
+
+Implemented as a package extension with `Oscar`. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
+function DoubleHomologicalProductCode(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
+    if isnothing(ext)
+        throw("The `DoubleHomologicalProductCode` depends on the package `Oscar` but you have not installed or imported it yet. Immediately after you import `Oscar`, the `DoubleHomologicalProductCode` will be available.")
+    end
+    return ext.DoubleHomologicalProductCode(args...; kwargs...)
+end
+

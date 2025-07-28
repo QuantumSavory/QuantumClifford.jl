@@ -145,3 +145,96 @@ end
 parity_matrix_x(hp::HomologicalProductCode) = boundary_maps(hp)[2]
 
 parity_matrix_z(hp::HomologicalProductCode) = boundary_maps(hp)[1]'
+
+struct DoubleHomologicalProductCode <: AbstractCSSCode
+    H::AbstractMatrix
+end
+
+function boundary_maps(c::DoubleHomologicalProductCode)
+    R = GF(2)
+    δ₀ = matrix(R, c.H)
+    # see Eq. 43
+    # δ̃₋₁ = (I ⊗ δ₀ᵀ) ⊕ (δ₀ ⊗ I)
+    δ̃₋₁ = vcat(
+        kronecker_product(identity_matrix(R, n), transpose(δ₀)),
+        kronecker_product(δ₀, identity_matrix(R, m))
+    )
+    # see Eq. 43
+    # δ̃₀ = [δ₀ ⊗ I | I ⊗ δ₀ᵀ]
+    δ̃₀ = hcat(
+        kronecker_product(δ₀, identity_matrix(R, n)),
+        kronecker_product(identity_matrix(R, m), transpose(δ₀))
+    )
+    ñ₋₁ = n*m # Eq. 44
+    ñ₀ = n^2 + m^2 # Eq. 44
+    ñ₁ = n*m # Eq. 44
+
+    # see Eq. 58
+    # δ̌₋₂  = (I ⊗ δ̃₀ᵀ) ⊕ (δ̃₋₁ ⊗ I)
+    δ̌₋₂ = vcat(
+        kronecker_product(identity_matrix(R, ñ₋₁), transpose(δ̃₀)),
+        kronecker_product(δ̃₋₁, identity_matrix(R, ñ₁))
+    )
+    # see Eq. 59
+    # δ̌₋₁ = [I ⊗ δ̃₋₁ᵀ |    0
+    #        δ̃₋₁ ⊗ I  | I ⊗ δ̃₀ᵀ
+    #           0      | δ̃₀ ⊗ I]
+    
+    # I ⊗ δ̃₋₁ᵀ  0
+    tb = hcat(
+        kronecker_product(identity_matrix(R, ñ₁), transpose(δ̃₋₁)),
+        zero_matrix(R, ñ₋₁ * ñ₋₁, ñ₁ * ñ₀)
+    )
+
+    # δ̃₋₁ ⊗ I  I ⊗ δ̃₀ᵀ
+    mb = hcat(
+        kronecker_product(δ̃₋₁, identity_matrix(R, ñ₀)),
+        kronecker_product(identity_matrix(R, ñ₀), transpose(δ̃₀))
+    )
+
+    # 0 δ̃₀ ⊗ I
+    bb = hcat(
+        zero_matrix(R, ñ₁ * ñ₁, ñ₋₁ * ñ₀),
+        kronecker_product(δ̃₀, identity_matrix(R, ñ₁))
+    )
+
+    δ̌₋₁ = vcat(tb, mb, bb)
+    @assert iszero(δ̌₋₁*δ̌₋₂)
+
+    # see Eq. 60
+    # δ̌0 = [δ̃₋₁ ⊗ I | I ⊗ δ̃₋₁ᵀ | 0
+    #       0        | δ̃₀ ⊗ I   | I ⊗ δ̃₀ᵀ]
+    tb = vcat(
+        kronecker_product(δ̃₋₁, identity_matrix(R, ñ₋₁)),
+        zero_matrix(R, ñ₀ * ñ₋₁, ñ₁ * ñ₁)
+    )
+    mb = vcat(
+        kronecker_product(identity_matrix(R, ñ₀), transpose(δ̃₋₁)),
+        kronecker_product(δ̃₀, identity_matrix(R, ñ₀))
+    )
+    bb = vcat(
+        zero_matrix(R, ñ₀ * ñ₋₁, ñ₁ * ñ₁),
+        kronecker_product(identity_matrix(R, ñ₁), transpose(δ̃₀)),
+    )
+    δ̌₀ = hcat(tb, mb, bb)
+
+    # see Eq. 61
+    # δ̌1 = [δ̃₀ ⊗ I | I ⊗ δ̃₋₁ᵀ]
+    δ̌₁ = hcat(
+        kronecker_product(δ̃₀, identity_matrix(R, ñ₋₁)),
+        kronecker_product(identity_matrix(R, ñ₋₁), transpose(δ̃₋₁))
+    )
+    @assert iszero(δ̌₁*δ̌₀)
+    return δ̌₋₂, δ̌₋₁, δ̌₀, δ̌₁
+end
+
+function parity_matrix_xz(c::DoubleHomologicalProductCode)
+    _, δ̌₋₁, δ̌₀, _ = boundary_maps(c)
+    hx = fq_to_int(δ̌₀)
+    hz = fq_to_int(transpose(δ̌₋₁))
+    return hx, hz
+end
+
+parity_matrix_x(c::DoubleHomologicalProductCode) = parity_matrix_xz(c)[1]
+
+parity_matrix_z(c::DoubleHomologicalProductCode) = parity_matrix_xz(c)[2]
