@@ -162,7 +162,7 @@ julia> c = DoubleHomologicalProductCode(δ);
 julia> import HiGHS; import JuMP;
 
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
-(214, 1, 9)
+(241, 1, 9)
 ```
 
 Here is `[[486, 6, 9]]` double homological product code from Table I of [Campbell_2019](@cite).

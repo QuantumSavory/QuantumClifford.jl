@@ -185,4 +185,49 @@
         G = quasi_cyclic_code(G_poly, l)
         @test iszero(H*transpose(G))
     end
+
+    @testset "Double Homological Product codes of Table I of https://arxiv.org/pdf/1805.09271" begin
+        # [[241, 1, 9]]
+        δ = [1 1 0;
+             0 1 1]
+        c = DoubleHomologicalProductCode(δ)
+        code = parity_checks(c)
+        n, k = code_n(code), code_k(code)
+        H = stab_to_gf2(code)
+        mat = matrix(GF(2), H)
+        computed_rank = rank(mat)
+        @test computed_rank == n - k
+        @test n == 241 && k == 1
+        @test stab_looks_good(code, remove_redundant_rows=true)
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 9
+
+        # [[486, 6, 9]]
+        δ = [1 1 0;
+             0 1 1;
+             1 0 1]
+        c = DoubleHomologicalProductCode(δ)
+        code = parity_checks(c)
+        n, k = code_n(code), code_k(code)
+        H = stab_to_gf2(code)
+        mat = matrix(GF(2), H)
+        computed_rank = rank(mat)
+        @test computed_rank == n - k
+        @test n == 486 && k == 6
+        @test stab_looks_good(code, remove_redundant_rows=true)
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 9
+
+        # [[913, 1, 16]]
+        δ = [1 1 0 0;
+             0 1 1 0;
+             0 0 1 1];
+        c = DoubleHomologicalProductCode(δ)
+        code = parity_checks(c)
+        n, k = code_n(code), code_k(code)
+        H = stab_to_gf2(code)
+        mat = matrix(GF(2), H)
+        computed_rank = rank(mat)
+        @test computed_rank == n - k
+        @test n == 913 && k == 1
+        @test stab_looks_good(code, remove_redundant_rows=true)
+    end
 end
