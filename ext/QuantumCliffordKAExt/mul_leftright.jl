@@ -6,35 +6,34 @@ import QuantumClifford: mul_left!, mul_right!
 # CAUTION: Keep in mind that mutable = order_right_left ? right : left
 # TODO: Make the parameters keyword arguments once support becomes available.
 KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
-    mutable_phases, mutable_xzs, @Const(const_xzs), @Const(stride),
+    mutable_phases, mutable_xzs, @Const(const_xzs),
     ::Val{order_right_left}, ::Val{phases},
     ::Val{block_size}, ::Val{batch_size}
     ) where {order_right_left, phases, block_size, batch_size}
 
     # unsafe_indices is required for shared_memory_reduce, do this manually.
-    global_position = global_index(
+    begin_i, j_mutable = global_index(
         KA.@index(Group, NTuple), KA.@groupsize(), KA.@index(Local, NTuple)
         )
-    start = global_position[1]
-    j_mutable = ifelse(size(mutable_xzs, 2) > 1, global_position[2], 1)
-    j_const = ifelse(size(const_xzs, 2) > 1, global_position[2], 1)
-    count = KA.@uniform (size(mutable_xzs, 1) >> 1)
+    stride_i = KA.@uniform (KA.@ndrange()[1])
+    j_const = ifelse(size(const_xzs, 2) > 1, j_mutable, 1)
+    end_i = KA.@uniform (size(mutable_xzs, 1) >> 1)
     if phases
         low = KA.@uniform (zero(eltype(mutable_xzs)))
         high = KA.@uniform (zero(eltype(mutable_xzs)))
     end
 
-    for (i, _) in zip(start : stride : count, one(batch_size) : batch_size)
+    for (i, _) in zip(begin_i : stride_i : end_i, one(batch_size) : batch_size)
         if order_right_left
             x_left = const_xzs[i, j_const]
-            z_left = const_xzs[i + count, j_const]
+            z_left = const_xzs[i + end_i, j_const]
             x_right = mutable_xzs[i, j_mutable]
-            z_right = mutable_xzs[i + count, j_mutable]
+            z_right = mutable_xzs[i + end_i, j_mutable]
         else
             x_left = mutable_xzs[i, j_mutable]
-            z_left = mutable_xzs[i + count, j_mutable]
+            z_left = mutable_xzs[i + end_i, j_mutable]
             x_right = const_xzs[i, j_const]
-            z_right = const_xzs[i + count, j_const]
+            z_right = const_xzs[i + end_i, j_const]
         end
 
         x_new = xor(x_left, x_right)
@@ -48,7 +47,7 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
         end
 
         mutable_xzs[i, j_mutable] = x_new
-        mutable_xzs[i + count, j_mutable] = z_new
+        mutable_xzs[i + end_i, j_mutable] = z_new
     end
 
     if phases
@@ -85,9 +84,10 @@ function device_mul!(
     end
     mul! = kernel_mul!(backend, (block_SZ, 1))
     mul!(
-        mutable_phases, mutable_xzs, const_xzs, dim_x,
+        mutable_phases, mutable_xzs, const_xzs,
         order_right_left, phases, block_size, batch_size;
-        workgroupsize = (block_SZ, 1), ndrange = (dim_x, dim_y)
+        workgroupsize = (block_SZ, 1),
+        ndrange = tessellate((dim_x, dim_y), (block_SZ, 1))
         )
     if phase_B
         transform!(

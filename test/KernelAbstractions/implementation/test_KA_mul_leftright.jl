@@ -8,7 +8,7 @@ using QuantumClifford: mul_left!, mul_right!
     for n in test_sizes
     # Keep the memory usage sane.
     rows = min(n, max_rows)
-    for _ in cycle_range
+    for r in one(cycle_count) : cycle_count
     @cached cache begin
 
         # PauliOperator
@@ -36,12 +36,12 @@ using QuantumClifford: mul_left!, mul_right!
         # Destabilizer
         h_d = Destabilizer(
             Tableau(
-                rand(eltype(h_p1.phase), 2 * rows) .& 0x3,
+                rand(eltype(h_p1.phase), rows << 1) .& 0x3,
                 rows,
                 rand(
                     eltype(h_p1.xz),
-                    cld(2 * rows, count_zeros(zero(eltype(h_p1.xz)))),
-                    2 * rows
+                    cld(rows << 1, count_zeros(zero(eltype(h_p1.xz)))),
+                    rows << 1
                     )
                 )
             )
@@ -52,25 +52,34 @@ using QuantumClifford: mul_left!, mul_right!
                 AT(h_d.tab.xzs)
                 )
             )
-        i = rand(1:rows)
-        j = rand(1:rows)
+        i = rand(one(rows) : rows)
+        j = rand(one(rows) : rows)
 
         # Left/Right order.
-        d_L = mul_left!(copy(d_p1), d_p2)
-        d_R = mul_right!(copy(d_p1), d_p2)
+        d_L = mul_left!(
+            copy(d_p1), d_p2;
+            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            )
+        d_R = mul_right!(
+            copy(d_p1), d_p2;
+            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            )
         synchronize()
         # Either commutes or anti-commutes.
         @test begin
             all(
                 (Array(d_L.phase) .- Array(d_R.phase)) .& 0x3
-                .== 2 * comm(h_p1, h_p2)
+                .== (comm(h_p1, h_p2) << 1)
                 )
             Array(d_L.xz) == Array(d_R.xz)
         end
 
         # Potential aliasing problem.
         h_o = mul!(copy(get_pauli(h_s, i)), h_s, i)
-        d_o = mul!(copy(d_s), i, i)
+        d_o = mul!(
+            copy(d_s), i, i;
+            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            )
         synchronize()
         @test begin
             h_o.phase == Array(phases(d_o, i))
@@ -79,7 +88,10 @@ using QuantumClifford: mul_left!, mul_right!
 
         # PauliOperator - PauliOperator
         h_o = mul!(copy(h_p1), h_p2)
-        d_o = mul!(copy(d_p1), d_p2)
+        d_o = mul!(
+            copy(d_p1), d_p2;
+            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            )
         synchronize()
         @test begin
             h_o.phase == Array(d_o.phase)
@@ -90,7 +102,10 @@ using QuantumClifford: mul_left!, mul_right!
 
         # PauliOperator - Tableau/AbstractStabilizer[i]
         h_o = mul!(copy(h_p1), h_v, i)
-        d_o = mul!(copy(d_p1), d_v, i)
+        d_o = mul!(
+            copy(d_p1), d_v, i;
+            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            )
         synchronize()
         @test begin
             h_o.phase == Array(d_o.phase)
@@ -104,7 +119,10 @@ using QuantumClifford: mul_left!, mul_right!
 
         # Tableau/AbstractStabilizer - PauliOperator
         h_o = mul!(copy(h_u), h_p1)
-        d_o = mul!(copy(d_u), d_p1)
+        d_o = mul!(
+            copy(d_u), d_p1;
+            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            )
         synchronize()
         @test begin
             phases(h_o, i) == Array(phases(d_o, i))
@@ -113,7 +131,10 @@ using QuantumClifford: mul_left!, mul_right!
 
         # Tableau/AbstractStabilizer[i] - PauliOperator
         h_o = mul!(copy(get_pauli(h_u, i)), h_p1)
-        d_o = mul!(copy(d_u), i, d_p1)
+        d_o = mul!(
+            copy(d_u), i, d_p1;
+            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            )
         synchronize()
         @test begin
             h_o.phase == Array(phases(d_o, i))
@@ -122,7 +143,10 @@ using QuantumClifford: mul_left!, mul_right!
 
         # Tableau/AbstractStabilizer[i] - Self[j]
         h_o = mul!(copy(get_pauli(h_u, i)), h_u, j)
-        d_o = mul!(copy(d_u), i, j)
+        d_o = mul!(
+            copy(d_u), i, j;
+            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            )
         synchronize()
         @test begin
             h_o.phase == Array(phases(d_o, i))
@@ -132,7 +156,10 @@ using QuantumClifford: mul_left!, mul_right!
         for (h_v, d_v) in ((h_s.tab, d_s.tab), (h_s, d_s))
 
         # Tableau/AbstractStabilizer - Tableau/AbstractStabilizer
-        d_o = mul!(copy(d_u), d_v)
+        d_o = mul!(
+            copy(d_u), d_v;
+            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            )
         synchronize()
         # Rows become {+/-} x Identity since it is multiplied by itself.
         @test begin
@@ -142,7 +169,10 @@ using QuantumClifford: mul_left!, mul_right!
 
         # Tableau/AbstractStabilizer - Tableau/AbstractStabilizer[i]
         h_o = mul!(copy(h_u), get_pauli(h_v, i))
-        d_o = mul!(copy(d_u), d_v, i)
+        d_o = mul!(
+            copy(d_u), d_v, i;
+            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            )
         synchronize()
         @test begin
             phases(h_o, j) == Array(phases(d_o, j))
@@ -151,7 +181,10 @@ using QuantumClifford: mul_left!, mul_right!
 
         # Tableau/AbstractStabilizer[i] - Tableau/AbstractStabilizer[j]
         h_o = mul!(copy(get_pauli(h_u, i)), h_v, j)
-        d_o = mul!(copy(d_u), i, d_v, j)
+        d_o = mul!(
+            copy(d_u), i, d_v, j;
+            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            )
         synchronize()
         @test begin
             h_o.phase == Array(phases(d_o, i))
@@ -169,15 +202,18 @@ using QuantumClifford: mul_left!, mul_right!
             copy(get_pauli(h_d, j)), get_pauli(h_d, i);
             phases = Val(false)
             )
-        n = h_d.tab.nqubits
-        h_o2 = mul!(copy(get_pauli(h_d, i + n)), get_pauli(h_d, j + n))
-        d_o = mul!(d_d, i, j)
+        n_q = h_d.tab.nqubits
+        h_o2 = mul!(copy(get_pauli(h_d, i + n_q)), get_pauli(h_d, j + n_q))
+        d_o = mul!(
+            d_d, i, j;
+            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            )
         synchronize()
         @test begin
             h_o1.phase == Array(phases(d_o, j))
             h_o1.xz == Array(xzs(d_o, j))
-            h_o2.phase == Array(phases(d_o, i + n))
-            h_o2.xz == Array(xzs(d_o, i + n))
+            h_o2.phase == Array(phases(d_o, i + n_q))
+            h_o2.xz == Array(xzs(d_o, i + n_q))
         end
 
     # Marks the end for @cached

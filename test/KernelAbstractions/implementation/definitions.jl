@@ -6,4 +6,7 @@ const test_sizes = [
 # The tests are for correctness, not for device memory limits.
 const max_rows = 1024
 # Keep it reasonable so that local testing remains accessible.
-const cycle_range = 1:16
+const cycle_count = 16
+# Correctness should be independent of parameter values.
+const block_sizes = rand(1:256, cycle_count)
+const batch_sizes = rand(1:256, cycle_count)
