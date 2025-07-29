@@ -2,7 +2,7 @@
     $TYPEDEF
 
 Construct a regular LDPC code parity-check matrix `H` using Gallager's
-original construction method [1057683](@cite).
+original construction method [gallager1962ldpc](@cite).
 
 # Mathematical Formulation
 
@@ -29,7 +29,7 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/gall
 Here is an example of `(3,4)`-LDPC code
 
 ```jldoctest
-julia> using QECCore; using QuantumClifford
+julia> using QECCore; using Nemo
 
 julia> μ = 3; wc = 3; wr = 4;
 
@@ -61,7 +61,7 @@ true
     $TYPEDFIELDS
 """
 struct GallagerLDPC <: AbstractCECC
-    """Number of block rows called "submatrices" in the Gallager's construction [1057683](@cite)."""
+    """Number of block rows called "submatrices" in the Gallager's construction [gallager1962ldpc](@cite)."""
     block_rows::Int
     """Column weight"""
     col_weight::Int
