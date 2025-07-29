@@ -156,3 +156,6 @@ Only CSS codes built using chain complexes and homology have this method.
 See also: [`metacheck_matrix_x`](@ref), [`metacheck_matrix_z`](@ref)
 """
 function metacheck_matrix end
+
+"""Implemented in a package extension with `Oscar`."""
+function bivariate_bicycle_code_k end

@@ -14,11 +14,11 @@ import Oscar
 import Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup,
     BasicGAPGroupElem, DirectProductGroup, cyclic_group, free_module, hom, transpose, tensor_product,
     chain_complex, total_complex, map, summands, MatElem, matrix, nrows, ncols, kernel, dim, range, image,
-    base_ring, ComplexOfMorphisms, domain, gens
+    base_ring, ComplexOfMorphisms
 import Oscar.Generic.DirectSumModule
 
 import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group,
-    boundary_maps, bivariate_bicycle_code_k
+    boundary_maps
 
 import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
     hgp, code_k, code_n, code_s, distance, parity_matrix_x, parity_matrix_z, parity_matrix_xz, parity_matrix,
@@ -27,7 +27,6 @@ import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps
 
-include("util.jl")
 include("types.jl")
 include("direct_product.jl")
 include("group_presentation.jl")

@@ -1,3 +1,13 @@
+﻿module QECCoreOscarExt
+
+using QECCore
+using DocStringExtensions
+
+import Oscar
+import Oscar: matrix, GF, hom, free_module, size, kernel, map, domain, gens
+
+import QECCore: bivariate_bicycle_code_k
+
 """
 For circulant *bivariate bicycle codes*, the parity-check matrices ``H_X`` and
 ``H_Z`` satisfy the rank equality ``\\text{rank}(H_X) = \\text{rank}(H_Z)``. This
@@ -62,7 +72,7 @@ k = 2 \\cdot \\dim(\\ker(A) \\cap \\ker(B)).
 \\end{aligned}
 ```
 """
-function bivariate_bicycle_code_k(c::AbstractCSSCode)
+function QECCore.bivariate_bicycle_code_k(c::AbstractCSSCode)
     Hx = parity_matrix_x(c)
     n = size(Hx,2)÷2
     A = matrix(GF(2), Hx[:,1:n])
@@ -74,3 +84,5 @@ function bivariate_bicycle_code_k(c::AbstractCSSCode)
     k = 2*size(map(domain(hA), gens(ans[1])), 1)
     return k
 end
+
+end # module

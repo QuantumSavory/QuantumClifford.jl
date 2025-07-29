@@ -12,6 +12,32 @@ are: `Hx = [A|B]` and `Hz = [B'|A']`. Both `Hx` and `Hz` are `(n/2)×n` matrices
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/qcga).
 
+Here is `[[756, 16, ≤ 34]]` circulant bivariate bicycle code from Table 1 of [bravyi2024high](@cite)
+with polynomials ``A = x^3 + y^10 + y^17`` and ``B = y^5 + x^3 + x^19``. 
+
+### Example
+
+```jldoctest
+julia> using QuantumClifford; using QuantumClifford.ECC; # hide
+
+julia> l, m = 21, 18;
+
+julia> A = [3, 10, 17];
+
+julia> B = [5, 3,19];
+
+julia> c = CirculantBivariateBicycle(l, m, A, B);
+
+julia> code_n(c), code_k(c)
+(756, 16)
+```
+
+!!! note
+    The Bivariate Bicycle code ``\\mathrm{QC}(A,B)`` is a specific instance of the
+    *Lifted Product* construction, where the underlying group is the direct product 
+    ``\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m`` (with ``\\mathbb{Z}_j`` denoting the
+    cyclic group of order ``j``).
+
 ### Fields
     $TYPEDFIELDS
 """
