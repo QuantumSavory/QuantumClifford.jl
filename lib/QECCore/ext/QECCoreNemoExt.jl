@@ -16,4 +16,12 @@ function QECCore.code_k(c::AbstractCSSCode)
     return n - rank_Hx - rank_Hz
 end
 
+function QECCore.code_k(c::AbstractCECC)
+    H = Matrix(parity_matrix(c))
+    n = code_n(c)
+    F₂ = GF(2)
+    rank_H = rank(matrix(F₂, H))
+    return n - rank_H
+end
+
 end # module
