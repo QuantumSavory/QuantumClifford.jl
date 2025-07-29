@@ -2,7 +2,10 @@
 ket = "ket"
 anc = "anc"
 ba = "ba"
+hom = "hom"
+IY = "IY"
 mor = "mor"
+ois = "ois"
 
 [type.ipynb]
 # It detects false possitives in the base64 encoded images inside notebooks

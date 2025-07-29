@@ -31,10 +31,12 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     Toric, Gottesman, Surface, Concat, CircuitCode,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     haah_cubic_codes, twobga_from_fp_group, twobga_from_direct_product,
+    TillichZemor, random_TillichZemor_code,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
     Triangular488, Triangular666, honeycomb_color_codes, DelfosseReichardt,
-    DelfosseReichardtRepCode, DelfosseReichardt823, QuantumTannerGraphProduct,
-    CyclicQuantumTannerGraphProduct,
+    DelfosseReichardtRepCode, DelfosseReichardt823, LaCross,
+    QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
+    DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -400,5 +402,8 @@ include("codes/classical/bch.jl")
 # qLDPC
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
+
+# higher dimensional codes
+include("codes/d_dimensional_codes.jl")
 
 end #module

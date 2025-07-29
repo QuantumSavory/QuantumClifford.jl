@@ -8,7 +8,7 @@ using SparseArrays
 
 import Nemo: GF
 import LinearAlgebra
-import Hecke: group_algebra, abelian_group, gens, quo, one, small_group
+import Hecke: group_algebra, abelian_group, gens, quo, one, small_group, polynomial_ring, GF
 
 # generate instances of all implemented codes to make sure nothing skips being checked
 
@@ -191,6 +191,13 @@ test_bb_codes = [bb1, bb2, bb3]
 
 test_twobga_codes = []
 
+# La-cross code polynomial
+F = GF(2)
+R, x = polynomial_ring(F, "x")
+h₂ = 1 + x + x^2
+h₃ = 1 + x + x^3
+h₄ = 1 + x + x^4
+
 @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
   import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order, gens, quo
   function load_oscar_codes()
@@ -323,7 +330,12 @@ const code_instance_args = Dict(
     :DelfosseReichardtRepCode => [4, 6, 8, 10],
     :DelfosseReichardt823 => [1, 2, 3, 4, 5],
     :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
-    :CyclicQuantumTannerGraphProduct => [1, 2, 3, 4, 5]
+    :CyclicQuantumTannerGraphProduct => [1, 2, 3, 4, 5],
+    :DDimensionalSurfaceCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
+    :DDimensionalToricCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
+    :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false), (7,h₃,true), (9,h₃,true), (9,h₄,true), (10,h₄,true), (12,h₄,true)],
+    :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
+    :random_TillichZemor_code => [(6,4,3), (7,5,3), (8,6,3)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
