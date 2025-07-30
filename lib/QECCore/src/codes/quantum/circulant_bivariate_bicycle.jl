@@ -24,7 +24,7 @@ julia> l, m = 21, 18;
 
 julia> A = [3, 10, 17];
 
-julia> B = [5, 3,19];
+julia> B = [5, 3, 19];
 
 julia> c = CirculantBivariateBicycle(l, m, A, B);
 
