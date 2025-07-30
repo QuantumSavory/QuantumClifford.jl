@@ -72,6 +72,7 @@ For classical code construction routines:
 - [bhatia2018mceliece](@cite)
 - [hamming1950error](@cite)
 - [huffman2010fundamentals](@cite)
+- [gallager1962ldpc](@cite)
 
 For minimum distance calculation of quantum codes:
 - [vardy1997intractability](@cite)
