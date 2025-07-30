@@ -8,7 +8,10 @@ using QuantumClifford: mul_left!, mul_right!
     for n in test_sizes
     # Keep the memory usage sane.
     rows = min(n, max_rows)
-    for r in one(cycle_count) : cycle_count
+    for r in one(round_count) : round_count
+    block = block_sizes[r]
+    batch = batch_sizes[r]
+    @info "Round: Pauli size = $n, block size = $block, batch size = $batch."
     @cached cache begin
 
         # PauliOperator
@@ -58,11 +61,11 @@ using QuantumClifford: mul_left!, mul_right!
         # Left/Right order.
         d_L = mul_left!(
             copy(d_p1), d_p2;
-            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            block_size = Val(block), batch_size = Val(batch)
             )
         d_R = mul_right!(
             copy(d_p1), d_p2;
-            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            block_size = Val(block), batch_size = Val(batch)
             )
         synchronize()
         # Either commutes or anti-commutes.
@@ -78,7 +81,7 @@ using QuantumClifford: mul_left!, mul_right!
         h_o = mul!(copy(get_pauli(h_s, i)), h_s, i)
         d_o = mul!(
             copy(d_s), i, i;
-            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            block_size = Val(block), batch_size = Val(batch)
             )
         synchronize()
         @test begin
@@ -90,7 +93,7 @@ using QuantumClifford: mul_left!, mul_right!
         h_o = mul!(copy(h_p1), h_p2)
         d_o = mul!(
             copy(d_p1), d_p2;
-            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            block_size = Val(block), batch_size = Val(batch)
             )
         synchronize()
         @test begin
@@ -104,7 +107,7 @@ using QuantumClifford: mul_left!, mul_right!
         h_o = mul!(copy(h_p1), h_v, i)
         d_o = mul!(
             copy(d_p1), d_v, i;
-            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            block_size = Val(block), batch_size = Val(batch)
             )
         synchronize()
         @test begin
@@ -121,7 +124,7 @@ using QuantumClifford: mul_left!, mul_right!
         h_o = mul!(copy(h_u), h_p1)
         d_o = mul!(
             copy(d_u), d_p1;
-            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            block_size = Val(block), batch_size = Val(batch)
             )
         synchronize()
         @test begin
@@ -133,7 +136,7 @@ using QuantumClifford: mul_left!, mul_right!
         h_o = mul!(copy(get_pauli(h_u, i)), h_p1)
         d_o = mul!(
             copy(d_u), i, d_p1;
-            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            block_size = Val(block), batch_size = Val(batch)
             )
         synchronize()
         @test begin
@@ -145,7 +148,7 @@ using QuantumClifford: mul_left!, mul_right!
         h_o = mul!(copy(get_pauli(h_u, i)), h_u, j)
         d_o = mul!(
             copy(d_u), i, j;
-            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            block_size = Val(block), batch_size = Val(batch)
             )
         synchronize()
         @test begin
@@ -158,7 +161,7 @@ using QuantumClifford: mul_left!, mul_right!
         # Tableau/AbstractStabilizer - Tableau/AbstractStabilizer
         d_o = mul!(
             copy(d_u), d_v;
-            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            block_size = Val(block), batch_size = Val(batch)
             )
         synchronize()
         # Rows become {+/-} x Identity since it is multiplied by itself.
@@ -171,7 +174,7 @@ using QuantumClifford: mul_left!, mul_right!
         h_o = mul!(copy(h_u), get_pauli(h_v, i))
         d_o = mul!(
             copy(d_u), d_v, i;
-            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            block_size = Val(block), batch_size = Val(batch)
             )
         synchronize()
         @test begin
@@ -183,7 +186,7 @@ using QuantumClifford: mul_left!, mul_right!
         h_o = mul!(copy(get_pauli(h_u, i)), h_v, j)
         d_o = mul!(
             copy(d_u), i, d_v, j;
-            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            block_size = Val(block), batch_size = Val(batch)
             )
         synchronize()
         @test begin
@@ -206,7 +209,7 @@ using QuantumClifford: mul_left!, mul_right!
         h_o2 = mul!(copy(get_pauli(h_d, i + n_q)), get_pauli(h_d, j + n_q))
         d_o = mul!(
             d_d, i, j;
-            block_size = Val(block_sizes[r]), batch_size = Val(batch_sizes[r])
+            block_size = Val(block), batch_size = Val(batch)
             )
         synchronize()
         @test begin
@@ -218,7 +221,7 @@ using QuantumClifford: mul_left!, mul_right!
 
     # Marks the end for @cached
     end
-    # Marks the end for _ in cycle_range
+    # Marks the end for r in one(round_count) : round_count
     end
     # Marks the end for n in test_sizes
     end

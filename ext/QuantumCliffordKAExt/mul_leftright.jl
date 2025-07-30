@@ -74,7 +74,7 @@ function device_mul!(
     )::Nothing where {T <: Unsigned, right_left, phase_B, block_SZ, batch_SZ}
 
     backend = KA.get_backend(mutable_xzs)
-    dim_x = max(block_SZ, cld(size(mutable_xzs, 1) >> 1, batch_SZ))
+    dim_x = cld(size(mutable_xzs, 1) >> 1, batch_SZ)
     dim_y = size(mutable_xzs, 2)
     if phase_B
         transform! = kernel_transform!(backend)
