@@ -10,6 +10,7 @@ else
     !Oscar_flag && @info "Skipping Oscar tests -- not tested on Julia < 1.11"
 end
 
+using Pkg
 Oscar_flag && Pkg.add("Oscar")
 
 @run_package_tests
