@@ -35,7 +35,7 @@ end
             h_p1 = PauliOperator(
                 zeros(Cuchar),
                 n * MiB >> 1,
-                zeros(UInt, cld(n * MiB, bit_count(UInt)))
+                zeros(UInt, cld(n * MiB >> 1, bit_count(UInt)) << 1)
                 )
             h_p2 = copy(h_p1)
             d_p1 = PauliOperator(
@@ -107,12 +107,12 @@ end
             h_p = PauliOperator(
                 zeros(Cuchar),
                 nqubits,
-                zeros(UInt, cld(nqubits << 1, bit_count(UInt)))
+                zeros(UInt, cld(nqubits, bit_count(UInt)) << 1)
                 )
             h_t = Tableau(
                 zeros(Cuchar, nqubits),
                 nqubits,
-                zeros(UInt, cld(nqubits << 1, bit_count(UInt)), nqubits)
+                zeros(UInt, cld(nqubits, bit_count(UInt)) << 1, nqubits)
                 )
             d_p = PauliOperator(
                 AT(u32(h_p.phase)),

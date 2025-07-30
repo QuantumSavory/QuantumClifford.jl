@@ -419,7 +419,8 @@ RETURNS (MIXED) DESTABILIZER
     batch_size::Val{batch_SZ} = Val(default_batch_size)
     ) where {phase_B, block_SZ, batch_SZ}
 
-    len, n = length(u.tab.phases), u.tab.nqubits
+    len = length(u.tab.phases)
+    n = len >> 1
     all(x -> 1 <= x <= len, (i, j, i + n, j + n)) ||
         throw(BoundsError(THROW_BOUNDS))
     return $unsafe_f_sym(
@@ -436,7 +437,8 @@ end
     batch_size::Val{batch_SZ} = Val(default_batch_size)
     ) where {phase_B, block_SZ, batch_SZ}
 
-    p, n, xzs = u.tab.phases, u.tab.nqubits, u.tab.xzs
+    p, xzs = u.tab.phases, u.tab.xzs
+    n = length(p) >> 1
     # Swapping the order of the indices is intentional.
     @inbounds device_mul!(
         (@view p[j]), (@view xzs[:, j]),

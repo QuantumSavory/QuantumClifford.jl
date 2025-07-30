@@ -4,14 +4,13 @@ using QuantumClifford: mul_left!, mul_right!
 
 @inline function test_KA_mul_leftright(AT, synchronize)
     cache = AllocCache()
-    for mul! in (mul_left!, mul_right!)
     for n in test_sizes
     # Keep the memory usage sane.
     rows = min(n, max_rows)
     for r in one(round_count) : round_count
     block = block_sizes[r]
     batch = batch_sizes[r]
-    @info "Round: Pauli size = $n, block size = $block, batch size = $batch."
+    for mul! in (mul_left!, mul_right!)
     @cached cache begin
 
         # PauliOperator
@@ -25,7 +24,7 @@ using QuantumClifford: mul_left!, mul_right!
             Tableau(
                 rand(eltype(h_p1.phase), rows) .& 0x3,
                 n,
-                rand(eltype(h_p1.xz), (length(h_p1.xz), rows))
+                rand(eltype(h_p1.xz), length(h_p1.xz), rows)
                 )
             )
         d_s = Stabilizer(
@@ -40,12 +39,8 @@ using QuantumClifford: mul_left!, mul_right!
         h_d = Destabilizer(
             Tableau(
                 rand(eltype(h_p1.phase), rows << 1) .& 0x3,
-                rows,
-                rand(
-                    eltype(h_p1.xz),
-                    cld(rows << 1, count_zeros(zero(eltype(h_p1.xz)))),
-                    rows << 1
-                    )
+                n,
+                rand(eltype(h_p1.xz), length(h_p1.xz), rows << 1)
                 )
             )
         d_d = Destabilizer(
@@ -57,6 +52,20 @@ using QuantumClifford: mul_left!, mul_right!
             )
         i = rand(one(rows) : rows)
         j = rand(one(rows) : rows)
+
+        # Independent of phases.
+        d_o_true = mul!(
+            copy(d_p1), d_p2;
+            phases = Val(true),
+            block_size = Val(block), batch_size = Val(batch)
+            )
+        d_o_false = mul!(
+            copy(d_p1), d_p2;
+            phases = Val(false),
+            block_size = Val(block), batch_size = Val(batch)
+            )
+        synchronize()
+        @test Array(d_o_true.xz) == Array(d_o_false.xz)
 
         # Left/Right order.
         d_L = mul_left!(
@@ -70,10 +79,8 @@ using QuantumClifford: mul_left!, mul_right!
         synchronize()
         # Either commutes or anti-commutes.
         @test begin
-            all(
-                (Array(d_L.phase) .- Array(d_R.phase)) .& 0x3
-                .== (comm(h_p1, h_p2) << 1)
-                )
+            (Array(d_L.phase)[1] - Array(d_R.phase)[1]) & 0x3 ==
+                (comm(h_p1, h_p2) << 1) &&
             Array(d_L.xz) == Array(d_R.xz)
         end
 
@@ -85,7 +92,7 @@ using QuantumClifford: mul_left!, mul_right!
             )
         synchronize()
         @test begin
-            h_o.phase == Array(phases(d_o, i))
+            h_o.phase == Array(phases(d_o, i)) &&
             h_o.xz == Array(xzs(d_o, i))
         end
 
@@ -97,7 +104,7 @@ using QuantumClifford: mul_left!, mul_right!
             )
         synchronize()
         @test begin
-            h_o.phase == Array(d_o.phase)
+            h_o.phase == Array(d_o.phase) &&
             h_o.xz == Array(d_o.xz)
         end
 
@@ -111,7 +118,7 @@ using QuantumClifford: mul_left!, mul_right!
             )
         synchronize()
         @test begin
-            h_o.phase == Array(d_o.phase)
+            h_o.phase == Array(d_o.phase) &&
             h_o.xz == Array(d_o.xz)
         end
 
@@ -128,7 +135,7 @@ using QuantumClifford: mul_left!, mul_right!
             )
         synchronize()
         @test begin
-            phases(h_o, i) == Array(phases(d_o, i))
+            phases(h_o, i) == Array(phases(d_o, i)) &&
             xzs(h_o, i) == Array(xzs(d_o, i))
         end
 
@@ -140,7 +147,7 @@ using QuantumClifford: mul_left!, mul_right!
             )
         synchronize()
         @test begin
-            h_o.phase == Array(phases(d_o, i))
+            h_o.phase == Array(phases(d_o, i)) &&
             h_o.xz == Array(xzs(d_o, i))
         end
 
@@ -152,7 +159,7 @@ using QuantumClifford: mul_left!, mul_right!
             )
         synchronize()
         @test begin
-            h_o.phase == Array(phases(d_o, i))
+            h_o.phase == Array(phases(d_o, i)) &&
             h_o.xz == Array(xzs(d_o, i))
         end
 
@@ -166,7 +173,7 @@ using QuantumClifford: mul_left!, mul_right!
         synchronize()
         # Rows become {+/-} x Identity since it is multiplied by itself.
         @test begin
-            reduce(|, phases(d_o)) & 0x1 == 0
+            reduce(|, phases(d_o)) & 0x1 == 0 &&
             reduce(|, xzs(d_o, i)) == 0
         end
 
@@ -178,7 +185,7 @@ using QuantumClifford: mul_left!, mul_right!
             )
         synchronize()
         @test begin
-            phases(h_o, j) == Array(phases(d_o, j))
+            phases(h_o, j) == Array(phases(d_o, j)) &&
             xzs(h_o, j) == Array(xzs(d_o, j))
         end
 
@@ -190,7 +197,7 @@ using QuantumClifford: mul_left!, mul_right!
             )
         synchronize()
         @test begin
-            h_o.phase == Array(phases(d_o, i))
+            h_o.phase == Array(phases(d_o, i)) &&
             h_o.xz == Array(xzs(d_o, i))
         end
 
@@ -205,27 +212,27 @@ using QuantumClifford: mul_left!, mul_right!
             copy(get_pauli(h_d, j)), get_pauli(h_d, i);
             phases = Val(false)
             )
-        n_q = h_d.tab.nqubits
-        h_o2 = mul!(copy(get_pauli(h_d, i + n_q)), get_pauli(h_d, j + n_q))
+        m = length(h_d.tab.phases) >> 1
+        h_o2 = mul!(copy(get_pauli(h_d, i + m)), get_pauli(h_d, j + m))
         d_o = mul!(
             d_d, i, j;
             block_size = Val(block), batch_size = Val(batch)
             )
         synchronize()
         @test begin
-            h_o1.phase == Array(phases(d_o, j))
-            h_o1.xz == Array(xzs(d_o, j))
-            h_o2.phase == Array(phases(d_o, i + n_q))
-            h_o2.xz == Array(xzs(d_o, i + n_q))
+            h_o1.phase == Array(phases(d_o, j)) &&
+            h_o1.xz == Array(xzs(d_o, j)) &&
+            h_o2.phase == Array(phases(d_o, i + m)) &&
+            h_o2.xz == Array(xzs(d_o, i + m))
         end
 
     # Marks the end for @cached
     end
+    # Marks the end for mul!
+    end
     # Marks the end for r in one(round_count) : round_count
     end
     # Marks the end for n in test_sizes
-    end
-    # Marks the end for mul!
     end
     unsafe_free!(cache)
 end

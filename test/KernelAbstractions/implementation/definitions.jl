@@ -8,5 +8,6 @@ const max_rows = 1024
 # Keep it reasonable so that local testing remains accessible.
 const round_count = 16
 # Correctness should be independent of parameter values.
-const block_sizes = rand(1:256, round_count)
+# The omission of the const specifier is intentional, overriden in OpenCL.
+block_sizes = rand(1:256, round_count)
 const batch_sizes = rand(1:256, round_count)
