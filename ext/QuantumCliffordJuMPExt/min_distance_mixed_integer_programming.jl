@@ -34,27 +34,6 @@ its elements having a weight of four. This discrepancy occurs because stabilizer
 are defined by parity-check matrices, while their minimum distances are determined by
 the dual [Sabo:2022smk](@cite).
 
-```jldoctest
-julia> using QuantumClifford, QuantumClifford.ECC
-
-julia> c = parity_checks(Steane7());
-
-julia> stab_to_gf2(c)
-6×14 Matrix{Bool}:
- 0  0  0  1  1  1  1  0  0  0  0  0  0  0
- 0  1  1  0  0  1  1  0  0  0  0  0  0  0
- 1  0  1  0  1  0  1  0  0  0  0  0  0  0
- 0  0  0  0  0  0  0  0  0  0  1  1  1  1
- 0  0  0  0  0  0  0  0  1  1  0  0  1  1
- 0  0  0  0  0  0  0  1  0  1  0  1  0  1
-
-julia> minimum(sum(stab_to_gf2(c), dims=2))
-4
-
-julia> distance(Steane7())
-3
-```
-
 !!! note
     The minimum distance problem for quantum codes is *NP-hard*, and this hardness extends
     to multiplicative and additive approximations, even when restricted to stabilizer or
@@ -75,14 +54,14 @@ information while evading the code's error detection mechanisms.
 ### Fundamentals of Quantum Code Distance
 
 The distance `d` of a quantum error-correcting code represents its robustness against
-physical errors and is defined as:
+physical errors and is defined as [qubitguide](@cite):
 
 ```math
-\\begin{align*}
+\\begin{aligned}
 \\begin{equation}
 d = \\min_{P \\in N(S)\\setminus S} \\mathrm{wt}(P)
 \\end{equation}
-\\end{align*}
+\\end{aligned}
 ```
 
 where:
@@ -100,42 +79,23 @@ We compute the minimum code distance for CSS (Calderbank-Shor-Steane) codes by s
 The distance is computed separately for `X`-type (``d_X``) and `Z`-type (``d_Z``) logical
 operators, then combined to give the true code distance: ``d = \\min(d_X, d_Z)``.
 
-#### `X-type` Distance (``d_X``)
+### X-type and Z-type Distances
 
-It is defined as the minimum number of `Z`-errors (phase flips) required to implement a non-trivial `X`-logical operator, where the errors must both commute with all `X`-stabilizers and anti-commute with at least one `X`-logical operator.
+The X-type distance (``d_X``) and Z-type distance (``d_Z```) are defined as the minimum
+number of errors required to implement a non-trivial logical operator of the opposite type,
+subject to the following constraints: 
 
-
-```math
-\\begin{align*}
-\\text{Minimize} \\quad & \\sum_{i=1}^n e_{Z,i} \\quad \\text{(Hamming weight of Z-errors)} \\\\
-\\text{Subject to} \\quad & \\mathbf{H_X} \\cdot \\mathbf{e}_Z \\equiv \\mathbf{0} \\pmod{2} \\quad \\text{(Commutes with X-stabilizers)} \\\\
-                      & \\mathbf{L_X} \\cdot \\mathbf{e}_Z \\equiv 1 \\pmod{2} \\quad \\text{(Anti-commutes with X-logical)} \\\\
-                      & e_{Z,i} \\in \\{0,1\\} \\quad \text{(Binary error variables)}
-\\end{align*}
-```
-
-Here:
-- ``\\mathbf{H_X}`` represent `X`-stabilizer matrix)
-- ``\\mathbf{L_X}`` represent `X`-logical operators).
-- ``\\mathbf{e_Z}`` are binary vector representing `Z`-error locations.
-
-#### `Z-type` Distance (``d_Z``)
-
-It is defined as the minimum number of `X`-errors (bit flips) required to implement a non-trivial `Z`-logical operator, where the errors must both commute with all `Z`-stabilizers and anti-commute with at least one `Z`-logical operator.
+- For ``d_X`` (where ``U = X``), the errors are Z-type (phase flips), and the constraints involve the X-stabilizer matrix ``\\mathbf{H_X}`` and X-logical operators ``\\mathbf{L_X}``. The error vector is denoted as `\\mathbf{e}_Z``.
+- For ``d_Z`` (where ``U = Z``), the errors are X-type (bit flips), with constraints given by the Z-stabilizer matrix ``\\mathbf{H_Z}`` and Z-logical operators ``\\mathbf{L_Z}``, and the error vector is ``\\mathbf{e}_X``.  
 
 ```math
-\\begin{align*}
-\\text{Minimize} \\quad & \\sum_{i=1}^n e_{X,i} \\quad \\text{(Hamming weight of X-errors)} \\\\
-\\text{Subject to} \\quad & \\mathbf{H_Z} \\cdot \\mathbf{e}_X \\equiv \\mathbf{0} \\pmod{2} \\quad \\text{(Commutes with Z-stabilizers)} \\\\
-                      & \\mathbf{L_Z} \\cdot \\mathbf{e}_X \\equiv 1 \\pmod{2} \\quad \\text{(Anti-commutes with Z-logical)} \\\\
-                      & e_{X,i} \\in \\{0,1\\} \\quad \\text{(Binary error variables)}
-\\end{align*}
+\\begin{aligned}
+\\text{Minimize} \\quad & \\sum_{i=1}^n e_{V,i} \\quad \\text{(Hamming weight of errors)} \\\\
+\\text{Subject to} \\quad & \\mathbf{H_U} \\cdot \\mathbf{e}_V \\equiv \\mathbf{0} \\pmod{2} \\quad \\text{(Commutes with U-stabilizers)} \\\\
+                      & \\mathbf{L_U} \\cdot \\mathbf{e}_V \\equiv 1 \\pmod{2} \\quad \\text{(Anti-commutes with U-logical)} \\\\
+                      & e_{V,i} \\in \\{0,1\\} \\quad \\text{(Binary error variables)}
+\\end{aligned}
 ```
-
-Here:
-- ``\\mathbf{H_Z}`` represent `Z`-stabilizer matrix)
-- ``\\mathbf{L_Z}`` represent `Z`-logical operators).
-- ``\\mathbf{e_X}`` are binary vector representing `X`-error locations.
 
 # Example
 

@@ -123,7 +123,6 @@ Used with [`distance`](@ref) to select MIP as the method of finding the distance
 
 !!! note
     - Requires a `JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`).
-    - `X`-type and `Z`-type logical operators yield identical code distance results.
     - For some stabilizer CSS codes, the `X`-distance and `Z`-distance are equal.
 
 $FIELDS
