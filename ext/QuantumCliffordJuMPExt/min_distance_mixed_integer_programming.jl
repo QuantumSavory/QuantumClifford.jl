@@ -140,7 +140,7 @@ Here:
 # Example
 
 A `[[40, 8, 5]]` 2BGA code with the minimum distance of `5` from
-Table `2` of [lin2024quantum](@cite).
+Table 2 of [lin2024quantum](@cite).
 
 ```jldoctest jumpexamples
 julia> import Hecke: group_algebra, GF, abelian_group, gens; import HiGHS; import JuMP;
