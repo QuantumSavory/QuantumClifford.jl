@@ -47,7 +47,8 @@ For a more in-depth background on minimum distance, see Chapter 3 of [Sabo:2022s
 
 The foundation of quantum error correction lies in protecting logical quantum information
 from physical errors by encoding it across multiple qubits. A quantum code's performance is
-fundamentally characterized by its distance (`d`), which quantifies the code's ability to detect and correct errors. Practically, the distance represents the minimum number of physical
+fundamentally characterized by its distance (`d`), which quantifies the code's ability to detect
+and correct errors. Practically, the distance represents the minimum number of physical
 qubit errors required to cause an undetectable logical error - one that corrupts encoded
 information while evading the code's error detection mechanisms.
 
@@ -66,11 +67,14 @@ d = \\min_{P \\in N(S)\\setminus S} \\mathrm{wt}(P)
 
 where:
 
-- ``N(S)`` denotes the normalizer of the stabilizer group `S`
-- ``\\mathrm{wt}(P)`` represents the weight of Pauli operator `P` (number of non-identity components)
+- ``N(S)`` denotes the [normalizer](https://en.wikipedia.org/wiki/Centralizer_and_normalizer) of the stabilizer group `S`.
+- ``\\mathrm{wt}(P)`` represents the weight of Pauli operator P.
 - The minimization is taken over all logical operators that are not stabilizers.
 
-The distance reveals the essential property that it equals the smallest number of qubits that must be affected to produce a logical error undetectable by stabilizer measurements. The normalizer condition ``P \\in N(S)`` ensures the operator commutes with all stabilizers, while ``P \\notin S`` guarantees it performs a non-trivial logical operation.
+The distance reveals the essential property that it equals the smallest number of qubits
+that must be affected to produce a logical error undetectable by stabilizer measurements. The
+normalizer condition ``P \\in N(S)`` ensures the operator commutes with all stabilizers, while
+``P \\notin S`` guarantees it performs a non-trivial logical operation [qubitguide](@cite).
 
 ### Mixed Integer Programming
 
