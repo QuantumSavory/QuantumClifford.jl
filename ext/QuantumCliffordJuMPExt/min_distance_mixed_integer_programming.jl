@@ -164,7 +164,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 ```
 
 A `[[48, 6, 8]]` GB code with the minimum distance of `8` from (A3)
-in Appendix `B` of [panteleev2021degenerate](@cite).
+in Appendix B of [panteleev2021degenerate](@cite).
 
 ```jldoctest jumpexamples
 julia> l = 24;
