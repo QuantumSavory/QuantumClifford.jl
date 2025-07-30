@@ -313,6 +313,16 @@ h₄ = 1 + x + x^4
   load_oscar_codes()
 end
 
+# Generalized Bivariate Bicycle Codes
+A1 = [(:x,3), (:y,1), (:y,2)]
+B1 = [(:y,3), (:x,1), (:x,2)]
+A1 = [(:x,9), (:y,1), (:y,2)]
+B1 = [(:y,0), (:x,2), (:x,7)]
+A2 = [(:x,6), (:y,5), (:y,6)]
+B2 = [(:y,0), (:x,4), (:x,13)]
+A3 = [(:x,5), (:y,2), (:y,3)]
+B3 = [(:y,2), (:x,7), (:x,6)]
+
 
 const code_instance_args = Dict(
     :Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
@@ -335,7 +345,7 @@ const code_instance_args = Dict(
     :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false), (7,h₃,true), (9,h₃,true), (9,h₄,true), (10,h₄,true), (12,h₄,true)],
     :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
     :random_TillichZemor_code => [(6,4,3), (7,5,3), (8,6,3)],
-    :CirculantBivariateBicycle => [(9,6,[3,1,2],[3,1,2]),(15,3,[9,1,2],[0,2,7]),(6,6,[3,1,2],[3,1,2]),(14,7,[6,5,6],[0,4,13]),(15,5,[5,2,3],[2,7,6])]
+    :GeneralizedCirculantBivariateBicycle => [(9,6,A1,B1),(15,3,A2,B2),(6,6, A1,B1),(14,7,A2,B2),(15,5,A3,B3)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)

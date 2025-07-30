@@ -84,6 +84,6 @@
     end
     
     @testset "Circulant Bivariate Bicycle Codes" begin
-        include("codes/circulant_bivariate_bicycle.jl")
+        include("codes/generalized_circulant_bivariate_bicycle.jl")
     end
 end
