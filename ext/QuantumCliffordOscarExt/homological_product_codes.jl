@@ -52,7 +52,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 ```
 
 Here is the `[[117, 9, 4]]` Homological product code construct from classical
-quasi-cyclic code from `Table III` of [xu2024fastparallelizablelogicalcomputation](@cite)).
+quasi-cyclic code from `Table III` of [xu2024fastparallelizablelogicalcomputation](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
@@ -75,7 +75,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 ```
 
 Here is the `[[225, 9, 6]]` Homological product code construct from classical
-quasi-cyclic code from `Table III` of [xu2024fastparallelizablelogicalcomputation](@cite)).
+quasi-cyclic code from `Table III` of [xu2024fastparallelizablelogicalcomputation](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
