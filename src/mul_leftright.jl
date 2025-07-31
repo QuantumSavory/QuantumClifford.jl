@@ -1,6 +1,7 @@
 # using LoopVectorization
 using HostCPUFeatures: pick_vector_width
 import SIMD
+include("throws.jl")
 
 """Nonvectorized version of `mul_left!` used for unit tests."""
 function _mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned
@@ -135,14 +136,14 @@ end
 ##############################
 
 @inline function mul_left!(r::PauliOperator, l::PauliOperator; phases::Val{B}=Val(true)) where B
-    nqubits(l)==nqubits(r) || throw(DimensionMismatch("The two Pauli operators should have the same length!")) # TODO skip this when @inbounds is set
+    nqubits(l)==nqubits(r) || throw(DimensionMismatch(THROW_NQUBITS)) # TODO skip this when @inbounds is set
     s = mul_left!(r.xz, l.xz, phases=phases)
     B && (r.phase[] = (s+r.phase[]+l.phase[])&0x3)
     r
 end
 
 @inline function mul_right!(l::PauliOperator, r::PauliOperator; phases::Val{B}=Val(true)) where B
-    nqubits(l)==nqubits(r) || throw(DimensionMismatch("The two Pauli operators should have the same length!")) # TODO skip this when @inbounds is set
+    nqubits(l)==nqubits(r) || throw(DimensionMismatch(THROW_NQUBITS)) # TODO skip this when @inbounds is set
     s = mul_right!(l.xz, r.xz, phases=phases)
     B && (l.phase[] = (s+r.phase[]+l.phase[])&0x3)
     l
