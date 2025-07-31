@@ -17,6 +17,8 @@ function quasi_cyclic_code(H::Oscar.Generic.MatSpaceElem, l::Int)
 end
 
 """
+    $TYPEDEF
+
 Constructs a `D`-dimensional CSS quantum code (`D ≥ 2`) from `D` classical 
 parity-check matrices via iterated *homological* products.
 
@@ -46,7 +48,7 @@ julia> c = HomologicalProductCode([δ,δ,δ]);
 julia> import HiGHS; import JuMP;
 
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
-(81, 3, 9)
+(81, 3, 3)
 ```
 
 Here is the `[[117, 9, 4]]` Homological product code construct from classical
@@ -113,8 +115,29 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (80, 16, 4)
 ```
 
+Here is a Homological product of `(3,4)`-classical LDPC code.
+
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
+
+julia> μ = 2; wc = 3; wr = 4;
+
+julia> c = GallagerLDPC(μ, wc, wr);
+
+julia> H = matrix(GF(2), parity_matrix(c));
+
+julia> c = HomologicalProductCode([H,transpose(H)]);
+
+julia> import HiGHS; import JuMP;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(100, 20, 2)
+```
+
+### Fields
+    $TYPEDFIELDS
 """
 struct HomologicalProductCode{T<:MatElem} <: AbstractCSSCode
+    """A length-`D` vector of parity-check matrices of classical error-correcting codes."""
     boundary_maps::Vector{T}
     function HomologicalProductCode(boundary_maps::Vector{T}) where {T <: MatElem}
         length(boundary_maps) >= 2 || throw(ArgumentError("At least `2` boundary maps must be provided."))
@@ -181,8 +204,12 @@ julia> import HiGHS; import JuMP;
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (486, 6, 9)
 ```
+
+### Fields
+    $TYPEDFIELDS
 """
 struct DoubleHomologicalProductCode <: AbstractCSSCode
+    """The parity-check matrix of a classical error-correcting code."""
     H::AbstractMatrix
 end
 
@@ -276,3 +303,7 @@ end
 parity_matrix_x(c::DoubleHomologicalProductCode) = parity_matrix_xz(c)[1]
 
 parity_matrix_z(c::DoubleHomologicalProductCode) = parity_matrix_xz(c)[2]
+
+metacheck_matrix_x(c::DoubleHomologicalProductCode) = boundary_maps(c)[4]
+
+metacheck_matrix_z(c::DoubleHomologicalProductCode) = boundary_maps(c)[1]'
