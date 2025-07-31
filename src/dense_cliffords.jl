@@ -91,6 +91,7 @@ function Base.copy(c::CliffordOperator)
 end
 
 @inline nqubits(c::CliffordOperator) = nqubits(tab(c))
+@inline phases(c::CliffordOperator) = phases(tab(c))
 
 Base.zero(c::CliffordOperator) = CliffordOperator(zero(tab(c)))
 Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Tableau, 2n, n))

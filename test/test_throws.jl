@@ -71,4 +71,6 @@
     @test_throws DimensionMismatch Stabilizer(fill(0x0, 2), Matrix{Bool}([1 0 1;1 1 1; 1 0 1]), Matrix{Bool}([1 0 0;1 1 1;1 0 1]))
     @test_throws DimensionMismatch Stabilizer(fill(0x0, 2), Matrix{Bool}([1 0 1 1 0 0; 1 1 1 1 1 1; 1 0 1 1 0 1]))
 
+    @test_throws DimensionMismatch apply_right!(random_clifford(1), random_pauli(2))
+    @test_throws DimensionMismatch apply_right!(random_clifford(2), random_clifford(1))
 end
