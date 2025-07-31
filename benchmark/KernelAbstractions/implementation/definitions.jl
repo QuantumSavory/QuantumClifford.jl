@@ -3,11 +3,11 @@ const format = "svg"
 
 # BenchmarkTools parameters.
 # Evaluations per sample point.
-const evals = 5
+const evals = 16
 # Maximum number of samples.
-const samples = 10_000
+const samples = 2^10
 # Maximum runtime for each sample group.
-const seconds = 300
+const seconds = 60
 
 # By definition, (unsigned) char is the smallest addressable unit of memory.
 const MiB = 1024 * 1024 * count_zeros(zero(Cuchar))

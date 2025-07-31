@@ -378,7 +378,7 @@ function precise_inv(a)::Matrix{UInt8}
     if n<200
         return UInt8.(mod.(inv(a),0x2))
     else
-	    return nemo_inv(a,n)
+        return nemo_inv(a,n)
     end
 end
 
