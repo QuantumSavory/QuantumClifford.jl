@@ -4,16 +4,9 @@ $TYPEDSIGNATURES
 Compute the distance of a code using mixed integer programming.
 See [`QuantumClifford.ECC.DistanceMIPAlgorithm`](@ref) for configuration options.
 
-Computes the minimum Hamming weight of a binary vector `x` by solving an **mixed
-integer program (MIP)** that satisfies the following constraints:
-
-- ``\\text{stab} \\cdot x \\equiv 0 \\pmod{2}``: The binary vector `x` must have an
-even overlap with each `X`-check of the stabilizer binary representation `stab`.
-- ``\\text{logicOp} \\cdot x \\equiv 1 \\pmod{2}``: The binary vector `x` must have
-an odd overlap with logical-`X` operator `logicOp` on the `i`-th logical qubit.
-
-Specifically, it calculates the minimum Hamming weight ``d_{Z}`` for the `Z`-type
-logical operator. The minimum distance for `X`-type logical operators is the same.
+Specifically, it computes the minimum distance of a Calderbank-Shor-Steane code by
+solving two independent **Mixed Integer Programs** for `X`-type (``d_X``) and `Z`-type
+(``d_Z``) distances. The code distance is ``d = \\min(d_X, d_Z)``.
 
 ### Background on Minimum Distance
 
@@ -41,27 +34,6 @@ its elements having a weight of four. This discrepancy occurs because stabilizer
 are defined by parity-check matrices, while their minimum distances are determined by
 the dual [Sabo:2022smk](@cite).
 
-```jldoctest
-julia> using QuantumClifford, QuantumClifford.ECC
-
-julia> c = parity_checks(Steane7());
-
-julia> stab_to_gf2(c)
-6×14 Matrix{Bool}:
- 0  0  0  1  1  1  1  0  0  0  0  0  0  0
- 0  1  1  0  0  1  1  0  0  0  0  0  0  0
- 1  0  1  0  1  0  1  0  0  0  0  0  0  0
- 0  0  0  0  0  0  0  0  0  0  1  1  1  1
- 0  0  0  0  0  0  0  0  1  1  0  0  1  1
- 0  0  0  0  0  0  0  1  0  1  0  1  0  1
-
-julia> minimum(sum(stab_to_gf2(c), dims=2))
-4
-
-julia> distance(Steane7())
-3
-```
-
 !!! note
     The minimum distance problem for quantum codes is *NP-hard*, and this hardness extends
     to multiplicative and additive approximations, even when restricted to stabilizer or
@@ -71,40 +43,67 @@ julia> distance(Steane7())
 
 For a more in-depth background on minimum distance, see Chapter 3 of [Sabo:2022smk](@cite).
 
+### Quantum Error Correction and Code Distance
+
+The foundation of quantum error correction lies in protecting logical quantum information
+from physical errors by encoding it across multiple qubits. A quantum code's performance is
+fundamentally characterized by its distance (`d`), which quantifies the code's ability to detect
+and correct errors. Practically, the distance represents the minimum number of physical
+qubit errors required to cause an undetectable logical error - one that corrupts encoded
+information while evading the code's error detection mechanisms.
+
+### Fundamentals of Quantum Code Distance
+
+The distance `d` of a quantum error-correcting code represents its robustness against
+physical errors and is defined as [qubitguide](@cite):
+
+```math
+\\begin{aligned}
+\\begin{equation}
+d = \\min_{P \\in N(S)\\setminus S} \\mathrm{wt}(P)
+\\end{equation}
+\\end{aligned}
+```
+
+where:
+
+- ``N(S)`` denotes the [normalizer](https://en.wikipedia.org/wiki/Centralizer_and_normalizer) of the stabilizer group `S`.
+- ``\\mathrm{wt}(P)`` represents the weight of Pauli operator P.
+- The minimization is taken over all logical operators that are not stabilizers.
+
+The distance reveals the essential property that it equals the smallest number of qubits
+that must be affected to produce a logical error undetectable by stabilizer measurements. The
+normalizer condition ``P \\in N(S)`` ensures the operator commutes with all stabilizers, while
+``P \\notin S`` guarantees it performs a non-trivial logical operation [qubitguide](@cite).
+
 ### Mixed Integer Programming
 
-The MIP minimizes the Hamming weight `w(x)`, defined as the number of nonzero
-elements in `x`, while satisfying the constraints:
+We compute the minimum code distance for CSS (Calderbank-Shor-Steane) codes by solving MIPs. 
+
+The distance is computed separately for `X`-type (``d_X``) and `Z`-type (``d_Z``) logical
+operators, then combined to give the true code distance: ``d = \\min(d_X, d_Z)``.
+
+### X-type and Z-type Distances
+
+The X-type distance (``d_X``) and Z-type distance (``d_Z```) are defined as the minimum
+number of errors required to implement a non-trivial logical operator of the opposite type,
+subject to the following constraints: 
+
+- For ``d_X`` (where ``U = X``), the errors are Z-type (phase flips), and the constraints involve the X-stabilizer matrix ``\\mathbf{H_X}`` and X-logical operators ``\\mathbf{L_X}``. The error vector is denoted as `\\mathbf{e}_Z``.
+- For ``d_Z`` (where ``U = Z``), the errors are X-type (bit flips), with constraints given by the Z-stabilizer matrix ``\\mathbf{H_Z}`` and Z-logical operators ``\\mathbf{L_Z}``, and the error vector is ``\\mathbf{e}_X``.  
 
 ```math
 \\begin{aligned}
-    \\text{Minimize} \\quad & w(x) = \\sum_{i=1}^n x_i, \\\\
-    \\text{subject to} \\quad & \\text{stab} \\cdot x \\equiv 0 \\pmod{2}, \\\\
-                            & \\text{logicOp} \\cdot x \\equiv 1 \\pmod{2}, \\\\
-                            & x_i \\in \\{0, 1\\} \\quad \\text{for all } i.
+\\text{Minimize} \\quad & \\sum_{i=1}^n e_{V,i} \\quad \\text{(Hamming weight of errors)} \\\\
+\\text{Subject to} \\quad & \\mathbf{H_U} \\cdot \\mathbf{e}_V \\equiv \\mathbf{0} \\pmod{2} \\quad \\text{(Commutes with U-stabilizers)} \\\\
+                      & \\mathbf{L_U} \\cdot \\mathbf{e}_V \\equiv 1 \\pmod{2} \\quad \\text{(Anti-commutes with U-logical)} \\\\
+                      & e_{V,i} \\in \\{0,1\\} \\quad \\text{(Binary error variables)}
 \\end{aligned}
 ```
-
-Here:
-- ``\\text{stab}`` is the binary matrix representing the stabilizer group.
-- ``\\text{logicOp}`` is the binary vector representing the logical-`X` operator.
-- `x` is the binary vector (decision variable) being optimized.
-
-The optimal solution ``w_{i}`` for each logical-`X` operator corresponds to the
-minimum weight of a Pauli `Z`-type operator satisfying the above conditions.
-The `Z`-type distance is given by:
-
-```math
-\\begin{aligned}
-    d_Z = \\min(w_1, w_2, \\dots, w_k),
-\\end{aligned}
-```
-
-where `k` is the number of logical qubits.
 
 # Example
 
-A [[40, 8, 5]] 2BGA code with the minimum distance of 5 from
+A `[[40, 8, 5]]` 2BGA code with the minimum distance of `5` from
 Table 2 of [lin2024quantum](@cite).
 
 ```jldoctest jumpexamples
@@ -128,7 +127,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (40, 8, 5)
 ```
 
-A [[48, 6, 8]] GB code with the minimum distance of 8 from (A3)
+A `[[48, 6, 8]]` GB code with the minimum distance of `8` from (A3)
 in Appendix B of [panteleev2021degenerate](@cite).
 
 ```jldoctest jumpexamples
@@ -159,8 +158,17 @@ are as follows:
 function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
     logical_qubits = isnothing(alg.logical_qubit) ? (1:code_k(code)) : (alg.logical_qubit:alg.logical_qubit)
     isnothing(alg.logical_qubit) || (1 <= alg.logical_qubit <= code_k(code)) || throw(ArgumentError("Logical qubit out of range"))
+    if alg.logical_operator_type == :minXZ
+        dX = _compute_distance(code, logical_qubits, :X, alg)
+        dZ = _compute_distance(code, logical_qubits, :Z, alg)
+        return min(dX, dZ)
+    else
+        return _compute_distance(code, logical_qubits, alg.logical_operator_type, alg)
+    end
+end
+
+function _compute_distance(code, logical_qubits, logical_operator_type, alg)
     # Get the appropriate logical operators and matrices based on operator type
-    logical_operator_type = alg.logical_operator_type
     l, H, h = if logical_operator_type == :X
         l_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(logx_ops(code)))
         H_val = SparseMatrixCSC{Int, Int}(stab_to_gf2(parity_checks(code)))
