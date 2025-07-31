@@ -41,6 +41,10 @@
                     @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
                     @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:X)) == L
                     @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z)) == L^2
+                    dx = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:X))
+                    dz = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z))
+                    mindxdz = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:minXZ))
+                    @test min(dx, dz) == mindxdz
                 end
             end
 
@@ -97,6 +101,10 @@
                     @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
                     @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:X)) == L
                     @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z)) == L^2
+                    dx = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:X))
+                    dz = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z))
+                    mindxdz = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:minXZ))
+                    @test min(dx, dz) == mindxdz
                 end
             end
 
