@@ -37,3 +37,15 @@ end
 function THROW_INVALID_Z_METACHECKS(D)
     return "`Z`-metachecks (`Mz`) require `D ≥ 3` (D=$(D))"    
 end
+
+const THROW_INVALID_CUDA_ARG = 
+"First argument to @run_cuda should be a function call"
+
+const THROW_MODEL_MEMORY_LIMIT =
+"Model exceeded memory limits"
+
+const THROW_MODEL_TIME_LIMIT =
+"Model exceeded time limit"
+
+function THROW_MODEL_FAILED(error)
+    return "Model failed to solve: $error"

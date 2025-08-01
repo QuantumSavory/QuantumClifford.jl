@@ -1,6 +1,6 @@
 macro run_cuda(call, ndrange)
     # destructure the kernel call
-    Meta.isexpr(call, :call) || throw(ArgumentError("first argument to @run_cuda should be a function call"))
+    Meta.isexpr(call, :call) || throw(ArgumentError(THROW_INVALID_CUDA_ARG))
     f = call.args[1]
     args = call.args[2:end]
     args = [esc(x) for x in args]

@@ -11,5 +11,6 @@ include("apply.jl")
 include("pauli_frames.jl")
 include("fastmemlayout.jl")
 include("apply_noise.jl")
+include("../../src/throws.jl")
 
 end

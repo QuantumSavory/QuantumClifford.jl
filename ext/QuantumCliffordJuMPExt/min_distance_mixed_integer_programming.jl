@@ -158,7 +158,7 @@ are as follows:
 """
 function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
     logical_qubits = isnothing(alg.logical_qubit) ? (1:code_k(code)) : (alg.logical_qubit:alg.logical_qubit)
-    isnothing(alg.logical_qubit) || (1 <= alg.logical_qubit <= code_k(code)) || throw(ArgumentError("Logical qubit out of range"))
+    isnothing(alg.logical_qubit) || (1 <= alg.logical_qubit <= code_k(code)) || throw(ArgumentError(THROW_BOUNDS))
     # Get the appropriate logical operators and matrices based on operator type
     logical_operator_type = alg.logical_operator_type
     l, H, h = if logical_operator_type == :X
@@ -254,11 +254,11 @@ function _minimum_distance(hx, lx, opt, opt_summary, time_limit)
     # Ensure the model is solved and feasible
     if !is_solved_and_feasible(model)
         if termination_status(model) == MOI.MEMORY_LIMIT
-            throw(ErrorException("Model exceeded memory limits"))
+            throw(ErrorException(THROW_MODEL_MEMORY_LIMIT))
         elseif termination_status(model) == MOI.TIME_LIMIT
-            throw(ErrorException("Model exceeded time limit"))
+            throw(ErrorException(THROW_MODEL_TIME_LIMIT))
         else
-            throw(ErrorException("Model failed to solve: $(termination_status(model))"))
+            throw(ErrorException(THROW_MODEL_FAILED(termination_status(model))))
         end
     end
     opt_val = sum(value(x[i]) for i in 1:n)

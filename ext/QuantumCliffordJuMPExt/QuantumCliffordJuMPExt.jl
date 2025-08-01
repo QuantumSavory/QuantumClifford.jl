@@ -24,5 +24,6 @@ import ILog2: ilog2, RoundUp
 export distance
 
 include("min_distance_mixed_integer_programming.jl")
+include("../../src/throws.jl")
 
 end

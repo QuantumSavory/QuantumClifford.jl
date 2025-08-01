@@ -614,7 +614,7 @@ function metacheck_matrix_x(c::DDimensionalCode)
 end
 
 function metacheck_matrix_z(c::DDimensionalCode)
-    c.D ≥ 3 || throw(ArgumentError(THROW_INVALID_Z_METACHECKS(c.D))))
+    c.D ≥ 3 || throw(ArgumentError(THROW_INVALID_Z_METACHECKS(c.D)))
     return Matrix(boundary_maps(c)[1]') # Mz
 end
 
