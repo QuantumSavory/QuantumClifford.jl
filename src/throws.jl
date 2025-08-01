@@ -25,3 +25,15 @@ const THROW_REQUIRED_POSITIVE_ARG =
 
 const THROW_INVALID_XZ_COMPONENTS = 
 "`xzcomponents` should be `:split` or `:together`"
+
+function THROW_INVALID_CODE_DIMENSION(D)
+    return "Dimension of the input code must be at least 2 (got D = $D)."    
+end
+
+function THROW_INVALID_X_METACHECKS(D)
+    return "`X`-metachecks (`Mx`) require `D ≥ 4` (D=$(D))"    
+end
+
+function THROW_INVALID_Z_METACHECKS(D)
+    return "`Z`-metachecks (`Mz`) require `D ≥ 3` (D=$(D))"    
+end
