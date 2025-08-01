@@ -73,6 +73,15 @@
                 expected_n = 756,
                 expected_k = 16
             ),
+            (
+                name = "BB [[784, 24, 24]]",
+                l = 28,
+                m = 14,
+                A = [(:x, 26), (:y, 6), (:y, 8)], # A = x²⁶ + y⁶ + y⁸
+                B = [(:y, 7), (:x, 9), (:x, 20)], # B = y⁷ + x⁹ + x²⁰
+                expected_n = 784,
+                expected_k = 24
+            )
         ]
             @testset "$(case.name): l=$(case.l), m=$(case.m)" for case in test_cases
                 c = GeneralizedCirculantBivariateBicycle(case.l, case.m, case.A, case.B)
@@ -85,7 +94,9 @@
                 @test computed_rank == n - k && computed_rank == nₛ - kₛ
                 @test n == nₛ == case.expected_n && k == kₛ == case.expected_k
                 @test stab_looks_good(stab, remove_redundant_rows=true)
-                @test bivariate_bicycle_code_k(c) == case.expected_k == code_k(c)
+                Hxᵣ = rank(matrix(GF(2), parity_matrix_x(c)))
+                Hzᵣ = rank(matrix(GF(2), parity_matrix_x(c)))
+                @test bivariate_bicycle_code_k(c) == case.expected_k == code_k(c) == 2*c.l*c.m - 2*Hxᵣ == 2*c.l*c.m - 2*Hzᵣ
                 # Both A and B are matrices where each row and column has exactly three non-zero entries when using 3-term polynomial representation.
                 Hx = parity_matrix_x(c)
                 n = size(Hx,2)÷2
@@ -96,6 +107,7 @@
                 @test all(sum(A, dims=1) .== 3)
                 @test all(sum(B, dims=1) .== 3)
                 @test A*B == B*A
+                @test iszero(A*B+B*A) == iszero(2*A*B)
             end
         end
 
@@ -158,7 +170,9 @@
                 @test computed_rank == n - k && computed_rank == nₛ - kₛ
                 @test n == nₛ == case.expected_n && k == kₛ == case.expected_k
                 @test stab_looks_good(stab, remove_redundant_rows=true)
-                @test bivariate_bicycle_code_k(c) == case.expected_k == code_k(c)
+                Hxᵣ = rank(matrix(GF(2), parity_matrix_x(c)))
+                Hzᵣ = rank(matrix(GF(2), parity_matrix_x(c)))
+                @test bivariate_bicycle_code_k(c) == case.expected_k == code_k(c) == 2*c.l*c.m - 2*Hxᵣ == 2*c.l*c.m - 2*Hzᵣ
                 # Both A and B are matrices where each row and column has exactly three non-zero entries when using 3-term polynomial representation.
                 Hx = parity_matrix_x(c)
                 n = size(Hx,2)÷2
@@ -169,6 +183,7 @@
                 @test all(sum(A, dims=1) .== 3)
                 @test all(sum(B, dims=1) .== 3)
                 @test A*B == B*A
+                @test iszero(A*B+B*A) == iszero(2*A*B)
             end
         end
 
@@ -228,7 +243,44 @@
                 B = [(:y, 6), (:x, 4), (:x, 5)],
                 expected_n = 180,
                 expected_k = 8
-            )
+            ),
+            (
+                name = "BB [[18, 4, 4]]",
+                l = 3,
+                m = 3,
+                A = [(:x, 0), (:x, 1), (:y, 1)],
+                B = [(:y, 0), (:x, 2), (:y, 2)],
+                expected_n = 18,
+                expected_k = 4
+            ),
+            (
+                name = "BB [[36, 4, 6]]",
+                l = 3,
+                m = 6,
+                A = [(:x, 1), (:y, 2), (:y, 3)],
+                B = [(:y, 0), (:y, 1), (:x, 2)],
+                expected_n = 36,
+                expected_k = 4
+            ),
+            (
+                name = "BB [[54, 4, 8]]",
+                l = 3,
+                m = 9,
+                A = [(:x, 1), (:y, 1), (:y, 3)],
+                B = [(:y, 0), (:y, 2), (:x, 2)],
+                expected_n = 54,
+                expected_k = 4
+            ),
+            (
+                name = "BB [[196, 18, 8]]",
+                l = 7,
+                m = 14,
+                A = [(:x, 0), (:y, 1), (:y, 3)],
+                B = [(:y, 0), (:x, 2), (:x, 3)],
+                expected_n = 196,
+                expected_k = 18
+            ),
+
         ]
             @testset "$(case.name): l=$(case.l), m=$(case.m)" for case in test_cases
                 c = GeneralizedCirculantBivariateBicycle(case.l, case.m, case.A, case.B)
@@ -240,7 +292,9 @@
                 computed_rank = rank(mat)
                 @test computed_rank == n - k && computed_rank == nₛ - kₛ && n == nₛ && k == kₛ
                 @test stab_looks_good(stab, remove_redundant_rows=true)
-                @test bivariate_bicycle_code_k(c) == case.expected_k == code_k(c)
+                Hxᵣ = rank(matrix(GF(2), parity_matrix_x(c)))
+                Hzᵣ = rank(matrix(GF(2), parity_matrix_x(c)))
+                @test bivariate_bicycle_code_k(c) == case.expected_k == code_k(c) == 2*c.l*c.m - 2*Hxᵣ == 2*c.l*c.m - 2*Hzᵣ
                 # Both A and B are matrices where each row and column has exactly three non-zero entries when using 3-term polynomial representation.
                 Hx = parity_matrix_x(c)
                 n = size(Hx,2)÷2
@@ -251,6 +305,7 @@
                 @test all(sum(A, dims=1) .== 3)
                 @test all(sum(B, dims=1) .== 3)
                 @test A*B == B*A
+                @test iszero(A*B+B*A) == iszero(2*A*B)
             end
         end
 
@@ -267,7 +322,9 @@
             computed_rank = rank(mat)
             @test computed_rank == n - k && computed_rank == nₛ - kₛ && n == nₛ && k == kₛ
             @test stab_looks_good(stab, remove_redundant_rows=true)
-            @test bivariate_bicycle_code_k(c) == code_k(c)
+            Hxᵣ = rank(matrix(GF(2), parity_matrix_x(c)))
+            Hzᵣ = rank(matrix(GF(2), parity_matrix_x(c)))
+            @test bivariate_bicycle_code_k(c) == code_k(c) == 2*c.l*c.m - 2*Hxᵣ == 2*c.l*c.m - 2*Hzᵣ
             Hx = parity_matrix_x(c)
             n = size(Hx,2)÷2
             A = Hx[:,1:n]
@@ -277,6 +334,7 @@
             @test all(sum(A, dims=1) .== 4)
             @test all(sum(B, dims=1) .== 4)
             @test A*B == B*A
+            @test iszero(A*B+B*A) == iszero(2*A*B)
         end
     end
 end
