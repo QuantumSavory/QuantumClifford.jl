@@ -258,7 +258,7 @@ function _minimum_distance(hx, lx, opt, opt_summary, time_limit)
         elseif termination_status(model) == MOI.TIME_LIMIT
             throw(ErrorException(THROW_MODEL_TIME_LIMIT))
         else
-            throw(ErrorException(THROW_MODEL_FAILED(termination_status(model))))
+            throw(ErrorException("Model failed to solve :$(termination_status(model))"))
         end
     end
     opt_val = sum(value(x[i]) for i in 1:n)

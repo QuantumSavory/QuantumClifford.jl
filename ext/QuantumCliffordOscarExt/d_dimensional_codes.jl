@@ -376,7 +376,7 @@ struct DDimensionalSurfaceCode <: DDimensionalCode
     L::Int
 
     function DDimensionalSurfaceCode(D::Int, L::Int)
-        D ≥ 2 || throw(ArgumentError(THROW_INVALID_CODE_DIMENSION(D)))
+        D ≥ 2 || throw(ArgumentError(THROW_INVALID_CODE_DIMENSION))
         new(D, L)
     end
 end
@@ -512,7 +512,7 @@ struct DDimensionalToricCode <: DDimensionalCode
     L::Int
     
     function DDimensionalToricCode(D::Int, L::Int)
-        D ≥ 2 || throw(ArgumentError(THROW_INVALID_CODE_DIMENSION(D)))
+        D ≥ 2 || throw(ArgumentError(THROW_INVALID_CODE_DIMENSION))
         new(D, L)
     end
 end
@@ -609,12 +609,12 @@ function code_k(c::DDimensionalCode)
 end
 
 function metacheck_matrix_x(c::DDimensionalCode)
-    c.D ≥ 4 || throw(ArgumentError(THROW_INVALID_X_METACHECKS(c.D)))
+    c.D ≥ 4 || throw(ArgumentError(THROW_INVALID_X_METACHECKS))
     return Matrix(boundary_maps(c)[4]) # Mx
 end
 
 function metacheck_matrix_z(c::DDimensionalCode)
-    c.D ≥ 3 || throw(ArgumentError(THROW_INVALID_Z_METACHECKS(c.D)))
+    c.D ≥ 3 || throw(ArgumentError(THROW_INVALID_Z_METACHECKS))
     return Matrix(boundary_maps(c)[1]') # Mz
 end
 

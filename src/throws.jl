@@ -26,17 +26,15 @@ const THROW_REQUIRED_POSITIVE_ARG =
 const THROW_INVALID_XZ_COMPONENTS = 
 "`xzcomponents` should be `:split` or `:together`"
 
-function THROW_INVALID_CODE_DIMENSION(D)
-    return "Dimension of the input code must be at least 2 (got D = $D)."    
-end
+const THROW_INVALID_CODE_DIMENSION =
+"Dimension of the input code must be at least 2"    
 
-function THROW_INVALID_X_METACHECKS(D)
-    return "`X`-metachecks (`Mx`) require `D ≥ 4` (D=$(D))"    
-end
+const THROW_INVALID_X_METACHECKS =
+"`X`-metachecks (`Mx`) require `D ≥ 4`"    
 
-function THROW_INVALID_Z_METACHECKS(D)
-    return "`Z`-metachecks (`Mz`) require `D ≥ 3` (D=$(D))"    
-end
+const THROW_INVALID_Z_METACHECKS = 
+"`Z`-metachecks (`Mz`) require `D ≥ 3`"    
+
 
 const THROW_INVALID_CUDA_ARG = 
 "First argument to @run_cuda should be a function call"
@@ -46,6 +44,3 @@ const THROW_MODEL_MEMORY_LIMIT =
 
 const THROW_MODEL_TIME_LIMIT =
 "Model exceeded time limit"
-
-function THROW_MODEL_FAILED(error)
-    return "Model failed to solve: $error"
