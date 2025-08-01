@@ -22,3 +22,6 @@ const THROW_MUST_BE_DIVISIBLE_BY_3 =
 
 const THROW_REQUIRED_POSITIVE_ARG = 
 "The input parameter should be positive"
+
+const THROW_INVALID_XZ_COMPONENTS = 
+"`xzcomponents` should be `:split` or `:together`"

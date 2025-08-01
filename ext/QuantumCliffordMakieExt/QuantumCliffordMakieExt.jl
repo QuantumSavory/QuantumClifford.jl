@@ -3,6 +3,7 @@ module QuantumCliffordMakieExt
 using Makie
 using QuantumClifford
 import QuantumClifford: stabilizerplot, stabilizerplot_axis
+include("../../src/throws.jl")
 
 # If you want to directly use heatmap
 function Makie.convert_arguments(P::Type{<:Makie.Heatmap}, s::Stabilizer)
@@ -38,7 +39,7 @@ function Makie.plot!(myplot::StabilizerPlot)
         h = QuantumClifford.stab_to_gf2(s)
         h[:,1:end÷2] + h[:,end÷2+1:end]*2
     else
-        throw(ErrorException("`xzcomponents` should be `:split` or `:together`"))
+        throw(ErrorException(THROW_INVALID_XZ_COMPONENTS))
     end
     r = r[end:-1:1,:]'
     hm = Makie.heatmap!(myplot, r;
