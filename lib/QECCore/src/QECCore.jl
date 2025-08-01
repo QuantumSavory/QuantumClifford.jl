@@ -9,7 +9,8 @@ using Random: GLOBAL_RNG, AbstractRNG, randperm, rand, MersenneTwister, randperm
 using DocStringExtensions
 
 # interfaces
-export distance, parity_matrix, code_n, code_s, code_k, parity_matrix_x, parity_matrix_z, rate, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix
+export distance, parity_matrix, code_n, code_s, code_k, parity_matrix_x, parity_matrix_z,
+rate, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, bivariate_bicycle_code_k
 export AbstractECC, AbstractQECC, AbstractCECC, AbstractCSSCode, AbstractDistanceAlg
 
 # QEC Codes
@@ -18,7 +19,7 @@ export Perfect5, Cleve8, Gottesman
 # CSS Codes
 export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMuller, Triangular488, Triangular666,
 DelfosseReichardt, DelfosseReichardtRepCode, DelfosseReichardt823, QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
-TillichZemor, random_TillichZemor_code
+TillichZemor, random_TillichZemor_code, GeneralizedCirculantBivariateBicycle
 
 # Classical Codes
 export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, GallagerLDPC
@@ -48,6 +49,7 @@ include("codes/quantum/gottesman.jl")
 include("codes/quantum/color_codes.jl")
 include("codes/quantum/quantumtannergraphproduct.jl")
 include("codes/quantum/tillichzemor.jl")
+include("codes/quantum/generalized_circulant_bivariate_bicycle.jl")
 
 # Reed-Muller Codes
 include("codes/classical/reedmuller.jl")
