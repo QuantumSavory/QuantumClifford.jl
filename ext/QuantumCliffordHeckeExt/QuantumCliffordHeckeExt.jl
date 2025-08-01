@@ -31,5 +31,6 @@ include("types.jl")
 include("lifted.jl")
 include("lacross.jl")
 include("lifted_product.jl")
+include("../../src/throws.jl")
 
 end # module

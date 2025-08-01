@@ -164,7 +164,7 @@ struct LPCode <: AbstractECC
         repr::Union{Function,Nothing}=nothing
     )
         if repr !== nothing # override the default A_repr/B_repr (exists for backward compat)
-            is_commutative(GA) || throw(ArgumentError("The group algebra must be commutative when using a single `repr` function, which is not the case here. Please specify separate `A_repr` and `B_repr` instead of a single `repr`. The default choice of `A_repr=right_repr_matrix, B_repr=left_repr_matrix` is frequently sufficient."))
+            is_commutative(GA) || throw(ArgumentError(THROW_REPR_NEEDS_COMMUTATIVE_ALGEBRA))
             A_repr = B_repr = repr
         end
         all(elem.parent == GA for elem in A) && all(elem.parent == GA for elem in B) || error("The base rings of all elements in both matrices must be the same as the group algebra")
@@ -181,7 +181,7 @@ struct LPCode <: AbstractECC
         repr::Union{Function,Nothing}=nothing
     )
         if repr !== nothing # override the default A_repr/B_repr (exists for backward compat)
-            is_commutative(GA) || throw(ArgumentError("The group algebra must be commutative when using a single `repr` function, which is not the case here. Please specify separate `A_repr` and `B_repr` instead of a single `repr`. The default choice of `A_repr=right_repr_matrix, B_repr=left_repr_matrix` is frequently sufficient."))
+            is_commutative(GA) || throw(ArgumentError(THROW_REPR_NEEDS_COMMUTATIVE_ALGEBRA))
             A_repr = B_repr = repr
         end
         # We are using the representation function of each lifted code.
@@ -548,7 +548,7 @@ See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_bl
 [`honeycomb_color_codes`](@ref).
 """
 function honeycomb_color_codes(ℓ::Int, m::Int)
-    (ℓ % 3 == 0 && m % 3 == 0) || throw(ArgumentError("Both ℓ and m must be divisible by 3"))
+    (ℓ % 3 == 0 && m % 3 == 0) || throw(ArgumentError(THROW_MUST_BE_DIVISIBLE_BY_3))
     GA = group_algebra(GF(2), abelian_group([ℓ, m]))
     x, y = gens(GA)
     c = 1 + x + x*y
