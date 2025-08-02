@@ -165,6 +165,11 @@ function parity_matrix_xz(hp::HomologicalProductCode)
     return hx, hz
 end
 
+function metacheck_matrix_x(c::HomologicalProductCode)
+    length(c.boundary_maps) ≥ 3 || throw(ArgumentError("`X`-metachecks (`Mx`) require three classical seed codes (D=$(length(c.boundary_maps))"))
+    return boundary_maps(c)[3] # Mx = δ₂
+end
+
 parity_matrix_x(hp::HomologicalProductCode) = boundary_maps(hp)[2]
 
 parity_matrix_z(hp::HomologicalProductCode) = boundary_maps(hp)[1]'
@@ -218,13 +223,13 @@ function boundary_maps(c::DoubleHomologicalProductCode)
     n = size(c.H, 2)
     m = size(c.H, 1)
     δ₀ = matrix(R, c.H)
-    # see Eq. 43
+    # see Eq. 43 of [Campbell_2019](@cite).
     # δ̃₋₁ = (I ⊗ δ₀ᵀ) ⊕ (δ₀ ⊗ I)
     δ̃₋₁ = vcat(
         kronecker_product(identity_matrix(R, n), transpose(δ₀)),
         kronecker_product(δ₀, identity_matrix(R, m))
     )
-    # see Eq. 43
+    # see Eq. 43 of [Campbell_2019](@cite).
     # δ̃₀ = [δ₀ ⊗ I | I ⊗ δ₀ᵀ]
     δ̃₀ = hcat(
         kronecker_product(δ₀, identity_matrix(R, n)),
@@ -234,13 +239,13 @@ function boundary_maps(c::DoubleHomologicalProductCode)
     ñ₀ = n^2 + m^2 # Eq. 44
     ñ₁ = n*m # Eq. 44
 
-    # see Eq. 58
+    # see Eq. 58 of [Campbell_2019](@cite).
     # δ̌₋₂  = (I ⊗ δ̃₀ᵀ) ⊕ (δ̃₋₁ ⊗ I)
     δ̌₋₂ = vcat(
         kronecker_product(identity_matrix(R, ñ₋₁), transpose(δ̃₀)),
         kronecker_product(δ̃₋₁, identity_matrix(R, ñ₁))
     )
-    # see Eq. 59
+    # see Eq. 59 of [Campbell_2019](@cite).
     # δ̌₋₁ = [I ⊗ δ̃₋₁ᵀ |    0
     #        δ̃₋₁ ⊗ I  | I ⊗ δ̃₀ᵀ
     #           0      | δ̃₀ ⊗ I]
@@ -266,7 +271,7 @@ function boundary_maps(c::DoubleHomologicalProductCode)
     δ̌₋₁ = vcat(tb, mb, bb)
     @assert iszero(δ̌₋₁*δ̌₋₂)
 
-    # see Eq. 60
+    # see Eq. 60 of [Campbell_2019](@cite).
     # δ̌0 = [δ̃₋₁ ⊗ I | I ⊗ δ̃₋₁ᵀ | 0
     #       0        | δ̃₀ ⊗ I   | I ⊗ δ̃₀ᵀ]
     tb = vcat(
@@ -283,7 +288,7 @@ function boundary_maps(c::DoubleHomologicalProductCode)
     )
     δ̌₀ = hcat(tb, mb, bb)
 
-    # see Eq. 61
+    # see Eq. 61 of [Campbell_2019](@cite).
     # δ̌1 = [δ̃₀ ⊗ I | I ⊗ δ̃₋₁ᵀ]
     δ̌₁ = hcat(
         kronecker_product(δ̃₀, identity_matrix(R, ñ₋₁)),

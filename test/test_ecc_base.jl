@@ -343,6 +343,7 @@ h₄ = 1 + x + x^4
     # 3D Homological product code from [Quintavalle_2021](@cite)
     δ = matrix(GF(2), parity_matrix(RepCode(3)))
     hpc₄ = HomologicalProductCode([δ,δ,δ])
+    @test iszero(mod.(metacheck_matrix_x(hpc₄)*parity_matrix_x(hpc₄), 2))
 
     append!(test_homological_product_codes, [hpc₁, hpc₂, hpc₃, hpc₄])
   end
