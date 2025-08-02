@@ -208,6 +208,8 @@
         @test n == 241 && k == 1
         @test stab_looks_good(code, remove_redundant_rows=true)
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 9
+        @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
+        @test iszero(mod.(metacheck_matrix_x(c)*parity_matrix_x(c), 2))
 
         # [[486, 6, 9]]
         δ = [1 1 0;
@@ -223,6 +225,8 @@
         @test n == 486 && k == 6
         @test stab_looks_good(code, remove_redundant_rows=true)
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 9
+        @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
+        @test iszero(mod.(metacheck_matrix_x(c)*parity_matrix_x(c), 2))
 
         # [[913, 1, 16]]
         δ = [1 1 0 0;
@@ -237,5 +241,7 @@
         @test computed_rank == n - k
         @test n == 913 && k == 1
         @test stab_looks_good(code, remove_redundant_rows=true)
+        @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
+        @test iszero(mod.(metacheck_matrix_x(c)*parity_matrix_x(c), 2))
     end
 end
