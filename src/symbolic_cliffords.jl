@@ -8,6 +8,7 @@ abstract type AbstractSingleQubitOperator <: AbstractSymbolicOperator end
 abstract type AbstractTwoQubitOperator <: AbstractSymbolicOperator end
 """Supertype of all symbolic single-qubit measurements."""
 abstract type AbstractMeasurement <: AbstractOperation end
+"""Supertype of all symbolic single-qubit reset measurements"""
 abstract type AbstractResetMeasurement <: AbstractOperation end
 # Stim has a good list of specialized single and two qubit operations at https://github.com/quantumlib/Stim/blob/e51ea66d213b25920e72c08e53266ec56fd14db4/src/stim/stabilizers/tableau_specialized_prepend.cc
 # Note that their specialized operations are for prepends (right multiplications), while we implement append (left multiplication) operations.
