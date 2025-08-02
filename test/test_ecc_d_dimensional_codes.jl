@@ -128,4 +128,120 @@
             end
         end
     end
+
+    @testset "Homological Product codes of Table III of https://arxiv.org/pdf/2407.18490" begin
+        # [[117, 9, 4]] from Table III
+        R, x = polynomial_ring(GF(2), "x")
+        l = 3
+        H_poly = matrix(R, 2, 3, [x^2 x^2 x^2;
+                                  x   x^2  0])
+        H = quasi_cyclic_code(H_poly, l)
+        G_poly = matrix(R, 1, 3, [1 x 1+x])
+        G = quasi_cyclic_code(G_poly, l)
+        @test iszero(H*transpose(G))
+        c = HomologicalProductCode([H,transpose(H)])
+        code = parity_checks(c)
+        n, k = code_n(code), code_k(code)
+        H = stab_to_gf2(code)
+        mat = matrix(GF(2), H)
+        computed_rank = rank(mat)
+        @test computed_rank == n - k
+        @test n == 117 && k == 9
+        @test stab_looks_good(code, remove_redundant_rows=true)
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
+
+        # [[225, 9, 4]] from Table III
+        R, x = polynomial_ring(GF(2), "x")
+        l = 3
+        H_poly = matrix(R, 3, 4, [x^2 x^2 x^2   0;
+                                  x^2   0 x^2  x^2;
+                                  x^2 x^2   x  x^2])
+        H = quasi_cyclic_code(H_poly, l)
+        G_poly = matrix(R, 1, 4, [1 (1+x)^2 x^2 (1+x)^2])
+        G = quasi_cyclic_code(G_poly, l)
+        @test iszero(H*transpose(G))
+        c = HomologicalProductCode([H,transpose(H)])
+        code = parity_checks(c)
+        n, k = code_n(code), code_k(code)
+        H = stab_to_gf2(code)
+        mat = matrix(GF(2), H)
+        computed_rank = rank(mat)
+        @test computed_rank == n - k
+        @test n == 225 && k == 9
+        @test stab_looks_good(code, remove_redundant_rows=true)
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
+
+        # [[400, 18, 8]] from Table III
+        R, x = polynomial_ring(GF(2), "x")
+        l = 4
+        H_poly = matrix(R, 3, 4, [x^3 x^3   0 x^3;
+                                  x^3 x^2 x^3 x^2;
+                                  x^3 x^3 x^2  0])
+        H = quasi_cyclic_code(H_poly, l)
+        G_poly = matrix(R, 1, 4, [1 1+x+x^2 1+x x+x^2])
+        G = quasi_cyclic_code(G_poly, l)
+        @test iszero(H*transpose(G))
+
+        # [[625, 25, 9]]
+        R, x = polynomial_ring(GF(2), "x")
+        l = 5
+        H_poly = matrix(R, 3, 4, [x^4   0 x^4 x^3;
+                                  0 x^3 x^3 x^4;
+                                  x^3 x^4   0 x^3])
+        H = quasi_cyclic_code(H_poly, l)
+        G_poly = matrix(R, 1, 4, [1 x+x^2+x^3 1+x^2+x^3 x+x^2])
+        G = quasi_cyclic_code(G_poly, l)
+        @test iszero(H*transpose(G))
+    end
+
+    @testset "Double Homological Product codes of Table I of https://arxiv.org/pdf/1805.09271" begin
+        # [[241, 1, 9]]
+        δ = [1 1 0;
+             0 1 1]
+        c = DoubleHomologicalProductCode(δ)
+        code = parity_checks(c)
+        n, k = code_n(code), code_k(code)
+        H = stab_to_gf2(code)
+        mat = matrix(GF(2), H)
+        computed_rank = rank(mat)
+        @test computed_rank == n - k
+        @test n == 241 && k == 1
+        @test stab_looks_good(code, remove_redundant_rows=true)
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 9
+        @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
+        @test iszero(mod.(metacheck_matrix_x(c)*parity_matrix_x(c), 2))
+
+        # [[486, 6, 9]]
+        δ = [1 1 0;
+             0 1 1;
+             1 0 1]
+        c = DoubleHomologicalProductCode(δ)
+        code = parity_checks(c)
+        n, k = code_n(code), code_k(code)
+        H = stab_to_gf2(code)
+        mat = matrix(GF(2), H)
+        computed_rank = rank(mat)
+        @test computed_rank == n - k
+        @test n == 486 && k == 6
+        @test stab_looks_good(code, remove_redundant_rows=true)
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 9
+        @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
+        @test iszero(mod.(metacheck_matrix_x(c)*parity_matrix_x(c), 2))
+
+        # [[913, 1, 16]]
+        δ = [1 1 0 0;
+             0 1 1 0;
+             0 0 1 1];
+        c = DoubleHomologicalProductCode(δ)
+        code = parity_checks(c)
+        n, k = code_n(code), code_k(code)
+        H = stab_to_gf2(code)
+        mat = matrix(GF(2), H)
+        computed_rank = rank(mat)
+        @test computed_rank == n - k
+        @test n == 913 && k == 1
+        @test stab_looks_good(code, remove_redundant_rows=true)
+        @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
+        @test iszero(mod.(metacheck_matrix_x(c)*parity_matrix_x(c), 2))
+    end
 end
