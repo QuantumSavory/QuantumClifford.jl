@@ -4,6 +4,7 @@ using SparseArrays
 using LinearAlgebra
 using Combinatorics
 using Graphs
+using Random: GLOBAL_RNG, AbstractRNG, randperm, rand, MersenneTwister, randperm
 
 using DocStringExtensions
 
@@ -16,10 +17,11 @@ export Perfect5, Cleve8, Gottesman
 
 # CSS Codes
 export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMuller, Triangular488, Triangular666,
-DelfosseReichardt, DelfosseReichardtRepCode, DelfosseReichardt823, QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct
+DelfosseReichardt, DelfosseReichardtRepCode, DelfosseReichardt823, QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
+TillichZemor, random_TillichZemor_code
 
 # Classical Codes
-export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming
+export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, GallagerLDPC
 
 # utilities
 export search_self_orthogonal_rm_codes
@@ -29,8 +31,9 @@ include("codes/util.jl")
 
 # Classical Codes
 include("codes/classical/hamming.jl")
-include("codes/classical/reptetion.jl")
+include("codes/classical/repetition.jl")
 include("codes/classical/golay.jl")
+include("codes/classical/gallager.jl")
 
 # Quantum Codes
 include("codes/quantum/css.jl")
@@ -44,6 +47,7 @@ include("codes/quantum/bitflipcode.jl")
 include("codes/quantum/gottesman.jl")
 include("codes/quantum/color_codes.jl")
 include("codes/quantum/quantumtannergraphproduct.jl")
+include("codes/quantum/tillichzemor.jl")
 
 # Reed-Muller Codes
 include("codes/classical/reedmuller.jl")

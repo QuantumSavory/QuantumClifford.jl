@@ -7,6 +7,10 @@
 
 ## v0.10.1-dev
 
+- Add novel `[[n² + m²,(n - rank([C ∣ M]))² + (m − rank([C ∣ M]ᵀ))², d]]` quantum Tillich-Zémor `random_TillichZemor_code` codes to `QECCore` and introduce `QECCoreNemoExt` for accurate matrix `rank` computation.
+- The D-dimensional Surface and Toric codes are now implemented using `Oscar`'s chain complexes and `GF2` homology in the ECC submodule.
+- Add `[[2n², 2k², d]]` and `[[(n - k)² + n², k², d]]` La-cross codes via `Hecke`'s univariate polynomial ring in the ECC submodule.
+- Implementing `apply_inv!` for direct application of the inverse of a given gate.
 - The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations — particularly useful now that there is also an `Oscar` extension, which provides many non-abelian group constructors.
 - Introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
@@ -18,6 +22,7 @@
 - Add `[[4p, 2(p − 2), 4]]` Delfosse-Reichardt repetition `DelfosseReichardtRepCode` code to `QECCore`.
 - Add `[[8p, 4p − 2, 3]]` Delfosse-Reichardt Generalized `[[8,2,3]]` `DelfosseReichardt823` code to `QECCore`.
 - Add Quantum Tanner graph product codes: general and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`) to `QECCore`.
+- Add classical Gallager's LDPC code to `QECCore`.
 
 ### Private API
 

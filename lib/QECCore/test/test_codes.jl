@@ -55,6 +55,10 @@
         include("codes/golay.jl")
     end
 
+    @testset "gallager" begin
+        include("codes/gallager.jl")
+    end
+
     @testset "hamming" begin
         include("codes/hamming.jl")
     end
@@ -73,5 +77,9 @@
 
     @testset "Quantum Tanner Graph Codes" begin
         include("codes/quantumtannergraphproduct.jl")
+    end
+
+    @testset "Quantum Tillich-Zemor Codes" begin
+        include("codes/tillichzemor.jl")
     end
 end
