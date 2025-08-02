@@ -8,7 +8,7 @@ abstract type AbstractSingleQubitOperator <: AbstractSymbolicOperator end
 abstract type AbstractTwoQubitOperator <: AbstractSymbolicOperator end
 """Supertype of all symbolic single-qubit measurements."""
 abstract type AbstractMeasurement <: AbstractOperation end
-
+abstract type AbstractResetMeasurement <: AbstractOperation end
 # Stim has a good list of specialized single and two qubit operations at https://github.com/quantumlib/Stim/blob/e51ea66d213b25920e72c08e53266ec56fd14db4/src/stim/stabilizers/tableau_specialized_prepend.cc
 # Note that their specialized operations are for prepends (right multiplications), while we implement append (left multiplication) operations.
 
@@ -577,7 +577,7 @@ julia> apply!(Register(copy(s)), sMRZ(1)) |> quantumstate # |000⟩ or |011⟩, 
 ```
 
 See also: [`Reset`](@ref), [`sMZ`](@ref)"""
-struct sMRZ <: AbstractOperation
+struct sMRZ <: AbstractResetMeasurement
     qubit::Int
     bit::Int
     sMRZ(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
@@ -586,7 +586,7 @@ end
 """Measure a qubit in the X basis and reset to the |+⟩ state.
 
 See also: [`sMRZ`](@ref), [`Reset`](@ref), [`sMZ`](@ref)"""
-struct sMRX <: AbstractOperation
+struct sMRX <: AbstractResetMeasurement
     qubit::Int
     bit::Int
     sMRX(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
@@ -595,7 +595,7 @@ end
 """Measure a qubit in the Y basis and reset to the |i₊⟩ state.
 
 See also: [`sMRZ`](@ref), [`Reset`](@ref), [`sMZ`](@ref)"""
-struct sMRY <: AbstractOperation
+struct sMRY <: AbstractResetMeasurement
     qubit::Int
     bit::Int
     sMRY(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
