@@ -61,20 +61,26 @@ julia> import HiGHS;
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (10, 2, 3)
 
-julia> m, p = 2, one(R);
+julia> m, p = 4, one(R);
 
 julia> new_code = ExtendedGeneralizedBicycleCode(c, m, p);
 
 julia> code_n(new_code), code_k(new_code), distance(new_code, DistanceMIPAlgorithm(solver=HiGHS))
-(20, 2, 5)
+(40, 2, 5)
 
-julia> p = 1 + x;
+julia> m, p = 4, 1 + x;
 
 julia> new_code = ExtendedGeneralizedBicycleCode(c, m, p);
 
 julia> code_n(new_code), code_k(new_code), distance(new_code, DistanceMIPAlgorithm(solver=HiGHS))
-(20, 4, 4)
+(40, 4, 5)
 ```
+
+!!! note
+    [koukoulekidis2024smallquantumcodesalgebraic](@cite) establishes that `ℓ = 5` is the
+    minimal lift size required to achieve quantum error-correcting codes with a minimum
+    distance of `d ≥ 3`.
+
 """
 struct ExtendedGeneralizedBicycleCode <: AbstractCSSCode
     """The base generalized bicycle code to extend."""
@@ -100,7 +106,9 @@ function parity_matrix_xz(c::ExtendedGeneralizedBicycleCode)
     ℓ = c.base_code.l
     R = parent(c.base_code.a)
     x = gen(R)
+    # a⁽ᵐ⁾(x) = p(x)a(x) ∈ 𝔽₂[x]/(x^(mℓ) - 1)
     a⁽ᵐ⁾ = mod(c.p*c.base_code.a, x^(c.m*ℓ)-1)
+    # b⁽ᵐ⁾(x) = p(x)b(x) ∈ 𝔽₂[x]/(x^(mℓ) - 1)
     b⁽ᵐ⁾ = mod(c.p*c.base_code.b, x^(c.m*ℓ)-1)
     ext_gb = GeneralizedBicycleCode(a⁽ᵐ⁾, b⁽ᵐ⁾, c.m*ℓ)
     hx, hz = parity_matrix_xz(ext_gb)

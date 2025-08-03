@@ -2,9 +2,9 @@
     using Hecke
     using HiGHS
     using JuMP
-    using QuantumClifford: stab_looks_good
+    using QuantumClifford: stab_looks_good, stab_to_gf2
     using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate
-    using QuantumClifford.ECC: generalized_bicycle_codes, code_k, code_n, DistanceMIPAlgorithm, GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode
+    using QuantumClifford.ECC: generalized_bicycle_codes, code_k, code_n, DistanceMIPAlgorithm, parity_checks, GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode
 
     # codes taken from Table 1 of [lin2024quantum](@cite)
     # Abelian 2BGA codes can be viewed as GB codes.
