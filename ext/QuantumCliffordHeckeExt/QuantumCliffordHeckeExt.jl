@@ -11,7 +11,7 @@ import Hecke: Group, GroupElem, AdditiveGroupElem,
     GroupAlgebra, GroupAlgebraElem, FqFieldElem, representation_matrix, dim, base_ring,
     multiplication_table, coefficients, abelian_group, group_algebra, rand, gens, order,
     is_commutative, FqPolyRingElem, residue_ring, coeff, zero_matrix, mod1, lift, ZZ, gen,
-    matrix, ncols, nrows, degree, gcd, polynomial_ring
+    matrix, ncols, nrows, degree, gcd, polynomial_ring, characteristic
 import Nemo
 import Nemo: characteristic, matrix_repr, GF, ZZ, lift
 

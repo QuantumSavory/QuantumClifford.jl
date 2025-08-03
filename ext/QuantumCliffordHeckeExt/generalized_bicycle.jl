@@ -1,4 +1,3 @@
-
 """
 $TYPEDEF
 
@@ -15,7 +14,7 @@ julia> import Hecke: polynomial_ring, GF; using QuantumClifford.ECC;
 
 julia> R, x = polynomial_ring(GF(2), "x");
 
-julia> l  = 5;
+julia> l = 5;
 
 julia> a = 1 + x^4;
 
@@ -38,7 +37,7 @@ julia> import Hecke: polynomial_ring, GF; using QuantumClifford.ECC;
 
 julia> R, x = polynomial_ring(GF(2), "x");
 
-julia> l  = 6;
+julia> l = 6;
 
 julia> a = 1 + x + x^2 + x^5;
 
@@ -59,15 +58,16 @@ All fields:
 $TYPEDFIELDS
 """
 struct GeneralizedBicycleCode <: AbstractCSSCode
-    """First generator polynomial in ``\\mathbb{F}_2[x]/(x^l - 1)``."""
+    """First generator polynomial in 𝔽₂[x]/(xˡ - 1)."""
     a::FqPolyRingElem
-    """Second generator polynomial in ``\\mathbb{F}_2[x]/(x^l - 1)``."""
+    """Second generator polynomial in 𝔽₂[x]/(xˡ - 1)."""
     b::FqPolyRingElem
     """The lift size which corresponds to dimension of circulant matrices."""
     l::Int
     function GeneralizedBicycleCode(a::FqPolyRingElem, b::FqPolyRingElem, l::Int)
         l <= 0 && throw(ArgumentError("Block length must be positive."))
         (base_ring(a) != base_ring(b)) && throw(ArgumentError("Polynomials must be from the same ring."))
+        (characteristic(base_ring(a)) != 2) && throw(ArgumentError("Polynomials must be over 𝔽₂"))   
         (degree(a) >= l || degree(b) >= l) && throw(ArgumentError("Polynomial degrees must be < l."))
         new(a, b, l)
     end
