@@ -5,7 +5,7 @@ Generalized bicycle codes ([koukoulekidis2024smallquantumcodesalgebraic](@cite))
 
 A generalized bicycle quantum LDPC code constructed from two polynomials in ``\\mathbb{F}_2[x]/(x^l - 1)``.
 
-Here is an example of a  [[10, 2, 3]] GB code from the Appendix B of
+Here is an example of a [[10, 2, 3]] GB code from the Appendix B of
 [koukoulekidis2024smallquantumcodesalgebraic](@cite) with lift size of 5
 build out of two polymonials in ``\\mathbb{F}_2[x]/(x^l - 1)``.
 
@@ -28,7 +28,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (10, 2, 3)
 ```
 
-Here is an example of a  [[12, 2, 3]] GB code from the Appendix B of
+Here is an example of a [[12, 2, 3]] GB code from the Appendix B of
 [koukoulekidis2024smallquantumcodesalgebraic](@cite) with lift size of 6
 build out of two polymonials in ``\\mathbb{F}_2[x]/(x^l - 1)``.
 

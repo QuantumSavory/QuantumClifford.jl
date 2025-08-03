@@ -4,7 +4,7 @@
     using JuMP
     using QuantumClifford: stab_looks_good
     using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate
-    using QuantumClifford.ECC: generalized_bicycle_codes, code_k, code_n, DistanceMIPAlgorithm, GeneralizedBicycleCode
+    using QuantumClifford.ECC: generalized_bicycle_codes, code_k, code_n, DistanceMIPAlgorithm, GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode
 
     # codes taken from Table 1 of [lin2024quantum](@cite)
     # Abelian 2BGA codes can be viewed as GB codes.
@@ -44,6 +44,16 @@
         @test code_n(c) == 10 == code_n(stab) && code_k(c) == 2 == code_k(stab)
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 3
         @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        for m in 2:10
+            R, x = polynomial_ring(GF(2), :x)
+            ext_code = ExtendedGeneralizedBicycleCode(c, m, one(R))
+            stab = parity_checks(ext_code)
+            mat = matrix(GF(2), stab_to_gf2(stab))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(ext_code) - code_k(ext_code)
+            @test code_n(ext_code) == m*10 == code_n(stab) && code_k(ext_code) == 2 == code_k(stab)
+            @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        end
 
         # [[12, 2, 3]]
         R, x = polynomial_ring(GF(2), "x")
@@ -58,6 +68,16 @@
         @test code_n(c) == 12 == code_n(stab) && code_k(c) == 2 == code_k(stab)
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 3
         @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        for m in 2:10
+            R, x = polynomial_ring(GF(2), :x)
+            ext_code = ExtendedGeneralizedBicycleCode(c, m, one(R))
+            stab = parity_checks(ext_code)
+            mat = matrix(GF(2), stab_to_gf2(stab))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(ext_code) - code_k(ext_code)
+            @test code_n(ext_code) == m*12 == code_n(stab) && code_k(ext_code) == 2 == code_k(stab)
+            @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        end
 
         # [[14, 2, 3]]
         R, x = polynomial_ring(GF(2), "x")
@@ -72,6 +92,16 @@
         @test code_n(c) == 14 == code_n(stab) && code_k(c) == 2 == code_k(stab)
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 3
         @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        for m in 2:10
+            R, x = polynomial_ring(GF(2), :x)
+            ext_code = ExtendedGeneralizedBicycleCode(c, m, one(R))
+            stab = parity_checks(ext_code)
+            mat = matrix(GF(2), stab_to_gf2(stab))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(ext_code) - code_k(ext_code)
+            @test code_n(ext_code) == m*14 == code_n(stab) && code_k(ext_code) == 2 == code_k(stab)
+            @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        end
 
         # [[16, 2, 3]]
         R, x = polynomial_ring(GF(2), "x")
@@ -86,6 +116,16 @@
         @test code_n(c) == 16 == code_n(stab) && code_k(c) == 2 == code_k(stab)
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 3
         @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        for m in 2:10
+            R, x = polynomial_ring(GF(2), :x)
+            ext_code = ExtendedGeneralizedBicycleCode(c, m, one(R))
+            stab = parity_checks(ext_code)
+            mat = matrix(GF(2), stab_to_gf2(stab))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(ext_code) - code_k(ext_code)
+            @test code_n(ext_code) == m*16 == code_n(stab) && code_k(ext_code) == 2 == code_k(stab)
+            @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        end
 
         # [[18, 2, 3]]
         R, x = polynomial_ring(GF(2), "x")
@@ -100,6 +140,16 @@
         @test code_n(c) == 18 == code_n(stab) && code_k(c) == 2 == code_k(stab)
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 3
         @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        for m in 2:10
+            R, x = polynomial_ring(GF(2), :x)
+            ext_code = ExtendedGeneralizedBicycleCode(c, m, one(R))
+            stab = parity_checks(ext_code)
+            mat = matrix(GF(2), stab_to_gf2(stab))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(ext_code) - code_k(ext_code)
+            @test code_n(ext_code) == m*18 == code_n(stab) && code_k(ext_code) == 2 == code_k(stab)
+            @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        end
 
         # [[20, 2, 4]]
         R, x = polynomial_ring(GF(2), "x")
@@ -114,5 +164,15 @@
         @test code_n(c) == 20 == code_n(stab) && code_k(c) == 2 == code_k(stab)
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
         @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        for m in 2:10
+            R, x = polynomial_ring(GF(2), :x)
+            ext_code = ExtendedGeneralizedBicycleCode(c, m, one(R))
+            stab = parity_checks(ext_code)
+            mat = matrix(GF(2), stab_to_gf2(stab))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(ext_code) - code_k(ext_code)
+            @test code_n(ext_code) == m*20 == code_n(stab) && code_k(ext_code) == 2 == code_k(stab)
+            @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        end
     end
 end
