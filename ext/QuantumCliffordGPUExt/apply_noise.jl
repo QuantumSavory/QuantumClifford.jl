@@ -6,7 +6,7 @@ function applynoise!(frame::PauliFrameGPU{T},noise::UnbiasedUncorrelatedNoise,i:
     p = noise.p
     xzs = tab(frame.frame).xzs
     lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
-    rows = size(stab, 1)
+    rows = size(frame.frame, 1)
 
     @run_cuda applynoise_kernel(xzs, p, ibig, ismallm, rows) rows
     return frame

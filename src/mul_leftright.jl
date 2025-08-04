@@ -56,8 +56,19 @@ function mul_ordered_lv!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Val
 end
 =#
 
-function mul_ordered!(r::SubArray{T,1,P,I2,L2}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B, I2, L2, P<:Adjoint}
-    # This method exists because SIMD.jl does not play well with Adjoint
+function mul_ordered!(r::SubArray{T,1,P,I2,false}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B, I2, P}
+    # This method exists because SIMD.jl requires fast linear indexing
+    # (which is not the case for Adjoint,
+    # e.g. when we use `fastcolumn`).
+    # The `false` in the SubArray parameters stands for
+    # "does not support fast linear indexing".
+    # See the other ::SubArray method below as well.
+    _mul_ordered_nonvec!(r,l; phases=B)
+end
+
+function mul_ordered!(r::SubArray{T,1,P,Tuple{I1, I2},true}, l::AbstractVector{T}; phases::Val{B}=Val(true)) where {T<:Unsigned, B, P, I1<:Any, I2<:AbstractUnitRange}
+    # This method exists because SIMD.jl requires fast linear indexing
+    # that is NOT strided. See the other ::SubArray method above as well.
     _mul_ordered_nonvec!(r,l; phases=B)
 end
 
@@ -137,58 +148,62 @@ end
     l
 end
 
-@inline function mul_left!(r::PauliOperator, l::Tableau, i::Int; phases::Val{B}=Val(true)) where B
+@inline function mul_left!(r::PauliOperator, l::Tableau, i::Integer; phases::Val{B}=Val(true)) where B
     s = mul_left!(r.xz, (@view l.xzs[:,i]), phases=phases)
     B && (r.phase[] = (s+r.phase[]+l.phases[i])&0x3)
     r
 end
 
-@inline mul_left!(r::PauliOperator, l::Stabilizer, i::Int; phases::Val{B}=Val(true)) where B = mul_left!(r, tab(l), i; phases=phases)
+@inline mul_left!(r::PauliOperator, l::Stabilizer, i::Integer; phases::Val{B}=Val(true)) where B = mul_left!(r, tab(l), i; phases=phases)
 
-@inline function mul_right!(l::PauliOperator, r::Tableau, i::Int; phases::Val{B}=Val(true)) where B
+@inline function mul_right!(l::PauliOperator, r::Tableau, i::Integer; phases::Val{B}=Val(true)) where B
     s = mul_right!(l.xz, (@view r.xzs[:,i]), phases=phases)
     B && (l.phase[] = (s+l.phase[]+r.phases[i])&0x3)
     l
 end
 
-@inline mul_right!(l::PauliOperator, r::Stabilizer, i::Int; phases::Val{B}=Val(true)) where B = mul_right!(l, tab(r), i; phases=phases)
+@inline mul_right!(l::PauliOperator, r::Stabilizer, i::Integer; phases::Val{B}=Val(true)) where B = mul_right!(l, tab(r), i; phases=phases)
 
 ##############################
 # On Tableaux
 ##############################
 
-@inline function mul_left!(s::Tableau, m, t::Tableau, i; phases::Val{B}=Val(true)) where B
+@inline function mul_left!(s::Tableau, m::Integer, t::Tableau, i::Integer; phases::Val{B}=Val(true)) where B
     extra_phase = mul_left!((@view s.xzs[:,m]), (@view t.xzs[:,i]); phases=phases)
     B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
     s
 end
 
-@inline function mul_left!(s::Tableau, m, i; phases::Val{B}=Val(true)) where B
+@inline function mul_left!(s::Tableau, m::Integer, i::Integer; phases::Val{B}=Val(true)) where B
     extra_phase = mul_left!((@view s.xzs[:,m]), (@view s.xzs[:,i]); phases=phases)
     B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x3)
     s
 end
 
-@inline function mul_left!(s::Stabilizer, m, i; phases::Val{B}=Val(true)) where B
-    mul_left!(tab(s), m, i; phases)
+@inline function mul_left!(s::Stabilizer, m::Integer, i::Integer; phases::Val{B}=Val(true)) where B
+    mul_left!(tab(s), m, i; phases=phases)
+    s
 end
 
-@inline function mul_left!(s::Destabilizer, i, j; phases::Val{B}=Val(true)) where B
+@inline function mul_left!(s::Destabilizer, i::Integer, j::Integer; phases::Val{B}=Val(true)) where B
     t = tab(s)
     mul_left!(t, j, i; phases=Val(false)) # Indices are flipped to preserve commutation constraints
     n = size(t,1)÷2
     mul_left!(t, i+n, j+n; phases=phases)
+    s
 end
 
-@inline function mul_left!(s::MixedStabilizer, i, j; phases::Val{B}=Val(true)) where B
+@inline function mul_left!(s::MixedStabilizer, i::Integer, j::Integer; phases::Val{B}=Val(true)) where B
     mul_left!(tab(s), i, j; phases=phases)
+    s
 end
 
-@inline function mul_left!(s::MixedDestabilizer, i, j; phases::Val{B}=Val(true)) where B
+@inline function mul_left!(s::MixedDestabilizer, i::Integer, j::Integer; phases::Val{B}=Val(true)) where B
     t = tab(s)
     mul_left!(t, j, i; phases=Val(false)) # Indices are flipped to preserve commutation constraints
     n = nqubits(t)
     mul_left!(t, i+n, j+n; phases=phases)
+    s
 end
 
 @inline function mul_left!(s::Tableau, p::PauliOperator; phases::Val{B}=Val(true)) where B # TODO multithread

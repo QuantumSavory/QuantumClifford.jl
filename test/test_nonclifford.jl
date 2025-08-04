@@ -4,6 +4,7 @@
     using Test
     using InteractiveUtils
     using Random
+    using LinearAlgebra
 
     @testset "Pauli decomposition into destabilizers" begin
         for n in [1,2,63,64,65,66,300]
@@ -117,8 +118,11 @@
                 apply!(genstab, nc) # in-place
                 apply!(genstab, nc) # in-place
                 newsm = genstab ⊗ genstab
+                newsm1 = genstab ⊗ stab
                 @test mixed_destab_looks_good(newsm.stab)
                 @test real(tr(newsm)) ≈ 1
+                @test mixed_destab_looks_good(newsm1.stab)
+                @test real(tr(newsm1)) ≈ 1
             end
         end
     end

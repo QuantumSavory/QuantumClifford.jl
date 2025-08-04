@@ -5,17 +5,53 @@
 
 # News
 
-## v0.10.0 - dev
+## v0.10.1-dev
 
-- **(breaking)** `StabMixture` was renamed to `GeneralizedStabilizer`.
-- **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in nonclifford functionality.
+- Add novel `[[n² + m²,(n - rank([C ∣ M]))² + (m − rank([C ∣ M]ᵀ))², d]]` quantum Tillich-Zémor `random_TillichZemor_code` codes to `QECCore` and introduce `QECCoreNemoExt` for accurate matrix `rank` computation.
+- The D-dimensional Surface and Toric codes are now implemented using `Oscar`'s chain complexes and `GF2` homology in the ECC submodule.
+- Add `[[2n², 2k², d]]` and `[[(n - k)² + n², k², d]]` La-cross codes via `Hecke`'s univariate polynomial ring in the ECC submodule.
+- Implementing `apply_inv!` for direct application of the inverse of a given gate.
+- The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations — particularly useful now that there is also an `Oscar` extension, which provides many non-abelian group constructors.
+- Introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
+- `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
+- The phase storage type can now be parameterized, instead of hardcoded to UInt8.
+- Drop support for Julia 1.9.
+- Add convenience wrappers for code families: `honeycomb_color_codes` and `haah_cubic_codes` via `LPCode` construction.
+- Some codes are moved to `QECCore` from `QuantumClifford`, including `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`.
+- Add `Delfosse-Reichardt` codes from classical self-orthogonal `Reed-Muller` seed codes to `QECCore`.
+- Add `[[4p, 2(p − 2), 4]]` Delfosse-Reichardt repetition `DelfosseReichardtRepCode` code to `QECCore`.
+- Add `[[8p, 4p − 2, 3]]` Delfosse-Reichardt Generalized `[[8,2,3]]` `DelfosseReichardt823` code to `QECCore`.
+- Add Quantum Tanner graph product codes: general and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`) to `QECCore`.
+- Add classical Gallager's LDPC code to `QECCore`.
+- Add `GeneralizedCirculantBivariateBicycle` to `QECCore` and introduce to `QECCoreOscarExt`.
+
+### Private API
+
+These changes affect internal implementation details - external packages should not rely on these!
+- Add `check_repr_regular_linear` to verify `F`-linear regular representation for group algebra elements.
+- Add `[2ʳ-1, 2ʳ-1-r, 3]` Hamming code.
+
+## v0.10.0 - 2025-07-02
+
+- **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
+- **(fix)** Paulis with imaginary phases had their phases incorrectly tracked.
+- **(fix)** `rowdecompose` was not accounting for the phase of the input Pauli string, leading to potential errors in non-Clifford functionality.
+- Various stabilizer data structures can now be constructed out of sequences of Paulis.
+- Most canonicalization routines can now act on sequences of Paulis.
+- `project*!` family of functions now work on more tableau types.
+- `QuantumCliffordJuMPExt` is a new extension depending on the JuMP solver suite. It enables computing minimum distance for quantum LDPC codes via Mixed Integer Programming (MIP) using `JuMP`.
+- `QuantumCliffordOscarExt` is a new extension depending on the Oscar CAS. It provides more convenient ways to construct two-block-group-algebra codes and more.
+- Improvements to `GeneralizedStabilizer` API including support for products and tensor product for many Clifford and non-Clifford operators and states.
 - `expect` is now implemented for `GeneralizedStabilizer`.
+- `projectrand!` is now implemented for `GeneralizedStabilizer`.
+- `QuantumClifford` now depends on `QECCore`. `QECCore` is a new package separate from `QuantumClifford`, which specifies the interfaces error correction codes, together with declaring a number of the more essential ones. Naming changes:
+  - **(breaking)** `parity_checks_x` -> `parity_matrix_x` and `parity_checks_z` -> `parity_matrix_z`
+  - `AbstractECC` -> `AbstractQECC`
+  - `ClassicalCode` -> `AbstractCECC`
+  - Some codes are moved to `QECCore` from `QuantumClifford`, including `Toric`, `Surface`, `RepCode`, `CSS`, `Shor9`, `Steane7`, `Cleve8`, `Perfect5`, `Bitflip3`.
+- **(breaking)** `StabMixture` was renamed to `GeneralizedStabilizer`.
 - Constructing a `Destabilizer` out of a full-rank `Stabilizer` does not require a canonicalization anymore, i.e. `stabilizerview(Destabilizer(s))==s` is guaranteed.
 - The `maximally_mixed` function is now available for creating maximally mixed multi-qubit states.
-- `projectrand!` is now implemented for `GeneralizedStabilizer`.
-
-## unreleased
-
 - Much faster indexing and slicing of `PauliOperator`.
 
 ## v0.9.19 - 2025-04-08

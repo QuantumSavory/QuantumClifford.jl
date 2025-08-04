@@ -3,9 +3,9 @@ env:
   JULIA_NUM_THREADS: auto
   PYTHON: ""
   PYCALL_DEBUG_BUILD: yes
-  
+
 steps:
-  - label: "Package Tests CI on Buildkite"
+  - label: "Package Tests"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -18,21 +18,121 @@ steps:
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
-  - label: "Downstream Breakage CI on Buildkite"
+  - label: "JET Tests"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      JET_TEST: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
+  - label: "ECC Tests"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      ECC_TEST: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
+  - label: "CUDA Tests"
+    agents:
+      queue: cuda
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      #- QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      CUDA_TEST: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
+  - label: "ROCm Tests"
+    agents:
+      queue: rocm
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      #- QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      ROCm_TEST: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
+  - label: "OpenCL Tests"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      OpenCL_TEST: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
+  - label: "Downstream QuantumSavory"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
       - QuantumSavory/julia-xvfb#v1:
     command:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
+      - julia --project=$(mktemp -d) -e '
         using Pkg;
-        pkg"dev .";'
-      - julia --project='~' -e '
-        using Pkg;
+        pkg"dev .";
         Pkg.add("QuantumSavory");
         Pkg.build("QuantumSavory");
-        Pkg.test("QuantumSavory");
+        Pkg.test("QuantumSavory");'
+  - label: "Downstream BPGates"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project=$(mktemp -d) -e '
+        using Pkg;
+        pkg"dev .";
         Pkg.add("BPGates");
         Pkg.build("BPGates");
         Pkg.test("BPGates");'
+  - label: "Downstream QuantumSymbolics"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project=$(mktemp -d) -e '
+        using Pkg;
+        pkg"dev .";
+        Pkg.add("QuantumSymbolics");
+        Pkg.build("QuantumSymbolics");
+        Pkg.test("QuantumSymbolics");'
