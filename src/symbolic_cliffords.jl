@@ -75,6 +75,7 @@ end
 function _apply_inv!(stab::AbstractStabilizer, gate::AbstractSingleQubitOperator; phases::Val{B}=Val(true)) where {B} # code repetition with the corresponding `_apply`
     s = tab(stab)
     c = gate.q
+    @boundscheck c <= nqubits(stab) || throw(THROW_BOUNDS)
     @inbounds @simd for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
@@ -294,8 +295,7 @@ function _apply!(stab::AbstractStabilizer, gate::AbstractTwoQubitOperator; phase
     s = tab(stab)
     q1 = gate.q1
     q2 = gate.q2
-    maxopqubit = max(q1, q2)
-    @boundscheck maxopqubit <= nqubits(stab) || throw(THROW_BOUNDS)
+    @boundscheck max(q1, q2) <= nqubits(stab) || throw(THROW_BOUNDS)
     Tₘₑ = eltype(s.xzs)
     shift = getshift(Tₘₑ, q1) - getshift(Tₘₑ, q2)
     @inbounds @simd for r in eachindex(s)
@@ -321,6 +321,7 @@ function _apply_inv!(stab::AbstractStabilizer, gate::AbstractTwoQubitOperator; p
     s = tab(stab)
     q1 = gate.q1
     q2 = gate.q2
+    @boundscheck max(q1, q2) <= nqubits(stab) || throw(THROW_BOUNDS)
     Tₘₑ = eltype(s.xzs)
     shift = getshift(Tₘₑ, q1) - getshift(Tₘₑ, q2)
     @inbounds @simd for r in eachindex(s)
