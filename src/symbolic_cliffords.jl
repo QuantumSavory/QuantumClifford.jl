@@ -60,6 +60,7 @@ Base.@propagate_inbounds setzbit(xzs::AbstractMatrix{T}, r::Int, c::Int, z::T, s
 function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) where {B, G<:AbstractSingleQubitOperator}
     s = tab(stab)
     c = gate.q
+    @boundscheck c <= nqubits(stab) || throw(DimensionMismatch("attempt to apply operator acting on qubit $c to $(nqubits(stab))-qubit stabilizer"))
     @inbounds @simd for r in eachindex(s)
         x = getxbit(s, r, c)
         z = getzbit(s, r, c)
@@ -158,6 +159,7 @@ end
 function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{B}=Val(true)) where B # TODO Generated functions that simplify the whole `if phases` branch might be a good optimization, but a quick benchmakr comparing sHadamard to SingleQubitOperator(sHadamard) did not show a worthwhile difference.
     s = tab(stab)
     c = op.q
+    @boundscheck c <= nqubits(stab) || throw(DimensionMismatch("attempt to apply operator acting on qubit $c to $(nqubits(stab))-qubit stabilizer"))
     Tₘₑ = eltype(s.xzs)
     sh = getshift(Tₘₑ, c)
     xx,zx,xz,zz = Tₘₑ.((op.xx,op.zx,op.xz,op.zz)) .<< sh
@@ -271,6 +273,8 @@ function _apply!(stab::AbstractStabilizer, gate::G; phases::Val{B}=Val(true)) wh
     s = tab(stab)
     q1 = gate.q1
     q2 = gate.q2
+    maxopqubit = max(q1, q2)
+    @boundscheck maxopqubit <= nqubits(stab) || throw(DimensionMismatch("attempt to apply operator affecting qubit $maxopqubit to stabilizer of length $(nqubits(stab))"))
     Tₘₑ = eltype(s.xzs)
     shift = getshift(Tₘₑ, q1) - getshift(Tₘₑ, q2)
     @inbounds @simd for r in eachindex(s)
