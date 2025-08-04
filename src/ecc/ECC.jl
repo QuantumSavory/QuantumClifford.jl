@@ -1,7 +1,8 @@
 module ECC
 
 using QECCore
-import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp
+import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
+metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -37,7 +38,8 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     DelfosseReichardtRepCode, DelfosseReichardt823, LaCross,
     QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
     DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps,
-    HomologicalProductCode, DoubleHomologicalProductCode, quasi_cyclic_code, 
+    GeneralizedCirculantBivariateBicycle,
+    HomologicalProductCode, DoubleHomologicalProductCode, quasi_cyclic_code,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
