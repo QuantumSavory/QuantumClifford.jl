@@ -5,7 +5,7 @@ Compute the distance of a code using mixed integer programming.
 See [`QuantumClifford.ECC.DistanceMIPAlgorithm`](@ref) for configuration options.
 
 Specifically, it computes the minimum distance of a Calderbank-Shor-Steane code by
-solving two independent **Mixed Integer Programs** for `X`-type (``d_X``) and `Z`-type
+solving two independent **Mixed Integer Programs** for X-type (``d_X``) and Z-type
 (``d_Z``) distances. The code distance is ``d = \\min(d_X, d_Z)``.
 
 ### Background on Minimum Distance
@@ -27,12 +27,6 @@ minimum distance of the quantum additive code to be inferred from that of the cl
 linear code but increases parameters from `n` to `3n` and `d` to `2d`, adding complexity.
 Furthermore, once a minimal weight vector is identified, it is essential to verify
 whether it belongs to the Pauli group `𝒫ₙ` over `n` qubits [Sabo:2022smk](@cite).
-
-Additionally, to illustrate how classical intuition can be misleading in this context,
-consider that the `[[7, 1, 3]]` Steane code has a minimum distance of three, despite all
-its elements having a weight of four. This discrepancy occurs because stabilizer codes
-are defined by parity-check matrices, while their minimum distances are determined by
-the dual [Sabo:2022smk](@cite).
 
 !!! note
     The minimum distance problem for quantum codes is *NP-hard*, and this hardness extends
@@ -59,9 +53,7 @@ physical errors and is defined as [qubitguide](@cite):
 
 ```math
 \\begin{aligned}
-\\begin{equation}
 d = \\min_{P \\in N(S)\\setminus S} \\mathrm{wt}(P)
-\\end{equation}
 \\end{aligned}
 ```
 
@@ -80,16 +72,16 @@ normalizer condition ``P \\in N(S)`` ensures the operator commutes with all stab
 
 We compute the minimum code distance for CSS (Calderbank-Shor-Steane) codes by solving MIPs. 
 
-The distance is computed separately for `X`-type (``d_X``) and `Z`-type (``d_Z``) logical
+The distance is computed separately for X-type (``d_X``) and Z-type (``d_Z``) logical
 operators, then combined to give the true code distance: ``d = \\min(d_X, d_Z)``.
 
 ### X-type and Z-type Distances
 
-The X-type distance (``d_X``) and Z-type distance (``d_Z```) are defined as the minimum
+The X-type distance (``d_X``) and Z-type distance (``d_Z``) are defined as the minimum
 number of errors required to implement a non-trivial logical operator of the opposite type,
 subject to the following constraints: 
 
-- For ``d_X`` (where ``U = X``), the errors are Z-type (phase flips), and the constraints involve the X-stabilizer matrix ``\\mathbf{H_X}`` and X-logical operators ``\\mathbf{L_X}``. The error vector is denoted as `\\mathbf{e}_Z``.
+- For ``d_X`` (where ``U = X``), the errors are Z-type (phase flips), and the constraints involve the X-stabilizer matrix ``\\mathbf{H_X}`` and X-logical operators ``\\mathbf{L_X}``. The error vector is denoted as ``\\mathbf{e}_Z``.
 - For ``d_Z`` (where ``U = Z``), the errors are X-type (bit flips), with constraints given by the Z-stabilizer matrix ``\\mathbf{H_Z}`` and Z-logical operators ``\\mathbf{L_Z}``, and the error vector is ``\\mathbf{e}_X``.  
 
 ```math

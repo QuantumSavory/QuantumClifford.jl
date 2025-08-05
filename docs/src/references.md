@@ -56,6 +56,7 @@ For quantum code construction routines:
 - [berthusen2025adaptivesyndromeextraction](@cite)
 - [arnault2025upperboundsminimumdistance](@cite)
 - [tillich2006minimum](@cite)
+- [bravyi2024high](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)
