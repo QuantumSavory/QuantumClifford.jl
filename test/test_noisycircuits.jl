@@ -224,6 +224,41 @@
             @test random2_pe[true_success_stat] == 0
         end
 
+        @testset "Symbolic Reset Measurements" begin
+            using QuantumClifford:tensor
+            #test for checking reset capabilities
+            state1 = S"-Z"
+            register1 = Register(state1, [0])
+            op1 = sMRZ(1,1)
+            verify1 = VerifyOp(state1, [1])
+            pet1 = petrajectories(register1, [op1,verify1])
+            @test pet1[false_success_stat] == 1
+            @test pet1[true_success_stat] == 0
+            @test pet1[failure_state] == 0
+
+            state2 = S"-X"
+            register2 = Register(state2, [0])
+            op2 = sMRX(1,1)
+            verify2 = VerifyOp(state2, [1])
+            pet2 = petrajectories(register2, [op2,verify2])
+            @test pet2[false_success_stat] == 1
+            @test pet2[true_success_stat] == 0
+            @test pet2[failure_state] == 0
+
+            #checks probabilstic case to see if the phase of measurement anticommuting stabilizer is the same in both branches
+            ghzState = S"XXX ZZI IZZ"
+            reg = Register(ghzState, [0])
+            branches = applybranches(reg, sMRZ(1,1))
+            stab1 = stabilizerview(branches[2][1].stab)
+            stab2 = stabilizerview(branches[1][1].stab)
+            canonicalize_rref!(stab1)
+            canonicalize_rref!(stab2)
+            @test phases(stab1)[end] == 0x00
+            @test phases(stab2)[end] == 0x00
+
+
+        end
+
         @testset "Conforming to the project! interface" begin
             state = Register(MixedDestabilizer(S"ZZ"), zeros(Bool, 1))
             meas = PauliMeasurement(P"ZI", 1)
