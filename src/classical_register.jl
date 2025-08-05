@@ -39,6 +39,10 @@ function apply!(r::Register, op, args...; kwargs...)
     apply!(quantumstate(r), op, args...; kwargs...)
     r
 end
+function apply_inv!(r::Register, op, args...; kwargs...)
+    apply_inv!(quantumstate(r), op, args...; kwargs...)
+    r
+end
 
 function apply!(r::Register, m::sMX)
     _, res = projectXrand!(r,m.qubit)
