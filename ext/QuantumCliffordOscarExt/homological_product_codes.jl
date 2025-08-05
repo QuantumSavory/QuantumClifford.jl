@@ -1,5 +1,5 @@
 """Convert a polynomial parity-check matrix or generator check matrix to binary quasi-cyclic form."""
-function quasi_cyclic_code(H::Oscar.Generic.MatSpaceElem, l::Int)
+function _circulant_matrix_from_quasi_cyclic_polynomial_matrix(H::MatSpaceElem, l::Int)
     F = GF(2)
     r, n = size(H)
     H_bin = zero_matrix(F, r*l, n*l)
@@ -61,12 +61,10 @@ julia> R, x = polynomial_ring(GF(2), "x");
 
 julia> l = 3;
 
-julia> H_poly = matrix(R, 2, 3, [x^2 x^2 x^2;
-                                 x   x^2  0]);
+julia> H = matrix(R, 2, 3, [x^2 x^2 x^2;
+                            x   x^2  0]);
 
-julia> H = quasi_cyclic_code(H_poly, l);
-
-julia> c = HomologicalProductCode([H,transpose(H)]);
+julia> c = HomologicalProductCode([H,transpose(H)], l);
 
 julia> import HiGHS; import JuMP;
 
@@ -84,13 +82,11 @@ julia> R, x = polynomial_ring(GF(2), "x");
 
 julia> l = 3;
 
-julia> H_poly = matrix(R, 3, 4, [x^2 x^2 x^2   0;
-                                 x^2   0 x^2  x^2;
-                                 x^2 x^2   x  x^2]);
+julia> H = matrix(R, 3, 4, [x^2 x^2 x^2   0;
+                            x^2   0 x^2  x^2;
+                            x^2 x^2   x  x^2]);
 
-julia> H = quasi_cyclic_code(H_poly, l);
-
-julia> c = HomologicalProductCode([H,transpose(H)]);
+julia> c = HomologicalProductCode([H,transpose(H)], l);
 
 julia> import HiGHS; import JuMP;
 
@@ -146,8 +142,16 @@ struct HomologicalProductCode{T<:MatElem} <: AbstractCSSCode
     end
 end
 
+function HomologicalProductCode(boundary_maps::Vector{MatSpaceElem{FqPolyRingElem}}, l::Int)
+    δₛ = [_circulant_matrix_from_quasi_cyclic_polynomial_matrix(δ, l) for δ in boundary_maps]
+    HomologicalProductCode(δₛ)
+end
+
+HomologicalProductCode(boundary_maps::Vector{MatSpaceElem{FqPolyRingElem}}; l::Int) = HomologicalProductCode(boundary_maps, l)
+
 function boundary_maps(hp::HomologicalProductCode)
     length(hp.boundary_maps) < 2 && throw(ArgumentError("`HomologicalProductCode` requires at least `2` boundary maps."))
+    typeof(hp.boundary_maps) == Vector{MatSpaceElem{FqPolyRingElem}} ? [_circulant_matrix_from_quasi_cyclic_polynomial_matrix(δ, c.l) for δ in hp.boundary_maps] : hp.boundary_maps
     R = base_ring(hp.boundary_maps[1])
     C = chain_complex([hom(free_module(R, size(hp.boundary_maps[1],1)), free_module(R, size(hp.boundary_maps[1],2)), hp.boundary_maps[1])], seed=0)
     for i in 2:length(hp.boundary_maps)

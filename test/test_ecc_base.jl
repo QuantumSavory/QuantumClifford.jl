@@ -323,18 +323,16 @@ h₄ = 1 + x + x^4
     # [[117, 9, 4]] from [xu2024fastparallelizablelogicalcomputation](@cite)
     R, x = polynomial_ring(GF(2), "x")
     l = 3
-    H_poly = matrix(R, 2, 3, [x^2 x^2 x^2;
-                              x   x^2  0])
-    H = quasi_cyclic_code(H_poly, l)
-    hpc₁ = HomologicalProductCode([H,transpose(H)])
+    H = matrix(R, 2, 3, [x^2 x^2 x^2;
+                         x   x^2  0])
+    hpc₁ = HomologicalProductCode([H,transpose(H)], l)
     # [[225, 9, 6]] from [xu2024fastparallelizablelogicalcomputation](@cite)
     R, x = polynomial_ring(GF(2), "x")
     l = 3
-    H_poly = matrix(R, 3, 4, [x^2 x^2 x^2   0;
-                              x^2   0 x^2  x^2;
-                              x^2 x^2   x  x^2])
-    H = quasi_cyclic_code(H_poly, l)
-    hpc₂ = HomologicalProductCode([H,transpose(H)])
+    H = matrix(R, 3, 4, [x^2 x^2 x^2   0;
+                         x^2   0 x^2  x^2;
+                         x^2 x^2   x  x^2])
+    hpc₂ = HomologicalProductCode([H,transpose(H)], l)
     # 3D Homological product code from [Quintavalle_2021](@cite)
     μ = 2; wc = 3; wr = 4
     c = GallagerLDPC(μ, wc, wr)
