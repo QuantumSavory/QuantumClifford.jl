@@ -234,7 +234,7 @@
             pet1 = petrajectories(register1, [op1,verify1])
             @test pet1[false_success_stat] == 1
             @test pet1[true_success_stat] == 0
-            @test pet1[failure_state] == 0
+            @test pet1[failure_stat] == 0
 
             state2 = S"-X"
             register2 = Register(state2, [0])
@@ -243,7 +243,7 @@
             pet2 = petrajectories(register2, [op2,verify2])
             @test pet2[false_success_stat] == 1
             @test pet2[true_success_stat] == 0
-            @test pet2[failure_state] == 0
+            @test pet2[failure_stat] == 0
 
             #checks probabilstic case to see if the phase of measurement anticommuting stabilizer is the same in both branches
             ghzState = S"XXX ZZI IZZ"
