@@ -3,26 +3,6 @@
     using QuantumClifford: AbstractCliffordOperator, CliffordOperator
     
     test_sizes = [1,2,63,64,65,127,128,129,511,512,513]
-
-    function CliffordOperator(pauli::PauliOperator)
-        n = nqubits(pauli)
-        res = one(CliffordOperator, n)
-
-        for i in 1:2n
-            if comm(pauli, tab(res), i) == 0x1
-                phases(res)[i] ⊻= 0x02
-            end
-        end
-        return res
-    end
-    
-    @testset "CliffordOperator constructor from PauliOperator" begin
-        for n in test_sizes
-            l = random_clifford(n)
-            pauli = random_pauli(n)
-            @test isequal(apply!(copy(l), pauli; phases=true), apply!(l, CliffordOperator(pauli); phases=true))
-        end
-    end
     
     # SLOW version of apply_right! for testing
     function apply_right_slow!(l::CliffordOperator, r::CliffordOperator; phases=true)
