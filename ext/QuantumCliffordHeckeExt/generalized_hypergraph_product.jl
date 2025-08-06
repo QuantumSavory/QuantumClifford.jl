@@ -46,7 +46,7 @@ julia> code_n(c), code_k(c)
 (882, 24)
 ```
 
-Here is an example of `[[1270, 28, 16≤ d ≤ 46]]` code from Appendix B of [panteleev2021degenerate](@cite).
+Here is an example of `[[1270, 28, 16 ≤ d ≤ 46]]` code from Appendix B of [panteleev2021degenerate](@cite).
 
 ```jldoctest
 julia> import Hecke: polynomial_ring, GF, quo, matrix; using QuantumClifford.ECC;
