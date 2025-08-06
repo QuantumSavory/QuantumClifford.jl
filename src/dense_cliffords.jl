@@ -63,6 +63,11 @@ end
 CliffordOperator(op::CliffordOperator) = op
 CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Tableau(paulis))
 CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
+function CliffordOperator(pauli::PauliOperator)
+    res = one(CliffordOperator, nqubits(pauli))
+    tab(res).phases = 0x02 * comm(pauli, tab(res))
+    return res
+end
 
 Base.:(==)(l::CliffordOperator, r::CliffordOperator) = tab(l) == tab(r)
 Base.hash(c::T, h::UInt) where {T<:CliffordOperator} = hash(T, hash(tab(c), h))
@@ -91,6 +96,7 @@ function Base.copy(c::CliffordOperator)
 end
 
 @inline nqubits(c::CliffordOperator) = nqubits(tab(c))
+@inline phases(c::CliffordOperator) = phases(tab(c))
 
 Base.zero(c::CliffordOperator) = CliffordOperator(zero(tab(c)))
 Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Tableau, 2n, n))
