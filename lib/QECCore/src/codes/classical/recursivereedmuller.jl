@@ -33,7 +33,7 @@ struct RecursiveReedMuller <: AbstractCECC
 
     function RecursiveReedMuller(r, m)
         if r < 0 || r > m
-            throw(ArgumentError("Invalid parameters: r must be non-negative and r ≤ m in order to valid code."))
+            throw(ArgumentError(THROW_INVALID_PARAMETERS_REEDMULLER))
         end
         new(r, m)
     end

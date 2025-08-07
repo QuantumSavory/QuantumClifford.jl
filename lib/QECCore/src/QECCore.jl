@@ -58,6 +58,8 @@ include("codes/quantum/delfosse_reichardt_code.jl")
 include("codes/quantum/delfosse_reichardt_repcode.jl")
 include("codes/quantum/delfosse_reichardt_823_code.jl")
 
+include("../../../src/throws.jl")
+
 function __init__()
     if isdefined(Base.Experimental, :register_error_hint)
         Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs

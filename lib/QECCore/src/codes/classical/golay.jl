@@ -31,7 +31,7 @@ struct Golay <: AbstractCECC
 
     function Golay(n)
         if !(n in (23, 24))
-            throw(ArgumentError("Invalid parameters: `n` must be either 24 or 23 to obtain a valid code."))
+            throw(ArgumentError(THROW_INVALID_PARAMETERS_GOLAY))
         end
         new(n)
     end

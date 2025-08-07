@@ -44,3 +44,12 @@ const THROW_MODEL_MEMORY_LIMIT =
 
 const THROW_MODEL_TIME_LIMIT =
 "Model exceeded time limit"
+
+const THROW_INVALID_PARAMETERS_GOLAY =
+"Invalid parameters: `n` must be either 24 or 23 to obtain a valid code."
+
+const THROW_INVALID_PARAMETERS_HAMMING =
+"Invalid parameters: `r` must be ≥ 2 to obtain a valid code."
+
+const THROW_INVALID_PARAMETERS_REEDMULLER =
+"Invalid parameters: r must be non-negative and r ≤ m in order to valid code."
