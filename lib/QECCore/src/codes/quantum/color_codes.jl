@@ -52,9 +52,9 @@ struct Triangular488 <: TriangularCode
 
     function Triangular488(d)
         if d%2!=1
-            throw(ArgumentError("Only odd distance triangular color codes are allowed.\nRefer to https://arxiv.org/abs/1108.5738"))
+            throw(ArgumentError(THROW_COLOR_CODES_ODD))
         elseif d<3
-            throw(ArgumentError("Smallest allowed distance is 3.\nRefer to https://arxiv.org/abs/1108.5738"))
+            throw(ArgumentError(THROW_COLOR_CODES_MIN_DIST))
         end
         return new(d)
     end
@@ -110,9 +110,9 @@ struct Triangular666 <: TriangularCode
     d::Int
     function Triangular666(d)
         if d%2!=1
-            throw(ArgumentError("Only odd distance triangular color codes are allowed.\nRefer to https://arxiv.org/abs/1108.5738"))
+            throw(ArgumentError(THROW_COLOR_CODES_ODD))
         elseif d<3
-            throw(ArgumentError("Smallest allowed distance is 3.\nRefer to https://arxiv.org/abs/1108.5738"))
+            throw(ArgumentError(THROW_COLOR_CODES_MIN_DIST))
         end
         return new(d)
     end

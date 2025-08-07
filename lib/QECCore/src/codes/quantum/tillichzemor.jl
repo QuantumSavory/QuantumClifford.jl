@@ -138,7 +138,7 @@ struct TillichZemor{M} <: AbstractCSSCode where {M <: Union{Nothing,Tuple{Abstra
     matrices::M
 
     function TillichZemor(n::Int, m::Int, r::Int, matrices::M=nothing) where {M <: Union{Nothing,Tuple{AbstractMatrix,AbstractMatrix}}}
-        (m ≥ r && (n - m)*r ≥ m) || throw(ArgumentError(("Conditions for the existence of `M` in `H = [C | M]` are not satisfied.")))
+        (m ≥ r && (n - m)*r ≥ m) || throw(ArgumentError((THROW_INVALID_PARAMETERS_TILLICH_ZEMOR)))
         new{M}(n, m, r, matrices)
     end
 end
@@ -202,7 +202,7 @@ function _create_matrix_M_random(rng::AbstractRNG, m::Int, n::Int, r::Int)
 end
 
 function _construct_parity_check_matrix(rng::AbstractRNG, n::Int, m::Int, r::Int)
-    (m ≥ r && (n - m)*r ≥ m) || throw(ArgumentError(("Conditions for the existence of `M` in `H = [C | M]` are not satisfied.")))
+    (m ≥ r && (n - m)*r ≥ m) || throw(ArgumentError((THROW_INVALID_PARAMETERS_TILLICH_ZEMOR)))
     C = _create_circulant_matrix(m)
     M = _create_matrix_M_random(rng, m, n, r)
     # The parity-check matrix H = [C | M]

@@ -21,7 +21,7 @@ struct QuantumReedMuller <: AbstractCSSCode
     m::Int
     function QuantumReedMuller(m)
         if  m < 3
-            throw(DomainError("Invalid parameters: m must be bigger than 2 in order to have a valid code."))
+            throw(DomainError(THROW_INVALID_QUANTUM_REED_MULLER))
         end
         new(m)
     end

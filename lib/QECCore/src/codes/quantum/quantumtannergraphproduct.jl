@@ -203,7 +203,7 @@ julia> code_n(c), code_k(c)
 struct CyclicQuantumTannerGraphProduct <: AbstractCSSCode
     m::Int
     function CyclicQuantumTannerGraphProduct(m::Int)
-        m > 0 || throw(ArgumentError("m must be positive."))
+        m > 0 || throw(ArgumentError(THROW_REQUIRED_POSITIVE_ARG))
         new(m)
     end
 end

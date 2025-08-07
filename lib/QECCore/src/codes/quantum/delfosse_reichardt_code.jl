@@ -86,14 +86,12 @@ struct DelfosseReichardt <: AbstractCSSCode
     """The log-length of the classical Reed-Muller code."""
     m::Int
     function DelfosseReichardt(p,r,m)
-        p < 2 && throw(ArgumentError("The number of blocks must be at least 2 to construct a valid code."))
+        p < 2 && throw(ArgumentError(THROW_DELFOSSE_MIN_BLOCKS))
         if r < 0 || r > m
-            throw(ArgumentError("Invalid parameters: r must be non-negative and r ≤ m in order to valid code."))
+            throw(ArgumentError(THROW_INVALID_PARAMETERS_REEDMULLER))
         end
         if !iszero(mod.(parity_matrix(ReedMuller(r,m))*parity_matrix(ReedMuller(r,m))',2))
-            throw(ArgumentError("The `Reed-Muller` parity check matrix must be 'self-orthogonal' to construct a self-dual
-            CSS `DelfosseReichardt` code. Use `search_self_orthogonal_rm_codes` to search for good parameters for `Reed-Muller` codes
-            that provide `self-orthogonal` seeds."))
+            throw(ArgumentError(THROW_DELFOSSE_SELF_ORTHOGONAL))
         end
         new(p,r,m)
     end

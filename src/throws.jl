@@ -53,3 +53,29 @@ const THROW_INVALID_PARAMETERS_HAMMING =
 
 const THROW_INVALID_PARAMETERS_REEDMULLER =
 "Invalid parameters: r must be non-negative and r ≤ m in order to valid code."
+
+const THROW_COLOR_CODES_ODD =
+"Only odd distance triangular color codes are allowed.\nRefer to https://arxiv.org/abs/1108.5738"
+
+const THROW_COLOR_CODES_MIN_DIST =
+"Smallest allowed distance is 3.\nRefer to https://arxiv.org/abs/1108.5738"
+
+const THROW_DELFOSSE_823_MIN_BLOCKS =
+"The number of blocks must be at least 1 to construct a valid code."
+
+const THROW_DELFOSSE_MIN_BLOCKS =
+"The number of blocks must be at least 2 to construct a valid code."
+
+const THROW_DELFOSSE_SELF_ORTHOGONAL =
+"The `Reed-Muller` parity check matrix must be 'self-orthogonal' to construct a self-dual
+CSS `DelfosseReichardt` code. Use `search_self_orthogonal_rm_codes` to search for good parameters for `Reed-Muller` codes
+that provide `self-orthogonal` seeds."
+
+const THROW_DELFOSSE_REP_MULTIPLE =
+"The number of blocks must be a multiple of 2."
+
+const THROW_INVALID_QUANTUM_REED_MULLER =
+"Invalid parameters: m must be bigger than 2 in order to have a valid code."
+
+const THROW_INVALID_PARAMETERS_TILLICH_ZEMOR =
+"Conditions for the existence of `M` in `H = [C | M]` are not satisfied."
