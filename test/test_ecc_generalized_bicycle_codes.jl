@@ -217,7 +217,7 @@
         @test stab_looks_good(stab, remove_redundant_rows=true) == true
     end
 
-    @testset "Generalized Bicycle Codes from Tables V-VIII from https://arxiv.org/abs/2503.03827" begin
+    @testset "Generalized Bicycle Codes from Tables V-VIII of https://arxiv.org/abs/2503.03827" begin
         R, y = polynomial_ring(GF(2), :y)
         table_v = [
             (12 , 4 , 1 + y    + y^2 , 1 + y + y^2 , 6),
