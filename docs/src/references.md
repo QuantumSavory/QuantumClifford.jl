@@ -57,6 +57,7 @@ For quantum code construction routines:
 - [arnault2025upperboundsminimumdistance](@cite)
 - [tillich2006minimum](@cite)
 - [bravyi2024high](@cite)
+- [liang2025generalizedtoriccodestwisted](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)

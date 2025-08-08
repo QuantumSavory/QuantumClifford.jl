@@ -22,3 +22,15 @@ function DDimensionalToricCode(args...; kwargs...)
     end
     return ext.DDimensionalToricCode(args...; kwargs...)
 end
+
+"""Generalized Toric codes ([liang2025generalizedtoriccodestwisted](@cite))
+
+Implemented as a package extension with `Oscar`. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
+function GeneralizedToricCode(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
+    if isnothing(ext)
+        throw("The `GeneralizedToricCode` depends on the package `Oscar` but you have not installed or imported it yet. Immediately after you import `Oscar`, the `GeneralizedToricCode` will be available.")
+    end
+    return ext.GeneralizedToricCode(args...; kwargs...)
+end
+
