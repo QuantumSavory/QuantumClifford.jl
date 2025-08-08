@@ -53,9 +53,8 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 
 See also: [`generalized_bicycle_codes`](@ref)
 
-All fields:
-
-$TYPEDFIELDS
+### Fields
+    $TYPEDFIELDS
 """
 struct GeneralizedBicycleCode <: AbstractCSSCode
     """First generator polynomial in 𝔽₂[x]/(xˡ - 1)."""
@@ -87,4 +86,4 @@ parity_matrix_z(c::GeneralizedBicycleCode) = parity_matrix_xz(c)[2]
 
 code_n(c::GeneralizedBicycleCode) = 2*c.l
 
-code_k(c::GeneralizedBicycleCode) = 2*degree(gcd(c.a, c.b, (polynomial_ring(GF(2), :x)[2])^c.l − 1))
+code_k(c::GeneralizedBicycleCode) = 2*degree(gcd(c.a, c.b, gen(parent(c.a))^c.l - 1))

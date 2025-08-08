@@ -1,4 +1,6 @@
 """
+    $TYPEDEF
+
 The extended generalized bicycle code is a family of quantum LDPC codes generated
 through *algebraic extension* of a base [`GeneralizedBicycleCode`](@ref). Starting
 with initial generating polynomials ``a(x), b(x) \\in \\mathbb{F}_2^{\\langle\\ell\\rangle}``,
@@ -81,6 +83,8 @@ julia> code_n(new_code), code_k(new_code), distance(new_code, DistanceMIPAlgorit
     minimal lift size required to achieve quantum error-correcting codes with a minimum
     distance of `d ≥ 3`.
 
+### Fields
+    $TYPEDFIELDS
 """
 struct ExtendedGeneralizedBicycleCode <: AbstractCSSCode
     """The base generalized bicycle code to extend."""
