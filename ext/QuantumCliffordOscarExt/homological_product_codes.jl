@@ -1,21 +1,3 @@
-"""Convert a polynomial parity-check matrix or generator check matrix to binary quasi-cyclic form."""
-function _circulant_matrix_from_quasi_cyclic_polynomial_matrix(H::MatSpaceElem, l::Int)
-    F = GF(2)
-    r, n = size(H)
-    H_bin = zero_matrix(F, r*l, n*l)
-    for i in 1:r, j in 1:n
-        cfs = zeros(F, l)
-        for (k, c) in enumerate(coefficients(H[i,j]))
-            cfs[k] = c
-        end
-        circ = hcat([circshift(cfs, s) for s in 0:l-1]...)
-        rows = (1:l) .+ (i-1)*l
-        cols = (1:l) .+ (j-1)*l
-        H_bin[rows, cols] = matrix(F, circ)
-    end
-    return H_bin
-end
-
 """
     $TYPEDEF
 
@@ -142,6 +124,24 @@ struct HomologicalProductCode{T<:MatElem} <: AbstractCSSCode
     end
 end
 
+"""Convert a polynomial parity-check matrix or generator check matrix to binary quasi-cyclic form."""
+function _circulant_matrix_from_quasi_cyclic_polynomial_matrix(H::MatSpaceElem, l::Int)
+    F = GF(2)
+    r, n = size(H)
+    H_bin = zero_matrix(F, r*l, n*l)
+    for i in 1:r, j in 1:n
+        cfs = zeros(F, l)
+        for (k, c) in enumerate(coefficients(H[i,j]))
+            cfs[k] = c
+        end
+        circ = hcat([circshift(cfs, s) for s in 0:l-1]...)
+        rows = (1:l) .+ (i-1)*l
+        cols = (1:l) .+ (j-1)*l
+        H_bin[rows, cols] = matrix(F, circ)
+    end
+    return H_bin
+end
+
 function HomologicalProductCode(boundary_maps::Vector{MatSpaceElem{FqPolyRingElem}}, l::Int)
     δₛ = [_circulant_matrix_from_quasi_cyclic_polynomial_matrix(δ, l) for δ in boundary_maps]
     HomologicalProductCode(δₛ)
@@ -162,11 +162,6 @@ function boundary_maps(hp::HomologicalProductCode)
     end
     δs = [matrix(map(C, d)) for d in 1:length(hp.boundary_maps)]
     return matrix_to_int.(δs)
-end
-
-function parity_matrix_xz(hp::HomologicalProductCode)
-    hx, hz = boundary_maps(hp)[2], boundary_maps(hp)[1]'
-    return hx, hz
 end
 
 function metacheck_matrix_x(c::HomologicalProductCode)
@@ -302,17 +297,10 @@ function boundary_maps(c::DoubleHomologicalProductCode)
     return fq_to_int(δ̌₋₂), fq_to_int(δ̌₋₁), fq_to_int(δ̌₀), fq_to_int(δ̌₁)
 end
 
-function parity_matrix_xz(c::DoubleHomologicalProductCode)
-    _, δ̌₋₁, δ̌₀, _ = boundary_maps(c)
-    hx = δ̌₀
-    hz = δ̌₋₁'
-    return hx, hz
-end
+parity_matrix_x(c::DoubleHomologicalProductCode) = boundary_maps(c)[3] # δ̌₀
 
-parity_matrix_x(c::DoubleHomologicalProductCode) = parity_matrix_xz(c)[1]
+parity_matrix_z(c::DoubleHomologicalProductCode) = boundary_maps(c)[2]' # δ̌₋₁'
 
-parity_matrix_z(c::DoubleHomologicalProductCode) = parity_matrix_xz(c)[2]
+metacheck_matrix_x(c::DoubleHomologicalProductCode) = boundary_maps(c)[4] # δ̌₁
 
-metacheck_matrix_x(c::DoubleHomologicalProductCode) = boundary_maps(c)[4]
-
-metacheck_matrix_z(c::DoubleHomologicalProductCode) = boundary_maps(c)[1]'
+metacheck_matrix_z(c::DoubleHomologicalProductCode) = boundary_maps(c)[1]' # δ̌₋₂'
