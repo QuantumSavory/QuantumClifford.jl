@@ -1,3 +1,12 @@
+"""
+A quantum state representation for efficient simulation using the stabilizer tableau backtracking 
+method [gidney-2021](@cite).
+
+This struct stores the inverse of all Clifford operations applied so far, enabling efficient 
+simulation by working backwards from measurements to the initial |0⟩^⊗n state. By conjugating the
+current-time observable Pₓ by the inverse Clifford operation we get some observable from the
+start of time that is equivalent to measuring Pₓ at the current time.
+"""
 struct StimRegister <: AbstractQCState
     inv_circuit::CliffordOperator
     bits::Vector{Bool}
@@ -10,6 +19,7 @@ StimRegister(qbits::Int, mbits::Int=0) = StimRegister(one(CliffordOperator, qbit
 
 Base.copy(r::StimRegister) = StimRegister(copy(r.inv_circuit), copy(r.bits))
 Base.:(==)(l::StimRegister,r::StimRegister) = l.inv_circuit==r.inv_circuit && l.bits==r.bits
+Base.hash(r::StimRegister, h::UInt) = hash(r.inv_circuit, hash(r.bits, h))
 
 stabilizerview(r::StimRegister) = stabilizerview(quantumstate(r))
 # destabilizerview(r::StimRegister) = destabilizerview(quantumstate(r))
@@ -18,7 +28,7 @@ stabilizerview(r::StimRegister) = stabilizerview(quantumstate(r))
 
 nqubits(r::StimRegister) = nqubits(r.inv_circuit)
 bitview(r::StimRegister) = r.bits
-quantumstate(r::StimRegister) = apply!(one(Stabilizer, nqubits(r)), r.inv_circuit)
+quantumstate(r::StimRegister) = apply_inv!(one(Stabilizer, nqubits(r)), r.inv_circuit)
 tab(r::StimRegister) = tab(r.inv_circuit)
 
 tensor(regs::StimRegister...) = StimRegister(tensor([r.inv_circuit for r in regs]), [bit for r in regs for bit in r.bits])
@@ -158,33 +168,11 @@ function projectrand!(r::StimRegister, pauli)
 end
 
 # function traceout!(r::StimRegister, arg)
+    # TODO
 # end
 
-
-"""
-Simulates measurement results of a Clifford circuit acting on an `n`-qubit |0⟩^⊗n state using the 
-stabilizer tableau backtracking method [gidney-2021](@cite).
-
-This method incrementally folds operations into an identity tableau by prepending inverses of 
-Clifford gates. Pauli-Z measurements are resolved by transforming their observables to the initial 
-state; deterministic measurements are directly computed from tableau signs,while random measurements 
-are simplified and simulated with randomized gate insertions.
-"""
-function backtrajectory(circuit::Vector{<:AbstractOperation}, n::Int, m::Int=0)
-    r = StimRegister(n, m)
-    for op in circuit
-        apply!(r, op)
-    end
-    r
-end
-function backtrajectory(circuit::Vector{<:AbstractOperation})
-    n = maximum(Iterators.flatten(affectedqubits.(circuit)); init=1)
-    m = maximum(Iterators.flatten(affectedbits.(circuit)); init=0)
-    return backtrajectory(circuit, n, m)
-end
-# function backtrajectory(circuit::Vector{AbstractOperation}, state::AbstractStabilizer)
-#     pushfirst!(circuit, Reset(state, 1:nqubits(state)))
-#     return backtrajectory(circuit, nqubits(state))
+# function applybranches(r::StimRegister, op)
+    # TODO
 # end
 
 

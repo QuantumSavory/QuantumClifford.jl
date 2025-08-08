@@ -10,7 +10,7 @@ module QuantumClifford
 import LinearAlgebra
 using LinearAlgebra: inv, mul!, rank, Adjoint, dot, tr
 import DataStructures
-using DataStructures: DefaultDict, Accumulator
+using DataStructures: DefaultDict, Accumulator, counter
 using Combinatorics: combinations
 using Base.Cartesian
 using DocStringExtensions
@@ -61,7 +61,7 @@ export
     # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, 
-    Reset, sMRX, sMRY, sMRZ, sRX, sRY, sRZ,
+    Reset, sMRX, sMRY, sMRZ, # sRX, sRY, sRZ,
     BellMeasurement, ClassicalXOR,
     VerifyOp,
     Register,
