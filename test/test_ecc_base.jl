@@ -8,7 +8,7 @@ using SparseArrays
 
 import Nemo: GF
 import LinearAlgebra
-import Hecke: group_algebra, abelian_group, gens, quo, one, small_group, polynomial_ring, GF
+import Hecke: group_algebra, abelian_group, gens, quo, one, small_group, polynomial_ring, GF, matrix, quo
 
 # generate instances of all implemented codes to make sure nothing skips being checked
 
@@ -186,6 +186,39 @@ B = y^3 + x^25 + x^26
 bb3 = two_block_group_algebra_codes(A,B)
 
 test_bb_codes = [bb1, bb2, bb3]
+
+# Generalized Hypergraph Product codes
+# [[882, 24, 18 ≤ d ≤ 24]] from Appendix B of [panteleev2021degenerate](@cite)
+F = GF(2)
+R, x = polynomial_ring(F, "x")
+n = 7
+l = 63
+S, _ =  quo(R, x^l - 1)
+A_ghp1 = matrix(S, n, n,
+         [x^27  0     0     0     0     1     x^54
+          x^54  x^27  0     0     0     0     1
+          1     x^54  x^27  0     0     0     0
+          0     1     x^54  x^27  0     0     0
+          0     0     1     x^54  x^27  0     0
+          0     0     0     1     x^54  x^27  0
+          0     0     0     0     1     x^54  x^27])
+b_ghp1 = S(1 + x + x^6)
+
+# [[882, 48, 16]] from Appendix B of [panteleev2021degenerate](@cite)
+F = GF(2)
+R, x = polynomial_ring(F, "x")
+n = 7
+l = 63
+S, _ =  quo(R, x^l - 1)
+A_ghp2 = matrix(S, n, n,
+         [x^27   0     0     1     x^18  x^27  1
+          1      x^27  0     0     1     x^18  x^27
+          x^27   1     x^27  0     0     1     x^18
+          x^18   x^27  1     x^27  0     0     1
+          1      x^18  x^27  1     x^27  0     0
+          0      1     x^18  x^27  1     x^27  0
+          0      0     1     x^18  x^27  1     x^27])
+b_ghp2 = S(1 + x + x^6)
 
 # Add some codes that require Oscar, hence do not work on Windows
 
@@ -381,6 +414,7 @@ const code_instance_args = Dict(
     :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
     :random_TillichZemor_code => [(6,4,3), (7,5,3), (8,6,3)],
     :GeneralizedCirculantBivariateBicycle => [(9,6,A1,B1),(15,3,A2,B2),(6,6, A1,B1),(14,7,A2,B2),(15,5,A3,B3)],
+    :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1), (A_ghp2, b_ghp2)],
     :DoubleHomologicalProductCode => [(δ₁), (δ₂)]
 )
 

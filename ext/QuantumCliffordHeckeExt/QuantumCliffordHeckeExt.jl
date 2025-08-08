@@ -11,7 +11,9 @@ import Hecke: Group, GroupElem, AdditiveGroupElem,
     GroupAlgebra, GroupAlgebraElem, FqFieldElem, representation_matrix, dim, base_ring,
     multiplication_table, coefficients, abelian_group, group_algebra, rand, gens, order,
     is_commutative, FqPolyRingElem, residue_ring, coeff, zero_matrix, mod1, lift, ZZ, gen,
-    matrix, ncols, nrows, degree
+    matrix, ncols, nrows, degree, EuclideanRingResidueRingElem, quo, coeff, parent, zero,
+    base_ring
+import Hecke.Generic.MatSpaceElem
 import Nemo
 import Nemo: characteristic, matrix_repr, GF, ZZ, lift
 
@@ -31,5 +33,6 @@ include("types.jl")
 include("lifted.jl")
 include("lacross.jl")
 include("lifted_product.jl")
+include("generalized_hypergraph_product.jl")
 
 end # module

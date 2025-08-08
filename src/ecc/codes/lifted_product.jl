@@ -39,3 +39,13 @@ function LaCross(args...; kwargs...)
     end
     return ext.LaCross(args...; kwargs...)
 end
+
+""" Generalized Hypergraph Product codes [panteleev2021degenerate](@cite)
+Implemented as a package extension with Hecke. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
+function GeneralizedHyperGraphProductCode(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
+    if isnothing(ext)
+        throw("The `GeneralizedHyperGraphProductCode` quantum LDPC code depends on the package `Hecke` but you have not installed or imported it yet. Immediately after you import `Hecke`, the `GeneralizedHyperGraphProductCode` will be available.")
+    end
+    return ext.GeneralizedHyperGraphProductCode(args...; kwargs...)
+end
