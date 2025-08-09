@@ -2,7 +2,7 @@ module ECC
 
 using QECCore
 import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
-metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp
+metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -19,7 +19,7 @@ using DocStringExtensions
 using Combinatorics: combinations
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form, , evaluate, identity_matrix, inv, derivative
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 
 export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
@@ -80,12 +80,7 @@ function iscss(c::AbstractECC)
     return iscss(typeof(c))
 end
 
-
-"""
-Generator Polynomial `g(x)`
-
-In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field `F`. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
-"""
+"""The generator matrix of a code."""
 function generator end
 
 parity_checks(s::Stabilizer) = s
@@ -396,7 +391,6 @@ include("codes/util.jl")
 
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
-include("codes/classical/goppa.jl")
 include("codes/classical/bch.jl")
 
 # qLDPC

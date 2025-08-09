@@ -10,7 +10,8 @@ using DocStringExtensions
 
 # interfaces
 export distance, parity_matrix, code_n, code_s, code_k, parity_matrix_x, parity_matrix_z,
-rate, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, bivariate_bicycle_code_k
+rate, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, bivariate_bicycle_code_k,
+generator_polynomial
 export AbstractECC, AbstractQECC, AbstractCECC, AbstractCSSCode, AbstractDistanceAlg
 
 # QEC Codes
@@ -22,7 +23,7 @@ DelfosseReichardt, DelfosseReichardtRepCode, DelfosseReichardt823, QuantumTanner
 TillichZemor, random_TillichZemor_code, GeneralizedCirculantBivariateBicycle
 
 # Classical Codes
-export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, GallagerLDPC
+export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, GallagerLDPC, GoppaCode
 
 # utilities
 export search_self_orthogonal_rm_codes
@@ -35,6 +36,7 @@ include("codes/classical/hamming.jl")
 include("codes/classical/repetition.jl")
 include("codes/classical/golay.jl")
 include("codes/classical/gallager.jl")
+include("codes/classical/goppa.jl")
 
 # Quantum Codes
 include("codes/quantum/css.jl")
