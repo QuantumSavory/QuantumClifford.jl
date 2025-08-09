@@ -1,5 +1,5 @@
 @testitem "CSS" begin
-using Test
+    using Test
     using QECCore
 
     @testset "CSS" begin

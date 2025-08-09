@@ -4,6 +4,7 @@
     using Test
     using InteractiveUtils
     using Random
+    using LinearAlgebra
 
     @testset "Pauli decomposition into destabilizers" begin
         for n in [1,2,63,64,65,66,300]

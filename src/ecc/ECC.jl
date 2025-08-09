@@ -1,7 +1,8 @@
 module ECC
 
 using QECCore
-import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z,parity_matrix
+import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
+metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -22,16 +23,22 @@ using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqP
 
 export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
+    metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode, LiftedCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
-    Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
+    Toric, Gottesman, Surface, Concat, CircuitCode,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     haah_cubic_codes, twobga_from_fp_group, twobga_from_direct_product,
+    TillichZemor, random_TillichZemor_code,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
-    Triangular488, Triangular666,
+    Triangular488, Triangular666, honeycomb_color_codes, DelfosseReichardt,
+    DelfosseReichardtRepCode, DelfosseReichardt823, LaCross,
+    QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
+    DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps,
+    GeneralizedCirculantBivariateBicycle, GeneralizedHyperGraphProductCode,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -116,16 +123,15 @@ Used with [`distance`](@ref) to select MIP as the method of finding the distance
 
 !!! note
     - Requires a `JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`).
-    - `X`-type and `Z`-type logical operators yield identical code distance results.
-    - For stabilizer codes, the `X`-distance and `Z`-distance are equal.
+    - For some stabilizer CSS codes, the `X`-distance and `Z`-distance are equal.
 
 $FIELDS
 """
 @kwdef struct DistanceMIPAlgorithm <: AbstractDistanceAlg
     """index of the logical qubit to compute code distance for (nothing means compute for all logical qubits)"""
     logical_qubit::Union{Int, Nothing}=nothing
-    """type of logical operator to consider (:X or :Z, defaults to :X) - both types yield identical distance results for CSS stabilizer codes."""
-    logical_operator_type::Symbol=:X
+    """type of logical operator to consider (:X or :Z, defaults to :minXZ)."""
+    logical_operator_type::Symbol=:minXZ
     """`JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`)"""
     solver::Module
     """when `true` (default=`false`), prints the MIP solver's solution summary"""
@@ -134,7 +140,7 @@ $FIELDS
     time_limit::Float64=60.0
 
     function DistanceMIPAlgorithm(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
-        logical_operator_type ∈ (:X, :Z) || throw(ArgumentError("`logical_operator_type` must be :X or :Z"))
+        logical_operator_type ∈ (:X, :Z, :minXZ) || throw(ArgumentError("`logical_operator_type` must be :X or :Z or :minXZ"))
         new(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
     end
 end
@@ -388,19 +394,16 @@ include("decoder_pipeline.jl")
 
 include("codes/util.jl")
 
-include("codes/gottesman.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
-include("codes/quantumreedmuller.jl")
-include("codes/classical/reedmuller.jl")
 include("codes/classical/goppa.jl")
-include("codes/classical/recursivereedmuller.jl")
 include("codes/classical/bch.jl")
-include("codes/classical/golay.jl")
-include("codes/color_codes.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
 include("codes/lifted_product.jl")
+
+# higher dimensional codes
+include("codes/d_dimensional_codes.jl")
 
 end #module
