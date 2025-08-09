@@ -1,3 +1,4 @@
+include("throws.jl")
 function permutesystems(c::CliffordOperator,p) # TODO this is a slow stupid implementation
     CliffordOperator(Tableau([tab(c)[i][p] for i in 1:2*nqubits(c)][vcat(p,p.+nqubits(c))]))
 end
@@ -101,10 +102,10 @@ end
 
 function logdot(s1::Stabilizer, s2::Stabilizer)
     if nqubits(s1)!=length(s1) || nqubits(s2)!=length(s2) # TODO implement this
-        throw(DomainError("Only pure (not mixed) states are supported when calculating inner product."))
+        throw(DomainError(THROW_MIXED_FUNCTIONALITY_UNAVAILABLE_DOTPROD))
     end
     if nqubits(s1)!=nqubits(s2)
-        throw(DimensionMismatch("Inner product can be calculated only between states with the same number of qubits."))
+        throw(DimensionMismatch(THROW_NQUBITS))
     end
     c1_inv = inv(CliffordOperator(tab(MixedDestabilizer(copy(s1)))))
     s2_prime = canonicalize!(c1_inv*s2)
@@ -122,9 +123,9 @@ function logdot(s1::Stabilizer, s2::Stabilizer)
     return k
 end
 
-LinearAlgebra.rank(s::Stabilizer)   = throw(BadDataStructure("Using a `Stabilizer` type does not permit automatic tracking of the rank. Use `length`, `trusted_rank`, the `MixedDestabilizer` type, or track the rank manually.",
+LinearAlgebra.rank(s::Stabilizer)   = throw(BadDataStructure(THROW_BAD_DATA_STRUCTURE,
                                             :rank, :Stabilizer))
-LinearAlgebra.rank(s::Destabilizer) = throw(BadDataStructure("Using a `Destabilizer` type does not permit automatic tracking of the rank. Use `length`, `trusted_rank`, the `MixedDestabilizer` type, or track the rank manually.",
+LinearAlgebra.rank(s::Destabilizer) = throw(BadDataStructure(THROW_BAD_DATA_STRUCTURE,
                                             :rank, :Destabilizer))
 LinearAlgebra.rank(s::MixedStabilizer) = s.rank
 LinearAlgebra.rank(s::MixedDestabilizer) = s.rank

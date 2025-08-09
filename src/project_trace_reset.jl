@@ -1,3 +1,4 @@
+include("throws.jl")
 """
 Generate a Pauli operator by using operators from a given the Stabilizer.
 
@@ -349,7 +350,7 @@ function _project!(d::Destabilizer,pauli::PauliOperator;keep_result::Val{Bkr}=Va
     end
     if anticommutes == 0
         if n != nqubits(stabilizer)
-            throw(BadDataStructure("`Destabilizer` can not efficiently (faster than n^3) detect whether you are projecting on a stabilized or a logical operator. Switch to one of the `Mixed*` data structures.",
+            throw(BadDataStructure(THROW_INEFFICIENT_DESTABILIZER,
                                    :project!,
                                    :Destabilizer))
         end
@@ -673,8 +674,8 @@ These qubits are traced out first, which could lead to "nonlocal" changes in
 the tableau.
 """
 function reset_qubits!(s::Stabilizer, newstate, qubits; phases=true)
-    nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
-    length(qubits) <= nqubits(s) || throw(DimensionMismatch("the stabilizer is not big enough to contain the new state"))
+    nqubits(newstate)==length(qubits) || throw(DimensionMismatch(THROW_NQUBITS))
+    length(qubits) <= nqubits(s) || throw(DimensionMismatch(THROW_SIZE))
     n = nqubits(s)
     s, x, z = canonicalize!(s,ranks=true) # TODO this is unnecessary, but it provides for nicely formatted tableaux; consider removing it for speed reasons
     _, rref_i = canonicalize_rref!((@view s[1:z]),qubits,phases=phases)
@@ -691,8 +692,8 @@ end
 $TYPEDSIGNATURES
 """
 function reset_qubits!(s::MixedStabilizer, newstate, qubits; phases=true) # TODO create the necessary interfaces so that Stabilizer and MixedStabilizer share this code
-    nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
-    length(qubits) <= nqubits(s) || throw(DimensionMismatch("the stabilizer is not big enough to contain the new state"))
+    nqubits(newstate)==length(qubits) || throw(DimensionMismatch(THROW_NQUBITS))
+    length(qubits) <= nqubits(s) || throw(DimensionMismatch(THROW_BOUNDS))
     n = nqubits(s)
     sv = stabilizerview(s)
     sv, rref_i = canonicalize_rref!(sv,qubits,phases=phases)
@@ -708,8 +709,8 @@ $TYPEDSIGNATURES
 """
 function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubits; phases=true) # TODO this is really inefficient
     _phases = Val(phases)
-    nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
-    length(qubits) <= nqubits(s) || throw(DimensionMismatch("the stabilizer is not big enough to contain the new state"))
+    nqubits(newstate)==length(qubits) || throw(DimensionMismatch(THROW_SIZE))
+    length(qubits) <= nqubits(s) || throw(DimensionMismatch(THROW_BOUNDS))
     newstatestab = stabilizerview(newstate)
     traceout!(s,qubits)
     for pauli in newstatestab

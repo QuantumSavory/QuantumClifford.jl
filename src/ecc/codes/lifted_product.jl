@@ -4,7 +4,7 @@ Implemented as a package extension with Hecke. Check the [QuantumClifford docume
 function LPCode(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
     if isnothing(ext)
-        throw("The `LPCode` depends on the package `Hecke` but you have not installed or imported it yet. Immediately after you import `Hecke`, the `LPCode` will be available.")
+        throw(THROW_MISSING_HECKE)
     end
     return ext.LPCode(args...; kwargs...)
 end
@@ -35,7 +35,7 @@ Implemented as a package extension with Hecke. Check the [QuantumClifford docume
 function LaCross(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
     if isnothing(ext)
-        throw("The `LaCross` quantum LDPC code depends on the package `Hecke` but you have not installed or imported it yet. Immediately after you import `Hecke`, the `LaCross` will be available.")
+        throw(THROW_MISSING_HECKE)
     end
     return ext.LaCross(args...; kwargs...)
 end

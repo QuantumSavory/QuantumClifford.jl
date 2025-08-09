@@ -1,3 +1,4 @@
+include("throws.jl")
 """
 Clifford Operator specified by the mapping of the basis generators.
 
@@ -50,7 +51,7 @@ struct CliffordOperator{T<:Tableau,P<:PauliOperator} <: AbstractCliffordOperator
         #    destab = tab(Destabilizer(stab))
         #    new{typeof(destab.phases),typeof(destab.xzs)}(destab) # TODO be smarter about type signatures here... there should be a better way
         else
-            throw(DimensionMismatch("Input tableau should be of size 2n×n (top half is the X mappings and the bottom half are the Z mappings)."))
+            throw(DimensionMismatch(THROW_INVALID_PARAMETERS_CLIFFORD))
         end
     end
 end
@@ -113,7 +114,7 @@ end
 
 """Nonvectorized version of `apply!` used for unit tests."""
 function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true)
-    nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
+    nqubits(stab)==nqubits(c) || throw(DimensionMismatch(THROW_INVALID_ACTION_QUBITS))
     s_tab = tab(stab)
     c_tab = tab(c)
     new_stabrow = c.buffer
@@ -126,7 +127,7 @@ end
 
 # TODO no need to track phases outside of stabview
 function _apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=Val(true)) where B
-    nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
+    nqubits(stab)==nqubits(c) || throw(DimensionMismatch(THROW_INVALID_ACTION_QUBITS))
     s_tab = tab(stab)
     c_tab = tab(c)
     threadlocal = c.buffer

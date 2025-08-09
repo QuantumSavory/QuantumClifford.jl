@@ -1,5 +1,5 @@
 using Random: AbstractRNG, GLOBAL_RNG
-
+include("throws.jl")
 """Supertype of all symbolic operators. Subtype of `AbstractCliffordOperator`"""
 abstract type AbstractSymbolicOperator <: AbstractCliffordOperator end
 """Supertype of all single-qubit symbolic operators."""
@@ -92,7 +92,7 @@ macro qubitop1(name, kernel, inv_kernel)
     quote
         struct $(esc(prefixname)) <: AbstractSingleQubitOperator
             q::Int
-            $(esc(prefixname))(q) = if q<=0 throw(NoZeroQubit) else new(q) end
+            $(esc(prefixname))(q) = if q<=0 throw(ArgumentError(THROW_NO_ZERO_QUBIT)) else new(q) end
         end
         @doc $docstring $prefixname
         @inline $(esc(:qubit_kernel))(::$prefixname, x, z) = $kernel
@@ -121,7 +121,7 @@ See also: [`SingleQubitOperator`](@ref)
 """
 struct sId1 <: AbstractSingleQubitOperator
     q::Int
-    sId1(q) = if q<=0 throw(NoZeroQubit) else new(q) end
+    sId1(q) = if q<=0 throw(ArgumentError(THROW_NO_ZERO_QUBIT)) else new(q) end
 end
 function _apply!(stab::AbstractStabilizer, ::sId1; phases::Val{B}=Val(true)) where B
     stab
@@ -171,7 +171,7 @@ struct SingleQubitOperator <: AbstractSingleQubitOperator
     zz::Bool
     px::Bool
     pz::Bool
-    SingleQubitOperator(q,args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
+    SingleQubitOperator(q,args...) = if q<=0 throw(ArgumentError(THROW_NO_ZERO_QUBIT)) else new(q,args...) end
 end
 function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{B}=Val(true)) where B # TODO Generated functions that simplify the whole `if phases` branch might be a good optimization, but a quick benchmakr comparing sHadamard to SingleQubitOperator(sHadamard) did not show a worthwhile difference.
     s = tab(stab)
@@ -223,7 +223,7 @@ function SingleQubitOperator(o::SingleQubitOperator, qubit::Int)
     return SingleQubitOperator(qubit, o.xx, o.xz, o.zx, o.zz, o.px, o.pz)
 end
 function SingleQubitOperator(op::CliffordOperator, qubit)
-    nqubits(op)==1 || throw(DimensionMismatch("You are trying to convert a multiqubit `CliffordOperator` into a symbolic `SingleQubitOperator`."))
+    nqubits(op)==1 || throw(DimensionMismatch(THROW_INVALID_CONVERSION_TO_SINGLEQUBIT))
     SingleQubitOperator(qubit,tab(op)[1,1]...,tab(op)[2,1]...,(~).(iszero.(tab(op).phases))...)
 end
 SingleQubitOperator(op::CliffordOperator) = SingleQubitOperator(op, 1)
@@ -231,10 +231,10 @@ SingleQubitOperator(op::CliffordOperator) = SingleQubitOperator(op, 1)
 CliffordOperator(op::AbstractSingleQubitOperator, n; kw...) = CliffordOperator(SingleQubitOperator(op), n; kw...)
 function CliffordOperator(op::SingleQubitOperator, n; compact=false)
     if compact
-        n==1 || throw(ArgumentError("Set `n=1` as a `SingleQubitOperator` being compacted (`compact=true`) has to result in a 1×1 `CliffordOperator`."))
+        n==1 || throw(ArgumentError(THROW_COMPACT_QUBIT_OPERATOR_SHAPE_ERROR))
         return CliffordOperator(Tableau([op.px ? 0x2 : 0x0, op.pz ? 0x2 : 0x0],[op.xx op.xz; op.zx op.zz]))
     else
-        n >= op.q || throw(DimensionMismatch("Set a larger `n`, otherwise the `SingleQubitOperator` can not fit in the allocated `CliffordOperator`. Use `compact=true` if you want to discard the target index."))
+        n >= op.q || throw(DimensionMismatch(THROW_INVALID_QUBIT_OPERATOR_SIZE_ALLOCATION))
         c = one(CliffordOperator, n)
         c[op.q,op.q] = op.xx, op.xz # TODO define an `embed` helper function
         c[n+op.q,op.q] = op.zx, op.zz
@@ -346,7 +346,7 @@ macro qubitop2(name, kernel, inv_kernel)
         struct $(esc(prefixname)) <: AbstractTwoQubitOperator
             q1::Int
             q2::Int
-            $(esc(prefixname))(q1,q2) = if q1<=0 || q2<=0 throw(NoZeroQubit) elseif q1==q2 throw(ArgumentError("Failed to create a two qubit gate because the two qubits it acts on have the same index. The qubit indices have to be different.")) else new(q1,q2) end
+            $(esc(prefixname))(q1,q2) = if q1<=0 || q2<=0 throw(ArgumentError(THROW_NO_ZERO_QUBIT)) elseif q1==q2 throw(ArgumentError(THROW_INVALID_TWO_QUBIT_GATE)) else new(q1,q2) end
         end
         @doc $docstring $prefixname
         @inline $(esc(:qubit_kernel))(::$prefixname, x1, z1, x2, z2) = $kernel
@@ -407,10 +407,10 @@ Then we can use a truth-table to boolean formula converter, e.g. https://www.dco
 
 function CliffordOperator(op::AbstractTwoQubitOperator, n; compact=false)
     if compact
-        n==2 || throw(ArgumentError("Set `n=2` as a `TwoQubitOperator` being compacted (`compact=true`) has to result in a 2×2 `CliffordOperator`."))
+        n==2 || throw(ArgumentError(THROW_COMPACT_QUBIT_OPERATOR_SHAPE_ERROR))
         return CliffordOperator(typeof(op))
     else
-        n >= max(op.q1,op.q2) || throw(DimensionMismatch("Set a larger `n`, otherwise the `TwoQubitOperator` can not fit in the allocated `CliffordOperator`. Use `compact=true` if you want to discard the target index."))
+        n >= max(op.q1,op.q2) || throw(DimensionMismatch(THROW_INVALID_QUBIT_OPERATOR_SIZE_ALLOCATION))
         c = one(CliffordOperator, n)
         _c = CliffordOperator(typeof(op))
         for (i,q) in ((1,op.q1),(2,op.q2))
@@ -513,21 +513,21 @@ end
 struct sMX <: AbstractMeasurement
     qubit::Int
     bit::Int
-    sMX(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
+    sMX(q, args...) = if q<=0 throw(ArgumentError(THROW_NO_ZERO_QUBIT)) else new(q,args...) end
 end
 
 """Symbolic single qubit Y measurement. See also [`Register`](@ref), [`projectYrand!`](@ref), [`sMX`](@ref), [`sMZ`](@ref)"""
 struct sMY <: AbstractMeasurement
     qubit::Int
     bit::Int
-    sMY(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
+    sMY(q, args...) = if q<=0 throw(ArgumentError(THROW_NO_ZERO_QUBIT)) else new(q,args...) end
 end
 
 """Symbolic single qubit Z measurement. See also [`Register`](@ref), [`projectZrand!`](@ref), [`sMX`](@ref), [`sMY`](@ref)"""
 struct sMZ <: AbstractMeasurement
     qubit::Int
     bit::Int
-    sMZ(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
+    sMZ(q, args...) = if q<=0 throw(ArgumentError(THROW_NO_ZERO_QUBIT)) else new(q,args...) end
 end
 
 sMX(i) = sMX(i,0)
@@ -624,7 +624,7 @@ See also: [`Reset`](@ref), [`sMZ`](@ref)"""
 struct sMRZ <: AbstractOperation
     qubit::Int
     bit::Int
-    sMRZ(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
+    sMRZ(q, args...) = if q<=0 throw(ArgumentError(THROW_NO_ZERO_QUBIT)) else new(q,args...) end
 end
 
 """Measure a qubit in the X basis and reset to the |+⟩ state.
@@ -633,7 +633,7 @@ See also: [`sMRZ`](@ref), [`Reset`](@ref), [`sMZ`](@ref)"""
 struct sMRX <: AbstractOperation
     qubit::Int
     bit::Int
-    sMRX(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
+    sMRX(q, args...) = if q<=0 throw(ArgumentError(THROW_NO_ZERO_QUBIT)) else new(q,args...) end
 end
 
 """Measure a qubit in the Y basis and reset to the |i₊⟩ state.
@@ -642,7 +642,7 @@ See also: [`sMRZ`](@ref), [`Reset`](@ref), [`sMZ`](@ref)"""
 struct sMRY <: AbstractOperation
     qubit::Int
     bit::Int
-    sMRY(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
+    sMRY(q, args...) = if q<=0 throw(ArgumentError(THROW_NO_ZERO_QUBIT)) else new(q,args...) end
 end
 
 sMRX(i) = sMRX(i,0)

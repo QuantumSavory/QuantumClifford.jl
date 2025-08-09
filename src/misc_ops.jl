@@ -1,5 +1,5 @@
 import QuantumInterface: nsubsystems
-
+include("throws.jl")
 """A Stabilizer measurement on the entirety of the quantum register.
 
 `projectrand!(state, pauli)` and `apply!(state, PauliMeasurement(pauli))` give the same (possibly non-deterministic) result.
@@ -33,7 +33,7 @@ struct SparseGate{T<:Tableau} <: AbstractCliffordOperator # TODO simplify type p
     indices::Vector{Int}
     function SparseGate(cliff::CliffordOperator{T}, indices::Vector{Int}) where T<:Tableau
         if length(indices) != nqubits(cliff)
-            throw(ArgumentError("The number of target qubits (indices) must match the qubit count in the CliffordOperator."))
+            throw(ArgumentError(THROW_BOUNDS))
         end
         new{T}(cliff, indices)
     end
@@ -44,7 +44,7 @@ SparseGate(c,t::Tuple) = SparseGate(c,collect(t))
 function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
     m = maximum(g.indices)
     if m > nqubits(state)
-        throw(ArgumentError(lazy"SparseGate was attempted on invalid qubit index $(m) when the state contains only $(nqubits(state)) qubits."))
+        throw(ArgumentError(THROW_BOUNDS))
     end
     apply!(state, g.cliff, g.indices; kwargs...)
 end
@@ -136,7 +136,7 @@ function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the oth
     # TODO QuantumClifford should implement some submatrix comparison
     r,n = size(v.good_state)
     if(r!=n)
-        throw(ArgumentError("""The argument you have provided for good_state is not a logical state within the codespace. Expected a pure $n - qubit stabilizer state (i.e. $n independent stabilizer generators on $n qubits), but good_state has only $r independent stabilizer generators."""))
+        throw(ArgumentError(THROW_NOT_STABILIZER_STATE))
     end
     canonicalize_rref!(quantumstate(s),v.indices) # Document why rref is used
     sv = tab(s)

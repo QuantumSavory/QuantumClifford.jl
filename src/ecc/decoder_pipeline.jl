@@ -14,7 +14,7 @@ function batchdecode(d::AbstractSyndromeDecoder, syndrome_samples)
     H = parity_checks(d)
     s, n = size(H)
     samples, _s = size(syndrome_samples)
-    s == _s || throw(ArgumentError(lazy"The syndromes given to `batchdecode` have the wrong dimensions. The syndrome length is $(_s) while it should be $(s)"))
+    s == _s || throw(ArgumentError(THROW_SIZE))
     results = falses(samples, 2n)
     for (i,syndrome_sample) in enumerate(eachrow(syndrome_samples))
         guess = decode(d, syndrome_sample)# TODO use `decode!`
@@ -38,7 +38,7 @@ See also: [`NaiveSyndromeECCSetup`](@ref), [`ShorSyndromeECCSetup`](@ref)"""
 struct CommutationCheckECCSetup <: AbstractECCSetup
     xz_noise::Float64
     function CommutationCheckECCSetup(xz_noise)
-        0<=xz_noise<=1 || throw(DomainError(xz_noise, "The independent X/Z memory noise in `CommutationCheckECCSetup` should be between 0 and 1."))
+        0<=xz_noise<=1 || throw(DomainError(THROW_INVALID_PARAMETERS_NOISE))
         new(xz_noise)
     end
 end
@@ -53,8 +53,8 @@ struct NaiveSyndromeECCSetup <: AbstractECCSetup
     mem_noise::Float64
     two_qubit_gate_noise::Float64
     function NaiveSyndromeECCSetup(mem_noise, two_qubit_gate_noise)
-        0<=mem_noise<=1 || throw(DomainError(mem_noise, "The memory noise in `NaiveSyndromeECCSetup` should be between 0 and 1."))
-        0<=two_qubit_gate_noise<=1 || throw(DomainError(two_qubit_gate_noise, "The two-qubit gate noise in `NaiveSyndromeECCSetup` should be between 0 and 1."))
+        0<=mem_noise<=1 || throw(DomainError(THROW_INVALID_PARAMETERS_NOISE))
+        0<=two_qubit_gate_noise<=1 || throw(DomainError(THROW_INVALID_PARAMETERS_NOISE))
         new(mem_noise, two_qubit_gate_noise)
     end
 end
@@ -73,8 +73,8 @@ struct ShorSyndromeECCSetup <: AbstractECCSetup
     mem_noise::Float64
     two_qubit_gate_noise::Float64
     function ShorSyndromeECCSetup(mem_noise, two_qubit_gate_noise)
-        0<=mem_noise<=1 || throw(DomainError(mem_noise, "The memory noise in `ShorSyndromeECCSetup` should be between 0 and 1."))
-        0<=two_qubit_gate_noise<=1 || throw(DomainError(two_qubit_gate_noise, "The two-qubit gate noise in `ShorSyndromeECCSetup` should be between 0 and 1."))
+        0<=mem_noise<=1 || throw(DomainError(THROW_INVALID_PARAMETERS_NOISE))
+        0<=two_qubit_gate_noise<=1 || throw(DomainError(THROW_INVALID_PARAMETERS_NOISE))
         new(mem_noise, two_qubit_gate_noise)
     end
 end
@@ -273,7 +273,7 @@ end
 function BeliefPropDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordLDPCDecodersExt)
     if isnothing(ext)
-        throw("The `BeliefPropDecoder` depends on the package `LDPCDecoders` but you have not installed or imported `LDPCDecoders` yet. Immediately after you import `LDPCDecoders`, the `BeliefPropDecoder` will be available.")
+        throw(THROW_MISSING_LDPCDecoders)
     end
     return ext.BeliefPropDecoder(args...; kwargs...)
 end
@@ -282,7 +282,7 @@ end
 function BitFlipDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordLDPCDecodersExt)
     if isnothing(ext)
-        throw("The `BitFlipDecoder` depends on the package `LDPCDecoders` but you have not installed or imported `LDPCDecoders` yet. Immediately after you import `LDPCDecoders`, the `BitFlipDecoder` will be available.")
+        throw(THROW_MISSING_LDPCDecoders)
     end
     return ext.BitFlipDecoder(args...; kwargs...)
 end
@@ -292,7 +292,7 @@ end
 function PyBeliefPropDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyQDecodersExt)
     if isnothing(ext)
-        throw("The `PyBeliefPropDecoder` depends on the package `PyQDecoders` but you have not installed or imported `PyQDecoders` yet. Immediately after you import `PyQDecoders`, the `PyBeliefPropDecoder` will be available.")
+        throw(THROW_MISSING_PyQDecoders)
     end
     return ext.PyBeliefPropDecoder(args...; kwargs...)
 end
@@ -301,7 +301,7 @@ end
 function PyBeliefPropOSDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyQDecodersExt)
     if isnothing(ext)
-        throw("The `PyBeliefPropOSDecoder` depends on the package `PyQDecoders` but you have not installed or imported `PyQDecoders` yet. Immediately after you import `PyQDecoders`, the `PyBeliefPropOSDecoder` will be available.")
+        throw(THROW_MISSING_PyQDecoders)
     end
     return ext.PyBeliefPropOSDecoder(args...; kwargs...)
 end
@@ -310,7 +310,7 @@ end
 function PyMatchingDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyQDecodersExt)
     if isnothing(ext)
-        throw("The `PyMatchingDecoder` depends on the package `PyQDecoders` but you have not installed or imported `PyMatchingDecoder` yet. Immediately after you import `PyQDecoders`, the `PyMatchingDecoder` will be available.")
+        throw(THROW_MISSING_PyQDecoders)
     end
     return ext.PyMatchingDecoder(args...; kwargs...)
 end

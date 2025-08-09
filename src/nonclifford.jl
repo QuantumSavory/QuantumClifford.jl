@@ -1,3 +1,4 @@
+include("throws.jl")
 """
 $(TYPEDEF)
 
@@ -42,7 +43,7 @@ end
 function GeneralizedStabilizer(state)
     n = nqubits(state)
     md = MixedDestabilizer(state)
-    rank(md)==n || throw(ArgumentError(lazy"""Attempting to convert a `Stabilizer`-like object to `GeneralizedStabilizer` object failed, because the initial state does not represent a pure state. Currently only pure states can be used to initialize a `GeneralizedStabilizer` mixture of stabilizer states."""))
+    rank(md)==n || throw(ArgumentError(THROW_MIXED_FUNCTIONALITY_UNAVAILABLE_STABILIZER))
     GeneralizedStabilizer(md, DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im)) # TODO maybe it should default to Destabilizer, not MixedDestabilizer
 end
 
@@ -361,18 +362,10 @@ struct PauliChannel{T,S} <: AbstractPauliChannel
     paulis::T
     weights::S
     function PauliChannel(paulis, weights)
-        length(paulis) == length(weights) || throw(ArgumentError(lazy"""
-        Attempting to construct a `PauliChannel` failed.
-        The length of the vectors of weights and of Pauli operator pairs differs
-        ($(length(weights)) and $(length(paulis)) respectively).
-        """))
+        length(paulis) == length(weights) || throw(ArgumentError(THROW_BOUNDS))
         n = nqubits(paulis[1][1])
         for p in paulis
-            n == nqubits(p[1]) == nqubits(p[2]) || throw(ArgumentError(lazy"""
-            You are attempting to construct a `PauliChannel` but have provided Pauli operators
-            that are not all of the same size (same number of qubits).
-            Please ensure that all of the Pauli operators being provided of of the same size.
-            """))
+            n == nqubits(p[1]) == nqubits(p[2]) || throw(ArgumentError(THROW_PAULI_BOUNDS))
         end
         new{typeof(paulis),typeof(weights)}(paulis,weights)
     end
@@ -401,7 +394,7 @@ nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 See also: [`GeneralizedStabilizer`](@ref), [`PauliChannel`](@ref), [`UnitaryPauliChannel`](@ref)
 """
 function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold=1e-10)
-    nqubits(state) == nqubits(gate) || throw(DimensionMismatch(lazy"GeneralizedStabilizer has $(nqubits(state)) qubits, but PauliChannel has $(nqubits(gate)). Use `embed` to create an appropriately padded PauliChannel."))
+    nqubits(state) == nqubits(gate) || throw(DimensionMismatch(THROW_EMBEDDING_REQUIRED))
     dict = state.destabweights
     stab = state.stab
     dtype = valtype(dict)

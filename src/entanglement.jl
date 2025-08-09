@@ -152,7 +152,7 @@ function bigram(state::AbstractStabilizer; clip::Bool=true)::Matrix{Int} # JET-X
     for i in 1:rows
         l = findfirst(j->|(tab[i,j]...), 1:columns)
         r = findlast(j->|(tab[i,j]...), 1:columns)
-        (isnothing(l) || isnothing(r)) && throw(DomainError("the tableau is inconsistent (check if it is clip-canonicalized and Hermitian)"))
+        (isnothing(l) || isnothing(r)) && throw(DomainError(THROW_INCONSISTENT_TABLEAU))
         bg[i, 1] = l
         bg[i, 2] = r
     end

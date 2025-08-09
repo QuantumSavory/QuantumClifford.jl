@@ -133,9 +133,7 @@ function __init__()
     end
 end
 
-include("throws.jl")
 
-const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you are attempting to create a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -189,7 +187,7 @@ function Tableau(phases::AbstractVector{<: Unsigned}, xs::AbstractMatrix{Bool}, 
     r_xs = size(xs, 1)
     r_zs = size(zs, 1)
     if length(phases) != r_xs || r_xs != r_zs
-        throw(DimensionMismatch(lazy"The length of phases ($(length(phases))), rows of xs ($r_xs), rows of zs ($r_zs) must all be equal."))
+        throw(DimensionMismatch(THROW_SIZE))
     end
     Tableau(
         phases,size(xs, 2),
@@ -656,7 +654,7 @@ function MixedDestabilizer(d::Destabilizer, r::Int)
     if l==2n
         MixedDestabilizer(tab(d), r)
     else
-        throw(DomainError("Only full-rank `Destabilizer` can be converted to `MixedDestabilizer` with specific rank. Try not specifying `r`."))
+        throw(DomainError(THROW_ONLY_FULL_RANK_DESTABILIZER_SUPPORTED))
     end
 end
 function MixedDestabilizer(d::Destabilizer)
@@ -833,8 +831,8 @@ comm(l::Tableau, r::PauliOperator) = comm(r, l)
 """An in-place version of [`comm`](@ref), storing its output in the given buffer."""
 function comm! end
 function comm!(v, l::PauliOperator, r::Tableau)
-    length(v) == length(r) || throw(DimensionMismatch(lazy"The dimensions of the output buffer and the input tableau have to match in `comm!`"))
-    nqubits(l) == nqubits(r) || throw(DimensionMismatch(lazy"The number of qubits of the input Pauli operator and the input tableau have to match in `comm!`"))
+    length(v) == length(r) || throw(DimensionMismatch(THROW_SIZE))
+    nqubits(l) == nqubits(r) || throw(DimensionMismatch(THROW_NQUBITS))
     for i in 1:length(r)
         v[i] = comm(l,r,i)
     end
@@ -872,7 +870,7 @@ function Base.:(*)(l::Number, r::PauliOperator)
     elseif l==-1im
         p.phase[] = (p.phase[] + 3)&0x3
     else
-        throw(DomainError(l,"Only {±1,±i} are permitted as phases."))
+        throw(DomainError(l,THROW_PHASES))
     end
     p
 end
@@ -1059,7 +1057,7 @@ function Base.hcat(tabs::Tableau...) # TODO this implementation is slow as it un
     for tab in tabs
         rows_tab, cols_tab = size(tab)
         if rows_tab != rows
-            throw(ArgumentError("All input Tableaux/Stabilizers must have the same number of rows."))
+            throw(ArgumentError(THROW_ROW_MISMATCH_TABLEAUX))
         end
         for i in 1:rows
             for j in 1:cols_tab
@@ -1099,7 +1097,7 @@ end
 
 # TODO no need to track phases outside of stabview
 function _apply!(stab::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
-    nqubits(stab)==nqubits(p) || throw(DimensionMismatch("The tableau and the Pauli operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
+    nqubits(stab)==nqubits(p) || throw(DimensionMismatch(THROW_INVALID_ACTION_QUBITS))
     s = tab(stab)
     B || return stab
     for i in eachindex(s)
@@ -1462,5 +1460,6 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
+include("throws.jl")
 
 end #module

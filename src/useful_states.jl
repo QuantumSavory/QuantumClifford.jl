@@ -1,3 +1,4 @@
+include("throws.jl")
 """A multiqubit operator corresponding to all identities except for Pauli Z at `i`. See also: [`sY`](@ref), [`sMY`](@ref)"""
 function single_z(n,i)
     p = zero(PauliOperator, n)
@@ -28,7 +29,7 @@ function Base.one(::Type{T}, n; basis=:Z) where {T<:Tableau}# TODO support `basi
     elseif basis==:Z
         T(falses(n,n),LinearAlgebra.I(n))
     else
-        throw(ArgumentError("`basis` should be one of :X, :Y, or :Z"))
+        throw(ArgumentError(THROW_INVALID_BASIS_REP))
     end
 end
 Base.one(::Type{<:Stabilizer}, n; basis=:Z) = Stabilizer(one(Tableau,n; basis)) # TODO make it type preserving

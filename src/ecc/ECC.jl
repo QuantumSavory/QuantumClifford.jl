@@ -54,7 +54,7 @@ Only CSS codes have this method.
 
 See also: [`parity_checks`](@ref)"""
 function parity_matrix_x(code::AbstractECC)
-    throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
+    throw(THROW_CHECKS_MISSING)
 end
 
 """Parity check boolean matrix of a code (only the Z entries in the tableau, i.e. the checks for X errors).
@@ -63,7 +63,7 @@ Only CSS codes have this method.
 
 See also: [`parity_checks`](@ref)"""
 function parity_matrix_z(code::AbstractECC)
-    throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
+    throw(THROW_CHECKS_MISSING)
 end
 
 """Check if the code is CSS.
@@ -141,7 +141,7 @@ $FIELDS
     time_limit::Float64=60.0
 
     function DistanceMIPAlgorithm(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
-        logical_operator_type ∈ (:X, :Z) || throw(ArgumentError("`logical_operator_type` must be :X or :Z"))
+        logical_operator_type ∈ (:X, :Z) || throw(ArgumentError(THROW_INVALID_LOGICAL_OPERATOR))
         new(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
     end
 end
@@ -390,6 +390,7 @@ function isdegenerate(H::Stabilizer, d::Int=1)
     return isdegenerate(H, errors)
 end
 
+include("../throws.jl")
 include("circuits.jl")
 include("decoder_pipeline.jl")
 
