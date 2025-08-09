@@ -56,6 +56,7 @@ For quantum code construction routines:
 - [berthusen2025adaptivesyndromeextraction](@cite)
 - [arnault2025upperboundsminimumdistance](@cite)
 - [tillich2006minimum](@cite)
+- [bravyi2024high](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)
@@ -72,6 +73,7 @@ For classical code construction routines:
 - [bhatia2018mceliece](@cite)
 - [hamming1950error](@cite)
 - [huffman2010fundamentals](@cite)
+- [gallager1962ldpc](@cite)
 
 For minimum distance calculation of quantum codes:
 - [vardy1997intractability](@cite)
