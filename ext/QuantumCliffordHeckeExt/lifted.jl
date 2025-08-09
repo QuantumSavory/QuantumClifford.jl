@@ -177,5 +177,3 @@ end
 code_n(c::LiftedCode) = size(c.A, 2) * order(group(c.GA))
 
 code_s(c::LiftedCode) = size(c.A, 1) * order(group(c.GA))
-
-code_k(c::LiftedCode) = code_n(c) - rank(matrix(GF(2), parity_matrix(c)))
