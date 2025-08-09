@@ -27,7 +27,7 @@
             for n in test_sizes
                 l = random_clifford(n)
                 pauli = random_pauli(n)
-                @test isequal(apply!(copy(l), pauli; phases=true), apply!(l, CliffordOperator(pauli); phases=true))
+                @test apply!(copy(l), pauli; phases=true) == apply!(l, CliffordOperator(pauli); phases=true)
             end
         end
         @testset "Permutations of qubits" begin
