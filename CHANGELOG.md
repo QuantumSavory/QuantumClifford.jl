@@ -7,7 +7,7 @@
 
 ## v0.10.1-dev
 
-- Add a `CliffordOperator` contructor that builds a dense clifford from a `PauliOperator`
+- Add a `CliffordOperator` constructor that builds a dense clifford from a `PauliOperator`
 - Add a `phases` getter for `CliffordOperator`
 - The generalized hypergraph product code is implemented in the ECC submodule.
 - Add novel `[[n² + m²,(n - rank([C ∣ M]))² + (m − rank([C ∣ M]ᵀ))², d]]` quantum Tillich-Zémor `random_TillichZemor_code` codes to `QECCore` and introduce `QECCoreNemoExt` for accurate matrix `rank` computation.
