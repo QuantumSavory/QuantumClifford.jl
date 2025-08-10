@@ -59,7 +59,7 @@ function apply_right!(l::CliffordOperator, r::PauliOperator)
     return l
 end
 
-function apply_right!(l::CliffordOperator, r::CliffordOperator; phases=true)
+function apply_right!(l::CliffordOperator, r::CliffordOperator)
     nqubits(l)==nqubits(r) || throw(DimensionMismatch("The two Clifford operators need to act on the same number of qubits."))
     l_tab = tab(l)
     l_tab_copy = copy(l_tab)
@@ -67,25 +67,25 @@ function apply_right!(l::CliffordOperator, r::CliffordOperator; phases=true)
     threadlocal = l.buffer
     @inbounds for row_r in eachindex(r_tab)
         zero!(threadlocal)
-        apply_right_row_kernel!(threadlocal, l_tab, row_r, l_tab_copy, r_tab; phases)
+        apply_right_row_kernel!(threadlocal, l_tab, row_r, l_tab_copy, r_tab)
     end
     l
 end
 
 """helper for computing the right multiplication of a row of a Clifford operator with another Clifford operator."""
-@inline function apply_right_row_kernel!(new_lrow, l_tab, row, l_tab_copy, r_tab; phases=true)
-    phases && (new_lrow.phase[] = r_tab.phases[row])
+@inline function apply_right_row_kernel!(new_lrow, l_tab, row, l_tab_copy, r_tab)
+    new_lrow.phase[] = r_tab.phases[row]
     n = nqubits(l_tab)
     for qubit in 1:n
         x,z = r_tab[row,qubit]
-        if phases&&x&&z
+        if x&&z
             new_lrow.phase[] -= 0x1
         end
         if x
-            mul_left!(new_lrow, l_tab_copy, qubit, phases=Val(phases))
+            mul_left!(new_lrow, l_tab_copy, qubit)
         end
         if z
-            mul_left!(new_lrow, l_tab_copy, qubit+n, phases=Val(phases))
+            mul_left!(new_lrow, l_tab_copy, qubit+n)
         end
     end
     l_tab[row] = new_lrow

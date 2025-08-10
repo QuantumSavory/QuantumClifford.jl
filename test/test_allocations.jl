@@ -113,7 +113,7 @@
                 f1() = apply_right!(l, gate)
                 f1()
                 allocated(f1)
-                @test allocated(f1) <= 0
+                @test allocated(f1) == 0
             end
             for _gate in subtypes(AbstractTwoQubitOperator)
                 l = random_clifford(q)
@@ -121,7 +121,7 @@
                 f2() = apply_right!(l, gate)
                 f2()
                 allocated(f2)
-                @test allocated(f2) <= 0
+                @test allocated(f2) == 0
             end
         end
     end
@@ -132,7 +132,7 @@
             f1() = apply_right!(l, pauli)
             f1()
             allocated(f1)
-            @test allocated(f1) <= 0
+            @test allocated(f1) == 0
         end
     end
     @testset "apply_right! dense" begin
@@ -142,7 +142,7 @@
             f1() = apply_right!(l, r)
             f1()
             allocated(f1)
-            @test_broken allocated(f1) <= 0
+            @test_broken allocated(f1) == 0
         end
     end
 end
