@@ -8,7 +8,7 @@ using SparseArrays
 
 import Nemo: GF
 import LinearAlgebra
-import Hecke: group_algebra, abelian_group, gens, quo, one, small_group
+import Hecke: group_algebra, abelian_group, gens, quo, one, small_group, polynomial_ring, GF, matrix, quo
 
 # generate instances of all implemented codes to make sure nothing skips being checked
 
@@ -187,9 +187,49 @@ bb3 = two_block_group_algebra_codes(A,B)
 
 test_bb_codes = [bb1, bb2, bb3]
 
+# Generalized Hypergraph Product codes
+# [[882, 24, 18 ≤ d ≤ 24]] from Appendix B of [panteleev2021degenerate](@cite)
+F = GF(2)
+R, x = polynomial_ring(F, "x")
+n = 7
+l = 63
+S, _ =  quo(R, x^l - 1)
+A_ghp1 = matrix(S, n, n,
+         [x^27  0     0     0     0     1     x^54
+          x^54  x^27  0     0     0     0     1
+          1     x^54  x^27  0     0     0     0
+          0     1     x^54  x^27  0     0     0
+          0     0     1     x^54  x^27  0     0
+          0     0     0     1     x^54  x^27  0
+          0     0     0     0     1     x^54  x^27])
+b_ghp1 = S(1 + x + x^6)
+
+# [[882, 48, 16]] from Appendix B of [panteleev2021degenerate](@cite)
+F = GF(2)
+R, x = polynomial_ring(F, "x")
+n = 7
+l = 63
+S, _ =  quo(R, x^l - 1)
+A_ghp2 = matrix(S, n, n,
+         [x^27   0     0     1     x^18  x^27  1
+          1      x^27  0     0     1     x^18  x^27
+          x^27   1     x^27  0     0     1     x^18
+          x^18   x^27  1     x^27  0     0     1
+          1      x^18  x^27  1     x^27  0     0
+          0      1     x^18  x^27  1     x^27  0
+          0      0     1     x^18  x^27  1     x^27])
+b_ghp2 = S(1 + x + x^6)
+
 # Add some codes that require Oscar, hence do not work on Windows
 
 test_twobga_codes = []
+
+# La-cross code polynomial
+F = GF(2)
+R, x = polynomial_ring(F, "x")
+h₂ = 1 + x + x^2
+h₃ = 1 + x + x^3
+h₄ = 1 + x + x^4
 
 @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
   import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order, gens, quo
@@ -306,6 +346,16 @@ test_twobga_codes = []
   load_oscar_codes()
 end
 
+# Generalized Bivariate Bicycle Codes
+A1 = [(:x,3), (:y,1), (:y,2)]
+B1 = [(:y,3), (:x,1), (:x,2)]
+A1 = [(:x,9), (:y,1), (:y,2)]
+B1 = [(:y,0), (:x,2), (:x,7)]
+A2 = [(:x,6), (:y,5), (:y,6)]
+B2 = [(:y,0), (:x,4), (:x,13)]
+A3 = [(:x,5), (:y,2), (:y,3)]
+B3 = [(:y,2), (:x,7), (:x,6)]
+
 
 const code_instance_args = Dict(
     :Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
@@ -314,7 +364,6 @@ const code_instance_args = Dict(
     :CSS => (c -> (parity_matrix_x(c), parity_matrix_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
     :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
     :CircuitCode => random_circuit_code_args,
-    :QuantumReedMuller => [3, 4, 5],
     :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, test_twobga_codes, test_honeycomb_color_codes, test_nonabelian_codes, other_lifted_product_codes)),
     :QuantumReedMuller => [3, 4, 5],
     :Triangular488 => [3, 5, 7, 9, 11],
@@ -325,7 +374,12 @@ const code_instance_args = Dict(
     :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
     :CyclicQuantumTannerGraphProduct => [1, 2, 3, 4, 5],
     :DDimensionalSurfaceCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
-    :DDimensionalToricCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)]
+    :DDimensionalToricCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
+    :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false), (7,h₃,true), (9,h₃,true), (9,h₄,true), (10,h₄,true), (12,h₄,true)],
+    :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
+    :random_TillichZemor_code => [(6,4,3), (7,5,3), (8,6,3)],
+    :GeneralizedCirculantBivariateBicycle => [(9,6,A1,B1),(15,3,A2,B2),(6,6, A1,B1),(14,7,A2,B2),(15,5,A3,B3)],
+    :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1), (A_ghp2, b_ghp2)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)

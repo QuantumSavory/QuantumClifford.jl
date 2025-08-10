@@ -65,7 +65,8 @@ CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Tab
 CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
 function CliffordOperator(pauli::PauliOperator)
     res = one(CliffordOperator, nqubits(pauli))
-    phases(res) .⊻= 0x02 .* comm(pauli, tab(res))
+    comm!(phases(res), pauli, tab(res))
+    tab(res).phases .*= 0x02
     return res
 end
 

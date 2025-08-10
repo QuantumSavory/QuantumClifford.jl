@@ -1,4 +1,4 @@
-@testitem "GPU" tags=[:gpu] begin
+@testitem "GPU" tags=[:cuda] begin
     using QuantumClifford: to_cpu, to_gpu
     using CUDA
 
