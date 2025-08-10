@@ -168,15 +168,14 @@ end
 
 
 
-#helper constant for the AbstractResetMeasurement applybranches 
-const reset_mappings = Dict(
-    sMRZ => [sMZ, sX, projectZ!],
-    sMRX => [sMX, sZ, projectX!],
-    sMRY => [sMY, sZ, projectY!]
-)
+#helper dispatch functions for the AbstractResetMeasurement applybranches 
+_reset_mappings(::Type{sMRZ}) = (sMZ, sX, projectZ!)
+_reset_mappings(::Type{sMRX}) = (sMX, sZ, projectX!)
+_reset_mappings(::Type{sMRY}) = (sMY, sZ, projectY!)
+
 #applybranches for reset measurements such as sMRZ, sMRX and sMRY
 function applybranches(r::Register, op::AbstractResetMeasurement;max_order=1)
-    operations = reset_mappings[typeof(op)]
+    operations = _reset_mappings(typeof(op))
     _, anticom, res = operations[3](quantumstate(r), op.qubit)
     new_branches = []
     if isnothing(res)

@@ -246,8 +246,8 @@
             @test pet2[failure_stat] == 0
 
             #checks probabilstic case to see if the phase of measurement anticommuting stabilizer is the same in both branches
-            ghzState = S"XXX ZZI IZZ"
-            reg = Register(ghzState, [0])
+            ghz_state = S"XXX ZZI IZZ"
+            reg = Register(ghz_state, [0])
             branches = applybranches(reg, sMRZ(1,1))
             stab1 = stabilizerview(branches[2][1].stab)
             stab2 = stabilizerview(branches[1][1].stab)
