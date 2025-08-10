@@ -656,28 +656,15 @@ sMRZ(i,::Nothing) = sMRZ(i,0)
 ##############################
 # Resets
 ##############################
-abstract type AbstractReset <: AbstractOperation end
 
 """Reset a qubit to the |+⟩ state.
-
 See also: [`sMRX`](@ref), [`Reset`](@ref)"""
-struct sRX <: AbstractReset
-    qubit::Int
-    sRX(q) = if q<=0 throw(NoZeroQubit) else new(q) end
-end
+sRX(i) = sMRX(i,0)
 
 """Reset a qubit to the |i₊⟩ state.
-
 See also: [`sMRY`](@ref), [`Reset`](@ref)"""
-struct sRY <: AbstractReset
-    qubit::Int
-    sRY(q) = if q<=0 throw(NoZeroQubit) else new(q) end
-end
+sRY(i) = sMRY(i,0)
 
 """Reset a qubit to the |0⟩ state.
-
 See also: [`sMRZ`](@ref), [`Reset`](@ref)"""
-struct sRZ <: AbstractReset
-    qubit::Int
-    sRZ(q) = if q<=0 throw(NoZeroQubit) else new(q) end
-end
+sRZ(i) = sMRZ(i,0)

@@ -61,7 +61,7 @@ export
     # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, 
-    Reset, sMRX, sMRY, sMRZ, # sRX, sRY, sRZ,
+    Reset, sMRX, sMRY, sMRZ, sRX, sRY, sRZ,
     BellMeasurement, ClassicalXOR,
     VerifyOp,
     Register,
