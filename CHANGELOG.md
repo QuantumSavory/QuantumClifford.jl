@@ -7,6 +7,7 @@
 
 ## v0.10.1-dev
 
+- Add `apply_right!` that applies a clifford operator to the right of a dense clifford operator.
 - Add a `CliffordOperator` constructor that builds a dense clifford from a `PauliOperator`
 - Add a `phases` getter for `CliffordOperator`
 - The generalized hypergraph product code is implemented in the ECC submodule.
