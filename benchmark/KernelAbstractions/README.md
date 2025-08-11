@@ -4,7 +4,7 @@
 2. Ensure that all the packages listed in `implementation/imports.jl` are installed as this is not handled automatically.
 3. Ensure that the backend package(s) listed in the pertinent `benchmark_platform_*.jl` script are properly setup and configured.
 4. Pass said script as an argument to julia (optionally, also set the number of executing host threads) and await for the benchmark to conclude.
-5. Navigate to the newly created directory in order to inspect the results.
+5. Navigate to the newly created directory (hierarchy) and find the matching platform/timestamp pair in order to inspect the results.
 
 # Noteworthy Details
 

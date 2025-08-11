@@ -2,7 +2,7 @@
 #=============================================================================#
 import KernelAbstractions as KA
 
-using Atomix: @atomic
+using Atomix: @atomic, @atomicreplace
 using GPUArraysCore: AbstractGPUArray
 # Resolves issue due to KA comparing against the literal Symbol("@Const").
 using KernelAbstractions: @Const

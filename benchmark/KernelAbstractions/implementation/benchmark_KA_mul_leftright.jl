@@ -1,19 +1,27 @@
 # This must be done explicitly as they are not exported.
 using QuantumClifford: mul_left!, mul_right!, Tableau
 
-@inline host_f(x, y; phases::Val{phase_B} = Val(true)) where {phase_B} =
+@inline function host_f!(
+    x, y;
+    phases::Val{phase_B} = Val(default_phases)
+    ) where {phase_B}
+
     mul_left!(x, y; phases = phases)
 
-@inline function device_f(
+end
+
+@inline function device_f!(
     x, y, synchronize;
-    phases::Val{phase_B} = Val(true),
+    phases::Val{phase_B} = Val(default_phases),
+    primary_axis::Val{primary_axis_E} = Val(default_primary_axis),
     block_size::Val{block_SZ} = Val(default_block_size),
     batch_size::Val{batch_SZ} = Val(default_batch_size)
-    ) where {phase_B, block_SZ, batch_SZ}
+    ) where {phase_B, primary_axis_E, block_SZ, batch_SZ}
 
     mul_left!(
         x, y;
-        phases = phases, block_size = block_size, batch_size = batch_size
+        phases = phases, primary_axis = primary_axis,
+        block_size = block_size, batch_size = batch_size
         )
     synchronize()
 
@@ -21,7 +29,7 @@ end
 
 @inline function benchmark_KA_mul_pauli_pauli(
     AT, synchronize, path;
-    phases::Val{phase_B} = Val(true)
+    phases::Val{phase_B} = Val(default_phases)
     ) where {phase_B}
 
     host_time = zeros(Float64, length(n_MiB))
@@ -46,17 +54,17 @@ end
             d_p2 = copy(d_p1)
             synchronize()
             # Trigger compilation before benchmarking.
-            host_f(h_p1, h_p2; phases = phases)
-            host_time[i] = @belapsed host_f(
+            host_f!(h_p1, h_p2; phases = phases)
+            host_time[i] = @belapsed host_f!(
                 $h_p1, $h_p2; phases = $phases
                 ) evals = evals samples = samples seconds = seconds
             for (j, size) in enumerate(batch_sizes)
-                device_f(
+                device_f!(
                     d_p1, d_p2, synchronize;
                     phases = phases, batch_size = Val(size)
                     )
                 device_time[j, i] =
-                    @belapsed device_f(
+                    @belapsed device_f!(
                         $d_p1, $d_p2, $synchronize;
                         phases = $phases, batch_size = Val($size)
                         ) evals = evals samples = samples seconds = seconds
@@ -72,6 +80,8 @@ end
     string(Sys.CPU_THREADS) * ", Device block size = $default_block_size"
     xlabel = "Pauli operator size (MiB)"
     label = hcat(("Device - batch size = " .* string.(batch_sizes))..., "Host")
+    path *= "/pauli_pauli"
+    mkpath(path)
 
     plot(
         n_MiB, 10^3 .* hcat(device_cat..., host_time);
@@ -79,7 +89,7 @@ end
         title = title, label = label, xlabel = xlabel, ylabel = "Runtime (ms)",
         background_color = :transparent
         )
-    savefig("$path/runtime_pauli_pauli_phase_$phase_B.$format")
+    savefig("$path/runtime.$format")
 
     plot(
         n_MiB, map(x -> host_time ./ x, device_cat);
@@ -87,13 +97,13 @@ end
         label = hcat(label[1 : end - 1]...), xlabel = xlabel,
         ylabel = "Ratio (host/device)", background_color = :transparent
         )
-    savefig("$path/ratio_pauli_pauli_phase_$phase_B.$format")
+    savefig("$path/ratio.$format")
 
 end
 
 @inline function benchmark_KA_mul_tableau_pauli(
     AT, synchronize, path;
-    phases::Val{phase_B} = Val(true)
+    phases::Val{phase_B} = Val(default_phases)
     ) where {phase_B}
 
     host_time = zeros(Float64, length(n_MiB))
@@ -126,17 +136,17 @@ end
                 )
             synchronize()
             # Trigger compilation before benchmarking.
-            host_f(h_t, h_p; phases = phases)
-            host_time[i] = @belapsed host_f(
+            host_f!(h_t, h_p; phases = phases)
+            host_time[i] = @belapsed host_f!(
                 $h_t, $h_p; phases = $phases
                 ) evals = evals samples = samples seconds = seconds
             for (j, size) in enumerate(batch_sizes)
-                device_f(
+                device_f!(
                     d_t, d_p, synchronize;
                     phases = phases, batch_size = Val(size)
                     )
                 device_time[j, i] =
-                    @belapsed device_f(
+                    @belapsed device_f!(
                         $d_t, $d_p, $synchronize;
                         phases = $phases, batch_size = Val($size)
                         ) evals = evals samples = samples seconds = seconds
@@ -152,6 +162,8 @@ end
     string(Sys.CPU_THREADS) * ", Device block size = $default_block_size"
     xlabel = "Tableau size (MiB)"
     label = hcat(("Device - batch size = " .* string.(batch_sizes))..., "Host")
+    path *= "/tableau_pauli"
+    mkpath(path)
 
     plot(
         n_MiB, 10^3 .* hcat(device_cat..., host_time);
@@ -159,7 +171,7 @@ end
         title = title, label = label, xlabel = xlabel, ylabel = "Runtime (ms)",
         background_color = :transparent
         )
-    savefig("$path/runtime_tableau_pauli_phase_$phase_B.$format")
+    savefig("$path/runtime.$format")
 
     plot(
         n_MiB, map(x -> host_time ./ x, device_cat);
@@ -167,17 +179,16 @@ end
         label = hcat(label[1 : end - 1]...), xlabel = xlabel,
         ylabel = "Ratio (host/device)", background_color = :transparent
         )
-    savefig("$path/ratio_tableau_pauli_phase_$phase_B.$format")
+    savefig("$path/ratio.$format")
 
 end
 
 @inline function benchmark_KA_mul_leftright(
     AT, synchronize, path;
-    phases::Val{phase_B} = Val(true)
+    phases::Val{phase_B} = Val(default_phases)
     ) where {phase_B}
 
-    path = "$path/mul_leftright"
-    mkpath(path)
+    path *= "/mul_leftright/phase_$phase_B"
     benchmark_KA_mul_pauli_pauli(AT, synchronize, path; phases = phases)
     benchmark_KA_mul_tableau_pauli(AT, synchronize, path; phases = phases)
 
