@@ -1,10 +1,9 @@
 include("implementation/benchmark_platform.jl")
 
-using Dates: value, now, UNIXEPOCH
 import pocl_jll
 using OpenCL: CLArray, cl.devices, cl.platforms, cl.finish, cl.queue
 const AT = CLArray
-const path = "OpenCL_benchmark_" * string(value(now()) - UNIXEPOCH)
+const path = "QuantumClifford_benchmarks/OpenCL"
 
 const can_run = any(length(devices(platform)) > 0 for platform in platforms())
 

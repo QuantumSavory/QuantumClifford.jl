@@ -1,9 +1,8 @@
 include("implementation/benchmark_platform.jl")
 
-using Dates: value, now, UNIXEPOCH
 using CUDA: CuArray, devices, synchronize
 const AT = CuArray
-const path = "CUDA_benchmark_" * string(value(now()) - UNIXEPOCH)
+const path = "QuantumClifford_benchmarks/CUDA"
 
 const can_run = length(devices()) > 0
 

@@ -1,21 +1,46 @@
 # Works even when broadcasting on zero-dimensional arrays.
-@inline u32(v) = map(x -> UInt32(x), v)
+@inline function u32(v)
+    return map(x -> UInt32(x), v)
+end
 
 # Surprisingly, these do not already exist.
-@inline get_pauli(t::Tableau, i::Integer) =
-    PauliOperator((@view t.phases[i]), t.nqubits, (@view t.xzs[:, i]))
-@inline get_pauli(s::AbstractStabilizer, i::Integer) =
-    PauliOperator(
+@inline function get_pauli(t::Tableau, i::Integer)
+    return PauliOperator(
+        (@view t.phases[i]),
+        t.nqubits,
+        (@view t.xzs[:, i])
+        )
+end
+@inline function get_pauli(s::AbstractStabilizer, i::Integer)
+    return PauliOperator(
         (@view s.tab.phases[i]),
         s.tab.nqubits,
         (@view s.tab.xzs[:, i])
         )
+end
 
-@inline phases(t::Tableau) = t.phases
-@inline phases(t::Tableau, i::Integer) = (@view t.phases[i])
-@inline phases(s::AbstractStabilizer) = s.tab.phases
-@inline phases(s::AbstractStabilizer, i::Integer) = (@view s.tab.phases[i])
-@inline xzs(t::Tableau) = t.xzs
-@inline xzs(t::Tableau, i::Integer) = (@view t.xzs[:, i])
-@inline xzs(s::AbstractStabilizer) = s.tab.xzs
-@inline xzs(s::AbstractStabilizer, i::Integer) = (@view s.tab.xzs[:, i])
+@inline function phases(t::Tableau)
+    return t.phases
+end
+@inline function phases(t::Tableau, i::Integer)
+    return (@view t.phases[i])
+end
+@inline function phases(s::AbstractStabilizer)
+    return s.tab.phases
+end
+@inline function phases(s::AbstractStabilizer, i::Integer)
+    return (@view s.tab.phases[i])
+end
+
+@inline function xzs(t::Tableau)
+    return t.xzs
+end
+@inline function xzs(t::Tableau, i::Integer)
+    return (@view t.xzs[:, i])
+end
+@inline function xzs(s::AbstractStabilizer)
+    return s.tab.xzs
+end
+@inline function xzs(s::AbstractStabilizer, i::Integer)
+    return (@view s.tab.xzs[:, i])
+end
