@@ -40,7 +40,7 @@ export
     # Linear Algebra
     tensor, tensor_pow,
     logdot, expect,
-    apply!, apply_inv!,
+    apply!, apply_inv!, apply_right!,
     permutesystems, permutesystems!,
     # Low Level Function Interface
     generate!, project!, reset_qubits!, traceout!,
@@ -1431,6 +1431,8 @@ include("fastmemlayout.jl")
 include("dense_cliffords.jl")
 # special one- and two- qubit operators
 include("symbolic_cliffords.jl")
+# apply right operations
+include("apply_right.jl")
 # linear algebra and array-like operations
 include("linalg.jl")
 # circuits
