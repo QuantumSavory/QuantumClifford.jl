@@ -57,9 +57,9 @@ td > code {
 |` │   └─ sMZ                            `|❌ | n²| [`projectZ!`](@ref)    |
 |` │                                     `|  |   |                        |
 |` ├─ AbstractResetMeasurement           `|  |   |                        |
-|` │   ├─ sMRX                           `|❌ | n²| [`projectX`](@ref) , [`sZ`](@ref) , [`sMX`](@ref)                     |
-|` │   ├─ sMRY                           `|❌ | n²| [`projectY`](@ref) , [`sZ`](@ref) , [`sMY`](@ref)                     |
-|` │   └─ sMRZ                           `|❌ | n²| [`projectZ`](@ref) , [`sX`](@ref) , [`sMZ`](@ref)                  |
+|` │   ├─ sMRX                           `|❌ | n²| [`projectX!`](@ref) , [`sZ`](@ref) , [`sMX`](@ref)                     |
+|` │   ├─ sMRY                           `|❌ | n²| [`projectY!`](@ref) , [`sZ`](@ref) , [`sMY`](@ref)                     |
+|` │   └─ sMRZ                           `|❌ | n²| [`projectZ!`](@ref) , [`sX`](@ref) , [`sMZ`](@ref)                  |
 |` │                                     `|  |   |                        |
 |` ├─ BellMeasurement                    `|❌ | n²|                        |
 |` ├─ NoiseOp                            `|❌ |  ?| [`applynoise!`](@ref)  |
