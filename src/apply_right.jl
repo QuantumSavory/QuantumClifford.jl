@@ -1,58 +1,95 @@
-"""the `apply_right!` function is used to right multiply any quantum operation to unitary 
-Clifford operation or Pauli product"""
+"""
+the `apply_right!` function is used to right multiply any quantum operation to unitary 
+Clifford operation or Pauli product
+
+```jldoctest
+julia> apply_right!(C"X Z", sHadamard(1))
+X₁ ⟼ + Z
+Z₁ ⟼ + X
+julia> apply_right!(C"Y Z", C"Z Y")
+X₁ ⟼ + Z
+Z₁ ⟼ - X
+julia> apply_right!(C"Y Z", P"X")
+X₁ ⟼ + Y
+Z₁ ⟼ - Z
+```
+
+Example: Build a bell state decoder
+```jldoctest
+julia> cliff = one(CliffordOperator, 2)
+X₁ ⟼ + X_
+X₂ ⟼ + _X
+Z₁ ⟼ + Z_
+Z₂ ⟼ + _Z
+julia> apply_right!(cliff, sHadamard(1))
+X₁ ⟼ + Z_
+X₂ ⟼ + _X
+Z₁ ⟼ + X_
+Z₂ ⟼ + _Z
+julia> apply_right!(cliff, sCNOT(1, 2))
+X₁ ⟼ + ZX
+X₂ ⟼ + _X
+Z₁ ⟼ + X_
+Z₂ ⟼ + XZ
+julia> apply!(bell(), cliff)
++ Z_
++ _Z
+```
+
+See also: [`apply!`](@ref), [`apply_inv!`](@ref)
+"""
 function apply_right! end
 
 
-# dense_cliffords
+##############################
+# Dense operators
+##############################
 
-function apply_right!(l::CliffordOperator, r::PauliOperator; phases=false)
+function apply_right!(l::CliffordOperator, r::PauliOperator)
     nqubits(l)==nqubits(r) || throw(DimensionMismatch("The Clifford and Pauli operators need to act on the same number of qubits."))
-    tab(l).phases[nqubits(l)+1:end] .⊻= r[1:nqubits(l)]
-    tab(l).phases[1:nqubits(l)] .⊻= r[nqubits(l)+1:end]
+    for i in 1:nqubits(l)
+        x, z = r[i]
+        if x
+            phases(l)[nqubits(l)+i] ⊻= 0x02
+        end
+        if z
+            phases(l)[i] ⊻= 0x02
+        end
+    end
+    return l
 end
 
-function apply_right!(l::CliffordOperator, r::CliffordOperator; phases=true)
+function apply_right!(l::CliffordOperator, r::CliffordOperator)
     nqubits(l)==nqubits(r) || throw(DimensionMismatch("The two Clifford operators need to act on the same number of qubits."))
     l_tab = tab(l)
+    l_tab_copy = copy(l_tab)
     r_tab = tab(r)
     threadlocal = l.buffer
-    new_xzs = Vector{typeof(threadlocal)}(undef, length(l_tab))
     @inbounds for row_r in eachindex(r_tab)
         zero!(threadlocal)
-        apply_right_row_kernel!(threadlocal, row_r, l_tab, r_tab, phases=phases)
-        new_xzs[row_r] = copy(threadlocal)
-    end
-    @inbounds for row_l in eachindex(l_tab)
-        l_tab[row_l] = new_xzs[row_l]
+        apply_right_row_kernel!(threadlocal, l_tab, row_r, l_tab_copy, r_tab)
     end
     l
 end
 
-@inline function apply_right_row_kernel!(new_lrow, row, l_tab, r_tab; phases=true)
-    phases && (new_lrow.phase[] = r_tab.phases[row])
+"""helper for computing the right multiplication of a row of a Clifford operator with another Clifford operator."""
+@inline function apply_right_row_kernel!(new_lrow, l_tab, row, l_tab_copy, r_tab)
+    new_lrow.phase[] = r_tab.phases[row]
     n = nqubits(l_tab)
     for qubit in 1:n
         x,z = r_tab[row,qubit]
-        if phases&&x&&z
+        if x&&z
             new_lrow.phase[] -= 0x1
         end
         if x
-            mul_left!(new_lrow, l_tab, qubit, phases=Val(phases))
+            mul_left!(new_lrow, l_tab_copy, qubit)
         end
         if z
-            mul_left!(new_lrow, l_tab, qubit+n, phases=Val(phases))
+            mul_left!(new_lrow, l_tab_copy, qubit+n)
         end
     end
+    l_tab[row] = new_lrow
     new_lrow
-end
-
-
-# symbolic_cliffords
-
-function mul_right_ignore_anticommute!(l::PauliOperator, r::PauliOperator)
-    x = mul_right!(l, r; phases=Val(true))
-    x.phase[] = x.phase[] & 0x02
-    return x
 end
 
 
@@ -66,13 +103,13 @@ function apply_right!(l::CliffordOperator, r::sHadamard)
 end
 
 function apply_right!(l::CliffordOperator, r::sHadamardXY)
-    l[r.q] = mul_right_ignore_anticommute!(l[r.q], l[nqubits(l)+r.q])
+    mul_right_ignore_anticomm!(tab(l), r.q, nqubits(l)+r.q)
     apply_right!(l, sY(r.q))
     return l
 end
 
 function apply_right!(l::CliffordOperator, r::sHadamardYZ)
-    l[nqubits(l)+r.q] = mul_right_ignore_anticommute!(l[nqubits(l)+r.q], l[r.q])
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q, r.q)
     apply_right!(l, sZ(r.q))
     return l
 end
@@ -84,23 +121,23 @@ function apply_right!(l::CliffordOperator, r::sPhase)
 end
 
 function apply_right!(l::CliffordOperator, r::sInvPhase)
-    l[r.q] = mul_right_ignore_anticommute!(l[r.q], l[nqubits(l)+r.q])
+    mul_right_ignore_anticomm!(tab(l), r.q, nqubits(l)+r.q)
     return l
 end
 
 function apply_right!(l::CliffordOperator, r::sX)
-    phases(tab(l))[nqubits(l)+r.q] ⊻= 0x02
+    phases(l)[nqubits(l)+r.q] ⊻= 0x02
     return l
 end
 
 function apply_right!(l::CliffordOperator, r::sY)
-    phases(tab(l))[r.q] ⊻= 0x02
-    phases(tab(l))[nqubits(l)+r.q] ⊻= 0x02
+    phases(l)[r.q] ⊻= 0x02
+    phases(l)[nqubits(l)+r.q] ⊻= 0x02
     return l
 end
 
 function apply_right!(l::CliffordOperator, r::sZ)
-    phases(tab(l))[r.q] ⊻= 0x02
+    phases(l)[r.q] ⊻= 0x02
     return l
 end
 
@@ -111,31 +148,31 @@ function apply_right!(l::CliffordOperator, r::sSQRTX)
 end
 
 function apply_right!(l::CliffordOperator, r::sInvSQRTX)
-    l[nqubits(l)+r.q] = mul_right_ignore_anticommute!(l[nqubits(l)+r.q], l[r.q])
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q, r.q)
     return l
 end
 
 function apply_right!(l::CliffordOperator, r::sSQRTY)
-    phases(tab(l))[nqubits(l)+r.q] ⊻= 0x02
+    phases(l)[nqubits(l)+r.q] ⊻= 0x02
     rowswap!(tab(l), r.q, nqubits(l)+r.q)
     return l
 end
 
 function apply_right!(l::CliffordOperator, r::sInvSQRTY)
     rowswap!(tab(l), r.q, nqubits(l)+r.q)
-    phases(tab(l))[nqubits(l)+r.q] ⊻= 0x02
+    phases(l)[nqubits(l)+r.q] ⊻= 0x02
     return l
 end
 
 function apply_right!(l::CliffordOperator, r::sCXYZ)
     rowswap!(tab(l), r.q, nqubits(l)+r.q)
-    l[r.q] = mul_right_ignore_anticommute!(l[r.q], l[nqubits(l)+r.q])
+    mul_right_ignore_anticomm!(tab(l), r.q, nqubits(l)+r.q)
     return l
 end
 
 function apply_right!(l::CliffordOperator, r::sCZYX)
     rowswap!(tab(l), r.q, nqubits(l)+r.q)
-    l[nqubits(l)+r.q] = mul_right_ignore_anticommute!(l[nqubits(l)+r.q], l[r.q])
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q, r.q)
     apply_right!(l, sX(r.q))
     return l
 end
@@ -205,8 +242,8 @@ function apply_right!(l::CliffordOperator, r::sCPHASE)
 end
 
 function apply_right!(l::CliffordOperator, r::sZCX)
-    l[nqubits(l)+r.q2] = mul_right!(l[nqubits(l)+r.q2], l[nqubits(l)+r.q1]; phases=Val(true))
-    l[r.q1] = mul_right!(l[r.q1], l[r.q2]; phases=Val(true))
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q2, nqubits(l)+r.q1)
+    mul_right_ignore_anticomm!(tab(l), r.q1, r.q2)
     return l
 end
 
@@ -218,14 +255,14 @@ function apply_right!(l::CliffordOperator, r::sZCY)
 end
 
 function apply_right!(l::CliffordOperator, r::sZCZ)
-    l[r.q2] = mul_right!(l[r.q2], l[nqubits(l)+r.q1]; phases=Val(true))
-    l[r.q1] = mul_right!(l[r.q1], l[nqubits(l)+r.q2]; phases=Val(true))
+    mul_right_ignore_anticomm!(tab(l), r.q2, nqubits(l)+r.q1)
+    mul_right_ignore_anticomm!(tab(l), r.q1, nqubits(l)+r.q2)
     return l
 end
 
 function apply_right!(l::CliffordOperator, r::sXCX)
-    l[nqubits(l)+r.q2] = mul_right!(l[nqubits(l)+r.q2], l[r.q1]; phases=Val(true))
-    l[nqubits(l)+r.q1] = mul_right!(l[nqubits(l)+r.q1], l[r.q2]; phases=Val(true))
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q2, r.q1)
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q1, r.q2)
     return l
 end
 
@@ -258,19 +295,19 @@ function apply_right!(l::CliffordOperator, r::sYCZ)
 end
 
 function apply_right!(l::CliffordOperator, r::sZCrY)
-    l[r.q1] = mul_left!(l[r.q1], l[r.q2])
-    l[r.q2] = mul_left!(l[r.q2], l[nqubits(l)+r.q1])
-    l[nqubits(l)+r.q2] = mul_left!(l[nqubits(l)+r.q2], l[nqubits(l)+r.q1])
-    l[r.q1] = mul_left!(l[r.q1], l[nqubits(l)+r.q2])
+    mul_right_ignore_anticomm!(tab(l), r.q1, r.q2)        
+    mul_right_ignore_anticomm!(tab(l), r.q2, nqubits(l)+r.q1)
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q2, nqubits(l)+r.q1)
+    mul_right_ignore_anticomm!(tab(l), r.q1, nqubits(l)+r.q2)
     return l
 end
 
 function apply_right!(l::CliffordOperator, r::sInvZCrY)
-    l[r.q1] = mul_left!(l[r.q1], l[r.q2])
-    l[r.q2] = mul_left!(l[r.q2], l[nqubits(l)+r.q1])
-    l[nqubits(l)+r.q2] = mul_left!(l[nqubits(l)+r.q2], l[nqubits(l)+r.q1])
-    l[r.q1] = mul_left!(l[r.q1], l[nqubits(l)+r.q2])
-    phases(tab(l))[r.q1] ⊻= 0x02
+    mul_right_ignore_anticomm!(tab(l), r.q1, r.q2)
+    mul_right_ignore_anticomm!(tab(l), r.q2, nqubits(l)+r.q1)
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q2, nqubits(l)+r.q1)
+    mul_right_ignore_anticomm!(tab(l), r.q1, nqubits(l)+r.q2)
+    phases(l)[r.q1] ⊻= 0x02
     return l
 end
 
@@ -282,10 +319,10 @@ function apply_right!(l::CliffordOperator, r::sSQRTZZ)
 end
 
 function apply_right!(l::CliffordOperator, r::sInvSQRTZZ)
-    l[r.q1] = mul_right_ignore_anticommute!(l[r.q1], l[nqubits(l)+r.q1])
-    l[r.q1] = mul_right_ignore_anticommute!(l[r.q1], l[nqubits(l)+r.q2])
-    l[r.q2] = mul_right_ignore_anticommute!(l[r.q2], l[nqubits(l)+r.q1])
-    l[r.q2] = mul_right_ignore_anticommute!(l[r.q2], l[nqubits(l)+r.q2])
+    mul_right_ignore_anticomm!(tab(l), r.q1, nqubits(l)+r.q1)
+    mul_right_ignore_anticomm!(tab(l), r.q1, nqubits(l)+r.q2)
+    mul_right_ignore_anticomm!(tab(l), r.q2, nqubits(l)+r.q1)
+    mul_right_ignore_anticomm!(tab(l), r.q2, nqubits(l)+r.q2)
     return l
 end
 
@@ -297,10 +334,10 @@ function apply_right!(l::CliffordOperator, r::sSQRTXX)
 end
 
 function apply_right!(l::CliffordOperator, r::sInvSQRTXX)
-    l[nqubits(l)+r.q1] = mul_right_ignore_anticommute!(l[nqubits(l)+r.q1], l[r.q1])
-    l[nqubits(l)+r.q1] = mul_right_ignore_anticommute!(l[nqubits(l)+r.q1], l[r.q2])
-    l[nqubits(l)+r.q2] = mul_right_ignore_anticommute!(l[nqubits(l)+r.q2], l[r.q1])
-    l[nqubits(l)+r.q2] = mul_right_ignore_anticommute!(l[nqubits(l)+r.q2], l[r.q2])
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q1, r.q1)
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q1, r.q2)
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q2, r.q1)
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q2, r.q2)    
     return l
 end
 
@@ -312,14 +349,27 @@ function apply_right!(l::CliffordOperator, r::sSQRTYY)
 end
 
 function apply_right!(l::CliffordOperator, r::sInvSQRTYY)
-    l[r.q1] = mul_right_ignore_anticommute!(l[r.q1], l[nqubits(l)+r.q1])
-    l[nqubits(l)+r.q1] = mul_right_ignore_anticommute!(l[nqubits(l)+r.q1], l[nqubits(l)+r.q2])
-    l[nqubits(l)+r.q1] = mul_right_ignore_anticommute!(l[nqubits(l)+r.q1], l[r.q2])
-    l[r.q2] = mul_right_ignore_anticommute!(l[r.q2], l[r.q1])
-    l[nqubits(l)+r.q2] = mul_right_ignore_anticommute!(l[nqubits(l)+r.q2], l[r.q1])
-    l[r.q1] = mul_right_ignore_anticommute!(l[r.q1], l[nqubits(l)+r.q1])
+    mul_right_ignore_anticomm!(tab(l), r.q1, nqubits(l)+r.q1)
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q1, nqubits(l)+r.q2)
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q1, r.q2)
+    mul_right_ignore_anticomm!(tab(l), r.q2, r.q1)
+    mul_right_ignore_anticomm!(tab(l), nqubits(l)+r.q2, r.q1)
+    mul_right_ignore_anticomm!(tab(l), r.q1, nqubits(l)+r.q1)    
     rowswap!(tab(l), r.q1, nqubits(l)+r.q1)
     rowswap!(tab(l), r.q2, nqubits(l)+r.q2)
     apply_right!(l, sZ(r.q2))
     return l
+end
+
+
+"""Multiply Pauli operators `l * r`, ignoring anticommutation phases (keeping only ±1, not ±i)"""
+@inline function mul_right_ignore_anticomm!(s::Tableau, m, t::Tableau, i; phases::Val{B}=Val(true)) where B
+    extra_phase = mul_right!((@view s.xzs[:,m]), (@view t.xzs[:,i]); phases=phases)
+    B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x2)
+    s
+end
+@inline function mul_right_ignore_anticomm!(s::Tableau, m, i; phases::Val{B}=Val(true)) where B
+    extra_phase = mul_right!((@view s.xzs[:,m]), (@view s.xzs[:,i]); phases=phases)
+    B && (s.phases[m] = (extra_phase+s.phases[m]+s.phases[i])&0x2)
+    s
 end

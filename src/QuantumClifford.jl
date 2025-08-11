@@ -136,6 +136,8 @@ function __init__()
     end
 end
 
+include("throws.jl")
+
 const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you are attempting to create a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
 
 # Predefined constants representing the permitted phases encoded
@@ -1432,6 +1434,8 @@ include("fastmemlayout.jl")
 include("dense_cliffords.jl")
 # special one- and two- qubit operators
 include("symbolic_cliffords.jl")
+# apply right operations
+include("apply_right.jl")
 # linear algebra and array-like operations
 include("linalg.jl")
 # circuits
