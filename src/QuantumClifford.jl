@@ -10,7 +10,7 @@ module QuantumClifford
 import LinearAlgebra
 using LinearAlgebra: inv, mul!, rank, Adjoint, dot, tr
 import DataStructures
-using DataStructures: DefaultDict, Accumulator
+using DataStructures: DefaultDict, Accumulator, counter
 using Combinatorics: combinations
 using Base.Cartesian
 using DocStringExtensions
@@ -60,7 +60,8 @@ export
     sSQRTZZ, sInvSQRTZZ, sSQRTXX, sInvSQRTXX, sSQRTYY, sInvSQRTYY,
     # Misc Ops
     SparseGate,
-    sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
+    sMX, sMY, sMZ, PauliMeasurement, 
+    Reset, sMRX, sMRY, sMRZ, sRX, sRY, sRZ,
     BellMeasurement, ClassicalXOR,
     VerifyOp,
     Register,
@@ -91,6 +92,8 @@ export
     mctrajectory!, mctrajectories, applywstatus!,
     # petrajectories
     petrajectories, applybranches,
+    # backtrajectory
+    backtrajectory,
     # nonclifford
     GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase,
     # makie plotting -- defined only when extension is loaded
@@ -1440,6 +1443,7 @@ include("operator_traits.jl")
 include("mctrajectory.jl")
 include("petrajectory.jl")
 include("misc_ops.jl")
+include("backtrajectory.jl")
 include("classical_register.jl")
 include("noise.jl")
 include("affectedqubits.jl")
@@ -1464,5 +1468,6 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
+include("apply_right.jl")
 
 end #module
