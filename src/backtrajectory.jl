@@ -14,8 +14,8 @@ end
 
 BacktrackingRegister(r::BacktrackingRegister) = r
 BacktrackingRegister(qbits::Int, mbits::Int=0) = BacktrackingRegister(one(CliffordOperator, qbits), falses(mbits))
-# BacktrackingRegister(s::AbstractStabilizer, mbits::Int=0) = BacktrackingRegister(..., falses(mbits))
-# BacktrackingRegister(r::Register) = BacktrackingRegister(..., r.bits)
+BacktrackingRegister(s::AbstractStabilizer, mbits::Int=0) = BacktrackingRegister(inv(CliffordOperator(Destabilizer(s))), falses(mbits))
+BacktrackingRegister(r::Register) = BacktrackingRegister(quantumstate(r), r.bits)
 
 Base.copy(r::BacktrackingRegister) = BacktrackingRegister(copy(r.inv_circuit), copy(r.bits))
 Base.:(==)(l::BacktrackingRegister,r::BacktrackingRegister) = l.inv_circuit==r.inv_circuit && l.bits==r.bits
