@@ -949,16 +949,7 @@ end
     end
 end
 
-@inline _logsizeof(::UInt128) = 7
-@inline _logsizeof(::UInt64 ) = 6
-@inline _logsizeof(::UInt32 ) = 5
-@inline _logsizeof(::UInt16 ) = 4
-@inline _logsizeof(::UInt8  ) = 3
-@inline _logsizeof(::Type{UInt128}) = 7
-@inline _logsizeof(::Type{UInt64 }) = 6
-@inline _logsizeof(::Type{UInt32 }) = 5
-@inline _logsizeof(::Type{UInt16 }) = 4
-@inline _logsizeof(::Type{UInt8  }) = 3
+@inline _logsizeof(::Union{T, Type{T}}) where {T <: Unsigned} = trailing_zeros(count_zeros(zero(T)))
 @inline _mask(::T) where T<:Unsigned = sizeof(T)*8-1
 @inline _mask(arg::T) where T<:Type = sizeof(arg)*8-1
 @inline _div(T,l) = l >> _logsizeof(T)
@@ -971,12 +962,12 @@ function unsafe_bitfindnext_(chunks::AbstractVector{T}, start::Int) where T<:Uns
 
     @inbounds begin
         if chunks[chunk_start] & mask != 0
-            return (chunk_start-1) << 6 + trailing_zeros(chunks[chunk_start] & mask) + 1
+            return (chunk_start-1) << _logsizeof(T) + trailing_zeros(chunks[chunk_start] & mask) + 1
         end
 
         for i = chunk_start+1:length(chunks)
             if chunks[i] != 0
-                return (i-1) << 6 + trailing_zeros(chunks[i]) + 1
+                return (i-1) << _logsizeof(T) + trailing_zeros(chunks[i]) + 1
             end
         end
     end
