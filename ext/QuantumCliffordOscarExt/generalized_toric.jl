@@ -108,7 +108,7 @@ julia> I_cap_J = intersect(I, J);
 
 julia> I_times_J = ideal(R_q, [f*g]);
 
-julia> i_cap_J == I_times_J
+julia> I_cap_J == I_times_J
 true
 
 julia> is_coprime(f, g)
@@ -129,7 +129,7 @@ Here is an example of computing the maximum logical dimension of Example 3
 (−1, 3, 3, −1)-generalized toric code.-generalized toric code from [liang2025generalizedtoriccodestwisted](@cite).
 
 ```jldoctest
-julia> using Oscar
+julia> using Oscar; using QuantumClifford.ECC;
 
 julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
 
@@ -147,7 +147,9 @@ Gröbner basis with elements
 with respect to the ordering
   lex([x, y])
 
-julia> all_monomials = [x^i * y^j for i in 0:1 for j in 0:6]
+julia> a, b = max_xy_exponents(W);
+
+julia> all_monomials = [x^i * y^j for i in 0:a-1 for j in 0:b-1]
 14-element Vector{FqMPolyRingElem}:
  1
  y
@@ -172,7 +174,7 @@ Here is an example of computing the maximum logical dimension of Example 4
 (−1, −3, 3, −1)-generalized toric code from [liang2025generalizedtoriccodestwisted](@cite).
 
 ```jldoctest
-julia> using Oscar;
+julia> using Oscar; using QuantumClifford.ECC;
 
 julia> R, (x, y) = polynomial_ring(GF(2), ["x", "y"]);
 
@@ -190,7 +192,9 @@ Gröbner basis with elements
 with respect to the ordering
   lex([x, y])
 
-julia> all_monomials = [x^i * y^j for i in 0:1 for j in 0:10]
+julia> a, b = max_xy_exponents(G);
+
+julia> all_monomials = [x^i * y^j for i in 0:a-1 for j in 0:b-1]
 22-element Vector{FqMPolyRingElem}:
  1
  y
@@ -223,7 +227,7 @@ Here is an example of computing the maximum logical dimension of Example 5
 (−1, −4, 4, −1)-generalized toric code from [liang2025generalizedtoriccodestwisted](@cite).
 
 ```jldoctest
-julia> using Oscar;
+julia> using Oscar; using QuantumClifford.ECC
 
 julia> R, (x, y) = polynomial_ring(GF(2), ["x", "y"]);
 
@@ -247,7 +251,9 @@ Gröbner basis with elements
 with respect to the ordering
   lex([y, x])
 
-julia> all_monomials = [x^i * y^j for i in 0:0 for j in 0:19] # Eq. 52
+julia> a, b = max_xy_exponents(G);
+
+julia> all_monomials = [x^i * y^j for i in 0:a-1 for j in 0:b-1] # Eq. 52
 20-element Vector{FqMPolyRingElem}:
  1
  y
@@ -509,3 +515,53 @@ end
 parity_matrix_x(c::GeneralizedToricCode) = parity_matrix_xz(c)[1]
 
 parity_matrix_z(c::GeneralizedToricCode) = parity_matrix_xz(c)[2]
+
+"""
+Given a Gröbner basis `G` of polynomials over a finite field multivariate polynomial ring in variables
+including `x` and `y`. It computes the maximum exponents of `x` and `y` appearing in any polynomial in
+`G`. It assumes `G` is a vector of polynomials and that variables `x` and `y` exist in the parent ring.
+
+#### Example
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+
+julia> f = x + x^2 + y^3;
+
+julia> g = y + y^2 + x^3;
+
+julia> I = ideal(R, [f, g]);
+
+julia> W = groebner_basis(I, ordering=lex([x, y]), complete_reduction=true)
+Gröbner basis with elements
+  1: y^7 + y^6 + y^4 + y^2 + y
+  2: x*y^2 + x*y + x + y^6 + y^3
+  3: x^2 + x + y^3
+with respect to the ordering
+  lex([x, y])
+
+julia> a, b = max_xy_exponents(W)
+(2, 7)
+```
+"""
+function max_xy_exponents(G::IdealGens{FqMPolyRingElem})
+    vs = gens(parent(first(G)))
+    xpos = findfirst(==(vs[1]), vs)
+    ypos = findfirst(==(vs[2]), vs)
+    nvs = length(vs)
+    exps = []
+    for p in G
+        for e in exponent_vectors(p)
+            evec = collect(e)
+            while length(evec) < nvs
+                push!(evec, 0)
+            end
+            push!(exps, (evec[xpos], evec[ypos]))
+        end
+    end
+    max_x_exp = maximum(t[1] for t in exps)
+    max_y_exp = maximum(t[2] for t in exps)
+    return max_x_exp, max_y_exp
+end
