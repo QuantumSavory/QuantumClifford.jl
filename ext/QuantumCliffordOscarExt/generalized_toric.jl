@@ -104,22 +104,175 @@ julia> I = ideal(R_q, [f]);
 
 julia> J = ideal(R_q, [g]);
 
-julia> ᵢcapⱼ = intersect(I, J);
+julia> I_cap_J = intersect(I, J);
 
-julia> ᵢtimesⱼ = ideal(R_q, [f*g]);
+julia> I_times_J = ideal(R_q, [f*g]);
 
-julia> ᵢcapⱼ == ᵢtimesⱼ
+julia> i_cap_J == I_times_J
 true
 
 julia> is_coprime(f, g)
 true
 ```
 
-!!! note
-    A useful computational technique involves computing the Gröbner basis for the polynomials ``f'(x, y) = xf(x, y)``
-    and ``g'(x, y) = yg(x, y)`` to ensure non-negative exponents. Alternatively, one may introduce auxiliary
-    variables ``\\overline{x}, \\overline{y}`` to represent ``x^{-1}, y^{-1}`` and include the relations
-    ``\\overline{x}x - 1`` and ``\\overline{y}y - 1`` in the Gröbner basis computation [liang2025generalizedtoriccodestwisted](@cite).  
+### Gröbner basis Computation
+
+A useful computational technique involves computing the Gröbner basis for the
+polynomials ``f'(x, y) = xf(x, y)`` and ``g'(x, y) = yg(x, y)`` to ensure non-negative
+exponents. Alternatively, one may introduce auxiliary variables ``\\overline{x}, \\overline{y}``
+to represent ``x^{-1}, y^{-1}`` and include the relations ``\\overline{x}x - 1`` and
+``\\overline{y}y - 1`` in the Gröbner basis computation [liang2025generalizedtoriccodestwisted](@cite).
+
+#### Examples
+
+Here is an example of computing the maximum logical dimension of Example 3
+(−1, 3, 3, −1)-generalized toric code.-generalized toric code from [liang2025generalizedtoriccodestwisted](@cite).
+
+```jldoctest
+julia> using Oscar
+
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+
+julia> f = x + x^2 + y^3;
+
+julia> g = y + y^2 + x^3;
+
+julia> I = ideal(R, [f, g]);
+
+julia> W = groebner_basis(I, ordering=lex([x, y]), complete_reduction=true)
+Gröbner basis with elements
+  1: y^7 + y^6 + y^4 + y^2 + y
+  2: x*y^2 + x*y + x + y^6 + y^3
+  3: x^2 + x + y^3
+with respect to the ordering
+  lex([x, y])
+
+julia> all_monomials = [x^i * y^j for i in 0:1 for j in 0:6]
+14-element Vector{FqMPolyRingElem}:
+ 1
+ y
+ y^2
+ y^3
+ y^4
+ y^5
+ y^6
+ x
+ x*y
+ x*y^2
+ x*y^3
+ x*y^4
+ x*y^5
+ x*y^6
+
+julia> k_max = 2*length(all_monomials)
+28
+```
+
+Here is an example of computing the maximum logical dimension of Example 4
+(−1, −3, 3, −1)-generalized toric code from [liang2025generalizedtoriccodestwisted](@cite).
+
+```jldoctest
+julia> using Oscar;
+
+julia> R, (x, y) = polynomial_ring(GF(2), ["x", "y"]);
+
+julia> f′ = x*y^3 + x^2*y^3 + 1;
+
+julia> g′ = y + y^2 + x^3;
+
+julia> I = ideal(R, [f′, g′]);
+
+julia> G = groebner_basis(I, ordering=lex([x, y]), complete_reduction=true)
+Gröbner basis with elements
+  1: y^11 + y^10 + y^6 + y^4 + y^3 + y + 1
+  2: x*y^2 + x*y + x + y^10 + y^5 + y^2 + y
+  3: x^2 + x + y^10 + y^7 + y^5 + y^4
+with respect to the ordering
+  lex([x, y])
+
+julia> all_monomials = [x^i * y^j for i in 0:1 for j in 0:10]
+22-element Vector{FqMPolyRingElem}:
+ 1
+ y
+ y^2
+ y^3
+ y^4
+ y^5
+ y^6
+ y^7
+ y^8
+ y^9
+ y^10
+ x
+ x*y
+ x*y^2
+ x*y^3
+ x*y^4
+ x*y^5
+ x*y^6
+ x*y^7
+ x*y^8
+ x*y^9
+ x*y^10
+
+julia> k_max = 2*length(all_monomials)
+44
+```
+
+Here is an example of computing the maximum logical dimension of Example 5
+(−1, −4, 4, −1)-generalized toric code from [liang2025generalizedtoriccodestwisted](@cite).
+
+```jldoctest
+julia> using Oscar;
+
+julia> R, (x, y) = polynomial_ring(GF(2), ["x", "y"]);
+
+julia> f = x*y^4 + x^2*y^4 + 1;
+
+julia> g = y + y^2 + x^4;
+
+julia> I = ideal(R, [f, g]);
+
+julia> G = groebner_basis(I, ordering=lex([x,y])) # Eq. 51
+Gröbner basis with elements
+  1: y^20 + y^17 + 1
+  2: x + y^16 + y^13 + y^12 + y^9 + y^2 + y
+with respect to the ordering
+  lex([x, y])
+
+julia> H = groebner_basis(I, ordering=lex([y,x])) # Eq. 54
+Gröbner basis with elements
+  1: x^20 + x^18 + x^2 + x + 1
+  2: y + x^18 + x^17 + x^8 + x^4 + 1
+with respect to the ordering
+  lex([y, x])
+
+julia> all_monomials = [x^i * y^j for i in 0:0 for j in 0:19] # Eq. 52
+20-element Vector{FqMPolyRingElem}:
+ 1
+ y
+ y^2
+ y^3
+ y^4
+ y^5
+ y^6
+ y^7
+ y^8
+ y^9
+ y^10
+ y^11
+ y^12
+ y^13
+ y^14
+ y^15
+ y^16
+ y^17
+ y^18
+ y^19
+
+julia> k_max = 2*length(all_monomials)
+40
+```
 
 ### Parity Checks
 

@@ -15,7 +15,7 @@ import Oscar: free_group, small_group_identification, describe, order, FPGroupEl
     BasicGAPGroupElem, DirectProductGroup, cyclic_group, free_module, hom, transpose, tensor_product,
     chain_complex, total_complex, map, summands, MatElem, matrix, nrows, ncols, kernel, dim, range, image,
     base_ring, ComplexOfMorphisms, coefficients, laurent_polynomial_ring, hnf_with_transform, ideal, intersect,
-    ==, is_coprime, quo
+    ==, is_coprime, quo, groebner_basis
 import Oscar.Generic.DirectSumModule
 import Oscar.Generic.LaurentMPolyWrap
 import Oscar.Generic.exponent_vectors
