@@ -220,6 +220,24 @@ A_ghp2 = matrix(S, n, n,
           0      0     1     x^18  x^27  1     x^27])
 b_ghp2 = S(1 + x + x^6)
 
+# Generalized Bicycle and Extended GB codes from [koukoulekidis2024smallquantumcodesalgebraic](@cite)
+R, x = polynomial_ring(GF(2), :x)
+l = 5
+a_gb₁ = 1 + x^4
+b_gb₁ = 1 + x + x^2 + x^4
+c_gb₁ = GeneralizedBicycleCode(a_gb₁, b_gb₁, l)
+p₁ = one(R)
+l = 9
+a_gb₂ = 1 + x^2
+b_gb₂ = 1 + x^5
+c_gb₂ = GeneralizedBicycleCode(a_gb₂, b_gb₂, l)
+p₂ = one(R)
+l = 10
+a_gb₃ = 1 + x
+b_gb₃ = 1 + x^6
+c_gb₃ = GeneralizedBicycleCode(a_gb₃, a_gb₃, l)
+p₃ = one(R) + x
+
 # Add some codes that require Oscar, hence do not work on Windows
 
 test_twobga_codes = []
@@ -379,7 +397,9 @@ const code_instance_args = Dict(
     :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
     :random_TillichZemor_code => [(6,4,3), (7,5,3), (8,6,3)],
     :GeneralizedCirculantBivariateBicycle => [(9,6,A1,B1),(15,3,A2,B2),(6,6, A1,B1),(14,7,A2,B2),(15,5,A3,B3)],
-    :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1), (A_ghp2, b_ghp2)]
+    :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1), (A_ghp2, b_ghp2)],
+    :GeneralizedBicycleCode => [(5,a_gb₁,b_gb₁), (9,a_gb₂,b_gb₂), (10,a_gb₃,b_gb₃)],
+    :ExtendedGeneralizedBicycleCode => [(c_gb₁,2,p₁), (c_gb₂,3,p₂), (c_gb₃,4,p₃)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
