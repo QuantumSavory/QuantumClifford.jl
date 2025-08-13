@@ -1,15 +1,14 @@
 """
     $TYPEDEF
 
-Constructs a `D`-dimensional CSS quantum code (`D ≥ 2`) from `D` classical 
+Constructs a D-dimensional CSS quantum code (D ≥ 2) from D classical 
 parity-check matrices via iterated *homological* products.
 
-!!! note
-    Several interpretations of the homological product exist. For example,
-    [bravyi2013homologicalproductcodes](@cite) employ a simplified version known
-    as the *single-sector* homological product. In contrast, the `HomologicalProductCode`
-    adopts a more conventional definition, which [bravyi2013homologicalproductcodes](@cite)
-    would refer to as the *multi-sector* homological product.
+Several interpretations of the homological product exist. For example,
+[bravyi2013homologicalproductcodes](@cite) employ a simplified version known
+as the *single-sector* homological product. In contrast, the `HomologicalProductCode`
+adopts a more conventional definition, which [bravyi2013homologicalproductcodes](@cite)
+would refer to as the *multi-sector* homological product.
 
 The term "homological product codes" can broadly encompass various constructions
 involving the product of quantum codes ([bravyi2013homologicalproductcodes](@cite),
@@ -18,7 +17,7 @@ particular subset—namely, the product of classical codes, which can also be de
 as length-`1` chain complexes (sometimes called high-dimensional hypergraph product codes
 [Zeng_2019](@cite)).
 
-Here is a `3D` Homological product code from [Quintavalle_2021](@cite).
+Here is a 3D Homological product code from [Quintavalle_2021](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
@@ -34,7 +33,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 ```
 
 Here is the `[[117, 9, 4]]` Homological product code construct from classical
-quasi-cyclic code from `Table III` of [xu2024fastparallelizablelogicalcomputation](@cite).
+quasi-cyclic code from Table III of [xu2024fastparallelizablelogicalcomputation](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
@@ -55,7 +54,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 ```
 
 Here is the `[[225, 9, 6]]` Homological product code construct from classical
-quasi-cyclic code from `Table III` of [xu2024fastparallelizablelogicalcomputation](@cite).
+quasi-cyclic code from Table III of [xu2024fastparallelizablelogicalcomputation](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
@@ -176,6 +175,55 @@ parity_matrix_z(hp::HomologicalProductCode) = boundary_maps(hp)[1]'
 """
 Constructs the *Double Homological Product code* from [Campbell_2019](@cite).
 
+# 4-term Chain Complex
+
+To construct a quantum error-correcting code with *metachecks*, we require a length-4 chain
+complex. This can be built by taking the *homological product* of two length-2 chain complexes.
+
+The length-4 chain complex, structured as:  
+
+```math
+\\begin{aligned}
+\\breve{C}_{-2} \\xrightarrow{\\breve{\\delta}_{-2}} \\breve{C}_{-1} \\xrightarrow{\\breve{\\delta}_{-1}} \\breve{C}_0 \\xrightarrow{\\breve{\\delta}_0} \\breve{C}_1 \\xrightarrow{\\breve{\\delta}_1} \\breve{C}_2
+\\end{aligned}
+```
+
+The homological product of two 2D chain complexes produces this length-4 complex, following the general rule:  
+
+```math
+\\begin{aligned}
+\\breve{C}_m = \\bigoplus_{i - j = m} \\tilde{C}_i \\otimes \\tilde{C}_j
+\\end{aligned}
+```
+
+The boundary maps are represented as block matrices and are defined as:  
+
+```math
+\\begin{align}
+\\breve{\\delta}_{-2} &= \\begin{pmatrix} 
+I \\otimes \\tilde{\\delta}_0^T \\\\ 
+\\tilde{\\delta}_{-1} \\otimes I 
+\\end{pmatrix}, \\\\
+\\breve{\\delta}_{-1} &= \\begin{pmatrix} 
+I \\otimes \\tilde{\\delta}_{-1}^T & 0 \\\\
+\\tilde{\\delta}_{-1} \\otimes I & I \\otimes \\tilde{\\delta}_0^T \\\\
+0 & \\tilde{\\delta}_0 \\otimes I 
+\\end{pmatrix}, \\\\
+\\breve{\\delta}_0 &= \\begin{pmatrix} 
+\\tilde{\\delta}_{-1} \\otimes I & I \\otimes \\tilde{\\delta}_{-1}^T & 0 \\\\
+0 & \\tilde{\\delta}_0 \\otimes I & I \\otimes \\tilde{\\delta}_0^T 
+\\end{pmatrix}, \\\\
+\\breve{\\delta}_1 &= \\begin{pmatrix} 
+\\tilde{\\delta}_0 \\otimes I & I \\otimes \\tilde{\\delta}_{-1}^T 
+\\end{pmatrix}
+\\end{align}
+```
+
+The condition ``\\breve{\\delta}_{j+1} \\breve{\\delta}_j = 0`` holds for all j,
+which follows from the corresponding property of the ``\\tilde{\\delta}`` matrices.  
+
+#### Example
+
 Here is `[[241, 1, 9]]` double homological product code from Table I of [Campbell_2019](@cite).
 
 ```jldoctest
@@ -190,23 +238,6 @@ julia> import HiGHS; import JuMP;
 
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (241, 1, 9)
-```
-
-Here is `[[486, 6, 9]]` double homological product code from Table I of [Campbell_2019](@cite).
-
-```jldoctest
-julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
-
-julia> δ = [1 1 0;
-            0 1 1;
-            1 0 1];
-
-julia> c = DoubleHomologicalProductCode(δ);
-
-julia> import HiGHS; import JuMP;
-
-julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
-(486, 6, 9)
 ```
 
 ### Fields

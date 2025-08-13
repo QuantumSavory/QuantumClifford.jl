@@ -44,4 +44,3 @@ function DoubleHomologicalProductCode(args...; kwargs...)
     end
     return ext.DoubleHomologicalProductCode(args...; kwargs...)
 end
-

@@ -407,6 +407,6 @@ include("codes/classical/lifted.jl")
 include("codes/qeccs_using_hecke.jl")
 
 # higher dimensional codes
-include("codes/d_dimensional_codes.jl")
+include("codes/qeccs_using_oscar.jl")
 
 end #module
