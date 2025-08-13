@@ -403,7 +403,7 @@ include("codes/classical/bch.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
-include("codes/lifted_product.jl")
+include("codes/qeccs_using_hecke.jl")
 
 # higher dimensional codes
 include("codes/d_dimensional_codes.jl")
