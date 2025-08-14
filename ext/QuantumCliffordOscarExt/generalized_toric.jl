@@ -517,6 +517,8 @@ parity_matrix_x(c::GeneralizedToricCode) = parity_matrix_xz(c)[1]
 parity_matrix_z(c::GeneralizedToricCode) = parity_matrix_xz(c)[2]
 
 """
+    $TYPEDEF
+
 Given a Gröbner basis `G` of polynomials over a finite field multivariate polynomial ring in variables
 including `x` and `y`. It computes the maximum exponents of `x` and `y` appearing in any polynomial in
 `G`. It assumes `G` is a vector of polynomials and that variables `x` and `y` exist in the parent ring.
