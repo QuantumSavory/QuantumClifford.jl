@@ -169,14 +169,14 @@ end
 
 
 #helper dispatch functions for the AbstractResetMeasurement applybranches 
-_reset_mappings(::Type{sMRZ}) = (sMZ, sX, projectZ!)
-_reset_mappings(::Type{sMRX}) = (sMX, sZ, projectX!)
-_reset_mappings(::Type{sMRY}) = (sMY, sZ, projectY!)
+_reset_mappings(::Type{sMRZ}) = (sX, projectZ!)
+_reset_mappings(::Type{sMRX}) = (sZ, projectX!)
+_reset_mappings(::Type{sMRY}) = (sZ, projectY!)
 
 #applybranches for reset measurements such as sMRZ, sMRX and sMRY
 function applybranches(r::Register, op::AbstractResetMeasurement;max_order=1)
-    operations = _reset_mappings(typeof(op))
-    _, anticom, res = operations[3](quantumstate(r), op.qubit)
+    flipOp, projectFunc = _reset_mappings(typeof(op))
+    _, anticom, res = projectFunc(quantumstate(r), op.qubit)
     new_branches = []
     if isnothing(res)
         s1 = r
@@ -185,13 +185,13 @@ function applybranches(r::Register, op::AbstractResetMeasurement;max_order=1)
         s2 = copy(r)
         phases(stabilizerview(s2.stab))[anticom] = 0x02
         s2.bits[op.bit] = true
-        apply!(s2, operations[2](op.qubit))
+        apply!(s2, flipOp(op.qubit))
         push!(new_branches, (s1,continue_stat,1/2,0))
         push!(new_branches, (s2,continue_stat,1/2,0))
     else
         r.bits[op.bit] = res==0x02
         if(res==0x02)
-            apply!(r, operations[2](op.qubit))
+            apply!(r, flipOp(op.qubit))
             r.bits[op.bit] = false
         end
         push!(new_branches, (r,continue_stat,1,0))
