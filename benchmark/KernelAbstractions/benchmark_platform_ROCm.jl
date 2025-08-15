@@ -1,9 +1,8 @@
 include("implementation/benchmark_platform.jl")
 
-using Dates: value, now, UNIXEPOCH
 using AMDGPU: ROCArray, devices, synchronize
 const AT = ROCArray
-const path = "ROCm_benchmark_" * string(value(now()) - UNIXEPOCH)
+const path = "QuantumClifford_benchmarks/ROCm"
 
 const can_run = length(devices()) > 0
 

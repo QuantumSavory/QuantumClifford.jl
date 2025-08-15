@@ -1,5 +1,9 @@
 # Works even when broadcasting on zero-dimensional arrays.
-@inline u32(v) = map(x -> UInt32(x), v)
+@inline function u32(v)
+    return map(x -> UInt32(x), v)
+end
 
 # By definition, the size of (unsigned) char is set to unity.
-@inline bit_count(::Type{T}) where {T} = sizeof(T) * count_zeros(zero(Cuchar))
+@inline function bit_count(::Type{T}) where {T}
+    return sizeof(T) * count_zeros(zero(Cuchar))
+end

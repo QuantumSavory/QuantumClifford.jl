@@ -16,6 +16,9 @@ const n_MiB = [2^i for i = 1:10]
 # TODO: Keep these or remove them now that a good default has been set?
 const batch_sizes = [1, 4, 8, 16, 32, 64]
 
-# These values are inaccessible since they originate from a package extension.
-const default_block_size = 256
-const default_batch_size = 32
+# These values originate from a package extension, hence the query.
+const KAExt = Base.get_extension(QuantumClifford, :QuantumCliffordKAExt)
+const default_phases = KAExt.default_phases
+const default_primary_axis = KAExt.default_primary_axis
+const default_block_size = KAExt.default_block_size
+const default_batch_size = KAExt.default_batch_size

@@ -1,5 +1,5 @@
 
 #=============================================================================#
-include("mul_leftright/device_mul.jl")
-include("mul_leftright/host_interface.jl")
+import QuantumClifford: canonicalize_gott!
+# TODO: Implement.
 #=============================================================================#
