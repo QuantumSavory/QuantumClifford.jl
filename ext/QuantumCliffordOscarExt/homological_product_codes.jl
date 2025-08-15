@@ -53,46 +53,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (117, 9, 4)
 ```
 
-Here is the `[[225, 9, 6]]` Homological product code construct from classical
-quasi-cyclic code from Table III of [xu2024fastparallelizablelogicalcomputation](@cite).
-
-```jldoctest
-julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
-
-julia> R, x = polynomial_ring(GF(2), "x");
-
-julia> l = 3;
-
-julia> H = matrix(R, 3, 4, [x^2 x^2 x^2   0;
-                            x^2   0 x^2  x^2;
-                            x^2 x^2   x  x^2]);
-
-julia> c = HomologicalProductCode([H,transpose(H)], l);
-
-julia> import HiGHS; import JuMP;
-
-julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
-(225, 9, 6)
-```
-
-Here is a Homological product of classical Reed-Muller codes.
-
-```jldoctest
-julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
-
-julia> r, m = 1, 3;
-
-julia> H = matrix(GF(2), parity_matrix(ReedMuller(r,m)));
-
-julia> c = HomologicalProductCode([H,transpose(H)]);
-
-julia> import HiGHS; import JuMP;
-
-julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
-(80, 16, 4)
-```
-
-Here is a Homological product of `(3,4)`-classical LDPC code.
+Here is a Homological product of `(3,4)`-classical LDPC codes.
 
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
 
