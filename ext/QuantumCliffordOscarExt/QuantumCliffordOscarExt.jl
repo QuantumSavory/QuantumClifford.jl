@@ -9,16 +9,20 @@ import QuantumClifford: Stabilizer
 import Nemo
 import Nemo: FqFieldElem
 import Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra,
-   GroupAlgebraElem, direct_product, sub, ZZ, lift
+   GroupAlgebraElem, direct_product, sub, ZZ, lift, polynomial_ring
 import Oscar
 import Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup,
     BasicGAPGroupElem, DirectProductGroup, cyclic_group, free_module, hom, transpose, tensor_product,
     chain_complex, total_complex, map, summands, MatElem, matrix, nrows, ncols, kernel, dim, range, image,
-    base_ring, ComplexOfMorphisms
+    base_ring, ComplexOfMorphisms, coefficients, laurent_polynomial_ring, hnf_with_transform, ideal, intersect,
+    ==, is_coprime, quo, groebner_basis, length, FqMPolyRingElem, first, length
 import Oscar.Generic.DirectSumModule
+import Oscar.Generic.LaurentMPolyWrap
+import Oscar.Generic.exponent_vectors
+import Oscar.IdealGens
 
 import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group,
-    boundary_maps
+    boundary_maps, max_xy_exponents
 
 import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
     hgp, code_k, code_n, code_s, distance, parity_matrix_x, parity_matrix_z, parity_matrix_xz, parity_matrix,
@@ -29,6 +33,7 @@ export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurfaceCode
 
 include("types.jl")
 include("direct_product.jl")
+include("generalized_toric.jl")
 include("group_presentation.jl")
 include("d_dimensional_codes.jl")
 
