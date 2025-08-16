@@ -1,6 +1,7 @@
 using Random: randperm, AbstractRNG, GLOBAL_RNG, rand!
 using ILog2
 import Nemo
+using Distributions
 
 ##############################
 # Random Paulis
@@ -516,3 +517,140 @@ function random_all_to_all_clifford_circuit(rng::AbstractRNG, nqubits::Int, ngat
 end
 
 random_all_to_all_clifford_circuit(nqubits::Int, ngates::Int) = random_all_to_all_clifford_circuit(GLOBAL_RNG, nqubits, ngates)
+
+##############################
+# Random stabilizer state
+##############################
+
+"""Convert an array of bits to an integer."""
+function bits2int(bits)
+    r = 0
+    s = 1
+    for b in bits
+        if b & 1 != 0
+            r += s
+        end
+        s <<= 1
+    end
+    return r
+end
+
+"""Count the number of '1' bits in the binary representation of 'v' modulo 2."""
+function parity(v)
+    return count_ones(v) % 2
+end
+
+"""Normalize a quantum state vector."""
+function normalize_state(state)
+    norm_factor = norm(state)
+    for s in state
+        if s != 0
+            norm_factor *= s / abs(s)
+            break
+        end
+    end
+    return state / norm_factor
+end
+
+"""Find the rank of a matrix over GF(2)"""
+function gf2_rank(rows)
+    rank = 0
+    while !isempty(rows)
+        pivot_row = pop!(rows)
+        if pivot_row != 0
+            rank += 1
+            lsb = pivot_row & -pivot_row
+            for i in eachindex(rows)
+                if rows[i] & lsb != 0
+                    rows[i] ⊻= pivot_row
+                end
+            end
+        end
+    end
+    return rank
+end
+
+"""Multiply a matrix by a vector over GF(2)."""
+function gf2_mul_mat_vec(m, v)
+    return bits2int([parity(m[i] & v) for i in 1:length(m)])
+end
+
+"""Calculate the dot product of two vectors over GF(2)."""
+function gf2_mul_vec_vec(v1, v2)
+    return parity(v1 & v2)
+end
+
+"""
+Computes the q-binomial coefficient, which generalizes the binomial coefficient to finite fields.
+
+Inputs:
+- n::Int: The first argument of the q-binomial coefficient.
+- k::Int: The second argument of the q-binomial coefficient.
+- q::Int: The base of the field (default is 2 for binary field).
+
+Outputs:
+- Int: The q-binomial coefficient C(n, k) over GF(q).
+"""
+function qbinomial(n, k, q = 2)
+    c = 1
+    for j in 0:(k - 1)
+        c *= q^n - q^j
+    end
+    for j in 0:(k - 1)
+        c ÷= q^k - q^j
+    end
+    return max(0, c) # Ensure non-negative values
+end
+
+"""Calculate the number of n-qubit states with 2**k nonzero elements."""
+function number_of_states(n)
+    return [2^n * 2^((k+1)*k ÷ 2) * qbinomial(n, k) for k in 0:n]
+end
+
+"""
+Generate a random n-qubit stabilizer state. It does so by using the procedure
+described in the [struchalin2021experimental](@cite).
+
+The procedure involves selecting a random value of k, sampling from the set of
+stabilizer states with 2^k nonzero elements, and generating a random stabilizer
+operator. The resulting state vector is normalized and returned.
+"""
+function random_stabilizer_state(n)
+    dtype = Int32
+    nmax = floor(Int, log2(typemax(dtype)) + 1)
+    if !(0 < n <= nmax)
+        throw(ArgumentError("Number of qubits must be in range(1, $nmax)!"))
+    end
+
+    dimn = 2^n
+    state = ComplexF32[0.0f0 for _ in 1:dimn]
+    weights = number_of_states(n)
+    dist = Distributions.Categorical(weights ./ sum(weights))  # Use a Categorical distribution for weighted sampling
+    k = rand(dist) - 1  # Offset by -1 to match 0-based indexing in Julia
+    dimk = 2^k
+
+    if k == 0
+        state[rand(1:dimn)] = 1.0f0
+        return state
+    end
+
+    rank = 0
+    R = rand(0:dimk-1, n) # Ensure R is initialized as a matrix
+    while rank < k
+        R = [rand(0:dimk-1) for _ in 1:n]  # Generate `n` rows with elements in GF(2^k)
+        rank = gf2_rank(copy(R))
+    end
+
+    t = rand(0:dimn-1)  # Random vector in GF(2^n)
+    Q = [rand(0:dimk-1) for _ in 1:k]  # Generate `k` rows for Q
+    c = rand(0:dimk-1)  # Random vector in GF(2^k)
+
+    for x in 0:(dimk - 1)
+        y = gf2_mul_mat_vec(R, x) ⊻ t  # y = R @ x + t
+        ib = gf2_mul_vec_vec(c, x)     # 'imaginary' bit
+        mb = gf2_mul_vec_vec(x, gf2_mul_mat_vec(Q, x))  # 'minus' bit
+        state[y + 1] = 1im^ib * (-1)^mb
+    end
+
+    return normalize_state(state)
+end
