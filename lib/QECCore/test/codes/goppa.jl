@@ -22,6 +22,7 @@
                 @test computed_rank <= m * t
                 n = length(ga.L)
                 @test code_k(ga) >= n - m*t
+                @test degree(generator_polynomial(ga)) ≤ code_n(ga) - code_k(ga) # degenerate cases included.
             end
         end
     end

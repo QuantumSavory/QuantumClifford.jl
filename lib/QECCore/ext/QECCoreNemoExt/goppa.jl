@@ -1,3 +1,5 @@
+abstract type AbstractPolynomialCode <: AbstractCECC end
+
 """
     $TYPEDEF
 
@@ -136,7 +138,7 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/gopp
 ### Fields
     $TYPEDFIELDS
 """
-struct GoppaCode <: AbstractCECC
+struct GoppaCode <: AbstractPolynomialCode
     """ The extension degree of ``\\mathbb{F}_{2^m}`` which determines the size of the field
     (2^m elements) and the binary expansion length."""
     m::Int
