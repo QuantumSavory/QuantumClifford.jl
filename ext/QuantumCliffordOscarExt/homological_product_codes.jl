@@ -1,8 +1,8 @@
 """
     $TYPEDEF
 
-Constructs a D-dimensional CSS quantum code (D ≥ 2) from D classical 
-parity-check matrices via iterated *homological* products.
+Constructs a D-dimensional CSS quantum code (D ≥ 2) from D classical parity-check
+matrices via iterated *homological* products.
 
 Several interpretations of the homological product exist. For example,
 [bravyi2013homologicalproductcodes](@cite) employ a simplified version known
@@ -16,6 +16,90 @@ involving the product of quantum codes ([bravyi2013homologicalproductcodes](@cit
 particular subset—namely, the product of classical codes, which can also be described
 as length-`1` chain complexes (sometimes called high-dimensional hypergraph product codes
 [Zeng_2019](@cite)).
+
+# Product Complex
+
+Given ``D`` chain complexes ``\\{\\mathcal{B}^i\\}_{i\\in[D]}``, where
+``\\mathcal{B}^i = \\{\\{B^i_{x_i}\\}_{x_i}, \\{\\partial^i_{x_i}\\}_{x_i}\\}``,
+the ``D``-dimensional product complex is defined as:
+
+```math
+\\begin{aligned}
+\\mathcal{D} = \\{\\{D_{\\vec{x}}\\}_{\\vec{x}=(x_1,\\dots,x_D)^T \\in \\mathbb{Z}^D}, \\{\\partial^i_{\\vec{x}}: D_{\\vec{x}} \\to D_{\\vec{x}-\\vec{e}_i}\\}_{i\\in[D],\\vec{x}\\in\\mathbb{Z}^D}\\} := \\text{Prod}(\\{\\mathcal{B}^i\\}_{i\\in[D]})
+\\end{aligned}
+```
+
+the tensor product of these chain complexes, where:
+
+```math
+\\begin{aligned}
+D_{\\vec{x}} := \\bigotimes_{i=1}^D B^i_{x_i}, \\\\
+\\partial^i_{\\vec{x}} := \\bigotimes_{j=1}^D (\\partial^j_{x_j})^{\\delta_{i,j}}
+\\end{aligned}
+```
+
+where ``\\delta_{i,j}`` is the Kronecker delta function and ``(\\partial^j_{x_j})^0``
+is defined as the identity map [xu2024fastparallelizablelogicalcomputation](@cite).
+
+!!! note
+   A product complex is a high-dimensional generalization of the chain complex.
+
+# Total Complex
+
+The ``\\mathcal{D}``-product complex is constructed from ``D`` base chain complexes
+with vector spaces ``\\{D_{\\vec{x}}\\}_{\\vec{x}}`` and boundary maps
+``\\{\\partial^i_{\\vec{x}}\\}_{i\\in[D],\\vec{x}}``. It's total chain complex
+``\\mathcal{T} = \\{\\{T_k\\}_k, \\{\\delta_k\\}_k\\} := \\text{Tot}(\\mathcal{D})``
+as follows:
+
+```math
+\\begin{aligned}
+T_k := \\bigoplus_{|\\vec{x}|=k} D_{\\vec{x}}
+\\end{aligned}
+```
+
+and the boundary maps:
+
+```math
+\\begin{aligned}
+\\delta_k\\left(\\bigoplus_{|\\vec{x}|=k} a_{\\vec{x}}\\right) = \\sum_{|\\vec{x}|=k} \\left(\\bigoplus_{|\\vec{y}|=k-1} \\partial_{\\vec{y},\\vec{x}} a_{\\vec{x}}\\right)
+\\end{aligned}
+```
+
+for any ``a_{\\vec{x}} \\in D_{\\vec{x}}``, and
+
+```math
+\\begin{aligned}
+\\partial_{\\vec{y},\\vec{x}} := 
+\\begin{cases} 
+\\partial^i_{\\vec{x}} & \\text{if } \\vec{x} - \\vec{y} = \\vec{e}_i \\text{ for some } i \\in [D], \\\\
+0 & \\text{otherwise.}
+\\end{cases}
+\\end{aligned}
+```
+
+!!! note
+    The total complex is obtained by projecting the ``D``-dimensional complex along
+    the "diagonal" direction. Once a total chain complex is derived from a product complex
+    (with length greater than 2), a quantum code can be defined from a length-2 
+    subcomplex [xu2024fastparallelizablelogicalcomputation](@cite).
+
+[xu2024fastparallelizablelogicalcomputation](@cite) focuses on product complexes with
+length-1 base complexes ``\\{\\mathcal{C}^i\\}_{i\\in[D]}}`` (classical codes). In this
+case, the total complex ``\\mathcal{T} = \\text{Tot}(\\text{Prod}(\\{\\mathcal{C}^i\\}_{i\\in[D]}))``
+has length ``D``:
+
+```math
+\\begin{aligned}
+T_D \\xrightarrow{\\delta_D} T_{D-1} \\xrightarrow{\\delta_{D-1}} \\cdots \\xrightarrow{\\delta_1} T_0
+\\end{aligned}
+```
+
+[xu2024fastparallelizablelogicalcomputation](@cite) considers dimensions ``D = 2, 3, 4``.
+- For ``D = 2``, the standard hypergraph product code is obtained, with planar surface codes as a special case [xu2024fastparallelizablelogicalcomputation](@cite).
+- For ``D = 3`` and ``D = 4``, the construction yields 3D and 4D homological product codes, with 3D surface/toric codes serving as specific instances [xu2024fastparallelizablelogicalcomputation](@cite).
+
+# Examples
 
 Here is a 3D Homological product code from [Quintavalle_2021](@cite).
 
