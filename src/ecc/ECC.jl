@@ -40,6 +40,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps,
     GeneralizedCirculantBivariateBicycle, GeneralizedHyperGraphProductCode,
     GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode,
+    HomologicalProductCode, DoubleHomologicalProductCode,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -406,6 +407,6 @@ include("codes/classical/lifted.jl")
 include("codes/qeccs_using_hecke.jl")
 
 # higher dimensional codes
-include("codes/d_dimensional_codes.jl")
+include("codes/qeccs_using_oscar.jl")
 
 end #module

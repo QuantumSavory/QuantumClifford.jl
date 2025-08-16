@@ -28,12 +28,13 @@ matrices ``A_m`` and ``B_m``, which are combined into a parity-check matrix ``H_
 ```math
 \\begin{aligned}
 H_m = \\begin{pmatrix} 
-A_m|B_m & 0 \\\\ 
-0 & B_m^\\top|A_m^\\top 
+A_m \\mid B_m & 0 \\\\
+0 & B_m^\\top \\mid A_m^\\top 
+\\end{pmatrix} 
 \\end{aligned}
 ```
 
-while maintaining dimensions:
+while maintaining logical dimension:
 
 ```math
 \\begin{aligned}
