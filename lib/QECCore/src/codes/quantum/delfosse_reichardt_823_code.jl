@@ -56,7 +56,7 @@ struct DelfosseReichardt823 <: AbstractQECC
     """The number of blocks in the Delfosse-Reichardt generalized [[8, 2, 3]] code."""
     p::Int
     function DelfosseReichardt823(p)
-        p < 1 && throw(ArgumentError(THROW_DELFOSSE_823_MIN_BLOCKS))
+        p < 1 && throw(ArgumentError("The number of blocks must be at least 1 to construct a valid code."))
         new(p)
     end
 end

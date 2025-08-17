@@ -136,7 +136,8 @@ function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the oth
     # TODO QuantumClifford should implement some submatrix comparison
     r,n = size(v.good_state)
     if(r!=n)
-        throw(ArgumentError(THROW_NOT_STABILIZER_STATE))
+        throw(ArgumentError("""The argument you have provided for good_state is not a logical state within the codespace.
+Expected a pure qubit stabilizer state (i.e. independent stabilizer generators on be equal to number of qubits)"""))
     end
     canonicalize_rref!(quantumstate(s),v.indices) # Document why rref is used
     sv = tab(s)

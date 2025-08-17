@@ -4,7 +4,7 @@ Implemented as a package extension with Hecke. Check the [QuantumClifford docume
 function LiftedCode(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
     if isnothing(ext)
-        throw(THROW_MISSING_HECKE)
+        throw(THROW_MISSING_PACKAGE("LiftedCode", "Hecke"))
     end
     return ext.LiftedCode(args...; kwargs...)
 end

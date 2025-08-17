@@ -6,6 +6,9 @@ All `AbstractSyndromeDecoder` types are expected to:
 - have an `evaluate_decoder` method which runs a full simulation but it supports only a small number of ECC protocols"""
 abstract type AbstractSyndromeDecoder end
 
+THROW_INVALID_NOISE(noisetype, setup) = 
+"The independent X/Z memory noise in `$setup` should be between 0 and 1."
+
 """Decode a syndrome using a given decoding algorithm."""
 function decode end
 
@@ -38,7 +41,7 @@ See also: [`NaiveSyndromeECCSetup`](@ref), [`ShorSyndromeECCSetup`](@ref)"""
 struct CommutationCheckECCSetup <: AbstractECCSetup
     xz_noise::Float64
     function CommutationCheckECCSetup(xz_noise)
-        0<=xz_noise<=1 || throw(DomainError(THROW_INVALID_PARAMETERS_NOISE))
+        0<=xz_noise<=1 || throw(DomainError(xz_noise, "The independent X/Z memory noise in `CommutationCheckECCSetup` should be between 0 and 1."))
         new(xz_noise)
     end
 end
@@ -53,8 +56,8 @@ struct NaiveSyndromeECCSetup <: AbstractECCSetup
     mem_noise::Float64
     two_qubit_gate_noise::Float64
     function NaiveSyndromeECCSetup(mem_noise, two_qubit_gate_noise)
-        0<=mem_noise<=1 || throw(DomainError(THROW_INVALID_PARAMETERS_NOISE))
-        0<=two_qubit_gate_noise<=1 || throw(DomainError(THROW_INVALID_PARAMETERS_NOISE))
+        0<=mem_noise<=1 || throw(DomainError(mem_noise, "The memory noise in `NaiveSyndromeECCSetup` should be between 0 and 1."))
+        0<=two_qubit_gate_noise<=1 || throw(DomainError(two_qubit_gate_noise, "The two-qubit gate noise in `NaiveSyndromeECCSetup` should be between 0 and 1."))
         new(mem_noise, two_qubit_gate_noise)
     end
 end
@@ -73,8 +76,8 @@ struct ShorSyndromeECCSetup <: AbstractECCSetup
     mem_noise::Float64
     two_qubit_gate_noise::Float64
     function ShorSyndromeECCSetup(mem_noise, two_qubit_gate_noise)
-        0<=mem_noise<=1 || throw(DomainError(THROW_INVALID_PARAMETERS_NOISE))
-        0<=two_qubit_gate_noise<=1 || throw(DomainError(THROW_INVALID_PARAMETERS_NOISE))
+        0<=mem_noise<=1 || throw(DomainError(mem_noise, "The memory noise in `ShorSyndromeECCSetup` should be between 0 and 1."))
+        0<=two_qubit_gate_noise<=1 || throw(DomainError(two_qubit_gate_noise, "The two-qubit gate noise in `ShorSyndromeECCSetup` should be between 0 and 1."))
         new(mem_noise, two_qubit_gate_noise)
     end
 end
@@ -273,7 +276,7 @@ end
 function BeliefPropDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordLDPCDecodersExt)
     if isnothing(ext)
-        throw(THROW_MISSING_LDPCDecoders)
+        throw(THROW_MISSING_PACKAGE("BeliefPropDecoder", "LDPCDecoders"))
     end
     return ext.BeliefPropDecoder(args...; kwargs...)
 end
@@ -282,7 +285,7 @@ end
 function BitFlipDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordLDPCDecodersExt)
     if isnothing(ext)
-        throw(THROW_MISSING_LDPCDecoders)
+        throw(THROW_MISSING_PACKAGE("BitFlipDecoder", "LDPCDecoders"))
     end
     return ext.BitFlipDecoder(args...; kwargs...)
 end
@@ -292,7 +295,7 @@ end
 function PyBeliefPropDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyQDecodersExt)
     if isnothing(ext)
-        throw(THROW_MISSING_PyQDecoders)
+        throw(THROW_MISSING_PACKAGE("PyBeliefPropDecoder","PyQDecoders"))
     end
     return ext.PyBeliefPropDecoder(args...; kwargs...)
 end
@@ -301,7 +304,7 @@ end
 function PyBeliefPropOSDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyQDecodersExt)
     if isnothing(ext)
-        throw(THROW_MISSING_PyQDecoders)
+        throw(THROW_MISSING_PACKAGE("PyBeliefPropOSDecoder","PyQDecoders"))
     end
     return ext.PyBeliefPropOSDecoder(args...; kwargs...)
 end
@@ -310,7 +313,7 @@ end
 function PyMatchingDecoder(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyQDecodersExt)
     if isnothing(ext)
-        throw(THROW_MISSING_PyQDecoders)
+        throw(THROW_MISSING_PACKAGE("PyMatchingDecoder","PyQDecoders"))
     end
     return ext.PyMatchingDecoder(args...; kwargs...)
 end

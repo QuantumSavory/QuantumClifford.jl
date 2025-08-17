@@ -22,7 +22,7 @@ struct Hamming <: AbstractCECC
     r::Int
     function Hamming(r)
         if r < 2
-            throw(ArgumentError(THROW_INVALID_PARAMETERS_HAMMING))
+            throw(ArgumentError("Invalid parameters: `r` must be ≥ 2 to obtain a valid code."))
         end
         new(r)
     end

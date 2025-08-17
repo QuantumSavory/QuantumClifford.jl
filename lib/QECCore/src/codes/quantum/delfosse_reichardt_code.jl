@@ -91,7 +91,9 @@ struct DelfosseReichardt <: AbstractCSSCode
             throw(ArgumentError(THROW_INVALID_PARAMETERS_REEDMULLER))
         end
         if !iszero(mod.(parity_matrix(ReedMuller(r,m))*parity_matrix(ReedMuller(r,m))',2))
-            throw(ArgumentError(THROW_DELFOSSE_SELF_ORTHOGONAL))
+            throw(ArgumentError("The `Reed-Muller` parity check matrix must be 'self-orthogonal' to construct a self-dual
+CSS `DelfosseReichardt` code. Use `search_self_orthogonal_rm_codes` to search for good parameters for `Reed-Muller` codes
+that provide `self-orthogonal` seeds."))
         end
         new(p,r,m)
     end

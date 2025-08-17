@@ -7,7 +7,7 @@ Implemented as a package extension with `Oscar`. Check the [QuantumClifford docu
 function DDimensionalSurfaceCode(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
     if isnothing(ext)
-        throw(THROW_MISSING_OSCAR)
+        throw(THROW_MISSING_PACKAGE("DDimensionalSurfaceCode", "Oscar"))
     end
     return ext.DDimensionalSurfaceCode(args...; kwargs...)
 end
@@ -18,7 +18,7 @@ Implemented as a package extension with `Oscar`. Check the [QuantumClifford docu
 function DDimensionalToricCode(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
     if isnothing(ext)
-        throw(THROW_MISSING_OSCAR)
+        throw(THROW_MISSING_PACKAGE("DDimensionalToricCode", "Oscar"))
     end
     return ext.DDimensionalToricCode(args...; kwargs...)
 end

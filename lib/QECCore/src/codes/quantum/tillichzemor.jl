@@ -1,3 +1,6 @@
+const THROW_INVALID_PARAMETERS_TILLICH_ZEMOR =
+"Conditions for the existence of `M` in `H = [C | M]` are not satisfied."
+
 """
     $TYPEDEF
 

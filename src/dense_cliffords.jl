@@ -51,7 +51,7 @@ struct CliffordOperator{T<:Tableau,P<:PauliOperator} <: AbstractCliffordOperator
         #    destab = tab(Destabilizer(stab))
         #    new{typeof(destab.phases),typeof(destab.xzs)}(destab) # TODO be smarter about type signatures here... there should be a better way
         else
-            throw(DimensionMismatch(THROW_INVALID_PARAMETERS_CLIFFORD))
+            throw(DimensionMismatch("Input tableau should be of size 2n×n (top half is the X mappings and the bottom half are the Z mappings)."))
         end
     end
 end

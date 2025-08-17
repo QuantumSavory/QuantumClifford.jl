@@ -43,7 +43,9 @@ end
 function GeneralizedStabilizer(state)
     n = nqubits(state)
     md = MixedDestabilizer(state)
-    rank(md)==n || throw(ArgumentError(THROW_MIXED_FUNCTIONALITY_UNAVAILABLE_STABILIZER))
+    rank(md)==n || throw(ArgumentError("""Attempting to convert a `Stabilizer`-like object to `GeneralizedStabilizer` object failed, 
+because the initial state does not represent a pure state. 
+Currently only pure states can be used to initialize a `GeneralizedStabilizer` mixture of stabilizer states."""))
     GeneralizedStabilizer(md, DefaultDict(0.0im, (falses(n),falses(n))=>1.0+0.0im)) # TODO maybe it should default to Destabilizer, not MixedDestabilizer
 end
 
@@ -365,7 +367,11 @@ struct PauliChannel{T,S} <: AbstractPauliChannel
         length(paulis) == length(weights) || throw(ArgumentError(THROW_BOUNDS))
         n = nqubits(paulis[1][1])
         for p in paulis
-            n == nqubits(p[1]) == nqubits(p[2]) || throw(ArgumentError(THROW_PAULI_BOUNDS))
+            n == nqubits(p[1]) == nqubits(p[2]) || throw(ArgumentError("""
+You are attempting to construct a `PauliChannel` but have provided Pauli operators
+that are not all of the same size (same number of qubits).
+Please ensure that all of the Pauli operators being provided of of the same size.
+"""))
         end
         new{typeof(paulis),typeof(weights)}(paulis,weights)
     end
@@ -394,7 +400,8 @@ nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 See also: [`GeneralizedStabilizer`](@ref), [`PauliChannel`](@ref), [`UnitaryPauliChannel`](@ref)
 """
 function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_threshold=1e-10)
-    nqubits(state) == nqubits(gate) || throw(DimensionMismatch(THROW_EMBEDDING_REQUIRED))
+    nqubits(state) == nqubits(gate) || throw(DimensionMismatch("The number of qubits in the GeneralizedStabilizer state does not match the number of qubits in the Pauli channel.
+ Use `embed` to pad the PauliChannel so it acts on the correct number of qubits."))
     dict = state.destabweights
     stab = state.stab
     dtype = valtype(dict)

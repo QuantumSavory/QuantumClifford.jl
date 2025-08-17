@@ -1,3 +1,5 @@
+const THROW_INVALID_CUDA_ARG = 
+"First argument to @run_cuda should be a function call"
 macro run_cuda(call, ndrange)
     # destructure the kernel call
     Meta.isexpr(call, :call) || throw(ArgumentError(THROW_INVALID_CUDA_ARG))

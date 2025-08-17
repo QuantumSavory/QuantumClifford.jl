@@ -4,7 +4,7 @@ Implemented as a package extension with Hecke. Check the [QuantumClifford docume
 function LPCode(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
     if isnothing(ext)
-        throw(THROW_MISSING_HECKE)
+        throw(THROW_MISSING_PACKAGE("LPCode", "Hecke"))
     end
     return ext.LPCode(args...; kwargs...)
 end
@@ -35,7 +35,7 @@ Implemented as a package extension with Hecke. Check the [QuantumClifford docume
 function LaCross(args...; kwargs...)
     ext = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
     if isnothing(ext)
-        throw(THROW_MISSING_HECKE)
+        throw(THROW_MISSING_PACKAGE("LaCross", "Hecke"))
     end
     return ext.LaCross(args...; kwargs...)
 end

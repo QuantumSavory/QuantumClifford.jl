@@ -1,3 +1,8 @@
+const THROW_REPR_NEEDS_COMMUTATIVE_ALGEBRA = 
+"The group algebra must be commutative when using a single `repr` function,\
+which is not the case here. Please specify separate `A_repr` and `B_repr` \
+instead of a single `repr`. The default choice of\
+`A_repr=right_repr_matrix, B_repr=left_repr_matrix` is frequently sufficient."
 right_repr_matrix(x) = representation_matrix(x, :right)
 left_repr_matrix(x) = representation_matrix(x, :left)
 
@@ -548,7 +553,7 @@ See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_bl
 [`honeycomb_color_codes`](@ref).
 """
 function honeycomb_color_codes(ℓ::Int, m::Int)
-    (ℓ % 3 == 0 && m % 3 == 0) || throw(ArgumentError(THROW_MUST_BE_DIVISIBLE_BY_3))
+    (ℓ % 3 == 0 && m % 3 == 0) || throw(ArgumentError("Both ℓ and m must be divisible by 3"))
     GA = group_algebra(GF(2), abelian_group([ℓ, m]))
     x, y = gens(GA)
     c = 1 + x + x*y

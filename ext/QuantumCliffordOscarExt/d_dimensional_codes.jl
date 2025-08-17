@@ -1,5 +1,9 @@
 abstract type DDimensionalCode <: AbstractCSSCode end
 
+THROW_INVALID_CODE_DIMENSION(code, D) =
+"Dimension of the $code code must be at least 2 (got D=$D)."
+""
+
 """Construct the chain complex for the repetition code of length `L`."""
 function _repcode_chain_complex(L::Int)
     F = GF(2)
@@ -376,7 +380,7 @@ struct DDimensionalSurfaceCode <: DDimensionalCode
     L::Int
 
     function DDimensionalSurfaceCode(D::Int, L::Int)
-        D ≥ 2 || throw(ArgumentError(THROW_INVALID_CODE_DIMENSION))
+        D ≥ 2 || throw(ArgumentError(THROW_INVALID_CODE_DIMENSION("Surface", D)))
         new(D, L)
     end
 end
@@ -512,7 +516,7 @@ struct DDimensionalToricCode <: DDimensionalCode
     L::Int
     
     function DDimensionalToricCode(D::Int, L::Int)
-        D ≥ 2 || throw(ArgumentError(THROW_INVALID_CODE_DIMENSION))
+        D ≥ 2 || throw(ArgumentError(THROW_INVALID_CODE_DIMENSION("Toric", D)))
         new(D, L)
     end
 end
@@ -609,12 +613,12 @@ function code_k(c::DDimensionalCode)
 end
 
 function metacheck_matrix_x(c::DDimensionalCode)
-    c.D ≥ 4 || throw(ArgumentError(THROW_INVALID_X_METACHECKS))
+    c.D ≥ 4 || throw(ArgumentError("`X`-metachecks (`Mx`) require `D ≥ 4`"))
     return Matrix(boundary_maps(c)[4]) # Mx
 end
 
 function metacheck_matrix_z(c::DDimensionalCode)
-    c.D ≥ 3 || throw(ArgumentError(THROW_INVALID_Z_METACHECKS))
+    c.D ≥ 3 || throw(ArgumentError("`Z`-metachecks (`Mz`) require `D ≥ 3`"))
     return Matrix(boundary_maps(c)[1]') # Mz
 end
 

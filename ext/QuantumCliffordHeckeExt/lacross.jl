@@ -142,7 +142,7 @@ struct LaCross <: AbstractCSSCode
     """A flag indicating whether to use the full-rank rectangular matrix (`true`) or the original circulant matrix (`false`)."""
     full_rank::Bool
     function LaCross(n, h, full_rank)
-        n <= 0 && throw(ArgumentError(THROW_REQUIRED_POSITIVE_ARG))
+        n <= 0 && throw(ArgumentError("Block length must be positive."))
         new(n, h, full_rank)
     end
 end

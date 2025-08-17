@@ -105,6 +105,10 @@ const BIG_INT_MINUS_ONE = Ref{BigInt}()
 const BIG_INT_TWO = Ref{BigInt}()
 const BIG_INT_FOUR = Ref{BigInt}()
 
+THROW_MISSING_PACKAGE(func, pack) =
+"You've invoked `$func` which depends on the package `$pack` but you have not installed or imported it yet.
+Immediately after you import `$pack`, the $func will be available."
+
 function __init__()
     BIG_INT_MINUS_ONE[] = BigInt(-1)
     BIG_INT_TWO[] = BigInt(2)
@@ -654,7 +658,8 @@ function MixedDestabilizer(d::Destabilizer, r::Int)
     if l==2n
         MixedDestabilizer(tab(d), r)
     else
-        throw(DomainError(THROW_ONLY_FULL_RANK_DESTABILIZER_SUPPORTED))
+        throw(DomainError("Only full-rank `Destabilizer` can be converted to `MixedDestabilizer` with specific rank. Try not specifying `r`."
+))
     end
 end
 function MixedDestabilizer(d::Destabilizer)
@@ -870,7 +875,7 @@ function Base.:(*)(l::Number, r::PauliOperator)
     elseif l==-1im
         p.phase[] = (p.phase[] + 3)&0x3
     else
-        throw(DomainError(l,THROW_PHASES))
+        throw(DomainError(l,"Only {±1,±i} are permitted as phases."))
     end
     p
 end
@@ -1057,7 +1062,7 @@ function Base.hcat(tabs::Tableau...) # TODO this implementation is slow as it un
     for tab in tabs
         rows_tab, cols_tab = size(tab)
         if rows_tab != rows
-            throw(ArgumentError(THROW_ROW_MISMATCH_TABLEAUX))
+            throw(ArgumentError("All input Tableaux/Stabilizers musT have the same number of rows."))
         end
         for i in 1:rows
             for j in 1:cols_tab

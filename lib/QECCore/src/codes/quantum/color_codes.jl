@@ -1,5 +1,11 @@
 abstract type ColorCode <: AbstractCSSCode end
 
+const THROW_COLOR_CODES_ODD =
+"Only odd distance triangular color codes are allowed.\nRefer to https://arxiv.org/abs/1108.5738"
+
+const THROW_COLOR_CODES_MIN_DIST =
+"Smallest allowed distance is 3.\nRefer to https://arxiv.org/abs/1108.5738"
+
 """Planar color codes that encode a single logical qubit."""
 abstract type TriangularCode <: ColorCode end
 

@@ -254,9 +254,9 @@ function _minimum_distance(hx, lx, opt, opt_summary, time_limit)
     # Ensure the model is solved and feasible
     if !is_solved_and_feasible(model)
         if termination_status(model) == MOI.MEMORY_LIMIT
-            throw(ErrorException(THROW_MODEL_MEMORY_LIMIT))
+            throw(ErrorException("Model exceeded memory limits"))
         elseif termination_status(model) == MOI.TIME_LIMIT
-            throw(ErrorException(THROW_MODEL_TIME_LIMIT))
+            throw(ErrorException("Model exceeded time limit"))
         else
             throw(ErrorException("Model failed to solve :$(termination_status(model))"))
         end

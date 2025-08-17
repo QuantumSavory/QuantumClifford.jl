@@ -1,5 +1,13 @@
 using Random: AbstractRNG, GLOBAL_RNG
 include("throws.jl")
+
+THROW_COMPACT_QUBIT_OPERATOR_SHAPE_ERROR(n, operator_with_size) =
+"Set `n=$n` as a $operator_with_size being compacted (`compact=true`) has to result in a $n x $n `CliffordOperator`."
+
+THROW_INVALID_QUBIT_OPERATOR_SIZE_ALLOCATION(operator_with_size) =
+"Set a larger `n`, otherwise the `operator_with_size` can not fit in the allocated `CliffordOperator`.
+ Use `compact=true` if you want to discard the target index."
+
 """Supertype of all symbolic operators. Subtype of `AbstractCliffordOperator`"""
 abstract type AbstractSymbolicOperator <: AbstractCliffordOperator end
 """Supertype of all single-qubit symbolic operators."""
@@ -223,7 +231,7 @@ function SingleQubitOperator(o::SingleQubitOperator, qubit::Int)
     return SingleQubitOperator(qubit, o.xx, o.xz, o.zx, o.zz, o.px, o.pz)
 end
 function SingleQubitOperator(op::CliffordOperator, qubit)
-    nqubits(op)==1 || throw(DimensionMismatch(THROW_INVALID_CONVERSION_TO_SINGLEQUBIT))
+    nqubits(op)==1 || throw(DimensionMismatch("You are trying to convert a multiqubit `CliffordOperator` into a symbolic `SingleQubitOperator`."))
     SingleQubitOperator(qubit,tab(op)[1,1]...,tab(op)[2,1]...,(~).(iszero.(tab(op).phases))...)
 end
 SingleQubitOperator(op::CliffordOperator) = SingleQubitOperator(op, 1)
@@ -231,10 +239,10 @@ SingleQubitOperator(op::CliffordOperator) = SingleQubitOperator(op, 1)
 CliffordOperator(op::AbstractSingleQubitOperator, n; kw...) = CliffordOperator(SingleQubitOperator(op), n; kw...)
 function CliffordOperator(op::SingleQubitOperator, n; compact=false)
     if compact
-        n==1 || throw(ArgumentError(THROW_COMPACT_QUBIT_OPERATOR_SHAPE_ERROR))
+        n==1 || throw(ArgumentError(THROW_COMPACT_QUBIT_OPERATOR_SHAPE_ERROR(1, "SingleQubitOperator")))
         return CliffordOperator(Tableau([op.px ? 0x2 : 0x0, op.pz ? 0x2 : 0x0],[op.xx op.xz; op.zx op.zz]))
     else
-        n >= op.q || throw(DimensionMismatch(THROW_INVALID_QUBIT_OPERATOR_SIZE_ALLOCATION))
+        n >= op.q || throw(DimensionMismatch(THROW_INVALID_QUBIT_OPERATOR_SIZE_ALLOCATION("SingleQubitOperator")))
         c = one(CliffordOperator, n)
         c[op.q,op.q] = op.xx, op.xz # TODO define an `embed` helper function
         c[n+op.q,op.q] = op.zx, op.zz
@@ -346,7 +354,7 @@ macro qubitop2(name, kernel, inv_kernel)
         struct $(esc(prefixname)) <: AbstractTwoQubitOperator
             q1::Int
             q2::Int
-            $(esc(prefixname))(q1,q2) = if q1<=0 || q2<=0 throw(ArgumentError(THROW_NO_ZERO_QUBIT)) elseif q1==q2 throw(ArgumentError(THROW_INVALID_TWO_QUBIT_GATE)) else new(q1,q2) end
+            $(esc(prefixname))(q1,q2) = if q1<=0 || q2<=0 throw(ArgumentError(THROW_NO_ZERO_QUBIT)) elseif q1==q2 throw(ArgumentError("Failed to create a two qubit gate because the two qubits it acts on have the same index. The qubit indices have to be different.")) else new(q1,q2) end
         end
         @doc $docstring $prefixname
         @inline $(esc(:qubit_kernel))(::$prefixname, x1, z1, x2, z2) = $kernel
@@ -407,10 +415,10 @@ Then we can use a truth-table to boolean formula converter, e.g. https://www.dco
 
 function CliffordOperator(op::AbstractTwoQubitOperator, n; compact=false)
     if compact
-        n==2 || throw(ArgumentError(THROW_COMPACT_QUBIT_OPERATOR_SHAPE_ERROR))
+        n==2 || throw(ArgumentError(THROW_COMPACT_QUBIT_OPERATOR_SHAPE_ERROR(2, "TwoQubitOperator")))
         return CliffordOperator(typeof(op))
     else
-        n >= max(op.q1,op.q2) || throw(DimensionMismatch(THROW_INVALID_QUBIT_OPERATOR_SIZE_ALLOCATION))
+        n >= max(op.q1,op.q2) || throw(DimensionMismatch(THROW_INVALID_QUBIT_OPERATOR_SIZE_ALLOCATION("TwoQubitOperator")))
         c = one(CliffordOperator, n)
         _c = CliffordOperator(typeof(op))
         for (i,q) in ((1,op.q1),(2,op.q2))

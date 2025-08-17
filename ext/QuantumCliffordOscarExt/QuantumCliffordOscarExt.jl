@@ -31,6 +31,5 @@ include("types.jl")
 include("direct_product.jl")
 include("group_presentation.jl")
 include("d_dimensional_codes.jl")
-include("../../src/throws.jl")
 
 end # module
