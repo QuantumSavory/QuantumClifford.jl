@@ -1,4 +1,3 @@
-include("throws.jl")
 """
 Clifford Operator specified by the mapping of the basis generators.
 

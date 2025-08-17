@@ -1,7 +1,6 @@
 # using LoopVectorization
 using HostCPUFeatures: pick_vector_width
 import SIMD
-include("throws.jl")
 
 """Nonvectorized version of `mul_left!` used for unit tests."""
 function _mul_left_nonvec!(r::AbstractVector{T}, l::AbstractVector{T}; phases::Bool=true) where T<:Unsigned

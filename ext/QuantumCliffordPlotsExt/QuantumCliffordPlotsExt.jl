@@ -3,6 +3,7 @@ module QuantumCliffordPlotsExt
 using Plots
 using QuantumClifford
 include("../../src/throws.jl")
+using .Throws
 
 @recipe function f(s::QuantumClifford.Stabilizer; xzcomponents=:together)
     seriestype  := :heatmap
@@ -22,7 +23,7 @@ include("../../src/throws.jl")
         h = QuantumClifford.stab_to_gf2(s)
         h[:,1:end÷2] + h[:,end÷2+1:end]*2
     else
-        throw(ErrorException(THROW_INVALID_XZ_COMPONENTS))
+        throw(ErrorException("`xzcomponents` should be `:split` or `:together`"))
     end
 end
 

@@ -105,10 +105,6 @@ const BIG_INT_MINUS_ONE = Ref{BigInt}()
 const BIG_INT_TWO = Ref{BigInt}()
 const BIG_INT_FOUR = Ref{BigInt}()
 
-THROW_MISSING_PACKAGE(func, pack) =
-"You've invoked `$func` which depends on the package `$pack` but you have not installed or imported it yet.
-Immediately after you import `$pack`, the $func will be available."
-
 function __init__()
     BIG_INT_MINUS_ONE[] = BigInt(-1)
     BIG_INT_TWO[] = BigInt(2)
@@ -1466,5 +1462,7 @@ include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
 include("throws.jl")
+
+using .Throws
 
 end #module

@@ -1,4 +1,3 @@
-include("throws.jl")
 const THROW_CONSISTENT_QUBIT_SIZE = "`qubits` and `newstate` have to be of consistent size"
 const THROW_SMALL_STABILIZER = "the stabilizer is not big enough to contain the new state"
 """

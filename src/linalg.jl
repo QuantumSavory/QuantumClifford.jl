@@ -1,5 +1,3 @@
-include("throws.jl")
-
 const THROW_BAD_DATA_STRUCTURE(type) =
 "Using a `$type` type does not permit automatic tracking of the rank.
 Use `length`, `trusted_rank`, the `MixedDestabilizer` type, or track the rank manually."

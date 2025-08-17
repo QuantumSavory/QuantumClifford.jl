@@ -1,5 +1,4 @@
 using Random: AbstractRNG, GLOBAL_RNG
-include("throws.jl")
 
 THROW_COMPACT_QUBIT_OPERATOR_SHAPE_ERROR(n, operator_with_size) =
 "Set `n=$n` as a $operator_with_size being compacted (`compact=true`) has to result in a $n x $n `CliffordOperator`."

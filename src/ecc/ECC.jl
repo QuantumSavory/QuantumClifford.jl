@@ -54,9 +54,6 @@ Only CSS codes have this method.
 
 See also: [`parity_checks`](@ref)"""
 
-const THROW_CHECKS_MISSING(code) =
-"Codes of the type $code do not have separate X and Z parity checks, either because they are not a CSS code
-and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library."
 
 function parity_matrix_x(code::AbstractECC)
     throw(THROW_CHECKS_MISSING(code))
@@ -395,7 +392,9 @@ function isdegenerate(H::Stabilizer, d::Int=1)
     return isdegenerate(H, errors)
 end
 
-include("../throws.jl")
+include("../../src/throws.jl")
+using .Throws
+
 include("circuits.jl")
 include("decoder_pipeline.jl")
 

@@ -57,7 +57,7 @@ struct DelfosseReichardtRepCode <: AbstractCSSCode
     """The number of blocks in the Delfosse-Reichardt Repetition code."""
     p::Int
     function DelfosseReichardtRepCode(p)
-        p < 2 && throw(ArgumentError(THROW_DELFOSSE_MIN_BLOCKS))
+        p < 2 && throw(ArgumentError("The number of blocks must be at least 2 to construct a valid code."))
         p % 2 != 0 && throw(ArgumentError("The number of blocks must be a multiple of 2."))
         new(p)
     end

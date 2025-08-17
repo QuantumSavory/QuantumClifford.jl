@@ -8,5 +8,7 @@ include("../../src/throws.jl")
 include("utilities.jl")
 include("mul_leftright.jl")
 
+using .Throws
+
 end
 #=============================================================================#

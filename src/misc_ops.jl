@@ -1,5 +1,4 @@
 import QuantumInterface: nsubsystems
-include("throws.jl")
 """A Stabilizer measurement on the entirety of the quantum register.
 
 `projectrand!(state, pauli)` and `apply!(state, PauliMeasurement(pauli))` give the same (possibly non-deterministic) result.

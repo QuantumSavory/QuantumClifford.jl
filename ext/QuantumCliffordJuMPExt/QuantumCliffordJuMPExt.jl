@@ -25,5 +25,6 @@ export distance
 
 include("min_distance_mixed_integer_programming.jl")
 include("../../src/throws.jl")
+using .Throws
 
 end

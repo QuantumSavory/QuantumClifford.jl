@@ -86,7 +86,7 @@ struct DelfosseReichardt <: AbstractCSSCode
     """The log-length of the classical Reed-Muller code."""
     m::Int
     function DelfosseReichardt(p,r,m)
-        p < 2 && throw(ArgumentError(THROW_DELFOSSE_MIN_BLOCKS))
+        p < 2 && throw(ArgumentError("The number of blocks must be at least 2 to construct a valid code."))
         if r < 0 || r > m
             throw(ArgumentError(THROW_INVALID_PARAMETERS_REEDMULLER))
         end

@@ -32,5 +32,6 @@ include("lifted.jl")
 include("lacross.jl")
 include("lifted_product.jl")
 include("../../src/throws.jl")
+using .Throws
 
 end # module
