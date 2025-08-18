@@ -1,7 +1,5 @@
 
 #=============================================================================#
-# Most ideal type for shared reductions due to avoiding bank conflicts.
-# TODO: Should these be modified to Cint/Cuint?
-const DeviceSigned = Int32
+# Most ideal type due to matching the native hardware capabilities.
 const DeviceUnsigned = UInt32
 #=============================================================================#

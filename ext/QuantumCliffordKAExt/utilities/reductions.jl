@@ -51,12 +51,10 @@ REDUCTION CATALOGUE
     index::Integer, stride::Integer, arguments::AbstractArray...
     )::Nothing
 
-    if length(arguments) > 0x0
-        reduction = :(
-            arguments[0x1][index] += arguments[0x1][index + stride];
-            )
+    if length(arguments) > 0
+        reduction = :(arguments[1][index] += arguments[1][index + stride];)
     end
-    for n in 0x2 : length(arguments)
+    for n in 2 : length(arguments)
         reduction = :(
             $reduction;
             arguments[$n][index] += arguments[$n][index + stride];
@@ -75,15 +73,13 @@ end
     index::Integer, stride::Integer, arguments::AbstractArray...
     )::Nothing
 
-    if length(arguments) > 0x0
-        clause = :(arguments[0x1][index + stride] < arguments[0x1][index])
-        body = :(
-            arguments[0x1][index] = arguments[0x1][index + stride];
-            )
+    if length(arguments) > 0
+        clause = :(arguments[1][index + stride] < arguments[1][index])
+        body = :(arguments[1][index] = arguments[1][index + stride];)
     end
-    for n in 0x2 : length(arguments)
-        subclause = :(arguments[0x1][index + stride] == arguments[0x1][index])
-        for m in 0x2 : (n - 0x1)
+    for n in 2 : length(arguments)
+        subclause = :(arguments[1][index + stride] == arguments[1][index])
+        for m in 2 : (n - 1)
             subclause = :(
                 $subclause &&
                     arguments[$m][index + stride] == arguments[$m][index]

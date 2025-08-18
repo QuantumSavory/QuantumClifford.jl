@@ -1,5 +1,5 @@
 
 #=============================================================================#
 # TODO: Figure out a more elegant solution that Julia approves of.
-const tracker_element_count = 0x5
+const tracker_element_count = Csize_t(length(instances(TrackerContent)))
 #=============================================================================#

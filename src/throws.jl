@@ -11,6 +11,6 @@ const THROW_NQUBITS =
 "Unable to perform the requested operation due to encountering a mismatch \
 between the number of qubits in the provided arguments."
 
-const THROW_VALS =
+const THROW_PARAMETERS =
 "Unable to perform the requested operation due to encountering a mismatch \
-between the provided `::Val` parameter(s) and the range of supported value(s)."
+between the provided tuning parameter(s) and the range of supported value(s)."

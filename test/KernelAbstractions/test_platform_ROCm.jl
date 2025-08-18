@@ -1,3 +1,5 @@
+
+#=============================================================================#
 @testitem "ROCm" tags = [:rocm] begin
 
     include("implementation/test_platform.jl")
@@ -12,7 +14,8 @@
     end
 
     if can_run
-        test_platform(AT, synchronize)
+        test_platform(synchronize, AT)
     end
 
 end
+#=============================================================================#

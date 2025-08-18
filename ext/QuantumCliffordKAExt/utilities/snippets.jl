@@ -17,17 +17,17 @@ SNIPPET CATALOGUE
 ==============================================================================#
 
 @inline function snippet_mod_4_sum_phase!(
-    global_position::NTuple{N, <: Integer}, phases::AbstractArray{<: Unsigned},
+    global_position::NTuple{N, Integer}, phases::AbstractArray{<: Unsigned},
     partner::Union{Unsigned, AbstractArray{<: Unsigned}}
     )::Nothing where {N}
 
     @inbounds begin
-        i = global_position[0x1]
+        i = global_position[1]
         if i <= length(phases)
             if partner isa Integer
                 phases[i] = (phases[i] + partner) & 0x3
             elseif partner isa AbstractArray
-                j = ifelse(length(partner) > 0x1, i, one(i))
+                j = ifelse(length(partner) > 1, i, one(i))
                 phases[i] = (phases[i] + partner[j]) & 0x3
             end
         end
@@ -37,11 +37,11 @@ SNIPPET CATALOGUE
 end
 
 @inline function snippet_mod_4_phase!(
-    global_position::NTuple{N, <: Integer}, phases::AbstractArray{<: Unsigned}
+    global_position::NTuple{N, Integer}, phases::AbstractArray{<: Unsigned}
     )::Nothing where {N}
 
     @inbounds begin
-        i = global_position[0x1]
+        i = global_position[1]
         if i <= length(phases)
             phases[i] &= 0x3
         end
@@ -51,50 +51,44 @@ end
 end
 
 @inline function snippet_track_pivot_canonicalize!(
-    global_position::NTuple{N, <: Integer},
+    global_position::NTuple{N, Integer},
     output_buffer::Union{Nothing, AbstractArray{<: Integer}},
-    tracker::AbstractArray{<: Unsigned}, toggle::Bool, sort_order::SortOrder
+    tracker::AbstractArray{<: Unsigned}, toggle::Bool
     )::Nothing where {N}
 
     @inbounds begin
         current = KA.@uniform (
-            ifelse(toggle, tracker_element_count, 0x0)
+            ifelse(toggle, tracker_element_count, zero(Csize_t))
             )
         previous = KA.@uniform (
-            ifelse(toggle, 0x0, tracker_element_count)
+            ifelse(toggle, zero(Csize_t), tracker_element_count)
             )
-        if global_position[0x1] == 0x1
+        if global_position[1] == 1
             bit_type = tracker[current + Integer(tracker_content_bit_type)]
             row = tracker[previous + Integer(tracker_content_swap_to)]
             invalid = Integer(pauli_bit_invalid)
 
             if !isnothing(output_buffer)
 
-                if sort_order == sort_order_pauli_bit_prefer_x
-                    primary = Integer(pauli_bit_x)
-                    secondary = Integer(pauli_bit_z)
-                elseif sort_order == sort_order_pauli_bit_prefer_z
-                    primary = Integer(pauli_bit_z)
-                    secondary = Integer(pauli_bit_x)
-                end
-
+                primary = Integer(pauli_bit_primary)
+                secondary = Integer(pauli_bit_secondary)
                 previous_bit_type =
                     tracker[previous + Integer(tracker_content_bit_type)]
                 # Primary => Invalid
                 if bit_type >= invalid && previous_bit_type == primary
-                    output_buffer[0x1] = row
-                    output_buffer[0x2] = row
-                # Invalid/Primary => Secondary
-                elseif bit_type == secondary && previous_bit_type != secondary
-                    output_buffer[0x1] = row
+                    output_buffer[1] = row
+                    output_buffer[2] = row
                 # Secondary => Invalid
                 elseif bit_type >= invalid && previous_bit_type == secondary
-                    output_buffer[0x2] = row
+                    output_buffer[2] = row
+                # Invalid/Primary => Secondary
+                elseif bit_type == secondary && previous_bit_type != secondary
+                    output_buffer[1] = row
                 end
 
             end
 
-            row = ifelse(bit_type < invalid, row + one(row), row)
+            row += ifelse(bit_type < invalid, one(row), zero(row))
             tracker[current + Integer(tracker_content_swap_to)] = row
         end
     end
@@ -103,19 +97,19 @@ end
 end
 
 @inline function snippet_track_pivot_canonicalize_rref!(
-    global_position::NTuple{N, <: Integer},
+    global_position::NTuple{N, Integer},
     output_buffer::Union{Nothing, AbstractArray{<: Integer}},
     tracker::AbstractArray{<: Unsigned}, toggle::Bool
     )::Nothing where {N}
 
     @inbounds begin
         current = KA.@uniform (
-            ifelse(toggle, tracker_element_count, 0x0)
+            ifelse(toggle, tracker_element_count, zero(Csize_t))
             )
         previous = KA.@uniform (
-            ifelse(toggle, 0x0, tracker_element_count)
+            ifelse(toggle, zero(Csize_t), tracker_element_count)
             )
-        if global_position[0x1] == 0x1
+        if global_position[1] == 1
             bit_type = tracker[current + Integer(tracker_content_bit_type)]
             row = tracker[previous + Integer(tracker_content_swap_to)]
             invalid = Integer(pauli_bit_invalid)
@@ -125,11 +119,11 @@ end
                     tracker[previous + Integer(tracker_content_bit_type)]
                 # Valid => Invalid
                 if bit_type >= invalid && previous_bit_type < invalid
-                    output_buffer[0x1] = row - one(row)
+                    output_buffer[1] = row - one(row)
                 end
             end
 
-            row = ifelse(bit_type < invalid, row - one(row), row)
+            row -= ifelse(bit_type < invalid, one(row), zero(row))
             tracker[current + Integer(tracker_content_swap_to)] = row
         end
     end
@@ -138,19 +132,19 @@ end
 end
 
 @inline function snippet_swap_rows_prepare_tracker!(
-    global_position::NTuple{N, <: Integer},
+    global_position::NTuple{N, Integer},
     phases::AbstractArray{<: Unsigned}, xzs::AbstractArray{<: Unsigned},
     tracker::AbstractArray{S}, toggle::Bool
     )::Nothing where {N, S <: Unsigned}
 
     @inbounds begin
-        i = global_position[0x1]
-        end_i = KA.@uniform (size(xzs, 0x1) >> 0x1)
+        i = global_position[1]
+        end_i = KA.@uniform (size(xzs, 1) >> 1)
         current = KA.@uniform (
-            ifelse(toggle, tracker_element_count, 0x0)
+            ifelse(toggle, tracker_element_count, zero(Csize_t))
             )
         next = KA.@uniform (
-            ifelse(toggle, 0x0, tracker_element_count)
+            ifelse(toggle, zero(Csize_t), tracker_element_count)
             )
         valid =
             tracker[current + Integer(tracker_content_bit_type)] <
@@ -185,27 +179,38 @@ end
 end
 
 @inline function snippet_set_row_phase_flag!(
-    global_position::NTuple{N, <: Integer},
+    global_position::NTuple{N, Integer},
     phases::AbstractArray{P}, xzs::AbstractArray{T},
-    tracker::AbstractArray{<: Unsigned}, toggle::Bool
+    tracker::AbstractArray{<: Unsigned}, toggle::Bool,
+    pauli_preferance::PauliPreferance
     )::Nothing where {N, P <: Unsigned, T <: Unsigned}
 
     @inbounds begin
-        z_offset = KA.@uniform (size(xzs, 0x1) >> 0x1)
-        end_rows = KA.@uniform (size(xzs, 0x2))
+        z_offset = KA.@uniform (size(xzs, 1) >> 1)
+        end_rows = KA.@uniform (size(xzs, 2))
         current = KA.@uniform (
-            ifelse(toggle, tracker_element_count, 0x0)
+            ifelse(toggle, tracker_element_count, zero(Csize_t))
             )
-        row = global_position[0x1]
+        row = global_position[1]
         index = tracker[current + Integer(tracker_content_index)]
         bit_shift = tracker[current + Integer(tracker_content_bit_shift)]
         bit_type = tracker[current + Integer(tracker_content_bit_type)]
 
         if bit_type < Integer(pauli_bit_invalid) && row <= end_rows
-            if bit_type == Integer(pauli_bit_x)
+            if bit_type == Integer(pauli_bit_primary)
+                index += ifelse(
+                    pauli_preferance == pauli_preferance_x,
+                    zero(z_offset),
+                    z_offset
+                    )
                 status = xzs[index, row] & bit_mask(bit_shift, T)
-            elseif bit_type == Integer(pauli_bit_z)
-                status = xzs[index + z_offset, row] & bit_mask(bit_shift, T)
+            elseif bit_type == Integer(pauli_bit_secondary)
+                index += ifelse(
+                    pauli_preferance == pauli_preferance_x,
+                    z_offset,
+                    zero(z_offset)
+                    )
+                status = xzs[index, row] & bit_mask(bit_shift, T)
             end
             phases[row] &= 0x3
             if status != zero(T)

@@ -1,5 +1,6 @@
 
 #=============================================================================#
-include("mul_leftright/device_mul.jl")
-include("mul_leftright/host_interface.jl")
+include("mul/device_mul.jl")
+include("mul/new_interface.jl")
+include("mul/old_interface.jl")
 #=============================================================================#

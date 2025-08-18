@@ -20,31 +20,27 @@ SINFUL IMPLEMENTATION WROUGHT ABOUT BY THE FOLLY OF MANKIND
 
 # TODO: Overhaul this entirely once support becomes available.
 @inline @generated function lock_mutex!(
-    mutex::M, data::AbstractArray...
-    )::Nothing where {M <: AbstractMutex}
+    mutex::AbstractMutex, data::AbstractArray...
+    )::Nothing
 
-    if length(data) > 0x0
-        clause = :(
-            @atomicreplace :release :acquire mutex[0x1] mutex_exchange_lock
-            )
-        # CAUTION: Atomics forces the necessary memory synchronisation barrier.
-        @inbounds nil = zero(eltype(data[0x1]))
-        fence = :(
-            # This is just a fancy atomic NOOP.
-            @atomicreplace :release :acquire data[0x1][0x1] $nil => $nil;
-            )
+    if length(data) > 0
+        swap = :(@atomicreplace :release :acquire mutex[1] mutex_exchange_lock)
+        # CAUTION: Atomics force the necessary memory synchronisation barrier.
+        @inbounds nil = zero(eltype(data[1]))
+        # This is just a fancy atomic NOOP.
+        fence = :(@atomicreplace :release :acquire data[1][1] $nil => $nil;)
     end
-    for n in 0x2 : length(data)
+    for n in 2 : length(data)
         @inbounds nil = zero(eltype(data[n]))
         fence = :(
             $fence;
-            @atomicreplace :release :acquire data[$n][0x1] $nil => $nil;
+            @atomicreplace :release :acquire data[$n][1] $nil => $nil;
             )
     end
     return :(
         @inbounds begin;
             while true;
-                ($clause).success && break;
+                ($swap).success && break;
             end;
             $fence;
         end;
@@ -55,30 +51,30 @@ end
 
 # TODO: Overhaul this entirely once support becomes available.
 @inline @generated function unlock_mutex!(
-    mutex::M, data::AbstractArray...
-    )::Nothing where {M <: AbstractMutex}
+    mutex::AbstractMutex, data::AbstractArray...
+    )::Nothing
 
-    if length(data) > 0x0
-        # CAUTION: Atomics forces the necessary memory synchronisation barrier.
+    if length(data) > 0
+        # CAUTION: Atomics force the necessary memory synchronisation barrier.
         fence = :(
-            temp_1 = data[0x1][0x1];
+            temp_1 = data[1][1];
             # This is just a fancy atomic NOOP. Always succeeds and releases.
-            @atomicreplace :release :acquire data[0x1][0x1] temp_1 => temp_1;
+            @atomicreplace :release :acquire data[1][1] temp_1 => temp_1;
             )
     end
-    for n in 0x2 : length(data)
+    for n in 2 : length(data)
         sym = Symbol(:temp_, n)
         fence = :(
             $fence;
-            $sym = data[$n][0x1];
-            @atomicreplace :release :acquire data[$n][0x1] $sym => $sym;
+            $sym = data[$n][1];
+            @atomicreplace :release :acquire data[$n][1] $sym => $sym;
             )
     end
     return :(
         @inbounds begin;
             $fence;
             # This will always succeed.
-            @atomicreplace :release :acquire mutex[0x1] mutex_exchange_unlock;
+            @atomicreplace :release :acquire mutex[1] mutex_exchange_unlock;
         end;
         return nothing;
         )

@@ -1,29 +1,27 @@
 
 #=============================================================================#
 # CAUTION: Keep in mind that the constants match the direction of the order.
-# TODO: Make the parameters keyword arguments once support becomes available.
 KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
     mutable_phases::AbstractArray{<: Unsigned}, mutable_xzs::AbstractArray{T},
     @Const(const_xzs::AbstractArray{T}),
-    multiplication_order::MultiplicationOrder,
-    ::Val{phases}, ::Val{primary_axis}, ::Val{block_size}, ::Val{batch_size}
-    ) where {
-        T <: Unsigned, phases, primary_axis, block_size, batch_size
-        }
+    @Const(multiplication_order::MultiplicationOrder),
+    @Const(primary_axis::PrimaryAxis),
+    ::Val{phases}, ::Val{block_size}, ::Val{batch_size}
+    ) where {T <: Unsigned, phases, block_size, batch_size}
 
     if primary_axis == primary_axis_rows
         j_mutable, begin_i = global_index(
             KA.@index(Group, NTuple), KA.@groupsize(), KA.@index(Local, NTuple)
             )
-        stride_i = KA.@ndrange()[0x2]
+        stride_i = KA.@ndrange()[2]
     elseif primary_axis == primary_axis_qubits
         begin_i, j_mutable = global_index(
             KA.@index(Group, NTuple), KA.@groupsize(), KA.@index(Local, NTuple)
             )
-        stride_i = KA.@ndrange()[0x1]
+        stride_i = KA.@ndrange()[1]
     end
-    end_i = KA.@uniform (size(mutable_xzs, 0x1) >> 0x1)
-    flag = KA.@uniform (size(const_xzs, 0x2) > 0x1)
+    end_i = KA.@uniform (size(mutable_xzs, 1) >> 1)
+    flag = KA.@uniform (size(const_xzs, 2) > 1)
     j_const = ifelse(flag, j_mutable, one(j_mutable))
 
     if phases
@@ -41,7 +39,7 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
         right = @view const_xzs[:, j_const]
     end
 
-    for (i, _) in zip(begin_i : stride_i : end_i, one(batch_size) : batch_size)
+    for (i, _) in zip(begin_i : stride_i : end_i, Base.OneTo(batch_size))
         x_left = left[i]
         z_left = left[i + end_i]
         x_right = right[i]
@@ -61,18 +59,26 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul!(
     end
 
     if phases
-        local_index = KA.@index(Local, Linear)
+        local_index = DeviceUnsigned(KA.@index(Local, Linear))
         phase_buffer[local_index] =
-            ((count_ones(high) << 0x1) + count_ones(low)) & 0x3
+            ((count_ones(high) << 1) + count_ones(low)) & 0x3
         shared_memory_reduce!(
-            reduce_sum!, local_index, Val(block_size), phase_buffer
+            reduce_sum!,
+            local_index, Val(DeviceUnsigned(block_size)),
+            phase_buffer
             )
 
         if local_index == one(local_index)
-            # CAUTION: This is sufficient since only atomicity is required.
-            @atomic :monotonic mutable_phases[j_mutable] +=
-                phase_buffer[local_index] & 0x3
-            @atomic :monotonic mutable_phases[j_mutable] &= 0x3
+            # Avoid expensive operations when they are not required.
+            if stride_i > block_size
+                # CAUTION: This memory order is sufficient.
+                @atomic :monotonic mutable_phases[j_mutable] +=
+                    phase_buffer[local_index] & 0x3
+                @atomic :monotonic mutable_phases[j_mutable] &= 0x3
+            else
+                mutable_phases[j_mutable] += phase_buffer[local_index] & 0x3
+                mutable_phases[j_mutable] &= 0x3
+            end
         end
     end
 
@@ -81,46 +87,33 @@ end
 # CAUTION: Requires either rows(const) == 1 or rows(const) == rows(mutable)
 function device_mul!(
     mutable_phases::AbstractArray{<: Unsigned}, mutable_xzs::AbstractArray{T},
-    const_phases::AbstractArray{<: Unsigned}, const_xzs::AbstractArray{T},
-    multiplication_order::MultiplicationOrder;
-    phases::Val{phase_B} = Val(default_phases),
-    primary_axis::Val{primary_axis_E} = Val(default_primary_axis),
-    block_size::Val{block_SZ} = Val(default_block_size),
-    batch_size::Val{batch_SZ} = Val(default_batch_size)
-    )::Nothing where {
-        T <: Unsigned, phase_B, primary_axis_E, block_SZ, batch_SZ
-        }
-
-    phase_B isa Bool && primary_axis_E isa PrimaryAxis &&
-        block_SZ isa Integer && block_SZ > zero(block_SZ) &&
-            batch_SZ isa Integer && batch_SZ > zero(batch_SZ) ||
-                throw(ArgumentError(THROW_VALS))
+    const_phases::AbstractArray{<: Unsigned}, const_xzs::AbstractArray{T};
+    multiplication_order::MultiplicationOrder = default_multiplication_order,
+    primary_axis::PrimaryAxis = default_primary_axis,
+    phases::Bool = default_phases,
+    block_size::Integer = default_block_size,
+    batch_size::Integer = default_batch_size
+    )::Nothing where {T <: Unsigned}
 
     backend = KA.get_backend(mutable_xzs)
 
-    if primary_axis_E == primary_axis_rows
-        tile = (one(block_SZ), block_SZ)
+    if primary_axis == primary_axis_rows
+        tile = (one(block_size), block_size)
         space = tessellate(
-            (
-                size(mutable_xzs, 0x2),
-                cld(size(mutable_xzs, 0x1) >> 0x1, batch_SZ)
-                ),
+            (size(mutable_xzs, 2), cld(size(mutable_xzs, 1) >> 1, batch_size)),
             tile
             )
-    elseif primary_axis_E == primary_axis_qubits
-        tile = (block_SZ, one(block_SZ))
+    elseif primary_axis == primary_axis_qubits
+        tile = (block_size, one(block_size))
         space = tessellate(
-            (
-                cld(size(mutable_xzs, 0x1) >> 0x1, batch_SZ),
-                size(mutable_xzs, 0x2)
-                ),
+            (cld(size(mutable_xzs, 1) >> 1, batch_size), size(mutable_xzs, 2)),
             tile
             )
     end
 
-    if phase_B
+    if phases
         snippet! = kernel_snippet!(backend)
-        @inbounds snippet!(
+        snippet!(
             snippet_mod_4_sum_phase!,
             mutable_phases, const_phases;
             ndrange = length(mutable_phases)
@@ -128,8 +121,9 @@ function device_mul!(
     end
     mul! = kernel_mul!(backend)
     mul!(
-        mutable_phases, mutable_xzs, const_xzs, multiplication_order,
-        phases, primary_axis, block_size, batch_size;
+        mutable_phases, mutable_xzs, const_xzs,
+        multiplication_order, primary_axis,
+        Val(phases), Val(block_size), Val(batch_size);
         workgroupsize = tile, ndrange = space
         )
 

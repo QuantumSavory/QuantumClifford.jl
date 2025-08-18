@@ -20,9 +20,7 @@
             zero(T)
             )
         temp = reinterpret(S, output)
-        @inbounds (
-            @view temp[Base.OneTo(len), Base.OneTo.(dims)...]
-            ) .= source
+        @inbounds (@view temp[Base.OneTo(len), Base.OneTo.(dims)...]) .= source
     end
     return output
 
