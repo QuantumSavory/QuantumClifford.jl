@@ -72,7 +72,11 @@ random_pauli(n::Int, p; kwargs...) = random_pauli(GLOBAL_RNG,n,p; kwargs...)
 # Random Tableaux
 ##############################
 
-"""A random tableau with r rows on n qubits.
+"""A random tableau with r rows on n qubits, suitable for bulk sampling.
+
+Each row is equivalent to an instance of [`random_pauli`](@ref) without any
+additional commutativity constraints. For proper states, consider utilising
+[`random_stabilizer`](@ref) or [`random_destabilizer`](@ref) as necessary.
 
 Use `nophase=false` to randomize the phase.
 Use `realphase=false` to get operators with phases including ±i.
