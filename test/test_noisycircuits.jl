@@ -257,6 +257,23 @@
             @test phases(stab2)[end] == 0x00
 
 
+            #checking if the classical bits record measurements correctly
+            reg = Register(one(MixedDestabilizer,1), 1)
+            apply!(reg, sX(1))
+
+            branches1 = applybranches(reg, sMRZ(1,1))
+
+            reg_after, _, _, _ = first(branches1)
+
+
+            @test bitview(reg_after)[1] == true
+
+            # The qubit should have been reset to 0
+            branches2 = applybranches(reg_after, sMZ(1,1))
+            r2, _, _, _ = first(branches2)
+            @test bitview(r2)[1] == false
+
+
         end
 
         @testset "Conforming to the project! interface" begin
