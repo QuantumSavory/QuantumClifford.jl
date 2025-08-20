@@ -9,7 +9,9 @@ const Z_COMMUTATION_SUBGROUP = [CliffordOperator(x, 1) for x in [sId1(1), sZ(1),
 """
 Stabilizers needed to convert between equivalent states to satisfy the commutation constraint (see [`apply_cphase_isolated`](@ref))
 
-NOTE: Luckily, to satisfy the commutation constraint we don't need the whole stabilizer subgroup which is quite big, but only a selected few.
+!!! info "Large subgroup"
+
+    Luckily, to satisfy the commutation constraint we don't need the whole stabilizer subgroup which is quite big, but only a selected few.
 """
 const PAULI_STABILIZERS = Dict(
     # For CPHASE |++>

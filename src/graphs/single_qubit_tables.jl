@@ -1,14 +1,16 @@
 """
-A function that generates a table mapping group members to the minimal representation in terms of the generators provided.
+Generate a table mapping group members to the minimal representation in terms of the generators provided.
+
+The first argument is the identity element of the group. The second argument is a list of generators.
 
 For example,
 `decompose_into_generators(sId1(1), [sInvPhase(1), sSQRTX(1)])`
-generates a table which maps
+generates a table in which the `sY` entry is
 `sY(1) -> [sSQRTX(1), sSQRTX(1), sInvPhase(1), sInvPhase(1)]`
 which means
 Y = sInvPhase * sInvPhase * sSQRTX * sSQRTX
 
-The function uses a brute-force, dynamical-programming based approach on
+The function uses a brute-force, dynamic programming based approach on
 finding minimal representation (decomposition) of any group elements in terms of the generators provided.
 """
 function decompose_into_generators(e::AbstractSingleQubitOperator, generators::Vector{<:AbstractSingleQubitOperator})
@@ -55,6 +57,9 @@ function decompose_into_generators(e::AbstractSingleQubitOperator, generators::V
     return table_prime
 end
 
+"""
+A table mapping group members to the minimal representation in terms of the generators provided.
+"""
 const IP_SQRTX_DECOMPOSITION_TABLE = decompose_into_generators(sId1(1), [sInvPhase(1), sSQRTX(1)])
 
 """Generate a single qubit operator multiplication table"""
