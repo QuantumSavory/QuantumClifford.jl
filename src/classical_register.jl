@@ -192,7 +192,6 @@ function applybranches(r::Register, op::AbstractResetMeasurement;max_order=1)
         r.bits[op.bit] = res==0x02
         if(res==0x02)
             apply!(r, flipOp(op.qubit))
-            r.bits[op.bit] = false
         end
         push!(new_branches, (r,continue_stat,1,0))
     end
