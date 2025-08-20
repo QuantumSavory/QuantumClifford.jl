@@ -2,7 +2,7 @@
     using CUDA
     using QuantumClifford
     using Random
-    using QuantumClifford: to_cpu, to_gpu
+    using QuantumClifford: to_cpu, to_gpu, random_tableau
     
     if CUDA.functional()
         @testset "GPU canonicalize! correctness" begin
@@ -18,12 +18,14 @@
         
         @testset "GPU canonicalize! performance" begin
             n = 6000  # Large enough to see GPU benefit
-            cpu_stab = random_stabilizer(n)
+            # Only linear independence is required to achieve full rank.
+            # Occurs with unit probability for arbitrarily large qubit counts.
+            cpu_stab = Stabilizer(random_tableau(n, n))
             gpu_stab = to_gpu(cpu_stab)
             canonicalize!(copy(gpu_stab))
             gpu_time = @elapsed canonicalize!(copy(gpu_stab))
             # Sanity check, note that for 6000 size Stabilizer cpu version takes 1900-2400 ms on average
-            @test gpu_time*1000 < 1900 
+            @test 1000 * gpu_time < 1900
         end
         
         @testset "GPU canonicalize! phases option" begin

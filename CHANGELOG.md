@@ -7,6 +7,7 @@
 
 ## v0.10.1-dev
 
+- Adapt.jl can now be used to convert various types to GPU-backed storage.
 - The `GeneralizedBicycleCode` and `ExtendedGeneralizedBicycleCode` are now implemented via `Hecke`'s polynomial ring in the ECC submodule.
 - Add `apply_right!` that applies a clifford operator to the right of a dense clifford operator.
 - Add `mul_right!` methods for inplace operations between tableaus
