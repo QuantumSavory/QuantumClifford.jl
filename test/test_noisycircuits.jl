@@ -224,6 +224,41 @@
             @test random2_pe[true_success_stat] == 0
         end
 
+        @testset "Symbolic Reset Measurements" begin
+            using QuantumClifford:tensor
+            #test for checking reset capabilities
+            state1 = S"-Z"
+            register1 = Register(state1, [0])
+            op1 = sMRZ(1,1)
+            verify1 = VerifyOp(state1, [1])
+            pet1 = petrajectories(register1, [op1,verify1])
+            @test pet1[false_success_stat] == 1
+            @test pet1[true_success_stat] == 0
+            @test pet1[failure_stat] == 0
+
+            state2 = S"-X"
+            register2 = Register(state2, [0])
+            op2 = sMRX(1,1)
+            verify2 = VerifyOp(state2, [1])
+            pet2 = petrajectories(register2, [op2,verify2])
+            @test pet2[false_success_stat] == 1
+            @test pet2[true_success_stat] == 0
+            @test pet2[failure_stat] == 0
+
+            #checks probabilstic case to see if the phase of measurement anticommuting stabilizer is the same in both branches
+            ghz_state = S"XXX ZZI IZZ"
+            reg = Register(ghz_state, [0])
+            branches = applybranches(reg, sMRZ(1,1))
+            stab1 = stabilizerview(branches[2][1].stab)
+            stab2 = stabilizerview(branches[1][1].stab)
+            canonicalize_rref!(stab1)
+            canonicalize_rref!(stab2)
+            @test phases(stab1)[end] == 0x00
+            @test phases(stab2)[end] == 0x00
+
+
+        end
+
         @testset "Conforming to the project! interface" begin
             state = Register(MixedDestabilizer(S"ZZ"), zeros(Bool, 1))
             meas = PauliMeasurement(P"ZI", 1)
@@ -294,5 +329,36 @@
             canonicalize!(quantumstate(r))
             @test stabilizerview(r) == expectedFinalState
         end
+    end
+
+    @testset "VerifyOp" begin
+        using QuantumClifford.ECC: Steane7, parity_checks, naive_encoding_circuit
+        @testset "Stabilizer passed as good_state is not a logical state" begin
+            good_state = parity_checks(Steane7()) #passing in a code instead of a state within codespace
+            verify = VerifyOp(good_state, 1:7)
+            reg = Register(one(MixedDestabilizer,7),6) #dummy register to pass into applywstatus!
+        
+            
+            @test_throws ArgumentError applywstatus!(reg, verify) #should throw an error since good_state isn't a logical state
+            
+    
+        end
+    
+        @testset "Accepts pure good_state argument" begin
+            good_state = S"ZZI
+                            IZZ 
+                            XXX" # passing in GHZ state as good_state argument since it exists within the repetition code's codespace
+            verify = VerifyOp(good_state, 1:3)
+            reg = Register(one(MixedDestabilizer,3),2) 
+            encoding = [sHadamard(1)  ,  sCNOT(1,2)   ,sCNOT(1,3) ] # encoding the register's state into a logical state within the repetition code's codespace
+            for i in encoding
+                apply!(reg, i)
+            end
+    
+            _, status = applywstatus!(reg, verify)
+            @test status == true_success_stat
+        end
+    
+      
     end
 end
