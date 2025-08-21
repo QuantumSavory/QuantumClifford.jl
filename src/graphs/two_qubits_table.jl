@@ -108,7 +108,8 @@ and we guarantee if U1 ∈ Z_COMMUTATION_SUBGROUP then U1' ∈ Z_COMMUTATION_SUB
 See also [`ISOLATED_CPHASE_TABLE`](@ref) and [`gen_isolated_cphase_table`](@ref)
 """
 function gen_isolated_cphase_table()
-    table = Dict{Tuple{Bool,SingleQubitOperator,SingleQubitOperator},GraphState}()
+    # Spelling out the full type of GraphState to avoid `convert(T, x)` during `setindex!` which causes memory allocation
+    table = Dict{Tuple{Bool,SingleQubitOperator,SingleQubitOperator},GraphState{Graphs.SimpleGraph{Int64},SingleQubitOperator}}()
 
     # Enumerate all possible states of the form (U1 ⊗ U2) (CPHASE)ᵏ |++>, k∈{0,1}
     # There are 24 * 24 * 2 possibilities in total.

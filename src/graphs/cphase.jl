@@ -133,14 +133,14 @@ function apply!(gs::GraphState, gate::sCPHASE)
 
         # find, after the removal of q1's VOP, if q2 has any non-operand neighbors
         nghbr = inneighbors(g, q2)
-        targets = filter(x -> x != q1, nghbr)
+        target_id = findfirst(x -> x != q1, nghbr)
 
-        if !isempty(targets)
+        if !isnothing(target_id)
             # If there is at least one non-operand neighbor, remove q2's VOP as well.
 
             # It's guaranteed that after this step, U₁ ∈ Z_COMMUTATION_SUBGROUP.
             # Because `local_comp!` will only introduce sInvPhase ∈ Z_COMMUTATION_SUBGROUP to non-src and non-target neighbors.
-            remove_vop!(gs, q2, targets[1])
+            remove_vop!(gs, q2, nghbr[target_id])
 
             # in which case we are sure both U₁, U₂ ∈ Z_COMMUTATION_SUBGROUP,
             # and we could just toggle the edge between them (fast path)
@@ -152,14 +152,15 @@ function apply!(gs::GraphState, gate::sCPHASE)
         end
    else
         # try reduce both U₁, U₂ to identity
-        for q in [q1,q2]
+        for q in (q1,q2)
             # non-operand neighbors
-            targets = filter(x-> (x != q1) && (x != q2), inneighbors(g, q))
+            nghbr = inneighbors(g, q)
+            target_id = findfirst(x-> (x != q1) && (x != q2), nghbr)
             # since q1 and q2 are disconnected, when non-operand neighbor is empty, it means the qubit is truly isolated
             # and any later local complementation won't change this. Therefore, we are safe to do a one-pass [q1, q2] removal above
             # instead of a general [q1, q2, q1] if we are dealing with the general case.
-            if !isempty(targets)
-                remove_vop!(gs, q, targets[1])
+            if !isnothing(target_id)
+                remove_vop!(gs, q, nghbr[target_id])
             end
         end
 
