@@ -31,7 +31,9 @@ CUDA_flag && Pkg.add("CUDA")
 ROCm_flag && Pkg.add("AMDGPU")
 OpenCL_flag && Pkg.add(["pocl_jll", "OpenCL"])
 if any((CUDA_flag, ROCm_flag, OpenCL_flag))
-    Pkg.add(["Atomix", "GPUArraysCore", "GPUArrays", "KernelAbstractions"])
+    Pkg.add(
+        ["Adapt", "Atomix", "GPUArraysCore", "GPUArrays", "KernelAbstractions"]
+         )
 end
 Oscar_flag && Pkg.add("Oscar")
 using TestItemRunner

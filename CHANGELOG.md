@@ -7,6 +7,13 @@
 
 ## v0.10.1-dev
 
+- The `HomologicalProductCode` and `DoubleHomologicalProductCode` are now implemented via `Oscar`'s homological algebra in the ECC submodule.
+- Adapt.jl can now be used to convert various types to GPU-backed storage.
+- The `GeneralizedBicycleCode` and `ExtendedGeneralizedBicycleCode` are now implemented via `Hecke`'s polynomial ring in the ECC submodule.
+- Add `apply_right!` that applies a clifford operator to the right of a dense clifford operator.
+- Add `mul_right!` methods for inplace operations between tableaus
+- Add a `CliffordOperator` constructor that builds a dense clifford from a `PauliOperator`
+- Add a `phases` getter for `CliffordOperator`
 - The generalized hypergraph product code is implemented in the ECC submodule.
 - Add novel `[[n² + m²,(n - rank([C ∣ M]))² + (m − rank([C ∣ M]ᵀ))², d]]` quantum Tillich-Zémor `random_TillichZemor_code` codes to `QECCore` and introduce `QECCoreNemoExt` for accurate matrix `rank` computation.
 - The D-dimensional Surface and Toric codes are now implemented using `Oscar`'s chain complexes and `GF2` homology in the ECC submodule.
