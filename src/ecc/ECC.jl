@@ -2,7 +2,7 @@ module ECC
 
 using QECCore
 import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
-metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp
+metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -81,13 +81,6 @@ end
 function iscss(c::AbstractECC)
     return iscss(typeof(c))
 end
-
-"""
-Generator Polynomial `g(x)`
-
-In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field `F`. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
-"""
-function generator_polynomial end
 
 """The generator matrix of a code."""
 function generator end

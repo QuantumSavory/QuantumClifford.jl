@@ -32,6 +32,7 @@
 - Add Quantum Tanner graph product codes: general and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`) to `QECCore`.
 - Add classical Gallager's LDPC code to `QECCore`.
 - Add `GeneralizedCirculantBivariateBicycle` to `QECCore` and introduce to `QECCoreOscarExt`.
+- Add `GoppaCode` to the `QECCore`.
 
 ### Private API
 
