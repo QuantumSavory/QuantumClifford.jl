@@ -4,13 +4,13 @@
 @inline function scan_step(
     x_bits::T, z_bits::T, current_index::Integer,
     index::Integer, bit_shift::Integer, bit_type::PauliBit,
-    ::Val{pauli_preferance}, ::Val{sort_order}
-    ) where {T <: Unsigned, pauli_preferance, sort_order}
+    ::Val{pauli_preference}, ::Val{sort_order}
+    ) where {T <: Unsigned, pauli_preference, sort_order}
 
-    if pauli_preferance == pauli_preferance_x
+    if pauli_preference == pauli_preference_x
         current_shift_primary = lowest_set_bit(x_bits)
         current_shift_secondary = lowest_set_bit(z_bits)
-    elseif pauli_preferance == pauli_preferance_z
+    elseif pauli_preference == pauli_preference_z
         current_shift_primary = lowest_set_bit(z_bits)
         current_shift_secondary = lowest_set_bit(x_bits)
     end

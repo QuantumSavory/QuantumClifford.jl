@@ -4,7 +4,7 @@
 const default_multiplication_order = multiplication_order_left
 
 # Customary choice to position X pauli operators before their Z counterparts.
-const default_pauli_preferance = pauli_preferance_x
+const default_pauli_preference = pauli_preference_x
 
 # Potentially boosts cache hits and reduces atomic contention.
 const default_primary_axis = primary_axis_rows

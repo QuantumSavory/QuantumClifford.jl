@@ -9,7 +9,7 @@ function device_canonicalize_rref!(
     output_buffer::Union{Nothing, AbstractArray{<: Integer}} = nothing,
     bit_masks::Union{Nothing, AbstractArray{T}} = nothing;
     multiplication_order::MultiplicationOrder = default_multiplication_order,
-    pauli_preferance::PauliPreferance = default_pauli_preferance,
+    pauli_preference::PauliPreference = default_pauli_preference,
     primary_axis::PrimaryAxis = default_primary_axis,
     phases::Bool = default_phases,
     block_size::Integer = default_block_size,
@@ -61,7 +61,7 @@ function device_canonicalize_rref!(
 
     bit_scan!(
         tracker, mutex, xzs, bit_masks, primary_axis,
-        Val(pauli_preferance), Val(sort_order_qubit_number),
+        Val(pauli_preference), Val(sort_order_qubit_number),
         Val(block_size), Val(batch_size);
         workgroupsize = tile, ndrange = space
         )
@@ -73,13 +73,13 @@ function device_canonicalize_rref!(
             )
         snippet!(
             snippet_set_row_phase_flag!,
-            ph, xzs, tracker, toggle, pauli_preferance;
+            ph, xzs, tracker, toggle, pauli_preference;
             ndrange = row_count
             )
         mul_and_scan!(
             ph, xzs, tracker, toggle, mutex, bit_masks, shrink_workspace,
             scan_side_lesser, multiplication_order, primary_axis,
-            Val(pauli_preferance), Val(sort_order_qubit_number),
+            Val(pauli_preference), Val(sort_order_qubit_number),
             Val(phases), Val(block_size), Val(batch_size);
             workgroupsize = tile, ndrange = space
             )
@@ -106,7 +106,7 @@ end
     output_buffer::Union{Nothing, AbstractGPUArray{<: Integer}} = nothing,
     bit_masks::Union{Nothing, AbstractGPUArray{<: Unsigned}} = nothing;
     multiplication_order::MultiplicationOrder = default_multiplication_order,
-    pauli_preferance::PauliPreferance = default_pauli_preferance,
+    pauli_preference::PauliPreference = default_pauli_preference,
     primary_axis::PrimaryAxis = default_primary_axis,
     phases::Bool = default_phases,
     block_size::Integer = default_block_size,
@@ -128,7 +128,7 @@ end
     return do_canonicalize_rref!(
         state, output_buffer, bit_masks;
         multiplication_order = multiplication_order,
-        pauli_preferance = pauli_preferance,
+        pauli_preference = pauli_preference,
         primary_axis = primary_axis, phases = phases,
         block_size = block_size, batch_size = batch_size
         )
@@ -140,7 +140,7 @@ end
     output_buffer::Union{Nothing, AbstractGPUArray{<: Integer}} = nothing,
     bit_masks::Union{Nothing, AbstractGPUArray{<: Unsigned}} = nothing;
     multiplication_order::MultiplicationOrder = default_multiplication_order,
-    pauli_preferance::PauliPreferance = default_pauli_preferance,
+    pauli_preference::PauliPreference = default_pauli_preference,
     primary_axis::PrimaryAxis = default_primary_axis,
     phases::Bool = default_phases,
     block_size::Integer = default_block_size,
@@ -156,7 +156,7 @@ end
     device_canonicalize_rref!(
         state_tab.phases, state_tab.xzs, output_buffer, bit_masks;
         multiplication_order = multiplication_order,
-        pauli_preferance = pauli_preferance,
+        pauli_preference = pauli_preference,
         primary_axis = primary_axis, phases = phases,
         block_size = block_size, batch_size = batch_size
         )

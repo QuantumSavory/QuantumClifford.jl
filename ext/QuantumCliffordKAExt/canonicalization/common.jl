@@ -6,11 +6,11 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_bit_scan!(
     @Const(xzs::AbstractArray{T}),
     @Const(bit_masks::Union{Nothing, AbstractArray{T}}),
     @Const(primary_axis::PrimaryAxis),
-    ::Val{pauli_preferance}, ::Val{sort_order},
+    ::Val{pauli_preference}, ::Val{sort_order},
     ::Val{block_size}, ::Val{batch_size}
     ) where {
         S <: Unsigned, T <: Unsigned,
-        pauli_preferance, sort_order, block_size, batch_size
+        pauli_preference, sort_order, block_size, batch_size
         }
 
     if primary_axis == primary_axis_rows
@@ -46,7 +46,7 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_bit_scan!(
 
         index, bit_shift, bit_type, break_flag = scan_step(
             x_bits, z_bits, i, index, bit_shift, bit_type,
-            Val(pauli_preferance), Val(sort_order)
+            Val(pauli_preference), Val(sort_order)
             )
         break_flag && break
     end
@@ -140,11 +140,11 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul_and_scan!(
     @Const(shrink_workspace::Bool), @Const(scan_side::ScanSide),
     @Const(multiplication_order::MultiplicationOrder),
     @Const(primary_axis::PrimaryAxis),
-    ::Val{pauli_preferance}, ::Val{sort_order},
+    ::Val{pauli_preference}, ::Val{sort_order},
     ::Val{phases}, ::Val{block_size}, ::Val{batch_size}
     ) where {
         S <: Unsigned, P <: Unsigned, T <: Unsigned,
-        pauli_preferance, sort_order, phases, block_size, batch_size
+        pauli_preference, sort_order, phases, block_size, batch_size
         }
 
     if primary_axis == primary_axis_rows
@@ -266,7 +266,7 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul_and_scan!(
 
         index, bit_shift, bit_type, break_flag = scan_step(
             x_bits, z_bits, i, index, bit_shift, bit_type,
-            Val(pauli_preferance), Val(sort_order)
+            Val(pauli_preference), Val(sort_order)
             )
         break_flag && break
     end
@@ -335,7 +335,7 @@ KA.@kernel inbounds = true unsafe_indices = true function kernel_mul_and_scan!(
 
         index, bit_shift, bit_type = scan_step(
             x_new, z_new, i, index, bit_shift, bit_type,
-            Val(pauli_preferance), Val(sort_order)
+            Val(pauli_preference), Val(sort_order)
             )
 
     end

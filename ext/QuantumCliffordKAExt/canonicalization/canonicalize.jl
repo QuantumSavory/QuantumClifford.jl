@@ -8,7 +8,7 @@ function device_canonicalize!(
     ph::AbstractArray{<: Unsigned}, xzs::AbstractArray{<: Unsigned},
     output_buffer::Union{Nothing, AbstractArray{S}} = nothing;
     multiplication_order::MultiplicationOrder = default_multiplication_order,
-    pauli_preferance::PauliPreferance = default_pauli_preferance,
+    pauli_preference::PauliPreference = default_pauli_preference,
     primary_axis::PrimaryAxis = default_primary_axis,
     phases::Bool = default_phases,
     block_size::Integer = default_block_size,
@@ -59,7 +59,7 @@ function device_canonicalize!(
 
     bit_scan!(
         tracker, mutex, xzs, nothing, primary_axis,
-        Val(pauli_preferance), Val(sort_order_pauli_bit),
+        Val(pauli_preference), Val(sort_order_pauli_bit),
         Val(block_size), Val(batch_size);
         workgroupsize = tile, ndrange = space
         )
@@ -76,13 +76,13 @@ function device_canonicalize!(
             )
         snippet!(
             snippet_set_row_phase_flag!,
-            ph, xzs, tracker, toggle, pauli_preferance;
+            ph, xzs, tracker, toggle, pauli_preference;
             ndrange = row_count
             )
         mul_and_scan!(
             ph, xzs, tracker, toggle, mutex, nothing, false,
             scan_side_greater, multiplication_order, primary_axis,
-            Val(pauli_preferance), Val(sort_order_pauli_bit),
+            Val(pauli_preference), Val(sort_order_pauli_bit),
             Val(phases), Val(block_size), Val(batch_size);
             workgroupsize = tile, ndrange = space
             )
@@ -108,7 +108,7 @@ end
     state::DeviceUnionTableau,
     output_buffer::Union{Nothing, AbstractGPUArray{<: Integer}} = nothing;
     multiplication_order::MultiplicationOrder = default_multiplication_order,
-    pauli_preferance::PauliPreferance = default_pauli_preferance,
+    pauli_preference::PauliPreference = default_pauli_preference,
     primary_axis::PrimaryAxis = default_primary_axis,
     phases::Bool = default_phases,
     block_size::Integer = default_block_size,
@@ -126,7 +126,7 @@ end
     return do_canonicalize!(
         state, output_buffer;
         multiplication_order = multiplication_order,
-        pauli_preferance = pauli_preferance,
+        pauli_preference = pauli_preference,
         primary_axis = primary_axis, phases = phases,
         block_size = block_size, batch_size = batch_size
         )
@@ -137,7 +137,7 @@ end
     state::DeviceUnionTableau,
     output_buffer::Union{Nothing, AbstractGPUArray{<: Integer}} = nothing;
     multiplication_order::MultiplicationOrder = default_multiplication_order,
-    pauli_preferance::PauliPreferance = default_pauli_preferance,
+    pauli_preference::PauliPreference = default_pauli_preference,
     primary_axis::PrimaryAxis = default_primary_axis,
     phases::Bool = default_phases,
     block_size::Integer = default_block_size,
@@ -153,7 +153,7 @@ end
     device_canonicalize!(
         state_tab.phases, state_tab.xzs, output_buffer;
         multiplication_order = multiplication_order,
-        pauli_preferance = pauli_preferance,
+        pauli_preference = pauli_preference,
         primary_axis = primary_axis, phases = phases,
         block_size = block_size, batch_size = batch_size
         )

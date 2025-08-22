@@ -7,9 +7,9 @@
 end
 
 # Specifies whether ordering should prioritise X or Z pauli operators.
-@enum PauliPreferance::UInt8 begin
-    pauli_preferance_x
-    pauli_preferance_z
+@enum PauliPreference::UInt8 begin
+    pauli_preference_x
+    pauli_preference_z
 end
 
 # Determines whether the first grid dimension matches the rows or the qubits.

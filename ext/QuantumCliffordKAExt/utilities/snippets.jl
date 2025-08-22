@@ -182,7 +182,7 @@ end
     global_position::NTuple{N, Integer},
     phases::AbstractArray{P}, xzs::AbstractArray{T},
     tracker::AbstractArray{<: Unsigned}, toggle::Bool,
-    pauli_preferance::PauliPreferance
+    pauli_preference::PauliPreference
     )::Nothing where {N, P <: Unsigned, T <: Unsigned}
 
     @inbounds begin
@@ -199,14 +199,14 @@ end
         if bit_type < Integer(pauli_bit_invalid) && row <= end_rows
             if bit_type == Integer(pauli_bit_primary)
                 index += ifelse(
-                    pauli_preferance == pauli_preferance_x,
+                    pauli_preference == pauli_preference_x,
                     zero(z_offset),
                     z_offset
                     )
                 status = xzs[index, row] & bit_mask(bit_shift, T)
             elseif bit_type == Integer(pauli_bit_secondary)
                 index += ifelse(
-                    pauli_preferance == pauli_preferance_x,
+                    pauli_preference == pauli_preference_x,
                     z_offset,
                     zero(z_offset)
                     )
