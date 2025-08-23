@@ -69,6 +69,7 @@ For quantum code construction routines:
 - [Quintavalle_2021](@cite)
 - [xu2024fastparallelizablelogicalcomputation](@cite)
 - [bravyi2013homologicalproductcodes](@cite)
+- [jacob2025singleshotdecodingfaulttolerantgates](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)
