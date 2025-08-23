@@ -133,5 +133,31 @@
                 @test stab_looks_good(stab, remove_redundant_rows=true) == true
             end
         end
+
+        @testset "Appendix B: Kitaev Toric Code" begin
+            R, (x, y) = laurent_polynomial_ring(GF(2), [:x, :y])
+            f = 1 + x
+            g = 1 + y
+            α1 = (0, 6)
+            α2 = (3, 3)
+            n, k = 36, 2
+            c = GeneralizedToricCode(f, g, α1, α2)
+            stab = parity_checks(c)
+            mat = matrix(GF(2), stab_to_gf2(stab))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == n == code_n(stab)
+            @test code_k(c) == k == code_k(stab)
+            @test stab_looks_good(stab, remove_redundant_rows=true) == true
+            Hx = matrix(GF(2), parity_matrix_x(c))
+            Hz = matrix(GF(2), parity_matrix_z(c))
+            @test rank(Hx) == 17 && rank(Hz) == 17 # B7
+            @test all(sum(parity_matrix_x(c), dims=1) .== 2)
+            # Each column contains exactly four ones [liang2025generalizedtoriccodestwisted](@cite)
+            @test all(sum(parity_matrix_x(c), dims=2) .== 4)
+            @test all(sum(parity_matrix_z(c), dims=1) .== 2)
+            # Each column contains exactly four ones [liang2025generalizedtoriccodestwisted](@cite)
+            @test all(sum(parity_matrix_z(c), dims=2) .== 4)
+        end
     end
 end
