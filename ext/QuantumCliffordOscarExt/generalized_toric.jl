@@ -123,10 +123,7 @@ exponents. Alternatively, one may introduce auxiliary variables ``\\overline{x},
 to represent ``x^{-1}, y^{-1}`` and include the relations ``\\overline{x}x - 1`` and
 ``\\overline{y}y - 1`` in the Gröbner basis computation [liang2025generalizedtoriccodestwisted](@cite).
 
-#### Examples
-
-Here is an example of computing the maximum logical dimension of Example 3
-(−1, 3, 3, −1)-generalized toric code.-generalized toric code from [liang2025generalizedtoriccodestwisted](@cite).
+#### Example
 
 Here is an example of computing the maximum logical dimension of Example 5
 (−1, −4, 4, −1)-generalized toric code from [liang2025generalizedtoriccodestwisted](@cite).
@@ -211,6 +208,27 @@ only independent monomial is 1, as all other monomials ``x^a y^b`` can be expres
 
 where ``a_1 \\in \\mathbb{Z}_2`` and ``p(x, y), q(x, y) \\in R``. For instance: ``x^2 = 1 + (1 + x)(1 + x)``. 
 
+#### Example
+
+```jldoctest
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
+
+julia> R, (x,y) = laurent_polynomial_ring(GF(2), [:x, :y]);
+
+julia> f = 1 + x;
+
+julia> g = 1 + y;
+
+julia> α1 = (0, 6);
+
+julia> α2 = (3, 3);
+
+julia> c = GeneralizedToricCode(f, g, α1, α2);
+
+julia> code_n(c), code_k(c)
+(36, 2)
+```
+
 ### Color Code
 
 The Color code is defined by the Laurent polynomials ``f(x, y) = 1 + x + xy`` and ``g(x, y) = 1 + y + xy``. The
@@ -228,15 +246,57 @@ The code has ``k_{\\text{max}} = 4``, reflecting its structure as a direct sum o
     For simple polynomials, independent monomials can be identified manually. However, a systematic
     approach using **Gröbner basis** is necessary for general cases.  
 
+#### Example
+
+```jldoctest
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
+
+julia> R, (x, y) = laurent_polynomial_ring(GF(2), [:x, :y]);
+
+julia> f = 1 + x + x*y;
+
+julia> g = 1 + y + x*y;
+
+julia> α1 = (0, 6);
+
+julia> α2 = (3, 3);
+
+julia> c = GeneralizedToricCode(f, g, α1, α2);
+
+julia> code_n(c), code_k(c)
+(36, 4)
+```
+
 ### ``(-1, 3, 3, -1)``-Generalized Toric Code
 
 The ``(-1, 3, 3, -1)``-Generalized Toric code corresponds to stabilizers in the Gross code
-and ``(3,3)``-BB code. The Laurent polynomials are:
+and ``(3, 3)``-BB code. The Laurent polynomials are:
 
 ```math
 \\begin{aligned}
     f(x, y) = 1 + x + x^{-1}y^3, \\quad g(x, y) = 1 + y + x^3 y^{-1},  
 \\end{aligned}
+```
+
+#### Example
+
+```jldoctest
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
+
+julia> R, (x, y) = laurent_polynomial_ring(GF(2), [:x, :y]);
+
+julia> f = 1 + x + x^-1*y^3;
+
+julia> g = 1 + y + x^3*y^-1;
+
+julia> α1 = (0, 12);
+
+julia> α2 = (6, 0);
+
+julia> c = GeneralizedToricCode(f, g, α1, α2);
+
+julia> code_n(c), code_k(c)
+(144, 12)
 ```
 
 ### ``(-1, -3, 3, -1)``-Generalized Toric Code
@@ -250,9 +310,30 @@ Laurent polynomials are:
 \\end{aligned}
 ```
 
-#### Examples
+#### Example
 
-Here is an example of `[[[396, 8, ≤ 26]]` Generalized Toric Code from Table IV of [liang2025generalizedtoriccodestwisted](@cite).
+```jldoctest
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
+
+julia> R, (x, y) = laurent_polynomial_ring(GF(2), [:x, :y]);
+
+julia> f = 1 + x + x^-1*y^-3;
+
+julia> g = 1 + y + x^3*y^-1;
+
+julia> α1 = (0, 12);
+
+julia> α2 = (6, 0);
+
+julia> c = GeneralizedToricCode(f, g, α1, α2);
+
+julia> code_n(c), code_k(c)
+(144, 12)
+```
+
+#### Example from Tables I-IV of [liang2025generalizedtoriccodestwisted](@cite)
+
+Here is an example of `[[396, 8, ≤ 26]]` Generalized Toric Code from Table IV of [liang2025generalizedtoriccodestwisted](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
@@ -273,25 +354,25 @@ julia> code_n(c), code_k(c)
 (396, 8)
 ```
 
-Here is an example of `[[[36, 2, d]]` Generalized Toric Code from Appendix B of [liang2025generalizedtoriccodestwisted](@cite).
+Here is an example of `[[292, 18, 8]]` Generalized Toric Code from Appendix B of [liang2025generalizedtoriccodestwisted](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
 julia> R, (x,y) = laurent_polynomial_ring(GF(2), [:x, :y]);
 
-julia> f = 1 + x;
+julia> f = 1 + x + y^2;
 
-julia> g = 1 + y;
+julia> g = 1 + y + x^-4*y;
 
-julia> α1 = (0, 6);
+julia> α1 = (0, 73);
 
-julia> α2 = (3, 3);
+julia> α2 = (2, 32);
 
 julia> c = GeneralizedToricCode(f, g, α1, α2);
 
 julia> code_n(c), code_k(c)
-(36, 2)
+(292, 18)
 ```
 
 ### Fields
