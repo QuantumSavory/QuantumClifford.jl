@@ -8,6 +8,11 @@
 ## v0.10.1-dev
 
 - **(fix)** The classical `LiftedCode` constructor had method errors in `parity_checks`, `code_n`, and `code_s`.
+- The `HomologicalProductCode` and `DoubleHomologicalProductCode` are now implemented via `Oscar`'s homological algebra in the ECC submodule.
+- Adapt.jl can now be used to convert various types to GPU-backed storage.
+- The `GeneralizedBicycleCode` and `ExtendedGeneralizedBicycleCode` are now implemented via `Hecke`'s polynomial ring in the ECC submodule.
+- Add `apply_right!` that applies a clifford operator to the right of a dense clifford operator.
+- Add `mul_right!` methods for inplace operations between tableaus
 - Add a `CliffordOperator` constructor that builds a dense clifford from a `PauliOperator`
 - Add a `phases` getter for `CliffordOperator`
 - The generalized hypergraph product code is implemented in the ECC submodule.
@@ -28,6 +33,7 @@
 - Add Quantum Tanner graph product codes: general and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`) to `QECCore`.
 - Add classical Gallager's LDPC code to `QECCore`.
 - Add `GeneralizedCirculantBivariateBicycle` to `QECCore` and introduce to `QECCoreOscarExt`.
+- Add `GoppaCode` to the `QECCore`.
 
 ### Private API
 
