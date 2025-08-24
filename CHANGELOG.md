@@ -7,6 +7,8 @@
 
 ## v0.10.1-dev
 
+- The `HomologicalProductCode` and `DoubleHomologicalProductCode` are now implemented via `Oscar`'s homological algebra in the ECC submodule.
+- Adapt.jl can now be used to convert various types to GPU-backed storage.
 - The `GeneralizedBicycleCode` and `ExtendedGeneralizedBicycleCode` are now implemented via `Hecke`'s polynomial ring in the ECC submodule.
 - Add `apply_right!` that applies a clifford operator to the right of a dense clifford operator.
 - Add `mul_right!` methods for inplace operations between tableaus
@@ -30,6 +32,7 @@
 - Add Quantum Tanner graph product codes: general and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`) to `QECCore`.
 - Add classical Gallager's LDPC code to `QECCore`.
 - Add `GeneralizedCirculantBivariateBicycle` to `QECCore` and introduce to `QECCoreOscarExt`.
+- Add `GoppaCode` to the `QECCore`.
 
 ### Private API
 

@@ -482,8 +482,8 @@ QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}
 
 See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
 """
-tab(s::Stabilizer{T}) where {T} = s.tab
 tab(s::AbstractStabilizer) = s.tab
+tab(t::Tableau) = t
 
 ##############################
 # Destabilizer formalism
