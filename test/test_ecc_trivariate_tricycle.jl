@@ -54,7 +54,13 @@
                 (1029, 18,  7, 7, 7, 1 + y^2*z^3   + x^5*y^5*z  , 1 + x^2*y^5*z + x^4*z^5    , 1 + x^4*y^6     + x^5*y^4*z^6),
             ]
 
-            for (n, k, ℓ, m, p, A_poly, B_poly, C_poly) in vcat(table_i, table_iii, table_iv, table_v)
+                table_vi = [
+                # n   , k  ,  ℓ, m, p, A                       , B                         ,   C
+                (108  , 18 ,  4, 3, 3, (1 + x^2)*(1 + x*y*z^2) , (1 + x^2)*(1 + x^3*y^2*z) ,  1  + x^2*y^2*z^2      ),
+                (108  , 60 ,  4, 3, 3, (1 + x^2)*(1 +       z) , (1 + x^2)*(1 + x^2*y*z^2) , (1  + x^2)*(1 + z^2)   )
+            ]
+
+            for (n, k, ℓ, m, p, A_poly, B_poly, C_poly) in vcat(table_i, table_iii, table_iv, table_v, table_vi)
                 F2 = GF(2)
                 R, (x, y, z) = polynomial_ring(F2, [:x, :y, :z])
                 I = ideal(R, [x^ℓ - 1, y^m - 1, z^p - 1])
