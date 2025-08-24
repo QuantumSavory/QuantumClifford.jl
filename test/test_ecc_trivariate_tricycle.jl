@@ -76,6 +76,7 @@
                 @test code_n(c) == n == code_n(stab)
                 @test code_k(c) == k == code_k(stab)
                 @test stab_looks_good(stab, remove_redundant_rows=true) == true
+                @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
             end
         end
     end
