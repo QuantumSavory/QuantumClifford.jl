@@ -11,12 +11,19 @@
         @testset "Trivariate Tricycle Codes" begin
             F2 = GF(2)
             R, (x, y, z) = polynomial_ring(F2, [:x, :y, :z])
-
             table_i = [
                 # n   , k  ,  ℓ, m, p, A                           , B                            ,   C
                 (72   , 6  ,  4, 3, 2, 1 + y         + x*y^2       , 1 + y*z       + x^2*y^2      , 1 + x*y^2*z     + x^2*y      ),
                 (180  , 12 ,  5, 4, 3, 1 + x^2*y^3*z + x^4*y       , 1 + x^3       + x^4*z^2      , 1 + x^3*y^3     + x^4*y*z^2  ),
                 (432  , 12 ,  6, 6, 4, 1 + x*y*z^3   + x^3*y^4*z^2 , 1 + x^3*y*z^2 + x^3*y^2*z^3  , 1 + x^4*y^3*z^3 + x^5*z^2    ),
+            ]
+            table_iii = [
+                # n , k , ℓ, m, p, A         , B        ,   C
+                (36 , 3 , 3, 2, 2, 1 + x*y*z , 1 + x^2*z, 1 + x^2*y    ),
+                (48 , 3 , 4, 2, 2, 1 + x     , 1 + x*z  , 1 + x*y      ),
+                (54 , 3 , 3, 3, 2, 1 + y*z   , 1 + x*z  , 1 + x*y*z    ),
+                (60 , 3 , 5, 2, 2, 1 + x*z   , 1 + x*y  , 1 + x*y*z    ),
+                (90 , 3 , 5, 3, 2, 1 + x     , 1 + x*y  , 1 + x^2*y^2*z),
             ]
             table_v = [
                 # n  , k ,  ℓ, m, p, A                          , B                          ,   C
@@ -35,7 +42,7 @@
                 (840 , 9 ,  8, 7, 5, 1 + y^3*z     + x*y*z^2    , 1 + y^5*z     + x^3*y^4*z  , 1 + x*y^3*z^4   + x^7*y*z    ),
                 (1029, 18,  7, 7, 7, 1 + y^2*z^3   + x^5*y^5*z  , 1 + x^2*y^5*z + x^4*z^5    , 1 + x^4*y^6     + x^5*y^4*z^6),
             ]
-            for (n, k, ℓ, m, p, A_poly, B_poly, C_poly) in vcat(table_i, table_v)
+            for (n, k, ℓ, m, p, A_poly, B_poly, C_poly) in vcat(table_i, table_iii, table_v)
                 F2 = GF(2)
                 R, (x, y, z) = polynomial_ring(F2, [:x, :y, :z])
                 I = ideal(R, [x^ℓ - 1, y^m - 1, z^p - 1])
