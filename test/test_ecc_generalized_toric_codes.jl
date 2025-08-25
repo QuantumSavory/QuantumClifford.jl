@@ -159,5 +159,45 @@
             # Each column contains exactly four ones [liang2025generalizedtoriccodestwisted](@cite)
             @test all(sum(parity_matrix_z(c), dims=2) .== 4)
         end
+
+        @testset "[[144, 12, 12]] Generalized Toric code properties" begin
+            R, (x, y) = laurent_polynomial_ring(GF(2), [:x, :y])
+            n  = 144
+            k = 12
+            f = 1 + x + x^-1*y^-3
+            g = 1 + y + x^3*y^-1
+            α1 = (0, 12)
+            α2 = (6,  0)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            stab = parity_checks(c)
+            mat = matrix(GF(2), stab_to_gf2(stab))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == n == code_n(stab)
+            @test code_k(c) == k == code_k(stab)
+            @test stab_looks_good(stab, remove_redundant_rows=true) == true
+            Hx = matrix(GF(2), parity_matrix_x(c))
+            Hz = matrix(GF(2), parity_matrix_z(c))
+            @test all(sum(parity_matrix_x(c), dims=1) .== 3)
+            @test all(sum(parity_matrix_x(c), dims=2) .== 6)
+            @test all(sum(parity_matrix_z(c), dims=1) .== 3)
+            @test all(sum(parity_matrix_z(c), dims=2) .== 6)
+            f = 1 + x + x^-1*y^3
+            g = 1 + y + x^3*y^-1
+            c = GeneralizedToricCode(f, g, α1, α2)
+            stab = parity_checks(c)
+            mat = matrix(GF(2), stab_to_gf2(stab))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            @test code_n(c) == n == code_n(stab)
+            @test code_k(c) == k == code_k(stab)
+            @test stab_looks_good(stab, remove_redundant_rows=true) == true
+            Hx = matrix(GF(2), parity_matrix_x(c))
+            Hz = matrix(GF(2), parity_matrix_z(c))
+            @test all(sum(parity_matrix_x(c), dims=1) .== 3)
+            @test all(sum(parity_matrix_x(c), dims=2) .== 6)
+            @test all(sum(parity_matrix_z(c), dims=1) .== 3)
+            @test all(sum(parity_matrix_z(c), dims=2) .== 6)
+        end
     end
 end
