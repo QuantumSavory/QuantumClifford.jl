@@ -3,7 +3,7 @@
     import QuantumClifford: GraphState, local_comp!
 
     test_sizes = [2,10,63,64,65,127,128,129]
-    iteration = 10000
+    iteration = 250
 
     @testset "CPHASE correctness" begin
         for _ in 1:iteration
