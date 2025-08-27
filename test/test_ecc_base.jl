@@ -8,7 +8,7 @@ using SparseArrays
 
 import Nemo: GF
 import LinearAlgebra
-import Hecke: group_algebra, abelian_group, gens, quo, one, small_group
+import Hecke: group_algebra, abelian_group, gens, quo, one, small_group, polynomial_ring, GF, matrix, quo
 
 # generate instances of all implemented codes to make sure nothing skips being checked
 
@@ -187,12 +187,79 @@ bb3 = two_block_group_algebra_codes(A,B)
 
 test_bb_codes = [bb1, bb2, bb3]
 
+# Generalized Hypergraph Product codes
+# [[882, 24, 18 ≤ d ≤ 24]] from Appendix B of [panteleev2021degenerate](@cite)
+F = GF(2)
+R, x = polynomial_ring(F, "x")
+n = 7
+l = 63
+S, _ =  quo(R, x^l - 1)
+A_ghp1 = matrix(S, n, n,
+         [x^27  0     0     0     0     1     x^54
+          x^54  x^27  0     0     0     0     1
+          1     x^54  x^27  0     0     0     0
+          0     1     x^54  x^27  0     0     0
+          0     0     1     x^54  x^27  0     0
+          0     0     0     1     x^54  x^27  0
+          0     0     0     0     1     x^54  x^27])
+b_ghp1 = S(1 + x + x^6)
+
+# [[882, 48, 16]] from Appendix B of [panteleev2021degenerate](@cite)
+F = GF(2)
+R, x = polynomial_ring(F, "x")
+n = 7
+l = 63
+S, _ =  quo(R, x^l - 1)
+A_ghp2 = matrix(S, n, n,
+         [x^27   0     0     1     x^18  x^27  1
+          1      x^27  0     0     1     x^18  x^27
+          x^27   1     x^27  0     0     1     x^18
+          x^18   x^27  1     x^27  0     0     1
+          1      x^18  x^27  1     x^27  0     0
+          0      1     x^18  x^27  1     x^27  0
+          0      0     1     x^18  x^27  1     x^27])
+b_ghp2 = S(1 + x + x^6)
+
+# Generalized Bicycle and Extended GB codes from [koukoulekidis2024smallquantumcodesalgebraic](@cite)
+R, x = polynomial_ring(GF(2), :x)
+l = 5
+a_gb₁ = 1 + x^4
+b_gb₁ = 1 + x + x^2 + x^4
+c_gb₁ = GeneralizedBicycleCode(a_gb₁, b_gb₁, l)
+p₁ = one(R)
+l = 9
+a_gb₂ = 1 + x^2
+b_gb₂ = 1 + x^5
+c_gb₂ = GeneralizedBicycleCode(a_gb₂, b_gb₂, l)
+p₂ = one(R)
+l = 10
+a_gb₃ = 1 + x
+b_gb₃ = 1 + x^6
+c_gb₃ = GeneralizedBicycleCode(a_gb₃, a_gb₃, l)
+p₃ = one(R) + x
+
 # Add some codes that require Oscar, hence do not work on Windows
 
 test_twobga_codes = []
+test_homological_product_codes = []
+
+# La-cross code polynomial
+F = GF(2)
+R, x = polynomial_ring(F, "x")
+h₂ = 1 + x + x^2
+h₃ = 1 + x + x^3
+h₄ = 1 + x + x^4
+
+# Double Homological product codes
+δ₁ = [1 1 0;
+      0 1 1]
+δ₂ = [1 1 0;
+      0 1 1;
+      1 0 1]
 
 @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
-  import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order, gens, quo
+  import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order, gens, quo,
+  polynomial_ring, matrix, GF, transpose
   function load_oscar_codes()
     #@info "Add group theoretic codes requiring Oscar"
     # [[72, 8, 9]] 2BGA code taken from Table I Block 1 of [lin2024quantum](@cite)
@@ -302,9 +369,45 @@ test_twobga_codes = []
     nonabel4 = twobga_from_fp_group(a, b, GA)
 
     append!(test_twobga_codes, [t1b1, t1b3, tb21, tb22, dprod1, dprod2, nonabel1, nonabel2, nonabel3, nonabel4])
+
+    # Homological Product Codes
+    # [[117, 9, 4]] from [xu2024fastparallelizablelogicalcomputation](@cite)
+    R, x = polynomial_ring(GF(2), "x")
+    l = 3
+    H = matrix(R, 2, 3, [x^2 x^2 x^2;
+                         x   x^2  0])
+    hpc₁ = HomologicalProductCode([H,transpose(H)], l)
+    # [[225, 9, 6]] from [xu2024fastparallelizablelogicalcomputation](@cite)
+    R, x = polynomial_ring(GF(2), "x")
+    l = 3
+    H = matrix(R, 3, 4, [x^2 x^2 x^2   0;
+                         x^2   0 x^2  x^2;
+                         x^2 x^2   x  x^2])
+    hpc₂ = HomologicalProductCode([H,transpose(H)], l)
+    # 3D Homological product code from [Quintavalle_2021](@cite)
+    μ = 2; wc = 3; wr = 4
+    c = GallagerLDPC(μ, wc, wr)
+    H = matrix(GF(2), parity_matrix(c))
+    hpc₃ = HomologicalProductCode([H,transpose(H)])
+    # 3D Homological product code from [Quintavalle_2021](@cite)
+    δ = matrix(GF(2), parity_matrix(RepCode(3)))
+    hpc₄ = HomologicalProductCode([δ,δ,δ])
+    @test iszero(mod.(metacheck_matrix_x(hpc₄)*parity_matrix_x(hpc₄), 2))
+
+    append!(test_homological_product_codes, [hpc₁, hpc₂, hpc₃, hpc₄])
   end
   load_oscar_codes()
 end
+
+# Generalized Bivariate Bicycle Codes
+A1 = [(:x,3), (:y,1), (:y,2)]
+B1 = [(:y,3), (:x,1), (:x,2)]
+A1 = [(:x,9), (:y,1), (:y,2)]
+B1 = [(:y,0), (:x,2), (:x,7)]
+A2 = [(:x,6), (:y,5), (:y,6)]
+B2 = [(:y,0), (:x,4), (:x,13)]
+A3 = [(:x,5), (:y,2), (:y,3)]
+B3 = [(:y,2), (:x,7), (:x,6)]
 
 
 const code_instance_args = Dict(
@@ -314,7 +417,6 @@ const code_instance_args = Dict(
     :CSS => (c -> (parity_matrix_x(c), parity_matrix_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
     :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
     :CircuitCode => random_circuit_code_args,
-    :QuantumReedMuller => [3, 4, 5],
     :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, test_twobga_codes, test_honeycomb_color_codes, test_nonabelian_codes, other_lifted_product_codes)),
     :QuantumReedMuller => [3, 4, 5],
     :Triangular488 => [3, 5, 7, 9, 11],
@@ -323,7 +425,17 @@ const code_instance_args = Dict(
     :DelfosseReichardtRepCode => [4, 6, 8, 10],
     :DelfosseReichardt823 => [1, 2, 3, 4, 5],
     :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
-    :CyclicQuantumTannerGraphProduct => [1, 2, 3, 4, 5]
+    :CyclicQuantumTannerGraphProduct => [1, 2, 3, 4, 5],
+    :DDimensionalSurfaceCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
+    :DDimensionalToricCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
+    :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false), (7,h₃,true), (9,h₃,true), (9,h₄,true), (10,h₄,true), (12,h₄,true)],
+    :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
+    :random_TillichZemor_code => [(6,4,3), (7,5,3), (8,6,3)],
+    :GeneralizedCirculantBivariateBicycle => [(9,6,A1,B1),(15,3,A2,B2),(6,6, A1,B1),(14,7,A2,B2),(15,5,A3,B3)],
+    :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1), (A_ghp2, b_ghp2)],
+    :GeneralizedBicycleCode => [(5,a_gb₁,b_gb₁), (9,a_gb₂,b_gb₂), (10,a_gb₃,b_gb₃)],
+    :ExtendedGeneralizedBicycleCode => [(c_gb₁,2,p₁), (c_gb₂,3,p₂), (c_gb₃,4,p₃)],
+    :DoubleHomologicalProductCode => [(δ₁), (δ₂)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
