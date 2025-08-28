@@ -121,7 +121,7 @@ H_X &= \\begin{bmatrix} A & B & C \\end{bmatrix}
 
 #### Examples
 
-Here is the `[[72, 6, 6]]` trivariate tricycle code from Table I from  [jacob2025singleshotdecodingfaulttolerantgates](@cite).
+Here is the `[[72, 6, 6]]` trivariate tricycle code from Table I from [jacob2025singleshotdecodingfaulttolerantgates](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
