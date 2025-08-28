@@ -146,7 +146,7 @@ julia> code_n(c), code_k(c)
 (72, 6)
 ```
 
-Here is the `[[432, 12, 12]` trivariate tricycle code from Table I from  [jacob2025singleshotdecodingfaulttolerantgates](@cite).
+Here is the `[[432, 12, 12]` trivariate tricycle code from Table I from [jacob2025singleshotdecodingfaulttolerantgates](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
