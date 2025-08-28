@@ -241,6 +241,8 @@ p₃ = one(R) + x
 # Trivariate Tricycle Codes from [jacob2025singleshotdecodingfaulttolerantgates](@cite)
 
 # [[36, 3, 3]] from Table III
+F₂ = GF(2)
+R, (x, y, z) = polynomial_ring(F₂, [:x, :y, :z])
 ℓ₁, m₁, p₁ = 3, 2, 2
 A₁ = 1 + x*y*z
 B₁ = 1 + x^2*z
