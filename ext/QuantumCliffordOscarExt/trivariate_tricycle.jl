@@ -4,7 +4,122 @@
 A quantum CSS code constructed from three trivariate polynomials over a finite field
 from [jacob2025singleshotdecodingfaulttolerantgates](@cite).
 
-#### Example
+[jacob2025singleshotdecodingfaulttolerantgates](@cite) first define arbitrary 3-block
+group algebra codes (for an *abelian* group G. The group algebra ``\\mathbb{F}_2[G]`` consists of
+formal sums of the form ``\\sum_{g \\in G} a_g g``, with ``a_g \\in \\mathbb{F}_2``.
+
+For a 3-block code, we consider the three length-1 chain complexes:
+
+```math
+\\begin{aligned}
+A_1 \\xrightarrow{\\quad a \\quad} A_0, \\quad
+B_1 \\xrightarrow{\\quad b \\quad} B_0, \\quad
+C_1 \\xrightarrow{\\quad c \\quad} C_0,
+\\end{aligned}
+```
+
+where ``A_i, B_i, C_i = \\mathbb{F}_2[G]`` and the boundary maps ``a, b, c \\in \\mathbb{F}_2[G]``.
+
+The tensor (balanced) product complex is formed from these three complexes using the
+*isomorphism* ``\\mathbb{F}_2[G] \\otimes_G \\mathbb{F}_2[G] \\simeq \\mathbb{F}_2[G]``
+which is used to simplify the general definition. The resulting tensor product complex is:
+
+```math
+\\begin{aligned}
+A_1 \\otimes_G B_1 \\otimes_G C_1
+\\xrightarrow{\\quad \\partial_3 \\quad}
+\\bigoplus_{i+j+k=2} A_i \\otimes_G B_j \\otimes_G C_k
+\\xrightarrow{\\quad \\partial_2 \\quad}
+\\bigoplus_{i+j+k=1} A_i \\otimes_G B_j \\otimes_G C_k
+\\xrightarrow{\\quad \\partial_1 \\quad} A_0 \\otimes_G B_0 \\otimes_G C_0
+\\end{aligned}
+```
+
+The boundary maps can be written explicitly in terms of a, b, and c as:
+
+```math
+\\begin{aligned}
+\\partial_3 &= \\begin{bmatrix} a \\\\ b \\\\ c \\end{bmatrix} \\\\
+\\partial_2 &= \\begin{bmatrix}
+0 & c & b \\\\
+c & 0 & a \\\\
+b & a & 0
+\\end{bmatrix} \\\\
+\\partial_1 &= \\begin{bmatrix} a & b & c \\end{bmatrix}
+\\end{aligned}
+```
+
+The trivariate tricycle codes from this complex by considering
+``G = \\Z_\\ell \\times \\Z_m \\times \\Z_p`` for integers ``\\ell``, m,
+and p. The following matrices which generate this group:
+
+```math
+\\begin{aligned}
+x &= S_\\ell \\otimes I_m \\otimes I_p \\\\
+y &= I_\\ell \\otimes S_m \\otimes I_p \\\\
+z &= I_\\ell \\otimes I_m \\otimes S_p
+\\end{aligned}
+```
+
+where ``S_n`` is the ``n \\times n`` cyclic shift matrix with elements
+``(S_n)_{i,j} = \\delta_{i, j \\oplus 1}`` and ``\\oplus`` denotes addition
+modulo n.
+
+We consider A, B, and C to be be polynomials in the non-commuting variables x, y,
+and z. An initial symmetric choice is:
+
+```math
+\\begin{aligned}
+A &= A_1 + A_2 + A_3 \\\\
+B &= B_1 + B_2 + B_3 \\\\
+C &= C_1 + C_2 + C_3
+\\end{aligned}
+```
+
+though this restriction can be relaxed [jacob2025singleshotdecodingfaulttolerantgates](@cite).
+
+We then define the parity-check matrices for the CSS code as:
+
+```math
+\\begin{aligned}
+H_X \\equiv \\partial_1, \\quad H_Z = \\partial_2^\\top, \\quad M_Z = \\partial_3^\\top,
+\\end{aligned}
+```
+
+where ``H_X`` and ``H_Z`` are the ``X`` and ``Z`` stabilizer generators, and ``M_Z``
+is a matrix of meta-checks encoding the redundancy in the ``Z`` checks. It can be verified that:
+
+```math
+\\begin{aligned}
+H_XH_Z^\\top = 0 \\quad \\text{and} \\quad M_ZH_Z = 0.
+\\end{aligned}
+```
+
+This results in the chain complex structure:
+
+```math
+\\begin{aligned}
+C_M \\xleftarrow{\\quad M_Z \\quad} C_Z \\xleftarrow{\\quad H_Z \\quad} Q \\xrightarrow{\\quad H_X \\quad} C_X
+\\end{aligned}
+```
+
+where the vector spaces over ``\\mathbb{F}_2[G]``.
+
+The matrices are given by:
+
+```math
+\\begin{aligned}
+M_Z &= \\begin{bmatrix} A^\\top & B^\\top & C^\\top \\end{bmatrix} \\\\
+H_Z &= \\begin{bmatrix}
+0 & C^\\top & B^\\top \\\\
+C^\\top & 0 & A^\\top \\\\
+B^\\top & A^\\top & 0
+\\end{bmatrix} \\\\
+H_X &= \\begin{bmatrix} A & B & C \\end{bmatrix}
+\\end{aligned}
+```
+
+#### Examples
 
 Here is the `[[72, 6, 6]]` trivariate tricycle code from Table I from  [jacob2025singleshotdecodingfaulttolerantgates](@cite).
 
