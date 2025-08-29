@@ -360,16 +360,15 @@
             @test status == true_success_stat
         end
 
-        @testset "can verify accurately when a tableau contains ancilliary qubits along with the state" begin
-            good_state = S"ZZI IZZ XXX" #ghz_state
-            anc = S"ZI IZ"
-            verify = VerifyOp(good_state,1:3)
-            reg = Register(MixedDestabilizer(tensor(good_state,anc)), 2)
-            syndrome_ops = [sCNOT(1,4), sCNOT(2,4), sCNOT(2,5), sCNOT(3,5), sMZ(4,1),  sMZ(5,2)]
-            for i in syndrome_ops #entangling ancillas with data qubits i.e. recording the syndrome
-                apply!(reg, i)
-            end
-            _, status = applywstatus!(reg, verify)
+        @testset "handles sub-tableau with ancillas correctly " begin
+            s = S"+ XXX__
+            + ZZ___
+            + Z_Z__
+            - ZZ_Z_
+            - _ZZ_Z"
+            good_state = S"XXX ZZI IZZ"
+            verify = VerifyOp(good_state, 1:3)
+            _, status = applywstatus!(s, verify) 
             @test status == true_success_stat #this test would have given a false_success_stat in the previous implementation of applywstatus! for VerifyOp
 
         end
