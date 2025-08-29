@@ -17,7 +17,7 @@ import Oscar: free_group, small_group_identification, describe, order, FPGroupEl
     base_ring, ComplexOfMorphisms, coefficients, zero_matrix, hcat, circshift, size, zeros, enumerate,
     kronecker_product, FqMatrix, identity_matrix, iszero, FqPolyRingElem, laurent_polynomial_ring,
     hnf_with_transform, ideal, intersect, ==, is_coprime, quo, groebner_basis, length, FqMPolyRingElem,
-    first, length
+    first, length, MPolyQuoRingElem, FqMPolyRingElem, modulus, ideal, monomials, terms, coeff, degree, mod
 import Oscar.Generic.MatSpaceElem
 import Oscar.Generic.DirectSumModule
 import Oscar.Generic.LaurentMPolyWrap
@@ -40,6 +40,7 @@ include("direct_product.jl")
 include("generalized_toric.jl")
 include("group_presentation.jl")
 include("d_dimensional_codes.jl")
+include("trivariate_tricycle.jl")
 include("homological_product_codes.jl")
 
 end # module

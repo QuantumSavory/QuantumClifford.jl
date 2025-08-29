@@ -238,6 +238,34 @@ b_gb₃ = 1 + x^6
 c_gb₃ = GeneralizedBicycleCode(a_gb₃, a_gb₃, l)
 p₃ = one(R) + x
 
+# Trivariate Tricycle Codes from [jacob2025singleshotdecodingfaulttolerantgates](@cite)
+
+# [[36, 3, 3]] from Table III
+F₂ = GF(2)
+R, (x, y, z) = polynomial_ring(F₂, [:x, :y, :z])
+ℓ₁, m₁, p₁ = 3, 2, 2
+A₁ = 1 + x*y*z
+B₁ = 1 + x^2*z
+C₁ = 1 + x
+
+# [[48, 3, 4]] from Table III
+ℓ₂, m₂, p₂ = 4, 2, 2
+A₂ = 1 + x
+B₂ = 1 + x*z
+C₂ = 1 + x*y
+
+# [[54, 3, 4]] from Table III
+ℓ₃, m₃, p₃ = 3, 3, 2
+A₃ = 1 + y*z
+B₃ = 1 + x*z
+C₃ = 1 + x*y*z
+
+# [[108, 6, 2]] from Table IV
+ℓ₄, m₄, p₄ = 4, 3, 3
+A₄ = (1 + x^2)*(1 + x*z)
+B₄ = 1 + x^2*y^2
+C₄ = 1 + x^2*y^2*z^2
+
 # Add some codes that require Oscar, hence do not work on Windows
 
 test_twobga_codes = []
@@ -435,7 +463,8 @@ const code_instance_args = Dict(
     :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1), (A_ghp2, b_ghp2)],
     :GeneralizedBicycleCode => [(5,a_gb₁,b_gb₁), (9,a_gb₂,b_gb₂), (10,a_gb₃,b_gb₃)],
     :ExtendedGeneralizedBicycleCode => [(c_gb₁,2,p₁), (c_gb₂,3,p₂), (c_gb₃,4,p₃)],
-    :DoubleHomologicalProductCode => [(δ₁), (δ₂)]
+    :DoubleHomologicalProductCode => [(δ₁), (δ₂)],
+    :TrivariateTricycleCode => [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)]
 )
 
 function all_testablable_code_instances(;maxn=nothing)
