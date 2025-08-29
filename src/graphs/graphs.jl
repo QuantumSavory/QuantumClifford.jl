@@ -1,4 +1,9 @@
+module GraphSim
+
 import Graphs: Graphs, nv, AbstractGraph
+using QuantumClifford
+using QuantumClifford: AbstractStabilizer
+import QuantumClifford: nqubits, apply!
 
 include("single_qubit_tables.jl")
 
@@ -273,3 +278,5 @@ end
 
 include("./two_qubits_table.jl")
 include("./cphase.jl")
+
+end #module
