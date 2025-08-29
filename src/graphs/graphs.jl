@@ -1,8 +1,12 @@
 module GraphSim
 
+export graphstate, graphstate!, graph_gatesequence, graph_gate
+
 import Graphs: Graphs, nv, AbstractGraph
-using QuantumClifford
-using QuantumClifford: AbstractStabilizer
+using QuantumClifford: AbstractStabilizer, AbstractSingleQubitOperator,
+        sId1, sInvPhase, sSQRTX, CliffordOperator, SingleQubitOperator,
+        Stabilizer, sZ, sPhase, sX, sY, sHadamard, sInvSQRTX, @S_str, stabilizerview,
+        canonicalize_gott!, phases, sCPHASE, affectedqubits, canonicalize!, tab
 import QuantumClifford: nqubits, apply!
 
 include("single_qubit_tables.jl")
