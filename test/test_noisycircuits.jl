@@ -358,6 +358,20 @@
             _, status = applywstatus!(reg, verify)
             @test status == true_success_stat
         end
+
+        @testset "can verify accurately against sub tableaus" begin
+            good_state = S"ZZI IZZ XXX" #ghz_state
+            verify = VerifyOp(good_state,1:3)
+            state = S"+ XXX__ 
+                    + ZZ___
+                    + Z_Z__
+                    - ZZ_Z_
+                    - _ZZ_Z" 
+            reg = Register(MixedDestabilizer(state), 2)
+            _, status = applywstatus!(reg, verify)
+            @test status == true_success_stat #this test would have given a false_success_stat in the previous implementation of applywstatus! for VerifyOp
+
+        end
     
       
     end
