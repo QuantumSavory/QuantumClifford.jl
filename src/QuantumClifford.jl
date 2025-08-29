@@ -1452,7 +1452,7 @@ include("useful_states.jl")
 include("experimental/Experimental.jl")
 #
 include("./graphs/graphs.jl")
-using .GraphSim: graphstate, graphstate!, graph_gatesequence, graph_gate
+using .GraphSim
 #
 include("entanglement.jl")
 #
