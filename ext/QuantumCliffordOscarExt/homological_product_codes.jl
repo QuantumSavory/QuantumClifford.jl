@@ -41,8 +41,7 @@ D_{\\vec{x}} := \\bigotimes_{i=1}^D B^i_{x_i}, \\\\
 where ``\\delta_{i,j}`` is the Kronecker delta function and ``(\\partial^j_{x_j})^0``
 is defined as the identity map [xu2024fastparallelizablelogicalcomputation](@cite).
 
-!!! note
-   A product complex is a high-dimensional generalization of the chain complex.
+A product complex is a high-dimensional generalization of the chain complex.
 
 # Total Complex
 
@@ -139,6 +138,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 
 Here is a Homological product of `(3,4)`-classical LDPC codes.
 
+```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
 
 julia> μ = 2; wc = 3; wr = 4;
@@ -248,16 +248,16 @@ The boundary maps are represented as block matrices and are defined as:
 \\breve{\\delta}_{-2} &= \\begin{pmatrix} 
 I \\otimes \\tilde{\\delta}_0^T \\\\ 
 \\tilde{\\delta}_{-1} \\otimes I 
-\\end{pmatrix}, \\\\
+\\end{pmatrix} \\\\
 \\breve{\\delta}_{-1} &= \\begin{pmatrix} 
 I \\otimes \\tilde{\\delta}_{-1}^T & 0 \\\\
 \\tilde{\\delta}_{-1} \\otimes I & I \\otimes \\tilde{\\delta}_0^T \\\\
 0 & \\tilde{\\delta}_0 \\otimes I 
-\\end{pmatrix}, \\\\
+\\end{pmatrix} \\\\
 \\breve{\\delta}_0 &= \\begin{pmatrix} 
 \\tilde{\\delta}_{-1} \\otimes I & I \\otimes \\tilde{\\delta}_{-1}^T & 0 \\\\
 0 & \\tilde{\\delta}_0 \\otimes I & I \\otimes \\tilde{\\delta}_0^T 
-\\end{pmatrix}, \\\\
+\\end{pmatrix} \\\\
 \\breve{\\delta}_1 &= \\begin{pmatrix} 
 \\tilde{\\delta}_0 \\otimes I & I \\otimes \\tilde{\\delta}_{-1}^T 
 \\end{pmatrix}
