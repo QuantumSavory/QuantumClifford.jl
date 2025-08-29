@@ -333,6 +333,7 @@
 
     @testset "VerifyOp" begin
         using QuantumClifford.ECC: Steane7, parity_checks, naive_encoding_circuit
+        using QuantumClifford: tensor
         @testset "Stabilizer passed as good_state is not a logical state" begin
             good_state = parity_checks(Steane7()) #passing in a code instead of a state within codespace
             verify = VerifyOp(good_state, 1:7)
@@ -359,15 +360,15 @@
             @test status == true_success_stat
         end
 
-        @testset "can verify accurately against sub tableaus" begin
+        @testset "can verify accurately when a tableau contains ancilliary qubits along with the state" begin
             good_state = S"ZZI IZZ XXX" #ghz_state
+            anc = S"ZI IZ"
             verify = VerifyOp(good_state,1:3)
-            state = S"+ XXX__ 
-                    + ZZ___
-                    + Z_Z__
-                    - ZZ_Z_
-                    - _ZZ_Z" 
-            reg = Register(MixedDestabilizer(state), 2)
+            reg = Register(MixedDestabilizer(tensor(good_state,anc)), 2)
+            syndrome_ops = [sCNOT(1,4), sCNOT(2,4), sCNOT(2,5), sCNOT(3,5), sMZ(4,1),  sMZ(5,2)]
+            for i in syndrome_ops #entangling ancillas with data qubits i.e. recording the syndrome
+                apply!(reg, i)
+            end
             _, status = applywstatus!(reg, verify)
             @test status == true_success_stat #this test would have given a false_success_stat in the previous implementation of applywstatus! for VerifyOp
 
