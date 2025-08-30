@@ -1,5 +1,11 @@
 # [Graph States](@id Graph-States)
 
+```@meta
+DocTestSetup = quote
+    using QuantumClifford
+end
+```
+
 !!! warning "The `graphstate` API is not considered stable"
     `graphstate` returns a lot of information about encoding a given stabilizer state in a graph. A different API is being designed that streamlines the work with graph states.
 
