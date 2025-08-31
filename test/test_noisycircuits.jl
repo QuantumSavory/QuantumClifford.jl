@@ -336,13 +336,8 @@
         using QuantumClifford: tensor
         @testset "Stabilizer passed as good_state is not a logical state" begin
             good_state = parity_checks(Steane7()) #passing in a code instead of a state within codespace
-            verify = VerifyOp(good_state, 1:7)
-            reg = Register(one(MixedDestabilizer,7),6) #dummy register to pass into applywstatus!
-        
+            @test_throws ArgumentError VerifyOp(good_state, 1:7) #should throw an error since good_state isn't a logical state i.e. has only 6 stabilizer generators
             
-            @test_throws ArgumentError applywstatus!(reg, verify) #should throw an error since good_state isn't a logical state
-            
-    
         end
     
         @testset "Accepts pure good_state argument" begin
