@@ -1,5 +1,8 @@
 
 #=============================================================================#
+# Assists in cleanly translating into the grid-block model.
+@inline tessellate(space, tile) = tile .* cld.(space, tile)
+
 # For use whenever KA.@index(Global, NTuple) is unavailable.
 # At the moment, JET always complains unless unsafe_indices = true is set.
 @inline global_index(block_index, block_dim, thread_index) =

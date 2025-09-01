@@ -55,6 +55,14 @@
         include("codes/golay.jl")
     end
 
+    @testset "gallager" begin
+        include("codes/gallager.jl")
+    end
+    
+    @testset "goppa" begin
+        include("codes/goppa.jl")
+    end
+
     @testset "hamming" begin
         include("codes/hamming.jl")
     end
@@ -77,5 +85,9 @@
 
     @testset "Quantum Tillich-Zemor Codes" begin
         include("codes/tillichzemor.jl")
+    end
+    
+    @testset "Circulant Bivariate Bicycle Codes" begin
+        include("codes/generalized_circulant_bivariate_bicycle.jl")
     end
 end

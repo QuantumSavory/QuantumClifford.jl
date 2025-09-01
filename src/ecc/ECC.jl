@@ -1,7 +1,8 @@
 module ECC
 
 using QECCore
-import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp
+import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
+metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -37,6 +38,10 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     DelfosseReichardtRepCode, DelfosseReichardt823, LaCross,
     QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
     DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps,
+    GeneralizedCirculantBivariateBicycle, GeneralizedHyperGraphProductCode,
+    GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode,
+    HomologicalProductCode, DoubleHomologicalProductCode,
+    GeneralizedToricCode,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -78,13 +83,6 @@ function iscss(c::AbstractECC)
     return iscss(typeof(c))
 end
 
-"""
-Generator Polynomial `g(x)`
-
-In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field `F`. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
-"""
-function generator_polynomial end
-
 """The generator matrix of a code."""
 function generator end
 
@@ -123,16 +121,15 @@ Used with [`distance`](@ref) to select MIP as the method of finding the distance
 
 !!! note
     - Requires a `JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`).
-    - `X`-type and `Z`-type logical operators yield identical code distance results.
-    - For stabilizer codes, the `X`-distance and `Z`-distance are equal.
+    - For some stabilizer CSS codes, the `X`-distance and `Z`-distance are equal.
 
 $FIELDS
 """
 @kwdef struct DistanceMIPAlgorithm <: AbstractDistanceAlg
     """index of the logical qubit to compute code distance for (nothing means compute for all logical qubits)"""
     logical_qubit::Union{Int, Nothing}=nothing
-    """type of logical operator to consider (:X or :Z, defaults to :X) - both types yield identical distance results for CSS stabilizer codes."""
-    logical_operator_type::Symbol=:X
+    """type of logical operator to consider (:X or :Z, defaults to :minXZ)."""
+    logical_operator_type::Symbol=:minXZ
     """`JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`)"""
     solver::Module
     """when `true` (default=`false`), prints the MIP solver's solution summary"""
@@ -141,7 +138,7 @@ $FIELDS
     time_limit::Float64=60.0
 
     function DistanceMIPAlgorithm(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
-        logical_operator_type ∈ (:X, :Z) || throw(ArgumentError("`logical_operator_type` must be :X or :Z"))
+        logical_operator_type ∈ (:X, :Z, :minXZ) || throw(ArgumentError("`logical_operator_type` must be :X or :Z or :minXZ"))
         new(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
     end
 end
@@ -401,9 +398,9 @@ include("codes/classical/bch.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
-include("codes/lifted_product.jl")
+include("codes/qeccs_using_hecke.jl")
 
 # higher dimensional codes
-include("codes/d_dimensional_codes.jl")
+include("codes/qeccs_using_oscar.jl")
 
 end #module

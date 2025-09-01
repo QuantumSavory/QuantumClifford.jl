@@ -36,6 +36,15 @@ For quantum code construction routines:
 - [chao2018quantum](@cite)
 - [kitaev2003fault](@cite)
 - [fowler2012surface](@cite)
+- [goppa1970new](@cite)
+- [berlekamp1973goppa](@cite)
+- [mceliece1978public](@cite)
+- [patterson1975algebraic](@cite)
+- [sugiyama1975method](@cite)
+- [bernstein2008attacking](@cite)
+- [wirtz1988parameters](@cite)
+- [singh2019code](@cite)
+- [van1988classical](@cite)
 - [knill1996concatenated](@cite)
 - [steane1999quantum](@cite)
 - [campbell2012magic](@cite)
@@ -56,6 +65,11 @@ For quantum code construction routines:
 - [berthusen2025adaptivesyndromeextraction](@cite)
 - [arnault2025upperboundsminimumdistance](@cite)
 - [tillich2006minimum](@cite)
+- [bravyi2024high](@cite)
+- [Quintavalle_2021](@cite)
+- [xu2024fastparallelizablelogicalcomputation](@cite)
+- [bravyi2013homologicalproductcodes](@cite)
+- [liang2025generalizedtoriccodestwisted](@cite)
 
 For classical code construction routines:
 - [muller1954application](@cite)
@@ -72,6 +86,7 @@ For classical code construction routines:
 - [bhatia2018mceliece](@cite)
 - [hamming1950error](@cite)
 - [huffman2010fundamentals](@cite)
+- [gallager1962ldpc](@cite)
 
 For minimum distance calculation of quantum codes:
 - [vardy1997intractability](@cite)

@@ -40,7 +40,7 @@ export
     # Linear Algebra
     tensor, tensor_pow,
     logdot, expect,
-    apply!, apply_inv!,
+    apply!, apply_inv!, apply_right!,
     permutesystems, permutesystems!,
     # Low Level Function Interface
     generate!, project!, reset_qubits!, traceout!,
@@ -482,8 +482,8 @@ QuantumClifford.Tableau{Vector{UInt8}, Matrix{UInt64}}
 
 See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
 """
-tab(s::Stabilizer{T}) where {T} = s.tab
 tab(s::AbstractStabilizer) = s.tab
+tab(t::Tableau) = t
 
 ##############################
 # Destabilizer formalism
@@ -1431,6 +1431,8 @@ include("fastmemlayout.jl")
 include("dense_cliffords.jl")
 # special one- and two- qubit operators
 include("symbolic_cliffords.jl")
+# apply right operations
+include("apply_right.jl")
 # linear algebra and array-like operations
 include("linalg.jl")
 # circuits
