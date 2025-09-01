@@ -7,6 +7,7 @@
 
 ## v0.10.1-dev
 
+- **(fix)** The classical `LiftedCode` constructor had method errors in `parity_checks`, `code_n`, and `code_s`.
 - The `GeneralizedToricCode` on twisted tori via `Oscar`'s Laurent polynomials is now implemented in the ECC submodule.
 - The `HomologicalProductCode` and `DoubleHomologicalProductCode` are now implemented via `Oscar`'s homological algebra in the ECC submodule.
 - Adapt.jl can now be used to convert various types to GPU-backed storage.
