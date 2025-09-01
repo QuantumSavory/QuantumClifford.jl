@@ -19,7 +19,6 @@ Abstract type for classical error correction code.
 """
 abstract type AbstractCECC <: AbstractECC end
 
-
 """
     parity_matrix(c::AbstractECC)
 
@@ -156,3 +155,23 @@ Only CSS codes built using chain complexes and homology have this method.
 See also: [`metacheck_matrix_x`](@ref), [`metacheck_matrix_z`](@ref)
 """
 function metacheck_matrix end
+
+"""Implemented in a package extension with `Oscar`."""
+function bivariate_bicycle_code_k end
+
+"""
+    generator_polynomial(c::AbstractCECC)
+
+The generator polynomial g(x) of a [cyclic code](https://en.wikipedia.org/wiki/Cyclic_code)
+which generates the ideal corresponding to the code in the quotient ring ``\\mathbb{F}_q[x]/(x^n - 1)``.
+
+The generator polynomial is the unique *monic* polynomial of minimal degree in the
+[polynomial code](https://en.wikipedia.org/wiki/Polynomial_code). For a cyclic 
+code C of length n over ``\\mathbb{F}_q``, g(x) satisfies:
+- g(x) divides ``x^n - 1`` in ``\\mathbb{F}_q[x]``.
+- The degree of g(x) is n - k, where k is the code dimension for the non-degenerate case.
+- Every codeword polynomial ``c(x) \\in C`` can be expressed as ``c(x) = m(x)g(x) \\mod (x^n - 1)``.
+
+The input is a classical polynomial error-correcting code defined over a finite field.
+"""
+function generator_polynomial end

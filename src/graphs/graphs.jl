@@ -1,6 +1,6 @@
 import Graphs: Graphs, nv, AbstractGraph
 
-const clifford_id1 = one(CliffordOperator, 1)
+include("single_qubit_tables.jl")
 
 # elided as it's a non-public API and might introduce unexpected behavior for downstream users
 # we didn't wrap it inside a new struct as that introduces boiler plate for show etc.
@@ -8,19 +8,16 @@ function _apply_vop!(vops::Vector{SingleQubitOperator}, op::AbstractSingleQubitO
     q = affectedqubits(op)[1]
     # Convert into a single qubit operator acting on index 1
     op_prime = SingleQubitOperator(SingleQubitOperator(op), 1)
-    # A trick that performs slightly better than directly op_prime * CliffordOperator(vops[q])
-    # as converting to `CliffordOperator` is expensive
-    vops[q] = SingleQubitOperator(op_prime * (vops[q] * clifford_id1))
+    vops[q] = SINGLE_QUBIT_MULTIPLICATION_TABLE[(op_prime, vops[q])]
     return vops
 end
 
-# NOTE: Not tested yet, so commented out for now
-# function _apply_vop_right!(vops::Vector{SingleQubitOperator}, op::AbstractSingleQubitOperator; phases::Bool=true)
-#     q = affectedqubits(op)[1]
-#     # Convert into a single qubit operator acting on index 1
-#     op_prime = SingleQubitOperator(SingleQubitOperator(op), 1)
-#     vops[q] = SingleQubitOperator(vops[q] * (op_prime * clifford_id1))
-# end
+function _apply_vop_right!(vops::Vector{SingleQubitOperator}, op::AbstractSingleQubitOperator; phases::Bool=true)
+    q = affectedqubits(op)[1]
+    # Convert into a single qubit operator acting on index 1
+    op_prime = SingleQubitOperator(SingleQubitOperator(op), 1)
+    vops[q] = SINGLE_QUBIT_MULTIPLICATION_TABLE[(vops[q], op_prime)]
+end
 
 # TODO: Implement sanity_check like the one in Stim
 struct GraphState{G, S}
@@ -273,3 +270,6 @@ function graph_gate(h_idx, ip_idx, z_idx, n)
     end
     c
 end
+
+include("./two_qubits_table.jl")
+include("./cphase.jl")

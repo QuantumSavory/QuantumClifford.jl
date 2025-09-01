@@ -2,6 +2,29 @@ using Random: randperm, AbstractRNG, GLOBAL_RNG, rand!
 using ILog2
 import Nemo
 
+# Modified from `Base` for `BitArray`
+@inline _msk_end(::Type{T}, l::Int) where {T<:Unsigned} = ~T(0) >>> _mod(T, -l)
+
+# A mask for the non-coding bits in the last chunk.
+@inline _msk_end(P::PauliOperator) = _msk_end(eltype(P.xz), length(P))
+@inline _msk_end(tab::Tableau) = _msk_end(eltype(tab.xzs), size(tab, 2))
+
+# Unset the leftover bits in the data array that don't code the Pauli operator.
+@inline function _unset_noncoding_bits!(P::PauliOperator)
+    msk = _msk_end(P)
+    P.xz[end] &= msk
+    P.xz[end÷2] &= msk
+    nothing
+end
+@inline function _unset_noncoding_bits!(tab::Tableau)
+    msk = _msk_end(tab)
+    for i in eachindex(tab)
+        @inbounds tab.xzs[end, i] &= msk
+        @inbounds tab.xzs[end÷2, i] &= msk
+    end
+    nothing
+end
+
 ##############################
 # Random Paulis
 ##############################
@@ -20,21 +43,6 @@ See also [`random_pauli!`](@ref)"""
 function random_pauli end
 """An in-place version of [`random_pauli`](@ref)"""
 function random_pauli! end
-
-
-# Modified from `Base` for `BitArray`
-@inline _msk_end(::Type{T}, l::Int) where {T<:Unsigned} = ~T(0) >>> _mod(T, -l)
-
-# A mask for the non-coding bits in the last chunk.
-@inline _msk_end(P::PauliOperator) = _msk_end(eltype(P.xz), length(P))
-
-# Unset the leftover bits in the data array that don't code the Pauli operator.
-@inline function _unset_noncoding_bits!(P::PauliOperator)
-    msk = _msk_end(P)
-    P.xz[end] &= msk
-    P.xz[end÷2] &= msk
-    nothing
-end
 
 function random_pauli!(rng::AbstractRNG, P::PauliOperator; nophase=true, realphase=true)
     rand!(rng, P.xz)
@@ -59,6 +67,68 @@ random_pauli(rng::AbstractRNG,n::Int; kwargs...) = random_pauli!(rng, zero(Pauli
 random_pauli(n::Int; kwargs...) = random_pauli(GLOBAL_RNG, n; kwargs...)
 random_pauli(rng::AbstractRNG,n::Int,p; kwargs...) = random_pauli!(rng, zero(PauliOperator, n),p; kwargs...)
 random_pauli(n::Int, p; kwargs...) = random_pauli(GLOBAL_RNG,n,p; kwargs...)
+
+##############################
+# Random Tableaux
+##############################
+
+"""A random tableau with r rows on n qubits, suitable for bulk sampling.
+
+Each row is equivalent to an instance of [`random_pauli`](@ref) without any
+additional commutativity constraints. For proper states, consider utilising
+[`random_stabilizer`](@ref) or [`random_destabilizer`](@ref) as necessary.
+
+Use `nophase=false` to randomize the phase.
+Use `realphase=false` to get operators with phases including ±i.
+
+
+Optionally, a "flip" probability `p` can be provided specified,
+in which case each bit is set to I with probability `1-p` and to
+X or Y or Z with probability `p`. Useful for simulating unbiased Pauli noise.
+
+See also [`random_tableau!`](@ref)"""
+function random_tableau end
+"""An in-place version of [`random_tableau`](@ref)"""
+function random_tableau! end
+
+function random_tableau!(rng::AbstractRNG, tab::Tableau; nophase=true, realphase=true)
+    rand!(rng, tab.xzs)
+    _unset_noncoding_bits!(tab)
+    if nophase
+        fill!(tab.phases, 0x0)
+    elseif realphase
+        rand!(rng, tab.phases, (0x0, 0x2))
+    else
+        rand!(rng, tab.phases, 0x0 : 0x3)
+    end
+    tab
+end
+random_tableau!(tab::Tableau; kwargs...) = random_tableau!(GLOBAL_RNG, tab; kwargs...)
+function random_tableau!(rng::AbstractRNG, tab::Tableau, p; nophase=true, realphase=true)
+    n = nqubits(tab)
+    p = p/3
+    for i in eachindex(tab)
+        current_pauli = tab[i]
+        for q in 1:n
+            r = rand(rng)
+            @inbounds current_pauli[q] = (r<=2p), (p<r<=3p)
+        end
+    end
+    if nophase
+        fill!(tab.phases, 0x0)
+    elseif realphase
+        rand!(rng, tab.phases, (0x0, 0x2))
+    else
+        rand!(rng, tab.phases, 0x0 : 0x3)
+    end
+    tab
+end
+random_tableau!(tab::Tableau, p; kwargs...) = random_tableau!(GLOBAL_RNG, tab, p; kwargs...)
+
+random_tableau(rng::AbstractRNG, r::Int, n::Int; kwargs...) = random_tableau!(rng, zero(Tableau, r, n); kwargs...)
+random_tableau(r::Int, n::Int; kwargs...) = random_tableau(GLOBAL_RNG, r, n; kwargs...)
+random_tableau(rng::AbstractRNG, r::Int, n::Int, p; kwargs...) = random_tableau!(rng, zero(Tableau, r, n), p; kwargs...)
+random_tableau(r::Int, n::Int, p; kwargs...) = random_tableau(GLOBAL_RNG, r, n, p; kwargs...)
 
 ##############################
 # Random Binary Matrices
@@ -378,7 +448,7 @@ function precise_inv(a)::Matrix{UInt8}
     if n<200
         return UInt8.(mod.(inv(a),0x2))
     else
-	    return nemo_inv(a,n)
+        return nemo_inv(a,n)
     end
 end
 
