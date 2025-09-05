@@ -161,7 +161,7 @@ julia> code_n(c), code_k(c)
 (72, 6)
 ```
 
-Here is the `[[432, 12, 12]` trivariate tricycle code from Table I from [jacob2025singleshotdecodingfaulttolerantgates](@cite).
+Here is the `[[432, 12, 12]]` trivariate tricycle code from Table I from [jacob2025singleshotdecodingfaulttolerantgates](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
@@ -190,11 +190,11 @@ julia> code_n(c), code_k(c)
     $TYPEDFIELDS
 """
 struct TrivariateTricycleCode <: AbstractCSSCode
-    """Size of the first cyclic dimension"""
+    """Order of the first abelian group in ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m \\times \\mathbb{Z}_p]``"""
     l::Int
-    """Size of the second cyclic dimension"""
+    """Order of the second abelian group in ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m \\times \\mathbb{Z}_p]``"""
     m::Int
-    """Size of the third cyclic dimension"""
+    """Order of the third abelian group in ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m \\times \\mathbb{Z}_p]``"""
     p::Int
     """First trivariate polynomial in quotient ring ``\\frac{\\mathbb{F}_2[x, y, z]}{\\langle x^\\ell-1, y^m-1, z^p-1 \\rangle}``"""
     A::MPolyQuoRingElem{FqMPolyRingElem}
