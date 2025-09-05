@@ -126,11 +126,11 @@ H_X &= \\begin{bmatrix} A & B & C \\end{bmatrix}
 
 The generalization of the [`TrivariateTricycleCode`](@ref) codes to an arbitrary
 number of groups (Λ ≥ 3) remains a conjecture; for details, see Section 5.3.2,
-*Product of Λ ≥ 3 group algebra codes* of [`breuckmann2024cupsgatesicohomology`](@ref).
+*Product of Λ ≥ 3 group algebra codes* of [breuckmann2024cupsgatesicohomology](@cite).
 The parity-check and metacheck matrices for the [`TrivariateTricycleCode`](@ref) codes—which
 are equivalent to the boundary maps of the underlying 3-term chain complex, see
-equation 2, 3, and 4 of [jacob2025singleshotdecodingfaulttolerantgates](@cite—are
-constructed explicitly in [`breuckmann2024cupsgatesicohomology`](@ref). These
+equation 2, 3, and 4 of [jacob2025singleshotdecodingfaulttolerantgates](@cite)—are
+constructed explicitly in [breuckmann2024cupsgatesicohomology](@cite). These
 matrices serve as the fundamental building blocks and provide the key theoretical
 insight underlying this family of quantum codes.
 
