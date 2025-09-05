@@ -58,3 +58,13 @@ function GeneralizedToricCode(args...; kwargs...)
     end
     return ext.GeneralizedToricCode(args...; kwargs...)
 end
+
+"""Trivariate Tricycle codes ([jacob2025singleshotdecodingfaulttolerantgates](@cite))
+Implemented as a package extension with `Oscar`. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
+function TrivariateTricycleCode(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
+    if isnothing(ext)
+        throw("The `TrivariateTricycleCode` depends on the package `Oscar` but you have not installed or imported it yet. Immediately after you import `Oscar`, the `TrivariateTricycleCode` will be available.")
+    end
+    return ext.TrivariateTricycleCode(args...; kwargs...)
+end
