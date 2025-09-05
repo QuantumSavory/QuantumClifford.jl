@@ -119,6 +119,21 @@ H_X &= \\begin{bmatrix} A & B & C \\end{bmatrix}
 \\end{aligned}
 ```
 
+!!! note
+    We leverage the isomorphism between the group algebra ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m \\times \\mathbb{Z}_p]``
+    and the multivariate polynomial quotient ring ``\\frac{\\mathbb{F}_2[x, y, z]}{\\langle x^\\ell-1, y^m-1, z^p-1 \\rangle}`` to introduce
+    a novel realization of the Trivariate Tricycle codes of [jacob2025singleshotdecodingfaulttolerantgates](@cite).
+
+The generalization of the [`TrivariateTricycleCode`](@ref) codes to an arbitrary
+number of groups (Λ ≥ 3) remains a conjecture; for details, see Section 5.3.2,
+*Product of Λ ≥ 3 group algebra codes* of [`breuckmann2024cupsgatesicohomology`](@ref).
+The parity-check and metacheck matrices for the [`TrivariateTricycleCode`](@ref) codes—which
+are equivalent to the boundary maps of the underlying 3-term chain complex, see
+equation 2, 3, and 4 of [jacob2025singleshotdecodingfaulttolerantgates](@cite—are
+constructed explicitly in [`breuckmann2024cupsgatesicohomology`](@ref). These
+matrices serve as the fundamental building blocks and provide the key theoretical
+insight underlying this family of quantum codes.
+
 #### Examples
 
 Here is the `[[72, 6, 6]]` trivariate tricycle code from Table I from [jacob2025singleshotdecodingfaulttolerantgates](@cite).
@@ -181,11 +196,11 @@ struct TrivariateTricycleCode <: AbstractCSSCode
     m::Int
     """Size of the third cyclic dimension"""
     p::Int
-    """First trivariate polynomial in quotient ring R/⟨xˡ-1, yᵐ-1, zᵖ-1⟩"""
+    """First trivariate polynomial in quotient ring ``\\frac{\\mathbb{F}_2[x, y, z]}{\\langle x^\\ell-1, y^m-1, z^p-1 \\rangle}``"""
     A::MPolyQuoRingElem{FqMPolyRingElem}
-    """Second trivariate polynomial in quotient ring R/⟨xˡ-1, yᵐ-1, zᵖ-1⟩"""
+    """Second trivariate polynomial in quotient ring ``\\frac{\\mathbb{F}_2[x, y, z]}{\\langle x^\\ell-1, y^m-1, z^p-1 \\rangle}``"""
     B::MPolyQuoRingElem{FqMPolyRingElem}
-    """Third trivariate polynomial in quotient ring R/⟨xˡ-1, yᵐ-1, zᵖ-1⟩"""
+    """Third trivariate polynomial in quotient ring ``\\frac{\\mathbb{F}_2[x, y, z]}{\\langle x^\\ell-1, y^m-1, z^p-1 \\rangle}``"""
     C::MPolyQuoRingElem{FqMPolyRingElem}
 
     function TrivariateTricycleCode(l::Int, m::Int, p::Int, A::MPolyQuoRingElem{FqMPolyRingElem}, B::MPolyQuoRingElem{FqMPolyRingElem}, C::MPolyQuoRingElem{FqMPolyRingElem})

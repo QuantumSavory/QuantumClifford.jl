@@ -269,6 +269,7 @@ C₄ = 1 + x^2*y^2*z^2
 # Add some codes that require Oscar, hence do not work on Windows
 
 test_twobga_codes = []
+test_generalized_toric_codes = []
 test_homological_product_codes = []
 
 # La-cross code polynomial
@@ -287,7 +288,7 @@ h₄ = 1 + x + x^4
 
 @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
   import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order, gens, quo,
-  polynomial_ring, matrix, GF, transpose
+  polynomial_ring, matrix, GF, transpose, laurent_polynomial_ring
   function load_oscar_codes()
     #@info "Add group theoretic codes requiring Oscar"
     # [[72, 8, 9]] 2BGA code taken from Table I Block 1 of [lin2024quantum](@cite)
@@ -423,6 +424,52 @@ h₄ = 1 + x + x^4
     @test iszero(mod.(metacheck_matrix_x(hpc₄)*parity_matrix_x(hpc₄), 2))
 
     append!(test_homological_product_codes, [hpc₁, hpc₂, hpc₃, hpc₄])
+
+    # Generalized Toric Codes from [liang2025generalizedtoriccodestwisted](@cite)
+    # [[12, 4, 2]] from Table I of [liang2025generalizedtoriccodestwisted](@cite)
+    R, (x,y) = laurent_polynomial_ring(GF(2), [:x, :y])
+    f = 1 + x + x*y
+    g = 1 + y + x*y
+    α1 = (0, 3)
+    α2 = (2, 1)
+    gtc₁ = GeneralizedToricCode(f, g, α1, α2)
+
+    # [[14, 6, 2]] from Table I of [liang2025generalizedtoriccodestwisted](@cite)
+    f = 1 + x + y
+    g = 1 + y + x
+    α1 = (0, 7)
+    α2 = (1, 2)
+    gtc₂ = GeneralizedToricCode(f, g, α1, α2)
+
+    # [[96, 4, 12]] from Table I of [liang2025generalizedtoriccodestwisted](@cite)
+    f = 1 + x + x^-2*y
+    g = 1 + y + x*y^-2
+    α1 = (0, 12)
+    α2 = (4, 2)
+    gtc₃ = GeneralizedToricCode(f, g, α1, α2)
+
+    # [[98, 6, 12]] from Table I of [liang2025generalizedtoriccodestwisted](@cite)
+    f = 1 + x + x^-1*y^2
+    g = 1 + y + x^-2*y^-1
+    α1 = (0,  7)
+    α2 = (7, 0)
+    gtc₄ = GeneralizedToricCode(f, g, α1, α2)
+
+    # [[112, 6, 12]] from Table II of [liang2025generalizedtoriccodestwisted](@cite)
+    f = 1 + x + x^-1*y^2
+    g = 1 + y + x^-2*y^-1
+    α1 =(0, 7)
+    α2 =(8, 2)
+    gtc₅ = GeneralizedToricCode(f, g, α1, α2)
+
+    # [[114, 4, 14]] from Table II of [liang2025generalizedtoriccodestwisted](@cite)
+    f = 1 + x + x^-3*y
+    g = 1 + y + x^-5
+    α1 = (0,  3)
+    α2 = (19, 1)
+    gtc₆ = GeneralizedToricCode(f, g, α1, α2)
+
+    append!(test_generalized_toric_codes, [gtc₁, gtc₂, gtc₃, gtc₄, gtc₅, gtc₆])
   end
   load_oscar_codes()
 end
