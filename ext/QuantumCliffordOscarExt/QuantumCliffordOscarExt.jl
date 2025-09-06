@@ -41,6 +41,7 @@ include("generalized_toric.jl")
 include("group_presentation.jl")
 include("d_dimensional_codes.jl")
 include("trivariate_tricycle.jl")
+include("tetravariate_tetracycle.jl")
 include("homological_product_codes.jl")
 
 end # module

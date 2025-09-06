@@ -68,3 +68,13 @@ function TrivariateTricycleCode(args...; kwargs...)
     end
     return ext.TrivariateTricycleCode(args...; kwargs...)
 end
+
+"""Tetravariate Tetracycle  codes 
+Implemented as a package extension with `Oscar`. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
+function TetravariateTetracycleCode(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
+    if isnothing(ext)
+        throw("The `TetravariateTetracycleCode` depends on the package `Oscar` but you have not installed or imported it yet. Immediately after you import `Oscar`, the `TetravariateTetracycleCode` will be available.")
+    end
+    return ext.TetravariateTetracycleCode(args...; kwargs...)
+end
