@@ -229,21 +229,36 @@
             #test for checking reset capabilities
             state1 = S"Z"
             register1 = Register(state1, [0])
-            op1 = sMRZ(1,1)
+            resetMeasure = sMRZ(1,1)
             verify1 = VerifyOp(state1, [1])
-            pet1 = petrajectories(register1, [op1,verify1])
+            pet1 = petrajectories(register1, [resetMeasure,verify1])
             @test pet1[false_success_stat] == 0
             @test pet1[true_success_stat] == 1
             @test pet1[failure_stat] == 0
 
             state2 = S"X"
             register2 = Register(state2, [0])
-            op2 = sMRX(1,1)
             verify2 = VerifyOp(state2, [1])
-            pet2 = petrajectories(register2, [op2,verify2])
+            pet2 = petrajectories(register2, [resetMeasure,verify2])
             @test pet2[false_success_stat] == 0
             @test pet2[true_success_stat] == 1
             @test pet2[failure_stat] == 0
+
+            negState1 = S"-Z"
+            register3 = Register(negState1, [0])
+            verify3 = VerifyOp(negState1, [1])
+            pet3 = petrajectories(register3, [resetMeasure,verify3])
+            @test pet3[false_success_stat] == 1
+            @test pet3[true_success_stat] == 0
+            @test pet3[failure_stat] == 0
+
+            negState2 = S"-X"
+            register4 = Register(negState2, [0])
+            verify4 = VerifyOp(negState2, [1])
+            pet4 = petrajectories(register4, [resetMeasure,verify4])
+            @test pet4[false_success_stat] == 1
+            @test pet4[true_success_stat] == 0
+            @test pet4[failure_stat] == 0
 
             #checks probabilstic case to see if the phase of measurement anticommuting stabilizer is the same in both branches
             ghz_state = S"XXX ZZI IZZ"
