@@ -1,0 +1,153 @@
+"""
+    $TYPEDEF
+
+The error model is a dictionary that maps a vector of error bits to a probability array. The probability dictionary is designed to represent any probability distribution on the error bits.
+
+### Fields
+    $TYPEDFIELDS
+"""
+struct ErrorModel{VT<:AbstractArray{Float64}}
+    """The number of bits in the error model."""
+    num_bits::Int
+    """The probabilities of the error model."""
+    probabilities::Dict{Vector{Int},VT}
+    function ErrorModel(num_bits::Int, probabilities::Dict{Vector{Int},VT}) where VT<:AbstractArray{Float64}
+        for (error_bits, prob_array) in probabilities
+            @assert maximum(error_bits) <= num_bits "Maximum element in error bits $error_bits is $(maximum(error_bits)), but num_bits is $num_bits"
+            expected_size = (fill(2,length(error_bits))...,)
+            actual_size = size(prob_array)
+            @assert size(prob_array) == expected_size "The dimension of the probability array must match the length of the error bits vector, and each dimension must be size 2. Expected: $expected_size, Got: $actual_size"
+            @assert sum(prob_array) == 1 "The sum of the probabilities must be 1, but got $(sum(prob_array))"
+        end
+        missing_variables = setdiff(1:num_bits, unique(vcat(keys(probabilities)...)))
+        @assert isempty(missing_variables) "The following variables are not used in the error model: $missing_variables"
+        new{VT}(num_bits, probabilities)
+    end
+end
+
+"""
+    $TYPEDSIGNATURES
+
+Create an error model from a vector of error probabilities. The `i`-th element of the vector is the error probability of bit `i`.
+
+See also: [`depolarization_error_model`](@ref)
+"""
+function ErrorModel(probabilities::Vector{Float64})
+    num_bits = length(probabilities)
+    probabilities = Dict([i] => [1.0-probabilities[i],probabilities[i]] for i in 1:num_bits)
+    return ErrorModel(num_bits, probabilities)
+end
+
+"""
+    $TYPEDSIGNATURES
+
+Create a depolarization error model from a vector of error probabilities. The `i`-th element of the vector is the depolarization probability of qubit `i`.
+
+See also: [`depolarization_error_model`](@ref)
+"""
+function depolarization_error_model(pvec::Vector{Float64}, qubit_num::Int)
+    @assert length(pvec) == qubit_num "The length of the vector of error probabilities must match the number of qubits"
+    probabilities = Dict([i,i+qubit_num] => [1.0-pvec[i] pvec[i]/3; pvec[i]/3 pvec[i]/3] for i in 1:qubit_num)
+    return ErrorModel(2*qubit_num, probabilities)
+end
+
+"""
+    $TYPEDSIGNATURES
+
+Create a depolarization error model from a depolarization probability. All qubits have the same depolarization probability.
+
+See also: [`depolarization_error_model`](@ref)
+"""
+depolarization_error_model(p::Float64, qubit_num::Int) = depolarization_error_model(fill(p, qubit_num), qubit_num)
+
+"""
+    $TYPEDSIGNATURES
+
+Check if the error model is a vector error model.
+"""
+isvector(em::ErrorModel) = all(length(key)==1 for key in keys(em.probabilities))
+
+"""
+    $TYPEDSIGNATURES
+
+Check if the error model is an independent error model. Independent error model means that 
+"""
+function isindependent(em::ErrorModel)
+    keys_list = collect(keys(em.probabilities))
+    for i in 1:length(keys_list)-1
+        for j in i+1:length(keys_list)
+            if !isempty(intersect(keys_list[i], keys_list[j]))
+                return false
+            end
+        end
+    end
+    return true
+end
+
+abstract type AbstractSampler end
+"""`IndependentVectorSampler` is a simple sampler that only works on vector error model."""
+struct IndependentVectorSampler <: AbstractSampler end
+
+"""
+    $TYPEDSIGNATURES
+
+Generate a random error pattern from the error model. `sampler` is the sampler to use.
+
+See also: [`IndependentVectorSampler`](@ref)
+"""
+function random_error_pattern(em::ErrorModel, num_samples::Int, sampler::IndependentVectorSampler) 
+    @assert isvector(em) "The error model must be a vector error model"
+    return [rand() < em.probabilities[[i]][2] for i in 1:em.num_bits, _ in 1:num_samples]
+end
+
+"""
+    $TYPEDEF
+
+A decoding problem is defined by the error model, the check matrix, and the logical matrix.
+
+### Fields
+    $TYPEDFIELDS
+"""
+struct DecodingProblem
+    error_model::ErrorModel
+    check_matrix::Matrix{Bool}
+    logical_matrix::Matrix{Bool}
+    function DecodingProblem(error_model::ErrorModel, check_matrix::Matrix{Bool}, logical_matrix::Matrix{Bool})
+        @assert size(check_matrix, 2) == error_model.num_bits "The number of columns of the check matrix must match the number of bits in the error model"
+        @assert size(logical_matrix, 2) == error_model.num_bits "The number of columns of the logical matrix must match the number of bits in the error model"
+        new(error_model, check_matrix, logical_matrix)
+    end
+end
+# TODO: generate code capacity noise decoding problem. Need to compute the logical operators first.
+
+"""
+    $TYPEDSIGNATURES
+
+Extract the syndrome from the error patterns.
+"""
+function syndrome_extraction(check_matrix::AbstractMatrix, error_patterns::AbstractMatrix) 
+    return Bool.(mod.(check_matrix * error_patterns, 2))
+end
+syndrome_extraction(problem::DecodingProblem, error_patterns::Matrix{Bool}) = syndrome_extraction(problem.check_matrix, error_patterns)
+
+
+abstract type AbstractDecoder end
+
+"""
+    decode(problem::DecodingProblem,syndrome::Matrix{Bool},decoder::AbstractDecoder)
+
+Decode the error pattern from the syndrome.
+"""
+function decode end
+
+"""
+    $TYPEDSIGNATURES
+
+Check if the error pattern is a logical error.
+"""
+function check_decoding_result(error_pattern1::AbstractMatrix, error_pattern2::AbstractMatrix, problem::DecodingProblem)
+    ep = error_pattern1 - error_pattern2
+    syndrome_test = any(syndrome_extraction(problem.check_matrix, ep), dims=1)
+    logical_test = any(syndrome_extraction(problem.logical_matrix, ep), dims=1)
+    return syndrome_test .|| logical_test
+end

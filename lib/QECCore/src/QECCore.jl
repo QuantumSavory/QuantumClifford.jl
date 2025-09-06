@@ -14,6 +14,12 @@ rate, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, bivariate_bicycl
 generator_polynomial
 export AbstractECC, AbstractQECC, AbstractCECC, AbstractCSSCode, AbstractDistanceAlg
 
+# ErrorModel
+export ErrorModel, depolarization_error_model, isvector, isindependent, random_error_pattern, IndependentVectorSampler
+
+# Decoding
+export AbstractDecoder, decode, syndrome_extraction, DecodingProblem, check_decoding_result
+
 # QEC Codes
 export Perfect5, Cleve8, Gottesman
 
@@ -29,6 +35,7 @@ export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, GallagerLDPC, G
 export search_self_orthogonal_rm_codes
 
 include("interface.jl")
+include("decoding.jl")
 include("codes/util.jl")
 
 # Classical Codes
