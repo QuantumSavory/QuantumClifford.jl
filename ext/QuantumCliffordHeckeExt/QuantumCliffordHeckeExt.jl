@@ -12,17 +12,20 @@ import Hecke: Group, GroupElem, AdditiveGroupElem,
     multiplication_table, coefficients, abelian_group, group_algebra, rand, gens, order,
     is_commutative, FqPolyRingElem, residue_ring, coeff, zero_matrix, mod1, lift, ZZ, gen,
     matrix, ncols, nrows, degree, EuclideanRingResidueRingElem, quo, parent, zero, gcd,
-    polynomial_ring, characteristic, isone, mod
+    polynomial_ring, characteristic, isone, mod, factor, zeros
 import Hecke.Generic.MatSpaceElem
 import Nemo
-import Nemo: characteristic, matrix_repr, GF, ZZ, lift
+import Nemo: characteristic, matrix_repr, GF, ZZ, lift, rank
 
 import QuantumClifford.ECC: iscss, parity_checks,
     two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes, check_repr_commutation_relation,
-    haah_cubic_codes, honeycomb_color_codes, check_repr_regular_linear
+    haah_cubic_codes, honeycomb_color_codes, check_repr_regular_linear, random_qc_ghp_code_matrix_A
 
 import QECCore: AbstractECC, CSS,
     hgp, code_k, code_n, code_s, parity_matrix_x, parity_matrix_z, parity_matrix_xz
+
+import Random
+import Random: AbstractRNG, default_rng, randperm
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export hgp, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes, haah_cubic_codes,

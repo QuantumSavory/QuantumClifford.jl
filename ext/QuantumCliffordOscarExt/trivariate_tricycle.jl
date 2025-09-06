@@ -1,0 +1,313 @@
+"""
+    $TYPEDEF
+
+A quantum CSS code constructed from three trivariate polynomials over a finite field
+from [jacob2025singleshotdecodingfaulttolerantgates](@cite).
+
+[jacob2025singleshotdecodingfaulttolerantgates](@cite) first define arbitrary 3-block
+group algebra codes (for an *abelian* group G. The group algebra ``\\mathbb{F}_2[G]`` consists of
+formal sums of the form ``\\sum_{g \\in G} a_g g``, with ``a_g \\in \\mathbb{F}_2``.
+
+For a 3-block code, we consider the three length-1 chain complexes:
+
+```math
+\\begin{aligned}
+A_1 \\xrightarrow{\\quad a \\quad} A_0, \\quad
+B_1 \\xrightarrow{\\quad b \\quad} B_0, \\quad
+C_1 \\xrightarrow{\\quad c \\quad} C_0,
+\\end{aligned}
+```
+
+where ``A_i, B_i, C_i = \\mathbb{F}_2[G]`` and the boundary maps ``a, b, c \\in \\mathbb{F}_2[G]``.
+
+The tensor (balanced) product complex is formed from these three complexes using the
+*isomorphism* ``\\mathbb{F}_2[G] \\otimes_G \\mathbb{F}_2[G] \\simeq \\mathbb{F}_2[G]``
+which is used to simplify the general definition. The resulting tensor product complex is:
+
+```math
+\\begin{aligned}
+A_1 \\otimes_G B_1 \\otimes_G C_1
+\\xrightarrow{\\quad \\partial_3 \\quad}
+\\bigoplus_{i+j+k=2} A_i \\otimes_G B_j \\otimes_G C_k
+\\xrightarrow{\\quad \\partial_2 \\quad}
+\\bigoplus_{i+j+k=1} A_i \\otimes_G B_j \\otimes_G C_k
+\\xrightarrow{\\quad \\partial_1 \\quad} A_0 \\otimes_G B_0 \\otimes_G C_0
+\\end{aligned}
+```
+
+The boundary maps can be written explicitly in terms of a, b, and c as:
+
+```math
+\\begin{aligned}
+\\partial_3 &= \\begin{bmatrix} a \\\\ b \\\\ c \\end{bmatrix} \\\\
+\\partial_2 &= \\begin{bmatrix}
+0 & c & b \\\\
+c & 0 & a \\\\
+b & a & 0
+\\end{bmatrix} \\\\
+\\partial_1 &= \\begin{bmatrix} a & b & c \\end{bmatrix}
+\\end{aligned}
+```
+
+The trivariate tricycle codes from this complex by considering
+``G = \\Z_\\ell \\times \\Z_m \\times \\Z_p`` for integers ``\\ell``, m,
+and p. The following matrices which generate this group:
+
+```math
+\\begin{aligned}
+x &= S_\\ell \\otimes I_m \\otimes I_p \\\\
+y &= I_\\ell \\otimes S_m \\otimes I_p \\\\
+z &= I_\\ell \\otimes I_m \\otimes S_p
+\\end{aligned}
+```
+
+where ``S_n`` is the ``n \\times n`` cyclic shift matrix with elements
+``(S_n)_{i,j} = \\delta_{i, j \\oplus 1}`` and ``\\oplus`` denotes addition
+modulo n.
+
+We consider A, B, and C to be be polynomials in the non-commuting variables x, y,
+and z. An initial symmetric choice is:
+
+```math
+\\begin{aligned}
+A &= A_1 + A_2 + A_3 \\\\
+B &= B_1 + B_2 + B_3 \\\\
+C &= C_1 + C_2 + C_3
+\\end{aligned}
+```
+
+though this restriction can be relaxed [jacob2025singleshotdecodingfaulttolerantgates](@cite).
+
+We then define the parity-check matrices for the CSS code as:
+
+```math
+\\begin{aligned}
+H_X \\equiv \\partial_1, \\quad H_Z = \\partial_2^\\top, \\quad M_Z = \\partial_3^\\top,
+\\end{aligned}
+```
+
+where ``H_X`` and ``H_Z`` are the ``X`` and ``Z`` stabilizer generators, and ``M_Z``
+is a matrix of meta-checks encoding the redundancy in the ``Z`` checks. It can be verified that:
+
+```math
+\\begin{aligned}
+H_XH_Z^\\top = 0 \\quad \\text{and} \\quad M_ZH_Z = 0.
+\\end{aligned}
+```
+
+This results in the chain complex structure:
+
+```math
+\\begin{aligned}
+C_M \\xleftarrow{\\quad M_Z \\quad} C_Z \\xleftarrow{\\quad H_Z \\quad} Q \\xrightarrow{\\quad H_X \\quad} C_X
+\\end{aligned}
+```
+
+where the vector spaces over ``\\mathbb{F}_2[G]``.
+
+The matrices are given by:
+
+```math
+\\begin{aligned}
+M_Z &= \\begin{bmatrix} A^\\top & B^\\top & C^\\top \\end{bmatrix} \\\\
+H_Z &= \\begin{bmatrix}
+0 & C^\\top & B^\\top \\\\
+C^\\top & 0 & A^\\top \\\\
+B^\\top & A^\\top & 0
+\\end{bmatrix} \\\\
+H_X &= \\begin{bmatrix} A & B & C \\end{bmatrix}
+\\end{aligned}
+```
+
+!!! note
+    We leverage the isomorphism between the group algebra ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m \\times \\mathbb{Z}_p]``
+    and the multivariate polynomial quotient ring ``\\frac{\\mathbb{F}_2[x, y, z]}{\\langle x^\\ell-1, y^m-1, z^p-1 \\rangle}`` to introduce
+    a novel realization of the Trivariate Tricycle codes of [jacob2025singleshotdecodingfaulttolerantgates](@cite).
+
+The generalization of the [`TrivariateTricycleCode`](@ref) codes to an arbitrary
+number of groups (Λ ≥ 3) remains a conjecture; for details, see Section 5.3.2,
+*Product of Λ ≥ 3 group algebra codes* of [breuckmann2024cupsgatesicohomology](@cite).
+The parity-check and metacheck matrices for the [`TrivariateTricycleCode`](@ref) codes—which
+are equivalent to the boundary maps of the underlying 3-term chain complex, see
+equation 2, 3, and 4 of [jacob2025singleshotdecodingfaulttolerantgates](@cite)—are
+constructed explicitly in [breuckmann2024cupsgatesicohomology](@cite). These
+matrices serve as the fundamental building blocks and provide the key theoretical
+insight underlying this family of quantum codes.
+
+#### Examples
+
+Here is the `[[72, 6, 6]]` trivariate tricycle code from Table I from [jacob2025singleshotdecodingfaulttolerantgates](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l, m, p = 4, 3, 2;
+
+julia> R, (x, y, z) = polynomial_ring(GF(2), [:x, :y, :z]);
+
+julia> I = ideal(R, [x^l - 1, y^m - 1, z^p - 1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + y + x*y^2);
+
+julia> B = S(1 + y*z + x^2*y^2);
+
+julia> C = S(1 + x*y^2*z + x^2*y);
+
+julia> c = TrivariateTricycleCode(l, m, p, A, B, C);
+
+julia> code_n(c), code_k(c)
+(72, 6)
+```
+
+Here is the `[[432, 12, 12]]` trivariate tricycle code from Table I from [jacob2025singleshotdecodingfaulttolerantgates](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l, m, p = 6, 6, 4;
+
+julia> R, (x, y, z) = polynomial_ring(GF(2), [:x, :y, :z]);
+
+julia> I = ideal(R, [x^l - 1, y^m - 1, z^p - 1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + x*y*z^3 + x^3*y^4*z^2);
+
+julia> B = S(1 + x^3*y*z^2 + x^3*y^2*z^3);
+
+julia> C = S(1 + x^4*y^3*z^3 + x^5*z^2);
+
+julia> c = TrivariateTricycleCode(l, m, p, A, B, C);
+
+julia> code_n(c), code_k(c)
+(432, 12)
+```
+
+### Fields
+    $TYPEDFIELDS
+"""
+struct TrivariateTricycleCode <: AbstractCSSCode
+    """Order of the first abelian group in ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m \\times \\mathbb{Z}_p]``"""
+    l::Int
+    """Order of the second abelian group in ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m \\times \\mathbb{Z}_p]``"""
+    m::Int
+    """Order of the third abelian group in ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m \\times \\mathbb{Z}_p]``"""
+    p::Int
+    """First trivariate polynomial in quotient ring ``\\frac{\\mathbb{F}_2[x, y, z]}{\\langle x^\\ell-1, y^m-1, z^p-1 \\rangle}``"""
+    A::MPolyQuoRingElem{FqMPolyRingElem}
+    """Second trivariate polynomial in quotient ring ``\\frac{\\mathbb{F}_2[x, y, z]}{\\langle x^\\ell-1, y^m-1, z^p-1 \\rangle}``"""
+    B::MPolyQuoRingElem{FqMPolyRingElem}
+    """Third trivariate polynomial in quotient ring ``\\frac{\\mathbb{F}_2[x, y, z]}{\\langle x^\\ell-1, y^m-1, z^p-1 \\rangle}``"""
+    C::MPolyQuoRingElem{FqMPolyRingElem}
+
+    function TrivariateTricycleCode(l::Int, m::Int, p::Int, A::MPolyQuoRingElem{FqMPolyRingElem}, B::MPolyQuoRingElem{FqMPolyRingElem}, C::MPolyQuoRingElem{FqMPolyRingElem})
+        l > 0 || throw(ArgumentError("l must be positive"))
+        m > 0 || throw(ArgumentError("m must be positive"))
+        p > 0 || throw(ArgumentError("p must be positive"))
+        Rₒ = parent(A)
+        R, (x,y,z) = polynomial_ring(GF(2), [:x, :y, :z])
+        I = ideal(R, [x^l-1, y^m-1, z^p-1])
+        Rₑₓₚ, _ = quo(R, I)
+        base_ring(Rₒ) != base_ring(Rₑₓₚ) && throw(ArgumentError("A must be in R/⟨x^$l-1, y^$m-1, z^$p-1⟩"))
+        modulus(Rₒ) != modulus(Rₑₓₚ) && throw(ArgumentError("A must be in R/⟨x^$l-1, y^$m-1, z^$p-1⟩"))
+        parent(B) != Rₒ && throw(ArgumentError("B must be in same ring as A"))
+        parent(C) != Rₒ && throw(ArgumentError("C must be in same ring as A"))
+        new(l, m, p, A, B, C)
+    end
+end
+
+"""Convert a matrix over GF(2) to an integer matrix."""
+function _gf2_to_int_mat(M_gf2)
+    m, n = size(M_gf2)
+    Mᵢₙₜ = zeros(Int, m, n)
+    for i in 1:m, j in 1:n
+        elem = M_gf2[i, j]
+        Mᵢₙₜ[i, j] = iszero(elem) ? 0 : 1
+    end
+    return Mᵢₙₜ
+end
+
+"""Construct a 3D circulant matrix from a trivariate polynomial."""
+function _circulant_matrix_3d(poly, l, m, p)
+    n = l*m*p
+    M = zero_matrix(GF(2), n, n)
+    for i in 0:l-1, j in 0:m-1, k in 0:p-1
+        col_idx = i*(m*p)+j*p+k+1
+        for term in terms(poly)
+            c = coeff(term, 1)
+            i₂ = degree(term, 1)
+            j₂ = degree(term, 2)
+            k₂ = degree(term, 3)
+            i₃ = mod(i₂+i, l)
+            j₃ = mod(j₂+j, m)
+            k₃ = mod(k₂+k, p)
+            row_idx = i₃*(m*p)+j₃*p+k₃+1
+            M[row_idx, col_idx] += c
+        end
+    end
+    return M
+end
+
+"""Convert a quotient ring polynomial to its circulant matrix representation."""
+function _polynomial_to_circulant_matrix(f, l, m, p)
+    f_lift = lift(f)
+    return _circulant_matrix_3d(f_lift, l, m, p)
+end
+
+"""Compute the transpose of a polynomial in the group algebra. For a
+polynomial f = ∑ cᵢⱼₖ xⁱyʲzᵏ, the transpose is fᵀ = ∑ cᵢⱼₖ x⁻ⁱy⁻ʲz⁻ᵏ."""
+function _polynomial_transpose(f, l, m, p)
+    f_lift = lift(f)
+    Rₒ = parent(f_lift)
+    x, y, z = gens(Rₒ)
+    fₜᵣₐₙₛ = zero(Rₒ)
+    monoms = monomials(f_lift)
+    coeffs = coefficients(f_lift)
+    for (mono, c) in zip(monoms, coeffs)
+        i = degree(mono, 1)
+        j = degree(mono, 2)
+        k = degree(mono, 3)
+        iᵢₙᵥ = mod(-i, l)
+        jᵢₙᵥ = mod(-j, m)
+        kᵢₙᵥ = mod(-k, p)
+        monoᵢₙᵥ = x^iᵢₙᵥ*y^jᵢₙᵥ*z^kᵢₙᵥ
+        fₜᵣₐₙₛ += c*monoᵢₙᵥ
+    end
+    return Rₒ(fₜᵣₐₙₛ)
+end
+
+function boundary_maps(c::TrivariateTricycleCode)
+    l, m, p = c.l, c.m, c.p
+    A, B, C = c.A, c.B, c.C
+    M_A = _polynomial_to_circulant_matrix(A, l, m, p)
+    M_B = _polynomial_to_circulant_matrix(B, l, m, p)
+    M_C = _polynomial_to_circulant_matrix(C, l, m, p)
+    Aₜᵣₐₙₛ = _polynomial_transpose(A, l, m, p)
+    Bₜᵣₐₙₛ = _polynomial_transpose(B, l, m, p)
+    Cₜᵣₐₙₛ = _polynomial_transpose(C, l, m, p)
+    M_Aₜᵣₐₙₛ = _polynomial_to_circulant_matrix(Aₜᵣₐₙₛ, l, m, p)
+    M_Bₜᵣₐₙₛ = _polynomial_to_circulant_matrix(Bₜᵣₐₙₛ, l, m, p)
+    M_Cₜᵣₐₙₛ = _polynomial_to_circulant_matrix(Cₜᵣₐₙₛ, l, m, p)
+    n_block = l*m*p
+    zero_block = zero_matrix(GF(2), n_block, n_block)
+    H_X = hcat(M_A, M_B, M_C) # Eq. 14
+    H_Z = vcat(
+        hcat(zero_block, M_Cₜᵣₐₙₛ, M_Bₜᵣₐₙₛ),
+        hcat(M_Cₜᵣₐₙₛ, zero_block, M_Aₜᵣₐₙₛ),
+        hcat(M_Bₜᵣₐₙₛ, M_Aₜᵣₐₙₛ, zero_block)
+    ) # Eq. 13
+    M_Z = hcat(M_Aₜᵣₐₙₛ, M_Bₜᵣₐₙₛ, M_Cₜᵣₐₙₛ) # Eq. 12
+    H_X = _gf2_to_int_mat(H_X)
+    H_Z = _gf2_to_int_mat(H_Z)
+    M_Z = _gf2_to_int_mat(M_Z)
+    return H_X, H_Z, M_Z
+end
+
+parity_matrix_x(c::TrivariateTricycleCode) = boundary_maps(c)[1]
+
+parity_matrix_z(c::TrivariateTricycleCode) = boundary_maps(c)[2]
+
+metacheck_matrix_z(c::TrivariateTricycleCode) = boundary_maps(c)[3]
