@@ -21,12 +21,6 @@ function bicycle_codes end
 """Implemented in a package extension with Hecke. Check the docs for the [Hecke extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Hecke.jl)"""
 function haah_cubic_codes end
 
-"""Implemented in a package extension with Oscar. Check the docs for the [Oscar extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Oscar.jl)"""
-function twobga_from_direct_product end
-
-"""Implemented in a package extension with Oscar. Check the docs for the [Oscar extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Oscar.jl)"""
-function twobga_from_fp_group end
-
 """Implemented in a package extension with Hecke."""
 function honeycomb_color_codes end
 
