@@ -1,7 +1,7 @@
 """
     $TYPEDEF
 
-The error model is a dictionary that maps a vector of error bits to a probability array. The probability dictionary is designed to represent any probability distribution on the error bits.
+Represents a probabilistic error model for a system of bits using a factored distribution approach. The model decomposes the joint probability distribution over all bits into smaller, manageable distributions over subsets of bits.
 
 ### Fields
     $TYPEDFIELDS
@@ -9,7 +9,20 @@ The error model is a dictionary that maps a vector of error bits to a probabilit
 struct ErrorModel{VT<:AbstractArray{Float64}}
     """The number of bits in the error model."""
     num_bits::Int
-    """The probabilities of the error model."""
+    """Dictionary defining the factored probability distributions.
+    
+    - **Keys**: `Vector{Int}` specifying which subset of bits the distribution covers
+      (e.g., `[1,3]` means this distribution covers bits 1 and 3)
+    - **Values**: `VT` multi-dimensional probability array where:
+        - Dimensionality = length of the key vector
+        - Each dimension has size 2 (representing classical bit states 0/1 or error/no-error)
+        - Values are non-negative probabilities summing to 1
+    
+    Example: `[1,2] => [0.4 0.3; 0.2 0.1]` represents:
+        - P(bit1=0, bit2=0) = 0.4
+        - P(bit1=0, bit2=1) = 0.3
+        - P(bit1=1, bit2=0) = 0.2
+        - P(bit1=1, bit2=1) = 0.1"""
     probabilities::Dict{Vector{Int},VT}
     function ErrorModel(num_bits::Int, probabilities::Dict{Vector{Int},VT}) where VT<:AbstractArray{Float64}
         for (error_bits, prob_array) in probabilities
@@ -42,8 +55,6 @@ end
     $TYPEDSIGNATURES
 
 Create a depolarization error model from a vector of error probabilities. The `i`-th element of the vector is the depolarization probability of qubit `i`.
-
-See also: [`depolarization_error_model`](@ref)
 """
 function depolarization_error_model(pvec::Vector{Float64}, qubit_num::Int)
     @assert length(pvec) == qubit_num "The length of the vector of error probabilities must match the number of qubits"
@@ -55,8 +66,6 @@ end
     $TYPEDSIGNATURES
 
 Create a depolarization error model from a depolarization probability. All qubits have the same depolarization probability.
-
-See also: [`depolarization_error_model`](@ref)
 """
 depolarization_error_model(p::Float64, qubit_num::Int) = depolarization_error_model(fill(p, qubit_num), qubit_num)
 
@@ -103,19 +112,29 @@ end
 """
     $TYPEDEF
 
-A decoding problem is defined by the error model, the check matrix, and the logical matrix.
+Represents a quantum error correction decoding problem by combining an error model with the code's stabilizer checks and logical operators. This structure forms the complete specification needed to perform quantum error correction decoding. 
+
+See also: [`ErrorModel`](@ref)
 
 ### Fields
     $TYPEDFIELDS
 """
-struct DecodingProblem
-    error_model::ErrorModel
+struct DecodingProblem{VT}
+    """Probabilistic error model for the bits"""
+    error_model::ErrorModel{VT}
+    """Parity check matrix
+    - **Matrix dimensions**: [num_checks × num_bits]
+    - **Matrix elements**: Boolean (false=0, true=1)
+    - **Operation**: Syndrome = check_matrix × error_vector (mod 2)"""
     check_matrix::Matrix{Bool}
+    """Logical operators
+    - **Matrix dimensions**: [num_logicals × num_bits]
+    - **Matrix elements**: Boolean (false=0, true=1)"""
     logical_matrix::Matrix{Bool}
-    function DecodingProblem(error_model::ErrorModel, check_matrix::Matrix{Bool}, logical_matrix::Matrix{Bool})
+    function DecodingProblem(error_model::ErrorModel{VT}, check_matrix::Matrix{Bool}, logical_matrix::Matrix{Bool})
         @assert size(check_matrix, 2) == error_model.num_bits "The number of columns of the check matrix must match the number of bits in the error model"
         @assert size(logical_matrix, 2) == error_model.num_bits "The number of columns of the logical matrix must match the number of bits in the error model"
-        new(error_model, check_matrix, logical_matrix)
+        new{VT}(error_model, check_matrix, logical_matrix)
     end
 end
 # TODO: generate code capacity noise decoding problem. Need to compute the logical operators first.
