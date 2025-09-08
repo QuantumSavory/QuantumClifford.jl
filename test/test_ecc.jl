@@ -1,10 +1,10 @@
-@testitem "ECC" tags=[:ecc] begin
+@testitem "ECC" tags=[:ecc, :part1] begin
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
 
     include("test_ecc_base.jl")
 
-    codes = all_testablable_code_instances()
+    codes = all_testable_code_instances()
 
     function test_naive_syndrome(c::AbstractECC, e::Bool)
         # create a random logical state

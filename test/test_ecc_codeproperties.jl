@@ -1,4 +1,4 @@
-@testitem "ECC code properties" tags=[:ecc] begin
+@testitem "ECC code properties" tags=[:ecc, :part1] begin
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
 
@@ -19,14 +19,14 @@
     end
 
     @testset "is CSS" begin
-        for code in all_testablable_code_instances()
+        for code in all_testable_code_instances()
             H = parity_checks(code)
             @test iscss(code) in (is_css_matrix(H), nothing)
         end
     end
 
     @testset "code tableau consistency" begin
-        for code in all_testablable_code_instances()
+        for code in all_testable_code_instances()
             H = parity_checks(code)
             @test nqubits(code) == size(H, 2) == code_n(code)
             @test size(H, 1) == code_s(code)

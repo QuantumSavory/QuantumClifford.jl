@@ -49,8 +49,11 @@ testfilter = ti -> begin
         push!(exclude, :jet)
     end
 
-    if get(ENV, "ECC_TEST", "") == "true"
-        return :ecc in ti.tags
+    if get(ENV, "ECC_TEST_1", "") == "true"
+        return (:ecc in ti.tags) && (:part1 in ti.tags)
+
+    elseif get(ENV, "ECC_TEST_2", "") == "true"
+        return (:ecc in ti.tags) && (:part2 in ti.tags)
     else
         push!(exclude, :ecc)
     end

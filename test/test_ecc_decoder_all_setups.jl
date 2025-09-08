@@ -1,4 +1,4 @@
-@testitem "ECC Decoder" tags=[:ecc] begin
+@testitem "ECC Decoder" tags=[:ecc, :part1] begin
     using QuantumClifford.ECC
 
     import PyQDecoders
@@ -7,9 +7,7 @@
     include("test_ecc_base.jl")
 
     @testset "table decoder, good for small codes" begin
-        codes = [
-                 all_testablable_code_instances(;maxn=10)...
-                ]
+        codes = all_testable_code_instances(;maxn=10)
 
         noise = 0.001
 

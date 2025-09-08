@@ -1,4 +1,4 @@
-@testitem "ECC 2BGA" tags=[:ecc] begin
+@testitem "ECC 2BGA" tags=[:ecc, :part2] begin
     using Hecke
     using JuMP
     using HiGHS

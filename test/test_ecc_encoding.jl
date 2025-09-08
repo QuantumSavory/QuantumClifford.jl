@@ -1,4 +1,4 @@
-@testitem "encoding circuits - compare to algebraic construction of encoded state" tags=[:ecc] begin
+@testitem "encoding circuits - compare to algebraic construction of encoded state" tags=[:ecc, :part1] begin
     using QuantumClifford
     using QuantumClifford.ECC
 
@@ -10,7 +10,7 @@
     # i.e. we modify the code we are testing so that the canonicalization does not need any permutations.
     for undoperm in [true, false],
         code in [
-            all_testablable_code_instances()...,
+            all_testable_code_instances()...,
             S"Y_",
             S"Z_",
             S"X_",

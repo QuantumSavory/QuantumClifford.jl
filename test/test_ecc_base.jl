@@ -191,10 +191,10 @@ test_bb_codes = [bb1, bb2, bb3]
 # [[882, 24, 18 ≤ d ≤ 24]] from Appendix B of [panteleev2021degenerate](@cite)
 F = GF(2)
 R, x = polynomial_ring(F, "x")
-n = 7
-l = 63
-S, _ =  quo(R, x^l - 1)
-A_ghp1 = matrix(S, n, n,
+n_ghp1 = 7
+l_ghp1 = 63
+S_ghp1, _ =  quo(R, x^l_ghp1 - 1)
+A_ghp1 = matrix(S_ghp1, n_ghp1, n_ghp1,
          [x^27  0     0     0     0     1     x^54
           x^54  x^27  0     0     0     0     1
           1     x^54  x^27  0     0     0     0
@@ -202,75 +202,24 @@ A_ghp1 = matrix(S, n, n,
           0     0     1     x^54  x^27  0     0
           0     0     0     1     x^54  x^27  0
           0     0     0     0     1     x^54  x^27])
-b_ghp1 = S(1 + x + x^6)
-
-# [[882, 48, 16]] from Appendix B of [panteleev2021degenerate](@cite)
-F = GF(2)
-R, x = polynomial_ring(F, "x")
-n = 7
-l = 63
-S, _ =  quo(R, x^l - 1)
-A_ghp2 = matrix(S, n, n,
-         [x^27   0     0     1     x^18  x^27  1
-          1      x^27  0     0     1     x^18  x^27
-          x^27   1     x^27  0     0     1     x^18
-          x^18   x^27  1     x^27  0     0     1
-          1      x^18  x^27  1     x^27  0     0
-          0      1     x^18  x^27  1     x^27  0
-          0      0     1     x^18  x^27  1     x^27])
-b_ghp2 = S(1 + x + x^6)
+b_ghp1 = S_ghp1(1 + x + x^6)
 
 # Generalized Bicycle and Extended GB codes from [koukoulekidis2024smallquantumcodesalgebraic](@cite)
 R, x = polynomial_ring(GF(2), :x)
-l = 5
+l_gb₁ = 6
 a_gb₁ = 1 + x^4
 b_gb₁ = 1 + x + x^2 + x^4
-c_gb₁ = GeneralizedBicycleCode(a_gb₁, b_gb₁, l)
-p₁ = one(R)
-l = 9
+c_gb₁ = GeneralizedBicycleCode(a_gb₁, b_gb₁, l_gb₁)
+p_gb₁ = one(R)
+l_gb₂ = 9
 a_gb₂ = 1 + x^2
 b_gb₂ = 1 + x^5
-c_gb₂ = GeneralizedBicycleCode(a_gb₂, b_gb₂, l)
-p₂ = one(R)
-l = 10
-a_gb₃ = 1 + x
-b_gb₃ = 1 + x^6
-c_gb₃ = GeneralizedBicycleCode(a_gb₃, a_gb₃, l)
-p₃ = one(R) + x
-
-# Trivariate Tricycle Codes from [jacob2025singleshotdecodingfaulttolerantgates](@cite)
-
-# [[36, 3, 3]] from Table III
-F₂ = GF(2)
-R, (x, y, z) = polynomial_ring(F₂, [:x, :y, :z])
-ℓ₁, m₁, p₁ = 3, 2, 2
-A₁ = 1 + x*y*z
-B₁ = 1 + x^2*z
-C₁ = 1 + x
-
-# [[48, 3, 4]] from Table III
-ℓ₂, m₂, p₂ = 4, 2, 2
-A₂ = 1 + x
-B₂ = 1 + x*z
-C₂ = 1 + x*y
-
-# [[54, 3, 4]] from Table III
-ℓ₃, m₃, p₃ = 3, 3, 2
-A₃ = 1 + y*z
-B₃ = 1 + x*z
-C₃ = 1 + x*y*z
-
-# [[108, 6, 2]] from Table IV
-ℓ₄, m₄, p₄ = 4, 3, 3
-A₄ = (1 + x^2)*(1 + x*z)
-B₄ = 1 + x^2*y^2
-C₄ = 1 + x^2*y^2*z^2
+c_gb₂ = GeneralizedBicycleCode(a_gb₂, b_gb₂, l_gb₂)
+p_gb₂ = one(R)
 
 # Add some codes that require Oscar, hence do not work on Windows
 
 test_twobga_codes = []
-test_generalized_toric_codes = []
-test_homological_product_codes = []
 
 # La-cross code polynomial
 F = GF(2)
@@ -279,16 +228,40 @@ h₂ = 1 + x + x^2
 h₃ = 1 + x + x^3
 h₄ = 1 + x + x^4
 
-# Double Homological product codes
-δ₁ = [1 1 0;
-      0 1 1]
-δ₂ = [1 1 0;
-      0 1 1;
-      1 0 1]
+# Generalized Bivariate Bicycle Codes
+A1 = [(:x,3), (:y,1), (:y,2)]
+B1 = [(:y,3), (:x,1), (:x,2)]
+
+const code_instance_args = Dict(
+    :Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
+    :Surface => [(3,3), (4,4), (3,6), (4,3), (5,5)],
+    :Gottesman => [(3,), (4,), (5,)],
+    :CSS => (c -> (parity_matrix_x(c), parity_matrix_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
+    :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
+    :CircuitCode => random_circuit_code_args,
+    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, test_twobga_codes, test_honeycomb_color_codes, test_nonabelian_codes, other_lifted_product_codes)),
+    :QuantumReedMuller => [(3,), (4,), (5,)],
+    :Triangular488 => [(3,), (5,), (7,), (9,), (11,)],
+    :Triangular666 => [(3,), (5,), (7,), (9,), (11,)],
+    :DelfosseReichardt => [(2,1,3), (2,2,4), (4,3,5), (4,3,6)],
+    :DelfosseReichardtRepCode => [(4,), (6,), (8,), (10,)],
+    :DelfosseReichardt823 => [(2,), (3,), (4,), (5,)],
+    :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
+    :CyclicQuantumTannerGraphProduct => [(2,), (3,), (4,)],
+    :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false)],
+    :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
+    :random_TillichZemor_code => [(6,4,3), (7,5,3), (8,6,3)],
+    :GeneralizedCirculantBivariateBicycle => [(9, 6, A1, B1)],
+    :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1, l_ghp1)],
+    :GeneralizedBicycleCode => [(a_gb₁,b_gb₁, l_gb₁), (a_gb₂,b_gb₂, l_gb₂)],
+    :ExtendedGeneralizedBicycleCode => [(c_gb₁,2,p_gb₁), (c_gb₂,3,p_gb₂)]
+)
+
+const oscar_code_instance_args = Dict()
 
 @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
   import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order, gens, quo,
-  polynomial_ring, matrix, GF, transpose, laurent_polynomial_ring
+  polynomial_ring, matrix, GF, transpose, laurent_polynomial_ring, ideal
   function load_oscar_codes()
     #@info "Add group theoretic codes requiring Oscar"
     # [[72, 8, 9]] 2BGA code taken from Table I Block 1 of [lin2024quantum](@cite)
@@ -402,128 +375,129 @@ h₄ = 1 + x + x^4
     # Homological Product Codes
     # [[117, 9, 4]] from [xu2024fastparallelizablelogicalcomputation](@cite)
     R, x = polynomial_ring(GF(2), "x")
-    l = 3
-    H = matrix(R, 2, 3, [x^2 x^2 x^2;
-                         x   x^2  0])
-    hpc₁ = HomologicalProductCode([H,transpose(H)], l)
-    # [[225, 9, 6]] from [xu2024fastparallelizablelogicalcomputation](@cite)
-    R, x = polynomial_ring(GF(2), "x")
-    l = 3
-    H = matrix(R, 3, 4, [x^2 x^2 x^2   0;
-                         x^2   0 x^2  x^2;
-                         x^2 x^2   x  x^2])
-    hpc₂ = HomologicalProductCode([H,transpose(H)], l)
-    # 3D Homological product code from [Quintavalle_2021](@cite)
-    μ = 2; wc = 3; wr = 4
-    c = GallagerLDPC(μ, wc, wr)
-    H = matrix(GF(2), parity_matrix(c))
-    hpc₃ = HomologicalProductCode([H,transpose(H)])
-    # 3D Homological product code from [Quintavalle_2021](@cite)
-    δ = matrix(GF(2), parity_matrix(RepCode(3)))
-    hpc₄ = HomologicalProductCode([δ,δ,δ])
-    @test iszero(mod.(metacheck_matrix_x(hpc₄)*parity_matrix_x(hpc₄), 2))
+    l₁ = 3
+    H₁ = matrix(R, 2, 3, [x^2 x^2 x^2;
+                          x   x^2  0])
 
-    append!(test_homological_product_codes, [hpc₁, hpc₂, hpc₃, hpc₄])
+    # 3D Homological product code from [Quintavalle_2021](@cite)
+    δ₂ = matrix(GF(2), parity_matrix(RepCode(3)))
+
+    # Trivariate Tricycle Codes from [jacob2025singleshotdecodingfaulttolerantgates](@cite)
+
+    # [[36, 3, 3]] from Table III
+    F₂ = GF(2)
+    ℓ₁, m₁, p₁ = 3, 2, 2
+    R, (x, y, z) = polynomial_ring(F₂, [:x, :y, :z])
+    I = ideal(R, [x^ℓ₁ - 1, y^m₁ - 1, z^p₁ - 1])
+    S, _ = quo(R, I)
+    A₁ = S(1 + x*y*z)
+    B₁ = S(1 + x^2*z)
+    C₁ = S(1 + x)
+
+    # [[48, 3, 4]] from Table III
+    ℓ₂, m₂, p₂ = 4, 2, 2
+    I = ideal(R, [x^ℓ₂ - 1, y^m₂ - 1, z^p₂ - 1])
+    S, _ = quo(R, I)
+    A₂ = S(1 + x)
+    B₂ = S(1 + x*z)
+    C₂ = S(1 + x*y)
+
+    # [[54, 3, 4]] from Table III
+    ℓ₃, m₃, p₃ = 3, 3, 2
+    I = ideal(R, [x^ℓ₃ - 1, y^m₃ - 1, z^p₃ - 1])
+    S, _ = quo(R, I)
+    A₃ = S(1 + y*z)
+    B₃ = S(1 + x*z)
+    C₃ = S(1 + x*y*z)
+
+    # [[108, 6, 2]] from Table IV
+    ℓ₄, m₄, p₄ = 4, 3, 3
+    I = ideal(R, [x^ℓ₄ - 1, y^m₄ - 1, z^p₄ - 1])
+    S, _ = quo(R, I)
+    A₄ = S((1 + x^2)*(1 + x*z))
+    B₄ = S(1 + x^2*y^2)
+    C₄ = S(1 + x^2*y^2*z^2)
 
     # Generalized Toric Codes from [liang2025generalizedtoriccodestwisted](@cite)
     # [[12, 4, 2]] from Table I of [liang2025generalizedtoriccodestwisted](@cite)
     R, (x,y) = laurent_polynomial_ring(GF(2), [:x, :y])
-    f = 1 + x + x*y
-    g = 1 + y + x*y
-    α1 = (0, 3)
-    α2 = (2, 1)
-    gtc₁ = GeneralizedToricCode(f, g, α1, α2)
+    f₁ = 1 + x + x*y
+    g₁ = 1 + y + x*y
+    α1₁ = (0, 3)
+    α2₁ = (2, 1)
 
     # [[14, 6, 2]] from Table I of [liang2025generalizedtoriccodestwisted](@cite)
-    f = 1 + x + y
-    g = 1 + y + x
-    α1 = (0, 7)
-    α2 = (1, 2)
-    gtc₂ = GeneralizedToricCode(f, g, α1, α2)
+    f₂ = 1 + x + y
+    g₂ = 1 + y + x
+    α1₂ = (0, 7)
+    α2₂ = (1, 2)
 
     # [[96, 4, 12]] from Table I of [liang2025generalizedtoriccodestwisted](@cite)
-    f = 1 + x + x^-2*y
-    g = 1 + y + x*y^-2
-    α1 = (0, 12)
-    α2 = (4, 2)
-    gtc₃ = GeneralizedToricCode(f, g, α1, α2)
+    f₃ = 1 + x + x^-2*y
+    g₃ = 1 + y + x*y^-2
+    α1₃ = (0, 12)
+    α2₃ = (4, 2)
 
     # [[98, 6, 12]] from Table I of [liang2025generalizedtoriccodestwisted](@cite)
-    f = 1 + x + x^-1*y^2
-    g = 1 + y + x^-2*y^-1
-    α1 = (0,  7)
-    α2 = (7, 0)
-    gtc₄ = GeneralizedToricCode(f, g, α1, α2)
+    f₄ = 1 + x + x^-1*y^2
+    g₄ = 1 + y + x^-2*y^-1
+    α1₄ = (0,  7)
+    α2₄ = (7, 0)
 
-    # [[112, 6, 12]] from Table II of [liang2025generalizedtoriccodestwisted](@cite)
-    f = 1 + x + x^-1*y^2
-    g = 1 + y + x^-2*y^-1
-    α1 =(0, 7)
-    α2 =(8, 2)
-    gtc₅ = GeneralizedToricCode(f, g, α1, α2)
+    # Double Homological product codes
+    # [[241, 1, 9]] from Table I of https://arxiv.org/pdf/1805.09271
+    δ₁ = [1 1 0;
+          0 1 1]
 
-    # [[114, 4, 14]] from Table II of [liang2025generalizedtoriccodestwisted](@cite)
-    f = 1 + x + x^-3*y
-    g = 1 + y + x^-5
-    α1 = (0,  3)
-    α2 = (19, 1)
-    gtc₆ = GeneralizedToricCode(f, g, α1, α2)
+    oscar_code_instance_args[:DDimensionalSurfaceCode] = [(2, 3), (3, 2), (4, 2)]
+    oscar_code_instance_args[:DDimensionalToricCode] = [(2, 3), (3, 2), (4, 2)]
+    oscar_code_instance_args[:GeneralizedToricCode] = [(f₁, g₁, α1₁, α2₁), (f₂, g₂, α1₂, α2₂), (f₃, g₃, α1₃, α2₃), (f₄, g₄, α1₄, α2₄)]
+    oscar_code_instance_args[:HomologicalProductCode] = [([H₁,transpose(H₁)], l₁), ([δ₂,δ₂,δ₂],)]
+    oscar_code_instance_args[:DoubleHomologicalProductCode] = [(δ₁,)]
+    oscar_code_instance_args[:TrivariateTricycleCode] = [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)]
 
-    append!(test_generalized_toric_codes, [gtc₁, gtc₂, gtc₃, gtc₄, gtc₅, gtc₆])
+    merge!(code_instance_args, oscar_code_instance_args)
   end
   load_oscar_codes()
 end
 
-# Generalized Bivariate Bicycle Codes
-A1 = [(:x,3), (:y,1), (:y,2)]
-B1 = [(:y,3), (:x,1), (:x,2)]
-A1 = [(:x,9), (:y,1), (:y,2)]
-B1 = [(:y,0), (:x,2), (:x,7)]
-A2 = [(:x,6), (:y,5), (:y,6)]
-B2 = [(:y,0), (:x,4), (:x,13)]
-A3 = [(:x,5), (:y,2), (:y,3)]
-B3 = [(:y,2), (:x,7), (:x,6)]
-
-
-const code_instance_args = Dict(
-    :Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
-    :Surface => [(3,3), (4,4), (3,6), (4,3), (5,5)],
-    :Gottesman => [3, 4, 5],
-    :CSS => (c -> (parity_matrix_x(c), parity_matrix_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
-    :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
-    :CircuitCode => random_circuit_code_args,
-    :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, test_twobga_codes, test_honeycomb_color_codes, test_nonabelian_codes, other_lifted_product_codes)),
-    :QuantumReedMuller => [3, 4, 5],
-    :Triangular488 => [3, 5, 7, 9, 11],
-    :Triangular666 => [3, 5, 7, 9, 11],
-    :DelfosseReichardt => [(2,1,3), (2,2,4), (4,3,5), (4,3,6)],
-    :DelfosseReichardtRepCode => [4, 6, 8, 10],
-    :DelfosseReichardt823 => [1, 2, 3, 4, 5],
-    :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
-    :CyclicQuantumTannerGraphProduct => [1, 2, 3, 4, 5],
-    :DDimensionalSurfaceCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
-    :DDimensionalToricCode => [(2, 2), (2, 3), (3, 2), (3, 3), (4, 2)],
-    :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false), (7,h₃,true), (9,h₃,true), (9,h₄,true), (10,h₄,true), (12,h₄,true)],
-    :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
-    :random_TillichZemor_code => [(6,4,3), (7,5,3), (8,6,3)],
-    :GeneralizedCirculantBivariateBicycle => [(9,6,A1,B1),(15,3,A2,B2),(6,6, A1,B1),(14,7,A2,B2),(15,5,A3,B3)],
-    :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1), (A_ghp2, b_ghp2)],
-    :GeneralizedBicycleCode => [(5,a_gb₁,b_gb₁), (9,a_gb₂,b_gb₂), (10,a_gb₃,b_gb₃)],
-    :ExtendedGeneralizedBicycleCode => [(c_gb₁,2,p₁), (c_gb₂,3,p₂), (c_gb₃,4,p₃)],
-    :DoubleHomologicalProductCode => [(δ₁), (δ₂)],
-    :TrivariateTricycleCode => [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)]
-)
-
-function all_testablable_code_instances(;maxn=nothing)
+function all_testable_code_instances(;maxn=nothing)
     codeinstances = []
-    i = 1
-    for t in subtypes(QuantumClifford.ECC.AbstractECC)
-        for c in get(code_instance_args, t.name.name, [])
-            codeinstance = t(c...)
-            !isnothing(maxn) && nqubits(codeinstance) > maxn && continue
-            push!(codeinstances, codeinstance)
-            #@show i, t, code_n(codeinstance), code_k(codeinstance), code_s(codeinstance), code_n(codeinstance)-code_k(codeinstance)
-            i += 1
+    tested = Set{Symbol}()
+    all_subtypes = subtypes(QuantumClifford.ECC.AbstractECC)
+    for t in all_subtypes
+        name = nameof(t)
+        haskey(code_instance_args, name) || continue
+        for args in code_instance_args[name]
+            try
+                code = t(args...)
+                !isnothing(maxn) && nqubits(code) > maxn && continue
+                push!(codeinstances, code)
+                push!(tested, name)
+            catch e
+                @warn "Instance creation failed for $name: $(sprint(showerror, e))"
+            end
+        end
+    end
+    expected_t = Set(keys(code_instance_args))
+    missing_t = setdiff(expected_t, tested)
+    if !isempty(missing_t)
+        for name in missing_t
+            sym = Symbol(name)
+            if isdefined(QuantumClifford.ECC, sym)
+                t = getfield(QuantumClifford.ECC, sym)
+                for args in code_instance_args[name]
+                    try
+                        code = t(args...)
+                        !isnothing(maxn) && nqubits(code) > maxn && continue
+                        push!(codeinstances, code)
+                    catch e
+                        @warn "Extension instance failed for $name: $(sprint(showerror, e))"
+                    end
+                end
+            else
+                @warn "Extension type $name not available"
+            end
         end
     end
     return codeinstances

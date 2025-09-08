@@ -1,4 +1,4 @@
-@testitem "ECC QLDPC minimum distance" tags=[:ecc] begin
+@testitem "ECC QLDPC minimum distance" tags=[:ecc, :part2] begin
     using Hecke
     using JuMP
     using HiGHS
