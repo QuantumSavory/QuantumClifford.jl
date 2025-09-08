@@ -1,7 +1,9 @@
 """
     $TYPEDEF
 
-Represents a probabilistic error model for a system of bits using a factored distribution approach. The model decomposes the joint probability distribution over all bits into smaller, manageable distributions over subsets of bits.
+Represents a probabilistic error model for a system of bits using a factored 
+distribution approach. The model decomposes the joint probability distribution 
+over all bits into smaller, manageable distributions over subsets of bits.
 
 ### Fields
     $TYPEDFIELDS
@@ -10,14 +12,14 @@ struct ErrorModel{VT<:AbstractArray{Float64}}
     """The number of bits in the error model."""
     num_bits::Int
     """Dictionary defining the factored probability distributions.
-    
+
     - **Keys**: `Vector{Int}` specifying which subset of bits the distribution covers
       (e.g., `[1,3]` means this distribution covers bits 1 and 3)
     - **Values**: `VT` multi-dimensional probability array where:
         - Dimensionality = length of the key vector
         - Each dimension has size 2 (representing classical bit states 0/1 or error/no-error)
         - Values are non-negative probabilities summing to 1
-    
+
     Example: `[1,2] => [0.4 0.3; 0.2 0.1]` represents:
         - P(bit1=0, bit2=0) = 0.4
         - P(bit1=0, bit2=1) = 0.3
@@ -27,7 +29,7 @@ struct ErrorModel{VT<:AbstractArray{Float64}}
     function ErrorModel(num_bits::Int, probabilities::Dict{Vector{Int},VT}) where VT<:AbstractArray{Float64}
         for (error_bits, prob_array) in probabilities
             @assert maximum(error_bits) <= num_bits "Maximum element in error bits $error_bits is $(maximum(error_bits)), but num_bits is $num_bits"
-            expected_size = (fill(2,length(error_bits))...,)
+            expected_size = (fill(2, length(error_bits))...,)
             actual_size = size(prob_array)
             @assert size(prob_array) == expected_size "The dimension of the probability array must match the length of the error bits vector, and each dimension must be size 2. Expected: $expected_size, Got: $actual_size"
             @assert sum(prob_array) == 1 "The sum of the probabilities must be 1, but got $(sum(prob_array))"
@@ -47,19 +49,20 @@ See also: [`depolarization_error_model`](@ref)
 """
 function ErrorModel(probabilities::Vector{Float64})
     num_bits = length(probabilities)
-    probabilities = Dict([i] => [1.0-probabilities[i],probabilities[i]] for i in 1:num_bits)
+    probabilities = Dict([i] => [1.0 - probabilities[i], probabilities[i]] for i in 1:num_bits)
     return ErrorModel(num_bits, probabilities)
 end
 
 """
     $TYPEDSIGNATURES
 
-Create a depolarization error model from a vector of error probabilities. The `i`-th element of the vector is the depolarization probability of qubit `i`.
+Create a depolarization error model from a vector of error probabilities. 
+The `i`-th element of the vector is the depolarization probability of qubit `i`.
 """
 function depolarization_error_model(pvec::Vector{Float64}, qubit_num::Int)
     @assert length(pvec) == qubit_num "The length of the vector of error probabilities must match the number of qubits"
-    probabilities = Dict([i,i+qubit_num] => [1.0-pvec[i] pvec[i]/3; pvec[i]/3 pvec[i]/3] for i in 1:qubit_num)
-    return ErrorModel(2*qubit_num, probabilities)
+    probabilities = Dict([i, i + qubit_num] => [1.0-pvec[i] pvec[i]/3; pvec[i]/3 pvec[i]/3] for i in 1:qubit_num)
+    return ErrorModel(2 * qubit_num, probabilities)
 end
 
 """
@@ -74,7 +77,7 @@ depolarization_error_model(p::Float64, qubit_num::Int) = depolarization_error_mo
 
 Check if the error model is a vector error model.
 """
-isvector(em::ErrorModel) = all(length(key)==1 for key in keys(em.probabilities))
+isvector(em::ErrorModel) = all(length(key) == 1 for key in keys(em.probabilities))
 
 """
     $TYPEDSIGNATURES
@@ -104,7 +107,7 @@ Generate a random error pattern from the error model. `sampler` is the sampler t
 
 See also: [`IndependentVectorSampler`](@ref)
 """
-function random_error_pattern(em::ErrorModel, num_samples::Int, sampler::IndependentVectorSampler) 
+function random_error_pattern(em::ErrorModel, num_samples::Int, sampler::IndependentVectorSampler)
     @assert isvector(em) "The error model must be a vector error model"
     return [rand() < em.probabilities[[i]][2] for i in 1:em.num_bits, _ in 1:num_samples]
 end
@@ -112,7 +115,9 @@ end
 """
     $TYPEDEF
 
-Represents a quantum error correction decoding problem by combining an error model with the code's stabilizer checks and logical operators. This structure forms the complete specification needed to perform quantum error correction decoding. 
+Represents a quantum error correction decoding problem by combining an error 
+model with the code's stabilizer checks and logical operators. This structure 
+forms the complete specification needed to perform quantum error correction decoding. 
 
 See also: [`ErrorModel`](@ref)
 
@@ -144,7 +149,7 @@ end
 
 Extract the syndrome from the error patterns.
 """
-function syndrome_extraction(check_matrix::AbstractMatrix, error_patterns::AbstractMatrix) 
+function syndrome_extraction(check_matrix::AbstractMatrix, error_patterns::AbstractMatrix)
     return Bool.(mod.(check_matrix * error_patterns, 2))
 end
 syndrome_extraction(problem::DecodingProblem, error_patterns::Matrix{Bool}) = syndrome_extraction(problem.check_matrix, error_patterns)
