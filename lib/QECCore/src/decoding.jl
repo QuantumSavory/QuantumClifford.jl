@@ -136,7 +136,7 @@ struct DecodingProblem{VT}
     - **Matrix dimensions**: [num_logicals × num_bits]
     - **Matrix elements**: Boolean (false=0, true=1)"""
     logical_matrix::Matrix{Bool}
-    function DecodingProblem(error_model::ErrorModel{VT}, check_matrix::Matrix{Bool}, logical_matrix::Matrix{Bool})
+    function DecodingProblem(error_model::ErrorModel{VT}, check_matrix::Matrix{Bool}, logical_matrix::Matrix{Bool}) where VT
         @assert size(check_matrix, 2) == error_model.num_bits "The number of columns of the check matrix must match the number of bits in the error model"
         @assert size(logical_matrix, 2) == error_model.num_bits "The number of columns of the logical matrix must match the number of bits in the error model"
         new{VT}(error_model, check_matrix, logical_matrix)
