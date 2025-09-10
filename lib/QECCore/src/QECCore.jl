@@ -35,7 +35,9 @@ export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, GallagerLDPC, G
 export search_self_orthogonal_rm_codes
 
 include("interface.jl")
-include("decoding.jl")
+include("decoding_interface.jl")
+include("decoding_impl.jl")
+
 include("codes/util.jl")
 
 # Classical Codes

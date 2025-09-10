@@ -8,8 +8,8 @@ over all bits into smaller, manageable distributions over subsets of bits.
 ### Fields
     $TYPEDFIELDS
 """
-struct ErrorModel{VT<:AbstractArray{Float64}}
-    """The number of bits in the error model."""
+struct FactoredBitNoiseModel{VT<:AbstractArray{Float64}} <: AbstractNoiseModel
+    """The number of bits in the noise model."""
     num_bits::Int
     """Dictionary defining the factored probability distributions.
 
@@ -26,7 +26,7 @@ struct ErrorModel{VT<:AbstractArray{Float64}}
         - P(bit1=1, bit2=0) = 0.2
         - P(bit1=1, bit2=1) = 0.1"""
     probabilities::Dict{Vector{Int},VT}
-    function ErrorModel(num_bits::Int, probabilities::Dict{Vector{Int},VT}) where VT<:AbstractArray{Float64}
+    function FactoredBitNoiseModel(num_bits::Int, probabilities::Dict{Vector{Int},VT}) where VT<:AbstractArray{Float64}
         for (error_bits, prob_array) in probabilities
             @assert maximum(error_bits) <= num_bits "Maximum element in error bits $error_bits is $(maximum(error_bits)), but num_bits is $num_bits"
             expected_size = (fill(2, length(error_bits))...,)
@@ -47,10 +47,10 @@ Create an error model from a vector of error probabilities. The `i`-th element o
 
 See also: [`depolarization_error_model`](@ref)
 """
-function ErrorModel(probabilities::Vector{Float64})
+function FactoredBitNoiseModel(probabilities::Vector{Float64})
     num_bits = length(probabilities)
     probabilities = Dict([i] => [1.0 - probabilities[i], probabilities[i]] for i in 1:num_bits)
-    return ErrorModel(num_bits, probabilities)
+    return FactoredBitNoiseModel(num_bits, probabilities)
 end
 
 """
@@ -62,7 +62,7 @@ The `i`-th element of the vector is the depolarization probability of qubit `i`.
 function depolarization_error_model(pvec::Vector{Float64}, qubit_num::Int)
     @assert length(pvec) == qubit_num "The length of the vector of error probabilities must match the number of qubits"
     probabilities = Dict([i, i + qubit_num] => [1.0-pvec[i] pvec[i]/3; pvec[i]/3 pvec[i]/3] for i in 1:qubit_num)
-    return ErrorModel(2 * qubit_num, probabilities)
+    return FactoredBitNoiseModel(2 * qubit_num, probabilities)
 end
 
 """
@@ -77,14 +77,14 @@ depolarization_error_model(p::Float64, qubit_num::Int) = depolarization_error_mo
 
 Check if the error model is a vector error model.
 """
-isvector(em::ErrorModel) = all(length(key) == 1 for key in keys(em.probabilities))
+isvector(em::FactoredBitNoiseModel) = all(length(key) == 1 for key in keys(em.probabilities))
 
 """
     $TYPEDSIGNATURES
 
 Check if the error model is an independent error model. Independent error model means that 
 """
-function isindependent(em::ErrorModel)
+function isindependent(em::FactoredBitNoiseModel)
     keys_list = collect(keys(em.probabilities))
     for i in 1:length(keys_list)-1
         for j in i+1:length(keys_list)
@@ -96,7 +96,6 @@ function isindependent(em::ErrorModel)
     return true
 end
 
-abstract type AbstractSampler end
 """`IndependentVectorSampler` is a simple sampler that only works on vector error model."""
 struct IndependentVectorSampler <: AbstractSampler end
 
@@ -107,11 +106,12 @@ Generate a random error pattern from the error model. `sampler` is the sampler t
 
 See also: [`IndependentVectorSampler`](@ref)
 """
-function random_error_pattern(em::ErrorModel, num_samples::Int, sampler::IndependentVectorSampler)
+function sample(em::FactoredBitNoiseModel, num_samples::Int, sampler::IndependentVectorSampler)
     @assert isvector(em) "The error model must be a vector error model"
     return [rand() < em.probabilities[[i]][2] for i in 1:em.num_bits, _ in 1:num_samples]
 end
 
+abstract type AbstractDecodingProblem end
 """
     $TYPEDEF
 
@@ -119,59 +119,45 @@ Represents a quantum error correction decoding problem by combining an error
 model with the code's stabilizer checks and logical operators. This structure 
 forms the complete specification needed to perform quantum error correction decoding. 
 
-See also: [`ErrorModel`](@ref)
+See also: [`FactoredBitErrorModel`](@ref)
 
 ### Fields
     $TYPEDFIELDS
 """
-struct DecodingProblem{VT}
+struct DetectorModelProblem{VT} <: AbstractDecodingProblem
     """Probabilistic error model for the bits"""
-    error_model::ErrorModel{VT}
+    error_model::FactoredBitNoiseModel{VT}
     """Parity check matrix
-    - **Matrix dimensions**: [num_checks × num_bits]
+    - **Matrix dimensions**: [`num_checks` × `num_bits`]
     - **Matrix elements**: Boolean (false=0, true=1)
-    - **Operation**: Syndrome = check_matrix × error_vector (mod 2)"""
+    - **Operation**: Syndrome = `check_matrix` × `error_vector` (mod 2)"""
     check_matrix::Matrix{Bool}
     """Logical operators
-    - **Matrix dimensions**: [num_logicals × num_bits]
+    - **Matrix dimensions**: [`num_logicals` × `num_bits`]
     - **Matrix elements**: Boolean (false=0, true=1)"""
     logical_matrix::Matrix{Bool}
-    function DecodingProblem(error_model::ErrorModel{VT}, check_matrix::Matrix{Bool}, logical_matrix::Matrix{Bool}) where VT
+    function DetectorModelProblem(error_model::FactoredBitNoiseModel{VT}, check_matrix::Matrix{Bool}, logical_matrix::Matrix{Bool}) where VT
         @assert size(check_matrix, 2) == error_model.num_bits "The number of columns of the check matrix must match the number of bits in the error model"
         @assert size(logical_matrix, 2) == error_model.num_bits "The number of columns of the logical matrix must match the number of bits in the error model"
         new{VT}(error_model, check_matrix, logical_matrix)
     end
 end
-# TODO: generate code capacity noise decoding problem. Need to compute the logical operators first.
 
-"""
-    $TYPEDSIGNATURES
 
-Extract the syndrome from the error patterns.
-"""
-function syndrome_extraction(check_matrix::AbstractMatrix, error_patterns::AbstractMatrix)
+function syndrome(check_matrix::AbstractMatrix, error_patterns::AbstractMatrix)
     return Bool.(mod.(check_matrix * error_patterns, 2))
 end
-syndrome_extraction(problem::DecodingProblem, error_patterns::Matrix{Bool}) = syndrome_extraction(problem.check_matrix, error_patterns)
+syndrome(problem::DetectorModelProblem, error_patterns::Matrix{Bool}) = syndrome(problem.check_matrix, error_patterns)
 
-
-abstract type AbstractDecoder end
-
-"""
-    decode(problem::DecodingProblem,syndrome::Matrix{Bool},decoder::AbstractDecoder)
-
-Decode the error pattern from the syndrome.
-"""
-function decode end
 
 """
     $TYPEDSIGNATURES
 
 Check if the error pattern is a logical error.
 """
-function check_decoding_result(error_pattern1::AbstractMatrix, error_pattern2::AbstractMatrix, problem::DecodingProblem)
+function decoding_error_rate(error_pattern1::AbstractMatrix, error_pattern2::AbstractMatrix, problem::DetectorModelProblem)
     ep = error_pattern1 - error_pattern2
-    syndrome_test = any(syndrome_extraction(problem.check_matrix, ep), dims=1)
-    logical_test = any(syndrome_extraction(problem.logical_matrix, ep), dims=1)
+    syndrome_test = any(syndrome(problem.check_matrix, ep), dims=1)
+    logical_test = any(syndrome(problem.logical_matrix, ep), dims=1)
     return syndrome_test .|| logical_test
 end
