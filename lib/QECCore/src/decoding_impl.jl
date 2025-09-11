@@ -99,19 +99,11 @@ end
 """`IndependentVectorSampler` is a simple sampler that only works on vector error model."""
 struct IndependentVectorSampler <: AbstractSampler end
 
-"""
-    $TYPEDSIGNATURES
-
-Generate a random error pattern from the error model. `sampler` is the sampler to use.
-
-See also: [`IndependentVectorSampler`](@ref)
-"""
 function sample(em::FactoredBitNoiseModel, num_samples::Int, sampler::IndependentVectorSampler)
     @assert isvector(em) "The error model must be a vector error model"
     return [rand() < em.probabilities[[i]][2] for i in 1:em.num_bits, _ in 1:num_samples]
 end
 
-abstract type AbstractDecodingProblem end
 """
     $TYPEDEF
 
@@ -124,9 +116,9 @@ See also: [`FactoredBitErrorModel`](@ref)
 ### Fields
     $TYPEDFIELDS
 """
-struct DetectorModelProblem{VT} <: AbstractDecodingProblem
+struct DetectorModelProblem{NMT<:AbstractNoiseModel} <: AbstractDecodingProblem
     """Probabilistic error model for the bits"""
-    error_model::FactoredBitNoiseModel{VT}
+    error_model::NMT
     """Parity check matrix
     - **Matrix dimensions**: [`num_checks` × `num_bits`]
     - **Matrix elements**: Boolean (false=0, true=1)
@@ -136,28 +128,56 @@ struct DetectorModelProblem{VT} <: AbstractDecodingProblem
     - **Matrix dimensions**: [`num_logicals` × `num_bits`]
     - **Matrix elements**: Boolean (false=0, true=1)"""
     logical_matrix::Matrix{Bool}
-    function DetectorModelProblem(error_model::FactoredBitNoiseModel{VT}, check_matrix::Matrix{Bool}, logical_matrix::Matrix{Bool}) where VT
+    function DetectorModelProblem(error_model::NMT, check_matrix::Matrix{Bool}, logical_matrix::Matrix{Bool}) where NMT<:AbstractNoiseModel
         @assert size(check_matrix, 2) == error_model.num_bits "The number of columns of the check matrix must match the number of bits in the error model"
         @assert size(logical_matrix, 2) == error_model.num_bits "The number of columns of the logical matrix must match the number of bits in the error model"
-        new{VT}(error_model, check_matrix, logical_matrix)
+        new{NMT}(error_model, check_matrix, logical_matrix)
     end
 end
 
+""" 
+    $TYPEDEF
 
-function syndrome(check_matrix::AbstractMatrix, error_patterns::AbstractMatrix)
+Represents a set of bit string samples.
+
+### Fields
+    $TYPEDFIELDS
+"""
+struct BitStringSamples <: AbstractDecodingSamples
+    """Physical bits"""
+    physical_bits::Matrix{Bool}
+    """Check bits"""
+    check_bits::Matrix{Bool}
+    """Logical bits"""
+    logical_bits::Matrix{Bool}
+end
+
+function sample(problem::DetectorModelProblem{NMT}, num_samples::Int, sampler::IndependentVectorSampler) where NMT<:FactoredBitNoiseModel
+    physical_bits = sample(problem.error_model, num_samples, sampler)
+    check_bits = measure_syndrome(problem.check_matrix, physical_bits)
+    logical_bits = measure_syndrome(problem.logical_matrix, physical_bits)
+    return BitStringSamples(physical_bits, check_bits, logical_bits)
+end
+
+function measure_syndrome(check_matrix::AbstractMatrix, error_patterns::AbstractMatrix)
     return Bool.(mod.(check_matrix * error_patterns, 2))
 end
-syndrome(problem::DetectorModelProblem, error_patterns::Matrix{Bool}) = syndrome(problem.check_matrix, error_patterns)
+measure_syndrome(problem::DetectorModelProblem, error_patterns::Matrix{Bool}) = measure_syndrome(problem.check_matrix, error_patterns)
 
+syndrome(samples::BitStringSamples) = samples.check_bits
 
 """
     $TYPEDSIGNATURES
 
 Check if the error pattern is a logical error.
 """
-function decoding_error_rate(error_pattern1::AbstractMatrix, error_pattern2::AbstractMatrix, problem::DetectorModelProblem)
-    ep = error_pattern1 - error_pattern2
-    syndrome_test = any(syndrome(problem.check_matrix, ep), dims=1)
-    logical_test = any(syndrome(problem.logical_matrix, ep), dims=1)
+function decoding_error_rate(problem::DetectorModelProblem, samples::BitStringSamples, decoding_result::AbstractMatrix)
+    ep = decoding_result - samples.physical_bits
+    return count(check_decoding_result(problem, ep)) / size(decoding_result, 2)
+end
+
+function check_decoding_result(problem::DetectorModelProblem,decoding_result_diff::AbstractMatrix)
+    syndrome_test = any(measure_syndrome(problem.check_matrix, decoding_result_diff), dims=1)
+    logical_test = any(measure_syndrome(problem.logical_matrix, decoding_result_diff), dims=1)
     return syndrome_test .|| logical_test
 end
