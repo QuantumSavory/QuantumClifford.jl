@@ -459,14 +459,10 @@ const code_instance_args = Dict(
   load_oscar_codes()
 end
 
-function _concrete_subtypes(T::DataType)
+function concretesubtypes(T::DataType)
     concrete = []
     for t in subtypes(T)
-        if isempty(subtypes(t))
-            push!(concrete, t)
-        else
-            append!(concrete, _concrete_subtypes(t))
-        end
+        isempty(subtypes(t)) ? push!(concrete, t) : append!(concrete, concretesubtypes(t))
     end
     return concrete
 end
@@ -474,20 +470,19 @@ end
 function all_testable_code_instances(; maxn=nothing)
     codeinstances = []
     code_args = copy(code_instance_args)
-    roots = (QuantumClifford.ECC.AbstractECC, QuantumClifford.ECC.AbstractCSSCode, QuantumClifford.ECC.AbstractQECC)
+    roots = (QuantumClifford.ECC.AbstractCSSCode, QuantumClifford.ECC.AbstractQECC)
     for root in roots
-        for t in _concrete_subtypes(root)
+        for t in concretesubtypes(root)
             name = nameof(t)
             if haskey(code_args, name)
-                for args in code_args[name]
+                for args in pop!(code_args, name)
                     code = t(args...)
                     !isnothing(maxn) && nqubits(code) > maxn && continue
                     push!(codeinstances, code)
                 end
-                pop!(code_args, name)
             end
         end
     end
-    !isempty(code_args) && error("Unused code_instance_args: $(collect(keys(code_args)))")
+    @test isempty(code_args)
     return codeinstances
 end
