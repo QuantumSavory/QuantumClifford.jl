@@ -172,7 +172,14 @@ end
 _reset_mappings(::Type{sMRZ}) = (sX, projectZ!)
 _reset_mappings(::Type{sMRX}) = (sZ, projectX!)
 _reset_mappings(::Type{sMRY}) = (sZ, projectY!)
-
+#helper function to only set a bit if the given index is non-zero, since internally 'nothing' is defined to be 0
+setBit = (bit_register, bit, value) -> begin
+    if bit == 0
+        nothing
+    else
+        bit_register[bit] = value
+    end
+end
 #applybranches for reset measurements such as sMRZ, sMRX and sMRY
 function applybranches(r::Register, op::AbstractResetMeasurement;max_order=1)
     flipOp, projectFunc = _reset_mappings(typeof(op))
@@ -181,15 +188,15 @@ function applybranches(r::Register, op::AbstractResetMeasurement;max_order=1)
     if isnothing(res)
         s1 = r
         phases(stabilizerview(s1.stab))[anticom] = 0x00
-        s1.bits[op.bit] = false
+        setBit(r.bits, op.bit, false)
         s2 = copy(r)
         phases(stabilizerview(s2.stab))[anticom] = 0x02
-        s2.bits[op.bit] = true
+        setBit(r.bits, op.bit, true)
         apply!(s2, flipOp(op.qubit))
         push!(new_branches, (s1,continue_stat,1/2,0))
         push!(new_branches, (s2,continue_stat,1/2,0))
     else
-        r.bits[op.bit] = res==0x02
+        setBit(r.bits, op.bit, res==0x02)
         if(res==0x02)
             apply!(r, flipOp(op.qubit))
         end
