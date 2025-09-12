@@ -5,9 +5,9 @@ The inner code c₁ and the outer code c₂.
 The construction is the following: replace each qubit in code c₂ with logical qubits encoded by code c₁.
 The resulting code will have `n = n₁ × n₂` qubits and `k = k₁ × k₂` logical qubits.
 """
-struct Concat <: AbstractECC
-    c₁::AbstractECC
-    c₂::AbstractECC
+struct Concat <: AbstractQECC
+    c₁::AbstractQECC
+    c₂::AbstractQECC
 end
 
 function parity_checks(c::Concat)

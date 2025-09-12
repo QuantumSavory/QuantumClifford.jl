@@ -33,7 +33,7 @@ steps:
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
-  - label: "ECC Tests"
+  - label: "ECC Universal Tests"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -42,7 +42,23 @@ steps:
       - JuliaCI/julia-coverage#v1:
           codecov: true
     env:
-      ECC_TEST: true
+      ECC_UNIVERSAL_TESTS: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
+
+  - label: "ECC Bespoke Tests"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      ECC_BESPOKE_TESTS: true
     command:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project='~' -e '
