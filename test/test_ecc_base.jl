@@ -250,14 +250,11 @@ const code_instance_args = Dict(
     :CyclicQuantumTannerGraphProduct => [(2,), (3,), (4,)],
     :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false)],
     :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
-    :random_TillichZemor_code => [(6,4,3), (7,5,3), (8,6,3)],
     :GeneralizedCirculantBivariateBicycle => [(9, 6, A1, B1)],
     :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1, l_ghp1)],
     :GeneralizedBicycleCode => [(a_gb₁,b_gb₁, l_gb₁), (a_gb₂,b_gb₂, l_gb₂)],
     :ExtendedGeneralizedBicycleCode => [(c_gb₁,2,p_gb₁), (c_gb₂,3,p_gb₂)]
 )
-
-const oscar_code_instance_args = Dict()
 
 @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
   import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order, gens, quo,
@@ -449,56 +446,48 @@ const oscar_code_instance_args = Dict()
     δ₁ = [1 1 0;
           0 1 1]
 
-    oscar_code_instance_args[:DDimensionalSurfaceCode] = [(2, 3), (3, 2), (4, 2)]
-    oscar_code_instance_args[:DDimensionalToricCode] = [(2, 3), (3, 2), (4, 2)]
-    oscar_code_instance_args[:GeneralizedToricCode] = [(f₁, g₁, α1₁, α2₁), (f₂, g₂, α1₂, α2₂), (f₃, g₃, α1₃, α2₃), (f₄, g₄, α1₄, α2₄)]
-    oscar_code_instance_args[:HomologicalProductCode] = [([H₁,transpose(H₁)], l₁), ([δ₂,δ₂,δ₂],)]
-    oscar_code_instance_args[:DoubleHomologicalProductCode] = [(δ₁,)]
-    oscar_code_instance_args[:TrivariateTricycleCode] = [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)]
-
+    oscar_code_instance_args = Dict(
+        :DDimensionalSurfaceCode => [(2, 3), (3, 2), (4, 2)],
+        :DDimensionalToricCode => [(2, 3), (3, 2), (4, 2)],
+        :GeneralizedToricCode => [(f₁, g₁, α1₁, α2₁), (f₂, g₂, α1₂, α2₂), (f₃, g₃, α1₃, α2₃), (f₄, g₄, α1₄, α2₄)],
+        :HomologicalProductCode => [([H₁,transpose(H₁)], l₁), ([δ₂,δ₂,δ₂],)],
+        :DoubleHomologicalProductCode => [(δ₁,)],
+        :TrivariateTricycleCode => [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)]
+    )  
     merge!(code_instance_args, oscar_code_instance_args)
   end
   load_oscar_codes()
 end
 
-function all_testable_code_instances(;maxn=nothing)
+function _concrete_subtypes(T::DataType)
+    concrete = []
+    for t in subtypes(T)
+        if isempty(subtypes(t))
+            push!(concrete, t)
+        else
+            append!(concrete, _concrete_subtypes(t))
+        end
+    end
+    return concrete
+end
+
+function all_testable_code_instances(; maxn=nothing)
     codeinstances = []
-    tested = Set{Symbol}()
-    all_subtypes = subtypes(QuantumClifford.ECC.AbstractECC)
-    for t in all_subtypes
-        name = nameof(t)
-        haskey(code_instance_args, name) || continue
-        for args in code_instance_args[name]
-            try
-                code = t(args...)
-                !isnothing(maxn) && nqubits(code) > maxn && continue
-                push!(codeinstances, code)
-                push!(tested, name)
-            catch e
-                @warn "Instance creation failed for $name: $(sprint(showerror, e))"
-            end
-        end
-    end
-    expected_t = Set(keys(code_instance_args))
-    missing_t = setdiff(expected_t, tested)
-    if !isempty(missing_t)
-        for name in missing_t
-            sym = Symbol(name)
-            if isdefined(QuantumClifford.ECC, sym)
-                t = getfield(QuantumClifford.ECC, sym)
-                for args in code_instance_args[name]
-                    try
-                        code = t(args...)
-                        !isnothing(maxn) && nqubits(code) > maxn && continue
-                        push!(codeinstances, code)
-                    catch e
-                        @warn "Extension instance failed for $name: $(sprint(showerror, e))"
-                    end
+    code_args = copy(code_instance_args)
+    roots = (QuantumClifford.ECC.AbstractECC, QuantumClifford.ECC.AbstractCSSCode, QuantumClifford.ECC.AbstractQECC)
+    for root in roots
+        for t in _concrete_subtypes(root)
+            name = nameof(t)
+            if haskey(code_args, name)
+                for args in code_args[name]
+                    code = t(args...)
+                    !isnothing(maxn) && nqubits(code) > maxn && continue
+                    push!(codeinstances, code)
                 end
-            else
-                @warn "Extension type $name not available"
+                pop!(code_args, name)
             end
         end
     end
+    !isempty(code_args) && error("Unused code_instance_args: $(collect(keys(code_args)))")
     return codeinstances
 end
