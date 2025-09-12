@@ -1,4 +1,4 @@
-@testitem "ECC GHP Code" tags=[:ecc, :part2] begin
+@testitem "ECC GHP Code" tags=[:ecc, :ecc_bespoke_checks] begin
     using Hecke
     using QuantumClifford
     using QuantumClifford: stab_looks_good, gf2_row_echelon_with_pivots!

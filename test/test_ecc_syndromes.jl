@@ -1,4 +1,4 @@
-@testitem "ECC Syndromes" tags=[:ecc, :part1] begin
+@testitem "ECC Syndromes" tags=[:ecc, :ecc_universal_checks] begin
     using QuantumClifford: mul_left!, embed
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC

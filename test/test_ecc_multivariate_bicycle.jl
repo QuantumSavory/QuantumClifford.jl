@@ -1,4 +1,4 @@
-@testitem "ECC Multivaraite Bicycle" tags=[:ecc, :part2] begin
+@testitem "ECC Multivaraite Bicycle" tags=[:ecc, :ecc_bespoke_checks] begin
     using Hecke
     using HiGHS
     using JuMP

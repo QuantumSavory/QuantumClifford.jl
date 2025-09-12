@@ -1,4 +1,4 @@
-@testitem "ECC Decoder" tags=[:ecc, :part1] begin
+@testitem "ECC Decoder" tags=[:ecc, :ecc_universal_checks] begin
     using QuantumClifford.ECC
 
     import PyQDecoders

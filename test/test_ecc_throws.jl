@@ -1,4 +1,4 @@
-@testitem "ECC throws" tags=[:ecc, :part1] begin
+@testitem "ECC throws" tags=[:ecc, :ecc_universal_checks] begin
 
     using QuantumClifford.ECC: ReedMuller, BCH, RecursiveReedMuller, Golay, Triangular488, Triangular666, Hamming
 

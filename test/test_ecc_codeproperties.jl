@@ -1,4 +1,4 @@
-@testitem "ECC code properties" tags=[:ecc, :part1] begin
+@testitem "ECC code properties" tags=[:ecc, :ecc_universal_checks] begin
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
 

@@ -33,7 +33,7 @@ steps:
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
-  - label: "ECC Tests (Part 1)"
+  - label: "ECC Universal Tests "
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -49,7 +49,7 @@ steps:
         using Pkg;
         pkg"dev .";'
 
-  - label: "ECC Tests (Part 2)"
+  - label: "ECC Bespoke Tests"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"

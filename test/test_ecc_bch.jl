@@ -1,4 +1,4 @@
-@testitem "ECC BCH" tags=[:ecc, :part2] begin
+@testitem "ECC BCH" tags=[:ecc, :ecc_bespoke_checks] begin
     using LinearAlgebra
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC, BCH, generator_polynomial

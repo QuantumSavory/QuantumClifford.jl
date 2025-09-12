@@ -1,4 +1,4 @@
-@testitem  "ECC GB Codes - slow" tags=[:ecc, :part2] begin
+@testitem  "ECC GB Codes - slow" tags=[:ecc, :ecc_bespoke_checks] begin
     using Hecke
     using HiGHS
     using JuMP
