@@ -7,7 +7,9 @@
     include("test_ecc_base.jl")
 
     @testset "table decoder, good for small codes" begin
-        codes = all_testable_code_instances(;maxn=10)
+        codes = [
+                all_testable_code_instances(;maxn=10)...
+                ]
 
         noise = 0.001
 
