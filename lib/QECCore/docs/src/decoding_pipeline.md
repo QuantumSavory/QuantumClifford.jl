@@ -18,6 +18,7 @@
 
 ### Decoder
 - `AbstractDecoder`: Abstract base class for decoders
+- `AbstractDecodingResult`: Abstract base class for decoding results
 
 ## Main Interface Functions
 
@@ -41,12 +42,12 @@ Extract syndrome from sampled data.
 
 ### 4. Decoding
 ```julia
-decode(problem::AbstractDecodingProblem, syndrome::AbstractSyndrome, decoder::AbstractDecoder) -> AbstractMatrix
+decode(problem::AbstractDecodingProblem, syndrome::AbstractSyndrome, decoder::AbstractDecoder) -> AbstractDecodingResult
 ```
 Decode the syndrome using the decoder and return the decoding result.
 
 ### 5. Error Rate Calculation
 ```julia
-decoding_error_rate(problem::AbstractDecodingProblem, samples::AbstractDecodingSamples, decoding_result::AbstractMatrix) -> Float64
+decoding_error_rate(problem::AbstractDecodingProblem, samples::AbstractDecodingSamples, decoding_result::AbstractDecodingResult) -> Float64
 ```
 Calculate the error rate of the decoding result for performance evaluation.

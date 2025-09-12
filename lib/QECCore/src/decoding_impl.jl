@@ -164,19 +164,25 @@ function measure_syndrome(check_matrix::AbstractMatrix, error_patterns::Abstract
 end
 measure_syndrome(problem::DetectorModelProblem, error_patterns::Matrix{Bool}) = measure_syndrome(problem.check_matrix, error_patterns)
 
-syndrome(samples::BitStringSamples) = samples.check_bits
+struct MatrixSyndrome <: AbstractSyndrome
+    mat::Matrix{Bool}
+end
+syndrome(samples::BitStringSamples) = MatrixSyndrome(samples.check_bits)
 
+struct MatrixDecodingResult <: AbstractDecodingResult
+    mat::Matrix{Bool}
+end
 """
     $TYPEDSIGNATURES
 
 Check if the error pattern is a logical error.
 """
-function decoding_error_rate(problem::DetectorModelProblem, samples::BitStringSamples, decoding_result::AbstractMatrix)
-    ep = decoding_result - samples.physical_bits
-    return count(check_decoding_result(problem, ep)) / size(decoding_result, 2)
+function decoding_error_rate(problem::DetectorModelProblem, samples::BitStringSamples, decoding_result::MatrixDecodingResult)
+    ep = Bool.(mod.(decoding_result.mat - samples.physical_bits, 2))
+    return count(check_decoding_result(problem, ep)) / size(decoding_result.mat, 2)
 end
 
-function check_decoding_result(problem::DetectorModelProblem,decoding_result_diff::AbstractMatrix)
+function check_decoding_result(problem::DetectorModelProblem,decoding_result_diff::AbstractMatrix{Bool})
     syndrome_test = any(measure_syndrome(problem.check_matrix, decoding_result_diff), dims=1)
     logical_test = any(measure_syndrome(problem.logical_matrix, decoding_result_diff), dims=1)
     return syndrome_test .|| logical_test

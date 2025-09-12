@@ -49,7 +49,7 @@ Extract the syndrome from the samples.
 function syndrome end
 
 abstract type AbstractDecoder end
-
+abstract type AbstractDecodingResult end
 """
     decode(problem::AbstractDecodingProblem, syndrome::AbstractSyndrome, decoder::AbstractDecoder)
 
@@ -61,19 +61,19 @@ Decode the syndrome using the decoder.
 - `decoder::AbstractDecoder`: The decoder to use.
 
 ### Outputs
-- `decoding_result::AbstractMatrix`: The decoded result.
+- `decoding_result::AbstractDecodingResult`: The decoded result.
 """
 function decode end
 
 """
-    decoding_error_rate(problem::AbstractDecodingProblem, samples::AbstractDecodingSamples, decoding_result::AbstractMatrix)
+    decoding_error_rate(problem::AbstractDecodingProblem, samples::AbstractDecodingSamples, decoding_result::AbstractDecodingResult)
 
 Calculate the error rate of the decoding result.
 
 ### Inputs
 - `problem::AbstractDecodingProblem`: The decoding problem to validate.
 - `syndrome::AbstractSyndrome`: The syndrome to validate.
-- `decoding_result::AbstractMatrix`: The decoded result to validate.
+- `decoding_result::AbstractDecodingResult`: The decoded result to validate.
 
 ### Outputs
 - `rate::Float64`: The error rate of the decoding result.

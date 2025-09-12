@@ -66,30 +66,30 @@
         @test QECCore.measure_syndrome(problem, ep) == Bool[true; true; true; false; false; false;;]
 
         ep2 = copy(ep)
-        @test !(QECCore.check_decoding_result(problem, ep2.-ep)[])
+        @test !(QECCore.check_decoding_result(problem, Bool.(mod.(ep2.-ep, 2)))[])
 
         ep2[1] = true
-        @test (QECCore.check_decoding_result(problem, ep2.-ep)[])
+        @test (QECCore.check_decoding_result(problem, Bool.(mod.(ep2.-ep, 2)))[])
 
         # applying a logical operator will lead to a logical error
         ep[2] = true
         ep[3] = true
-        @test (QECCore.check_decoding_result(problem, ep2.-ep)[])
+        @test (QECCore.check_decoding_result(problem, Bool.(mod.(ep2.-ep, 2)))[])
         ep2 = copy(ep)
         ep2[8:10] .= true
-        @test (QECCore.check_decoding_result(problem, ep2.-ep)[])
+        @test (QECCore.check_decoding_result(problem, Bool.(mod.(ep2.-ep, 2)))[])
 
         # applying a stabilizer will not lead to a logical error
         ep2 = copy(ep)
         ep2[4:6] .= true
         ep2[7] = false
-        @test !(QECCore.check_decoding_result(problem, ep2.-ep)[])
+        @test !(QECCore.check_decoding_result(problem, Bool.(mod.(ep2.-ep, 2)))[])
 
         ep2 = copy(ep)
         ep2[11:14] .= true
-        @test !(QECCore.check_decoding_result(problem, ep2.-ep)[])
+        @test !(QECCore.check_decoding_result(problem, Bool.(mod.(ep2.-ep, 2)))[])
 
         samples = sample(problem, 1000, IndependentVectorSampler())
-        @test decoding_error_rate(problem, samples, samples.physical_bits) == 0.0
+        @test decoding_error_rate(problem, samples, MatrixDecodingResult(samples.physical_bits)) == 0.0
     end
 end
