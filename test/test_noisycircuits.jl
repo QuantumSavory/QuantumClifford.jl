@@ -241,7 +241,7 @@
             state2 = S"X"
             register2 = Register(state2, [0])
             verify2 = VerifyOp(state2, [1])
-            pet2 = petrajectories(register2, [resetMeasure,verify2])
+            pet2 = petrajectories(register2, [resetMeasureX,verify2])
             @test pet2[false_success_stat] == 0
             @test pet2[true_success_stat] == 1
             @test pet2[failure_stat] == 0
