@@ -283,6 +283,13 @@
             r2, _, _, _ = first(branches2)
             @test bitview(r2)[1] == false
 
+            #if the second argument(the bit where the measurement is recorded) isn't provided
+            state = S"-Z"
+            register5 = Register(state, 1)
+            branches = applybranches(register5, sMRZ(1)) #sMRZ(1) is internally sMRZ(1,0)
+            @test branches[1][1].bits[1] == false # since there's no bit provided for sMRZ, the bit should remain 0 even though the measurement would result in a 1. 
+
+
 
         end
 
