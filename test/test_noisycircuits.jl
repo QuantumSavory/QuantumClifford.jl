@@ -229,7 +229,7 @@
             #test for checking reset capabilities
             resetMeasureX = sMRX(1,1)#reset measurement ops that are used in the tests
             resetMeasureZ = sMRZ(1,1)
-
+            resetMeasureY = sMRY(1,1)
             state1 = S"Z"
             register1 = Register(state1, [0])
             verify1 = VerifyOp(state1, [1])
@@ -242,6 +242,14 @@
             register2 = Register(state2, [0])
             verify2 = VerifyOp(state2, [1])
             pet2 = petrajectories(register2, [resetMeasureX,verify2])
+            @test pet2[false_success_stat] == 0
+            @test pet2[true_success_stat] == 1
+            @test pet2[failure_stat] == 0
+
+            state3 = S"Y"
+            register2 = Register(state3, [0])
+            verifyY = VerifyOp(state2, [1])
+            pet2 = petrajectories(register2, [resetMeasureY,verifyY])
             @test pet2[false_success_stat] == 0
             @test pet2[true_success_stat] == 1
             @test pet2[failure_stat] == 0
