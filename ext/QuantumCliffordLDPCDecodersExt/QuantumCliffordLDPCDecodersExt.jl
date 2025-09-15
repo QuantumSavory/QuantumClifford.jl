@@ -111,10 +111,6 @@ function decode(d::BPOTSDecoder, syndrome_sample::AbstractVector{Bool})
     return vcat(guess_x, guess_z)
 end
 
-function parity_checks(d::BPOTSDecoder)
-    return d.H
-end
-
 function BeliefPropDecoder(c; errorrate=nothing, maxiter=nothing)
     Hx = parity_checks_x(c)
     Hz = parity_checks_z(c)
