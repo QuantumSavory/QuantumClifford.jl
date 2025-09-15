@@ -246,13 +246,13 @@
             @test pet2[true_success_stat] == 1
             @test pet2[failure_stat] == 0
 
-            state3 = S"Y"
-            register2 = Register(state3, [0])
-            verifyY = VerifyOp(state2, [1])
-            pet2 = petrajectories(register2, [resetMeasureY,verifyY])
-            @test pet2[false_success_stat] == 0
-            @test pet2[true_success_stat] == 1
-            @test pet2[failure_stat] == 0
+            stateY = S"Y"
+            register2 = Register(stateY, [0])
+            verifyY = VerifyOp(stateY, [1])
+            petY = petrajectories(register2, [resetMeasureY,verifyY])
+            @test petY[false_success_stat] == 0
+            @test petY[true_success_stat] == 1
+            @test petY[failure_stat] == 0
 
             negState1 = S"-Z"
             register3 = Register(negState1, [0])
