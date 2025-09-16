@@ -527,7 +527,7 @@ const code_instance_args = Dict(
         :DDimensionalSurfaceCode => [(2, 3), (3, 2), (3, 3), (4, 2)],
         :DDimensionalToricCode => [(2, 3), (3, 2), (3, 3), (4, 2)],
         :GeneralizedToricCode => [(f₁, g₁, α1₁, α2₁), (f₂, g₂, α1₂, α2₂), (f₃, g₃, α1₃, α2₃), (f₄, g₄, α1₄, α2₄), (f₅, g₅, α1₅, α2₅), (f₆, g₆, α1₆, α2₆)],
-        :HomologicalProductCode => [([H₁,transpose(H₁)], l₁), ([H₂, transpose(H₂)], l₂), ([H₃, transpose(H₃)]), ([δ₄, δ₄, δ₄],)],
+        :HomologicalProductCode => [([H₁, transpose(H₁)], l₁), ([H₂, transpose(H₂)], l₂), ([H₃, transpose(H₃)],), ([δ₄, δ₄, δ₄],)],
         :DoubleHomologicalProductCode => [(δ₁,), (δ₂,)],
         :TrivariateTricycleCode => [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)]
     )
