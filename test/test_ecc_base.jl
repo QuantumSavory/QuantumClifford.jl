@@ -204,6 +204,22 @@ A_ghp1 = matrix(S_ghp1, n_ghp1, n_ghp1,
           0     0     0     0     1     x^54  x^27])
 b_ghp1 = S_ghp1(1 + x + x^6)
 
+# [[882, 48, 16]] from Appendix B of [panteleev2021degenerate](@cite)
+F = GF(2)
+R, x = polynomial_ring(F, "x")
+n_ghp2 = 7
+l_ghp2 = 63
+S_ghp2, _ =  quo(R, x^l_ghp2 - 1)
+A_ghp2 = matrix(S_ghp2, n_ghp2, n_ghp2,
+         [x^27   0     0     1     x^18  x^27  1
+          1      x^27  0     0     1     x^18  x^27
+          x^27   1     x^27  0     0     1     x^18
+          x^18   x^27  1     x^27  0     0     1
+          1      x^18  x^27  1     x^27  0     0
+          0      1     x^18  x^27  1     x^27  0
+          0      0     1     x^18  x^27  1     x^27])
+b_ghp2 = S_ghp2(1 + x + x^6)
+
 # Generalized Bicycle and Extended GB codes from [koukoulekidis2024smallquantumcodesalgebraic](@cite)
 R, x = polynomial_ring(GF(2), :x)
 l_gb₁ = 6
@@ -216,6 +232,11 @@ a_gb₂ = 1 + x^2
 b_gb₂ = 1 + x^5
 c_gb₂ = GeneralizedBicycleCode(a_gb₂, b_gb₂, l_gb₂)
 p_gb₂ = one(R)
+l_gb₃ = 10
+a_gb₃ = 1 + x
+b_gb₃ = 1 + x^6
+c_gb₃ = GeneralizedBicycleCode(a_gb₃, a_gb₃, l_gb₃)
+p_gb₃ = one(R) + x
 
 # Add some codes that require Oscar, hence do not work on Windows
 
@@ -229,8 +250,35 @@ h₃ = 1 + x + x^3
 h₄ = 1 + x + x^4
 
 # Generalized Bivariate Bicycle Codes
-A1 = [(:x,3), (:y,1), (:y,2)]
-B1 = [(:y,3), (:x,1), (:x,2)]
+# [[108, 8, 10]] from [bravyi2024high](@cite)
+l1 = 9
+m1 = 6
+A1 = [(:x, 3), (:y, 1), (:y, 2)] # A = x³ + y + y²
+B1 = [(:y, 3), (:x, 1), (:x, 2)] # B = y³ + x + x²
+
+# [[90, 8, 10]] from [bravyi2024high](@cite)
+l2 = 15
+m2 = 3
+A2 = [(:x, 9), (:y, 1), (:y, 2)] # A = x⁹ + y + y²
+B2 = [(:y, 0), (:x, 2), (:x, 7)] # B = 1 + x² + x⁷
+
+# [[72, 12, 6]] from from [bravyi2024high](@cite)
+l3 = 6
+m3 = 6
+A3 = [(:x, 3), (:y, 1), (:y, 2)] # A = x³ + y + y²
+B3 = [(:y, 3), (:x, 1), (:x, 2)] # B = y³ + x + x²
+
+# [[54, 8, 6]] from [wang2024coprime](@cite)
+l4 = 3
+m4 = 9
+A4 = [(:x, 0), (:y, 2), (:y, 4)] # A = 1 + y² + y⁴
+B4 = [(:y, 3), (:x, 1), (:x, 2)] # B = y³ + x + x²
+
+# [[98, 6, 12]] from [wang2024coprime](@cite)
+l5 = 7
+m5 = 7
+A5 = [(:x, 3), (:y, 5), (:y, 6)] # A = x³ + y⁵ + y⁶
+B5 = [(:y, 2), (:x, 3), (:x, 5)] # A = y² + x³ + x⁵
 
 const code_instance_args = Dict(
     :Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
@@ -248,12 +296,12 @@ const code_instance_args = Dict(
     :DelfosseReichardt823 => [(2,), (3,), (4,), (5,)],
     :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
     :CyclicQuantumTannerGraphProduct => [(2,), (3,), (4,)],
-    :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false)],
+    :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false), (7,h₃,true), (9,h₃,true), (9,h₄,true), (10,h₄,true), (12,h₄,true)],
     :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
-    :GeneralizedCirculantBivariateBicycle => [(9, 6, A1, B1)],
-    :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1, l_ghp1)],
-    :GeneralizedBicycleCode => [(a_gb₁,b_gb₁, l_gb₁), (a_gb₂,b_gb₂, l_gb₂)],
-    :ExtendedGeneralizedBicycleCode => [(c_gb₁,2,p_gb₁), (c_gb₂,3,p_gb₂)]
+    :GeneralizedCirculantBivariateBicycle => [(l1, m1, A1, B1), (l2, m2, A2,B2), (l3, m3, A3, B3), (l4, m4, A4, B4), (l5, m5, A5, B5)],
+    :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1, l_ghp1), (A_ghp2, b_ghp2, l_ghp2)],
+    :GeneralizedBicycleCode => [(a_gb₁, b_gb₁, l_gb₁), (a_gb₂, b_gb₂, l_gb₂), (a_gb₃ ,b_gb₃, l_gb₃)],
+    :ExtendedGeneralizedBicycleCode => [(c_gb₁, 2, p_gb₁), (c_gb₂, 3, p_gb₂), (c_gb₃, 4, p_gb₃)]
 )
 
 @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
@@ -376,8 +424,30 @@ const code_instance_args = Dict(
     H₁ = matrix(R, 2, 3, [x^2 x^2 x^2;
                           x   x^2  0])
 
+    # [[225, 9, 6]] from [xu2024fastparallelizablelogicalcomputation](@cite)
+    R, x = polynomial_ring(GF(2), "x")
+    l₂ = 3
+    H₂ = matrix(R, 3, 4, [x^2 x^2 x^2   0;
+                         x^2   0 x^2  x^2;
+                         x^2 x^2   x  x^2])
+                         
     # 3D Homological product code from [Quintavalle_2021](@cite)
-    δ₂ = matrix(GF(2), parity_matrix(RepCode(3)))
+    μ = 2; wc = 3; wr = 4
+    c = GallagerLDPC(μ, wc, wr)
+    H₃ = matrix(GF(2), parity_matrix(c))
+
+    # 3D Homological product code from [Quintavalle_2021](@cite)
+    δ₄ = matrix(GF(2), parity_matrix(RepCode(3)))
+
+    # Double Homological product codes
+    # [[241, 1, 9]] from Table I of https://arxiv.org/pdf/1805.09271
+    δ₁ = [1 1 0;
+          0 1 1]
+    
+    # [[486, 6, 9]] from Table I of https://arxiv.org/pdf/1805.09271
+    δ₂ = [1 1 0;
+          0 1 1;
+          1 0 1]
 
     # Trivariate Tricycle Codes from [jacob2025singleshotdecodingfaulttolerantgates](@cite)
 
@@ -441,17 +511,24 @@ const code_instance_args = Dict(
     α1₄ = (0,  7)
     α2₄ = (7, 0)
 
-    # Double Homological product codes
-    # [[241, 1, 9]] from Table I of https://arxiv.org/pdf/1805.09271
-    δ₁ = [1 1 0;
-          0 1 1]
+    # [[112, 6, 12]] from Table II of [liang2025generalizedtoriccodestwisted](@cite)
+    f₅ = 1 + x + x^-1*y^2
+    g₅ = 1 + y + x^-2*y^-1
+    α1₅ =(0, 7)
+    α2₅ =(8, 2)
+
+    # [[114, 4, 14]] from Table II of [liang2025generalizedtoriccodestwisted](@cite)
+    f₆ = 1 + x + x^-3*y
+    g₆ = 1 + y + x^-5
+    α1₆ = (0,  3)
+    α2₆ = (19, 1)
 
     oscar_code_instance_args = Dict(
-        :DDimensionalSurfaceCode => [(2, 3), (3, 2), (4, 2)],
-        :DDimensionalToricCode => [(2, 3), (3, 2), (4, 2)],
-        :GeneralizedToricCode => [(f₁, g₁, α1₁, α2₁), (f₂, g₂, α1₂, α2₂), (f₃, g₃, α1₃, α2₃), (f₄, g₄, α1₄, α2₄)],
-        :HomologicalProductCode => [([H₁,transpose(H₁)], l₁), ([δ₂,δ₂,δ₂],)],
-        :DoubleHomologicalProductCode => [(δ₁,)],
+        :DDimensionalSurfaceCode => [(2, 3), (3, 2), (3, 3), (4, 2)],
+        :DDimensionalToricCode => [(2, 3), (3, 2), (3, 3), (4, 2)],
+        :GeneralizedToricCode => [(f₁, g₁, α1₁, α2₁), (f₂, g₂, α1₂, α2₂), (f₃, g₃, α1₃, α2₃), (f₄, g₄, α1₄, α2₄), (f₅, g₅, α1₅, α2₅), (f₆, g₆, α1₆, α2₆)],
+        :HomologicalProductCode => [([H₁,transpose(H₁)], l₁), ([H₂, transpose(H₂)], l₂), ([H₃, transpose(H₃)]), ([δ₄, δ₄, δ₄],)],
+        :DoubleHomologicalProductCode => [(δ₁,), (δ₂,)],
         :TrivariateTricycleCode => [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)]
     )
     merge!(code_instance_args, oscar_code_instance_args)
