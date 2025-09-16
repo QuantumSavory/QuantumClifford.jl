@@ -7,6 +7,7 @@
 
 ## v0.10.1-dev
 
+- Add decoding pipeline in `QECCore`.
 - The `TrivariateTricycleCode` is implemented using a novel realization via `Oscar.jl`'s multivariate polynomial quotient ring formalism in the ECC submodule.
 - The `GeneralizedToricCode` on twisted tori via `Oscar.jl`'s Laurent polynomials is now implemented in the ECC submodule.
 - The `HomologicalProductCode` and `DoubleHomologicalProductCode` are now implemented via `Oscar.jl`'s homological algebra in the ECC submodule.
