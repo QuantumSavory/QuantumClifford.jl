@@ -428,9 +428,9 @@ const code_instance_args = Dict(
     R, x = polynomial_ring(GF(2), "x")
     l₂ = 3
     H₂ = matrix(R, 3, 4, [x^2 x^2 x^2   0;
-                         x^2   0 x^2  x^2;
-                         x^2 x^2   x  x^2])
-                         
+                          x^2   0 x^2  x^2;
+                          x^2 x^2   x  x^2])
+
     # 3D Homological product code from [Quintavalle_2021](@cite)
     μ = 2; wc = 3; wr = 4
     c = GallagerLDPC(μ, wc, wr)
