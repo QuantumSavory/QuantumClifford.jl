@@ -333,15 +333,11 @@
 
     @testset "VerifyOp" begin
         using QuantumClifford.ECC: Steane7, parity_checks, naive_encoding_circuit
+        using QuantumClifford: tensor
         @testset "Stabilizer passed as good_state is not a logical state" begin
             good_state = parity_checks(Steane7()) #passing in a code instead of a state within codespace
-            verify = VerifyOp(good_state, 1:7)
-            reg = Register(one(MixedDestabilizer,7),6) #dummy register to pass into applywstatus!
-        
+            @test_throws ArgumentError VerifyOp(good_state, 1:7) #should throw an error since good_state isn't a logical state i.e. has only 6 stabilizer generators
             
-            @test_throws ArgumentError applywstatus!(reg, verify) #should throw an error since good_state isn't a logical state
-            
-    
         end
     
         @testset "Accepts pure good_state argument" begin
@@ -357,6 +353,19 @@
     
             _, status = applywstatus!(reg, verify)
             @test status == true_success_stat
+        end
+
+        @testset "handles sub-tableau with ancillas correctly " begin
+            s = S"+ XXX__
+            + ZZ___
+            + Z_Z__
+            - ZZ_Z_
+            - _ZZ_Z"
+            good_state = S"XXX ZZI IZZ"
+            verify = VerifyOp(good_state, 1:3)
+            _, status = applywstatus!(s, verify) 
+            @test status == true_success_stat #this test would have given a false_success_stat in the previous implementation of applywstatus! for VerifyOp
+
         end
     
       
