@@ -58,8 +58,11 @@ testfilter = ti -> begin
     elseif get(ENV, "ECC_DECODING", "") == "true"
         return (:ecc in ti.tags) && (:ecc_decoding in ti.tags)
 
-    elseif get(ENV, "ECC_SYNDROME_MEASUREMENT", "") == "true"
-        return (:ecc in ti.tags) && (:ecc_syndrome_measurement in ti.tags)
+    elseif get(ENV, "ECC_SYNDROME_CIRCUIT_EQUIVALENCE", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_syndrome_circuit_equivalence in ti.tags)
+
+    elseif get(ENV, "ECC_SYNDROME_MEASUREMENT_CORRECTNESS", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_syndrome_measurement_correctness in ti.tags)
 
     elseif get(ENV, "ECC_THROWS", "") == "true"
         return (:ecc in ti.tags) && (:ecc_throws in ti.tags)

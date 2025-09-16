@@ -78,7 +78,7 @@ steps:
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
-  - label: "ECC Syndrome Measurement"
+  - label: "ECC Syndrome Measurement Correctness"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -87,13 +87,29 @@ steps:
       - JuliaCI/julia-coverage#v1:
           codecov: true
     env:
-      ECC_SYNDROME_MEASUREMENT: true
+      ECC_SYNDROME_MEASUREMENT_CORRECTNESS: true
     command:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
-  - label: "ECC THROWS"
+        pkg"dev .";'
+  - label: "ECC Syndrome Circuit Equivalence"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      ECC_SYNDROME_CIRCUIT_EQUIVALENCE: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
+  - label: "ECC Throws"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"

@@ -1,4 +1,4 @@
-@testitem "ECC Syndromes" tags=[:ecc, :ecc_syndrome_measurement] begin
+@testitem "ECC Syndromes" tags=[:ecc, :ecc_syndrome_circuit_equivalence] begin
     using QuantumClifford: mul_left!, embed
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
