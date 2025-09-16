@@ -33,7 +33,7 @@ steps:
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
-  - label: "ECC Universal Tests"
+  - label: "ECC Code Properties"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -42,13 +42,72 @@ steps:
       - JuliaCI/julia-coverage#v1:
           codecov: true
     env:
-      ECC_UNIVERSAL_TESTS: true
+      ECC_CODE_PROPERTIES: true
     command:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
-
+  - label: "ECC Encoding"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      ECC_ENCODING: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
+  - label: "ECC Decoding"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      ECC_DECODING: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
+  - label: "ECC Syndrome Measurement"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      ECC_SYNDROME_MEASUREMENT: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
+  - label: "ECC THROWS"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+    env:
+      ECC_THROWS: true
+    command:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --project='~' -e '
+        using Pkg;
+        pkg"dev .";'
   - label: "ECC Bespoke Tests"
     plugins:
       - JuliaCI/julia#v1:

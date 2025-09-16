@@ -49,9 +49,21 @@ testfilter = ti -> begin
         push!(exclude, :jet)
     end
 
-    if get(ENV, "ECC_UNIVERSAL_TESTS", "") == "true"
-        return (:ecc in ti.tags) && (:ecc_universal_checks in ti.tags)
+    if get(ENV, "ECC_CODE_PROPERTIES", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_code_properties in ti.tags)
 
+    elseif get(ENV, "ECC_ENCODING", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_encoding in ti.tags)
+
+    elseif get(ENV, "ECC_DECODING", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_decoding in ti.tags)
+
+    elseif get(ENV, "ECC_SYNDROME_MEASUREMENT", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_syndrome_measurement in ti.tags)
+
+    elseif get(ENV, "ECC_THROWS", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_throws in ti.tags)
+    
     elseif get(ENV, "ECC_BESPOKE_TESTS", "") == "true"
         return (:ecc in ti.tags) && (:ecc_bespoke_checks in ti.tags)
     else

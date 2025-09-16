@@ -1,4 +1,4 @@
-@testitem "ECC" tags=[:ecc, :ecc_universal_checks] begin
+@testitem "ECC" tags=[:ecc, :ecc_syndrome_measurement] begin
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
 
