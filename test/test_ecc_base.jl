@@ -453,7 +453,7 @@ const code_instance_args = Dict(
         :HomologicalProductCode => [([H₁,transpose(H₁)], l₁), ([δ₂,δ₂,δ₂],)],
         :DoubleHomologicalProductCode => [(δ₁,)],
         :TrivariateTricycleCode => [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)]
-    )  
+    )
     merge!(code_instance_args, oscar_code_instance_args)
   end
   load_oscar_codes()
@@ -469,20 +469,17 @@ end
 
 function all_testable_code_instances(; maxn=nothing)
     codeinstances = []
-    code_args = copy(code_instance_args)
-    roots = (QuantumClifford.ECC.AbstractCSSCode, QuantumClifford.ECC.AbstractQECC)
-    for root in roots
-        for t in concretesubtypes(root)
-            name = nameof(t)
-            if haskey(code_args, name)
-                for args in pop!(code_args, name)
-                    code = t(args...)
-                    !isnothing(maxn) && nqubits(code) > maxn && continue
-                    push!(codeinstances, code)
-                end
-            end
+    i = 1
+    _code_instance_args = copy(code_instance_args)
+    for t in concretesubtypes(QuantumClifford.ECC.AbstractQECC)
+        for c in pop!(_code_instance_args, nameof(t), [])
+            codeinstance = t(c...)
+            !isnothing(maxn) && nqubits(codeinstance) > maxn && continue
+            push!(codeinstances, codeinstance)
+            #@show i, t, code_n(codeinstance), code_k(codeinstance), code_s(codeinstance), code_n(codeinstance)-code_k(codeinstance)
+            i += 1
         end
     end
-    @test isempty(code_args)
+    @test isempty(_code_instance_args) # if this fails, then some code instances were not tested
     return codeinstances
 end
