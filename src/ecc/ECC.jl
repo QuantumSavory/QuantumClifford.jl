@@ -79,6 +79,10 @@ function iscss(::Type{T}) where T<:AbstractECC
     return false
 end
 
+function iscss(::Type{T}) where T <: AbstractCSSCode
+    return true
+end
+
 function iscss(c::AbstractECC)
     return iscss(typeof(c))
 end
