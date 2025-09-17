@@ -16,7 +16,7 @@ In order to actually invoke its features, it is also pivotal to import the perti
 - It cannot be stressed enough that **ALL** the accelerated functionality is strictly *asynchronous* and that synchronisation barriers should be inserted as required. Please consult the relevant backend documentation for detailed instructions on this matter.
 - Certain function calls are presently *synchronous* due to external limitations imposed by the toolchain dependencies. They should still be treated as *asynchronous* from a concurrency perspective as this will hopefully be resolved in a future release.
 - Hardware limitations impose certain restrictions that are not present in the base package. Namely, the bitwidth of the phase variable(s) must be compatible with the usage of atomic intrinsics. The Adapt extension automatically handles this conversion but explicitly initialised objects must ensure their own compatibility.
-- Wherever feasible, tuning parameters are exposed via `::Val` keyword arguments. Whilst the chosen defaults strive to be as performant as possible whilst maintaining generality, it may prove beneficial to further refine them to be more optimal for the underlying hardware.
+- Tuning parameters are exposed via keyword arguments wherever feasible. Whilst the chosen defaults strive to be as performant as possible whilst maintaining generality, it may prove beneficial to further refine them to be more optimal for the particular characteristics of the underlying hardware.
 
 # Warnings
 
