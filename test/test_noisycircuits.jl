@@ -227,48 +227,47 @@
         @testset "Symbolic Reset Measurements" begin
             using QuantumClifford:tensor
             #test for checking reset capabilities
-            resetMeasureX = sMRX(1,1)#reset measurement ops that are used in the tests
-            resetMeasureZ = sMRZ(1,1)
-            resetMeasureY = sMRY(1,1)
+            state1 = S"-Z"
+            register1 = Register(state1, [0])
+            measure_z = sMRZ(1,1)
+            verify_z_neg = VerifyOp(state1, [1])
+            pet1 = petrajectories(register1, [measure_z,verify_z_neg])
+            @test pet1[false_success_stat] == 1
+            @test pet1[true_success_stat] == 0
+            @test pet1[failure_stat] == 0
+
+            state2 = S"-X"
+            register2 = Register(state2, [0])
+            measure_x = sMRX(1,1)
+            verify_x_neg = VerifyOp(state2, [1])
+            pet2 = petrajectories(register2, [measure_x,verify_x_neg])
+            @test pet2[false_success_stat] == 1
+            @test pet2[true_success_stat] == 0
+            @test pet2[failure_stat] == 0
+
             state1 = S"Z"
             register1 = Register(state1, [0])
-            verify1 = VerifyOp(state1, [1])
-            pet1 = petrajectories(register1, [resetMeasureZ,verify1])
+            verify_z = VerifyOp(state1, [1])
+            pet1 = petrajectories(register1, [reset_measure_z,verify_z])
             @test pet1[false_success_stat] == 0
             @test pet1[true_success_stat] == 1
             @test pet1[failure_stat] == 0
 
             state2 = S"X"
             register2 = Register(state2, [0])
-            verify2 = VerifyOp(state2, [1])
-            pet2 = petrajectories(register2, [resetMeasureX,verify2])
+            verify_x = VerifyOp(state2, [1])
+            pet2 = petrajectories(register2, [reset_measure_x,verify_x])
             @test pet2[false_success_stat] == 0
             @test pet2[true_success_stat] == 1
             @test pet2[failure_stat] == 0
 
-            stateY = S"Y"
-            register2 = Register(stateY, [0])
-            verifyY = VerifyOp(stateY, [1])
-            petY = petrajectories(register2, [resetMeasureY,verifyY])
-            @test petY[false_success_stat] == 0
-            @test petY[true_success_stat] == 1
-            @test petY[failure_stat] == 0
-
-            negState1 = S"-Z"
-            register3 = Register(negState1, [0])
-            verify3 = VerifyOp(negState1, [1])
-            pet3 = petrajectories(register3, [resetMeasureZ,verify3])
-            @test pet3[false_success_stat] == 1
-            @test pet3[true_success_stat] == 0
-            @test pet3[failure_stat] == 0
-
-            negState2 = S"-X"
-            register4 = Register(negState2, [0])
-            verify4 = VerifyOp(negState2, [1])
-            pet4 = petrajectories(register4, [resetMeasureX,verify4])
-            @test pet4[false_success_stat] == 1
-            @test pet4[true_success_stat] == 0
-            @test pet4[failure_stat] == 0
+            state_y = S"Y"
+            register_y = Register(state_y, [0])
+            verify_y = VerifyOp(state_y, [1])
+            pet_y = petrajectories(register_y, [reset_measure_y,verify_y])
+            @test pet_y[false_success_stat] == 0
+            @test pet_y[true_success_stat] == 1
+            @test pet_y[failure_stat] == 0
 
             #checks probabilstic case to see if the phase of measurement anticommuting stabilizer is the same in both branches
             ghz_state = S"XXX ZZI IZZ"
