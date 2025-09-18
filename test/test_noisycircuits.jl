@@ -229,40 +229,43 @@
             #test for checking reset capabilities
             state1 = S"-Z"
             register1 = Register(state1, [0])
-            measure_z = sMRZ(1,1)
+            reset_measure_z = sMRZ(1,1)
             verify_z_neg = VerifyOp(state1, [1])
-            pet1 = petrajectories(register1, [measure_z,verify_z_neg])
+            pet1 = petrajectories(register1, [reset_measure_z,verify_z_neg])
             @test pet1[false_success_stat] == 1
             @test pet1[true_success_stat] == 0
             @test pet1[failure_stat] == 0
 
             state2 = S"-X"
             register2 = Register(state2, [0])
-            measure_x = sMRX(1,1)
+            reset_measure_x = sMRX(1,1)
             verify_x_neg = VerifyOp(state2, [1])
-            pet2 = petrajectories(register2, [measure_x,verify_x_neg])
+            pet2 = petrajectories(register2, [reset_measure_x,verify_x_neg])
             @test pet2[false_success_stat] == 1
             @test pet2[true_success_stat] == 0
             @test pet2[failure_stat] == 0
 
-            state1 = S"Z"
-            register1 = Register(state1, [0])
-            verify_z = VerifyOp(state1, [1])
-            pet1 = petrajectories(register1, [reset_measure_z,verify_z])
-            @test pet1[false_success_stat] == 0
-            @test pet1[true_success_stat] == 1
-            @test pet1[failure_stat] == 0
+            state3 = S"Z"
+            register3 = Register(state3, [0])
+            reset_measure_z = sMRZ(1,1)
+            verify_z = VerifyOp(state3, [1])
+            pet3 = petrajectories(register3, [reset_measure_z,verify_z])
+            @test pet3[false_success_stat] == 0
+            @test pet3[true_success_stat] == 1
+            @test pet3[failure_stat] == 0
 
-            state2 = S"X"
-            register2 = Register(state2, [0])
-            verify_x = VerifyOp(state2, [1])
-            pet2 = petrajectories(register2, [reset_measure_x,verify_x])
-            @test pet2[false_success_stat] == 0
-            @test pet2[true_success_stat] == 1
-            @test pet2[failure_stat] == 0
+            state4 = S"X"
+            register4 = Register(state4, [0])
+            reset_measure_x = sMRX(1,1)
+            verify_x = VerifyOp(state4, [1])
+            pet4 = petrajectories(register4, [reset_measure_x,verify_x])
+            @test pet4[false_success_stat] == 0
+            @test pet4[true_success_stat] == 1
+            @test pet4[failure_stat] == 0
 
             state_y = S"Y"
             register_y = Register(state_y, [0])
+            reset_measure_y = sMRY(1,1)
             verify_y = VerifyOp(state_y, [1])
             pet_y = petrajectories(register_y, [reset_measure_y,verify_y])
             @test pet_y[false_success_stat] == 0
