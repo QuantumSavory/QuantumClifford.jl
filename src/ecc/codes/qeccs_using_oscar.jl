@@ -1,3 +1,9 @@
+"""Implemented in a package extension with Oscar. Check the docs for the [Oscar extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Oscar.jl)"""
+function twobga_from_direct_product end
+
+"""Implemented in a package extension with Oscar. Check the docs for the [Oscar extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Oscar.jl)"""
+function twobga_from_fp_group end
+
 """Implemented in a package extension with `Oscar`. Check the docs for the [Oscar extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Oscar.jl)"""
 function boundary_maps end
 
@@ -57,4 +63,14 @@ function GeneralizedToricCode(args...; kwargs...)
         throw("The `GeneralizedToricCode` depends on the package `Oscar` but you have not installed or imported it yet. Immediately after you import `Oscar`, the `GeneralizedToricCode` will be available.")
     end
     return ext.GeneralizedToricCode(args...; kwargs...)
+end
+
+"""Trivariate Tricycle codes ([jacob2025singleshotdecodingfaulttolerantgates](@cite))
+Implemented as a package extension with `Oscar`. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
+function TrivariateTricycleCode(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
+    if isnothing(ext)
+        throw("The `TrivariateTricycleCode` depends on the package `Oscar` but you have not installed or imported it yet. Immediately after you import `Oscar`, the `TrivariateTricycleCode` will be available.")
+    end
+    return ext.TrivariateTricycleCode(args...; kwargs...)
 end
