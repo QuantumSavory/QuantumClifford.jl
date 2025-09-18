@@ -174,7 +174,7 @@ _reset_mappings(::Type{sMRX}) = (sZ, projectX!)
 _reset_mappings(::Type{sMRY}) = (sZ, projectY!)
 
 #helper function to only set a bit if the given index is non-zero, since internally 'nothing' is defined to be 0
-function _setregbit(bit_register::Register,bit::Int64,value::Bool)
+function _setregbit(bit_register::Vector{Bool},bit::Int64,value::Bool)
     if(bit==0)
         nothing
     else
