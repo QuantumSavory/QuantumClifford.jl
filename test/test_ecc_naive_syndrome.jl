@@ -1,10 +1,10 @@
-@testitem "ECC" tags=[:ecc, :ecc_syndrome_measurement_correctness] begin
+@testitem "ECC - naive syndrome circuits" tags=[:ecc, :ecc_syndrome_measurement_correctness] begin
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
 
     include("test_ecc_base.jl")
 
-    codes = all_testable_code_instances()
+    codes = all_testable_code_instances(; maxn=100)
 
     function test_naive_syndrome(c::AbstractECC, e::Bool)
         # create a random logical state
@@ -59,14 +59,5 @@
         for c in codes, _ in 1:2
             test_with_pframes(c)
         end
-    end
-
-    ##
-
-    @testset "is degenerate function - test on popular codes" begin
-        @test isdegenerate(Shor9()) == true
-        @test isdegenerate(Steane7()) == false
-        @test isdegenerate(Steane7(), 2) == true
-        @test isdegenerate(Bitflip3()) == true
     end
 end

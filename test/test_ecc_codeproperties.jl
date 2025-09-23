@@ -36,4 +36,11 @@
             @test QuantumClifford.stab_looks_good(copy(H), remove_redundant_rows=true)
         end
     end
+
+    @testset "is degenerate function - test on popular codes" begin
+        @test isdegenerate(Shor9()) == true
+        @test isdegenerate(Steane7()) == false
+        @test isdegenerate(Steane7(), 2) == true
+        @test isdegenerate(Bitflip3()) == true
+    end
 end
