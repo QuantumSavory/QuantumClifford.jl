@@ -19,7 +19,7 @@ steps:
         using Pkg;
         pkg"dev .";'
     env:
-      JET_TEST: "{{matrix.QC_JET_TEST}}"
+      JET_TEST: "{{matrix.JET_TEST}}"
       QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
       QC_GPU_TEST: "{{matrix.QC_GPU_TEST}}"
     agents:
