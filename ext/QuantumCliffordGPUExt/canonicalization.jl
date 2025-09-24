@@ -60,7 +60,7 @@ function update_kernel!(d_mat::CuDeviceArray{T,2}, d_phases::CuDeviceArray{P,1},
                        current_col::Integer, pivot_row::Integer, bit::T,
                        r::Integer, total_blocks::Integer, nblocks::Integer, 
                        update_phase::Bool) where {T, P}
-    s_pivot = @cuDynamicSharedMem(T, total_blocks)
+    s_pivot = CuDynamicSharedArray(T, total_blocks)
     tid = threadIdx().x
     for idx in tid:blockDim().x:total_blocks
         s_pivot[idx] = d_mat[idx, current_col]
