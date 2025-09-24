@@ -571,7 +571,7 @@ const code_instance_args = Dict(
         :HomologicalProductCode => [([H₁, transpose(H₁)], l₁), ([H₂, transpose(H₂)], l₂), ([H₃, transpose(H₃)],), ([δ₄, δ₄, δ₄],)],
         :DoubleHomologicalProductCode => [(δ₁,), (δ₂,)],
         :TrivariateTricycleCode => [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)],
-        :BivariateBicycleCode => [((l_bb₁, m_bb₁, A_bb₁, B_bb₁), (l_bb₂, m_bb₂, A_bb₂, B_bb₂), (l_bb₃, m_bb₃, A_bb₃, B_bb₃), (l_bb₄, m_bb₄, A_bb₄, B_bb₄), (l_bb₅, m_bb₅, A_bb₅, B_bb₅))]
+        :BivariateBicycleCode => [(l_bb₁, m_bb₁, A_bb₁, B_bb₁), (l_bb₂, m_bb₂, A_bb₂, B_bb₂), (l_bb₃, m_bb₃, A_bb₃, B_bb₃), (l_bb₄, m_bb₄, A_bb₄, B_bb₄), (l_bb₅, m_bb₅, A_bb₅, B_bb₅)]
     )
     merge!(code_instance_args, oscar_code_instance_args)
   end
