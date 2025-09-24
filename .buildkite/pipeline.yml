@@ -19,15 +19,9 @@ steps:
         using Pkg;
         pkg"dev .";'
     env:
-      JET_TEST: "{{matrix.JET_TEST}}"
-      ECC_CODE_PROPERTIES: "{{matrix.ECC_CODE_PROPERTIES}}"
-      ECC_ENCODING: "{{matrix.ECC_ENCODING}}"
-      ECC_DECODING: "{{matrix.ECC_DECODING}}"
-      ECC_SYNDROME_MEASUREMENT_CORRECTNESS: "{{matrix.ECC_SYNDROME_MEASUREMENT_CORRECTNESS}}"
-      ECC_SYNDROME_CIRCUIT_EQUIVALENCE: "{{matrix.ECC_SYNDROME_CIRCUIT_EQUIVALENCE}}"
-      CUDA_TEST: "{{matrix.CUDA_TEST}}"
-      ROCm_TEST: "{{matrix.ROCm_TEST}}"
-      OpenCL_TEST: "{{matrix.OpenCL_TEST}}"
+      JET_TEST: "{{matrix.QC_JET_TEST}}"
+      QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
+      QC_GPU_TEST: "{{matrix.QC_GPU_TEST}}"
     agents:
       queue: "{{matrix.QUEUE}}"
     matrix:
@@ -35,59 +29,69 @@ steps:
         LABEL: ["base tests"]
         QUEUE: ["default"]
         JET_TEST: ["false"]
-        ECC_CODE_PROPERTIES: ["false"]
-        ECC_ENCODING: ["false"]
-        ECC_DECODING: ["false"]
-        ECC_SYNDROME_MEASUREMENT_CORRECTNESS: ["false"]
-        ECC_SYNDROME_CIRCUIT_EQUIVALENCE: ["false"]
-        CUDA_TEST: ["false"]
-        ROCm_TEST: ["false"]
-        OpenCL_TEST: ["false"]
+        QC_ECC_TEST: ["false"]
+        QC_GPU_TEST: ["false"]
       adjustments:
         - with:
             LABEL: "JET"
             QUEUE: default
-            JET_TEST: true
+            QC_JET_TEST: true
+            QC_ECC_TEST: false
+            QC_GPU_TEST: false
         - with:
-            LABEL: "ECC Properties"
+            LABEL: "ECC Base"
             QUEUE: default
-            ECC_CODE_PROPERTIES: true
+            QC_JET_TEST: false
+            QC_ECC_TEST: "base"
+            QC_GPU_TEST: false
         - with:
             LABEL: "ECC Encoding"
             QUEUE: default
-            ECC_ENCODING: true
+            QC_JET_TEST: false
+            QC_ECC_TEST: "encoding"
+            QC_GPU_TEST: false
         - with:
             LABEL: "ECC Decoding"
             QUEUE: default
-            ECC_ENCODING: true
+            QC_JET_TEST: false
+            QC_ECC_TEST: "decoding"
+            QC_GPU_TEST: false
         - with:
             LABEL: "ECC Syndrome Measurement"
             QUEUE: default
-            ECC_SYNDROME_MEASUREMENT_CORRECTNESS: true
+            QC_JET_TEST: false
+            QC_ECC_TEST: "syndromemeasurement"
+            QC_GPU_TEST: false
         - with:
             LABEL: "ECC Syndrome Circuit"
             QUEUE: default
-            ECC_SYNDROME_CIRCUIT_EQUIVALENCE: true
-        - with:
-            LABEL: "ECC Throws"
-            QUEUE: default
-            ECC_THROWS: true
+            QC_JET_TEST: false
+            QC_ECC_TEST: "syndromecircuit"
+            QC_GPU_TEST: false
         - with:
             LABEL: "ECC Bespoke"
             QUEUE: default
-            ECC_BESPOKE_TESTS: true
+            QC_JET_TEST: false
+            QC_ECC_TEST: "bespoke"
+            QC_GPU_TEST: false
         - with:
             LABEL: "GPU - CUDA"
             QUEUE: cuda
-            CUDA_TEST: true
+            QC_JET_TEST: false
+            QC_ECC_TEST: false
+            QC_GPU_TEST: "cuda"
         - with:
             LABEL: "GPU - ROCm"
             QUEUE: rocm
-            ROCm_TEST: true
+            QC_JET_TEST: false
+            QC_ECC_TEST: false
+            QC_GPU_TEST: "rocm"
         - with:
             LABEL: "GPU - OpenCL"
             QUEUE: default
-            OpenCL_TEST: true
+            QC_JET_TEST: false
+            QC_ECC_TEST: false
+            QC_GPU_TEST: "opencl"
 
   - label: "Downstream QuantumSavory"
     plugins:
