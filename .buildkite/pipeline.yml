@@ -32,10 +32,17 @@ steps:
       queue: "{{matrix.QUEUE}}"
     matrix:
       setup:
-        LABEL:
-          - "base tests"
-        QUEUE:
-          - default
+        LABEL: ["base tests"]
+        QUEUE: ["default"]
+        JET_TEST: ["false"]
+        ECC_CODE_PROPERTIES: ["false"]
+        ECC_ENCODING: ["false"]
+        ECC_DECODING: ["false"]
+        ECC_SYNDROME_MEASUREMENT_CORRECTNESS: ["false"]
+        ECC_SYNDROME_CIRCUIT_EQUIVALENCE: ["false"]
+        CUDA_TEST: ["false"]
+        ROCm_TEST: ["false"]
+        OpenCL_TEST: ["false"]
       adjustments:
         - with:
             LABEL: "JET"
