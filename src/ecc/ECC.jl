@@ -2,7 +2,7 @@ module ECC
 
 using QECCore
 import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
-metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp
+metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial
 using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
@@ -39,6 +39,9 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
     DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps,
     GeneralizedCirculantBivariateBicycle, GeneralizedHyperGraphProductCode,
+    GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode,
+    HomologicalProductCode, DoubleHomologicalProductCode,
+    GeneralizedToricCode, TrivariateTricycleCode,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -76,16 +79,13 @@ function iscss(::Type{T}) where T<:AbstractECC
     return false
 end
 
+function iscss(::Type{T}) where T <: AbstractCSSCode
+    return true
+end
+
 function iscss(c::AbstractECC)
     return iscss(typeof(c))
 end
-
-"""
-Generator Polynomial `g(x)`
-
-In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field `F`. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
-"""
-function generator_polynomial end
 
 """The generator matrix of a code."""
 function generator end
@@ -402,9 +402,9 @@ include("codes/classical/bch.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
-include("codes/lifted_product.jl")
+include("codes/qeccs_using_hecke.jl")
 
 # higher dimensional codes
-include("codes/d_dimensional_codes.jl")
+include("codes/qeccs_using_oscar.jl")
 
 end #module

@@ -31,7 +31,9 @@ CUDA_flag && Pkg.add("CUDA")
 ROCm_flag && Pkg.add("AMDGPU")
 OpenCL_flag && Pkg.add(["pocl_jll", "OpenCL"])
 if any((CUDA_flag, ROCm_flag, OpenCL_flag))
-    Pkg.add(["Atomix", "GPUArraysCore", "GPUArrays", "KernelAbstractions"])
+    Pkg.add(
+        ["Adapt", "Atomix", "GPUArraysCore", "GPUArrays", "KernelAbstractions"]
+         )
 end
 Oscar_flag && Pkg.add("Oscar")
 using TestItemRunner
@@ -47,8 +49,26 @@ testfilter = ti -> begin
         push!(exclude, :jet)
     end
 
-    if get(ENV, "ECC_TEST", "") == "true"
-        return :ecc in ti.tags
+    if get(ENV, "ECC_CODE_PROPERTIES", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_code_properties in ti.tags)
+
+    elseif get(ENV, "ECC_ENCODING", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_encoding in ti.tags)
+
+    elseif get(ENV, "ECC_DECODING", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_decoding in ti.tags)
+
+    elseif get(ENV, "ECC_SYNDROME_CIRCUIT_EQUIVALENCE", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_syndrome_circuit_equivalence in ti.tags)
+
+    elseif get(ENV, "ECC_SYNDROME_MEASUREMENT_CORRECTNESS", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_syndrome_measurement_correctness in ti.tags)
+
+    elseif get(ENV, "ECC_THROWS", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_throws in ti.tags)
+    
+    elseif get(ENV, "ECC_BESPOKE_TESTS", "") == "true"
+        return (:ecc in ti.tags) && (:ecc_bespoke_checks in ti.tags)
     else
         push!(exclude, :ecc)
     end

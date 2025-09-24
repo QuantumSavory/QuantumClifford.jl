@@ -8,16 +8,21 @@
 ## v0.10.1-dev
 
 - **(fix)** `canonicalize_gott!` now properly supports non-UInt64 types.
+- The `TrivariateTricycleCode` is implemented using a novel realization via `Oscar.jl`'s multivariate polynomial quotient ring formalism in the ECC submodule.
+- The `GeneralizedToricCode` on twisted tori via `Oscar.jl`'s Laurent polynomials is now implemented in the ECC submodule.
+- The `HomologicalProductCode` and `DoubleHomologicalProductCode` are now implemented via `Oscar.jl`'s homological algebra in the ECC submodule.
+- Adapt.jl can now be used to convert various types to GPU-backed storage.
+- The `GeneralizedBicycleCode` and `ExtendedGeneralizedBicycleCode` are now implemented via `Hecke.jl`'s polynomial ring in the ECC submodule.
 - Add `apply_right!` that applies a clifford operator to the right of a dense clifford operator.
 - Add `mul_right!` methods for inplace operations between tableaus
 - Add a `CliffordOperator` constructor that builds a dense clifford from a `PauliOperator`
 - Add a `phases` getter for `CliffordOperator`
 - The generalized hypergraph product code is implemented in the ECC submodule.
 - Add novel `[[n² + m²,(n - rank([C ∣ M]))² + (m − rank([C ∣ M]ᵀ))², d]]` quantum Tillich-Zémor `random_TillichZemor_code` codes to `QECCore` and introduce `QECCoreNemoExt` for accurate matrix `rank` computation.
-- The D-dimensional Surface and Toric codes are now implemented using `Oscar`'s chain complexes and `GF2` homology in the ECC submodule.
-- Add `[[2n², 2k², d]]` and `[[(n - k)² + n², k², d]]` La-cross codes via `Hecke`'s univariate polynomial ring in the ECC submodule.
+- The D-dimensional Surface and Toric codes are now implemented using `Oscar.jl`'s chain complexes and `GF2` homology in the ECC submodule.
+- Add `[[2n², 2k², d]]` and `[[(n - k)² + n², k², d]]` La-cross codes via `Hecke.jl`'s univariate polynomial ring in the ECC submodule.
 - Implementing `apply_inv!` for direct application of the inverse of a given gate.
-- The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations — particularly useful now that there is also an `Oscar` extension, which provides many non-abelian group constructors.
+- The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations — particularly useful now that there is also an `Oscar.jl` extension, which provides many non-abelian group constructors.
 - Introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
 - The phase storage type can now be parameterized, instead of hardcoded to UInt8.
@@ -30,6 +35,7 @@
 - Add Quantum Tanner graph product codes: general and cyclic `Q(G₁×G₂)` codes (Tanner graphs `G₁`, `G₂`) to `QECCore`.
 - Add classical Gallager's LDPC code to `QECCore`.
 - Add `GeneralizedCirculantBivariateBicycle` to `QECCore` and introduce to `QECCoreOscarExt`.
+- Add `GoppaCode` to the `QECCore`.
 
 ### Private API
 

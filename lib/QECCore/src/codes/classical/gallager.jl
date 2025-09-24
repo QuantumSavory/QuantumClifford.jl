@@ -68,7 +68,7 @@ struct GallagerLDPC <: AbstractCECC
     """Row weight which must be greater column weight."""
     row_weight::Int
     """Random seed for reproducible parity check matrix generation (`default=42`)."""
-    seed::Union{Int,Nothing}
+    seed::Int
 
     function GallagerLDPC(block_rows, col_weight, row_weight, seed::Union{Int,Nothing}=42)
         block_rows ≤ 1 && throw(ArgumentError("Number of block rows must be > 1, got $block_rows"))
@@ -79,7 +79,7 @@ struct GallagerLDPC <: AbstractCECC
     end
 end
 
-function _gallager_ldpc_code(μ::Int, w_c::Int, w_r::Int, seed::Union{Int,Nothing})
+function _gallager_ldpc_code(μ::Int, w_c::Int, w_r::Int, seed::Int)
     n = μ*w_r
     m = μ*w_c
     I = Int[]
@@ -89,7 +89,7 @@ function _gallager_ldpc_code(μ::Int, w_c::Int, w_r::Int, seed::Union{Int,Nothin
     sizehint!(J, m*w_c)
     sizehint!(V, m*w_c)
     template_cols = [((i-1)*w_r+1):(i*w_r) for i in 1:μ]
-    rng = seed === nothing ? GLOBAL_RNG : MersenneTwister(seed)
+    rng = MersenneTwister(seed)
     perms = [randperm(rng, n) for _ in 2:w_c]
     for d in 1:w_c
         rows = ((d-1)*μ+1):(d*μ)

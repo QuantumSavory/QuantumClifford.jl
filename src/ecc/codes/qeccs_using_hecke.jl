@@ -21,12 +21,6 @@ function bicycle_codes end
 """Implemented in a package extension with Hecke. Check the docs for the [Hecke extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Hecke.jl)"""
 function haah_cubic_codes end
 
-"""Implemented in a package extension with Oscar. Check the docs for the [Oscar extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Oscar.jl)"""
-function twobga_from_direct_product end
-
-"""Implemented in a package extension with Oscar. Check the docs for the [Oscar extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Oscar.jl)"""
-function twobga_from_fp_group end
-
 """Implemented in a package extension with Hecke."""
 function honeycomb_color_codes end
 
@@ -48,4 +42,26 @@ function GeneralizedHyperGraphProductCode(args...; kwargs...)
         throw("The `GeneralizedHyperGraphProductCode` quantum LDPC code depends on the package `Hecke` but you have not installed or imported it yet. Immediately after you import `Hecke`, the `GeneralizedHyperGraphProductCode` will be available.")
     end
     return ext.GeneralizedHyperGraphProductCode(args...; kwargs...)
+end
+
+"""Generalized Bicycle codes ([koukoulekidis2024smallquantumcodesalgebraic](@cite))
+
+Implemented as a package extension with Hecke. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
+function GeneralizedBicycleCode(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
+    if isnothing(ext)
+        throw("The `GeneralizedBicycleCode` depends on the package `Hecke` but you have not installed or imported it yet. Immediately after you import `Hecke`, the `GeneralizedBicycleCode` will be available.")
+    end
+    return ext.GeneralizedBicycleCode(args...; kwargs...)
+end
+
+"""Extended Generalized Bicycle codes ([koukoulekidis2024smallquantumcodesalgebraic](@cite))
+
+Implemented as a package extension with Hecke. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
+function ExtendedGeneralizedBicycleCode(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
+    if isnothing(ext)
+        throw("The `ExtendedGeneralizedBicycleCode` depends on the package `Hecke` but you have not installed or imported it yet. Immediately after you import `Hecke`, the `ExtendedGeneralizedBicycleCode` will be available.")
+    end
+    return ext.ExtendedGeneralizedBicycleCode(args...; kwargs...)
 end
