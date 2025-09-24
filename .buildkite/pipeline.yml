@@ -93,7 +93,7 @@ steps:
             QC_ECC_TEST: false
             QC_GPU_TEST: "opencl"
 
-  - label: "Downstream QuantumSavory"
+  - label: "Downstream Tests - {{matrix.PACKAGE}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
