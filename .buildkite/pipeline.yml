@@ -35,61 +35,61 @@ steps:
         - with:
             LABEL: "JET"
             QUEUE: default
-            QC_JET_TEST: true
+            JET_TEST: true
             QC_ECC_TEST: false
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Base"
             QUEUE: default
-            QC_JET_TEST: false
+            JET_TEST: false
             QC_ECC_TEST: "base"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Encoding"
             QUEUE: default
-            QC_JET_TEST: false
+            JET_TEST: false
             QC_ECC_TEST: "encoding"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Decoding"
             QUEUE: default
-            QC_JET_TEST: false
+            JET_TEST: false
             QC_ECC_TEST: "decoding"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Syndrome Measurement"
             QUEUE: default
-            QC_JET_TEST: false
+            JET_TEST: false
             QC_ECC_TEST: "syndromemeasurement"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Syndrome Circuit"
             QUEUE: default
-            QC_JET_TEST: false
+            JET_TEST: false
             QC_ECC_TEST: "syndromecircuit"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Bespoke"
             QUEUE: default
-            QC_JET_TEST: false
+            JET_TEST: false
             QC_ECC_TEST: "bespoke"
             QC_GPU_TEST: false
         - with:
             LABEL: "GPU - CUDA"
             QUEUE: cuda
-            QC_JET_TEST: false
+            JET_TEST: false
             QC_ECC_TEST: false
             QC_GPU_TEST: "cuda"
         - with:
             LABEL: "GPU - ROCm"
             QUEUE: rocm
-            QC_JET_TEST: false
+            JET_TEST: false
             QC_ECC_TEST: false
             QC_GPU_TEST: "rocm"
         - with:
             LABEL: "GPU - OpenCL"
             QUEUE: default
-            QC_JET_TEST: false
+            JET_TEST: false
             QC_ECC_TEST: false
             QC_GPU_TEST: "opencl"
 
