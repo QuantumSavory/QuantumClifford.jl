@@ -19,15 +19,15 @@ steps:
         using Pkg;
         pkg"dev .";'
     env:
-      - JET_TEST: {{matrix.JET_TEST}}
-      - ECC_CODE_PROPERTIES: {{matrix.ECC_CODE_PROPERTIES}}
-      - ECC_ENCODING: {{matrix.ECC_ENCODING}}
-      - ECC_DECODING: {{matrix.ECC_DECODING}}
-      - ECC_SYNDROME_MEASUREMENT_CORRECTNESS: {{matrix.ECC_SYNDROME_MEASUREMENT_CORRECTNESS}}
-      - ECC_SYNDROME_CIRCUIT_EQUIVALENCE: {{matrix.ECC_SYNDROME_CIRCUIT_EQUIVALENCE}}
-      - CUDA_TEST: {{matrix.CUDA_TEST}}
-      - ROCm_TEST: {{matrix.ROCm_TEST}}
-      - OpenCL_TEST: {{matrix.OpenCL_TEST}}
+      JET_TEST: {{matrix.JET_TEST}}
+      ECC_CODE_PROPERTIES: {{matrix.ECC_CODE_PROPERTIES}}
+      ECC_ENCODING: {{matrix.ECC_ENCODING}}
+      ECC_DECODING: {{matrix.ECC_DECODING}}
+      ECC_SYNDROME_MEASUREMENT_CORRECTNESS: {{matrix.ECC_SYNDROME_MEASUREMENT_CORRECTNESS}}
+      ECC_SYNDROME_CIRCUIT_EQUIVALENCE: {{matrix.ECC_SYNDROME_CIRCUIT_EQUIVALENCE}}
+      CUDA_TEST: {{matrix.CUDA_TEST}}
+      ROCm_TEST: {{matrix.ROCm_TEST}}
+      OpenCL_TEST: {{matrix.OpenCL_TEST}}
     agents:
       queue: {{matrix.QUEUE}}
     matrix:
