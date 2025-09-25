@@ -6,7 +6,9 @@ env:
 
 steps:
   - label: "Package Tests - {{matrix.LABEL}}"
-    name: "Package Tests - {{matrix.LABEL}}"
+    notify:
+      - github_commit_status:
+          context: "Package Tests - {{matrix.LABEL}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -95,7 +97,9 @@ steps:
             QC_GPU_TEST: "opencl"
 
   - label: "Downstream Tests - {{matrix.PACKAGE}}"
-    name: "Downstream Tests - {{matrix.PACKAGE}}"
+    notify:
+      - github_commit_status:
+          context: "Downstream Tests - {{matrix.PACKAGE}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
