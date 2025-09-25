@@ -5,12 +5,12 @@ env:
   PYCALL_DEBUG_BUILD: yes
 
 steps:
-  - label: "Package Tests"
+  - label: "Package Tests - {{matrix.LABEL}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
       - QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-test#v1:
       - JuliaCI/julia-coverage#v1:
           codecov: true
     command:
@@ -18,202 +18,82 @@ steps:
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
-  - label: "JET Tests"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
     env:
-      JET_TEST: true
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
-  - label: "ECC Code Properties"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
-    env:
-      ECC_CODE_PROPERTIES: true
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
-  - label: "ECC Encoding"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
-    env:
-      ECC_ENCODING: true
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
-  - label: "ECC Decoding"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
-    env:
-      ECC_DECODING: true
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
-  - label: "ECC Syndrome Measurement Correctness"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
-    env:
-      ECC_SYNDROME_MEASUREMENT_CORRECTNESS: true
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
-  - label: "ECC Syndrome Circuit Equivalence"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
-    env:
-      ECC_SYNDROME_CIRCUIT_EQUIVALENCE: true
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
-  - label: "ECC Throws"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
-    env:
-      ECC_THROWS: true
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
-  - label: "ECC Bespoke Tests"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
-    env:
-      ECC_BESPOKE_TESTS: true
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
-  - label: "CUDA Tests"
+      JET_TEST: "{{matrix.JET_TEST}}"
+      QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
+      QC_GPU_TEST: "{{matrix.QC_GPU_TEST}}"
     agents:
-      queue: cuda
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      #- QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
-    env:
-      CUDA_TEST: true
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
-  - label: "ROCm Tests"
-    agents:
-      queue: rocm
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      #- QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
-    env:
-      ROCm_TEST: true
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
-  - label: "OpenCL Tests"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
-    env:
-      OpenCL_TEST: true
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
-  - label: "Downstream QuantumSavory"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project=$(mktemp -d) -e '
-        using Pkg;
-        pkg"dev .";
-        Pkg.add("QuantumSavory");
-        Pkg.build("QuantumSavory");
-        Pkg.test("QuantumSavory");'
-  - label: "Downstream BPGates"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project=$(mktemp -d) -e '
-        using Pkg;
-        pkg"dev .";
-        Pkg.add("BPGates");
-        Pkg.build("BPGates");
-        Pkg.test("BPGates");'
-  - label: "Downstream QuantumSymbolics"
+      queue: "{{matrix.QUEUE}}"
+    matrix:
+      setup:
+        LABEL: ["base tests"]
+        QUEUE: ["default"]
+        JET_TEST: ["false"]
+        QC_ECC_TEST: ["false"]
+        QC_GPU_TEST: ["false"]
+      adjustments:
+        - with:
+            LABEL: "JET"
+            QUEUE: default
+            JET_TEST: true
+            QC_ECC_TEST: false
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Base"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "base"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Encoding"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "encoding"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Decoding"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "decoding"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Syndrome Measurement"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "syndromemeasurement"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Syndrome Circuit"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "syndromecircuit"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Bespoke"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "bespoke"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "GPU - CUDA"
+            QUEUE: cuda
+            JET_TEST: false
+            QC_ECC_TEST: false
+            QC_GPU_TEST: "cuda"
+        - with:
+            LABEL: "GPU - ROCm"
+            QUEUE: rocm
+            JET_TEST: false
+            QC_ECC_TEST: false
+            QC_GPU_TEST: "rocm"
+        - with:
+            LABEL: "GPU - OpenCL"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: false
+            QC_GPU_TEST: "opencl"
+
+  - label: "Downstream Tests - {{matrix.PACKAGE}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -223,6 +103,9 @@ steps:
       - julia --project=$(mktemp -d) -e '
         using Pkg;
         pkg"dev .";
-        Pkg.add("QuantumSymbolics");
-        Pkg.build("QuantumSymbolics");
-        Pkg.test("QuantumSymbolics");'
+        Pkg.add("{{matrix.PACKAGE}}");
+        Pkg.build("{{matrix.PACKAGE}}");
+        Pkg.test("{{matrix.PACKAGE}}");'
+    matrix:
+      setup:
+        PACKAGE: ["QuantumSavory", "BPGates", "QuantumSymbolics"]
