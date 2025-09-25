@@ -1,4 +1,4 @@
-@testitem "ECC throws" tags=[:ecc, :ecc_throws] begin
+@testitem "ECC throws" tags=[:ecc, :ecc_base] begin
 
     using QuantumClifford.ECC: ReedMuller, BCH, RecursiveReedMuller, Golay, Triangular488, Triangular666, Hamming
 
@@ -21,7 +21,7 @@
     @test_throws ArgumentError Golay(21)
 
     @test_throws ArgumentError Hamming(1)
-  
+
     @test_throws ArgumentError Triangular488(8)
     @test_throws ArgumentError Triangular488(1)
     @test_throws ArgumentError Triangular666(8)
