@@ -14,17 +14,17 @@ Here is the `[[54, 8, 6]]` from Table 1 [wang2024coprime](@cite)
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
 
-julia> l=3; m=9
+julia> l=3; m=9;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
 
-julia> I = ideal(R, [x^l-1, y^m-1])
+julia> I = ideal(R, [x^l-1, y^m-1]);
 
-julia> S, _ = quo(R, I)
+julia> S, _ = quo(R, I);
 
-julia> A = S(1   + y^2 + y^4)
+julia> A = S(1   + y^2 + y^4);
 
-julia> B = S(y^3 + x   + x^2)
+julia> B = S(y^3 + x   + x^2);
 
 julia> c = BivariateBicycleCode(l, m, A, B);
 
@@ -37,17 +37,17 @@ Here is the `[[72, 12, 6]]` from Table 3 of [bravyi2024high](@cite)
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
 
-julia> l=6; m=6
+julia> l=6; m=6;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
 
-julia> I = ideal(R, [x^l-1, y^m-1])
+julia> I = ideal(R, [x^l-1, y^m-1]);
 
-julia> S, _ = quo(R, I)
+julia> S, _ = quo(R, I);
 
-julia> A = S(x^3 + y + y^2)
+julia> A = S(x^3 + y + y^2);
 
-julia> B = S(y^3 + x + x^2)
+julia> B = S(y^3 + x + x^2);
 
 julia> c = BivariateBicycleCode(l, m, A, B);
 
