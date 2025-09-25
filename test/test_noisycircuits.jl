@@ -229,21 +229,48 @@
             #test for checking reset capabilities
             state1 = S"-Z"
             register1 = Register(state1, [0])
-            op1 = sMRZ(1,1)
-            verify1 = VerifyOp(state1, [1])
-            pet1 = petrajectories(register1, [op1,verify1])
+            reset_measure_z = sMRZ(1,1)
+            verify_z_neg = VerifyOp(state1, [1])
+            pet1 = petrajectories(register1, [reset_measure_z,verify_z_neg])
             @test pet1[false_success_stat] == 1
             @test pet1[true_success_stat] == 0
             @test pet1[failure_stat] == 0
 
             state2 = S"-X"
             register2 = Register(state2, [0])
-            op2 = sMRX(1,1)
-            verify2 = VerifyOp(state2, [1])
-            pet2 = petrajectories(register2, [op2,verify2])
+            reset_measure_x = sMRX(1,1)
+            verify_x_neg = VerifyOp(state2, [1])
+            pet2 = petrajectories(register2, [reset_measure_x,verify_x_neg])
             @test pet2[false_success_stat] == 1
             @test pet2[true_success_stat] == 0
             @test pet2[failure_stat] == 0
+
+            state3 = S"Z"
+            register3 = Register(state3, [0])
+            reset_measure_z = sMRZ(1,1)
+            verify_z = VerifyOp(state3, [1])
+            pet3 = petrajectories(register3, [reset_measure_z,verify_z])
+            @test pet3[false_success_stat] == 0
+            @test pet3[true_success_stat] == 1
+            @test pet3[failure_stat] == 0
+
+            state4 = S"X"
+            register4 = Register(state4, [0])
+            reset_measure_x = sMRX(1,1)
+            verify_x = VerifyOp(state4, [1])
+            pet4 = petrajectories(register4, [reset_measure_x,verify_x])
+            @test pet4[false_success_stat] == 0
+            @test pet4[true_success_stat] == 1
+            @test pet4[failure_stat] == 0
+
+            state_y = S"Y"
+            register_y = Register(state_y, [0])
+            reset_measure_y = sMRY(1,1)
+            verify_y = VerifyOp(state_y, [1])
+            pet_y = petrajectories(register_y, [reset_measure_y,verify_y])
+            @test pet_y[false_success_stat] == 0
+            @test pet_y[true_success_stat] == 1
+            @test pet_y[failure_stat] == 0
 
             #checks probabilstic case to see if the phase of measurement anticommuting stabilizer is the same in both branches
             ghz_state = S"XXX ZZI IZZ"
@@ -251,10 +278,27 @@
             branches = applybranches(reg, sMRZ(1,1))
             stab1 = stabilizerview(branches[2][1].stab)
             stab2 = stabilizerview(branches[1][1].stab)
-            canonicalize_rref!(stab1)
-            canonicalize_rref!(stab2)
-            @test phases(stab1)[end] == 0x00
-            @test phases(stab2)[end] == 0x00
+            @test stab1 == S"ZII -ZZI -ZIZ"
+            @test stab2 == S"ZII +ZZI +ZIZ"
+
+
+            #checking if the classical bits record measurements correctly
+            reg = Register(one(MixedDestabilizer,1), 1)
+            apply!(reg, sX(1))
+            branches1 = applybranches(reg, sMRZ(1,1))
+            reg_after, _, _, _ = first(branches1)
+            @test bitview(reg_after)[1] == true
+            # The qubit should have been reset to 0
+            branches2 = applybranches(reg_after, sMRZ(1,1))
+            r2, _, _, _ = first(branches2)
+            @test bitview(r2)[1] == false
+
+            #if the second argument(the bit where the measurement is recorded) isn't provided
+            state = S"-Z"
+            register5 = Register(state, 1)
+            branches = applybranches(register5, sMRZ(1)) #sMRZ(1) is internally sMRZ(1,0)
+            @test branches[1][1].bits[1] == false # since there's no bit provided for sMRZ, the bit should remain 0 even though the measurement would result in a 1. 
+
 
 
         end
@@ -333,15 +377,11 @@
 
     @testset "VerifyOp" begin
         using QuantumClifford.ECC: Steane7, parity_checks, naive_encoding_circuit
+        using QuantumClifford: tensor
         @testset "Stabilizer passed as good_state is not a logical state" begin
             good_state = parity_checks(Steane7()) #passing in a code instead of a state within codespace
-            verify = VerifyOp(good_state, 1:7)
-            reg = Register(one(MixedDestabilizer,7),6) #dummy register to pass into applywstatus!
-        
+            @test_throws ArgumentError VerifyOp(good_state, 1:7) #should throw an error since good_state isn't a logical state i.e. has only 6 stabilizer generators
             
-            @test_throws ArgumentError applywstatus!(reg, verify) #should throw an error since good_state isn't a logical state
-            
-    
         end
     
         @testset "Accepts pure good_state argument" begin
@@ -357,6 +397,19 @@
     
             _, status = applywstatus!(reg, verify)
             @test status == true_success_stat
+        end
+
+        @testset "handles sub-tableau with ancillas correctly " begin
+            s = S"+ XXX__
+            + ZZ___
+            + Z_Z__
+            - ZZ_Z_
+            - _ZZ_Z"
+            good_state = S"XXX ZZI IZZ"
+            verify = VerifyOp(good_state, 1:3)
+            _, status = applywstatus!(s, verify) 
+            @test status == true_success_stat #this test would have given a false_success_stat in the previous implementation of applywstatus! for VerifyOp
+
         end
     
       

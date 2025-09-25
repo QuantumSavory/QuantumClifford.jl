@@ -1,4 +1,4 @@
-@testitem "ECC LPCode representations of commutative algebras" tags=[:ecc] begin
+@testitem "ECC LPCode representations of commutative algebras" tags=[:ecc, :ecc_bespoke_checks] begin
     using Test
     using QuantumClifford
     using QuantumClifford.ECC

@@ -21,7 +21,7 @@ import QuantumClifford.ECC: iscss, parity_checks,
     two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes, check_repr_commutation_relation,
     haah_cubic_codes, honeycomb_color_codes, check_repr_regular_linear, random_qc_ghp_code_matrix_A
 
-import QECCore: AbstractECC, CSS,
+import QECCore: AbstractQECC, CSS, AbstractCSSCode,
     hgp, code_k, code_n, code_s, parity_matrix_x, parity_matrix_z, parity_matrix_xz
 
 import Random

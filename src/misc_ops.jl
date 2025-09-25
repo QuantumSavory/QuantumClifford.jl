@@ -128,20 +128,24 @@ end
 struct VerifyOp <: AbstractOperation
     good_state::Stabilizer
     indices::AbstractVector{Int}
-    VerifyOp(s,indices) = new(canonicalize_rref!(copy(stabilizerview(s)))[1],indices)
+    function VerifyOp(s, indices)
+        gs = canonicalize_rref!(copy(stabilizerview(s)))[1]
+        r,n = size(gs)
+        if(r!=n)
+            throw(ArgumentError(lazy"""The argument you have provided for good_state is not a logical state within the codespace. Expected a pure $n - qubit stabilizer state (i.e. $n independent stabilizer generators on $n qubits), but good_state has only $r independent stabilizer generators."""))
+        end
+        return new(gs, indices)
+    end
 end
 
 # TODO this one needs more testing
 function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
     # TODO QuantumClifford should implement some submatrix comparison
-    r,n = size(v.good_state)
-    if(r!=n)
-        throw(ArgumentError("""The argument you have provided for good_state is not a logical state within the codespace. Expected a pure $n - qubit stabilizer state (i.e. $n independent stabilizer generators on $n qubits), but good_state has only $r independent stabilizer generators."""))
-    end
-    canonicalize_rref!(quantumstate(s),v.indices) # Document why rref is used
-    sv = tab(s)
+    sv = traceout!(copy(quantumstate(s)), setdiff(1:nqubits(s),v.indices))
+    sv = stabilizerview(sv)
+    canonicalize_rref!(sv, v.indices)
+    sv = tab(sv)
     good_state = tab(v.good_state)
-    
     
     for i in eachindex(good_state)
         (sv.phases[end-i+1]==good_state.phases[end-i+1]) || return s, false_success_stat
