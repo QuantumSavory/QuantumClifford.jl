@@ -6,6 +6,7 @@ env:
 
 steps:
   - label: "Package Tests - {{matrix.LABEL}}"
+    name: "Package Tests - {{matrix.LABEL}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -94,6 +95,7 @@ steps:
             QC_GPU_TEST: "opencl"
 
   - label: "Downstream Tests - {{matrix.PACKAGE}}"
+    name: "Downstream Tests - {{matrix.PACKAGE}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
