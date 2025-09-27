@@ -1,4 +1,5 @@
 using QuantumClifford:Register, AbstractOperation, applywstatus!, PauliOperator
+import QuantumClifford:affectedqubits,affectedbits,applybranches
 """A type of Decision Gate that uses the decoder's lookup table to apply a correction gate based on the syndrome of the input register.
  Does not require an explicit decision function."""
 struct DecoderCorrectionGate <: AbstractOperation
