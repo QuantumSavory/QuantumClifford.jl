@@ -406,5 +406,5 @@ include("codes/qeccs_using_hecke.jl")
 
 # higher dimensional codes
 include("codes/qeccs_using_oscar.jl")
-
+include("correction_gate.jl")
 end #module
