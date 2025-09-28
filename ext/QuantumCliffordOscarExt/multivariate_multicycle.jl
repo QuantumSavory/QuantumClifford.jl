@@ -161,6 +161,7 @@ function parity_matrix_xz(c::MultivariateMulticycleCode; qubit_degree::Union{Not
     hx, hz = transpose(maps[k]), maps[k+1]
     return hx, hz
 end
+
 parity_matrix_x(c::MultivariateMulticycleCode) = parity_matrix_xz(c)[1]
 
 parity_matrix_z(c::MultivariateMulticycleCode) = parity_matrix_xz(c)[2]
