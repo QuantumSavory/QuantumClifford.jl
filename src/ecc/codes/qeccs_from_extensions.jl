@@ -18,6 +18,7 @@ const structs_implemented_in_extensions = [
     (:GeneralizedToricCode, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
     (:TrivariateTricycleCode, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
     (:BivariateBicycleCodeViaPoly, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
+    (:MultivariateMulticycleCode, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
 ]
 
 for (struct_name, extension_name, struct_docstring, deps) in structs_implemented_in_extensions

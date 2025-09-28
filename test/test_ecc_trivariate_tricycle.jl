@@ -53,7 +53,7 @@
             (1029, 18,  7, 7, 7, 1 + y^2*z^3   + x^5*y^5*z  , 1 + x^2*y^5*z + x^4*z^5    , 1 + x^4*y^6     + x^5*y^4*z^6),
         ]
 
-            table_vi = [
+        table_vi = [
             # n   , k  ,  ℓ, m, p, A                       , B                         ,   C
             (108  , 18 ,  4, 3, 3, (1 + x^2)*(1 + x*y*z^2) , (1 + x^2)*(1 + x^3*y^2*z) ,  1  + x^2*y^2*z^2      ),
             (108  , 60 ,  4, 3, 3, (1 + x^2)*(1 +       z) , (1 + x^2)*(1 + x^2*y*z^2) , (1  + x^2)*(1 + z^2)   )
@@ -77,6 +77,15 @@
             @test code_k(c) == k == code_k(stab)
             @test stab_looks_good(stab, remove_redundant_rows=true) == true
             @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
+            c = MultivariateMulticycleCode([ℓ, m, p], [A, B, C])
+            stab = parity_checks(c)
+            mat = matrix(GF(2), stab_to_gf2(stab))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            # A TT code is defined on n = 3*ℓ*m*p data qubits.
+            @test code_n(c) == n == code_n(stab) == 3*ℓ*m*p
+            @test code_k(c) == k == code_k(stab)
+            @test stab_looks_good(stab, remove_redundant_rows=true) == true
         end
     end
 end

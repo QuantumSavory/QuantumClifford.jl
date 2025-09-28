@@ -564,6 +564,45 @@ const code_instance_args = Dict(
     A_bb₅ = S_bb₅(x^3 + y^5 + y^6)
     B_bb₅ = S_bb₅(y^2 + x^3 + x^5)
 
+    # Multivariate Multicycle Codes
+    # t = 2; Bivariate Bicycle codes
+    # [[72, 12, 6]]
+    l_mm₁ =6; m_mm₁ = 6
+    R_mm₁, (x, y) = polynomial_ring(GF(2), [:x, :y])
+    I_mm₁ = ideal(R_mm₁, [x^l_mm₁-1, y^m_mm₁-1])
+    S_mm₁, _ = quo(R_mm₁, I_mm₁)
+    A_mm₁ = S_mm₁(x^3 + y + y^2)
+    B_mm₁ = S_mm₁(y^3 + x + x^2)
+
+    # [[90, 8, 10]]
+    l_mm₂ =15; m_mm₂ = 3
+    R_mm₂, (x, y) = polynomial_ring(GF(2), [:x, :y])
+    I_mm₂ = ideal(R_mm₂, [x^l_mm₂-1, y^m_mm₂-1])
+    S_mm₂, _ = quo(R_mm₂, I_mm₂)
+    A_mm₂ = S_mm₂(x^9 + y   + y^2)
+    B_mm₂ = S_mm₂(1   + x^2 + x^7)
+
+    # t = 3; Trivariate Tricycle codes
+    # [[60, 3, 4]]
+    ℓ_mm₃, m_mm₃, p_mm₃ = 5, 2, 2
+    F2_mm₃ = GF(2)
+    R_mm₃, (x, y, z) = polynomial_ring(F2_mm₃, [:x, :y, :z])
+    I_mm₃ = ideal(R_mm₃, [x^ℓ_mm₃ - 1, y^m_mm₃ - 1, z^p_mm₃ - 1])
+    S_mm₃, _ = quo(R_mm₃, I_mm₃)
+    A_mm₃ = S_mm₃(1 + x*z)
+    B_mm₃ = S_mm₃(1 + x*y)
+    C_mm₃ = S_mm₃(1 + x*y*z)   
+    
+    # [[90, 3, 5]]
+    ℓ_mm₄, m_mm₄, p_mm₄ = 5, 3, 2
+    F2_mm₄ = GF(2)
+    R_mm₄, (x, y, z) = polynomial_ring(F2_mm₄, [:x, :y, :z])
+    I_mm₄ = ideal(R_mm₄, [x^ℓ_mm₄ - 1, y^m_mm₄ - 1, z^p_mm₄ - 1])
+    S_mm₄, _ = quo(R_mm₄, I_mm₄)
+    A_mm₄ = S_mm₄(1 + x)
+    B_mm₄ = S_mm₄(1 + x*y)
+    C_mm₄ = S_mm₄(1 + x^2*y^2*z)
+
     oscar_code_instance_args = Dict(
         :DDimensionalSurfaceCode => [(2, 3), (3, 2), (3, 3), (4, 2)],
         :DDimensionalToricCode => [(2, 3), (3, 2), (3, 3), (4, 2)],
@@ -571,7 +610,8 @@ const code_instance_args = Dict(
         :HomologicalProductCode => [([H₁, transpose(H₁)], l₁), ([H₂, transpose(H₂)], l₂), ([H₃, transpose(H₃)],), ([δ₄, δ₄, δ₄],)],
         :DoubleHomologicalProductCode => [(δ₁,), (δ₂,)],
         :TrivariateTricycleCode => [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)],
-        :BivariateBicycleCodeViaPoly => [(l_bb₁, m_bb₁, A_bb₁, B_bb₁), (l_bb₂, m_bb₂, A_bb₂, B_bb₂), (l_bb₃, m_bb₃, A_bb₃, B_bb₃), (l_bb₄, m_bb₄, A_bb₄, B_bb₄), (l_bb₅, m_bb₅, A_bb₅, B_bb₅)]
+        :BivariateBicycleCodeViaPoly => [(l_bb₁, m_bb₁, A_bb₁, B_bb₁), (l_bb₂, m_bb₂, A_bb₂, B_bb₂), (l_bb₃, m_bb₃, A_bb₃, B_bb₃), (l_bb₄, m_bb₄, A_bb₄, B_bb₄), (l_bb₅, m_bb₅, A_bb₅, B_bb₅)],
+        :MultivariateMulticycleCode =>[([l_mm₁,m_mm₁], [A_mm₁, B_mm₁]), ([l_mm₂,m_mm₂], [A_mm₂, B_mm₂]), ([ℓ_mm₃, m_mm₃, p_mm₃], [A_mm₃, B_mm₃, C_mm₃]), ([ℓ_mm₄, m_mm₄, p_mm₄], [A_mm₄, B_mm₄, C_mm₄])]
     )
     merge!(code_instance_args, oscar_code_instance_args)
   end
