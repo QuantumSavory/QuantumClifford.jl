@@ -30,7 +30,7 @@ julia> A = S(x^3 + y^10 + y^17);
 
 julia> B = S(y^5 + x^3  + x^19);
 
-julia> c = MultivariateMulticycleCode([l,m], [A,B])
+julia> c = MultivariateMulticycleCode([l,m], [A,B]);
 
 julia> code_n(c), code_k(c)
 (756, 16)
