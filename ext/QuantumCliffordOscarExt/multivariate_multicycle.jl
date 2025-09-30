@@ -1,4 +1,3 @@
-
 """
 We introduce a novel class of quantum CSS codes — *Multivariate Multicycle* codes — constructed
 from multivariate polynomial quotient ring formalism over finite fields over GF(2). Our discovery establishes
@@ -120,7 +119,7 @@ function _polynomial_to_circulant_matrix(f::MPolyQuoRingElem, orders::Vector{Int
             exps = [degree(term, k) for k in 1:t]
             row_idx = 0
             for k in 1:t
-                row_idx = row_idx * orders[k] + mod(idxs[k] + exps[k], orders[k])
+                row_idx = row_idx*orders[k]+mod(idxs[k]+exps[k], orders[k])
             end
             M[row_idx+1, col_idx+1] += c
         end
@@ -139,7 +138,7 @@ function boundary_maps(code::MultivariateMulticycleCode)
         boundary_map = map(K, k)
         KoszulMatrix = matrix(boundary_map)
         nr, nc = size(KoszulMatrix)
-        M = zeros(Int, nr * N, nc * N)
+        M = zeros(Int, nr*N, nc*N)
         for i in 1:nr, j in 1:nc
             e = KoszulMatrix[i, j]
             !iszero(e) || continue
@@ -185,7 +184,7 @@ function metacheck_matrix_x(code::MultivariateMulticycleCode)
     maps = boundary_maps(code)
     t = length(code.orders)
     t ≥ 4 || throw(ArgumentError("X-metachecks require t ≥ 4 variables"))
-    qd = t ÷ 2
+    qd = t÷2
     return transpose(maps[qd+1])
 end
 
@@ -194,6 +193,6 @@ function metacheck_matrix_z(code::MultivariateMulticycleCode)
     maps = boundary_maps(code)
     t = length(code.orders)
     t ≥ 3 || throw(ArgumentError("Z-metachecks require t ≥ 3 variables"))
-    qd = t ÷ 2
+    qd = t÷2
     return maps[qd+2]
 end
