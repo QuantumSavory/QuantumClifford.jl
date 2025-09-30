@@ -19,7 +19,7 @@ import Oscar: free_group, small_group_identification, describe, order, FPGroupEl
     hnf_with_transform, ideal, intersect, ==, is_coprime, quo, groebner_basis, length, FqMPolyRingElem,
     first, MPolyQuoRingElem, FqMPolyRingElem, modulus, ideal, monomials, terms, coeff, degree, mod,
     monomial, exponent_vector, nvars, koszul_matrix
-
+import Oscar.koszul_complex
 import Oscar.Generic.MatSpaceElem
 import Oscar.Generic.DirectSumModule
 import Oscar.Generic.LaurentMPolyWrap

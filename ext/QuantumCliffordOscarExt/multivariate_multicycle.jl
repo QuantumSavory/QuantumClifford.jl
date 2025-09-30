@@ -9,7 +9,7 @@ corresponding circulant matrix derived from the code's defining relations. The *
 the framework for the boundary map construction, ensuring the commutativity properties essential for the code
 construction. This correspondence reveals that multivariate multicycle codes possess the structure of
 **Koszul complexes** with circulant coefficients. This family of codes generalizes the bivariate bicycle,
-trivariate tricycle ([TrivariateTricycleCode](@ref)), and tetravariate tetracycle codes and it enables
+trivariate tricycle ([`TrivariateTricycleCode`](@ref)), and tetravariate tetracycle codes and it enables
 full single shot decoding in both X and Z directions.
 
 # Special Cases 
@@ -17,6 +17,8 @@ full single shot decoding in both X and Z directions.
 ## t = 2: Bivariate bicycle codes
 
 ```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
 julia> l=21; m=18;
 
 julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
@@ -93,7 +95,7 @@ struct MultivariateMulticycleCode <: AbstractCSSCode
     function MultivariateMulticycleCode(orders::Vector{Int}, polys::Vector{<:MPolyQuoRingElem})
         length(orders) == length(polys) || throw(ArgumentError("Mismatch orders/polys"))
         all(x->x>0, orders) || throw(ArgumentError("All orders must be positive"))
-        length(orders) ≥ 2 || throw(ArgumentError("Need at least 2 variables to define an CSS code"))
+        length(orders) ≥ 2 || throw(ArgumentError("Need at least 2 variables to define a CSS code"))
         new(orders, collect(polys))
     end
 end
@@ -119,7 +121,7 @@ function _polynomial_to_circulant_matrix(f::MPolyQuoRingElem, orders::Vector{Int
             row_idx = 0
             for k in 1:t
                 row_idx = row_idx * orders[k] + mod(idxs[k] + exps[k], orders[k])
-            end 
+            end
             M[row_idx+1, col_idx+1] += c
         end
     end
@@ -130,38 +132,68 @@ function boundary_maps(code::MultivariateMulticycleCode)
     t = length(code.orders)
     N = prod(code.orders)
     circs = [_gf2_to_int(_polynomial_to_circulant_matrix(p, code.orders)) for p in code.polynomials]
-    maps = Vector{Matrix{Int}}(undef, t)
-    for k in 1:t
+    maps = Vector{Matrix{Int}}(undef, t+1)
+    for k in 0:t
         R, x = polynomial_ring(GF(2), ["x$i" for i in 1:t])
-        KoszulMatrix = koszul_matrix(x, k)
+        K = koszul_complex(x)
+        boundary_map = map(K, k)
+        KoszulMatrix = matrix(boundary_map)
         nr, nc = size(KoszulMatrix)
-        M = zeros(Int, nr*N, nc*N)
+        M = zeros(Int, nr * N, nc * N)
         for i in 1:nr, j in 1:nc
             e = KoszulMatrix[i, j]
             !iszero(e) || continue
             for idx in 1:t
-                e == x[idx] || continue
-                r = ((i-1)*N+1):(i*N)
-                c = ((j-1)*N+1):(j*N)
-                M[r, c] .= circs[idx]
-                break
+                if e == x[idx]
+                    row_range = ((i-1)*N+1):(i*N)
+                    col_range = ((j-1)*N+1):(j*N)
+                    M[row_range, col_range] .= circs[idx]
+                    break
+                end
             end
         end
-        maps[k] = M
+        maps[k+1] = M
+    end
+    for k in 1:t
+        if !isempty(maps[k]) && !isempty(maps[k+1])
+            @assert iszero(mod.(maps[k]*maps[k-1],2)) "Exactness check failed: ∂$(k-1)∘∂$k ≠ 0 mod 2"
+        end
     end
     return maps
 end
 
-function parity_matrix_xz(c::MultivariateMulticycleCode; qubit_degree::Union{Nothing,Int}=nothing)
-    maps = boundary_maps(c)
-    t = length(c.orders)
-    k = qubit_degree === nothing ? cld(t, 2) : qubit_degree
-    k >= 1 || throw(ArgumentError("qubit degree must be >= 1"))
-    (k+1) <= t || throw(ArgumentError("qubit degree too large for number of variables"))
-    hx, hz = transpose(maps[k]), maps[k+1]
+function parity_matrix_xz(code::MultivariateMulticycleCode)
+    maps = boundary_maps(code)
+    t = length(code.orders)
+    if t == 2
+        hx = maps[3]
+        hz = transpose(maps[2])
+    else
+        qd = t ÷ 2
+        hx = maps[qd+2]
+        hz = transpose(maps[qd+1])
+    end
     return hx, hz
 end
 
 parity_matrix_x(c::MultivariateMulticycleCode) = parity_matrix_xz(c)[1]
 
 parity_matrix_z(c::MultivariateMulticycleCode) = parity_matrix_xz(c)[2]
+
+"""For t ≥ 4, provides metachecks for X-stabilizers enabling single-shot decoding."""
+function metacheck_matrix_x(code::MultivariateMulticycleCode)
+    maps = boundary_maps(code)
+    t = length(code.orders)
+    t ≥ 4 || throw(ArgumentError("X-metachecks require t ≥ 4 variables"))
+    qd = t ÷ 2
+    return transpose(maps[qd+1])
+end
+
+"""For t ≥ 3, provides metachecks for Z-stabilizers enabling single-shot decoding."""
+function metacheck_matrix_z(code::MultivariateMulticycleCode)
+    maps = boundary_maps(code)
+    t = length(code.orders)
+    t ≥ 3 || throw(ArgumentError("Z-metachecks require t ≥ 3 variables"))
+    qd = t ÷ 2
+    return maps[qd+2]
+end
