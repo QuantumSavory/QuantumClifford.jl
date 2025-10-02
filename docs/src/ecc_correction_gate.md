@@ -11,6 +11,14 @@ end
 !!! warning "Unstable"
     This is experimental functionality with an unstable API.
 
+This example demonstrates the simulation of a noisy quantum circuit using perturbative expansions, where error correction is incorporated through a DecoderCorrectionGate. After encoding the Steane code and introducing noise, the decoder correction gate applies the most likely correction based on the measured syndrome, leading to a noticeable improvement in the logical success rate. This illustrates how perturbative expansion methods can be combined with error-correcting circuits to study performance under realistic noise.
+
+Some of the relevant structures and functions used in this code are:
+ - Register[@ref]
+ - TableDecoder[@ref]
+ - DecoderCorrectionGate[@ref] 
+ - petrajectories[@ref]
+
 Import with
 `using QuantumClifford.Experimental.NoisyCircuits` and `using QuantumClifford.ECC: DecoderCorrectionGate`
 
