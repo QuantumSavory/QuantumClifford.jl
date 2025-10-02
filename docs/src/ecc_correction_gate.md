@@ -52,7 +52,7 @@ We see that the true_success rate is pretty terrible.
 In order to improve this rate with the help of error correction, we can use the DecoderCorrectionGate:
 
 ```@example 1
-correction_gate = DecoderCorrectionGate(decoder, affected_qubits = 1:7, input_bits = 1:6) # guesses the most probable error correcting Pauli Operation based on the recorded syndrome
+correction_gate = DecoderCorrectionGate(decoder, data_qubits = 1:7, syndrome_bits = 1:6) # guesses the most probable error correcting Pauli Operation based on the recorded syndrome
 ```
 Let's include the correction gate in our list of circuit operations and place it after syndrome collection.
 ```@example 1
