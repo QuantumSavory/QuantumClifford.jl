@@ -1,7 +1,6 @@
 using QuantumClifford:Register, AbstractOperation, applywstatus!, PauliOperator
 import QuantumClifford:affectedqubits,affectedbits,applybranches
-"""A type of Decision Gate that uses the decoder's lookup table to apply a correction gate based on the syndrome of the input register.
- Does not require an explicit decision function."""
+"""A gate that uses a lookup table to apply a correction gate based on the syndrome of the input register."""
 struct DecoderCorrectionGate <: AbstractOperation
     decoder::AbstractSyndromeDecoder# just a function that maps inputbits to an operation on affectedqubits
     affected_qubits::Vector{Int}
@@ -10,11 +9,12 @@ struct DecoderCorrectionGate <: AbstractOperation
     function DecoderCorrectionGate(dec::AbstractSyndromeDecoder, affected_qubits, input_bits)
         qs = collect(Int, affected_qubits)
         bs = collect(Int, input_bits)
-        if length(qs)!=dec.n
-            throw(ArgumentError(lazy"Decoder expects $dec.n qubits, got $(length(affected_qubits))"))
+        bits, qubits = size(parity_checks(decoder))
+        if length(qs)!=qubits
+            throw(ArgumentError(lazy"Decoder expects $qubits qubits, got $(length(affected_qubits))"))
         end
-        if length(bs)!=dec.s
-            throw(ArgumentError(lazy"Decoder expects $dec.s qubits, got $(length(input_bits))"))
+        if length(bs)!=bits
+            throw(ArgumentError(lazy"Decoder expects $bits bits, got $(length(input_bits))"))
         end
         return new(dec, qs,bs)
     end
