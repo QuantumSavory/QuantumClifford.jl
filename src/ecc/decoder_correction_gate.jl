@@ -9,7 +9,7 @@ struct DecoderCorrectionGate <: AbstractOperation
     function DecoderCorrectionGate(dec::AbstractSyndromeDecoder, data_qubits, syndrome_bits)
         qs = collect(Int, data_qubits)
         bs = collect(Int, syndrome_bits)
-        bits, qubits = size(parity_checks(decoder))
+        bits, qubits = size(parity_checks(dec))
         if length(qs)!=qubits
             throw(ArgumentError(lazy"Decoder expects $qubits qubits, got $(length(data_qubits))"))
         end
@@ -22,6 +22,7 @@ end
 function QuantumClifford.apply!(state::Register, op::DecoderCorrectionGate)
   targets = op.data_qubits
   key = Vector{Bool}(state.bits[op.syndrome_bits])
+  all(iszero, key) && return state
   correction = decode(op.decoder, key)  
   correction === nothing && return state
   pauli_operator = PauliOperator(correction)
