@@ -71,8 +71,8 @@ end
 See also: [`pftrajectories`](@ref), [`mctrajectories`](@ref)"""
 function petrajectories(initialstate, circuit; branch_weight=1.0, max_order=1, keepstates::Bool=false)
     for circuit_op in circuit
-        if(maximum(affectedqubits(circuit_op)) > nqubits(initialstate))
-            throw(ArgumentError(lazy"""Qubit out of bounds for $circuit_op. Attempting to access a $(nqubits(initialstate)) qubit state at index $(maximum(affectedqubits(circuit_op)))"""))
+        if(_sentinel_maximum(_sentinel_affectedqubits(circuit_op)) > nqubits(initialstate))
+            throw(ArgumentError(lazy"""Qubit out of bounds for $circuit_op. Attempting to access a $(nqubits(initialstate)) qubit state at index $(_sentinel_maximum(_sentinel_affectedqubits(circuit_op)))"""))
         end
     end
     if keepstates
