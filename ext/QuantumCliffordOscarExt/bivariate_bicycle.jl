@@ -26,9 +26,9 @@ julia> I = ideal(R, [x^l-1, y^m-1]);
 
 julia> S, _ = quo(R, I);
 
-julia> A = S(1   + y^2 + y^4);
+julia> A = S(1 + y^2 + y^4);
 
-julia> B = S(y^3 + x   + x^2);
+julia> B = S(y^3 + x + x^2);
 
 julia> c = BivariateBicycleCode(l, m, A, B);
 
@@ -74,7 +74,7 @@ julia> S, _ = quo(R, I);
 
 julia> A = S(x^3 + y^10 + y^17);
 
-julia> B = S(y^5 + x^3  + x^19);
+julia> B = S(y^5 + x^3 + x^19);
 
 julia> c = BivariateBicycleCode(l, m, A, B);
 
