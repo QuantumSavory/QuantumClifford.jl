@@ -8,7 +8,7 @@ There is an injective ring homomorphism from ``R`` to ``\\mathbb{F}_2^{\\ell m \
 given by ``x \\mapsto S_\\ell \\otimes I_m`` and ``y \\mapsto I_k \\otimes S_m``,
 where ``S_k`` is the cyclic shift matrix of size ``k \\times k`` [eberhardt2024logical](@cite).
 
-This homomorphism allows us to work with in either the polynomial quotient ring
+This homomorphism allows us to work with either the polynomial quotient ring
 or explicit circulant matrix formulation. We implement the polynomial quotient ring formalism.
 
 #### Examples
@@ -155,9 +155,9 @@ function _bivariate_circulant(coeff_mat::Matrix{Int})
     for i₁ in 0:ℓ-1, j₁ in 0:m-1
         row_idx = i₁*m+j₁+1
         for i₂ in 0:ℓ-1, j₂ in 0:m-1
-            i_res = mod(i₁+i₂, ℓ)
-            j_res = mod(j₁+j₂, m)
-            col_idx = i_res*m+j_res + 1
+            i_mod = mod(i₁+i₂, ℓ)
+            j_mod = mod(j₁+j₂, m)
+            col_idx = i_mod*m+j_mod+1
             circ_mat[row_idx, col_idx] += coeff_mat[i₂+1, j₂+1]
         end
     end
