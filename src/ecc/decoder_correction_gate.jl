@@ -9,7 +9,7 @@ struct DecoderCorrectionGate <: AbstractOperation
     function DecoderCorrectionGate(dec::AbstractSyndromeDecoder, data_qubits, syndrome_bits)
         qs = collect(Int, data_qubits)
         bs = collect(Int, syndrome_bits)
-        bits, qubits = size(parity_checks(decoder))
+        bits, qubits = size(parity_checks(dec))
         if length(qs)!=qubits
             throw(ArgumentError(lazy"Decoder expects $qubits qubits, got $(length(data_qubits))"))
         end
