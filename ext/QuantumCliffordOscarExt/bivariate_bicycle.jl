@@ -105,6 +105,8 @@ julia> code_n(c), code_k(c)
 (128, 14)
 ```
 
+See also: [`GeneralizedCirculantBivariateBicycle`](@ref)
+
 ### Fields
     $TYPEDFIELDS
 """
