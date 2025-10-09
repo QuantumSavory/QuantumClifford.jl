@@ -735,4 +735,5 @@ and correct errors in ``\\mathbf{s}`` before proceeding with standard decoding. 
 technique is called *syndrome repair decoding* [Higgott_2023](@cite).
 """
 boundary_maps(c::DDimensionalSurfaceCode) = _boundary_maps_surface(c)
+
 boundary_maps(c::DDimensionalToricCode) = _boundary_maps_toric(c)

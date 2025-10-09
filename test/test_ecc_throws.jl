@@ -1,4 +1,4 @@
-@testitem "ECC throws" tags=[:ecc] begin
+@testitem "ECC throws" tags=[:ecc, :ecc_base] begin
 
     using Hecke
     using Hecke: group_algebra, GF, abelian_group, gens, one, representation_matrix
@@ -23,7 +23,7 @@
     @test_throws ArgumentError Golay(21)
 
     @test_throws ArgumentError Hamming(1)
-  
+
     @test_throws ArgumentError Triangular488(8)
     @test_throws ArgumentError Triangular488(1)
     @test_throws ArgumentError Triangular666(8)

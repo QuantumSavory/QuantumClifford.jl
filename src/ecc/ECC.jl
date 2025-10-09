@@ -41,7 +41,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     GeneralizedCirculantBivariateBicycle, GeneralizedHyperGraphProductCode,
     GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode,
     HomologicalProductCode, DoubleHomologicalProductCode,
-    GeneralizedToricCode,
+    GeneralizedToricCode, TrivariateTricycleCode,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
@@ -77,6 +77,10 @@ Return `nothing` if unknown from the type.
 """
 function iscss(::Type{T}) where T<:AbstractECC
     return false
+end
+
+function iscss(::Type{T}) where T <: AbstractCSSCode
+    return true
 end
 
 function iscss(c::AbstractECC)
