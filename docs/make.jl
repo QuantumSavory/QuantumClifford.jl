@@ -56,7 +56,7 @@ pages = [
     
 ],
 "ECC compendium" => [
-    "ECC perturb" => "ecc_correction_gate.md",
+    "ECC using Decoder Correction Gate" => "ecc_correction_gate.md",
     "Evaluating codes and decoders" => "ECC_evaluating.md",
     "API" => "ECC_API.md"
 ],
