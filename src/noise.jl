@@ -208,11 +208,3 @@ function applybranches(s::AbstractQCState, g::NoisyGate; max_order=1)
     news, _,_,_ = applybranches(s,g.gate,max_order=max_order)[1] # TODO this assumes only one always successful branch for the gate
     return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
 end
-
-function _sentinel_affectedqubits end
-QuantumClifford._sentinel_affectedqubits(x::Any) = QuantumClifford.affectedqubits(x)
-QuantumClifford._sentinel_affectedqubits(::QuantumClifford.NoiseOpAll) = missing
-
-function _sentinel_maximum end
-QuantumClifford._sentinel_maximum(x::Any) = maximum(x)
-QuantumClifford._sentinel_maximum(::Missing) = 0
