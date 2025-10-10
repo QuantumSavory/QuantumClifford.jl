@@ -257,7 +257,8 @@ L_M
 where ``L_M`` spans the cohomology group ``H^{i-1}``. However, if ``L_M`` is non-sparse
 (common in topological codes), decoding efficiency may suffer.
 
-!!! note The modified metacheck matrix ``M'`` is only employed when the initial decoding
+!!! note
+    The modified metacheck matrix ``M'`` is only employed when the initial decoding
     attempt yields an invalid syndrome (``z \\notin \\text{im}(H_X)``). This approach
     helps maintain decoder efficiency, particularly for topological codes where ``L_M`` is
     typically non-sparse. However, the overall performance of two-stage decoders remains
