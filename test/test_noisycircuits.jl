@@ -375,7 +375,7 @@
         end
 
         @testset "DecoderCorrectionGate" begin
-            using QuantumClifford.ECC: Steane7, parity_checks, naive_encoding_circuit, naive_syndrome_circuit, DecoderCorrectionGate
+            using QuantumClifford.ECC: Steane7, parity_checks, naive_encoding_circuit, naive_syndrome_circuit, DecoderCorrectionGate, TableDecoder
 
             code = parity_checks(Steane7())
             decoder = TableDecoder(code)
