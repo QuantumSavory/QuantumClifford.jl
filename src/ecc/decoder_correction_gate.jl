@@ -19,16 +19,18 @@ struct DecoderCorrectionGate <: AbstractOperation
         return new(dec, qs,bs)
     end
 end
+
 function QuantumClifford.apply!(state::Register, op::DecoderCorrectionGate)
-  targets = op.data_qubits
-  key = Vector{Bool}(state.bits[op.syndrome_bits])
-  all(iszero, key) && return state
-  correction = decode(op.decoder, key)  
-  correction === nothing && return state
-  pauli_operator = PauliOperator(correction)
-  apply!(state, pauli_operator, targets) 
-  return state
-end
+    targets = op.data_qubits
+    key = Vector{Bool}(state.bits[op.syndrome_bits])
+    all(iszero, key) && return state
+    correction = decode(op.decoder, key)  
+    correction === nothing && return state
+    pauli_operator = PauliOperator(correction)
+    apply!(state, pauli_operator, targets) 
+    return state
+    end
+
 applybranches(s::Register, op::DecoderCorrectionGate; max_order=1) = [(applywstatus!(copy(s),op)...,1,0)]
 
 affectedqubits(op::DecoderCorrectionGate) = op.data_qubits

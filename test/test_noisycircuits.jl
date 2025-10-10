@@ -375,6 +375,7 @@
         end
 
         @testset "DecoderCorrectionGate" begin
+            using QuantumClifford.ECC: Steane7
             code = parity_checks(Steane7())
             decoder = TableDecoder(code)
             ecirc = naive_encoding_circuit(code)
@@ -398,7 +399,6 @@
             mctrajectory!(new_reg, scirc)
             correction = DecoderCorrectionGate(decoder, 1:7, 1:6)
             branches = applybranches(new_reg,correction )
-            show(stabilizerview(branches[1][1].stab))
             _, status = applywstatus!(branches[1][1], verify)
             @test status == true_success_stat
 
