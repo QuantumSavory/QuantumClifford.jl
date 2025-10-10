@@ -123,7 +123,7 @@ abstract type AbstractDistanceAlg end
 Returns the `X`-metacheck matrix (``M_X = \\partial_{i-1}``) for a CSS code defined
 by a chain complex of length `l ≥ 4`, where qubits are placed on `i`-cells with
 ``1 < i < l−1``. This matrix acts on `X`-syndromes (measurement outcomes of `Z`-type
-stabilizers) and enforces the constraint ``M_Xs_X = 0``, ensuring syndromes are valid
+stabilizers) and enforces the constraint ``M_Xs_X = 0``, ensuring syndromes ``s_X`` are valid
 codewords of a classical *metacode*.
 
 !!! note
