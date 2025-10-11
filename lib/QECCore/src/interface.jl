@@ -143,11 +143,11 @@ C_4 \\xrightarrow{\\partial_4} C_3 \\xrightarrow{\\partial_3} C_2 \\xrightarrow{
 \\end{aligned}
 ```
 
-the metacheck matrix ``M_X = \\partial_1`` satisfies the following:
+the metacheck matrix ``M_X = \\partial_1`` obtained via [`metacheck_matrix_x`](@ref) satisfies the following:
 
 - Acts on X-syndromes: ``s_X \\in C_1``.
 - It enforces ``M_Xs_X = 0``, i.e. only valid syndromes lie in ``\\ker M_X``.
-- It satisfies the boundary condition ``M_XH_X = 0`` (i.e., ``\\partial_1 \\partial_2 = 0``).
+- It satisfies the boundary condition ``M_XH_X = 0`` (i.e., ``\\partial_1 \\partial_2 = 0``)  where ``H_Z`` and ``M_Z`` are obtained via [`parity_matrix_x`](@ref) and [`metacheck_matrix_x`](@ref) respectively.
 
 See also: [`metacheck_matrix_z`](@ref), [`metacheck_matrix`](@ref), [`parity_matrix_x`](@ref)
 """
@@ -178,11 +178,11 @@ C_4 \\xrightarrow{\\partial_4} C_3 \\xrightarrow{\\partial_3} C_2 \\xrightarrow{
 \\end{aligned}
 ```
 
-the metacheck matrix ``M_Z = \\partial_4`` satisfies the following:
+the metacheck matrix ``M_Z = \\partial_4`` obtained via [`metacheck_matrix_z`](@ref) satisfies the following:
 
 - Acts on Z-syndromes: ``s_Z \\in C_3``,
 - It enforces ``M_Z\\cdot_Z = 0``, i.e. only valid syndromes lie in ``\\ker M_Z``.
-- It satisfies the boundary condition ``H_Z^\\top \\cdot M_Z^\\top = 0`` (i.e., \\partial_3 \\partial_4 = 0``,
+- It satisfies the boundary condition ``H_Z^\\top \\cdot M_Z^\\top = 0`` (i.e., \\partial_3 \\partial_4 = 0``) where ``H_Z`` and ``M_Z`` are obtained via [`parity_matrix_z`](@ref) and [`metacheck_matrix_z`](@ref) respectively.
 
 See also: [`metacheck_matrix_x`](@ref), [`metacheck_matrix`](@ref), [`parity_matrix_z`](@ref)
 """
