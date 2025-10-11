@@ -7,7 +7,6 @@ QuantumClifford.ECC.DecoderCorrectionGate
 DocTestSetup = quote
     using QuantumClifford
     using QuantumClifford.ECC
-    using QuantumClifford.Experimental.NoisyCircuits
 end
 ``` 
 
@@ -21,14 +20,6 @@ Some of the relevant structures and functions used in this code are:
  - [`QuantumClifford.ECC.TableDecoder`](@ref)
  - [`QuantumClifford.ECC.DecoderCorrectionGate`](@ref)
  - [`petrajectories`](@ref)
-
-Import with
-`using QuantumClifford.Experimental.NoisyCircuits` and `using QuantumClifford.ECC: DecoderCorrectionGate`
-
-These imports enable the simulation of noisy circuits using the perturbative expansion method and error correction using the DecoderCorrectionGate
-
-Below is an example of this functionality in use:
-
 
 ```@example 1
 using QuantumClifford
