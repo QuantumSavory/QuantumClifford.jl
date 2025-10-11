@@ -412,8 +412,8 @@ Invalid syndromes in `ker M_X \\setminus im H_X` belong to the `(i−1)`-th homo
 
 !!! note
     A code can be designed to incorporate syndromes within a metacode by employing a chain complex
-    of minimum length three—sufficient for encoding either `X` or `Z` syndromes. If the goal is to
-    include both `X` and `Z` syndromes in the metacode, the chain complex must extend to at least
+    of minimum length three—sufficient for encoding either X or Z syndromes. If the goal is to
+    include both X and Z syndromes in the metacode, the chain complex must extend to at least
     length four [Higgott_2023](@cite).
 
 ### Metachecks in Higher-Dimensional Complexes
