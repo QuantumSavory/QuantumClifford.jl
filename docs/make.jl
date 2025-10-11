@@ -6,6 +6,9 @@ using DocumenterCitations
 using QuantumClifford
 using QuantumClifford.Experimental.NoisyCircuits
 using QuantumInterface
+using Pkg
+Pkg.develop(path=joinpath(@__DIR__, "..", "lib", "QECCore"))
+using QECCore
 
 ENV["HECKE_PRINT_BANNER"] = "false"
 import Hecke
@@ -31,7 +34,7 @@ doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
 format = Documenter.HTML(size_threshold_ignore = ["API.md"]),
-modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt],
+modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt, QECCore],
 warnonly = [:missing_docs],
 linkcheck = true,
 authors = "Stefan Krastanov",
