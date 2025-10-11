@@ -5,6 +5,13 @@ Modules = [QuantumClifford.ECC]
 Private = false
 ```
 
+## Implemented in the library requiring `QECCore.jl`
+
+```@autodocs
+Modules = [QECCore]
+Private = false
+```
+
 ## Implemented in an extension requiring `Hecke.jl`
 
 ```@autodocs
