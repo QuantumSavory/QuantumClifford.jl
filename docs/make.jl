@@ -6,7 +6,6 @@ using DocumenterCitations
 using QuantumClifford
 using QuantumClifford.Experimental.NoisyCircuits
 using QuantumInterface
-using QuantumClifford.ECC
 
 ENV["HECKE_PRINT_BANNER"] = "false"
 import Hecke
@@ -34,7 +33,7 @@ sitename = "QuantumClifford.jl",
 format = Documenter.HTML(size_threshold_ignore = ["API.md"]),
 modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt],
 warnonly = [:missing_docs],
-linkcheck = false,
+linkcheck = trues,
 authors = "Stefan Krastanov",
 pages = [
 "QuantumClifford.jl" => "index.md",
@@ -56,7 +55,6 @@ pages = [
     
 ],
 "ECC compendium" => [
-    "ECC using Decoder Correction Gate" => "ecc_correction_gate.md",
     "Evaluating codes and decoders" => "ECC_evaluating.md",
     "API" => "ECC_API.md"
 ],
