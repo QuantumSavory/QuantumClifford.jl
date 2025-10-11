@@ -414,4 +414,10 @@
     
       
     end
+    @testset "Petrajectories" begin
+        reg = Register(one(MixedDestabilizer,3),2) 
+        op = sCNOT(1,4)
+        circuit = [op]
+        @test_throws ArgumentError petrajectories(reg, circuit) # throws an error because sCNOT attemps to access a qubit that doesn't exist
+    end
 end
