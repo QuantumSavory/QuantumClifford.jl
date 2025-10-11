@@ -23,17 +23,23 @@ Some of the relevant structures and functions used in this code are:
 
 ```@example 1
 using QuantumClifford
-using QuantumClifford.ECC: Steane7, parity_checks, naive_encoding_circuit, naive_syndrome_circuit, TableDecoder, DecoderCorrectionGate
+using QuantumClifford.ECC: Steane7, parity_checks, naive_encoding_circuit, naive_syndrome_circuit, TableDecoder, DecoderCorrectionGate, code_n, code_s
+
 code = parity_checks(Steane7()) #creates the stabilizer tableau for the Steane code
-register = Register(one(MixedDestabilizer, 13), 6) # A register with 13 qubits, 7 data qubits and 6 ancillas
+data = code_n(code)
+checks = code_s(code)
+Qbits = data+checks
+register = Register(one(MixedDestabilizer, Qbits), checks) # A register with 13 qubits, 7 data qubits and 6 ancillas
 decoder = TableDecoder(code) # creates a decoder based on the Steane code
-noiseless_state = one(MixedDestabilizer, 7)
+
+noiseless_state = one(MixedDestabilizer, data)
 encoding_circuit = naive_encoding_circuit(code) #encodes the circuit as a state within the Steane codespace
 mctrajectory!(noiseless_state, encoding_circuit) # applies each gate in ecirc to noiseless_state
-syndrome_circuit,_,_ = naive_syndrome_circuit(code) # caputures the operations needed to extract the error syndrome
-verify = VerifyOp(noiseless_state, 1:7) # verifies the first 7 qubits of the register with the prepared state
+verify = VerifyOp(noiseless_state, 1:data) # verifies the first 7 qubits of the register with the prepared state
+
+syndrome_circuit,_,_ = naive_syndrome_circuit(code) # the operations needed to extract the error syndrome
 epsilon = 0.1
-noise = NoiseOp(UnbiasedUncorrelatedNoise(epsilon), (1:7)) # introduces noise into the circuit
+noise = NoiseOp(UnbiasedUncorrelatedNoise(epsilon), (1:data)) # introduces noise into the circuit
 
 circuit = vcat(encoding_circuit, noise, syndrome_circuit, verify) 
 ```
@@ -46,7 +52,7 @@ We see that the true_success rate is pretty terrible.
 In order to improve this rate with the help of error correction, we can use the DecoderCorrectionGate:
 
 ```@example 1
-correction_gate = DecoderCorrectionGate(decoder, 1:7, 1:6) # takes in the decoder, data qubits and syndrome bits as an input and guesses the most probable error correcting Pauli Operation based on the recorded syndrome
+correction_gate = DecoderCorrectionGate(decoder, 1:data, 1:checks) # takes in the decoder, data qubits and syndrome bits as an input and guesses the most probable error correcting Pauli Operation based on the recorded syndrome
 ```
 Let's include the correction gate in our list of circuit operations and place it after syndrome collection.
 ```@example 1
