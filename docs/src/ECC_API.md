@@ -5,7 +5,7 @@ Modules = [QuantumClifford.ECC]
 Private = false
 ```
 
-## Implemented in the library requiring `QECCore.jl`
+## The base library `QECCore.jl`
 
 ```@autodocs
 Modules = [QECCore]
