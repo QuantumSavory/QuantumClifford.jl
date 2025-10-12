@@ -6,8 +6,6 @@ using DocumenterCitations
 using QuantumClifford
 using QuantumClifford.Experimental.NoisyCircuits
 using QuantumInterface
-using Pkg
-Pkg.develop(path=joinpath(@__DIR__, "..", "lib", "QECCore"))
 using QECCore
 
 ENV["HECKE_PRINT_BANNER"] = "false"
