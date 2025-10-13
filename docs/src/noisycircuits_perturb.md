@@ -9,13 +9,10 @@ DocTestSetup = quote
 end
 ```
 
-!!! warning "Unstable"
-    This is experimental functionality with an unstable API.
-    
-Import with `using QuantumClifford.Experimental.NoisyCircuits`.
-
 This module enables the simulation of noisy Clifford circuits through a perturbative expansion in the noise parameter (assuming the noise is small).
-Instead of simulating many Monte Carlo trajectories, only the leading order trajectories are exhaustively enumerated and simulated.
+Instead of simulating many Monte Carlo trajectories, only the leading order trajectories are exhaustively enumerated and simulated, supporting even obtaining symbolic expressions for figures of merit.
+
+# Purification Circuit Example
 
 Here is an example of a purification circuit (the same circuit seen in the [Monte Carlo example](@ref noisycircuits_mc))
 
@@ -64,7 +61,7 @@ You can also consult the [list of implemented operators](@ref noisycircuits_ops)
 
 # Error Correction in Perturbative Expansion Simulations
 
-Here is an example that demonstrates the simulation of a noisy quantum circuit using perturbative expansions, where error correction is incorporated through a DecoderCorrectionGate. After encoding the Steane code and introducing noise, the decoder correction gate applies the most likely correction based on the measured syndrome, leading to a noticeable improvement in the logical success rate. This illustrates how perturbative expansion methods can be combined with error-correcting circuits to study performance under noise.
+Here is an example that demonstrates the simulation of a noisy quantum circuit using perturbative expansions, where error correction is incorporated through a `DecoderCorrectionGate`. After encoding the Steane code and introducing noise, the decoder correction gate applies the (hopefully) most likely correction based on the measured syndrome, leading to a noticeable improvement in the logical success rate. This illustrates how perturbative expansion methods can be combined with error-correcting circuits to study performance under noise.
 
 Some of the relevant structures and functions used in this code are:
  - [`Register`](@ref)
@@ -79,36 +76,40 @@ using QuantumClifford.ECC: Steane7, parity_checks, naive_encoding_circuit, naive
 code = parity_checks(Steane7()) #creates the stabilizer tableau for the Steane code
 data = code_n(code)
 checks = code_s(code)
-Qbits = data+checks
-register = Register(one(MixedDestabilizer, Qbits), checks) # A register with 13 qubits, 7 data qubits and 6 ancillas
+qbits = data+checks
+register = Register(one(MixedDestabilizer, qbits), checks) # A register with 13 qubits, 7 data qubits and 6 ancillas
 decoder = TableDecoder(code) # creates a decoder based on the Steane code
 
 noiseless_state = one(MixedDestabilizer, data)
-encoding_circuit = naive_encoding_circuit(code) #encodes the circuit as a state within the Steane codespace
+encoding_circuit = naive_encoding_circuit(code) # circuit to encode a state in the Steane codespace
 mctrajectory!(noiseless_state, encoding_circuit) # applies each gate in ecirc to noiseless_state
-verify = VerifyOp(noiseless_state, 1:data) # verifies the first 7 qubits of the register with the prepared state
+verify = VerifyOp(noiseless_state, 1:data) # prepare a "tomographic" verification operation, checking that the first 7 qubits of the register indeed form still the same code word
 
 syndrome_circuit,_,_ = naive_syndrome_circuit(code) # the operations needed to extract the error syndrome
 epsilon = 0.1
-noise = NoiseOp(UnbiasedUncorrelatedNoise(epsilon), (1:data)) # introduces noise into the circuit
+noise = NoiseOp(UnbiasedUncorrelatedNoise(epsilon), (1:data)) # an op that introduces noise into the circuit
 
 circuit = vcat(encoding_circuit, noise, syndrome_circuit, verify) 
 ```
+
 we can run perturbative expansions with [`petrajectories`](@ref).
+
 ```@example 1
 pet = petrajectories(register, circuit; max_order=3)
 pet
 ```
-We see that the true_success rate is pretty terrible.
-In order to improve this rate with the help of error correction, we can use the DecoderCorrectionGate:
+We see that the `true_success` rate is pretty terrible.
+In order to improve this rate with the help of error correction, we can use the `DecoderCorrectionGate`:
 
 ```@example 1
 correction_gate = DecoderCorrectionGate(decoder, 1:data, 1:checks) # takes in the decoder, data qubits and syndrome bits as an input and guesses the most probable error correcting Pauli Operation based on the recorded syndrome
 ```
+
 Let's include the correction gate in our list of circuit operations and place it after syndrome collection.
+
 ```@example 1
 circuit = vcat(encoding_circuit, noise, syndrome_circuit, correction_gate, verify) 
 pet = petrajectories(register, circuit; max_order=3)
 pet
 ```
-We can see that the true_success rate has gone up significantly.
+We can see that the `true_success` rate has gone up significantly.
