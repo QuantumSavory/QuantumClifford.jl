@@ -272,7 +272,7 @@
             @test pet_y[true_success_stat] == 1
             @test pet_y[failure_stat] == 0
 
-            #checks probabilstic case to see if the phase of measurement anticommuting stabilizer is the same in both branches
+            #checks probabilistic case to see if the phase of measurement anticommuting stabilizer is the same in both branches
             ghz_state = S"XXX ZZI IZZ"
             reg = Register(ghz_state, [0])
             branches = applybranches(reg, sMRZ(1,1))
@@ -413,5 +413,11 @@
         end
     
       
+    end
+    @testset "Petrajectories" begin
+        reg = Register(one(MixedDestabilizer,3),2) 
+        op = sCNOT(1,4)
+        circuit = [op]
+        @test_throws ArgumentError petrajectories(reg, circuit) # throws an error because sCNOT attempts to access a qubit that doesn't exist
     end
 end
