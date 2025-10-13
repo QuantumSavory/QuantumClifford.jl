@@ -1,5 +1,6 @@
 using QuantumClifford:Register, AbstractOperation, applywstatus!, PauliOperator
 import QuantumClifford:affectedqubits,affectedbits,applybranches
+
 """Applies a Pauli correction on the `data_qubits` determined by the `decoder` using the corresponding `syndrome_bits` from the classical register."""
 struct DecoderCorrectionGate <: AbstractOperation
     decoder::AbstractSyndromeDecoder# just a function that maps inputbits to an operation on affectedqubits
@@ -29,7 +30,7 @@ function QuantumClifford.apply!(state::Register, op::DecoderCorrectionGate)
     pauli_operator = PauliOperator(correction)
     apply!(state, pauli_operator, targets) 
     return state
-    end
+end
 
 applybranches(s::Register, op::DecoderCorrectionGate; max_order=1) = [(applywstatus!(copy(s),op)...,1,0)]
 

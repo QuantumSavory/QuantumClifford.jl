@@ -402,9 +402,6 @@
             branches = applybranches(new_reg,correction )
             _, status = applywstatus!(branches[1][1], verify)
             @test status == true_success_stat
-
-
-
         end
     end
 
