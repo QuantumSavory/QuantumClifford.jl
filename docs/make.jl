@@ -33,7 +33,7 @@ sitename = "QuantumClifford.jl",
 format = Documenter.HTML(size_threshold_ignore = ["API.md"]),
 modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt],
 warnonly = [:missing_docs],
-linkcheck = trues,
+linkcheck = true,
 authors = "Stefan Krastanov",
 pages = [
 "QuantumClifford.jl" => "index.md",
@@ -51,8 +51,7 @@ pages = [
     "Perturbative Expansions" => "noisycircuits_perturb.md",
     "ECC example" => "ecc_example_sim.md",
     "Circuit Operations" => "noisycircuits_ops.md",
-    "API" => "noisycircuits_API.md",
-    
+    "API" => "noisycircuits_API.md"
 ],
 "ECC compendium" => [
     "Evaluating codes and decoders" => "ECC_evaluating.md",
