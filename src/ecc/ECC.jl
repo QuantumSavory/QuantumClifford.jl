@@ -393,7 +393,6 @@ end
 
 include("circuits.jl")
 include("decoder_pipeline.jl")
-include("decoder_correction_gate.jl")
 include("codes/util.jl")
 
 include("codes/concat.jl")
