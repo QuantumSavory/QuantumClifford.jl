@@ -373,6 +373,36 @@
             canonicalize!(quantumstate(r))
             @test stabilizerview(r) == expectedFinalState
         end
+
+        @testset "DecoderCorrectionGate" begin
+            using QuantumClifford.ECC: Steane7, parity_checks, naive_encoding_circuit, naive_syndrome_circuit, DecoderCorrectionGate, TableDecoder
+
+            code = parity_checks(Steane7())
+            decoder = TableDecoder(code)
+            ecirc = naive_encoding_circuit(code)
+            scirc,_,_ = naive_syndrome_circuit(code)
+            state = one(MixedDestabilizer,7)
+            mctrajectory!(state, ecirc)
+            verify = VerifyOp(state, 1:7)
+
+            reg = Register(one(MixedDestabilizer,13),6)
+            mctrajectory!(reg, ecirc)
+            apply!(reg, sX(2))
+            mctrajectory!(reg, scirc)
+            correction_gate = DecoderCorrectionGate(decoder, 1:7, 1:6)
+            apply!(reg, correction_gate)
+            _, status = applywstatus!(reg, verify) 
+            @test status == true_success_stat
+
+            new_reg = Register(one(MixedDestabilizer,13),6)
+            mctrajectory!(new_reg, ecirc)
+            apply!(new_reg, sZ(5))
+            mctrajectory!(new_reg, scirc)
+            correction = DecoderCorrectionGate(decoder, 1:7, 1:6)
+            branches = applybranches(new_reg,correction )
+            _, status = applywstatus!(branches[1][1], verify)
+            @test status == true_success_stat
+        end
     end
 
     @testset "VerifyOp" begin
