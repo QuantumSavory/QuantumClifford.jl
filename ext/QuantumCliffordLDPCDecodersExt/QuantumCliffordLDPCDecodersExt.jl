@@ -44,12 +44,11 @@ struct BPOTSDecoder <: AbstractSyndromeDecoder
 end
 
 function BPOTSDecoder(c; errorrate=nothing, maxiter=nothing, T=9, C=2.0)
-    # Get stabilizer matrices
+    
     Hx_raw = parity_checks_x(c)
     Hz_raw = parity_checks_z(c)
     H_raw = parity_checks(c)
 
-    # Convert to proper matrices
     if H_raw isa Stabilizer
         H_gf2 = stab_to_gf2(H_raw)
         H = sparse(Bool.(H_gf2))
@@ -57,7 +56,6 @@ function BPOTSDecoder(c; errorrate=nothing, maxiter=nothing, T=9, C=2.0)
         H = sparse(Bool.(H_raw))
     end
     
-    # Convert X and Z matrices
     if Hx_raw isa Stabilizer
         Hx_gf2 = stab_to_gf2(Hx_raw)
         Hz_gf2 = stab_to_gf2(Hz_raw)
@@ -68,46 +66,32 @@ function BPOTSDecoder(c; errorrate=nothing, maxiter=nothing, T=9, C=2.0)
         Hz = sparse(Bool.(Hz_raw))
     end
     
-    # Get dimensions
     s, n = size(H)
-    
-    # For quantum codes, determine k
-    if c isa Toric || c isa Surface
-        k = c isa Toric ? 2 : 1
-    else
-        k = n - s
-    end
+    k = code_k(c)
     
     cx = size(Hx, 1)
     cz = size(Hz, 1)
     
-    # Create fault matrix
     fm = BitMatrix(ones(Bool, s, 2*n))
     
-    # Create decoders
     errorrate = something(errorrate, 0.0)
     maxiter = something(maxiter, 200)
     bpots_x = LDPCDecoders.BPOTSDecoder(Hx, errorrate, maxiter; T=T, C=C)
     bpots_z = LDPCDecoders.BPOTSDecoder(Hz, errorrate, maxiter; T=T, C=C)
 
-    # Pass the original code object as the first parameter
     return BPOTSDecoder(c, H, fm, n, s, k, cx, cz, bpots_x, bpots_z)
 end
 
 function decode(d::BPOTSDecoder, syndrome_sample::AbstractVector{Bool})
-    # Validate input size
     length(syndrome_sample) == d.cx + d.cz || 
         throw(DimensionMismatch("Syndrome length ($(length(syndrome_sample))) does not match expected size ($(d.cx + d.cz))"))
-    
-    # Split syndrome
+
     row_x = @view syndrome_sample[1:d.cx]
     row_z = @view syndrome_sample[d.cx+1:d.cx+d.cz]
-    
-    # Decode both parts
+
     guess_z, conv_z = LDPCDecoders.decode!(d.bpots_x, Vector(row_x))
     guess_x, conv_x = LDPCDecoders.decode!(d.bpots_z, Vector(row_z))
-    
-    # Return combined X and Z errors
+
     return vcat(guess_x, guess_z)
 end
 
@@ -146,12 +130,14 @@ function BitFlipDecoder(c; errorrate=nothing, maxiter=nothing)
     errorrate = isnothing(errorrate) ? 0.0 : errorrate
     maxiter = isnothing(maxiter) ? n : maxiter
     bfz = LDPCDecoders.BitFlipDecoder(Hz, errorrate, maxiter)
+    bfx = LDPCDecoders.BitFlipDecoder(Hx, errorrate, maxiter)
 
     return BitFlipDecoder(H, fm, n, s, k, cx, cz, bfx, bfz)
 end
 
 parity_checks(d::BeliefPropDecoder) = d.H
 parity_checks(d::BitFlipDecoder) = d.H
+parity_checks(d::BPOTSDecoder) = d.H
 
 function decode(d::BeliefPropDecoder, syndrome_sample)
     row_x = @view syndrome_sample[1:d.cx]
