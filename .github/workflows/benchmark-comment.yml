@@ -23,10 +23,10 @@ jobs:
       ${{ github.event.workflow_run.event == 'pull_request' &&
           github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # restore records from the artifacts
-      - uses: dawidd6/action-download-artifact@v8
+      - uses: dawidd6/action-download-artifact@v11
         with:
           workflow: benchmark.yml
           name: performance-tracking

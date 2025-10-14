@@ -11,14 +11,15 @@ jobs:
     #runs-on: self-hosted
     steps:
       # setup
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: julia-actions/setup-julia@latest
         with:
           version: '1.10'
+      - run: |
+          julia --project=@. -e 'using Pkg; Pkg.develop(path=joinpath(dirname(@__DIR__), "QuantumClifford.jl", "lib", "QECCore"))'
       - uses: julia-actions/julia-buildpkg@latest
       - name: install dependencies
         run: julia -e 'using Pkg; pkg"add PkgBenchmark BenchmarkCI@0.1"'
-
       # run the benchmark suite
       - name: run benchmarks
         run: |

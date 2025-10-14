@@ -3,14 +3,14 @@ env:
   JULIA_NUM_THREADS: auto
   PYTHON: ""
   PYCALL_DEBUG_BUILD: yes
-  
+
 steps:
-  - label: "Package Tests CI on Buildkite"
+  - label: "Package Tests - {{matrix.LABEL}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
       - QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-test#v1:
       - JuliaCI/julia-coverage#v1:
           codecov: true
     command:
@@ -18,21 +18,94 @@ steps:
       - julia --project='~' -e '
         using Pkg;
         pkg"dev .";'
-  - label: "Downstream Breakage CI on Buildkite"
+    env:
+      JET_TEST: "{{matrix.JET_TEST}}"
+      QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
+      QC_GPU_TEST: "{{matrix.QC_GPU_TEST}}"
+    agents:
+      queue: "{{matrix.QUEUE}}"
+    matrix:
+      setup:
+        LABEL: ["base tests"]
+        QUEUE: ["default"]
+        JET_TEST: ["false"]
+        QC_ECC_TEST: ["false"]
+        QC_GPU_TEST: ["false"]
+      adjustments:
+        - with:
+            LABEL: "JET"
+            QUEUE: default
+            JET_TEST: true
+            QC_ECC_TEST: false
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Base"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "base"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Encoding"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "encoding"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Decoding"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "decoding"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Syndrome Measurement"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "syndromemeasurement"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Syndrome Circuit"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "syndromecircuit"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Bespoke"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "bespoke"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "GPU - CUDA"
+            QUEUE: cuda
+            JET_TEST: false
+            QC_ECC_TEST: false
+            QC_GPU_TEST: "cuda"
+        - with:
+            LABEL: "GPU - ROCm"
+            QUEUE: rocm
+            JET_TEST: false
+            QC_ECC_TEST: false
+            QC_GPU_TEST: "rocm"
+        - with:
+            LABEL: "GPU - OpenCL"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: false
+            QC_GPU_TEST: "opencl"
+
+  - label: "Downstream Tests - {{matrix.PACKAGE}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
       - QuantumSavory/julia-xvfb#v1:
     command:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
+      - julia --project=$(mktemp -d) -e '
         using Pkg;
-        pkg"dev .";'
-      - julia --project='~' -e '
-        using Pkg;
-        Pkg.add("QuantumSavory");
-        Pkg.build("QuantumSavory");
-        Pkg.test("QuantumSavory");
-        Pkg.add("BPGates");
-        Pkg.build("BPGates");
-        Pkg.test("BPGates");'
+        pkg"dev .";
+        Pkg.add("{{matrix.PACKAGE}}");
+        Pkg.build("{{matrix.PACKAGE}}");
+        Pkg.test("{{matrix.PACKAGE}}");'
+    matrix:
+      setup:
+        PACKAGE: ["QuantumSavory", "BPGates", "QuantumSymbolics"]

@@ -23,18 +23,25 @@
         @testset "Constructors" begin
             @test_throws DimensionMismatch CliffordOperator(T"X")
         end
+        @testset "Constructor from PauliOperator" begin
+            for n in test_sizes
+                l = random_clifford(n)
+                pauli = random_pauli(n)
+                @test apply!(copy(l), pauli; phases=true) == apply!(l, CliffordOperator(pauli); phases=true)
+            end
+        end
         @testset "Permutations of qubits" begin
             for c in [tCNOT, tId1⊗tHadamard, tCNOT⊗tCNOT, tensor_pow(tCNOT,6), tensor_pow(tCNOT,7), tensor_pow(tCNOT,6)⊗tPhase, tensor_pow(tCNOT,7)⊗tPhase]
                 for rep in 1:5
                     p = randperm(nqubits(c))
                     s = random_stabilizer(nqubits(c))
-                    @test permute(c,p)*s[:,p] == (c*s)[:,p]
+                    @test permutesystems(c,p)*s[:,p] == (c*s)[:,p]
                 end
             end
             for i in 1:5
                 p = randperm(125)
                 c = rand([tId1, tHadamard, tPhase], 125)
-                @test ⊗(c[p]...) == permute(⊗(c...), p)
+                @test ⊗(c[p]...) == permutesystems(⊗(c...), p)
             end
         end
         @testset "Tensor products" begin

@@ -1,4 +1,4 @@
-@testitem "ECC Syndromes" begin
+@testitem "ECC Syndromes" tags=[:ecc, :ecc_syndrome_circuit_equivalence] begin
     using QuantumClifford: mul_left!, embed
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
@@ -63,7 +63,7 @@
     end
 
     @testset "naive and shor measurement circuits" begin
-        for (i,c) in enumerate(all_testablable_code_instances())
+        for (i,c) in enumerate(all_testable_code_instances())
             pframe_naive_vs_shor_syndrome(c)
         end
     end
