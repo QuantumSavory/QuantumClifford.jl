@@ -19,8 +19,5 @@ QuantumInterface = "5717a53b-5d69-4fa3-b976-0bf2f97ca1e5"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 
-[workspace]
-projects = ["..", "../lib/QECCore"]
-
 [extras]
 CPUSummary = "2a0fbf3d-bb9c-48f3-b0a9-814d99fd7ab9"
