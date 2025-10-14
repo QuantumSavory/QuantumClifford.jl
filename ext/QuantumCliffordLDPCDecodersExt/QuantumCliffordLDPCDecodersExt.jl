@@ -30,6 +30,24 @@ struct BitFlipDecoder <: AbstractSyndromeDecoder # TODO all these decoders have 
     bfdecoderz
 end
 
+"""
+    BPOTSDecoder(code; errorrate=nothing, maxiter=nothing, T=9, C=2.0)
+
+BP-OTS (Belief Propagation with Oscillating Trapping Sets) decoder for quantum LDPC codes.
+This decoder uses oscillation tracking and biasing to escape trapping sets.
+
+# Arguments
+- `code`: A quantum code (e.g., Toric, Surface)
+- `errorrate`: Physical error rate (depolarizing probability)
+- `maxiter`: Maximum number of iterations (default: 200)
+- `T`: Biasing period (default: 9)
+- `C`: Bias constant (default: 2.0)
+
+# Reference
+Chytas et al., "Enhanced Message-Passing Decoding of Degenerate Quantum Codes 
+Utilizing Trapping Set Dynamics", IEEE Communications Letters, 2024
+"""
+
 struct BPOTSDecoder <: AbstractSyndromeDecoder
     original_code       
     H::SparseMatrixCSC{Bool,Int}
