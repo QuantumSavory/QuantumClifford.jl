@@ -34,7 +34,7 @@ export parity_checks, parity_checks_x, parity_checks_z, iscss,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
-    BeliefPropDecoder, BitFlipDecoder,
+    BeliefPropDecoder, BitFlipDecoder, BPOTSDecoder,
     PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder
 
 """Parity check tableau of a code.
