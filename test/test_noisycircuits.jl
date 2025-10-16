@@ -315,7 +315,7 @@
     end
 
     @testset "Classical Bits" begin
-        @testset "DecisionGate" begin
+        @testset "IndexedDecisionGate" begin
             X_error = CliffordOperator([P"X", P"-Z"])
             # testing single digit return value from decision function
             for s in [S"Z", S"-Z", S"X", S"-X", S"Y", S"-Y"]
@@ -323,7 +323,7 @@
                 applywstatus!(r, PauliMeasurement(P"Z", 1))
                 correctiveGate = SparseGate(X_error, [1])
                 decisionFunction = syndrome -> syndrome[1] ? 1 : nothing
-                applywstatus!(r, DecisionGate([correctiveGate], decisionFunction))
+                applywstatus!(r, IndexedDecisionGate([correctiveGate], decisionFunction))
                 @test stabilizerview(r) == S"Z"
             end
 
@@ -335,7 +335,7 @@
             applywstatus!(r, PauliMeasurement(P"ZI", 1))
             correctiveGates = [SparseGate(X_error, [1]), SparseGate(X_error, [2])]
             decisionFunction = syndrome -> syndrome[1] ? [1,2] : nothing
-            applywstatus!(r, DecisionGate(correctiveGates, decisionFunction))
+            applywstatus!(r, IndexedDecisionGate(correctiveGates, decisionFunction))
             canonicalize!(quantumstate(r))
             @test stabilizerview(r) == expectedFinalState
 
@@ -344,7 +344,7 @@
             applywstatus!(r, sMZ(1, 1))
             # we use the same corrective gates, with a different decision function
             decisionFunction = syndrome -> syndrome[1] ? [1] : 2 # both [1] and 1 should work
-            applywstatus!(r, DecisionGate(correctiveGates, decisionFunction))
+            applywstatus!(r, IndexedDecisionGate(correctiveGates, decisionFunction))
             canonicalize!(quantumstate(r))
             @test stabilizerview(r) == expectedFinalState
         end

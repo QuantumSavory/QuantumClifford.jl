@@ -114,14 +114,14 @@ It can be done anywhere in a circuit, not just at the beginning.
 
 [`ConditionalGate`](@ref) is a conditional gate that performs one of two provided gates, depending on the value of a given classical bit.
 
-[`DecisionGate`](@ref) is a conditional gate that performs one of the supplied `gates`, depending on the output of `decisionfunction` applied to the entire classical bit register.
+[`IndexedDecisionGate`](@ref) is a conditional gate that performs one of the supplied `gates`, depending on the output of `decisionfunction` applied to the entire classical bit register.
 
 ```@example 1
 gate1 = SparseGate(tCNOT,   [1,2])
 gate2 = sCPHASE(1,2)
 gate3 = SparseGate(tSWAP,   [1,3])
 cg = ConditionalGate(gate1, gate2, 2)
-dg = DecisionGate([gate1,gate2,gate3], bit_register->1) # it will always perform gate1
+dg = IndexedDecisionGate([gate1,gate2,gate3], bit_register->1) # it will always perform gate1
 [sMX(4,1), sMZ(5,2), cg, dg]
 ```
 

@@ -10,7 +10,7 @@ using Combinatorics: combinations
 using Base.Cartesian
 
 export NoisyBellMeasurement,
-       DecisionGate, ConditionalGate
+       IndexedDecisionGate, ConditionalGate
 
 #TODO all these structs should use specified types
 #TODO all of the methods should better specified type signatures
@@ -31,7 +31,7 @@ struct ConditionalGate <: AbstractOperation
 end
 
 """A conditional gate that performs one of the `gates`, depending on the output of `decisionfunction` applied to the entire classical bit register."""
-struct DecisionGate <: AbstractOperation
+struct IndexedDecisionGate <: AbstractOperation
     gates::AbstractVector{AbstractOperation}
     decisionfunction
 end
@@ -75,7 +75,7 @@ function QuantumClifford.apply!(state::Register, op::ConditionalGate)
     return state
 end
 
-function QuantumClifford.apply!(state::Register, op::DecisionGate)
+function QuantumClifford.apply!(state::Register, op::IndexedDecisionGate)
     decision = op.decisionfunction(state.bits)
     if !isnothing(decision)
         for i in 1:length(decision)
@@ -86,10 +86,10 @@ function QuantumClifford.apply!(state::Register, op::DecisionGate)
 end
 
 applybranches(s::Register, op::ConditionalGate; max_order=1) = [(applywstatus!(copy(s),op)...,1,0)]
-applybranches(s::Register, op::DecisionGate; max_order=1) = [(applywstatus!(copy(s),op)...,1,0)]
+applybranches(s::Register, op::IndexedDecisionGate; max_order=1) = [(applywstatus!(copy(s),op)...,1,0)]
 
 affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
 affectedqubits(d::ConditionalGate) = union(affectedqubits(d.truegate), affectedqubits(d.falsegate))
-affectedqubits(d::DecisionGate) = [(union(affectedqubits.(d.gates))...)...]
+affectedqubits(d::IndexedDecisionGate) = [(union(affectedqubits.(d.gates))...)...]
 
 end
