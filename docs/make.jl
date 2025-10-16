@@ -6,6 +6,7 @@ using DocumenterCitations
 using QuantumClifford
 using QuantumClifford.Experimental.NoisyCircuits
 using QuantumInterface
+using QuantumClifford.ECC
 
 ENV["HECKE_PRINT_BANNER"] = "false"
 import Hecke

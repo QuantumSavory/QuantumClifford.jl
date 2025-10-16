@@ -99,7 +99,7 @@ pet = petrajectories(register, circuit; max_order=3)
 pet
 ```
 We see that the `true_success` rate is pretty terrible.
-In order to improve this rate with the help of error correction, we can use the `DecoderCorrectionGate`:
+In order to improve this rate with the help of error correction, we can use the [`DecoderCorrectionGate`](@ref):
 
 ```@example 1
 correction_gate = DecoderCorrectionGate(decoder, 1:data, 1:checks) # takes in the decoder, data qubits and syndrome bits as an input and guesses the most probable error correcting Pauli Operation based on the recorded syndrome
