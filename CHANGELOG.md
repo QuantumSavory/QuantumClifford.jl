@@ -6,7 +6,7 @@
 # News
 
 ## v0.10.1-dev
-
+- **(fix)** The classical `LiftedCode` constructor had method errors in `parity_checks`, `code_n`, and `code_s`.
 - **(fix)** `canonicalize_gott!` now properly supports non-UInt64 types.
 - The `TrivariateTricycleCode` is implemented using a novel realization via `Oscar.jl`'s multivariate polynomial quotient ring formalism in the ECC submodule.
 - The `GeneralizedToricCode` on twisted tori via `Oscar.jl`'s Laurent polynomials is now implemented in the ECC submodule.
