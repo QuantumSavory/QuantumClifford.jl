@@ -48,7 +48,6 @@ This decoder uses oscillation tracking and biasing to escape trapping sets.
 Chytas et al., "Enhanced Message-Passing Decoding of Degenerate Quantum Codes 
 Utilizing Trapping Set Dynamics", IEEE Communications Letters, 2024
 """
-
 struct BPOTSDecoder <: AbstractSyndromeDecoder
     original_code       
     H::SparseMatrixCSC{Bool,Int}
@@ -148,8 +147,8 @@ function BitFlipDecoder(c; errorrate=nothing, maxiter=nothing)
     isnothing(errorrate) || 0≤errorrate≤1 || error(lazy"BitFlipDecoder got an invalid error rate argument. `errorrate` must be in the range [0, 1].")
     errorrate = isnothing(errorrate) ? 0.0 : errorrate
     maxiter = isnothing(maxiter) ? n : maxiter
-    bfz = LDPCDecoders.BitFlipDecoder(Hz, errorrate, maxiter)
     bfx = LDPCDecoders.BitFlipDecoder(Hx, errorrate, maxiter)
+    bfz = LDPCDecoders.BitFlipDecoder(Hz, errorrate, maxiter)
 
     return BitFlipDecoder(H, fm, n, s, k, cx, cz, bfx, bfz)
 end
