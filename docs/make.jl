@@ -7,6 +7,7 @@ using QuantumClifford
 using QuantumClifford.Experimental.NoisyCircuits
 using QuantumInterface
 using QECCore
+using QuantumClifford.ECC
 
 ENV["HECKE_PRINT_BANNER"] = "false"
 import Hecke
@@ -46,7 +47,7 @@ pages = [
     "Datastructure Choice" => "datastructures.md",
     "Useful States" => "commonstates.md",
 ],
-"Noisy Circuits" => [
+"Circuit Simulation" => [
     "Simulation of Noisy Circuits" => "noisycircuits.md",
     "Monte Carlo" => "noisycircuits_mc.md",
     "Perturbative Expansions" => "noisycircuits_perturb.md",
@@ -55,7 +56,7 @@ pages = [
     "API" => "noisycircuits_API.md"
 ],
 "ECC compendium" => [
-    "Evaluating codes and decoders" => "ECC_evaluating.md"
+    "Evaluating codes and decoders" => "ECC_evaluating.md",
     "API" => "ECC_API.md"
 ],
 "All Gates" => "allops.md",

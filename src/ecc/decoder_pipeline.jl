@@ -245,8 +245,6 @@ parity_checks(d::TableDecoder) = d.H
 function create_lookup_table(code::Stabilizer)
     lookup_table = Dict{Vector{Bool},Vector{Bool}}()
     constraints, qubits = size(code)
-    # In the case of no errors
-    lookup_table[ zeros(UInt8, constraints) ] = stab_to_gf2(zero(PauliOperator, qubits))
     # In the case of single bit errors
     for bit_to_be_flipped in 1:qubits
         for error_type in [single_x, single_y, single_z]
@@ -259,6 +257,8 @@ function create_lookup_table(code::Stabilizer)
             lookup_table[syndrome] = stab_to_gf2(error)
         end
     end
+    # In the case of no errors
+    lookup_table[ zeros(UInt8, constraints) ] = stab_to_gf2(zero(PauliOperator, qubits))
     lookup_table
 end;
 
