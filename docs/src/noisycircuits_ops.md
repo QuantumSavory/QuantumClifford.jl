@@ -24,14 +24,13 @@ using Quantikz # hide
 [sCNOT(2,4),sHadamard(2),sCPHASE(1,3),sSWAP(2,4)]
 ```
 
-Any arbitrary tableaux can be used as a gate too. 
+Any arbitrary tableaux can be used as a gate too.
 
 They can be specified by giving a Clifford operator tableaux and the indices on which it acts
 (particularly useful for gates acting on a small part of a circuit):
 
 ```@example 1
 using QuantumClifford # hide
-using QuantumClifford.Experimental.NoisyCircuits # hide
 using Quantikz # hide
 SparseGate(tCNOT, [2,4])
 ```
