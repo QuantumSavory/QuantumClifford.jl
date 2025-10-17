@@ -1438,6 +1438,7 @@ include("classical_register.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
+include("misc_gates.jl")
 # common states and operators
 include("enumeration.jl")
 include("randoms.jl")
