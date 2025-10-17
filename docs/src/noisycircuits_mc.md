@@ -24,13 +24,10 @@ using Quantikz # hide
 good_bell_state = S"XX
                     ZZ"
 initial_state = MixedDestabilizer(good_bell_state⊗good_bell_state)
-
 g1 = sCNOT(1,3) # CNOT between qubit 1 and qubit 3 (both with Alice)
 g2 = sCNOT(2,4) # CNOT between qubit 2 and qubit 4 (both with Bob)
 
-# Ideal Bell measurement
 m = BellMeasurement([sMX(3),sMX(4)]) # Bell measurement on qubit 3 and 4
-
 v = VerifyOp(good_bell_state,[1,2]) # Verify that qubit 1 and 2 indeed form a good Bell pair
 epsilon = 0.01 # The error rate
 n = NoiseOpAll(UnbiasedUncorrelatedNoise(epsilon))

@@ -35,7 +35,7 @@ sitename = "QuantumClifford.jl",
 format = Documenter.HTML(size_threshold_ignore = ["API.md", "ECC_API.md"]),
 modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt, QECCore],
 warnonly = [:missing_docs],
-linkcheck = false,
+linkcheck = true,
 authors = "Stefan Krastanov",
 pages = [
 "QuantumClifford.jl" => "index.md",

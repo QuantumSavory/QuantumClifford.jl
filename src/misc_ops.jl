@@ -132,8 +132,6 @@ function applybranches(s::AbstractQCState, m::NoisyBellMeasurement; max_order=1)
     end
 end
 
-affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
-
 # TODO XXX THIS IS PARTICULARLY INEFFICIENT recurrent implementation
 function _applybranches_measurement(branches, measurements, n)
     if length(measurements) == 0
