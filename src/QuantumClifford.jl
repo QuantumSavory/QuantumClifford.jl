@@ -63,7 +63,7 @@ export
     sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
     BellMeasurement, ClassicalXOR,
     VerifyOp,
-    Register,
+    Register, NoisyBellMeasurement
     # Enumeration and Randoms
     enumerate_single_qubit_gates, random_clifford1,
     enumerate_cliffords, symplecticGS, clifford_cardinality, enumerate_phases,
