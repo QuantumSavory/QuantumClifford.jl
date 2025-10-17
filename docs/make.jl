@@ -6,6 +6,7 @@ using DocumenterCitations
 using QuantumClifford
 using QuantumClifford.Experimental.NoisyCircuits
 using QuantumInterface
+using QECCore
 using QuantumClifford.ECC
 
 ENV["HECKE_PRINT_BANNER"] = "false"
@@ -31,8 +32,8 @@ plugins = [bib],
 doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
-format = Documenter.HTML(size_threshold_ignore = ["API.md"]),
-modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt],
+format = Documenter.HTML(size_threshold_ignore = ["API.md", "ECC_API.md"]),
+modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt, QECCore],
 warnonly = [:missing_docs],
 linkcheck = true,
 authors = "Stefan Krastanov",
