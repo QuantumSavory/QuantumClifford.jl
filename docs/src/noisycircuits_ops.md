@@ -9,8 +9,6 @@ end
 
 !!! warning "Unstable"
     This is experimental functionality with an unstable API.
-    
-Import with `using QuantumClifford.Experimental.NoisyCircuits`.
 
 Too see a condensed list of all operations [check out the API docs](@ref all-operations).
 
