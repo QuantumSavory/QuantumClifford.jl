@@ -62,7 +62,9 @@ export
     sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
     BellMeasurement, NoisyBellMeasurement, ClassicalXOR,
     VerifyOp,
-    Register, 
+    Register,
+    # Misc gates
+    IndexedDecisionGate, ConditionalGate,
     # Enumeration and Randoms
     enumerate_single_qubit_gates, random_clifford1,
     enumerate_cliffords, symplecticGS, clifford_cardinality, enumerate_phases,
@@ -90,17 +92,15 @@ export
     mctrajectory!, mctrajectories, applywstatus!,
     # petrajectories
     petrajectories, applybranches,
-    
+
     # nonclifford
     GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
-    compactify_circuit,
+    compactify_circuit
     # gpu support
     # to_cpu, to_gpu
-    # Misc gates
-    IndexedDecisionGate, ConditionalGate
 
 
 const BIG_INT_MINUS_ONE = Ref{BigInt}()
@@ -1437,10 +1437,10 @@ include("mctrajectory.jl")
 include("petrajectory.jl")
 include("misc_ops.jl")
 include("classical_register.jl")
+include("misc_gates.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
-
 # common states and operators
 include("enumeration.jl")
 include("randoms.jl")
@@ -1459,5 +1459,4 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
-include("misc_gates.jl")
 end #module
