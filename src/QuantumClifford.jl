@@ -20,7 +20,6 @@ import QuantumInterface: tensor, ⊗, tensor_pow,
     apply!, projectX!, projectY!, projectZ!,
     embed, permutesystems,
     entanglement_entropy
-
 export
     @P_str, PauliOperator, ⊗, I, X, Y, Z,
     @T_str, xbit, zbit, xview, zview,
@@ -61,9 +60,9 @@ export
     # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
-    BellMeasurement, ClassicalXOR,
+    BellMeasurement, NoisyBellMeasurement, ClassicalXOR,
     VerifyOp,
-    Register, NoisyBellMeasurement
+    Register, 
     # Enumeration and Randoms
     enumerate_single_qubit_gates, random_clifford1,
     enumerate_cliffords, symplecticGS, clifford_cardinality, enumerate_phases,
@@ -91,14 +90,17 @@ export
     mctrajectory!, mctrajectories, applywstatus!,
     # petrajectories
     petrajectories, applybranches,
+    
     # nonclifford
     GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
-    compactify_circuit
+    compactify_circuit,
     # gpu support
     # to_cpu, to_gpu
+    # Misc gates
+    IndexedDecisionGate, ConditionalGate
 
 
 const BIG_INT_MINUS_ONE = Ref{BigInt}()
