@@ -1,4 +1,3 @@
-
 """A conditional gate that either performs `truegate` or `falsegate`, depending on the value of `controlbit`."""
 struct ConditionalGate <: AbstractOperation
     truegate::AbstractOperation
