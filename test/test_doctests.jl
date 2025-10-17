@@ -1,7 +1,6 @@
 @testitem "Doctests" tags=[:doctests] begin
     using Documenter
     using QuantumClifford
-    using QuantumClifford.Experimental.NoisyCircuits
     using QuantumInterface
 
     extensions = []

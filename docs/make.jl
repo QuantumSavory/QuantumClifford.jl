@@ -4,7 +4,6 @@ using Revise # for interactive doc updates
 using Documenter
 using DocumenterCitations
 using QuantumClifford
-using QuantumClifford.Experimental.NoisyCircuits
 using QuantumInterface
 using QECCore
 using QuantumClifford.ECC
@@ -33,7 +32,7 @@ doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
 format = Documenter.HTML(size_threshold_ignore = ["API.md", "ECC_API.md"]),
-modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt, QECCore],
+modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt, QECCore],
 warnonly = [:missing_docs],
 linkcheck = true,
 authors = "Stefan Krastanov",
