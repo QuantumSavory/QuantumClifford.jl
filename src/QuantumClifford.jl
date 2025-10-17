@@ -62,7 +62,9 @@ export
     sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
     BellMeasurement, NoisyBellMeasurement, ClassicalXOR,
     VerifyOp,
-    Register, 
+    Register,
+    # Misc gates
+    IndexedDecisionGate, ConditionalGate,
     # Enumeration and Randoms
     enumerate_single_qubit_gates, random_clifford1,
     enumerate_cliffords, symplecticGS, clifford_cardinality, enumerate_phases,
@@ -90,17 +92,15 @@ export
     mctrajectory!, mctrajectories, applywstatus!,
     # petrajectories
     petrajectories, applybranches,
-    
+
     # nonclifford
     GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
-    compactify_circuit,
+    compactify_circuit
     # gpu support
     # to_cpu, to_gpu
-    # Misc gates
-    IndexedDecisionGate, ConditionalGate
 
 
 const BIG_INT_MINUS_ONE = Ref{BigInt}()
@@ -1074,8 +1074,8 @@ Base.hcat(stabs::Stabilizer{T}...) where {T} = Stabilizer(hcat((tab(s) for s in 
 """
     apply!
 
-Apply any quantum operation to a stabilizer state, including unitary Clifford 
-operations, Pauli measurements, and noise. 
+Apply any quantum operation to a stabilizer state, including unitary Clifford
+operations, Pauli measurements, and noise.
 May result in a random/stochastic result (e.g. with measurements or noise)."""
 function apply! end
 
@@ -1118,7 +1118,7 @@ end
 
 """
     apply_inv!
-    
+
 Apply the inverse of any quantum operation to a stabilizer state.
 """
 function apply_inv! end
@@ -1434,10 +1434,10 @@ include("mctrajectory.jl")
 include("petrajectory.jl")
 include("misc_ops.jl")
 include("classical_register.jl")
+include("misc_gates.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
-
 # common states and operators
 include("enumeration.jl")
 include("randoms.jl")
@@ -1456,5 +1456,4 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
-include("misc_gates.jl")
 end #module
