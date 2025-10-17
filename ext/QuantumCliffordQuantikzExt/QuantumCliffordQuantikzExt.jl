@@ -50,7 +50,7 @@ end
 Quantikz.QuantikzOp(op::BellMeasurement) = Quantikz.ParityMeasurement(["\\mathtt{$(string(nameof(typeof(o)))[3])}" for o in op.measurements], collect(affectedqubits(op))) # TODO make Quantikz work with tuples and remove the collect
 Quantikz.QuantikzOp(op::NoisyBellMeasurement) = Quantikz.QuantikzOp(op.meas)
 Quantikz.QuantikzOp(op::ConditionalGate) = Quantikz.ClassicalDecision(affectedqubits(op),op.controlbit) # TODO make Quantikz work with tuples and remove the collect
-Quantikz.QuantikzOp(op::DecisionGate) = Quantikz.ClassicalDecision(affectedqubits(op),Quantikz.ibegin:Quantikz.iend) # TODO make Quantikz work with tuples and remove the collect
+Quantikz.QuantikzOp(op::IndexedDecisionGate) = Quantikz.ClassicalDecision(affectedqubits(op),Quantikz.ibegin:Quantikz.iend) # TODO make Quantikz work with tuples and remove the collect
 #Quantikz.QuantikzOp(op::DenseGate) = Quantikz.MultiControlU(affectedqubits(op))
 Quantikz.QuantikzOp(op::PauliMeasurement) = Quantikz.Measurement("\\begin{array}{c}$(lstring(op.pauli))\\end{array}",collect(affectedqubits(op)),op.bit) # TODO make Quantikz work with tuples and remove the collect
 Quantikz.QuantikzOp(op::Union{sMX,sMRX}) = Quantikz.Measurement("\\begin{array}{c}\\mathtt{X}\\end{array}",collect(affectedqubits(op)), iszero(op.bit) ? nothing : op.bit) # TODO make Quantikz work with tuples and remove the collect
