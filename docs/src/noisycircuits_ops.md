@@ -3,7 +3,6 @@
 ```@meta
 DocTestSetup = quote
     using QuantumClifford
-    using QuantumClifford.Experimental.NoisyCircuits
     using Quantikz
 end
 ```
@@ -23,7 +22,6 @@ Predefined unitary gates are available, like [`sCNOT`](@ref), [`sHadamard`](@ref
 
 ```@example 1
 using QuantumClifford # hide
-using QuantumClifford.Experimental.NoisyCircuits # hide
 using Quantikz # hide
 [sCNOT(2,4),sHadamard(2),sCPHASE(1,3),sSWAP(2,4)]
 ```
