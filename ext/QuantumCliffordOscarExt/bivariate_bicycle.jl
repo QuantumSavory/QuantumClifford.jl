@@ -131,7 +131,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (72, 12, 6)
 ```
 
-- [`LPCode`](@ref): Bivariate Bicycle codes are children of *abelian* [Lifted Product](https://errorcorrectionzoo.org/c/abelian_lifted_product) codes. We provide provide the group algebra elements as matrices:
+- [`LPCode`](@ref): Bivariate Bicycle codes are children of *abelian* [Lifted Product](https://errorcorrectionzoo.org/c/abelian_lifted_product) codes. We provide the ``1 x 1`` matrix of group algebra elements:
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
