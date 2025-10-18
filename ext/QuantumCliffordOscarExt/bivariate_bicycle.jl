@@ -108,7 +108,7 @@ julia> code_n(c), code_k(c)
 # Relationships to other QECCs
 
 This implementation uses the polynomial quotient ring formalism. The same codes can be constructed 
-using various equivalent approaches:
+using various other approaches:
 
 !!! note
     In the discussion below, we consider the `[[72, 12, 6]]` Bivariate bicycle code as introduced in [bravyi2024high](@cite). For a detailed
