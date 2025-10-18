@@ -287,6 +287,15 @@ function BitFlipDecoder(args...; kwargs...)
     return ext.BitFlipDecoder(args...; kwargs...)
 end
 
+"""A BP-OTS (Belief Propagation with Oscillating Trapping Sets) decoder built around tools from `LDPCDecoders.jl`. 
+"""
+function BPOTSDecoder(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordLDPCDecodersExt)
+    if isnothing(ext)
+        throw("The `BPOTSDecoder` depends on the package `LDPCDecoders` but you have not installed or imported `LDPCDecoders` yet. Immediately after you import `LDPCDecoders`, the `BPOTSDecoder` will be available.")
+    end
+    return ext.BPOTSDecoder(args...; kwargs...)
+end
 
 """A Belief Propagation decoder built around tools from the python package `ldpc` available from the julia package `PyQDecoders.jl`."""
 function PyBeliefPropDecoder(args...; kwargs...)
