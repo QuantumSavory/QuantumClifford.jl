@@ -168,7 +168,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> ℓ=6; m=6;
 
-julia> GA = group_algebra(GF(2), abelian_group([l, m]));
+julia> GA = group_algebra(GF(2), abelian_group([ℓ, m]));
 
 julia> x, y = gens(GA);
 
