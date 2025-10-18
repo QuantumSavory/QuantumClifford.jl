@@ -15,7 +15,7 @@ from group theory. Just as normal subgroups enable the construction of quotient 
 For a subset I of a ring R to be an ideal, it must satisfy the following properties:
 - ``(I, +) \\leq (R, +)``
 - ``y \\in R, i \\in I: i \\cdot y \\in I``
-- ``x \\in R, i \\in I: x \\cdot i \in I``
+- ``x \\in R, i \\in I: x \\cdot i \\in I``
 
 Once we have an ideal, we can construct the quotient ring R/I, whose elements are the cosets themselves. The operations
 are defined by adding or multiplying these cosets together. It is important to note that an ideal is not a subring because
