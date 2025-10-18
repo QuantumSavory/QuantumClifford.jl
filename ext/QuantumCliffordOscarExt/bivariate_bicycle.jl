@@ -28,8 +28,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> F₂ = GF(2);
 
-julia> R, (x, y) = polynomial_ring(F₂, [:x, :y])
-(Multivariate polynomial ring in 2 variables over F2, FqMPolyRingElem[x, y])
+julia> R, (x, y) = polynomial_ring(F₂, [:x, :y]);
 
 julia> ℓ, m = 4, 3
 (4, 3)
