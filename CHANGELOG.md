@@ -7,6 +7,7 @@
 
 ## v0.10.1-dev
 
+- The `BivariateBicycleCode` is now implemented using multivariate quotient ring formalism in the ECC submodule.
 - `ptrace` for partial traces. We already had `traceout!`, which returns tableaux with the same number of qubits. `ptrace` removes the traceout qubits besides setting their stabilizing operators to `I`.
 - **(fix)** `canonicalize_gott!` now properly supports non-UInt64 types.
 - The `TrivariateTricycleCode` is implemented using a novel realization via `Oscar.jl`'s multivariate polynomial quotient ring formalism in the ECC submodule.
