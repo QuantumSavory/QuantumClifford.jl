@@ -18,11 +18,13 @@ import Oscar: free_group, small_group_identification, describe, order, FPGroupEl
     kronecker_product, FqMatrix, identity_matrix, iszero, FqPolyRingElem, laurent_polynomial_ring,
     hnf_with_transform, ideal, intersect, ==, is_coprime, quo, groebner_basis, length, FqMPolyRingElem,
     first, length, MPolyQuoRingElem, FqMPolyRingElem, modulus, ideal, monomials, terms, coeff, degree, mod
+import Oscar.koszul_complex
 import Oscar.Generic.MatSpaceElem
 import Oscar.Generic.DirectSumModule
 import Oscar.Generic.LaurentMPolyWrap
 import Oscar.Generic.exponent_vectors
 import Oscar.IdealGens
+import Combinatorics: combinations
 
 import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group,
     boundary_maps, max_xy_exponents
@@ -41,6 +43,7 @@ include("generalized_toric.jl")
 include("group_presentation.jl")
 include("d_dimensional_codes.jl")
 include("trivariate_tricycle.jl")
+include("multivariate_multicycle.jl")
 include("homological_product_codes.jl")
 
 end # module
