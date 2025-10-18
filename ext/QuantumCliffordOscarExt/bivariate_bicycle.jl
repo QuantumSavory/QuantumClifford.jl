@@ -110,6 +110,9 @@ julia> code_n(c), code_k(c)
 This implementation uses the polynomial quotient ring formalism. The same codes can be constructed 
 using various equivalent approaches:
 
+!!! note
+    In the discussion below, we consider the `[[72, 12, 6]]` Bivariate bicycle code as introduced in [bravyi2024high](@cite).
+
 - [`GeneralizedCirculantBivariateBicycle`](@ref): Circulant matrix formulation - Instead of polynomials, we provide the *monomial* terms as lists of tuples:
 
 ```jldoctest
