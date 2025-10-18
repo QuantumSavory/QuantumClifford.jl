@@ -105,6 +105,86 @@ julia> code_n(c), code_k(c)
 (128, 14)
 ```
 
+# Relationships to other QECCs
+
+This implementation uses the polynomial quotient ring formalism. The same codes can be constructed 
+using various equivalent approaches:
+
+- [`GeneralizedCirculantBivariateBicycle`](ref): Circulant matrix formulation - Instead of polynomials, we provide the *monomial* terms as lists of tuples:
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> ℓ = 6;
+
+julia> m = 6;
+
+julia> A = [(:x, 3), (:y, 1), (:y, 2)];
+
+julia> B = [(:y, 3), (:x, 1), (:x, 2)];
+
+julia> c = GeneralizedCirculantBivariateBicycle(ℓ, m, A, B);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(72, 12, 6)
+```
+
+- [`LPCode`](@ref): Bivariate Bicycle codes are children of *abelian* [Lifted Product](https://errorcorrectionzoo.org/c/abelian_lifted_product) codes. We provide provide the group algebra elements as matrices:
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> ℓ = 6;
+
+julia> m = 6;
+
+julia> GA = group_algebra(GF(2), abelian_group([ℓ, m]));
+
+julia> x, y = gens(GA);
+
+julia> A = reshape([x^3 + y + y^2], (1, 1));
+
+julia> B = reshape([y^3 + x + x^2], (1, 1));
+
+julia> c = LPCode(A, B);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(72, 12, 6)
+```
+
+- [`two_block_group_algebra_codes`](ref):  Bivaraite Bicycle codes are a subfamily of *abelian* [2BGA](https://errorcorrectionzoo.org/c/2bga) codes, which themselves are instances of [Lifted Product](https://errorcorrectionzoo.org/c/abelian_lifted_product) codes.
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> ℓ=6; m=6;
+
+julia> GA = group_algebra(GF(2), abelian_group([l, m]));
+
+julia> x, y = gens(GA);
+
+julia> A = x^3 + y + y^2;
+
+julia> B = y^3 + x + x^2;
+
+julia> c = two_block_group_algebra_codes(A,B);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(72, 12, 6)
+```
+
+- [`generalized_bicycle_codes`](ref) and [`GeneralizedBicycleCode`](ref): Bivariate Bicycle codes are siblings of [generalized bicycle](https://errorcorrectionzoo.org/c/generalized_bicycle) codes - both are children of [2BGA](https://errorcorrectionzoo.org/c/2bga) codes.
+
+- [`bicycle_codes`](ref): The [bicycle](https://errorcorrectionzoo.org/c/bicycle) codes are children of (https://errorcorrectionzoo.org/c/generalized_bicycle) codes.
+
+- [`ExtendedGeneralizedBicycleCode`](ref): These codes are constructed through *algebraic extension* of [generalized bicycle](https://errorcorrectionzoo.org/c/generalized_bicycle) codes.
+
 See also: [`GeneralizedCirculantBivariateBicycle`](@ref)
 
 ### Fields
