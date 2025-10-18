@@ -20,7 +20,7 @@ function single_y(n,i)
 end
 
 # TODO make faster by using fewer initializations, like in Base.zero
-function Base.one(::Type{T}, n; basis=:Z) where {T<:Tableau}# TODO support `basis` in all other `one(::[Mixed][De]Stabilizer)` functions
+function Base.one(::Type{T}, n::Integer; basis=:Z) where {T<:Tableau}# TODO support `basis` in all other `one(::[Mixed][De]Stabilizer)` functions
     if basis==:X
         T(LinearAlgebra.I(n),falses(n,n))
     elseif basis==:Y

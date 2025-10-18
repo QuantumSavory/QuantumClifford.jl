@@ -43,7 +43,7 @@ export
     apply!, apply_inv!, apply_right!,
     permutesystems, permutesystems!,
     # Low Level Function Interface
-    generate!, project!, reset_qubits!, traceout!,
+    generate!, project!, reset_qubits!, traceout!, ptrace,
     projectX!, projectY!, projectZ!,
     projectrand!, projectXrand!, projectYrand!, projectZrand!,
     puttableau!, embed,
@@ -175,6 +175,9 @@ end
 
 function Tableau(paulis::Base.AbstractVecOrTuple{PauliOperator})
     r = length(paulis)
+    if r == 0
+        return Tableau(zeros(UInt8, 0), 0, zeros(UInt8, 0, 0))
+    end
     n = nqubits(paulis[1])
     P = eltype(paulis[1].phase)
     XZ = eltype(paulis[1].xz)
@@ -1072,8 +1075,8 @@ Base.hcat(stabs::Stabilizer{T}...) where {T} = Stabilizer(hcat((tab(s) for s in 
 """
     apply!
 
-Apply any quantum operation to a stabilizer state, including unitary Clifford 
-operations, Pauli measurements, and noise. 
+Apply any quantum operation to a stabilizer state, including unitary Clifford
+operations, Pauli measurements, and noise.
 May result in a random/stochastic result (e.g. with measurements or noise)."""
 function apply! end
 
@@ -1116,7 +1119,7 @@ end
 
 """
     apply_inv!
-    
+
 Apply the inverse of any quantum operation to a stabilizer state.
 """
 function apply_inv! end
