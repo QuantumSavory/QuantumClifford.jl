@@ -35,7 +35,7 @@ and ``y^m - 1`` (see Definition 10.45) from [ernst2016inquiry](@cite). This idea
 dimensions: ``x^\\ell - 1`` creates periodic boundary conditions in the x-direction and ``y^m - 1`` creates periodic boundary
 conditions in the y-direction.
 
-Formally, to verify that ``J`` satisfies the *ideal* requirements, the properties are J are as follows:
+Formally, to verify that ``J`` satisfies the *ideal* requirements, the properties of J are as follows:
 
 - ``(J, +) \\leq mathbb{F}_2[x, y], +)``
 
