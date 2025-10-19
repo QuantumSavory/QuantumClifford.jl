@@ -8,8 +8,9 @@ of *Koszul* complexes. According to [eisenbud2013commutative](@cite) "Let ``a_1,
 tensor product ``(R \\xrightarrow{a_1} R) \\otimes (R \\xrightarrow{a_2} R) \\otimes \\cdots \\otimes (R \\xrightarrow{a_n} R)``. 
 
 We note that the work that introduced Trivariate tricycle codes in [jacob2025single](@cite) utilize length-1 chain
-complexes along with the structure of the boundary maps for the tensor-product of three length-1 chain complexes that
-was provided in [breuckmann2024cupsgatesicohomology](@cite). See  5.3.2 Product of Λ ≥ 3 group algebra codes page 23 for more details.
+complexes along with the structure of the boundary maps for the tensor-product complex of three length-1 chain complexes
+that was provided in [breuckmann2024cupsgatesicohomology](@cite). See  5.3.2 Product of Λ ≥ 3 group algebra codes page 23
+for more details.
 
 Specifically, for a code defined by *t* polynomial relations, we show that the *k-th* boundary map is obtained by
 taking the **Koszul matrix** in degree *k* and replacing each variable entry with the corresponding circulant matrix
