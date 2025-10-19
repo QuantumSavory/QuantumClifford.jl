@@ -1,15 +1,25 @@
 """
 We introduce a novel class of quantum CSS codes — *Multivariate Multicycle* codes — constructed
-from multivariate polynomial quotient ring formalism over finite fields over GF(2). Our discovery establishes
-that the boundary maps of these codes are governed by the combinatorial structure of *Koszul* complexes.
-Specifically, for a code defined by *t* polynomial relations, we demonstrate that the *k-th* boundary map
-is obtained by taking the **Koszul matrix** in degree *k* and replacing each variable entry with the
-corresponding circulant matrix derived from the code's defining relations. The **Koszul complex** provides
-the framework for the boundary map construction, ensuring the commutativity properties essential for the code
-construction. This correspondence reveals that multivariate multicycle codes possess the structure of
-**Koszul complexes** with circulant coefficients. This family of codes generalizes the bivariate bicycle,
-trivariate tricycle ([`TrivariateTricycleCode`](@ref)), and tetravariate tetracycle codes and it enables
-full single shot decoding in both X and Z directions.
+from multivariate polynomial quotient ring formalism over ``\\mathbb{F}_2``. 
+
+Our discovery establishes that the boundary maps of these codes are governed by the combinatorial structure
+of *Koszul* complexes. According to [eisenbud2013commutative](@cite) "Let ``a_1, \\dots, a_n`` be elements of 
+``R``. Then the Koszul complex ``\\mathrm{Kosz}(\\mathbf{a})`` is *isomorphic* to the total complex of the
+tensor product ``(R \\xrightarrow{a_1} R) \\otimes (R \\xrightarrow{a_2} R) \\otimes \\cdots \\otimes (R \\xrightarrow{a_n} R)``. 
+
+We note that the work that introduced Trivariate tricycle codes in [jacob2025single](@cite) utilize length-1 chain
+complexes along with the structure of the boundary maps for the tensor-product of three length-1 chain complexes that
+was provided in [breuckmann2024cupsgatesicohomology](@cite). See  5.3.2 Product of Λ ≥ 3 group algebra codes page 23 for more details.
+
+Specifically, for a code defined by *t* polynomial relations, we show that the *k-th* boundary map is obtained by
+taking the **Koszul matrix** in degree *k* and replacing each variable entry with the corresponding circulant matrix
+derived from the code's defining relations. The **Koszul complex** provides the framework for the boundary map construction,
+ensuring the commutativity properties essential for the code construction. This correspondence reveals that multivariate
+multicycle codes can be constructed using the framework of **Koszul complexes**.
+
+This family of codes generalizes the bivariate bicycle, trivariate tricycle ([`TrivariateTricycleCode`](@ref)), and
+tetravariate tetracycle codes and it enables full single shot decoding in both X and Z directions, a capability that the
+[`TrivariateTricycleCode`](@ref) lacks.
 
 # Special Cases 
 
