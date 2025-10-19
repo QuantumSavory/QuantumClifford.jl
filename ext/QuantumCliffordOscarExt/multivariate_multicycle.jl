@@ -6,6 +6,7 @@ Our discovery establishes that the boundary maps of these codes are governed by 
 of *Koszul* complexes. According to [eisenbud2013commutative](@cite) "Let ``a_1, \\dots, a_n`` be elements of 
 ``R``. Then the Koszul complex ``\\mathrm{Kosz}(\\mathbf{a})`` is *isomorphic* to the total complex of the
 tensor product ``(R \\xrightarrow{a_1} R) \\otimes (R \\xrightarrow{a_2} R) \\otimes \\cdots \\otimes (R \\xrightarrow{a_n} R)``. 
+For more details, see Section 17.3.
 
 We note that the work that introduced Trivariate tricycle codes in [jacob2025single](@cite) utilize length-1 chain
 complexes along with the structure of the boundary maps for the tensor-product complex of three length-1 chain complexes
