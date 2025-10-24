@@ -5,6 +5,7 @@ using Documenter
 using DocumenterCitations
 using QuantumClifford
 using QuantumInterface
+using QECCore
 using QuantumClifford.ECC
 
 ENV["HECKE_PRINT_BANNER"] = "false"

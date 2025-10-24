@@ -57,6 +57,9 @@ QuantumCliffordPyQDecodersExt = "PyQDecoders"
 QuantumCliffordQOpticsExt = "QuantumOpticsBase"
 QuantumCliffordQuantikzExt = "Quantikz"
 
+[workspace]
+projects = ["docs", "/lib/QECCore"]
+
 [compat]
 Adapt = "4.3.0"
 Atomix = "1.1.1"
