@@ -20,7 +20,6 @@ import QuantumInterface: tensor, ⊗, tensor_pow,
     apply!, projectX!, projectY!, projectZ!,
     embed, permutesystems,
     entanglement_entropy
-
 export
     @P_str, PauliOperator, ⊗, I, X, Y, Z,
     @T_str, xbit, zbit, xview, zview,
@@ -61,9 +60,11 @@ export
     # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
-    BellMeasurement, ClassicalXOR,
+    BellMeasurement, NoisyBellMeasurement, ClassicalXOR,
     VerifyOp,
     Register,
+    # Misc gates
+    IndexedDecisionGate, ConditionalGate,
     # Enumeration and Randoms
     enumerate_single_qubit_gates, random_clifford1,
     enumerate_cliffords, symplecticGS, clifford_cardinality, enumerate_phases,
@@ -91,6 +92,7 @@ export
     mctrajectory!, mctrajectories, applywstatus!,
     # petrajectories
     petrajectories, applybranches,
+
     # nonclifford
     GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase,
     # makie plotting -- defined only when extension is loaded
@@ -1435,6 +1437,7 @@ include("mctrajectory.jl")
 include("petrajectory.jl")
 include("misc_ops.jl")
 include("classical_register.jl")
+include("misc_gates.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
@@ -1442,8 +1445,6 @@ include("pauli_frames.jl")
 include("enumeration.jl")
 include("randoms.jl")
 include("useful_states.jl")
-#
-include("experimental/Experimental.jl")
 #
 include("./graphs/graphs.jl")
 #
@@ -1458,5 +1459,4 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
-
 end #module

@@ -3,7 +3,6 @@
 ```@meta
 DocTestSetup = quote
     using QuantumClifford
-    using QuantumClifford.Experimental.NoisyCircuits
     using Quantikz
     using QuantumClifford.ECC
 end
@@ -18,7 +17,6 @@ Here is an example of a purification circuit (the same circuit seen in the [Mont
 
 ```@example
 using QuantumClifford # hide
-using QuantumClifford.Experimental.NoisyCircuits # hide
 using Quantikz # hide
 using QuantumClifford.ECC # hide
 good_bell_state = S"XX
