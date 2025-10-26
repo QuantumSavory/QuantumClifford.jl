@@ -1446,6 +1446,7 @@ include("useful_states.jl")
 include("experimental/Experimental.jl")
 #
 include("./graphs/graphs.jl")
+using .GraphSim
 #
 include("entanglement.jl")
 #
