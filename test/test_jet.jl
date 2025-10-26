@@ -3,5 +3,5 @@
     using Test
     using QuantumClifford
 
-    JET.test_package(QuantumClifford, target_defined_modules = true)
+    JET.test_package(QuantumClifford)
 end
