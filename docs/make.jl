@@ -32,7 +32,11 @@ doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
 format = Documenter.HTML(size_threshold_ignore = ["API.md", "ECC_API.md"]),
+<<<<<<< HEAD
 modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt, QECCore],
+=======
+modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt],
+>>>>>>> 0d7f83b7 (made changes to make.jl)
 warnonly = [:missing_docs],
 linkcheck = true,
 authors = "Stefan Krastanov",
