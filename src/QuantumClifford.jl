@@ -43,7 +43,7 @@ export
     apply!, apply_inv!, apply_right!,
     permutesystems, permutesystems!,
     # Low Level Function Interface
-    generate!, project!, reset_qubits!, traceout!,
+    generate!, project!, reset_qubits!, traceout!, ptrace,
     projectX!, projectY!, projectZ!,
     projectrand!, projectXrand!, projectYrand!, projectZrand!,
     puttableau!, embed,
@@ -175,6 +175,9 @@ end
 
 function Tableau(paulis::Base.AbstractVecOrTuple{PauliOperator})
     r = length(paulis)
+    if r == 0
+        return Tableau(zeros(UInt8, 0), 0, zeros(UInt8, 0, 0))
+    end
     n = nqubits(paulis[1])
     P = eltype(paulis[1].phase)
     XZ = eltype(paulis[1].xz)
@@ -949,16 +952,7 @@ end
     end
 end
 
-@inline _logsizeof(::UInt128) = 7
-@inline _logsizeof(::UInt64 ) = 6
-@inline _logsizeof(::UInt32 ) = 5
-@inline _logsizeof(::UInt16 ) = 4
-@inline _logsizeof(::UInt8  ) = 3
-@inline _logsizeof(::Type{UInt128}) = 7
-@inline _logsizeof(::Type{UInt64 }) = 6
-@inline _logsizeof(::Type{UInt32 }) = 5
-@inline _logsizeof(::Type{UInt16 }) = 4
-@inline _logsizeof(::Type{UInt8  }) = 3
+@inline _logsizeof(::Union{T, Type{T}}) where {T <: Unsigned} = trailing_zeros(count_zeros(zero(T)))
 @inline _mask(::T) where T<:Unsigned = sizeof(T)*8-1
 @inline _mask(arg::T) where T<:Type = sizeof(arg)*8-1
 @inline _div(T,l) = l >> _logsizeof(T)
@@ -971,12 +965,12 @@ function unsafe_bitfindnext_(chunks::AbstractVector{T}, start::Int) where T<:Uns
 
     @inbounds begin
         if chunks[chunk_start] & mask != 0
-            return (chunk_start-1) << 6 + trailing_zeros(chunks[chunk_start] & mask) + 1
+            return (chunk_start-1) << _logsizeof(T) + trailing_zeros(chunks[chunk_start] & mask) + 1
         end
 
         for i = chunk_start+1:length(chunks)
             if chunks[i] != 0
-                return (i-1) << 6 + trailing_zeros(chunks[i]) + 1
+                return (i-1) << _logsizeof(T) + trailing_zeros(chunks[i]) + 1
             end
         end
     end
@@ -1081,8 +1075,8 @@ Base.hcat(stabs::Stabilizer{T}...) where {T} = Stabilizer(hcat((tab(s) for s in 
 """
     apply!
 
-Apply any quantum operation to a stabilizer state, including unitary Clifford 
-operations, Pauli measurements, and noise. 
+Apply any quantum operation to a stabilizer state, including unitary Clifford
+operations, Pauli measurements, and noise.
 May result in a random/stochastic result (e.g. with measurements or noise)."""
 function apply! end
 
@@ -1125,7 +1119,7 @@ end
 
 """
     apply_inv!
-    
+
 Apply the inverse of any quantum operation to a stabilizer state.
 """
 function apply_inv! end

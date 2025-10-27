@@ -138,7 +138,7 @@ All fields:
 
 $TYPEDFIELDS
 """
-struct LPCode <: AbstractECC
+struct LPCode <: AbstractCSSCode
     """the first base matrix of the code, whose elements are in a group algebra."""
     A::GroupAlgebraElemMatrix
     """the second base matrix of the code, whose elements are in the same group algebra as `A`."""

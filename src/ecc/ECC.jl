@@ -41,12 +41,12 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     GeneralizedCirculantBivariateBicycle, GeneralizedHyperGraphProductCode,
     GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode,
     HomologicalProductCode, DoubleHomologicalProductCode,
-    GeneralizedToricCode,
+    GeneralizedToricCode, TrivariateTricycleCode, BivariateBicycleCode,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
     BeliefPropDecoder, BitFlipDecoder,
-    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder
+    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, DecoderCorrectionGate
 
 """Parity check tableau of a code.
 
@@ -77,6 +77,10 @@ Return `nothing` if unknown from the type.
 """
 function iscss(::Type{T}) where T<:AbstractECC
     return false
+end
+
+function iscss(::Type{T}) where T <: AbstractCSSCode
+    return true
 end
 
 function iscss(c::AbstractECC)
@@ -403,4 +407,5 @@ include("codes/qeccs_using_hecke.jl")
 # higher dimensional codes
 include("codes/qeccs_using_oscar.jl")
 
+include("decoder_correction_gate.jl")
 end #module
