@@ -181,8 +181,8 @@ C_4 \\xrightarrow{\\partial_4} C_3 \\xrightarrow{\\partial_3} C_2 \\xrightarrow{
 the metacheck matrix ``M_Z = \\partial_4`` obtained via [`metacheck_matrix_z`](@ref) satisfies the following:
 
 - Acts on Z-syndromes: ``s_Z \\in C_3``,
-- It enforces ``M_Z\\cdot_Z = 0``, i.e. only valid syndromes lie in ``\\ker M_Z``.
-- It satisfies the boundary condition ``H_Z^\\top \\cdot M_Z^\\top = 0`` (i.e., \\partial_3 \\partial_4 = 0``) where ``H_Z`` and ``M_Z`` are obtained via [`parity_matrix_z`](@ref) and [`metacheck_matrix_z`](@ref) respectively.
+- It enforces ``M_Zs_Z = 0``, i.e. only valid syndromes lie in ``\\ker M_Z``.
+- It satisfies the boundary condition ``H_Z^\\topM_Z^\\top = 0`` (i.e., ``\\partial_3 \\partial_4 = 0``) where ``H_Z`` and ``M_Z`` are obtained via [`parity_matrix_z`](@ref) and [`metacheck_matrix_z`](@ref) respectively.
 
 See also: [`metacheck_matrix_x`](@ref), [`metacheck_matrix`](@ref), [`parity_matrix_z`](@ref)
 """
@@ -224,12 +224,12 @@ X and Z syndromes."
 Metachecks enable single-shot decoding by providing a metacode for syndrome repair,
 but their role is best understood through the broader property of **confinement** [Higgott_2023](@cite):
 
-- A code has ``*(t,f)*-confinement if, for all errors *E* with ``|E|_{\\text{red}} ``\\leq t``,
+- A code has *(t,f)*-confinement if, for all errors *E* with ``|E|_{\\text{red}} \\leq t``,
 the syndrome weight satisfies ``f(|\\sigma(E)|) \\geq |E|_{\\text{red}}``, where
 ``f: \\mathbb{Z} \\to \\mathbb{R}`` is an increasing function. This bounds the physical
 error weight by a function of the syndrome weight.
 
-Codes with metachecks (e.g., `D`-dimensional surface and toric codes) exhibit confinement
+Codes with metachecks (e.g., D-dimensional surface and toric codes) exhibit confinement
 because ``M_X/M_Z`` constrain syndromes to a metacode, but confinement can exist *without*
 metachecks (e.g., quantum expander codes). Thus, while metachecks are sufficient for single-shot
 QEC (via syndrome repair), they are not strictly necessary.
@@ -303,7 +303,7 @@ the extended matrix:
 ```math
 \\begin{aligned}
 \\begin{equation}
-H_M = \begin{pmatrix}
+H_M = \\begin{pmatrix}
 H_X & I_r \\\\
 0 & M
 \\end{pmatrix}
@@ -406,9 +406,9 @@ where
 The boundary conditions ``\\partial_{i-1} \\partial_i = 0`` (i.e., ``M_X H_X = 0``) guarantee that valid syndromes
 (`im H_X`) lie in `ker M_X`.
 
-Invalid syndromes in `ker M_X \\setminus im H_X` belong to the `(i−1)`-th homology group
+Invalid syndromes in ``ker M_X \\setminus im H_X`` belong to the ``(i−1)``-th homology group
 ``H_{i-1} = \\ker \\partial_{i-1} / \\mathrm{im} \\partial_i``, while invalid `Z`-syndromes in
-`ker M_Z \\setminus im H_Z` belong to the `(i+1)`-th cohomology group.
+``ker M_Z \\setminus im H_Z`` belong to the ``(i+1)``-th cohomology group.
 
 !!! note
     A code can be designed to incorporate syndromes within a metacode by employing a chain complex
