@@ -41,12 +41,12 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     GeneralizedCirculantBivariateBicycle, GeneralizedHyperGraphProductCode,
     GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode,
     HomologicalProductCode, DoubleHomologicalProductCode,
-    GeneralizedToricCode, TrivariateTricycleCode,
+    GeneralizedToricCode, TrivariateTricycleCode, BivariateBicycleCode,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
     BeliefPropDecoder, BitFlipDecoder,
-    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder
+    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, DecoderCorrectionGate
 
 """Parity check tableau of a code.
 
@@ -407,4 +407,5 @@ include("codes/qeccs_using_hecke.jl")
 # higher dimensional codes
 include("codes/qeccs_using_oscar.jl")
 
+include("decoder_correction_gate.jl")
 end #module

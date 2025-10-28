@@ -897,3 +897,28 @@ function delete_columns(𝒮::Stabilizer, subset)
     if length(𝒮) == 0 return 𝒮 end
     return 𝒮[:, setdiff(1:nqubits(𝒮), subset)]
 end
+
+function ptrace(s::Stabilizer, to_traceout::Base.AbstractVecOrTuple{Int})
+    n = nqubits(s)
+    to_keep = setdiff(1:n, to_traceout)
+    s = traceout!(copy(s), to_traceout)
+    s[:,to_keep]
+end
+
+function ptrace(s::MixedStabilizer, to_traceout::Base.AbstractVecOrTuple{Int})
+    n = nqubits(s)
+    to_keep = setdiff(1:n, to_traceout)
+    s = traceout!(copy(s), to_traceout)
+    MixedStabilizer(tab(s)[:,to_keep], rank(s))
+end
+
+function ptrace(s::MixedDestabilizer, to_traceout::Base.AbstractVecOrTuple{Int})
+    n = nqubits(s)
+    to_keep = setdiff(1:n, to_traceout)
+    s = traceout!(copy(s), to_traceout)
+    if rank(s) == 0
+        return one(typeof(s), 0, length(to_keep))
+    else
+        return MixedDestabilizer(stabilizerview(s)[:,to_keep]) # TODO this can be faster by avoiding the repeated canonicalization
+    end
+end
