@@ -42,7 +42,7 @@ export
     apply!, apply_inv!, apply_right!,
     permutesystems, permutesystems!,
     # Low Level Function Interface
-    generate!, project!, reset_qubits!, traceout!,
+    generate!, project!, reset_qubits!, traceout!, ptrace,
     projectX!, projectY!, projectZ!,
     projectrand!, projectXrand!, projectYrand!, projectZrand!,
     puttableau!, embed,
@@ -177,6 +177,9 @@ end
 
 function Tableau(paulis::Base.AbstractVecOrTuple{PauliOperator})
     r = length(paulis)
+    if r == 0
+        return Tableau(zeros(UInt8, 0), 0, zeros(UInt8, 0, 0))
+    end
     n = nqubits(paulis[1])
     P = eltype(paulis[1].phase)
     XZ = eltype(paulis[1].xz)

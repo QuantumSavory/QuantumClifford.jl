@@ -5,6 +5,7 @@ using Documenter
 using DocumenterCitations
 using QuantumClifford
 using QuantumInterface
+using QECCore
 using QuantumClifford.ECC
 
 ENV["HECKE_PRINT_BANNER"] = "false"
@@ -31,7 +32,7 @@ doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
 format = Documenter.HTML(size_threshold_ignore = ["API.md", "ECC_API.md"]),
-modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt],
+modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt, QECCore],
 warnonly = [:missing_docs],
 linkcheck = true,
 authors = "Stefan Krastanov",
