@@ -5,6 +5,7 @@ affectedqubits(g::AbstractTwoQubitOperator) = (g.q1, g.q2)
 affectedqubits(g::NoisyGate) = affectedqubits(g.gate,)
 affectedqubits(g::SparseGate) = g.indices
 affectedqubits(b::BellMeasurement) = map(m->m.qubit, b.measurements)
+affectedqubits(m::NoisyBellMeasurement) = affectedqubits(m.meas)
 affectedqubits(r::Reset) = r.indices
 affectedqubits(n::NoiseOp) = n.indices
 affectedqubits(g::PauliMeasurement) = 1:length(g.pauli)
