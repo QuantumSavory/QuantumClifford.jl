@@ -9,6 +9,8 @@ using SparseArrays
 import Nemo: GF, matrix, rank, finite_field, polynomial_ring
 import LinearAlgebra
 
+include("test_ecc_base.jl")
+
 # generate instances of all implemented codes to make sure nothing skips being checked
 
 # Goppa Codes
@@ -49,25 +51,19 @@ const classical_code_instance_args = Dict(
     :GoppaCode => [(m₁, t₁, g₁, L₁), (m₂, t₂, g₂), (m₃, t₃, g₃), (m₄, t₄, g₄, L₄)]
 )
 
-function all_testable_classical_code_instances(;maxn=nothing)
-    types = subtypes(AbstractCECC)
-    concrete = Type[]
-    while !isempty(types)
-        t = popfirst!(types)
-        isabstracttype(t) ? append!(types, subtypes(t)) : push!(concrete, t)
-    end
+function all_testable_classical_code_instances(; maxn=nothing)
     codeinstances = []
-    for t in concrete
-        t_name = Symbol(split(string(t), ".")[end])
-        for args in get(classical_code_instance_args, t_name, [])
-            try
-                codeinstance = t(args...)
-                !isnothing(maxn) && code_n(codeinstance) > maxn && continue
-                push!(codeinstances, codeinstance)
-            catch e
-                @warn "Failed to create $t with args $args: $e"
-            end
+    i = 1
+    classical_code_args = copy(classical_code_instance_args)
+    for t in concretesubtypes(AbstractCECC)
+        for args in pop!(classical_code_args, nameof(t), [])
+            codeinstance = t(args...)
+            !isnothing(maxn) && code_n(codeinstance) > maxn && continue
+            push!(codeinstances, codeinstance)
+            #@show i, t, code_n(codeinstance), code_k(codeinstance), code_n(codeinstance)-code_k(codeinstance)
+            i += 1
         end
     end
+    @test isempty(classical_code_args) # if this fails, then some code instances were not tested
     return codeinstances
 end
