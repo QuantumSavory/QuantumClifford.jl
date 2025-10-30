@@ -75,6 +75,16 @@ function TrivariateTricycleCode(args...; kwargs...)
     return ext.TrivariateTricycleCode(args...; kwargs...)
 end
 
+"""Bivariate Bicycle codes ([jacob2025singleshotdecodingfaulttolerantgates](@cite))
+Implemented as a package extension with `Oscar`. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
+function BivariateBicycleCode(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
+    if isnothing(ext)
+        throw("The `BivariateBicycleCode` depends on the package `Oscar` but you have not installed or imported it yet. Immediately after you import `Oscar`, the `BivariateBicycleCode` will be available.")
+    end
+    return ext.BivariateBicycleCode(args...; kwargs...)
+end
+
 """Multivariate Multicycle codes.
 Implemented as a package extension with `Oscar`. Check the [QuantumClifford documentation](http://qc.quantumsavory.org/stable/ECC_API/) for more details on that extension."""
 function MultivariateMulticycleCode(args...; kwargs...)
