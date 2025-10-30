@@ -1,5 +1,6 @@
 @testitem "ECC" tags=[:ecc, :ecc_base] begin
     using Nemo
+    using Hecke
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractCECC, QECCore
 
