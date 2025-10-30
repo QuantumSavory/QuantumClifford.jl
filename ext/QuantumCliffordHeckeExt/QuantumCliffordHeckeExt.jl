@@ -10,7 +10,7 @@ import Hecke: Group, GroupElem, AdditiveGroupElem,
     GroupAlgebra, GroupAlgebraElem, FqFieldElem, representation_matrix, dim, base_ring,
     multiplication_table, coefficients, abelian_group, group_algebra, rand, gens, order,
     is_commutative, FqPolyRingElem, residue_ring, coeff, zero_matrix, mod1, lift, ZZ, gen,
-    polynomial_ring, characteristic, isone, mod, factor, zeros, group
+    polynomial_ring, characteristic, isone, mod, factor, zeros, group, EuclideanRingResidueRingElem
 import Hecke.Generic.MatSpaceElem
 import Nemo
 import Nemo: characteristic, matrix_repr, GF, ZZ, lift, matrix, rank
