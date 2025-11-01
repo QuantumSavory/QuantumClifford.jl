@@ -3,6 +3,10 @@
     using HiGHS
     using JuMP
     using Hecke: group_algebra, GF, abelian_group, gens, one
+    using QECCore
+    using QuantumClifford
+    using QuantumClifford: stab_looks_good
+    using QuantumClifford.ECC
     using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, distance, DistanceMIPAlgorithm
 
     @testset "Reproduce Table 3 bravyi2024high" begin
@@ -11,14 +15,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^3 + y + y^2)
-        B = S(y^3 + x + x^2)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^3 + y + y^2)
+        B₁ = S(y^3 + x + x^2)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 72 && code_k(c) == 12
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -31,14 +47,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^9 + y   + y^2)
-        B = S(1   + x^2 + x^7)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^9 + y   + y^2)
+        B₁ = S(1   + x^2 + x^7)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 90 && code_k(c) == 8
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -51,14 +79,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^3 + y + y^2)
-        B = S(y^3 + x + x^2)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^3 + y + y^2)
+        B₁ = S(y^3 + x + x^2)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 108 && code_k(c) == 8
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -71,14 +111,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^3 + y + y^2)
-        B = S(y^3 + x + x^2)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^3 + y + y^2)
+        B₁ = S(y^3 + x + x^2)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 144 && code_k(c) == 12
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -91,15 +143,39 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^3 + y^2 + y^7)
-        B = S(y^3 + x   + x^2)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^3 + y^2 + y^7)
+        B₁ = S(y^3 + x   + x^2)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 288 && code_k(c) == 12
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
 
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -112,14 +188,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^9 + y    + y^2)
-        B = S(y^3 + x^25 + x^26)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^9 + y    + y^2)
+        B₁ = S(y^3 + x^25 + x^26)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 360 && code_k(c) == 12
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -132,14 +220,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^3 + y^10 + y^17)
-        B = S(y^5 + x^3  + x^19)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^3 + y^10 + y^17)
+        B₁ = S(y^5 + x^3  + x^19)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 756 && code_k(c) == 16
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -154,14 +254,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^9 + y + y^2)
-        B = S(1   + x + x^11)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^9 + y + y^2)
+        B₁ = S(1   + x + x^11)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 72 && code_k(c) == 8
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -174,14 +286,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^8 + y^4 + y)
-        B = S(y^5 + x^8 + x^7)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^8 + y^4 + y)
+        B₁ = S(y^5 + x^8 + x^7)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 90 && code_k(c) == 8
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -194,14 +318,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^10 + y^4 + y)
-        B = S(1    + x   + x^2)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^10 + y^4 + y)
+        B₁ = S(1    + x   + x^2)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 120 && code_k(c) == 8
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -214,14 +350,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^5 + y^2 + y^3)
-        B = S(y^2 + x^7 + x^6)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^5 + y^2 + y^3)
+        B₁ = S(y^2 + x^7 + x^6)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 150 && code_k(c) == 8
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -234,14 +382,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^6 + y^5 + y^6)
-        B = S(1   + x^4 + x^13)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^6 + y^5 + y^6)
+        B₁ = S(1   + x^4 + x^13)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 196 && code_k(c) == 12
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -256,14 +416,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(1   + y^2 + y^4)
-        B = S(y^3 + x   + x^2)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(1   + y^2 + y^4)
+        B₁ = S(y^3 + x   + x^2)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 54 && code_k(c) == 8
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -276,14 +448,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^3 + y^5 + y^6)
-        B = S(y^2 + x^3 + x^5)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^3 + y^5 + y^6)
+        B₁ = S(y^2 + x^3 + x^5)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 98 && code_k(c) == 6
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -296,14 +480,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(1   + y^2 + y^10)
-        B = S(y^3 + x  +  x^2)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(1   + y^2 + y^10)
+        B₁ = S(y^3 + x  +  x^2)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 126 && code_k(c) == 8
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -316,14 +512,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(1   + y^6 + y^8)
-        B = S(y^5 + x   + x^4)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(1   + y^6 + y^8)
+        B₁ = S(y^5 + x   + x^4)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 150 && code_k(c) == 16
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -336,14 +544,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(1    + y^10 + y^14)
-        B = S(y^12 + x    + x^2)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(1    + y^10 + y^14)
+        B₁ = S(y^12 + x    + x^2)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 162 && code_k(c) == 8
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -356,14 +576,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^3 + y   + y^2)
-        B = S(y^6 + x^4 + x^5)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^3 + y   + y^2)
+        B₁ = S(y^6 + x^4 + x^5)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 180 && code_k(c) == 8
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -378,14 +610,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(1 +   y   + y^2)
-        B = S(y^3 + x^2 + x^4)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(1 +   y   + y^2)
+        B₁ = S(y^3 + x^2 + x^4)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 108 && code_k(c) == 16
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -398,14 +642,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^2 + y + y^3 + y^4)
-        B = S(y^2 + x + x^3 + x^4)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^2 + y + y^3 + y^4)
+        B₁ = S(y^2 + x + x^3 + x^4)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 128 && code_k(c) == 14
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 4)
+        @test all(sum(B, dims=2) .== 4)
+        @test all(sum(A, dims=1) .== 4)
+        @test all(sum(B, dims=1) .== 4)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 4)
         @test all(sum(B, dims=2) .== 4)
         @test all(sum(A, dims=1) .== 4)
@@ -418,14 +674,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(1   + x + y)
-        B = S(x^3 + y + y^2)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(1   + x + y)
+        B₁ = S(x^3 + y + y^2)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 162 && code_k(c) == 4
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -438,14 +706,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(1   + x   + y^6)
-        B = S(y^3 + x^2 + x^3)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(1   + x   + y^6)
+        B₁ = S(y^3 + x^2 + x^3)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 162 && code_k(c) == 12
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -458,14 +738,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(1   + y   + y^2)
-        B = S(y^3 + x^3 + x^6)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(1   + y   + y^2)
+        B₁ = S(y^3 + x^3 + x^6)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 162 && code_k(c) == 24
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -478,14 +770,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x^3 + y + y^2)
-        B = S(y^3 + x + x^2)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x^3 + y + y^2)
+        B₁ = S(y^3 + x + x^2)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 270 && code_k(c) == 8
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -498,14 +802,26 @@
         R, (x, y) = polynomial_ring(GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
-        A = S(x + y^3 + y^4)
-        B = S(y + x^3 + x^4)
-        c = BivariateBicycleCode(l, m, A, B)
+        A₁ = S(x + y^3 + y^4)
+        B₁ = S(y + x^3 + x^4)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 98 && code_k(c) == 6
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
@@ -520,12 +836,24 @@
         S, _ = quo(R, I)
         A = S(x^3 + y + y^2)
         B = S(y^3 + x + x^2)
-        c = BivariateBicycleCode(l, m, A, B)
+        c = BivariateBicycleCode(l, m, A₁, B₁)
         @test code_n(c) == 162 && code_k(c) == 8
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
         B = Hx[:,n+1:end]
+        @test all(sum(A, dims=2) .== 3)
+        @test all(sum(B, dims=2) .== 3)
+        @test all(sum(A, dims=1) .== 3)
+        @test all(sum(B, dims=1) .== 3)
+        @test A*B == B*A
+        @test iszero(A*B+B*A) == iszero(2*A*B)
+        c = MultivariateMulticycleCode([l, m], [A₁, B₁])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
         @test all(sum(A, dims=2) .== 3)
         @test all(sum(B, dims=2) .== 3)
         @test all(sum(A, dims=1) .== 3)
