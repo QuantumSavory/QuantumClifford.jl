@@ -1,8 +1,6 @@
 env:
   CODECOV_TOKEN: adb3f22a-231a-4f7b-8ed4-7c6c56453cbe
   JULIA_NUM_THREADS: auto
-  PYTHON: ""
-  PYCALL_DEBUG_BUILD: yes
 
 steps:
   - label: "QuantumClifford Tests - {{matrix.LABEL}}"
