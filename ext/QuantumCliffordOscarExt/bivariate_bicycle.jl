@@ -228,9 +228,9 @@ using various other approaches:
 !!! note
     In the discussion below, we consider the `[[72, 12, 6]]` Bivariate bicycle code as introduced in [bravyi2024high](@cite). For a detailed
     explanation of the *isomorphisms* connecting group algebra of cyclic groups, multivariate quotient rings, and circulant matrix representations,
-    see [`GeneralizedCirculantBivariateBicycle`](@ref).
+    see `GeneralizedCirculantBivariateBicycle`.
 
-- [`GeneralizedCirculantBivariateBicycle`](@ref): Circulant matrix formulation - Instead of polynomials, we provide the *monomial* terms as lists of tuples:
+- `GeneralizedCirculantBivariateBicycle`: Circulant matrix formulation - Instead of polynomials, we provide the *monomial* terms as lists of tuples:
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
@@ -251,7 +251,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (72, 12, 6)
 ```
 
-- [`LPCode`](@ref): Bivariate Bicycle codes are children of *abelian* [Lifted Product](https://errorcorrectionzoo.org/c/abelian_lifted_product) codes. We provide the ``1 x 1`` matrix of group algebra elements:
+- `LPCode`: Bivariate Bicycle codes are children of *abelian* [Lifted Product](https://errorcorrectionzoo.org/c/abelian_lifted_product) codes. We provide the ``1 x 1`` matrix of group algebra elements:
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
@@ -276,7 +276,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (72, 12, 6)
 ```
 
-- [`two_block_group_algebra_codes`](@ref):  Bivaraite Bicycle codes are a subfamily of *abelian* [2BGA](https://errorcorrectionzoo.org/c/2bga) codes, which themselves are instances of [Lifted Product](https://errorcorrectionzoo.org/c/abelian_lifted_product) codes.
+- `two_block_group_algebra_codes`:  Bivaraite Bicycle codes are a subfamily of *abelian* [2BGA](https://errorcorrectionzoo.org/c/2bga) codes, which themselves are instances of [Lifted Product](https://errorcorrectionzoo.org/c/abelian_lifted_product) codes.
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
@@ -299,14 +299,11 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (72, 12, 6)
 ```
 
-- [`generalized_bicycle_codes`](@ref) and [`GeneralizedBicycleCode`](@ref): Bivariate Bicycle codes are siblings of [generalized bicycle](https://errorcorrectionzoo.org/c/generalized_bicycle) codes - both are children of [2BGA](https://errorcorrectionzoo.org/c/2bga) codes.
+- `generalized_bicycle_codes` and `GeneralizedBicycleCode`: Bivariate Bicycle codes are siblings of [generalized bicycle](https://errorcorrectionzoo.org/c/generalized_bicycle) codes - both are children of [2BGA](https://errorcorrectionzoo.org/c/2bga) codes.
 
-- [`bicycle_codes`](@ref): The [bicycle](https://errorcorrectionzoo.org/c/bicycle) codes are children of (https://errorcorrectionzoo.org/c/generalized_bicycle) codes.
+- `bicycle_codes`: The [bicycle](https://errorcorrectionzoo.org/c/bicycle) codes are children of (https://errorcorrectionzoo.org/c/generalized_bicycle) codes.
 
-- [`ExtendedGeneralizedBicycleCode`](@ref): These codes are constructed through *algebraic extension* of [generalized bicycle](https://errorcorrectionzoo.org/c/generalized_bicycle) codes.
-
-See also: [`GeneralizedCirculantBivariateBicycle`](@ref), [`LPCode`](@ref), [`two_block_group_algebra_codes`](@ref),
-[`generalized_bicycle_codes`](@ref), [`GeneralizedBicycleCode`](@ref), [`ExtendedGeneralizedBicycleCode`](@ref)
+- `ExtendedGeneralizedBicycleCode`: These codes are constructed through *algebraic extension* of [generalized bicycle](https://errorcorrectionzoo.org/c/generalized_bicycle) codes.
 
 ### Fields
     $TYPEDFIELDS
