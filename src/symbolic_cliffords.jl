@@ -113,7 +113,7 @@ end
 @qubitop1 SQRTX        (x⊻z ,z   , x==0 && z!=0) (x⊻z ,z   , x!=0 && z!=0)
 @qubitop1 InvSQRTX     (x⊻z ,z   , x!=0 && z!=0) (x⊻z ,z   , x==0 && z!=0)
 @qubitop1 SQRTY        (z   ,x   , x!=0 && z==0) (z   ,x   , z!=0 && x==0)
-@qubitop1 InvSQRTY     (z   ,x   , z!=0 && x==0) (z   ,x   , x!=0 && z==0) 
+@qubitop1 InvSQRTY     (z   ,x   , z!=0 && x==0) (z   ,x   , x!=0 && z==0)
 @qubitop1 CXYZ         (x⊻z ,x   , false)        (z   ,x⊻z , false)
 @qubitop1 CZYX         (z   ,x⊻z , false)        (x⊻z ,x   , false)
 
@@ -175,7 +175,7 @@ You can think of the `s` prefix as "symbolic" or "sparse".
     pz::Bool
     SingleQubitOperator(q,args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
-function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{B}=Val(true)) where B # TODO Generated functions that simplify the whole `if phases` branch might be a good optimization, but a quick benchmakr comparing sHadamard to SingleQubitOperator(sHadamard) did not show a worthwhile difference.
+function _apply!(stab::AbstractStabilizer, op::SingleQubitOperator; phases::Val{B}=Val(true)) where B # TODO Generated functions that simplify the whole `if phases` branch might be a good optimization, but a quick benchmark comparing sHadamard to SingleQubitOperator(sHadamard) did not show a worthwhile difference.
     s = tab(stab)
     c = op.q
     Tₘₑ = eltype(s.xzs)
