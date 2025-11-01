@@ -15,13 +15,6 @@ steps:
           codecov: true
     command:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg, CondaPkg;
-        println("CondaPkg Python version:");
-        pkg"conda run python --version";'
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
     env:
       JET_TEST: "{{matrix.JET_TEST}}"
       QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
