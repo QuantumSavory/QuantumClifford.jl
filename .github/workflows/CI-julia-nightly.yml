@@ -34,10 +34,12 @@ jobs:
       - uses: julia-actions/julia-buildpkg@v1
         with:
           project: 'lib/QECCore'
-      - uses: julia-actions/julia-runtest@v1
+      - name: Test QuantumClifford (with released QECCore)
+        uses: julia-actions/julia-runtest@v1
         env:
           JULIA_NUM_THREADS: ${{ matrix.threads }}
-      - uses: julia-actions/julia-runtest@v1
+      - name: Test QECCore (with released QuantumClifford)
+        uses: julia-actions/julia-runtest@v1
         with:
           project: 'lib/QECCore'
         env:

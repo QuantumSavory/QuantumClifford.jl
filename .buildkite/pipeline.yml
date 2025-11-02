@@ -3,7 +3,7 @@ env:
   JULIA_NUM_THREADS: auto
 
 steps:
-  - label: "QuantumClifford Tests - {{matrix.LABEL}}"
+  - label: "QuantumClifford Tests (with local QECCore) - {{matrix.LABEL}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -90,7 +90,7 @@ steps:
             QC_ECC_TEST: false
             QC_GPU_TEST: "opencl"
 
-  - label: "QECCore Tests - {{matrix.LABEL}}"
+  - label: "QECCore Tests (with local QuantumClifford) - {{matrix.LABEL}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -104,7 +104,7 @@ steps:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project='~' -e '
         using Pkg;
-        pkg"dev ./lib/QECCore";'
+        Pkg.add("QECCore");' # picks correct one due to workspace and source TOML entries
     env:
       JET_TEST: "{{matrix.JET_TEST}}"
     agents:
