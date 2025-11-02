@@ -93,6 +93,14 @@ export
     petrajectories, applybranches,
     # nonclifford
     GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase,
+    # Non-Clifford simulation - sum-over-Cliffords
+    TGate, CCZGate,
+    SparsifiedState, MagicStateDecomposition, CliffordGateDecomposition,
+    SimulationResult, QuantumSimulationResults, BitString,
+    sparsify_stabilizer_decomposition, estimate_sparsification_quality,
+    decompose_T_gate, decompose_CCZ_gate, decompose_rotation_magic_state,
+    simulate_non_clifford_circuit, sample_measurement_outcomes,
+    display_results, estimate_simulation_cost,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
@@ -1454,6 +1462,9 @@ include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
 include("nonclifford.jl")
+include("non_clifford_magic_states.jl")
+include("non_clifford_simulation.jl")
+include("non_clifford_sampling.jl")
 include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
