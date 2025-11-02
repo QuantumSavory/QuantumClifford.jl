@@ -10,7 +10,7 @@ families of:
 
 Delfosse and Reichardt ([delfosse2020short](@cite)) utilize the `[8, 4, 4]` Reed-Muller code
 to construct `[[8p, 6(p−1), 4]]` self-dual CSS quantum codes for `p ≥ 2`, and the `[16, 11, 4]`
-Reed-Muller code to construct `[[16p, 14p − 8, 4]]` self-dual CSS quantum codes for `p ≥ 1`. 
+Reed-Muller code to construct `[[16p, 14p − 8, 4]]` self-dual CSS quantum codes for `p ≥ 1`.
 The parameter `p` specifies the **number of blocks** in the code construction.
 
 To generalize the code construction, we extended the approach by using self-orthogonal `Reed-Muller`
@@ -108,7 +108,7 @@ a code with `k=0` logical qubits.
 julia> using QuantumClifford; using QuantumClifford.ECC; using QECCore: search_self_orthogonal_rm_codes; # hide
 
 julia> search_self_orthogonal_rm_codes(6)
-12-element Vector{Tuple{Int64, Int64}}:
+11-element Vector{Tuple{Int64, Int64}}:
  (1, 2)
  (1, 3)
  (2, 3)
@@ -152,7 +152,7 @@ julia> code_n(c), code_k(c)
 
 """
 function search_self_orthogonal_rm_codes(maxₘ::Int)
-    good_params = Tuple{Int, Int}[] 
+    good_params = Tuple{Int, Int}[]
     for m in 1:maxₘ
         for r in 0:m
             # Skip RM(0,1) as it produces a trivial code (k=0)
@@ -164,7 +164,7 @@ function search_self_orthogonal_rm_codes(maxₘ::Int)
                     push!(good_params, (r, m))
                 end
             catch
-                continue 
+                continue
             end
         end
     end

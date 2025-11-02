@@ -12,8 +12,6 @@ concurrency:
   # Cancel intermediate builds, but only if it is a pull request build.
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 
-env:
-  PYTHON: ~
 jobs:
   test:
     name: Julia ${{ matrix.version }} - t=${{ matrix.threads }} - jet=${{ matrix.jet }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
@@ -26,12 +24,6 @@ jobs:
             arch: x64
             version: alpha
             threads: 2
-            jet: 'false'
-#          - os: ubuntu-latest
-#            arch: x64
-#            version: '1'
-#            threads: 2
-#            jet: 'true'
     steps:
       - uses: actions/checkout@v5
       - uses: julia-actions/install-juliaup@v2
@@ -44,7 +36,6 @@ jobs:
       - uses: julia-actions/julia-runtest@v1
         env:
           JULIA_NUM_THREADS: ${{ matrix.threads }}
-          JET_TEST: ${{ matrix.jet }}
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v5
         with:

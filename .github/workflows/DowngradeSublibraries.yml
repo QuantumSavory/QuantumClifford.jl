@@ -1,4 +1,4 @@
-name: Downgrade
+name: Downgrade Sublibraries
 on:
   pull_request:
     branches: [master, main]
@@ -8,14 +8,15 @@ on:
     branches: [master, main]
     paths-ignore:
       - 'docs/**'
-env:
-  PYTHON: ~
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         version: ['1.10']
+        project:
+          - 'lib/QECCore'
     steps:
       - uses: actions/checkout@v5
       - uses: julia-actions/setup-julia@v2
@@ -23,9 +24,13 @@ jobs:
           version: ${{ matrix.version }}
       - uses: julia-actions/julia-downgrade-compat@v2
         with:
+          projects: ${{ matrix.project }}
           skip: Pkg,TOML,InteractiveUtils,Random,LinearAlgebra
-      - uses: julia-actions/cache@v2
-      - run: |
-          julia --project=@. -e 'using Pkg; Pkg.develop(path=joinpath(dirname(@__DIR__), "QuantumClifford.jl", "lib", "QECCore"))'
+          julia_version: ${{ matrix.version }}
       - uses: julia-actions/julia-buildpkg@v1
+        with:
+          project: ${{ matrix.project }}
       - uses: julia-actions/julia-runtest@v1
+        with:
+          project: ${{ matrix.project }}
+          ALLOW_RERESOLVE: false
