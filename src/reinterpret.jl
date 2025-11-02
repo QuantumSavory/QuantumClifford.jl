@@ -1,18 +1,13 @@
-"""
-Helpers to reinterpret packed bit representations between unsigned element types.
-
-These methods provide convenient `Base.reinterpret(::Type{U}, x)` overloads for
-`PauliOperator`, `Tableau`, `Stabilizer`, and `PauliFrame` so tests and code can
-easily convert between `UInt8/UInt16/UInt32/...` packed layouts.
-"""
+# Helpers to reinterpret packed bit representations between unsigned element types.
+#
+# These methods provide `reinterpret(::Type{U}, x)` overloads for
+# `PauliOperator`, `Tableau`, `Stabilizer`, and `PauliFrame` that perform
+# conversions between different unsigned element types. The implementation
+# below uses a simple, correct packing approach (bit-level) to ensure
+# correctness across arbitrary element-size changes.
 
 import Base: reinterpret
 
-"""
-Pack a vector of Bool into a Vector{U} with little-endian bit order.
-
-The bit with index 1 goes to the least-significant bit of the first word.
-"""
 function _pack_bits(bits::AbstractVector{Bool}, ::Type{U}) where {U<:Unsigned}
     n = length(bits)
     bits_per = sizeof(U) * 8
@@ -28,11 +23,6 @@ function _pack_bits(bits::AbstractVector{Bool}, ::Type{U}) where {U<:Unsigned}
     return out
 end
 
-"""
-Reinterpret a single PauliOperator to use storage elements of type `U`.
-
-This unpacks the X/Z bits and repacks them into words of type `U`.
-"""
 function reinterpret(::Type{U}, p::PauliOperator) where {U<:Unsigned}
     xs = xbit(p)
     zs = zbit(p)
