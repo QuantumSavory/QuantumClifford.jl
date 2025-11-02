@@ -33,4 +33,3 @@ jobs:
       - uses: julia-actions/julia-runtest@v1
         with:
           project: ${{ matrix.project }}
-          ALLOW_RERESOLVE: false
