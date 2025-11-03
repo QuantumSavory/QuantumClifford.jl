@@ -7,6 +7,8 @@ views using `Base.reinterpret` when the underlying byte layout allows it.
 If the storage-element sizes are incompatible, the code falls back to a
 safe packing path.
 """
+import Base: reinterpret
+
 function reinterpret(::Type{U}, p::PauliOperator) where {U<:Unsigned}
     old = eltype(p.xz)
     total_bytes = length(p.xz) * sizeof(old)
