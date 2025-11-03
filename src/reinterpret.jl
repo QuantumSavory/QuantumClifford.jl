@@ -1,12 +1,3 @@
-"""
-Helpers to reinterpret packed bit representations between unsigned element types.
-
-These methods define `reinterpret(::Type{U}, ::PauliOperator)` and
-`reinterpret(::Type{U}, ::Tableau)` in a way that prefers zero-copy
-views using `Base.reinterpret` when the underlying byte layout allows it.
-If the storage-element sizes are incompatible, the code falls back to a
-safe packing path.
-"""
 import Base: reinterpret
 
 function reinterpret(::Type{U}, p::PauliOperator) where {U<:Unsigned}
