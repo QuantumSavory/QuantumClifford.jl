@@ -1,6 +1,8 @@
 env:
   CODECOV_TOKEN: adb3f22a-231a-4f7b-8ed4-7c6c56453cbe
   JULIA_NUM_THREADS: auto
+  PYTHON: ""
+  PYCALL_DEBUG_BUILD: yes
 
 steps:
   - label: "QuantumClifford Tests (with local QECCore) - {{matrix.LABEL}}"
@@ -97,14 +99,10 @@ steps:
           compiled_size_limit: 10737418240 # 10GiB
       - QuantumSavory/julia-xvfb#v1:
       - JuliaCI/julia-test#v1:
+          package: "QECCore"
       - JuliaCI/julia-coverage#v1:
           codecov: true
           dirs: './src,./ext,./lib/QECCore/src,./lib/QECCore/ext'
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        Pkg.add("QECCore");' # picks correct one due to workspace and source TOML entries
     env:
       JET_TEST: "{{matrix.JET_TEST}}"
     agents:

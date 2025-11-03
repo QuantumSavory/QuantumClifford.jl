@@ -12,9 +12,12 @@ concurrency:
   # Cancel intermediate builds, but only if it is a pull request build.
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 
+env:
+  PYTHON: ""
+  PYCALL_DEBUG_BUILD: yes
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - t=${{ matrix.threads }} - jet=${{ matrix.jet }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    name: Julia ${{ matrix.version }} - t=${{ matrix.threads }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -34,7 +37,7 @@ jobs:
       - uses: julia-actions/julia-buildpkg@v1
         with:
           project: 'lib/QECCore'
-      - name: Test QuantumClifford (with released QECCore)
+      - name: Test QuantumClifford (with local QECCore)
         uses: julia-actions/julia-runtest@v1
         env:
           JULIA_NUM_THREADS: ${{ matrix.threads }}
