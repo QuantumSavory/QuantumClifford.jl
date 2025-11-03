@@ -4,20 +4,14 @@ authors = ["Stefan Krastanov <stefan@krastanov.org> and QuantumSavory community 
 version = "0.10.0"
 
 [deps]
-AbstractAlgebra = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
-Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 AutoHashEquals = "15f4f7f2-30c1-5605-9d31-71845cf9641f"
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
-Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
-Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
-HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"
 HostCPUFeatures = "3e5b6fbb-0976-4d2c-9146-d79de83f2fb0"
 ILog2 = "2cd5bd5f-40a1-5050-9e10-fc8cdb6109f5"
 InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
-JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 Nemo = "2edaba10-b0f1-5616-af89-8c11ac63239a"
@@ -29,13 +23,14 @@ SIMD = "fdea26ae-647d-5447-a871-4b548cad5224"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 SumTypes = "8e1ec7a9-0e02-4297-b0fe-6433085c89f2"
-TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 
 [weakdeps]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 Atomix = "a9b6321e-bd34-4604-b9c9-b65b8de01458"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 GPUArraysCore = "46192b85-c4d5-4398-a991-12ede77f4527"
+Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
 LDPCDecoders = "3c486d74-64b9-4c60-8b1a-13a564e77efb"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
@@ -44,6 +39,9 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PyQDecoders = "17f5de1a-9b79-4409-a58d-4d45812840f7"
 Quantikz = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
 QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
+
+[sources.QECCore]
+path = "lib/QECCore"
 
 [extensions]
 QuantumCliffordAdaptExt = ["Adapt", "GPUArraysCore"]
@@ -58,6 +56,9 @@ QuantumCliffordPlotsExt = "Plots"
 QuantumCliffordPyQDecodersExt = "PyQDecoders"
 QuantumCliffordQOpticsExt = "QuantumOpticsBase"
 QuantumCliffordQuantikzExt = "Quantikz"
+
+[workspace]
+projects = ["docs", "/lib/QECCore"]
 
 [compat]
 Adapt = "4.3.0"
@@ -94,9 +95,3 @@ SparseArrays = "1.10"
 Statistics = "1.10"
 SumTypes = "0.5"
 julia = "1.10"
-
-[sources.QECCore]
-path = "lib/QECCore"
-
-[workspace]
-projects = ["docs", "/lib/QECCore"]
