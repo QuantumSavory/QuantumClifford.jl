@@ -5,9 +5,11 @@
         using Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra
         using QuantumClifford
         using QuantumClifford.ECC
-        using QuantumClifford.ECC: code_k, code_n, two_block_group_algebra_codes
+        using QuantumClifford.ECC: code_k, code_n, two_block_group_algebra_codes, DistanceMIPAlgorithm
         using Oscar
         using Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup, FPGroupElem
+        using HiGHS
+        using JuMP
 
         @testset "Reproduce Table 3 of arXiv:2306.16400" begin
             # [[24, 8, 3]]
@@ -23,6 +25,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 24 && code_k(c) == 8
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 3
             @test small_group_identification(G) == (order(G), 4)
 
             # [[24, 12, 2]]
@@ -37,6 +40,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 24 && code_k(c) == 12
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
             @test small_group_identification(G) == (order(G), 4)
 
             # [[32, 8, 4]]
@@ -52,6 +56,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 32 && code_k(c) == 8
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
             @test small_group_identification(G) == (order(G), 7)
 
             # [[32, 16, 2]]
@@ -66,6 +71,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 32 && code_k(c) == 16
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
             @test small_group_identification(G) == (order(G), 7)
 
             # [[36, 12, 3]]
@@ -81,6 +87,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 36 && code_k(c) == 12
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 3
             @test small_group_identification(G) == (order(G), 1)
 
             # [[40, 8, 5]]
@@ -96,6 +103,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 40 && code_k(c) == 8
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 5
             @test small_group_identification(G) == (order(G), 4)
 
             # [[40, 20, 2]]
@@ -110,6 +118,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 40 && code_k(c) == 20
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
             @test small_group_identification(G) == (order(G), 4)
 
             # [[48, 8, 6]]
@@ -125,6 +134,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 48 && code_k(c) == 8
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
             @test small_group_identification(G) == (order(G), 6)
 
             # [[48, 12, 4]]
@@ -139,6 +149,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 48 && code_k(c) == 12
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
             @test small_group_identification(G) == (order(G), 6)
 
             # [[48, 16, 3]]
@@ -153,6 +164,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 48 && code_k(c) == 16
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 3
             @test small_group_identification(G) == (order(G), 6)
 
             # [[48, 24, 2]]
@@ -167,6 +179,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 48 && code_k(c) == 24
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
             @test small_group_identification(G) == (order(G), 6)
 
             # [[56, 8, 7]]
@@ -182,6 +195,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 56 && code_k(c) == 8
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 7
             @test small_group_identification(G) == (order(G), 3)
 
             # [[56, 28, 2]]
@@ -196,6 +210,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 56 && code_k(c) == 28
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
             @test small_group_identification(G) == (order(G), 3)
 
             # [[60, 12, 5]]
@@ -211,6 +226,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 60 && code_k(c) == 12
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 5
             @test small_group_identification(G) == (order(G), 3)
 
             # [[60, 20, 3]]
@@ -225,6 +241,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 60 && code_k(c) == 20
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 3
             @test small_group_identification(G) == (order(G), 3)
 
             # [[64, 8, 8]]
@@ -240,9 +257,10 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 64 && code_k(c) == 8
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 8
             @test small_group_identification(G) == (order(G), 18)
 
-            # [[64, 16, 8]]
+            # [[64, 16, 4]]
             F = free_group(["r", "s"])
             r, s = gens(F)
             G, = quo(F, [r^m, s^2, (r*s)^2])
@@ -254,6 +272,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 64 && code_k(c) == 16
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
             @test small_group_identification(G) == (order(G), 18)
 
             # [[64, 32, 2]]
@@ -268,6 +287,7 @@
             @test order(G) == 2*m
             @test describe(G) == "D$(m*2)"
             @test code_n(c) == 64 && code_k(c) == 32
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
            @test small_group_identification(G) == (order(G), 18)
         end
     end
