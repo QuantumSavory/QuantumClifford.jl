@@ -1,12 +1,15 @@
-@testitem "ECC 2BGA Reprroduce Table 3 lin2024quantum" begin
+@testitem "ECC 2BGA Reproduce Table 3 of arXiv:2306.16400" tags=[:ecc, :ecc_bespoke_checks] begin
     @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
+        using Nemo
         using Nemo: FqFieldElem
         using Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra
+        using QuantumClifford
         using QuantumClifford.ECC
         using QuantumClifford.ECC: code_k, code_n, two_block_group_algebra_codes
-        using Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup, FPGroupElem, twobga_from_fp_group
+        using Oscar
+        using Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup, FPGroupElem
 
-        @testset "Reproduce Table 3 of lin2024quantum" begin
+        @testset "Reproduce Table 3 of arXiv:2306.16400" begin
             # [[24, 8, 3]]
             m = 6
             F = free_group(["r", "s"])
