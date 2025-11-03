@@ -90,10 +90,46 @@ function applywstatus!(s::AbstractQCState, m::BellMeasurement)
     end
 end
 
+"""A Bell measurement in which each of the measured qubits has a chance to have flipped."""
+struct NoisyBellMeasurement{T} <: AbstractOperation
+    meas::AbstractOperation
+    flipprob::T
+end
+NoisyBellMeasurement(p,i,fp) = NoisyBellMeasurement(BellMeasurement(p,i),fp)
+
+function applywstatus!(s::AbstractQCState, m::NoisyBellMeasurement)
+    state, status = applywstatus!(s,m.meas)
+    nqubits = length(affectedqubits(m))
+    errprob = (1-(1-2*m.flipprob)^nqubits)/2 # probability of odd number of flips
+    if rand()<errprob
+        return state, status==continue_stat ? failure_stat : continue_stat
+    else
+        return state, status
+    end
+end
+
 function applybranches(s::AbstractQCState, m::BellMeasurement; max_order=1)
     n = nqubits(s)
     [(ns,iseven(r>>1 + m.parity) ? continue_stat : failure_stat, p,0)
      for (ns,r,p) in _applybranches_measurement([(s,0x0,1.0)],m.measurements,n)]
+end
+
+function applybranches(s::AbstractQCState, m::NoisyBellMeasurement; max_order=1)
+    measurement_branches = applybranches(s, m.meas, max_order=max_order)
+    if max_order==0
+        return measurement_branches
+    else
+        new_branches = []
+        nqubits = length(affectedqubits(m))
+        p = (1-2m.flipprob)^nqubits
+        errprob = 1//2*(1-p)
+        sucprob = 1//2*(1+p)
+        for (mstate, success, mprob, morder) in measurement_branches
+            push!(new_branches, (mstate, success, mprob*sucprob, morder))
+            push!(new_branches, (mstate, success==continue_stat ? failure_stat : continue_stat, mprob*errprob, morder+1))
+        end
+        return new_branches
+    end
 end
 
 # TODO XXX THIS IS PARTICULARLY INEFFICIENT recurrent implementation

@@ -8,14 +8,12 @@ on:
     branches: [master, main]
     paths-ignore:
       - 'docs/**'
-env:
-  PYTHON: ~
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: ['1.10']
+        version: ['1.12']
     steps:
       - uses: actions/checkout@v5
       - uses: julia-actions/setup-julia@v2
@@ -24,8 +22,7 @@ jobs:
       - uses: julia-actions/julia-downgrade-compat@v2
         with:
           skip: Pkg,TOML,InteractiveUtils,Random,LinearAlgebra
+          julia_version: ${{ matrix.version }}
       - uses: julia-actions/cache@v2
-      - run: |
-          julia --project=@. -e 'using Pkg; Pkg.develop(path=joinpath(dirname(@__DIR__), "QuantumClifford.jl", "lib", "QECCore"))'
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1

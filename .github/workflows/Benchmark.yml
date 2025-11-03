@@ -2,9 +2,6 @@ name: Performance tracking
 on:
   pull_request:
 
-env:
-  PYTHON: ~
-
 jobs:
   performance-tracking:
     runs-on: ubuntu-latest
