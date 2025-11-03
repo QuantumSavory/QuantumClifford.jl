@@ -1,7 +1,6 @@
 @testitem "Doctests" tags=[:doctests] begin
     using Documenter
     using QuantumClifford
-    using QuantumClifford.Experimental.NoisyCircuits
     using QuantumInterface
 
     extensions = []
@@ -25,7 +24,7 @@
     ENV["LINES"] = 80    # for forcing `displaysize(io)` to be big enough
     ENV["COLUMNS"] = 80
     DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford; using QuantumClifford.ECC); recursive=true)
-    modules = [QuantumClifford, QuantumClifford.Experimental.NoisyCircuits, QuantumClifford.ECC, QuantumInterface, extensions...]
+    modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, extensions...]
     doctestfilters = [r"(QuantumClifford\.|)"]
     doctest(nothing, modules;
             doctestfilters

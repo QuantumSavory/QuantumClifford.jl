@@ -3,72 +3,135 @@ env:
   JULIA_NUM_THREADS: auto
   PYTHON: ""
   PYCALL_DEBUG_BUILD: yes
-  
+
 steps:
-  - label: "Package Tests"
+  - label: "QuantumClifford Tests (with local QECCore) - {{matrix.LABEL}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
+          compiled_size_limit: 10737418240 # 10GiB
       - QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-test#v1:
       - JuliaCI/julia-coverage#v1:
           codecov: true
+          dirs: './src,./ext,./lib/QECCore/src,./lib/QECCore/ext'
     command:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
-  - label: "JET Tests"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
     env:
-      JET_TEST: true
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project='~' -e '
-        using Pkg;
-        pkg"dev .";'
-  - label: "Downstream QuantumSavory"
+      JET_TEST: "{{matrix.JET_TEST}}"
+      QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
+      QC_GPU_TEST: "{{matrix.QC_GPU_TEST}}"
+    agents:
+      queue: "{{matrix.QUEUE}}"
+    matrix:
+      setup:
+        LABEL: ["base tests"]
+        QUEUE: ["default"]
+        JET_TEST: ["false"]
+        QC_ECC_TEST: ["false"]
+        QC_GPU_TEST: ["false"]
+      adjustments:
+        - with:
+            LABEL: "JET"
+            QUEUE: default
+            JET_TEST: true
+            QC_ECC_TEST: false
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Base"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "base"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Encoding"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "encoding"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Decoding"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "decoding"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Syndrome Measurement"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "syndromemeasurement"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Syndrome Circuit"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "syndromecircuit"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "ECC Bespoke"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: "bespoke"
+            QC_GPU_TEST: false
+        - with:
+            LABEL: "GPU - CUDA"
+            QUEUE: cuda
+            JET_TEST: false
+            QC_ECC_TEST: false
+            QC_GPU_TEST: "cuda"
+        - with:
+            LABEL: "GPU - ROCm"
+            QUEUE: rocm
+            JET_TEST: false
+            QC_ECC_TEST: false
+            QC_GPU_TEST: "rocm"
+        - with:
+            LABEL: "GPU - OpenCL"
+            QUEUE: default
+            JET_TEST: false
+            QC_ECC_TEST: false
+            QC_GPU_TEST: "opencl"
+
+  - label: "QECCore Tests (with local QuantumClifford) - {{matrix.LABEL}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
+          compiled_size_limit: 10737418240 # 10GiB
+      - QuantumSavory/julia-xvfb#v1:
+      - JuliaCI/julia-test#v1:
+          package: "QECCore"
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+          dirs: './src,./ext,./lib/QECCore/src,./lib/QECCore/ext'
+    env:
+      JET_TEST: "{{matrix.JET_TEST}}"
+    agents:
+      queue: "{{matrix.QUEUE}}"
+    matrix:
+      setup:
+        LABEL: ["base tests"]
+        QUEUE: ["default"]
+        JET_TEST: ["false"]
+      adjustments:
+        - with:
+            LABEL: "JET"
+            QUEUE: default
+            JET_TEST: true
+
+  - label: "Downstream Tests - {{matrix.PACKAGE}}"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+          compiled_size_limit: 10737418240 # 10GiB
       - QuantumSavory/julia-xvfb#v1:
     command:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --project=$(mktemp -d) -e '
         using Pkg;
         pkg"dev .";
-        Pkg.add("QuantumSavory");
-        Pkg.build("QuantumSavory");
-        Pkg.test("QuantumSavory");'
-  - label: "Downstream BPGates"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project=$(mktemp -d) -e '
-        using Pkg;
-        pkg"dev .";
-        Pkg.add("BPGates");
-        Pkg.build("BPGates");
-        Pkg.test("BPGates");'
-  - label: "Downstream QuantumSymbolics"
-    plugins:
-      - JuliaCI/julia#v1:
-          version: "1"
-      - QuantumSavory/julia-xvfb#v1:
-    command:
-      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - julia --project=$(mktemp -d) -e '
-        using Pkg;
-        pkg"dev .";
-        Pkg.add("QuantumSymbolics");
-        Pkg.build("QuantumSymbolics");
-        Pkg.test("QuantumSymbolics");'
+        Pkg.add("{{matrix.PACKAGE}}");
+        Pkg.build("{{matrix.PACKAGE}}");
+        Pkg.test("{{matrix.PACKAGE}}");'
+    matrix:
+      setup:
+        PACKAGE: ["QuantumSavory", "BPGates", "QuantumSymbolics"]

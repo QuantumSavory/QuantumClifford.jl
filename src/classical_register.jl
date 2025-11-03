@@ -133,14 +133,14 @@ function applybranches(s::Register, op::PauliMeasurement; max_order=1) # TODO th
     if isnothing(r)
         s1 = s
         phases(stabilizerview(s1.stab))[anticom] = 0x00
-        s1.bits[op.bit] = false
+        _setregbit(s1.bits, op.bit, false)
         s2 = copy(s)
         phases(stabilizerview(s2.stab))[anticom] = 0x02
-        s2.bits[op.bit] = true
+        _setregbit(s2.bits, op.bit, true)
         push!(new_branches, (s1,continue_stat,1/2,0))
         push!(new_branches, (s2,continue_stat,1/2,0))
     else
-        s.bits[op.bit] = r==0x02
+        _setregbit(s.bits, op.bit, r==0x02)
         push!(new_branches, (s,continue_stat,1,0))
     end
     new_branches
@@ -153,19 +153,58 @@ function applybranches(s::Register, op::AbstractMeasurement; max_order=1)
     if isnothing(r)
         s1 = s
         phases(stabilizerview(s1.stab))[anticom] = 0x00
-        s1.bits[op.bit] = false
+        _setregbit(s1.bits, op.bit, false)
         s2 = copy(s)
         phases(stabilizerview(s2.stab))[anticom] = 0x02
-        s2.bits[op.bit] = true
+        _setregbit(s2.bits, op.bit, true)
         push!(new_branches, (s1,continue_stat,1/2,0))
         push!(new_branches, (s2,continue_stat,1/2,0))
     else
-        s.bits[op.bit] = r==0x02
+        _setregbit(s.bits, op.bit, r==0x02)
         push!(new_branches, (s,continue_stat,1,0))
     end
     new_branches
 end
 
+
+
+#helper dispatch functions for the AbstractResetMeasurement applybranches 
+_reset_mappings(::Type{sMRZ}) = (sX, projectZ!)
+_reset_mappings(::Type{sMRX}) = (sZ, projectX!)
+_reset_mappings(::Type{sMRY}) = (sZ, projectY!)
+
+#helper function to only set a bit if the given index is non-zero, since internally 'nothing' is defined to be 0
+function _setregbit(bit_register::Vector{Bool},bit::Int64,value::Bool)
+    if(bit==0)
+        nothing
+    else
+        bit_register[bit] = value
+    end
+end
+
+function applybranches(s::Register, op::AbstractResetMeasurement;max_order=1)
+    flipOp, projectFunc = _reset_mappings(typeof(op))
+    _, anticom, res = projectFunc(quantumstate(s), op.qubit)
+    new_branches = []
+    if isnothing(res)
+        s1 = s
+        phases(stabilizerview(s1.stab))[anticom] = 0x00
+        _setregbit(s1.bits, op.bit, false)
+        s2 = copy(s)
+        phases(stabilizerview(s2.stab))[anticom] = 0x02
+        _setregbit(s2.bits, op.bit, true)
+        apply!(s2, flipOp(op.qubit))
+        push!(new_branches, (s1,continue_stat,1/2,0))
+        push!(new_branches, (s2,continue_stat,1/2,0))
+    else
+        _setregbit(s.bits, op.bit, res==0x02)
+        if(res==0x02)
+            apply!(s, flipOp(op.qubit))
+        end
+        push!(new_branches, (s,continue_stat,1,0))
+    end
+    new_branches
+end
 #=
 function applybranches(state::Register, op::SparseMeasurement; max_order=1)
     n = nqubits(state.stab) # TODO implement actual sparse measurements

@@ -1,7 +1,7 @@
 @testitem "Random" begin
     using Random
     using QuantumClifford
-    using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
+    using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good, random_tableau
 
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
@@ -69,6 +69,18 @@
             bound = 1/sqrt(n)
             @test expected * (1-10bound) <= sum(count_ones.(random_pauli(10000).xz)) <= expected * (1+10bound)
 
+        end
+    end
+
+    @testset "Random Tableaux" begin
+        phase_is_real(t) = t ∈ [0, 2]
+        for n in [1, test_sizes..., 200,500]
+            @test all(random_tableau(100, n).phases .== 0)
+            @test all(random_tableau(100, n, 0.1).phases .== 0)
+            @test any(random_tableau(100, n; nophase=false, realphase=false).phases .== 1)
+            @test any(random_tableau(100, n, 0.1; nophase=false, realphase=false).phases .== 1)
+            @test any(phase_is_real.(random_tableau(100, n; nophase=false).phases))
+            @test any(phase_is_real.(random_tableau(100, n, 0.1; nophase=false).phases))
         end
     end
 end

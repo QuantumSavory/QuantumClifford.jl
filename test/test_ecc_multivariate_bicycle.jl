@@ -1,4 +1,4 @@
-@testitem "ECC Multivaraite Bicycle" begin
+@testitem "ECC Multivaraite Bicycle" tags=[:ecc, :ecc_bespoke_checks] begin
     using Hecke
     using HiGHS
     using JuMP
@@ -81,7 +81,7 @@
         x, y = gens(GA)
         z = x*y
         A = x + z^4
-        B = x + y^2 + z^2 
+        B = x + y^2 + z^2
         c = two_block_group_algebra_codes(A, B)
         @test code_n(c) == 30 && code_k(c) == 4
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 5
@@ -92,7 +92,7 @@
         x, y = gens(GA)
         z = x*y
         A = x + y^3
-        B = x^2 + y + y^2 
+        B = x^2 + y + y^2
         c = two_block_group_algebra_codes(A, B)
         @test code_n(c) == 72 && code_k(c) == 4
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 8
@@ -103,7 +103,7 @@
         x, y = gens(GA)
         z = x*y
         A = x^6 + x^3
-        B = z^5 + x^5 + y 
+        B = z^5 + x^5 + y
         c = two_block_group_algebra_codes(A, B)
         @test code_n(c) == 96 && code_k(c) == 4
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 8

@@ -6,8 +6,10 @@ import QuantumInterface: nsubsystems
 Particularly useful when acting on [`Register`](@ref).
 
 See also: [`apply!`](@ref), [`projectrand!`](@ref)."""
-struct PauliMeasurement{Tₚ<:AbstractArray{UInt8,0}, Tᵥ<:AbstractVector{<:Unsigned}} <: AbstractMeasurement
-    pauli::PauliOperator{Tₚ,Tᵥ}
+struct PauliMeasurement{
+    P <: AbstractArray{<: Unsigned, 0}, XZ <: AbstractVector{<: Unsigned}
+} <: AbstractMeasurement
+    pauli::PauliOperator{P,XZ}
     bit::Int
 end
 
@@ -88,10 +90,46 @@ function applywstatus!(s::AbstractQCState, m::BellMeasurement)
     end
 end
 
+"""A Bell measurement in which each of the measured qubits has a chance to have flipped."""
+struct NoisyBellMeasurement{T} <: AbstractOperation
+    meas::AbstractOperation
+    flipprob::T
+end
+NoisyBellMeasurement(p,i,fp) = NoisyBellMeasurement(BellMeasurement(p,i),fp)
+
+function applywstatus!(s::AbstractQCState, m::NoisyBellMeasurement)
+    state, status = applywstatus!(s,m.meas)
+    nqubits = length(affectedqubits(m))
+    errprob = (1-(1-2*m.flipprob)^nqubits)/2 # probability of odd number of flips
+    if rand()<errprob
+        return state, status==continue_stat ? failure_stat : continue_stat
+    else
+        return state, status
+    end
+end
+
 function applybranches(s::AbstractQCState, m::BellMeasurement; max_order=1)
     n = nqubits(s)
     [(ns,iseven(r>>1 + m.parity) ? continue_stat : failure_stat, p,0)
      for (ns,r,p) in _applybranches_measurement([(s,0x0,1.0)],m.measurements,n)]
+end
+
+function applybranches(s::AbstractQCState, m::NoisyBellMeasurement; max_order=1)
+    measurement_branches = applybranches(s, m.meas, max_order=max_order)
+    if max_order==0
+        return measurement_branches
+    else
+        new_branches = []
+        nqubits = length(affectedqubits(m))
+        p = (1-2m.flipprob)^nqubits
+        errprob = 1//2*(1-p)
+        sucprob = 1//2*(1+p)
+        for (mstate, success, mprob, morder) in measurement_branches
+            push!(new_branches, (mstate, success, mprob*sucprob, morder))
+            push!(new_branches, (mstate, success==continue_stat ? failure_stat : continue_stat, mprob*errprob, morder+1))
+        end
+        return new_branches
+    end
 end
 
 # TODO XXX THIS IS PARTICULARLY INEFFICIENT recurrent implementation
@@ -126,15 +164,25 @@ end
 struct VerifyOp <: AbstractOperation
     good_state::Stabilizer
     indices::AbstractVector{Int}
-    VerifyOp(s,indices) = new(canonicalize_rref!(copy(stabilizerview(s)))[1],indices)
+    function VerifyOp(s, indices)
+        gs = canonicalize_rref!(copy(stabilizerview(s)))[1]
+        r,n = size(gs)
+        if(r!=n)
+            throw(ArgumentError(lazy"""The argument you have provided for good_state is not a logical state within the codespace. Expected a pure $n - qubit stabilizer state (i.e. $n independent stabilizer generators on $n qubits), but good_state has only $r independent stabilizer generators."""))
+        end
+        return new(gs, indices)
+    end
 end
 
 # TODO this one needs more testing
 function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the other qubits are measured or traced out
     # TODO QuantumClifford should implement some submatrix comparison
-    canonicalize_rref!(quantumstate(s),v.indices) # Document why rref is used
-    sv = tab(s)
+    sv = traceout!(copy(quantumstate(s)), setdiff(1:nqubits(s),v.indices))
+    sv = stabilizerview(sv)
+    canonicalize_rref!(sv, v.indices)
+    sv = tab(sv)
     good_state = tab(v.good_state)
+    
     for i in eachindex(good_state)
         (sv.phases[end-i+1]==good_state.phases[end-i+1]) || return s, false_success_stat
         for (j,q) in zip(eachindex(good_state),v.indices)

@@ -111,6 +111,7 @@ where the order is `2m`.
 The [[24, 8, 3]] 2BGA code from Appendix C, Table III in [lin2024quantum](@cite) is constructed
 by specifying a group presentation below (giving the group `D₆ = C₆ ⋉ C₂`).
 
+
 ```jldoctest finitegrp
 julia> m = 6;
 

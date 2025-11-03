@@ -56,6 +56,11 @@ td > code {
 |` │   ├─ sMY                            `|❌ | n²| [`projectY!`](@ref)    |
 |` │   └─ sMZ                            `|❌ | n²| [`projectZ!`](@ref)    |
 |` │                                     `|  |   |                        |
+|` ├─ AbstractResetMeasurement           `|  |   |                        |
+|` │   ├─ sMRX                           `|❌ | n²| [`projectX!`](@ref)   |
+|` │   ├─ sMRY                           `|❌ | n²| [`projectY!`](@ref)   |
+|` │   └─ sMRZ                           `|❌ | n²| [`projectZ!`](@ref)   |
+|` │                                     `|  |   |                        |
 |` ├─ BellMeasurement                    `|❌ | n²|                        |
 |` ├─ NoiseOp                            `|❌ |  ?| [`applynoise!`](@ref)  |
 |` ├─ NoiseOpAll                         `|❌ |  ?| [`applynoise!`](@ref)  |
@@ -72,7 +77,6 @@ Predefined unitary gates are available, like [`sCNOT`](@ref), [`sHadamard`](@ref
 
 ```@example 1
 using QuantumClifford # hide
-using QuantumClifford.Experimental.NoisyCircuits # hide
 using Quantikz # hide
 [sCNOT(2,4),sHadamard(2),sCPHASE(1,3),sSWAP(2,4)]
 ```
@@ -84,7 +88,6 @@ They can be specified by giving a Clifford operator tableaux and the indices on 
 
 ```@example 1
 using QuantumClifford # hide
-using QuantumClifford.Experimental.NoisyCircuits # hide
 using Quantikz # hide
 SparseGate(tCNOT, [2,4])
 ```
