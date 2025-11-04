@@ -21,7 +21,7 @@ function bicycle_codes end
 """Implemented in a package extension with Hecke. Check the docs for the [Hecke extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Hecke.jl)"""
 function haah_cubic_codes end
 
-"""Implemented in a package extension with Hecke."""
+"""Implemented in a package extension with Hecke. Check the docs for the [Hecke extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Hecke.jl)"""
 function honeycomb_color_codes end
 
 """La-cross codes ([pecorari2025high](@cite))
