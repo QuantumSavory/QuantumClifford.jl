@@ -36,6 +36,7 @@ if any((CUDA_flag, ROCm_flag, OpenCL_flag))
          )
 end
 Oscar_flag && Pkg.add("Oscar")
+Oscar_compatible = !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
 using TestItemRunner
 using QuantumClifford
 
@@ -47,6 +48,10 @@ testfilter = ti -> begin
         return :jet in ti.tags
     else
         push!(exclude, :jet)
+    end
+
+    if !Oscar_compatible
+        push!(exclude, :oscar_required)
     end
 
     if get(ENV, "ECC_TEST", "") == "base"
