@@ -13,7 +13,7 @@ using QuantumClifford
     t3 = reinterpret(UInt64, t2)
     @test QuantumClifford.stab_to_gf2(t) == QuantumClifford.stab_to_gf2(t3)
 end
-    
+
 @testitem "reinterpret edge cases" begin
     @test_throws ArgumentError reinterpret(UInt128, P"XXXXX")
 
@@ -22,24 +22,24 @@ end
     @test_throws ArgumentError reinterpret(UInt32, p_small)
 end
 
-    @testset "reinterpret combinations" begin
-        unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
-        ns = [7,8,9, 15,16,17, 31,32,33, 63,64,65, 127,128,129]
-        Random.seed!(12345)
+@testset "reinterpret combinations" begin
+    unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
+    ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
+    Random.seed!(12345)
 
-        for n in ns
-            for Ti in unsigned_types, Tf in unsigned_types
-                len = QuantumClifford._nchunks(n, Ti)
-                xz = rand(Ti, len)
-                p = PauliOperator(0x0, n, xz)
-                try
-                    p2 = reinterpret(Tf, p)
-                    p3 = reinterpret(Ti, p2)
-                    @test xbit(p) == xbit(p3)
-                    @test zbit(p) == zbit(p3)
-                catch e
-                    @test isa(e, ArgumentError)
-                end
+    for n in ns
+        for Ti in unsigned_types, Tf in unsigned_types
+            len = QuantumClifford._nchunks(n, Ti)
+            xz = rand(Ti, len)
+            p = PauliOperator(0x0, n, xz)
+            try
+                p2 = reinterpret(Tf, p)
+                p3 = reinterpret(Ti, p2)
+                @test xbit(p) == xbit(p3)
+                @test zbit(p) == zbit(p3)
+            catch e
+                @test isa(e, ArgumentError)
             end
         end
     end
+end
