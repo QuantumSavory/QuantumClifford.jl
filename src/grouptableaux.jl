@@ -364,8 +364,8 @@ function pauligroup(n::Int; phases=false)
         for i in 2*4^n+1:3*4^n
             s[i+4^n] = -1 * s[i]
         end
-    end
-    if !phases
+        return s
+    else
         s = zero(Tableau, 4^n, n)
         paulis = ((false, false), (true, false), (false, true), (true, true))
         for (i, P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
@@ -373,8 +373,8 @@ function pauligroup(n::Int; phases=false)
                 s[i, j] = p
             end
         end
+        return s
     end
-    return s
 end
 
 """
