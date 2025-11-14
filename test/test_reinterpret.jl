@@ -25,7 +25,6 @@ end
 @testset "reinterpret combinations" begin
     unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
     ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
-    Random.seed!(12345)
 
     for n in ns
         for Ti in unsigned_types, Tf in unsigned_types
