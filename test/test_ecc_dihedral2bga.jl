@@ -1,4 +1,4 @@
-@testitem "ECC 2BGA Reproduce Table 3 of arXiv:2306.16400" tags=[:ecc, :ecc_bespoke_checks] begin
+@testitem "ECC 2BGA Reproduce Table 3 of arXiv:2306.16400" tags=[:ecc, :ecc_bespoke_checks, :oscar_required] begin
     @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
         using Nemo
         using Nemo: FqFieldElem
