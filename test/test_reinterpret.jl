@@ -20,7 +20,6 @@
 end
 
 @testitem "reinterpret edge cases" begin
-    # After removing defensive layout checks, reinterpret should succeed and round-trip
     p_edge = P"XXXXX"
     try
         p_edge2 = reinterpret(UInt128, p_edge)
@@ -29,6 +28,8 @@ end
         @test zbit(p_edge) == zbit(p_edge3)
     catch e
         @test isa(e, ArgumentError)
+        msg = sprint(showerror, e)
+        @test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
     end
 
     small_xz = UInt8[0x0, 0x0, 0x0, 0x0]
@@ -40,6 +41,8 @@ end
         @test zbit(p_small) == zbit(p_small3)
     catch e
         @test isa(e, ArgumentError)
+        msg = sprint(showerror, e)
+        @test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
     end
 end
 
@@ -59,6 +62,8 @@ end
                 @test zbit(p) == zbit(p3)
             catch e
                 @test isa(e, ArgumentError)
+                msg = sprint(showerror, e)
+                @test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
             end
         end
     end
@@ -66,7 +71,6 @@ end
 
 
 @testset "reinterpret extra edge cases" begin
-    # 1) Zero-qubit PauliOperator (empty halves) should round-trip or at least raise ArgumentError
     p_zero = PauliOperator(BitVector(), BitVector())
     try
         pz2 = reinterpret(UInt64, p_zero)
@@ -75,22 +79,20 @@ end
         @test zbit(p_zero) == zbit(pz3)
     catch e
         @test isa(e, ArgumentError)
+        msg = sprint(showerror, e)
+        @test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
     end
 
-    # 2) Minimal backing: 1 byte total -> reinterpret to a 2-byte element should fail
     p_min = QuantumClifford.PauliOperator(0x0, 1, UInt8[0x0])
     @test_throws ArgumentError reinterpret(UInt16, p_min)
 
-    # 3) Small backing -> reinterpret to a much larger element type should fail
     p_small2 = QuantumClifford.PauliOperator(0x0, 2, UInt8[0x0, 0x0])
     @test_throws ArgumentError reinterpret(UInt128, p_small2)
 
-    # 4) Tableau with an odd number of rows (3 rows) -> reinterpret to a wider element should fail
     phases = UInt8[0x0]
     t_odd = QuantumClifford.Tableau(phases, 1, zeros(UInt8, 3, 1))
     @test_throws ArgumentError reinterpret(UInt16, t_odd)
 
-    # 5) Successful tableau roundtrip for a simple shape (may throw ArgumentError depending on sizes)
     nch = QuantumClifford._nchunks(5, UInt8)
     xt = rand(UInt8, nch, 2)
     phases = zeros(UInt8, 2)
