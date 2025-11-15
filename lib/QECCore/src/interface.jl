@@ -76,8 +76,7 @@ The number of stabilizers in a error correction code. They might not be all line
 See also: [`code_n`](@ref) and [`code_k`](@ref)
 """
 function code_s end
-code_s(c::AbstractQECC) = nstabilizers(parity_matrix(c))
-nstabilizers(pm::AbstractMatrix{Bool}) = size(pm, 1)
+code_s(c::AbstractQECC) = size(parity_matrix(c), 1)
 
 """
     code_k(c::AbstractECC)
@@ -456,7 +455,7 @@ The generator polynomial g(x) of a [cyclic code](https://en.wikipedia.org/wiki/C
 which generates the ideal corresponding to the code in the quotient ring ``\\mathbb{F}_q[x]/(x^n - 1)``.
 
 The generator polynomial is the unique *monic* polynomial of minimal degree in the
-[polynomial code](https://en.wikipedia.org/wiki/Polynomial_code). For a cyclic 
+[polynomial code](https://en.wikipedia.org/wiki/Polynomial_code). For a cyclic
 code C of length n over ``\\mathbb{F}_q``, g(x) satisfies:
 - g(x) divides ``x^n - 1`` in ``\\mathbb{F}_q[x]``.
 - The degree of g(x) is n - k, where k is the code dimension for the non-degenerate case.
