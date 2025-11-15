@@ -49,41 +49,45 @@ testfilter = ti -> begin
         push!(exclude, :jet)
     end
 
+    if !Oscar_flag
+        push!(exclude, :oscar_required)
+    end
+
     if get(ENV, "ECC_TEST", "") == "base"
-        return (:ecc in ti.tags) && (:ecc_base in ti.tags)
+        return (:ecc in ti.tags) && (:ecc_base in ti.tags) && all(!in(exclude), ti.tags)
 
     elseif get(ENV, "ECC_TEST", "") == "encoding"
-        return (:ecc in ti.tags) && (:ecc_encoding in ti.tags)
+        return (:ecc in ti.tags) && (:ecc_encoding in ti.tags) && all(!in(exclude), ti.tags)
 
     elseif get(ENV, "ECC_TEST", "") == "decoding"
-        return (:ecc in ti.tags) && (:ecc_decoding in ti.tags)
+        return (:ecc in ti.tags) && (:ecc_decoding in ti.tags) && all(!in(exclude), ti.tags)
 
     elseif get(ENV, "ECC_TEST", "") == "syndromecircuit"
-        return (:ecc in ti.tags) && (:ecc_syndrome_circuit_equivalence in ti.tags)
+        return (:ecc in ti.tags) && (:ecc_syndrome_circuit_equivalence in ti.tags) && all(!in(exclude), ti.tags)
 
     elseif get(ENV, "ECC_TEST", "") == "syndromemeasurement"
-        return (:ecc in ti.tags) && (:ecc_syndrome_measurement_correctness in ti.tags)
+        return (:ecc in ti.tags) && (:ecc_syndrome_measurement_correctness in ti.tags) && all(!in(exclude), ti.tags)
 
     elseif get(ENV, "ECC_TEST", "") == "bespoke"
-        return (:ecc in ti.tags) && (:ecc_bespoke_checks in ti.tags)
+        return (:ecc in ti.tags) && (:ecc_bespoke_checks in ti.tags) && all(!in(exclude), ti.tags)
     else
         push!(exclude, :ecc)
     end
 
     if CUDA_flag
-        return :cuda in ti.tags
+        return (:cuda in ti.tags) && all(!in(exclude), ti.tags)
     else
         push!(exclude, :cuda)
     end
 
     if ROCm_flag
-        return :rocm in ti.tags
+        return (:rocm in ti.tags) && all(!in(exclude), ti.tags)
     else
         push!(exclude, :rocm)
     end
 
     if OpenCL_flag
-        return :opencl in ti.tags
+        return (:opencl in ti.tags) && all(!in(exclude), ti.tags)
     else
         push!(exclude, :opencl)
     end
