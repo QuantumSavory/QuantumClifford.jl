@@ -17,29 +17,33 @@
 - Add a `phases` getter for `CliffordOperator`
 - Adapt.jl can now be used to convert various types to GPU-backed storage.
 - The phase storage type can now be parameterized, instead of hardcoded to UInt8.
-
-- The `GeneralizedToricCode` on twisted tori via `Oscar.jl`'s Laurent polynomials is now implemented in the ECC submodule.
-- The `HomologicalProductCode` and `DoubleHomologicalProductCode` are now implemented via `Oscar.jl`'s homological algebra in the ECC submodule.
-- The generalized hypergraph product code is implemented in the ECC submodule.
-- Add novel `[[n² + m²,(n - rank([C ∣ M]))² + (m − rank([C ∣ M]ᵀ))², d]]` quantum Tillich-Zémor `random_TillichZemor_code` codes to `QECCore` and introduce `QECCoreNemoExt` for accurate matrix `rank` computation.
-- The D-dimensional Surface and Toric codes are now implemented using `Oscar.jl`'s chain complexes and `GF2` homology in the ECC submodule.
-- Add `[[2n², 2k², d]]` and `[[(n - k)² + n², k², d]]` La-cross codes via `Hecke.jl`'s univariate polynomial ring in the ECC submodule.
-
+- Add an extension to `QECCore` -- `QECCoreNemoExt` for accurate matrix `rank` computation
 - Introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - Quantum codes (including **(breaking)** changes to API):
     - The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations — particularly useful now that there is also an `Oscar.jl` extension, which provides many non-abelian group constructors.
-    - Add `GeneralizedBicycleCode` and `ExtendedGeneralizedBicycleCode` to `QuantumClifford.ECC` through a Hecke extension.
-    - Add convenience wrappers for code families: `honeycomb_color_codes` and `haah_cubic_codes` to `QuantumClifford.ECC` through a Hecke extension.
-    - Add `TrivariateTricycleCode` to `QuantumClifford.ECC` through an Oscar extension.
-    - Add `BivariateBicycleCode`, implemented using multivariate quotient ring formalism to `QuantumClifford.ECC`
-    - Add `GeneralizedCirculantBivariateBicycle` to `QECCore` through an Oscar extension.
-    - Add cyclic quantum Tanner graph product codes to `QECCore`.
-    - Add `Delfosse-Reichardt` codes from classical self-orthogonal `Reed-Muller` seed codes to `QECCore`.
-    - Add `[[4p, 2(p − 2), 4]]` Delfosse-Reichardt repetition `DelfosseReichardtRepCode` code to `QECCore`.
-    - Add `[[8p, 4p − 2, 3]]` Delfosse-Reichardt Generalized `[[8,2,3]]` `DelfosseReichardt823` code to `QECCore`.
+    - Add `BivariateBicycleCode`, implemented using multivariate quotient ring formalism
+    - In a Hecke extension for `QuantumClifford.ECC`:
+        - Add `GeneralizedBicycleCode` and `ExtendedGeneralizedBicycleCode`
+        - Add `GeneralizedHyperGraphProductCode`
+        - Add `[[2n², 2k², d]]` and `[[(n - k)² + n², k², d]]` La-cross codes via univariate polynomial ring
+        - Add convenience wrappers for code families `honeycomb_color_codes` and `haah_cubic_codes`
+    - In an Oscar extension for `QuantumClifford.ECC`:
+        - Add `TrivariateTricycleCode`
+        - Add `GeneralizedToricCode` on twisted tori in terms of Laurent polynomials
+        - Add `HomologicalProductCode` and `DoubleHomologicalProductCode`
+        - Add D-dimensional Surface and Toric codes through chain complexes and `GF2` homology
+    - In `QECCore`:
+        - Add cyclic quantum Tanner graph product codes
+        - Add `[[n² + m²,(n - rank([C ∣ M]))² + (m − rank([C ∣ M]ᵀ))², d]]` quantum Tillich-Zémor `random_TillichZemor_code`
+        - Add `Delfosse-Reichardt` codes from classical self-orthogonal `Reed-Muller` seed codes
+        - Add `[[4p, 2(p − 2), 4]]` Delfosse-Reichardt repetition `DelfosseReichardtRepCode`
+        - Add `[[8p, 4p − 2, 3]]` Delfosse-Reichardt Generalized `[[8,2,3]]` `DelfosseReichardt823`
+        - In an Oscar extension for `QECCore`
+            - Add `GeneralizedCirculantBivariateBicycle`
 - Classical codes (including **(breaking)** changes to API):
-    - Add classical `GoppaCode` to the `QECCore`.
-    - Add classical Gallager's LDPC code to `QECCore`.
+    - In `QECCore`:
+        - Add classical `GoppaCode`
+        - Add classical Gallager's LDPC code
 - **(breaking)** Some codes are moved to `QECCore` from `QuantumClifford`, including `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`, `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller`.
 
 ### Private API
