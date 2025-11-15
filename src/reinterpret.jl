@@ -26,19 +26,6 @@ function reinterpret(::Type{U}, p::PauliOperator) where {U<:Unsigned}
             ),
         )
     end
-    half_words = nl ÷ 2
-    bits_per_half = half_words * sizeof(U) * 8
-    if bits_per_half < p.nqubits
-        throw(
-            ArgumentError(
-                lazy"""
-cannot reinterpret PauliOperator: resulting backing array of $(nl) $(U) elements would provide $(bits_per_half) bits per half,
-which is insufficient to represent $(p.nqubits) qubits. The backing bytes are compatible with $(U), but the resulting layout
-would not contain enough bits in each X/Z half to represent the operator.
-""",
-            ),
-        )
-    end
     return PauliOperator(p.phase, p.nqubits, new_xz)
 end
 
@@ -59,19 +46,6 @@ function reinterpret(::Type{U}, t::Tableau) where {U<:Unsigned}
         throw(
             ArgumentError(
                 "cannot reinterpret Tableau: resulting number of rows $(new_rows) is not even (cannot split into X and Z halves).",
-            ),
-        )
-    end
-    half_rows = new_rows ÷ 2
-    bits_per_half = half_rows * sizeof(U) * 8
-    if bits_per_half < t.nqubits
-        throw(
-            ArgumentError(
-                lazy"""
-cannot reinterpret Tableau: resulting backing array of $(new_rows) $(U) rows would provide $(bits_per_half) bits per half,
-which is insufficient to represent $(t.nqubits) qubits. The backing bytes are compatible with $(U), but the resulting layout
-would not contain enough bits in each X/Z half to represent the tableau.
-""",
             ),
         )
     end

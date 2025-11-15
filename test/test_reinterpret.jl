@@ -123,7 +123,7 @@ end
                 catch e
                     @test isa(e, ArgumentError)
                     msg = sprint(showerror, e)
-                    @test occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg)
+                    @test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
                 end
             end
         end
@@ -151,7 +151,7 @@ end
                 catch e
                     @test isa(e, ArgumentError)
                     msg = sprint(showerror, e)
-                    @test occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg)
+                    @test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
                 end
             end
         end
@@ -181,7 +181,7 @@ end
                 catch e
                     @test isa(e, ArgumentError)
                     msg = sprint(showerror, e)
-                    @test occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg)
+                    @test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
                 end
             end
         end
