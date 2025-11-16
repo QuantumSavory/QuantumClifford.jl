@@ -111,7 +111,7 @@ Represents a quantum error correction decoding problem by combining an error
 model with the code's stabilizer checks and logical operators. This structure 
 forms the complete specification needed to perform quantum error correction decoding. 
 
-See also: [`FactoredBitErrorModel`](@ref)
+See also: [`FactoredBitNoiseModel`](@ref)
 
 ### Fields
     $TYPEDFIELDS
