@@ -2,9 +2,6 @@ name: Performance tracking
 on:
   pull_request:
 
-env:
-  PYTHON: ~
-
 jobs:
   performance-tracking:
     runs-on: ubuntu-latest
@@ -52,7 +49,7 @@ jobs:
         run: echo ${{ github.event.pull_request.number }} > ./pull-request-number.artifact
 
       # save as artifacts (performance tracking (comment) workflow will use it)
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: performance-tracking
           path: ./*.artifact

@@ -92,7 +92,7 @@ where
 !!! note
     The cohomology group ``H^i(\\widetilde{C}) = H(\\partial_{i+1}^T, \\partial_i^T)`` has the same
     rank as the homology group ``H_i(C)`` and corresponds to ``X``-type logical operators in the CSS code
-    ``CSS(\\partial_i, \\partial_{i+1}^T)``, while ``H_i(C)`` corresponds to ``Z``-type operators. 
+    ``CSS(\\partial_i, \\partial_{i+1}^T)``, while ``H_i(C)`` corresponds to ``Z``-type operators.
 
 ### Classical Codes via Chain Complexes and ``\\mathbb{F_2}`` Homology
 
@@ -140,7 +140,7 @@ the code parameters are:
     Quantum error-correcting codes, which are represented as `3`-term chain complexes, can be
     constructed by applying the homological or hypergraph product to two `2`-term chain complexes.
 
-For a detailed explanation, see the ECC Zoo's writeup on the 
+For a detailed explanation, see the ECC Zoo's writeup on the
 [CSS-to-homology correspondence](https://errorcorrectionzoo.org/c/qubit_css#defterm-Qubit_20XCSS-to-homology_20Xcorrespondence).
 
 ## D-dimensional Surface Code ([Berthusen_2024](@cite), [Zeng_2019](@cite))
@@ -393,12 +393,12 @@ See also: [`DDimensionalToricCode`](@ref)
 struct DDimensionalSurfaceCode <: DDimensionalCode
     """Dimension of the Surface code (must be ≥ 2)."""
     D::Int
-    """Size parameter determining the `D`-dimensional Surface code family, constructed via hypergraph product of 
+    """Size parameter determining the `D`-dimensional Surface code family, constructed via hypergraph product of
     `(L - 1) × L` repetition code chain complexes."""
     L::Int
 
     function DDimensionalSurfaceCode(D::Int, L::Int)
-        D ≥ 2 || throw(ArgumentError("Dimension of the Surface code must be at least 2 (got D=$D)."))
+        D ≥ 2 || throw(ArgumentError(lazy"Dimension of the Surface code must be at least 2 (got D=$D)."))
         new(D, L)
     end
 end
@@ -529,12 +529,12 @@ See also: [`DDimensionalSurfaceCode`](@ref)
 struct DDimensionalToricCode <: DDimensionalCode
     """Dimension of the Toric code (must be ≥ 2)."""
     D::Int
-    """Size parameter determining the `D`-dimensional Toric code family, constructed via hypergraph product of 
+    """Size parameter determining the `D`-dimensional Toric code family, constructed via hypergraph product of
     `L × L` repetition code chain complexes."""
     L::Int
-    
+
     function DDimensionalToricCode(D::Int, L::Int)
-        D ≥ 2 || throw(ArgumentError("Dimension of the Toric code must be at least 2 (got D=$D)."))
+        D ≥ 2 || throw(ArgumentError(lazy"Dimension of the Toric code must be at least 2 (got D=$D)."))
         new(D, L)
     end
 end
@@ -735,4 +735,5 @@ and correct errors in ``\\mathbf{s}`` before proceeding with standard decoding. 
 technique is called *syndrome repair decoding* [Higgott_2023](@cite).
 """
 boundary_maps(c::DDimensionalSurfaceCode) = _boundary_maps_surface(c)
+
 boundary_maps(c::DDimensionalToricCode) = _boundary_maps_toric(c)

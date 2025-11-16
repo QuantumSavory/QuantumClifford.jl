@@ -18,8 +18,8 @@ where each submatrix ``H_d`` is a ``μ × μw_r`` binary matrix with:
 - Row weight ``w_r`` (number of 1s per row)
 - Column weight 1 (each column has exactly one 1)
 
-The first submatrix ``H_1`` has a specific structure where row ``i`` (``1 ≤ i ≤ μ``) contains 
-its ``w_r`` 1s in columns ``(i-1)w_r + 1`` to ``iw_r``. Subsequent submatrices ``H_2,...,H_{w_c}`` 
+The first submatrix ``H_1`` has a specific structure where row ``i`` (``1 ≤ i ≤ μ``) contains
+its ``w_r`` 1s in columns ``(i-1)w_r + 1`` to ``iw_r``. Subsequent submatrices ``H_2,...,H_{w_c}``
 are *column permutations* of ``H_1``.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/gallager).
@@ -60,7 +60,7 @@ true
 ### Fields
     $TYPEDFIELDS
 """
-struct GallagerLDPC <: AbstractCECC
+struct GallagerLDPC <: AbstractCECC # TODO this should not be a constructor but a function, given that it just randomly generates a matrix
     """Number of block rows called "submatrices" in the Gallager's construction [gallager1962ldpc](@cite)."""
     block_rows::Int
     """Column weight"""
@@ -75,6 +75,9 @@ struct GallagerLDPC <: AbstractCECC
         col_weight < 3 && throw(ArgumentError("Column weight must be ≥ 3 (Gallager's condition)"))
         row_weight ≤ 1 && throw(ArgumentError("Row weight must be > 1, got $row_weight"))
         row_weight ≤ col_weight && throw(ArgumentError("Row weight must be > column weight"))
+        if isnothing(seed)
+            seed = rand(UInt32)
+        end
         new(block_rows, col_weight, row_weight, seed)
     end
 end
@@ -102,7 +105,7 @@ function _gallager_ldpc_code(μ::Int, w_c::Int, w_r::Int, seed::Int)
                 end
             end
         else
-            perm = perms[d-1]  
+            perm = perms[d-1]
             for (i, cols) in enumerate(template_cols)
                 for j in cols
                     push!(I, rows[i])

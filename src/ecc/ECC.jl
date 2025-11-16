@@ -3,7 +3,6 @@ module ECC
 using QECCore
 import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
 metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial
-using LinearAlgebra: LinearAlgebra, I, rank, tr
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
@@ -15,11 +14,16 @@ using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     apply!, comm, comm!, stab_to_gf2, embed, @S_str, affectedqubits, affectedbits,
     pftrajectories, pfmeasurements, mctrajectories
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
-using DocStringExtensions
+
 using Combinatorics: combinations
+using LinearAlgebra: LinearAlgebra, I, rank, tr
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
+
+using DocStringExtensions
+using JuliaSyntaxHighlighting: highlight
+using StyledStrings: @styled_str
 
 export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
@@ -41,11 +45,12 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     GeneralizedCirculantBivariateBicycle, GeneralizedHyperGraphProductCode,
     GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode,
     HomologicalProductCode, DoubleHomologicalProductCode,
+    GeneralizedToricCode, TrivariateTricycleCode, BivariateBicycleCode,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder,
     BeliefPropDecoder, BitFlipDecoder,
-    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder
+    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, DecoderCorrectionGate
 
 """Parity check tableau of a code.
 
@@ -76,6 +81,10 @@ Return `nothing` if unknown from the type.
 """
 function iscss(::Type{T}) where T<:AbstractECC
     return false
+end
+
+function iscss(::Type{T}) where T <: AbstractCSSCode
+    return true
 end
 
 function iscss(c::AbstractECC)
@@ -397,9 +406,7 @@ include("codes/classical/bch.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
-include("codes/qeccs_using_hecke.jl")
+include("codes/qeccs_from_extensions.jl")
 
-# higher dimensional codes
-include("codes/qeccs_using_oscar.jl")
-
+include("decoder_correction_gate.jl")
 end #module
