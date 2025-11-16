@@ -209,7 +209,7 @@ end
 
 
 ##
-# `concrete_typeparams` annotations for the parameteric types we care about
+# `concrete_typeparams` annotations for the parametric types we care about
 ##
 
 function concrete_typeparams(t::Type{ClassicalXOR})

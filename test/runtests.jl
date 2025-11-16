@@ -13,16 +13,16 @@ end
 if Sys.iswindows()
     @info "Skipping GPU/OpenCL tests -- only executed on *NIX platforms."
 else
-    CUDA_flag = get(ENV, "CUDA_TEST", "") == "true"
-    ROCm_flag = get(ENV, "ROCm_TEST", "") == "true"
-    OpenCL_flag = get(ENV, "OpenCL_TEST", "") == "true"
+    CUDA_flag = get(ENV, "GPU_TEST", "") == "cuda"
+    ROCm_flag = get(ENV, "GPU_TEST", "") == "rocm"
+    OpenCL_flag = get(ENV, "GPU_TEST", "") == "opencl"
 
     CUDA_flag && @info "Running with CUDA tests."
     ROCm_flag && @info "Running with ROCm tests."
     OpenCL_flag && @info "Running with OpenCL tests."
     if !any((CUDA_flag, ROCm_flag, OpenCL_flag))
         @info "Skipping GPU/OpenCL tests -- must be explicitly enabled."
-        @info "Environment must uniquely set [CUDA, ROCm, OpenCL]_TEST=true."
+        @info "Environment must uniquely set GPU_TEST=cuda/rocm/opencl."
     end
 end
 
@@ -49,26 +49,45 @@ testfilter = ti -> begin
         push!(exclude, :jet)
     end
 
-    if get(ENV, "ECC_TEST", "") == "true"
-        return :ecc in ti.tags
+    if !Oscar_flag
+        push!(exclude, :oscar_required)
+    end
+
+    if get(ENV, "ECC_TEST", "") == "base"
+        return (:ecc in ti.tags) && (:ecc_base in ti.tags) && all(!in(exclude), ti.tags)
+
+    elseif get(ENV, "ECC_TEST", "") == "encoding"
+        return (:ecc in ti.tags) && (:ecc_encoding in ti.tags) && all(!in(exclude), ti.tags)
+
+    elseif get(ENV, "ECC_TEST", "") == "decoding"
+        return (:ecc in ti.tags) && (:ecc_decoding in ti.tags) && all(!in(exclude), ti.tags)
+
+    elseif get(ENV, "ECC_TEST", "") == "syndromecircuit"
+        return (:ecc in ti.tags) && (:ecc_syndrome_circuit_equivalence in ti.tags) && all(!in(exclude), ti.tags)
+
+    elseif get(ENV, "ECC_TEST", "") == "syndromemeasurement"
+        return (:ecc in ti.tags) && (:ecc_syndrome_measurement_correctness in ti.tags) && all(!in(exclude), ti.tags)
+
+    elseif get(ENV, "ECC_TEST", "") == "bespoke"
+        return (:ecc in ti.tags) && (:ecc_bespoke_checks in ti.tags) && all(!in(exclude), ti.tags)
     else
         push!(exclude, :ecc)
     end
 
     if CUDA_flag
-        return :cuda in ti.tags
+        return (:cuda in ti.tags) && all(!in(exclude), ti.tags)
     else
         push!(exclude, :cuda)
     end
 
     if ROCm_flag
-        return :rocm in ti.tags
+        return (:rocm in ti.tags) && all(!in(exclude), ti.tags)
     else
         push!(exclude, :rocm)
     end
 
     if OpenCL_flag
-        return :opencl in ti.tags
+        return (:opencl in ti.tags) && all(!in(exclude), ti.tags)
     else
         push!(exclude, :opencl)
     end

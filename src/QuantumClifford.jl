@@ -7,13 +7,14 @@ module QuantumClifford
 
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
-import LinearAlgebra
-using LinearAlgebra: inv, mul!, rank, Adjoint, dot, tr
-import DataStructures
-using DataStructures: DefaultDict, Accumulator
+using LinearAlgebra: LinearAlgebra, inv, mul!, rank, Adjoint, dot, tr
+using DataStructures: DataStructures, DefaultDict, Accumulator
 using Combinatorics: combinations
 using Base.Cartesian
+
 using DocStringExtensions
+using JuliaSyntaxHighlighting: highlight
+using StyledStrings: @styled_str
 
 import QuantumInterface: tensor, ⊗, tensor_pow,
     nqubits, expect, project!, reset_qubits!, traceout!, ptrace,
@@ -43,7 +44,7 @@ export
     apply!, apply_inv!, apply_right!,
     permutesystems, permutesystems!,
     # Low Level Function Interface
-    generate!, project!, reset_qubits!, traceout!,
+    generate!, project!, reset_qubits!, traceout!, ptrace,
     projectX!, projectY!, projectZ!,
     projectrand!, projectXrand!, projectYrand!, projectZrand!,
     puttableau!, embed,
@@ -61,9 +62,11 @@ export
     # Misc Ops
     SparseGate,
     sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
-    BellMeasurement, ClassicalXOR,
+    BellMeasurement, NoisyBellMeasurement, ClassicalXOR,
     VerifyOp,
     Register,
+    # Misc gates
+    IndexedDecisionGate, ConditionalGate,
     # Enumeration and Randoms
     enumerate_single_qubit_gates, random_clifford1,
     enumerate_cliffords, symplecticGS, clifford_cardinality, enumerate_phases,
@@ -101,41 +104,8 @@ export
     # to_cpu, to_gpu
 
 
-const BIG_INT_MINUS_ONE = Ref{BigInt}()
-const BIG_INT_TWO = Ref{BigInt}()
-const BIG_INT_FOUR = Ref{BigInt}()
-
-function __init__()
-    BIG_INT_MINUS_ONE[] = BigInt(-1)
-    BIG_INT_TWO[] = BigInt(2)
-    BIG_INT_FOUR[] = BigInt(4)
-
-    # Register error hint for the `project!` method for GeneralizedStabilizer
-    if isdefined(Base.Experimental, :register_error_hint)
-        Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
-            if exc.f === project! && argtypes[1] <: GeneralizedStabilizer
-                print(io, """
-                \nThe method `project!` is not appropriate for use with`GeneralizedStabilizer`.
-                You probably are looking for `projectrand!`.
-                `project!` in this library is a low-level "linear algebra" method to verify
-                whether a measurement operator commutes with a set of stabilizers, and to
-                potentially simplify the tableau and provide the index of the anticommuting
-                term in that tableau. This linear algebra operation is not defined for
-                `GeneralStabilizer` as there is no single tableau to provide an index into.""")
-            elseif exc.f === ECC.distance && length(argtypes)==1
-                print(io,"""
-                \nThe distance for this code is not in our database. Consider using the MIP-based method:
-                `import JuMP, HiGHS; distance(code, DistanceMIPAlgorithm(solver=HiGHS))` or another MIP solver""")
-            elseif exc.f === ECC.distance && length(argtypes)==2 && argtypes[2]===ECC.DistanceMIPAlgorithm
-                print(io,"""\nPlease first import `JuMP` to make MIP-based distance calculation available.""")
-            end
-        end
-    end
-end
-
+include("init.jl")
 include("throws.jl")
-
-const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you are attempting to create a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -175,6 +145,9 @@ end
 
 function Tableau(paulis::Base.AbstractVecOrTuple{PauliOperator})
     r = length(paulis)
+    if r == 0
+        return Tableau(zeros(UInt8, 0), 0, zeros(UInt8, 0, 0))
+    end
     n = nqubits(paulis[1])
     P = eltype(paulis[1].phase)
     XZ = eltype(paulis[1].xz)
@@ -949,16 +922,7 @@ end
     end
 end
 
-@inline _logsizeof(::UInt128) = 7
-@inline _logsizeof(::UInt64 ) = 6
-@inline _logsizeof(::UInt32 ) = 5
-@inline _logsizeof(::UInt16 ) = 4
-@inline _logsizeof(::UInt8  ) = 3
-@inline _logsizeof(::Type{UInt128}) = 7
-@inline _logsizeof(::Type{UInt64 }) = 6
-@inline _logsizeof(::Type{UInt32 }) = 5
-@inline _logsizeof(::Type{UInt16 }) = 4
-@inline _logsizeof(::Type{UInt8  }) = 3
+@inline _logsizeof(::Union{T, Type{T}}) where {T <: Unsigned} = trailing_zeros(count_zeros(zero(T)))
 @inline _mask(::T) where T<:Unsigned = sizeof(T)*8-1
 @inline _mask(arg::T) where T<:Type = sizeof(arg)*8-1
 @inline _div(T,l) = l >> _logsizeof(T)
@@ -971,12 +935,12 @@ function unsafe_bitfindnext_(chunks::AbstractVector{T}, start::Int) where T<:Uns
 
     @inbounds begin
         if chunks[chunk_start] & mask != 0
-            return (chunk_start-1) << 6 + trailing_zeros(chunks[chunk_start] & mask) + 1
+            return (chunk_start-1) << _logsizeof(T) + trailing_zeros(chunks[chunk_start] & mask) + 1
         end
 
         for i = chunk_start+1:length(chunks)
             if chunks[i] != 0
-                return (i-1) << 6 + trailing_zeros(chunks[i]) + 1
+                return (i-1) << _logsizeof(T) + trailing_zeros(chunks[i]) + 1
             end
         end
     end
@@ -1081,8 +1045,8 @@ Base.hcat(stabs::Stabilizer{T}...) where {T} = Stabilizer(hcat((tab(s) for s in 
 """
     apply!
 
-Apply any quantum operation to a stabilizer state, including unitary Clifford 
-operations, Pauli measurements, and noise. 
+Apply any quantum operation to a stabilizer state, including unitary Clifford
+operations, Pauli measurements, and noise.
 May result in a random/stochastic result (e.g. with measurements or noise)."""
 function apply! end
 
@@ -1125,7 +1089,7 @@ end
 
 """
     apply_inv!
-    
+
 Apply the inverse of any quantum operation to a stabilizer state.
 """
 function apply_inv! end
@@ -1441,6 +1405,7 @@ include("mctrajectory.jl")
 include("petrajectory.jl")
 include("misc_ops.jl")
 include("classical_register.jl")
+include("misc_gates.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
@@ -1448,8 +1413,6 @@ include("pauli_frames.jl")
 include("enumeration.jl")
 include("randoms.jl")
 include("useful_states.jl")
-#
-include("experimental/Experimental.jl")
 #
 include("./graphs/graphs.jl")
 #
@@ -1464,5 +1427,4 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
-
 end #module
