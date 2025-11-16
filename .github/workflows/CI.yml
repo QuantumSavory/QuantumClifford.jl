@@ -28,16 +28,11 @@ jobs:
         os:
           - ubuntu-latest
         threads:
-          - '1'
           - '5'
         arch:
           - x64
         include:
           - arch: aarch64
-            os: macos-latest
-            version: '1'
-            threads: '1'
-          - arch: x64
             os: macos-latest
             version: '1'
             threads: '1'
