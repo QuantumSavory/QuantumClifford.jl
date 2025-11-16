@@ -8,6 +8,8 @@
 ## v0.11.0-dev
 
 - Drop support for Julia <1.12.
+- Implementation of the specialized simulation algorithms for graph states (faster for large sparse tableaux).
+- **(breaking)** moving all graph state functionality to a submodule `GraphSim`.
 - **(fix)** `canonicalize_gott!` now properly supports non-UInt64 types.
 - `ptrace` for partial traces. We already had `traceout!`, which returns tableaux with the same number of qubits. `ptrace` removes the traceout qubits besides setting their stabilizing operators to `I`.
 - Add `apply_right!` that applies a Clifford operator to the right of a dense clifford operator.
