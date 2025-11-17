@@ -45,8 +45,8 @@ PyQDecoders = "17f5de1a-9b79-4409-a58d-4d45812840f7"
 Quantikz = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
 QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
 
-[sources]
-QECCore = {path = "lib/QECCore"}
+[sources.QECCore]
+path = "lib/QECCore"
 
 [extensions]
 QuantumCliffordAdaptExt = ["Adapt", "GPUArraysCore"]
@@ -77,7 +77,7 @@ HostCPUFeatures = "0.1.6"
 ILog2 = "0.2.3, 1, 2"
 InteractiveUtils = "1.11"
 JuMP = "1.23"
-JuliaSyntaxHighlighting = "1.12"
+JuliaSyntaxHighlighting = "1.12, 0.1"
 KernelAbstractions = "0.9.35"
 LDPCDecoders = "0.3.2"
 LinearAlgebra = "1.10"
