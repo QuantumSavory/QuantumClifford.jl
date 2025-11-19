@@ -145,7 +145,7 @@ julia> A = S(1 + y^2 + y^4);
 
 julia> B = S(y^3 + x + x^2);
 
-julia> c = BivariateBicycleCode(l, m, A, B);
+julia> c = BivariateBicycleCodeViaPoly(l, m, A, B);
 
 julia> code_n(c), code_k(c)
 (54, 8)
@@ -168,7 +168,7 @@ julia> A = S(x^3 + y + y^2);
 
 julia> B = S(y^3 + x + x^2);
 
-julia> c = BivariateBicycleCode(l, m, A, B);
+julia> c = BivariateBicycleCodeViaPoly(l, m, A, B);
 
 julia> code_n(c), code_k(c)
 (72, 12)
@@ -191,7 +191,7 @@ julia> A = S(x^3 + y^10 + y^17);
 
 julia> B = S(y^5 + x^3 + x^19);
 
-julia> c = BivariateBicycleCode(l, m, A, B);
+julia> c = BivariateBicycleCodeViaPoly(l, m, A, B);
 
 julia> code_n(c), code_k(c)
 (756, 16)
@@ -214,7 +214,7 @@ julia> A = S(x^2 + y + y^3 + y^4);
 
 julia> B = S(y^2 + x + x^3 + x^4);
 
-julia> c = BivariateBicycleCode(l, m, A, B);
+julia> c = BivariateBicycleCodeViaPoly(l, m, A, B);
 
 julia> code_n(c), code_k(c)
 (128, 14)
@@ -228,9 +228,11 @@ using various other approaches:
 !!! note
     In the discussion below, we consider the `[[72, 12, 6]]` Bivariate bicycle code as introduced in [bravyi2024high](@cite). For a detailed
     explanation of the *isomorphisms* connecting group algebra of cyclic groups, multivariate quotient rings, and circulant matrix representations,
-    see `GeneralizedCirculantBivariateBicycle`.
+    see `BivariateBicycleCodeViaCirculantMat`.
 
-- `GeneralizedCirculantBivariateBicycle`: Circulant matrix formulation - Instead of polynomials, we provide the *monomial* terms as lists of tuples:
+- `BivariateBicycleCodeViaCirculantMat`: A generalization of the circulant bivariate bicycle code introduced in [bravyi2024high](@cite),
+extending the original three-term polynomial representation up to `ℓ` terms (for `x`-powers) and
+`m` terms (for `y`-powers). Instead of polynomials, we provide the *monomial* terms as lists of tuples:
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
@@ -243,7 +245,7 @@ julia> A = [(:x, 3), (:y, 1), (:y, 2)];
 
 julia> B = [(:y, 3), (:x, 1), (:x, 2)];
 
-julia> c = GeneralizedCirculantBivariateBicycle(ℓ, m, A, B);
+julia> c = BivariateBicycleCodeViaCirculantMat(ℓ, m, A, B);
 
 julia> import HiGHS;
 
@@ -299,18 +301,18 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (72, 12, 6)
 ```
 
-- `generalized_bicycle_codes` and `GeneralizedBicycleCode`: Bivariate Bicycle codes are siblings of [generalized bicycle](https://errorcorrectionzoo.org/c/generalized_bicycle) codes - both are children of [2BGA](https://errorcorrectionzoo.org/c/2bga) codes.
+- `generalized_bicycle_codes_as_2bga` and `GeneralizedBicycleCode`: Bivariate Bicycle codes are siblings of [generalized bicycle](https://errorcorrectionzoo.org/c/generalized_bicycle) codes - both are children of [2BGA](https://errorcorrectionzoo.org/c/2bga) codes.
 
-- `bicycle_codes`: The [bicycle](https://errorcorrectionzoo.org/c/bicycle) codes are children of (https://errorcorrectionzoo.org/c/generalized_bicycle) codes.
+- `bicycle_codes_as_2bga`: The [bicycle](https://errorcorrectionzoo.org/c/bicycle) codes are children of (https://errorcorrectionzoo.org/c/generalized_bicycle) codes.
 
 - `ExtendedGeneralizedBicycleCode`: These codes are constructed through *algebraic extension* of [generalized bicycle](https://errorcorrectionzoo.org/c/generalized_bicycle) codes.
 
 ### Fields
     $TYPEDFIELDS
 """
-struct BivariateBicycleCode <: AbstractCSSCode
+struct BivariateBicycleCodeViaPoly <: AbstractCSSCode
     """Order of the first abelian group in ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m]``"""
-    ℓ::Int
+    l::Int
     """Order of the second abelian group in ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m]``"""
     m::Int
     """First bivariate polynomial in quotient ring ``\\frac{\\mathbb{F}_2[x, y]}{\\langle x^\\ell-1, y^m-1 \\rangle}``"""
@@ -318,20 +320,20 @@ struct BivariateBicycleCode <: AbstractCSSCode
     """Second bivariate polynomial in quotient ring ``\\frac{\\mathbb{F}_2[x, y]}{\\langle x^\\ell-1, y^m-1 \\rangle}``"""
     d::MPolyQuoRingElem
     
-    function BivariateBicycleCode(ℓ::Int, m::Int, c::MPolyQuoRingElem, d::MPolyQuoRingElem)
-        ℓ > 0 || throw(ArgumentError("ℓ must be positive"))
+    function BivariateBicycleCodeViaPoly(l::Int, m::Int, c::MPolyQuoRingElem, d::MPolyQuoRingElem)
+        l > 0 || throw(ArgumentError("l must be positive"))
         m > 0 || throw(ArgumentError("m must be positive"))
         parent(c) == parent(d) || throw(ArgumentError("Polynomials must be in the same quotient ring"))
         Q = parent(c)
         R = base_ring(Q)
         base_ring(R) == GF(2) || throw(ArgumentError("Base ring must be GF(2)"))
         nvars(R) == 2 || throw(ArgumentError("Must be bivariate polynomials"))
-        new(ℓ, m, c, d)
+        new(l, m, c, d)
     end
 end
 
-function _poly_to_coeff_mat(poly::MPolyQuoRingElem, ℓ::Int, m::Int)
-    mat = zeros(Int, ℓ, m)
+function _poly_to_coeff_mat(poly::MPolyQuoRingElem, l::Int, m::Int)
+    mat = zeros(Int, l, m)
     for term in terms(lift(poly))
         coeffᵥₐₗ = coeff(term, 1)
         coeffᵢₙₜ = iszero(coeffᵥₐₗ) ? 0 : 1
@@ -339,9 +341,9 @@ function _poly_to_coeff_mat(poly::MPolyQuoRingElem, ℓ::Int, m::Int)
         exps = exponent_vector(monom, 1)
         i = length(exps) >= 1 ? exps[1] : 0
         j = length(exps) >= 2 ? exps[2] : 0
-        i = mod(i, ℓ)
+        i = mod(i, l)
         j = mod(j, m)
-        if i < ℓ && j < m
+        if i < l && j < m
             mat[i+1, j+1] = coeffᵢₙₜ
         end
     end
@@ -349,13 +351,13 @@ function _poly_to_coeff_mat(poly::MPolyQuoRingElem, ℓ::Int, m::Int)
 end
 
 function _bivariate_circulant(coeff_mat::Matrix{Int})
-    ℓ, m = size(coeff_mat)
-    n = ℓ*m
+    l, m = size(coeff_mat)
+    n = l*m
     circ_mat = zeros(Int, n, n)
-    for i₁ in 0:ℓ-1, j₁ in 0:m-1
+    for i₁ in 0:l-1, j₁ in 0:m-1
         row_idx = i₁*m+j₁+1
-        for i₂ in 0:ℓ-1, j₂ in 0:m-1
-            i_mod = mod(i₁+i₂, ℓ)
+        for i₂ in 0:l-1, j₂ in 0:m-1
+            i_mod = mod(i₁+i₂, l)
             j_mod = mod(j₁+j₂, m)
             col_idx = i_mod*m+j_mod+1
             circ_mat[row_idx, col_idx] += coeff_mat[i₂+1, j₂+1]
@@ -364,17 +366,17 @@ function _bivariate_circulant(coeff_mat::Matrix{Int})
     return circ_mat
 end
 
-function parity_matrix_xz(c::BivariateBicycleCode)
-    A_coeff = _poly_to_coeff_mat(c.c, c.ℓ, c.m)
-    B_coeff = _poly_to_coeff_mat(c.d, c.ℓ, c.m)
+function parity_matrix_xz(c::BivariateBicycleCodeViaPoly)
+    A_coeff = _poly_to_coeff_mat(c.c, c.l, c.m)
+    B_coeff = _poly_to_coeff_mat(c.d, c.l, c.m)
     A = _bivariate_circulant(A_coeff)
     B = _bivariate_circulant(B_coeff)
     hx, hz = hcat(A, B), hcat(transpose(B), transpose(A))
     return hx, hz
 end
 
-parity_matrix_x(c::BivariateBicycleCode) = parity_matrix_xz(c)[1]
+parity_matrix_x(c::BivariateBicycleCodeViaPoly) = parity_matrix_xz(c)[1]
 
-parity_matrix_z(c::BivariateBicycleCode) = parity_matrix_xz(c)[2]
+parity_matrix_z(c::BivariateBicycleCodeViaPoly) = parity_matrix_xz(c)[2]
 
-code_n(c::BivariateBicycleCode) = 2*c.ℓ*c.m
+code_n(c::BivariateBicycleCodeViaPoly) = 2*c.l*c.m

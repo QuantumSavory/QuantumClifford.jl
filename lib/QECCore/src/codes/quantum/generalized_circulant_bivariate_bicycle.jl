@@ -128,7 +128,7 @@ julia> A = [(:x,3), (:y,10), (:y,17)];
 
 julia> B = [(:y,5), (:x,3), (:x,19)];
 
-julia> c = GeneralizedCirculantBivariateBicycle(l, m, A, B);
+julia> c = BivariateBicycleCodeViaCirculantMat(l, m, A, B);
 
 julia> code_n(c), code_k(c)
 (756, 16)
@@ -149,7 +149,7 @@ julia> A = [(:x,2), (:y,1), (:y,3), (:y,4)];
 
 julia> B = [(:y,2), (:x,1), (:x,3), (:x,4)];
 
-julia> c = GeneralizedCirculantBivariateBicycle(l, m, A, B);
+julia> c = BivariateBicycleCodeViaCirculantMat(l, m, A, B);
 
 julia> code_n(c), code_k(c)
 (128, 14)
@@ -171,7 +171,7 @@ julia> A = [(:x, 0), (:x, 1), (:y, 1)];
 
 julia> B = [(:y, 0), (:x, 2), (:y, 2)];
 
-julia> c = GeneralizedCirculantBivariateBicycle(l, m, A, B);
+julia> c = BivariateBicycleCodeViaCirculantMat(l, m, A, B);
 
 julia> code_n(c), code_k(c)
 (18, 4)
@@ -211,7 +211,7 @@ julia> code_n(c), code_k(c)
 ### Fields
     $TYPEDFIELDS
 """
-struct GeneralizedCirculantBivariateBicycle <: AbstractCSSCode
+struct BivariateBicycleCodeViaCirculantMat <: AbstractCSSCode
     """Dimension of cyclic shift matrix `Sₗ` where `x = Sₗ ⊗ Iₘ`"""
     l::Int
     """ Dimension of cyclic shift matrix `Sₘ` where `y = Iₗ ⊗ Sₘ`"""
@@ -221,7 +221,7 @@ struct GeneralizedCirculantBivariateBicycle <: AbstractCSSCode
     """Terms in matrix B, where each tuple is (:x or :y, power)"""
     B::Vector{Tuple{Symbol,Int}}
     
-    function GeneralizedCirculantBivariateBicycle(l, m, A, B)
+    function BivariateBicycleCodeViaCirculantMat(l, m, A, B)
         (l >= 0 && m >= 0) || throw(ArgumentError("l and m must be non-negative"))
         (length(A) >= 1 && length(B) >= 1) || throw(ArgumentError("A and B must each have at least one entry"))
         for (mat, terms) in [(:A, A), (:B, B)]
@@ -236,7 +236,7 @@ struct GeneralizedCirculantBivariateBicycle <: AbstractCSSCode
     end
 end
 
-function parity_matrix_xz(c::GeneralizedCirculantBivariateBicycle)
+function parity_matrix_xz(c::BivariateBicycleCodeViaCirculantMat)
     Iₗ = Matrix{Bool}(I, c.l, c.l)
     Iₘ = Matrix{Bool}(I, c.m, c.m)
     xₚ = Dict(i => kron(circshift(Iₗ, (0,i)), Iₘ) for i in 0:c.l)
@@ -258,8 +258,8 @@ function parity_matrix_xz(c::GeneralizedCirculantBivariateBicycle)
     return Hx, Hz
 end
 
-code_n(c::GeneralizedCirculantBivariateBicycle) = 2*c.l*c.m
+code_n(c::BivariateBicycleCodeViaCirculantMat) = 2*c.l*c.m
 
-parity_matrix_x(c::GeneralizedCirculantBivariateBicycle) = parity_matrix_xz(c)[1]
+parity_matrix_x(c::BivariateBicycleCodeViaCirculantMat) = parity_matrix_xz(c)[1]
 
-parity_matrix_z(c::GeneralizedCirculantBivariateBicycle) = parity_matrix_xz(c)[2]
+parity_matrix_z(c::BivariateBicycleCodeViaCirculantMat) = parity_matrix_xz(c)[2]

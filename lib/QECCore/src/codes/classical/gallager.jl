@@ -28,15 +28,17 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/gall
 
 Here is an example of `(3,4)`-LDPC code
 
-```jldoctest
-julia> using QECCore; using Nemo
+```jldoctest examples
+julia> using QECCore; using Nemo: GF, rank, matrix; using Random; using SparseArrays;
 
 julia> μ = 3; wc = 3; wr = 4;
 
-julia> c = GallagerLDPC(μ, wc, wr);
+julia> rng = MersenneTwister(42);
 
-julia> H = parity_matrix(c)
-9×12 SparseArrays.SparseMatrixCSC{Bool, Int64} with 36 stored entries:
+julia> c = random_Gallager_ldpc(rng, μ, wc, wr);
+
+julia> c.H
+9×12 SparseMatrixCSC{Bool, Int64} with 36 stored entries:
  1  1  1  1  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅
  ⋅  ⋅  ⋅  ⋅  1  1  1  1  ⋅  ⋅  ⋅  ⋅
  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  1  1  1  1
@@ -46,56 +48,56 @@ julia> H = parity_matrix(c)
  ⋅  1  1  ⋅  1  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  1
  ⋅  ⋅  ⋅  1  ⋅  1  1  1  ⋅  ⋅  ⋅  ⋅
  1  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  1  1  1  ⋅
+```
 
-julia> code_n(c), code_k(c)
-(12, 5)
+The code length N equals block_rows × row_weight:
 
-julia> all(sum(Matrix(H), dims=1) .== 3)
+```jldoctest examples
+julia> n = c.block_rows*c.wr
+12
+```
+
+and code dimension:
+
+```jldoctest examples
+julia> k = n - rank(matrix(GF(2), c.H))
+5
+```
+
+The Gallager's classical code exhibits regular structure with all columns
+having weight 3 and all rows having weight 4, ensuring it maintains constant
+column and row weights throughout the parity-check matrix.
+
+```jldoctest examples
+julia> all(sum(Matrix(c.H), dims=1) .== 3)
 true
 
-julia> all(sum(Matrix(H), dims=2) .== 4)
+julia> all(sum(Matrix(c.H), dims=2) .== 4)
 true
 ```
 
-### Fields
-    $TYPEDFIELDS
+### Arguments
+- `block_rows::Int` Number of block rows called "submatrices" in the Gallager's construction [gallager1962ldpc](@cite).
+- `col_weight::Int`: Column weight
+- `row_weight::Int`: Row weight which must be greater column weight.
 """
-struct GallagerLDPC <: AbstractCECC # TODO this should not be a constructor but a function, given that it just randomly generates a matrix
-    """Number of block rows called "submatrices" in the Gallager's construction [gallager1962ldpc](@cite)."""
-    block_rows::Int
-    """Column weight"""
-    col_weight::Int
-    """Row weight which must be greater column weight."""
-    row_weight::Int
-    """Random seed for reproducible parity check matrix generation (`default=42`)."""
-    seed::Int
-
-    function GallagerLDPC(block_rows, col_weight, row_weight, seed::Union{Int,Nothing}=42)
-        block_rows ≤ 1 && throw(ArgumentError("Number of block rows must be > 1, got $block_rows"))
-        col_weight < 3 && throw(ArgumentError("Column weight must be ≥ 3 (Gallager's condition)"))
-        row_weight ≤ 1 && throw(ArgumentError("Row weight must be > 1, got $row_weight"))
-        row_weight ≤ col_weight && throw(ArgumentError("Row weight must be > column weight"))
-        if isnothing(seed)
-            seed = rand(UInt32)
-        end
-        new(block_rows, col_weight, row_weight, seed)
-    end
-end
-
-function _gallager_ldpc_code(μ::Int, w_c::Int, w_r::Int, seed::Int)
-    n = μ*w_r
-    m = μ*w_c
+function random_Gallager_ldpc(rng::AbstractRNG, block_rows::Int, col_weight::Int, row_weight::Int)
+    block_rows ≤ 1 && throw(ArgumentError("Number of block rows must be > 1, got $block_rows"))
+    col_weight < 3 && throw(ArgumentError("Column weight must be ≥ 3 (Gallager's condition)"))
+    row_weight ≤ 1 && throw(ArgumentError("Row weight must be > 1, got $row_weight"))
+    row_weight ≤ col_weight && throw(ArgumentError("Row weight must be > column weight"))
+    n = block_rows*row_weight
+    m = block_rows*col_weight
     I = Int[]
     J = Int[]
     V = Bool[]
-    sizehint!(I, m*w_c)
-    sizehint!(J, m*w_c)
-    sizehint!(V, m*w_c)
-    template_cols = [((i-1)*w_r+1):(i*w_r) for i in 1:μ]
-    rng = MersenneTwister(seed)
-    perms = [randperm(rng, n) for _ in 2:w_c]
-    for d in 1:w_c
-        rows = ((d-1)*μ+1):(d*μ)
+    sizehint!(I, m*col_weight)
+    sizehint!(J, m*col_weight)
+    sizehint!(V, m*col_weight)
+    template_cols = [((i-1)*row_weight+1):(i*row_weight) for i in 1:block_rows]
+    perms = [randperm(rng, n) for _ in 2:col_weight]
+    for d in 1:col_weight
+        rows = ((d-1)*block_rows+1):(d*block_rows)
         if d == 1
             for (i, cols) in enumerate(template_cols)
                 for j in cols
@@ -115,9 +117,8 @@ function _gallager_ldpc_code(μ::Int, w_c::Int, w_r::Int, seed::Int)
             end
         end
     end
-    return sparse(I, J, V, m, n)
+    H = sparse(I, J, V, m, n)
+    return (block_rows=block_rows, wc=col_weight, wr=row_weight, H=H)
 end
 
-code_n(c::GallagerLDPC) = c.block_rows*c.row_weight
-
-parity_matrix(c::GallagerLDPC) = _gallager_ldpc_code(c.block_rows, c.col_weight, c.row_weight, c.seed)
+random_Gallager_ldpc(block_rows::Int, col_weight::Int, row_weight::Int) = random_Gallager_ldpc(GLOBAL_RNG, block_rows, col_weight, row_weight)

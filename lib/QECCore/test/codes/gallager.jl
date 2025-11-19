@@ -12,10 +12,12 @@
                 for wr in [wc+1, wc+3, 2*wc]
                     wr <= wc && continue
                     @testset "μ=$μ, wc=$wc, wr=$wr" begin
-                        c = GallagerLDPC(μ, wc, wr)
-                        H = parity_matrix(c)
-                        c1 = GallagerLDPC(μ, wc, wr)
-                        H1 = parity_matrix(c1)
+                        rng1 = MersenneTwister(123)
+                        rng2 = MersenneTwister(123)
+                        c = random_Gallager_ldpc(rng1, μ, wc, wr)
+                        c1 = random_Gallager_ldpc(rng2, μ, wc, wr)
+                        H = c.H
+                        H1 = c1.H
                         @test Matrix(H) == Matrix(H1)
                         m, n = size(H)
                         @test m == μ*wc
@@ -33,10 +35,12 @@
                         @test r ≤ m && 0 < 1 - r/n < 1
                     end
                     @testset "μ=$μ, wc=$wc, wr=$wr" begin
-                        c = GallagerLDPC(μ, wc, wr, 1)
-                        H = parity_matrix(c)
-                        c1 = GallagerLDPC(μ, wc, wr, 2)
-                        H1 = parity_matrix(c1)
+                        rng1 = MersenneTwister(1)
+                        rng2 = MersenneTwister(2)
+                        c = random_Gallager_ldpc(rng1, μ, wc, wr)
+                        c1 = random_Gallager_ldpc(rng2, μ, wc, wr)
+                        H = c.H
+                        H1 = c1.H
                         @test Matrix(H) != Matrix(H1)
                         m, n = size(H)
                         @test m == μ*wc

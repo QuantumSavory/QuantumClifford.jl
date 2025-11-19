@@ -120,23 +120,32 @@ L = { \\alpha \\in \\mathbb{F}_{2^m} \\mid g(\\alpha) \\neq 0}
 ```
 
 ```jldoctest
-julia> using QECCore; using Nemo
+julia> import Nemo: finite_field, polynomial_ring, rank, matrix, GF;
 
-julia> m, t =  5, 4;
+julia> using QECCore: random_Goppa_code, code_n, code_k, parity_matrix; using Random: MersenneTwister;
 
-julia> c = GoppaCode(m, t);
+julia> rng = MersenneTwister(123);
+
+julia> m, t = 5, 4;
+
+julia> c = random_Goppa_code(rng, m, t);
 
 julia> c.g
-x^4 + α^4*x^3 + (α^3 + α^2)*x + α^3 + α
+x^4 + (α^3 + α^2 + α + 1)*x^3 + (α + 1)*x^2 + (α^3 + 1)*x + α^4 + α^3 + α^2 + α
 
-julia> code_n(c), code_k(c)
+julia> H = parity_matrix(c);
+
+julia> size(H, 2), size(H, 2) - rank(matrix(GF(2), H))
 (32, 12)
 ```
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/goppa).
 
-### Fields
-    $TYPEDFIELDS
+### Arguments
+- `rng` - A random number generator instance
+- `m` - The degree of the Goppa polynomial `g(x)` which controls the error-correction capability.
+- `t` - The Goppa polynomial over ``\\mathbb{F}_{2^m}`` which must satisfy: degree(g) = t, and
+    g(αᵢ) ≠ 0 ∀ αᵢ ∈ L.
 """
 struct GoppaCode <: AbstractPolynomialCode
     """ The extension degree of ``\\mathbb{F}_{2^m}`` which determines the size of the field
@@ -150,39 +159,41 @@ struct GoppaCode <: AbstractPolynomialCode
     """The support set of distinct elements from ``\\mathbb{F}_{2^m}`` which defines code length
     n = length(L). It must satisfy g(α) ≠ 0 ∀ α ∈ L."""
     L::Vector{FqFieldElem}
-    """Random number generator seed for reproducible polynomial generation."""
-    seed::Int
 
-    function GoppaCode(m, t, g::FqPolyRingElem, L::Vector{FqFieldElem}; seed::Int=42)
+    function GoppaCode(m::Int, t::Int, g::FqPolyRingElem, L::Vector{FqFieldElem})
         (m < 3 || t < 2 || t >= 2^(m - 1)) && throw(ArgumentError("m ≥ 3 and t ≥ 2 required, with t < 2^(m-1)"))
         degree(g) != t && throw(ArgumentError("The Goppa polynomial must have degree t"))
         !is_monic(g) && throw(ArgumentError("The Goppa polynomial must be monic."))
         any(evaluate(g, α) == 0 for α in L) && throw(ArgumentError("L cannot contain roots of the Goppa polynomial."))
         length(L) - m*t ≤ 0 && throw(ArgumentError("Parameters would produce invalid code: length(L) - m*t = $(length(L)) - $m*$t ≤ 0."))
-        new(m, t, g, L, seed)
+        new(m, t, g, L)
     end
 end
-    
-function GoppaCode(m, t, g::FqPolyRingElem; seed::Int=42)
+
+function GoppaCode(m::Int, t::Int, g::FqPolyRingElem)
     F, α = finite_field(2, m, :α)
     L = [a for a in F if evaluate(g, a) != 0]
-    return GoppaCode(m, t, g, L; seed)
+    return GoppaCode(m, t, g, L)
 end
 
-function GoppaCode(m, t; seed=42)
+function QECCore.random_Goppa_code(rng::AbstractRNG, m::Int, t::Int)
+    (m < 3 || t < 2 || t >= 2^(m - 1)) && throw(ArgumentError("m ≥ 3 and t ≥ 2 required, with t < 2^(m-1)"))
     F, α = finite_field(2, m, :α)
-    R, x = polynomial_ring(F, "x")
-    rng = MersenneTwister(seed)
+    R, x = polynomial_ring(F, :x)
     for _ in 1:500
         coeffs = rand(rng, F, t)
         g = R([coeffs...; one(F)])
         if is_irreducible(g)
             L = [a for a in F if evaluate(g, a) != 0]
-            return GoppaCode(m, t, g, L; seed)
+            if length(L) - m*t > 0
+                return GoppaCode(m, t, g, L)
+            end
         end
     end
-    throw(ErrorException("Failed to find irreducible polynomial after 500 attempts"))
+    throw(ErrorException("Failed to find suitable irreducible polynomial after 500 attempts"))
 end
+
+QECCore.random_Goppa_code(m::Int, t::Int) = QECCore.random_Goppa_code(GLOBAL_RNG, m, t)
 
 function parity_matrix(ga::GoppaCode)
     m, t, g, L = ga.m, ga.t, ga.g, ga.L
