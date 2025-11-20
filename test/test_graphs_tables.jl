@@ -1,5 +1,5 @@
 @testitem "Graph states precompiled tables correctness" begin
-    import QuantumClifford: GraphState, IP_SQRTX_DECOMPOSITION_TABLE, ISOLATED_CPHASE_TABLE, Z_COMMUTATION_SUBGROUP, SINGLE_QUBIT_MULTIPLICATION_TABLE, gen_graph_state, vops
+    import QuantumClifford.GraphSim: GraphState, IP_SQRTX_DECOMPOSITION_TABLE, ISOLATED_CPHASE_TABLE, Z_COMMUTATION_SUBGROUP, SINGLE_QUBIT_MULTIPLICATION_TABLE, gen_graph_state, vops
 
     @testset "Single Clifford operator decomposition table" begin
         for (k, v) in IP_SQRTX_DECOMPOSITION_TABLE

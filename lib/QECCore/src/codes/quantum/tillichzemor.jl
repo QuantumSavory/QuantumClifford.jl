@@ -7,7 +7,7 @@ hypergraph product of two classical seed **(n, m, r)-Structured LDPC** codes.
 
 # Structured LDPC
 
-The classical `(n, m, r)`-structured LDPC codes were introduced in [tillich2006minimum](@cite). 
+The classical `(n, m, r)`-structured LDPC codes were introduced in [tillich2006minimum](@cite).
 The minimum distance of structured binary LDPC codes with parity-check matrices of
 the form ``[C \\mid M]``, where `C` is circulant and `M` has fixed column weight
 ``r \\geq 3``, is in ``O(n^{\\frac{r-2}{r-1} + \\epsilon})``, improving the previous
@@ -225,12 +225,7 @@ function random_TillichZemor_code(rng::AbstractRNG, n::Int, m::Int, r::Int)
     hx, hz = hgp(H, H)
     TillichZemor(n, m, r, (hx, hz))
 end
-
-function random_TillichZemor_code(n::Int, m::Int, r::Int)
-    H = _construct_parity_check_matrix(GLOBAL_RNG, n, m, r)
-    hx, hz = hgp(H, H)
-    TillichZemor(n, m, r, (hx, hz))
-end
+random_TillichZemor_code(n::Int, m::Int, r::Int) = random_TillichZemor_code(GLOBAL_RNG, n, m, r)
 
 function parity_matrix_xz(c::TillichZemor{<:Tuple})::Tuple{AbstractMatrix,AbstractMatrix}
     return c.matrices
