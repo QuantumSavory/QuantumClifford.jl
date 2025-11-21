@@ -92,6 +92,36 @@
     end
 
     ##
+    @testset "BPOTSDecoder decoder, good for topological codes" begin
+        codes = [
+                 Toric(6,6),
+                 Toric(8,8),
+                 Surface(6,6),
+                 Surface(8,8)
+                ]
+
+        noise = 0.01
+
+        setups = [
+                  CommutationCheckECCSetup(noise),
+                  NaiveSyndromeECCSetup(noise, 0),
+                  ShorSyndromeECCSetup(noise, 0),
+                 ]
+
+        for c in codes
+            for s in setups
+                for d in [c->BPOTSDecoder(c, errorrate=noise, maxiter=200, T=9, C=2.0)]
+                    e = evaluate_decoder(d(c), s, 10000)
+                    #@show c
+                    #@show s
+                    #@show e
+                    @test max(e...) < noise/2
+                end
+            end
+        end
+    end
+
+    ##
 
     using Test
     using QuantumClifford

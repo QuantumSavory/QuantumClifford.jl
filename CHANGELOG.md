@@ -81,6 +81,9 @@ These changes affect internal implementation details - external packages should 
 
 - `permutesystems` and `permutesystems!` are no implemented, deprecating `permute` and `permute!`
 
+## Added
+- BP-OTS (Belief Propagation with Oscillating Trapping Sets) decoder for quantum LDPC codes in the LDPCDecoders extension
+
 ## v0.9.18 - 2025-02-19
 
 - Fixes for rare crashes in the python BP decoders.
