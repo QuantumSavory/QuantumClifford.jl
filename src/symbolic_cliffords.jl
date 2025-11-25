@@ -651,20 +651,3 @@ sMRZ(i) = sMRZ(i,0)
 sMRX(i,::Nothing) = sMRX(i,0)
 sMRY(i,::Nothing) = sMRY(i,0)
 sMRZ(i,::Nothing) = sMRZ(i,0)
-
-
-##############################
-# Resets
-##############################
-
-"""Reset a qubit to the |+⟩ state.
-See also: [`sMRX`](@ref), [`Reset`](@ref)"""
-sRX(i) = sMRX(i,0)
-
-"""Reset a qubit to the |i₊⟩ state.
-See also: [`sMRY`](@ref), [`Reset`](@ref)"""
-sRY(i) = sMRY(i,0)
-
-"""Reset a qubit to the |0⟩ state.
-See also: [`sMRZ`](@ref), [`Reset`](@ref)"""
-sRZ(i) = sMRZ(i,0)

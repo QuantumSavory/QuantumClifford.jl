@@ -60,8 +60,7 @@ export
     sSQRTZZ, sInvSQRTZZ, sSQRTXX, sInvSQRTXX, sSQRTYY, sInvSQRTYY,
     # Misc Ops
     SparseGate,
-    sMX, sMY, sMZ, PauliMeasurement, 
-    Reset, sMRX, sMRY, sMRZ, sRX, sRY, sRZ,
+    sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
     BellMeasurement, ClassicalXOR,
     VerifyOp,
     Register, BacktrackRegister,
