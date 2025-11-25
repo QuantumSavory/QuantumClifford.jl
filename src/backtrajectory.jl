@@ -7,56 +7,56 @@ simulation by working backwards from measurements to the initial |0⟩^⊗n stat
 current-time observable Pₓ by the inverse Clifford operation we get some observable from the
 start of time that is equivalent to measuring Pₓ at the current time.
 """
-struct BacktrackingRegister <: AbstractQCState
+struct BacktrackRegister <: AbstractQCState
     inv_circuit::CliffordOperator
     bits::Vector{Bool}
 end
 
-BacktrackingRegister(r::BacktrackingRegister) = r
-BacktrackingRegister(qbits::Int, mbits::Int=0) = BacktrackingRegister(one(CliffordOperator, qbits), falses(mbits))
-BacktrackingRegister(s::AbstractStabilizer, mbits::Int=0) = BacktrackingRegister(inv(CliffordOperator(Destabilizer(s))), falses(mbits))
-BacktrackingRegister(r::Register) = BacktrackingRegister(quantumstate(r), r.bits)
+BacktrackRegister(r::BacktrackRegister) = r
+BacktrackRegister(qbits::Int, mbits::Int=0) = BacktrackRegister(one(CliffordOperator, qbits), falses(mbits))
+BacktrackRegister(s::AbstractStabilizer, mbits::Int=0) = BacktrackRegister(inv(CliffordOperator(Destabilizer(s))), falses(mbits))
+BacktrackRegister(r::Register) = BacktrackRegister(quantumstate(r), r.bits)
 
-Base.copy(r::BacktrackingRegister) = BacktrackingRegister(copy(r.inv_circuit), copy(r.bits))
-Base.:(==)(l::BacktrackingRegister,r::BacktrackingRegister) = l.inv_circuit==r.inv_circuit && l.bits==r.bits
-Base.hash(r::BacktrackingRegister, h::UInt) = hash(r.inv_circuit, hash(r.bits, h))
+Base.copy(r::BacktrackRegister) = BacktrackRegister(copy(r.inv_circuit), copy(r.bits))
+Base.:(==)(l::BacktrackRegister,r::BacktrackRegister) = l.inv_circuit==r.inv_circuit && l.bits==r.bits
+Base.hash(r::BacktrackRegister, h::UInt) = hash(r.inv_circuit, hash(r.bits, h))
 
-nqubits(r::BacktrackingRegister) = nqubits(r.inv_circuit)
-bitview(r::BacktrackingRegister) = r.bits
-quantumstate(r::BacktrackingRegister) = apply_inv!(one(Stabilizer, nqubits(r)), r.inv_circuit)
-tab(r::BacktrackingRegister) = tab(r.inv_circuit)
+nqubits(r::BacktrackRegister) = nqubits(r.inv_circuit)
+bitview(r::BacktrackRegister) = r.bits
+quantumstate(r::BacktrackRegister) = apply_inv!(one(Stabilizer, nqubits(r)), r.inv_circuit)
+tab(r::BacktrackRegister) = tab(r.inv_circuit)
 
-tensor(regs::BacktrackingRegister...) = BacktrackingRegister(tensor([r.inv_circuit for r in regs]), [bit for r in regs for bit in r.bits])
-# tensor(args::AbstractQCState...) = tensor(BacktrackingRegister.(args)...)
+tensor(regs::BacktrackRegister...) = BacktrackRegister(tensor([r.inv_circuit for r in regs]), [bit for r in regs for bit in r.bits])
+# tensor(args::AbstractQCState...) = tensor(BacktrackRegister.(args)...)
 
-function apply!(r::BacktrackingRegister, op, args...; kwargs...)
+function apply!(r::BacktrackRegister, op, args...; kwargs...)
     apply_right!(r.inv_circuit, op, args...; kwargs...)
     r
 end
 
-function apply!(r::BacktrackingRegister, m::sMX)
+function apply!(r::BacktrackRegister, m::sMX)
     _, res = projectXrand!(r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
-function apply!(r::BacktrackingRegister, m::sMY)
+function apply!(r::BacktrackRegister, m::sMY)
     _, res = projectYrand!(r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
-function apply!(r::BacktrackingRegister, m::sMZ)
+function apply!(r::BacktrackRegister, m::sMZ)
     _, res = projectZrand!(r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
-function apply!(r::BacktrackingRegister, m::sMRX)
+function apply!(r::BacktrackRegister, m::sMRX)
     _, res = projectXrand!(r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     phases(tab(r))[m.qubit] = 0x00
     phases(tab(r))[nqubits(r)+m.qubit] = 0x00
     r
 end
-function apply!(r::BacktrackingRegister, m::sMRY)
+function apply!(r::BacktrackRegister, m::sMRY)
     _, res = projectYrand!(r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     if iszero(res)
@@ -64,20 +64,20 @@ function apply!(r::BacktrackingRegister, m::sMRY)
     end
     r
 end
-function apply!(r::BacktrackingRegister, m::sMRZ)
+function apply!(r::BacktrackRegister, m::sMRZ)
     _, res = projectZrand!(r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     phases(tab(r))[m.qubit] = 0x00
     phases(tab(r))[nqubits(r)+m.qubit] ⊻= 0x02
     r
 end
-function apply!(r::BacktrackingRegister, m::PauliMeasurement)
+function apply!(r::BacktrackRegister, m::PauliMeasurement)
     _, res = projectrand!(r,m.pauli)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
     r
 end
 
-function projectXrand!(r::BacktrackingRegister, m)
+function projectXrand!(r::BacktrackRegister, m)
     if all(getxrow(tab(r), m) .== 0)
         return r, phases(tab(r))[m]
     end
@@ -89,7 +89,7 @@ function projectXrand!(r::BacktrackingRegister, m)
     r, phases(tab(r))[m]
 end
 
-function projectYrand!(r::BacktrackingRegister, m)
+function projectYrand!(r::BacktrackRegister, m)
     if all(getxrow(tab(r), m) .== getxrow(tab(r), nqubits(r)+m))
         return r, eval_y_obs(r.inv_circuit, m).phase[]
     end
@@ -101,7 +101,7 @@ function projectYrand!(r::BacktrackingRegister, m)
     r, eval_y_obs(r.inv_circuit, m).phase[]
 end
 
-function projectZrand!(r::BacktrackingRegister, m)
+function projectZrand!(r::BacktrackRegister, m)
     if all(getxrow(tab(r), nqubits(r)+m) .== 0)
         return r, phases(tab(r))[nqubits(r)+m]
     end
@@ -111,7 +111,7 @@ function projectZrand!(r::BacktrackingRegister, m)
     r, phases(tab(r))[nqubits(r)+m]
 end
 
-function projectrand!(r::BacktrackingRegister, pauli)
+function projectrand!(r::BacktrackRegister, pauli)
     if all(iszero.(pauli.xz))
         return pauli.phase[] & 0x02
     end
@@ -162,11 +162,11 @@ function projectrand!(r::BacktrackingRegister, pauli)
     r, res
 end
 
-# function traceout!(r::BacktrackingRegister, arg)
+# function traceout!(r::BacktrackRegister, arg)
     # TODO
 # end
 
-# function applybranches(r::BacktrackingRegister, op)
+# function applybranches(r::BacktrackRegister, op)
     # TODO
 # end
 

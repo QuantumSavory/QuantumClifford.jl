@@ -32,7 +32,7 @@ export
     fastcolumn, fastrow,
     bitview, quantumstate, tab, rank,
     BadDataStructure,
-    affectedqubits, #TODO move to QuantumInterface?
+    affectedqubits, affectedbits, #TODO move to QuantumInterface?
     # GF2
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     # Canonicalization
@@ -64,7 +64,7 @@ export
     Reset, sMRX, sMRY, sMRZ, sRX, sRY, sRZ,
     BellMeasurement, ClassicalXOR,
     VerifyOp,
-    Register,
+    Register, BacktrackRegister,
     # Enumeration and Randoms
     enumerate_single_qubit_gates, random_clifford1,
     enumerate_cliffords, symplecticGS, clifford_cardinality, enumerate_phases,
@@ -92,8 +92,6 @@ export
     mctrajectory!, mctrajectories, applywstatus!,
     # petrajectories
     petrajectories, applybranches,
-    # backtrajectory
-    backtrajectory,
     # nonclifford
     GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase,
     # makie plotting -- defined only when extension is loaded
@@ -1443,8 +1441,8 @@ include("operator_traits.jl")
 include("mctrajectory.jl")
 include("petrajectory.jl")
 include("misc_ops.jl")
-include("backtrajectory.jl")
 include("classical_register.jl")
+include("backtrajectory.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
@@ -1468,6 +1466,5 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
-include("apply_right.jl")
 
 end #module

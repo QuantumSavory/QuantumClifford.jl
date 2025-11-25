@@ -12,16 +12,6 @@ function applynoise!(state, noise, indices::Base.AbstractVecOrTuple)
     return state
 end
 
-# Implementations for Register
-function applynoise!(r::Register, n, i::Int)
-    apply!(quantumstate(r), n, i)
-    return r
-end
-function applynoise!(r::Register, n, indices::Base.AbstractVecOrTuple)
-    apply!(quantumstate(r), n, indices)
-    return r
-end
-
 """Depolarization noise model with total probability of error `p`."""
 struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
     p::T
@@ -47,27 +37,26 @@ function PauliNoise(p)
     UnbiasedUncorrelatedNoise(p)
 end
 
-function applynoise!(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNoise,i::Int)
+function applynoise!(s::AbstractQCState, noise::UnbiasedUncorrelatedNoise, i::Int)
     infid = noise.p/3
     r = rand()
     if r<infid
-        apply_single_x!(s,i)
+        apply!(s, sX(i))
     elseif r<2infid
-        apply_single_z!(s,i)
+        apply!(s, sZ(i))
     elseif r<3infid
-        apply_single_y!(s,i)
+        apply!(s, sY(i))
     end
     s
 end
-
-function applynoise!(s::AbstractStabilizer,noise::PauliNoise,i::Int)
+function applynoise!(s::AbstractQCState, noise::PauliNoise, i::Int)
     r = rand()
     if r<noise.px
-        apply_single_x!(s,i)
+        apply!(s, sX(i))
     elseif r<noise.px+noise.pz
-        apply_single_z!(s,i)
+        apply!(s, sZ(i))
     elseif r<noise.px+noise.pz+noise.py
-        apply_single_y!(s,i)
+        apply!(s, sY(i))
     end
     s
 end
@@ -152,6 +141,18 @@ end
 function apply!(r::Register, n::NoiseOp)
     apply!(quantumstate(r), n)
     return r
+end
+
+# XXX necessary to resolve ambiguity between apply!(s::AbstractQCState, mr::Noise) and apply!(r::BackRegister, op)
+# TODO resolve them in a neater fashion with less repetition
+function apply!(r::BacktrackRegister, n::NoisyGate)
+    applynoise!(apply!(r, n.gate), n.noise, affectedqubits(n.gate))
+end
+function apply!(r::BacktrackRegister, n::NoiseOpAll)
+    applynoise!(r, n.noise, 1:nqubits(r))
+end
+function apply!(r::BacktrackRegister, n::NoiseOp)
+    applynoise!(r, n.noise, affectedqubits(n))
 end
 
 ##
