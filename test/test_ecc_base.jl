@@ -44,19 +44,19 @@ LP118 = [LPCode(base_matrix, l .- base_matrix', l) for (l, base_matrix) in B118]
 
 # generalized bicyle codes from (A1) and (A2) Appendix B of [panteleev2021degenerate](@cite).
 test_gb_codes = [
-    generalized_bicycle_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 127), # (A1) [[254, 28, 14≤d≤20]]
-    generalized_bicycle_codes([0, 1, 14, 16, 22], [0, 3, 13, 20, 42], 63), # (A2) [[126, 28, 8]]
+    generalized_bicycle_codes_as_2bga([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 127), # (A1) [[254, 28, 14≤d≤20]]
+    generalized_bicycle_codes_as_2bga([0, 1, 14, 16, 22], [0, 3, 13, 20, 42], 63), # (A2) [[126, 28, 8]]
 ]
 
 test_hcubic_codes = [
-    haah_cubic_codes([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 3),
-    haah_cubic_codes(8), # (D) [[1024, 30, 13 ≤ d ≤ 32]] Appendix B of [panteleev2021degenerate](@cite).
+    Haah_cubic_codes_as_2bga([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 3),
+    Haah_cubic_codes_as_2bga(8), # (D) [[1024, 30, 13 ≤ d ≤ 32]] Appendix B of [panteleev2021degenerate](@cite).
 ]
 
 # honeycomb color codes from [eberhardt2024logical](@cite).
 test_honeycomb_color_codes = [
-    honeycomb_color_codes(6 , 6), honeycomb_color_codes(9 , 6),
-    honeycomb_color_codes(12, 6), honeycomb_color_codes(12, 9),
+    honeycomb_color_codes_as_2bga(6 , 6), honeycomb_color_codes_as_2bga(9 , 6),
+    honeycomb_color_codes_as_2bga(12, 6), honeycomb_color_codes_as_2bga(12, 9),
 ]
 
 # Lifted product codes using non-commutative algebras
@@ -298,7 +298,7 @@ const code_instance_args = Dict(
     :CyclicQuantumTannerGraphProduct => [(2,), (3,), (4,)],
     :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false), (7,h₃,true), (9,h₃,true), (9,h₄,true), (10,h₄,true), (12,h₄,true)],
     :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
-    :GeneralizedCirculantBivariateBicycle => [(l1, m1, A1, B1), (l2, m2, A2,B2), (l3, m3, A3, B3), (l4, m4, A4, B4), (l5, m5, A5, B5)],
+    :BivariateBicycleCodeViaCirculantMat => [(l1, m1, A1, B1), (l2, m2, A2,B2), (l3, m3, A3, B3), (l4, m4, A4, B4), (l5, m5, A5, B5)],
     :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1, l_ghp1), (A_ghp2, b_ghp2, l_ghp2)],
     :GeneralizedBicycleCode => [(a_gb₁, b_gb₁, l_gb₁), (a_gb₂, b_gb₂, l_gb₂), (a_gb₃ ,b_gb₃, l_gb₃)],
     :ExtendedGeneralizedBicycleCode => [(c_gb₁, 2, p_gb₁), (c_gb₂, 3, p_gb₂), (c_gb₃, 4, p_gb₃)]
@@ -571,7 +571,7 @@ const code_instance_args = Dict(
         :HomologicalProductCode => [([H₁, transpose(H₁)], l₁), ([H₂, transpose(H₂)], l₂), ([H₃, transpose(H₃)],), ([δ₄, δ₄, δ₄],)],
         :DoubleHomologicalProductCode => [(δ₁,), (δ₂,)],
         :TrivariateTricycleCode => [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)],
-        :BivariateBicycleCode => [(l_bb₁, m_bb₁, A_bb₁, B_bb₁), (l_bb₂, m_bb₂, A_bb₂, B_bb₂), (l_bb₃, m_bb₃, A_bb₃, B_bb₃), (l_bb₄, m_bb₄, A_bb₄, B_bb₄), (l_bb₅, m_bb₅, A_bb₅, B_bb₅)]
+        :BivariateBicycleCodeViaPoly => [(l_bb₁, m_bb₁, A_bb₁, B_bb₁), (l_bb₂, m_bb₂, A_bb₂, B_bb₂), (l_bb₃, m_bb₃, A_bb₃, B_bb₃), (l_bb₄, m_bb₄, A_bb₄, B_bb₄), (l_bb₅, m_bb₅, A_bb₅, B_bb₅)]
     )
     merge!(code_instance_args, oscar_code_instance_args)
   end

@@ -125,7 +125,7 @@ in Appendix B of [panteleev2021degenerate](@cite).
 ```jldoctest jumpexamples
 julia> l = 24;
 
-julia> c1 = generalized_bicycle_codes([0, 2, 8, 15], [0, 2, 12, 17], l);
+julia> c1 = generalized_bicycle_codes_as_2bga([0, 2, 8, 15], [0, 2, 12, 17], l);
 
 julia> code_n(c1), code_k(c1), distance(c1, DistanceMIPAlgorithm(solver=HiGHS))
 (48, 6, 8)

@@ -51,7 +51,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (12, 2, 3)
 ```
 
-See also: [`generalized_bicycle_codes`](@ref)
+See also: [`generalized_bicycle_codes_as_2bga`](@ref)
 
 ### Fields
     $TYPEDFIELDS

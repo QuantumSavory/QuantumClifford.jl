@@ -587,23 +587,22 @@ function code_n(c::DDimensionalCode)
     D = c.D
     if D == 2
         # 2D: sum E₁ total complex dimensions
-        return dims[2] # (see A11, page 9): For DDimensionalSurfaceCode L² + (L-1)²
+        return dims[2] # (see A11, page 9): For DDimensionalSurfaceCode L² + (L-1)² [Berthusen_2024](@cite)
     elseif D == 3
         # 3D: sum F₁ total complex dimensions
         # F₁ = E₀ ⊗ D₁ ⊕ E₁ ⊗ D₀
-        return dims[2] # (see A21, page 10): For DDimensionalSurfaceCode L³ + 2L(L − 1)²
+        return dims[2] # (see A21, page 10): For DDimensionalSurfaceCode L³ + 2L(L − 1)² [Berthusen_2024](@cite)
     elseif D == 4
         # 4D: sum G² total complex dimensions
         # G² = F₁ ⊗ C₁ ⊕ F₂ ⊗ C₀
-        return dims[3] # (see A28, page 11): For DDimensionalSurfaceCode 6L⁴ − 12L³ + 10L² − 4L + 1
+        return dims[3] # (see A28, page 11): For DDimensionalSurfaceCode 6L⁴ − 12L³ + 10L² − 4L + 1 [Berthusen_2024](@cite)
     else
-        # TODO Investigate for dimension > 4? For odd D: take middle term, For even D: take middle three terms.
-        middle = div(length(dims), 2) + 1
-        if D % 2 == 0
-            return sum(dims[middle-1:middle+1])
-        else
-            return dims[middle]
-        end
+        # TODO Investigate and derive expressions for dimension > 4?
+        throw(ErrorException("""
+            code_n is only implemented for 2D, 3D, and 4D codes [Berthusen_2024](@cite).
+            Received: $D-dimensional code. The current literature does not provide closed-form
+            formulas for D > 4. Higher-dimensional codes require further investigation to derive
+            generalized formulas."""))
     end
 end
 
