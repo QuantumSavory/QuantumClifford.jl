@@ -75,24 +75,36 @@ function configure_anythingllm(package_name::String;
     end
 
     # Step 3: Upload markdown documentation files
-    # Note: Document upload requires manual configuration through the AnythingLLM UI
-    # The workspace is created and ready to receive documents
-    @info "Workspace created successfully. Please upload documents manually through the AnythingLLM UI at:"
-    @info "  $api_url/workspace/$workspace_slug"
-    @info "  Upload the markdown files from: $(joinpath(@__DIR__, "src"))"
+    @info "Uploading markdown documentation files..."
+    docs_src_dir = joinpath(@__DIR__, "src")
+    markdown_files = filter(f -> endswith(f, ".md"), readdir(docs_src_dir))
 
-    # Uncomment below to enable automatic document upload when server configuration is fixed
-    # docs_src_dir = joinpath(@__DIR__, "src")
-    # markdown_files = filter(f -> endswith(f, ".md"), readdir(docs_src_dir))
-    # for md_file in markdown_files
-    #     file_path = joinpath(docs_src_dir, md_file)
-    #     try
-    #         @info "  Uploading: $md_file"
-    #         upload_document_from_file(api_url, api_key, workspace_slug, file_path, md_file)
-    #     catch e
-    #         @warn "Failed to upload $md_file" exception=e
-    #     end
-    # end
+    for md_file in markdown_files
+        file_path = joinpath(docs_src_dir, md_file)
+        try
+            @info "  Uploading: $md_file"
+            upload_document_from_file(api_url, api_key, workspace_slug, file_path, md_file)
+        catch e
+            @warn "Failed to upload $md_file" exception=e
+        end
+    end
+
+    # Step 4: Upload public docstrings
+    @info "Collecting and uploading public docstrings..."
+    try
+        upload_docstrings(api_url, api_key, workspace_slug)
+    catch e
+        @warn "Failed to upload docstrings" exception=e
+    end
+
+    # Step 5: Update embeddings to include all uploaded documents
+    @info "Updating embeddings..."
+    sleep(2)  # Give server time to process uploads
+    try
+        update_workspace_embeddings(api_url, api_key, workspace_slug)
+    catch e
+        @warn "Failed to update embeddings" exception=e
+    end
 
     # Step 6: Get or create embed
     @info "Getting embed configuration..."
