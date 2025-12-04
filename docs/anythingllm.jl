@@ -42,36 +42,66 @@ function configure_anythingllm(package_name::String;
 
     @info "Configuring AnythingLLM for $package_name..."
 
-    # Step 1: Delete existing workspace if it exists
-    @info "Checking for existing workspace..."
+    # Step 1: Check if workspace exists and if it has an embed
+    @info "Checking for existing workspace and embed..."
+    workspace_exists = false
+    has_embed = false
+
     try
+        # Check for existing embed first
+        response = HTTP.get("$api_url/api/v1/embed", headers=headers)
+        embeds = JSON3.read(String(response.body))
+
+        for embed in get(embeds, :embeds, [])
+            if haskey(embed, :workspace)
+                workspace_name = lowercase(get(embed.workspace, :name, ""))
+                if contains(workspace_name, lowercase(package_name))
+                    has_embed = true
+                    @info "Found existing embed for workspace"
+                    break
+                end
+            end
+        end
+
+        # Check for existing workspace
         response = HTTP.get("$api_url/api/v1/workspaces", headers=headers)
         workspaces = JSON3.read(String(response.body))
 
         for ws in get(workspaces, :workspaces, [])
             if lowercase(get(ws, :slug, "")) == workspace_slug
-                @info "Deleting existing workspace: $(ws.slug)"
-                HTTP.delete("$api_url/api/v1/workspace/$(ws.slug)", headers=headers)
-                sleep(1)  # Give the server time to clean up
+                workspace_exists = true
+                # Only delete if there's no embed (to preserve the embed)
+                if !has_embed
+                    @info "Deleting existing workspace (no embed to preserve): $(ws.slug)"
+                    HTTP.delete("$api_url/api/v1/workspace/$(ws.slug)", headers=headers)
+                    workspace_exists = false
+                    sleep(1)
+                else
+                    @info "Preserving existing workspace to keep embed"
+                end
                 break
             end
         end
     catch e
-        @warn "Error checking/deleting workspace" exception=e
+        @warn "Error checking workspace/embed" exception=e
     end
 
-    # Step 2: Create new workspace
-    @info "Creating new workspace: $workspace_slug"
-    try
-        body = JSON3.write(Dict("name" => package_name))
-        response = HTTP.post("$api_url/api/v1/workspace/new",
-                           headers=headers,
-                           body=body)
-        result = JSON3.read(String(response.body))
-        @info "Created workspace: $(result.workspace.slug)"
-    catch e
-        @error "Failed to create workspace" exception=e
-        return ""
+    # Step 2: Create new workspace if needed
+    if !workspace_exists
+        @info "Creating new workspace: $workspace_slug"
+        try
+            body = JSON3.write(Dict("name" => package_name))
+            response = HTTP.post("$api_url/api/v1/workspace/new",
+                               headers=headers,
+                               body=body)
+            result = JSON3.read(String(response.body))
+            @info "Created workspace: $(result.workspace.slug)"
+        catch e
+            @error "Failed to create workspace" exception=e
+            return ""
+        end
+    else
+        @info "Using existing workspace: $workspace_slug"
     end
 
     # Step 3: Upload markdown documentation files
@@ -110,25 +140,27 @@ function configure_anythingllm(package_name::String;
     @info "Getting embed configuration..."
     embed_uuid = ""
     try
+        # Check if an embed already exists for any QuantumClifford workspace
         response = HTTP.get("$api_url/api/v1/embed", headers=headers)
         embeds = JSON3.read(String(response.body))
 
         for embed in get(embeds, :embeds, [])
-            if haskey(embed, :workspace) &&
-               lowercase(get(embed.workspace, :slug, "")) == workspace_slug
-                embed_uuid = embed.uuid
-                @info "Found existing embed: $embed_uuid"
-                break
+            if haskey(embed, :workspace)
+                workspace_name = lowercase(get(embed.workspace, :name, ""))
+                if contains(workspace_name, "quantumclifford")
+                    embed_uuid = embed.uuid
+                    @info "Found existing embed: $embed_uuid"
+                    break
+                end
             end
         end
 
         if isempty(embed_uuid)
-            @info "No embed found for workspace, you may need to create one manually"
-            return ""
+            @info "No embed found. Create one manually at: $api_url/workspace/$workspace_slug"
+            @info "The documentation will build successfully, but the chat widget will not appear until an embed is created."
         end
     catch e
-        @warn "Failed to get embed" exception=e
-        return ""
+        @warn "Failed to get embed configuration" exception=e
     end
 
     # Return the embed script
