@@ -155,35 +155,25 @@ function configure_anythingllm(package_name::String;
 
         if isempty(embed_uuid)
             @info "No embed found, creating new embed..."
-            try
-                # Create new embed for the workspace
-                embed_body = JSON.json(Dict(
-                    "workspaceSlug" => workspace_slug,
-                    "maxThreads" => 10,
-                    "chatMode" => "query"
-                ))
+            # Create new embed for the workspace
+            embed_body = JSON.json(Dict(
+                "workspace_slug" => workspace_slug,
+                "max_chats_per_day" => nothing,
+                "max_chats_per_session" => nothing
+            ))
 
-                create_response = HTTP.post("$api_url/api/v1/embed/new",
-                                          headers=headers,
-                                          body=embed_body)
+            create_response = HTTP.post("$api_url/api/v1/embed/new",
+                                      headers=headers,
+                                      body=embed_body)
 
-                embed_result = JSON.parse(String(create_response.body))
+            embed_result = JSON.parse(String(create_response.body))
 
-                if haskey(embed_result, "embed") && haskey(embed_result["embed"], "uuid")
-                    embed_uuid = embed_result["embed"]["uuid"]
-                    @info "Created new embed: $embed_uuid"
-                else
-                    @warn "Embed creation response missing UUID: $embed_result"
-                end
-            catch e
-                @warn "Failed to create embed automatically" exception=e
-                @info """
-                Please create an embed manually:
-                1. Visit: $api_url/workspace/$workspace_slug
-                2. Go to Settings → Embeds
-                3. Click "New Embed" and configure it
-                4. Rebuild the documentation
-                """
+            if haskey(embed_result, "embed") && haskey(embed_result["embed"], "uuid")
+                embed_uuid = embed_result["embed"]["uuid"]
+                @info "Created new embed: $embed_uuid"
+            else
+                @error "Failed to create embed: $embed_result"
+                error("Embed creation failed")
             end
         end
     catch e
