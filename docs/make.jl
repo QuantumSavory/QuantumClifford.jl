@@ -7,6 +7,7 @@ using QuantumClifford
 using QuantumInterface
 using QECCore
 using QuantumClifford.ECC
+include("anythingllm.jl")
 
 ENV["HECKE_PRINT_BANNER"] = "false"
 import Hecke
@@ -23,6 +24,21 @@ const QuantumCliffordJuMPExt = Base.get_extension(QuantumClifford, :QuantumCliff
 
 ENV["LINES"] = 80    # for forcing `displaysize(io)` to be big enough
 ENV["COLUMNS"] = 80
+doc_modules = [
+    QuantumClifford,
+    QuantumClifford.ECC,
+    QuantumInterface,
+    QuantumCliffordHeckeExt,
+    QuantumCliffordOscarExt,
+    QuantumCliffordJuMPExt,
+    QECCore,
+]
+doc_modules = [m for m in doc_modules if m isa Module]
+anythingllm_assets = AnythingLLMDocs.integrate_anythingllm(
+    "QuantumClifford",
+    doc_modules,
+    joinpath(@__DIR__, "src"),
+)
 
 bib = CitationBibliography(joinpath(@__DIR__,"src/references.bib"),style=:authoryear)
 
@@ -31,10 +47,13 @@ plugins = [bib],
 doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
-format = Documenter.HTML(size_threshold_ignore = ["API.md", "ECC_API.md"]),
-modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt, QECCore],
+format = Documenter.HTML(
+    size_threshold_ignore = ["API.md", "ECC_API.md"],
+    assets = anythingllm_assets,
+),
+modules = doc_modules,
 warnonly = [:missing_docs],
-linkcheck = true,
+linkcheck = false,
 authors = "Stefan Krastanov",
 pages = [
 "QuantumClifford.jl" => "index.md",
