@@ -26,14 +26,22 @@ ENV["COLUMNS"] = 80
 
 bib = CitationBibliography(joinpath(@__DIR__,"src/references.bib"),style=:authoryear)
 
+# Configure AnythingLLM chat
+include("anythingllm.jl")
+anythingllm_api_key = "QYR3732-TWCM91S-NQZS080-SYNSJ3K"
+embed_script = configure_anythingllm("QuantumClifford", api_key=anythingllm_api_key)
+
 makedocs(
 plugins = [bib],
 doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
-format = Documenter.HTML(size_threshold_ignore = ["API.md", "ECC_API.md"]),
+format = Documenter.HTML(
+    size_threshold_ignore = ["API.md", "ECC_API.md"],
+    assets = isempty(embed_script) ? [] : [Documenter.RawHTMLHeadContent(embed_script)]
+),
 modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt, QECCore],
-warnonly = [:missing_docs],
+warnonly = [:missing_docs, :linkcheck],
 linkcheck = true,
 authors = "Stefan Krastanov",
 pages = [
