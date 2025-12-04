@@ -51,10 +51,10 @@ function configure_anythingllm(package_name::String;
         response = HTTP.get("$api_url/api/v1/workspaces", headers=headers)
         workspaces = JSON.parse(String(response.body))
 
-        for ws in get(workspaces, :workspaces, [])
-            if lowercase(get(ws, :slug, "")) == workspace_slug
-                @info "Deleting existing workspace: $(ws.slug)"
-                HTTP.delete("$api_url/api/v1/workspace/$(ws.slug)", headers=headers)
+        for ws in get(workspaces, "workspaces", [])
+            if lowercase(get(ws, "slug", "")) == workspace_slug
+                @info "Deleting existing workspace: $(ws["slug"])"
+                HTTP.delete("$api_url/api/v1/workspace/$(ws["slug"])", headers=headers)
                 sleep(1)  # Give server time to clean up
                 break
             end
@@ -68,12 +68,12 @@ function configure_anythingllm(package_name::String;
         response = HTTP.get("$api_url/api/v1/embed", headers=headers)
         embeds = JSON.parse(String(response.body))
 
-        for embed in get(embeds, :embeds, [])
-            if haskey(embed, :workspace)
-                workspace_name = lowercase(get(embed.workspace, :name, ""))
+        for embed in get(embeds, "embeds", [])
+            if haskey(embed, "workspace")
+                workspace_name = lowercase(get(embed["workspace"], "name", ""))
                 if contains(workspace_name, lowercase(package_name))
-                    @info "Deleting existing embed: $(embed.uuid)"
-                    HTTP.delete("$api_url/api/v1/embed/$(embed.uuid)", headers=headers)
+                    @info "Deleting existing embed: $(embed["uuid"])"
+                    HTTP.delete("$api_url/api/v1/embed/$(embed["uuid"])", headers=headers)
                     break
                 end
             end
@@ -91,8 +91,8 @@ function configure_anythingllm(package_name::String;
                            headers=headers,
                            body=body)
         result = JSON.parse(String(response.body))
-        workspace_id = result.workspace.id
-        @info "Created workspace: $(result.workspace.slug) (ID: $workspace_id)"
+        workspace_id = result["workspace"]["id"]
+        @info "Created workspace: $(result["workspace"]["slug"]) (ID: $workspace_id)"
     catch e
         @error "Failed to create workspace" exception=e
         return ""
@@ -142,11 +142,11 @@ function configure_anythingllm(package_name::String;
         response = HTTP.get("$api_url/api/v1/embed", headers=headers)
         embeds = JSON.parse(String(response.body))
 
-        for embed in get(embeds, :embeds, [])
-            if haskey(embed, :workspace)
-                workspace_name = lowercase(get(embed.workspace, :name, ""))
+        for embed in get(embeds, "embeds", [])
+            if haskey(embed, "workspace")
+                workspace_name = lowercase(get(embed["workspace"], "name", ""))
                 if contains(workspace_name, lowercase(package_name))
-                    embed_uuid = embed.uuid
+                    embed_uuid = embed["uuid"]
                     @info "Found embed: $embed_uuid"
                     break
                 end
@@ -158,9 +158,9 @@ function configure_anythingllm(package_name::String;
             try
                 # Create new embed for the workspace
                 embed_body = JSON.json(Dict(
-                    "workspace_id" => workspace_id,
-                    "max_threads" => 10,
-                    "chat_mode" => "query"
+                    "workspaceSlug" => workspace_slug,
+                    "maxThreads" => 10,
+                    "chatMode" => "query"
                 ))
 
                 create_response = HTTP.post("$api_url/api/v1/embed/new",
@@ -331,7 +331,7 @@ function update_workspace_embeddings(api_url, api_key, workspace_slug)
     docs_data = JSON.parse(String(response.body))
 
     # Collect all document paths
-    doc_paths = collect_document_paths(get(docs_data, :localFiles, Dict()))
+    doc_paths = collect_document_paths(get(docs_data, "localFiles", Dict()))
 
     if !isempty(doc_paths)
         # Update embeddings to include all documents
@@ -356,13 +356,13 @@ Recursively collect all document paths from the file tree.
 function collect_document_paths(file_tree)
     paths = String[]
 
-    if haskey(file_tree, :type) && file_tree.type == "folder"
-        for item in get(file_tree, :items, [])
+    if haskey(file_tree, "type") && file_tree["type"] == "folder"
+        for item in get(file_tree, "items", [])
             append!(paths, collect_document_paths(item))
         end
-    elseif haskey(file_tree, :type) && file_tree.type == "file"
-        if haskey(file_tree, :path)
-            push!(paths, file_tree.path)
+    elseif haskey(file_tree, "type") && file_tree["type"] == "file"
+        if haskey(file_tree, "path")
+            push!(paths, file_tree["path"])
         end
     end
 
