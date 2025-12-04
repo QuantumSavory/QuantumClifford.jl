@@ -323,6 +323,9 @@ function update_workspace_embeddings(api_url, api_key, workspace_slug)
     # Collect all document paths
     doc_paths = collect_document_paths(get(docs_data, "localFiles", Dict()))
 
+    # Strip "documents/" prefix if present (AnythingLLM expects paths relative to documents folder)
+    doc_paths = [startswith(path, "documents/") ? path[11:end] : path for path in doc_paths]
+
     if !isempty(doc_paths)
         # Update embeddings to include all documents
         body = JSON.json(Dict(
@@ -339,20 +342,25 @@ function update_workspace_embeddings(api_url, api_key, workspace_slug)
 end
 
 """
-    collect_document_paths(file_tree)
+    collect_document_paths(file_tree, current_path="")
 
 Recursively collect all document paths from the file tree.
 """
-function collect_document_paths(file_tree)
+function collect_document_paths(file_tree, current_path="")
     paths = String[]
 
     if haskey(file_tree, "type") && file_tree["type"] == "folder"
+        folder_name = get(file_tree, "name", "")
+        new_path = isempty(current_path) ? folder_name : "$current_path/$folder_name"
+
         for item in get(file_tree, "items", [])
-            append!(paths, collect_document_paths(item))
+            append!(paths, collect_document_paths(item, new_path))
         end
     elseif haskey(file_tree, "type") && file_tree["type"] == "file"
-        if haskey(file_tree, "path")
-            push!(paths, file_tree["path"])
+        file_name = get(file_tree, "name", "")
+        if !isempty(file_name)
+            full_path = isempty(current_path) ? file_name : "$current_path/$file_name"
+            push!(paths, full_path)
         end
     end
 
