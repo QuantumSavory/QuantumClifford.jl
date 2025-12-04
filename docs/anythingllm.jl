@@ -160,7 +160,7 @@ function configure_anythingllm(package_name::String;
                 embed_body = JSON.json(Dict(
                     "workspace_id" => workspace_id,
                     "max_threads" => 10,
-                    "chat_mode" => "chat"
+                    "chat_mode" => "query"
                 ))
 
                 create_response = HTTP.post("$api_url/api/v1/embed/new",
