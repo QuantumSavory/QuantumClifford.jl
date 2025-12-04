@@ -42,13 +42,26 @@ function configure_anythingllm(package_name::String;
 
     @info "Configuring AnythingLLM for $package_name..."
 
-    # Step 1: Check if workspace exists and if it has an embed
-    @info "Checking for existing workspace and embed..."
-    workspace_exists = false
-    has_embed = false
-
+    # Step 1: Delete existing workspace and embed (if any)
+    @info "Cleaning up existing workspace and embed..."
     try
-        # Check for existing embed first
+        response = HTTP.get("$api_url/api/v1/workspaces", headers=headers)
+        workspaces = JSON3.read(String(response.body))
+
+        for ws in get(workspaces, :workspaces, [])
+            if lowercase(get(ws, :slug, "")) == workspace_slug
+                @info "Deleting existing workspace: $(ws.slug)"
+                HTTP.delete("$api_url/api/v1/workspace/$(ws.slug)", headers=headers)
+                sleep(1)  # Give server time to clean up
+                break
+            end
+        end
+    catch e
+        @warn "Error checking/deleting workspace" exception=e
+    end
+
+    # Delete any existing embeds for this workspace
+    try
         response = HTTP.get("$api_url/api/v1/embed", headers=headers)
         embeds = JSON3.read(String(response.body))
 
@@ -56,52 +69,30 @@ function configure_anythingllm(package_name::String;
             if haskey(embed, :workspace)
                 workspace_name = lowercase(get(embed.workspace, :name, ""))
                 if contains(workspace_name, lowercase(package_name))
-                    has_embed = true
-                    @info "Found existing embed for workspace"
+                    @info "Deleting existing embed: $(embed.uuid)"
+                    HTTP.delete("$api_url/api/v1/embed/$(embed.uuid)", headers=headers)
                     break
                 end
             end
         end
-
-        # Check for existing workspace
-        response = HTTP.get("$api_url/api/v1/workspaces", headers=headers)
-        workspaces = JSON3.read(String(response.body))
-
-        for ws in get(workspaces, :workspaces, [])
-            if lowercase(get(ws, :slug, "")) == workspace_slug
-                workspace_exists = true
-                # Only delete if there's no embed (to preserve the embed)
-                if !has_embed
-                    @info "Deleting existing workspace (no embed to preserve): $(ws.slug)"
-                    HTTP.delete("$api_url/api/v1/workspace/$(ws.slug)", headers=headers)
-                    workspace_exists = false
-                    sleep(1)
-                else
-                    @info "Preserving existing workspace to keep embed"
-                end
-                break
-            end
-        end
     catch e
-        @warn "Error checking workspace/embed" exception=e
+        @warn "Error checking/deleting embed" exception=e
     end
 
-    # Step 2: Create new workspace if needed
-    if !workspace_exists
-        @info "Creating new workspace: $workspace_slug"
-        try
-            body = JSON3.write(Dict("name" => package_name))
-            response = HTTP.post("$api_url/api/v1/workspace/new",
-                               headers=headers,
-                               body=body)
-            result = JSON3.read(String(response.body))
-            @info "Created workspace: $(result.workspace.slug)"
-        catch e
-            @error "Failed to create workspace" exception=e
-            return ""
-        end
-    else
-        @info "Using existing workspace: $workspace_slug"
+    # Step 2: Create new workspace
+    @info "Creating new workspace: $workspace_slug"
+    workspace_id = nothing
+    try
+        body = JSON3.write(Dict("name" => package_name))
+        response = HTTP.post("$api_url/api/v1/workspace/new",
+                           headers=headers,
+                           body=body)
+        result = JSON3.read(String(response.body))
+        workspace_id = result.workspace.id
+        @info "Created workspace: $(result.workspace.slug) (ID: $workspace_id)"
+    catch e
+        @error "Failed to create workspace" exception=e
+        return ""
     end
 
     # Step 3: Upload markdown documentation files
@@ -136,31 +127,40 @@ function configure_anythingllm(package_name::String;
         @warn "Failed to update embeddings" exception=e
     end
 
-    # Step 6: Get or create embed
-    @info "Getting embed configuration..."
+    # Step 6: Get embed (must be created manually via UI)
+    @info "Looking for embed..."
     embed_uuid = ""
+
     try
-        # Check if an embed already exists for any QuantumClifford workspace
         response = HTTP.get("$api_url/api/v1/embed", headers=headers)
         embeds = JSON3.read(String(response.body))
 
         for embed in get(embeds, :embeds, [])
             if haskey(embed, :workspace)
                 workspace_name = lowercase(get(embed.workspace, :name, ""))
-                if contains(workspace_name, "quantumclifford")
+                if contains(workspace_name, lowercase(package_name))
                     embed_uuid = embed.uuid
-                    @info "Found existing embed: $embed_uuid"
+                    @info "Found embed: $embed_uuid"
                     break
                 end
             end
         end
 
         if isempty(embed_uuid)
-            @info "No embed found. Create one manually at: $api_url/workspace/$workspace_slug"
-            @info "The documentation will build successfully, but the chat widget will not appear until an embed is created."
+            @warn """
+            No embed found for workspace '$package_name'.
+
+            To enable the chat widget, create an embed manually (one-time setup):
+            1. Visit: $api_url/workspace/$workspace_slug
+            2. Go to Settings → Embeds
+            3. Click "New Embed" and configure it
+            4. Rebuild the documentation
+
+            The documentation will build successfully, but the chat widget will only appear after the embed is created.
+            """
         end
     catch e
-        @warn "Failed to get embed configuration" exception=e
+        @warn "Failed to get embed" exception=e
     end
 
     # Return the embed script
