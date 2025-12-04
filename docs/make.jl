@@ -28,8 +28,8 @@ bib = CitationBibliography(joinpath(@__DIR__,"src/references.bib"),style=:author
 
 # Configure AnythingLLM chat
 include("anythingllm.jl")
-anythingllm_api_key = "QYR3732-TWCM91S-NQZS080-SYNSJ3K"
-embed_script = configure_anythingllm("QuantumClifford", api_key=anythingllm_api_key)
+embed_script = configure_anythingllm("QuantumClifford",
+    modules=[QuantumClifford, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt, QECCore])
 
 makedocs(
 plugins = [bib],

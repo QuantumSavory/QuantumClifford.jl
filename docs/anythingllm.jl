@@ -1,11 +1,12 @@
 using HTTP
-using JSON3
+using JSON
 using Documenter
 
 """
     configure_anythingllm(package_name::String;
                           api_url::String="https://anythingllm.krastanov.org",
-                          api_key::String=get(ENV, "ANYTHINGLLM_API_KEY", ""))
+                          api_key::String=get(ENV, "ANYTHINGLLM_API_KEY", ""),
+                          modules::Vector=[])
 
 Configure AnythingLLM chat for the documentation.
 This function will:
@@ -20,13 +21,15 @@ This function will:
 - `package_name`: Name of the package (used for workspace name)
 - `api_url`: Base URL of the AnythingLLM instance
 - `api_key`: API key for authentication (defaults to ANYTHINGLLM_API_KEY env var)
+- `modules`: Vector of modules to extract docstrings from (default: empty)
 
 # Returns
 - HTML string containing the embed script tag
 """
 function configure_anythingllm(package_name::String;
                                api_url::String="https://anythingllm.krastanov.org",
-                               api_key::String=get(ENV, "ANYTHINGLLM_API_KEY", ""))
+                               api_key::String=get(ENV, "ANYTHINGLLM_API_KEY", ""),
+                               modules::Vector=[])
 
     if isempty(api_key)
         @warn "AnythingLLM API key not provided. Skipping LLM chat configuration."
@@ -46,7 +49,7 @@ function configure_anythingllm(package_name::String;
     @info "Cleaning up existing workspace and embed..."
     try
         response = HTTP.get("$api_url/api/v1/workspaces", headers=headers)
-        workspaces = JSON3.read(String(response.body))
+        workspaces = JSON.parse(String(response.body))
 
         for ws in get(workspaces, :workspaces, [])
             if lowercase(get(ws, :slug, "")) == workspace_slug
@@ -63,7 +66,7 @@ function configure_anythingllm(package_name::String;
     # Delete any existing embeds for this workspace
     try
         response = HTTP.get("$api_url/api/v1/embed", headers=headers)
-        embeds = JSON3.read(String(response.body))
+        embeds = JSON.parse(String(response.body))
 
         for embed in get(embeds, :embeds, [])
             if haskey(embed, :workspace)
@@ -83,11 +86,11 @@ function configure_anythingllm(package_name::String;
     @info "Creating new workspace: $workspace_slug"
     workspace_id = nothing
     try
-        body = JSON3.write(Dict("name" => package_name))
+        body = JSON.json(Dict("name" => package_name))
         response = HTTP.post("$api_url/api/v1/workspace/new",
                            headers=headers,
                            body=body)
-        result = JSON3.read(String(response.body))
+        result = JSON.parse(String(response.body))
         workspace_id = result.workspace.id
         @info "Created workspace: $(result.workspace.slug) (ID: $workspace_id)"
     catch e
@@ -111,11 +114,15 @@ function configure_anythingllm(package_name::String;
     end
 
     # Step 4: Upload public docstrings
-    @info "Collecting and uploading public docstrings..."
-    try
-        upload_docstrings(api_url, api_key, workspace_slug)
-    catch e
-        @warn "Failed to upload docstrings" exception=e
+    if !isempty(modules)
+        @info "Collecting and uploading public docstrings..."
+        try
+            upload_docstrings(api_url, api_key, workspace_slug, modules)
+        catch e
+            @warn "Failed to upload docstrings" exception=e
+        end
+    else
+        @info "No modules specified, skipping docstring upload"
     end
 
     # Step 5: Update embeddings to include all uploaded documents
@@ -127,13 +134,13 @@ function configure_anythingllm(package_name::String;
         @warn "Failed to update embeddings" exception=e
     end
 
-    # Step 6: Get embed (must be created manually via UI)
+    # Step 6: Get or create embed
     @info "Looking for embed..."
     embed_uuid = ""
 
     try
         response = HTTP.get("$api_url/api/v1/embed", headers=headers)
-        embeds = JSON3.read(String(response.body))
+        embeds = JSON.parse(String(response.body))
 
         for embed in get(embeds, :embeds, [])
             if haskey(embed, :workspace)
@@ -147,17 +154,37 @@ function configure_anythingllm(package_name::String;
         end
 
         if isempty(embed_uuid)
-            @warn """
-            No embed found for workspace '$package_name'.
+            @info "No embed found, creating new embed..."
+            try
+                # Create new embed for the workspace
+                embed_body = JSON.json(Dict(
+                    "workspace_id" => workspace_id,
+                    "max_threads" => 10,
+                    "chat_mode" => "chat"
+                ))
 
-            To enable the chat widget, create an embed manually (one-time setup):
-            1. Visit: $api_url/workspace/$workspace_slug
-            2. Go to Settings → Embeds
-            3. Click "New Embed" and configure it
-            4. Rebuild the documentation
+                create_response = HTTP.post("$api_url/api/v1/embed/new",
+                                          headers=headers,
+                                          body=embed_body)
 
-            The documentation will build successfully, but the chat widget will only appear after the embed is created.
-            """
+                embed_result = JSON.parse(String(create_response.body))
+
+                if haskey(embed_result, "embed") && haskey(embed_result["embed"], "uuid")
+                    embed_uuid = embed_result["embed"]["uuid"]
+                    @info "Created new embed: $embed_uuid"
+                else
+                    @warn "Embed creation response missing UUID: $embed_result"
+                end
+            catch e
+                @warn "Failed to create embed automatically" exception=e
+                @info """
+                Please create an embed manually:
+                1. Visit: $api_url/workspace/$workspace_slug
+                2. Go to Settings → Embeds
+                3. Click "New Embed" and configure it
+                4. Rebuild the documentation
+                """
+            end
         end
     catch e
         @warn "Failed to get embed" exception=e
@@ -226,7 +253,7 @@ function upload_raw_text(api_url, api_key, workspace_slug, content, title)
                            headers=headers,
                            body=form)
 
-        result = JSON3.read(String(response.body))
+        result = JSON.parse(String(response.body))
         return result
     finally
         # Clean up temporary file
@@ -235,13 +262,13 @@ function upload_raw_text(api_url, api_key, workspace_slug, content, title)
 end
 
 """
-    upload_docstrings(api_url, api_key, workspace_slug)
+    upload_docstrings(api_url, api_key, workspace_slug, modules)
 
-Extract and upload all public docstrings from the documented modules.
+Extract and upload all public docstrings from the specified modules.
 """
-function upload_docstrings(api_url, api_key, workspace_slug)
-    # Get all documented modules
-    modules_to_document = [QuantumClifford]
+function upload_docstrings(api_url, api_key, workspace_slug, modules)
+    # Use provided modules
+    modules_to_document = modules
 
     docstrings = Dict{String, String}()
 
@@ -297,18 +324,18 @@ function update_workspace_embeddings(api_url, api_key, workspace_slug)
 
     # Get list of documents
     response = HTTP.get("$api_url/api/v1/workspace/$workspace_slug", headers=headers)
-    workspace_data = JSON3.read(String(response.body))
+    workspace_data = JSON.parse(String(response.body))
 
     # Get the documents directory listing
     response = HTTP.get("$api_url/api/v1/documents", headers=headers)
-    docs_data = JSON3.read(String(response.body))
+    docs_data = JSON.parse(String(response.body))
 
     # Collect all document paths
     doc_paths = collect_document_paths(get(docs_data, :localFiles, Dict()))
 
     if !isempty(doc_paths)
         # Update embeddings to include all documents
-        body = JSON3.write(Dict(
+        body = JSON.json(Dict(
             "adds" => doc_paths,
             "deletes" => []
         ))
