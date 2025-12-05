@@ -33,8 +33,7 @@ requirejs.config({
       "highlight"
     ]
   }
-}
-});
+}});
 ////////////////////////////////////////////////////////////////////////////////
 require(['jquery', 'katex', 'katex-auto-render'], function($, katex, renderMathInElement) {
 $(document).ready(function() {
@@ -59,7 +58,6 @@ $(document).ready(function() {
     }
   ]
 }
-
   );
 })
 
@@ -96,13 +94,13 @@ window.addEventListener("load", openTarget);
 
 function accordion() {
   document.body
-    .querySelectorAll("details")
+    .querySelectorAll("details.docstring")
     .forEach((e) => e.setAttribute("open", "true"));
 }
 
 function noccordion() {
   document.body
-    .querySelectorAll("details")
+    .querySelectorAll("details.docstring")
     .forEach((e) => e.removeAttribute("open"));
 }
 
