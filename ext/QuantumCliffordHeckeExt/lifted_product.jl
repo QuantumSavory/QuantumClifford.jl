@@ -520,9 +520,9 @@ See also: [`bicycle_codes`](@ref), [`generalized_bicycle_codes`](@ref), [`two_bl
 function haah_cubic_codes(l::Int)
     GA = group_algebra(GF(2), abelian_group([l,l,l]))
     x, y, z = gens(GA)
-    c = [1 + x + y + z;;]
-    d = [1 + x*y + x*z + y*z;;]
-    LPCode(c,d)
+    c = 1 + x + y + z
+    d = 1 + x*y + x*z + y*z
+    two_block_group_algebra_codes(c, d)
 end
 
 """

@@ -15,6 +15,7 @@ Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 HostCPUFeatures = "3e5b6fbb-0976-4d2c-9146-d79de83f2fb0"
 ILog2 = "2cd5bd5f-40a1-5050-9e10-fc8cdb6109f5"
 InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
+JuliaSyntaxHighlighting = "ac6e5ff7-fb65-4e79-a425-ec3bc9c03011"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 Nemo = "2edaba10-b0f1-5616-af89-8c11ac63239a"
@@ -25,6 +26,7 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SIMD = "fdea26ae-647d-5447-a871-4b548cad5224"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+StyledStrings = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
 SumTypes = "8e1ec7a9-0e02-4297-b0fe-6433085c89f2"
 
 [weakdeps]
@@ -43,8 +45,8 @@ PyQDecoders = "17f5de1a-9b79-4409-a58d-4d45812840f7"
 Quantikz = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
 QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
 
-[sources.QECCore]
-path = "lib/QECCore"
+[sources]
+QECCore = {path = "lib/QECCore"}
 
 [extensions]
 QuantumCliffordAdaptExt = ["Adapt", "GPUArraysCore"]
@@ -73,8 +75,9 @@ Graphs = "1.9"
 Hecke = "0.32, 0.33, 0.34, 0.35, 0.36, 0.37, 0.38, 0.39"
 HostCPUFeatures = "0.1.6"
 ILog2 = "0.2.3, 1, 2"
-InteractiveUtils = "1.10"
+InteractiveUtils = "1.11"
 JuMP = "1.23"
+JuliaSyntaxHighlighting = "1.12"
 KernelAbstractions = "0.9.35"
 LDPCDecoders = "0.3.2"
 LinearAlgebra = "1.10"
@@ -93,5 +96,6 @@ Random = "1.10"
 SIMD = "3.4.0"
 SparseArrays = "1.10"
 Statistics = "1.10"
+StyledStrings = "1.11"
 SumTypes = "0.5"
-julia = "1.10"
+julia = "1.12"
