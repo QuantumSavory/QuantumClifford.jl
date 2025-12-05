@@ -54,6 +54,37 @@ function configure_anythingllm(package_name::String;
         for ws in get(workspaces, "workspaces", [])
             if lowercase(get(ws, "slug", "")) == workspace_slug
                 @info "Deleting existing workspace: $(ws["slug"])"
+
+                # First, get all documents in the workspace and delete them
+                try
+                    ws_response = HTTP.get("$api_url/api/v1/workspace/$(ws["slug"])", headers=headers)
+                    ws_data = JSON.parse(String(ws_response.body))
+                    ws_info = ws_data["workspace"]
+
+                    # If ws_info is an array, take the first element
+                    if isa(ws_info, Vector)
+                        ws_info = ws_info[1]
+                    end
+
+                    documents = get(ws_info, "documents", [])
+                    if !isempty(documents)
+                        @info "  Unlinking $(length(documents)) documents from workspace before deletion"
+                        # Unlink all documents from workspace
+                        doc_paths = [doc["docpath"] for doc in documents]
+                        remove_body = JSON.json(Dict(
+                            "adds" => [],
+                            "deletes" => doc_paths
+                        ))
+                        HTTP.post("$api_url/api/v1/workspace/$(ws["slug"])/update-embeddings",
+                                 headers=headers,
+                                 body=remove_body)
+                        sleep(1)  # Give server time to process
+                    end
+                catch doc_e
+                    @warn "  Error removing documents from workspace" exception=doc_e
+                end
+
+                # Now delete the workspace
                 HTTP.delete("$api_url/api/v1/workspace/$(ws["slug"])", headers=headers)
                 sleep(1)  # Give server time to clean up
                 break
