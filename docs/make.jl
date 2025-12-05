@@ -19,8 +19,6 @@ const QuantumCliffordOscarExt = Base.get_extension(QuantumClifford, :QuantumClif
 import JuMP
 const QuantumCliffordJuMPExt = Base.get_extension(QuantumClifford, :QuantumCliffordJuMPExt)
 
-#DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
-
 ENV["LINES"] = 80    # for forcing `displaysize(io)` to be big enough
 ENV["COLUMNS"] = 80
 doc_modules = [
@@ -37,7 +35,7 @@ include("anythingllm.jl")
 anythingllm_assets = AnythingLLMDocs.integrate_anythingllm(
     "QuantumClifford",
     doc_modules,
-    joinpath(@__DIR__, "src"),
+    @__DIR__,
 )
 
 bib = CitationBibliography(joinpath(@__DIR__,"src/references.bib"),style=:authoryear)

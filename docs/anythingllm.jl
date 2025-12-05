@@ -339,7 +339,7 @@ create an embed, and return the head asset to inject into Documenter.
 function integrate_anythingllm(name::String, modules::Vector{Module}, docs_root::String)
     cfg = load_config()
     try
-        root = realpath(joinpath(docs_root, ".."))
+        root = realpath(docs_root)
         devbranch = Documenter.git_remote_head_branch("deploydocs(devbranch = ...)", root)
         decision = Documenter.deploy_folder(
             Documenter.auto_detect_deploy_system();
@@ -361,14 +361,13 @@ function integrate_anythingllm(name::String, modules::Vector{Module}, docs_root:
             return RawHTMLHeadContent[]
         end
 
-        pkg_version = TOML.parsefile(joinpath(root, "Project.toml"))["version"]
-        version_tag = isempty(deploy_subfolder) ? string(pkg_version) : string(pkg_version, "-", deploy_subfolder)
+        version_tag = deploy_subfolder
         workspace_title = string(name, " ", version_tag)
 
         workspace = recreate_workspace!(cfg, workspace_title)
         slug = String(get(workspace, "slug", slugify(workspace_title)))
         locations = String[]
-        append!(locations, upload_markdown_sources!(cfg, slug, docs_root))
+        append!(locations, upload_markdown_sources!(cfg, slug, joinpath(docs_root, "src")))
         append!(locations, upload_docstrings!(cfg, slug, modules))
         move_files_to_folder!(cfg, slug, locations)
         uuid = create_embed!(cfg, slug)
