@@ -7,7 +7,6 @@ using QuantumClifford
 using QuantumInterface
 using QECCore
 using QuantumClifford.ECC
-include("anythingllm.jl")
 
 ENV["HECKE_PRINT_BANNER"] = "false"
 import Hecke
@@ -33,7 +32,8 @@ doc_modules = [
     QuantumCliffordJuMPExt,
     QECCore,
 ]
-doc_modules = [m for m in doc_modules if m isa Module]
+
+include("anythingllm.jl")
 anythingllm_assets = AnythingLLMDocs.integrate_anythingllm(
     "QuantumClifford",
     doc_modules,
@@ -53,7 +53,7 @@ format = Documenter.HTML(
 ),
 modules = doc_modules,
 warnonly = [:missing_docs],
-linkcheck = false,
+linkcheck = true,
 authors = "Stefan Krastanov",
 pages = [
 "QuantumClifford.jl" => "index.md",

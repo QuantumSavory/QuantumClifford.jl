@@ -1,11 +1,13 @@
 module AnythingLLMDocs
 
+import Documenter
 using Documenter: RawHTMLHeadContent
 using Documenter.HTMLWriter
 using Documenter.DocSystem
 using HTTP
 using JSON
 using Markdown
+using TOML
 
 const DEFAULT_API_BASE = get(
     ENV,
@@ -134,16 +136,41 @@ function delete_workspace_documents!(cfg, name::String, slug::String)
     targets = String[]
     for doc in docs
         docsource = get(doc, "docSource", "")
+        docloc = lowercase(String(get(doc, "location", get(doc, "name", ""))))
         if isempty(docsource)
             continue
         end
         if startswith(docsource, "docs/") || startswith(docsource, "docstring:")
-            if occursin(lowercase(slug), lowercase(docsource)) || occursin(lowercase(name), lowercase(docsource))
-                push!(targets, String(get(doc, "name", "")))
+            if occursin(lowercase(slug), lowercase(docsource)) || occursin(lowercase(name), lowercase(docsource)) || occursin(lowercase(slug), docloc) || occursin(lowercase(name), docloc)
+                push!(targets, String(get(doc, "location", get(doc, "name", ""))))
             end
         end
     end
     delete_documents!(cfg, targets)
+end
+
+"""Ensure a folder exists (best effort)."""
+function ensure_folder!(cfg, folder::String)
+    try
+        request_json(cfg, "POST", "/document/create-folder"; body=Dict("name" => folder))
+    catch err
+        @debug "create-folder failed (possibly exists)" exception = (err, catch_backtrace())
+    end
+end
+
+"""
+Move uploaded documents into a target folder.
+
+`locations` should be the `location` paths returned by AnythingLLM uploads.
+"""
+function move_files_to_folder!(cfg, folder::String, locations::Vector{String})
+    isempty(locations) && return
+    ensure_folder!(cfg, folder)
+    files = [
+        Dict("from" => loc, "to" => string(folder, "/", split(loc, "/")[end]))
+        for loc in locations
+    ]
+    request_json(cfg, "POST", "/document/move-files"; body=Dict("files" => files))
 end
 
 function delete_embeds_for_workspace!(cfg, workspace_slugs::Set{String}, workspace_by_id::AbstractDict)
@@ -184,7 +211,11 @@ function recreate_workspace!(cfg, name::String)
     return get(workspace, "workspace", workspace)
 end
 
-"""Upload a text blob as a document to AnythingLLM, attaching metadata."""
+"""
+Upload a text blob as a document to AnythingLLM, attaching metadata.
+
+Returns the locations of the created document artifacts.
+"""
 function upload_raw!(cfg, workspace_slug::String; title::String, text::String, source::String)
     body = Dict(
         "textContent" => text,
@@ -194,7 +225,12 @@ function upload_raw!(cfg, workspace_slug::String; title::String, text::String, s
             "docSource" => source,
         ),
     )
-    request_json(cfg, "POST", "/document/raw-text"; body=body)
+    resp = request_json(cfg, "POST", "/document/raw-text"; body=body)
+    docs = get(resp, "documents", Any[])
+    return String[
+        String(get(doc, "location", get(doc, "name", "")))
+        for doc in docs if get(doc, "location", nothing) !== nothing || get(doc, "name", nothing) !== nothing
+    ]
 end
 
 """Extract the first Markdown heading text, if present."""
@@ -206,8 +242,13 @@ function first_heading(text::AbstractString)
     return ""
 end
 
-"""Upload all Markdown sources under `docs_root` into the target workspace."""
+"""
+Upload all Markdown sources under `docs_root` into the target workspace.
+
+Returns the locations of uploaded artifacts.
+"""
 function upload_markdown_sources!(cfg, workspace_slug::String, docs_root::String)
+    locations = String[]
     for (root, _, files) in walkdir(docs_root)
         for file in files
             endswith(file, ".md") || continue
@@ -216,9 +257,10 @@ function upload_markdown_sources!(cfg, workspace_slug::String, docs_root::String
             title = first_heading(text)
             title = isempty(title) ? file : title
             rel = relpath(path, docs_root)
-            upload_raw!(cfg, workspace_slug; title=title, text=text, source="docs/$rel")
+            append!(locations, upload_raw!(cfg, workspace_slug; title=title, text=text, source="docs/$rel"))
         end
     end
+    return locations
 end
 
 """Convert Markdown to a plain text representation for upload."""
@@ -240,18 +282,27 @@ function docstrings_for_module(mod::Module)
     return entries
 end
 
-"""Upload collected docstrings for all provided modules to AnythingLLM."""
+"""
+Upload collected docstrings for all provided modules to AnythingLLM.
+
+Returns the locations of uploaded artifacts.
+"""
 function upload_docstrings!(cfg, workspace_slug::String, modules::Vector{Module})
     seen = Set{String}()
+    locations = String[]
     for mod in modules
         for (key, text) in docstrings_for_module(mod)
             if key in seen || isempty(strip(text))
                 continue
             end
             push!(seen, key)
-            upload_raw!(cfg, workspace_slug; title=key, text=text, source="docstring:$key")
+            append!(
+                locations,
+                upload_raw!(cfg, workspace_slug; title=key, text=text, source="docstring:$key"),
+            )
         end
     end
+    return locations
 end
 
 """Create an embed configuration for the workspace and return its UUID."""
@@ -288,10 +339,38 @@ create an embed, and return the head asset to inject into Documenter.
 function integrate_anythingllm(name::String, modules::Vector{Module}, docs_root::String)
     cfg = load_config()
     try
-        workspace = recreate_workspace!(cfg, name)
-        slug = String(get(workspace, "slug", slugify(name)))
-        upload_markdown_sources!(cfg, slug, docs_root)
-        upload_docstrings!(cfg, slug, modules)
+        root = realpath(joinpath(docs_root, ".."))
+        devbranch = Documenter.git_remote_head_branch("deploydocs(devbranch = ...)", root)
+        decision = Documenter.deploy_folder(
+            Documenter.auto_detect_deploy_system();
+            branch = "gh-pages",
+            branch_previews = "gh-pages",
+            devbranch = devbranch,
+            devurl = "dev",
+            push_preview = false,
+            repo = "github.com/QuantumSavory/QuantumClifford.jl.git",
+            repo_previews = nothing,
+            deploy_repo = nothing,
+            tag_prefix = "",
+        )
+        versions = Any["stable" => "v^", "v#.#", "dev" => "dev"]
+        deploy_subfolder = Documenter.determine_deploy_subfolder(decision, versions)
+
+        if !decision.all_ok
+            @info "Skipping AnythingLLM deployment; deploy conditions not met."
+            return RawHTMLHeadContent[]
+        end
+
+        pkg_version = TOML.parsefile(joinpath(root, "Project.toml"))["version"]
+        version_tag = isempty(deploy_subfolder) ? string(pkg_version) : string(pkg_version, "-", deploy_subfolder)
+        workspace_title = string(name, " ", version_tag)
+
+        workspace = recreate_workspace!(cfg, workspace_title)
+        slug = String(get(workspace, "slug", slugify(workspace_title)))
+        locations = String[]
+        append!(locations, upload_markdown_sources!(cfg, slug, docs_root))
+        append!(locations, upload_docstrings!(cfg, slug, modules))
+        move_files_to_folder!(cfg, slug, locations)
         uuid = create_embed!(cfg, slug)
         return [RawHTMLHeadContent(embed_script(cfg, uuid))]
     catch err
