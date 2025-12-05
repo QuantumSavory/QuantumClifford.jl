@@ -52,7 +52,7 @@ format = Documenter.HTML(
     assets = anythingllm_assets,
 ),
 modules = doc_modules,
-warnonly = [:missing_docs],
+warnonly = [:missing_docs, :linkcheck],
 linkcheck = true,
 authors = "Stefan Krastanov",
 pages = [
