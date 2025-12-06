@@ -319,18 +319,61 @@ function create_embed!(cfg, workspace_slug::String; allowlist::String=DEFAULT_AL
     return String(uuid)
 end
 
-"""Generate the script tag that loads the AnythingLLM embed widget."""
+"""
+Generate a script block that loads the AnythingLLM embed widget.
+
+This is intentionally hacky: Documenter ships `require.js`, whose `define`
+conflicts with the AnythingLLM embed. We temporarily remove `define`, inject the
+embed script at the end of the body, then restore `define` after a delay.
+See Documenter issues #1247, #1433, #2158.
+"""
 function embed_script(cfg::AnythingLLMConfig, embed_uuid::String)
     api_base = string(cfg.embed_host, "/api/embed")
     script_src = string(cfg.embed_host, "/embed/anythingllm-chat-widget.min.js")
     return """
-<script
-  data-embed-id="$embed_uuid"
-  data-base-api-url="$api_base"
-  src="$script_src"
-  data-greeting="This is an LLM helper with access to the entirety of the docs. You can directly ask it your questions."
-  data-chat-icon="magic"
-  defer>
+<script>
+// Bad workaround for Documenter + require.js clashing with AnythingLLM.
+// Remove `define`, load the embed, then restore `define` after a delay.
+(function() {
+  const embedId = "$embed_uuid";
+  const apiBase = "$api_base";
+  const src = "$script_src";
+
+  const injectEmbed = () => {
+    const priorDefine = window.define;
+    try {
+      delete window.define;
+    } catch (_) {
+      window.define = undefined;
+    }
+
+    const tag = document.createElement("script");
+    tag.src = src;
+    tag.dataset.embedId = embedId;
+    tag.dataset.baseApiUrl = apiBase;
+    tag.dataset.greeting = "This is an LLM helper with access to the entirety of the docs. You can directly ask it your questions.";
+    tag.dataset.chatIcon = "magic";
+    document.body.appendChild(tag);
+
+    setTimeout(() => {
+      if (priorDefine === undefined) {
+        try {
+          delete window.define;
+        } catch (_) {
+          window.define = undefined;
+        }
+      } else {
+        window.define = priorDefine;
+      }
+    }, 4000);
+  };
+
+  if (document.readyState === "complete" || document.readyState === "interactive") {
+    injectEmbed();
+  } else {
+    window.addEventListener("DOMContentLoaded", injectEmbed);
+  }
+})();
 </script>
 """
 end
@@ -341,31 +384,39 @@ create an embed, and return the head asset to inject into Documenter.
 """
 function integrate_anythingllm(name::String, modules::Vector{Module}, docs_root::String)
     cfg = load_config()
+    force_workspace = get(ENV, "ANYTHINGLLMDOC_FORCE_DEPLOY", "")
     try
-        root = realpath(docs_root)
-        devbranch = Documenter.git_remote_head_branch("deploydocs(devbranch = ...)", root)
-        decision = Documenter.deploy_folder(
-            Documenter.auto_detect_deploy_system();
-            branch = "gh-pages",
-            branch_previews = "gh-pages",
-            devbranch = devbranch,
-            devurl = "dev",
-            push_preview = false,
-            repo = "github.com/QuantumSavory/QuantumClifford.jl.git",
-            repo_previews = nothing,
-            deploy_repo = nothing,
-            tag_prefix = "",
-        )
-        versions = Any["stable" => "v^", "v#.#", "dev" => "dev"]
-        deploy_subfolder = Documenter.determine_deploy_subfolder(decision, versions)
+        workspace_title = ""
+        if isempty(force_workspace)
+            root = realpath(docs_root)
+            devbranch = Documenter.git_remote_head_branch("deploydocs(devbranch = ...)", root)
+            decision = Documenter.deploy_folder(
+                Documenter.auto_detect_deploy_system();
+                branch = "gh-pages",
+                branch_previews = "gh-pages",
+                devbranch = devbranch,
+                devurl = "dev",
+                push_preview = false,
+                repo = "github.com/QuantumSavory/QuantumClifford.jl.git",
+                repo_previews = nothing,
+                deploy_repo = nothing,
+                tag_prefix = "",
+            )
+            versions = Any["stable" => "v^", "v#.#", "dev" => "dev"]
+            deploy_subfolder = Documenter.determine_deploy_subfolder(decision, versions)
 
-        if !decision.all_ok
-            @info "Skipping AnythingLLM deployment; deploy conditions not met."
-            return RawHTMLHeadContent[]
+            if !decision.all_ok
+                @info "Skipping AnythingLLM deployment; deploy conditions not met."
+                return RawHTMLHeadContent[]
+            end
+
+            version_tag = deploy_subfolder
+            workspace_title = string(name, " ", version_tag)
+        else
+            # Bad workaround: allow local testing by bypassing Documenter deploy detection.
+            # This is intentionally limited to manual runs; see Documenter issues #1247, #1433, #2158.
+            workspace_title = force_workspace
         end
-
-        version_tag = deploy_subfolder
-        workspace_title = string(name, " ", version_tag)
 
         workspace = recreate_workspace!(cfg, workspace_title)
         slug = String(get(workspace, "slug", slugify(workspace_title)))
