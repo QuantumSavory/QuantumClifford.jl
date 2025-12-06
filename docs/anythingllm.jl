@@ -323,9 +323,9 @@ end
 Generate a script block that loads the AnythingLLM embed widget.
 
 This is intentionally hacky: Documenter ships `require.js`, whose `define`
-conflicts with the AnythingLLM embed. We temporarily remove `define`, inject the
-embed script at the end of the body, then restore `define` after a delay.
-See Documenter issues #1247, #1433, #2158.
+conflicts with the AnythingLLM embed. We isolate the widget inside a sandboxed
+iframe overlay so globals do not collide. See Documenter issues #1247, #1433,
+#2158.
 """
 function embed_script(cfg::AnythingLLMConfig, embed_uuid::String)
     api_base = string(cfg.embed_host, "/api/embed")
@@ -333,39 +333,51 @@ function embed_script(cfg::AnythingLLMConfig, embed_uuid::String)
     return """
 <script>
 // Bad workaround for Documenter + require.js clashing with AnythingLLM.
-// Remove `define`, load the embed, then restore `define` after a delay.
+// Render the widget inside a sandboxed iframe overlay to isolate globals.
 (function() {
   const embedId = "$embed_uuid";
   const apiBase = "$api_base";
   const src = "$script_src";
 
   const injectEmbed = () => {
-    const priorDefine = window.define;
-    try {
-      delete window.define;
-    } catch (_) {
-      window.define = undefined;
-    }
+    if (document.getElementById("anythingllm-embed-frame")) return;
 
-    const tag = document.createElement("script");
-    tag.src = src;
-    tag.dataset.embedId = embedId;
-    tag.dataset.baseApiUrl = apiBase;
-    tag.dataset.greeting = "This is an LLM helper with access to the entirety of the docs. You can directly ask it your questions.";
-    tag.dataset.chatIcon = "magic";
-    document.body.appendChild(tag);
+    const iframe = document.createElement("iframe");
+    iframe.id = "anythingllm-embed-frame";
+    iframe.title = "AnythingLLM chat";
+    iframe.style.position = "fixed";
+    iframe.style.bottom = "16px";
+    iframe.style.right = "16px";
+    iframe.style.width = "420px";
+    iframe.style.height = "640px";
+    iframe.style.maxWidth = "min(90vw, 420px)";
+    iframe.style.maxHeight = "min(90vh, 640px)";
+    iframe.style.border = "none";
+    iframe.style.zIndex = "2147483000";
+    iframe.style.background = "transparent";
+    iframe.sandbox = "allow-same-origin allow-scripts allow-popups allow-forms allow-modals";
+    iframe.loading = "lazy";
 
-    setTimeout(() => {
-      if (priorDefine === undefined) {
-        try {
-          delete window.define;
-        } catch (_) {
-          window.define = undefined;
-        }
-      } else {
-        window.define = priorDefine;
-      }
-    }, 4000);
+    const html = `
+<!doctype html>
+<html>
+  <head>
+    <style>
+      html, body { margin: 0; padding: 0; overflow: hidden; background: transparent; }
+    </style>
+  </head>
+  <body>
+    <script
+      data-embed-id="\${embedId}"
+      data-base-api-url="\${apiBase}"
+      data-greeting="This is an LLM helper with access to the entirety of the docs. You can directly ask it your questions."
+      data-chat-icon="magic"
+      src="\${src}">
+    </script>
+  </body>
+</html>`;
+    iframe.srcdoc = html;
+    document.body.appendChild(iframe);
   };
 
   if (document.readyState === "complete" || document.readyState === "interactive") {
