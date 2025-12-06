@@ -327,7 +327,10 @@ function embed_script(cfg::AnythingLLMConfig, embed_uuid::String)
 <script
   data-embed-id="$embed_uuid"
   data-base-api-url="$api_base"
-  src="$script_src">
+  src="$script_src"
+  data-greeting="This is an LLM helper with access to the entirety of the docs. You can directly ask it your questions."
+  data-chat-icon="magic"
+  defer>
 </script>
 """
 end
