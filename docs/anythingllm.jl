@@ -413,8 +413,6 @@ function integrate_anythingllm(name::String, modules::Vector{Module}, docs_root:
             version_tag = deploy_subfolder
             workspace_title = string(name, " ", version_tag)
         else
-            # Bad workaround: allow local testing by bypassing Documenter deploy detection.
-            # This is intentionally limited to manual runs; see Documenter issues #1247, #1433, #2158.
             workspace_title = force_workspace
         end
 
