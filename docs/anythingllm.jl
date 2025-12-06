@@ -346,12 +346,12 @@ function embed_script(cfg::AnythingLLMConfig, embed_uuid::String)
     iframe.id = "anythingllm-embed-frame";
     iframe.title = "AnythingLLM chat";
     iframe.style.position = "fixed";
-    iframe.style.bottom = "16px";
-    iframe.style.right = "16px";
-    iframe.style.width = "420px";
-    iframe.style.height = "640px";
-    iframe.style.maxWidth = "min(90vw, 420px)";
-    iframe.style.maxHeight = "min(90vh, 640px)";
+    iframe.style.bottom = "0";
+    iframe.style.right = "0";
+    iframe.style.width = "80px";
+    iframe.style.height = "80px";
+    iframe.style.maxWidth = "min(90vw, 80px)";
+    iframe.style.maxHeight = "min(90vh, 80px)";
     iframe.style.border = "none";
     iframe.style.zIndex = "2147483000";
     iframe.style.background = "transparent";
@@ -373,7 +373,7 @@ function embed_script(cfg::AnythingLLMConfig, embed_uuid::String)
       data-greeting="This is an LLM helper with access to the entirety of the docs. You can directly ask it your questions."
       data-chat-icon="magic"
       src="\${src}">
-    <\/script>
+    <\\/script>
   </body>
 </html>`;
     iframe.srcdoc = html;
