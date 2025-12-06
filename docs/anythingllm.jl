@@ -373,7 +373,7 @@ function embed_script(cfg::AnythingLLMConfig, embed_uuid::String)
       data-greeting="This is an LLM helper with access to the entirety of the docs. You can directly ask it your questions."
       data-chat-icon="magic"
       src="\${src}">
-    </script>
+    <\/script>
   </body>
 </html>`;
     iframe.srcdoc = html;
