@@ -319,18 +319,73 @@ function create_embed!(cfg, workspace_slug::String; allowlist::String=DEFAULT_AL
     return String(uuid)
 end
 
-"""Generate the script tag that loads the AnythingLLM embed widget."""
+"""
+Generate a script block that loads the AnythingLLM embed widget.
+
+This is intentionally hacky: Documenter ships `require.js`, whose `define`
+conflicts with the AnythingLLM embed. We isolate the widget inside a sandboxed
+iframe overlay so globals do not collide. See Documenter issues #1247, #1433,
+#2158.
+"""
 function embed_script(cfg::AnythingLLMConfig, embed_uuid::String)
     api_base = string(cfg.embed_host, "/api/embed")
     script_src = string(cfg.embed_host, "/embed/anythingllm-chat-widget.min.js")
     return """
-<script
-  data-embed-id="$embed_uuid"
-  data-base-api-url="$api_base"
-  src="$script_src"
-  data-greeting="This is an LLM helper with access to the entirety of the docs. You can directly ask it your questions."
-  data-chat-icon="magic"
-  defer>
+<script>
+// Bad workaround for Documenter + require.js clashing with AnythingLLM.
+// Render the widget inside a sandboxed iframe overlay to isolate globals.
+(function() {
+  const embedId = "$embed_uuid";
+  const apiBase = "$api_base";
+  const src = "$script_src";
+
+  const injectEmbed = () => {
+    if (document.getElementById("anythingllm-embed-frame")) return;
+
+    const iframe = document.createElement("iframe");
+    iframe.id = "anythingllm-embed-frame";
+    iframe.title = "AnythingLLM chat";
+    iframe.style.position = "fixed";
+    iframe.style.bottom = "0";
+    iframe.style.right = "0";
+    iframe.style.width = "80px";
+    iframe.style.height = "80px";
+    iframe.style.maxWidth = "min(90vw, 80px)";
+    iframe.style.maxHeight = "min(90vh, 80px)";
+    iframe.style.border = "none";
+    iframe.style.zIndex = "2147483000";
+    iframe.style.background = "transparent";
+    iframe.sandbox = "allow-same-origin allow-scripts allow-popups allow-forms allow-modals";
+    iframe.loading = "lazy";
+
+    const html = `
+<!doctype html>
+<html>
+  <head>
+    <style>
+      html, body { margin: 0; padding: 0; overflow: hidden; background: transparent; }
+    </style>
+  </head>
+  <body>
+    <script
+      data-embed-id="\${embedId}"
+      data-base-api-url="\${apiBase}"
+      data-greeting="This is an LLM helper with access to the entirety of the docs. You can directly ask it your questions."
+      data-chat-icon="magic"
+      src="\${src}">
+    <\\/script>
+  </body>
+</html>`;
+    iframe.srcdoc = html;
+    document.body.appendChild(iframe);
+  };
+
+  if (document.readyState === "complete" || document.readyState === "interactive") {
+    injectEmbed();
+  } else {
+    window.addEventListener("DOMContentLoaded", injectEmbed);
+  }
+})();
 </script>
 """
 end
@@ -341,31 +396,37 @@ create an embed, and return the head asset to inject into Documenter.
 """
 function integrate_anythingllm(name::String, modules::Vector{Module}, docs_root::String)
     cfg = load_config()
+    force_workspace = get(ENV, "ANYTHINGLLMDOC_FORCE_DEPLOY", "")
     try
-        root = realpath(docs_root)
-        devbranch = Documenter.git_remote_head_branch("deploydocs(devbranch = ...)", root)
-        decision = Documenter.deploy_folder(
-            Documenter.auto_detect_deploy_system();
-            branch = "gh-pages",
-            branch_previews = "gh-pages",
-            devbranch = devbranch,
-            devurl = "dev",
-            push_preview = false,
-            repo = "github.com/QuantumSavory/QuantumClifford.jl.git",
-            repo_previews = nothing,
-            deploy_repo = nothing,
-            tag_prefix = "",
-        )
-        versions = Any["stable" => "v^", "v#.#", "dev" => "dev"]
-        deploy_subfolder = Documenter.determine_deploy_subfolder(decision, versions)
+        workspace_title = ""
+        if isempty(force_workspace)
+            root = realpath(docs_root)
+            devbranch = Documenter.git_remote_head_branch("deploydocs(devbranch = ...)", root)
+            decision = Documenter.deploy_folder(
+                Documenter.auto_detect_deploy_system();
+                branch = "gh-pages",
+                branch_previews = "gh-pages",
+                devbranch = devbranch,
+                devurl = "dev",
+                push_preview = false,
+                repo = "github.com/QuantumSavory/QuantumClifford.jl.git",
+                repo_previews = nothing,
+                deploy_repo = nothing,
+                tag_prefix = "",
+            )
+            versions = Any["stable" => "v^", "v#.#", "dev" => "dev"]
+            deploy_subfolder = Documenter.determine_deploy_subfolder(decision, versions)
 
-        if !decision.all_ok
-            @info "Skipping AnythingLLM deployment; deploy conditions not met."
-            return RawHTMLHeadContent[]
+            if !decision.all_ok
+                @info "Skipping AnythingLLM deployment; deploy conditions not met."
+                return RawHTMLHeadContent[]
+            end
+
+            version_tag = deploy_subfolder
+            workspace_title = string(name, " ", version_tag)
+        else
+            workspace_title = force_workspace
         end
-
-        version_tag = deploy_subfolder
-        workspace_title = string(name, " ", version_tag)
 
         workspace = recreate_workspace!(cfg, workspace_title)
         slug = String(get(workspace, "slug", slugify(workspace_title)))
