@@ -212,7 +212,9 @@ end
 The lookup table contains only weight=1 errors, thus it is small,
 but at best it provides only for distance=3 decoding.
 
-The size of the lookup table would grow exponentially quickly for higher distances."""
+The size of the lookup table would grow exponentially quickly for higher distances.
+
+See also: [`CSSTableDecoder`](@ref)"""
 struct TableDecoder <: AbstractSyndromeDecoder
     """Stabilizer tableau defining the code"""
     H
@@ -332,6 +334,9 @@ function decode(d::ClassicalTableDecoder, syndrome_sample)
 end
 
 """A look-up table decoder for CSS codes.
+
+Importantly, this decoder addresses the x and z errors separately, unlike the [`TableDecoder`](@ref).
+For a given distance, this decoder will do better on CSS codes than the [`TableDecoder`](@ref).
 
 Uses two [`ClassicalTableDecoder`](@ref) instances internally to decode
 the X and Z errors separately."""
