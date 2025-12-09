@@ -29,8 +29,8 @@ Generate a decoding problem from a quantum code and a decoding scenario.
 
 ### 2. Sampling
 ```julia
-sample(problem::AbstractDecodingProblem) -> AbstractDecodingSamples
-sample(problem::AbstractDecodingProblem, sampler::AbstractSampler) -> AbstractDecodingSamples
+sample(problem::AbstractDecodingProblem, num_samples::Int) -> AbstractDecodingSamples
+sample(problem::AbstractDecodingProblem, num_samples::Int, sampler::AbstractSampler) -> AbstractDecodingSamples
 ```
 Sample from the decoding problem to generate decoding samples. If the sampler is not provided, the default sampler will be used.
 
@@ -53,7 +53,7 @@ decoding_error_rate(problem::AbstractDecodingProblem, samples::AbstractDecodingS
 Calculate the error rate of the decoding result for performance evaluation.
 
 ## Examples
-The following examples demonstrate the typical workflow using the decoding interface. These are conceptual examples showing the general pattern of usage and are not be implemented yet.
+The following examples demonstrate the typical workflow using the decoding interface. These are conceptual examples showing the general pattern of usage and may not be implemented yet.
 
 ### Code Capacity Noise
 Code capacity noise is the simplest decoding scenario where noise only affects data qubits, and syndrome measurements are assumed to be perfect (no measurement errors). This scenario is useful for understanding the fundamental error correction capability of a code.

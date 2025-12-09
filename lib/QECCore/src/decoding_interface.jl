@@ -4,7 +4,7 @@ abstract type AbstractDecodingScenario end
 """
     decoding_problem(code::AbstractCode, decoding_scenario::AbstractDecodingScenario)
 
-Generate a decoding problem from a code, a noise model, and a decoding scenario.
+Generate a decoding problem from a code and a decoding scenario.
 
 ### Inputs
 - `code::AbstractCode`: The code to decode.
@@ -19,17 +19,18 @@ abstract type AbstractDecodingSamples end
 abstract type AbstractSampler end
 
 """
-    sample(problem::AbstractDecodingProblem)
-    sample(problem::AbstractDecodingProblem, sampler::AbstractSampler)
+    sample(problem::AbstractDecodingProblem, num_samples::Int)
+    sample(problem::AbstractDecodingProblem, num_samples::Int, sampler::AbstractSampler)
 
 Sample from the decoding problem. If the sampler is not provided, the default sampler will be used.
 
 ### Inputs
 - `problem::AbstractDecodingProblem`: The decoding problem to sample from.
+- `num_samples::Int`: The number of samples to generate.
 - `sampler::AbstractSampler`: The sampler to use.
 
 ### Outputs
-- `samples::AbstractDecodingSamples`: The sampled syndrome.
+- `samples::AbstractDecodingSamples`: The sampled data.
 """
 function sample end
 
@@ -71,7 +72,7 @@ Calculate the error rate of the decoding result.
 
 ### Inputs
 - `problem::AbstractDecodingProblem`: The decoding problem to validate.
-- `syndrome::AbstractSyndrome`: The syndrome to validate.
+- `samples::AbstractDecodingSamples`: The samples to validate.
 - `decoding_result::AbstractDecodingResult`: The decoded result to validate.
 
 ### Outputs

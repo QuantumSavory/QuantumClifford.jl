@@ -113,7 +113,7 @@ end
 IndependentBitNoiseModel(probabilitie::Float64, num_bits::Int) = IndependentBitNoiseModel(fill(probabilitie, num_bits))
 
 function to_vector_error_model(em::FactoredBitNoiseModel)
-    @assert isvector(em) "The error model must be an vector error model"
+    @assert isvector(em) "The error model must be a vector error model"
     return IndependentBitNoiseModel([em.probabilities[key][2] for key in keys(em.probabilities)])
 end
 
