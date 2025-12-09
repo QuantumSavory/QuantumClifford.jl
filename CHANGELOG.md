@@ -22,6 +22,7 @@
 - Add an extension to `QECCore` -- `QECCoreNemoExt` for accurate matrix `rank` computation
 - Introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - Quantum codes (including **(breaking)** changes to API):
+    - `TableDecoder` now supports arbitrary error weights and a new `CSSTableDecoder` is available that separate decodes the x and z syndromes of CSS codes.
     - The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations — particularly useful now that there is also an `Oscar.jl` extension, which provides many non-abelian group constructors.
     - Add `BivariateBicycleCode`, implemented using multivariate quotient ring formalism
     - In a Hecke extension for `QuantumClifford.ECC`:
