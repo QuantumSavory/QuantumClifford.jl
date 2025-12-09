@@ -14,12 +14,6 @@ rate, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, bivariate_bicycl
 generator_polynomial
 export AbstractECC, AbstractQECC, AbstractCECC, AbstractCSSCode, AbstractDistanceAlg
 
-# Decoding interfaces
-export AbstractDecoder, AbstractDecodingResult, AbstractDecodingProblem, AbstractNoiseModel, AbstractDecodingScenario, decode, sample, decoding_error_rate, AbstractSyndrome, syndrome
-
-# DetectorModelProblem
-export DetectorModelProblem, FactoredBitNoiseModel, depolarization_error_model, isvector, isindependent, IndependentVectorSampler, BitStringSamples, MatrixDecodingResult, MatrixSyndrome
-
 # QEC Codes
 export Perfect5, Cleve8, Gottesman
 

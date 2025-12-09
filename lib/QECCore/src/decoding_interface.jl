@@ -1,15 +1,13 @@
 abstract type AbstractDecodingProblem end
-abstract type AbstractNoiseModel end
 abstract type AbstractDecodingScenario end
 
 """
-    decoding_problem(code::AbstractCode, noise_model::AbstractNoiseModel, decoding_scenario::AbstractDecodingScenario)
+    decoding_problem(code::AbstractCode, decoding_scenario::AbstractDecodingScenario)
 
 Generate a decoding problem from a code, a noise model, and a decoding scenario.
 
 ### Inputs
 - `code::AbstractCode`: The code to decode.
-- `noise_model::AbstractNoiseModel`: The noise model to use.
 - `decoding_scenario::AbstractDecodingScenario`: The decoding scenario to use.
 
 ### Outputs
@@ -21,9 +19,10 @@ abstract type AbstractDecodingSamples end
 abstract type AbstractSampler end
 
 """
+    sample(problem::AbstractDecodingProblem)
     sample(problem::AbstractDecodingProblem, sampler::AbstractSampler)
 
-Sample from the decoding problem.
+Sample from the decoding problem. If the sampler is not provided, the default sampler will be used.
 
 ### Inputs
 - `problem::AbstractDecodingProblem`: The decoding problem to sample from.

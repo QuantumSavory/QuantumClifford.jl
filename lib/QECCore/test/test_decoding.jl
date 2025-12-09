@@ -1,5 +1,6 @@
 @testitem "Decoding interfaces" begin
     using QECCore
+    using QECCore: FactoredBitNoiseModel, depolarization_error_model, isvector, isindependent, IndependentVectorSampler, sample, decoding_error_rate, DetectorModelProblem, MatrixDecodingResult, measure_syndrome, check_decoding_result, IndependentBitNoiseModel
     using Test
 
     @testset "FactoredBitNoiseModel" begin
@@ -28,6 +29,17 @@
         @test_throws AssertionError FactoredBitNoiseModel(2, Dict([1] => [0.6,0.4],[3] => [0.5,0.5]))
         @test_throws AssertionError FactoredBitNoiseModel(2, Dict([1] => [0.6,0.2],[2] => [0.5,0.5]))
         @test_throws AssertionError FactoredBitNoiseModel(3, Dict([1] => [0.6,0.4],[3] => [0.5,0.5]))
+    end
+
+    @testset "IndependentBitNoiseModel" begin
+        em = IndependentBitNoiseModel(0.1, 10)
+        @test em.probabilities == fill(0.1, 10)
+
+        em = IndependentBitNoiseModel(fill(0.1, 10))
+        @test em.probabilities == fill(0.1, 10)
+        ep = sample(em, 10000, IndependentVectorSampler())
+        @test size(ep) == (10, 10000)
+        @test count(ep)/10/10000 ≈ 0.1 atol = 0.01
     end
 
     @testset "IndependentVectorSampler" begin
