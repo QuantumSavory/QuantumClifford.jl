@@ -19,10 +19,24 @@ const QuantumCliffordOscarExt = Base.get_extension(QuantumClifford, :QuantumClif
 import JuMP
 const QuantumCliffordJuMPExt = Base.get_extension(QuantumClifford, :QuantumCliffordJuMPExt)
 
-#DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
-
 ENV["LINES"] = 80    # for forcing `displaysize(io)` to be big enough
 ENV["COLUMNS"] = 80
+doc_modules = [
+    QuantumClifford,
+    QuantumClifford.ECC,
+    QuantumInterface,
+    QuantumCliffordHeckeExt,
+    QuantumCliffordOscarExt,
+    QuantumCliffordJuMPExt,
+    QECCore,
+]
+
+include("anythingllm.jl")
+anythingllm_assets = AnythingLLMDocs.integrate_anythingllm(
+    "QuantumClifford",
+    doc_modules,
+    @__DIR__,
+)
 
 bib = CitationBibliography(joinpath(@__DIR__,"src/references.bib"),style=:authoryear)
 
@@ -31,9 +45,12 @@ plugins = [bib],
 doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
-format = Documenter.HTML(size_threshold_ignore = ["API.md", "ECC_API.md"]),
-modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt, QECCore],
-warnonly = [:missing_docs],
+format = Documenter.HTML(
+    size_threshold_ignore = ["API.md", "ECC_API.md"],
+    assets = anythingllm_assets,
+),
+modules = doc_modules,
+warnonly = [:missing_docs, :linkcheck],
 linkcheck = true,
 authors = "Stefan Krastanov",
 pages = [
