@@ -224,41 +224,51 @@ struct TableDecoder <: AbstractSyndromeDecoder
     s::Int
     """The number of encoded qubits"""
     k::Int
+    """The maximum weight of errors in the lookup table"""
+    error_weight::Int
     """The lookup table corresponding to the code, slow to create"""
     lookup_table::Dict{Vector{Bool},Vector{Bool}}
     lookup_buffer::Vector{Bool}
-    TableDecoder(H, faults_matrix, n, s, k, lookup_table) = new(H, faults_matrix, n, s, k, lookup_table, fill(false, s))
+    TableDecoder(H, faults_matrix, n, s, k, error_weight, lookup_table) = new(H, faults_matrix, n, s, k, error_weight, lookup_table, fill(false, s))
 end
 
-function TableDecoder(c)
+function TableDecoder(c; error_weight=1)
     H = parity_checks(c)
     s, n = size(H)
     _, _, r = canonicalize!(Base.copy(H), ranks=true)
     k = n - r
-    lookup_table = create_lookup_table(H)
+    lookup_table = create_lookup_table(H; error_weight)
     fm = faults_matrix(H)
-    return TableDecoder(H, fm, n, s, k, lookup_table)
+    return TableDecoder(H, fm, n, s, k, error_weight, lookup_table)
 end
 
 parity_checks(d::TableDecoder) = d.H
 
-function create_lookup_table(code::Stabilizer)
+function create_lookup_table(code::Stabilizer; error_weight=1)
     lookup_table = Dict{Vector{Bool},Vector{Bool}}()
     constraints, qubits = size(code)
-    # In the case of single bit errors
-    for bit_to_be_flipped in 1:qubits
-        for error_type in [single_x, single_y, single_z]
-            # Generate e⃗
-            error = error_type(qubits, bit_to_be_flipped)::PauliOperator{Array{UInt8, 0}, Vector{UInt}}
-            # Calculate s⃗
-            # (check which stabilizer rows do not commute with the Pauli error)
-            syndrome = comm(error, code)
-            # Store s⃗ → e⃗
-            lookup_table[syndrome] = stab_to_gf2(error)
+    # Process errors from highest weight to lowest
+    # so that lower-weight errors overwrite higher-weight ones
+    # (lower-weight errors are more probable)
+    for w in error_weight:-1:1
+        # Iterate over all combinations of w qubit positions
+        for positions in combinations(1:qubits, w)
+            # For each position, there are 3 choices: X, Y, Z
+            # We iterate over all 3^w combinations using (x_bit, z_bit) tuples
+            for pauli_types in Iterators.product(ntuple(_ -> ((true,false), (true,true), (false,true)), w)...)
+                error = zero(PauliOperator, qubits)
+                for (i, pos) in enumerate(positions)
+                    error[pos] = pauli_types[i]
+                end
+                # Calculate syndrome (check which stabilizer rows do not commute with the error)
+                syndrome = comm(error, code)
+                # Store s⃗ → e⃗
+                lookup_table[syndrome] = stab_to_gf2(error)
+            end
         end
     end
     # In the case of no errors
-    lookup_table[ zeros(UInt8, constraints) ] = stab_to_gf2(zero(PauliOperator, qubits))
+    lookup_table[zeros(UInt8, constraints)] = stab_to_gf2(zero(PauliOperator, qubits))
     lookup_table
 end;
 
