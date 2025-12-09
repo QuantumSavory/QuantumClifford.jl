@@ -18,8 +18,8 @@ import Nemo
 import Nemo: characteristic, matrix_repr, GF, ZZ, lift, rank
 
 import QuantumClifford.ECC: iscss, parity_checks,
-    two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes, check_repr_commutation_relation,
-    haah_cubic_codes, honeycomb_color_codes, check_repr_regular_linear, random_qc_ghp_code_matrix_A
+    two_block_group_algebra_codes, generalized_bicycle_codes_as_2bga, bicycle_codes_as_2bga, check_repr_commutation_relation,
+    Haah_cubic_codes_as_2bga, honeycomb_color_codes_as_2bga, check_repr_regular_linear, random_qc_ghp_code_matrix_A
 
 import QECCore: AbstractQECC, CSS, AbstractCSSCode,
     hgp, code_k, code_n, code_s, parity_matrix_x, parity_matrix_z, parity_matrix_xz
@@ -28,8 +28,8 @@ import Random
 import Random: AbstractRNG, default_rng, randperm
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
-export hgp, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes, haah_cubic_codes,
-    LPCode, LiftedCode, honeycomb_color_codes, LaCross, GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode,
+export hgp, two_block_group_algebra_codes, generalized_bicycle_codes_as_2bga, bicycle_codes_as_2bga, Haah_cubic_codes_as_2bga,
+    LPCode, LiftedCode, honeycomb_color_codes_as_2bga, LaCross, GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode,
     GeneralizedHyperGraphProductCode
 
 include("util.jl")

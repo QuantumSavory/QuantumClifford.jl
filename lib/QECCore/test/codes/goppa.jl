@@ -1,16 +1,21 @@
 @testitem "ECC Goppa" begin
+    using Random
     using QECCore
     using LinearAlgebra
+    import Nemo
     using Nemo: finite_field, GF, polynomial_ring, evaluate, FqFieldElem, degree, is_irreducible, gcd, derivative, matrix, inv, is_monic, echelon_form, transpose, nullspace, iszero
     using QuantumClifford
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
+    using Random: MersenneTwister, GLOBAL_RNG, AbstractRNG, rand
+    using QECCore: random_Goppa_code
 
     @testset "Testing Goppa codes properties" begin
+        rng = MersenneTwister(123)
         for m in 3:12
             for t in 2:m-1
-                ga = GoppaCode(m, t)
-                gx = generator_polynomial(ga)
+                ga = random_Goppa_code(rng, m, t)
+                gx = ga.g
                 # Goppa generator polynomial, `g(x)` is an irreducible polynomial.
                 @test is_irreducible(gx) && is_monic(gx)
                 # The Goppa polynomial, `g(x)`, is square free, thus no repeated roots, if the gcd with the derivative is 1.
@@ -21,8 +26,8 @@
                 # For parity check matrix matrix `H = XY` over `GF(2ᵐ)`, maximum of `m * t` rows are linearly independent, hence `Rank(XY) ≤ m * t`[singh2019code](@cite).
                 @test computed_rank <= m * t
                 n = length(ga.L)
-                @test code_k(ga) >= n - m*t
-                @test degree(generator_polynomial(ga)) ≤ code_n(ga) - code_k(ga) # degenerate cases included.
+                @test  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) >= n - m*t
+                @test degree(ga.g) ≤ length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) # degenerate cases included.
             end
         end
     end
@@ -39,7 +44,7 @@
     k = n - m*t 
     d = 2t + 1 
     H = parity_matrix(ga)
-    @test code_k(ga) >= n - m*t
+    @test  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) >= n - m*t
     # From https://surface.syr.edu/cgi/viewcontent.cgi?article=1846&context=honors_capstone
     ref_mat = [0 0 1 0 1 0 0 0 0 0 0 1;
                0 1 1 1 0 0 0 0 1 0 0 0;
@@ -55,7 +60,7 @@
     computed_rank = rank(mat)
     @test computed_rank <= m * t
     n = length(ga.L)
-    @test code_k(ga) >= n - m*t
+    @test  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) >= n - m*t
 
     # From https://doc.sagemath.org/html/en/reference/coding/sage/coding/goppa_code.html
     # [55, 16, d]
@@ -65,13 +70,13 @@
     t = 9
     g = x^t + 1
     ga = GoppaCode(m, t, g)
-    @test code_n(ga) == 55 && code_k(ga) == 16
+    @test length(ga.L) == 55 &&  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) == 16
     @test gcd(derivative(ga.g), ga.g) == 1
     mat = matrix(GF(2), parity_matrix(ga))
     computed_rank = rank(mat)
     @test computed_rank <= m * t
     n = length(ga.L)
-    @test code_k(ga) >= n - m*t
+    @test  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) >= n - m*t
     # [8, 2, d]
     m = 3
     F, α = finite_field(2, m, :α)
@@ -79,13 +84,13 @@
     t = 2
     g = x^t + x + 1
     ga = GoppaCode(m, t, g)
-    @test code_n(ga) == 8 && code_k(ga) == 2
+    @test length(ga.L) == 8 &&  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) == 2
     @test gcd(derivative(ga.g), ga.g) == 1
     mat = matrix(GF(2), parity_matrix(ga))
     computed_rank = rank(mat)
     @test computed_rank <= m * t
     n = length(ga.L)
-    @test code_k(ga) >= n - m*t
+    @test  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) >= n - m*t
 
     # From example 1.9 of https://arxiv.org/pdf/1907.12754
     m = 4
@@ -99,7 +104,7 @@
     k = n - m*t 
     d = 2t + 1 
     H = parity_matrix(ga)
-    @test code_k(ga) >= n - m*t
+    @test  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) >= n - m*t
     mat = matrix(GF(2), parity_matrix(ga))
     computed_rank = rank(mat)
     @test computed_rank <= m * t
@@ -127,7 +132,7 @@
     R, x = polynomial_ring(F, :x)
     g = x^t + x + 1
     L = [F(0), F(1), α, α^2, α + 1, α^2 + α, α^2 + α + 1, α^2 + 1]
-    ga = GoppaCode(3, 2, g, L)
+    ga = GoppaCode(m, t, g, L)
     H = parity_matrix(ga)
     ref_H = [1 1 0 0 0 0 0 0;
              0 0 0 1 0 1 1 1;
@@ -139,6 +144,6 @@
     computed_rank = rank(mat)
     @test computed_rank <= m * t
     n = length(ga.L)
-    @test code_k(ga) >= n - m*t
+    @test  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) >= n - m*t
     @test echelon_form(matrix(GF(2), H)) == echelon_form(matrix(GF(2), ref_H))
 end

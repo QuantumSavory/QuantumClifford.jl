@@ -139,13 +139,15 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 Here is a Homological product of `(3,4)`-classical LDPC codes.
 
 ```jldoctest
-julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
+julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore; using Random; using SparseArrays
 
 julia> μ = 2; wc = 3; wr = 4;
 
-julia> c = GallagerLDPC(μ, wc, wr);
+julia> rng = MersenneTwister(42);
 
-julia> H = matrix(GF(2), parity_matrix(c));
+julia> c = random_Gallager_ldpc(rng, μ, wc, wr);
+
+julia> H = matrix(GF(2), c.H);
 
 julia> c = HomologicalProductCode([H,transpose(H)]);
 
