@@ -578,9 +578,13 @@ mutable struct MixedDestabilizer{T<:Tableau} <: AbstractStabilizer
 end
 
 # Added a lot of type assertions to help Julia infer types
-function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false) where {T}
+function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false, backtrack=false) where {T}
     rows,n = size(stab)
-    stab, r, s, permx, permz = canonicalize_gott!(copy(stab))
+    if backtrack
+        stab, r, s, permx, permz, canonops = canonicalize_gott!(copy(stab), backtrack=true)
+    else
+        stab, r, s, permx, permz = canonicalize_gott!(copy(stab))
+    end
     t = zero(T, n*2, n)
     vstab = @view tab(stab)[1:r+s] # this view is necessary for cases of tableaux with redundant rows
     t[n+1:n+r+s] = vstab # The Stabilizer part of the tableau
@@ -615,12 +619,17 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false)
     end
     if undoperm
         t = t[:,invperm(permx[permz])]
-        return MixedDestabilizer(t, r+s)
+    end
+    returnstate = MixedDestabilizer(t, r+s)
+    if backtrack
+        for canonop in reverse(canonops)
+            canonop(returnstate)
+        end
     end
     if reportperm
-        return (MixedDestabilizer(t, r+s)::MixedDestabilizer{T}, r, permx, permz)
+        return returnstate, r, permx, permz
     else
-        return MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
+        return returnstate
     end
 end
 
