@@ -21,7 +21,7 @@
 
         for c in codes
             for s in setups
-                for d in [TableDecoder]
+                for d in [TableDecoder, CSSTableDecoder]
                     e = evaluate_decoder(d(c), s, 100000)
                     #@show c
                     #@show s
