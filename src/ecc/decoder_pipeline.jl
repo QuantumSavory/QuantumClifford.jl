@@ -338,7 +338,7 @@ end
 Importantly, this decoder addresses the x and z errors separately, unlike the [`TableDecoder`](@ref).
 For a given distance, this decoder will do better on CSS codes than the [`TableDecoder`](@ref).
 
-Uses two [`ClassicalTableDecoder`](@ref) instances internally to decode
+Uses two `ClassicalTableDecoder` instances internally to decode
 the X and Z errors separately."""
 struct CSSTableDecoder <: AbstractSyndromeDecoder
     """Stabilizer tableau defining the code"""
