@@ -570,6 +570,13 @@ column permutation in the preparation of a `MixedDestabilizer` so that qubits ar
 The boolean keyword arguments `undoperm` and `reportperm` can be used to control this behavior
 and to report the permutations explicitly.
 
+Occasionally one might want specific destabilizer operators for a given tableau, **without** canonicalizing the tableau.
+E.g. if a Pauli frame correction is to be applied after purification or teleportation,
+the correction has to be done by applying the destabilizer corresponding to a specific stabilizer operator of a given tableau.
+Directly using `MixedDestabilizer` will first canonicalize the tableau, which would change the rows of the tableau,
+leading to a consistent set of destabilizer operators, but not the specific ones corresponding to the original pre-canonicalization tableau.
+The `backtrack=true` keyword argument can be undo canonicalization and restore the original rows, but this time also with the corresponding destabilizers.
+
 See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
 """
 mutable struct MixedDestabilizer{T<:Tableau} <: AbstractStabilizer
