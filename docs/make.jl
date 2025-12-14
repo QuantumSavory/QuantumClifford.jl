@@ -3,6 +3,7 @@ push!(LOAD_PATH,"../src/")
 using Revise # for interactive doc updates
 using Documenter
 using DocumenterCitations
+using AnythingLLMDocs
 using QuantumClifford
 using QuantumInterface
 using QECCore
@@ -31,11 +32,14 @@ doc_modules = [
     QECCore,
 ]
 
-include("anythingllm.jl")
-anythingllm_assets = AnythingLLMDocs.integrate_anythingllm(
+api_base="https://anythingllm.krastanov.org/api/v1"
+anythingllm_assets = integrate_anythingllm(
     "QuantumClifford",
     doc_modules,
     @__DIR__,
+    api_base;
+    repo = "github.com/QuantumSavory/QuantumClifford.jl.git",
+    options = EmbedOptions(),
 )
 
 bib = CitationBibliography(joinpath(@__DIR__,"src/references.bib"),style=:authoryear)
