@@ -3,7 +3,7 @@
 // Bad workaround for Documenter + require.js clashing with AnythingLLM.
 // Render the widget inside a sandboxed iframe overlay to isolate globals.
 (function() {
-  const embedId = "3fc730da-4800-4d17-9642-256fe3699141";
+  const embedId = "3e6ea9a8-e873-43ac-b198-5593b7c5d1d1";
   const apiBase = "https://anythingllm.krastanov.org/api/embed";
   const src = "https://anythingllm.krastanov.org/embed/anythingllm-chat-widget.min.js";
 
@@ -13,16 +13,7 @@
     const iframe = document.createElement("iframe");
     iframe.id = "anythingllm-embed-frame";
     iframe.title = "AnythingLLM chat";
-    iframe.style.position = "fixed";
-    iframe.style.bottom = "0";
-    iframe.style.right = "0";
-    iframe.style.width = "80px";
-    iframe.style.height = "80px";
-    iframe.style.maxWidth = "min(90vw, 80px)";
-    iframe.style.maxHeight = "min(90vh, 80px)";
-    iframe.style.border = "none";
-    iframe.style.zIndex = "2147483000";
-    iframe.style.background = "transparent";
+    iframe.style.cssText = "bottom: 0; height: 560px; maxHeight: min(95vh, 560px); right: 0; border: none; maxWidth: min(95vw, 360px); position: fixed; width: 360px; zIndex: 2147483000; background: transparent;";
     iframe.sandbox = "allow-same-origin allow-scripts allow-popups allow-forms allow-modals";
     iframe.loading = "lazy";
 
@@ -38,8 +29,16 @@
     <script
       data-embed-id="${embedId}"
       data-base-api-url="${apiBase}"
-      data-greeting="This is an LLM helper with access to the entirety of the docs. You can directly ask it your questions."
       data-chat-icon="magic"
+      data-position="bottom-right"
+      data-assistant-name="AnythingLLM Chat Assistant"
+      data-window-height="400px"
+      data-greeting="This is an LLM helper with access to the entirety of the docs. You can directly ask it your questions. As usual, take anything it says with a grain of salt -- LLMs are prone to confabulating."
+      data-open-on-load="on"
+      data-brand-image-url="false"
+      data-no-sponsor="true"
+      data-no-header="true"
+      data-window-width="300px"
       src="${src}">
     <\/script>
   </body>
@@ -76,7 +75,7 @@ pfmeasurements(frames)                                 # extract the measurement
 errors = [PauliError(i,errprob) for i in 1:code_n(code)]
 fullcircuit = [ecirc..., errors..., scirc...]</code></pre><img src="3f670491.png" alt="Example block output"/><p>And running this noisy simulation:</p><pre><code class="language-julia hljs">frames = pftrajectories(fullcircuit; trajectories=nframes)
 pfmeasurements(frames)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4×6 Matrix{Bool}:
- 0  0  0  1  1  1
- 0  0  1  0  1  0
+ 0  0  0  1  0  1
  0  0  0  0  0  0
- 0  0  0  0  0  0</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../noisycircuits_perturb/">« Perturbative Expansions</a><a class="docs-footer-nextpage" href="../noisycircuits_ops/">Circuit Operations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Wednesday 10 December 2025 22:09">Wednesday 10 December 2025</span>. Using Julia version 1.12.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 0  0  0  0  0  0
+ 1  0  1  0  0  0</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../noisycircuits_perturb/">« Perturbative Expansions</a><a class="docs-footer-nextpage" href="../noisycircuits_ops/">Circuit Operations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Sunday 14 December 2025 05:17">Sunday 14 December 2025</span>. Using Julia version 1.12.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
