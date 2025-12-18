@@ -1,9 +1,17 @@
 @testitem "ECC Decoder" tags=[:ecc, :ecc_decoding] begin
+    using Test
+    using QuantumClifford
     using QuantumClifford.ECC
 
     import PyQDecoders
-    import PyTesseractDecoder
     import LDPCDecoders
+    import Sys
+
+    if !Sys.iswindows()
+        import PyTesseractDecoder
+    else
+        @test_broken false # TODO tesseract-decoder is not available on Windows
+    end
 
     include("test_ecc_base.jl")
 
@@ -95,14 +103,6 @@
 
     ##
 
-    using Test
-    using QuantumClifford
-    using QuantumClifford.ECC
-
-    import PyQDecoders
-    import PyTesseractDecoder
-    import LDPCDecoders
-
     @testset "matching decoder, good as long as column weight of the code is limited" begin
         codes = [
                  Toric(8,8),
@@ -130,6 +130,7 @@
         end
     end
 
+    if !Sys.iswindows()
     @testset "tesseract decoder (tesseract-decoder via PyTesseractDecoder)" begin
         codes = [
             Surface(8, 8),
@@ -166,5 +167,6 @@
                 @test max(e...) <= 0.2/20
             end
         end
+    end
     end
 end
