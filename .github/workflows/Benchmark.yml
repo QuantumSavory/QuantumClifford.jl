@@ -2,16 +2,13 @@ name: Performance tracking
 on:
   pull_request:
 
-env:
-  PYTHON: ~
-
 jobs:
   performance-tracking:
     runs-on: ubuntu-latest
     #runs-on: self-hosted
     steps:
       # setup
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: julia-actions/setup-julia@latest
         with:
           version: '1.10'
@@ -52,7 +49,7 @@ jobs:
         run: echo ${{ github.event.pull_request.number }} > ./pull-request-number.artifact
 
       # save as artifacts (performance tracking (comment) workflow will use it)
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: performance-tracking
           path: ./*.artifact
