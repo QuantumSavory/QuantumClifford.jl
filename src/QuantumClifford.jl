@@ -13,8 +13,6 @@ using Combinatorics: combinations
 using Base.Cartesian
 
 using DocStringExtensions
-using JuliaSyntaxHighlighting: highlight
-using StyledStrings: @styled_str
 
 import QuantumInterface: tensor, ⊗, tensor_pow,
     nqubits, expect, project!, reset_qubits!, traceout!, ptrace,
