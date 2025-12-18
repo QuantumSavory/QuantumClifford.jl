@@ -50,7 +50,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder, CSSTableDecoder,
     BeliefPropDecoder, BitFlipDecoder,
-    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, DecoderCorrectionGate
+    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, TesseractDecoder, DecoderCorrectionGate
 
 """Parity check tableau of a code.
 

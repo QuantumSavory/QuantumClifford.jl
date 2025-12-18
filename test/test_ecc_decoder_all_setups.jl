@@ -2,6 +2,7 @@
     using QuantumClifford.ECC
 
     import PyQDecoders
+    import PyTesseractDecoder
     import LDPCDecoders
 
     include("test_ecc_base.jl")
@@ -22,6 +23,7 @@
         for c in codes
             for s in setups
                 for d in [TableDecoder, CSSTableDecoder]
+                    d === CSSTableDecoder && !iscss(c) && continue
                     e = evaluate_decoder(d(c), s, 100000)
                     #@show c
                     #@show s
@@ -98,6 +100,7 @@
     using QuantumClifford.ECC
 
     import PyQDecoders
+    import PyTesseractDecoder
     import LDPCDecoders
 
     @testset "matching decoder, good as long as column weight of the code is limited" begin
@@ -123,6 +126,44 @@
                 #@show s
                 #@show e
                 @test max(e...) < noise/5
+            end
+        end
+    end
+
+    @testset "tesseract decoder (tesseract-decoder via PyTesseractDecoder)" begin
+        codes = [
+            Surface(8, 8),
+            Toric(8, 8),
+        ]
+
+        noise = 0.02
+        setups = [
+            CommutationCheckECCSetup(noise),
+        ]
+
+        for c in codes
+            Hstab = parity_checks(c)
+            stab = QuantumClifford.stab_to_gf2(Hstab) # [X | Z]
+            s, n2 = size(stab)
+            n = n2 ÷ 2
+            check_dense = hcat(@view(stab[:, n+1:end]), @view(stab[:, 1:n])) # [Z | X]
+
+            d = TesseractDecoder(c; errorrate=noise, det_beam=50)
+
+            # Basic consistency: the returned error guess matches the input syndrome.
+            for col in 1:min(20, 2n)
+                syndrome = @view check_dense[:, col]
+                guess = QuantumClifford.ECC.decode(d, syndrome)
+                predicted_syndrome = falses(s)
+                for j in findall(guess)
+                    predicted_syndrome .⊻= @view check_dense[:, j]
+                end
+                @test predicted_syndrome == syndrome
+            end
+
+            for setup in setups
+                e = evaluate_decoder(d, setup, 2000)
+                @test max(e...) <= 0.2/20
             end
         end
     end

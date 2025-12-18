@@ -42,11 +42,13 @@ Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 Oscar = "f1435218-dba5-11e9-1e4d-f1a5fab5fc13"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PyQDecoders = "17f5de1a-9b79-4409-a58d-4d45812840f7"
+PyTesseractDecoder = "cb7393ab-d93b-4096-98de-53f8be4e08d3"
 Quantikz = "b0d11df0-eea3-4d79-b4a5-421488cbf74b"
 QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
 
 [sources]
 QECCore = {path = "lib/QECCore"}
+PyTesseractDecoder = {url = "https://github.com/QuantumSavory/PyTesseractDecoder.jl", rev = "master"}
 
 [extensions]
 QuantumCliffordAdaptExt = ["Adapt", "GPUArraysCore"]
@@ -59,6 +61,7 @@ QuantumCliffordMakieExt = "Makie"
 QuantumCliffordOscarExt = ["Hecke", "Oscar"]
 QuantumCliffordPlotsExt = "Plots"
 QuantumCliffordPyQDecodersExt = "PyQDecoders"
+QuantumCliffordPyTesseractDecoderExt = "PyTesseractDecoder"
 QuantumCliffordQOpticsExt = "QuantumOpticsBase"
 QuantumCliffordQuantikzExt = "Quantikz"
 
@@ -88,6 +91,7 @@ Oscar = "1.1.1"
 Plots = "1.38.0"
 PrecompileTools = "1.2"
 PyQDecoders = "0.2.5"
+PyTesseractDecoder = "0.1"
 QECCore = "0.1.1"
 Quantikz = "1.3.1"
 QuantumInterface = "0.3.3, 0.4"
