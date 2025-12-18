@@ -48,7 +48,6 @@ QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
 
 [sources]
 QECCore = {path = "lib/QECCore"}
-PyTesseractDecoder = {url = "https://github.com/QuantumSavory/PyTesseractDecoder.jl", rev = "master"}
 
 [extensions]
 QuantumCliffordAdaptExt = ["Adapt", "GPUArraysCore"]

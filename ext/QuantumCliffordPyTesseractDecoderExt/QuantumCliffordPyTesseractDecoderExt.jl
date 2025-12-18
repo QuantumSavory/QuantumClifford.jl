@@ -8,6 +8,7 @@ using QECCore
 import QuantumClifford.ECC
 import QuantumClifford.ECC: AbstractSyndromeDecoder, decode, batchdecode, parity_checks
 
+# based on https://github.com/quantumlib/tesseract-decoder/issues/153
 function _dem_from_check_matrices(
     check_matrix::SparseMatrixCSC{Bool, Int},
     observables_matrix::SparseMatrixCSC{Bool, Int},
