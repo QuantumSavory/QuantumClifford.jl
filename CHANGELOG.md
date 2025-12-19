@@ -18,6 +18,7 @@
 - Add `mul_right!` methods for inplace operations between tableaus
 - Add a `CliffordOperator` constructor that builds a dense clifford from a `PauliOperator`
 - Add a `phases` getter for `CliffordOperator`
+- A new non-Clifford operation was added as a Pauli channel, the rotation gate `pcRx`.
 - Adapt.jl can now be used to convert various types to GPU-backed storage.
 - The phase storage type can now be parameterized, instead of hardcoded to UInt8.
 - Add an extension to `QECCore` -- `QECCoreNemoExt` for accurate matrix `rank` computation
