@@ -33,7 +33,7 @@ julia> using QECCore
 
 julia> μ = 3; wc = 3; wr = 4;
 
-julia> H = random_Gallager_ldpc(rng, μ, wc, wr);
+julia> H = random_Gallager_ldpc(μ, wc, wr);
 ```
 
 The Gallager's classical code exhibits regular structure with all columns
