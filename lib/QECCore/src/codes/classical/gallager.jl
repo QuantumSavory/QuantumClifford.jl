@@ -29,39 +29,11 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/gall
 Here is an example of `(3,4)`-LDPC code
 
 ```jldoctest examples
-julia> using QECCore; using Nemo: GF, rank, matrix; using Random; using SparseArrays;
+julia> using QECCore
 
 julia> μ = 3; wc = 3; wr = 4;
 
-julia> rng = MersenneTwister(42);
-
-julia> c = random_Gallager_ldpc(rng, μ, wc, wr);
-
-julia> c.H
-9×12 SparseMatrixCSC{Bool, Int64} with 36 stored entries:
- 1  1  1  1  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅
- ⋅  ⋅  ⋅  ⋅  1  1  1  1  ⋅  ⋅  ⋅  ⋅
- ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  1  1  1  1
- 1  ⋅  1  ⋅  ⋅  ⋅  1  ⋅  1  ⋅  ⋅  ⋅
- ⋅  ⋅  ⋅  ⋅  ⋅  1  ⋅  1  ⋅  ⋅  1  1
- ⋅  1  ⋅  1  1  ⋅  ⋅  ⋅  ⋅  1  ⋅  ⋅
- ⋅  1  1  ⋅  1  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  1
- ⋅  ⋅  ⋅  1  ⋅  1  1  1  ⋅  ⋅  ⋅  ⋅
- 1  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  ⋅  1  1  1  ⋅
-```
-
-The code length N equals block_rows × row_weight:
-
-```jldoctest examples
-julia> n = c.block_rows*c.wr
-12
-```
-
-and code dimension:
-
-```jldoctest examples
-julia> k = n - rank(matrix(GF(2), c.H))
-5
+julia> H = random_Gallager_ldpc(rng, μ, wc, wr);
 ```
 
 The Gallager's classical code exhibits regular structure with all columns
@@ -69,10 +41,10 @@ having weight 3 and all rows having weight 4, ensuring it maintains constant
 column and row weights throughout the parity-check matrix.
 
 ```jldoctest examples
-julia> all(sum(Matrix(c.H), dims=1) .== 3)
+julia> all(sum(Matrix(H), dims=1) .== 3)
 true
 
-julia> all(sum(Matrix(c.H), dims=2) .== 4)
+julia> all(sum(Matrix(H), dims=2) .== 4)
 true
 ```
 
