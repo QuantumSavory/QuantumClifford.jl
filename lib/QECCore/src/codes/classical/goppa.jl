@@ -6,3 +6,5 @@ function GoppaCode(args...; kwargs...)
     end
     return ext.GoppaCode(args...; kwargs...)
 end
+
+function random_Goppa_code end

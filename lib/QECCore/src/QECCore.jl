@@ -20,10 +20,10 @@ export Perfect5, Cleve8, Gottesman
 # CSS Codes
 export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMuller, Triangular488, Triangular666,
 DelfosseReichardt, DelfosseReichardtRepCode, DelfosseReichardt823, QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
-TillichZemor, random_TillichZemor_code, GeneralizedCirculantBivariateBicycle
+TillichZemor, random_TillichZemor_code, BivariateBicycleCodeViaCirculantMat
 
 # Classical Codes
-export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, GallagerLDPC, GoppaCode
+export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, random_Gallager_ldpc, GoppaCode, random_Goppa_code
 
 # utilities
 export search_self_orthogonal_rm_codes

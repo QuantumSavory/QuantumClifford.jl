@@ -25,12 +25,12 @@
 - Quantum codes (including **(breaking)** changes to API):
     - `TableDecoder` now supports arbitrary error weights and a new `CSSTableDecoder` is available that separate decodes the x and z syndromes of CSS codes.
     - The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations — particularly useful now that there is also an `Oscar.jl` extension, which provides many non-abelian group constructors.
-    - Add `BivariateBicycleCode`, implemented using multivariate quotient ring formalism
+    - Add `BivariateBicycleCodeViaPoly`, implemented using multivariate quotient ring formalism
     - In a Hecke extension for `QuantumClifford.ECC`:
         - Add `GeneralizedBicycleCode` and `ExtendedGeneralizedBicycleCode`
         - Add `GeneralizedHyperGraphProductCode`
         - Add `[[2n², 2k², d]]` and `[[(n - k)² + n², k², d]]` La-cross codes via univariate polynomial ring
-        - Add convenience wrappers for code families `honeycomb_color_codes` and `haah_cubic_codes`
+        - Add convenience wrappers for code families `honeycomb_color_codes_as_2bga` and `Haah_cubic_codes_as_2bga`
     - In an Oscar extension for `QuantumClifford.ECC`:
         - Add `TrivariateTricycleCode`
         - Add `GeneralizedToricCode` on twisted tori in terms of Laurent polynomials
@@ -43,12 +43,13 @@
         - Add `[[4p, 2(p − 2), 4]]` Delfosse-Reichardt repetition `DelfosseReichardtRepCode`
         - Add `[[8p, 4p − 2, 3]]` Delfosse-Reichardt Generalized `[[8,2,3]]` `DelfosseReichardt823`
         - In an Oscar extension for `QECCore`
-            - Add `GeneralizedCirculantBivariateBicycle`
+            - Add `BivariateBicycleCodeViaCirculantMat`
 - Classical codes (including **(breaking)** changes to API):
     - In `QECCore`:
         - Add classical `GoppaCode`
         - Add classical Gallager's LDPC code
 - **(breaking)** Some codes are moved to `QECCore` from `QuantumClifford`, including `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`, `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller`.
+- **(breaking)** Some codes (types or functions) are slightly renamed for consistency.
 
 ### Private API
 
