@@ -1,0 +1,56 @@
+name: CI-nightly
+on:
+  push:
+    branches: [master, main]
+    tags: ["*"]
+  pull_request:
+
+concurrency:
+  # group by workflow and ref; the last slightly strange component ensures that for pull
+  # requests, we limit to 1 concurrent job, but for the master branch we don't
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main') || github.run_number }}
+  # Cancel intermediate builds, but only if it is a pull request build.
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
+env:
+  PYTHON: ""
+  PYCALL_DEBUG_BUILD: yes
+jobs:
+  test:
+    name: Julia ${{ matrix.version }} - t=${{ matrix.threads }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: x64
+            version: alpha
+            threads: 2
+    steps:
+      - uses: actions/checkout@v6
+      - uses: julia-actions/install-juliaup@v2
+        with:
+          channel: ${{ matrix.version }}~${{ matrix.arch }}
+      - uses: julia-actions/cache@v2
+      - uses: julia-actions/julia-buildpkg@v1
+      - uses: julia-actions/julia-buildpkg@v1
+        with:
+          project: 'lib/QECCore'
+      - name: Test QuantumClifford (with local QECCore)
+        uses: julia-actions/julia-runtest@v1
+        env:
+          JULIA_NUM_THREADS: ${{ matrix.threads }}
+      - name: Test QECCore (with released QuantumClifford)
+        uses: julia-actions/julia-runtest@v1
+        with:
+          project: 'lib/QECCore'
+        env:
+          JULIA_NUM_THREADS: ${{ matrix.threads }}
+      - uses: julia-actions/julia-processcoverage@v1
+        with:
+          directories: './src,./ext,./lib/QECCore/src,./lib/QECCore/ext'
+      - uses: codecov/codecov-action@v5
+        with:
+          file: lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}

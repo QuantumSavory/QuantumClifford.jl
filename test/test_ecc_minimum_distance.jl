@@ -1,4 +1,4 @@
-@testitem "ECC QLDPC minimum distance" tags=[:ecc] begin
+@testitem "ECC QLDPC minimum distance" tags=[:ecc, :ecc_bespoke_checks] begin
     using Hecke
     using JuMP
     using HiGHS
@@ -14,7 +14,12 @@
         # By default, the minimum distance for the Z-type logical operator is computed.
         # The minimum distance for X-type logical operators is the same.
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == distance(c, DistanceMIPAlgorithm(logical_operator_type=:Z; solver=HiGHS)) == 8
+        dx = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:X))
+        dz = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z))
+        mindxdz = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:minXZ))
+        @test min(dx, dz) == mindxdz
     end
+
     @testset "minimum distance properties: Weight-7 MB" begin
         # [[30, 4, 5]] MB code from Table 1 of [voss2024multivariatebicyclecodes](@cite)
         l=5; m=3
@@ -30,5 +35,10 @@
         # By default, the minimum distance for the Z-type logical operator is computed.
         # The minimum distance for X-type logical operators is the same.
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == distance(c, DistanceMIPAlgorithm(logical_operator_type=:Z; solver=HiGHS)) == 5
+        dx = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:X))
+        dz = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z))
+        mindxdz = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:minXZ))
+        @test min(dx, dz) == mindxdz
     end
+
 end

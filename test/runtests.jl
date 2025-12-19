@@ -1,18 +1,41 @@
-using Pkg
+CUDA_flag = false
+ROCm_flag = false
+OpenCL_flag = false
+Oscar_flag = false
+
 if Sys.iswindows() || Sys.ARCH != :x86_64
-    @info "skipping Oscar tests (they currently do not run on Windows OS or ARM CPU)"
-    @info "skipping GPU tests (set GPU_TESTS=true to test GPU (on non-Windows))"
-elseif get(ENV, "GPU_TESTS", "") == "true"
-    @info "running with GPU tests"
-    Pkg.add("CUDA")
-elseif VERSION < v"1.11"
-    @info "skipping Oscar tests (not tested on Julia <1.11)"
-    @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"
+    @info "Skipping Oscar tests -- only supported x86_64 *NIX platforms."
 else
-    @info "skipping GPU tests (set GPU_TESTS=true to test GPU)"
-    Pkg.add("Oscar")
+    Oscar_flag = VERSION >= v"1.11"
+    !Oscar_flag && @info "Skipping Oscar tests -- not tested on Julia < 1.11"
 end
 
+if Sys.iswindows()
+    @info "Skipping GPU/OpenCL tests -- only executed on *NIX platforms."
+else
+    CUDA_flag = get(ENV, "GPU_TEST", "") == "cuda"
+    ROCm_flag = get(ENV, "GPU_TEST", "") == "rocm"
+    OpenCL_flag = get(ENV, "GPU_TEST", "") == "opencl"
+
+    CUDA_flag && @info "Running with CUDA tests."
+    ROCm_flag && @info "Running with ROCm tests."
+    OpenCL_flag && @info "Running with OpenCL tests."
+    if !any((CUDA_flag, ROCm_flag, OpenCL_flag))
+        @info "Skipping GPU/OpenCL tests -- must be explicitly enabled."
+        @info "Environment must uniquely set GPU_TEST=cuda/rocm/opencl."
+    end
+end
+
+using Pkg
+CUDA_flag && Pkg.add("CUDA")
+ROCm_flag && Pkg.add("AMDGPU")
+OpenCL_flag && Pkg.add(["pocl_jll", "OpenCL"])
+if any((CUDA_flag, ROCm_flag, OpenCL_flag))
+    Pkg.add(
+        ["Adapt", "Atomix", "GPUArraysCore", "GPUArrays", "KernelAbstractions"]
+         )
+end
+Oscar_flag && Pkg.add("Oscar")
 using TestItemRunner
 using QuantumClifford
 
@@ -20,22 +43,53 @@ using QuantumClifford
 testfilter = ti -> begin
     exclude = Symbol[]
 
-    if get(ENV, "JET_TEST", "") != "true"
-        push!(exclude, :jet)
-    else
+    if get(ENV, "JET_TEST", "") == "true"
         return :jet in ti.tags
+    else
+        push!(exclude, :jet)
     end
 
-    if get(ENV, "ECC_TEST", "") != "true"
+    if !Oscar_flag
+        push!(exclude, :oscar_required)
+    end
+
+    if get(ENV, "ECC_TEST", "") == "base"
+        return (:ecc in ti.tags) && (:ecc_base in ti.tags) && all(!in(exclude), ti.tags)
+
+    elseif get(ENV, "ECC_TEST", "") == "encoding"
+        return (:ecc in ti.tags) && (:ecc_encoding in ti.tags) && all(!in(exclude), ti.tags)
+
+    elseif get(ENV, "ECC_TEST", "") == "decoding"
+        return (:ecc in ti.tags) && (:ecc_decoding in ti.tags) && all(!in(exclude), ti.tags)
+
+    elseif get(ENV, "ECC_TEST", "") == "syndromecircuit"
+        return (:ecc in ti.tags) && (:ecc_syndrome_circuit_equivalence in ti.tags) && all(!in(exclude), ti.tags)
+
+    elseif get(ENV, "ECC_TEST", "") == "syndromemeasurement"
+        return (:ecc in ti.tags) && (:ecc_syndrome_measurement_correctness in ti.tags) && all(!in(exclude), ti.tags)
+
+    elseif get(ENV, "ECC_TEST", "") == "bespoke"
+        return (:ecc in ti.tags) && (:ecc_bespoke_checks in ti.tags) && all(!in(exclude), ti.tags)
+    else
         push!(exclude, :ecc)
-    else
-        return :ecc in ti.tags
     end
 
-    if get(ENV, "GPU_TESTS", "") != "true"
-        push!(exclude, :gpu)
+    if CUDA_flag
+        return (:cuda in ti.tags) && all(!in(exclude), ti.tags)
     else
-        return :gpu in ti.tags
+        push!(exclude, :cuda)
+    end
+
+    if ROCm_flag
+        return (:rocm in ti.tags) && all(!in(exclude), ti.tags)
+    else
+        push!(exclude, :rocm)
+    end
+
+    if OpenCL_flag
+        return (:opencl in ti.tags) && all(!in(exclude), ti.tags)
+    else
+        push!(exclude, :opencl)
     end
 
     if !(VERSION >= v"1.10")

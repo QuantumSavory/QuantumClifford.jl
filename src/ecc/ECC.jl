@@ -1,8 +1,8 @@
 module ECC
 
 using QECCore
-import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp
-using LinearAlgebra: LinearAlgebra, I, rank, tr
+import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
+metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
@@ -14,11 +14,16 @@ using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     apply!, comm, comm!, stab_to_gf2, embed, @S_str, affectedqubits, affectedbits,
     pftrajectories, pfmeasurements, mctrajectories
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
-using DocStringExtensions
+
 using Combinatorics: combinations
+using LinearAlgebra: LinearAlgebra, I, rank, tr
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
+
+using DocStringExtensions
+using JuliaSyntaxHighlighting: highlight
+using StyledStrings: @styled_str
 
 export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
@@ -31,15 +36,21 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     Toric, Gottesman, Surface, Concat, CircuitCode,
     LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
     haah_cubic_codes, twobga_from_fp_group, twobga_from_direct_product,
+    TillichZemor, random_TillichZemor_code,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
     Triangular488, Triangular666, honeycomb_color_codes, DelfosseReichardt,
-    DelfosseReichardtRepCode, DelfosseReichardt823, QuantumTannerGraphProduct,
-    CyclicQuantumTannerGraphProduct,
+    DelfosseReichardtRepCode, DelfosseReichardt823, LaCross,
+    QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
+    DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps,
+    GeneralizedCirculantBivariateBicycle, GeneralizedHyperGraphProductCode,
+    GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode,
+    HomologicalProductCode, DoubleHomologicalProductCode,
+    GeneralizedToricCode, TrivariateTricycleCode, BivariateBicycleCode,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
-    TableDecoder,
+    TableDecoder, CSSTableDecoder,
     BeliefPropDecoder, BitFlipDecoder,
-    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder
+    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, DecoderCorrectionGate
 
 """Parity check tableau of a code.
 
@@ -72,16 +83,13 @@ function iscss(::Type{T}) where T<:AbstractECC
     return false
 end
 
+function iscss(::Type{T}) where T <: AbstractCSSCode
+    return true
+end
+
 function iscss(c::AbstractECC)
     return iscss(typeof(c))
 end
-
-"""
-Generator Polynomial `g(x)`
-
-In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field `F`. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
-"""
-function generator_polynomial end
 
 """The generator matrix of a code."""
 function generator end
@@ -121,16 +129,15 @@ Used with [`distance`](@ref) to select MIP as the method of finding the distance
 
 !!! note
     - Requires a `JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`).
-    - `X`-type and `Z`-type logical operators yield identical code distance results.
-    - For stabilizer codes, the `X`-distance and `Z`-distance are equal.
+    - For some stabilizer CSS codes, the `X`-distance and `Z`-distance are equal.
 
 $FIELDS
 """
 @kwdef struct DistanceMIPAlgorithm <: AbstractDistanceAlg
     """index of the logical qubit to compute code distance for (nothing means compute for all logical qubits)"""
     logical_qubit::Union{Int, Nothing}=nothing
-    """type of logical operator to consider (:X or :Z, defaults to :X) - both types yield identical distance results for CSS stabilizer codes."""
-    logical_operator_type::Symbol=:X
+    """type of logical operator to consider (:X or :Z, defaults to :minXZ)."""
+    logical_operator_type::Symbol=:minXZ
     """`JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`)"""
     solver::Module
     """when `true` (default=`false`), prints the MIP solver's solution summary"""
@@ -139,7 +146,7 @@ $FIELDS
     time_limit::Float64=60.0
 
     function DistanceMIPAlgorithm(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
-        logical_operator_type ∈ (:X, :Z) || throw(ArgumentError("`logical_operator_type` must be :X or :Z"))
+        logical_operator_type ∈ (:X, :Z, :minXZ) || throw(ArgumentError("`logical_operator_type` must be :X or :Z or :minXZ"))
         new(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
     end
 end
@@ -399,6 +406,7 @@ include("codes/classical/bch.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
-include("codes/lifted_product.jl")
+include("codes/qeccs_from_extensions.jl")
 
+include("decoder_correction_gate.jl")
 end #module

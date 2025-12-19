@@ -157,7 +157,7 @@ This method requires you give the circuit that performs both syndrome measuremen
 The faults matrix that translates an error vector into corresponding logical errors is necessary as well.
 
 This is a relatively barebones method that assumes the user prepares necessary circuits, etc.
-It is a method that is used internally by more user-frienly methods providing automatic conversion of codes and noise models
+It is a method that is used internally by more user-friendly methods providing automatic conversion of codes and noise models
 to the necessary noisy circuits.
 """
 function evaluate_decoder(d::AbstractSyndromeDecoder, nsamples, circuit, syndrome_bits, logical_bits, faults_submatrix)
@@ -212,7 +212,9 @@ end
 The lookup table contains only weight=1 errors, thus it is small,
 but at best it provides only for distance=3 decoding.
 
-The size of the lookup table would grow exponentially quickly for higher distances."""
+The size of the lookup table would grow exponentially quickly for higher distances.
+
+See also: [`CSSTableDecoder`](@ref)"""
 struct TableDecoder <: AbstractSyndromeDecoder
     """Stabilizer tableau defining the code"""
     H
@@ -224,47 +226,166 @@ struct TableDecoder <: AbstractSyndromeDecoder
     s::Int
     """The number of encoded qubits"""
     k::Int
+    """The maximum weight of errors in the lookup table"""
+    error_weight::Int
     """The lookup table corresponding to the code, slow to create"""
     lookup_table::Dict{Vector{Bool},Vector{Bool}}
     lookup_buffer::Vector{Bool}
-    TableDecoder(H, faults_matrix, n, s, k, lookup_table) = new(H, faults_matrix, n, s, k, lookup_table, fill(false, s))
+    TableDecoder(H, faults_matrix, n, s, k, error_weight, lookup_table) = new(H, faults_matrix, n, s, k, error_weight, lookup_table, fill(false, s))
 end
 
-function TableDecoder(c)
+function TableDecoder(c; error_weight=1)
     H = parity_checks(c)
     s, n = size(H)
     _, _, r = canonicalize!(Base.copy(H), ranks=true)
     k = n - r
-    lookup_table = create_lookup_table(H)
+    lookup_table = create_lookup_table(H; error_weight)
     fm = faults_matrix(H)
-    return TableDecoder(H, fm, n, s, k, lookup_table)
+    return TableDecoder(H, fm, n, s, k, error_weight, lookup_table)
 end
 
 parity_checks(d::TableDecoder) = d.H
 
-function create_lookup_table(code::Stabilizer)
+function create_lookup_table(code::Stabilizer; error_weight=1)
     lookup_table = Dict{Vector{Bool},Vector{Bool}}()
     constraints, qubits = size(code)
-    # In the case of no errors
-    lookup_table[ zeros(UInt8, constraints) ] = stab_to_gf2(zero(PauliOperator, qubits))
-    # In the case of single bit errors
-    for bit_to_be_flipped in 1:qubits
-        for error_type in [single_x, single_y, single_z]
-            # Generate e⃗
-            error = error_type(qubits, bit_to_be_flipped)::PauliOperator{Array{UInt8, 0}, Vector{UInt}}
-            # Calculate s⃗
-            # (check which stabilizer rows do not commute with the Pauli error)
-            syndrome = comm(error, code)
-            # Store s⃗ → e⃗
-            lookup_table[syndrome] = stab_to_gf2(error)
+    # Process errors from highest weight to lowest
+    # so that lower-weight errors overwrite higher-weight ones
+    # (lower-weight errors are more probable)
+    for w in error_weight:-1:1
+        # Iterate over all combinations of w qubit positions
+        for positions in combinations(1:qubits, w)
+            # For each position, there are 3 choices: X, Y, Z
+            # We iterate over all 3^w combinations using (x_bit, z_bit) tuples
+            for pauli_types in Iterators.product(ntuple(_ -> ((true,false), (true,true), (false,true)), w)...)
+                error = zero(PauliOperator, qubits)
+                for (i, pos) in enumerate(positions)
+                    error[pos] = pauli_types[i]
+                end
+                # Calculate syndrome (check which stabilizer rows do not commute with the error)
+                syndrome = comm(error, code)
+                # Store s⃗ → e⃗
+                lookup_table[syndrome] = stab_to_gf2(error)
+            end
         end
     end
+    # In the case of no errors
+    lookup_table[zeros(UInt8, constraints)] = stab_to_gf2(zero(PauliOperator, qubits))
     lookup_table
 end;
 
 function decode(d::TableDecoder, syndrome_sample)
     d.lookup_buffer .= syndrome_sample # TODO have this work without data copying, by supporting the correct types, especially in the batch decode case
     return get(d.lookup_table, d.lookup_buffer, nothing)
+end
+
+"""A simple look-up table decoder for classical codes.
+
+Similar to [`TableDecoder`](@ref) but works with a classical parity check matrix
+instead of a stabilizer tableau."""
+struct ClassicalTableDecoder <: AbstractSyndromeDecoder
+    """Parity check matrix defining the code"""
+    H::Matrix{Bool}
+    """The number of bits in the code"""
+    n::Int
+    """The number of parity checks"""
+    s::Int
+    """The maximum weight of errors in the lookup table"""
+    error_weight::Int
+    """The lookup table corresponding to the code"""
+    lookup_table::Dict{Vector{Bool},Vector{Bool}}
+    lookup_buffer::Vector{Bool}
+    ClassicalTableDecoder(H, n, s, error_weight, lookup_table) = new(H, n, s, error_weight, lookup_table, fill(false, s))
+end
+
+function ClassicalTableDecoder(H::Matrix{Bool}; error_weight=1)
+    s, n = size(H)
+    lookup_table = create_lookup_table(H; error_weight)
+    return ClassicalTableDecoder(H, n, s, error_weight, lookup_table)
+end
+
+parity_checks(d::ClassicalTableDecoder) = d.H
+
+function create_lookup_table(H::Matrix{Bool}; error_weight=1) # TODO there is inefficient casting between Bool vectors and bitvectors here
+    lookup_table = Dict{Vector{Bool},Vector{Bool}}()
+    s, n = size(H)
+    # Process errors from highest weight to lowest
+    # so that lower-weight errors overwrite higher-weight ones
+    # (lower-weight errors are more probable)
+    for w in error_weight:-1:1
+        for positions in combinations(1:n, w)
+            error = falses(n)
+            for pos in positions
+                error[pos] = true
+            end
+            # Calculate syndrome: s = H * e (mod 2)
+            syndrome = Bool[(sum(H[row, pos] for pos in positions) % 2) == 1 for row in 1:s]
+            lookup_table[syndrome] = error
+        end
+    end
+    # In the case of no errors
+    lookup_table[falses(s)] = falses(n)
+    lookup_table
+end
+
+function decode(d::ClassicalTableDecoder, syndrome_sample)
+    d.lookup_buffer .= syndrome_sample
+    return get(d.lookup_table, d.lookup_buffer, nothing)
+end
+
+"""A look-up table decoder for CSS codes.
+
+Importantly, this decoder addresses the x and z errors separately, unlike the [`TableDecoder`](@ref).
+For a given distance, this decoder will do better on CSS codes than the [`TableDecoder`](@ref).
+
+Uses two `ClassicalTableDecoder` instances internally to decode
+the X and Z errors separately."""
+struct CSSTableDecoder <: AbstractSyndromeDecoder
+    """Stabilizer tableau defining the code"""
+    H
+    """Faults matrix corresponding to the code"""
+    faults_matrix
+    """The number of qubits in the code"""
+    n::Int
+    """The number of parity checks"""
+    s::Int
+    """The number of encoded qubits"""
+    k::Int
+    """The number of X checks"""
+    cx::Int
+    """The number of Z checks"""
+    cz::Int
+    """The maximum weight of errors in the lookup table"""
+    error_weight::Int
+    """Classical decoder for X errors (decodes Z syndrome)"""
+    tabledecoderx::ClassicalTableDecoder
+    """Classical decoder for Z errors (decodes X syndrome)"""
+    tabledecoderz::ClassicalTableDecoder
+end
+
+function CSSTableDecoder(c; error_weight=1)
+    Hx = parity_matrix_x(c)
+    Hz = parity_matrix_z(c)
+    H = parity_checks(c)
+    s, n = size(H)
+    _, _, r = canonicalize!(copy(H), ranks=true)
+    k = n - r
+    cx = size(Hx, 1)
+    cz = size(Hz, 1)
+    fm = faults_matrix(H)
+    tabledecoderx = ClassicalTableDecoder(Matrix{Bool}(Hx); error_weight)
+    tabledecoderz = ClassicalTableDecoder(Matrix{Bool}(Hz); error_weight)
+    return CSSTableDecoder(H, fm, n, s, k, cx, cz, error_weight, tabledecoderx, tabledecoderz)
+end
+
+parity_checks(d::CSSTableDecoder) = d.H
+
+function decode(d::CSSTableDecoder, syndrome_sample)
+    row_x = @view syndrome_sample[1:d.cx]
+    row_z = @view syndrome_sample[d.cx+1:d.cx+d.cz]
+    guess_z = decode(d.tabledecoderx, row_x)
+    guess_x = decode(d.tabledecoderz, row_z)
+    return isnothing(guess_x) || isnothing(guess_z) ? nothing : vcat(guess_x, guess_z)
 end
 
 # From extensions:
