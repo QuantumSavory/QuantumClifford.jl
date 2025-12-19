@@ -49,6 +49,7 @@
         - Add classical `GoppaCode`
         - Add classical Gallager's LDPC code
 - **(breaking)** Some codes are moved to `QECCore` from `QuantumClifford`, including `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`, `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller`.
+- **(breaking)** Some codes (types or functions) are slightly renamed for consistency.
 
 ### Private API
 
