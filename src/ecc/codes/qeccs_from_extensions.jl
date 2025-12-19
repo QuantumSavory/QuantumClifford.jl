@@ -1,4 +1,4 @@
-using QuantumClifford: register_method_error_hint, DepMissingError
+using QuantumClifford: register_method_error_hint, WeakDepMissingError
 
 const heckeext_struct_docstring = "Implemented as a package extension with Hecke. Check the docs for the [Hecke extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Hecke.jl)"
 const heckeext_function_docstring = heckeext_struct_docstring

@@ -11,6 +11,7 @@
 - Implementation of the specialized simulation algorithms for graph states (faster for large sparse tableaux).
 - **(breaking)** moving all graph state functionality to a submodule `GraphSim`.
 - **(fix)** `canonicalize_gott!` now properly supports non-UInt64 types.
+- `MixedDestabilizer` now has a `backtrack` keyword argument that makes it possible to undo the canonicalization step and recover destabilizers for specific stabilizer operators.
 - `ptrace` for partial traces. We already had `traceout!`, which returns tableaux with the same number of qubits. `ptrace` removes the traceout qubits besides setting their stabilizing operators to `I`.
 - Add `apply_right!` that applies a Clifford operator to the right of a dense clifford operator.
 - Implementing `apply_inv!` for direct application of the inverse of a given gate.
@@ -22,6 +23,7 @@
 - Add an extension to `QECCore` -- `QECCoreNemoExt` for accurate matrix `rank` computation
 - Introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - Quantum codes (including **(breaking)** changes to API):
+    - `TableDecoder` now supports arbitrary error weights and a new `CSSTableDecoder` is available that separate decodes the x and z syndromes of CSS codes.
     - The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations — particularly useful now that there is also an `Oscar.jl` extension, which provides many non-abelian group constructors.
     - Add `BivariateBicycleCodeViaPoly`, implemented using multivariate quotient ring formalism
     - In a Hecke extension for `QuantumClifford.ECC`:

@@ -3,6 +3,7 @@ push!(LOAD_PATH,"../src/")
 using Revise # for interactive doc updates
 using Documenter
 using DocumenterCitations
+using AnythingLLMDocs
 using QuantumClifford
 using QuantumInterface
 using QECCore
@@ -19,10 +20,27 @@ const QuantumCliffordOscarExt = Base.get_extension(QuantumClifford, :QuantumClif
 import JuMP
 const QuantumCliffordJuMPExt = Base.get_extension(QuantumClifford, :QuantumCliffordJuMPExt)
 
-#DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford); recursive=true)
-
 ENV["LINES"] = 80    # for forcing `displaysize(io)` to be big enough
 ENV["COLUMNS"] = 80
+doc_modules = [
+    QuantumClifford,
+    QuantumClifford.ECC,
+    QuantumInterface,
+    QuantumCliffordHeckeExt,
+    QuantumCliffordOscarExt,
+    QuantumCliffordJuMPExt,
+    QECCore,
+]
+
+api_base="https://anythingllm.krastanov.org/api/v1"
+anythingllm_assets = integrate_anythingllm(
+    "QuantumClifford",
+    doc_modules,
+    @__DIR__,
+    api_base;
+    repo = "github.com/QuantumSavory/QuantumClifford.jl.git",
+    options = EmbedOptions(),
+)
 
 bib = CitationBibliography(joinpath(@__DIR__,"src/references.bib"),style=:authoryear)
 
@@ -31,9 +49,12 @@ plugins = [bib],
 doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
-format = Documenter.HTML(size_threshold_ignore = ["API.md", "ECC_API.md"]),
-modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, QuantumCliffordHeckeExt, QuantumCliffordOscarExt, QuantumCliffordJuMPExt, QECCore],
-warnonly = [:missing_docs],
+format = Documenter.HTML(
+    size_threshold_ignore = ["API.md", "ECC_API.md"],
+    assets = anythingllm_assets,
+),
+modules = doc_modules,
+warnonly = [:missing_docs, :linkcheck],
 linkcheck = true,
 authors = "Stefan Krastanov",
 pages = [

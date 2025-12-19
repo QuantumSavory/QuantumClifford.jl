@@ -48,7 +48,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     GeneralizedToricCode, TrivariateTricycleCode, BivariateBicycleCodeViaPoly,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
-    TableDecoder,
+    TableDecoder, CSSTableDecoder,
     BeliefPropDecoder, BitFlipDecoder,
     PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, DecoderCorrectionGate
 
