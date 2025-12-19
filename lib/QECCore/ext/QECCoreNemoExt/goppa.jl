@@ -141,11 +141,8 @@ julia> size(H, 2), size(H, 2) - rank(matrix(GF(2), H))
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/goppa).
 
-### Arguments
-- `rng` - A random number generator instance
-- `m` - The degree of the Goppa polynomial `g(x)` which controls the error-correction capability.
-- `t` - The Goppa polynomial over ``\\mathbb{F}_{2^m}`` which must satisfy: degree(g) = t, and
-    g(αᵢ) ≠ 0 ∀ αᵢ ∈ L.
+### Fields
+    $TYPEDFIELDS
 """
 struct GoppaCode <: AbstractPolynomialCode
     """ The extension degree of ``\\mathbb{F}_{2^m}`` which determines the size of the field
