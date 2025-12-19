@@ -118,7 +118,7 @@ function random_Gallager_ldpc(rng::AbstractRNG, block_rows::Int, col_weight::Int
         end
     end
     H = sparse(I, J, V, m, n)
-    return (block_rows=block_rows, wc=col_weight, wr=row_weight, H=H)
+    return H
 end
 
 random_Gallager_ldpc(block_rows::Int, col_weight::Int, row_weight::Int) = random_Gallager_ldpc(GLOBAL_RNG, block_rows, col_weight, row_weight)
