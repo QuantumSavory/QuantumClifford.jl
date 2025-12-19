@@ -35,10 +35,8 @@
                     @testset "μ=$μ, wc=$wc, wr=$wr" begin
                         rng1 = MersenneTwister(1)
                         rng2 = MersenneTwister(2)
-                        c = random_Gallager_ldpc(rng1, μ, wc, wr)
-                        c1 = random_Gallager_ldpc(rng2, μ, wc, wr)
-                        H = c.H
-                        H1 = c1.H
+                        H = random_Gallager_ldpc(rng1, μ, wc, wr)
+                        H1 = random_Gallager_ldpc(rng2, μ, wc, wr)
                         @test Matrix(H) != Matrix(H1)
                         m, n = size(H)
                         @test m == μ*wc
