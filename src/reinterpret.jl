@@ -51,6 +51,15 @@ end
 reinterpret(::Type{U}, s::Stabilizer) where {U<:Unsigned} =
     Stabilizer(reinterpret(U, tab(s)))
 
+reinterpret(::Type{U}, d::Destabilizer) where {U<:Unsigned} =
+    Destabilizer(reinterpret(U, tab(d)))
+
+reinterpret(::Type{U}, ms::MixedStabilizer) where {U<:Unsigned} =
+    MixedStabilizer(reinterpret(U, tab(ms)), rank(ms))
+
+reinterpret(::Type{U}, md::MixedDestabilizer) where {U<:Unsigned} =
+    MixedDestabilizer(reinterpret(U, tab(md)), rank(md))
+
 function reinterpret(::Type{U}, f::PauliFrame) where {U<:Unsigned}
     return PauliFrame(reinterpret(U, f.frame), f.measurements)
 end

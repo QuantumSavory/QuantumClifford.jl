@@ -161,6 +161,90 @@ end
 end
 
 
+@testset "destabilizer combinations" begin
+    unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
+    ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
+
+    for n in ns
+        for Ti in unsigned_types, Tf in unsigned_types
+            nch = QuantumClifford._nchunks(n, Ti)
+            xzs = rand(Ti, nch, n)
+            phases = zeros(UInt8, n)
+            t = QuantumClifford.Tableau(phases, n, xzs)
+            s = QuantumClifford.Stabilizer(t)
+            d = QuantumClifford.Destabilizer(s)
+            try
+                d2 = reinterpret(Tf, d)
+                d3 = reinterpret(Ti, d2)
+                @test QuantumClifford.stab_to_gf2(tab(d)) == QuantumClifford.stab_to_gf2(tab(d3))
+            catch e
+                @test isa(e, ArgumentError)
+                msg = sprint(showerror, e)
+                @test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
+            end
+        end
+    end
+end
+
+
+@testset "mixedstabilizer combinations" begin
+    unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
+    ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
+
+    for n in ns
+        for Ti in unsigned_types, Tf in unsigned_types
+            nch = QuantumClifford._nchunks(n, Ti)
+            # Create a rank-deficient stabilizer for MixedStabilizer
+            r = min(n-1, max(1, n÷2)) # Make it rank-deficient
+            xzs = rand(Ti, nch, r)
+            phases = zeros(UInt8, r)
+            t = QuantumClifford.Tableau(phases, n, xzs)
+            s = QuantumClifford.Stabilizer(t)
+            ms = QuantumClifford.MixedStabilizer(s)
+            try
+                ms2 = reinterpret(Tf, ms)
+                ms3 = reinterpret(Ti, ms2)
+                @test QuantumClifford.stab_to_gf2(tab(ms)) == QuantumClifford.stab_to_gf2(tab(ms3))
+                @test rank(ms) == rank(ms3)
+            catch e
+                @test isa(e, ArgumentError)
+                msg = sprint(showerror, e)
+                @test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
+            end
+        end
+    end
+end
+
+
+@testset "mixeddestabilizer combinations" begin
+    unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
+    ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
+
+    for n in ns
+        for Ti in unsigned_types, Tf in unsigned_types
+            nch = QuantumClifford._nchunks(n, Ti)
+            # Create a rank-deficient stabilizer for MixedDestabilizer
+            r = min(n-1, max(1, n÷2)) # Make it rank-deficient
+            xzs = rand(Ti, nch, r)
+            phases = zeros(UInt8, r)
+            t = QuantumClifford.Tableau(phases, n, xzs)
+            s = QuantumClifford.Stabilizer(t)
+            md = QuantumClifford.MixedDestabilizer(s)
+            try
+                md2 = reinterpret(Tf, md)
+                md3 = reinterpret(Ti, md2)
+                @test QuantumClifford.stab_to_gf2(tab(md)) == QuantumClifford.stab_to_gf2(tab(md3))
+                @test rank(md) == rank(md3)
+            catch e
+                @test isa(e, ArgumentError)
+                msg = sprint(showerror, e)
+                @test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
+            end
+        end
+    end
+end
+
+
 @testset "pauliframe combinations" begin
     unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
     ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
