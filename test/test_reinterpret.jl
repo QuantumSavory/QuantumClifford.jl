@@ -1,19 +1,24 @@
 @testitem "Reinterpret" begin
     using QuantumClifford
 
-    # PauliOperator roundtrip via explicit constructor calls
-    xbits = BitVector([true, true, false])
-    zbits = BitVector([false, true, true])
-    p = PauliOperator(xbits, zbits)
+    # PauliOperator roundtrip via explicit constructor calls with UInt64 storage
+    # For 3 qubits: xbits = [true, true, false], zbits = [false, true, true]
+    # Encoded as: X bits in first chunk (0b011 = 3), Z bits in second chunk (0b110 = 6)
+    p = PauliOperator(0x0, 3, UInt64[3, 6])
     p2 = reinterpret(UInt8, p)
     p3 = reinterpret(UInt64, p2)
     @test xbit(p) == xbit(p3)
     @test zbit(p) == zbit(p3)
 
-    # Tableau roundtrip via explicit tableau construction
-    pa1 = PauliOperator(BitVector([true, false]), BitVector([false, false])) # X X
-    pa2 = PauliOperator(BitVector([false, false]), BitVector([true, true]))   # Z Z
-    t = QuantumClifford.Tableau([pa1, pa2])
+    # Tableau roundtrip via explicit tableau construction with UInt64 storage
+    # For 2 qubits: pa1 = X₁X₂, pa2 = Z₁Z₂
+    # X bits: [1,1], [0,0]; Z bits: [0,0], [1,1]
+    nch = QuantumClifford._nchunks(2, UInt64)
+    xzs = UInt64[3, 0]  # row 1: X₁X₂ (xbits=0b11=3, zbits=0b00=0)
+    xzs = reshape([3, 0], nch, 1)  # First row
+    xzs = hcat(xzs, reshape([0, 3], nch, 1))  # Add second row: Z₁Z₂
+    phases = UInt8[0x0, 0x0]
+    t = QuantumClifford.Tableau(phases, 2, xzs)
     t2 = reinterpret(UInt8, t)
     t3 = reinterpret(UInt64, t2)
     @test QuantumClifford.stab_to_gf2(t) == QuantumClifford.stab_to_gf2(t3)

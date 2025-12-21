@@ -12,3 +12,7 @@ between the pertinent size(s) of the provided arguments."
 const THROW_NQUBITS =
 "Unable to perform the requested operation due to encountering a mismatch \
 between the number of qubits in the provided arguments."
+
+const THROW_REINTERPRET_SIZE_MISMATCH =
+"Unable to perform the requested operation as the bit count of the principal \
+axis of the underlying data is not divisible by that of the target type."
