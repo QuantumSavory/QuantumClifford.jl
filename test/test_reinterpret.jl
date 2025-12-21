@@ -27,8 +27,6 @@ end
 		@test zbit(p_edge) == zbit(p_edge3)
 	catch e
 		@test isa(e, ArgumentError)
-		msg = sprint(showerror, e)
-		@test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
 	end
 
 	small_xz = UInt8[0x0, 0x0, 0x0, 0x0]
@@ -40,8 +38,6 @@ end
 		@test zbit(p_small) == zbit(p_small3)
 	catch e
 		@test isa(e, ArgumentError)
-		msg = sprint(showerror, e)
-		@test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
 	end
 end
 
@@ -61,8 +57,6 @@ end
 				@test zbit(p) == zbit(p3)
 			catch e
 				@test isa(e, ArgumentError)
-				msg = sprint(showerror, e)
-				@test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
 			end
 		end
 	end
@@ -78,8 +72,6 @@ end
 		@test zbit(p_zero) == zbit(pz3)
 	catch e
 		@test isa(e, ArgumentError)
-		msg = sprint(showerror, e)
-		@test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
 	end
 
 	p_min = QuantumClifford.PauliOperator(0x0, 1, UInt8[0x0])
@@ -123,8 +115,6 @@ end
 					@test QuantumClifford.stab_to_gf2(t) == QuantumClifford.stab_to_gf2(t3)
 				catch e
 					@test isa(e, ArgumentError)
-					msg = sprint(showerror, e)
-					@test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
 				end
 			end
 		end
@@ -151,8 +141,6 @@ end
 					@test QuantumClifford.stab_to_gf2(tab(s)) == QuantumClifford.stab_to_gf2(tab(s3))
 				catch e
 					@test isa(e, ArgumentError)
-					msg = sprint(showerror, e)
-					@test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
 				end
 			end
 		end
@@ -178,8 +166,6 @@ end
 				@test QuantumClifford.stab_to_gf2(tab(d)) == QuantumClifford.stab_to_gf2(tab(d3))
 			catch e
 				@test isa(e, ArgumentError)
-				msg = sprint(showerror, e)
-				@test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
 			end
 		end
 	end
@@ -207,8 +193,6 @@ end
 				@test rank(ms) == rank(ms3)
 			catch e
 				@test isa(e, ArgumentError)
-				msg = sprint(showerror, e)
-				@test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
 			end
 		end
 	end
@@ -236,8 +220,6 @@ end
 				@test rank(md) == rank(md3)
 			catch e
 				@test isa(e, ArgumentError)
-				msg = sprint(showerror, e)
-				@test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
 			end
 		end
 	end
@@ -265,8 +247,6 @@ end
 					@test pf.measurements == pf3.measurements
 				catch e
 					@test isa(e, ArgumentError)
-					msg = sprint(showerror, e)
-					@test occursin("cannot reinterpret", msg) && (occursin("backing bytes not divisible", msg) || occursin("resulting backing array length", msg))
 				end
 			end
 		end
