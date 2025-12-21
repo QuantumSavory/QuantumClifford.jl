@@ -11,7 +11,7 @@
 	# Tableau with explicit UInt64 storage
 	# For 2 qubits: row1 = X₁X₂ (xbits=0b11=3, zbits=0b00=0), row2 = Z₁Z₂ (xbits=0b00=0, zbits=0b11=3)
 	nch = QuantumClifford._nchunks(2, UInt64)
-	xzs = reshape([3, 0, 0, 3], nch, 2)  # 2 rows with UInt64 storage
+	xzs = reshape(UInt64[3, 0, 0, 3], nch, 2)  # 2 rows with UInt64 storage
 	phases = UInt8[0x0, 0x0]
 	t = QuantumClifford.Tableau(phases, 2, xzs)
 	@test QuantumClifford.stab_to_gf2(t)[1] == [1, 1, 0, 0]  # X₁X₂
