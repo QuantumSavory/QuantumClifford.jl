@@ -1,4 +1,4 @@
-using QuantumClifford: register_method_error_hint, DepMissingError
+using QuantumClifford: register_method_error_hint, WeakDepMissingError
 
 const heckeext_struct_docstring = "Implemented as a package extension with Hecke. Check the docs for the [Hecke extension](http://qc.quantumsavory.org/stable/ECC_API/#Implemented-in-an-extension-requiring-Hecke.jl)"
 const heckeext_function_docstring = heckeext_struct_docstring
@@ -17,7 +17,7 @@ const structs_implemented_in_extensions = [
     (:DoubleHomologicalProductCode, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
     (:GeneralizedToricCode, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
     (:TrivariateTricycleCode, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
-    (:BivariateBicycleCode, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
+    (:BivariateBicycleCodeViaPoly, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
 ]
 
 for (struct_name, extension_name, struct_docstring, deps) in structs_implemented_in_extensions
@@ -36,10 +36,10 @@ end
 
 const functions_implemented_in_extensions = [
     (:two_block_group_algebra_codes, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
-    (:generalized_bicycle_codes, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
-    (:bicycle_codes, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
-    (:haah_cubic_codes, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
-    (:honeycomb_color_codes, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:generalized_bicycle_codes_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:bicycle_codes_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:Haah_cubic_codes_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:honeycomb_color_codes_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
     (:boundary_maps, :QuantumCliffordOscarExt, oscarext_function_docstring, (:Oscar,)),
     (:max_xy_exponents, :QuantumCliffordOscarExt, oscarext_function_docstring, (:Oscar,)),
     (:twobga_from_direct_product, :QuantumCliffordOscarExt, oscarext_function_docstring, (:Oscar,)),

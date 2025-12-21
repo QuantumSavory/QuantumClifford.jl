@@ -69,8 +69,8 @@ for any ``a_{\\vec{x}} \\in D_{\\vec{x}}``, and
 
 ```math
 \\begin{aligned}
-\\partial_{\\vec{y},\\vec{x}} := 
-\\begin{cases} 
+\\partial_{\\vec{y},\\vec{x}} :=
+\\begin{cases}
 \\partial^i_{\\vec{x}} & \\text{if } \\vec{x} - \\vec{y} = \\vec{e}_i \\text{ for some } i \\in [D], \\\\
 0 & \\text{otherwise.}
 \\end{cases}
@@ -80,7 +80,7 @@ for any ``a_{\\vec{x}} \\in D_{\\vec{x}}``, and
 !!! note
     The total complex is obtained by projecting the ``D``-dimensional complex along
     the "diagonal" direction. Once a total chain complex is derived from a product complex
-    (with length greater than 2), a quantum code can be defined from a length-2 
+    (with length greater than 2), a quantum code can be defined from a length-2
     subcomplex [xu2024fastparallelizablelogicalcomputation](@cite).
 
 [xu2024fastparallelizablelogicalcomputation](@cite) focuses on product complexes with
@@ -139,20 +139,15 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 Here is a Homological product of `(3,4)`-classical LDPC codes.
 
 ```jldoctest
-julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
+julia> using Oscar, QuantumClifford, QuantumClifford.ECC, QECCore;
 
 julia> μ = 2; wc = 3; wr = 4;
 
-julia> c = GallagerLDPC(μ, wc, wr);
+julia> c = random_Gallager_ldpc(μ, wc, wr);
 
-julia> H = matrix(GF(2), parity_matrix(c));
+julia> H = matrix(GF(2), c);
 
 julia> c = HomologicalProductCode([H,transpose(H)]);
-
-julia> import HiGHS; import JuMP;
-
-julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
-(100, 20, 2)
 ```
 
 ### Fields
@@ -225,7 +220,7 @@ Constructs the *Double Homological Product code* from [Campbell_2019](@cite).
 To construct a quantum error-correcting code with *metachecks*, we require a length-4 chain
 complex. This can be built by taking the *homological product* of two length-2 chain complexes.
 
-The length-4 chain complex, structured as:  
+The length-4 chain complex, structured as:
 
 ```math
 \\begin{aligned}
@@ -233,7 +228,7 @@ The length-4 chain complex, structured as:
 \\end{aligned}
 ```
 
-The homological product of two 2D chain complexes produces this length-4 complex, following the general rule:  
+The homological product of two 2D chain complexes produces this length-4 complex, following the general rule:
 
 ```math
 \\begin{aligned}
@@ -241,31 +236,31 @@ The homological product of two 2D chain complexes produces this length-4 complex
 \\end{aligned}
 ```
 
-The boundary maps are represented as block matrices and are defined as:  
+The boundary maps are represented as block matrices and are defined as:
 
 ```math
 \\begin{align}
-\\breve{\\delta}_{-2} &= \\begin{pmatrix} 
-I \\otimes \\tilde{\\delta}_0^T \\\\ 
-\\tilde{\\delta}_{-1} \\otimes I 
+\\breve{\\delta}_{-2} &= \\begin{pmatrix}
+I \\otimes \\tilde{\\delta}_0^T \\\\
+\\tilde{\\delta}_{-1} \\otimes I
 \\end{pmatrix} \\\\
-\\breve{\\delta}_{-1} &= \\begin{pmatrix} 
+\\breve{\\delta}_{-1} &= \\begin{pmatrix}
 I \\otimes \\tilde{\\delta}_{-1}^T & 0 \\\\
 \\tilde{\\delta}_{-1} \\otimes I & I \\otimes \\tilde{\\delta}_0^T \\\\
-0 & \\tilde{\\delta}_0 \\otimes I 
+0 & \\tilde{\\delta}_0 \\otimes I
 \\end{pmatrix} \\\\
-\\breve{\\delta}_0 &= \\begin{pmatrix} 
+\\breve{\\delta}_0 &= \\begin{pmatrix}
 \\tilde{\\delta}_{-1} \\otimes I & I \\otimes \\tilde{\\delta}_{-1}^T & 0 \\\\
-0 & \\tilde{\\delta}_0 \\otimes I & I \\otimes \\tilde{\\delta}_0^T 
+0 & \\tilde{\\delta}_0 \\otimes I & I \\otimes \\tilde{\\delta}_0^T
 \\end{pmatrix} \\\\
-\\breve{\\delta}_1 &= \\begin{pmatrix} 
-\\tilde{\\delta}_0 \\otimes I & I \\otimes \\tilde{\\delta}_{-1}^T 
+\\breve{\\delta}_1 &= \\begin{pmatrix}
+\\tilde{\\delta}_0 \\otimes I & I \\otimes \\tilde{\\delta}_{-1}^T
 \\end{pmatrix}
 \\end{align}
 ```
 
 The condition ``\\breve{\\delta}_{j+1} \\breve{\\delta}_j = 0`` holds for all j,
-which follows from the corresponding property of the ``\\tilde{\\delta}`` matrices.  
+which follows from the corresponding property of the ``\\tilde{\\delta}`` matrices.
 
 #### Example
 
@@ -324,7 +319,7 @@ function boundary_maps(c::DoubleHomologicalProductCode)
     # δ̌₋₁ = [I ⊗ δ̃₋₁ᵀ |    0
     #        δ̃₋₁ ⊗ I  | I ⊗ δ̃₀ᵀ
     #           0      | δ̃₀ ⊗ I]
-    
+
     # I ⊗ δ̃₋₁ᵀ  0
     tb = hcat(
         kronecker_product(identity_matrix(R, ñ₁), transpose(δ̃₋₁)),

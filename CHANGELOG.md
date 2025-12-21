@@ -11,24 +11,27 @@
 - Implementation of the specialized simulation algorithms for graph states (faster for large sparse tableaux).
 - **(breaking)** moving all graph state functionality to a submodule `GraphSim`.
 - **(fix)** `canonicalize_gott!` now properly supports non-UInt64 types.
+- `MixedDestabilizer` now has a `backtrack` keyword argument that makes it possible to undo the canonicalization step and recover destabilizers for specific stabilizer operators.
 - `ptrace` for partial traces. We already had `traceout!`, which returns tableaux with the same number of qubits. `ptrace` removes the traceout qubits besides setting their stabilizing operators to `I`.
 - Add `apply_right!` that applies a Clifford operator to the right of a dense clifford operator.
 - Implementing `apply_inv!` for direct application of the inverse of a given gate.
 - Add `mul_right!` methods for inplace operations between tableaus
 - Add a `CliffordOperator` constructor that builds a dense clifford from a `PauliOperator`
 - Add a `phases` getter for `CliffordOperator`
+- A new non-Clifford operation was added as a Pauli channel, the rotation gate `pcRx`.
 - Adapt.jl can now be used to convert various types to GPU-backed storage.
 - The phase storage type can now be parameterized, instead of hardcoded to UInt8.
 - Add an extension to `QECCore` -- `QECCoreNemoExt` for accurate matrix `rank` computation
 - Introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - Quantum codes (including **(breaking)** changes to API):
+    - `TableDecoder` now supports arbitrary error weights and a new `CSSTableDecoder` is available that separate decodes the x and z syndromes of CSS codes.
     - The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations — particularly useful now that there is also an `Oscar.jl` extension, which provides many non-abelian group constructors.
-    - Add `BivariateBicycleCode`, implemented using multivariate quotient ring formalism
+    - Add `BivariateBicycleCodeViaPoly`, implemented using multivariate quotient ring formalism
     - In a Hecke extension for `QuantumClifford.ECC`:
         - Add `GeneralizedBicycleCode` and `ExtendedGeneralizedBicycleCode`
         - Add `GeneralizedHyperGraphProductCode`
         - Add `[[2n², 2k², d]]` and `[[(n - k)² + n², k², d]]` La-cross codes via univariate polynomial ring
-        - Add convenience wrappers for code families `honeycomb_color_codes` and `haah_cubic_codes`
+        - Add convenience wrappers for code families `honeycomb_color_codes_as_2bga` and `Haah_cubic_codes_as_2bga`
     - In an Oscar extension for `QuantumClifford.ECC`:
         - Add `TrivariateTricycleCode`
         - Add `GeneralizedToricCode` on twisted tori in terms of Laurent polynomials
@@ -41,12 +44,13 @@
         - Add `[[4p, 2(p − 2), 4]]` Delfosse-Reichardt repetition `DelfosseReichardtRepCode`
         - Add `[[8p, 4p − 2, 3]]` Delfosse-Reichardt Generalized `[[8,2,3]]` `DelfosseReichardt823`
         - In an Oscar extension for `QECCore`
-            - Add `GeneralizedCirculantBivariateBicycle`
+            - Add `BivariateBicycleCodeViaCirculantMat`
 - Classical codes (including **(breaking)** changes to API):
     - In `QECCore`:
         - Add classical `GoppaCode`
         - Add classical Gallager's LDPC code
 - **(breaking)** Some codes are moved to `QECCore` from `QuantumClifford`, including `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`, `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller`.
+- **(breaking)** Some codes (types or functions) are slightly renamed for consistency.
 
 ### Private API
 
