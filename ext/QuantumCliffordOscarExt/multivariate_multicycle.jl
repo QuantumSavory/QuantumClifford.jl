@@ -41,7 +41,7 @@ julia> A = S(x^3 + y^10 + y^17);
 
 julia> B = S(y^5 + x^3  + x^19);
 
-julia> c = MultivariateMulticycleCode([l,m], [A,B]);
+julia> c = MultivariateMulticycle([l,m], [A,B]);
 
 julia> code_n(c), code_k(c)
 (756, 16)
@@ -66,7 +66,7 @@ julia> B = S(1 + x^3*y*z^2 + x^3*y^2*z^3);
 
 julia> C = S(1 + x^4*y^3*z^3 + x^5*z^2);
 
-julia> c = MultivariateMulticycleCode([l,m, p], [A, B, C]);
+julia> c = MultivariateMulticycle([l,m, p], [A, B, C]);
 
 julia> code_n(c), code_k(c)
 (432, 12)
@@ -93,16 +93,16 @@ julia> C = S(1 + w^2*x^2*y^2*z^2);
 
 julia> D = S(1 + w^3*x^3*y^3*z^3);
 
-julia> c = MultivariateMulticycleCode([l, m, p, r], [A, B, C, D]);
+julia> c = MultivariateMulticycle([l, m, p, r], [A, B, C, D]);
 
 julia> code_n(c), code_k(c)
 (648, 18)
 ```
 """
-struct MultivariateMulticycleCode <: AbstractCSSCode
+struct MultivariateMulticycle <: AbstractCSSCode
     orders::Vector{Int}
     polynomials::Vector{MPolyQuoRingElem{FqMPolyRingElem}}
-    function MultivariateMulticycleCode(orders::Vector{Int}, polys::Vector{<:MPolyQuoRingElem})
+    function MultivariateMulticycle(orders::Vector{Int}, polys::Vector{<:MPolyQuoRingElem})
         length(orders) == length(polys) || throw(ArgumentError("Mismatch orders/polys"))
         all(x->x>0, orders) || throw(ArgumentError("All orders must be positive"))
         length(orders) ≥ 2 || throw(ArgumentError("Need at least 2 variables to define a CSS code"))
@@ -138,7 +138,7 @@ function _polynomial_to_circulant_matrix(f::MPolyQuoRingElem, orders::Vector{Int
     return M
 end
 
-function boundary_maps(code::MultivariateMulticycleCode)
+function boundary_maps(code::MultivariateMulticycle)
     t = length(code.orders)
     N = prod(code.orders)
     circs = [_gf2_to_int(_polynomial_to_circulant_matrix(p, code.orders)) for p in code.polynomials]
@@ -172,7 +172,7 @@ function boundary_maps(code::MultivariateMulticycleCode)
     return maps
 end
 
-function parity_matrix_xz(code::MultivariateMulticycleCode)
+function parity_matrix_xz(code::MultivariateMulticycle)
     maps = boundary_maps(code)
     t = length(code.orders)
     if t == 2
@@ -186,12 +186,12 @@ function parity_matrix_xz(code::MultivariateMulticycleCode)
     return hx, hz
 end
 
-parity_matrix_x(c::MultivariateMulticycleCode) = parity_matrix_xz(c)[1]
+parity_matrix_x(c::MultivariateMulticycle) = parity_matrix_xz(c)[1]
 
-parity_matrix_z(c::MultivariateMulticycleCode) = parity_matrix_xz(c)[2]
+parity_matrix_z(c::MultivariateMulticycle) = parity_matrix_xz(c)[2]
 
 """For t ≥ 4, provides metachecks for X-stabilizers enabling single-shot decoding."""
-function metacheck_matrix_x(code::MultivariateMulticycleCode)
+function metacheck_matrix_x(code::MultivariateMulticycle)
     maps = boundary_maps(code)
     t = length(code.orders)
     t ≥ 4 || throw(ArgumentError("X-metachecks require t ≥ 4 variables"))
@@ -200,7 +200,7 @@ function metacheck_matrix_x(code::MultivariateMulticycleCode)
 end
 
 """For t ≥ 3, provides metachecks for Z-stabilizers enabling single-shot decoding."""
-function metacheck_matrix_z(code::MultivariateMulticycleCode)
+function metacheck_matrix_z(code::MultivariateMulticycle)
     maps = boundary_maps(code)
     t = length(code.orders)
     t ≥ 3 || throw(ArgumentError("Z-metachecks require t ≥ 3 variables"))
