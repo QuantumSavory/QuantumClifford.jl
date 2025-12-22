@@ -8,7 +8,7 @@ const oscarext_function_docstring = oscarext_struct_docstring
 const structs_implemented_in_extensions = [
     (:LPCode, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
     (:LaCross, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
-    (:GeneralizedHyperGraphProductCode, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
+    (:GeneralizedHyperGraphProduct, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
     (:GeneralizedBicycle, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
     (:ExtendedGeneralizedBicycle, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
     (:DDimensionalSurface, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
