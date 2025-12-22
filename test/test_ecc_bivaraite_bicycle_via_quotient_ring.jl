@@ -3,7 +3,7 @@
     using HiGHS
     using JuMP
     using Hecke: group_algebra, GF, abelian_group, gens, one
-    using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, distance, DistanceMIPAlgorithm
+    using QuantumClifford.ECC: two_block_group_algebra_code, code_k, code_n, distance, DistanceMIPAlgorithm
 
     @testset "Reproduce Table 3 bravyi2024high" begin
         # [[72, 12, 6]]

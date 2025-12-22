@@ -5,7 +5,7 @@
     using JuMP
     using HiGHS
     using Hecke: group_algebra, GF, abelian_group, gens
-    using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, distance, DistanceMIPAlgorithm
+    using QuantumClifford.ECC: two_block_group_algebra_code, code_k, code_n, distance, DistanceMIPAlgorithm
 
     @testset "Reproduce Table 2 wang2024coprime" begin
         # [[30,4,6]]

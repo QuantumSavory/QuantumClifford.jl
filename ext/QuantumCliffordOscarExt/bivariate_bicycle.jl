@@ -278,7 +278,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (72, 12, 6)
 ```
 
-- `two_block_group_algebra_codes`:  Bivaraite Bicycle codes are a subfamily of *abelian* [2BGA](https://errorcorrectionzoo.org/c/2bga) codes, which themselves are instances of [Lifted Product](https://errorcorrectionzoo.org/c/abelian_lifted_product) codes.
+- `two_block_group_algebra_code`:  Bivaraite Bicycle codes are a subfamily of *abelian* [2BGA](https://errorcorrectionzoo.org/c/2bga) codes, which themselves are instances of [Lifted Product](https://errorcorrectionzoo.org/c/abelian_lifted_product) codes.
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;

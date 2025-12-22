@@ -17,7 +17,7 @@ import Nemo
 import Nemo: characteristic, matrix_repr, GF, ZZ, lift, matrix, rank
 
 import QuantumClifford.ECC: iscss, parity_checks,
-    two_block_group_algebra_codes, generalized_bicycle_code_as_2bga, bicycle_code_as_2bga, check_repr_commutation_relation,
+    two_block_group_algebra_code, generalized_bicycle_code_as_2bga, bicycle_code_as_2bga, check_repr_commutation_relation,
     Haah_cubic_code_as_2bga, honeycomb_color_code_as_2bga, check_repr_regular_linear, random_qc_ghp_code_matrix_A
 
 import QECCore: AbstractQECC, CSS, AbstractCSSCode,
@@ -27,7 +27,7 @@ import Random
 import Random: AbstractRNG, default_rng, randperm
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
-export hgp, two_block_group_algebra_codes, generalized_bicycle_code_as_2bga, bicycle_code_as_2bga, Haah_cubic_code_as_2bga,
+export hgp, two_block_group_algebra_code, generalized_bicycle_code_as_2bga, bicycle_code_as_2bga, Haah_cubic_code_as_2bga,
     LPCode, LiftedCode, honeycomb_color_code_as_2bga, LaCross, GeneralizedBicycle, ExtendedGeneralizedBicycle,
     GeneralizedHyperGraphProduct
 

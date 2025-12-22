@@ -35,7 +35,7 @@ for (struct_name, extension_name, struct_docstring, deps) in structs_implemented
 end
 
 const functions_implemented_in_extensions = [
-    (:two_block_group_algebra_codes, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:two_block_group_algebra_code, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
     (:generalized_bicycle_code_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
     (:bicycle_code_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
     (:Haah_cubic_code_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),

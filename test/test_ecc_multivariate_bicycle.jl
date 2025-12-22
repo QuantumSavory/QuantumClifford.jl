@@ -3,7 +3,7 @@
     using HiGHS
     using JuMP
     using Hecke: group_algebra, GF, abelian_group, gens
-    using QuantumClifford.ECC: two_block_group_algebra_codes, code_k, code_n, distance, DistanceMIPAlgorithm
+    using QuantumClifford.ECC: two_block_group_algebra_code, code_k, code_n, distance, DistanceMIPAlgorithm
 
     # Multivariate Bicycle codes taken from Table 1 of [voss2024multivariatebicyclecodes](@cite)
     @testset "Weight-4 QLDPC Codes" begin

@@ -3,7 +3,7 @@
     using JuMP
     using HiGHS
     using Hecke: group_algebra, GF, abelian_group, gens
-    using QuantumClifford.ECC: two_block_group_algebra_codes, generalized_bicycle_codes, code_k, code_n, distance, DistanceMIPAlgorithm
+    using QuantumClifford.ECC: two_block_group_algebra_code, generalized_bicycle_codes, code_k, code_n, distance, DistanceMIPAlgorithm
 
     @testset "minimum distance properties: GB" begin
         # [48, 6, 8]] GB code, # minimum distance is exact, d = 8

@@ -25,7 +25,7 @@ import Oscar.Generic.LaurentMPolyWrap
 import Oscar.Generic.exponent_vectors
 import Oscar.IdealGens
 
-import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group,
+import QuantumClifford.ECC: two_block_group_algebra_code, twobga_from_direct_product, twobga_from_fp_group,
     boundary_maps, max_xy_exponents
 
 import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
