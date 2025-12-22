@@ -1,5 +1,4 @@
-"""
-We introduce a novel class of quantum CSS codes — *Multivariate Multicycle* codes — constructed
+"""We introduce a novel class of quantum CSS codes — *Multivariate Multicycle* codes — constructed
 from multivariate polynomial quotient ring formalism over ``\\mathbb{F}_2``. 
 
 Our discovery establishes that the boundary maps of these codes are governed by the combinatorial structure
