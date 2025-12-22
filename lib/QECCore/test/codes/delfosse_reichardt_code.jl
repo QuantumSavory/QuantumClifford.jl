@@ -8,7 +8,7 @@
     using Nemo: matrix, GF, echelon_form
     using QECCore
     using QECCore.LinearAlgebra
-    using QECCore: _generalize_delfosse_reichardt_code, search_self_orthogonal_rm_codes
+    using QECCore: _generalize_delfosse_reichardt_code, search_self_orthogonal_rm_code
 
     @testset "Testing Generalized Delfosse-Reichardt code properties" begin
         # from https://arxiv.org/pdf/2008.05051"
