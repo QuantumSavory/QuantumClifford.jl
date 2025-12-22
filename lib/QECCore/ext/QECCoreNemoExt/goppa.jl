@@ -6,7 +6,7 @@ abstract type AbstractPolynomialCode <: AbstractCECC end
 The family of Goppa codes, as discovered by Denisovich Goppa, in his 1970 paper [goppa1970new](@cite). The
 binary Goppa code is characterized by two key elements:
 
-- Goppa polynomial: A *monic* polynomial of degree t over ``\\mathbb{F}_{2^m}`` with no repeated roots. For a fixed support set ``L = {\\gamma_0, \\dots, \\gamma_{n-1}} \\subseteq \\mathbb{F}_{2^m}``, the polynomial satisfies ``g(\\gamma_i) \\neq 0`` for all ``0 \\leq i < n``.  
+- Goppa polynomial: A *monic* polynomial of degree t over ``\\mathbb{F}_{2^m}`` with no repeated roots. For a fixed support set ``L = {\\gamma_0, \\dots, \\gamma_{n-1}} \\subseteq \\mathbb{F}_{2^m}``, the polynomial satisfies ``g(\\gamma_i) \\neq 0`` for all ``0 \\leq i < n``.
 - Support list: A list of n distinct elements ``{\\gamma_0, \\dots, \\gamma_{n-1}}`` from ``\\mathbb{F}_{2^m}`` such that ``g(\\gamma_i) \\neq 0`` for all ``0 \\leq i < n`` (i.e., none are roots of the Goppa polynomial g(x).
 
 The set ``L = {\\gamma_0, \\dots, \\gamma_{n-1}}`` defines the code’s structure, with n distinct
@@ -77,7 +77,7 @@ L_1^{t-1} \\cdot g(L_1)^{-1} & L_2^{t-1} \\cdot g(L_2)^{-1} & L_3^{t-1} \\cdot g
 You might be interested in consulting [berlekamp1973goppa](@cite), [mceliece1978public](@cite),
 [patterson1975algebraic](@cite), [sugiyama1975method](@cite), [van1988classical](@cite),
 [bernstein2008attacking](@cite), [wirtz1988parameters](@cite) and [singh2019code](@cite)
-an as well. 
+an as well.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/gappa).
 

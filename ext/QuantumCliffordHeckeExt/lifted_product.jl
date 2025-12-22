@@ -120,7 +120,7 @@ julia> code_n(c2), code_k(c2)
 
 ## Code subfamilies and convenience constructors for them
 
-- When the base matrices of the `LPCode` are 1×1, the code is called a two-block group-algebra code [`two_block_group_algebra_codes`](@ref).
+- When the base matrices of the `LPCode` are 1×1, the code is called a two-block group-algebra code [`two_block_group_algebra_code`](@ref).
 - When the base matrices of the `LPCode` are 1×1 and their elements are sums of cyclic permutations, the code is called a generalized bicycle code [`generalized_bicycle_code_as_2bga`](@ref).
 - When the two matrices are adjoint to each other, the code is called a bicycle code [`bicycle_code_as_2bga`](@ref).
 
@@ -131,7 +131,7 @@ The default representation, provided by `Hecke`, is the permutation representati
 
 We also accept a custom representation function as detailed in [`LiftedCode`](@ref).
 
-See also: [`LiftedCode`](@ref), [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_code_as_2bga`](@ref), [`bicycle_code_as_2bga`](@ref),
+See also: [`LiftedCode`](@ref), [`two_block_group_algebra_code`](@ref), [`generalized_bicycle_code_as_2bga`](@ref), [`bicycle_code_as_2bga`](@ref),
 [`Haah_cubic_code_as_2bga`](@ref).
 
 All fields:
@@ -405,9 +405,9 @@ Generalized bicycle codes, which are a special case of *abelian* 2GBA codes (and
 Here the group is chosen as the cyclic group of order `l`,
 and the base matrices `a` and `b` are the sum of the group algebra elements corresponding to the shifts `a_shifts` and `b_shifts`.
 
-Behind the scenes, the shifts are converted to the corresponding group algebra elements and piped to [`two_block_group_algebra_codes`](@ref).
+Behind the scenes, the shifts are converted to the corresponding group algebra elements and piped to [`two_block_group_algebra_code`](@ref).
 
-See also: [`two_block_group_algebra_codes`](@ref), [`bicycle_code_as_2bga`](@ref).
+See also: [`two_block_group_algebra_code`](@ref), [`bicycle_code_as_2bga`](@ref).
 
 ## Examples
 
@@ -451,7 +451,7 @@ where `a` and `b` are conjugate to each other.
 The order of the cyclic group is `l`, and the shifts `a_shifts` and `b_shifts` are reverse to each other.
 Thus you need to provide only the `a_shifts` and the rest of the conversions and conjugations are taken care of.
 
-See also: [`two_block_group_algebra_codes`](@ref), [`generalized_bicycle_code_as_2bga`](@ref), [`Haah_cubic_code_as_2bga`](@ref).
+See also: [`two_block_group_algebra_code`](@ref), [`generalized_bicycle_code_as_2bga`](@ref), [`Haah_cubic_code_as_2bga`](@ref).
 """ # TODO doctest example
 function bicycle_code_as_2bga(a_shifts::Array{Int}, l::Int)
     GA = group_algebra(GF(2), abelian_group(l))
@@ -471,7 +471,7 @@ before piping the arguments to [`generalized_bicycle_code_as_2bga`](@ref).
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/haah_cubic).
 
-See also: [`bicycle_code_as_2bga`](@ref), [`generalized_bicycle_code_as_2bga`](@ref), [`two_block_group_algebra_codes`](@ref).
+See also: [`bicycle_code_as_2bga`](@ref), [`generalized_bicycle_code_as_2bga`](@ref), [`two_block_group_algebra_code`](@ref).
 
 ## Examples
 
@@ -514,7 +514,7 @@ julia> code_n(c), code_k(c)
 (1024, 30)
 ```
 
-See also: [`bicycle_code_as_2bga`](@ref), [`generalized_bicycle_code_as_2bga`](@ref), [`two_block_group_algebra_codes`](@ref),
+See also: [`bicycle_code_as_2bga`](@ref), [`generalized_bicycle_code_as_2bga`](@ref), [`two_block_group_algebra_code`](@ref),
 [`honeycomb_color_code_as_2bga`](@ref).
 """
 function Haah_cubic_code_as_2bga(l::Int)
@@ -528,7 +528,7 @@ end
 """
 The honeycomb color codes [eberhardt2024logical](@cite) are exactly the Bivariate
 Bicycle (BB) codes defined by the polynomials `c = 1 + x + xy` and `d = 1 + y + xy`,
-provided that both `ℓ` and `m` are divisible by three. This `6.6.6` code is an example of BB
+provided that both `l` and `m` are divisible by three. This `6.6.6` code is an example of BB
 code, as it represents a special case.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/triangular_color).
@@ -536,19 +536,19 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/tria
 ```jldoctest
 julia> import Hecke; using QuantumClifford.ECC;
 
-julia> ℓ = 9; m = 6;
+julia> l = 9; m = 6;
 
-julia> c = honeycomb_color_code_as_2bga(ℓ, m);
+julia> c = honeycomb_color_code_as_2bga(l, m);
 
 julia> code_n(c), code_k(c)
 (108, 4)
 ```
 
-See also: [`bicycle_code_as_2bga`](@ref), [`generalized_bicycle_code_as_2bga`](@ref), [`two_block_group_algebra_codes`](@ref),
+See also: [`bicycle_code_as_2bga`](@ref), [`generalized_bicycle_code_as_2bga`](@ref), [`two_block_group_algebra_code`](@ref),
 [`honeycomb_color_code_as_2bga`](@ref).
 """
 function honeycomb_color_code_as_2bga(l::Int, m::Int)
-    (l % 3 == 0 && m % 3 == 0) || throw(ArgumentError("Both ℓ and m must be divisible by 3"))
+    (l % 3 == 0 && m % 3 == 0) || throw(ArgumentError("Both l and m must be divisible by 3"))
     GA = group_algebra(GF(2), abelian_group([l, m]))
     x, y = gens(GA)
     c = 1 + x + x*y

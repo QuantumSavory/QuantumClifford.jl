@@ -218,14 +218,14 @@
             c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
 
-            # [[18, 4, 4]] 
+            # [[18, 4, 4]]
             f = 1 + x + x*y
             g = 1 + y + x*y
             α1 = (0, 3)
             α2 = (3, 0)
             c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
-        
+
             # [[24, 4, 4]]
             f = 1 + x + x*y
             g = 1 + y + x*y
@@ -250,7 +250,7 @@
             c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
-            # [[36, 4, 6]] 
+            # [[36, 4, 6]]
             f = 1 + x + x^-1
             g = 1 + y + y^-1
             α1 = (0, 9)
@@ -290,7 +290,7 @@
             c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 8
 
-            # [[60, 8, 6]] 
+            # [[60, 8, 6]]
             f = 1 + x + y^-2
             g = 1 + y + x^2
             α1 = (0, 10)

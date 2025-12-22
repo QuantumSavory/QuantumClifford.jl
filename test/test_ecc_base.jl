@@ -292,14 +292,14 @@ const code_instance_args = Dict(
     :Triangular488 => [(3,), (5,), (7,), (9,), (11,)],
     :Triangular666 => [(3,), (5,), (7,), (9,), (11,)],
     :DelfosseReichardt => [(2,1,3), (2,2,4), (4,3,5), (4,3,6)],
-    :DelfosseReichardtRepCode => [(4,), (6,), (8,), (10,)],
+    :DelfosseReichardtRep => [(4,), (6,), (8,), (10,)],
     :DelfosseReichardt823 => [(2,), (3,), (4,), (5,)],
     :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
     :CyclicQuantumTannerGraphProduct => [(2,), (3,), (4,)],
     :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false), (7,h₃,true), (9,h₃,true), (9,h₄,true), (10,h₄,true), (12,h₄,true)],
     :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
-    :BivariateBicycleCodeViaCirculantMat => [(l1, m1, A1, B1), (l2, m2, A2,B2), (l3, m3, A3, B3), (l4, m4, A4, B4), (l5, m5, A5, B5)],
-    :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1, l_ghp1), (A_ghp2, b_ghp2, l_ghp2)],
+    :BivariateBicycleViaCirculantMat => [(l1, m1, A1, B1), (l2, m2, A2,B2), (l3, m3, A3, B3), (l4, m4, A4, B4), (l5, m5, A5, B5)],
+    :GeneralizedHyperGraphProduct => [(A_ghp1, b_ghp1, l_ghp1), (A_ghp2, b_ghp2, l_ghp2)],
     :GeneralizedBicycle => [(a_gb₁, b_gb₁, l_gb₁), (a_gb₂, b_gb₂, l_gb₂), (a_gb₃ ,b_gb₃, l_gb₃)],
     :ExtendedGeneralizedBicycle => [(c_gb₁, 2, p_gb₁), (c_gb₂, 3, p_gb₂), (c_gb₃, 4, p_gb₃)]
 )
@@ -443,7 +443,7 @@ const code_instance_args = Dict(
     # [[241, 1, 9]] from Table I of https://arxiv.org/pdf/1805.09271
     δ₁ = [1 1 0;
           0 1 1]
-    
+
     # [[486, 6, 9]] from Table I of https://arxiv.org/pdf/1805.09271
     δ₂ = [1 1 0;
           0 1 1;
@@ -453,33 +453,33 @@ const code_instance_args = Dict(
 
     # [[36, 3, 3]] from Table III
     F₂ = GF(2)
-    ℓ₁, m₁, p₁ = 3, 2, 2
+    l₁, m₁, p₁ = 3, 2, 2
     R, (x, y, z) = polynomial_ring(F₂, [:x, :y, :z])
-    I = ideal(R, [x^ℓ₁ - 1, y^m₁ - 1, z^p₁ - 1])
+    I = ideal(R, [x^l₁ - 1, y^m₁ - 1, z^p₁ - 1])
     S, _ = quo(R, I)
     A₁ = S(1 + x*y*z)
     B₁ = S(1 + x^2*z)
     C₁ = S(1 + x)
 
     # [[48, 3, 4]] from Table III
-    ℓ₂, m₂, p₂ = 4, 2, 2
-    I = ideal(R, [x^ℓ₂ - 1, y^m₂ - 1, z^p₂ - 1])
+    l₂, m₂, p₂ = 4, 2, 2
+    I = ideal(R, [x^l₂ - 1, y^m₂ - 1, z^p₂ - 1])
     S, _ = quo(R, I)
     A₂ = S(1 + x)
     B₂ = S(1 + x*z)
     C₂ = S(1 + x*y)
 
     # [[54, 3, 4]] from Table III
-    ℓ₃, m₃, p₃ = 3, 3, 2
-    I = ideal(R, [x^ℓ₃ - 1, y^m₃ - 1, z^p₃ - 1])
+    l₃, m₃, p₃ = 3, 3, 2
+    I = ideal(R, [x^l₃ - 1, y^m₃ - 1, z^p₃ - 1])
     S, _ = quo(R, I)
     A₃ = S(1 + y*z)
     B₃ = S(1 + x*z)
     C₃ = S(1 + x*y*z)
 
     # [[108, 6, 2]] from Table IV
-    ℓ₄, m₄, p₄ = 4, 3, 3
-    I = ideal(R, [x^ℓ₄ - 1, y^m₄ - 1, z^p₄ - 1])
+    l₄, m₄, p₄ = 4, 3, 3
+    I = ideal(R, [x^l₄ - 1, y^m₄ - 1, z^p₄ - 1])
     S, _ = quo(R, I)
     A₄ = S((1 + x^2)*(1 + x*z))
     B₄ = S(1 + x^2*y^2)
@@ -609,8 +609,8 @@ const code_instance_args = Dict(
         :GeneralizedToric => [(f₁, g₁, α1₁, α2₁), (f₂, g₂, α1₂, α2₂), (f₃, g₃, α1₃, α2₃), (f₄, g₄, α1₄, α2₄), (f₅, g₅, α1₅, α2₅), (f₆, g₆, α1₆, α2₆)],
         :HomologicalProduct => [([H₁, transpose(H₁)], l₁), ([H₂, transpose(H₂)], l₂), ([H₃, transpose(H₃)],), ([δ₄, δ₄, δ₄],)],
         :DoubleHomologicalProduct => [(δ₁,), (δ₂,)],
-        :TrivariateTricycle => [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)],
-        :BivariateBicycleCodeViaPoly => [(l_bb₁, m_bb₁, A_bb₁, B_bb₁), (l_bb₂, m_bb₂, A_bb₂, B_bb₂), (l_bb₃, m_bb₃, A_bb₃, B_bb₃), (l_bb₄, m_bb₄, A_bb₄, B_bb₄), (l_bb₅, m_bb₅, A_bb₅, B_bb₅)],
+        :TrivariateTricycle => [(l₁, m₁, p₁, A₁, B₁, C₁), (l₂, m₂, p₂, A₂, B₂, C₂), (l₃, m₃, p₃, A₃, B₃, C₃), (l₄, m₄, p₄, A₄, B₄, C₄)],
+        :BivariateBicycleViaPoly => [(l_bb₁, m_bb₁, A_bb₁, B_bb₁), (l_bb₂, m_bb₂, A_bb₂, B_bb₂), (l_bb₃, m_bb₃, A_bb₃, B_bb₃), (l_bb₄, m_bb₄, A_bb₄, B_bb₄), (l_bb₅, m_bb₅, A_bb₅, B_bb₅)],
         :MultivariateMulticycle =>[([l_mm₁,m_mm₁], [A_mm₁, B_mm₁]), ([l_mm₂,m_mm₂], [A_mm₂, B_mm₂]), ([ℓ_mm₃, m_mm₃, p_mm₃], [A_mm₃, B_mm₃, C_mm₃]), ([ℓ_mm₄, m_mm₄, p_mm₄], [A_mm₄, B_mm₄, C_mm₄])]
     )
     merge!(code_instance_args, oscar_code_instance_args)

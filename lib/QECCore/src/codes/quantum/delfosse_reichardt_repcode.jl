@@ -52,6 +52,9 @@ julia> code_n(c), code_k(c)
 
 ### Fields
     $TYPEDFIELDS
+
+
+See also: [`DelfosseReichardt`](@ref), [`DelfosseReichardt823`](@ref)
 """
 struct DelfosseReichardtRep <: AbstractCSSCode
     """The number of blocks in the Delfosse-Reichardt Repetition code."""

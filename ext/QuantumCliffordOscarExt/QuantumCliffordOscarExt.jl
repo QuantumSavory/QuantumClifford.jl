@@ -27,7 +27,7 @@ import Oscar.Generic.exponent_vectors
 import Oscar.IdealGens
 import Combinatorics: combinations
 
-import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group,
+import QuantumClifford.ECC: two_block_group_algebra_code, twobga_from_direct_product, twobga_from_fp_group,
     boundary_maps, max_xy_exponents
 
 import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
@@ -36,8 +36,7 @@ import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurface, DDimensionalToric, boundary_maps,
-    HomologicalProduct, DoubleHomologicalProduct, GeneralizedToric, TrivariateTricycle, BivariateBicycleCodeViaPoly,
-    MultivariateMulticycle
+    HomologicalProduct, DoubleHomologicalProduct, GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly, MultivariateMulticycle
 
 include("types.jl")
 include("direct_product.jl")

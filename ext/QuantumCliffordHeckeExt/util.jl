@@ -78,7 +78,7 @@ function random_qc_ghp_code_matrix_A(S, b, n::Int, w::Int, l::Int; min_k::Int=10
     k_b == 0 && min_k > 0 && error("The chosen polynomial b(x) yields k_b=0. It cannot generate a code with min_k=$min_k. Choose a different b(x).")
     F, _ = residue_ring(R, g)
     for attempt in 1:max_attempts
-        A = _matrix_A(S, n, w, ℓ, rng)
+        A = _matrix_A(S, n, w, l, rng)
         _meets_ghp_constraints(A, w) || continue
         A_proj = matrix(F, n, n, [F(lift((A[i,j]))) for i in 1:n, j in 1:n])
         rk_A_proj = rank(A_proj)
@@ -89,13 +89,13 @@ function random_qc_ghp_code_matrix_A(S, b, n::Int, w::Int, l::Int; min_k::Int=10
     error("Failed to generate a valid QC matrix with k >= $min_k after $max_attempts attempts. Try increasing max_attempts, decreasing min_k, or choosing a different b(x) with higher k_b.")
 end
 
-function _matrix_A(S, n, w, ℓ, rng)
+function _matrix_A(S, n, w, l, rng)
     R = base_ring(S)
     x = gen(R)
     temp = [S(0) for _ in 1:n]
     positions = randperm(rng, n)[1:w]
     for pos in positions
-        exp = rand(rng, 0:ℓ-1)
+        exp = rand(rng, 0:l-1)
         temp[pos] = S(x^exp)
     end
     A = zero_matrix(S, n, n)

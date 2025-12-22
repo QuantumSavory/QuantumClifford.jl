@@ -51,7 +51,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (12, 2, 3)
 ```
 
-See also: [`generalized_bicycle_codes_as_2bga`](@ref)
+See also: [`generalized_bicycle_code_as_2bga`](@ref)
 
 ### Fields
     $TYPEDFIELDS
@@ -66,7 +66,7 @@ struct GeneralizedBicycle <: AbstractCSSCode
     function GeneralizedBicycle(a::FqPolyRingElem, b::FqPolyRingElem, l::Int)
         l <= 0 && throw(ArgumentError("Block length must be positive."))
         (base_ring(a) != base_ring(b)) && throw(ArgumentError("Polynomials must be from the same ring."))
-        (characteristic(base_ring(a)) != 2) && throw(ArgumentError("Polynomials must be over 𝔽₂"))   
+        (characteristic(base_ring(a)) != 2) && throw(ArgumentError("Polynomials must be over 𝔽₂"))
         (degree(a) >= l || degree(b) >= l) && throw(ArgumentError("Polynomial degrees must be < l."))
         new(a, b, l)
     end

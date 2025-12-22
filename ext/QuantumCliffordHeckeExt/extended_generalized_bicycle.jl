@@ -1,11 +1,11 @@
 """
     $TYPEDEF
 
-The extended generalized bicycle code is a family of quantum LDPC codes generated
+The extended generalized bicycle code ([koukoulekidis2024smallquantumcodesalgebraic](@cite)) is a family of quantum LDPC codes generated
 through *algebraic extension* of a base [`GeneralizedBicycle`](@ref). Starting
 with initial generating polynomials ``a(x), b(x) \\in \\mathbb{F}_2^{\\langle\\ell\\rangle}``,
 the extended GB codes are constructed by polynomial multiplication, where for each extension
-step ``m``, an extension polynomial 
+step ``m``, an extension polynomial
 
 ```math
 \\begin{aligned}
@@ -27,10 +27,10 @@ matrices ``A_m`` and ``B_m``, which are combined into a parity-check matrix ``H_
 
 ```math
 \\begin{aligned}
-H_m = \\begin{pmatrix} 
+H_m = \\begin{pmatrix}
 A_m \\mid B_m & 0 \\\\
-0 & B_m^\\top \\mid A_m^\\top 
-\\end{pmatrix} 
+0 & B_m^\\top \\mid A_m^\\top
+\\end{pmatrix}
 \\end{aligned}
 ```
 
@@ -80,7 +80,7 @@ julia> code_n(new_code), code_k(new_code), distance(new_code, DistanceMIPAlgorit
 ```
 
 !!! note
-    [koukoulekidis2024smallquantumcodesalgebraic](@cite) establishes that `ℓ = 5` is the
+    [koukoulekidis2024smallquantumcodesalgebraic](@cite) establishes that `l = 5` is the
     minimal lift size required to achieve quantum error-correcting codes with a minimum
     distance of `d ≥ 3`.
 
@@ -92,9 +92,9 @@ struct ExtendedGeneralizedBicycle <: AbstractCSSCode
     base_code::AbstractCSSCode
     """The extension index (m ≥ 1)"""
     m::Int
-    """The extension polynomial ∈ 𝔽₂[((m-1)ℓ +1)]."""
+    """The extension polynomial ∈ 𝔽₂[((m-1)l +1)]."""
     p::FqPolyRingElem
-    
+
     function ExtendedGeneralizedBicycle(base_code::GeneralizedBicycle, m::Int, p::FqPolyRingElem)
         m ≥ 1 || throw(ArgumentError("Extension index m must be ≥ 1"))
         if m == 1
@@ -108,14 +108,14 @@ struct ExtendedGeneralizedBicycle <: AbstractCSSCode
 end
 
 function parity_matrix_xz(c::ExtendedGeneralizedBicycle)
-    ℓ = c.base_code.l
+    l = c.base_code.l
     R = parent(c.base_code.a)
     x = gen(R)
-    # a⁽ᵐ⁾(x) = p(x)a(x) ∈ 𝔽₂[x]/(x^(mℓ) - 1)
-    a⁽ᵐ⁾ = mod(c.p*c.base_code.a, x^(c.m*ℓ)-1)
-    # b⁽ᵐ⁾(x) = p(x)b(x) ∈ 𝔽₂[x]/(x^(mℓ) - 1)
-    b⁽ᵐ⁾ = mod(c.p*c.base_code.b, x^(c.m*ℓ)-1)
-    ext_gb = GeneralizedBicycle(a⁽ᵐ⁾, b⁽ᵐ⁾, c.m*ℓ)
+    # a⁽ᵐ⁾(x) = p(x)a(x) ∈ 𝔽₂[x]/(x^(ml) - 1)
+    a⁽ᵐ⁾ = mod(c.p*c.base_code.a, x^(c.m*l)-1)
+    # b⁽ᵐ⁾(x) = p(x)b(x) ∈ 𝔽₂[x]/(x^(ml) - 1)
+    b⁽ᵐ⁾ = mod(c.p*c.base_code.b, x^(c.m*l)-1)
+    ext_gb = GeneralizedBicycle(a⁽ᵐ⁾, b⁽ᵐ⁾, c.m*l)
     hx, hz = parity_matrix_xz(ext_gb)
     return hx, hz
 end

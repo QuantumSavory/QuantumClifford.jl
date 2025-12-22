@@ -2,7 +2,7 @@
 $TYPEDSIGNATURES
 
 Constructing two block group algebra codes by specifying the direct product to be used.
-See also the more general [`two_block_group_algebra_codes`](@ref).
+See also the more general [`two_block_group_algebra_code`](@ref).
 
 Two block group algebra codes are constructed by choosing a group (and specific generators),
 then choosing two polynomials made out of these generators,
@@ -11,7 +11,7 @@ lifted product code constructors.
 
 The Hecke library, for which we already have an extension, provides for a fairly easy way
 to construct such polynomials for many abelian and small groups.
-See [`two_block_group_algebra_codes`](@ref) for those capabilities.
+See [`two_block_group_algebra_code`](@ref) for those capabilities.
 
 However, more esoteric groups can be specified as the direct product of other groups.
 To support arbitrary direct products we use Oscar, which builds upon Hecke.
@@ -24,9 +24,9 @@ products of two or more *general* groups, which necessitate the use of `Oscar.di
 This particular function is nothing more than a simple wrapper that takes care of argument conversions.
 Of note, the polynomials here are given as lists of monomials.
 
-Of course, if you are comfortable with Oscar, you can use [`two_block_group_algebra_codes`](@ref) directly.
+Of course, if you are comfortable with Oscar, you can use [`two_block_group_algebra_code`](@ref) directly.
 
-See also: [`two_block_group_algebra_codes`](@ref), [`twobga_from_fp_group`](@ref)
+See also: [`two_block_group_algebra_code`](@ref), [`twobga_from_fp_group`](@ref)
 
 ## Examples
 
@@ -100,6 +100,6 @@ true
 function twobga_from_direct_product(a_elts::VectorDirectProductGroupElem, b_elts::VectorDirectProductGroupElem, F2G::DirectProductGroupAlgebra)
     a = sum(F2G(x) for x in a_elts)
     b = sum(F2G(x) for x in b_elts)
-    c = two_block_group_algebra_codes(a,b)
+    c = two_block_group_algebra_code(a,b)
     return c
 end

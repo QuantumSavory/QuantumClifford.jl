@@ -5,13 +5,13 @@ Constructs a D-dimensional CSS quantum code (D ≥ 2) from D classical parity-ch
 matrices via iterated *homological* products.
 
 Several interpretations of the homological product exist. For example,
-[bravyi2013HomologicalProducts](@cite) employ a simplified version known
+[bravyi2013homologicalproductcodes](@cite) employ a simplified version known
 as the *single-sector* homological product. In contrast, the `HomologicalProduct`
-adopts a more conventional definition, which [bravyi2013HomologicalProducts](@cite)
+adopts a more conventional definition, which [bravyi2013homologicalproductcodes](@cite)
 would refer to as the *multi-sector* homological product.
 
 The term "homological product codes" can broadly encompass various constructions
-involving the product of quantum codes ([bravyi2013HomologicalProducts](@cite),
+involving the product of quantum codes ([bravyi2013homologicalproductcodes](@cite),
 [Campbell_2019](@cite)). However, `HomologicalProduct` focuses specifically on a
 particular subset—namely, the product of classical codes, which can also be described
 as length-`1` chain complexes (sometimes called high-dimensional hypergraph product codes

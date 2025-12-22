@@ -8,7 +8,7 @@
         @testset "ptrace" begin
             for N in test_sizes[3:end]
                 for n in [N,rand(N÷4:N÷2)]
-                    @show n
+                    #@show n
                     to_delete = randperm(N)[1:rand(N÷4:N÷3)]
                     stab0 = random_stabilizer(n, N)
                     stab1 = MixedStabilizer(stab0)

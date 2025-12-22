@@ -151,7 +151,7 @@
         H = matrix(R, 2, 3, [x^2 x^2 x^2;
                              x   x^2  0])
         G = matrix(R, 1, 3, [1 x 1+x])
-        c = HomologicalProductCode([H,transpose(H)], l)
+        c = HomologicalProduct([H,transpose(H)], l)
         code = parity_checks(c)
         n, k = code_n(code), code_k(code)
         H = stab_to_gf2(code)
@@ -175,7 +175,7 @@
                              x^2   0 x^2  x^2;
                              x^2 x^2   x  x^2])
         G = matrix(R, 1, 4, [1 (1+x)^2 x^2 (1+x)^2])
-        c = HomologicalProductCode([H,transpose(H)], l)
+        c = HomologicalProduct([H,transpose(H)], l)
         code = parity_checks(c)
         n, k = code_n(code), code_k(code)
         H = stab_to_gf2(code)
@@ -220,7 +220,7 @@
         # [[241, 1, 9]]
         δ = [1 1 0;
              0 1 1]
-        c = DoubleHomologicalProductCode(δ)
+        c = DoubleHomologicalProduct(δ)
         code = parity_checks(c)
         n, k = code_n(code), code_k(code)
         H = stab_to_gf2(code)
@@ -237,7 +237,7 @@
         δ = [1 1 0;
              0 1 1;
              1 0 1]
-        c = DoubleHomologicalProductCode(δ)
+        c = DoubleHomologicalProduct(δ)
         code = parity_checks(c)
         n, k = code_n(code), code_k(code)
         H = stab_to_gf2(code)
@@ -254,7 +254,7 @@
         δ = [1 1 0 0;
              0 1 1 0;
              0 0 1 1];
-        c = DoubleHomologicalProductCode(δ)
+        c = DoubleHomologicalProduct(δ)
         code = parity_checks(c)
         n, k = code_n(code), code_k(code)
         H = stab_to_gf2(code)

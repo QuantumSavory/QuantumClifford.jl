@@ -41,8 +41,8 @@
     L = [α^i for i in 2:13]
     ga = Goppa(m, t, g, L)
     n = length(L)
-    k = n - m*t 
-    d = 2t + 1 
+    k = n - m*t
+    d = 2t + 1
     H = parity_matrix(ga)
     @test  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) >= n - m*t
     # From https://surface.syr.edu/cgi/viewcontent.cgi?article=1846&context=honors_capstone
@@ -101,8 +101,8 @@
     L = [α^i for i in 2:13]
     ga = Goppa(m, t, g, L)
     n = length(L)
-    k = n - m*t 
-    d = 2t + 1 
+    k = n - m*t
+    d = 2t + 1
     H = parity_matrix(ga)
     @test  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) >= n - m*t
     mat = matrix(GF(2), parity_matrix(ga))

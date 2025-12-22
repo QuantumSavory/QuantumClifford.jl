@@ -39,19 +39,19 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     TillichZemor, random_TillichZemor_code,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
     Triangular488, Triangular666, honeycomb_color_code_as_2bga, DelfosseReichardt,
-    DelfosseReichardtRepCode, DelfosseReichardt823, LaCross,
+    DelfosseReichardtRep, DelfosseReichardt823, LaCross,
     QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
     DDimensionalSurface, DDimensionalToric, boundary_maps,
     BivariateBicycleViaCirculantMat, GeneralizedHyperGraphProduct,
     GeneralizedBicycle, ExtendedGeneralizedBicycle,
     HomologicalProduct, DoubleHomologicalProduct,
-    GeneralizedToric, TrivariateTricycle, BivariateBicycleCodeViaPoly,
+    GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly,
     MultivariateMulticycle,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder, CSSTableDecoder,
     BeliefPropDecoder, BitFlipDecoder,
-    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, DecoderCorrectionGate
+    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, TesseractDecoder, DecoderCorrectionGate
 
 """Parity check tableau of a code.
 

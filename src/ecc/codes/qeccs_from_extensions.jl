@@ -17,7 +17,7 @@ const structs_implemented_in_extensions = [
     (:DoubleHomologicalProduct, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
     (:GeneralizedToric, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
     (:TrivariateTricycle, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
-    (:BivariateBicycleCodeViaPoly, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
+    (:BivariateBicycleViaPoly, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
     (:MultivariateMulticycle, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
 ]
 

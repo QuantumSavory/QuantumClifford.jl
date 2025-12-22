@@ -390,7 +390,7 @@ See also: [`DDimensionalToric`](@ref)
 ### Fields
     $TYPEDFIELDS
 """
-struct DDimensionalSurface <: DDimensional
+struct DDimensionalSurface <: DDimensionalCode
     """Dimension of the Surface code (must be ≥ 2)."""
     D::Int
     """Size parameter determining the `D`-dimensional Surface code family, constructed via hypergraph product of
@@ -526,7 +526,7 @@ See also: [`DDimensionalSurface`](@ref)
 ### Fields
     $TYPEDFIELDS
 """
-struct DDimensionalToric <: DDimensional
+struct DDimensionalToric <: DDimensionalCode
     """Dimension of the Toric code (must be ≥ 2)."""
     D::Int
     """Size parameter determining the `D`-dimensional Toric code family, constructed via hypergraph product of
@@ -579,7 +579,7 @@ function _chain_dimensions(C::ComplexOfMorphisms)
     [dim(C[i]) for i in rng]
 end
 
-function code_n(c::DDimensional)
+function code_n(c::DDimensionalCode)
     current = isa(c, DDimensionalToric) ? _total_complex_toric(c) : _total_complex_surface(c)
     # dimensions of all chain spaces
     dims = _chain_dimensions(current)
