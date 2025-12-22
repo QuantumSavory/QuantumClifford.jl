@@ -36,11 +36,11 @@ for (struct_name, extension_name, struct_docstring, deps) in structs_implemented
 end
 
 const functions_implemented_in_extensions = [
-    (:two_block_group_algebra_codes, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
-    (:generalized_bicycle_codes_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
-    (:bicycle_codes_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
-    (:Haah_cubic_codes_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
-    (:honeycomb_color_codes_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:two_block_group_algebra_code, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:generalized_bicycle_code_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:bicycle_code_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:Haah_cubic_code_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:honeycomb_color_code_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
     (:boundary_maps, :QuantumCliffordOscarExt, oscarext_function_docstring, (:Oscar,)),
     (:max_xy_exponents, :QuantumCliffordOscarExt, oscarext_function_docstring, (:Oscar,)),
     (:twobga_from_direct_product, :QuantumCliffordOscarExt, oscarext_function_docstring, (:Oscar,)),

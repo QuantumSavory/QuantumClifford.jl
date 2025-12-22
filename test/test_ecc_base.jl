@@ -44,19 +44,19 @@ LP118 = [LPCode(base_matrix, l .- base_matrix', l) for (l, base_matrix) in B118]
 
 # generalized bicyle codes from (A1) and (A2) Appendix B of [panteleev2021degenerate](@cite).
 test_gb_codes = [
-    generalized_bicycle_codes_as_2bga([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 127), # (A1) [[254, 28, 14≤d≤20]]
-    generalized_bicycle_codes_as_2bga([0, 1, 14, 16, 22], [0, 3, 13, 20, 42], 63), # (A2) [[126, 28, 8]]
+    generalized_bicycle_code_as_2bga([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 127), # (A1) [[254, 28, 14≤d≤20]]
+    generalized_bicycle_code_as_2bga([0, 1, 14, 16, 22], [0, 3, 13, 20, 42], 63), # (A2) [[126, 28, 8]]
 ]
 
 test_hcubic_codes = [
-    Haah_cubic_codes_as_2bga([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 3),
-    Haah_cubic_codes_as_2bga(8), # (D) [[1024, 30, 13 ≤ d ≤ 32]] Appendix B of [panteleev2021degenerate](@cite).
+    Haah_cubic_code_as_2bga([0, 15, 20, 28, 66], [0, 58, 59, 100, 121], 3),
+    Haah_cubic_code_as_2bga(8), # (D) [[1024, 30, 13 ≤ d ≤ 32]] Appendix B of [panteleev2021degenerate](@cite).
 ]
 
 # honeycomb color codes from [eberhardt2024logical](@cite).
 test_honeycomb_color_codes = [
-    honeycomb_color_codes_as_2bga(6 , 6), honeycomb_color_codes_as_2bga(9 , 6),
-    honeycomb_color_codes_as_2bga(12, 6), honeycomb_color_codes_as_2bga(12, 9),
+    honeycomb_color_code_as_2bga(6 , 6), honeycomb_color_code_as_2bga(9 , 6),
+    honeycomb_color_code_as_2bga(12, 6), honeycomb_color_code_as_2bga(12, 9),
 ]
 
 # Lifted product codes using non-commutative algebras
@@ -67,21 +67,21 @@ GA = group_algebra(GF(2), G)
 r, s  = gens(GA);
 A = 1 + r
 B = 1 + s + r^6 + s^3*r + s*r^7 + s^3*r^5
-nonabel1 = two_block_group_algebra_codes(A,B)
+nonabel1 = two_block_group_algebra_code(A,B)
 
 G = small_group(48,10)
 GA = group_algebra(GF(2), G)
 r, s  = gens(GA);
 A = 1 + s*r^2
 B = 1 + r + s^3 + s^4 + s^2*r^5 + s^4*r^6
-nonabel2 = two_block_group_algebra_codes(A,B)
+nonabel2 = two_block_group_algebra_code(A,B)
 
 G = small_group(40,8)
 GA = group_algebra(GF(2), G)
 r, s  = gens(GA);
 A = 1 + s*r^5 + r^5 + s*r^6
 B = 1 + s^2 + r + s^2*r^3
-nonabel3 = two_block_group_algebra_codes(A,B)
+nonabel3 = two_block_group_algebra_code(A,B)
 
 test_nonabelian_codes = [nonabel1, nonabel2, nonabel3]
 
@@ -109,7 +109,7 @@ GA = group_algebra(GF(2), abelian_group([l*m]))
 𝜋 = gens(GA)[1]
 A = 𝜋^2 + 𝜋^5  + 𝜋^44
 B = 𝜋^8 + 𝜋^14 + 𝜋^47
-coprimeBB1 = two_block_group_algebra_codes(A, B)
+coprimeBB1 = two_block_group_algebra_code(A, B)
 
 # [[126,12,10]]
 l=7; m=9
@@ -117,7 +117,7 @@ GA = group_algebra(GF(2), abelian_group([l*m]))
 𝜋 = gens(GA)[1]
 A = 1   + 𝜋    + 𝜋^58
 B = 𝜋^3 + 𝜋^16 + 𝜋^44
-coprimeBB2 = two_block_group_algebra_codes(A, B)
+coprimeBB2 = two_block_group_algebra_code(A, B)
 
 test_coprimeBB_codes = [coprimeBB1, coprimeBB2]
 
@@ -129,7 +129,7 @@ x, y = gens(GA)
 z = x*y
 A = x^3 + y^7
 B = x + y^5
-weight4mbb = two_block_group_algebra_codes(A, B)
+weight4mbb = two_block_group_algebra_code(A, B)
 
 # Weight-5 [96, 4, 8]] MBB code
 l=8; m=6
@@ -138,7 +138,7 @@ x, y = gens(GA)
 z = x*y
 A = x^6 + x^3
 B = z^5 + x^5 + y
-weight5mbb = two_block_group_algebra_codes(A, B)
+weight5mbb = two_block_group_algebra_code(A, B)
 
 # Weight-6 [[48, 4, 6]] MBB code
 l=4; m=6
@@ -147,7 +147,7 @@ x, y = gens(GA)
 z = x*y
 A = x^3 + y^5
 B = x + z^5 + y^5 + y^2
-weight6mbb = two_block_group_algebra_codes(A, B)
+weight6mbb = two_block_group_algebra_code(A, B)
 
 # Weight-7 [[30, 4, 5]] MBB code
 l=5; m=3
@@ -156,7 +156,7 @@ x, y = gens(GA)
 z = x*y
 A = x^4 + x^2
 B = x + x^2 + y + z^2 + z^3
-weight7mbb = two_block_group_algebra_codes(A, B)
+weight7mbb = two_block_group_algebra_code(A, B)
 
 test_mbb_codes = [weight4mbb, weight5mbb, weight6mbb, weight7mbb]
 
@@ -167,7 +167,7 @@ GA = group_algebra(GF(2), abelian_group([l, m]))
 x, y = gens(GA)
 A = x^3 + y + y^2
 B = y^3 + x + x^2
-bb1 = two_block_group_algebra_codes(A,B)
+bb1 = two_block_group_algebra_code(A,B)
 
 # A [[90, 8, 10]] code from Table 3 of [bravyi2024high](@cite).
 l=15; m=3
@@ -175,7 +175,7 @@ GA = group_algebra(GF(2), abelian_group([l, m]))
 x, y = gens(GA)
 A = x^9 + y   + y^2
 B = 1   + x^2 + x^7
-bb2 = two_block_group_algebra_codes(A,B)
+bb2 = two_block_group_algebra_code(A,B)
 
 # A [[360, 12, ≤ 24]]  code from Table 3 of [bravyi2024high](@cite).
 l=30; m=6
@@ -183,7 +183,7 @@ GA = group_algebra(GF(2), abelian_group([l, m]))
 x, y = gens(GA)
 A = x^9 + y    + y^2
 B = y^3 + x^25 + x^26
-bb3 = two_block_group_algebra_codes(A,B)
+bb3 = two_block_group_algebra_code(A,B)
 
 test_bb_codes = [bb1, bb2, bb3]
 
