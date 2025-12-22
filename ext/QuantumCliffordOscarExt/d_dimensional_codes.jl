@@ -1,4 +1,4 @@
-abstract type DDimensional <: AbstractCSSCode end
+abstract type DDimensionalCode <: AbstractCSSCode end
 
 """Construct the chain complex for the repetition code of length `L`."""
 function _repcode_chain_complex(L::Int)
@@ -570,9 +570,9 @@ end
 
 parity_matrix_xz(c::DDimensionalToric) = _parity_matrix_xz_toric(c)
 
-parity_matrix_x(c::DDimensional) = parity_matrix_xz(c)[1]
+parity_matrix_x(c::DDimensionalCode) = parity_matrix_xz(c)[1]
 
-parity_matrix_z(c::DDimensional) = parity_matrix_xz(c)[2]
+parity_matrix_z(c::DDimensionalCode) = parity_matrix_xz(c)[2]
 
 function _chain_dimensions(C::ComplexOfMorphisms)
     rng = range(C)
@@ -606,7 +606,7 @@ function code_n(c::DDimensionalCode)
     end
 end
 
-function code_k(c::DDimensional)
+function code_k(c::DDimensionalCode)
     # [Berthusen_2024](@cite) uses the following left-to-right notation:
     #   D=2: E₂ → E₁ → E₀                  (qubits in E₁, compute dim H₁(E))
     #   D=3: F₃ → F₂ → F₁ → F₀       (A16) (qubits in F₁, compute dim H₁(F))
@@ -629,12 +629,12 @@ function code_k(c::DDimensional)
     return k
 end
 
-function metacheck_matrix_x(c::DDimensional)
+function metacheck_matrix_x(c::DDimensionalCode)
     c.D ≥ 4 || throw(ArgumentError("`X`-metachecks (`Mx`) require `D ≥ 4` (D=$(c.D))"))
     return Matrix(boundary_maps(c)[4]) # Mx
 end
 
-function metacheck_matrix_z(c::DDimensional)
+function metacheck_matrix_z(c::DDimensionalCode)
     c.D ≥ 3 || throw(ArgumentError("`Z`-metachecks (`Mz`) require `D ≥ 3` (D=$(c.D))"))
     return Matrix(boundary_maps(c)[1]') # Mz
 end
