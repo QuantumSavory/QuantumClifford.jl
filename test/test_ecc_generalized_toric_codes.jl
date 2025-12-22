@@ -26,7 +26,7 @@
                 (62, 10, 1 + x + x^-1*y   , 1 + y + x^-1*y^-1, (0, 31),  (1 , 13)),
                 (66,  4, 1 + x + x^-2*y^-1, 1 + y + x^2*y    , (0,  3),  (11,  2)),
                 (70,  6, 1 + x + x*y      , 1 + y + x*y^-1   , (0,  7),  (5 ,  1)),
-                (72,  8, 1 + x + x^-1*y^-3, 1 + y + x^3*y^-1 , (0, 12),  (3 ,  3)),
+                (72,  8, 1 + x + x^-1*y^3 , 1 + y + x^3*y^-1 , (0, 12),  (3 ,  3)),
                 (78,  4, 1 + x + x^-2*y^-1, 1 + y + x^2*y    , (0,  3),  (13,  1)),
                 (84,  6, 1 + x + x^-2     , 1 + y + x^-2*y^2 , (0, 14),  (3 , -6)),
                 (90,  8, 1 + x + x^-1*y^-3, 1 + y + x^3*y^-1 , (0, 15),  (3 , -6)),
@@ -198,6 +198,121 @@
             @test all(sum(parity_matrix_x(c), dims=2) .== 6)
             @test all(sum(parity_matrix_z(c), dims=1) .== 3)
             @test all(sum(parity_matrix_z(c), dims=2) .== 6)
+        end
+
+        @testset "Table I: Distance test for some relatively small Generalized Toric codes" begin
+            R, (x, y) = laurent_polynomial_ring(GF(2), [:x, :y])
+            # [[12, 4, 2]]
+            f = 1 + x + x*y
+            g = 1 + y + x*y
+            α1 = (0, 3)
+            α2 = (2, 1)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
+
+            # [[14, 6, 2]]
+            f = 1 + x + y
+            g = 1 + y + x
+            α1 = (0, 7)
+            α2 = (1, 2)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
+
+            # [[18, 4, 4]] 
+            f = 1 + x + x*y
+            g = 1 + y + x*y
+            α1 = (0, 3)
+            α2 = (3, 0)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
+        
+            # [[24, 4, 4]]
+            f = 1 + x + x*y
+            g = 1 + y + x*y
+            α1 = (0, 3)
+            α2 = (4, 2)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
+
+            # [[28, 6, 4]]
+            f = 1 + x + x^-1*y
+            g = 1 + y + x*y
+            α1 = (0, 7)
+            α2 = (2, 3)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
+
+            # [[30, 4, 6]]
+            f = 1 + x + x^2
+            g = 1 + y + x^2
+            α1 = (0, 3)
+            α2 = (5, 1)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
+
+            # [[36, 4, 6]] 
+            f = 1 + x + x^-1
+            g = 1 + y + y^-1
+            α1 = (0, 9)
+            α2 = (2, 4)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
+
+            # [[42, 6, 6]]
+            f = 1 + x + x*y
+            g = 1 + y + x*y^-1
+            α1 = (0, 7)
+            α2 = (3, 2)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
+
+            # [[48, 4, 8]]
+            f = 1 + x + x^2
+            g = 1 + y + x^2
+            α1 = (0, 3)
+            α2 = (8, 1)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 8
+
+            # [[54, 8, 6]]
+            f = 1 + x + x^-1
+            g = 1 + y + x^3*y^2
+            α1 = (0, 3)
+            α2 = (9, 0)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
+
+            # [[56, 6, 8]]
+            f = 1 + x + y^-2
+            g = 1 + y + x^-2
+            α1 = (0, 7)
+            α2 = (4, 3)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 8
+
+            # [[60, 8, 6]] 
+            f = 1 + x + y^-2
+            g = 1 + y + x^2
+            α1 = (0, 10)
+            α2 = (3,  3)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
+
+            # [[62, 10, 6]]
+            f = 1 + x + x^-1*y
+            g = 1 + y + x^-1*y^-1
+            α1 = (0, 31)
+            α2 = (1, 13)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
+
+            # [[66, 4, 10]]
+            f = 1 + x + x^-2*y^-1
+            g = 1 + y + x^2*y
+            α1 = (0 , 3)
+            α2 = (11, 2)
+            c = GeneralizedToricCode(f, g, α1, α2)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 10
         end
     end
 end

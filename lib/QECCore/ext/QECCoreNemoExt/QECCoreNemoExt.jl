@@ -11,7 +11,9 @@ import Nemo: GF, matrix, rank, transpose, finite_field, GF, polynomial_ring, eva
 import QECCore: code_k, parity_matrix_x, parity_matrix_z, parity_matrix, generator_polynomial
 
 import Random
-import Random: MersenneTwister
+import Random: MersenneTwister, GLOBAL_RNG, AbstractRNG, rand
+
+import QECCore: random_Goppa_code, code_k, code_n
 
 function QECCore.code_k(c::AbstractCSSCode)
     n = code_n(c)

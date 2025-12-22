@@ -84,7 +84,7 @@
             )
         ]
             @testset "$(case.name): l=$(case.l), m=$(case.m)" for case in test_cases
-                c = GeneralizedCirculantBivariateBicycle(case.l, case.m, case.A, case.B)
+                c = BivariateBicycleCodeViaCirculantMat(case.l, case.m, case.A, case.B)
                 stab = parity_checks(c)
                 n, k = code_n(c), code_k(c)
                 nₛ, kₛ = code_n(stab), code_k(stab)
@@ -160,7 +160,7 @@
             )
         ]
             @testset "$(case.name): a=$(case.l), b=$(case.m)" for case in test_cases
-                c = GeneralizedCirculantBivariateBicycle(case.l, case.m, case.A, case.B)
+                c = BivariateBicycleCodeViaCirculantMat(case.l, case.m, case.A, case.B)
                 stab = parity_checks(c)
                 n, k = code_n(c), code_k(c)
                 nₛ, kₛ = code_n(stab), code_k(stab)
@@ -283,7 +283,7 @@
 
         ]
             @testset "$(case.name): l=$(case.l), m=$(case.m)" for case in test_cases
-                c = GeneralizedCirculantBivariateBicycle(case.l, case.m, case.A, case.B)
+                c = BivariateBicycleCodeViaCirculantMat(case.l, case.m, case.A, case.B)
                 stab = parity_checks(c)
                 n, k = code_n(c), code_k(c)
                 nₛ, kₛ = code_n(stab), code_k(stab)
@@ -313,7 +313,7 @@
             l, m = 8, 8
             A = [(:x,2), (:y,1), (:y,3), (:y,4)]
             B = [(:y,2), (:x,1), (:x,3), (:x,4)]
-            c = GeneralizedCirculantBivariateBicycle(l, m, A, B)
+            c = BivariateBicycleCodeViaCirculantMat(l, m, A, B)
             stab = parity_checks(c)
             n, k = code_n(c), code_k(c)
             nₛ, kₛ = code_n(stab), code_k(stab)

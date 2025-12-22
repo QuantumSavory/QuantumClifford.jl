@@ -7,6 +7,7 @@ using InteractiveUtils
 using SparseArrays
 
 import Nemo: GF, matrix, rank, finite_field, polynomial_ring
+import Hecke: group_algebra, abelian_group, gens, representation_matrix
 import LinearAlgebra
 
 include("test_ecc_base.jl")
@@ -40,6 +41,13 @@ R, z = polynomial_ring(F, :z)
 g₄ = z^2 + α^7*z + 1
 L₄ = [α^i for i in 2:13]
 
+# Lifted Codes
+l₁ = 12; GA₁ = group_algebra(GF(2), abelian_group(l)); x = gens(GA)[]
+B₁ = reshape([1 + x + x^3 + x^6], (1, 1))
+c = LiftedCode(B, repr = representation_matrix)
+
+base_matrix₂ = [0 0 0 0; 0 1 2 5; 0 6 3 1]; l₂ = 3;
+
 const classical_code_instance_args = Dict(
     :RepCode => [3, 4, 5, 6, 7, 8, 9, 10],
     :BCH => [(3, 1), (3, 2), (4, 1), (4, 1), (5, 1), (5, 2), (6, 1), (6, 2)],
@@ -48,7 +56,8 @@ const classical_code_instance_args = Dict(
     :Golay => [(23), (24)],
     :Hamming => [2, 3, 4, 5, 6, 7, 8],
     :GallagerLDPC => [(3, 3, 4), (3, 4, 5), (4, 5, 7), (4, 6, 7)],
-    :GoppaCode => [(m₁, t₁, g₁, L₁), (m₂, t₂, g₂), (m₃, t₃, g₃), (m₄, t₄, g₄, L₄)]
+    :GoppaCode => [(m₁, t₁, g₁, L₁), (m₂, t₂, g₂), (m₃, t₃, g₃), (m₄, t₄, g₄, L₄)],
+    :LiftedCode => [(B₁, repr = representation_matrix), (base_matrix₂, l₂), (base_matrix₂, 5), (base_matrix₂, 7)]
 )
 
 function all_testable_classical_code_instances(; maxn=nothing)
