@@ -92,7 +92,7 @@ struct DelfosseReichardt <: AbstractCSSCode
         end
         if !iszero(mod.(parity_matrix(ReedMuller(r,m))*parity_matrix(ReedMuller(r,m))',2))
             throw(ArgumentError("The `Reed-Muller` parity check matrix must be 'self-orthogonal' to construct a self-dual
-            CSS `DelfosseReichardt` code. Use `search_self_orthogonal_rm_codes` to search for good parameters for `Reed-Muller` codes
+            CSS `DelfosseReichardt` code. Use `search_self_orthogonal_rm_code` to search for good parameters for `Reed-Muller` codes
             that provide `self-orthogonal` seeds."))
         end
         new(p,r,m)
@@ -105,9 +105,9 @@ satisfies ``H \\times H^\\top \\equiv 0 \\pmod{2}``. Skips the trivial case `RM(
 a code with `k=0` logical qubits.
 
 ```jldoctest
-julia> using QuantumClifford; using QuantumClifford.ECC; using QECCore: search_self_orthogonal_rm_codes; # hide
+julia> using QuantumClifford; using QuantumClifford.ECC; using QECCore: search_self_orthogonal_rm_code; # hide
 
-julia> search_self_orthogonal_rm_codes(6)
+julia> search_self_orthogonal_rm_code(6)
 11-element Vector{Tuple{Int64, Int64}}:
  (1, 2)
  (1, 3)
@@ -151,7 +151,7 @@ julia> code_n(c), code_k(c)
 ```
 
 """
-function search_self_orthogonal_rm_codes(maxₘ::Int)
+function search_self_orthogonal_rm_code(maxₘ::Int)
     good_params = Tuple{Int, Int}[]
     for m in 1:maxₘ
         for r in 0:m

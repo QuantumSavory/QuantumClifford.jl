@@ -105,7 +105,7 @@ julia> g = x^t + x + 1;
 
 julia> L = [F(0), F(1), α, α^2, α + 1, α^2 + α, α^2 + α + 1, α^2 + 1];
 
-julia> c = GoppaCode(m, t, g, L);
+julia> c = Goppa(m, t, g, L);
 
 julia> code_n(c), code_k(c)
 (8, 2)
@@ -144,7 +144,7 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/gopp
 ### Fields
     $TYPEDFIELDS
 """
-struct GoppaCode <: AbstractPolynomialCode
+struct Goppa <: AbstractPolynomialCode
     """ The extension degree of ``\\mathbb{F}_{2^m}`` which determines the size of the field
     (2^m elements) and the binary expansion length."""
     m::Int
@@ -157,7 +157,7 @@ struct GoppaCode <: AbstractPolynomialCode
     n = length(L). It must satisfy g(α) ≠ 0 ∀ α ∈ L."""
     L::Vector{FqFieldElem}
 
-    function GoppaCode(m::Int, t::Int, g::FqPolyRingElem, L::Vector{FqFieldElem})
+    function Goppa(m::Int, t::Int, g::FqPolyRingElem, L::Vector{FqFieldElem})
         (m < 3 || t < 2 || t >= 2^(m - 1)) && throw(ArgumentError("m ≥ 3 and t ≥ 2 required, with t < 2^(m-1)"))
         degree(g) != t && throw(ArgumentError("The Goppa polynomial must have degree t"))
         !is_monic(g) && throw(ArgumentError("The Goppa polynomial must be monic."))
@@ -167,10 +167,10 @@ struct GoppaCode <: AbstractPolynomialCode
     end
 end
 
-function GoppaCode(m::Int, t::Int, g::FqPolyRingElem)
+function Goppa(m::Int, t::Int, g::FqPolyRingElem)
     F, α = finite_field(2, m, :α)
     L = [a for a in F if evaluate(g, a) != 0]
-    return GoppaCode(m, t, g, L)
+    return Goppa(m, t, g, L)
 end
 
 function QECCore.random_Goppa_code(rng::AbstractRNG, m::Int, t::Int)
@@ -183,7 +183,7 @@ function QECCore.random_Goppa_code(rng::AbstractRNG, m::Int, t::Int)
         if is_irreducible(g)
             L = [a for a in F if evaluate(g, a) != 0]
             if length(L) - m*t > 0
-                return GoppaCode(m, t, g, L)
+                return Goppa(m, t, g, L)
             end
         end
     end
@@ -192,7 +192,7 @@ end
 
 QECCore.random_Goppa_code(m::Int, t::Int) = QECCore.random_Goppa_code(GLOBAL_RNG, m, t)
 
-function parity_matrix(ga::GoppaCode)
+function parity_matrix(ga::Goppa)
     m, t, g, L = ga.m, ga.t, ga.g, ga.L
     F = parent(L[1])
     # D = diag(1/g(oᵢ))
@@ -210,4 +210,4 @@ function parity_matrix(ga::GoppaCode)
     return H
 end
 
-generator_polynomial(c::GoppaCode) = c.g
+generator_polynomial(c::Goppa) = c.g

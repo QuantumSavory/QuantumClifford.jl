@@ -39,7 +39,7 @@
     R, x = polynomial_ring(F, :x)
     g = x^2 + x + α^3
     L = [α^i for i in 2:13]
-    ga = GoppaCode(m, t, g, L)
+    ga = Goppa(m, t, g, L)
     n = length(L)
     k = n - m*t 
     d = 2t + 1 
@@ -69,7 +69,7 @@
     R, x = polynomial_ring(F, :x)
     t = 9
     g = x^t + 1
-    ga = GoppaCode(m, t, g)
+    ga = Goppa(m, t, g)
     @test length(ga.L) == 55 &&  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) == 16
     @test gcd(derivative(ga.g), ga.g) == 1
     mat = matrix(GF(2), parity_matrix(ga))
@@ -83,7 +83,7 @@
     R, x = polynomial_ring(F, :x)
     t = 2
     g = x^t + x + 1
-    ga = GoppaCode(m, t, g)
+    ga = Goppa(m, t, g)
     @test length(ga.L) == 8 &&  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) == 2
     @test gcd(derivative(ga.g), ga.g) == 1
     mat = matrix(GF(2), parity_matrix(ga))
@@ -99,7 +99,7 @@
     R, z = polynomial_ring(F, :z)
     g = z^2 + α^7*z + 1
     L = [α^i for i in 2:13]
-    ga = GoppaCode(m, t, g, L)
+    ga = Goppa(m, t, g, L)
     n = length(L)
     k = n - m*t 
     d = 2t + 1 
@@ -132,7 +132,7 @@
     R, x = polynomial_ring(F, :x)
     g = x^t + x + 1
     L = [F(0), F(1), α, α^2, α + 1, α^2 + α, α^2 + α + 1, α^2 + 1]
-    ga = GoppaCode(m, t, g, L)
+    ga = Goppa(m, t, g, L)
     H = parity_matrix(ga)
     ref_H = [1 1 0 0 0 0 0 0;
              0 0 0 1 0 1 1 1;

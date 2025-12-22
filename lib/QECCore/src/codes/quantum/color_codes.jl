@@ -1,7 +1,7 @@
-abstract type ColorCode <: AbstractCSSCode end
+abstract type Color <: AbstractCSSCode end
 
 """Planar color codes that encode a single logical qubit."""
-abstract type TriangularCode <: ColorCode end
+abstract type Triangular <: Color end
 
 """
     $TYPEDEF
@@ -46,7 +46,7 @@ More information can be seen in [landahl2011color](@cite)
 ### Fields
     $TYPEDFIELDS
 """
-struct Triangular488 <: TriangularCode
+struct Triangular488 <: Triangular
     """The distance of the code."""
     d::Int
 
@@ -105,7 +105,7 @@ More information can be seen in [landahl2011color](@cite)
 ### Fields
     $TYPEDFIELDS
 """
-struct Triangular666 <: TriangularCode
+struct Triangular666 <: Triangular
     """The distance of the code."""
     d::Int
     function Triangular666(d)
@@ -121,10 +121,10 @@ end
 Triangular488() = Triangular488(3) # smallest d
 Triangular666() = Triangular666(3) # smallest d
 
-parity_matrix_x(c::TriangularCode) = _colorcode_get_check_matrix(c)
-parity_matrix_z(c::TriangularCode) = _colorcode_get_check_matrix(c)
+parity_matrix_x(c::Triangular) = _Color_get_check_matrix(c)
+parity_matrix_z(c::Triangular) = _Color_get_check_matrix(c)
 
-function _colorcode_get_check_matrix(c::Triangular666)
+function _Color_get_check_matrix(c::Triangular666)
     n = code_n(c)
     num_checks = (n-1)÷2
     num_layers = (c.d-1)÷2
@@ -200,7 +200,7 @@ end
 
 """Returns the binary matrix defining the X stabilizers for the Triangular488 code. The Z stabilizers are the same.
 Based on Fig. 2 of [landahl2011color](@cite)"""
-function _colorcode_get_check_matrix(c::Triangular488)
+function _Color_get_check_matrix(c::Triangular488)
     n = code_n(c)
     num_checks = (n-1)÷2
     num_layers = (c.d-1)÷2
@@ -281,7 +281,7 @@ function _colorcode_get_check_matrix(c::Triangular488)
 end
 
 """Returns which qubits each stabilizer touches when given a parity check matrix. Useful for debugging/testing."""
-function _colorcode_get_qubit_indices(matrix::Matrix{Bool})
+function _Color_get_qubit_indices(matrix::Matrix{Bool})
     for j in 1:size(matrix)[1] println(findall(>(0),matrix[j,:])) end
     return
 end
@@ -289,4 +289,4 @@ end
 # From https://arxiv.org/abs/1108.5738 Fig. 2's caption:
 code_n(c::Triangular488) = (c.d^2+2c.d-1)÷2
 code_n(c::Triangular666) = (3*c.d^2+1)÷4
-code_k(c::TriangularCode) = 1
+code_k(c::Triangular) = 1
