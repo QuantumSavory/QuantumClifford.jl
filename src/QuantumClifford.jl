@@ -96,6 +96,11 @@ export
     petrajectories, applybranches,
     # nonclifford
     GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase, pcRx,
+    # Non-Clifford simulation - low-rank stabilizer decomposition
+    TGate, CCZGate,
+    lrtrajectories, lrmeasurements, lrcost,
+    LRTrajectoryResults,
+    isclifford, stabilizer_extent,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
@@ -1440,6 +1445,8 @@ include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
 include("nonclifford.jl")
+include("lowrank/LowRankNonClifford.jl")
+using .LowRankNonClifford
 include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
