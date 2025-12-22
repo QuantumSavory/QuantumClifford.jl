@@ -47,7 +47,6 @@ QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
 
 [sources]
 QECCore = {path = "lib/QECCore"}
-WeakDepHelpers = {url = "https://github.com/QuantumSavory/WeakDepHelpers.jl", rev = "master"}
 
 [extensions]
 QuantumCliffordAdaptExt = ["Adapt", "GPUArraysCore"]
