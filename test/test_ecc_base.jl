@@ -225,17 +225,17 @@ R, x = polynomial_ring(GF(2), :x)
 l_gb₁ = 6
 a_gb₁ = 1 + x^4
 b_gb₁ = 1 + x + x^2 + x^4
-c_gb₁ = GeneralizedBicycleCode(a_gb₁, b_gb₁, l_gb₁)
+c_gb₁ = GeneralizedBicycle(a_gb₁, b_gb₁, l_gb₁)
 p_gb₁ = one(R)
 l_gb₂ = 9
 a_gb₂ = 1 + x^2
 b_gb₂ = 1 + x^5
-c_gb₂ = GeneralizedBicycleCode(a_gb₂, b_gb₂, l_gb₂)
+c_gb₂ = GeneralizedBicycle(a_gb₂, b_gb₂, l_gb₂)
 p_gb₂ = one(R)
 l_gb₃ = 10
 a_gb₃ = 1 + x
 b_gb₃ = 1 + x^6
-c_gb₃ = GeneralizedBicycleCode(a_gb₃, a_gb₃, l_gb₃)
+c_gb₃ = GeneralizedBicycle(a_gb₃, a_gb₃, l_gb₃)
 p_gb₃ = one(R) + x
 
 # Add some codes that require Oscar, hence do not work on Windows
@@ -300,8 +300,8 @@ const code_instance_args = Dict(
     :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],
     :BivariateBicycleCodeViaCirculantMat => [(l1, m1, A1, B1), (l2, m2, A2,B2), (l3, m3, A3, B3), (l4, m4, A4, B4), (l5, m5, A5, B5)],
     :GeneralizedHyperGraphProductCode => [(A_ghp1, b_ghp1, l_ghp1), (A_ghp2, b_ghp2, l_ghp2)],
-    :GeneralizedBicycleCode => [(a_gb₁, b_gb₁, l_gb₁), (a_gb₂, b_gb₂, l_gb₂), (a_gb₃ ,b_gb₃, l_gb₃)],
-    :ExtendedGeneralizedBicycleCode => [(c_gb₁, 2, p_gb₁), (c_gb₂, 3, p_gb₂), (c_gb₃, 4, p_gb₃)]
+    :GeneralizedBicycle => [(a_gb₁, b_gb₁, l_gb₁), (a_gb₂, b_gb₂, l_gb₂), (a_gb₃ ,b_gb₃, l_gb₃)],
+    :ExtendedGeneralizedBicycle => [(c_gb₁, 2, p_gb₁), (c_gb₂, 3, p_gb₂), (c_gb₃, 4, p_gb₃)]
 )
 
 @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
@@ -604,14 +604,14 @@ const code_instance_args = Dict(
     C_mm₄ = S_mm₄(1 + x^2*y^2*z)
 
     oscar_code_instance_args = Dict(
-        :DDimensionalSurfaceCode => [(2, 3), (3, 2), (3, 3), (4, 2)],
-        :DDimensionalToricCode => [(2, 3), (3, 2), (3, 3), (4, 2)],
-        :GeneralizedToricCode => [(f₁, g₁, α1₁, α2₁), (f₂, g₂, α1₂, α2₂), (f₃, g₃, α1₃, α2₃), (f₄, g₄, α1₄, α2₄), (f₅, g₅, α1₅, α2₅), (f₆, g₆, α1₆, α2₆)],
-        :HomologicalProductCode => [([H₁, transpose(H₁)], l₁), ([H₂, transpose(H₂)], l₂), ([H₃, transpose(H₃)],), ([δ₄, δ₄, δ₄],)],
-        :DoubleHomologicalProductCode => [(δ₁,), (δ₂,)],
-        :TrivariateTricycleCode => [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)],
+        :DDimensionalSurface => [(2, 3), (3, 2), (3, 3), (4, 2)],
+        :DDimensionalToric => [(2, 3), (3, 2), (3, 3), (4, 2)],
+        :GeneralizedToric => [(f₁, g₁, α1₁, α2₁), (f₂, g₂, α1₂, α2₂), (f₃, g₃, α1₃, α2₃), (f₄, g₄, α1₄, α2₄), (f₅, g₅, α1₅, α2₅), (f₆, g₆, α1₆, α2₆)],
+        :HomologicalProduct => [([H₁, transpose(H₁)], l₁), ([H₂, transpose(H₂)], l₂), ([H₃, transpose(H₃)],), ([δ₄, δ₄, δ₄],)],
+        :DoubleHomologicalProduct => [(δ₁,), (δ₂,)],
+        :TrivariateTricycle => [(ℓ₁, m₁, p₁, A₁, B₁, C₁), (ℓ₂, m₂, p₂, A₂, B₂, C₂), (ℓ₃, m₃, p₃, A₃, B₃, C₃), (ℓ₄, m₄, p₄, A₄, B₄, C₄)],
         :BivariateBicycleCodeViaPoly => [(l_bb₁, m_bb₁, A_bb₁, B_bb₁), (l_bb₂, m_bb₂, A_bb₂, B_bb₂), (l_bb₃, m_bb₃, A_bb₃, B_bb₃), (l_bb₄, m_bb₄, A_bb₄, B_bb₄), (l_bb₅, m_bb₅, A_bb₅, B_bb₅)],
-        :MultivariateMulticycleCode =>[([l_mm₁,m_mm₁], [A_mm₁, B_mm₁]), ([l_mm₂,m_mm₂], [A_mm₂, B_mm₂]), ([ℓ_mm₃, m_mm₃, p_mm₃], [A_mm₃, B_mm₃, C_mm₃]), ([ℓ_mm₄, m_mm₄, p_mm₄], [A_mm₄, B_mm₄, C_mm₄])]
+        :MultivariateMulticycle =>[([l_mm₁,m_mm₁], [A_mm₁, B_mm₁]), ([l_mm₂,m_mm₂], [A_mm₂, B_mm₂]), ([ℓ_mm₃, m_mm₃, p_mm₃], [A_mm₃, B_mm₃, C_mm₃]), ([ℓ_mm₄, m_mm₄, p_mm₄], [A_mm₄, B_mm₄, C_mm₄])]
     )
     merge!(code_instance_args, oscar_code_instance_args)
   end

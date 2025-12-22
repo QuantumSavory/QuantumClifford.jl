@@ -35,8 +35,8 @@ import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
     metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
-export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps,
-    HomologicalProductCode, DoubleHomologicalProductCode, GeneralizedToricCode, TrivariateTricycleCode, BivariateBicycleCodeViaPoly,
+export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurface, DDimensionalToric, boundary_maps,
+    HomologicalProduct, DoubleHomologicalProduct, GeneralizedToric, TrivariateTricycle, BivariateBicycleCodeViaPoly,
     MultivariateMulticycle
 
 include("types.jl")

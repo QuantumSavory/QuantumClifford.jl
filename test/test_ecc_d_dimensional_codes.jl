@@ -12,7 +12,7 @@
         @testset "[[L² + (L − 1)², 1, L]] 2D surface code" begin
             for L in 2:5
                 D = 2
-                c = DDimensionalSurfaceCode(D, L)
+                c = DDimensionalSurface(D, L)
                 code = parity_checks(c)
                 n, k = code_n(code), code_k(code)
                 H = stab_to_gf2(code)
@@ -29,7 +29,7 @@
         @testset "[[L³ + 2L(L − 1)², 1, min(L, L²)]] 3D Surface code" begin
             for L in 2:3
                 D = 3
-                c = DDimensionalSurfaceCode(D, L)
+                c = DDimensionalSurface(D, L)
                 code = parity_checks(c)
                 n, k = code_n(code), code_k(code)
                 H = stab_to_gf2(code)
@@ -52,7 +52,7 @@
             # Testing only one instance of 4D codes due to longer execution time.
             L = 2
             D = 4
-            c = DDimensionalSurfaceCode(D, L)
+            c = DDimensionalSurface(D, L)
             code = parity_checks(c)
             n, k = code_n(code), code_k(code)
             H = stab_to_gf2(code)
@@ -72,7 +72,7 @@
         @testset "[[2L², 2, L]] 2D Toric code" begin
             for L in 2:5
                 D = 2
-                c = DDimensionalToricCode(D, L)
+                c = DDimensionalToric(D, L)
                 code = parity_checks(c)
                 n, k = code_n(code), code_k(code)
                 H = stab_to_gf2(code)
@@ -89,7 +89,7 @@
         @testset "[[3L³, 3, min(L, L²)]] 3D Toric code" begin
             for L in 2:3
                 D = 3
-                c = DDimensionalToricCode(D, L)
+                c = DDimensionalToric(D, L)
                 code = parity_checks(c)
                 n, k = code_n(code), code_k(code)
                 H = stab_to_gf2(code)
@@ -112,7 +112,7 @@
             # Testing only one instance of 4D codes due to longer execution time.
             L = 2
             D = 4
-            c = DDimensionalToricCode(D, L)
+            c = DDimensionalToric(D, L)
             code = parity_checks(c)
             n, k = code_n(code), code_k(code)
             H = stab_to_gf2(code)

@@ -67,7 +67,7 @@
             A = S(A_poly)
             B = S(B_poly)
             C = S(C_poly)
-            c = TrivariateTricycleCode(ℓ, m, p, A, B, C)
+            c = TrivariateTricycle(ℓ, m, p, A, B, C)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)

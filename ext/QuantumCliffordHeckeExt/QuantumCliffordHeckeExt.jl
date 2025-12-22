@@ -28,8 +28,8 @@ import Random: AbstractRNG, default_rng, randperm
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export hgp, two_block_group_algebra_codes, generalized_bicycle_codes_as_2bga, bicycle_codes_as_2bga, Haah_cubic_codes_as_2bga,
-    LPCode, LiftedCode, honeycomb_color_codes_as_2bga, LaCross, GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode,
-    GeneralizedHyperGraphProductCode
+    LPCode, LiftedCode, honeycomb_color_codes_as_2bga, LaCross, GeneralizedBicycle, ExtendedGeneralizedBicycle,
+    GeneralizedHyperGraphProduct
 
 include("util.jl")
 include("types.jl")

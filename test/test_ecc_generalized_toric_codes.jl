@@ -123,7 +123,7 @@
             ]
 
             for (n, k, f, g, α1, α2) in vcat(table_i, table_ii, table_iii, table_iv)
-                c = GeneralizedToricCode(f, g, α1, α2)
+                c = GeneralizedToric(f, g, α1, α2)
                 stab = parity_checks(c)
                 mat = matrix(GF(2), stab_to_gf2(stab))
                 computed_rank = rank(mat)
@@ -141,7 +141,7 @@
             α1 = (0, 6)
             α2 = (3, 3)
             n, k = 36, 2
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -153,10 +153,10 @@
             Hz = matrix(GF(2), parity_matrix_z(c))
             @test rank(Hx) == 17 && rank(Hz) == 17 # B7
             @test all(sum(parity_matrix_x(c), dims=1) .== 2)
-            # Each column contains exactly four ones [liang2025generalizedtoriccodestwisted](@cite)
+            # Each column contains exactly four ones [liang2025GeneralizedToricstwisted](@cite)
             @test all(sum(parity_matrix_x(c), dims=2) .== 4)
             @test all(sum(parity_matrix_z(c), dims=1) .== 2)
-            # Each column contains exactly four ones [liang2025generalizedtoriccodestwisted](@cite)
+            # Each column contains exactly four ones [liang2025GeneralizedToricstwisted](@cite)
             @test all(sum(parity_matrix_z(c), dims=2) .== 4)
         end
 
@@ -168,7 +168,7 @@
             g = 1 + y + x^3*y^-1
             α1 = (0, 12)
             α2 = (6,  0)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -184,7 +184,7 @@
             @test all(sum(parity_matrix_z(c), dims=2) .== 6)
             f = 1 + x + x^-1*y^3
             g = 1 + y + x^3*y^-1
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
@@ -207,7 +207,7 @@
             g = 1 + y + x*y
             α1 = (0, 3)
             α2 = (2, 1)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
 
             # [[14, 6, 2]]
@@ -215,7 +215,7 @@
             g = 1 + y + x
             α1 = (0, 7)
             α2 = (1, 2)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
 
             # [[18, 4, 4]] 
@@ -223,7 +223,7 @@
             g = 1 + y + x*y
             α1 = (0, 3)
             α2 = (3, 0)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
         
             # [[24, 4, 4]]
@@ -231,7 +231,7 @@
             g = 1 + y + x*y
             α1 = (0, 3)
             α2 = (4, 2)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
 
             # [[28, 6, 4]]
@@ -239,7 +239,7 @@
             g = 1 + y + x*y
             α1 = (0, 7)
             α2 = (2, 3)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
 
             # [[30, 4, 6]]
@@ -247,7 +247,7 @@
             g = 1 + y + x^2
             α1 = (0, 3)
             α2 = (5, 1)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
             # [[36, 4, 6]] 
@@ -255,7 +255,7 @@
             g = 1 + y + y^-1
             α1 = (0, 9)
             α2 = (2, 4)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
             # [[42, 6, 6]]
@@ -263,7 +263,7 @@
             g = 1 + y + x*y^-1
             α1 = (0, 7)
             α2 = (3, 2)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
             # [[48, 4, 8]]
@@ -271,7 +271,7 @@
             g = 1 + y + x^2
             α1 = (0, 3)
             α2 = (8, 1)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 8
 
             # [[54, 8, 6]]
@@ -279,7 +279,7 @@
             g = 1 + y + x^3*y^2
             α1 = (0, 3)
             α2 = (9, 0)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
             # [[56, 6, 8]]
@@ -287,7 +287,7 @@
             g = 1 + y + x^-2
             α1 = (0, 7)
             α2 = (4, 3)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 8
 
             # [[60, 8, 6]] 
@@ -295,7 +295,7 @@
             g = 1 + y + x^2
             α1 = (0, 10)
             α2 = (3,  3)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
             # [[62, 10, 6]]
@@ -303,7 +303,7 @@
             g = 1 + y + x^-1*y^-1
             α1 = (0, 31)
             α2 = (1, 13)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
             # [[66, 4, 10]]
@@ -311,7 +311,7 @@
             g = 1 + y + x^2*y
             α1 = (0 , 3)
             α2 = (11, 2)
-            c = GeneralizedToricCode(f, g, α1, α2)
+            c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 10
         end
     end
