@@ -153,10 +153,10 @@
             Hz = matrix(GF(2), parity_matrix_z(c))
             @test rank(Hx) == 17 && rank(Hz) == 17 # B7
             @test all(sum(parity_matrix_x(c), dims=1) .== 2)
-            # Each column contains exactly four ones [liang2025GeneralizedToricstwisted](@cite)
+            # Each column contains exactly four ones [liang2025generalizedtoriccodestwisted](@cite)
             @test all(sum(parity_matrix_x(c), dims=2) .== 4)
             @test all(sum(parity_matrix_z(c), dims=1) .== 2)
-            # Each column contains exactly four ones [liang2025GeneralizedToricstwisted](@cite)
+            # Each column contains exactly four ones [liang2025generalizedtoriccodestwisted](@cite)
             @test all(sum(parity_matrix_z(c), dims=2) .== 4)
         end
 
