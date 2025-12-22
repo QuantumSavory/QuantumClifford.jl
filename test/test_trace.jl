@@ -8,13 +8,13 @@
         @testset "ptrace" begin
             for N in test_sizes[3:end]
                 for n in [N,rand(N÷4:N÷2)]
-                    @show n
+                    #@show n
                     to_delete = randperm(N)[1:rand(N÷4:N÷3)]
                     stab0 = random_stabilizer(n, N)
                     stab1 = MixedStabilizer(stab0)
                     stab2 = MixedDestabilizer(stab0)
                     p0, ra, rb = canonicalize!(ptrace(stab0, to_delete), ranks=true)
-                    @show ra, rb
+                    #@show ra, rb
                     p1 = canonicalize!(stabilizerview(ptrace(stab1, to_delete)))
                     p2 = canonicalize!(stabilizerview(ptrace(stab2, to_delete)))
                     @test p0[1:rb] == p1 == p2
