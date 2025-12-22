@@ -10,7 +10,7 @@ lifted product code constructors.
 
 The Hecke library, for which we already have an extension, provides for a fairly easy way
 to construct such polynomials for many abelian and small groups.
-See [`two_block_group_algebra_codes`](@ref) for those capabilities.
+See [`two_block_group_algebra_code`](@ref) for those capabilities.
 
 However, more esoteric groups are usually specified by a group presentation `⟨S | R⟩`,
 where `S` is a set of generators and `R` is the relations those generators obey.
@@ -19,14 +19,14 @@ We use `Oscar.free_group` and `quo` in order to first prepare the free group gen
 and then the group obeying also the relations `R`, i.e. the `⟨S | R⟩` [presentation](https://en.wikipedia.org/wiki/Presentation_of_a_group).
 
 After that point we proceed as usual, creating two polynomials of generators and piping them
-to [`two_block_group_algebra_codes`](@ref).
+to [`two_block_group_algebra_code`](@ref).
 
 This particular function is nothing more than a simple wrapper that takes care of argument conversions.
 Of note, the polynomials here are given as lists of monomials.
 
-Of course, if you are comfortable with Oscar, you can use [`two_block_group_algebra_codes`](@ref) directly.
+Of course, if you are comfortable with Oscar, you can use [`two_block_group_algebra_code`](@ref) directly.
 
-See also: [`two_block_group_algebra_codes`](@ref), [`twobga_from_direct_product`](@ref)
+See also: [`two_block_group_algebra_code`](@ref), [`twobga_from_direct_product`](@ref)
 
 ## Examples
 
@@ -149,6 +149,6 @@ julia> describe(G), small_group_identification(G)
 function twobga_from_fp_group(a_elts::VectorFPGroupElem, b_elts::VectorFPGroupElem, F2G::FqFieldFPGroupAlgebra)
     a = sum(F2G(x) for x in a_elts)
     b = sum(F2G(x) for x in b_elts)
-    c = two_block_group_algebra_codes(a,b)
+    c = two_block_group_algebra_code(a,b)
     return c
 end

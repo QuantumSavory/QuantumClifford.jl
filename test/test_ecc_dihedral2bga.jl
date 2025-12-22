@@ -4,7 +4,7 @@
     using Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra
     using QuantumClifford
     using QuantumClifford.ECC
-    using QuantumClifford.ECC: code_k, code_n, two_block_group_algebra_codes, DistanceMIPAlgorithm
+    using QuantumClifford.ECC: code_k, code_n, two_block_group_algebra_code, DistanceMIPAlgorithm
     using Oscar
     using Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup, FPGroupElem
     using HiGHS

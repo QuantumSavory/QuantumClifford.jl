@@ -56,7 +56,7 @@ const classical_code_instance_args = Dict(
     :Golay => [(23), (24)],
     :Hamming => [2, 3, 4, 5, 6, 7, 8],
     :GallagerLDPC => [(3, 3, 4), (3, 4, 5), (4, 5, 7), (4, 6, 7)],
-    :GoppaCode => [(m₁, t₁, g₁, L₁), (m₂, t₂, g₂), (m₃, t₃, g₃), (m₄, t₄, g₄, L₄)],
+    :Goppa => [(m₁, t₁, g₁, L₁), (m₂, t₂, g₂), (m₃, t₃, g₃), (m₄, t₄, g₄, L₄)],
     :LiftedCode => [(B₁, repr = representation_matrix), (base_matrix₂, l₂), (base_matrix₂, 5), (base_matrix₂, 7)]
 )
 
