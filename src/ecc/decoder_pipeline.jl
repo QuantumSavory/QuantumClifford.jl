@@ -435,3 +435,12 @@ function PyMatchingDecoder(args...; kwargs...)
     end
     return ext.PyMatchingDecoder(args...; kwargs...)
 end
+
+"""A syndrome decoder using Google's `tesseract-decoder` available via `PyTesseractDecoder.jl`."""
+function TesseractDecoder(c; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyTesseractDecoderExt)
+    if isnothing(ext)
+        throw(QuantumClifford.WeakDepMissingError(:TesseractDecoder, (:PyTesseractDecoder,)))
+    end
+    return ext.TesseractDecoder(c; kwargs...)
+end
