@@ -34,7 +34,7 @@
         end
 
         max_m = 10
-        parameters = search_self_orthogonal_rm_codes(max_m)
+        parameters = search_self_orthogonal_rm_code(max_m)
         for (r, m) in parameters
             @testset "Delfosse-Reichardt code with RM(r=$r, m=$m) seed" begin
                 for p in 2:5

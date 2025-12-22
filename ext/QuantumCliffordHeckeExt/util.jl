@@ -68,17 +68,17 @@ has at most w non-zero entries. This ensures the resulting parity-check matrices
 and ``H_Z`` are ``(w + deg b(x))``-limited. Thus, the Tanner graphs 𝒯_X and 𝒯_Z have girth 6
 (no 4-cycles), improving belief propagation decoder performance [panteleev2021degenerate](@cite).
 """
-function random_qc_ghp_code_matrix_A(S, b, n::Int, w::Int, ℓ::Int; min_k::Int=10, max_attempts=1000, rng::AbstractRNG=default_rng())
+function random_qc_ghp_code_matrix_A(S, b, n::Int, w::Int, l::Int; min_k::Int=10, max_attempts=1000, rng::AbstractRNG=default_rng())
     R = base_ring(S)
     x = gen(R)
     b_lifted = lift(b)
-    xₗ₋₁ = R(x)^ℓ - 1
+    xₗ₋₁ = R(x)^l - 1
     g = gcd(b_lifted, xₗ₋₁)
     k_b = degree(g)
     k_b == 0 && min_k > 0 && error("The chosen polynomial b(x) yields k_b=0. It cannot generate a code with min_k=$min_k. Choose a different b(x).")
     F, _ = residue_ring(R, g)
     for attempt in 1:max_attempts
-        A = _matrix_A(S, n, w, ℓ, rng)
+        A = _matrix_A(S, n, w, l, rng)
         _meets_ghp_constraints(A, w) || continue
         A_proj = matrix(F, n, n, [F(lift((A[i,j]))) for i in 1:n, j in 1:n])
         rk_A_proj = rank(A_proj)
@@ -89,13 +89,13 @@ function random_qc_ghp_code_matrix_A(S, b, n::Int, w::Int, ℓ::Int; min_k::Int=
     error("Failed to generate a valid QC matrix with k >= $min_k after $max_attempts attempts. Try increasing max_attempts, decreasing min_k, or choosing a different b(x) with higher k_b.")
 end
 
-function _matrix_A(S, n, w, ℓ, rng)
+function _matrix_A(S, n, w, l, rng)
     R = base_ring(S)
     x = gen(R)
     temp = [S(0) for _ in 1:n]
     positions = randperm(rng, n)[1:w]
     for pos in positions
-        exp = rand(rng, 0:ℓ-1)
+        exp = rand(rng, 0:l-1)
         temp[pos] = S(x^exp)
     end
     A = zero_matrix(S, n, n)

@@ -8,16 +8,16 @@ const oscarext_function_docstring = oscarext_struct_docstring
 const structs_implemented_in_extensions = [
     (:LPCode, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
     (:LaCross, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
-    (:GeneralizedHyperGraphProductCode, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
-    (:GeneralizedBicycleCode, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
-    (:ExtendedGeneralizedBicycleCode, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
-    (:DDimensionalSurfaceCode, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
-    (:DDimensionalToricCode, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
-    (:HomologicalProductCode, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
-    (:DoubleHomologicalProductCode, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
-    (:GeneralizedToricCode, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
-    (:TrivariateTricycleCode, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
-    (:BivariateBicycleCodeViaPoly, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
+    (:GeneralizedHyperGraphProduct, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
+    (:GeneralizedBicycle, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
+    (:ExtendedGeneralizedBicycle, :QuantumCliffordHeckeExt, heckeext_struct_docstring, (:Hecke,)),
+    (:DDimensionalSurface, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
+    (:DDimensionalToric, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
+    (:HomologicalProduct, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
+    (:DoubleHomologicalProduct, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
+    (:GeneralizedToric, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
+    (:TrivariateTricycle, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
+    (:BivariateBicycleViaPoly, :QuantumCliffordOscarExt, oscarext_struct_docstring, (:Oscar,)),
 ]
 
 for (struct_name, extension_name, struct_docstring, deps) in structs_implemented_in_extensions
@@ -36,10 +36,10 @@ end
 
 const functions_implemented_in_extensions = [
     (:two_block_group_algebra_codes, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
-    (:generalized_bicycle_codes_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
-    (:bicycle_codes_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
-    (:Haah_cubic_codes_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
-    (:honeycomb_color_codes_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:generalized_bicycle_code_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:bicycle_code_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:Haah_cubic_code_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
+    (:honeycomb_color_code_as_2bga, :QuantumCliffordHeckeExt, heckeext_function_docstring, (:Hecke,)),
     (:boundary_maps, :QuantumCliffordOscarExt, oscarext_function_docstring, (:Oscar,)),
     (:max_xy_exponents, :QuantumCliffordOscarExt, oscarext_function_docstring, (:Oscar,)),
     (:twobga_from_direct_product, :QuantumCliffordOscarExt, oscarext_function_docstring, (:Oscar,)),

@@ -205,7 +205,7 @@ julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
 julia> D = 2; L = 2;
 
-julia> c = DDimensionalSurfaceCode(D, L);
+julia> c = DDimensionalSurface(D, L);
 
 julia> code = parity_checks(c)
 + X_X_X
@@ -226,7 +226,7 @@ julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
 julia> D = 2; L = 4;
 
-julia> c = DDimensionalSurfaceCode(D, L);
+julia> c = DDimensionalSurface(D, L);
 
 julia> code = parity_checks(c)
 + X___X___________X________
@@ -307,7 +307,7 @@ julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
 julia> D = 3; L = 2;
 
-julia> c = DDimensionalSurfaceCode(D, L);
+julia> c = DDimensionalSurface(D, L);
 
 julia> code = parity_checks(c)
 + XX__X_____X_
@@ -363,7 +363,7 @@ julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
 julia> D = 4; L = 2;
 
-julia> c = DDimensionalSurfaceCode(D, L);
+julia> c = DDimensionalSurface(D, L);
 
 julia> import HiGHS; import JuMP;
 
@@ -378,32 +378,32 @@ Both X and Z-type metachecks available:
 - ``M_X = \\partial_1^G``
 
 To obtain surface codes of greater dimensionality, we alternate between `C` and `D` and then form a
-product with the chain complex representing the `DDimensionalSurfaceCode` [Berthusen_2024](@cite).
+product with the chain complex representing the `DDimensionalSurface` [Berthusen_2024](@cite).
 
 !!! note
-    The procedure described above for the `DDimensionalSurfaceCode` can alternatively be performed
+    The procedure described above for the `DDimensionalSurface` can alternatively be performed
     using an `L × L` repetition code and only the chain complex `C`. In this case, the result would
-    be the `DDimensionalToricCode`.
+    be the `DDimensionalToric`.
 
-See also: [`DDimensionalToricCode`](@ref)
+See also: [`DDimensionalToric`](@ref)
 
 ### Fields
     $TYPEDFIELDS
 """
-struct DDimensionalSurfaceCode <: DDimensionalCode
+struct DDimensionalSurface <: DDimensionalCode
     """Dimension of the Surface code (must be ≥ 2)."""
     D::Int
     """Size parameter determining the `D`-dimensional Surface code family, constructed via hypergraph product of
     `(L - 1) × L` repetition code chain complexes."""
     L::Int
 
-    function DDimensionalSurfaceCode(D::Int, L::Int)
+    function DDimensionalSurface(D::Int, L::Int)
         D ≥ 2 || throw(ArgumentError(lazy"Dimension of the Surface code must be at least 2 (got D=$D)."))
         new(D, L)
     end
 end
 
-function _total_complex_surface(c::DDimensionalSurfaceCode)
+function _total_complex_surface(c::DDimensionalSurface)
     D, L = c.D, c.L
     C = _repcode_chain_complex(L)
     D_chain = _dual_repcode_chain_complex(L)
@@ -424,7 +424,7 @@ function _total_complex_surface(c::DDimensionalSurfaceCode)
     return current
 end
 
-function _boundary_maps_surface(c::DDimensionalSurfaceCode)
+function _boundary_maps_surface(c::DDimensionalSurface)
     current = _total_complex_surface(c)
     boundary_maps = Vector{Matrix{Int}}()
     for d in 1:c.D
@@ -434,14 +434,14 @@ function _boundary_maps_surface(c::DDimensionalSurfaceCode)
     return boundary_maps
 end
 
-function _parity_matrix_xz_surface(c::DDimensionalSurfaceCode)
+function _parity_matrix_xz_surface(c::DDimensionalSurface)
     # 2D codes: Oscar returns pcm hx', so we transpose it to convert it back to hx. # See page 11, B2 for reference.
     # 3D and beyond codes: Oscar returns pcm hz', so we transpose it to convert it back to hz. See page 11, 12 - B3, B4, B6, and B7 for reference.
     b = _boundary_maps_surface(c)
     c.D == 2 ? (b[1]', b[2]) : (b[3], b[2]')
 end
 
-parity_matrix_xz(c::DDimensionalSurfaceCode) = _parity_matrix_xz_surface(c)
+parity_matrix_xz(c::DDimensionalSurface) = _parity_matrix_xz_surface(c)
 
 """
     $TYPEDEF
@@ -473,7 +473,7 @@ julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
 julia> D = 2; L = 2;
 
-julia> c = DDimensionalToricCode(D, L);
+julia> c = DDimensionalToric(D, L);
 
 julia> code = parity_checks(c)
 + X_X_XX__
@@ -498,7 +498,7 @@ julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
 julia> D = 3; L = 2;
 
-julia> c = DDimensionalToricCode(D, L);
+julia> c = DDimensionalToric(D, L);
 
 julia> import HiGHS; import JuMP;
 
@@ -513,7 +513,7 @@ julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
 julia> D = 4; L = 2;
 
-julia> c = DDimensionalToricCode(D, L);
+julia> c = DDimensionalToric(D, L);
 
 julia> import HiGHS; import JuMP;
 
@@ -521,25 +521,25 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (96, 6, 4)
 ```
 
-See also: [`DDimensionalSurfaceCode`](@ref)
+See also: [`DDimensionalSurface`](@ref)
 
 ### Fields
     $TYPEDFIELDS
 """
-struct DDimensionalToricCode <: DDimensionalCode
+struct DDimensionalToric <: DDimensionalCode
     """Dimension of the Toric code (must be ≥ 2)."""
     D::Int
     """Size parameter determining the `D`-dimensional Toric code family, constructed via hypergraph product of
     `L × L` repetition code chain complexes."""
     L::Int
 
-    function DDimensionalToricCode(D::Int, L::Int)
+    function DDimensionalToric(D::Int, L::Int)
         D ≥ 2 || throw(ArgumentError(lazy"Dimension of the Toric code must be at least 2 (got D=$D)."))
         new(D, L)
     end
 end
 
-function _total_complex_toric(c::DDimensionalToricCode)
+function _total_complex_toric(c::DDimensionalToric)
     D, L = c.D, c.L
     # we use the full repetition code chain complex
     C = _repcode_chain_complex_full(L)
@@ -551,7 +551,7 @@ function _total_complex_toric(c::DDimensionalToricCode)
     return current
 end
 
-function _boundary_maps_toric(c::DDimensionalToricCode)
+function _boundary_maps_toric(c::DDimensionalToric)
     current = _total_complex_toric(c)
     boundary_maps = Vector{Matrix{Int}}()
     for d in 1:c.D
@@ -561,14 +561,14 @@ function _boundary_maps_toric(c::DDimensionalToricCode)
     return boundary_maps
 end
 
-function _parity_matrix_xz_toric(c::DDimensionalToricCode)
+function _parity_matrix_xz_toric(c::DDimensionalToric)
     # 2D codes: Oscar returns pcm hx', so we transpose it to convert it back to hx. # See page 11, B2 for reference.
     # 3D and beyond codes: Oscar returns pcm hz', so we transpose it to convert it back to hz. See page 11, 12 - B3, B4, B6, and B7 for reference.
     b = _boundary_maps_toric(c)
     c.D == 2 ? (b[1]', b[2]) : (b[3], b[2]')
 end
 
-parity_matrix_xz(c::DDimensionalToricCode) = _parity_matrix_xz_toric(c)
+parity_matrix_xz(c::DDimensionalToric) = _parity_matrix_xz_toric(c)
 
 parity_matrix_x(c::DDimensionalCode) = parity_matrix_xz(c)[1]
 
@@ -580,22 +580,22 @@ function _chain_dimensions(C::ComplexOfMorphisms)
 end
 
 function code_n(c::DDimensionalCode)
-    current = isa(c, DDimensionalToricCode) ? _total_complex_toric(c) : _total_complex_surface(c)
+    current = isa(c, DDimensionalToric) ? _total_complex_toric(c) : _total_complex_surface(c)
     # dimensions of all chain spaces
     dims = _chain_dimensions(current)
     # [Berthusen_2024](@cite) specifies different selection rules based on dimension, at least up to 4D.
     D = c.D
     if D == 2
         # 2D: sum E₁ total complex dimensions
-        return dims[2] # (see A11, page 9): For DDimensionalSurfaceCode L² + (L-1)² [Berthusen_2024](@cite)
+        return dims[2] # (see A11, page 9): For DDimensionalSurface L² + (L-1)² [Berthusen_2024](@cite)
     elseif D == 3
         # 3D: sum F₁ total complex dimensions
         # F₁ = E₀ ⊗ D₁ ⊕ E₁ ⊗ D₀
-        return dims[2] # (see A21, page 10): For DDimensionalSurfaceCode L³ + 2L(L − 1)² [Berthusen_2024](@cite)
+        return dims[2] # (see A21, page 10): For DDimensionalSurface L³ + 2L(L − 1)² [Berthusen_2024](@cite)
     elseif D == 4
         # 4D: sum G² total complex dimensions
         # G² = F₁ ⊗ C₁ ⊕ F₂ ⊗ C₀
-        return dims[3] # (see A28, page 11): For DDimensionalSurfaceCode 6L⁴ − 12L³ + 10L² − 4L + 1 [Berthusen_2024](@cite)
+        return dims[3] # (see A28, page 11): For DDimensionalSurface 6L⁴ − 12L³ + 10L² − 4L + 1 [Berthusen_2024](@cite)
     else
         # TODO Investigate and derive expressions for dimension > 4?
         throw(ErrorException("""
@@ -615,7 +615,7 @@ function code_k(c::DDimensionalCode)
     #   D=2: current_0 ← current_1 ← current_2
     #   D=3: current_0 ← current_1 ← current_2 ← current_3
     #   D=4: current_0 ← current_1 ← current_2 ← current_3 ← current_4
-    current = isa(c, DDimensionalToricCode) ? _total_complex_toric(c) : _total_complex_surface(c)
+    current = isa(c, DDimensionalToric) ? _total_complex_toric(c) : _total_complex_surface(c)
     i = c.D == 2 ? 1 : 2 # For codes with D ≥ 3: Hx is boundary_maps(c)[3], boundary_maps(c)[2] is Hz'.
     # TODO Does this hold for dimension > 4?
     ∂ᵢ = map(current, i)
@@ -651,11 +651,11 @@ Here are the boundary maps of `[[12, 1, 2]]` `3D` Surface code with
 ```jldoctest boundarymaps
 julia> using Oscar; using QuantumClifford; using QECCore;
 
-julia> using QuantumClifford.ECC: DDimensionalSurfaceCode, boundary_maps, metacheck_matrix_z;
+julia> using QuantumClifford.ECC: DDimensionalSurface, boundary_maps, metacheck_matrix_z;
 
 julia> D = 3; L = 2;
 
-julia> c = DDimensionalSurfaceCode(D, L);
+julia> c = DDimensionalSurface(D, L);
 
 julia> Mz, Hz, Hx = boundary_maps(c);
 ```
@@ -733,6 +733,6 @@ generating a detectable *metasyndrome*. By examining ``\\mathbf{m}``, we can ide
 and correct errors in ``\\mathbf{s}`` before proceeding with standard decoding. This
 technique is called *syndrome repair decoding* [Higgott_2023](@cite).
 """
-boundary_maps(c::DDimensionalSurfaceCode) = _boundary_maps_surface(c)
+boundary_maps(c::DDimensionalSurface) = _boundary_maps_surface(c)
 
-boundary_maps(c::DDimensionalToricCode) = _boundary_maps_toric(c)
+boundary_maps(c::DDimensionalToric) = _boundary_maps_toric(c)

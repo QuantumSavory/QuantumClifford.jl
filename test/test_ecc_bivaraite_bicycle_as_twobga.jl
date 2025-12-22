@@ -12,7 +12,7 @@
         x, y = gens(GA)
         A = x^3 + y + y^2
         B = y^3 + x + x^2
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 72 && code_k(c) == 12
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
@@ -22,7 +22,7 @@
         x, y = gens(GA)
         A = x^9 + y   + y^2
         B = 1   + x^2 + x^7
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 90 && code_k(c) == 8
 
         # [[108, 8, 10]]
@@ -31,7 +31,7 @@
         x, y = gens(GA)
         A = x^3 + y + y^2
         B = y^3 + x + x^2
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 108 && code_k(c) == 8
 
         # [[144, 12, 12]]
@@ -40,7 +40,7 @@
         x, y = gens(GA)
         A = x^3 + y + y^2
         B = y^3 + x + x^2
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 144 && code_k(c) == 12
 
         # [[288, 12, 12]]
@@ -49,7 +49,7 @@
         x, y = gens(GA)
         A = x^3 + y^2 + y^7
         B = y^3 + x   + x^2
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 288 && code_k(c) == 12
 
         # [[360, 12, ≤ 24]]
@@ -58,7 +58,7 @@
         x, y = gens(GA)
         A = x^9 + y    + y^2
         B = y^3 + x^25 + x^26
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 360 && code_k(c) == 12
 
         # [[756, 16, ≤ 34]]
@@ -67,7 +67,7 @@
         x, y = gens(GA)
         A = x^3 + y^10 + y^17
         B = y^5 + x^3  + x^19
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 756 && code_k(c) == 16
     end
 
@@ -78,7 +78,7 @@
         x, y = gens(GA)
         A = x^9 + y + y^2
         B = 1   + x + x^11
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 72 && code_k(c) == 8
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
@@ -88,7 +88,7 @@
         x, y = gens(GA)
         A = x^8 + y^4 + y
         B = y^5 + x^8 + x^7
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 90 && code_k(c) == 8
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
@@ -98,7 +98,7 @@
         x, y = gens(GA)
         A = x^10 + y^4 + y
         B = 1    + x   + x^2
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 120 && code_k(c) == 8
 
         # [[150, 8, 8]]
@@ -107,7 +107,7 @@
         x, y = gens(GA)
         A = x^5 + y^2 + y^3
         B = y^2 + x^7 + x^6
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 150 && code_k(c) == 8
 
         # [[196, 12, 8]]
@@ -116,7 +116,7 @@
         x, y = gens(GA)
         A = x^6 + y^5 + y^6
         B = 1   + x^4 + x^13
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 196 && code_k(c) == 12
     end
 
@@ -127,7 +127,7 @@
         x, y = gens(GA)
         A = 1   + y^2 + y^4
         B = y^3 + x   + x^2
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 54 && code_k(c) == 8
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
 
@@ -137,7 +137,7 @@
         x, y = gens(GA)
         A = x^3 + y^5 + y^6
         B = y^2 + x^3 + x^5
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 98 && code_k(c) == 6
 
         # [[126, 8, 10]]
@@ -146,7 +146,7 @@
         x, y = gens(GA)
         A = 1   + y^2 + y^10
         B = y^3 + x  +  x^2
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 126 && code_k(c) == 8
 
         # [[150, 16, 8]]
@@ -155,7 +155,7 @@
         x, y = gens(GA)
         A = 1   + y^6 + y^8
         B = y^5 + x   + x^4
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 150 && code_k(c) == 16
 
         # [[162, 8, 14]]
@@ -164,7 +164,7 @@
         x, y = gens(GA)
         A = 1    + y^10 + y^14
         B = y^12 + x    + x^2
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 162 && code_k(c) == 8
 
         # [[180, 8, 16]]
@@ -173,7 +173,7 @@
         x, y = gens(GA)
         A = x^3 + y   + y^2
         B = y^6 + x^4 + x^5
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 180 && code_k(c) == 8
     end
 
@@ -184,7 +184,7 @@
         x, y = gens(GA)
         A = 1 +   y   + y^2
         B = y^3 + x^2 + x^4
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 108 && code_k(c) == 16
 
         # [[128, 14, 12]]
@@ -193,7 +193,7 @@
         x, y = gens(GA)
         A = x^2 + y + y^3 + y^4
         B = y^2 + x + x^3 + x^4
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 128 && code_k(c) == 14
 
         # [[162, 4, 16]]
@@ -202,7 +202,7 @@
         x, y = gens(GA)
         A = 1   + x + y
         B = x^3 + y + y^2
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 162 && code_k(c) == 4
 
         # [[162, 12, 8]]
@@ -211,7 +211,7 @@
         x, y = gens(GA)
         A = 1   + x   + y^6
         B = y^3 + x^2 + x^3
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 162 && code_k(c) == 12
 
         # [[162, 24, 6]]
@@ -220,7 +220,7 @@
         x, y = gens(GA)
         A = 1   + y   + y^2
         B = y^3 + x^3 + x^6
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 162 && code_k(c) == 24
 
         # [[270, 8, 18]]
@@ -229,7 +229,7 @@
         x, y = gens(GA)
         A = x^3 + y + y^2
         B = y^3 + x + x^2
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 270 && code_k(c) == 8
 
         # [[98, 6, 12]]
@@ -238,7 +238,7 @@
         x, y = gens(GA)
         A = x + y^3 + y^4
         B = y + x^3 + x^4
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 98 && code_k(c) == 6
 
         # [[162, 8, 12]]
@@ -247,7 +247,7 @@
         x, y = gens(GA)
         A = x^3 + y + y^2
         B = y^3 + x + x^2
-        c = two_block_group_algebra_codes(A,B)
+        c = two_block_group_algebra_code(A,B)
         @test code_n(c) == 162 && code_k(c) == 8
     end
 end

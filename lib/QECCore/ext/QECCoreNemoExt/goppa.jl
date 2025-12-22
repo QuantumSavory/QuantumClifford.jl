@@ -6,7 +6,7 @@ abstract type AbstractPolynomialCode <: AbstractCECC end
 The family of Goppa codes, as discovered by Denisovich Goppa, in his 1970 paper [goppa1970new](@cite). The
 binary Goppa code is characterized by two key elements:
 
-- Goppa polynomial: A *monic* polynomial of degree t over ``\\mathbb{F}_{2^m}`` with no repeated roots. For a fixed support set ``L = {\\gamma_0, \\dots, \\gamma_{n-1}} \\subseteq \\mathbb{F}_{2^m}``, the polynomial satisfies ``g(\\gamma_i) \\neq 0`` for all ``0 \\leq i < n``.  
+- Goppa polynomial: A *monic* polynomial of degree t over ``\\mathbb{F}_{2^m}`` with no repeated roots. For a fixed support set ``L = {\\gamma_0, \\dots, \\gamma_{n-1}} \\subseteq \\mathbb{F}_{2^m}``, the polynomial satisfies ``g(\\gamma_i) \\neq 0`` for all ``0 \\leq i < n``.
 - Support list: A list of n distinct elements ``{\\gamma_0, \\dots, \\gamma_{n-1}}`` from ``\\mathbb{F}_{2^m}`` such that ``g(\\gamma_i) \\neq 0`` for all ``0 \\leq i < n`` (i.e., none are roots of the Goppa polynomial g(x).
 
 The set ``L = {\\gamma_0, \\dots, \\gamma_{n-1}}`` defines the code’s structure, with n distinct
@@ -77,7 +77,7 @@ L_1^{t-1} \\cdot g(L_1)^{-1} & L_2^{t-1} \\cdot g(L_2)^{-1} & L_3^{t-1} \\cdot g
 You might be interested in consulting [berlekamp1973goppa](@cite), [mceliece1978public](@cite),
 [patterson1975algebraic](@cite), [sugiyama1975method](@cite), [van1988classical](@cite),
 [bernstein2008attacking](@cite), [wirtz1988parameters](@cite) and [singh2019code](@cite)
-an as well. 
+an as well.
 
 The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/gappa).
 
@@ -105,7 +105,7 @@ julia> g = x^t + x + 1;
 
 julia> L = [F(0), F(1), α, α^2, α + 1, α^2 + α, α^2 + α + 1, α^2 + 1];
 
-julia> c = GoppaCode(m, t, g, L);
+julia> c = Goppa(m, t, g, L);
 
 julia> code_n(c), code_k(c)
 (8, 2)
@@ -144,7 +144,7 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/gopp
 ### Fields
     $TYPEDFIELDS
 """
-struct GoppaCode <: AbstractPolynomialCode
+struct Goppa <: AbstractPolynomialCode
     """ The extension degree of ``\\mathbb{F}_{2^m}`` which determines the size of the field
     (2^m elements) and the binary expansion length."""
     m::Int
@@ -157,7 +157,7 @@ struct GoppaCode <: AbstractPolynomialCode
     n = length(L). It must satisfy g(α) ≠ 0 ∀ α ∈ L."""
     L::Vector{FqFieldElem}
 
-    function GoppaCode(m::Int, t::Int, g::FqPolyRingElem, L::Vector{FqFieldElem})
+    function Goppa(m::Int, t::Int, g::FqPolyRingElem, L::Vector{FqFieldElem})
         (m < 3 || t < 2 || t >= 2^(m - 1)) && throw(ArgumentError("m ≥ 3 and t ≥ 2 required, with t < 2^(m-1)"))
         degree(g) != t && throw(ArgumentError("The Goppa polynomial must have degree t"))
         !is_monic(g) && throw(ArgumentError("The Goppa polynomial must be monic."))
@@ -167,10 +167,10 @@ struct GoppaCode <: AbstractPolynomialCode
     end
 end
 
-function GoppaCode(m::Int, t::Int, g::FqPolyRingElem)
+function Goppa(m::Int, t::Int, g::FqPolyRingElem)
     F, α = finite_field(2, m, :α)
     L = [a for a in F if evaluate(g, a) != 0]
-    return GoppaCode(m, t, g, L)
+    return Goppa(m, t, g, L)
 end
 
 function QECCore.random_Goppa_code(rng::AbstractRNG, m::Int, t::Int)
@@ -183,7 +183,7 @@ function QECCore.random_Goppa_code(rng::AbstractRNG, m::Int, t::Int)
         if is_irreducible(g)
             L = [a for a in F if evaluate(g, a) != 0]
             if length(L) - m*t > 0
-                return GoppaCode(m, t, g, L)
+                return Goppa(m, t, g, L)
             end
         end
     end
@@ -192,7 +192,7 @@ end
 
 QECCore.random_Goppa_code(m::Int, t::Int) = QECCore.random_Goppa_code(GLOBAL_RNG, m, t)
 
-function parity_matrix(ga::GoppaCode)
+function parity_matrix(ga::Goppa)
     m, t, g, L = ga.m, ga.t, ga.g, ga.L
     F = parent(L[1])
     # D = diag(1/g(oᵢ))
@@ -210,4 +210,4 @@ function parity_matrix(ga::GoppaCode)
     return H
 end
 
-generator_polynomial(c::GoppaCode) = c.g
+generator_polynomial(c::Goppa) = c.g

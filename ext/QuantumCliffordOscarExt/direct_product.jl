@@ -100,6 +100,6 @@ true
 function twobga_from_direct_product(a_elts::VectorDirectProductGroupElem, b_elts::VectorDirectProductGroupElem, F2G::DirectProductGroupAlgebra)
     a = sum(F2G(x) for x in a_elts)
     b = sum(F2G(x) for x in b_elts)
-    c = two_block_group_algebra_codes(a,b)
+    c = two_block_group_algebra_code(a,b)
     return c
 end

@@ -77,6 +77,9 @@ julia> code_n(c), code_k(c)
 
 ### Fields
     $TYPEDFIELDS
+
+
+See also: [`DelfosseReichardtRep`](@ref), [`DelfosseReichardt823`](@ref)
 """
 struct DelfosseReichardt <: AbstractCSSCode
     """The number of blocks in the Delfosse-Reichardt CSS code."""
@@ -107,7 +110,7 @@ a code with `k=0` logical qubits.
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC; using QECCore: search_self_orthogonal_rm_codes; # hide
 
-julia> search_self_orthogonal_rm_codes(6)
+julia> search_self_orthogonal_rm_code(6)
 11-element Vector{Tuple{Int64, Int64}}:
  (1, 2)
  (1, 3)
@@ -151,7 +154,7 @@ julia> code_n(c), code_k(c)
 ```
 
 """
-function search_self_orthogonal_rm_codes(maxₘ::Int)
+function search_self_orthogonal_rm_code(maxₘ::Int)
     good_params = Tuple{Int, Int}[]
     for m in 1:maxₘ
         for r in 0:m

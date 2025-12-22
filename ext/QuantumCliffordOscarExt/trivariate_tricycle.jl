@@ -135,10 +135,10 @@ H_X &= \\begin{bmatrix} A & B & C \\end{bmatrix}
 
 ## Generalization
 
-The generalization of the [`TrivariateTricycleCode`](@ref) codes to an arbitrary
+The generalization of the [`TrivariateTricycle`](@ref) codes to an arbitrary
 number of groups (Λ ≥ 3) remains a conjecture; for details, see Section 5.3.2,
 *Product of Λ ≥ 3 group algebra codes* of [breuckmann2024cupsgatesicohomology](@cite).
-The parity-check and metacheck matrices for the [`TrivariateTricycleCode`](@ref) codes—which
+The parity-check and metacheck matrices for the [`TrivariateTricycle`](@ref) codes—which
 are equivalent to the boundary maps of the underlying 3-term chain complex, see
 equation 2, 3, and 4 of [jacob2025singleshotdecodingfaulttolerantgates](@cite)—are
 constructed explicitly in [breuckmann2024cupsgatesicohomology](@cite). These
@@ -166,7 +166,7 @@ julia> B = S(1 + y*z + x^2*y^2);
 
 julia> C = S(1 + x*y^2*z + x^2*y);
 
-julia> c = TrivariateTricycleCode(l, m, p, A, B, C);
+julia> c = TrivariateTricycle(l, m, p, A, B, C);
 
 julia> code_n(c), code_k(c)
 (72, 6)
@@ -191,7 +191,7 @@ julia> B = S(1 + x^3*y*z^2 + x^3*y^2*z^3);
 
 julia> C = S(1 + x^4*y^3*z^3 + x^5*z^2);
 
-julia> c = TrivariateTricycleCode(l, m, p, A, B, C);
+julia> c = TrivariateTricycle(l, m, p, A, B, C);
 
 julia> code_n(c), code_k(c)
 (432, 12)
@@ -200,7 +200,7 @@ julia> code_n(c), code_k(c)
 ### Fields
     $TYPEDFIELDS
 """
-struct TrivariateTricycleCode <: AbstractCSSCode
+struct TrivariateTricycle <: AbstractCSSCode
     """Order of the first abelian group in ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m \\times \\mathbb{Z}_p]``"""
     l::Int
     """Order of the second abelian group in ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m \\times \\mathbb{Z}_p]``"""
@@ -214,7 +214,7 @@ struct TrivariateTricycleCode <: AbstractCSSCode
     """Third trivariate polynomial in quotient ring ``\\frac{\\mathbb{F}_2[x, y, z]}{\\langle x^\\ell-1, y^m-1, z^p-1 \\rangle}``"""
     C::MPolyQuoRingElem{FqMPolyRingElem}
 
-    function TrivariateTricycleCode(l::Int, m::Int, p::Int, A::MPolyQuoRingElem{FqMPolyRingElem}, B::MPolyQuoRingElem{FqMPolyRingElem}, C::MPolyQuoRingElem{FqMPolyRingElem})
+    function TrivariateTricycle(l::Int, m::Int, p::Int, A::MPolyQuoRingElem{FqMPolyRingElem}, B::MPolyQuoRingElem{FqMPolyRingElem}, C::MPolyQuoRingElem{FqMPolyRingElem})
         l > 0 || throw(ArgumentError("l must be positive"))
         m > 0 || throw(ArgumentError("m must be positive"))
         p > 0 || throw(ArgumentError("p must be positive"))
@@ -290,7 +290,7 @@ function _polynomial_transpose(f, l, m, p)
     return Rₒ(fₜᵣₐₙₛ)
 end
 
-function boundary_maps(c::TrivariateTricycleCode)
+function boundary_maps(c::TrivariateTricycle)
     l, m, p = c.l, c.m, c.p
     A, B, C = c.A, c.B, c.C
     M_A = _polynomial_to_circulant_matrix(A, l, m, p)
@@ -317,8 +317,8 @@ function boundary_maps(c::TrivariateTricycleCode)
     return H_X, H_Z, M_Z
 end
 
-parity_matrix_x(c::TrivariateTricycleCode) = boundary_maps(c)[1]
+parity_matrix_x(c::TrivariateTricycle) = boundary_maps(c)[1]
 
-parity_matrix_z(c::TrivariateTricycleCode) = boundary_maps(c)[2]
+parity_matrix_z(c::TrivariateTricycle) = boundary_maps(c)[2]
 
-metacheck_matrix_z(c::TrivariateTricycleCode) = boundary_maps(c)[3]
+metacheck_matrix_z(c::TrivariateTricycle) = boundary_maps(c)[3]

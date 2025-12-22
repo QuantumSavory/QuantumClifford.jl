@@ -149,6 +149,6 @@ julia> describe(G), small_group_identification(G)
 function twobga_from_fp_group(a_elts::VectorFPGroupElem, b_elts::VectorFPGroupElem, F2G::FqFieldFPGroupAlgebra)
     a = sum(F2G(x) for x in a_elts)
     b = sum(F2G(x) for x in b_elts)
-    c = two_block_group_algebra_codes(a,b)
+    c = two_block_group_algebra_code(a,b)
     return c
 end
