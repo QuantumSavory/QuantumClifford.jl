@@ -390,57 +390,11 @@ end
 
 # From extensions:
 
-"""A simple Belief Propagation decoder built around tools from `LDPCDecoders.jl`."""
-function BeliefPropDecoder(args...; kwargs...)
-    ext = Base.get_extension(QuantumClifford, :QuantumCliffordLDPCDecodersExt)
-    if isnothing(ext)
-        throw("The `BeliefPropDecoder` depends on the package `LDPCDecoders` but you have not installed or imported `LDPCDecoders` yet. Immediately after you import `LDPCDecoders`, the `BeliefPropDecoder` will be available.")
-    end
-    return ext.BeliefPropDecoder(args...; kwargs...)
-end
+using WeakDepHelpers: @declare_struct_is_in_extension
 
-"""An Iterative Bitflip decoder built around tools from `LDPCDecoders.jl`."""
-function BitFlipDecoder(args...; kwargs...)
-    ext = Base.get_extension(QuantumClifford, :QuantumCliffordLDPCDecodersExt)
-    if isnothing(ext)
-        throw("The `BitFlipDecoder` depends on the package `LDPCDecoders` but you have not installed or imported `LDPCDecoders` yet. Immediately after you import `LDPCDecoders`, the `BitFlipDecoder` will be available.")
-    end
-    return ext.BitFlipDecoder(args...; kwargs...)
-end
-
-
-"""A Belief Propagation decoder built around tools from the python package `ldpc` available from the julia package `PyQDecoders.jl`."""
-function PyBeliefPropDecoder(args...; kwargs...)
-    ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyQDecodersExt)
-    if isnothing(ext)
-        throw("The `PyBeliefPropDecoder` depends on the package `PyQDecoders` but you have not installed or imported `PyQDecoders` yet. Immediately after you import `PyQDecoders`, the `PyBeliefPropDecoder` will be available.")
-    end
-    return ext.PyBeliefPropDecoder(args...; kwargs...)
-end
-
-"""A Belief Propagation decoder with ordered statistics decoding, built around tools from the python package `ldpc` available from the julia package `PyQDecoders.jl`."""
-function PyBeliefPropOSDecoder(args...; kwargs...)
-    ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyQDecodersExt)
-    if isnothing(ext)
-        throw("The `PyBeliefPropOSDecoder` depends on the package `PyQDecoders` but you have not installed or imported `PyQDecoders` yet. Immediately after you import `PyQDecoders`, the `PyBeliefPropOSDecoder` will be available.")
-    end
-    return ext.PyBeliefPropOSDecoder(args...; kwargs...)
-end
-
-"""A perfect matching decoder built around tools from the python package `pymatching` available from the julia package `PyQDecoders.jl`."""
-function PyMatchingDecoder(args...; kwargs...)
-    ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyQDecodersExt)
-    if isnothing(ext)
-        throw("The `PyMatchingDecoder` depends on the package `PyQDecoders` but you have not installed or imported `PyMatchingDecoder` yet. Immediately after you import `PyQDecoders`, the `PyMatchingDecoder` will be available.")
-    end
-    return ext.PyMatchingDecoder(args...; kwargs...)
-end
-
-"""A syndrome decoder using Google's `tesseract-decoder` available via `PyTesseractDecoder.jl`."""
-function TesseractDecoder(c; kwargs...)
-    ext = Base.get_extension(QuantumClifford, :QuantumCliffordPyTesseractDecoderExt)
-    if isnothing(ext)
-        throw(QuantumClifford.WeakDepMissingError(:TesseractDecoder, (:PyTesseractDecoder,)))
-    end
-    return ext.TesseractDecoder(c; kwargs...)
-end
+@declare_struct_is_in_extension QuantumClifford BeliefPropDecoder :QuantumCliffordLDPCDecodersExt (:LDPCDecoders,) "A simple Belief Propagation decoder built around tools from `LDPCDecoders.jl`."
+@declare_struct_is_in_extension QuantumClifford BitFlipDecoder :QuantumCliffordLDPCDecodersExt (:LDPCDecoders,) "An Iterative Bitflip decoder built around tools from `LDPCDecoders.jl`."
+@declare_struct_is_in_extension QuantumClifford PyBeliefPropDecoder :QuantumCliffordPyQDecodersExt (:PyQDecoders,) "A Belief Propagation decoder built around tools from the python package `ldpc` available from the julia package `PyQDecoders.jl`."
+@declare_struct_is_in_extension QuantumClifford PyBeliefPropOSDecoder :QuantumCliffordPyQDecodersExt (:PyQDecoders,) "A Belief Propagation decoder with ordered statistics decoding, built around tools from the python package `ldpc` available from the julia package `PyQDecoders.jl`."
+@declare_struct_is_in_extension QuantumClifford PyMatchingDecoder :QuantumCliffordPyQDecodersExt (:PyQDecoders,) "A perfect matching decoder built around tools from the python package `pymatching` available from the julia package `PyQDecoders.jl`."
+@declare_struct_is_in_extension QuantumClifford TesseractDecoder :QuantumCliffordPyTesseractDecoderExt (:PyTesseractDecoder,) "A syndrome decoder using Google's `tesseract-decoder` available via `PyTesseractDecoder.jl`."
