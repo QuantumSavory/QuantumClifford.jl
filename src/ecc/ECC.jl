@@ -22,8 +22,6 @@ using SparseArrays: sparse
 using Statistics: std
 
 using DocStringExtensions
-using JuliaSyntaxHighlighting: highlight
-using StyledStrings: @styled_str
 
 export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
