@@ -4,7 +4,6 @@
     using QuantumClifford.ECC
 
     import PyQDecoders
-    import PyTesseractDecoder
     import LDPCDecoders
     import Sys
 
@@ -169,6 +168,7 @@
                 @test max(e...) <= 0.2/20
             end
         end
+    end
     end
 
     end
