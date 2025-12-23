@@ -51,7 +51,7 @@
         @testset "Repetition codes" begin
             for n in 3:10
                 H = parity_matrix(RepCode(n))
-                c = CSS(hgp(H, H))
+                c = CSS(hgp(H, H)...)
                 @test stab_looks_good(parity_checks(c); remove_redundant_rows=true)
                 hx, hz = parity_matrix_x(c), parity_matrix_z(c)
                 @test verify_orthogonality(hx, hz)
@@ -70,7 +70,7 @@
         @testset "Golay codes" begin
             for n in [23, 24]
                 H = parity_matrix(Golay(n))
-                c = CSS(hgp(H, H))
+                c = CSS(hgp(H, H)...)
                 @test stab_looks_good(parity_checks(c); remove_redundant_rows=true)
                 hx, hz = parity_matrix_x(c), parity_matrix_z(c)
                 @test verify_orthogonality(hx, hz)
@@ -80,7 +80,7 @@
         @testset "Reed-Muller codes" begin
             for m in 3:5, r in 1:m-1
                 H = parity_matrix(ReedMuller(r, m))
-                c = CSS(hgp(H, H))
+                c = CSS(hgp(H, H)...)
                 @test stab_looks_good(parity_checks(c); remove_redundant_rows=true)
                 hx, hz = parity_matrix_x(c), parity_matrix_z(c)
                 @test verify_orthogonality(hx, hz)
