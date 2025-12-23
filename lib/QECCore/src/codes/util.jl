@@ -32,7 +32,7 @@ julia> H1 = [1 0 1 0; 0 1 0 1; 1 1 0 0];
 
 julia> H2 = [1 1 0; 0 1 1];
 
-julia> c = parity_checks(hgp(H1, H2))
+julia> c = parity_checks(hgp(H1, H2)...)
 + X_____X_____X_____
 + _X_____X____XX____
 + __X_____X____X____
@@ -64,7 +64,7 @@ corresponds to the specific case where `G = G1 = G2`​.
 ```jldoctest examples
 julia> H = parity_matrix(RepCode(3));
 
-julia> c = parity_checks(hgp(H, H))
+julia> c = parity_checks(hgp(H, H)...)
 + X__X_____X_X______
 + _X__X____XX_______
 + __X__X____XX______
