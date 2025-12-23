@@ -284,7 +284,10 @@ const code_instance_args = Dict(
     :Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
     :Surface => [(3,3), (4,4), (3,6), (4,3), (5,5)],
     :Gottesman => [(3,), (4,), (5,)],
-    :CSS => (c -> (parity_matrix_x(c), parity_matrix_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
+    :CSS => vcat(
+        (c -> (parity_matrix_x(c), parity_matrix_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
+        [hgp(H1, H2), hgp(H2, H2), hgp(H1, H1), hgp(H2, H1)]
+    ),
     :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
     :CircuitCode => random_circuit_code_args,
     :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, test_twobga_codes, test_honeycomb_color_codes, test_nonabelian_codes, other_lifted_product_codes)),
@@ -294,7 +297,6 @@ const code_instance_args = Dict(
     :DelfosseReichardt => [(2,1,3), (2,2,4), (4,3,5), (4,3,6)],
     :DelfosseReichardtRep => [(4,), (6,), (8,), (10,)],
     :DelfosseReichardt823 => [(2,), (3,), (4,), (5,)],
-    :QuantumTannerGraphProduct => [(H1, H2),(H2, H2), (H1, H1), (H2, H1)],
     :CyclicQuantumTannerGraphProduct => [(2,), (3,), (4,)],
     :LaCross => [(5,h₂,true), (6,h₂,true), (8,h₂,true), (7,h₃,false), (7,h₃,true), (9,h₃,true), (9,h₄,true), (10,h₄,true), (12,h₄,true)],
     :TillichZemor => [(4,3,3), (5,4,4), (6,5,5), (7,6,6)],

@@ -19,7 +19,7 @@ export Perfect5, Cleve8, Gottesman
 
 # CSS Codes
 export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMuller, Triangular488, Triangular666,
-DelfosseReichardt, DelfosseReichardtRep, DelfosseReichardt823, QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
+DelfosseReichardt, DelfosseReichardtRep, DelfosseReichardt823, CyclicQuantumTannerGraphProduct,
 TillichZemor, random_TillichZemor_code, BivariateBicycleViaCirculantMat
 
 # Classical Codes
@@ -49,7 +49,7 @@ include("codes/quantum/surface.jl")
 include("codes/quantum/bitflipcode.jl")
 include("codes/quantum/gottesman.jl")
 include("codes/quantum/color_codes.jl")
-include("codes/quantum/quantumtannergraphproduct.jl")
+include("codes/quantum/cyclictannergraphproduct.jl")
 include("codes/quantum/tillichzemor.jl")
 include("codes/quantum/generalized_circulant_bivariate_bicycle.jl")
 

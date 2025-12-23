@@ -79,8 +79,8 @@
         include("codes/delfosse_reichardt_823_code.jl")
     end
 
-    @testset "Quantum Tanner Graph Codes" begin
-        include("codes/quantumtannergraphproduct.jl")
+    @testset "Cyclic Tanner Graph Codes" begin
+        include("codes/cyclictannergraphproduct.jl")
     end
 
     @testset "Quantum Tillich-Zemor Codes" begin
