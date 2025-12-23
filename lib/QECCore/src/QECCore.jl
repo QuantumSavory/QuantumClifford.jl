@@ -29,6 +29,9 @@ export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, random_Gallager
 export search_self_orthogonal_rm_code, hgp
 
 include("interface.jl")
+include("decoding_interface.jl")
+include("decoding_impl.jl")
+
 include("codes/util.jl")
 
 # Classical Codes
