@@ -789,7 +789,6 @@ end
     using QuantumClifford
     using QuantumClifford.LowRankNonClifford
     using Random
-    using Statistics
     
     import QuantumClifford: AbstractOperation
     import QuantumClifford.LowRankNonClifford:
