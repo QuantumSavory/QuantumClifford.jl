@@ -44,7 +44,7 @@ julia> B = S(y^5 + x^3  + x^19);
 julia> c = MultivariateMulticycle([l,m], [A,B]);
 
 julia> code_n(c), code_k(c)
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 2
 [ Info: C_0 dimension: 378 == binom(2, 0)*378
 [ Info: C_1 dimension: 756 == binom(2, 1)*378
@@ -53,7 +53,7 @@ julia> code_n(c), code_k(c)
 [ Info: Differential for degree 1: (756, 378)
 [ Info: Differential for degree 2: (378, 756)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 2
 [ Info: C_0 dimension: 378 == binom(2, 0)*378
 [ Info: C_1 dimension: 756 == binom(2, 1)*378
@@ -62,7 +62,7 @@ julia> code_n(c), code_k(c)
 [ Info: Differential for degree 1: (756, 378)
 [ Info: Differential for degree 2: (378, 756)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 2
 [ Info: C_0 dimension: 378 == binom(2, 0)*378
 [ Info: C_1 dimension: 756 == binom(2, 1)*378
@@ -71,7 +71,7 @@ julia> code_n(c), code_k(c)
 [ Info: Differential for degree 1: (756, 378)
 [ Info: Differential for degree 2: (378, 756)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 2
 [ Info: C_0 dimension: 378 == binom(2, 0)*378
 [ Info: C_1 dimension: 756 == binom(2, 1)*378
@@ -80,7 +80,7 @@ julia> code_n(c), code_k(c)
 [ Info: Differential for degree 1: (756, 378)
 [ Info: Differential for degree 2: (378, 756)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 2
 [ Info: C_0 dimension: 378 == binom(2, 0)*378
 [ Info: C_1 dimension: 756 == binom(2, 1)*378
@@ -89,7 +89,7 @@ julia> code_n(c), code_k(c)
 [ Info: Differential for degree 1: (756, 378)
 [ Info: Differential for degree 2: (378, 756)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 2
 [ Info: C_0 dimension: 378 == binom(2, 0)*378
 [ Info: C_1 dimension: 756 == binom(2, 1)*378
@@ -123,7 +123,7 @@ julia> C = S(1 + x^4*y^3*z^3 + x^5*z^2);
 julia> c = MultivariateMulticycle([l,m, p], [A, B, C]);
 
 julia> code_n(c), code_k(c)
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 3
 [ Info: C_0 dimension: 144 == binom(3, 0)*144
 [ Info: C_1 dimension: 432 == binom(3, 1)*144
@@ -135,7 +135,7 @@ julia> code_n(c), code_k(c)
 [ Info: Differential for degree 3: (144, 432)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
 [ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 3
 [ Info: C_0 dimension: 144 == binom(3, 0)*144
 [ Info: C_1 dimension: 432 == binom(3, 1)*144
@@ -147,7 +147,7 @@ julia> code_n(c), code_k(c)
 [ Info: Differential for degree 3: (144, 432)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
 [ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 3
 [ Info: C_0 dimension: 144 == binom(3, 0)*144
 [ Info: C_1 dimension: 432 == binom(3, 1)*144
@@ -159,7 +159,7 @@ julia> code_n(c), code_k(c)
 [ Info: Differential for degree 3: (144, 432)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
 [ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 3
 [ Info: C_0 dimension: 144 == binom(3, 0)*144
 [ Info: C_1 dimension: 432 == binom(3, 1)*144
@@ -171,7 +171,7 @@ julia> code_n(c), code_k(c)
 [ Info: Differential for degree 3: (144, 432)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
 [ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 3
 [ Info: C_0 dimension: 144 == binom(3, 0)*144
 [ Info: C_1 dimension: 432 == binom(3, 1)*144
@@ -183,7 +183,7 @@ julia> code_n(c), code_k(c)
 [ Info: Differential for degree 3: (144, 432)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
 [ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 3
 [ Info: C_0 dimension: 144 == binom(3, 0)*144
 [ Info: C_1 dimension: 432 == binom(3, 1)*144
@@ -222,7 +222,7 @@ julia> D = S(1 + w^3*x^3*y^3*z^3);
 julia> c = MultivariateMulticycle([l, m, p, r], [A, B, C, D]);
 
 julia> code_n(c), code_k(c)
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 4
 [ Info: C_0 dimension: 108 == binom(4, 0)*108
 [ Info: C_1 dimension: 432 == binom(4, 1)*108
@@ -237,7 +237,7 @@ julia> code_n(c), code_k(c)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
 [ Info: Checking exactness condition for degree 3: ∂2∘∂3
 [ Info: Checking exactness condition for degree 4: ∂3∘∂4
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 4
 [ Info: C_0 dimension: 108 == binom(4, 0)*108
 [ Info: C_1 dimension: 432 == binom(4, 1)*108
@@ -252,7 +252,7 @@ julia> code_n(c), code_k(c)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
 [ Info: Checking exactness condition for degree 3: ∂2∘∂3
 [ Info: Checking exactness condition for degree 4: ∂3∘∂4
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 4
 [ Info: C_0 dimension: 108 == binom(4, 0)*108
 [ Info: C_1 dimension: 432 == binom(4, 1)*108
@@ -267,7 +267,7 @@ julia> code_n(c), code_k(c)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
 [ Info: Checking exactness condition for degree 3: ∂2∘∂3
 [ Info: Checking exactness condition for degree 4: ∂3∘∂4
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 4
 [ Info: C_0 dimension: 108 == binom(4, 0)*108
 [ Info: C_1 dimension: 432 == binom(4, 1)*108
@@ -282,7 +282,7 @@ julia> code_n(c), code_k(c)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
 [ Info: Checking exactness condition for degree 3: ∂2∘∂3
 [ Info: Checking exactness condition for degree 4: ∂3∘∂4
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 4
 [ Info: C_0 dimension: 108 == binom(4, 0)*108
 [ Info: C_1 dimension: 432 == binom(4, 1)*108
@@ -297,7 +297,7 @@ julia> code_n(c), code_k(c)
 [ Info: Checking exactness condition for degree 2: ∂1∘∂2
 [ Info: Checking exactness condition for degree 3: ∂2∘∂3
 [ Info: Checking exactness condition for degree 4: ∂3∘∂4
-[ Info: Constructing boundary maps for a MultivariateMulticycle
+[ Info: Constructing boundary maps for MultivariateMulticycle
 [ Info: Number of variables t = 4
 [ Info: C_0 dimension: 108 == binom(4, 0)*108
 [ Info: C_1 dimension: 432 == binom(4, 1)*108
