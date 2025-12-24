@@ -357,7 +357,7 @@ end
 function boundary_maps(code::MultivariateMulticycle)
     t = length(code.orders)
     N = prod(code.orders)
-    @info "Constructing boundary maps for a MultivariateMulticycle"
+    @info "Constructing boundary maps for MultivariateMulticycle"
     @info "Number of variables t = $t"
     for k in 0:t
         dim = binomial(t, k)*N
