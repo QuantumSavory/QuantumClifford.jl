@@ -39,22 +39,19 @@ export
 Trait function to determine if an operation is a Clifford gate.
 Users can extend this for custom gate types by defining new methods.
 
-This replaces the previous `identify_gate_type` function with an extensible
-multimethod approach following Julia idioms.
-
 # Examples
-```julia
-isclifford(sHadamard(1))   # true
-isclifford(sPhase(1))      # true
-isclifford(sCNOT(1,2))     # true
-isclifford(TGate(1))       # false
-isclifford(CCZGate(1,2,3)) # false
-
-# Extend for custom gates:
-isclifford(::MyCustomCliffordGate) = true
-isclifford(::MyNonCliffordGate) = false
+```jldoctest
+julia> isclifford(sHadamard(1))
+true
+julia> isclifford(sPhase(1))
+true
+julia> isclifford(sCNOT(1,2))
+true
+julia> isclifford(TGate(1))
+false
+julia> isclifford(CCZGate(1,2,3))
+false
 ```
-
 """
 function isclifford end
 
@@ -83,19 +80,18 @@ For Clifford gates, ξ = 1. Users can extend for custom non-Clifford gates.
 
 The extent determines simulation cost: total cost scales as ∏ⱼ ξ(Vⱼ).
 
-From Proposition 2 of Bravyi et al.: For Clifford magic states, ξ(ψ) = F(ψ)⁻¹
+From Proposition 2 of [bravyi2019simulation](@cite): For Clifford magic states, ξ(ψ) = F(ψ)⁻¹
 where F(ψ) = max_φ |⟨φ|ψ⟩|² is the stabilizer fidelity.
 
 # Examples
-```julia
-stabilizer_extent(sHadamard(1))   # 1.0 (Clifford)
-stabilizer_extent(TGate(1))       # ≈ 1.172
-stabilizer_extent(CCZGate(1,2,3)) # 16/9 ≈ 1.778
-
-# Extend for custom gates:
-stabilizer_extent(::MyGate) = 2.5
+```jldoctest
+julia> stabilizer_extent(sHadamard(1))
+1.0
+julia> stabilizer_extent(TGate(1)) ≈ 1.172
+true
+julia> stabilizer_extent(CCZGate(1,2,3)) ≈ 16/9
+true
 ```
-
 """
 function stabilizer_extent end
 
@@ -110,17 +106,18 @@ stabilizer extent ξ(T) = (cos(π/8) + tan(π/8)sin(π/8))² ≈ 1.172.
 The T gate is diagonal in the computational basis:
 T = diag(1, e^(iπ/4)) = R_z(π/4)
 
-# Fields
-- `qubit::Int`: Target qubit index (1-indexed)
+$(TYPEDFIELDS)
 
 # Example
-```julia
-circuit = [sHadamard(1), TGate(1), sHadamard(1)]
-result = lrtrajectories(circuit, 1; trajectories=1000)
+```jldoctest
+julia> circuit = [sHadamard(1), TGate(1), sHadamard(1)];
+julia> result = lrtrajectories(circuit, 1; trajectories=100);
+julia> size(lrmeasurements(result))
+(100, 1)
 ```
-
 """
 struct TGate <: AbstractOperation
+    "Target qubit index (1-indexed)"
     qubit::Int
     
     function TGate(q::Int)
@@ -144,17 +141,18 @@ stabilizer extent ξ(CCZ) = 16/9 ≈ 1.778.
 The CCZ gate applies a phase of -1 when all three qubits are in state |1⟩:
 CCZ|xyz⟩ = (-1)^(xyz)|xyz⟩
 
-# Fields
-- `qubits::NTuple{3,Int}`: Target qubit indices (sorted, 1-indexed)
+$(TYPEDFIELDS)
 
 # Example
-```julia
-circuit = [sHadamard(1), sHadamard(2), sHadamard(3), CCZGate(1, 2, 3)]
-result = lrtrajectories(circuit, 3; trajectories=1000)
+```jldoctest
+julia> circuit = [sHadamard(1), sHadamard(2), sHadamard(3), CCZGate(1, 2, 3)];
+julia> result = lrtrajectories(circuit, 3; trajectories=100);
+julia> size(lrmeasurements(result))
+(100, 3)
 ```
-
 """
 struct CCZGate <: AbstractOperation
+    "Target qubit indices (sorted, 1-indexed)"
     qubits::NTuple{3, Int}
     
     function CCZGate(q1::Int, q2::Int, q3::Int)
@@ -175,24 +173,23 @@ stabilizer_extent(::CCZGate) = _CCZ_EXTENT
 """
     SparsifiedDecomposition
 
-Result of applying Sparsification Lemma (Lemma 6) from Section 5.2.
+Result of applying Sparsification Lemma (Lemma 6) from Section 5.2 of [bravyi2019simulation](@cite).
 Represents |Ω⟩ = (||c||₁/k) Σₐ₌₁ᵏ |ωₐ⟩ that approximates |ψ⟩ = Σⱼ cⱼ|φⱼ⟩.
 
-# Fields
-- `states::Vector{Stabilizer}`: Sampled stabilizer states |ωₐ⟩
-- `coefficients::Vector{ComplexF64}`: Corresponding coefficients
-- `k::Int`: Number of terms in sparse approximation
-- `original_l1_norm::Float64`: ||c||₁ of original decomposition
-- `approximation_error_bound::Float64`: Target δ parameter
-- `expected_norm_bound::Float64`: E[||Ω||²] = 1 + ||c||₁²/k
-
+$(TYPEDFIELDS)
 """
 struct SparsifiedDecomposition
+    "Sampled stabilizer states |ωₐ⟩"
     states::Vector{Stabilizer}
+    "Corresponding coefficients"
     coefficients::Vector{ComplexF64}
+    "Number of terms in sparse approximation"
     k::Int
+    "||c||₁ of original decomposition"
     original_l1_norm::Float64
+    "Target δ parameter"
     approximation_error_bound::Float64
+    "E[||Ω||²] = 1 + ||c||₁²/k"
     expected_norm_bound::Float64
     
     function SparsifiedDecomposition(states, coeffs, k, l1_norm, delta)
@@ -206,7 +203,7 @@ end
 """
     sparsify_stabilizer_decomposition(coefficients, states, delta; rng=Random.GLOBAL_RNG)
 
-Implements Sparsification Lemma (Lemma 6) from Section 5.2 of Bravyi et al.
+Implements Sparsification Lemma (Lemma 6) from Section 5.2 of [bravyi2019simulation](@cite)
 
 Given |ψ⟩ = Σⱼ cⱼ|φⱼ⟩ with L1 norm ||c||₁, constructs random state 
 |Ω⟩ = (||c||₁/k) Σₐ₌₁ᵏ |ωₐ⟩ where each |ωₐ⟩ is sampled from {|φⱼ⟩} 
@@ -270,7 +267,7 @@ end
 
 Sparsification for MixedDestabilizer states (used during incremental simulation).
 
-This is the core routine for incremental sparsification, applying Lemma 6 to
+This is the core routine for incremental sparsification, applying Lemma 6 of [bravyi2019simulation](@cite) to
 MixedDestabilizer states that can continue to have gates applied to them.
 
 Samples k ≥ ||c||₁²/δ² states from the decomposition, preserving the L1 norm
@@ -373,23 +370,22 @@ Stabilizer decomposition V|+⟩^⊗t = Σⱼ cⱼ|φⱼ⟩ for Clifford magic st
 Used as intermediate step before applying Lifting Lemma.
 
 For Clifford magic states: ξ(ψ) = F(ψ)⁻¹ where F(ψ) = max_φ |⟨φ|ψ⟩|² 
-is the stabilizer fidelity (Proposition 2).
+is the stabilizer fidelity (Proposition 2 of [bravyi2019simulation](@cite)).
 
-# Fields
-- `gate_type::Symbol`: Type of gate (:T, :CCZ, :R_theta)
-- `coefficients::Vector{ComplexF64}`: Decomposition coefficients cⱼ
-- `stabilizer_states::Vector{Stabilizer}`: Stabilizer states |φⱼ⟩
-- `l1_norm::Float64`: ||c||₁
-- `stabilizer_extent::Float64`: ξ(ψ) = ||c||₁²
-- `stabilizer_fidelity::Float64`: F(ψ) = 1/ξ(ψ) for Clifford magic states
-
+$(TYPEDFIELDS)
 """
 struct MagicStateDecompositionCache
+    "Type of gate (:T, :CCZ, :R_theta)"
     gate_type::Symbol
+    "Decomposition coefficients cⱼ"
     coefficients::Vector{ComplexF64}
+    "Stabilizer states |φⱼ⟩"
     stabilizer_states::Vector{Stabilizer}
+    "||c||₁"
     l1_norm::Float64
+    "ξ(ψ) = ||c||₁²"
     stabilizer_extent::Float64
+    "F(ψ) = 1/ξ(ψ) for Clifford magic states"
     stabilizer_fidelity::Float64
     
     function MagicStateDecompositionCache(gate_type, coeffs, states)
@@ -427,20 +423,20 @@ end
 Sum-over-Cliffords decomposition U = Σⱼ cⱼKⱼ where Kⱼ are Clifford unitaries.
 Result of applying Lifting Lemma to magic state decomposition.
 
-# Fields
-- `gate_type::Symbol`: Type of original non-Clifford gate
-- `coefficients::Vector{ComplexF64}`: Decomposition coefficients cⱼ
-- `clifford_operations::Vector{Vector{AbstractOperation}}`: Clifford circuits Kⱼ
-- `l1_norm::Float64`: ||c||₁
-- `stabilizer_extent::Float64`: ξ = ||c||₁²
-- `target_qubits::Vector{Int}`: Qubits the gate acts on
+$(TYPEDFIELDS)
 """
 struct CliffordGateDecompositionCache
+    "Type of original non-Clifford gate"
     gate_type::Symbol
+    "Decomposition coefficients cⱼ"
     coefficients::Vector{ComplexF64}
+    "Clifford circuits Kⱼ"
     clifford_operations::Vector{Vector{AbstractOperation}}
+    "||c||₁"
     l1_norm::Float64
+    "ξ = ||c||₁²"
     stabilizer_extent::Float64
+    "Qubits the gate acts on"
     target_qubits::Vector{Int}
     
     function CliffordGateDecompositionCache(gate_type, coeffs, ops, qubits)
@@ -697,30 +693,38 @@ end
 
 Results from low-rank stabilizer simulation, analogous to PauliFrame results.
 
-# Fields
-- `measurements::Matrix{Bool}`: Measurement outcomes (trajectories × qubits)
-- `simulation_cost::Int`: Number of sparse stabilizer terms used (k)
-- `approximation_error::Float64`: Target δ parameter
-- `total_extent::Float64`: Product of gate extents ∏ⱼ ξ(Vⱼ)
-- `n_qubits::Int`: Number of qubits
-- `total_runtime::Float64`: Simulation time in seconds
+$(TYPEDFIELDS)
 
 # Accessing Results
 Use `lrmeasurements(result)` to get measurement matrix, similar to `pfmeasurements`.
 
 # Example
-```julia
-result = lrtrajectories(circuit, 2; trajectories=1000, delta=0.1)
-measurements = lrmeasurements(result)  # Matrix{Bool} of size (1000, 2)
-```
+```jldoctest
+julia> circuit = [sHadamard(1), TGate(1), sCNOT(1,2)];
 
+julia> result = lrtrajectories(circuit, 2; trajectories=100, delta=0.1);
+
+julia> measurements = lrmeasurements(result);
+
+julia> size(measurements)
+(100, 2)
+
+julia> eltype(measurements)
+Bool
+```
 """
 struct LRTrajectoryResults
+    "Measurement outcomes (trajectories × qubits)"
     measurements::Matrix{Bool}
+    "Number of sparse stabilizer terms used (k)"
     simulation_cost::Int
+    "Target δ parameter"
     approximation_error::Float64
+    "Product of gate extents ∏ⱼ ξ(Vⱼ)"
     total_extent::Float64
+    "Number of qubits"
     n_qubits::Int
+    "Simulation time in seconds"
     total_runtime::Float64
 end
 
@@ -768,12 +772,15 @@ Each row is one trajectory, each column is one measured qubit.
 Analogous to `pfmeasurements` for Pauli frames.
 
 # Example
-```julia
-result = lrtrajectories(circuit; trajectories=1000)
-m = lrmeasurements(result)
-prob_0 = sum(m[:, 1] .== false) / size(m, 1)  # Probability of |0⟩ on qubit 1
+```jldoctest
+julia> circuit = [sHadamard(1), TGate(1)];
+julia> result = lrtrajectories(circuit; trajectories=100);
+julia> m = lrmeasurements(result);
+julia> size(m)
+(100, 1)
+julia> 0.0 <= sum(m[:, 1] .== false) / size(m, 1) <= 1.0
+true
 ```
-
 """
 lrmeasurements(r::LRTrajectoryResults) = r.measurements
 
@@ -832,7 +839,7 @@ end
     compute_stabilizer_inner_product(state1::Stabilizer, state2::Stabilizer) -> ComplexF64
 
 Compute inner product ⟨state1|state2⟩ using QuantumClifford's dot function.
-Based on Section 4.3, Lemma 3 of Bravyi et al. 2019.
+Based on Section 4.3, Lemma 3 of [bravyi2019simulation](@cite).
 """
 function compute_stabilizer_inner_product(state1::Stabilizer, state2::Stabilizer)
     n = nqubits(state1)
@@ -1349,7 +1356,7 @@ for Pauli frame simulation.
 Use `lrmeasurements(result)` to extract the measurement matrix.
 
 # Algorithm
-Implements the Sum-over-Cliffords method from Section 2.3.2 of Bravyi et al. 2019
+Implements the Sum-over-Cliffords method from Section 2.3.2 of [bravyi2019simulation](@cite)
 with incremental sparsification (Section 5.2) after each non-Clifford gate:
 
 1. Initialize with |0⟩ state
@@ -1360,20 +1367,21 @@ with incremental sparsification (Section 5.2) after each non-Clifford gate:
 
 # Performance
 - Memory: O(k × n) where k ≈ total_extent/δ² (never stores 2^m terms)
-- Simulation cost scales as ∏ⱼ ξ(Vⱼ) where ξ(T) ≈ 1.172, ξ(CCZ) = 16/9
+- Simulation cost scales as ∏ⱼ ξ(Vⱼ) where Vⱼ are the non-Clifford gates and ξ(T) ≈ 1.172, ξ(CCZ) = 16/9
 - Time complexity: O(m × k² × n³) for simulation + O(k × n³ × trajectories) for sampling
 
 # Example
-```julia
-# Simple T-gate circuit
-circuit = [sHadamard(1), TGate(1), sHadamard(1)]
-result = lrtrajectories(circuit; trajectories=5000, delta=0.1)
-println(result)  # Shows statistics and top outcomes
-measurements = lrmeasurements(result)  # Extract raw data
-
-# Check probability distribution
-p0 = sum(measurements[:, 1] .== false) / size(measurements, 1)
-println("P(|0⟩) = \$p0")  # Should be ≈ cos²(π/8) ≈ 0.854
+```jldoctest
+julia> circuit = [sHadamard(1), TGate(1), sHadamard(1)];
+julia> result = lrtrajectories(circuit; trajectories=100, delta=0.1);
+julia> result.simulation_cost > 0
+true
+julia> measurements = lrmeasurements(result);
+julia> size(measurements)
+(100, 1)
+julia> p0 = sum(measurements[:, 1] .== false) / size(measurements, 1);
+julia> 0.0 <= p0 <= 1.0
+true
 ```
 """
 function lrtrajectories(circuit::AbstractVector{<:AbstractOperation};
@@ -1486,15 +1494,15 @@ is bounded by the maximum k at any single gate, not the final k.
 This is typically much smaller than the estimated final k.
 
 # Example
-```julia
-circuit = [sHadamard(1), TGate(1), TGate(1), TGate(1), sHadamard(1)]
-cost = lrcost(circuit; delta=0.1)
-println("Estimated cost: \$(cost.estimated_k) stabilizer terms")
-println("Total extent: \$(cost.total_extent)")
-
-if cost.estimated_k > 100000
-    println("Consider using larger delta for faster simulation")
-end
+```jldoctest
+julia> circuit = [sHadamard(1), TGate(1), TGate(1), TGate(1), sHadamard(1)];
+julia> cost = lrcost(circuit; delta=0.1);
+julia> cost.non_clifford_count
+3
+julia> cost.estimated_k > 0
+true
+julia> cost.total_extent ≈ stabilizer_extent(TGate(1))^3
+true
 ```
 """
 function lrcost(circuit::AbstractVector{<:AbstractOperation}; delta::Float64=0.1)
