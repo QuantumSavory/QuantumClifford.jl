@@ -3,12 +3,12 @@
     using JuMP
     using HiGHS
     using Hecke: group_algebra, GF, abelian_group, gens
-    using QuantumClifford.ECC: two_block_group_algebra_codes, generalized_bicycle_codes, code_k, code_n, distance, DistanceMIPAlgorithm
+    using QuantumClifford.ECC: two_block_group_algebra_code, generalized_bicycle_codes, code_k, code_n, distance, DistanceMIPAlgorithm
 
     @testset "minimum distance properties: GB" begin
         # [48, 6, 8]] GB code, # minimum distance is exact, d = 8
         l = 24
-        c = generalized_bicycle_codes([0, 2, 8, 15], [0, 2, 12, 17], l)
+        c = generalized_bicycle_code([0, 2, 8, 15], [0, 2, 12, 17], l)
         # minimum distance is exact, d = 8
         i = rand(1:code_k(c))
         # By default, the minimum distance for the Z-type logical operator is computed.
@@ -28,7 +28,7 @@
         z = x*y
         A = x^4 + x^2
         B = x + x^2 + y + z^2 + z^3
-        c = two_block_group_algebra_codes(A, B)
+        c = two_block_group_algebra_code(A, B)
         # minimum distance is exact, d = 5
         i = rand(1:code_k(c))
         @test code_n(c) == 30 && code_k(c) == 4

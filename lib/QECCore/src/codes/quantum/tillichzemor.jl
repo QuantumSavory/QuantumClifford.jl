@@ -219,6 +219,9 @@ matrix ``M`` of size ``m \\times (n-m)``. Each column of ``M`` contains exactly 
 nonzero entries, which are placed uniformly at random while ensuring that no row of M is
 entirely zero. This construction ensures a structured yet partially randomized design for
 the seed parity-check matrix ``H = [C \\mid M]``.
+
+This particular implementation is bespoke to QuantumClifford.jl -- there might be
+other implementations of randomly sampling Tillich Zémor codes.
 """
 function random_TillichZemor_code(rng::AbstractRNG, n::Int, m::Int, r::Int)
     H = _construct_parity_check_matrix(rng, n, m, r)

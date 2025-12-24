@@ -51,6 +51,9 @@ julia> code_n(c), code_k(c)
 
 ### Fields
     $TYPEDFIELDS
+
+
+See also: [`DelfosseReichardt`](@ref), [`DelfosseReichardtRep`](@ref)
 """
 struct DelfosseReichardt823 <: AbstractQECC
     """The number of blocks in the Delfosse-Reichardt generalized [[8, 2, 3]] code."""
