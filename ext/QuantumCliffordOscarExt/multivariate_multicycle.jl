@@ -7,9 +7,9 @@ of *Koszul* complexes. According to [eisenbud2013commutative](@cite) "Let ``a_1,
 tensor product ``(R \\xrightarrow{a_1} R) \\otimes (R \\xrightarrow{a_2} R) \\otimes \\cdots \\otimes (R \\xrightarrow{a_n} R)``. 
 For more details, see Section 17.3.
 
-We note that the work that introduced Trivariate tricycle codes in [jacob2025single](@cite) utilize length-1 chain
-complexes along with the structure of the boundary maps for the tensor-product complex of three length-1 chain complexes
-that was provided in [breuckmann2024cupsgatesicohomology](@cite). See  5.3.2 Product of Λ ≥ 3 group algebra codes page 23
+We note that the work that introduced Trivariate tricycle codes in [jacob2025singleshotdecodingfaulttolerantgates](@cite)
+utilize length-1 chain complexes along with the structure of the boundary maps for the tensor-product complex of
+three length-1 chain complexes that was provided in [breuckmann2024cupsgatesicohomology](@cite). See  5.3.2 Product of Λ ≥ 3 group algebra codes page 23
 for more details.
 
 Specifically, for a code defined by *t* polynomial relations, we show that the *k-th* boundary map is obtained by
@@ -18,9 +18,9 @@ derived from the code's defining relations. The **Koszul complex** provides the 
 ensuring the commutativity properties essential for the code construction. This correspondence reveals that multivariate
 multicycle codes can be constructed using the framework of **Koszul complexes**.
 
-This family of codes generalizes the bivariate bicycle, trivariate tricycle ([`TrivariateTricycleCode`](@ref)), and
+This family of codes generalizes the bivariate bicycle, trivariate tricycle ([`TrivariateTricycle`](@ref)), and
 tetravariate tetracycle codes and it enables full single shot decoding in both X and Z directions, a capability that the
-[`TrivariateTricycleCode`](@ref) lacks.
+[`TrivariateTricycle`](@ref) lacks.
 
 # Special Cases 
 
