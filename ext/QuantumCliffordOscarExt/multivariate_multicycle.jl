@@ -24,7 +24,7 @@ tetravariate tetracycle codes and it enables full single shot decoding in both X
 
 # Special Cases 
 
-## t = 2: Bivariate bicycle codes
+## t = 2: Bivariate bicycle codes ([bravyi2024high](@cite))
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
@@ -101,7 +101,7 @@ julia> code_n(c), code_k(c)
 (756, 16)
 ```
 
-## t = 3: Trivariate tricycle codes
+## t = 3: Trivariate tricycle codes ([jacob2025singleshotdecodingfaulttolerantgates](@cite))
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
@@ -198,7 +198,9 @@ julia> code_n(c), code_k(c)
 (432, 12)
 ```
 
-## t = 4: Tetravariate Tetracycle Codes
+## t = 4: Multivariate Multicycle Codes
+
+These novel codes are made in QuantumClifford.jl backend of QuantumSavory.
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
