@@ -19,14 +19,14 @@ export Perfect5, Cleve8, Gottesman
 
 # CSS Codes
 export Toric, Bitflip3, Phaseflip3, Shor9, Steane7, Surface, CSS, QuantumReedMuller, Triangular488, Triangular666,
-DelfosseReichardt, DelfosseReichardtRepCode, DelfosseReichardt823, QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
-TillichZemor, random_TillichZemor_code, BivariateBicycleCodeViaCirculantMat
+DelfosseReichardt, DelfosseReichardtRep, DelfosseReichardt823, QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
+TillichZemor, random_TillichZemor_code, BivariateBicycleViaCirculantMat
 
 # Classical Codes
-export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, random_Gallager_ldpc, GoppaCode, random_Goppa_code
+export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, random_Gallager_ldpc, Goppa, random_Goppa_code
 
 # utilities
-export search_self_orthogonal_rm_codes
+export search_self_orthogonal_rm_code, hgp
 
 include("interface.jl")
 include("codes/util.jl")

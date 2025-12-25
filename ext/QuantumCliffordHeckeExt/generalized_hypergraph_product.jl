@@ -40,7 +40,7 @@ julia> A = matrix(S, n, n,
 
 julia> b = S(1 + x + x^6);
 
-julia> c = GeneralizedHyperGraphProductCode(A, b, l);
+julia> c = GeneralizedHyperGraphProduct(A, b, l);
 
 julia> code_n(c), code_k(c)
 (882, 24)
@@ -61,12 +61,12 @@ julia> A = matrix(S, n, n,
            [1     0     x^51  x^52  0
             0     1     0     x^111 x^20
             1     0     x^98  0     x^122
-            1     x^80  0     x^119 0 
+            1     x^80  0     x^119 0
             0     1     x^5   0     x^106]);
 
 julia> b = S(1 + x + x^7);
 
-julia> c = GeneralizedHyperGraphProductCode(A, b, l);
+julia> c = GeneralizedHyperGraphProduct(A, b, l);
 
 julia> code_n(c), code_k(c)
 (1270, 28)
@@ -75,7 +75,7 @@ julia> code_n(c), code_k(c)
 ### Fields
     $TYPEDFIELDS
 """
-struct GeneralizedHyperGraphProductCode <: AbstractCSSCode
+struct GeneralizedHyperGraphProduct <: AbstractCSSCode
     """The matrix ``A \\in M_{n \\times n}(R)``, where ``R = \\mathbb{F}_2[x]/(x^\\ell - 1)``. Each entry in `A` represents a polynomial modulo ``x^\\ell - 1``, defining a circulant block."""
     A::MatSpaceElem{EuclideanRingResidueRingElem{FqPolyRingElem}}
     """The polynomial ``b(x) \\in R``, generating a binary circulant matrix that commutes with all elements of `R`. """
@@ -83,7 +83,7 @@ struct GeneralizedHyperGraphProductCode <: AbstractCSSCode
     """The number of rows and columns in each binary circulant block."""
     l::Int
 
-    function GeneralizedHyperGraphProductCode(A, b, l)
+    function GeneralizedHyperGraphProduct(A, b, l)
         size(A, 1) == size(A, 2) || throw(ArgumentError("A must be square"))
         parent(A[1,1]) == parent(b) || throw(ArgumentError("A and b must be over the same ring"))
         new(A, b, l)
@@ -120,7 +120,7 @@ function _polynomial_matrix_to_circulant_matrix(H_poly, l)
     return H
 end
 
-function parity_matrix_xz(c::GeneralizedHyperGraphProductCode)
+function parity_matrix_xz(c::GeneralizedHyperGraphProduct)
     n = size(c.A, 1)
     Aᵗʳ = matrix(parent(c.b), n, n, [_poly_transpose(c.A[j, i], c.l) for i in 1:n, j in 1:n])
     bᵢ = _bᵢ(c.b, n)
@@ -132,6 +132,6 @@ function parity_matrix_xz(c::GeneralizedHyperGraphProductCode)
     return hx, hz
 end
 
-parity_matrix_x(c::GeneralizedHyperGraphProductCode) = parity_matrix_xz(c)[1]
+parity_matrix_x(c::GeneralizedHyperGraphProduct) = parity_matrix_xz(c)[1]
 
-parity_matrix_z(c::GeneralizedHyperGraphProductCode) = parity_matrix_xz(c)[2]
+parity_matrix_z(c::GeneralizedHyperGraphProduct) = parity_matrix_xz(c)[2]

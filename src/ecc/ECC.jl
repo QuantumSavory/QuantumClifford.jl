@@ -22,8 +22,6 @@ using SparseArrays: sparse
 using Statistics: std
 
 using DocStringExtensions
-using JuliaSyntaxHighlighting: highlight
-using StyledStrings: @styled_str
 
 export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
@@ -34,23 +32,23 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface, Concat, CircuitCode,
-    LPCode, two_block_group_algebra_codes, generalized_bicycle_codes_as_2bga, bicycle_codes_as_2bga,
-    Haah_cubic_codes_as_2bga, twobga_from_fp_group, twobga_from_direct_product,
+    LPCode, two_block_group_algebra_code, generalized_bicycle_code_as_2bga, bicycle_code_as_2bga,
+    Haah_cubic_code_as_2bga, twobga_from_fp_group, twobga_from_direct_product,
     TillichZemor, random_TillichZemor_code,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
-    Triangular488, Triangular666, honeycomb_color_codes_as_2bga, DelfosseReichardt,
-    DelfosseReichardtRepCode, DelfosseReichardt823, LaCross,
+    Triangular488, Triangular666, honeycomb_color_code_as_2bga, DelfosseReichardt,
+    DelfosseReichardtRep, DelfosseReichardt823, LaCross,
     QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
-    DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps,
-    BivariateBicycleCodeViaCirculantMat, GeneralizedHyperGraphProductCode,
-    GeneralizedBicycleCode, ExtendedGeneralizedBicycleCode,
-    HomologicalProductCode, DoubleHomologicalProductCode,
-    GeneralizedToricCode, TrivariateTricycleCode, BivariateBicycleCodeViaPoly,
+    DDimensionalSurface, DDimensionalToric, boundary_maps,
+    BivariateBicycleViaCirculantMat, GeneralizedHyperGraphProduct,
+    GeneralizedBicycle, ExtendedGeneralizedBicycle,
+    HomologicalProduct, DoubleHomologicalProduct,
+    GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder, CSSTableDecoder,
     BeliefPropDecoder, BitFlipDecoder,
-    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, DecoderCorrectionGate
+    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, TesseractDecoder, DecoderCorrectionGate
 
 """Parity check tableau of a code.
 
