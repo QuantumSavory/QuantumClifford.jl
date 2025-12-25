@@ -11,14 +11,14 @@
         F2 = GF(2)
         R, (x, y, z) = polynomial_ring(F2, [:x, :y, :z])
         table_i = [
-            # n   , k  ,  ℓ, m, p, A                           , B                            ,   C
+            # n   , k  ,  l, m, p, A                           , B                            ,   C
             (72   , 6  ,  4, 3, 2, 1 + y         + x*y^2       , 1 + y*z       + x^2*y^2      , 1 + x*y^2*z     + x^2*y      ),
             (180  , 12 ,  5, 4, 3, 1 + x^2*y^3*z + x^4*y       , 1 + x^3       + x^4*z^2      , 1 + x^3*y^3     + x^4*y*z^2  ),
             (432  , 12 ,  6, 6, 4, 1 + x*y*z^3   + x^3*y^4*z^2 , 1 + x^3*y*z^2 + x^3*y^2*z^3  , 1 + x^4*y^3*z^3 + x^5*z^2    ),
         ]
 
         table_iii = [
-            # n , k , ℓ, m, p, A         , B        ,   C
+            # n , k , l, m, p, A         , B        ,   C
             (36 , 3 , 3, 2, 2, 1 + x*y*z , 1 + x^2*z, 1 + x^2*y    ),
             (48 , 3 , 4, 2, 2, 1 + x     , 1 + x*z  , 1 + x*y      ),
             (54 , 3 , 3, 3, 2, 1 + y*z   , 1 + x*z  , 1 + x*y*z    ),
@@ -27,7 +27,7 @@
         ]
 
         table_iv = [
-            # n  , k  , ℓ, m, p, A                             , B             , C
+            # n  , k  , l, m, p, A                             , B             , C
             (36  , 6  , 3, 2, 2, (1 +       z)*(1 + x        ) , 1 + x         , 1 + x*y*z       ),
             (48  , 6  , 4, 2, 2, (1 + x^2*y*z)*(1 + x*z      ) , 1 + x^3       , 1 + x^3*y*z     ),
             (54  , 9  , 3, 3, 2, (1 +       z)*(1 + y        ) , 1 + x*y*z     , 1 + x^2*y^2     ),
@@ -36,7 +36,7 @@
         ]
 
         table_v = [
-            # n  , k ,  ℓ, m, p, A                          , B                          ,   C
+            # n  , k ,  l, m, p, A                          , B                          ,   C
             (36  , 6 ,  3, 2, 2, 1 + x         + x^2*z      , 1 + x*y       + x^2*y      , 1 + x*y*z       + x^2        ),
             (72  , 6 ,  4, 3, 2, 1 + y         + x*y^2      , 1 + y*z       + x^2*y^2    , 1 + x*y^2*z     + x^2*y      ),
             (81  , 6 ,  3, 3, 3, 1 + x         + x*y        , 1 + y         + y*z        , 1 + z           + z*x        ),
@@ -54,26 +54,26 @@
         ]
 
             table_vi = [
-            # n   , k  ,  ℓ, m, p, A                       , B                         ,   C
+            # n   , k  ,  l, m, p, A                       , B                         ,   C
             (108  , 18 ,  4, 3, 3, (1 + x^2)*(1 + x*y*z^2) , (1 + x^2)*(1 + x^3*y^2*z) ,  1  + x^2*y^2*z^2      ),
             (108  , 60 ,  4, 3, 3, (1 + x^2)*(1 +       z) , (1 + x^2)*(1 + x^2*y*z^2) , (1  + x^2)*(1 + z^2)   )
         ]
 
-        for (n, k, ℓ, m, p, A_poly, B_poly, C_poly) in vcat(table_i, table_iii, table_iv, table_v, table_vi)
+        for (n, k, l, m, p, A_poly, B_poly, C_poly) in vcat(table_i, table_iii, table_iv, table_v, table_vi)
             F2 = GF(2)
             R, (x, y, z) = polynomial_ring(F2, [:x, :y, :z])
-            I = ideal(R, [x^ℓ - 1, y^m - 1, z^p - 1])
+            I = ideal(R, [x^l - 1, y^m - 1, z^p - 1])
             S, _ = quo(R, I)
             A = S(A_poly)
             B = S(B_poly)
             C = S(C_poly)
-            c = TrivariateTricycleCode(ℓ, m, p, A, B, C)
+            c = TrivariateTricycle(l, m, p, A, B, C)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
             @test computed_rank == code_n(c) - code_k(c)
-            # A TT code is defined on n = 3*ℓ*m*p data qubits.
-            @test code_n(c) == n == code_n(stab) == 3*ℓ*m*p
+            # A TT code is defined on n = 3*l*m*p data qubits.
+            @test code_n(c) == n == code_n(stab) == 3*l*m*p
             @test code_k(c) == k == code_k(stab)
             @test stab_looks_good(stab, remove_redundant_rows=true) == true
             @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))

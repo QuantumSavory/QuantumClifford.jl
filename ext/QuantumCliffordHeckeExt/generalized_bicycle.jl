@@ -20,7 +20,7 @@ julia> a = 1 + x^4;
 
 julia> b = 1 + x + x^2 + x^4;
 
-julia> c = GeneralizedBicycleCode(a, b, l);
+julia> c = GeneralizedBicycle(a, b, l);
 
 julia> import HiGHS;
 
@@ -43,7 +43,7 @@ julia> a = 1 + x + x^2 + x^5;
 
 julia> b = 1 + x + x^3 + x^5;
 
-julia> c = GeneralizedBicycleCode(a, b, l);
+julia> c = GeneralizedBicycle(a, b, l);
 
 julia> import HiGHS;
 
@@ -51,28 +51,28 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (12, 2, 3)
 ```
 
-See also: [`generalized_bicycle_codes`](@ref)
+See also: [`generalized_bicycle_code_as_2bga`](@ref)
 
 ### Fields
     $TYPEDFIELDS
 """
-struct GeneralizedBicycleCode <: AbstractCSSCode
+struct GeneralizedBicycle <: AbstractCSSCode
     """First generator polynomial in 𝔽₂[x]/(xˡ - 1)."""
     a::FqPolyRingElem
     """Second generator polynomial in 𝔽₂[x]/(xˡ - 1)."""
     b::FqPolyRingElem
     """The lift size which corresponds to dimension of circulant matrices."""
     l::Int
-    function GeneralizedBicycleCode(a::FqPolyRingElem, b::FqPolyRingElem, l::Int)
+    function GeneralizedBicycle(a::FqPolyRingElem, b::FqPolyRingElem, l::Int)
         l <= 0 && throw(ArgumentError("Block length must be positive."))
         (base_ring(a) != base_ring(b)) && throw(ArgumentError("Polynomials must be from the same ring."))
-        (characteristic(base_ring(a)) != 2) && throw(ArgumentError("Polynomials must be over 𝔽₂"))   
+        (characteristic(base_ring(a)) != 2) && throw(ArgumentError("Polynomials must be over 𝔽₂"))
         (degree(a) >= l || degree(b) >= l) && throw(ArgumentError("Polynomial degrees must be < l."))
         new(a, b, l)
     end
 end
 
-function parity_matrix_xz(c::GeneralizedBicycleCode)
+function parity_matrix_xz(c::GeneralizedBicycle)
     A = circulant_matrix_from_polynomial_ring(c.l, c.a)
     B = circulant_matrix_from_polynomial_ring(c.l, c.b)
     hx = hcat(A, B)
@@ -80,10 +80,10 @@ function parity_matrix_xz(c::GeneralizedBicycleCode)
     return hx, hz
 end
 
-parity_matrix_x(c::GeneralizedBicycleCode) = parity_matrix_xz(c)[1]
+parity_matrix_x(c::GeneralizedBicycle) = parity_matrix_xz(c)[1]
 
-parity_matrix_z(c::GeneralizedBicycleCode) = parity_matrix_xz(c)[2]
+parity_matrix_z(c::GeneralizedBicycle) = parity_matrix_xz(c)[2]
 
-code_n(c::GeneralizedBicycleCode) = 2*c.l
+code_n(c::GeneralizedBicycle) = 2*c.l
 
-code_k(c::GeneralizedBicycleCode) = 2*degree(gcd(c.a, c.b, gen(parent(c.a))^c.l - 1))
+code_k(c::GeneralizedBicycle) = 2*degree(gcd(c.a, c.b, gen(parent(c.a))^c.l - 1))

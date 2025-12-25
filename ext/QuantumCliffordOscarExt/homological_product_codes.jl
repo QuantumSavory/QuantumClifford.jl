@@ -6,13 +6,13 @@ matrices via iterated *homological* products.
 
 Several interpretations of the homological product exist. For example,
 [bravyi2013homologicalproductcodes](@cite) employ a simplified version known
-as the *single-sector* homological product. In contrast, the `HomologicalProductCode`
+as the *single-sector* homological product. In contrast, the `HomologicalProduct`
 adopts a more conventional definition, which [bravyi2013homologicalproductcodes](@cite)
 would refer to as the *multi-sector* homological product.
 
 The term "homological product codes" can broadly encompass various constructions
 involving the product of quantum codes ([bravyi2013homologicalproductcodes](@cite),
-[Campbell_2019](@cite)). However, `HomologicalProductCode` focuses specifically on a
+[Campbell_2019](@cite)). However, `HomologicalProduct` focuses specifically on a
 particular subset—namely, the product of classical codes, which can also be described
 as length-`1` chain complexes (sometimes called high-dimensional hypergraph product codes
 [Zeng_2019](@cite)).
@@ -69,8 +69,8 @@ for any ``a_{\\vec{x}} \\in D_{\\vec{x}}``, and
 
 ```math
 \\begin{aligned}
-\\partial_{\\vec{y},\\vec{x}} := 
-\\begin{cases} 
+\\partial_{\\vec{y},\\vec{x}} :=
+\\begin{cases}
 \\partial^i_{\\vec{x}} & \\text{if } \\vec{x} - \\vec{y} = \\vec{e}_i \\text{ for some } i \\in [D], \\\\
 0 & \\text{otherwise.}
 \\end{cases}
@@ -80,7 +80,7 @@ for any ``a_{\\vec{x}} \\in D_{\\vec{x}}``, and
 !!! note
     The total complex is obtained by projecting the ``D``-dimensional complex along
     the "diagonal" direction. Once a total chain complex is derived from a product complex
-    (with length greater than 2), a quantum code can be defined from a length-2 
+    (with length greater than 2), a quantum code can be defined from a length-2
     subcomplex [xu2024fastparallelizablelogicalcomputation](@cite).
 
 [xu2024fastparallelizablelogicalcomputation](@cite) focuses on product complexes with
@@ -107,7 +107,7 @@ julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECC
 
 julia> δ = matrix(GF(2), parity_matrix(RepCode(3)));
 
-julia> c = HomologicalProductCode([δ,δ,δ]);
+julia> c = HomologicalProduct([δ,δ,δ]);
 
 julia> import HiGHS; import JuMP;
 
@@ -128,7 +128,7 @@ julia> l = 3;
 julia> H = matrix(R, 2, 3, [x^2 x^2 x^2;
                             x   x^2  0]);
 
-julia> c = HomologicalProductCode([H,transpose(H)], l);
+julia> c = HomologicalProduct([H,transpose(H)], l);
 
 julia> import HiGHS; import JuMP;
 
@@ -139,29 +139,24 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 Here is a Homological product of `(3,4)`-classical LDPC codes.
 
 ```jldoctest
-julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECCore;
+julia> using Oscar, QuantumClifford, QuantumClifford.ECC, QECCore;
 
 julia> μ = 2; wc = 3; wr = 4;
 
-julia> c = GallagerLDPC(μ, wc, wr);
+julia> c = random_Gallager_ldpc(μ, wc, wr);
 
-julia> H = matrix(GF(2), parity_matrix(c));
+julia> H = matrix(GF(2), c);
 
-julia> c = HomologicalProductCode([H,transpose(H)]);
-
-julia> import HiGHS; import JuMP;
-
-julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
-(100, 20, 2)
+julia> c = HomologicalProduct([H,transpose(H)]);
 ```
 
 ### Fields
     $TYPEDFIELDS
 """
-struct HomologicalProductCode{T<:MatElem} <: AbstractCSSCode
+struct HomologicalProduct{T<:MatElem} <: AbstractCSSCode
     """A length-`D` vector of parity-check matrices of classical error-correcting codes."""
     boundary_maps::Vector{T}
-    function HomologicalProductCode(boundary_maps::Vector{T}) where {T <: MatElem}
+    function HomologicalProduct(boundary_maps::Vector{T}) where {T <: MatElem}
         length(boundary_maps) >= 2 || throw(ArgumentError("At least `2` boundary maps must be provided."))
         all(base_ring(δ) == base_ring(boundary_maps[1]) for δ in boundary_maps) || throw(ArgumentError("All boundary maps must have the same base ring."))
         new{T}(boundary_maps)
@@ -186,15 +181,15 @@ function _circulant_matrix_from_quasi_cyclic_polynomial_matrix(H::MatSpaceElem, 
     return H_bin
 end
 
-function HomologicalProductCode(boundary_maps::Vector{MatSpaceElem{FqPolyRingElem}}, l::Int)
+function HomologicalProduct(boundary_maps::Vector{MatSpaceElem{FqPolyRingElem}}, l::Int)
     δₛ = [_circulant_matrix_from_quasi_cyclic_polynomial_matrix(δ, l) for δ in boundary_maps]
-    HomologicalProductCode(δₛ)
+    HomologicalProduct(δₛ)
 end
 
-HomologicalProductCode(boundary_maps::Vector{MatSpaceElem{FqPolyRingElem}}; l::Int) = HomologicalProductCode(boundary_maps, l)
+HomologicalProduct(boundary_maps::Vector{MatSpaceElem{FqPolyRingElem}}; l::Int) = HomologicalProduct(boundary_maps, l)
 
-function boundary_maps(hp::HomologicalProductCode)
-    length(hp.boundary_maps) < 2 && throw(ArgumentError("`HomologicalProductCode` requires at least `2` boundary maps."))
+function boundary_maps(hp::HomologicalProduct)
+    length(hp.boundary_maps) < 2 && throw(ArgumentError("`HomologicalProduct` requires at least `2` boundary maps."))
     typeof(hp.boundary_maps) == Vector{MatSpaceElem{FqPolyRingElem}} ? [_circulant_matrix_from_quasi_cyclic_polynomial_matrix(δ, c.l) for δ in hp.boundary_maps] : hp.boundary_maps
     R = base_ring(hp.boundary_maps[1])
     C = chain_complex([hom(free_module(R, size(hp.boundary_maps[1],1)), free_module(R, size(hp.boundary_maps[1],2)), hp.boundary_maps[1])], seed=0)
@@ -208,14 +203,14 @@ function boundary_maps(hp::HomologicalProductCode)
     return matrix_to_int.(δs)
 end
 
-function metacheck_matrix_x(c::HomologicalProductCode)
+function metacheck_matrix_x(c::HomologicalProduct)
     length(c.boundary_maps) ≥ 3 || throw(ArgumentError("`X`-metachecks (`Mx`) require three classical seed codes (D=$(length(c.boundary_maps))"))
     return boundary_maps(c)[3] # Mx = δ₂
 end
 
-parity_matrix_x(hp::HomologicalProductCode) = boundary_maps(hp)[2]
+parity_matrix_x(hp::HomologicalProduct) = boundary_maps(hp)[2]
 
-parity_matrix_z(hp::HomologicalProductCode) = boundary_maps(hp)[1]'
+parity_matrix_z(hp::HomologicalProduct) = boundary_maps(hp)[1]'
 
 """
 Constructs the *Double Homological Product code* from [Campbell_2019](@cite).
@@ -225,7 +220,7 @@ Constructs the *Double Homological Product code* from [Campbell_2019](@cite).
 To construct a quantum error-correcting code with *metachecks*, we require a length-4 chain
 complex. This can be built by taking the *homological product* of two length-2 chain complexes.
 
-The length-4 chain complex, structured as:  
+The length-4 chain complex, structured as:
 
 ```math
 \\begin{aligned}
@@ -233,7 +228,7 @@ The length-4 chain complex, structured as:
 \\end{aligned}
 ```
 
-The homological product of two 2D chain complexes produces this length-4 complex, following the general rule:  
+The homological product of two 2D chain complexes produces this length-4 complex, following the general rule:
 
 ```math
 \\begin{aligned}
@@ -241,31 +236,31 @@ The homological product of two 2D chain complexes produces this length-4 complex
 \\end{aligned}
 ```
 
-The boundary maps are represented as block matrices and are defined as:  
+The boundary maps are represented as block matrices and are defined as:
 
 ```math
 \\begin{align}
-\\breve{\\delta}_{-2} &= \\begin{pmatrix} 
-I \\otimes \\tilde{\\delta}_0^T \\\\ 
-\\tilde{\\delta}_{-1} \\otimes I 
+\\breve{\\delta}_{-2} &= \\begin{pmatrix}
+I \\otimes \\tilde{\\delta}_0^T \\\\
+\\tilde{\\delta}_{-1} \\otimes I
 \\end{pmatrix} \\\\
-\\breve{\\delta}_{-1} &= \\begin{pmatrix} 
+\\breve{\\delta}_{-1} &= \\begin{pmatrix}
 I \\otimes \\tilde{\\delta}_{-1}^T & 0 \\\\
 \\tilde{\\delta}_{-1} \\otimes I & I \\otimes \\tilde{\\delta}_0^T \\\\
-0 & \\tilde{\\delta}_0 \\otimes I 
+0 & \\tilde{\\delta}_0 \\otimes I
 \\end{pmatrix} \\\\
-\\breve{\\delta}_0 &= \\begin{pmatrix} 
+\\breve{\\delta}_0 &= \\begin{pmatrix}
 \\tilde{\\delta}_{-1} \\otimes I & I \\otimes \\tilde{\\delta}_{-1}^T & 0 \\\\
-0 & \\tilde{\\delta}_0 \\otimes I & I \\otimes \\tilde{\\delta}_0^T 
+0 & \\tilde{\\delta}_0 \\otimes I & I \\otimes \\tilde{\\delta}_0^T
 \\end{pmatrix} \\\\
-\\breve{\\delta}_1 &= \\begin{pmatrix} 
-\\tilde{\\delta}_0 \\otimes I & I \\otimes \\tilde{\\delta}_{-1}^T 
+\\breve{\\delta}_1 &= \\begin{pmatrix}
+\\tilde{\\delta}_0 \\otimes I & I \\otimes \\tilde{\\delta}_{-1}^T
 \\end{pmatrix}
 \\end{align}
 ```
 
 The condition ``\\breve{\\delta}_{j+1} \\breve{\\delta}_j = 0`` holds for all j,
-which follows from the corresponding property of the ``\\tilde{\\delta}`` matrices.  
+which follows from the corresponding property of the ``\\tilde{\\delta}`` matrices.
 
 #### Example
 
@@ -277,7 +272,7 @@ julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC; using QECC
 julia> δ = [1 1 0;
             0 1 1];
 
-julia> c = DoubleHomologicalProductCode(δ);
+julia> c = DoubleHomologicalProduct(δ);
 
 julia> import HiGHS; import JuMP;
 
@@ -288,12 +283,12 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 ### Fields
     $TYPEDFIELDS
 """
-struct DoubleHomologicalProductCode <: AbstractCSSCode
+struct DoubleHomologicalProduct <: AbstractCSSCode
     """The parity-check matrix of a classical error-correcting code."""
     H::AbstractMatrix
 end
 
-function boundary_maps(c::DoubleHomologicalProductCode)
+function boundary_maps(c::DoubleHomologicalProduct)
     R = GF(2)
     n = size(c.H, 2)
     m = size(c.H, 1)
@@ -324,7 +319,7 @@ function boundary_maps(c::DoubleHomologicalProductCode)
     # δ̌₋₁ = [I ⊗ δ̃₋₁ᵀ |    0
     #        δ̃₋₁ ⊗ I  | I ⊗ δ̃₀ᵀ
     #           0      | δ̃₀ ⊗ I]
-    
+
     # I ⊗ δ̃₋₁ᵀ  0
     tb = hcat(
         kronecker_product(identity_matrix(R, ñ₁), transpose(δ̃₋₁)),
@@ -373,10 +368,10 @@ function boundary_maps(c::DoubleHomologicalProductCode)
     return fq_to_int(δ̌₋₂), fq_to_int(δ̌₋₁), fq_to_int(δ̌₀), fq_to_int(δ̌₁)
 end
 
-parity_matrix_x(c::DoubleHomologicalProductCode) = boundary_maps(c)[3] # δ̌₀
+parity_matrix_x(c::DoubleHomologicalProduct) = boundary_maps(c)[3] # δ̌₀
 
-parity_matrix_z(c::DoubleHomologicalProductCode) = boundary_maps(c)[2]' # δ̌₋₁'
+parity_matrix_z(c::DoubleHomologicalProduct) = boundary_maps(c)[2]' # δ̌₋₁'
 
-metacheck_matrix_x(c::DoubleHomologicalProductCode) = boundary_maps(c)[4] # δ̌₁
+metacheck_matrix_x(c::DoubleHomologicalProduct) = boundary_maps(c)[4] # δ̌₁
 
-metacheck_matrix_z(c::DoubleHomologicalProductCode) = boundary_maps(c)[1]' # δ̌₋₂'
+metacheck_matrix_z(c::DoubleHomologicalProduct) = boundary_maps(c)[1]' # δ̌₋₂'
