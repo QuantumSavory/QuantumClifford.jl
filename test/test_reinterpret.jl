@@ -14,8 +14,8 @@
 	xzs = reshape(UInt64[3, 0, 0, 3], nch, 2)  # 2 rows with UInt64 storage
 	phases = UInt8[0x0, 0x0]
 	t = QuantumClifford.Tableau(phases, 2, xzs)
-	@test QuantumClifford.stab_to_gf2(t)[1] == [1, 1, 0, 0]  # X₁X₂
-	@test QuantumClifford.stab_to_gf2(t)[2] == [0, 0, 1, 1]  # Z₁Z₂
+	@test QuantumClifford.stab_to_gf2(t)[1] == [true, true, false, false]  # X₁X₂
+	@test QuantumClifford.stab_to_gf2(t)[2] == [false, false, true, true]  # Z₁Z₂
 end
 
 @testitem "reinterpret edge cases" begin
