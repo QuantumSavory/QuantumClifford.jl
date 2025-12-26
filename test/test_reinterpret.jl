@@ -11,11 +11,11 @@
 	# Tableau with explicit UInt64 storage
 	# For 2 qubits: row1 = X₁X₂ (xbits=0b11=3, zbits=0b00=0), row2 = Z₁Z₂ (xbits=0b00=0, zbits=0b11=3)
 	nch = QuantumClifford._nchunks(2, UInt64)
-	xzs = reshape(UInt64[3, 0, 0, 3], nch, 2)  # 2 rows with UInt64 storage
+	xzs = reshape(UInt64[3, 0, 0, 3], nch, 2)
 	phases = UInt8[0x0, 0x0]
 	t = QuantumClifford.Tableau(phases, 2, xzs)
-	@test QuantumClifford.stab_to_gf2(t)[1] == [true, true, false, false]  # X₁X₂
-	@test QuantumClifford.stab_to_gf2(t)[2] == [false, false, true, true]  # Z₁Z₂
+	@test QuantumClifford.stab_to_gf2(t)[1, :] == [true, true, false, false]  # X₁X₂
+	@test QuantumClifford.stab_to_gf2(t)[2, :] == [false, false, true, true]  # Z₁Z₂
 end
 
 @testitem "reinterpret edge cases" begin
@@ -40,24 +40,23 @@ end
 		@test isa(e, ArgumentError)
 	end
 end
-
-@testset "reinterpret combinations" begin
-	unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
+	@test t[1, :] == [true, true, false, false]  # X₁X₂
+	@test t[2, :] == [false, false, true, true]  # Z₁Z₂
+	unsigned_types = subtypes(Unsigned)
 	ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
 
 	for n in ns
 		for Ti in unsigned_types, Tf in unsigned_types
-			len = QuantumClifford._nchunks(n, Ti)
-			xz = rand(Ti, len)
-			p = PauliOperator(0x0, n, xz)
+			p = zero(PauliOperator, n)
+			random_pauli!(p)
 			try
 				p2 = reinterpret(Tf, p)
 				p3 = reinterpret(Ti, p2)
 				@test xbit(p) == xbit(p3)
 				@test zbit(p) == zbit(p3)
 			catch e
-				@test isa(e, ArgumentError)
-			end
+				@test xbit(p) == xbit(p3)
+				@test zbit(p) == zbit(p3)
 		end
 	end
 end
@@ -75,7 +74,7 @@ end
 	end
 
 	p_min = QuantumClifford.PauliOperator(0x0, 1, UInt8[0x0])
-	@test_throws ArgumentError reinterpret(UInt16, p_min)
+				@test t == t3
 
 	p_small2 = QuantumClifford.PauliOperator(0x0, 2, UInt8[0x0, 0x0])
 	@test_throws ArgumentError reinterpret(UInt128, p_small2)
@@ -91,28 +90,26 @@ end
 	try
 		t2 = reinterpret(UInt16, t_ok)
 		t3 = reinterpret(eltype(t_ok.xzs), t2)
-		@test QuantumClifford.stab_to_gf2(t_ok) == QuantumClifford.stab_to_gf2(t3)
-	catch e
+		@test t_ok == t3
+				@test tab(s) == tab(s3)
 		@test isa(e, ArgumentError)
 	end
 end
 
 @testset "tableau combinations" begin
-	unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
+	unsigned_types = subtypes(Unsigned)
 	ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
 	rows_choices = (1, 2, 3)
 
 	for n in ns
 		for Ti in unsigned_types, Tf in unsigned_types
 			for r in rows_choices
-				nch = QuantumClifford._nchunks(n, Ti)
-				xzs = rand(Ti, nch, r)
-				phases = zeros(UInt8, r)
-				t = QuantumClifford.Tableau(phases, n, xzs)
+				t = zero(Tableau, r, n)
+				random_tableau!(t)
 				try
-					t2 = reinterpret(Tf, t)
+			@test tab(d) == tab(d3)
 					t3 = reinterpret(Ti, t2)
-					@test QuantumClifford.stab_to_gf2(t) == QuantumClifford.stab_to_gf2(t3)
+					@test t == t3
 				catch e
 					@test isa(e, ArgumentError)
 				end
@@ -123,47 +120,43 @@ end
 
 
 @testset "stabilizer combinations" begin
-	unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
+	unsigned_types = subtypes(Unsigned)
 	ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
 	rows_choices = (1, 2, 3)
-
+			@test tab(ms) == tab(ms3)
 	for n in ns
 		for Ti in unsigned_types, Tf in unsigned_types
 			for r in rows_choices
-				nch = QuantumClifford._nchunks(n, Ti)
-				xzs = rand(Ti, nch, r)
-				phases = zeros(UInt8, r)
-				t = QuantumClifford.Tableau(phases, n, xzs)
+				t = zero(Tableau, r, n)
+				random_tableau!(t)
 				s = QuantumClifford.Stabilizer(t)
 				try
 					s2 = reinterpret(Tf, s)
 					s3 = reinterpret(Ti, s2)
-					@test QuantumClifford.stab_to_gf2(tab(s)) == QuantumClifford.stab_to_gf2(tab(s3))
+					@test s == s3
 				catch e
 					@test isa(e, ArgumentError)
 				end
 			end
 		end
-	end
+			@test tab(md) == tab(md3)
 end
 
 
 @testset "destabilizer combinations" begin
-	unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
+	unsigned_types = subtypes(Unsigned)
 	ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
 
 	for n in ns
 		for Ti in unsigned_types, Tf in unsigned_types
-			nch = QuantumClifford._nchunks(n, Ti)
-			xzs = rand(Ti, nch, n)
-			phases = zeros(UInt8, n)
-			t = QuantumClifford.Tableau(phases, n, xzs)
+			t = zero(Tableau, n, n)
+			random_tableau!(t)
 			s = QuantumClifford.Stabilizer(t)
 			d = QuantumClifford.Destabilizer(s)
 			try
 				d2 = reinterpret(Tf, d)
 				d3 = reinterpret(Ti, d2)
-				@test QuantumClifford.stab_to_gf2(tab(d)) == QuantumClifford.stab_to_gf2(tab(d3))
+				@test tab(pf.frame) == tab(pf3.frame)
 			catch e
 				@test isa(e, ArgumentError)
 			end
@@ -173,23 +166,20 @@ end
 
 
 @testset "mixedstabilizer combinations" begin
-	unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
+	unsigned_types = subtypes(Unsigned)
 	ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
 
 	for n in ns
 		for Ti in unsigned_types, Tf in unsigned_types
-			nch = QuantumClifford._nchunks(n, Ti)
-			# Create a rank-deficient stabilizer for MixedStabilizer
 			r = min(n-1, max(1, n÷2)) # Make it rank-deficient
-			xzs = rand(Ti, nch, r)
-			phases = zeros(UInt8, r)
-			t = QuantumClifford.Tableau(phases, n, xzs)
+			t = zero(Tableau, r, n)
+			random_tableau!(t)
 			s = QuantumClifford.Stabilizer(t)
 			ms = QuantumClifford.MixedStabilizer(s)
 			try
 				ms2 = reinterpret(Tf, ms)
 				ms3 = reinterpret(Ti, ms2)
-				@test QuantumClifford.stab_to_gf2(tab(ms)) == QuantumClifford.stab_to_gf2(tab(ms3))
+				@test ms == ms3
 				@test rank(ms) == rank(ms3)
 			catch e
 				@test isa(e, ArgumentError)
@@ -200,23 +190,20 @@ end
 
 
 @testset "mixeddestabilizer combinations" begin
-	unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
+	unsigned_types = subtypes(Unsigned)
 	ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
 
 	for n in ns
 		for Ti in unsigned_types, Tf in unsigned_types
-			nch = QuantumClifford._nchunks(n, Ti)
-			# Create a rank-deficient stabilizer for MixedDestabilizer
 			r = min(n-1, max(1, n÷2)) # Make it rank-deficient
-			xzs = rand(Ti, nch, r)
-			phases = zeros(UInt8, r)
-			t = QuantumClifford.Tableau(phases, n, xzs)
+			t = zero(Tableau, r, n)
+			random_tableau!(t)
 			s = QuantumClifford.Stabilizer(t)
 			md = QuantumClifford.MixedDestabilizer(s)
 			try
 				md2 = reinterpret(Tf, md)
 				md3 = reinterpret(Ti, md2)
-				@test QuantumClifford.stab_to_gf2(tab(md)) == QuantumClifford.stab_to_gf2(tab(md3))
+				@test md == md3
 				@test rank(md) == rank(md3)
 			catch e
 				@test isa(e, ArgumentError)
@@ -227,24 +214,21 @@ end
 
 
 @testset "pauliframe combinations" begin
-	unsigned_types = (UInt8, UInt16, UInt32, UInt64, UInt128)
+	unsigned_types = subtypes(Unsigned)
 	ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
 	rows_choices = (1, 2, 3)
 
 	for n in ns
 		for Ti in unsigned_types, Tf in unsigned_types
 			for r in rows_choices
-				nch = QuantumClifford._nchunks(n, Ti)
-				xzs = rand(Ti, nch, r)
-				phases = zeros(UInt8, r)
-				t = QuantumClifford.Tableau(phases, n, xzs)
+				t = zero(Tableau, r, n)
+				random_tableau!(t)
 				s = QuantumClifford.Stabilizer(t)
 				pf = QuantumClifford.PauliFrame(s, falses(length(s), 2))
 				try
 					pf2 = reinterpret(Tf, pf)
 					pf3 = reinterpret(Ti, pf2)
-					@test QuantumClifford.stab_to_gf2(tab(pf.frame)) == QuantumClifford.stab_to_gf2(tab(pf3.frame))
-					@test pf.measurements == pf3.measurements
+					@test pf == pf3
 				catch e
 					@test isa(e, ArgumentError)
 				end
