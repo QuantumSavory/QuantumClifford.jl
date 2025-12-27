@@ -97,6 +97,10 @@ These functions work on all stabilizer data structures: [`Stabilizer`](@ref), [`
 
 #### Performance Implications
 
-The default row-major (`fastrow`) layout is generally the best choice for typical operations. However, if your code performs many sparse gate applications on a specific qubit set, converting to column-major layout may be beneficial.
+The default row-major (`fastrow`) layout is generally the best choice for typical operations on the CPU. However, if your code performs many sparse gate applications on a specific qubit set, converting to column-major layout may be beneficial.
 
-Both of these parameters are [benchmarked](bench_intsize.png) (testing the application of a Pauli operator, which is an $\mathcal{O}(n^2)$ operation; and testing the canonicalization of a Stabilizer, which is an $\mathcal{O}(n^3)$ operation). Row-major UInt64 is the best performing and it is used by default in this library.
+**Note:** The performance claims above are based on CPU benchmarks. On GPU, the optimal memory layout may differ due to differences in memory access patterns and hardware architecture. Users interested in GPU performance are encouraged to benchmark both layouts for their workloads and to contribute results or suggestions.
+
+The test suite (see e.g. `test/test_bitpack.jl`) only verifies that both memory layouts produce identical results for all operations; it does **not** compare their performance. Actual performance comparisons are performed using scripts in the `benchmark/` directory, which are designed to generate benchmark results suitable for automatic inclusion in the documentation. If you wish to contribute new benchmarks or update performance data, please refer to the scripts in `benchmark/`.
+
+Both of these parameters are [benchmarked](bench_intsize.png) (testing the application of a Pauli operator, which is an $\mathcal{O}(n^2)$ operation; and testing the canonicalization of a Stabilizer, which is an $\mathcal{O}(n^3)$ operation) on CPU. Row-major UInt64 is the best performing and it is used by default in this library for CPU workloads.
