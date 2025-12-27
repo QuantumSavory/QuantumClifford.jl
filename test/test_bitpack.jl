@@ -80,4 +80,35 @@
             @test stab_to_gf2(s) == stab_to_gf2(sr) == stab_to_gf2(sc) == stab_to_gf2(s8) == stab_to_gf2(s8r) == stab_to_gf2(s8c)
         end
     end
+
+    @testset "memory layout performance comparison" begin
+        # fastrow should be faster than fastcolumn for canonicalization
+        s_row = fastrow(random_stabilizer(100, 128))
+        s_col = fastcolumn(copy(s_row))
+        
+        # Both layouts should produce identical results
+        result_row = canonicalize!(copy(s_row); phases=true)
+        result_col = canonicalize!(copy(s_col); phases=true)
+        @test stab_to_gf2(result_row) == stab_to_gf2(result_col)
+        
+        # Test sparse gate application
+        s_row_gates = fastrow(random_stabilizer(50, 64))
+        s_col_gates = fastcolumn(copy(s_row_gates))
+        gate = sCNOT(1, 2)
+        
+        # Apply sparse gates and verify identity
+        s_row_after = apply!(copy(s_row_gates), gate)
+        s_col_after = apply!(copy(s_col_gates), gate)
+        @test stab_to_gf2(s_row_after) == stab_to_gf2(s_col_after)
+        
+        # Test dense clifford operator application
+        s_row_clif = fastrow(random_stabilizer(50, 64))
+        s_col_clif = fastcolumn(copy(s_row_clif))
+        c = CliffordOperator(random_destabilizer(64; phases=false))
+        
+        # Apply dense gates and verify identity
+        s_row_clif_after = apply!(copy(s_row_clif), c)
+        s_col_clif_after = apply!(copy(s_col_clif), c)
+        @test stab_to_gf2(s_row_clif_after) == stab_to_gf2(s_col_clif_after)
+    end
 end
