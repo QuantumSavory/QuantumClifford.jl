@@ -25,8 +25,10 @@ using DocStringExtensions
 export
     TGate, CCZGate,
     LRTrajectoryResults,
+    PureGeneralizedStabilizer,
     
     lrtrajectories,
+    lrstate,
     lrmeasurements,
     lrcost,
     
@@ -34,7 +36,7 @@ export
     stabilizer_extent
 
 """
-    isclifford(op::AbstractOperation) -> Bool
+$(SIGNATURES)
 
 Trait function to determine if an operation is a Clifford gate.
 Users can extend this for custom gate types by defining new methods.
@@ -43,12 +45,16 @@ Users can extend this for custom gate types by defining new methods.
 ```jldoctest
 julia> isclifford(sHadamard(1))
 true
+
 julia> isclifford(sPhase(1))
 true
+
 julia> isclifford(sCNOT(1,2))
 true
+
 julia> isclifford(TGate(1))
 false
+
 julia> isclifford(CCZGate(1,2,3))
 false
 ```
@@ -73,7 +79,7 @@ isclifford(op::SparseGate) = isclifford(op.cliff)
 isclifford(::AbstractOperation) = false
 
 """
-    stabilizer_extent(op::AbstractOperation) -> Float64
+$(SIGNATURES)
 
 Return the stabilizer extent ξ(op) for a gate.
 For Clifford gates, ξ = 1. Users can extend for custom non-Clifford gates.
@@ -87,8 +93,10 @@ where F(ψ) = max_φ |⟨φ|ψ⟩|² is the stabilizer fidelity.
 ```jldoctest
 julia> stabilizer_extent(sHadamard(1))
 1.0
+
 julia> stabilizer_extent(TGate(1)) ≈ 1.172
 true
+
 julia> stabilizer_extent(CCZGate(1,2,3)) ≈ 16/9
 true
 ```
@@ -97,8 +105,9 @@ function stabilizer_extent end
 
 stabilizer_extent(op::AbstractOperation) = isclifford(op) ? 1.0 : error("stabilizer_extent not defined for $(typeof(op)). Please define a method.")
 
+# TODO: implement apply!(::GeneralizedStabilizer, ::TGate)
 """
-    TGate <: AbstractOperation
+$(TYPEDEF)
 
 T gate (π/8 phase rotation). This is a non-Clifford gate with optimal 
 stabilizer extent ξ(T) = (cos(π/8) + tan(π/8)sin(π/8))² ≈ 1.172.
@@ -111,7 +120,9 @@ $(TYPEDFIELDS)
 # Example
 ```jldoctest
 julia> circuit = [sHadamard(1), TGate(1), sHadamard(1)];
+
 julia> result = lrtrajectories(circuit, 1; trajectories=100);
+
 julia> size(lrmeasurements(result))
 (100, 1)
 ```
@@ -132,8 +143,9 @@ isclifford(::TGate) = false
 const _T_EXTENT = (cos(π/8) + tan(π/8) * sin(π/8))^2
 stabilizer_extent(::TGate) = _T_EXTENT
 
+# TODO: implement apply!(::GeneralizedStabilizer, ::CCZGate)
 """
-    CCZGate <: AbstractOperation
+$(TYPEDEF)
 
 Controlled-Controlled-Z gate. This is a non-Clifford gate with optimal 
 stabilizer extent ξ(CCZ) = 16/9 ≈ 1.778.
@@ -146,7 +158,9 @@ $(TYPEDFIELDS)
 # Example
 ```jldoctest
 julia> circuit = [sHadamard(1), sHadamard(2), sHadamard(3), CCZGate(1, 2, 3)];
+
 julia> result = lrtrajectories(circuit, 3; trajectories=100);
+
 julia> size(lrmeasurements(result))
 (100, 3)
 ```
@@ -171,7 +185,7 @@ const _CCZ_EXTENT = 16.0 / 9.0
 stabilizer_extent(::CCZGate) = _CCZ_EXTENT
 
 """
-    SparsifiedDecomposition
+$(TYPEDEF)
 
 Result of applying Sparsification Lemma (Lemma 6) from Section 5.2 of [bravyi2019simulation](@cite).
 Represents |Ω⟩ = (||c||₁/k) Σₐ₌₁ᵏ |ωₐ⟩ that approximates |ψ⟩ = Σⱼ cⱼ|φⱼ⟩.
@@ -201,9 +215,9 @@ struct SparsifiedDecomposition
 end
 
 """
-    sparsify_stabilizer_decomposition(coefficients, states, delta; rng=Random.GLOBAL_RNG)
+$(SIGNATURES)
 
-Implements Sparsification Lemma (Lemma 6) from Section 5.2 of [bravyi2019simulation](@cite)
+Implements Sparsification Lemma (Lemma 6) from Section 5.2 of [bravyi2019simulation](@cite).
 
 Given |ψ⟩ = Σⱼ cⱼ|φⱼ⟩ with L1 norm ||c||₁, constructs random state 
 |Ω⟩ = (||c||₁/k) Σₐ₌₁ᵏ |ωₐ⟩ where each |ωₐ⟩ is sampled from {|φⱼ⟩} 
@@ -222,7 +236,6 @@ The approximation satisfies E[||ψ - Ω||²] = ||c||₁²/k ≤ δ² for k ≥ |
 
 # Mathematical Guarantee (Theorem 1)
 For the returned sparse state: χ_δ(ψ) ≤ 1 + ||c||₁²/δ²
-
 """
 function sparsify_stabilizer_decomposition(coefficients::Vector{ComplexF64}, 
                                           states::Vector{<:Stabilizer}, 
@@ -263,7 +276,7 @@ function sparsify_stabilizer_decomposition(coefficients::Vector{ComplexF64},
 end
 
 """
-    sparsify_mixed_destabilizer_decomposition(coefficients, states, delta; rng)
+$(SIGNATURES)
 
 Sparsification for MixedDestabilizer states (used during incremental simulation).
 
@@ -342,9 +355,9 @@ function sparsify_mixed_destabilizer_decomposition(
 end
 
 """
-    estimate_sparsification_quality(sparse::SparsifiedDecomposition)
+$(SIGNATURES)
 
-Estimate quality bounds from Lemma 7 (Sparsification tail bound).
+Estimate quality bounds from Lemma 7 (Sparsification tail bound) of [bravyi2019simulation](@cite).
 
 # Returns
 Named tuple with:
@@ -352,7 +365,6 @@ Named tuple with:
 - `expected_error`: E[||ψ - Ω||²] = ||c||₁²/k
 - `error_bound`: Target δ parameter
 - `expected_norm`: E[||Ω||²] = 1 + ||c||₁²/k
-
 """
 function estimate_sparsification_quality(sparse::SparsifiedDecomposition)
     return (
@@ -364,7 +376,7 @@ function estimate_sparsification_quality(sparse::SparsifiedDecomposition)
 end
 
 """
-    MagicStateDecompositionCache
+$(TYPEDEF)
 
 Stabilizer decomposition V|+⟩^⊗t = Σⱼ cⱼ|φⱼ⟩ for Clifford magic states.
 Used as intermediate step before applying Lifting Lemma.
@@ -418,7 +430,7 @@ struct MagicStateDecompositionCache
 end
 
 """
-    CliffordGateDecompositionCache
+$(TYPEDEF)
 
 Sum-over-Cliffords decomposition U = Σⱼ cⱼKⱼ where Kⱼ are Clifford unitaries.
 Result of applying Lifting Lemma to magic state decomposition.
@@ -449,9 +461,9 @@ struct CliffordGateDecompositionCache
 end
 
 """
-    decompose_rotation_magic_state(θ; nqubits=1)
+$(SIGNATURES)
 
-Create magic state decomposition R(θ)|+⟩ = Σⱼ cⱼ|φⱼ⟩ from Eq. (26).
+Create magic state decomposition R(θ)|+⟩ = Σⱼ cⱼ|φⱼ⟩ from Eq. (26) of [bravyi2019simulation](@cite).
 
 R(θ)|+⟩ = (cos(θ/2) - sin(θ/2))|+⟩ + √2 sin(θ/2)e^(-iπ/4) S|+⟩
 
@@ -463,7 +475,6 @@ Returns optimal decomposition with ξ(R(θ)) = (cos(θ/2) + tan(π/8)sin(θ/2))�
 
 # Returns
 `MagicStateDecompositionCache` with the optimal decomposition.
-
 """
 function decompose_rotation_magic_state(θ::Float64; nqubits::Int=1)
     cos_half = cos(θ/2)
@@ -493,9 +504,9 @@ function decompose_rotation_magic_state(θ::Float64; nqubits::Int=1)
 end
 
 """
-    lifting_lemma_single_qubit(magic_decomp::MagicStateDecompositionCache, qubit::Int)
+$(SIGNATURES)
 
-Apply Lifting Lemma (Lemma 1) to convert R(θ)|+⟩ = Σⱼ cⱼ|φⱼ⟩ to R(θ) = Σⱼ cⱼKⱼ.
+Apply Lifting Lemma (Lemma 1) of [bravyi2019simulation](@cite) to convert R(θ)|+⟩ = Σⱼ cⱼ|φⱼ⟩ to R(θ) = Σⱼ cⱼKⱼ.
 
 For a diagonal gate V, if V|+⟩ = Σⱼ cⱼKⱼ|+⟩ where Kⱼ are diagonal Cliffords,
 then V = Σⱼ cⱼKⱼ.
@@ -523,26 +534,7 @@ function lifting_lemma_single_qubit(magic_decomp::MagicStateDecompositionCache, 
 end
 
 """
-    decompose_T_gate(qubit::Int)
-
-T gate decomposition: T = R(π/4) with ξ(T) = (cos(π/8) + tan(π/8)sin(π/8))² ≈ 1.172.
-
-# Arguments
-- `qubit::Int`: Target qubit index
-
-# Returns
-`CliffordGateDecompositionCache` with optimal T gate decomposition.
-
-"""
-function decompose_T_gate(qubit::Int)
-    magic_decomp = decompose_rotation_magic_state(π/4; nqubits=1)
-    gate_decomp = lifting_lemma_single_qubit(magic_decomp, qubit)
-    return CliffordGateDecompositionCache(:T, gate_decomp.coefficients, 
-                                          gate_decomp.clifford_operations, [qubit])
-end
-
-"""
-    create_ccz_stabilizer_state(operations::Vector{<:AbstractOperation})
+$(SIGNATURES)
 
 Create stabilizer state by applying Clifford operations to |+++⟩.
 Internal helper for CCZ decomposition.
@@ -562,9 +554,9 @@ function create_ccz_stabilizer_state(operations::Vector{<:AbstractOperation})
 end
 
 """
-    decompose_CCZ_magic_state()
+$(SIGNATURES)
 
-Create optimal magic state decomposition for CCZ gate using Proposition 2.
+Create optimal magic state decomposition for CCZ gate using Proposition 2 of [bravyi2019simulation](@cite).
 
 For Clifford magic states: ξ(ψ) = F(ψ)⁻¹ where F(ψ) = max_φ |⟨φ|ψ⟩|².
 For CCZ: F(CCZ) = |⟨+++|CCZ|+++⟩|² = 9/16, so ξ(CCZ) = 16/9.
@@ -607,7 +599,7 @@ function decompose_CCZ_magic_state()
 end
 
 """
-    lifting_lemma_CCZ(magic_decomp::MagicStateDecompositionCache, qubits::Vector{Int})
+$(SIGNATURES)
 
 Apply Lifting Lemma to convert CCZ magic state decomposition to gate decomposition.
 
@@ -643,26 +635,7 @@ function lifting_lemma_CCZ(magic_decomp::MagicStateDecompositionCache, qubits::V
 end
 
 """
-    decompose_CCZ_gate(qubits::Vector{Int})
-
-Get optimal CCZ gate decomposition with ξ(CCZ) = 16/9.
-
-# Arguments
-- `qubits::Vector{Int}`: Target qubit indices (must be length 3)
-
-# Returns
-`CliffordGateDecompositionCache` with optimal CCZ gate decomposition.
-
-"""
-function decompose_CCZ_gate(qubits::Vector{Int})
-    magic_decomp = decompose_CCZ_magic_state()
-    return lifting_lemma_CCZ(magic_decomp, qubits)
-end
-
-decompose_CCZ_gate(q1::Int, q2::Int, q3::Int) = decompose_CCZ_gate([q1, q2, q3])
-
-"""
-    get_gate_decomposition(gate::AbstractOperation)
+$(SIGNATURES)
 
 Get CliffordGateDecompositionCache for a non-Clifford gate.
 Uses multiple dispatch - users can extend for custom gates.
@@ -673,11 +646,16 @@ Uses multiple dispatch - users can extend for custom gates.
 function get_gate_decomposition end
 
 function get_gate_decomposition(gate::TGate)
-    return decompose_T_gate(gate.qubit)
+    magic_decomp = decompose_rotation_magic_state(π/4; nqubits=1)
+    gate_decomp = lifting_lemma_single_qubit(magic_decomp, gate.qubit)
+    return CliffordGateDecompositionCache(:T, gate_decomp.coefficients, 
+                                          gate_decomp.clifford_operations, [gate.qubit])
 end
 
 function get_gate_decomposition(gate::CCZGate)
-    return decompose_CCZ_gate(collect(gate.qubits))
+    magic_decomp = decompose_CCZ_magic_state()
+    qubits = collect(gate.qubits)
+    return lifting_lemma_CCZ(magic_decomp, qubits)
 end
 
 function get_gate_decomposition(gate::AbstractOperation)
@@ -689,7 +667,7 @@ function get_gate_decomposition(gate::AbstractOperation)
 end
 
 """
-    LRTrajectoryResults
+$(TYPEDEF)
 
 Results from low-rank stabilizer simulation, analogous to PauliFrame results.
 
@@ -764,7 +742,7 @@ function Base.show(io::IO, ::MIME"text/plain", r::LRTrajectoryResults)
 end
 
 """
-    lrmeasurements(result::LRTrajectoryResults) -> Matrix{Bool}
+$(SIGNATURES)
 
 Extract measurement outcomes from simulation results.
 Each row is one trajectory, each column is one measured qubit.
@@ -774,10 +752,14 @@ Analogous to `pfmeasurements` for Pauli frames.
 # Example
 ```jldoctest
 julia> circuit = [sHadamard(1), TGate(1)];
+
 julia> result = lrtrajectories(circuit; trajectories=100);
+
 julia> m = lrmeasurements(result);
+
 julia> size(m)
 (100, 1)
+
 julia> 0.0 <= sum(m[:, 1] .== false) / size(m, 1) <= 1.0
 true
 ```
@@ -785,21 +767,36 @@ true
 lrmeasurements(r::LRTrajectoryResults) = r.measurements
 
 """
-    SimulationState
+$(TYPEDEF)
+Pure state represented as a weighted sum of stabilizer states:
 
-Internal state after sum-over-Cliffords simulation completes.
-Contains the sparse stabilizer decomposition ready for sampling.
+|ψ⟩ = Σₐ cₐ|φₐ⟩
+
+where:
+- `cₐ` are stored in `coefficients`
+- `|φₐ⟩` are stored in `stabilizer_states`
+- The number of terms k = `num_terms`
+
+Similar to `GeneralizedStabilizer` but restricted to pure states. This is the 
+internal representation used by the low-rank simulation method from [bravyi2019simulation](@cite).
+
+$(TYPEDFIELDS)
 """
-struct SimulationState
-    sparse_states::Vector{Stabilizer}
+struct PureGeneralizedStabilizer
+    "Stabilizer states |φₐ⟩ in the decomposition"
+    stabilizer_states::Vector{Stabilizer}
+    "Coefficients cₐ for each stabilizer state"
     coefficients::Vector{ComplexF64}
-    simulation_cost::Int
+    "Number of stabilizer terms (k)"
+    num_terms::Int
+    "Approximation error δ used during sparsification"
     approximation_error::Float64
-    original_extent::Float64
+    "Total extent ∏ⱼ ξ(Vⱼ) of non-Clifford gates"
+    total_extent::Float64
 end
 
 """
-    create_computational_zero_state(n_qubits::Int) -> MixedDestabilizer
+$(SIGNATURES)
 
 Creates proper |0ⁿ⟩ state stabilized by Z₁, Z₂, ..., Zₙ.
 Used as initial state for Sum-over-Cliffords method.
@@ -816,7 +813,7 @@ function create_computational_zero_state(n_qubits::Int)
 end
 
 """
-    create_computational_basis_state(bitstring::BitVector) -> Stabilizer
+$(SIGNATURES)
 
 Create |x⟩ = |x₁x₂...xₙ⟩ as stabilizer state.
 Stabilized by (-1)^xᵢ Zᵢ for each qubit i.
@@ -836,7 +833,7 @@ function create_computational_basis_state(bitstring::BitVector)
 end
 
 """
-    compute_stabilizer_inner_product(state1::Stabilizer, state2::Stabilizer) -> ComplexF64
+$(SIGNATURES)
 
 Compute inner product ⟨state1|state2⟩ using QuantumClifford's dot function.
 Based on Section 4.3, Lemma 3 of [bravyi2019simulation](@cite).
@@ -850,10 +847,10 @@ function compute_stabilizer_inner_product(state1::Stabilizer, state2::Stabilizer
 end
 
 """
-    compute_amplitude(states, coeffs, bitstring) -> ComplexF64
+$(SIGNATURES)
 
 Compute amplitude ⟨x|ψ⟩ where |ψ⟩ = Σ cₐ|φₐ⟩ and x is computational basis state.
-Uses O(kn³) algorithm from Section 4.3.
+Uses O(kn³) algorithm from Section 4.3 of [bravyi2019simulation](@cite).
 """
 function compute_amplitude(states::Vector{<:Stabilizer}, 
                           coeffs::Vector{ComplexF64},
@@ -870,16 +867,18 @@ function compute_amplitude(states::Vector{<:Stabilizer},
     return amplitude
 end
 
+# TODO: Future improvement - refactor to use mctrajectory! infrastructure:
+#   mctrajectory!(initial_state, circuit) which internally dispatches to apply!(initial_state, gate).
+# We would just need to implement: apply!(::PureGeneralizedStabilizer, ::T) where isclifford(T)!=true
 """
-    simulate_sum_over_cliffords(circuit, n_qubits, delta; verbose=false, rng=GLOBAL_RNG)
+$(SIGNATURES)
 
 Incremental Sum-over-Cliffords simulation with per-gate sparsification.
 
-This prevents exponential memory blowup
-by applying the Sparsification Lemma (Lemma 6) after each non-Clifford gate,
-rather than building the full 2^m decomposition first
+This prevents exponential memory blowup by applying the Sparsification Lemma (Lemma 6) 
+after each non-Clifford gate, rather than building the full 2^m decomposition first.
 
-# Algorithm (Section 2.3.2 + Section 5.2)
+# Algorithm (Section 2.3.2 + Section 5.2 of [bravyi2019simulation](@cite))
 For each gate in circuit:
 1. If Clifford: apply to all current stabilizer states in-place
 2. If non-Clifford:
@@ -911,12 +910,7 @@ the number of non-Clifford gates. By triangle inequality on L2 norms:
 - `rng::AbstractRNG=Random.GLOBAL_RNG`: Random number generator for sparsification
 
 # Returns
-`SimulationState` containing sparse stabilizer decomposition ready for sampling.
-
-# References
-- Section 2.3.2: Sum-over-Cliffords method
-- Section 5.2: Sparsification Lemma (Lemma 6)
-- Theorem 1: Approximate stabilizer rank bound
+`PureGeneralizedStabilizer` containing sparse stabilizer decomposition ready for sampling.
 """
 function simulate_sum_over_cliffords(
     circuit::Vector{<:AbstractOperation}, 
@@ -1028,7 +1022,7 @@ function simulate_sum_over_cliffords(
         final_stabilizer_states[i] = Stabilizer(stabilizerview(state))
     end
     
-    return SimulationState(
+    return PureGeneralizedStabilizer(
         final_stabilizer_states,
         current_coefficients,
         length(final_stabilizer_states),
@@ -1038,10 +1032,10 @@ function simulate_sum_over_cliffords(
 end
 
 """
-    simulate_pure_clifford_circuit(circuit, n_qubits, delta)
+$(SIGNATURES)
 
 Handle pure Clifford circuits exactly (no approximation needed).
-Returns a trivial SimulationState with single stabilizer state.
+Returns a trivial PureGeneralizedStabilizer with single stabilizer state.
 """
 function simulate_pure_clifford_circuit(circuit::AbstractVector{<:AbstractOperation}, 
                                        n_qubits::Int, 
@@ -1069,25 +1063,32 @@ function simulate_pure_clifford_circuit(circuit::AbstractVector{<:AbstractOperat
             "Internal error: stabilizer has $(size(final_state, 1)) generators, expected $n_qubits"))
     end
     
-    return SimulationState([final_state], [ComplexF64(1.0)], 1, 0.0, 1.0)
+    return PureGeneralizedStabilizer([final_state], [ComplexF64(1.0)], 1, 0.0, 1.0)
 end
 
 """
-    MetropolisSamplerState
+$(TYPEDEF)
 
 Cached state for efficient Metropolis sampling.
 Stores current bitstring and precomputed amplitude to avoid recomputation.
+
+$(TYPEDFIELDS)
 """
 mutable struct MetropolisSamplerState
+    "Current bitstring being sampled"
     current_bitstring::BitVector
+    "Squared amplitude |⟨x|ψ⟩|² for current bitstring"
     current_amplitude_sq::Float64
+    "Stabilizer states in the decomposition"
     states::Vector{Stabilizer}
+    "Coefficients for each stabilizer state"
     coefficients::Vector{ComplexF64}
+    "Number of qubits"
     n_qubits::Int
 end
 
 """
-    initialize_metropolis(states, coeffs) -> MetropolisSamplerState
+$(SIGNATURES)
 
 Initialize Metropolis sampler with random starting bitstring.
 """
@@ -1105,7 +1106,7 @@ function initialize_metropolis(states::Vector{<:Stabilizer},
 end
 
 """
-    metropolis_step!(metro::MetropolisSamplerState) -> Bool
+$(SIGNATURES)
 
 Perform single Metropolis step: propose bit flip and accept/reject.
 Returns true if proposal was accepted.
@@ -1139,7 +1140,7 @@ function metropolis_step!(metro::MetropolisSamplerState)
 end
 
 """
-    metropolis_mixing!(metro::MetropolisSamplerState, burn_in::Int)
+$(SIGNATURES)
 
 Run burn-in period to reach equilibrium distribution.
 Recommended: burn_in ≈ 10n for shallow circuits, 100n for deep circuits.
@@ -1151,13 +1152,13 @@ function metropolis_mixing!(metro::MetropolisSamplerState, burn_in::Int)
 end
 
 """
-    sample_measurement_outcomes(sim_state, n_samples; burn_in=0, verbose=false) -> Matrix{Bool}
+$(SIGNATURES)
 
-MCMC Metropolis sampling from Section 4.2.
+MCMC Metropolis sampling from Section 4.2 of [bravyi2019simulation](@cite).
 Complexity: O(k × n³ × T) where T = burn_in + n_samples × thinning.
 
 # Arguments
-- `sim_state::SimulationState`: Sparse stabilizer decomposition from sum-over-Cliffords
+- `state::PureGeneralizedStabilizer`: Sparse stabilizer decomposition from sum-over-Cliffords
 - `n_samples::Int`: Number of measurement outcomes to generate
 - `burn_in::Int=0`: Mixing time (0 = auto-tune based on circuit)
 - `verbose::Bool=false`: Show progress information
@@ -1165,18 +1166,18 @@ Complexity: O(k × n³ × T) where T = burn_in + n_samples × thinning.
 # Returns
 `Matrix{Bool}` of size (n_samples, n_qubits) with measurement outcomes.
 """
-function sample_measurement_outcomes(sim_state::SimulationState, 
+function sample_measurement_outcomes(state::PureGeneralizedStabilizer, 
                                     n_samples::Int; 
                                     burn_in::Int=0,
                                     verbose::Bool=false)
     
     n_samples > 0 || throw(ArgumentError("Number of samples must be positive, got $n_samples"))
-    length(sim_state.sparse_states) > 0 || throw(ArgumentError("Simulation state must contain at least one stabilizer state"))
+    length(state.stabilizer_states) > 0 || throw(ArgumentError("State must contain at least one stabilizer state"))
     
-    n_qubits = nqubits(sim_state.sparse_states[1])
+    n_qubits = nqubits(state.stabilizer_states[1])
     
     if burn_in == 0
-        circuit_depth_proxy = log2(max(1, sim_state.simulation_cost))
+        circuit_depth_proxy = log2(max(1, state.num_terms))
         burn_in = ceil(Int, 10 * n_qubits * (1 + circuit_depth_proxy / 10))
         if verbose
             @info "Auto-tuned burn-in: $burn_in steps"
@@ -1184,9 +1185,9 @@ function sample_measurement_outcomes(sim_state::SimulationState,
     end
     
     if verbose
-        @info "Initializing Metropolis sampler with $(length(sim_state.sparse_states)) stabilizer states..."
+        @info "Initializing Metropolis sampler with $(length(state.stabilizer_states)) stabilizer states..."
     end
-    metro = initialize_metropolis(sim_state.sparse_states, sim_state.coefficients)
+    metro = initialize_metropolis(state.stabilizer_states, state.coefficients)
     
     if verbose
         @info "Burn-in: $burn_in steps..."
@@ -1227,7 +1228,7 @@ function sample_measurement_outcomes(sim_state::SimulationState,
 end
 
 """
-    compute_outcome_frequencies(measurements::Matrix{Bool}) -> Dict{BitVector, Float64}
+$(SIGNATURES)
 
 Compute frequency distribution of measurement outcomes.
 """
@@ -1248,9 +1249,9 @@ function compute_outcome_frequencies(measurements::Matrix{Bool})
 end
 
 """
-    validate_simulation_parameters(circuit, n_qubits, trajectories, delta)
+$(SIGNATURES)
 
- validation of simulation parameters.
+Validation of simulation parameters.
 """
 function validate_simulation_parameters(circuit::AbstractVector,
                                        n_qubits::Int,
@@ -1278,7 +1279,7 @@ function validate_simulation_parameters(circuit::AbstractVector,
 end
 
 """
-    validate_operation_qubits(op, n_qubits, idx)
+$(SIGNATURES)
 
 Validate that operation uses valid qubit indices.
 """
@@ -1317,7 +1318,7 @@ function validate_operation_qubits(op::AbstractOperation, n_qubits::Int, idx::In
 end
 
 """
-    infer_circuit_nqubits(circuit) -> Int
+$(SIGNATURES)
 
 Infer number of qubits from circuit operations.
 """
@@ -1338,12 +1339,21 @@ function infer_circuit_nqubits(circuit)
 end
 
 """
-    lrtrajectories(circuit; trajectories=1000, delta=0.1, verbose=false) -> LRTrajectoryResults
+$(SIGNATURES)
 
 Simulate quantum circuit with non-Clifford gates using low-rank stabilizer decomposition.
 
 This is the main entry point for non-Clifford simulation, analogous to `pftrajectories` 
-for Pauli frame simulation.
+for Pauli frame simulation. This method returns **measurement statistics only**, not the 
+quantum state. Use [`lrstate`](@ref) if you need access to the state representation.
+
+# Comparison to `mctrajectories` with `GeneralizedStabilizer`
+- `lrtrajectories`: Only supports unitary gates (no mid-circuit measurements). 
+  Performs implicit Z-basis measurements on all qubits at the end. Faster for 
+  circuits with many non-Clifford gates due to sparsification.
+- `mctrajectories` with `GeneralizedStabilizer`: Supports mid-circuit measurements 
+  and more general operations. Provides access to the full density matrix. More 
+  general but slower for large numbers of non-Clifford gates.
 
 # Arguments
 - `circuit`: Vector of quantum operations (Clifford gates, TGate, CCZGate, etc.)
@@ -1363,7 +1373,7 @@ with incremental sparsification (Section 5.2) after each non-Clifford gate:
 2. For each gate:
    - Clifford: apply to all current stabilizer states
    - Non-Clifford: expand decomposition, then sparsify immediately
-3. Sample measurement outcomes using Metropolis MCMC (Section 4.2)
+3. Sample measurement outcomes via Metropolis MCMC (Section 4.2) with implicit Z-basis measurement
 
 # Performance
 - Memory: O(k × n) where k ≈ total_extent/δ² (never stores 2^m terms)
@@ -1373,16 +1383,24 @@ with incremental sparsification (Section 5.2) after each non-Clifford gate:
 # Example
 ```jldoctest
 julia> circuit = [sHadamard(1), TGate(1), sHadamard(1)];
+
 julia> result = lrtrajectories(circuit; trajectories=100, delta=0.1);
+
 julia> result.simulation_cost > 0
 true
+
 julia> measurements = lrmeasurements(result);
+
 julia> size(measurements)
 (100, 1)
+
 julia> p0 = sum(measurements[:, 1] .== false) / size(measurements, 1);
+
 julia> 0.0 <= p0 <= 1.0
 true
 ```
+
+See also: [`lrstate`](@ref), [`lrmeasurements`](@ref), [`lrcost`](@ref)
 """
 function lrtrajectories(circuit::AbstractVector{<:AbstractOperation};
                         trajectories::Int=1000,
@@ -1417,17 +1435,17 @@ function lrtrajectories(circuit::AbstractVector{<:AbstractOperation},
         if verbose
             @info "Step 1/2: Computing sum-over-Cliffords decomposition..."
         end
-        sim_state = simulate_sum_over_cliffords(circuit_vec, n_qubits, delta; verbose)
+        state = simulate_sum_over_cliffords(circuit_vec, n_qubits, delta; verbose)
         
         if verbose
-            @info "Decomposition complete: $(sim_state.simulation_cost) sparse terms"
-            @info "Total extent: $(sim_state.original_extent)"
+            @info "Decomposition complete: $(state.num_terms) sparse terms"
+            @info "Total extent: $(state.total_extent)"
         end
         
         if verbose
             @info "Step 2/2: Sampling measurement outcomes..."
         end
-        measurements = sample_measurement_outcomes(sim_state, trajectories; verbose)
+        measurements = sample_measurement_outcomes(state, trajectories; verbose)
         
         total_runtime = time() - start_time
         
@@ -1437,9 +1455,9 @@ function lrtrajectories(circuit::AbstractVector{<:AbstractOperation},
         
         return LRTrajectoryResults(
             measurements,
-            sim_state.simulation_cost,
-            sim_state.approximation_error,
-            sim_state.original_extent,
+            state.num_terms,
+            state.approximation_error,
+            state.total_extent,
             n_qubits,
             total_runtime
         )
@@ -1464,7 +1482,52 @@ function lrtrajectories(circuit::AbstractVector, n_qubits::Int; kwargs...)
 end
 
 """
-    lrcost(circuit; delta=0.1) -> NamedTuple
+$(SIGNATURES)
+
+Run low-rank simulation and return the state representation.
+
+Unlike [`lrtrajectories`](@ref) which returns measurement samples, this function returns
+the `PureGeneralizedStabilizer` state directly. This is useful when you need
+the state for further analysis or custom sampling.
+
+# Arguments
+- `circuit`: Vector of quantum operations (Clifford gates, TGate, CCZGate, etc.)
+- `n_qubits::Int`: Number of qubits (optional, inferred from circuit if not provided)
+- `delta::Float64=0.1`: Approximation error parameter
+- `verbose::Bool=false`: Show detailed progress information
+
+# Returns
+`PureGeneralizedStabilizer` containing the sparse stabilizer decomposition |ψ⟩ = Σₐ cₐ|φₐ⟩.
+
+# Example
+```jldoctest
+julia> circuit = [sHadamard(1), TGate(1)];
+
+julia> state = lrstate(circuit; delta=0.1);
+
+julia> length(state.coefficients) > 0
+true
+```
+
+See also: [`lrtrajectories`](@ref), [`PureGeneralizedStabilizer`](@ref)
+"""
+function lrstate(circuit::AbstractVector{<:AbstractOperation};
+                 delta::Float64=0.1,
+                 verbose::Bool=false)
+    n_qubits = infer_circuit_nqubits(circuit)
+    return lrstate(circuit, n_qubits; delta, verbose)
+end
+
+function lrstate(circuit::AbstractVector{<:AbstractOperation},
+                 n_qubits::Int;
+                 delta::Float64=0.1,
+                 verbose::Bool=false)
+    circuit_vec = collect(AbstractOperation, circuit)
+    return simulate_sum_over_cliffords(circuit_vec, n_qubits, delta; verbose)
+end
+
+"""
+$(SIGNATURES)
 
 Estimate simulation cost before running full simulation.
 
@@ -1496,11 +1559,15 @@ This is typically much smaller than the estimated final k.
 # Example
 ```jldoctest
 julia> circuit = [sHadamard(1), TGate(1), TGate(1), TGate(1), sHadamard(1)];
+
 julia> cost = lrcost(circuit; delta=0.1);
+
 julia> cost.non_clifford_count
 3
+
 julia> cost.estimated_k > 0
 true
+
 julia> cost.total_extent ≈ stabilizer_extent(TGate(1))^3
 true
 ```
