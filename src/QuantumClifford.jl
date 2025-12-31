@@ -1413,6 +1413,7 @@ include("symbolic_cliffords.jl")
 include("apply_right.jl")
 # linear algebra and array-like operations
 include("linalg.jl")
+include("reinterpret.jl")
 # circuits
 include("operator_traits.jl")
 include("mctrajectory.jl")
@@ -1423,7 +1424,6 @@ include("misc_gates.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
-include("reinterpret.jl")
 # common states and operators
 include("enumeration.jl")
 include("randoms.jl")
