@@ -9,11 +9,9 @@ using QuantumInterface
 using QECCore
 using QuantumClifford.ECC
 
-ENV["HECKE_PRINT_BANNER"] = "false"
 import Hecke
 const QuantumCliffordHeckeExt = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
 
-ENV["OSCAR_PRINT_BANNER"] = "false"
 import Oscar
 const QuantumCliffordOscarExt = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
 

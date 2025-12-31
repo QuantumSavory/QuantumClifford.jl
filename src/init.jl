@@ -7,6 +7,10 @@ import WeakDepHelpers: WeakDepCache, method_error_hint_callback
 const WEAKDEP_METHOD_ERROR_HINTS = WeakDepCache()
 
 function __init__()
+    ENV["NEMO_PRINT_BANNER"] = "false"
+    ENV["HECKE_PRINT_BANNER"] = "false"
+    ENV["OSCAR_PRINT_BANNER"] = "false"
+
     BIG_INT_MINUS_ONE[] = BigInt(-1)
     BIG_INT_TWO[] = BigInt(2)
     BIG_INT_FOUR[] = BigInt(4)

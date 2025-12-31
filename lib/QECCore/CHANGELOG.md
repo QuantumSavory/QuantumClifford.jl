@@ -1,8 +1,9 @@
 # News
 
-## v0.1.2 - dev
+## v0.1.2 - 2025-12-31
 
 - Introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix`.
+- Introduce `generator_polynomial`.
 - Move the following codes from `QuantumClifford.ECC` to `QECCore`: `ReedMuller`, `RecursiveReedMuller`, `QuantumReedMuller`, `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`.
 - Add classical `Goppa`
 - Add classical Gallager's LDPC code
