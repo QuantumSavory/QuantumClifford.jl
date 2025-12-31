@@ -2,12 +2,19 @@ CUDA_flag = false
 ROCm_flag = false
 OpenCL_flag = false
 Oscar_flag = false
+Tesseract_flag = false
 
 if Sys.iswindows() || Sys.ARCH != :x86_64
     @info "Skipping Oscar tests -- only supported x86_64 *NIX platforms."
 else
     Oscar_flag = VERSION >= v"1.11"
     !Oscar_flag && @info "Skipping Oscar tests -- not tested on Julia < 1.11"
+end
+
+if Sys.iswindows()
+    @info "Skipping Tesseract tests -- only supported *NIX platforms."
+else
+    Tesseract_flag = true
 end
 
 if Sys.iswindows()
@@ -36,6 +43,7 @@ if any((CUDA_flag, ROCm_flag, OpenCL_flag))
          )
 end
 Oscar_flag && Pkg.add("Oscar")
+Tesseract_flag && Pkg.add("PyTesseractDecoder")
 using TestItemRunner
 using QuantumClifford
 
@@ -51,6 +59,10 @@ testfilter = ti -> begin
 
     if !Oscar_flag
         push!(exclude, :oscar_required)
+    end
+
+    if !Tesseract_flag
+        push!(exclude, :tesseract_required)
     end
 
     if get(ENV, "ECC_TEST", "") == "base"
