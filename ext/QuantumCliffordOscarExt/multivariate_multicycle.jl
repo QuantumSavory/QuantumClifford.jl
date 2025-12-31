@@ -368,6 +368,15 @@ function boundary_maps(code::MultivariateMulticycle)
         @info "C_$k dimension: $dim == binom($t, $k)*$N"
     end
     circs = [_gf2_to_int(_polynomial_to_circulant_matrix(p, code.orders)) for p in code.polynomials]
+    # From Wikipedia: A set of matrices A_1, ... , A_k is said to commute if they commute pairwise,
+    # meaning that every pair of matrices in the set commutes. https://en.wikipedia.org/wiki/Commuting_matrices.
+    # Circulant matrices commute. They form a commutative ring since the sum of two circulant matrices is circulant.
+    for i in 1:t
+        for j in i+1:t
+            A, B = circs[i], circs[j]
+            @assert mod.(A*B, 2) == mod.(B*A, 2)
+        end
+    end
     maps = Vector{Matrix{Int}}(undef, t)
     R, x = polynomial_ring(GF(2), ["x$i" for i in 1:t])
     K = koszul_complex(x)
