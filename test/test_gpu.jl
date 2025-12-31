@@ -1,4 +1,4 @@
-@testitem "GPU" tags=[:gpu] begin
+@testitem "GPU" tags=[:cuda] begin
     using QuantumClifford: to_cpu, to_gpu
     using CUDA
 
@@ -33,26 +33,21 @@
         end
     end
 
-    function approx(a, b, threshold)
-        maximum(abs.(a - b)) <= threshold
-    end
-
-
     @testset "GPU" begin
         CUDA.allowscalar(false) # make sure we are using GPU kernels and not iterating on indices
 
-        @test begin
+        begin
             p = random_pauli(3)
             p_gpu = to_gpu(p)
-            typeof(p_gpu.xz) <: CUDA.CuArray # todo this is a bad test because it depends on representation of data in QuantumClifford. Change later...
+            @test typeof(p_gpu.xz) <: CUDA.CuArray # todo this is a bad test because it depends on representation of data in QuantumClifford. Change later...
         end
-        @test begin
+        begin
             s = random_stabilizer(3)
             s_gpu = to_gpu(s)
-            typeof(tab(s_gpu).xzs) <: CUDA.CuArray # todo this is a bad test because it depends on representation of data in QuantumClifford. Change later...
+            @test typeof(tab(s_gpu).xzs) <: CUDA.CuArray # todo this is a bad test because it depends on representation of data in QuantumClifford. Change later...
         end
 
-        @test begin
+        begin
             for n in [2, 4, 8, 100, 500]
                 s = random_stabilizer(n)
                 s_gpu = to_gpu(s)
@@ -60,10 +55,9 @@
                     apply_single_qubit_and_compare(n, s, s_gpu)
                 end
             end
-            true
         end
 
-        @test begin
+        begin
             for n in [2, 4, 8, 100, 500]
                 s = random_stabilizer(n)
                 s_gpu = to_gpu(s)
@@ -71,10 +65,9 @@
                     apply_single_or_double_qubit_and_compare(n, s, s_gpu)
                 end
             end
-            true
         end
 
-        @test begin
+        begin
             # todo test MRZ and other random gates statistically
             circuit = [sHadamard(2), sHadamard(5), sCNOT(1, 2), sCNOT(2, 5), sMZ(1), sMZ(2), sMZ(4), sMZ(5)]
             ccircuit = if eltype(circuit) <: QuantumClifford.CompactifiedGate
@@ -94,10 +87,9 @@
                     throw("pftrajectories produce wrong result after applying $func")
                 end
             end
-            true
         end
 
-        @test begin
+        begin
             # test fastrow
             for n in [2, 4, 8, 100, 500]
                 s = fastrow(random_stabilizer(n))
@@ -107,10 +99,9 @@
                     apply_single_or_double_qubit_and_compare(n, s, s_gpu)
                 end
             end
-            true
         end
 
-        @test begin
+        begin
             # test fastcolumn
             for n in [2, 4, 8, 100, 500]
                 s = fastcolumn(random_stabilizer(n))
@@ -120,10 +111,9 @@
                     apply_single_or_double_qubit_and_compare(n, s, s_gpu)
                 end
             end
-            true
         end
 
-        @test begin
+        begin
             # test applynoise
             N = 4
             trajectories = 10000
@@ -140,8 +130,7 @@
                                               sMZ(4, 4)
                                              ]).measurements
             avg_result = to_cpu(sum(measurements, dims=1) / trajectories)
-            error_threshold = 0.02
-            approx(vec(avg_result), [0, .5, 2p/3, .5], error_threshold)
+            @test vec(avg_result) ≈ [0, .5, 2p/3, .5] atol=0.02
         end
     end
 end

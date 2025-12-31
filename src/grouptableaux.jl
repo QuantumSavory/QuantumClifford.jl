@@ -60,7 +60,7 @@ end
 Base.copy(t::SubsystemCodeTableau) = SubsystemCodeTableau(copy(t.tab), t.index, t.r, t.m, t.k)
 
 function Base.show(io::IO, t::SubsystemCodeTableau)
-    r = t.r+t.m+2*t.k 
+    r = t.r+t.m+2*t.k
     q = nqubits(t)
     if get(io, :compact, false) | haskey(io, :typeinfo)
         print(io, "MixedDestablizer $r×$q")
@@ -249,6 +249,8 @@ function canonicalize_noncomm(t::Tableau)
     return SubsystemCodeTableau(loc, ind, r, m, k)
 end
 
+canonicalize_noncomm(ps::Base.AbstractVecOrTuple{PauliOperator}) = canonicalize_noncomm(Tableau(ps))
+
 """
 For a not-necessarily commutative set of Paulis S,
 computed S', the [non-commutative canonical form](@ref canonicalize_noncomm) of of S.
@@ -362,8 +364,8 @@ function pauligroup(n::Int; phases=false)
         for i in 2*4^n+1:3*4^n
             s[i+4^n] = -1 * s[i]
         end
-    end
-    if !phases
+        return s
+    else
         s = zero(Tableau, 4^n, n)
         paulis = ((false, false), (true, false), (false, true), (true, true))
         for (i, P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
@@ -371,8 +373,8 @@ function pauligroup(n::Int; phases=false)
                 s[i, j] = p
             end
         end
+        return s
     end
-    return s
 end
 
 """

@@ -1,8 +1,13 @@
-
-# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 version: 2
+enable-beta-ecosystems: true
 updates:
+  - package-ecosystem: "julia"
+    directories:
+      - "/"
+      - "lib/QECCore"
+    schedule:
+      interval: "weekly"
   - package-ecosystem: "github-actions"
-    directory: "/" # Location of package manifests
+    directory: "/"
     schedule:
       interval: "weekly"

@@ -17,6 +17,7 @@ export JULIA_NUM_THREADS=$nthreads
 cat << EOF | julia -t$nthreads
 using Pkg;
 Pkg.activate(;temp=true);
+Pkg.develop(joinpath(dirname(@__DIR__), "lib", "QECCore"))
 pkg"add BenchmarkTools StableRNGs Nemo PkgBenchmark";
 pkg"develop .."
 using PkgBenchmark

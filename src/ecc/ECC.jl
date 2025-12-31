@@ -1,6 +1,8 @@
 module ECC
 
-using LinearAlgebra: LinearAlgebra, I, rank, tr
+using QECCore
+import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
+metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
@@ -12,34 +14,45 @@ using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     apply!, comm, comm!, stab_to_gf2, embed, @S_str, affectedqubits, affectedbits,
     pftrajectories, pfmeasurements, mctrajectories
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
-using DocStringExtensions
+
 using Combinatorics: combinations
+using LinearAlgebra: LinearAlgebra, I, rank, tr
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 
-abstract type AbstractECC end
+using DocStringExtensions
 
-export parity_checks, parity_checks_x, parity_checks_z, iscss,
-    code_n, code_s, code_k, rate, distance,
+export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
+    code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
+    metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix,
     isdegenerate, faults_matrix,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode, LiftedCode,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
-    Toric, Gottesman, Surface, Concat, CircuitCode, QuantumReedMuller,
-    LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
-    haah_cubic_codes,
+    Toric, Gottesman, Surface, Concat, CircuitCode,
+    LPCode, two_block_group_algebra_code, generalized_bicycle_code_as_2bga, bicycle_code_as_2bga,
+    Haah_cubic_code_as_2bga, twobga_from_fp_group, twobga_from_direct_product,
+    TillichZemor, random_TillichZemor_code,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
+    Triangular488, Triangular666, honeycomb_color_code_as_2bga, DelfosseReichardt,
+    DelfosseReichardtRep, DelfosseReichardt823, LaCross,
+    QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
+    DDimensionalSurface, DDimensionalToric, boundary_maps,
+    BivariateBicycleViaCirculantMat, GeneralizedHyperGraphProduct,
+    GeneralizedBicycle, ExtendedGeneralizedBicycle,
+    HomologicalProduct, DoubleHomologicalProduct,
+    GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
-    TableDecoder,
+    TableDecoder, CSSTableDecoder,
     BeliefPropDecoder, BitFlipDecoder,
-    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder
+    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, TesseractDecoder, DecoderCorrectionGate
 
 """Parity check tableau of a code.
 
-See also: [`parity_checks_x`](@ref) and [`parity_checks_z`](@ref)"""
+See also: [`parity_matrix_x`](@ref) and [`parity_matrix_z`](@ref)"""
 function parity_checks end
 
 """Parity check boolean matrix of a code (only the X entries in the tableau, i.e. the checks for Z errors).
@@ -47,7 +60,7 @@ function parity_checks end
 Only CSS codes have this method.
 
 See also: [`parity_checks`](@ref)"""
-function parity_checks_x(code::AbstractECC)
+function parity_matrix_x(code::AbstractECC)
     throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
 end
 
@@ -56,10 +69,9 @@ end
 Only CSS codes have this method.
 
 See also: [`parity_checks`](@ref)"""
-function parity_checks_z(code::AbstractECC)
+function parity_matrix_z(code::AbstractECC)
     throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
 end
-
 
 """Check if the code is CSS.
 
@@ -69,26 +81,21 @@ function iscss(::Type{T}) where T<:AbstractECC
     return false
 end
 
+function iscss(::Type{T}) where T <: AbstractCSSCode
+    return true
+end
+
 function iscss(c::AbstractECC)
     return iscss(typeof(c))
 end
-
-"""
-Generator Polynomial `g(x)`
-
-In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field `F`. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
-"""
-function generator_polynomial end
 
 """The generator matrix of a code."""
 function generator end
 
 parity_checks(s::Stabilizer) = s
+parity_checks(c::AbstractECC) = Stabilizer(parity_matrix(c))
 Stabilizer(c::AbstractECC) = parity_checks(c)
 MixedDestabilizer(c::AbstractECC; kwarg...) = MixedDestabilizer(Stabilizer(c); kwarg...)
-
-"""The number of physical qubits in a code."""
-function code_n end
 
 nqubits(c::AbstractECC) = code_n(c::AbstractECC)
 
@@ -96,8 +103,6 @@ code_n(c::AbstractECC) = code_n(parity_checks(c))
 
 code_n(s::Stabilizer) = nqubits(s)
 
-"""The number of stabilizer checks in a code. They might not be all linearly independent, thus `code_s >= code_n-code_k`. For the number of linearly independent checks you can use `LinearAlgebra.rank`."""
-function code_s end
 code_s(s::Stabilizer) = length(s)
 code_s(c::AbstractECC) = code_s(parity_checks(c))
 
@@ -113,17 +118,38 @@ end
 
 code_k(c::AbstractECC) = code_k(parity_checks(c))
 
-"""The rate of a code."""
-function rate(c)
-    rate = code_k(c)//code_n(c)
-    return rate
+"""
+$TYPEDEF
+
+A Mixed Integer Programming (MIP) method for computing the code distance of CSS stabilizer codes
+by finding the minimum-weight non-trivial logical [`PauliOperator`](@ref) (either `X`-type or `Z`-type).
+Used with [`distance`](@ref) to select MIP as the method of finding the distance of a code.
+
+!!! note
+    - Requires a `JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`).
+    - For some stabilizer CSS codes, the `X`-distance and `Z`-distance are equal.
+
+$FIELDS
+"""
+@kwdef struct DistanceMIPAlgorithm <: AbstractDistanceAlg
+    """index of the logical qubit to compute code distance for (nothing means compute for all logical qubits)"""
+    logical_qubit::Union{Int, Nothing}=nothing
+    """type of logical operator to consider (:X or :Z, defaults to :minXZ)."""
+    logical_operator_type::Symbol=:minXZ
+    """`JuMP`-compatible MIP solver (e.g., `HiGHS`, `SCIP`)"""
+    solver::Module
+    """when `true` (default=`false`), prints the MIP solver's solution summary"""
+    opt_summary::Bool=false
+    """time limit (in seconds) for the MIP solver's execution (default=60.0)"""
+    time_limit::Float64=60.0
+
+    function DistanceMIPAlgorithm(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
+        logical_operator_type ∈ (:X, :Z, :minXZ) || throw(ArgumentError("`logical_operator_type` must be :X or :Z or :minXZ"))
+        new(logical_qubit, logical_operator_type, solver, opt_summary, time_limit)
+    end
 end
 
-
-"""The distance of a code."""
-function distance end
-
-"""Parity matrix of a code, given as a stabilizer tableau."""
+"""Parity matrix of a code, given as a stabilizer tableau.""" # TODO this should not exist when the transition to QECCore is finished -- currently this is used only for "old" codes, still defined in QuantumClifford
 function parity_matrix(c::AbstractECC)
     paritym = stab_to_gf2(parity_checks(c::AbstractECC))
     return paritym
@@ -314,7 +340,7 @@ function faults_matrix(c::Stabilizer)
     s, n = size(c)
     r = rank(md)
     k = n - r
-    k == n-s || @warn "`faults_matrix` was called on an ECC that has redundant rows (is rank-deficient). `faults_matrix` corrected for that, however this is a frequent source of mistakes and inefficiencies. We advise you remove redundant rows from your ECC."
+    k == n-s || @warn "`faults_matrix` was called on an ECC that has redundant rows (is rank-deficient). `faults_matrix` corrected for that, however this is a frequent source of mistakes and inefficiencies. We advise you remove redundant rows from your ECC." maxlog=1
     O = falses(2k, 2n)
     logviews = [logicalxview(md); logicalzview(md)]
     errors = [one(Stabilizer,n; basis=:X);one(Stabilizer,n)]
@@ -372,26 +398,13 @@ include("decoder_pipeline.jl")
 
 include("codes/util.jl")
 
-include("codes/classical_codes.jl")
-include("codes/css.jl")
-include("codes/bitflipcode.jl")
-include("codes/fivequbit.jl")
-include("codes/steanecode.jl")
-include("codes/shorcode.jl")
-include("codes/clevecode.jl")
-include("codes/toric.jl")
-include("codes/gottesman.jl")
-include("codes/surface.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
-include("codes/quantumreedmuller.jl")
-include("codes/classical/reedmuller.jl")
-include("codes/classical/recursivereedmuller.jl")
 include("codes/classical/bch.jl")
-include("codes/classical/golay.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
-include("codes/lifted_product.jl")
+include("codes/qeccs_from_extensions.jl")
 
+include("decoder_correction_gate.jl")
 end #module

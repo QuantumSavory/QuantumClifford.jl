@@ -5,9 +5,30 @@ Modules = [QuantumClifford.ECC]
 Private = false
 ```
 
+## The base library `QECCore.jl`
+
+```@autodocs
+Modules = [QECCore]
+Private = false
+```
+
 ## Implemented in an extension requiring `Hecke.jl`
 
 ```@autodocs
 Modules = [QuantumCliffordHeckeExt]
-Private = true
+Private = false
+```
+
+## Implemented in an extension requiring `Oscar.jl`
+
+```@autodocs
+Modules = [QuantumCliffordOscarExt]
+Private = false
+```
+
+## Implemented in an extension requiring `JuMP.jl`
+
+```@autodocs
+Modules = [QuantumCliffordJuMPExt]
+Private = false
 ```

@@ -218,10 +218,13 @@ Based on [gottesman1997stabilizer](@cite).
 
 See also: [`canonicalize!`](@ref), [`canonicalize_rref!`](@ref)
 """
-function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true)
-    @valbooldispatch _canonicalize_gott!(stabilizer; phases=Val(phases)) phases
+function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true, backtrack::Bool=false)
+    @valbooldispatch _canonicalize_gott!(stabilizer; phases=Val(phases), backtrack=Val(backtrack)) phases backtrack
 end
-function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) where {B}
+function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true), backtrack::Val{Bbacktrack}=Val(false)) where {B,Bbacktrack}
+    if Bbacktrack
+        canonops = CanonOp[]
+    end
     xzs = tab(stabilizer).xzs
     rows, columns = size(stabilizer)
     i = 1
@@ -231,16 +234,18 @@ function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) w
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases)
+            Bbacktrack && push!(canonops, CanonOp(rowswap=(k,i)))
             for m in 1:rows
                 if stabilizer[m,j][1] && m!=i # if X or Y
                     mul_left!(stabilizer, m, i; phases)
+                    Bbacktrack && push!(canonops, CanonOp(mul_left=(m,i)))
                 end
             end
             i += 1
         end
     end
     xperm, r = gott_standard_form_indices((@view xzs[1:end÷2,:]),rows,columns)
-    permute!(stabilizer,xperm)
+    permutesystems!(stabilizer,xperm)
     i = r+1
     for j in r+1:columns
         # find first row with Z in col `j`
@@ -248,16 +253,41 @@ function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true)) w
         if k !== nothing
             k += i-1
             rowswap!(stabilizer, k, i; phases)
+            Bbacktrack && push!(canonops, CanonOp(rowswap=(k,i)))
             for m in 1:rows
                 if stabilizer[m,j][2] && m!=i # if Z or Y
                     mul_left!(stabilizer, m, i; phases)
+                    Bbacktrack && push!(canonops, CanonOp(mul_left=(m,i)))
                 end
             end
             i += 1
         end
     end
     zperm, s = gott_standard_form_indices((@view xzs[end÷2+1:end,:]),rows,columns,skip=r)
-    permute!(stabilizer,zperm)
+    permutesystems!(stabilizer,zperm)
     # we have r+s==rows (or we have trailing rows that are zeroed)
-    stabilizer, r, s, xperm, zperm
+    if Bbacktrack
+        return stabilizer, r, s, xperm, zperm, canonops
+    else
+        return stabilizer, r, s, xperm, zperm
+    end
 end
+
+struct CanonOp
+    rowswap::Union{Nothing,Tuple{Int,Int}}
+    mul_left::Union{Nothing,Tuple{Int,Int}}
+end
+CanonOp(;rowswap=nothing, mul_left=nothing) = CanonOp(rowswap, mul_left)
+
+function (op::CanonOp)(state::AbstractStabilizer)
+    if !isnothing(op.rowswap)
+        rowswap!(state, op.rowswap...)
+    end
+    if !isnothing(op.mul_left)
+        mul_left!(state, op.mul_left...)
+    end
+end
+
+canonicalize!(ps::Base.AbstractVecOrTuple{PauliOperator}, args...; kwargs...) = canonicalize!(Stabilizer(ps), args...; kwargs...)
+canonicalize_rref!(ps::Base.AbstractVecOrTuple{PauliOperator}, args...; kwargs...) = canonicalize_rref!(Stabilizer(ps), args...; kwargs...)
+canonicalize_gott!(ps::Base.AbstractVecOrTuple{PauliOperator}, args...; kwargs...) = canonicalize_gott!(Stabilizer(ps), args...; kwargs...)

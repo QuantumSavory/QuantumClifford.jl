@@ -315,26 +315,60 @@
             @test tab(apply!(copy(s),sMZ(r))).xzs == tab(sz).xzs == tab(ssz).xzs == tab(rssz).xzs
         end
     end
-    @testset "project! projectrand! apply!(...,sM*) consistency" begin
+
+    # project*! should accept AbstractStabilizer, or Stabilizer in particular
+    # This testset is not merged with the previous one as "measuring commuting operator out of the stabilizer"
+    # is not well supported for pure stabilizer state datastructure. See also "Datastructure Choice"
+    @testset "Single Qubit Pure State Projections" begin
+        for n in test_sizes
+            s = random_stabilizer(n);
+            r = rand(1:n)
+            px = single_x(n,r);
+            py = single_y(n,r);
+            pz = single_z(n,r);
+            @test project!(copy(s),px) == projectX!(copy(s),r)
+            @test project!(copy(s),py) == projectY!(copy(s),r)
+            @test project!(copy(s),pz) == projectZ!(copy(s),r)
+            sx = project!(copy(s),px)[1]
+            sy = project!(copy(s),py)[1]
+            sz = project!(copy(s),pz)[1]
+            ssx = project!(copy(s),sMX(r))[1]
+            ssy = project!(copy(s),sMY(r))[1]
+            ssz = project!(copy(s),sMZ(r))[1]
+            rssx = projectrand!(copy(s),sMX(r))[1]
+            rssy = projectrand!(copy(s),sMY(r))[1]
+            rssz = projectrand!(copy(s),sMZ(r))[1]
+            @test project!(copy(sx),px) == projectX!(copy(sx),r)
+            @test project!(copy(sy),py) == projectY!(copy(sy),r)
+            @test project!(copy(sz),pz) == projectZ!(copy(sz),r)
+            @test tab(apply!(copy(s),sMX(r))).xzs == tab(sx).xzs == tab(ssx).xzs == tab(rssx).xzs
+            @test tab(apply!(copy(s),sMY(r))).xzs == tab(sy).xzs == tab(ssy).xzs == tab(rssy).xzs
+            @test tab(apply!(copy(s),sMZ(r))).xzs == tab(sz).xzs == tab(ssz).xzs == tab(rssz).xzs
+        end
+    end
+    @testset "project! projectrand! project*! project*rand! apply!(...,sM*) consistency" begin
         s = S"XII -IZI IIY"
         _,_, r1 = project!(MixedDestabilizer(copy(s)), sMX(1))
         _,_, r2 = project!(copy(s), P"XII")
-        _,_, r3 = project!(MixedDestabilizer(copy(s)), sMX(1))
-        _, r4 = projectrand!(copy(s), P"XII")
-        r5 = bitview(apply!(Register(copy(s), [0]),sMX(1)))[1]
-        @test r1 == r2 == r3 == r4 == r5
+        _, r3 = projectrand!(copy(s), P"XII")
+        r4 = bitview(apply!(Register(copy(s), [0]),sMX(1)))[1]
+        _, _, r5 = projectX!(copy(s), 1)
+        _, r6 = projectXrand!(copy(s), 1)
+        @test r1 == r2 == r3 == r4 == r5 == r6
         _,_, r1 = project!(MixedDestabilizer(copy(s)), sMZ(2))
         _,_, r2 = project!(copy(s), P"IZI")
-        _,_, r3 = project!(MixedDestabilizer(copy(s)), sMZ(2))
-        _, r4 = projectrand!(copy(s), P"IZI")
-        r5 = bitview(apply!(Register(copy(s), [0]),sMZ(2)))[1]
-        @test r1%2 == r2%2 == r3%2 == r4%2 == r5
+        _, r3 = projectrand!(copy(s), P"IZI")
+        r4 = bitview(apply!(Register(copy(s), [0]),sMZ(2)))[1]
+        _, _, r5 = projectZ!(copy(s), 2)
+        _, r6 = projectZrand!(copy(s), 2)
+        @test r1%2 == r2%2 == r3%2 == r4 == r5%2 == r6%2
         _,_, r1 = project!(MixedDestabilizer(copy(s)), sMY(3))
         _,_, r2 = project!(copy(s), P"IIY")
-        _,_, r3 = project!(MixedDestabilizer(copy(s)), sMY(3))
-        _, r4 = projectrand!(copy(s), P"IIY")
-        r5 = bitview(apply!(Register(copy(s), [0]),sMY(3)))[1]
-        @test r1 == r2 == r3 == r4 == r5
+        _, r3 = projectrand!(copy(s), P"IIY")
+        r4 = bitview(apply!(Register(copy(s), [0]),sMY(3)))[1]
+        _, _, r5 = projectY!(copy(s), 3)
+        _, r6 = projectYrand!(copy(s), 3)
+        @test r1 == r2 == r3 == r4 == r5 == r6
     end
     @testset "projectremoverand!" begin
         for n in test_sizes
