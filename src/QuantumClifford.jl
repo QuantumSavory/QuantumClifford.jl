@@ -1413,7 +1413,6 @@ include("symbolic_cliffords.jl")
 include("apply_right.jl")
 # linear algebra and array-like operations
 include("linalg.jl")
-include("reinterpret.jl")
 # circuits
 include("operator_traits.jl")
 include("mctrajectory.jl")
@@ -1434,6 +1433,7 @@ using .GraphSim
 #
 include("entanglement.jl")
 #
+include("reinterpret.jl")
 include("tableau_show.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
