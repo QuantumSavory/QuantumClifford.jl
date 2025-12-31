@@ -1,3 +1,5 @@
+import Graphs
+
 """
 $TYPEDSIGNATURES
 

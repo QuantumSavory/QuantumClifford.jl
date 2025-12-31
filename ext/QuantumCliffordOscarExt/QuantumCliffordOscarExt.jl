@@ -17,14 +17,15 @@ import Oscar: free_group, small_group_identification, describe, order, FPGroupEl
     base_ring, ComplexOfMorphisms, coefficients, zero_matrix, hcat, circshift, size, zeros, enumerate,
     kronecker_product, FqMatrix, identity_matrix, iszero, FqPolyRingElem, laurent_polynomial_ring,
     hnf_with_transform, ideal, intersect, ==, is_coprime, quo, groebner_basis, length, FqMPolyRingElem,
-    first, length
+    first, MPolyQuoRingElem, FqMPolyRingElem, modulus, ideal, monomials, terms, coeff, degree, mod,
+    monomial, exponent_vector, nvars
 import Oscar.Generic.MatSpaceElem
 import Oscar.Generic.DirectSumModule
 import Oscar.Generic.LaurentMPolyWrap
 import Oscar.Generic.exponent_vectors
 import Oscar.IdealGens
 
-import QuantumClifford.ECC: two_block_group_algebra_codes, twobga_from_direct_product, twobga_from_fp_group,
+import QuantumClifford.ECC: two_block_group_algebra_code, twobga_from_direct_product, twobga_from_fp_group,
     boundary_maps, max_xy_exponents
 
 import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
@@ -32,14 +33,16 @@ import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
     metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
-export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps,
-    HomologicalProductCode, DoubleHomologicalProductCode, GeneralizedToricCode
+export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurface, DDimensionalToric, boundary_maps,
+    HomologicalProduct, DoubleHomologicalProduct, GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly
 
 include("types.jl")
 include("direct_product.jl")
+include("bivariate_bicycle.jl")
 include("generalized_toric.jl")
 include("group_presentation.jl")
 include("d_dimensional_codes.jl")
+include("trivariate_tricycle.jl")
 include("homological_product_codes.jl")
 
 end # module

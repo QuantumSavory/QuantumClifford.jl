@@ -1,6 +1,6 @@
 @testitem "Graph state CPHASE simulation" begin
     using Random
-    import QuantumClifford: GraphState, local_comp!
+    import QuantumClifford.GraphSim: GraphState, local_comp!
 
     test_sizes = [2,10,63,64,65,127,128,129]
     iteration = 250

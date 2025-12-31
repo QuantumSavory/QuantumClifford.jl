@@ -3,15 +3,12 @@
 ```@meta
 DocTestSetup = quote
     using QuantumClifford
-    using QuantumClifford.Experimental.NoisyCircuits
     using Quantikz
 end
 ```
 
 !!! warning "Unstable"
     This is experimental functionality with an unstable API.
-    
-Import with `using QuantumClifford.Experimental.NoisyCircuits`.
 
 Too see a condensed list of all operations [check out the API docs](@ref all-operations).
 
@@ -23,19 +20,17 @@ Predefined unitary gates are available, like [`sCNOT`](@ref), [`sHadamard`](@ref
 
 ```@example 1
 using QuantumClifford # hide
-using QuantumClifford.Experimental.NoisyCircuits # hide
 using Quantikz # hide
 [sCNOT(2,4),sHadamard(2),sCPHASE(1,3),sSWAP(2,4)]
 ```
 
-Any arbitrary tableaux can be used as a gate too. 
+Any arbitrary tableaux can be used as a gate too.
 
 They can be specified by giving a Clifford operator tableaux and the indices on which it acts
 (particularly useful for gates acting on a small part of a circuit):
 
 ```@example 1
 using QuantumClifford # hide
-using QuantumClifford.Experimental.NoisyCircuits # hide
 using Quantikz # hide
 SparseGate(tCNOT, [2,4])
 ```
@@ -114,14 +109,14 @@ It can be done anywhere in a circuit, not just at the beginning.
 
 [`ConditionalGate`](@ref) is a conditional gate that performs one of two provided gates, depending on the value of a given classical bit.
 
-[`DecisionGate`](@ref) is a conditional gate that performs one of the supplied `gates`, depending on the output of `decisionfunction` applied to the entire classical bit register.
+[`IndexedDecisionGate`](@ref) is a conditional gate that performs one of the supplied `gates`, depending on the output of `decisionfunction` applied to the entire classical bit register.
 
 ```@example 1
 gate1 = SparseGate(tCNOT,   [1,2])
 gate2 = sCPHASE(1,2)
 gate3 = SparseGate(tSWAP,   [1,3])
 cg = ConditionalGate(gate1, gate2, 2)
-dg = DecisionGate([gate1,gate2,gate3], bit_register->1) # it will always perform gate1
+dg = IndexedDecisionGate([gate1,gate2,gate3], bit_register->1) # it will always perform gate1
 [sMX(4,1), sMZ(5,2), cg, dg]
 ```
 

@@ -5,9 +5,9 @@ The inner code c₁ and the outer code c₂.
 The construction is the following: replace each qubit in code c₂ with logical qubits encoded by code c₁.
 The resulting code will have `n = n₁ × n₂` qubits and `k = k₁ × k₂` logical qubits.
 """
-struct Concat <: AbstractECC
-    c₁::AbstractECC
-    c₂::AbstractECC
+struct Concat <: AbstractQECC
+    c₁::AbstractQECC
+    c₂::AbstractQECC
 end
 
 function parity_checks(c::Concat)
@@ -25,7 +25,7 @@ function parity_checks(c::Concat)
     phases_logx₁ = phases(logx_ops(c₁))
     h_logz₁ = stab_to_gf2(logz_ops(c₁))
     phases_logz₁ = phases(logz_ops(c₁))
-    # parity checks of c₂ with qubits repalced with logical qubits of c₁
+    # parity checks of c₂ with qubits replaced with logical qubits of c₁
     outer_check_h = transpose(hcat([vcat(
         kron(h₂[i, 1:end÷2], h_logx₁[j, 1:end÷2]) .⊻ kron(h₂[i, end÷2+1:end], h_logz₁[j, 1:end÷2]), # X part
         kron(h₂[i, 1:end÷2], h_logx₁[j, end÷2+1:end]) .⊻ kron(h₂[i, end÷2+1:end], h_logz₁[j, end÷2+1:end]) # Z part

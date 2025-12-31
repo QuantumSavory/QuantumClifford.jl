@@ -287,7 +287,7 @@ function _reset!(memory::RandDestabMemory)
     end
 end
 
-# Allocation free inverse of upper trinagular int matrix with 1 on diagonal.
+# Allocation free inverse of upper triangular int matrix with 1 on diagonal.
 function _inv!(inverse, A)
     for i in 2:size(A, 2)
         for j in 1:i-1

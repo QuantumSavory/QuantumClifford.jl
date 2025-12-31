@@ -1,6 +1,6 @@
 @testitem "Graph states single qubit gates" begin
     using Random
-    import QuantumClifford: GraphState
+    import QuantumClifford.GraphSim: GraphState
 
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 

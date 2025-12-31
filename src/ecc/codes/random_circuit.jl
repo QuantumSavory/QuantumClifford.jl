@@ -10,7 +10,7 @@ using Random: AbstractRNG, GLOBAL_RNG
 
 See also: [`random_all_to_all_circuit_code`](@ref), [`random_brickwork_circuit_code`](@ref)
 """
-struct CircuitCode <: AbstractECC
+struct CircuitCode <: AbstractQECC
     n::Int
     circ::Vector{QuantumClifford.AbstractOperation}
     encode_qubits::AbstractArray
