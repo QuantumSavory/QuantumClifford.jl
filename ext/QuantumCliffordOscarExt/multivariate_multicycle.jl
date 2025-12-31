@@ -316,6 +316,8 @@ julia> code_n(c), code_k(c)
 [ Info: Checking exactness condition for degree 4: ∂3∘∂4
 (648, 18)
 ```
+
+See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaCirculantMat`](@ref), [`BivariateBicycleViaPoly`](@ref)  
 """
 struct MultivariateMulticycle <: AbstractCSSCode
     orders::Vector{Int}
