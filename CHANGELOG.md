@@ -21,6 +21,7 @@
 - A new non-Clifford operation was added as a Pauli channel, the rotation gate `pcRx`.
 - Adapt.jl can now be used to convert various types to GPU-backed storage.
 - The phase storage type can now be parameterized, instead of hardcoded to UInt8.
+- Add decoding pipeline in `QECCore`.
 - Add an extension to `QECCore` -- `QECCoreNemoExt` for accurate matrix `rank` computation
 - Introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
 - Quantum codes (including **(breaking)** changes to API):
