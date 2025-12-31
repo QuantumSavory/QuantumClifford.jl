@@ -317,7 +317,7 @@ julia> code_n(c), code_k(c)
 (648, 18)
 ```
 
-See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaCirculantMat`](@ref), [`BivariateBicycleViaPoly`](@ref)  
+See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)  
 """
 struct MultivariateMulticycle <: AbstractCSSCode
     orders::Vector{Int}
