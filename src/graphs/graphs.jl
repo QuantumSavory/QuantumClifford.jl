@@ -7,7 +7,7 @@ using QuantumClifford: AbstractStabilizer, AbstractSingleQubitOperator,
         sId1, sInvPhase, sSQRTX, CliffordOperator, SingleQubitOperator,
         Stabilizer, sZ, sPhase, sX, sY, sHadamard, sInvSQRTX, @S_str, stabilizerview,
         canonicalize_gott!, phases, sCPHASE, affectedqubits, canonicalize!, tab
-import QuantumClifford: nqubits, apply!
+import QuantumClifford: nqubits, apply!, Stabilizer
 
 include("single_qubit_tables.jl")
 

@@ -64,6 +64,10 @@ include("codes/quantum/delfosse_reichardt_repcode.jl")
 include("codes/quantum/delfosse_reichardt_823_code.jl")
 
 function __init__()
+    ENV["NEMO_PRINT_BANNER"] = "false"
+    ENV["HECKE_PRINT_BANNER"] = "false"
+    ENV["OSCAR_PRINT_BANNER"] = "false"
+
     if isdefined(Base.Experimental, :register_error_hint)
         Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
             if exc.f == parity_matrix_x || exc.f == parity_matrix_z
