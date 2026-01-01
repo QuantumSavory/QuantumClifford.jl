@@ -639,6 +639,9 @@ function metacheck_matrix_z(c::DDimensionalCode)
     return Matrix(boundary_maps(c)[1]') # Mz
 end
 
+
+hasmetachecks(c::DDimensionalCode) = (metacheck_matrix_x(c), metacheck_matrix_z(c))
+
 """
 $TYPEDEF
 

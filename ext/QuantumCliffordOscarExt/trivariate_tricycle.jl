@@ -322,3 +322,5 @@ parity_matrix_x(c::TrivariateTricycle) = boundary_maps(c)[1]
 parity_matrix_z(c::TrivariateTricycle) = boundary_maps(c)[2]
 
 metacheck_matrix_z(c::TrivariateTricycle) = boundary_maps(c)[3]
+
+hasmetachecks(c::TrivariateTricycle) = (nothing, metacheck_matrix_z(c))

@@ -236,3 +236,5 @@ function metacheck_matrix_z(code::MultivariateMulticycle)
     qd = t÷2
     return maps[qd+2]
 end
+
+hasmetachecks(c::MultivariateMulticycle) = (metacheck_matrix_x(c), metacheck_matrix_z(c))
