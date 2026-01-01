@@ -433,8 +433,8 @@ const code_instance_args = Dict(
 
     # 3D Homological product code from [Quintavalle_2021](@cite)
     μ = 2; wc = 3; wr = 4
-    c = GallagerLDPC(μ, wc, wr)
-    H₃ = matrix(GF(2), parity_matrix(c))
+    c = random_Gallager_ldpc(μ, wc, wr)
+    H₃ = matrix(GF(2), c)
 
     # 3D Homological product code from [Quintavalle_2021](@cite)
     δ₄ = matrix(GF(2), parity_matrix(RepCode(3)))
