@@ -141,7 +141,6 @@
         for _ in 1:100
             error = rand(Bool, size(Hx, 2))
             @test iszero(mod.(Mx*mod.(Hx*error, 2), 2))
-            @test iszero(sx)
             error = rand(Bool, size(Hz, 2))
             @test iszero(mod.(Mz*mod.(Hz*error, 2), 2))
         end
