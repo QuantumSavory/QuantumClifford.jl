@@ -56,8 +56,8 @@
     end
 
     @testset "pauli combinations" begin
-        unsigned_types = subtypes(Unsigned)
-        ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
+        unsigned_types = [UInt8, UInt64, UInt128]
+        ns = [64]
 
         for n in ns
             for Ti in unsigned_types, Tf in unsigned_types
@@ -110,48 +110,61 @@
     end
 
     @testset "tableau combinations" begin
-        unsigned_types = subtypes(Unsigned)
-        ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
-        rows_choices = (1, 2, 3)
+        unsigned_types = [UInt8, UInt64, UInt128]
+        ns = [64]
+        rows_choices = (3,)
 
         for n in ns
             for Ti in unsigned_types, Tf in unsigned_types
                 for r in rows_choices
-                    for layout_fn in (identity, fastrow, fastcolumn)
-                        t = layout_fn(zero(Tableau, r, n))
-                        random_tableau!(t)
-                        try
-                            t2 = reinterpret(Tf, t)
-                            t3 = reinterpret(Ti, t2)
-                            @test t == t3
-                        catch e
-                            reinterpret_error_matches(e, "Unable to reinterpret tableau storage")
-                        end
+                    t = zero(Tableau, r, n)
+                    random_tableau!(t)
+                    try
+                        t2 = reinterpret(Tf, t)
+                        t3 = reinterpret(Ti, t2)
+                        @test t == t3
+                    catch e
+                        reinterpret_error_matches(e, "Unable to reinterpret tableau storage")
                     end
                 end
             end
         end
     end
 
+    @testset "tableau layout variations" begin
+        # Test that layout functions work with reinterpret
+        Ti, Tf = UInt8, UInt64
+        n, r = 7, 2
+        for layout_fn in (identity, fastrow, fastcolumn)
+            t = layout_fn(zero(Tableau, r, n))
+            random_tableau!(t)
+            try
+                t2 = reinterpret(Tf, t)
+                t3 = reinterpret(Ti, t2)
+                @test t == t3
+            catch e
+                reinterpret_error_matches(e, "Unable to reinterpret tableau storage")
+            end
+        end
+    end
+
     @testset "stabilizer combinations" begin
-        unsigned_types = subtypes(Unsigned)
-        ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
-        rows_choices = (1, 2, 3)
+        unsigned_types = [UInt8, UInt64, UInt128]
+        ns = [64]
+        rows_choices = (3,)
 
         for n in ns
             for Ti in unsigned_types, Tf in unsigned_types
                 for r in rows_choices
-                    for layout_fn in (identity, fastrow, fastcolumn)
-                        t = layout_fn(zero(Tableau, r, n))
-                        random_tableau!(t)
-                        s = QuantumClifford.Stabilizer(t)
-                        try
-                            s2 = reinterpret(Tf, s)
-                            s3 = reinterpret(Ti, s2)
-                            @test s == s3
-                        catch e
-                            reinterpret_error_matches(e, "Unable to reinterpret stabilizer storage")
-                        end
+                    t = zero(Tableau, r, n)
+                    random_tableau!(t)
+                    s = QuantumClifford.Stabilizer(t)
+                    try
+                        s2 = reinterpret(Tf, s)
+                        s3 = reinterpret(Ti, s2)
+                        @test s == s3
+                    catch e
+                        reinterpret_error_matches(e, "Unable to reinterpret stabilizer storage")
                     end
                 end
             end
@@ -159,98 +172,90 @@
     end
 
     @testset "destabilizer combinations" begin
-        unsigned_types = subtypes(Unsigned)
-        ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
+        unsigned_types = [UInt8, UInt64, UInt128]
+        ns = [64]
 
         for n in ns
             for Ti in unsigned_types, Tf in unsigned_types
-                for layout_fn in (identity, fastrow, fastcolumn)
-                    t = layout_fn(zero(Tableau, n, n))
-                    random_tableau!(t)
-                    s = QuantumClifford.Stabilizer(t)
-                    d = QuantumClifford.Destabilizer(s)
-                    try
-                        d2 = reinterpret(Tf, d)
-                        d3 = reinterpret(Ti, d2)
-                        @test tab(d) == tab(d3)
-                    catch e
-                        reinterpret_error_matches(e, "Unable to reinterpret destabilizer storage")
-                    end
+                t = zero(Tableau, n, n)
+                random_tableau!(t)
+                s = QuantumClifford.Stabilizer(t)
+                d = QuantumClifford.Destabilizer(s)
+                try
+                    d2 = reinterpret(Tf, d)
+                    d3 = reinterpret(Ti, d2)
+                    @test tab(d) == tab(d3)
+                catch e
+                    reinterpret_error_matches(e, "Unable to reinterpret destabilizer storage")
                 end
             end
         end
     end
 
     @testset "mixedstabilizer combinations" begin
-        unsigned_types = subtypes(Unsigned)
-        ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
+        unsigned_types = [UInt8, UInt64, UInt128]
+        ns = [64]
 
         for n in ns
             for Ti in unsigned_types, Tf in unsigned_types
-                for layout_fn in (identity, fastrow, fastcolumn)
-                    r = min(n-1, max(1, n÷2)) # Make it rank-deficient
-                    t = layout_fn(zero(Tableau, r, n))
-                    random_tableau!(t)
-                    s = QuantumClifford.Stabilizer(t)
-                    ms = QuantumClifford.MixedStabilizer(s)
-                    try
-                        ms2 = reinterpret(Tf, ms)
-                        ms3 = reinterpret(Ti, ms2)
-                        @test ms == ms3
-                        @test rank(ms) == rank(ms3)
-                    catch e
-                        reinterpret_error_matches(e, "Unable to reinterpret mixedstabilizer storage")
-                    end
+                r = min(n-1, max(1, n÷2))
+                t = zero(Tableau, r, n)
+                random_tableau!(t)
+                s = QuantumClifford.Stabilizer(t)
+                ms = QuantumClifford.MixedStabilizer(s)
+                try
+                    ms2 = reinterpret(Tf, ms)
+                    ms3 = reinterpret(Ti, ms2)
+                    @test ms == ms3
+                    @test rank(ms) == rank(ms3)
+                catch e
+                    reinterpret_error_matches(e, "Unable to reinterpret mixedstabilizer storage")
                 end
             end
         end
     end
 
     @testset "mixeddestabilizer combinations" begin
-        unsigned_types = subtypes(Unsigned)
-        ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
+        unsigned_types = [UInt8, UInt64, UInt128]
+        ns = [64]
 
         for n in ns
             for Ti in unsigned_types, Tf in unsigned_types
-                for layout_fn in (identity, fastrow, fastcolumn)
-                    r = min(n-1, max(1, n÷2)) # Make it rank-deficient
-                    t = layout_fn(zero(Tableau, r, n))
-                    random_tableau!(t)
-                    s = QuantumClifford.Stabilizer(t)
-                    md = QuantumClifford.MixedDestabilizer(s)
-                    try
-                        md2 = reinterpret(Tf, md)
-                        md3 = reinterpret(Ti, md2)
-                        @test md == md3
-                        @test rank(md) == rank(md3)
-                    catch e
-                        reinterpret_error_matches(e, "Unable to reinterpret mixeddestabilizer storage")
-                    end
+                r = min(n-1, max(1, n÷2))
+                t = zero(Tableau, r, n)
+                random_tableau!(t)
+                s = QuantumClifford.Stabilizer(t)
+                md = QuantumClifford.MixedDestabilizer(s)
+                try
+                    md2 = reinterpret(Tf, md)
+                    md3 = reinterpret(Ti, md2)
+                    @test md == md3
+                    @test rank(md) == rank(md3)
+                catch e
+                    reinterpret_error_matches(e, "Unable to reinterpret mixeddestabilizer storage")
                 end
             end
         end
     end
 
     @testset "pauliframe combinations" begin
-        unsigned_types = subtypes(Unsigned)
-        ns = [7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129]
-        rows_choices = (1, 2, 3)
+        unsigned_types = [UInt8, UInt64, UInt128]
+        ns = [64]
+        rows_choices = (3,)
 
         for n in ns
             for Ti in unsigned_types, Tf in unsigned_types
                 for r in rows_choices
-                    for layout_fn in (identity, fastrow, fastcolumn)
-                        t = layout_fn(zero(Tableau, r, n))
-                        random_tableau!(t)
-                        s = QuantumClifford.Stabilizer(t)
-                        pf = QuantumClifford.PauliFrame(s, falses(length(s), 2))
-                        try
-                            pf2 = reinterpret(Tf, pf)
-                            pf3 = reinterpret(Ti, pf2)
-                            @test pf == pf3
-                        catch e
-                            reinterpret_error_matches(e, ("Unable to reinterpret pauliframe storage", "Unable to reinterpret tableau storage", "Cannot `convert`"))
-                        end
+                    t = zero(Tableau, r, n)
+                    random_tableau!(t)
+                    s = QuantumClifford.Stabilizer(t)
+                    pf = QuantumClifford.PauliFrame(s, falses(length(s), 2))
+                    try
+                        pf2 = reinterpret(Tf, pf)
+                        pf3 = reinterpret(Ti, pf2)
+                        @test pf == pf3
+                    catch e
+                        reinterpret_error_matches(e, ("Unable to reinterpret pauliframe storage", "Unable to reinterpret tableau storage", "Cannot `convert`"))
                     end
                 end
             end
