@@ -87,8 +87,16 @@
             @test code_k(c) == k == code_k(stab)
             @test stab_looks_good(stab, remove_redundant_rows=true) == true
             @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
-            @test parity_matrix_z(c) != metacheck_matrix_z(c)
-            @test parity_matrix_x(c) != parity_matrix_z(c)
+            Hz = parity_matrix_z(c)
+            Mz = metacheck_matrix_z(c)
+            @test Hz != Mz
+            @test Hx != Hz
+            for _ in 1:100
+                error = rand(Bool, size(Hz, 2))
+                zz = mod.(Hz*error, 2)
+                sz = mod.(Mz*zz, 2)
+                iszero(sz)
+            end
         end
     end
 
@@ -110,11 +118,25 @@
         @test code_n(c) == code_n(stab) == 6*l*m*p*r
         @test code_k(c) == code_k(stab)
         @test stab_looks_good(stab, remove_redundant_rows=true) == true
-        @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
-        @test iszero(mod.(metacheck_matrix_x(c)*parity_matrix_x(c), 2))
-        @test metacheck_matrix_z(c) != metacheck_matrix_x(c)
-        @test parity_matrix_z(c) != metacheck_matrix_z(c)
-        @test parity_matrix_x(c) != metacheck_matrix_x(c)
-        @test parity_matrix_x(c) != parity_matrix_z(c)
+        Hx = parity_matrix_x(c)
+        Hz = parity_matrix_z(c)
+        Mx = metacheck_matrix_x(c)
+        Mz = metacheck_matrix_z(c)
+        @test iszero(mod.(Mz*Hz, 2))
+        @test iszero(mod.(Mx*Hx, 2))
+        @test Mz != Mx
+        @test Hz != Mz
+        @test Hx != Mx
+        @test Hx != Hz
+        for _ in 1:100
+            error = rand(Bool, size(Hx, 2))
+            zx = mod.(Hx*error, 2)
+            sx = mod.(Mx*zx, 2)
+            @test iszero(sx)
+            error = rand(Bool, size(Hz, 2))
+            zz = mod.(Hz*error, 2)
+            sz = mod.(Mz*zz, 2)
+            iszero(sz)
+        end
     end
 end
