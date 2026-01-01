@@ -1443,9 +1443,10 @@ include("tableau_show.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
-include("nonclifford.jl")
-include("lowrank/LowRankNonClifford.jl")
-using .LowRankNonClifford
+include("lowrank/PauliChannelNonClifford.jl")
+include("lowrank/PureNonClifford.jl")
+using .PauliChannelNonClifford
+using .PureNonClifford
 include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #

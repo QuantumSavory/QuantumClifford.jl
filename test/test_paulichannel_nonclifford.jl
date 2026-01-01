@@ -1,4 +1,4 @@
-@testitem "NonClifford" begin
+@testitem "PauliChannelNonClifford" begin
     using QuantumClifford
     using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, invsparsity, mul_left!, mul_right!, mixed_destab_looks_good, tr
     using Test

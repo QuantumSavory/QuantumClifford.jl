@@ -1,7 +1,7 @@
-@testitem "LowRankNonClifford Circuit Simulation" tags=[:non_clifford] begin
+@testitem "PureNonClifford Circuit Simulation" tags=[:non_clifford] begin
     using QuantumClifford
-    using QuantumClifford.LowRankNonClifford
-    import QuantumClifford.LowRankNonClifford: 
+    using QuantumClifford.PureNonClifford
+    import QuantumClifford.PureNonClifford: 
         get_gate_decomposition, 
         CliffordGateDecompositionCache,
         PureGeneralizedStabilizer
@@ -237,11 +237,11 @@
     end
 end
 
-@testitem "LowRankNonClifford Sampling" tags=[:non_clifford] begin
+@testitem "PureNonClifford Sampling" tags=[:non_clifford] begin
     using QuantumClifford
-    using QuantumClifford.LowRankNonClifford
+    using QuantumClifford.PureNonClifford
     import QuantumClifford: AbstractOperation
-    import QuantumClifford.LowRankNonClifford: 
+    import QuantumClifford.PureNonClifford: 
         PureGeneralizedStabilizer,
         sample_measurement_outcomes,
         compute_outcome_frequencies,
@@ -361,11 +361,11 @@ end
     end
 end
 
-@testitem "LowRankNonClifford Magic States" tags=[:non_clifford] begin
+@testitem "PureNonClifford Magic States" tags=[:non_clifford] begin
     using QuantumClifford
-    using QuantumClifford.LowRankNonClifford
+    using QuantumClifford.PureNonClifford
     using Random
-    import QuantumClifford.LowRankNonClifford:
+    import QuantumClifford.PureNonClifford:
     sparsify_stabilizer_decomposition,
     estimate_sparsification_quality,
     get_gate_decomposition,
@@ -464,9 +464,9 @@ end
     end
 end
 
-@testitem "LowRankNonClifford T-Gate Probability Distribution" tags=[:non_clifford] begin
+@testitem "PureNonClifford T-Gate Probability Distribution" tags=[:non_clifford] begin
     using QuantumClifford
-    using QuantumClifford.LowRankNonClifford
+    using QuantumClifford.PureNonClifford
 
     @testset "H-T-H Circuit Probability" begin
         circuit = [sHadamard(1), TGate(1), sHadamard(1)]
@@ -513,11 +513,10 @@ end
     end
 end
 
-
-@testitem "LowRankNonClifford Bell State with T" tags=[:non_clifford] begin
+@testitem "PureNonClifford Bell State with T" tags=[:non_clifford] begin
     using QuantumClifford
-    using QuantumClifford.LowRankNonClifford
-    import QuantumClifford.LowRankNonClifford: compute_outcome_frequencies
+    using QuantumClifford.PureNonClifford
+    import QuantumClifford.PureNonClifford: compute_outcome_frequencies
 
     @testset "Bell State Correlations" begin
         circuit = [
@@ -557,9 +556,9 @@ end
     end
 end
 
-@testitem "LowRankNonClifford Result Display" tags=[:non_clifford] begin
+@testitem "PureNonClifford Result Display" tags=[:non_clifford] begin
     using QuantumClifford
-    using QuantumClifford.LowRankNonClifford
+    using QuantumClifford.PureNonClifford
 
     @testset "Show Method" begin
         circuit = [sHadamard(1), TGate(1)]
@@ -586,9 +585,9 @@ end
     end
 end
 
-@testitem "LowRankNonClifford Edge Cases" tags=[:non_clifford] begin
+@testitem "PureNonClifford Edge Cases" tags=[:non_clifford] begin
     using QuantumClifford
-    using QuantumClifford.LowRankNonClifford
+    using QuantumClifford.PureNonClifford
 
     @testset "Single Gate Circuits" begin
         result = lrtrajectories([TGate(1)], 1; trajectories=50, delta=0.1, verbose=false)
@@ -625,13 +624,13 @@ end
     end
 end
 
-@testitem "LowRankNonClifford Incremental Sparsification" tags=[:non_clifford] begin
+@testitem "PureNonClifford Incremental Sparsification" tags=[:non_clifford] begin
     using QuantumClifford
-    using QuantumClifford.LowRankNonClifford
+    using QuantumClifford.PureNonClifford
     using Random
     
     import QuantumClifford: AbstractOperation
-    import QuantumClifford.LowRankNonClifford:
+    import QuantumClifford.PureNonClifford:
         sparsify_mixed_destabilizer_decomposition,
         simulate_sum_over_cliffords,
         PureGeneralizedStabilizer
@@ -753,9 +752,9 @@ end
     end
 end
 
-@testitem "LowRankNonClifford Probability Accuracy with Incremental Sparsification" tags=[:non_clifford] begin
+@testitem "PureNonClifford Probability Accuracy with Incremental Sparsification" tags=[:non_clifford] begin
     using QuantumClifford
-    using QuantumClifford.LowRankNonClifford
+    using QuantumClifford.PureNonClifford
 
     @testset "H-T^4-H Distribution" begin
         circuit = [sHadamard(1), TGate(1), TGate(1), TGate(1), TGate(1), sHadamard(1)]
@@ -784,13 +783,13 @@ end
     end
 end
 
-@testitem "LowRankNonClifford Incremental Sparsification Correctness" tags=[:non_clifford] begin
+@testitem "PureNonClifford Incremental Sparsification Correctness" tags=[:non_clifford] begin
     using QuantumClifford
-    using QuantumClifford.LowRankNonClifford
+    using QuantumClifford.PureNonClifford
     using Random
     
     import QuantumClifford: AbstractOperation
-    import QuantumClifford.LowRankNonClifford:
+    import QuantumClifford.PureNonClifford:
         simulate_sum_over_cliffords,
         PureGeneralizedStabilizer,
         compute_outcome_frequencies

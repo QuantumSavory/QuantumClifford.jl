@@ -1,3 +1,28 @@
+module PauliChannelNonClifford
+using LinearAlgebra
+using DataStructures: DefaultDict
+using DocStringExtensions
+import ..QuantumClifford
+import ..QuantumClifford:
+    AbstractQCState, AbstractOperation, AbstractCliffordOperator, AbstractStabilizer,
+    PauliOperator, Stabilizer, MixedDestabilizer, Destabilizer,
+    apply!, nqubits, stabilizerview, destabilizerview, rank,
+    zero, comm, mul_right!, embed, tensor, ⊗, project!, ghz,
+    I, X, Z
+
+export
+    GeneralizedStabilizer,
+    PauliChannel,
+    UnitaryPauliChannel,
+    AbstractPauliChannel,
+    pcT,
+    pcPhase,
+    pcRx,
+    expect,
+    projectrand!,
+    invsparsity,
+    rowdecompose
+
 """
 $(TYPEDEF)
 
@@ -329,7 +354,7 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
 
 See also: [`expect`](@ref)
 """
-function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
+function QuantumClifford.projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
     # Compute expectation value
     exp_val = expect(p, sm)
     prob_plus = (real(exp_val) + 1) / 2
@@ -818,4 +843,5 @@ function pcRx(θ)
         (I, X),
         (cos(θ/2), -im*sin(θ/2))
     )
+end
 end
