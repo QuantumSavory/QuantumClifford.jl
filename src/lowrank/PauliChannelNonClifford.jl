@@ -18,7 +18,6 @@ export
     pcT,
     pcPhase,
     pcRx,
-    projectrand!,
     invsparsity,
     rowdecompose
 
