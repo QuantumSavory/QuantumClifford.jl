@@ -1,6 +1,7 @@
 module QuantumCliffordQOpticsExt
 
 using QuantumClifford
+using QuantumClifford.PureNonClifford: PureGeneralizedStabilizer
 import QuantumClifford: mul_left!, mul_right!
 using QuantumOpticsBase
 using Graphs
@@ -69,8 +70,25 @@ Ket(dim=4)
                 0.0 + 0.0im
                 0.0 + 0.0im
  0.7071067811865474 + 0.0im
-```"""
+```
+"""
 Ket(s::QuantumClifford.AbstractStabilizer) = stab_to_ket(s)
+
+"""
+$TYPEDSIGNATURES
+
+Convert a PureGeneralizedStabilizer state to a ket representation.
+
+The state |ψ⟩ = Σₐ cₐ|φₐ⟩ is converted by summing the ket representations
+of each stabilizer state weighted by their coefficients.
+
+TODO: Each stabilizer state is converted independently with potentially different
+global phases, which can cause incorrect interference for multi-term superpositions.
+A proper implementation would need to track relative phases between stabilizer states.
+"""
+function Ket(state::PureGeneralizedStabilizer)
+    return sum(c * Ket(s) for (c, s) in zip(state.coefficients, state.stabilizer_states))
+end
 
 """
 $TYPEDSIGNATURES

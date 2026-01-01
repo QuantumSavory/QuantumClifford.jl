@@ -25,7 +25,6 @@ using DocStringExtensions
 export
     TGate, CCZGate,
     LRTrajectoryResults,
-    PureGeneralizedStabilizer,
     
     lrtrajectories,
     lrstate,
