@@ -1,6 +1,12 @@
 @testitem "reinterpret" begin
     using QuantumClifford
     using Test
+    using InteractiveUtils
+
+    # Local aliases for brevity
+    const Tableau = QuantumClifford.Tableau
+    const random_tableau! = QuantumClifford.random_tableau!
+    const random_pauli! = QuantumClifford.random_pauli!
 
     reinterpret_error_matches(e, needle="Unable to reinterpret") = begin
         @test isa(e, ArgumentError)
@@ -80,7 +86,7 @@
         end
 
         p_min = QuantumClifford.PauliOperator(0x0, 1, UInt8[0x0])
-        @test p_min == reinterpret(eltype(p_min.xz), reinterpret(UInt8, p_min))
+        @test_throws "Unable to reinterpret pauli storage" reinterpret(UInt8, p_min)
 
         p_small2 = QuantumClifford.PauliOperator(0x0, 2, UInt8[0x0, 0x0])
         @test_throws "Unable to reinterpret pauli storage" reinterpret(UInt128, p_small2)
