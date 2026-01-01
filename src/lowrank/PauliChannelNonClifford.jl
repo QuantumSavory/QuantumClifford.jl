@@ -350,7 +350,7 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 with ϕᵢⱼ | Pᵢ | Pⱼ:
  0.146447+0.0im | + Z | + Z
 
-julia> QuantumClifford._projectrand_notnorm(copy(sm), P"X", 1)[1]
+julia> QuantumClifford.PauliChannelNonClifford._projectrand_notnorm(copy(sm), P"X", 1)[1]
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
