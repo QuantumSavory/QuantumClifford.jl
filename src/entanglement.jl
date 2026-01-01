@@ -223,7 +223,7 @@ function entanglement_entropy(state::AbstractStabilizer, subsystem::AbstractVect
         state, rank_after_deletion = canonicalize_rref!(state, subsystem)
         nb_of_deletions = length(subsystem)
     else
-    # trace out the complement to get S(A)
+	# trace out the complement to get S(A)
         state, rank_after_deletion = canonicalize_rref!(state, setdiff(1:nb_of_qubits, subsystem))
         nb_of_deletions = nb_of_qubits - length(subsystem)
     end
