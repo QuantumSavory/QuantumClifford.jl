@@ -77,6 +77,15 @@
             @test code_k(c) == k == code_k(stab)
             @test stab_looks_good(stab, remove_redundant_rows=true) == true
             @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
+            Hz = parity_matrix_z(c)
+            Mz = metacheck_matrix_z(c)
+            @test Hz != Mz
+            @test Hx != Mz
+            @test Hx != Hz
+            for _ in 1:100
+                error = rand(Bool, size(Hz, 2))
+                @test iszero(mod.(Mz*mod.(Hz*error, 2), 2))
+            end
             c = MultivariateMulticycle([l,m, p], [A, B, C])
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
@@ -90,12 +99,11 @@
             Hz = parity_matrix_z(c)
             Mz = metacheck_matrix_z(c)
             @test Hz != Mz
+            @test Hx != Mz
             @test Hx != Hz
             for _ in 1:100
                 error = rand(Bool, size(Hz, 2))
-                zz = mod.(Hz*error, 2)
-                sz = mod.(Mz*zz, 2)
-                iszero(sz)
+                @test iszero(mod.(Mz*mod.(Hz*error, 2), 2))
             end
         end
     end
@@ -126,17 +134,16 @@
         @test iszero(mod.(Mx*Hx, 2))
         @test Mz != Mx
         @test Hz != Mz
+        @test Hx != Mz
         @test Hx != Mx
+        @test Hz != Mx
         @test Hx != Hz
         for _ in 1:100
             error = rand(Bool, size(Hx, 2))
-            zx = mod.(Hx*error, 2)
-            sx = mod.(Mx*zx, 2)
+            @test iszero(mod.(Mx*mod.(Hx*error, 2), 2))
             @test iszero(sx)
             error = rand(Bool, size(Hz, 2))
-            zz = mod.(Hz*error, 2)
-            sz = mod.(Mz*zz, 2)
-            iszero(sz)
+            @test iszero(mod.(Mz*mod.(Hz*error, 2), 2))
         end
     end
 end
