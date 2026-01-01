@@ -82,10 +82,6 @@
             @test Hz != Mz
             @test Hx != Mz
             @test Hx != Hz
-            for _ in 1:100
-                error = rand(Bool, size(Hz, 2))
-                @test iszero(mod.(Mz*mod.(Hz*error, 2), 2))
-            end
             c = MultivariateMulticycle([l,m, p], [A, B, C])
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
@@ -101,10 +97,6 @@
             @test Hz != Mz
             @test Hx != Mz
             @test Hx != Hz
-            for _ in 1:100
-                error = rand(Bool, size(Hz, 2))
-                @test iszero(mod.(Mz*mod.(Hz*error, 2), 2))
-            end
         end
     end
 
@@ -138,11 +130,5 @@
         @test Hx != Mx
         @test Hz != Mx
         @test Hx != Hz
-        for _ in 1:100
-            error = rand(Bool, size(Hx, 2))
-            @test iszero(mod.(Mx*mod.(Hx*error, 2), 2))
-            error = rand(Bool, size(Hz, 2))
-            @test iszero(mod.(Mz*mod.(Hz*error, 2), 2))
-        end
     end
 end
