@@ -8,7 +8,7 @@ import ..QuantumClifford:
     PauliOperator, Stabilizer, MixedDestabilizer, Destabilizer,
     apply!, nqubits, stabilizerview, destabilizerview, rank,
     zero, comm, mul_right!, embed, tensor, ⊗, project!, ghz,
-    I, X, Z
+    I, X, Z, expect
 
 export
     GeneralizedStabilizer,
@@ -18,7 +18,6 @@ export
     pcT,
     pcPhase,
     pcRx,
-    expect,
     projectrand!,
     invsparsity,
     rowdecompose
@@ -173,7 +172,7 @@ julia> prob = (real(χ′)+1)/2
 ```
 
 """
-function expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
+function QuantumClifford.expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
     χ′ = zero(valtype(s.destabweights))
     phase, b, c = rowdecompose(p, s.stab)
     for ((dᵢ,dⱼ), χ) in s.destabweights
@@ -343,7 +342,7 @@ julia> χ′ = expect(P"-X", sm)
 julia> prob₁ = (real(χ′)+1)/2
 0.8535533905932737
 
-julia> QuantumClifford._projectrand_notnorm(copy(sm), P"X", 0)[1]
+julia> QuantumClifford.PauliChannelNonClifford._projectrand_notnorm(copy(sm), P"X", 0)[1]
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
