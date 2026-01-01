@@ -1,4 +1,4 @@
-module LowRankNonClifford
+module PureNonClifford
 
 using Random
 using Statistics
