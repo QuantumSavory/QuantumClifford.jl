@@ -97,7 +97,7 @@ export
     # Non-Clifford simulation - low-rank stabilizer decomposition
     # TODO: export PureGeneralizedStabilizer
     TGate, CCZGate,
-    lrtrajectories, lrmeasurements, lrcost,
+    lrtrajectories, lrstate, lrmeasurements, lrcost,
     LRTrajectoryResults,
     isclifford, stabilizer_extent,
     # makie plotting -- defined only when extension is loaded

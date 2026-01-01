@@ -94,8 +94,8 @@ where F(ψ) = max_φ |⟨φ|ψ⟩|² is the stabilizer fidelity.
 julia> stabilizer_extent(sHadamard(1))
 1.0
 
-julia> stabilizer_extent(TGate(1)) ≈ 1.172
-true
+julia> round(stabilizer_extent(TGate(1)), digits=3)
+1.172
 
 julia> stabilizer_extent(CCZGate(1,2,3)) ≈ 16/9
 true
