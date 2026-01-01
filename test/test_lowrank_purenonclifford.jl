@@ -752,6 +752,47 @@ end
     end
 end
 
+@testitem "PureNonClifford QuantumOptics Comparison" tags=[:non_clifford] begin
+    using QuantumClifford
+    using QuantumClifford.PureNonClifford: PureGeneralizedStabilizer, lrstate
+    using QuantumOpticsBase
+    using LinearAlgebra
+    
+    b = SpinBasis(1//2)
+    T_matrix = Operator(b, ComplexF64[1 0; 0 exp(im*π/4)])
+    H_matrix = Operator(b, ComplexF64[1 1; 1 -1]/√2)
+    
+    @testset "Single qubit H-T-H circuit" begin
+        circuit = [sHadamard(1), TGate(1), sHadamard(1)]
+        state = lrstate(circuit; delta=0.01)
+        ket_qc = Ket(state)
+        
+        ket_qo = spinup(b) 
+        ket_qo = H_matrix * ket_qo
+        ket_qo = T_matrix * ket_qo
+        ket_qo = H_matrix * ket_qo
+        
+        overlap = abs(dagger(ket_qc) * ket_qo)
+        @test overlap > 0.85
+    end
+
+    @testset "Multiple T gates" begin
+        circuit = [sHadamard(1), TGate(1), TGate(1), TGate(1), sHadamard(1)]
+        state = lrstate(circuit; delta=0.01)
+        ket_qc = Ket(state)
+        
+        ket_qo = spinup(b)  
+        ket_qo = H_matrix * ket_qo
+        ket_qo = T_matrix * ket_qo
+        ket_qo = T_matrix * ket_qo
+        ket_qo = T_matrix * ket_qo
+        ket_qo = H_matrix * ket_qo
+        
+        overlap = abs(dagger(ket_qc) * ket_qo)
+        @test overlap > 0.85
+    end
+end
+
 @testitem "PureNonClifford Probability Accuracy with Incremental Sparsification" tags=[:non_clifford] begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
