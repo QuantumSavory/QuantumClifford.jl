@@ -44,60 +44,6 @@ julia> B = S(y^5 + x^3  + x^19);
 julia> c = MultivariateMulticycle([l,m], [A,B]);
 
 julia> code_n(c), code_k(c)
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 2
-[ Info: C_0 dimension: 378 == binom(2, 0)*378
-[ Info: C_1 dimension: 756 == binom(2, 1)*378
-[ Info: C_2 dimension: 378 == binom(2, 2)*378
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3
-[ Info: Differential for degree 1: (756, 378)
-[ Info: Differential for degree 2: (378, 756)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 2
-[ Info: C_0 dimension: 378 == binom(2, 0)*378
-[ Info: C_1 dimension: 756 == binom(2, 1)*378
-[ Info: C_2 dimension: 378 == binom(2, 2)*378
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3
-[ Info: Differential for degree 1: (756, 378)
-[ Info: Differential for degree 2: (378, 756)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 2
-[ Info: C_0 dimension: 378 == binom(2, 0)*378
-[ Info: C_1 dimension: 756 == binom(2, 1)*378
-[ Info: C_2 dimension: 378 == binom(2, 2)*378
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3
-[ Info: Differential for degree 1: (756, 378)
-[ Info: Differential for degree 2: (378, 756)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 2
-[ Info: C_0 dimension: 378 == binom(2, 0)*378
-[ Info: C_1 dimension: 756 == binom(2, 1)*378
-[ Info: C_2 dimension: 378 == binom(2, 2)*378
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3
-[ Info: Differential for degree 1: (756, 378)
-[ Info: Differential for degree 2: (378, 756)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 2
-[ Info: C_0 dimension: 378 == binom(2, 0)*378
-[ Info: C_1 dimension: 756 == binom(2, 1)*378
-[ Info: C_2 dimension: 378 == binom(2, 2)*378
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3
-[ Info: Differential for degree 1: (756, 378)
-[ Info: Differential for degree 2: (378, 756)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 2
-[ Info: C_0 dimension: 378 == binom(2, 0)*378
-[ Info: C_1 dimension: 756 == binom(2, 1)*378
-[ Info: C_2 dimension: 378 == binom(2, 2)*378
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3
-[ Info: Differential for degree 1: (756, 378)
-[ Info: Differential for degree 2: (378, 756)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
 (756, 16)
 ```
 
@@ -123,78 +69,6 @@ julia> C = S(1 + x^4*y^3*z^3 + x^5*z^2);
 julia> c = MultivariateMulticycle([l,m, p], [A, B, C]);
 
 julia> code_n(c), code_k(c)
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 3
-[ Info: C_0 dimension: 144 == binom(3, 0)*144
-[ Info: C_1 dimension: 432 == binom(3, 1)*144
-[ Info: C_2 dimension: 432 == binom(3, 2)*144
-[ Info: C_3 dimension: 144 == binom(3, 3)*144
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3 <---- C_4
-[ Info: Differential for degree 1: (432, 144)
-[ Info: Differential for degree 2: (432, 432)
-[ Info: Differential for degree 3: (144, 432)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 3
-[ Info: C_0 dimension: 144 == binom(3, 0)*144
-[ Info: C_1 dimension: 432 == binom(3, 1)*144
-[ Info: C_2 dimension: 432 == binom(3, 2)*144
-[ Info: C_3 dimension: 144 == binom(3, 3)*144
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3 <---- C_4
-[ Info: Differential for degree 1: (432, 144)
-[ Info: Differential for degree 2: (432, 432)
-[ Info: Differential for degree 3: (144, 432)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 3
-[ Info: C_0 dimension: 144 == binom(3, 0)*144
-[ Info: C_1 dimension: 432 == binom(3, 1)*144
-[ Info: C_2 dimension: 432 == binom(3, 2)*144
-[ Info: C_3 dimension: 144 == binom(3, 3)*144
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3 <---- C_4
-[ Info: Differential for degree 1: (432, 144)
-[ Info: Differential for degree 2: (432, 432)
-[ Info: Differential for degree 3: (144, 432)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 3
-[ Info: C_0 dimension: 144 == binom(3, 0)*144
-[ Info: C_1 dimension: 432 == binom(3, 1)*144
-[ Info: C_2 dimension: 432 == binom(3, 2)*144
-[ Info: C_3 dimension: 144 == binom(3, 3)*144
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3 <---- C_4
-[ Info: Differential for degree 1: (432, 144)
-[ Info: Differential for degree 2: (432, 432)
-[ Info: Differential for degree 3: (144, 432)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 3
-[ Info: C_0 dimension: 144 == binom(3, 0)*144
-[ Info: C_1 dimension: 432 == binom(3, 1)*144
-[ Info: C_2 dimension: 432 == binom(3, 2)*144
-[ Info: C_3 dimension: 144 == binom(3, 3)*144
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3 <---- C_4
-[ Info: Differential for degree 1: (432, 144)
-[ Info: Differential for degree 2: (432, 432)
-[ Info: Differential for degree 3: (144, 432)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 3
-[ Info: C_0 dimension: 144 == binom(3, 0)*144
-[ Info: C_1 dimension: 432 == binom(3, 1)*144
-[ Info: C_2 dimension: 432 == binom(3, 2)*144
-[ Info: C_3 dimension: 144 == binom(3, 3)*144
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3 <---- C_4
-[ Info: Differential for degree 1: (432, 144)
-[ Info: Differential for degree 2: (432, 432)
-[ Info: Differential for degree 3: (144, 432)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Checking exactness condition for degree 3: ∂2∘∂3
 (432, 12)
 ```
 
@@ -224,96 +98,6 @@ julia> D = S(1 + w^3*x^3*y^3*z^3);
 julia> c = MultivariateMulticycle([l, m, p, r], [A, B, C, D]);
 
 julia> code_n(c), code_k(c)
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 4
-[ Info: C_0 dimension: 108 == binom(4, 0)*108
-[ Info: C_1 dimension: 432 == binom(4, 1)*108
-[ Info: C_2 dimension: 648 == binom(4, 2)*108
-[ Info: C_3 dimension: 432 == binom(4, 3)*108
-[ Info: C_4 dimension: 108 == binom(4, 4)*108
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3 <---- C_4 <---- C_5
-[ Info: Differential for degree 1: (432, 108)
-[ Info: Differential for degree 2: (648, 432)
-[ Info: Differential for degree 3: (432, 648)
-[ Info: Differential for degree 4: (108, 432)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Checking exactness condition for degree 4: ∂3∘∂4
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 4
-[ Info: C_0 dimension: 108 == binom(4, 0)*108
-[ Info: C_1 dimension: 432 == binom(4, 1)*108
-[ Info: C_2 dimension: 648 == binom(4, 2)*108
-[ Info: C_3 dimension: 432 == binom(4, 3)*108
-[ Info: C_4 dimension: 108 == binom(4, 4)*108
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3 <---- C_4 <---- C_5
-[ Info: Differential for degree 1: (432, 108)
-[ Info: Differential for degree 2: (648, 432)
-[ Info: Differential for degree 3: (432, 648)
-[ Info: Differential for degree 4: (108, 432)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Checking exactness condition for degree 4: ∂3∘∂4
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 4
-[ Info: C_0 dimension: 108 == binom(4, 0)*108
-[ Info: C_1 dimension: 432 == binom(4, 1)*108
-[ Info: C_2 dimension: 648 == binom(4, 2)*108
-[ Info: C_3 dimension: 432 == binom(4, 3)*108
-[ Info: C_4 dimension: 108 == binom(4, 4)*108
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3 <---- C_4 <---- C_5
-[ Info: Differential for degree 1: (432, 108)
-[ Info: Differential for degree 2: (648, 432)
-[ Info: Differential for degree 3: (432, 648)
-[ Info: Differential for degree 4: (108, 432)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Checking exactness condition for degree 4: ∂3∘∂4
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 4
-[ Info: C_0 dimension: 108 == binom(4, 0)*108
-[ Info: C_1 dimension: 432 == binom(4, 1)*108
-[ Info: C_2 dimension: 648 == binom(4, 2)*108
-[ Info: C_3 dimension: 432 == binom(4, 3)*108
-[ Info: C_4 dimension: 108 == binom(4, 4)*108
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3 <---- C_4 <---- C_5
-[ Info: Differential for degree 1: (432, 108)
-[ Info: Differential for degree 2: (648, 432)
-[ Info: Differential for degree 3: (432, 648)
-[ Info: Differential for degree 4: (108, 432)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Checking exactness condition for degree 4: ∂3∘∂4
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 4
-[ Info: C_0 dimension: 108 == binom(4, 0)*108
-[ Info: C_1 dimension: 432 == binom(4, 1)*108
-[ Info: C_2 dimension: 648 == binom(4, 2)*108
-[ Info: C_3 dimension: 432 == binom(4, 3)*108
-[ Info: C_4 dimension: 108 == binom(4, 4)*108
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3 <---- C_4 <---- C_5
-[ Info: Differential for degree 1: (432, 108)
-[ Info: Differential for degree 2: (648, 432)
-[ Info: Differential for degree 3: (432, 648)
-[ Info: Differential for degree 4: (108, 432)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Checking exactness condition for degree 4: ∂3∘∂4
-[ Info: Constructing boundary maps for MultivariateMulticycle
-[ Info: Number of variables t = 4
-[ Info: C_0 dimension: 108 == binom(4, 0)*108
-[ Info: C_1 dimension: 432 == binom(4, 1)*108
-[ Info: C_2 dimension: 648 == binom(4, 2)*108
-[ Info: C_3 dimension: 432 == binom(4, 3)*108
-[ Info: C_4 dimension: 108 == binom(4, 4)*108
-[ Info: Koszul complex: C_-1 <---- C_0 <---- C_1 <---- C_2 <---- C_3 <---- C_4 <---- C_5
-[ Info: Differential for degree 1: (432, 108)
-[ Info: Differential for degree 2: (648, 432)
-[ Info: Differential for degree 3: (432, 648)
-[ Info: Differential for degree 4: (108, 432)
-[ Info: Checking exactness condition for degree 2: ∂1∘∂2
-[ Info: Checking exactness condition for degree 3: ∂2∘∂3
-[ Info: Checking exactness condition for degree 4: ∂3∘∂4
 (648, 18)
 ```
 
@@ -361,11 +145,11 @@ end
 function boundary_maps(code::MultivariateMulticycle)
     t = length(code.orders)
     N = prod(code.orders)
-    @info "Constructing boundary maps for MultivariateMulticycle"
-    @info "Number of variables t = $t"
+    @debug "Constructing boundary maps for MultivariateMulticycle"
+    @debug "Number of variables t = $t"
     for k in 0:t
         dim = binomial(t, k)*N
-        @info "C_$k dimension: $dim == binom($t, $k)*$N"
+        @debug "C_$k dimension: $dim == binom($t, $k)*$N"
     end
     circs = [_gf2_to_int(_polynomial_to_circulant_matrix(p, code.orders)) for p in code.polynomials]
     # From Wikipedia: A set of matrices A_1, ... , A_k is said to commute if they commute pairwise,
@@ -380,7 +164,7 @@ function boundary_maps(code::MultivariateMulticycle)
     maps = Vector{Matrix{Int}}(undef, t)
     R, x = polynomial_ring(GF(2), ["x$i" for i in 1:t])
     K = koszul_complex(x)
-    @info "Koszul complex: $K"
+    @debug "Koszul complex: $K"
     for k in 1:t
         boundary_map = map(K, k)
         KoszulMatrix = matrix(boundary_map)
@@ -405,11 +189,11 @@ function boundary_maps(code::MultivariateMulticycle)
             end
         end
         maps[k] = M
-        @info "Differential for degree $k: $(size(M))"
+        @debug "Differential for degree $k: $(size(M))"
     end
     for k in 2:t
         if !isempty(maps[k]) && !isempty(maps[k-1])
-            @info "Checking exactness condition for degree $k: ∂$(k-1)∘∂$k"
+            @debug "Checking exactness condition for degree $k: ∂$(k-1)∘∂$k"
             prod_check = mod.(maps[k]*maps[k-1], 2)
             @assert iszero(prod_check) "Exactness failed: ∂$(k-1)∘∂$k ≠ 0 mod 2"
         end
