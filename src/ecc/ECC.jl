@@ -2,7 +2,7 @@ module ECC
 
 using QECCore
 import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
-metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial
+metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial, hasmetachecks
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
@@ -44,6 +44,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     GeneralizedBicycle, ExtendedGeneralizedBicycle,
     HomologicalProduct, DoubleHomologicalProduct,
     GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly,
+    MultivariateMulticycle,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder, CSSTableDecoder,

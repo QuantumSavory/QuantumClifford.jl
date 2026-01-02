@@ -464,3 +464,5 @@ code C of length n over ``\\mathbb{F}_q``, g(x) satisfies:
 The input is a classical polynomial error-correcting code defined over a finite field.
 """
 function generator_polynomial end
+
+hasmetachecks(c::AbstractQECC) = (false, false)

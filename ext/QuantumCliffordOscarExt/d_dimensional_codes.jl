@@ -639,6 +639,7 @@ function metacheck_matrix_z(c::DDimensionalCode)
     return Matrix(boundary_maps(c)[1]') # Mz
 end
 
+hasmetachecks(c::DDimensionalCode) = c.D >= 4 ? (true, true) : c.D == 3 ? (false, true) : (false, false)
 """
 $TYPEDEF
 
