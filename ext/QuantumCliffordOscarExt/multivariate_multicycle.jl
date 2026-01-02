@@ -1,10 +1,10 @@
 """We introduce a novel class of quantum CSS codes — *Multivariate Multicycle* codes — constructed
-from multivariate polynomial quotient ring formalism over ``\\mathbb{F}_2``. 
+from multivariate polynomial quotient ring formalism over ``\\mathbb{F}_2``.
 
 Our discovery establishes that the boundary maps of these codes are governed by the combinatorial structure
-of *Koszul* complexes. According to [eisenbud2013commutative](@cite) "Let ``a_1, \\dots, a_n`` be elements of 
+of *Koszul* complexes. According to [eisenbud2013commutative](@cite) "Let ``a_1, \\dots, a_n`` be elements of
 ``R``. Then the Koszul complex ``\\mathrm{Kosz}(\\mathbf{a})`` is *isomorphic* to the total complex of the
-tensor product ``(R \\xrightarrow{a_1} R) \\otimes (R \\xrightarrow{a_2} R) \\otimes \\cdots \\otimes (R \\xrightarrow{a_n} R)``. 
+tensor product ``(R \\xrightarrow{a_1} R) \\otimes (R \\xrightarrow{a_2} R) \\otimes \\cdots \\otimes (R \\xrightarrow{a_n} R)``.
 For more details, see Section 17.3.
 
 We note that the work that introduced Trivariate tricycle codes in [jacob2025singleshotdecodingfaulttolerantgates](@cite)
@@ -22,7 +22,7 @@ This family of codes generalizes the bivariate bicycle, trivariate tricycle ([`T
 tetravariate tetracycle codes and it enables full single shot decoding in both X and Z directions, a capability that the
 [`TrivariateTricycle`](@ref) lacks.
 
-# Special Cases 
+# Special Cases
 
 ## t = 2: Bivariate bicycle codes ([bravyi2024high](@cite))
 
@@ -101,7 +101,7 @@ julia> code_n(c), code_k(c)
 (648, 18)
 ```
 
-See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)  
+See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
 """
 struct MultivariateMulticycle <: AbstractCSSCode
     orders::Vector{Int}

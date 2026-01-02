@@ -5,6 +5,9 @@
 
 # News
 
+## v0.11.1 - dev
+    - Add `MultivariateMulticycle`, a novel family of quantum LDPC code using Koszul complexes
+
 ## v0.11.0 - 2026-01-01
 
 - Drop support for Julia <1.12.
@@ -39,7 +42,6 @@
         - Add `GeneralizedToric` on twisted tori in terms of Laurent polynomials
         - Add `HomologicalProduct` and `DoubleHomologicalProduct`
         - Add D-dimensional Surface and Toric codes through chain complexes and `GF2` homology
-        - Add `MultivariateMulticycle`, a novel family of quantum LDPC code using Koszul complexes
     - In `QECCore`:
         - Add cyclic quantum Tanner graph product codes
         - Add `[[n² + m²,(n - rank([C ∣ M]))² + (m − rank([C ∣ M]ᵀ))², d]]` quantum Tillich-Zémor `random_TillichZemor_code`

@@ -591,8 +591,8 @@ const code_instance_args = Dict(
     S_mm₃, _ = quo(R_mm₃, I_mm₃)
     A_mm₃ = S_mm₃(1 + x*z)
     B_mm₃ = S_mm₃(1 + x*y)
-    C_mm₃ = S_mm₃(1 + x*y*z)   
-    
+    C_mm₃ = S_mm₃(1 + x*y*z)
+
     # [[90, 3, 5]]
     ℓ_mm₄, m_mm₄, p_mm₄ = 5, 3, 2
     F2_mm₄ = GF(2)
