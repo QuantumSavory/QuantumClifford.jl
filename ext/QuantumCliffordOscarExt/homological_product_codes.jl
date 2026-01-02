@@ -212,7 +212,7 @@ parity_matrix_x(hp::HomologicalProduct) = boundary_maps(hp)[2]
 
 parity_matrix_z(hp::HomologicalProduct) = boundary_maps(hp)[1]'
 
-hasmetachecks(c::HomologicalProduct) = (metacheck_matrix_x(c), nothing)
+hasmetachecks(c::HomologicalProduct) = length(c.boundary_maps) >= 4 ? (true, true) : length(c.boundary_maps) == 3 ? (true, false) : (false, false)
 
 """
 Constructs the *Double Homological Product code* from [Campbell_2019](@cite).
@@ -378,4 +378,4 @@ metacheck_matrix_x(c::DoubleHomologicalProduct) = boundary_maps(c)[4] # δ̌₁
 
 metacheck_matrix_z(c::DoubleHomologicalProduct) = boundary_maps(c)[1]' # δ̌₋₂'
 
-hasmetachecks(c::DoubleHomologicalProduct) = (metacheck_matrix_x(c), metacheck_matrix_z(c))
+hasmetachecks(c::DoubleHomologicalProduct) = (true, true)

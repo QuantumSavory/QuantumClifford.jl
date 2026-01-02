@@ -465,4 +465,4 @@ The input is a classical polynomial error-correcting code defined over a finite 
 """
 function generator_polynomial end
 
-hasmetachecks(c::AbstractQECC) = (nothing, nothing)
+hasmetachecks(c::AbstractQECC) = (false, false)

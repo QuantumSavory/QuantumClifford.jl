@@ -237,4 +237,4 @@ function metacheck_matrix_z(code::MultivariateMulticycle)
     return maps[qd+2]
 end
 
-hasmetachecks(c::MultivariateMulticycle) = (metacheck_matrix_x(c), metacheck_matrix_z(c))
+hasmetachecks(c::MultivariateMulticycle) = length(c.polynomials) >= 4 ? (true, true) : length(c.polynomials) == 3 ? (false, true) : (false, false)
