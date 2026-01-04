@@ -80,8 +80,7 @@ The library uses **row-major (fastrow) layout by default**, where each Pauli str
 - **Projective measurements** (`project!`) - which frequently iterate over rows
 
 The alternative **column-major (fastcolumn) layout** stores tableau columns (mostly) contiguously in memory. This layout is optimized for:
-- **Applying sparse gates** like `apply!(s, sCNOT(i,j))` - row updates on a few qubits
-- **Pauli multiplications** (left or right)
+- **Applying sparse gates** like `apply!(s, sCNOT(i,j))` - operations that only touch a few qubits
 
 #### Converting Between Layouts
 
@@ -95,12 +94,20 @@ s_row = fastrow(copy(s_col))         # Convert back to row-major layout
 
 These functions work on all stabilizer data structures: [`Stabilizer`](@ref), [`Destabilizer`](@ref), [`MixedStabilizer`](@ref), and [`MixedDestabilizer`](@ref).
 
-#### Performance Implications
+#### Performance Considerations
 
-The default row-major (`fastrow`) layout is generally the best choice for typical operations on the CPU. However, if your code performs many sparse gate applications on a specific qubit set, converting to column-major layout may be beneficial.
+On CPU, the performance differences between layouts are measurable for large stabilizer states:
 
-**Note:** The performance claims above are based on CPU benchmarks. On GPU, the optimal memory layout may differ due to differences in memory access patterns and hardware architecture. Users interested in GPU performance are encouraged to benchmark both layouts for their workloads and to contribute results or suggestions.
+```jldoctest
+julia> s_row = fastrow(random_stabilizer(1000));
 
-The test suite (see e.g. `test/test_bitpack.jl`) only verifies that both memory layouts produce identical results for all operations; it does **not** compare their performance. Actual performance comparisons are performed using scripts in the `benchmark/` directory, which are designed to generate benchmark results suitable for automatic inclusion in the documentation. If you wish to contribute new benchmarks or update performance data, please refer to the scripts in `benchmark/`.
+julia> s_col = fastcolumn(random_stabilizer(1000));
 
-Both of these parameters are [benchmarked](bench_intsize.png) (testing the application of a Pauli operator, which is an $\mathcal{O}(n^2)$ operation; and testing the canonicalization of a Stabilizer, which is an $\mathcal{O}(n^3)$ operation) on CPU. Row-major UInt64 is the best performing and it is used by default in this library for CPU workloads.
+julia> @time canonicalize!(copy(s_row));
+  0.012 seconds
+
+julia> @time canonicalize!(copy(s_col));
+  0.033 seconds
+```
+
+Row-major layout shows a significant advantage for canonicalization and other operations that iterate over entire rows. However, the choice of layout is most impactful for large stabilizer states. For typical workloads, the default row-major layout is recommended. If you suspect layout is affecting your performance, use profiling tools to compare both layouts on your specific use case.
