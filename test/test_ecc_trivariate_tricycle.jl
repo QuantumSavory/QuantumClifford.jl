@@ -77,6 +77,58 @@
             @test code_k(c) == k == code_k(stab)
             @test stab_looks_good(stab, remove_redundant_rows=true) == true
             @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
+            Hz = parity_matrix_z(c)
+            Mz = metacheck_matrix_z(c)
+            @test Hz != Mz
+            @test Hx != Mz
+            @test Hx != Hz
+            c = MultivariateMulticycle([l,m, p], [A, B, C])
+            stab = parity_checks(c)
+            mat = matrix(GF(2), stab_to_gf2(stab))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(c) - code_k(c)
+            # A TT code is defined on n = 3*l*m*p data qubits.
+            @test code_n(c) == n == code_n(stab) == 3*l*m*p
+            @test code_k(c) == k == code_k(stab)
+            @test stab_looks_good(stab, remove_redundant_rows=true) == true
+            @test iszero(mod.(metacheck_matrix_z(c)*parity_matrix_z(c), 2))
+            Hz = parity_matrix_z(c)
+            Mz = metacheck_matrix_z(c)
+            @test Hz != Mz
+            @test Hx != Mz
+            @test Hx != Hz
         end
+    end
+
+    @testset "Test novel MM code" begin
+        l, m, p, r = 4, 3, 3, 3
+        R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z])
+        I = ideal(R, [w^l - 1, x^m - 1, y^p - 1, z^r - 1])
+        S, _ = quo(R, I)
+        A = S((1 + x^2 )*(1 + w*x*y*z^2))
+        B = S((1 + x^2)*(1 + w*x^3*y^2*z))
+        C = S(1 + w^2*x^2*y^2*z^2)
+        D = S(1 + w^3*x^3*y^3*z^3)
+        c = MultivariateMulticycle([l, m, p, r], [A, B, C, D])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        # A MM code is defined on n = 6*l*m*p*r data qubits.
+        @test code_n(c) == code_n(stab) == 6*l*m*p*r
+        @test code_k(c) == code_k(stab)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        Hx = parity_matrix_x(c)
+        Hz = parity_matrix_z(c)
+        Mx = metacheck_matrix_x(c)
+        Mz = metacheck_matrix_z(c)
+        @test iszero(mod.(Mz*Hz, 2))
+        @test iszero(mod.(Mx*Hx, 2))
+        @test Mz != Mx
+        @test Hz != Mz
+        @test Hx != Mz
+        @test Hx != Mx
+        @test Hz != Mx
+        @test Hx != Hz
     end
 end
