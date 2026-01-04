@@ -18,6 +18,7 @@ steps:
           dirs: './src,./ext,./lib/QECCore/src,./lib/QECCore/ext'
     command:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - echo "TERM=$${TERM}"
     env:
       JET_TEST: "{{matrix.JET_TEST}}"
       QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
