@@ -16,7 +16,7 @@ steps:
       - JuliaCI/julia-coverage#v1:
           codecov: true
           dirs: './src,./ext,./lib/QECCore/src,./lib/QECCore/ext'
-    command:
+    commands:
       - echo "TERM=$${TERM} | PYTHON=$${PYTHON} | PYCALL_DEBUG_BUILD=$${PYCALL_DEBUG_BUILD}"
     env:
       JET_TEST: "{{matrix.JET_TEST}}"
