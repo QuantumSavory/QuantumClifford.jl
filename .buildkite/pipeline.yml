@@ -3,7 +3,6 @@ env:
   JULIA_NUM_THREADS: auto
   PYTHON: ""
   PYCALL_DEBUG_BUILD: yes
-  TERM: xterm
 
 steps:
   - label: "QuantumClifford Tests (with local QECCore) - {{matrix.LABEL}}"
