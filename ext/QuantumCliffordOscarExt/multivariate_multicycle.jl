@@ -125,7 +125,7 @@ julia> code_n(c), code_k(c)
 (1024, 30)
 ```
 
-See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref), [`Haah_cubic_code_as_2bga`](@ref)
+See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
 """
 struct MultivariateMulticycle <: AbstractCSSCode
     orders::Vector{Int}
