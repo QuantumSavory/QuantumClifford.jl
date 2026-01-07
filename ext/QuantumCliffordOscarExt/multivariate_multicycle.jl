@@ -107,19 +107,19 @@ code D of [panteleev2021degenerate](@cite) on the `8 × 8 × 8` Lattice.
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
 
-julia> L = 8
+julia> L = 8;
 
-julia> R, (x,y,z) = polynomial_ring(GF(2), [:x,:y,:z])
+julia> R, (x,y,z) = polynomial_ring(GF(2), [:x,:y,:z]);
 
-julia> I = ideal(R, [x^L-1, y^L-1, z^L-1])
+julia> I = ideal(R, [x^L-1, y^L-1, z^L-1]);
 
-julia> S, _ = quo(R, I)
+julia> S, _ = quo(R, I);
 
-julia> A = S(1 + x + y + z)
+julia> A = S(1 + x + y + z);
 
-julia> B = S(1 + x*y + x*z + y*z)
+julia> B = S(1 + x*y + x*z + y*z);
 
-julia> c = MultivariateMulticycle([L,L,L], [A,B])
+julia> c = MultivariateMulticycle([L,L,L], [A,B]);
 
 julia> code_n(c), code_k(c)
 (1024, 30)
