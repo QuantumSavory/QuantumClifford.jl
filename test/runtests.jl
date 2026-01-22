@@ -1,3 +1,6 @@
+using InteractiveUtils
+versioninfo(;verbose=true)
+
 CUDA_flag = false
 ROCm_flag = false
 OpenCL_flag = false
@@ -44,6 +47,7 @@ if any((CUDA_flag, ROCm_flag, OpenCL_flag))
 end
 Oscar_flag && Pkg.add("Oscar")
 Tesseract_flag && Pkg.add("PyTesseractDecoder")
+
 using TestItemRunner
 using QuantumClifford
 

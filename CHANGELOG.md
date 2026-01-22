@@ -5,7 +5,10 @@
 
 # News
 
-## v0.11.0-dev
+## v0.11.1 - dev
+    - Add `MultivariateMulticycle`, a novel family of quantum LDPC code using Koszul complexes
+
+## v0.11.0 - 2026-01-01
 
 - Drop support for Julia <1.12.
 - Implementation of the specialized simulation algorithms for graph states (faster for large sparse tableaux).
