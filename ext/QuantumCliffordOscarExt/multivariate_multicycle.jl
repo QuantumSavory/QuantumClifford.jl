@@ -72,7 +72,7 @@ julia> code_n(c), code_k(c)
 (432, 12)
 ```
 
-## t = 4: Multivariate Multicycle Codes
+## t = 4: Multivariate Multicycle Codes ([mian2026multivariatemulticyclecodescomplete](@cite))
 
 These novel codes are made in QuantumClifford.jl backend of QuantumSavory.
 
