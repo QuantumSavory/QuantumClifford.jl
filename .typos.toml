@@ -8,6 +8,7 @@ mor = "mor"
 ois = "ois"
 Childs = "Childs"
 mian = "mian"
+Tham = "Tham"
 
 [type.ipynb]
 # It detects false possitives in the base64 encoded images inside notebooks
