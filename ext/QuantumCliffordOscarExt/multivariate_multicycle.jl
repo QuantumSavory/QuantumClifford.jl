@@ -243,7 +243,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time
 
 - ## La-Cross codes ([pecorari2025high](@cite))
 
-Here is an example of `[[98, 18, 4]]` Weight-6 TB-QLDPC code from Appendix A Table 2 of [voss2024multivariatebicyclecodes](@cite).
+Here is an example of `[[98, 18, 4]]` "square" La-Cross from [pecorari2025high](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
