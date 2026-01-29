@@ -166,7 +166,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time
 
 - ## Abelian two-block group algebra codes ([lin2024quantum](@cite))
 
-Here is an example of `[[16, 2, 4]]` abelian 2BGA code from Table II of [aydin2025cyclichypergraphproductcode](@cite).
+Here is an example of `[[16, 2, 4]]` abelian 2BGA code from Table II of [lin2024quantum](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
