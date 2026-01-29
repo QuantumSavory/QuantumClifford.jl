@@ -266,6 +266,35 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time
 (98, 18, 4)
 ```
 
+- ## 4D Toric codes ([dennis2002topological](@cite))
+
+Here is an example of `[[96, 6, 4]]` 4D Toric code from [dennis2002topological](@cite).
+
+```jldoctest
+julia> l, m, p, r = 2, 2, 2, 2;
+
+julia> R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z]);
+
+julia> I = ideal(R, [w^l - 1, x^m - 1, y^p - 1, z^r - 1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + w);
+
+julia> B = S(1 + x);
+
+julia> C = S(1 + y);
+
+julia> D = S(1 + z);
+
+julia> c = MultivariateMulticycle([l, m, p, r], [A, B, C, D]);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(96, 6, 4)
+```
+
 See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
 """
 struct MultivariateMulticycle <: AbstractCSSCode
