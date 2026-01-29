@@ -28,7 +28,7 @@ julia> c = MultivariateMulticycle([l, m, p, r], [A, B, C, D]);
 
 julia> import HiGHS;
 
-julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
 (648, 18, 9)
 ```
 
@@ -84,7 +84,7 @@ julia> code_n(c), code_k(c)
 (432, 12)
 ```
 
-- # Abelian Multicycle codes ([lin2025abelianmulticyclecodessingleshot](@cite))
+- ## Abelian Multicycle codes ([lin2025abelianmulticyclecodessingleshot](@cite))
 
 Here is an example of `[[84, 6, 7]]` AMC code from Table I of [lin2025abelianmulticyclecodessingleshot](@cite).
 
@@ -116,6 +116,54 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 ```
 
 All the AMC codes from Table I are subfamilies of MM codes. Notably, this family of codes have weight-6 stabilizer checks.
+
+- ## Cyclic Hypergraph product codes ([aydin2025cyclichypergraphproductcode](@cite))
+
+Here is an example of `[[450, 32, 8]]` C2 code from Table I of [aydin2025cyclichypergraphproductcode](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l=15; m=15;
+
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+
+julia> I = ideal(R, [x^l-1, y^m-1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + x + x^4);
+
+julia> B = S(1 + y + y^4);
+
+julia> c = MultivariateMulticycle([l,m], [A,B]);
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(450, 32, 8)
+```
+
+Here is an example of `[[240, 8, 8]]` CxR code from Table I of [aydin2025cyclichypergraphproductcode](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l=15; m=8;
+
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+
+julia> I = ideal(R, [x^l-1, y^m-1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + x + x^4);
+
+julia> B = S(1 + y);
+
+julia> c = MultivariateMulticycle([l,m], [A,B]);
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(240, 8, 8)
+```
 
 See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
 """
