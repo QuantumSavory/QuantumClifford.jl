@@ -2,14 +2,14 @@
 using new framework of Koszul complex over the multivariate polynomial quotient ring. For details on the construction,
 please refer to our paper ([mian2026multivariatemulticyclecodescomplete](@cite))
  
-Here is an example of `[[648, 60, 9]]` Multivariate Multicycle Code from example 8 of [mian2026multivariatemulticyclecodescomplete](@cite).
+Here is an example of `[[96, 44, 4]]` Multivariate Multicycle Code from Table II of [mian2026multivariatemulticyclecodescomplete](@cite).
 
 These novel codes are made in QuantumClifford.jl backend of QuantumSavory.
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
 
-julia> l, m, p, r = 3, 3, 3, 4;
+julia> l, m, p, r = 2, 2, 2, 2;
 
 julia> R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z]);
 
@@ -30,7 +30,7 @@ julia> c = MultivariateMulticycle([l, m, p, r], [A, B, C, D]);
 julia> import HiGHS;
 
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
-(648, 18, 9)
+(96, 44, 4)
 ```
 
 The Multivariate Multicycle code generalizes the several families of quantum-error correcting codes, namely:
