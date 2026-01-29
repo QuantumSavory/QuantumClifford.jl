@@ -84,6 +84,39 @@ julia> code_n(c), code_k(c)
 (432, 12)
 ```
 
+- # Abelian Multicycle codes ([lin2025abelianmulticyclecodessingleshot](@cite))
+
+Here is an example of `[[84, 6, 7]]` AMC code from Table I of [lin2025abelianmulticyclecodessingleshot](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l, m, p, r = 14, 1, 1, 1;
+
+julia> R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z]);
+
+julia> I = ideal(R, [w^l - 1, x^m - 1, y^p - 1, z^r - 1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + w);
+
+julia> B = S(1 + w^2);
+
+julia> C = S(1 + w^5);
+
+julia> D = S(1 + w^6);
+
+julia> c = MultivariateMulticycle([l, m, p, r], [A, B, C, D]);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(84, 6, 7)
+```
+
+All the AMC codes from Table I are subfamilies of MM codes. Notably, these families have weight-6 stabilizer checks.
+
 See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
 """
 struct MultivariateMulticycle <: AbstractCSSCode
