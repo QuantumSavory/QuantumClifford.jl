@@ -241,6 +241,31 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time
 (48, 4, 6)
 ```
 
+- ## La-Cross codes ([pecorari2025high](@cite))
+
+Here is an example of `[[98, 18, 4]]` Weight-6 TB-QLDPC code from Appendix A Table 2 of [voss2024multivariatebicyclecodes](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> n = 7;
+
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+
+julia> I = ideal(R, [x^n-1, y^n-1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + x + x^3);
+
+julia> B = S(1 + y + y^3);
+
+julia> c = MultivariateMulticycle([n,n], [A,B]);
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(98, 18, 4)
+```
+
 See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
 """
 struct MultivariateMulticycle <: AbstractCSSCode
