@@ -164,6 +164,31 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time
 (240, 8, 8)
 ```
 
+- ## Abelian two-block group algebra codes ([lin2024quantum](@cite))
+
+Here is an example of `[[16, 2, 4]]` abelian 2BGA code from Table II of [aydin2025cyclichypergraphproductcode](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l=2; m=4;
+
+julia> R, (s, x) = polynomial_ring(GF(2), [:s, :x]);
+
+julia> I = ideal(R, [s^l-1, x^m-1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + x);
+
+julia> B = S(1 + x + s + x^2 + s*x + s*x^3);
+
+julia> c = MultivariateMulticycle([l,m], [A,B]);
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(16, 2, 4)
+```
+
 See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
 """
 struct MultivariateMulticycle <: AbstractCSSCode
