@@ -189,6 +189,31 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time
 (16, 2, 4)
 ```
 
+- ## Generalized bicycle codes ([pryadko2013quantum](@cite))
+
+Here is an example of `[[30, 8, 4]]` generalized bicycle code from [pryadko2013quantum](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l=15; m=1;
+
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+
+julia> I = ideal(R, [x^l-1, y^m-1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + x^2 + x^8);
+
+julia> B = S(1 + x + x^4);
+
+julia> c = MultivariateMulticycle([l,m], [A,B]);
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(30, 8, 4)
+```
+
 See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
 """
 struct MultivariateMulticycle <: AbstractCSSCode
