@@ -115,7 +115,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (84, 6, 7)
 ```
 
-All the AMC codes from Table I are subfamilies of MM codes. Notably, these families have weight-6 stabilizer checks.
+All the AMC codes from Table I are subfamilies of MM codes. Notably, this family of codes have weight-6 stabilizer checks.
 
 See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
 """
