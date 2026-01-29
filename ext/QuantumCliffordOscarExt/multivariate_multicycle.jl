@@ -1,30 +1,42 @@
 """We introduce a novel class of quantum CSS codes — *Multivariate Multicycle* codes — constructed
-from multivariate polynomial quotient ring formalism over ``\\mathbb{F}_2``.
+using Koszul complex over multivariate polynomial quotient ring.
 
-Our discovery establishes that the boundary maps of these codes are governed by the combinatorial structure
-of *Koszul* complexes. According to [eisenbud2013commutative](@cite) "Let ``a_1, \\dots, a_n`` be elements of
-``R``. Then the Koszul complex ``\\mathrm{Kosz}(\\mathbf{a})`` is *isomorphic* to the total complex of the
-tensor product ``(R \\xrightarrow{a_1} R) \\otimes (R \\xrightarrow{a_2} R) \\otimes \\cdots \\otimes (R \\xrightarrow{a_n} R)``.
-For more details, see Section 17.3.
+Here is an example of `[[648, 60, 9]]` Multivariate Multicycle Code from example 8 of [mian2026multivariatemulticyclecodescomplete](@cite).
 
-We note that the work that introduced Trivariate tricycle codes in [jacob2025singleshotdecodingfaulttolerantgates](@cite)
-utilize length-1 chain complexes along with the structure of the boundary maps for the tensor-product complex of
-three length-1 chain complexes that was provided in [breuckmann2024cupsgatesicohomology](@cite). See  5.3.2 Product of Λ ≥ 3 group algebra codes page 23
-for more details.
+These novel codes are made in QuantumClifford.jl backend of QuantumSavory.
 
-Specifically, for a code defined by *t* polynomial relations, we show that the *k-th* boundary map is obtained by
-taking the **Koszul matrix** in degree *k* and replacing each variable entry with the corresponding circulant matrix
-derived from the code's defining relations. The **Koszul complex** provides the framework for the boundary map construction,
-ensuring the commutativity properties essential for the code construction. This correspondence reveals that multivariate
-multicycle codes can be constructed using the framework of **Koszul complexes**.
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
 
-This family of codes generalizes the bivariate bicycle, trivariate tricycle ([`TrivariateTricycle`](@ref)), and
-tetravariate tetracycle codes and it enables full single shot decoding in both X and Z directions, a capability that the
-[`TrivariateTricycle`](@ref) lacks.
+julia> l, m, p, r = 3, 3, 3, 4;
 
-# Special Cases
+julia> R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z]);
 
-## t = 2: Bivariate bicycle codes ([bravyi2024high](@cite))
+julia> I = ideal(R, [w^l - 1, x^m - 1, y^p - 1, z^r - 1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S((1 + x)*(1 + y*z));
+
+julia> B = S((1 + y)*(1 + z*w));
+
+julia> C = S((1 + z)*(1 + w*x));
+
+julia> D = S((1 + w)*(1 + x*y));
+
+julia> c = MultivariateMulticycle([l, m, p, r], [A, B, C, D]);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(648, 18, 9)
+```
+
+For details on the construction, see out paper: ([mian2026multivariatemulticyclecodescomplete](@cite))
+
+The Multivariate Multicycle code generalizes the several families of quantum-error correcting codes, namely:
+
+- ## Bivariate bicycle codes ([bravyi2024high](@cite))
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
@@ -47,7 +59,7 @@ julia> code_n(c), code_k(c)
 (756, 16)
 ```
 
-## t = 3: Trivariate tricycle codes ([jacob2025singleshotdecodingfaulttolerantgates](@cite))
+- ## Trivariate tricycle codes ([jacob2025singleshotdecodingfaulttolerantgates](@cite))
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
@@ -70,35 +82,6 @@ julia> c = MultivariateMulticycle([l,m, p], [A, B, C]);
 
 julia> code_n(c), code_k(c)
 (432, 12)
-```
-
-## t = 4: Multivariate Multicycle Codes ([mian2026multivariatemulticyclecodescomplete](@cite))
-
-These novel codes are made in QuantumClifford.jl backend of QuantumSavory.
-
-```jldoctest
-julia> using Oscar; using QuantumClifford.ECC;
-
-julia> l, m, p, r = 4, 3, 3, 3;
-
-julia> R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z]);
-
-julia> I = ideal(R, [w^l - 1, x^m - 1, y^p - 1, z^r - 1]);
-
-julia> S, _ = quo(R, I);
-
-julia> A = S((1 + x^2 )*(1 + w*x*y*z^2));
-
-julia> B = S((1 + x^2)*(1 + w*x^3*y^2*z));
-
-julia> C = S(1 + w^2*x^2*y^2*z^2);
-
-julia> D = S(1 + w^3*x^3*y^3*z^3);
-
-julia> c = MultivariateMulticycle([l, m, p, r], [A, B, C, D]);
-
-julia> code_n(c), code_k(c)
-(648, 18)
 ```
 
 See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
