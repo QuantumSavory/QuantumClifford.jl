@@ -1,6 +1,7 @@
 """We introduce a novel class of quantum CSS codes — *Multivariate Multicycle* codes — constructed
-using Koszul complex over multivariate polynomial quotient ring.
-
+using new framework of Koszul complex over the multivariate polynomial quotient ring. For details on the construction,
+please refer to our paper ([mian2026multivariatemulticyclecodescomplete](@cite))
+ 
 Here is an example of `[[648, 60, 9]]` Multivariate Multicycle Code from example 8 of [mian2026multivariatemulticyclecodescomplete](@cite).
 
 These novel codes are made in QuantumClifford.jl backend of QuantumSavory.
@@ -31,8 +32,6 @@ julia> import HiGHS;
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
 (648, 18, 9)
 ```
-
-For details on the construction, see out paper: ([mian2026multivariatemulticyclecodescomplete](@cite))
 
 The Multivariate Multicycle code generalizes the several families of quantum-error correcting codes, namely:
 
