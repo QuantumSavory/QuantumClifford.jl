@@ -283,6 +283,8 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time
 Here is an example of `[[96, 6, 4]]` 4D Toric code from [dennis2002topological](@cite).
 
 ```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
 julia> l, m, p, r = 2, 2, 2, 2;
 
 julia> R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z]);
