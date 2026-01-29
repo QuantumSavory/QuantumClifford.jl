@@ -214,6 +214,33 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time
 (30, 8, 4)
 ```
 
+- ## Multivariate bicycle codes ([voss2024multivariatebicyclecodes](@cite))
+
+Here is an example of `[[48, 4, 6]]` Weight-6 TB-QLDPC code from Appendix A Table 2 of [voss2024multivariatebicyclecodes](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l=4; m=6;
+
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+
+julia> I = ideal(R, [x^l-1, y^m-1]);
+
+julia> S, _ = quo(R, I);
+
+julia> z = x*y;
+
+julia> A = S(x^3 + y^5);
+
+julia> B = S(x + z^5 + y^5 + y^2);
+
+julia> c = MultivariateMulticycle([l,m], [A,B]);
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(48, 4, 6)
+```
+
 See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
 """
 struct MultivariateMulticycle <: AbstractCSSCode
