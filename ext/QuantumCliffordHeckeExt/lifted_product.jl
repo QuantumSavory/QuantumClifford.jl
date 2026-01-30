@@ -445,7 +445,7 @@ julia> a = 1 + s + r + s*r^6;
 
 julia> b = 1 + s^2*r + s^2*r^6 + r^2;
 
-julia> c = two_block_group_algebra_codes(a,b);
+julia> c = two_block_group_algebra_code(a,b);
 
 julia> import HiGHS
 
