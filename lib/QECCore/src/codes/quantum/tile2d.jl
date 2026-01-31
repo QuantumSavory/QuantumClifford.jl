@@ -21,7 +21,7 @@ julia> code_n(c), code_k(c)
 ```
 """
 struct Tile2D <: AbstractCSSCode
-    """Size of the tile box ``(B \times B)`` determining the support of a stabilizer."""
+    """Size of the tile box ``(B \\times B)`` determining the support of a stabilizer."""
     B::Int
     """Positions of horizontal edges within the tile box."""
     horiz::Vector{Tuple{Int,Int}}
