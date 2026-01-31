@@ -1,7 +1,9 @@
 @testitem "Tile 2D" begin
     using Test
+    using Nemo: matrix, GF
     using QECCore
-    import QuantumClifford.ECC: parity_checks
+    using QuantumClifford: stab_looks_good, Stabilizer
+    using QuantumClifford.ECC
 
     @testset "Tile 2D" begin
         # from table 1 of https://arxiv.org/pdf/2504.09171
