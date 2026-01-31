@@ -1,7 +1,7 @@
 """
 2D Tile is a generalization of surface codes that offers flexibility in terms of locality and stabilizer check weight
 without compromising on the 2D locality of the 2D surface code. It encodes more logical qubits than surface code, and
-and provides O(1)-locality.
+and provides O(1)-locality. 
 
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC; # hide
@@ -89,10 +89,14 @@ end
 
 function parity_matrix_xz(tile::Tile2D)
     tileZ   = _complement_tile(tile)
+    # "While this set can be arbitrary, we will always restrict ourselves to (rotated) rectangular shapes" [steffan2025tilecodeshighefficiencyquantum](@cite).
     black, red, blue = _rectangular_layout(tile)
     physical = _physical_qubits(tile)
     Xrows = Vector{Vector{Tuple{Symbol,Int,Int}}}()
     Zrows = Vector{Vector{Tuple{Symbol,Int,Int}}}()
+    # "We fine-tune the layout to the specific support of the stabilizers. We will first
+    # remove all qubits that are not supported in any X-type stabilizer or are not supported
+    # in any Z-type stabilizer" [steffan2025tilecodeshighefficiencyquantum](@cite).
     for v in black
         push!(Xrows, filter(in(physical), _edges(v, tile)))
         push!(Zrows, filter(in(physical), _edges(v, tileZ)))
@@ -103,6 +107,7 @@ function parity_matrix_xz(tile::Tile2D)
     for v in blue
         push!(Zrows, filter(in(physical), _edges(v, tileZ)))
     end
+    # "Finally, we remove all stabilizers whose support has become empty because of aforementioned procedure" [steffan2025tilecodeshighefficiencyquantum](@cite).
     filter!(!isempty, Xrows)
     filter!(!isempty, Zrows)
     qubits = unique(vcat(Xrows..., Zrows...))

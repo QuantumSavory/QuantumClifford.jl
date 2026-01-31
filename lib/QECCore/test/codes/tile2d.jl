@@ -1,6 +1,7 @@
 @testitem "Tile 2D" begin
     using Test
     using QECCore
+    import QuantumClifford.ECC: parity_checks
 
     @testset "Tile 2D" begin
         # from table 1 of https://arxiv.org/pdf/2504.09171
