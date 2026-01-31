@@ -89,13 +89,13 @@ end
 
 function parity_matrix_xz(tile::Tile2D)
     tileZ   = _complement_tile(tile)
-    # "While this set can be arbitrary, we will always restrict ourselves to (rotated) rectangular shapes" [steffan2025tilecodeshighefficiencyquantum](@cite).
+    # "We will always restrict ourselves to (rotated) rectangular shapes" [steffan2025tilecodeshighefficiencyquantum](@cite).
     black, red, blue = _rectangular_layout(tile)
     physical = _physical_qubits(tile)
     Xrows = Vector{Vector{Tuple{Symbol,Int,Int}}}()
     Zrows = Vector{Vector{Tuple{Symbol,Int,Int}}}()
-    # "We fine-tune the layout to the specific support of the stabilizers. We will first
-    # remove all qubits that are not supported in any X-type stabilizer or are not supported
+    # "We fine-tune the layout to the specific support of the stabilizers. First remove
+    # all qubits that are not supported in any X-type stabilizer or are not supported
     # in any Z-type stabilizer" [steffan2025tilecodeshighefficiencyquantum](@cite).
     for v in black
         push!(Xrows, filter(in(physical), _edges(v, tile)))
