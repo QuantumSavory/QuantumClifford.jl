@@ -3,7 +3,7 @@
     using Nemo: matrix, GF, rank
     using QECCore: Tile2D
     using QuantumClifford: stab_looks_good, stab_to_gf2
-    using QuantumClifford.ECC: parity_checks, code_n, code_k
+    using QuantumClifford.ECC: parity_checks, code_n, code_k, parity_matrix_x, parity_matrix_z
 
     @testset "Tile 2D" begin
         # from table 1 of https://arxiv.org/pdf/2504.09171
