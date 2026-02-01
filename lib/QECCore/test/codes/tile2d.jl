@@ -27,6 +27,7 @@
         end
 
         # check-weight tests
+        # From Table I of https://arxiv.org/pdf/2504.09171v1
         # [[288, 8, 12]] 
         B = 3
         horizX = [(0,0),(2,1),(2,2)]
