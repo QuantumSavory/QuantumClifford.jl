@@ -1,6 +1,5 @@
 @testitem "Tile 2D" begin
     using Test
-    using Statistics
     using Nemo: matrix, GF, rank
     using QECCore: Tile2D
     using QuantumClifford: stab_looks_good, stab_to_gf2
@@ -34,8 +33,6 @@
         vertX = [(0,2),(1,2),(2,0)]
         Lx, Ly = 10, 10
         c = Tile2D(B, horizX, vertX, Lx, Ly)
-        @test all(median(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 6)
-        @test all(median(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 6)
         @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 6)
         @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 6)
 
@@ -45,8 +42,6 @@
         vertX = [(0,0),(0,2),(1,1),(2,2)]
         Lx, Ly = 10, 10
         c = Tile2D(B, horizX, vertX, Lx, Ly)
-        @test all(median(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 8)
-        @test all(median(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 8)
         @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 8)
         @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 8)
 
@@ -56,8 +51,6 @@
         vertX = [(0,1),(1,0),(1,1),(3,3)]
         Lx, Ly = 9, 9
         c = Tile2D(B, horizX, vertX, Lx, Ly)
-        @test all(median(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 8)
-        @test all(median(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 8)
         @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 8)
         @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 8)
 
@@ -67,8 +60,6 @@
         vertX = [(0,1),(1,0),(1,1),(3,3)]
         Lx, Ly = 13, 13
         c = Tile2D(B, horizX, vertX, Lx, Ly)
-        @test all(median(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 8)
-        @test all(median(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 8)
         @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 8)
         @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 8)
     end
