@@ -90,4 +90,8 @@
     @testset "Circulant Bivariate Bicycle Codes" begin
         include("codes/generalized_circulant_bivariate_bicycle.jl")
     end
+
+    @testset "Tile 2D" begin
+        include("codes/tile2d.jl")
+    end
 end
