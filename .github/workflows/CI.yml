@@ -66,7 +66,7 @@ jobs:
           directories: './src,./ext,./lib/QECCore/src,./lib/QECCore/ext'
       - uses: codecov/codecov-action@v5
         with:
-          file: lcov.info
+          files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
   docs:
     name: Documentation
