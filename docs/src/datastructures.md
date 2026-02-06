@@ -71,7 +71,76 @@ Notice the results when the projection operator commutes with the state but is n
 
 We do not use boolean arrays to store information about the qubits as this would be wasteful (7 out of 8 bits in the boolean would be unused). Instead, we use all 8 qubits in a byte and perform bitwise logical operations as necessary. Implementation details of the object in RAM can matter for performance. The library permits any of the standard `UInt` types to be used for packing the bits, and larger `UInt` types (like `UInt64`) are usually faster as they permit working on 64 qubits at a time (instead of 1 if we used a boolean, or 8 if we used a byte).
 
-Moreover, how a tableau is stored in memory can affect performance, as a row-major storage
-usually permits more efficient use of the CPU cache (for the particular algorithms we use).
+### Memory Layout: fastrow vs fastcolumn
 
-Both of these parameters are [benchmarked](bench_intsize.png) (testing the application of a Pauli operator, which is an $\mathcal{O}(n^2)$ operation; and testing the canonicalization of a Stabilizer, which is an $\mathcal{O}(n^3)$ operation). Row-major UInt64 is the best performing and it is  used by default in this library.
+How a tableau is stored in memory significantly affects performance, as different memory layouts provide better cache locality for different operations.
+
+#### Default: fastrow Layout
+
+**The [`fastrow`](@ref) layout is the default** for [`Stabilizer`](@ref), [`Destabilizer`](@ref), [`MixedStabilizer`](@ref), and [`MixedDestabilizer`](@ref). In this layout, each Pauli string (row of the tableau) is stored contiguously in memory. This corresponds to column-major storage of the underlying `xzs` matrix.
+
+This layout is optimized for:
+- **Canonicalization operations** (`canonicalize!`) - $\mathcal{O}(n^3)$ operations performing row operations
+- **Projective measurements** (`project!`) - which frequently iterate over rows  
+- **Row operations** like `mul_left!`
+- Measuring large Pauli operators
+- Applying large dense n-qubit Clifford operations
+
+#### Alternative: fastcolumn Layout  
+
+**The [`fastcolumn`](@ref) layout is the default** for [`PauliFrame`](@ref). In this layout, the bits of a given qubit (tableau columns) are stored (mostly) contiguously in memory. This corresponds to row-major storage of the underlying `xzs` matrix.
+
+This layout is optimized for:
+- **Applying sparse gates** like `apply!(s, sCNOT(i,j))` - operations that only touch a few qubits
+- Single-qubit and two-qubit gate applications
+- Operations where column locality matters more than row locality
+
+#### Converting Between Layouts
+
+The functions [`fastrow`](@ref) and [`fastcolumn`](@ref) can be used to convert between memory layouts without changing the logical content of the tableau:
+
+```julia
+s = random_stabilizer(1000)          # Uses default fastrow layout
+s_col = fastcolumn(copy(s))          # Convert to fastcolumn layout
+s_row = fastrow(copy(s_col))         # Convert back to fastrow layout
+
+pf = PauliFrame(100, 50, 10)         # Uses default fastcolumn layout  
+pf_row = fastrow(copy(pf))           # Convert to fastrow layout
+```
+
+These functions work on all stabilizer data structures: [`Stabilizer`](@ref), [`Destabilizer`](@ref), [`MixedStabilizer`](@ref), [`MixedDestabilizer`](@ref), and [`PauliFrame`](@ref).
+
+#### Technical Details: Indexing Convention
+
+**Important:** Regardless of the memory layout (`fastrow` or `fastcolumn`), the indexing convention for the `xzs` matrix is always `xzs[tableau_column_index, tableau_row_index]`. 
+
+- The **X component** of qubit `i` in stabilizer `j` is at `xzs[i_big, j]`  
+- The **Z component** is at `xzs[i_big + end÷2, j]`
+
+where `i_big` accounts for bit packing (multiple qubits packed into each `UInt64`).
+
+What changes between `fastrow` and `fastcolumn` is the underlying storage order of the matrix:
+- **fastrow**: column-major Julia array → bits of a stabilizer row are contiguous in memory
+- **fastcolumn**: row-major Julia array (via transpose trick) → bits of a qubit column are contiguous in memory
+
+The performance difference becomes apparent when examining different operation types:
+
+```jldoctest
+julia> s_row = fastrow(random_stabilizer(1000));
+
+julia> s_col = fastcolumn(random_stabilizer(1000));
+
+julia> @time canonicalize!(copy(s_row));
+  0.012 seconds
+
+julia> @time canonicalize!(copy(s_col));
+  0.033 seconds
+
+julia> @time apply!(copy(s_row), sCNOT(1, 2));
+  0.000028 seconds
+
+julia> @time apply!(copy(s_col), sCNOT(1, 2));
+  0.000019 seconds
+```
+
+The `fastrow` layout excels at canonicalization and other row-focused operations, while `fastcolumn` is faster for sparse single-gate applications on specific qubits. In most practical scenarios, the default `fastrow` layout is optimal for `Stabilizer` types, while `fastcolumn` is optimal for `PauliFrame` simulations.
