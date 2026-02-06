@@ -309,15 +309,38 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (96, 6, 4)
 ```
 
+Here is an example of a `[[1024, 30, 13 ≤ d ≤ 32]]` Haah's cubic code from Appendix B,
+code D of [panteleev2021degenerate](@cite) on the `8 × 8 × 8` Lattice.
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> L = 8;
+
+julia> R, (x,y,z) = polynomial_ring(GF(2), [:x,:y,:z]);
+
+julia> I = ideal(R, [x^L-1, y^L-1, z^L-1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + x + y + z);
+
+julia> B = S(1 + x*y + x*z + y*z);
+
+julia> c = MultivariateMulticycle([L,L,L], [A,B]);
+
+julia> code_n(c), code_k(c)
+(1024, 30)
+```
+
 See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
 """
 struct MultivariateMulticycle <: AbstractCSSCode
     orders::Vector{Int}
     polynomials::Vector{MPolyQuoRingElem{FqMPolyRingElem}}
     function MultivariateMulticycle(orders::Vector{Int}, polys::Vector{<:MPolyQuoRingElem})
-        length(orders) == length(polys) || throw(ArgumentError("Mismatch orders/polys"))
         all(x->x>0, orders) || throw(ArgumentError("All orders must be positive"))
-        length(orders) ≥ 2 || throw(ArgumentError("Need at least 2 variables to define a CSS code"))
+        length(polys) ≥ 2 || throw(ArgumentError("Need at least 2 variables to define a CSS code"))
         new(orders, collect(polys))
     end
 end
@@ -351,7 +374,7 @@ function _polynomial_to_circulant_matrix(f::MPolyQuoRingElem, orders::Vector{Int
 end
 
 function boundary_maps(code::MultivariateMulticycle)
-    t = length(code.orders)
+    t = length(code.polynomials)
     N = prod(code.orders)
     @debug "Constructing boundary maps for MultivariateMulticycle"
     @debug "Number of variables t = $t"
@@ -411,7 +434,7 @@ end
 
 function parity_matrix_xz(code::MultivariateMulticycle)
     maps = boundary_maps(code)
-    t = length(code.orders)
+    t = length(code.polynomials)
     if t == 2
         hx = transpose(maps[1])
         hz = maps[2]
@@ -430,7 +453,7 @@ parity_matrix_z(c::MultivariateMulticycle) = parity_matrix_xz(c)[2]
 """For t ≥ 4, provides metachecks for X-stabilizers enabling single-shot decoding."""
 function metacheck_matrix_x(code::MultivariateMulticycle)
     maps = boundary_maps(code)
-    t = length(code.orders)
+    t = length(code.polynomials)
     t ≥ 4 || throw(ArgumentError("X-metachecks require t ≥ 4 variables"))
     qd = t÷2
     return transpose(maps[qd-1])
@@ -439,7 +462,7 @@ end
 """For t ≥ 3, provides metachecks for Z-stabilizers enabling single-shot decoding."""
 function metacheck_matrix_z(code::MultivariateMulticycle)
     maps = boundary_maps(code)
-    t = length(code.orders)
+    t = length(code.polynomials)
     t ≥ 3 || throw(ArgumentError("Z-metachecks require t ≥ 3 variables"))
     qd = t÷2
     return maps[qd+2]
