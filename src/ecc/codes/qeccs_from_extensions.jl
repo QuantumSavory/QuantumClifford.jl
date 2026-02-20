@@ -18,7 +18,7 @@ const oscarext_function_docstring = oscarext_struct_docstring
 @declare_struct_is_in_extension QuantumClifford TrivariateTricycle :QuantumCliffordOscarExt (:Oscar,) oscarext_struct_docstring
 @declare_struct_is_in_extension QuantumClifford BivariateBicycleViaPoly :QuantumCliffordOscarExt (:Oscar,) oscarext_struct_docstring
 @declare_struct_is_in_extension QuantumClifford MultivariateMulticycle :QuantumCliffordOscarExt (:Oscar,) oscarext_struct_docstring
-@declare_struct_is_in_extension QuantumClifford ZSZCode :QuantumCliffordOscarExt (:Oscar,) oscarext_struct_docstring
+@declare_struct_is_in_extension QuantumClifford ZSZ :QuantumCliffordOscarExt (:Oscar,) oscarext_struct_docstring
 
 @declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS two_block_group_algebra_code (:Hecke,) heckeext_function_docstring
 @declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS generalized_bicycle_code_as_2bga (:Hecke,) heckeext_function_docstring
