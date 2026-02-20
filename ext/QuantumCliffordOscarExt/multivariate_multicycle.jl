@@ -1,30 +1,41 @@
 """We introduce a novel class of quantum CSS codes — *Multivariate Multicycle* codes — constructed
-from multivariate polynomial quotient ring formalism over ``\\mathbb{F}_2``.
+using new framework of Koszul complex over the multivariate polynomial quotient ring. For details on the construction,
+please refer to our paper ([mian2026multivariatemulticyclecodescomplete](@cite))
+ 
+Here is an example of `[[96, 44, 4]]` Multivariate Multicycle Code from Table II of [mian2026multivariatemulticyclecodescomplete](@cite).
 
-Our discovery establishes that the boundary maps of these codes are governed by the combinatorial structure
-of *Koszul* complexes. According to [eisenbud2013commutative](@cite) "Let ``a_1, \\dots, a_n`` be elements of
-``R``. Then the Koszul complex ``\\mathrm{Kosz}(\\mathbf{a})`` is *isomorphic* to the total complex of the
-tensor product ``(R \\xrightarrow{a_1} R) \\otimes (R \\xrightarrow{a_2} R) \\otimes \\cdots \\otimes (R \\xrightarrow{a_n} R)``.
-For more details, see Section 17.3.
+These novel codes are made in QuantumClifford.jl backend of QuantumSavory.
 
-We note that the work that introduced Trivariate tricycle codes in [jacob2025singleshotdecodingfaulttolerantgates](@cite)
-utilize length-1 chain complexes along with the structure of the boundary maps for the tensor-product complex of
-three length-1 chain complexes that was provided in [breuckmann2024cupsgatesicohomology](@cite). See  5.3.2 Product of Λ ≥ 3 group algebra codes page 23
-for more details.
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
 
-Specifically, for a code defined by *t* polynomial relations, we show that the *k-th* boundary map is obtained by
-taking the **Koszul matrix** in degree *k* and replacing each variable entry with the corresponding circulant matrix
-derived from the code's defining relations. The **Koszul complex** provides the framework for the boundary map construction,
-ensuring the commutativity properties essential for the code construction. This correspondence reveals that multivariate
-multicycle codes can be constructed using the framework of **Koszul complexes**.
+julia> l, m, p, r = 2, 2, 2, 2;
 
-This family of codes generalizes the bivariate bicycle, trivariate tricycle ([`TrivariateTricycle`](@ref)), and
-tetravariate tetracycle codes and it enables full single shot decoding in both X and Z directions, a capability that the
-[`TrivariateTricycle`](@ref) lacks.
+julia> R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z]);
 
-# Special Cases
+julia> I = ideal(R, [w^l - 1, x^m - 1, y^p - 1, z^r - 1]);
 
-## t = 2: Bivariate bicycle codes ([bravyi2024high](@cite))
+julia> S, _ = quo(R, I);
+
+julia> A = S((1 + x)*(1 + y*z));
+
+julia> B = S((1 + y)*(1 + z*w));
+
+julia> C = S((1 + z)*(1 + w*x));
+
+julia> D = S((1 + w)*(1 + x*y));
+
+julia> c = MultivariateMulticycle([l, m, p, r], [A, B, C, D]);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(96, 44, 4)
+```
+
+The Multivariate Multicycle code generalizes the several families of quantum-error correcting codes, namely:
+
+- ## Bivariate bicycle codes ([bravyi2024high](@cite))
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
@@ -47,7 +58,7 @@ julia> code_n(c), code_k(c)
 (756, 16)
 ```
 
-## t = 3: Trivariate tricycle codes ([jacob2025singleshotdecodingfaulttolerantgates](@cite))
+- ## Trivariate tricycle codes ([jacob2025singleshotdecodingfaulttolerantgates](@cite))
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
@@ -72,14 +83,14 @@ julia> code_n(c), code_k(c)
 (432, 12)
 ```
 
-## t = 4: Multivariate Multicycle Codes
+- ## Abelian Multicycle codes ([lin2025abelianmulticyclecodessingleshot](@cite))
 
-These novel codes are made in QuantumClifford.jl backend of QuantumSavory.
+Here is an example of `[[84, 6, 7]]` AMC code from Table I of [lin2025abelianmulticyclecodessingleshot](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
 
-julia> l, m, p, r = 4, 3, 3, 3;
+julia> l, m, p, r = 14, 1, 1, 1;
 
 julia> R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z]);
 
@@ -87,18 +98,215 @@ julia> I = ideal(R, [w^l - 1, x^m - 1, y^p - 1, z^r - 1]);
 
 julia> S, _ = quo(R, I);
 
-julia> A = S((1 + x^2 )*(1 + w*x*y*z^2));
+julia> A = S(1 + w);
 
-julia> B = S((1 + x^2)*(1 + w*x^3*y^2*z));
+julia> B = S(1 + w^2);
 
-julia> C = S(1 + w^2*x^2*y^2*z^2);
+julia> C = S(1 + w^5);
 
-julia> D = S(1 + w^3*x^3*y^3*z^3);
+julia> D = S(1 + w^6);
 
 julia> c = MultivariateMulticycle([l, m, p, r], [A, B, C, D]);
 
-julia> code_n(c), code_k(c)
-(648, 18)
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(84, 6, 7)
+```
+
+All the AMC codes from Table I are subfamilies of MM codes. Notably, this family of codes have weight-6 stabilizer checks.
+
+- ## Cyclic Hypergraph product codes ([aydin2025cyclichypergraphproductcode](@cite))
+
+Here is an example of `[[450, 32, 8]]` C2 code from Table I of [aydin2025cyclichypergraphproductcode](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l=15; m=15;
+
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+
+julia> I = ideal(R, [x^l-1, y^m-1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + x + x^4);
+
+julia> B = S(1 + y + y^4);
+
+julia> c = MultivariateMulticycle([l,m], [A,B]);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(450, 32, 8)
+```
+
+Here is an example of `[[240, 8, 8]]` CxR code from Table I of [aydin2025cyclichypergraphproductcode](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l=15; m=8;
+
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+
+julia> I = ideal(R, [x^l-1, y^m-1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + x + x^4);
+
+julia> B = S(1 + y);
+
+julia> c = MultivariateMulticycle([l,m], [A,B]);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(240, 8, 8)
+```
+
+- ## Abelian two-block group algebra codes ([lin2024quantum](@cite))
+
+Here is an example of `[[16, 2, 4]]` abelian 2BGA code from Table II of [lin2024quantum](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l=2; m=4;
+
+julia> R, (s, x) = polynomial_ring(GF(2), [:s, :x]);
+
+julia> I = ideal(R, [s^l-1, x^m-1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + x);
+
+julia> B = S(1 + x + s + x^2 + s*x + s*x^3);
+
+julia> c = MultivariateMulticycle([l,m], [A,B]);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(16, 2, 4)
+```
+
+- ## Generalized bicycle codes ([pryadko2013quantum](@cite))
+
+Here is an example of `[[30, 8, 4]]` generalized bicycle code from [pryadko2013quantum](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l=15; m=1;
+
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+
+julia> I = ideal(R, [x^l-1, y^m-1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + x^2 + x^8);
+
+julia> B = S(1 + x + x^4);
+
+julia> c = MultivariateMulticycle([l,m], [A,B]);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(30, 8, 4)
+```
+
+- ## Multivariate bicycle codes ([voss2024multivariatebicyclecodes](@cite))
+
+Here is an example of `[[48, 4, 6]]` Weight-6 TB-QLDPC code from Appendix A Table 2 of [voss2024multivariatebicyclecodes](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l=4; m=6;
+
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+
+julia> I = ideal(R, [x^l-1, y^m-1]);
+
+julia> S, _ = quo(R, I);
+
+julia> z = x*y;
+
+julia> A = S(x^3 + y^5);
+
+julia> B = S(x + z^5 + y^5 + y^2);
+
+julia> c = MultivariateMulticycle([l,m], [A,B]);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(48, 4, 6)
+```
+
+- ## La-Cross codes ([pecorari2025high](@cite))
+
+Here is an example of `[[98, 18, 4]]` "square" La-Cross from [pecorari2025high](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> n = 7;
+
+julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+
+julia> I = ideal(R, [x^n-1, y^n-1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + x + x^3);
+
+julia> B = S(1 + y + y^3);
+
+julia> c = MultivariateMulticycle([n,n], [A,B]);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(98, 18, 4)
+```
+
+- ## 4D Toric codes ([dennis2002topological](@cite))
+
+Here is an example of `[[96, 6, 4]]` 4D Toric code from [dennis2002topological](@cite).
+
+```jldoctest
+julia> using Oscar; using QuantumClifford.ECC;
+
+julia> l, m, p, r = 2, 2, 2, 2;
+
+julia> R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z]);
+
+julia> I = ideal(R, [w^l - 1, x^m - 1, y^p - 1, z^r - 1]);
+
+julia> S, _ = quo(R, I);
+
+julia> A = S(1 + w);
+
+julia> B = S(1 + x);
+
+julia> C = S(1 + y);
+
+julia> D = S(1 + z);
+
+julia> c = MultivariateMulticycle([l, m, p, r], [A, B, C, D]);
+
+julia> import HiGHS;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(96, 6, 4)
 ```
 
 See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
