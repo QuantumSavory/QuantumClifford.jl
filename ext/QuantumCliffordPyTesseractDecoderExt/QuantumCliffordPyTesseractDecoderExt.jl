@@ -1,6 +1,6 @@
 module QuantumCliffordPyTesseractDecoderExt
 
-using PyTesseractDecoder: tesseract, stim, np, PythonCall
+using PyTesseractDecoder: tesseract_decoder, tesseract, stim, np, PythonCall
 using SparseArrays
 using QuantumClifford
 using QECCore
@@ -99,7 +99,14 @@ struct TesseractDecoder <: AbstractSyndromeDecoder
     nerrors::Int
 end
 
-function TesseractDecoder(c; det_beam::Integer=50, priors=nothing, errorrate=nothing)
+function TesseractDecoder(c;
+    pqlimit::Integer=1_000_000,
+    det_beam::Integer=20,
+    beam_climbing::Bool=true,
+    num_det_orders::Integer=21,
+    priors=nothing,
+    errorrate=nothing
+)
     H = parity_checks(c)
     s, n = size(H)
     fm = ECC.faults_matrix(H)
@@ -123,7 +130,18 @@ function TesseractDecoder(c; det_beam::Integer=50, priors=nothing, errorrate=not
     check_sparse = sparse(check_dense)
     fm_sparse = sparse(fm)
     dem = _dem_from_check_matrices(check_sparse, fm_sparse, prior_vec)
-    config = tesseract.TesseractConfig(dem=dem, det_beam=Int(det_beam))
+    config = tesseract.TesseractConfig(
+        dem=dem,
+        pqlimit=pqlimit,
+        det_beam=det_beam,
+        beam_climbing=beam_climbing,
+        det_orders=tesseract_decoder.utils.build_det_orders(
+            dem=dem,
+            num_det_orders=num_det_orders,
+            method=tesseract_decoder.utils.DetOrder.DetIndex
+        ),
+        no_revisit_dets=true
+    )
     decoder = config.compile_decoder()
 
     symptom_to_column = _symptom_to_column_map(check_sparse, fm_sparse)
@@ -151,31 +169,15 @@ function decode(d::TesseractDecoder, syndrome_sample)
     d.s == _s || throw(ArgumentError(lazy"The syndrome given to `decode` has the wrong dimensions. The syndrome length is $(_s) while it should be $(d.s)"))
 
     guess = falses(d.nerrors)
-    PythonCall.GIL.@lock begin
+    @time "decode" begin PythonCall.GIL.@lock begin
         idxs = PythonCall.pyconvert(Vector{Int}, d.decoder.decode_to_errors(PythonCall.Py(syndrome_sample).to_numpy()))
         for idx0 in idxs
             (0 <= idx0 < length(d.error_to_column)) || continue
             guess[d.error_to_column[idx0 + 1]] = true
         end
     end
-    return guess
-end
-
-function batchdecode(d::TesseractDecoder, syndrome_samples)
-    samples, _s = size(syndrome_samples)
-    d.s == _s || throw(ArgumentError(lazy"The syndromes given to `batchdecode` have the wrong dimensions. The syndrome length is $(_s) while it should be $(d.s)"))
-
-    results = falses(samples, d.nerrors)
-    PythonCall.GIL.@lock begin
-        for (i, syndrome_sample) in enumerate(eachrow(syndrome_samples))
-            idxs = PythonCall.pyconvert(Vector{Int}, d.decoder.decode_to_errors(PythonCall.Py(syndrome_sample).to_numpy()))
-            for idx0 in idxs
-                (0 <= idx0 < length(d.error_to_column)) || continue
-                results[i, d.error_to_column[idx0 + 1]] = true
-            end
-        end
     end
-    return results
+    return guess
 end
 
 end
