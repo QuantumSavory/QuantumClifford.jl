@@ -161,10 +161,11 @@ It is a method that is used internally by more user-friendly methods providing a
 to the necessary noisy circuits.
 """
 function evaluate_decoder(d::AbstractSyndromeDecoder, nsamples, circuit, syndrome_bits, logical_bits, faults_submatrix)
-    frames = pftrajectories(circuit;trajectories=nsamples,threads=true)
+    @time "pftrajectories" frames = pftrajectories(circuit;trajectories=nsamples,threads=true)
 
     syndromes = @view pfmeasurements(frames)[:, syndrome_bits]
     measured_faults = @view pfmeasurements(frames)[:, logical_bits]
+    @show sum(syndromes, dims=2)
     guesses = batchdecode(d, syndromes)
     evaluate_guesses(measured_faults, guesses, faults_submatrix)
 end
