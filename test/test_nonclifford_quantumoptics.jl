@@ -1,6 +1,8 @@
 @testitem "Non-Clifford Quantum Optics" begin
     using QuantumClifford
-    using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!, invsparsity, _projectrand_notnorm, mixed_destab_looks_good, tr
+    using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!, invsparsity, mixed_destab_looks_good
+    using QuantumClifford.PauliChannelNonClifford: _projectrand_notnorm
+    using LinearAlgebra: tr    
     using QuantumClifford: @S_str, random_stabilizer
     using QuantumOpticsBase
     using Test
@@ -323,7 +325,7 @@
 
                         @test (expect(p, g)+1)/2 ≈ tr(rhop)
 
-                        gm_notnorm, _ = QuantumClifford._projectrand_notnorm(copy(g), p, 0)
+                        gm_notnorm, _ = _projectrand_notnorm(copy(g), p, 0)
                         @test (expect(p, g)+1)/2 ≈ tr(gm_notnorm)
 
                         @test tr(rhop) ≈ tr(gm_notnorm)
@@ -397,4 +399,3 @@
         expected = Operator(pcRx(θ1 + θ2))
         @test composed.data ≈ expected.data rtol=1e-10
     end
-end
