@@ -7,6 +7,7 @@
 
 ## v0.11.1 - dev
     - Add `MultivariateMulticycle`, a novel family of quantum LDPC code using Koszul complexes
+    - **(fix)** `permutesystems` no longer mutates its argument in place; it now correctly returns a modified copy
 
 ## v0.11.0 - 2026-01-01
 
