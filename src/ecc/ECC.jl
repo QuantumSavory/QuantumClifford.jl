@@ -44,7 +44,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     GeneralizedBicycle, ExtendedGeneralizedBicycle,
     HomologicalProduct, DoubleHomologicalProduct,
     GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly,
-    MultivariateMulticycle,
+    MultivariateMulticycle, BravyiBaconShor, SubsystemHypergraphProduct,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder, CSSTableDecoder,
@@ -402,6 +402,10 @@ include("codes/util.jl")
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
 include("codes/classical/bch.jl")
+
+# Subsystem codes
+include("codes/subsystem_bacon_shor.jl")
+include("codes/subsystem_hypergraph_product.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
