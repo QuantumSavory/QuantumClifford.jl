@@ -230,6 +230,10 @@ function SingleQubitOperator(op::CliffordOperator, qubit)
 end
 SingleQubitOperator(op::CliffordOperator) = SingleQubitOperator(op, 1)
 
+# Retarget symbolic gates to new qubit indices while keeping the same gate kind.
+(g::SingleQubitOperator)(qubit::Int) = SingleQubitOperator(g, qubit)
+(g::AbstractSingleQubitOperator)(qubit::Int) = typeof(g)(qubit)
+
 CliffordOperator(op::AbstractSingleQubitOperator, n; kw...) = CliffordOperator(SingleQubitOperator(op), n; kw...)
 function CliffordOperator(op::SingleQubitOperator, n; compact=false)
     if compact
@@ -428,6 +432,7 @@ function CliffordOperator(op::AbstractTwoQubitOperator, n; compact=false)
 end
 
 CliffordOperator(::Type{O}) where {O<:AbstractTwoQubitOperator} = CliffordOperator(apply!(one(Destabilizer,2),O(1,2)))
+(g::AbstractTwoQubitOperator)(q1::Int, q2::Int) = typeof(g)(q1, q2)
 
 function Base.show(io::IO, op::AbstractTwoQubitOperator)
     if get(io, :compact, false) | haskey(io, :typeinfo)
