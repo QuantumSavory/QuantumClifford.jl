@@ -439,6 +439,129 @@ function _project!(d::MixedDestabilizer,pauli::PauliOperator;keep_result::Val{Bk
 end
 
 """
+A faster special-case version of [`project!`](@ref) for sparse PauliOperators.
+
+This function is faster when the PauliOperator is sparse, i.e. it has only a small number of (not identity) elements, compared to the number of system qubits. Especially when the measured qubits are close to each other.
+
+For single qubit measurements, use [`projectX!`](@ref), [`projectY!`](@ref), or [`projectZ!`](@ref), since they are faster.
+
+See also: [`project!`](@ref), [`projectX!`](@ref), [`projectY!`](@ref), [`projectZ!`](@ref).
+"""
+function project_sparse!(state,qubits::Vector{<:Integer}, local_pauli::PauliOperator;keep_result::Bool=true,phases::Bool=true)
+    @valbooldispatch _project_sparse!(state,qubits,local_pauli;keep_result=Val(keep_result),phases=Val(phases)) keep_result phases
+end
+function _project_sparse!(d::MixedDestabilizer,qubits::Vector{<:Integer},local_pauli::PauliOperator;keep_result::Val{Bkr}=Val(true),phases::Val{Bp}=Val(true)) where {Bkr, Bp}
+    anticommutes = 0
+    tab = QuantumClifford.tab(d)
+    stabilizer = stabilizerview(d)
+    destabilizer = destabilizerview(d)
+    r = d.rank
+    n = nqubits(d)
+    # The idea is to still do the comm xor between UInt64s because obeying to the memory layout is faster then checking individual bits.
+    packed_indices = _packed_indices(d,qubits) # TODO: find a way to to this without (or with minimal) allocations
+    # Check whether we anticommute with any of the stabilizer rows
+    for i in 1:r
+        if comm(stabilizer, i, packed_indices, local_pauli)!=0x0
+            anticommutes = i
+            break
+        end
+    end
+    if anticommutes == 0
+        anticomlog = 0
+
+        for i in r+1:n
+            if comm(stabilizer, i, packed_indices, local_pauli)!=0x0
+                anticomlog = i
+                break
+            end
+        end
+        if anticomlog == 0
+            for i in n+r+1:2n
+                if comm(stabilizer, i, packed_indices, local_pauli)!=0x0
+                    anticomlog = i
+                    break
+                end
+            end
+        end
+        if anticomlog!=0
+            if anticomlog<=n
+                rowswap!(tab, r+1+n, anticomlog)
+                n!=r+1 && anticomlog!=r+1 && rowswap!(tab, r+1, anticomlog+n)
+            else
+                rowswap!(tab, r+1, anticomlog-n)
+                rowswap!(tab, r+1+n, anticomlog)
+            end
+            anticomm_update_rows(tab,packed_indices,r+1,n,r+1,local_pauli,phases)
+            d.rank+=1
+            anticommutes = d.rank
+            tab[r+1] = tab[n+r+1]
+            # replace row
+            zero!(tab, n+r+1)
+            @inbounds for (i, col) in enumerate(qubits)
+                tab[n+r+1, col] = local_pauli[i]
+            end
+            result = nothing
+        else
+            if Bkr
+                new_pauli = zero(PauliOperator, n)
+                for i in 1:r
+                    comm(stabilizer, i, packed_indices, local_pauli)!=0x0 && mul_left!(new_pauli, stabilizer, i, phases=phases)
+                end
+                result = new_pauli.phase[]
+            else
+                result = nothing
+            end
+        end
+    else
+        anticomm_update_rows(tab,packed_indices,r,n,anticommutes,local_pauli,phases)
+        destabilizer[anticommutes] = stabilizer[anticommutes]
+        zero!(stabilizer, anticommutes)
+        @inbounds for (i, col) in enumerate(qubits)
+            stabilizer[anticommutes, col] = local_pauli[i]
+        end
+        result = nothing
+    end
+    d, anticommutes, result
+end
+# find the column indices of the UInt64 integers that the qubits are packed into in the tableau. There is probably a better way to do this. Pre allocation is hard, because two qubits can be packed into the same UInt64 integer (which would be good).
+@inline function _packed_indices(d::MixedDestabilizer,qubits::Vector{<:Integer})
+    type_size = sizeof(eltype(tab(d).xzs)) * 8
+    n = nqubits(d)
+    packed_indices_x = unique(div.(qubits.-1,type_size).+1)
+    packed_indices_z = packed_indices_x.+(div(n-1,type_size)+1)
+    vcat(packed_indices_x, packed_indices_z)
+end
+@inline function anticomm_update_rows(tab,cols,r,n,anticommutes,local_pauli::PauliOperator,phases::Val{B}=Val(true)) where {B}
+    for i in r+1:n
+        if comm(tab, i, cols, local_pauli)!=0x0
+            mul_left!(tab, i, n+anticommutes; phases=phases)
+        end
+    end
+    for i in n+anticommutes+1:2n
+        if comm(tab, i, cols, local_pauli)!=0x0
+            mul_left!(tab, i, n+anticommutes; phases=phases)
+        end
+    end
+    for i in 1:r
+        if i!=anticommutes && comm(tab, i, cols, local_pauli)!=0x0
+            mul_left!(tab, i, n+anticommutes; phases=Val(false))
+        end
+    end
+end
+
+# TODO: move this into QuantumClifford.jl (file)
+@inline function comm(stab::Stabilizer,row,cols::Vector{<:Integer},local_pauli::PauliOperator)
+    # Check whether the row anticommutes with the local Pauli operator
+    # (which is a length(cols) qubit Pauli operator)
+    comm(local_pauli.xz, (@view tab(stab).xzs[cols,row]))
+end
+@inline function comm(tab::Tableau,row,cols::Vector{<:Integer},local_pauli::PauliOperator)
+    # Check whether the row anticommutes with the local Pauli operator
+    # (which is a length(cols) qubit Pauli operator)
+    comm(local_pauli.xz, (@view tab.xzs[cols,row]))
+end
+
+"""
 Measure a given qubit in the X basis.
 A faster special-case version of [`project!`](@ref).
 
