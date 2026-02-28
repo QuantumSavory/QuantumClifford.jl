@@ -55,6 +55,7 @@ For quantum code construction routines:
 - [bravyi2024high](@cite)
 - [haah2011local](@cite)
 - [landahl2011color](@cite)
+- [lin2023quantumtwoblockgroupalgebra](@cite)
 - [wang2023abelian](@cite)
 - [naghipour2015quantum](@cite)
 - [eberhardt2024logical](@cite)
