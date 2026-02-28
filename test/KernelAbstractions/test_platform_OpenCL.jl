@@ -1,3 +1,5 @@
+
+#=============================================================================#
 @testitem "OpenCL" tags = [:opencl] begin
 
     include("implementation/test_platform.jl")
@@ -16,9 +18,10 @@
 
     if can_run
         # TODO: Revisit this once the POCL code generation issues are resolved.
-        block_sizes = fill(256, round_count)
+        block_sizes = fill(KAExt.default_block_size, max_rounds)
         synchronize() = finish(queue())
-        test_platform(AT, synchronize)
+        test_platform(synchronize, AT)
     end
 
 end
+#=============================================================================#
