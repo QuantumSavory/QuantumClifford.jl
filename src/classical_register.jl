@@ -48,7 +48,7 @@ end
 @deprecate apply!(r::Register, operation, indices::Base.AbstractVecOrTuple{Int}; kwargs...) apply!(r, indices, operation; kwargs...)
 
 function apply!(r::Register, indices::Base.AbstractVecOrTuple{Int}, operation::Base.AbstractVecOrTuple{Int}; kwargs...)
-    throw(MethodError(apply!, (r, indices, operation)))
+    error("`apply!(::Register, ...)` requires two more arguments in specific order -- `indices` (a vector or tuple of qubit indices) and `operation` (the quantum operation acting on the qubits)")
 end
 
 function apply!(r::Register, m::sMX)
