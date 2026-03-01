@@ -47,6 +47,10 @@ end
 
 @deprecate apply!(r::Register, operation, indices::Base.AbstractVecOrTuple{Int}; kwargs...) apply!(r, indices, operation; kwargs...)
 
+function apply!(r::Register, indices::Base.AbstractVecOrTuple{Int}, operation::Base.AbstractVecOrTuple{Int}; kwargs...)
+    throw(MethodError(apply!, (r, indices, operation)))
+end
+
 function apply!(r::Register, m::sMX)
     _, res = projectXrand!(r,m.qubit)
     m.bit!=0 && (bitview(r)[m.bit] = !iszero(res))
