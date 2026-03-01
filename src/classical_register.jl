@@ -35,10 +35,17 @@ tab(r::Register) = tab(quantumstate(r))
 tensor(regs::Register...) = Register(tensor(quantumstate.(regs)...), [bit for r in regs for bit in r.bits])
 tensor(args::Union{Register, AbstractStabilizer}...) = tensor(Register.(args)...)
 
-function apply!(r::Register, op, args...; kwargs...)
-    apply!(quantumstate(r), op, args...; kwargs...)
+function apply!(r::Register, operation; kwargs...)
+    apply!(quantumstate(r), operation; kwargs...)
     r
 end
+
+function apply!(r::Register, indices::Base.AbstractVecOrTuple{Int}, operation; kwargs...)
+    apply!(quantumstate(r), indices, operation; kwargs...)
+    r
+end
+
+@deprecate apply!(r::Register, operation, indices::Base.AbstractVecOrTuple{Int}; kwargs...) apply!(r, indices, operation; kwargs...)
 
 function apply!(r::Register, m::sMX)
     _, res = projectXrand!(r,m.qubit)
@@ -168,7 +175,7 @@ end
 
 
 
-#helper dispatch functions for the AbstractResetMeasurement applybranches 
+#helper dispatch functions for the AbstractResetMeasurement applybranches
 _reset_mappings(::Type{sMRZ}) = (sX, projectZ!)
 _reset_mappings(::Type{sMRX}) = (sZ, projectX!)
 _reset_mappings(::Type{sMRY}) = (sZ, projectY!)
