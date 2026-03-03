@@ -5,6 +5,10 @@
 
 # News
 
+## v0.11.2 - 2026-03-01
+
+- **(fix)** Deprecate legacy 3-argument `apply!` order (`state, operation, indices`) in favor of `state, indices, operation`.
+
 ## v0.11.1 - 2026-02-26
 
 - Add `MultivariateMulticycle`, a novel family of quantum LDPC code using Koszul complexes
