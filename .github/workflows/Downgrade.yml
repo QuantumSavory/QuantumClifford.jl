@@ -41,7 +41,7 @@ jobs:
           '
       - uses: julia-actions/julia-downgrade-compat@v2
         with:
-          skip: Combinatorics,InteractiveUtils,LinearAlgebra,PrecompileTools,Printf,Pkg,REPL,Random,Statistics,TOML
+          skip: Combinatorics,InteractiveUtils,LinearAlgebra,PrecompileTools,Printf,Pkg,REPL,Random,SparseArrays,Statistics,TOML
           mode: 'forcedeps'
           julia_version: ${{ matrix.version }}
       - uses: julia-actions/cache@v2
