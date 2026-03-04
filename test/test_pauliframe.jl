@@ -26,7 +26,7 @@
                        sHadamard(1), sCNOT(1,2), sCNOT(1,3), # prepare a GHZ state
                        sMZ(1,1), sMZ(2,2), sMZ(3,3) # measure each qubit
                       ]
-        n = 10^6
+        n = 2 * 10^5
         frame = PauliFrame(n, 3, 3)
         f = pftrajectories(frame, ghz_circuit)
         m = pfmeasurements(f)
