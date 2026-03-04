@@ -17,9 +17,9 @@ Of course, if you are comfortable with Oscar, you can use [`twobga_from_fp_group
     $TYPEDFIELDS
 """
 struct ZSZ <: AbstractCSSCode
-    """Order of the normal cyclic group ``\\mathbb{Z}_\\ell``"""
+    """Order of the cyclic group ``\\mathbb{Z}_\\ell``"""
     l::Int
-    """Order of the acting cyclic group ``\\mathbb{Z}_m``"""
+    """Order of the cyclic group ``\\mathbb{Z}_m``"""
     m::Int
     """The action parameter `q` such that ``y x y^{-1} = x^q``"""
     q::Int
