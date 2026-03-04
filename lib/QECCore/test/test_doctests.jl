@@ -19,11 +19,7 @@
     ENV["COLUMNS"] = 80
     DocMeta.setdocmeta!(QECCore, :DocTestSetup, :(using QECCore; using QuantumClifford); recursive=true)
     modules = [QECCore, extensions...]
-    doctestfilters = [
-        r"(QECCore\.|)",
-        # Nemo may emit deprecation warnings in doctest sessions on newer releases.
-        r"(?ms)^.*Warning: `.*` is deprecated, use `.*` instead\.\n(?:.*caller = .*\n)?(?:.*@ .*:\d+\n)?",
-    ]
+    doctestfilters = [r"(QECCore\.|)"]
     doctest(nothing, modules;
             doctestfilters
             #fix=true

@@ -97,7 +97,9 @@ julia> t = 2;
 
 julia> m = 3;
 
-julia> F, α = finite_field(2, m, :α);
+julia> F = GF(2, m, :α);
+
+julia> α = gen(F);
 
 julia> R, x = polynomial_ring(F, :x);
 
@@ -120,7 +122,7 @@ L = { \\alpha \\in \\mathbb{F}_{2^m} \\mid g(\\alpha) \\neq 0}
 ```
 
 ```jldoctest
-julia> import Nemo: finite_field, polynomial_ring, rank, matrix, GF;
+julia> import Nemo: polynomial_ring, rank, matrix, GF;
 
 julia> using QECCore: random_Goppa_code, code_n, code_k, parity_matrix; using Random: MersenneTwister;
 
@@ -168,14 +170,14 @@ struct Goppa <: AbstractPolynomialCode
 end
 
 function Goppa(m::Int, t::Int, g::FqPolyRingElem)
-    F, α = finite_field(2, m, :α)
+    F = GF(2, m, :α)
     L = [a for a in F if evaluate(g, a) != 0]
     return Goppa(m, t, g, L)
 end
 
 function QECCore.random_Goppa_code(rng::AbstractRNG, m::Int, t::Int)
     (m < 3 || t < 2 || t >= 2^(m - 1)) && throw(ArgumentError("m ≥ 3 and t ≥ 2 required, with t < 2^(m-1)"))
-    F, α = finite_field(2, m, :α)
+    F = GF(2, m, :α)
     R, x = polynomial_ring(F, :x)
     for _ in 1:500
         coeffs = rand(rng, F, t)
