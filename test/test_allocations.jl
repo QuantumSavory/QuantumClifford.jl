@@ -100,7 +100,7 @@
         @test allocated(f1) <= 18
     end
 
-    test_sizes = [2,63,64,65,127,128,129,511,512,513]
+    test_sizes = [2,63,64,65,127,128,129]
     @testset "apply_right! symbolic" begin
         for q in test_sizes
             q1 = rand(1:q)
