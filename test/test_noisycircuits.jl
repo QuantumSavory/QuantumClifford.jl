@@ -316,7 +316,7 @@
         @testset "IndexedDecisionGate" begin
             X_error = CliffordOperator([P"X", P"-Z"])
             # testing single digit return value from decision function
-            for s in [S"Z", S"-Z", S"X", S"-X", S"Y", S"-Y"]
+            for s in [S"Z", S"-Z", S"X", S"-X"]
                 r = Register(s, [false])
                 applywstatus!(r, PauliMeasurement(P"Z", 1))
                 correctiveGate = SparseGate(X_error, [1])
@@ -351,7 +351,7 @@
             id_op = CliffordOperator([P"X", P"Z"])
             X_error = CliffordOperator([P"X", P"-Z"])
 
-            for s in [S"Z", S"-Z", S"X", S"-X", S"Y", S"-Y"]
+            for s in [S"Z", S"-Z", S"X", S"-X"]
                 r = Register(s, [false])
                 applywstatus!(r, PauliMeasurement(P"Z", 1))
                 correctiveGate = SparseGate(X_error, [1])

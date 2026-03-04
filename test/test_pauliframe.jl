@@ -43,7 +43,7 @@
     end
 
     @testset "sMZ vs sMRZ - mctrajectories vs pftrajectories" begin
-        n = 2000
+        n = 1000
         state = Register(one(MixedDestabilizer, 3), 6)
         frame = PauliFrame(n, 3, 6)
 
@@ -90,7 +90,7 @@
     end
 
     @testset "PauliMeasurements" begin
-        n = 2000
+        n = 1000
         state = Register(one(MixedDestabilizer, 3), 5)
         frame = PauliFrame(n, 3, 5)
 

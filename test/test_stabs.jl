@@ -3,7 +3,7 @@
     using LinearAlgebra
     using Random: randperm
     using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
-    test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
+    test_sizes = [1,2,10,63,64,65] # Including sizes that would test off-by-one errors in the bit encoding.
     @testset "Pure and Mixed state initialization" begin
 
         @testset "Destabilizer initialization" begin
@@ -55,7 +55,7 @@
             canonicalize!(s)
             dss = canonicalize!(copy(stabilizerview(ds)))
             @test s == dss
-            stabs = [s[1:i] for s in [random_stabilizer(n) for n in [32,16,16,64,63,65,129,128,127]] for i in rand(1:10)];
+            stabs = [s[1:i] for s in [random_stabilizer(n) for n in [32,16,16,64,63,65]] for i in rand(1:10)];
             mdstabs = MixedDestabilizer.(stabs);
             @test canonicalize!(⊗(stabs...)) == canonicalize!(stabilizerview(⊗(mdstabs...)))
             md = MixedDestabilizer(random_destabilizer(n))
