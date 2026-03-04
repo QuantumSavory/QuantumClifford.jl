@@ -109,7 +109,7 @@ julia> code_n(c), code_k(c), code_s(c)
 ```
 """
 function LiftedCode(group_elem_array::Matrix{<: GroupOrAdditiveGroupElem}; GA::GroupAlgebra=group_algebra(GF(2), parent(group_elem_array[1,1])), repr::Union{Function, Nothing}=nothing)
-    A = zeros(GA, size(group_elem_array)...)
+    A = fill(zero(GA), size(group_elem_array)...)
     for i in axes(group_elem_array, 1), j in axes(group_elem_array, 2)
         A[i, j] = GA[A[i, j]]
     end
@@ -152,7 +152,7 @@ julia> code_n(c), code_k(c), code_s(c)
 ```
 """
 function LiftedCode(shift_array::Matrix{Int}, l::Int; GA::GroupAlgebra=group_algebra(GF(2), abelian_group(l)), repr=representation_matrix)
-    A = zeros(GA, size(shift_array)...)
+    A = fill(zero(GA), size(shift_array)...)
     for i in 1:size(shift_array, 1)
         for j in 1:size(shift_array, 2)
             A[i, j] = GA[shift_array[i, j]%l+1]
