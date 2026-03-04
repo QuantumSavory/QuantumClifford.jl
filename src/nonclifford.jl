@@ -26,10 +26,10 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒮𝓉𝒶𝒷
 - X
 with ϕᵢⱼ | Pᵢ | Pⱼ:
- 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
  0.0-0.353553im | + Z | + _
  0.0+0.353553im | + _ | + Z
- 0.146447+0.0im | + Z | + Z
+ 0.853553+0.0im | + _ | + _
 ```
 
 See also: [`PauliChannel`](@ref)
@@ -54,13 +54,9 @@ function _sorted_show_entries(s::GeneralizedStabilizer)
     entries = [begin
         left = string(_stabmixdestab(s.stab, di))
         right = string(_stabmixdestab(s.stab, dj))
-        (χ, left, right, left*" | "*right)
+        (χ, left, right)
     end for ((di,dj), χ) in s.destabweights]
-    sort!(entries; lt=(a,b)->begin
-        abs_a = abs(a[1])
-        abs_b = abs(b[1])
-        abs_a == abs_b ? a[4] < b[4] : abs_a > abs_b
-    end)
+    sort!(entries; by=entry->(entry[2], entry[3]))
     return entries
 end
 
@@ -69,7 +65,7 @@ function Base.show(io::IO, s::GeneralizedStabilizer)
     show(io,s.stab)
     println(io)
     print(io, "with ϕᵢⱼ | Pᵢ | Pⱼ:")
-    for (χ, left, right, _) in _sorted_show_entries(s)
+    for (χ, left, right) in _sorted_show_entries(s)
         println(io)
         print(io, " ")
         print(IOContext(io, :compact => true), χ)
@@ -139,10 +135,10 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒮𝓉𝒶𝒷
 - X
 with ϕᵢⱼ | Pᵢ | Pⱼ:
- 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
  0.0-0.353553im | + Z | + _
  0.0+0.353553im | + _ | + Z
- 0.146447+0.0im | + Z | + Z
+ 0.853553+0.0im | + _ | + _
 
 julia> χ′ = expect(P"-X", sm)
 0.7071067811865475 + 0.0im
@@ -188,10 +184,10 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒮𝓉𝒶𝒷
 - X
 with ϕᵢⱼ | Pᵢ | Pⱼ:
- 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
  0.0-0.353553im | + Z | + _
  0.0+0.353553im | + _ | + Z
- 0.146447+0.0im | + Z | + Z
+ 0.853553+0.0im | + _ | + _
 
 julia> tr(sm)
 1.0 + 0.0im
@@ -311,10 +307,10 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒮𝓉𝒶𝒷
 - X
 with ϕᵢⱼ | Pᵢ | Pⱼ:
- 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
  0.0-0.353553im | + Z | + _
  0.0+0.353553im | + _ | + Z
- 0.146447+0.0im | + Z | + Z
+ 0.853553+0.0im | + _ | + _
 
 julia> χ′ = expect(P"-X", sm)
 0.7071067811865475 + 0.0im
@@ -493,10 +489,10 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 + XX
 + ZZ
 with ϕᵢⱼ | Pᵢ | Pⱼ:
- 0.853553+0.0im | + __ | + __
+ 0.146447+0.0im | + Z_ | + Z_
  0.0-0.353553im | + Z_ | + __
  0.0+0.353553im | + __ | + Z_
- 0.146447+0.0im | + Z_ | + Z_
+ 0.853553+0.0im | + __ | + __
 
 julia> newsm = sm ⊗ sm
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
@@ -511,22 +507,22 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 + __XX
 + __ZZ
 with ϕᵢⱼ | Pᵢ | Pⱼ:
- 0.728553+0.0im | + ____ | + ____
- 0.0-0.301777im | + Z___ | + ____
- 0.0-0.301777im | + __Z_ | + ____
- 0.0+0.301777im | + ____ | + Z___
- 0.0+0.301777im | + ____ | + __Z_
- -0.125+0.0im | + Z_Z_ | + ____
- 0.125+0.0im | + Z___ | + Z___
- 0.125+0.0im | + Z___ | + __Z_
- 0.125+0.0im | + __Z_ | + Z___
- 0.125+0.0im | + __Z_ | + __Z_
- -0.125+0.0im | + ____ | + Z_Z_
+ 0.0214466+0.0im | + Z_Z_ | + Z_Z_
  0.0-0.0517767im | + Z_Z_ | + Z___
  0.0-0.0517767im | + Z_Z_ | + __Z_
+ -0.125+0.0im | + Z_Z_ | + ____
  0.0+0.0517767im | + Z___ | + Z_Z_
+ 0.125+0.0im | + Z___ | + Z___
+ 0.125+0.0im | + Z___ | + __Z_
+ 0.0-0.301777im | + Z___ | + ____
  0.0+0.0517767im | + __Z_ | + Z_Z_
- 0.0214466+0.0im | + Z_Z_ | + Z_Z_
+ 0.125+0.0im | + __Z_ | + Z___
+ 0.125+0.0im | + __Z_ | + __Z_
+ 0.0-0.301777im | + __Z_ | + ____
+ -0.125+0.0im | + ____ | + Z_Z_
+ 0.0+0.301777im | + ____ | + Z___
+ 0.0+0.301777im | + ____ | + __Z_
+ 0.728553+0.0im | + ____ | + ____
 
 julia> real(tr(newsm))
 1.0
@@ -579,10 +575,10 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 + XX
 + ZZ
 with ϕᵢⱼ | Pᵢ | Pⱼ:
- 0.853553+0.0im | + __ | + __
+ 0.146447+0.0im | + Z_ | + Z_
  0.0-0.353553im | + Z_ | + __
  0.0+0.353553im | + __ | + Z_
- 0.146447+0.0im | + Z_ | + Z_
+ 0.853553+0.0im | + __ | + __
 
 julia> s = ghz(2)
 + XX
@@ -601,10 +597,10 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 + __XX
 + __ZZ
 with ϕᵢⱼ | Pᵢ | Pⱼ:
- 0.853553+0.0im | + ____ | + ____
+ 0.146447+0.0im | + Z___ | + Z___
  0.0-0.353553im | + Z___ | + ____
  0.0+0.353553im | + ____ | + Z___
- 0.146447+0.0im | + Z___ | + Z___
+ 0.853553+0.0im | + ____ | + ____
 
 julia> real(tr(newsm))
 1.0
@@ -768,10 +764,10 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒮𝓉𝒶𝒷
 - X
 with ϕᵢⱼ | Pᵢ | Pⱼ:
- 0.853553+0.0im | + _ | + _
+ 0.146447+0.0im | + Z | + Z
  0.0-0.353553im | + Z | + _
  0.0+0.353553im | + _ | + Z
- 0.146447+0.0im | + Z | + Z
+ 0.853553+0.0im | + _ | + _
 ```
 """
 Base.:(*)(pc::UnitaryPauliChannel, sm::GeneralizedStabilizer) = apply!(sm, pc.paulichannel)
