@@ -47,6 +47,11 @@ if any((CUDA_flag, ROCm_flag, OpenCL_flag))
 end
 Oscar_flag && Pkg.add("Oscar")
 Tesseract_flag && Pkg.add("PyTesseractDecoder")
+if get(ENV, "JET_TEST", "") == "true"
+    Pkg.add("JET")
+else
+    @info "Skipping JET tests -- must be explicitly enabled."
+end
 
 using TestItemRunner
 using QuantumClifford
