@@ -38,6 +38,12 @@ jobs:
                 TOML.print(io, project)
               end
             end
+            if haskey(project, "sources")
+              delete!(project, "sources")
+              open("Project.toml", "w") do io
+                TOML.print(io, project)
+              end
+            end
           '
       - uses: julia-actions/julia-downgrade-compat@v2
         with:
