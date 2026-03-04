@@ -305,7 +305,7 @@ julia> matroid_parent(T"XX")[1]
 julia> matroid_parent(T"XX")[2]
 3:3
 
-julia> println(matroid_parent(T"XX")[3])
+julia> matroid_parent(T"XX")[3]
 3:2
 ```
 """
