@@ -181,6 +181,11 @@ function main(args)
     println("Warmup: $(cfg.warmup)")
     println("Output directory: $(cfg.outdir)")
 
+    if isnothing(Base.find_package("QuantumClifford"))
+        println("QuantumClifford is not available in the active environment, developing local path...")
+        Pkg.develop(path=REPO_ROOT)
+    end
+
     if cfg.precompile
         println("Precompiling test environment...")
         Pkg.instantiate()
