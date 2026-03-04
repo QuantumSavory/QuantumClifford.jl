@@ -25,7 +25,7 @@
         allocated(f3)
         #@test allocated(f3) <= 1 # TODO lower it by making apply! more efficient
         @test_broken false # the test above does not always work on julia 1.11+, depending on whether it runs in CI or not
-        f4() = apply!(s,tCNOT,[5,20])
+        f4() = apply!(s,[5,20],tCNOT)
         f4()
         allocated(f4)
         #@test allocated(f4) <= 3 # TODO lower it by making apply! more efficient
