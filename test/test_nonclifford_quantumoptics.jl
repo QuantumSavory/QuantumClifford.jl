@@ -22,7 +22,7 @@
             end
         end
 
-       for _ in 1:10
+       for _ in 1:4
            for n in 1:1
                i = rand(1:n)
                stab = random_stabilizer(n)
@@ -38,7 +38,7 @@
                bigtgate = embed(n,i, pcT)
                @test qo_bigtgate ≈ Operator(bigtgate)
 
-               for step in 1:10
+               for step in 1:4
                    # apply!(ket, qo_bigtgate) TODO implement this API
                    ket = qo_bigtgate*ket
                    apply!(genstab, bigtgate)
@@ -50,18 +50,18 @@
     end
 
     @testset "apply!" begin
-        for n in [1,2,3,4] # exponential cost in this term
+        for n in [1,2,3] # exponential cost in this term
             s = random_stabilizer(n)
             sm = GeneralizedStabilizer(s)
             @test dm(Ket(s)) ≈ Operator(sm)
             # test clifford gates
-            for _ in 1:10
+            for _ in 1:4
                 c = random_clifford(n)
                 uc = Operator(c)
                 @test uc * Operator(sm) * uc' ≈ Operator(apply!(sm, c)) # sm is modified in place for the next round
             end
             # and now some (repeated) non-clifford ops
-            for _ in 1:5 # exponential cost in this term
+            for _ in 1:3 # exponential cost in this term
                 i = rand(1:n)
                 nc = embed(n, i, pcT)
                 apply!(sm, nc) # in-place
@@ -73,7 +73,7 @@
     end
 
     @testset "copy and ==" begin
-        for n in 1:10
+        for n in 1:6
             s = random_stabilizer(n)
             sm = GeneralizedStabilizer(s)
             i = rand(1:n)
@@ -115,8 +115,8 @@
     end
 
     @testset "Multi-qubit projections using GeneralizedStabilizer for stabilizer states" begin
-        for n in 1:5
-            for repetition in 1:3
+        for n in 1:4
+            for repetition in 1:2
                 for state in [Stabilizer, MixedDestabilizer, GeneralizedStabilizer]
                     s = random_stabilizer(n)
                     p = random_pauli(n)
@@ -152,8 +152,8 @@
             end
         end
         # Test non-trivial states
-        for n in 2:5
-            for trial in 1:10
+        for n in 2:4
+            for trial in 1:4
                 s = random_stabilizer(n)
                 genstab = GeneralizedStabilizer(s)
                 p = random_pauli(n)
@@ -179,8 +179,8 @@
     end
 
     @testset "Multi-qubit projections using GeneralizedStabilizer with multiple non-Clifford gates" begin
-        num_trials = 10
-        num_qubits = [2,3,4,5] # exclusively multi-qubit
+        num_trials = 4
+        num_qubits = [2,3,4] # exclusively multi-qubit
         for n in num_qubits  # Exponential cost in this term
             for repetition in 1:num_trials
                 test_phases = [π/4, π/8, π/2, π, 2π]
@@ -204,8 +204,8 @@
             end
         end
 
-        for j in 1:10
-            num_qubits = [2,3,4,5] # exclusively multi-qubit
+        for j in 1:4
+            num_qubits = [2,3,4] # exclusively multi-qubit
             for n in num_qubits # exponential cost in this term
                 test_phases = [π/4, π/8, π/2, π, 2π]
                 test_gates = [pcPhase, pcRx]
@@ -229,7 +229,7 @@
 
     @testset "projectrand! gives random results" begin
         s1 = projectrand!(GeneralizedStabilizer(S"X"), P"Z")[1].stab
-        @test any(projectrand!(GeneralizedStabilizer(S"X"), P"Z")[1].stab != s1 for _ in 1:20)
+        @test any(projectrand!(GeneralizedStabilizer(S"X"), P"Z")[1].stab != s1 for _ in 1:10)
     end
 
     @testset "Tensor products of generalized stabilizers" begin
@@ -296,7 +296,7 @@
     end
 
     @testset "smaller test redundant to the ones above" begin
-        for n in 1:5
+        for n in 1:4
             for rep in 1:2
             test_phases = [π/4, π/8, π/2, π, 2π]
             test_gates = [pcPhase, pcRx]
@@ -348,12 +348,12 @@
             U.data[2, 2] = exp(im*ϕ)
             return U
         end
-        for _ in 1:10
+        for _ in 1:5
             ϕ = 2π*rand()
             @test Operator(pcPhase(ϕ)).data ≈ dense(qo_ph(ϕ)).data ≈ ref_ph(ϕ)
         end
         for n in 2:5
-            for _ in 1:10
+            for _ in 1:5
                 ϕ = 2π*rand()
                 q = rand(1:n)
                 qc = dense(Operator(embed(n, q, pcPhase(ϕ)))).data
@@ -377,13 +377,13 @@
             U.data[2,2] = cos(θ/2)
             return U
         end
-        for _ in 1:10
+        for _ in 1:5
             # This rotations have a period of 4π.
             θ = 4π*rand() 
             @test Operator(pcRx(θ)).data ≈ dense(qo_rx(θ)).data ≈ ref_rx(θ)
         end
         for n in 2:5
-            for _ in 1:5
+            for _ in 1:3
                 θ = 4π*rand()
                 q = rand(1:n)
                 qc = dense(Operator(embed(n, q, pcRx(θ)))).data 

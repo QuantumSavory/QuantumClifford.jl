@@ -27,7 +27,7 @@ end
 
 """A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`.
 
-`apply!(state, cliff, indices)` and `apply!(state, SparseGate(cliff, indices))` give the same result."""
+`apply!(state, indices, cliff)` and `apply!(state, SparseGate(cliff, indices))` give the same result."""
 struct SparseGate{T<:Tableau} <: AbstractCliffordOperator # TODO simplify type parameters (remove nesting)
     cliff::CliffordOperator{T}
     indices::Vector{Int}
@@ -46,7 +46,7 @@ function apply!(state::AbstractStabilizer, g::SparseGate; kwargs...)
     if m > nqubits(state)
         throw(ArgumentError(lazy"SparseGate was attempted on invalid qubit index $(m) when the state contains only $(nqubits(state)) qubits."))
     end
-    apply!(state, g.cliff, g.indices; kwargs...)
+    apply!(state, g.indices, g.cliff; kwargs...)
 end
 
 function LinearAlgebra.inv(g::SparseGate; phases=true)
@@ -182,7 +182,7 @@ function applywstatus!(s::AbstractQCState, v::VerifyOp) # XXX It assumes the oth
     canonicalize_rref!(sv, v.indices)
     sv = tab(sv)
     good_state = tab(v.good_state)
-    
+
     for i in eachindex(good_state)
         (sv.phases[end-i+1]==good_state.phases[end-i+1]) || return s, false_success_stat
         for (j,q) in zip(eachindex(good_state),v.indices)

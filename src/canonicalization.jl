@@ -222,9 +222,7 @@ function canonicalize_gott!(stabilizer::Stabilizer; phases::Bool=true, backtrack
     @valbooldispatch _canonicalize_gott!(stabilizer; phases=Val(phases), backtrack=Val(backtrack)) phases backtrack
 end
 function _canonicalize_gott!(stabilizer::Stabilizer; phases::Val{B}=Val(true), backtrack::Val{Bbacktrack}=Val(false)) where {B,Bbacktrack}
-    if Bbacktrack
-        canonops = CanonOp[]
-    end
+    canonops = CanonOp[]
     xzs = tab(stabilizer).xzs
     rows, columns = size(stabilizer)
     i = 1

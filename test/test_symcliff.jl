@@ -15,8 +15,8 @@
                 @test SingleQubitOperator(op)==SingleQubitOperator(op_cc, n)
                 op0_c = CliffordOperator(op0, n)
                 s = random_stabilizer(n)
-                @test apply!(copy(s),op)==apply!(copy(s),SingleQubitOperator(op))==apply!(copy(s),op_cc,[n])==apply!(copy(s),op_c)
-                @test ==(apply!(copy(s),op,phases=false),apply!(copy(s),op_cc,[n],phases=false), phases=false)
+                @test apply!(copy(s),op)==apply!(copy(s),SingleQubitOperator(op))==apply!(copy(s),[n],op_cc)==apply!(copy(s),op_c)
+                @test ==(apply!(copy(s),op,phases=false),apply!(copy(s),[n],op_cc,phases=false), phases=false)
                 @test apply!(copy(s),op0)==apply!(copy(s),op0_c)
             end
             i = n÷2+1
@@ -26,9 +26,9 @@
             n==1 && continue
             s = random_stabilizer(n)
             i1,i2 = randperm(n)[1:2]
-            @test apply!(copy(s),tCNOT,[i1,i2]) == apply!(copy(s),sCNOT(i1,i2))
-            @test apply!(copy(s),tSWAP,[i1,i2]) == apply!(copy(s),sSWAP(i1,i2))
-            @test apply!(copy(s),tCPHASE,[i1,i2]) == apply!(copy(s),sCPHASE(i1,i2))
+            @test apply!(copy(s),[i1,i2],tCNOT) == apply!(copy(s),sCNOT(i1,i2))
+            @test apply!(copy(s),[i1,i2],tSWAP) == apply!(copy(s),sSWAP(i1,i2))
+            @test apply!(copy(s),[i1,i2],tCPHASE) == apply!(copy(s),sCPHASE(i1,i2))
         end
         @test_throws DimensionMismatch SingleQubitOperator(tCNOT,1)
         @test_throws DimensionMismatch CliffordOperator(sHadamard(5),2)

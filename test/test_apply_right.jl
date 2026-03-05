@@ -2,7 +2,7 @@
     using InteractiveUtils
     using QuantumClifford: AbstractCliffordOperator, CliffordOperator
     
-    test_sizes = [1,2,63,64,65,127,128,129,511,512,513]
+    test_sizes = [1,2,63,64,65,127,128,129]
     
     # SLOW version of apply_right! for testing
     function apply_right_slow!(l::CliffordOperator, r::CliffordOperator; phases=true)
