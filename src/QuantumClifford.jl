@@ -585,6 +585,7 @@ end
 # Added a lot of type assertions to help Julia infer types
 function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false, backtrack=false) where {T}
     rows,n = size(stab)
+    canonops = CanonOp[]
     if backtrack
         stab, r, s, permx, permz, canonops = canonicalize_gott!(copy(stab), backtrack=true)
     else
