@@ -296,7 +296,7 @@ Based on [goodenough2024bipartiteentanglementnoisystabilizer](@cite)
 By deleting the qubits in the first output array from S', taking the [`normalizer`](@ref) of S', then
 deleting the qubits in the second returned array from the [`normalizer`](@ref) of S', S is reproduced.
 
-```jldoctest; filter = r" \\(empty range\\)"
+```jldoctest; filter = r" \(empty range\)"
 julia> matroid_parent(T"XX")[1]
 + X_X
 + XX_
