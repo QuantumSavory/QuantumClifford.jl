@@ -84,7 +84,7 @@ julia> import Hecke: group_algebra, GF, abelian_group, gens; import LinearAlgebr
 
 julia> l = 63; GA = group_algebra(GF(2), abelian_group(l)); x = gens(GA)[];
 
-julia> A = zeros(GA, 7, 7);
+julia> A = fill(zero(GA), 7, 7);
 
 julia> A[diagind(A)] .= x^27;
 

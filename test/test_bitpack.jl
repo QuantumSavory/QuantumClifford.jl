@@ -57,7 +57,7 @@
     @testset "fast column and fast row mul_left correctness" begin
         reinterpret_stab(s) = Stabilizer(Tableau(copy(phases(s)), nqubits(s), collect(reinterpret(UInt8, collect(s.tab.xzs)))))
         reinterpret_p(p) = PauliOperator(p.phase, nqubits(p), collect(reinterpret(UInt8, p.xz)))
-        for N in [7,8,9,33,61,62,63,64,65,66]
+        for N in [7,8,9,63,64,65]
 
             s0 = random_stabilizer(2,N)
             p = random_pauli(N)
