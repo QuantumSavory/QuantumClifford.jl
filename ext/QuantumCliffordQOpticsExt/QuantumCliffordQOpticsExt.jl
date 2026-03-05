@@ -156,7 +156,7 @@ end
 function cliff_to_unitary(cliff)
     n = nqubits(cliff)
     b = bell(n, localorder=true)
-    apply!(b, cliff, 1:n)
+    apply!(b, 1:n, cliff)
     ψ = Ket(b)
     Operator(SpinBasis(1//2)^n,reshape(ψ.data * sqrt(2)^n, (2^n,2^n)))
 end
