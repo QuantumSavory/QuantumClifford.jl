@@ -14,11 +14,11 @@ end
 
 # Implementations for Register
 function applynoise!(r::Register, n, i::Int)
-    apply!(quantumstate(r), n, i)
+    applynoise!(quantumstate(r), n, i)
     return r
 end
 function applynoise!(r::Register, n, indices::Base.AbstractVecOrTuple)
-    apply!(quantumstate(r), n, indices)
+    applynoise!(quantumstate(r), n, indices)
     return r
 end
 
