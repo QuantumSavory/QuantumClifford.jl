@@ -4,9 +4,8 @@ using QECCore
 using DocStringExtensions
 
 import Nemo
-import Nemo: GF, matrix, rank, transpose, finite_field, GF, polynomial_ring, evaluate,
-    FqFieldElem, FqPolyRingElem, degree, is_irreducible, gcd, derivative, matrix, inv,
-    is_zero, coeff, is_monic, one
+import Nemo: GF, gen, matrix, rank, transpose, polynomial_ring, evaluate, FqFieldElem,
+    FqPolyRingElem, degree, is_irreducible, gcd, derivative, inv, coeff, is_monic, one
 
 import QECCore: code_k, parity_matrix_x, parity_matrix_z, parity_matrix, generator_polynomial
 

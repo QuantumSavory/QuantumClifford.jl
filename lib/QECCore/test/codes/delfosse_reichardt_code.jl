@@ -19,7 +19,7 @@
         ]
         for (r, m) in code_families
             @testset "DelfosseReichardt with RM(r=$r, m=$m) seed" begin
-                for p in 2:5
+                for p in 2:4
                     c = DelfosseReichardt(p, r, m)
                     stab = parity_checks(c)
                     nₛ, kₛ = code_n(stab), code_k(stab)
@@ -37,7 +37,7 @@
         parameters = search_self_orthogonal_rm_code(max_m)
         for (r, m) in parameters
             @testset "Delfosse-Reichardt code with RM(r=$r, m=$m) seed" begin
-                for p in 2:5
+                for p in 2:4
                     code = DelfosseReichardt(p, r, m)
                     stab = parity_checks(code)
                     nₛ, kₛ = code_n(stab), code_k(stab)

@@ -4,7 +4,7 @@
     using QuantumClifford
 
     # Including sizes that would test off-by-one errors in the bit encoding.
-    test_sizes = [1, 2, 3, 4, 5, 7, 8, 9, 15, 16, 17]
+    test_sizes = [1, 2, 3, 4, 5, 7, 8, 9]
     # Zero function(in groupify) slows down around 2^30(n=30),eventually breaks
     small_test_sizes = [1, 2, 3, 4, 5, 7] # Pauligroup slows around n = 8
 

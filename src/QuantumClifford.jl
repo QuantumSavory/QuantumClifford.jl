@@ -585,6 +585,7 @@ end
 # Added a lot of type assertions to help Julia infer types
 function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false, backtrack=false) where {T}
     rows,n = size(stab)
+    canonops = CanonOp[]
     if backtrack
         stab, r, s, permx, permz, canonops = canonicalize_gott!(copy(stab), backtrack=true)
     else
@@ -1071,9 +1072,10 @@ end
 function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator; phases::Bool=true)
     @valbooldispatch _apply!(stab,op; phases=Val(phases)) phases
 end
-function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices; phases::Bool=true)
+function apply!(stab::AbstractStabilizer, indices::Base.AbstractVecOrTuple{Int}, op::AbstractCliffordOperator; phases::Bool=true)
     @valbooldispatch _apply!(stab,op,indices; phases=Val(phases)) phases
 end
+@deprecate apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices::Base.AbstractVecOrTuple{Int}; phases::Bool=true) apply!(stab, indices, op; phases=phases)
 
 # TODO no need to track phases outside of stabview
 function _apply!(stab::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
