@@ -169,7 +169,7 @@ function _circulant_matrix_from_quasi_cyclic_polynomial_matrix(H::MatSpaceElem, 
     r, n = size(H)
     H_bin = zero_matrix(F, r*l, n*l)
     for i in 1:r, j in 1:n
-        cfs = zeros(F, l)
+        cfs = fill(zero(F), l)
         for (k, c) in enumerate(coefficients(H[i,j]))
             cfs[k] = c
         end

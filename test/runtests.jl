@@ -6,6 +6,7 @@ ROCm_flag = false
 OpenCL_flag = false
 Oscar_flag = false
 Tesseract_flag = false
+JET_flag = false
 
 if Sys.iswindows() || Sys.ARCH != :x86_64
     @info "Skipping Oscar tests -- only supported x86_64 *NIX platforms."
@@ -36,6 +37,12 @@ else
     end
 end
 
+if get(ENV, "JET_TEST", "") == "true"
+    JET_flag = true
+else
+    @info "Skipping JET tests -- must be explicitly enabled."
+end
+
 using Pkg
 CUDA_flag && Pkg.add("CUDA")
 ROCm_flag && Pkg.add("AMDGPU")
@@ -43,15 +50,12 @@ OpenCL_flag && Pkg.add(["pocl_jll", "OpenCL"])
 if any((CUDA_flag, ROCm_flag, OpenCL_flag))
     Pkg.add(
         ["Adapt", "Atomix", "GPUArraysCore", "GPUArrays", "KernelAbstractions"]
-         )
+    )
 end
 Oscar_flag && Pkg.add("Oscar")
 Tesseract_flag && Pkg.add("PyTesseractDecoder")
-if get(ENV, "JET_TEST", "") == "true"
-    Pkg.add("JET")
-else
-    @info "Skipping JET tests -- must be explicitly enabled."
-end
+JET_flag && Pkg.add("JET")
+
 
 using TestItemRunner
 using QuantumClifford
@@ -60,7 +64,7 @@ using QuantumClifford
 testfilter = ti -> begin
     exclude = Symbol[]
 
-    if get(ENV, "JET_TEST", "") == "true"
+    if JET_flag
         return :jet in ti.tags
     else
         push!(exclude, :jet)
