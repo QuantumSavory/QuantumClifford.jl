@@ -23,7 +23,7 @@
     ENV["COLUMNS"] = 80
     DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford; using QuantumClifford.ECC); recursive=true)
     modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, extensions...]
-    doctestfilters = [r"(QuantumClifford\.|)", r" \(empty range\)"]
+    doctestfilters = [r"(QuantumClifford\.|)"]
     doctest(nothing, modules;
             doctestfilters
             #fix=true
