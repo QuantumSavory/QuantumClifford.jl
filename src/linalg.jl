@@ -248,7 +248,7 @@ function tensor(ops::Stabilizer...)
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops) # TODO why is this allocating (at least in 1.11)
     rtot = sum(length, ops)  # TODO why is this allocating (at least in 1.11)
-    tab = zero(Stabilizer, rtot, ntot)
+    tab = zero(typeof(first(ops)), rtot, ntot)
     last_row = 0
     last_col = 0
     for op in ops
