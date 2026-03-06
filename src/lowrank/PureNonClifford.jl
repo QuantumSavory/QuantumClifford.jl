@@ -6,8 +6,6 @@ using LinearAlgebra
 
 import ..QuantumClifford:
     AbstractOperation, AbstractCliffordOperator, AbstractNonCliffordOperator,
-    AbstractSingleQubitOperator, AbstractTwoQubitOperator,
-    AbstractSymbolicOperator,
 
     PauliOperator, Stabilizer, MixedDestabilizer,
 
@@ -16,13 +14,11 @@ import ..QuantumClifford:
 
     sHadamard, sPhase, sX, sCPHASE,
 
-    sMX, sMY, sMZ, sMRX, sMRY, sMRZ, PauliMeasurement,
-
-    SparseGate, CliffordOperator,
+    CliffordOperator,
 
     isclifford,
 
-    mctrajectory!, applywstatus!, continue_stat, CircuitStatus,
+    mctrajectory!,
 
     sT, sCCZ
 
@@ -568,6 +564,8 @@ mutable struct PureGeneralizedStabilizer
     delta_per_gate::Float64
     "Running product of gate extents ∏ⱼ ξ(Vⱼ)"
     total_extent::Float64
+    "Accumulated approximation error from non-Clifford gates"
+    accumulated_approximation_error::Float64
 end
 
 """
@@ -578,7 +576,7 @@ Create a `PureGeneralizedStabilizer` initialized to the |0⟩ⁿ state.
 function PureGeneralizedStabilizer(n_qubits::Int, delta_per_gate::Float64)
     n_qubits > 0 || throw(ArgumentError("Number of qubits must be positive, got $n_qubits"))
     initial_state = one(MixedDestabilizer, n_qubits)
-    PureGeneralizedStabilizer([initial_state], [ComplexF64(1.0)], delta_per_gate, 1.0)
+    PureGeneralizedStabilizer([initial_state], [ComplexF64(1.0)], delta_per_gate, 1.0, 0.0)
 end
 
 nqubits(s::PureGeneralizedStabilizer) = nqubits(s.states[1])
@@ -588,7 +586,8 @@ function Base.copy(s::PureGeneralizedStabilizer)
         [copy(st) for st in s.states],
         copy(s.coefficients),
         s.delta_per_gate,
-        s.total_extent
+        s.total_extent,
+        s.accumulated_approximation_error
     )
 end
 
@@ -598,34 +597,6 @@ $(SIGNATURES)
 Apply a Clifford operation to a `PureGeneralizedStabilizer` by applying it to each state.
 """
 function apply!(state::PureGeneralizedStabilizer, op::AbstractCliffordOperator)
-    for s in state.states
-        apply!(s, op)
-    end
-    state
-end
-
-function apply!(state::PureGeneralizedStabilizer, op::AbstractSingleQubitOperator)
-    for s in state.states
-        apply!(s, op)
-    end
-    state
-end
-
-function apply!(state::PureGeneralizedStabilizer, op::AbstractTwoQubitOperator)
-    for s in state.states
-        apply!(s, op)
-    end
-    state
-end
-
-function apply!(state::PureGeneralizedStabilizer, op::AbstractSymbolicOperator)
-    for s in state.states
-        apply!(s, op)
-    end
-    state
-end
-
-function apply!(state::PureGeneralizedStabilizer, op::SparseGate)
     for s in state.states
         apply!(s, op)
     end
@@ -665,11 +636,8 @@ function apply!(state::PureGeneralizedStabilizer, op::AbstractNonCliffordOperato
         expanded_coefficients, expanded_states, state.delta_per_gate)
     state.states = sparse_result.states
     state.coefficients = sparse_result.coefficients
+    state.accumulated_approximation_error += state.delta_per_gate
     state
-end
-
-function applywstatus!(state::PureGeneralizedStabilizer, op::AbstractOperation)
-    apply!(state, op), continue_stat
 end
 
 """
@@ -1090,7 +1058,7 @@ function lrtrajectories(circuit::AbstractVector{<:AbstractOperation},
     return LRTrajectoryResults(
         measurements,
         length(state.states),
-        delta,
+        state.accumulated_approximation_error,
         state.total_extent,
         n_qubits,
         total_runtime

@@ -11,7 +11,7 @@
 
         result = lrtrajectories(circuit_clifford, 2; trajectories=50, delta=0.1, verbose=false)
         @test result.simulation_cost == 1
-        @test result.approximation_error ≈ 0.1
+        @test result.approximation_error == 0.0
         @test size(lrmeasurements(result), 1) == 50
     end
 
