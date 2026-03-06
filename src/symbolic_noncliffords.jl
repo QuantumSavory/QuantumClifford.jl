@@ -1,30 +1,3 @@
-"""
-$(SIGNATURES)
-
-Return the stabilizer extent ξ(op) for a gate.
-For Clifford gates, ξ = 1. Users can extend for custom non-Clifford gates.
-
-The extent determines simulation cost: total cost scales as ∏ⱼ ξ(Vⱼ).
-
-From Proposition 2 of [bravyi2019simulation](@cite): For Clifford magic states, ξ(ψ) = F(ψ)⁻¹
-where F(ψ) = max_φ |⟨φ|ψ⟩|² is the stabilizer fidelity.
-
-# Examples
-```jldoctest
-julia> stabilizer_extent(sHadamard(1))
-1.0
-
-julia> round(stabilizer_extent(sT(1)), digits=3)
-1.172
-
-julia> stabilizer_extent(sCCZ(1,2,3)) ≈ 16/9
-true
-```
-"""
-function stabilizer_extent end
-
-stabilizer_extent(op::AbstractOperation) = isclifford(op) ? 1.0 : error("stabilizer_extent not defined for $(typeof(op)). Please define a method.")
-
 # TODO: implement apply!(::GeneralizedStabilizer, ::sT)
 """
 $(TYPEDEF)
@@ -59,9 +32,6 @@ end
 
 nqubits(::sT) = 1
 isclifford(::sT) = false
-
-const _T_EXTENT = (cos(π/8) + tan(π/8) * sin(π/8))^2
-stabilizer_extent(::sT) = _T_EXTENT
 
 # TODO: implement apply!(::GeneralizedStabilizer, ::sCCZ)
 """
@@ -100,10 +70,3 @@ sCCZ(qubits::Vector{Int}) = sCCZ(qubits[1], qubits[2], qubits[3])
 
 nqubits(::sCCZ) = 3
 isclifford(::sCCZ) = false
-
-const _CCZ_EXTENT = 16.0 / 9.0
-stabilizer_extent(::sCCZ) = _CCZ_EXTENT
-
-# Deprecated aliases
-@deprecate TGate(args...) sT(args...)
-@deprecate CCZGate(args...) sCCZ(args...)

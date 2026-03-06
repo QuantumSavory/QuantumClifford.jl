@@ -96,7 +96,7 @@ export
     GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase, pcRx,
     # Non-Clifford simulation - low-rank stabilizer decomposition
     # TODO: export PureGeneralizedStabilizer
-    sT, sCCZ, TGate, CCZGate,
+    sT, sCCZ,
     lrtrajectories, lrstate, lrmeasurements, lrcost,
     LRTrajectoryResults,
     isclifford, stabilizer_extent,
