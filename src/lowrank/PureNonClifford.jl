@@ -8,74 +8,33 @@ import ..QuantumClifford:
     AbstractOperation, AbstractCliffordOperator,
     AbstractSingleQubitOperator, AbstractTwoQubitOperator,
     AbstractSymbolicOperator,
-    
+
     PauliOperator, Stabilizer, MixedDestabilizer,
-    
+
     apply!, nqubits, stabilizerview, destabilizerview, rank,
     zero, comm,
-    
+
     sHadamard, sPhase, sX, sCPHASE,
-    
+
     sMX, sMY, sMZ, sMRX, sMRY, sMRZ, PauliMeasurement,
-    
-    SparseGate, CliffordOperator
+
+    SparseGate, CliffordOperator,
+
+    isclifford
 
 using DocStringExtensions
 
 export
     TGate, CCZGate,
     LRTrajectoryResults,
-    
+
     lrtrajectories,
     lrstate,
     lrmeasurements,
     lrcost,
-    
+
     isclifford,
     stabilizer_extent
-
-"""
-$(SIGNATURES)
-
-Trait function to determine if an operation is a Clifford gate.
-Users can extend this for custom gate types by defining new methods.
-
-# Examples
-```jldoctest
-julia> isclifford(sHadamard(1))
-true
-
-julia> isclifford(sPhase(1))
-true
-
-julia> isclifford(sCNOT(1,2))
-true
-
-julia> isclifford(TGate(1))
-false
-
-julia> isclifford(CCZGate(1,2,3))
-false
-```
-"""
-function isclifford end
-
-isclifford(::AbstractCliffordOperator) = true
-isclifford(::AbstractSingleQubitOperator) = true
-isclifford(::AbstractTwoQubitOperator) = true
-isclifford(::AbstractSymbolicOperator) = true
-
-isclifford(::sMX) = true
-isclifford(::sMY) = true
-isclifford(::sMZ) = true
-isclifford(::sMRX) = true
-isclifford(::sMRY) = true
-isclifford(::sMRZ) = true
-isclifford(::PauliMeasurement) = true
-
-isclifford(op::SparseGate) = isclifford(op.cliff)
-
-isclifford(::AbstractOperation) = false
 
 """
 $(SIGNATURES)

@@ -1445,6 +1445,7 @@ include("tableau_show.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
+include("isclifford.jl")
 include("lowrank/PauliChannelNonClifford.jl")
 include("lowrank/PureNonClifford.jl")
 using .PauliChannelNonClifford
