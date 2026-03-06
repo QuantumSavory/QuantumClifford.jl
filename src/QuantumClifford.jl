@@ -129,6 +129,7 @@ include("macrotools.jl")
 
 abstract type AbstractOperation end
 abstract type AbstractCliffordOperator <: AbstractOperation end
+abstract type AbstractNonCliffordOperator <: AbstractOperation end
 
 include("pauli_operator.jl")
 
@@ -1442,11 +1443,11 @@ using .GraphSim
 include("entanglement.jl")
 #
 include("tableau_show.jl")
+include("isclifford.jl")
+include("symbolic_noncliffords.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
-include("isclifford.jl")
-include("symbolic_noncliffords.jl")
 include("lowrank/PauliChannelNonClifford.jl")
 include("lowrank/PureNonClifford.jl")
 using .PauliChannelNonClifford

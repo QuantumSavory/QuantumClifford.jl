@@ -20,7 +20,7 @@ julia> size(lrmeasurements(result))
 (100, 1)
 ```
 """
-struct sT <: AbstractOperation
+struct sT <: AbstractNonCliffordOperator
     "Target qubit index (1-indexed)"
     qubit::Int
 
@@ -31,7 +31,6 @@ struct sT <: AbstractOperation
 end
 
 nqubits(::sT) = 1
-isclifford(::sT) = false
 
 # TODO: implement apply!(::GeneralizedStabilizer, ::sCCZ)
 """
@@ -55,7 +54,7 @@ julia> size(lrmeasurements(result))
 (100, 3)
 ```
 """
-struct sCCZ <: AbstractOperation
+struct sCCZ <: AbstractNonCliffordOperator
     "Target qubit indices (sorted, 1-indexed)"
     qubits::NTuple{3, Int}
 
@@ -69,4 +68,3 @@ end
 sCCZ(qubits::Vector{Int}) = sCCZ(qubits[1], qubits[2], qubits[3])
 
 nqubits(::sCCZ) = 3
-isclifford(::sCCZ) = false

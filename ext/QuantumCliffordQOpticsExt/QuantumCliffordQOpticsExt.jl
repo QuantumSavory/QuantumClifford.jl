@@ -87,7 +87,7 @@ global phases, which can cause incorrect interference for multi-term superpositi
 A proper implementation would need to track relative phases between stabilizer states.
 """
 function Ket(state::PureGeneralizedStabilizer)
-    return sum(c * Ket(s) for (c, s) in zip(state.coefficients, state.stabilizer_states))
+    return sum(c * Ket(Stabilizer(stabilizerview(s))) for (c, s) in zip(state.coefficients, state.states))
 end
 
 """

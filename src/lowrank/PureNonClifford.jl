@@ -5,7 +5,7 @@ using Statistics
 using LinearAlgebra
 
 import ..QuantumClifford:
-    AbstractOperation, AbstractCliffordOperator,
+    AbstractOperation, AbstractCliffordOperator, AbstractNonCliffordOperator,
     AbstractSingleQubitOperator, AbstractTwoQubitOperator,
     AbstractSymbolicOperator,
 
@@ -21,6 +21,8 @@ import ..QuantumClifford:
     SparseGate, CliffordOperator,
 
     isclifford,
+
+    mctrajectory!, applywstatus!, continue_stat, CircuitStatus,
 
     sT, sCCZ
 
@@ -71,97 +73,6 @@ stabilizer_extent(::sT) = _T_EXTENT
 
 const _CCZ_EXTENT = 16.0 / 9.0
 stabilizer_extent(::sCCZ) = _CCZ_EXTENT
-
-"""
-$(TYPEDEF)
-
-Result of applying Sparsification Lemma (Lemma 6) from Section 5.2 of [bravyi2019simulation](@cite).
-Represents |Ω⟩ = (||c||₁/k) Σₐ₌₁ᵏ |ωₐ⟩ that approximates |ψ⟩ = Σⱼ cⱼ|φⱼ⟩.
-
-$(TYPEDFIELDS)
-"""
-struct SparsifiedDecomposition
-    "Sampled stabilizer states |ωₐ⟩"
-    states::Vector{Stabilizer}
-    "Corresponding coefficients"
-    coefficients::Vector{ComplexF64}
-    "Number of terms in sparse approximation"
-    k::Int
-    "||c||₁ of original decomposition"
-    original_l1_norm::Float64
-    "Target δ parameter"
-    approximation_error_bound::Float64
-    "E[||Ω||²] = 1 + ||c||₁²/k"
-    expected_norm_bound::Float64
-    
-    function SparsifiedDecomposition(states, coeffs, k, l1_norm, delta)
-        length(states) == length(coeffs) == k || throw(DimensionMismatch(
-            "Inconsistent array lengths: states=$(length(states)), coeffs=$(length(coeffs)), k=$k"))
-        expected_norm = 1.0 + l1_norm^2 / k
-        new(states, coeffs, k, l1_norm, delta, expected_norm)
-    end
-end
-
-"""
-$(SIGNATURES)
-
-Implements Sparsification Lemma (Lemma 6) from Section 5.2 of [bravyi2019simulation](@cite).
-
-Given |ψ⟩ = Σⱼ cⱼ|φⱼ⟩ with L1 norm ||c||₁, constructs random state 
-|Ω⟩ = (||c||₁/k) Σₐ₌₁ᵏ |ωₐ⟩ where each |ωₐ⟩ is sampled from {|φⱼ⟩} 
-with probability |cⱼ|/||c||₁.
-
-The approximation satisfies E[||ψ - Ω||²] = ||c||₁²/k ≤ δ² for k ≥ ||c||₁²/δ².
-
-# Arguments
-- `coefficients::Vector{ComplexF64}`: Coefficients cⱼ in decomposition
-- `states::Vector{<:Stabilizer}`: Stabilizer states |φⱼ⟩
-- `delta::Float64`: Target approximation error (must be positive)
-- `rng::AbstractRNG`: Random number generator (default: global RNG)
-
-# Returns
-`SparsifiedDecomposition` containing the sparse approximation.
-
-# Mathematical Guarantee (Theorem 1)
-For the returned sparse state: χ_δ(ψ) ≤ 1 + ||c||₁²/δ²
-"""
-function sparsify_stabilizer_decomposition(coefficients::Vector{ComplexF64}, 
-                                          states::Vector{<:Stabilizer}, 
-                                          delta::Float64;
-                                          rng::AbstractRNG=Random.GLOBAL_RNG)
-    
-    length(coefficients) == length(states) || throw(DimensionMismatch(
-        "Coefficients and states must have same length: $(length(coefficients)) vs $(length(states))"))
-    delta > 0 || throw(ArgumentError("Approximation error δ must be positive, got $delta"))
-    
-    l1_norm = sum(abs.(coefficients))
-    l1_norm > 0 || throw(ArgumentError("All coefficients are zero - no valid decomposition"))
-    
-    k = max(1, ceil(Int, l1_norm^2 / delta^2))
-    
-    abs_coeffs = abs.(coefficients)
-    probabilities = abs_coeffs / l1_norm
-    cumulative_probs = cumsum(probabilities)
-    
-    sampled_states = Vector{Stabilizer}()
-    sampled_coefficients = ComplexF64[]
-    
-    uniform_weight = l1_norm / k
-    
-    for i in 1:k
-        r = rand(rng)
-        selected_idx = findfirst(p -> p >= r, cumulative_probs)
-        if selected_idx === nothing
-            selected_idx = length(states)
-        end
-        
-        phase_factor = coefficients[selected_idx] / abs_coeffs[selected_idx]
-        push!(sampled_states, copy(states[selected_idx]))
-        push!(sampled_coefficients, phase_factor * uniform_weight)
-    end
-    
-    return SparsifiedDecomposition(sampled_states, sampled_coefficients, k, l1_norm, delta)
-end
 
 """
 $(SIGNATURES)
@@ -239,27 +150,6 @@ function sparsify_mixed_destabilizer_decomposition(
         coefficients = sampled_coefficients,
         k = k,
         l1_norm = l1_norm
-    )
-end
-
-"""
-$(SIGNATURES)
-
-Estimate quality bounds from Lemma 7 (Sparsification tail bound) of [bravyi2019simulation](@cite).
-
-# Returns
-Named tuple with:
-- `k`: Number of sparse terms
-- `expected_error`: E[||ψ - Ω||²] = ||c||₁²/k
-- `error_bound`: Target δ parameter
-- `expected_norm`: E[||Ω||²] = 1 + ||c||₁²/k
-"""
-function estimate_sparsification_quality(sparse::SparsifiedDecomposition)
-    return (
-        k = sparse.k,
-        expected_error = sparse.original_l1_norm^2 / sparse.k,
-        error_bound = sparse.approximation_error_bound,
-        expected_norm = sparse.expected_norm_bound
     )
 end
 
@@ -662,42 +552,124 @@ Pure state represented as a weighted sum of stabilizer states:
 
 where:
 - `cₐ` are stored in `coefficients`
-- `|φₐ⟩` are stored in `stabilizer_states`
-- The number of terms k = `num_terms`
+- `|φₐ⟩` are stored in `states` (as `MixedDestabilizer`)
 
-Similar to `GeneralizedStabilizer` but restricted to pure states. This is the 
+Similar to `GeneralizedStabilizer` but restricted to pure states. This is the
 internal representation used by the low-rank simulation method from [bravyi2019simulation](@cite).
 
 $(TYPEDFIELDS)
 """
-struct PureGeneralizedStabilizer
-    "Stabilizer states |φₐ⟩ in the decomposition"
-    stabilizer_states::Vector{Stabilizer}
+mutable struct PureGeneralizedStabilizer
+    "MixedDestabilizer states |φₐ⟩ in the decomposition"
+    states::Vector{MixedDestabilizer}
     "Coefficients cₐ for each stabilizer state"
     coefficients::Vector{ComplexF64}
-    "Number of stabilizer terms (k)"
-    num_terms::Int
-    "Approximation error δ used during sparsification"
-    approximation_error::Float64
-    "Total extent ∏ⱼ ξ(Vⱼ) of non-Clifford gates"
+    "Per-gate approximation error budget δᵢ"
+    delta_per_gate::Float64
+    "Running product of gate extents ∏ⱼ ξ(Vⱼ)"
     total_extent::Float64
 end
 
 """
 $(SIGNATURES)
 
-Creates proper |0ⁿ⟩ state stabilized by Z₁, Z₂, ..., Zₙ.
-Used as initial state for Sum-over-Cliffords method.
+Create a `PureGeneralizedStabilizer` initialized to the |0⟩ⁿ state.
 """
-function create_computational_zero_state(n_qubits::Int)
+function PureGeneralizedStabilizer(n_qubits::Int, delta_per_gate::Float64)
     n_qubits > 0 || throw(ArgumentError("Number of qubits must be positive, got $n_qubits"))
-    
-    z_operators = [zero(PauliOperator, n_qubits) for _ in 1:n_qubits]
-    for i in 1:n_qubits
-        z_operators[i][i] = (false, true)
+    initial_state = one(MixedDestabilizer, n_qubits)
+    PureGeneralizedStabilizer([initial_state], [ComplexF64(1.0)], delta_per_gate, 1.0)
+end
+
+nqubits(s::PureGeneralizedStabilizer) = nqubits(s.states[1])
+
+function Base.copy(s::PureGeneralizedStabilizer)
+    PureGeneralizedStabilizer(
+        [copy(st) for st in s.states],
+        copy(s.coefficients),
+        s.delta_per_gate,
+        s.total_extent
+    )
+end
+
+"""
+$(SIGNATURES)
+
+Apply a Clifford operation to a `PureGeneralizedStabilizer` by applying it to each state.
+"""
+function apply!(state::PureGeneralizedStabilizer, op::AbstractCliffordOperator)
+    for s in state.states
+        apply!(s, op)
     end
-    
-    return MixedDestabilizer(Stabilizer(z_operators))
+    state
+end
+
+function apply!(state::PureGeneralizedStabilizer, op::AbstractSingleQubitOperator)
+    for s in state.states
+        apply!(s, op)
+    end
+    state
+end
+
+function apply!(state::PureGeneralizedStabilizer, op::AbstractTwoQubitOperator)
+    for s in state.states
+        apply!(s, op)
+    end
+    state
+end
+
+function apply!(state::PureGeneralizedStabilizer, op::AbstractSymbolicOperator)
+    for s in state.states
+        apply!(s, op)
+    end
+    state
+end
+
+function apply!(state::PureGeneralizedStabilizer, op::SparseGate)
+    for s in state.states
+        apply!(s, op)
+    end
+    state
+end
+
+"""
+$(SIGNATURES)
+
+Apply a non-Clifford operation to a `PureGeneralizedStabilizer` by expanding the
+sum-over-Cliffords decomposition and then sparsifying.
+"""
+function apply!(state::PureGeneralizedStabilizer, op::AbstractNonCliffordOperator)
+    gate_decomp = get_gate_decomposition(op)
+    state.total_extent *= stabilizer_extent(op)
+
+    num_decomp_terms = length(gate_decomp.coefficients)
+    current_k = length(state.states)
+
+    expanded_states = Vector{MixedDestabilizer}()
+    expanded_coefficients = Vector{ComplexF64}()
+    sizehint!(expanded_states, current_k * num_decomp_terms)
+    sizehint!(expanded_coefficients, current_k * num_decomp_terms)
+
+    for (s, c) in zip(state.states, state.coefficients)
+        for (gc, ops) in zip(gate_decomp.coefficients, gate_decomp.clifford_operations)
+            new_s = copy(s)
+            for cliff_op in ops
+                apply!(new_s, cliff_op)
+            end
+            push!(expanded_states, new_s)
+            push!(expanded_coefficients, c * gc)
+        end
+    end
+
+    sparse_result = sparsify_mixed_destabilizer_decomposition(
+        expanded_coefficients, expanded_states, state.delta_per_gate)
+    state.states = sparse_result.states
+    state.coefficients = sparse_result.coefficients
+    state
+end
+
+function applywstatus!(state::PureGeneralizedStabilizer, op::AbstractOperation)
+    apply!(state, op), continue_stat
 end
 
 """
@@ -753,205 +725,6 @@ function compute_amplitude(states::Vector{<:Stabilizer},
     end
     
     return amplitude
-end
-
-# TODO: Future improvement - refactor to use mctrajectory! infrastructure:
-#   mctrajectory!(initial_state, circuit) which internally dispatches to apply!(initial_state, gate).
-# We would just need to implement: apply!(::PureGeneralizedStabilizer, ::T) where isclifford(T)!=true
-"""
-$(SIGNATURES)
-
-Incremental Sum-over-Cliffords simulation with per-gate sparsification.
-
-This prevents exponential memory blowup by applying the Sparsification Lemma (Lemma 6) 
-after each non-Clifford gate, rather than building the full 2^m decomposition first.
-
-# Algorithm (Section 2.3.2 + Section 5.2 of [bravyi2019simulation](@cite))
-For each gate in circuit:
-1. If Clifford: apply to all current stabilizer states in-place
-2. If non-Clifford:
-   a. Get gate decomposition U = Σⱼ cⱼKⱼ (e.g., T = c₁I + c₂S)
-   b. Expand: each current state |φₐ⟩ becomes {Kⱼ|φₐ⟩} with coefficients multiplied
-   c. Sparsify immediately using Lemma 6 with per-gate error budget δᵢ
-
-# Error Budget Management
-Total approximation error δ is distributed as δᵢ = δ/m per gate, where m is
-the number of non-Clifford gates. By triangle inequality on L2 norms:
-  ||ψ_exact - ψ_approx|| ≤ Σᵢ δᵢ = δ
-
-# Complexity Analysis
-- Memory: O(k_max × n) where k_max = max over gates of (||c||₁²/δᵢ²)
-  For T-gates: k_max ≈ ξ(T)^(gates_so_far) / δᵢ² 
-- Time: O(m × k² × decomp_size × n³) for gate application and inner products
-- Contrast with non-incremental: would require O(2^m × n) memory
-
-# Mathematical Guarantees
-- L1 norm preserved through sparsification (by construction of Lemma 6)
-- After m gates: ||c||₁ = √(ξ₁ × ξ₂ × ... × ξₘ) = √(total_extent)
-- Final k ≤ 1 + total_extent/δ² (matches Theorem 1)
-
-# Arguments
-- `circuit::Vector{<:AbstractOperation}`: Quantum circuit to simulate
-- `n_qubits::Int`: Number of qubits
-- `delta::Float64`: Total approximation error bound
-- `verbose::Bool=false`: Print progress information
-- `rng::AbstractRNG=Random.GLOBAL_RNG`: Random number generator for sparsification
-
-# Returns
-`PureGeneralizedStabilizer` containing sparse stabilizer decomposition ready for sampling.
-"""
-function simulate_sum_over_cliffords(
-    circuit::Vector{<:AbstractOperation}, 
-    n_qubits::Int, 
-    delta::Float64;
-    verbose::Bool=false,
-    rng::AbstractRNG=Random.GLOBAL_RNG)
-    
-    delta > 0 || throw(ArgumentError("Approximation error δ must be positive, got $delta"))
-    n_qubits > 0 || throw(ArgumentError("Number of qubits must be positive, got $n_qubits"))
-    
-    non_clifford_count = count(op -> !isclifford(op), circuit)
-    
-    if non_clifford_count == 0
-        if verbose
-            @info "Pure Clifford circuit detected"
-        end
-        return simulate_pure_clifford_circuit(circuit, n_qubits, delta)
-    end
-    
-    delta_per_gate = delta / non_clifford_count
-    
-    if verbose
-        @info "Incremental Sum-over-Cliffords simulation"
-        @info "  Non-Clifford gates: $non_clifford_count"
-        @info "  Per-gate error budget: δᵢ = $(round(delta_per_gate, digits=6))"
-    end
-    
-    initial_state = create_computational_zero_state(n_qubits)
-    current_states = [initial_state]
-    current_coefficients = [ComplexF64(1.0)]
-    
-    total_extent = 1.0
-    non_clifford_idx = 0
-    max_terms_seen = 1
-    
-    for (op_idx, op) in enumerate(circuit)
-        if isclifford(op)
-            for state in current_states
-                apply!(state, op)
-            end
-        else
-            non_clifford_idx += 1
-            gate_decomp = get_gate_decomposition(op)
-            gate_extent = stabilizer_extent(op)
-            total_extent *= gate_extent
-            num_decomp_terms = length(gate_decomp.coefficients)
-            
-            current_k = length(current_states)
-            
-            if verbose
-                @info "Processing non-Clifford gate $non_clifford_idx/$non_clifford_count"
-                @info "  Gate: $(typeof(op)), extent ξ = $(round(gate_extent, digits=4))"
-                @info "  Decomposition terms: $num_decomp_terms"
-                @info "  Current states before expansion: $current_k"
-            end
-            
-            expanded_states = Vector{MixedDestabilizer}()
-            expanded_coefficients = Vector{ComplexF64}()
-            
-            expected_size = current_k * num_decomp_terms
-            sizehint!(expanded_states, expected_size)
-            sizehint!(expanded_coefficients, expected_size)
-            
-            for (state, coeff) in zip(current_states, current_coefficients)
-                for (gate_coeff, clifford_ops) in zip(gate_decomp.coefficients,
-                                                       gate_decomp.clifford_operations)
-                    new_state = copy(state)
-                    for cliff_op in clifford_ops
-                        apply!(new_state, cliff_op)
-                    end
-                    push!(expanded_states, new_state)
-                    push!(expanded_coefficients, coeff * gate_coeff)
-                end
-            end
-            
-            expanded_count = length(expanded_states)
-            max_terms_seen = max(max_terms_seen, expanded_count)
-            
-            if verbose
-                @info "  States after expansion: $expanded_count"
-                l1_before = sum(abs, expanded_coefficients)
-                @info "  L1 norm: $(round(l1_before, digits=4))"
-            end
-            
-            sparse_result = sparsify_mixed_destabilizer_decomposition(
-                expanded_coefficients, expanded_states, delta_per_gate; rng=rng)
-            
-            current_states = sparse_result.states
-            current_coefficients = sparse_result.coefficients
-            
-            if verbose
-                @info "  States after sparsification: $(sparse_result.k)"
-                @info "  Sparsification reduced by factor: $(round(expanded_count / sparse_result.k, digits=2))x"
-            end
-        end
-    end
-    
-    if verbose
-        @info "Simulation complete"
-        @info "  Final number of states: $(length(current_states))"
-        @info "  Maximum states during simulation: $max_terms_seen"
-        @info "  Total extent ∏ξᵢ: $(round(total_extent, digits=4))"
-        @info "  Expected final k bound: $(ceil(Int, 1 + total_extent/delta^2))"
-    end
-    
-    final_stabilizer_states = Vector{Stabilizer}(undef, length(current_states))
-    for (i, state) in enumerate(current_states)
-        final_stabilizer_states[i] = Stabilizer(stabilizerview(state))
-    end
-    
-    return PureGeneralizedStabilizer(
-        final_stabilizer_states,
-        current_coefficients,
-        length(final_stabilizer_states),
-        delta,
-        total_extent
-    )
-end
-
-"""
-$(SIGNATURES)
-
-Handle pure Clifford circuits exactly (no approximation needed).
-Returns a trivial PureGeneralizedStabilizer with single stabilizer state.
-"""
-function simulate_pure_clifford_circuit(circuit::AbstractVector{<:AbstractOperation}, 
-                                       n_qubits::Int, 
-                                       delta::Float64)
-    state = create_computational_zero_state(n_qubits)
-    
-    for op in circuit
-        try
-            apply!(state, op)
-        catch e
-            @error "Failed to apply Clifford operation $op: $e"
-            rethrow(e)
-        end
-    end
-    
-    if rank(state) != n_qubits
-        throw(ErrorException(
-            "Circuit produced mixed state (rank=$(rank(state))) from pure input - not a valid Clifford circuit"))
-    end
-    
-    final_state = Stabilizer(stabilizerview(state))
-    
-    if size(final_state, 1) != n_qubits
-        throw(ErrorException(
-            "Internal error: stabilizer has $(size(final_state, 1)) generators, expected $n_qubits"))
-    end
-    
-    return PureGeneralizedStabilizer([final_state], [ComplexF64(1.0)], 1, 0.0, 1.0)
 end
 
 """
@@ -1060,12 +833,13 @@ function sample_measurement_outcomes(state::PureGeneralizedStabilizer,
                                     verbose::Bool=false)
     
     n_samples > 0 || throw(ArgumentError("Number of samples must be positive, got $n_samples"))
-    length(state.stabilizer_states) > 0 || throw(ArgumentError("State must contain at least one stabilizer state"))
-    
-    n_qubits = nqubits(state.stabilizer_states[1])
-    
+    length(state.states) > 0 || throw(ArgumentError("State must contain at least one stabilizer state"))
+
+    stab_states = [Stabilizer(stabilizerview(s)) for s in state.states]
+    n_qubits = nqubits(stab_states[1])
+
     if burn_in == 0
-        circuit_depth_proxy = log2(max(1, state.num_terms))
+        circuit_depth_proxy = log2(max(1, length(state.states)))
         burn_in = ceil(Int, 10 * n_qubits * (1 + circuit_depth_proxy / 10))
         if verbose
             @info "Auto-tuned burn-in: $burn_in steps"
@@ -1073,9 +847,9 @@ function sample_measurement_outcomes(state::PureGeneralizedStabilizer,
     end
     
     if verbose
-        @info "Initializing Metropolis sampler with $(length(state.stabilizer_states)) stabilizer states..."
+        @info "Initializing Metropolis sampler with $(length(stab_states)) stabilizer states..."
     end
-    metro = initialize_metropolis(state.stabilizer_states, state.coefficients)
+    metro = initialize_metropolis(stab_states, state.coefficients)
     
     if verbose
         @info "Burn-in: $burn_in steps..."
@@ -1294,7 +1068,7 @@ function lrtrajectories(circuit::AbstractVector{<:AbstractOperation};
                         trajectories::Int=1000,
                         delta::Float64=0.1,
                         verbose::Bool=false)
-    
+
     n_qubits = infer_circuit_nqubits(circuit)
     return lrtrajectories(circuit, n_qubits; trajectories, delta, verbose)
 end
@@ -1304,67 +1078,34 @@ function lrtrajectories(circuit::AbstractVector{<:AbstractOperation},
                         trajectories::Int=1000,
                         delta::Float64=0.1,
                         verbose::Bool=false)
-    
+
     validate_simulation_parameters(circuit, n_qubits, trajectories, delta)
-    
+
     start_time = time()
-    
-    if verbose
-        @info "Starting low-rank stabilizer simulation"
-        @info "  Qubits: $n_qubits"
-        @info "  Gates: $(length(circuit))"
-        @info "  Trajectories: $trajectories"
-        @info "  δ: $delta"
-    end
-    
-    circuit_vec = collect(AbstractOperation, circuit)
-    
-    try
-        if verbose
-            @info "Step 1/2: Computing sum-over-Cliffords decomposition..."
-        end
-        state = simulate_sum_over_cliffords(circuit_vec, n_qubits, delta; verbose)
-        
-        if verbose
-            @info "Decomposition complete: $(state.num_terms) sparse terms"
-            @info "Total extent: $(state.total_extent)"
-        end
-        
-        if verbose
-            @info "Step 2/2: Sampling measurement outcomes..."
-        end
-        measurements = sample_measurement_outcomes(state, trajectories; verbose)
-        
-        total_runtime = time() - start_time
-        
-        if verbose
-            @info "Simulation completed in $(round(total_runtime, digits=2)) seconds"
-        end
-        
-        return LRTrajectoryResults(
-            measurements,
-            state.num_terms,
-            state.approximation_error,
-            state.total_extent,
-            n_qubits,
-            total_runtime
-        )
-        
-    catch e
-        @error "Simulation failed: $e"
-        rethrow(e)
-    end
+
+    state = _lrstate(circuit, n_qubits, delta)
+    measurements = sample_measurement_outcomes(state, trajectories; verbose)
+    total_runtime = time() - start_time
+
+    return LRTrajectoryResults(
+        measurements,
+        length(state.states),
+        delta,
+        state.total_extent,
+        n_qubits,
+        total_runtime
+    )
 end
 
 function lrtrajectories(circuit::AbstractVector, n_qubits::Int; kwargs...)
     isempty(circuit) && throw(ArgumentError("Circuit cannot be empty"))
-    
+
     for (i, op) in enumerate(circuit)
         if !(op isa AbstractOperation)
             throw(ArgumentError("Element $i is not an AbstractOperation: got $(typeof(op))"))
         end
     end
-    
+
     typed_circuit = AbstractOperation[op for op in circuit]
     return lrtrajectories(typed_circuit, n_qubits; kwargs...)
 end
@@ -1410,8 +1151,21 @@ function lrstate(circuit::AbstractVector{<:AbstractOperation},
                  n_qubits::Int;
                  delta::Float64=0.1,
                  verbose::Bool=false)
-    circuit_vec = collect(AbstractOperation, circuit)
-    return simulate_sum_over_cliffords(circuit_vec, n_qubits, delta; verbose)
+    return _lrstate(circuit, n_qubits, delta)
+end
+
+"""
+$(SIGNATURES)
+
+Internal helper: create PureGeneralizedStabilizer and run circuit via mctrajectory!.
+"""
+function _lrstate(circuit::AbstractVector{<:AbstractOperation}, n_qubits::Int, delta::Float64)
+    non_clifford_count = count(op -> !isclifford(op), circuit)
+    delta_per_gate = non_clifford_count > 0 ? delta / non_clifford_count : delta
+
+    state = PureGeneralizedStabilizer(n_qubits, delta_per_gate)
+    mctrajectory!(state, circuit)
+    state
 end
 
 """
