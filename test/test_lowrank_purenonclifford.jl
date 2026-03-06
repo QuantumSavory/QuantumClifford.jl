@@ -3,8 +3,7 @@
     using QuantumClifford.PureNonClifford
     import QuantumClifford.PureNonClifford:
         get_gate_decomposition,
-        CliffordGateDecompositionCache,
-        PureGeneralizedStabilizer
+        CliffordGateDecompositionCache
 
     @testset "Pure Clifford Circuit" begin
         circuit_clifford = [sHadamard(1), sCNOT(1,2), sZ(1)]
@@ -209,7 +208,6 @@ end
     using QuantumClifford.PureNonClifford
     import QuantumClifford: AbstractOperation
     import QuantumClifford.PureNonClifford:
-        PureGeneralizedStabilizer,
         sample_measurement_outcomes,
         compute_outcome_frequencies
 
@@ -565,8 +563,7 @@ end
 
     import QuantumClifford: AbstractOperation
     import QuantumClifford.PureNonClifford:
-        sparsify_mixed_destabilizer_decomposition,
-        PureGeneralizedStabilizer
+        sparsify_mixed_destabilizer_decomposition
 
     @testset "sparsify_mixed_destabilizer_decomposition" begin
         state1 = MixedDestabilizer(S"Z")
@@ -688,7 +685,7 @@ end
 
 @testitem "PureNonClifford QuantumOptics Comparison" tags=[:non_clifford] begin
     using QuantumClifford
-    using QuantumClifford.PureNonClifford: PureGeneralizedStabilizer, lrstate
+    using QuantumClifford.PureNonClifford
     using QuantumOpticsBase
     using LinearAlgebra
 
@@ -765,7 +762,6 @@ end
 
     import QuantumClifford: AbstractOperation
     import QuantumClifford.PureNonClifford:
-        PureGeneralizedStabilizer,
         compute_outcome_frequencies
 
     @testset "Probability Accuracy With Sparsification Active" begin
@@ -864,5 +860,35 @@ end
 
         xi_T = (cos(π/8) + tan(π/8)*sin(π/8))^2
         @test result.total_extent ≈ xi_T^n_gates rtol=0.01
+    end
+end
+
+@testitem "PureGeneralizedStabilizer public constructor" tags=[:non_clifford] begin
+    using QuantumClifford
+
+    @testset "Single-argument constructor" begin
+        state = PureGeneralizedStabilizer(3)
+        @test nqubits(state) == 3
+        @test length(state.states) == 1
+        @test length(state.coefficients) == 1
+    end
+
+    @testset "Two-argument constructor" begin
+        state = PureGeneralizedStabilizer(2, 0.05)
+        @test nqubits(state) == 2
+        @test state.delta_per_gate == 0.05
+    end
+
+    @testset "Apply gates to constructed state" begin
+        state = PureGeneralizedStabilizer(2)
+        apply!(state, sHadamard(1))
+        apply!(state, sCNOT(1, 2))
+        @test nqubits(state) == 2
+        @test length(state.states) == 1  # still 1 term, Clifford only
+    end
+
+    @testset "Error on invalid nqubits" begin
+        @test_throws ArgumentError PureGeneralizedStabilizer(0)
+        @test_throws ArgumentError PureGeneralizedStabilizer(-1)
     end
 end

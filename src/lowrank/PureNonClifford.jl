@@ -26,6 +26,7 @@ using DocStringExtensions
 
 export
     sT, sCCZ,
+    PureGeneralizedStabilizer,
     LRTrajectoryResults,
 
     lrtrajectories,
@@ -572,8 +573,13 @@ end
 $(SIGNATURES)
 
 Create a `PureGeneralizedStabilizer` initialized to the |0⟩ⁿ state.
+
+The `delta_per_gate` parameter controls the approximation error budget
+for each non-Clifford gate during sparsification.
+
+See also: [`lrtrajectories`](@ref)
 """
-function PureGeneralizedStabilizer(n_qubits::Int, delta_per_gate::Float64)
+function PureGeneralizedStabilizer(n_qubits::Int, delta_per_gate::Float64=0.1)
     n_qubits > 0 || throw(ArgumentError("Number of qubits must be positive, got $n_qubits"))
     initial_state = one(MixedDestabilizer, n_qubits)
     PureGeneralizedStabilizer([initial_state], [ComplexF64(1.0)], delta_per_gate, 1.0, 0.0)
