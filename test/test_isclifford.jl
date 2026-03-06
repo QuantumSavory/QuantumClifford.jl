@@ -60,4 +60,9 @@
     @testset "Dense CliffordOperator" begin
         @test isclifford(CliffordOperator(tHadamard)) == true
     end
+
+    @testset "Non-Clifford gates" begin
+        @test isclifford(sT(1)) == false
+        @test isclifford(sCCZ(1, 2, 3)) == false
+    end
 end

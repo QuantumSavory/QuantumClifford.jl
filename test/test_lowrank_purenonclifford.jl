@@ -24,7 +24,7 @@
     end
 
     @testset "T-Gate Simulation" begin
-        circuit_T = [sHadamard(1), TGate(1), sHadamard(1)]
+        circuit_T = [sHadamard(1), sT(1), sHadamard(1)]
         result_T = lrtrajectories(circuit_T, 1; trajectories=100, delta=0.1, verbose=false)
         
         expected_xi_T = (cos(π/8) + tan(π/8)*sin(π/8))^2
@@ -36,7 +36,7 @@
     end
 
     @testset "Multiple T-Gates" begin
-        circuit_3T = [TGate(1), TGate(1), TGate(1)]
+        circuit_3T = [sT(1), sT(1), sT(1)]
         result_3T = lrtrajectories(circuit_3T, 1; trajectories=50, delta=0.1, verbose=false)
         
         expected_xi_T = (cos(π/8) + tan(π/8)*sin(π/8))^2
@@ -49,7 +49,7 @@
     @testset "CCZ Gate Simulation" begin
         circuit_CCZ = [
             sHadamard(1), sHadamard(2), sHadamard(3),
-            CCZGate(1, 2, 3),
+            sCCZ(1, 2, 3),
             sHadamard(1), sHadamard(2), sHadamard(3)
         ]
         result_CCZ = lrtrajectories(circuit_CCZ, 3; trajectories=50, delta=0.1, verbose=false)
@@ -72,7 +72,7 @@
     end
 
     @testset "Cost Estimation" begin
-        circuit = [sHadamard(1), TGate(1)]
+        circuit = [sHadamard(1), sT(1)]
         deltas = [0.5, 0.2, 0.1, 0.05]
         
         for delta in deltas
@@ -86,16 +86,16 @@
     end
     
     @testset "nqubits Interface" begin
-        t = TGate(1)
+        t = sT(1)
         @test nqubits(t) == 1
         
-        ccz = CCZGate(1, 2, 3)
+        ccz = sCCZ(1, 2, 3)
         @test nqubits(ccz) == 3
     end
     
     @testset "isclifford for non-Clifford gates" begin
-        @test isclifford(TGate(1)) == false
-        @test isclifford(CCZGate(1, 2, 3)) == false
+        @test isclifford(sT(1)) == false
+        @test isclifford(sCCZ(1, 2, 3)) == false
     end
 
     @testset "stabilizer_extent Trait" begin
@@ -103,21 +103,21 @@
         @test stabilizer_extent(sCNOT(1, 2)) == 1.0
         
         expected_xi_T = (cos(π/8) + tan(π/8)*sin(π/8))^2
-        @test stabilizer_extent(TGate(1)) ≈ expected_xi_T rtol=0.001
+        @test stabilizer_extent(sT(1)) ≈ expected_xi_T rtol=0.001
         
         expected_xi_CCZ = 16.0/9.0
-        @test stabilizer_extent(CCZGate(1, 2, 3)) ≈ expected_xi_CCZ rtol=0.001
+        @test stabilizer_extent(sCCZ(1, 2, 3)) ≈ expected_xi_CCZ rtol=0.001
     end
     
     @testset "T Gate Decomposition" begin
-        decomp = get_gate_decomposition(TGate(1))
+        decomp = get_gate_decomposition(sT(1))
         @test decomp.gate_type == :T
         @test length(decomp.coefficients) == 2
         @test decomp.target_qubits == [1]
     end
     
     @testset "CCZ Gate Decomposition" begin
-        decomp = get_gate_decomposition(CCZGate(1, 2, 3))
+        decomp = get_gate_decomposition(sCCZ(1, 2, 3))
         @test decomp.gate_type == :CCZ
         @test length(decomp.coefficients) == 8
         @test decomp.target_qubits == [1, 2, 3]
@@ -135,7 +135,7 @@
     end
     
     @testset "T Gate Cost Estimation" begin
-        circuit = [sHadamard(1), TGate(1), TGate(1)]
+        circuit = [sHadamard(1), sT(1), sT(1)]
         cost_info = lrcost(circuit; delta=0.1)
         
         expected_xi_T = (cos(π/8) + tan(π/8) * sin(π/8))^2
@@ -146,7 +146,7 @@
     end
     
     @testset "CCZ Gate Cost Estimation" begin
-        circuit = [CCZGate(1, 2, 3)]
+        circuit = [sCCZ(1, 2, 3)]
         cost_info = lrcost(circuit; delta=0.1)
         
         expected_xi_CCZ = 16.0/9.0
@@ -158,9 +158,9 @@
     @testset "Mixed Circuit Cost Estimation" begin
         circuit = [
             sHadamard(1), sHadamard(2),
-            TGate(1),
+            sT(1),
             sCNOT(1, 2),
-            CCZGate(1, 2, 3),
+            sCCZ(1, 2, 3),
             sZ(3)
         ]
         cost_info = lrcost(circuit; delta=0.1)
@@ -173,7 +173,7 @@
     end
     
     @testset "Cost Scales with Delta" begin
-        circuit = [TGate(1)]
+        circuit = [sT(1)]
         
         cost_small_delta = lrcost(circuit; delta=0.01)
         cost_large_delta = lrcost(circuit; delta=0.5)
@@ -226,7 +226,7 @@ end
     end
 
     @testset "Computational Correctness - Single Qubit" begin
-        circuit = [sHadamard(1), TGate(1)]
+        circuit = [sHadamard(1), sT(1)]
         
         result = lrtrajectories(circuit, 1; trajectories=1000, delta=0.05, verbose=false)
         
@@ -243,7 +243,7 @@ end
         circuit = [
             sHadamard(1),
             sCNOT(1,2),
-            TGate(1)
+            sT(1)
         ]
         
         result = lrtrajectories(circuit, 2; trajectories=1000, delta=0.1, verbose=false)
@@ -265,7 +265,7 @@ end
         for n in qubit_counts
             circuit = AbstractOperation[]
             append!(circuit, [sHadamard(i) for i in 1:n])
-            push!(circuit, TGate(1))
+            push!(circuit, sT(1))
             append!(circuit, [sHadamard(i) for i in 1:n])
             
             start = time()
@@ -282,9 +282,9 @@ end
         circuit = AbstractOperation[
             [sHadamard(i) for i in 1:n_qubits]...,
             sCNOT(1,2), sCNOT(2,3), sCNOT(3,4), sCNOT(4,5),
-            TGate(1), TGate(3), TGate(5),
+            sT(1), sT(3), sT(5),
             sCNOT(2,3), sCNOT(4,5),
-            TGate(2), TGate(4)
+            sT(2), sT(4)
         ]
         
         result = lrtrajectories(
@@ -338,7 +338,7 @@ end
     end
 
     @testset "T-Gate Decomposition" begin
-        t_decomp = get_gate_decomposition(TGate(1))
+        t_decomp = get_gate_decomposition(sT(1))
         expected_xi_T = (cos(π/8) + tan(π/8)*sin(π/8))^2
         
         @test t_decomp.gate_type == :T
@@ -358,7 +358,7 @@ end
     end
 
     @testset "CCZ Gate Decomposition" begin
-        ccz_decomp = get_gate_decomposition(CCZGate(1,2,3))
+        ccz_decomp = get_gate_decomposition(sCCZ(1,2,3))
         expected_xi_CCZ = 16.0/9.0
         
         @test ccz_decomp.gate_type == :CCZ
@@ -414,7 +414,7 @@ end
     using QuantumClifford.PureNonClifford
 
     @testset "H-T-H Circuit Probability" begin
-        circuit = [sHadamard(1), TGate(1), sHadamard(1)]
+        circuit = [sHadamard(1), sT(1), sHadamard(1)]
         
         result = lrtrajectories(circuit, 1; trajectories=10000, delta=0.05, verbose=false)
         measurements = lrmeasurements(result)
@@ -429,7 +429,7 @@ end
     end
     
     @testset "T|+⟩ State Distribution" begin
-        circuit = [sHadamard(1), TGate(1)]
+        circuit = [sHadamard(1), sT(1)]
         
         result = lrtrajectories(circuit, 1; trajectories=5000, delta=0.05, verbose=false)
         measurements = lrmeasurements(result)
@@ -444,7 +444,7 @@ end
     end
     
     @testset "Multiple T Gates" begin
-        circuit_2T = [sHadamard(1), TGate(1), TGate(1), sHadamard(1)]
+        circuit_2T = [sHadamard(1), sT(1), sT(1), sHadamard(1)]
         
         result = lrtrajectories(circuit_2T, 1; trajectories=5000, delta=0.05, verbose=false)
         measurements = lrmeasurements(result)
@@ -467,7 +467,7 @@ end
         circuit = [
             sHadamard(1),
             sCNOT(1, 2),
-            TGate(1)
+            sT(1)
         ]
         
         result = lrtrajectories(circuit, 2; trajectories=5000, delta=0.1, verbose=false)
@@ -489,7 +489,7 @@ end
     @testset "GHZ State with CCZ" begin
         circuit = [
             sHadamard(1), sHadamard(2), sHadamard(3),
-            CCZGate(1, 2, 3),
+            sCCZ(1, 2, 3),
             sHadamard(1), sHadamard(2), sHadamard(3)
         ]
         
@@ -506,7 +506,7 @@ end
     using QuantumClifford.PureNonClifford
 
     @testset "Show Method" begin
-        circuit = [sHadamard(1), TGate(1)]
+        circuit = [sHadamard(1), sT(1)]
         result = lrtrajectories(circuit, 1; trajectories=100, delta=0.1, verbose=false)
         
         io = IOBuffer()
@@ -520,7 +520,7 @@ end
     end
     
     @testset "lrmeasurements Accessor" begin
-        circuit = [sHadamard(1), TGate(1)]
+        circuit = [sHadamard(1), sT(1)]
         result = lrtrajectories(circuit, 1; trajectories=50, delta=0.1, verbose=false)
         
         m = lrmeasurements(result)
@@ -535,7 +535,7 @@ end
     using QuantumClifford.PureNonClifford
 
     @testset "Single Gate Circuits" begin
-        result = lrtrajectories([TGate(1)], 1; trajectories=50, delta=0.1, verbose=false)
+        result = lrtrajectories([sT(1)], 1; trajectories=50, delta=0.1, verbose=false)
         @test result.simulation_cost > 1
         
         result = lrtrajectories([sHadamard(1)], 1; trajectories=50, delta=0.1, verbose=false)
@@ -543,7 +543,7 @@ end
     end
     
     @testset "Large Delta" begin
-        circuit = [sHadamard(1), TGate(1)]
+        circuit = [sHadamard(1), sT(1)]
         result = lrtrajectories(circuit, 1; trajectories=50, delta=0.9, verbose=false)
         
         @test result.simulation_cost >= 1
@@ -551,19 +551,19 @@ end
     end
     
     @testset "Qubit Index Validation" begin
-        @test_throws ArgumentError TGate(0)
-        @test_throws ArgumentError TGate(-1)
-        @test_throws ArgumentError CCZGate(1, 1, 2)
-        @test_throws ArgumentError CCZGate(0, 1, 2)
+        @test_throws ArgumentError sT(0)
+        @test_throws ArgumentError sT(-1)
+        @test_throws ArgumentError sCCZ(1, 1, 2)
+        @test_throws ArgumentError sCCZ(0, 1, 2)
     end
     
     @testset "CCZ Gate Constructor" begin
-        ccz = CCZGate(3, 1, 2)
+        ccz = sCCZ(3, 1, 2)
         @test ccz.qubits == (1, 2, 3)
     end
     
     @testset "Auto Qubit Inference" begin
-        circuit = [sHadamard(1), TGate(3), sCNOT(2, 4)]
+        circuit = [sHadamard(1), sT(3), sCNOT(2, 4)]
         result = lrtrajectories(circuit; trajectories=20, delta=0.2, verbose=false)
         @test result.n_qubits == 4
     end
@@ -610,7 +610,7 @@ end
         n_gates = 20
         circuit = vcat(
             [sHadamard(1)],
-            [TGate(1) for _ in 1:n_gates],
+            [sT(1) for _ in 1:n_gates],
             [sHadamard(1)]
         )
         
@@ -625,7 +625,7 @@ end
     end
     
     @testset "Reproducibility with RNG Seed" begin
-        circuit = AbstractOperation[sHadamard(1), TGate(1), TGate(1), TGate(1), sHadamard(1)]
+        circuit = AbstractOperation[sHadamard(1), sT(1), sT(1), sT(1), sHadamard(1)]
         
         rng1 = MersenneTwister(12345)
         rng2 = MersenneTwister(12345)
@@ -638,7 +638,7 @@ end
     
     @testset "Large Circuit Scalability" begin
         n_gates = 24
-        circuit = AbstractOperation[TGate(1) for _ in 1:n_gates]
+        circuit = AbstractOperation[sT(1) for _ in 1:n_gates]
         
         start_time = time()
         result = lrtrajectories(circuit, 1; trajectories=50, delta=0.8, verbose=false)
@@ -653,7 +653,7 @@ end
     end
     
     @testset "Small Circuit No Sparsification" begin
-        circuit = AbstractOperation[TGate(1), TGate(1), TGate(1)]
+        circuit = AbstractOperation[sT(1), sT(1), sT(1)]
         
         result = lrtrajectories(circuit, 1; trajectories=50, delta=0.1, verbose=false)
         
@@ -663,7 +663,7 @@ end
     @testset "Error Budget Distribution" begin
         circuit = AbstractOperation[
             sHadamard(1),
-            TGate(1), TGate(1), TGate(1), TGate(1),
+            sT(1), sT(1), sT(1), sT(1),
             sHadamard(1)
         ]
         
@@ -681,8 +681,8 @@ end
     end
     
     @testset "Per-Gate Delta Calculation" begin
-        circuit_1T = AbstractOperation[TGate(1)]
-        circuit_4T = AbstractOperation[TGate(1), TGate(1), TGate(1), TGate(1)]
+        circuit_1T = AbstractOperation[sT(1)]
+        circuit_4T = AbstractOperation[sT(1), sT(1), sT(1), sT(1)]
         
         delta = 0.2
         
@@ -708,7 +708,7 @@ end
     H_matrix = Operator(b, ComplexF64[1 1; 1 -1]/√2)
     
     @testset "Single qubit H-T-H circuit" begin
-        circuit = [sHadamard(1), TGate(1), sHadamard(1)]
+        circuit = [sHadamard(1), sT(1), sHadamard(1)]
         state = lrstate(circuit; delta=0.01)
         ket_qc = Ket(state)
         
@@ -722,7 +722,7 @@ end
     end
 
     @testset "Multiple T gates" begin
-        circuit = [sHadamard(1), TGate(1), TGate(1), TGate(1), sHadamard(1)]
+        circuit = [sHadamard(1), sT(1), sT(1), sT(1), sHadamard(1)]
         state = lrstate(circuit; delta=0.01)
         ket_qc = Ket(state)
         
@@ -743,7 +743,7 @@ end
     using QuantumClifford.PureNonClifford
 
     @testset "H-T^4-H Distribution" begin
-        circuit = [sHadamard(1), TGate(1), TGate(1), TGate(1), TGate(1), sHadamard(1)]
+        circuit = [sHadamard(1), sT(1), sT(1), sT(1), sT(1), sHadamard(1)]
         
         result = lrtrajectories(circuit, 1; trajectories=5000, delta=0.05, verbose=false)
         measurements = lrmeasurements(result)
@@ -756,7 +756,7 @@ end
     @testset "Multiple T-Gates Accuracy" begin
         circuit = vcat(
             [sHadamard(1)],
-            [TGate(1) for _ in 1:8],
+            [sT(1) for _ in 1:8],
             [sHadamard(1)]
         )
         
@@ -783,7 +783,7 @@ end
     @testset "Probability Accuracy With Sparsification Active" begin
         circuit = AbstractOperation[
             sHadamard(1),
-            [TGate(1) for _ in 1:16]...,
+            [sT(1) for _ in 1:16]...,
             sHadamard(1)
         ]
         
@@ -802,7 +802,7 @@ end
         circuit = AbstractOperation[
             sHadamard(1),
             sCNOT(1, 2),
-            [TGate(1) for _ in 1:n_T_gates]...,
+            [sT(1) for _ in 1:n_T_gates]...,
         ]
         
         result = lrtrajectories(circuit, 2; trajectories=2000, delta=0.7, verbose=false)
@@ -827,9 +827,9 @@ end
     @testset "CCZ With Incremental Sparsification" begin
         circuit = AbstractOperation[
             sHadamard(1), sHadamard(2), sHadamard(3),
-            CCZGate(1, 2, 3),
-            CCZGate(1, 2, 3),
-            CCZGate(1, 2, 3),
+            sCCZ(1, 2, 3),
+            sCCZ(1, 2, 3),
+            sCCZ(1, 2, 3),
             sHadamard(1), sHadamard(2), sHadamard(3)
         ]
         
@@ -845,10 +845,10 @@ end
     @testset "Mixed T and CCZ Gates" begin
         circuit = AbstractOperation[
             sHadamard(1), sHadamard(2), sHadamard(3),
-            TGate(1),
-            TGate(2),
-            CCZGate(1, 2, 3),
-            TGate(3),
+            sT(1),
+            sT(2),
+            sCCZ(1, 2, 3),
+            sT(3),
             sHadamard(1), sHadamard(2), sHadamard(3)
         ]
         
@@ -863,7 +863,7 @@ end
     end
     
     @testset "L1 Norm Consistency Check" begin
-        circuit = AbstractOperation[TGate(1) for _ in 1:10]
+        circuit = AbstractOperation[sT(1) for _ in 1:10]
         
         sim_state = simulate_sum_over_cliffords(
             circuit, 1, 0.5; rng=MersenneTwister(42))
@@ -880,7 +880,7 @@ end
     @testset "Deterministic Results With Same RNG" begin
         circuit = AbstractOperation[
             sHadamard(1),
-            TGate(1), TGate(1), TGate(1), TGate(1), TGate(1),
+            sT(1), sT(1), sT(1), sT(1), sT(1),
             sHadamard(1)
         ]
         
@@ -897,7 +897,7 @@ end
     
     @testset "Stress Test - Very Large Circuit" begin
         n_gates = 32
-        circuit = AbstractOperation[TGate(1) for _ in 1:n_gates]
+        circuit = AbstractOperation[sT(1) for _ in 1:n_gates]
         
         start_time = time()
         result = lrtrajectories(circuit, 1; trajectories=20, delta=0.95, verbose=false)

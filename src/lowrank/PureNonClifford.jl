@@ -20,12 +20,14 @@ import ..QuantumClifford:
 
     SparseGate, CliffordOperator,
 
-    isclifford
+    isclifford,
+
+    sT, sCCZ, stabilizer_extent
 
 using DocStringExtensions
 
 export
-    TGate, CCZGate,
+    sT, sCCZ,
     LRTrajectoryResults,
 
     lrtrajectories,
@@ -36,111 +38,6 @@ export
     isclifford,
     stabilizer_extent
 
-"""
-$(SIGNATURES)
-
-Return the stabilizer extent ξ(op) for a gate.
-For Clifford gates, ξ = 1. Users can extend for custom non-Clifford gates.
-
-The extent determines simulation cost: total cost scales as ∏ⱼ ξ(Vⱼ).
-
-From Proposition 2 of [bravyi2019simulation](@cite): For Clifford magic states, ξ(ψ) = F(ψ)⁻¹
-where F(ψ) = max_φ |⟨φ|ψ⟩|² is the stabilizer fidelity.
-
-# Examples
-```jldoctest
-julia> stabilizer_extent(sHadamard(1))
-1.0
-
-julia> round(stabilizer_extent(TGate(1)), digits=3)
-1.172
-
-julia> stabilizer_extent(CCZGate(1,2,3)) ≈ 16/9
-true
-```
-"""
-function stabilizer_extent end
-
-stabilizer_extent(op::AbstractOperation) = isclifford(op) ? 1.0 : error("stabilizer_extent not defined for $(typeof(op)). Please define a method.")
-
-# TODO: implement apply!(::GeneralizedStabilizer, ::TGate)
-"""
-$(TYPEDEF)
-
-T gate (π/8 phase rotation). This is a non-Clifford gate with optimal 
-stabilizer extent ξ(T) = (cos(π/8) + tan(π/8)sin(π/8))² ≈ 1.172.
-
-The T gate is diagonal in the computational basis:
-T = diag(1, e^(iπ/4)) = R_z(π/4)
-
-$(TYPEDFIELDS)
-
-# Example
-```jldoctest
-julia> circuit = [sHadamard(1), TGate(1), sHadamard(1)];
-
-julia> result = lrtrajectories(circuit, 1; trajectories=100);
-
-julia> size(lrmeasurements(result))
-(100, 1)
-```
-"""
-struct TGate <: AbstractOperation
-    "Target qubit index (1-indexed)"
-    qubit::Int
-    
-    function TGate(q::Int)
-        q > 0 || throw(ArgumentError("Qubit index must be positive, got $q"))
-        new(q)
-    end
-end
-
-nqubits(::TGate) = 1
-isclifford(::TGate) = false
-
-const _T_EXTENT = (cos(π/8) + tan(π/8) * sin(π/8))^2
-stabilizer_extent(::TGate) = _T_EXTENT
-
-# TODO: implement apply!(::GeneralizedStabilizer, ::CCZGate)
-"""
-$(TYPEDEF)
-
-Controlled-Controlled-Z gate. This is a non-Clifford gate with optimal 
-stabilizer extent ξ(CCZ) = 16/9 ≈ 1.778.
-
-The CCZ gate applies a phase of -1 when all three qubits are in state |1⟩:
-CCZ|xyz⟩ = (-1)^(xyz)|xyz⟩
-
-$(TYPEDFIELDS)
-
-# Example
-```jldoctest
-julia> circuit = [sHadamard(1), sHadamard(2), sHadamard(3), CCZGate(1, 2, 3)];
-
-julia> result = lrtrajectories(circuit, 3; trajectories=100);
-
-julia> size(lrmeasurements(result))
-(100, 3)
-```
-"""
-struct CCZGate <: AbstractOperation
-    "Target qubit indices (sorted, 1-indexed)"
-    qubits::NTuple{3, Int}
-    
-    function CCZGate(q1::Int, q2::Int, q3::Int)
-        all(q -> q > 0, (q1, q2, q3)) || throw(ArgumentError("All qubit indices must be positive"))
-        length(unique((q1, q2, q3))) == 3 || throw(ArgumentError("CCZ requires 3 distinct qubits, got $q1, $q2, $q3"))
-        new(Tuple(sort([q1, q2, q3])))
-    end
-end
-
-CCZGate(qubits::Vector{Int}) = CCZGate(qubits[1], qubits[2], qubits[3])
-
-nqubits(::CCZGate) = 3
-isclifford(::CCZGate) = false
-
-const _CCZ_EXTENT = 16.0 / 9.0
-stabilizer_extent(::CCZGate) = _CCZ_EXTENT
 
 """
 $(TYPEDEF)
@@ -603,14 +500,14 @@ Uses multiple dispatch - users can extend for custom gates.
 """
 function get_gate_decomposition end
 
-function get_gate_decomposition(gate::TGate)
+function get_gate_decomposition(gate::sT)
     magic_decomp = decompose_rotation_magic_state(π/4; nqubits=1)
     gate_decomp = lifting_lemma_single_qubit(magic_decomp, gate.qubit)
     return CliffordGateDecompositionCache(:T, gate_decomp.coefficients, 
                                           gate_decomp.clifford_operations, [gate.qubit])
 end
 
-function get_gate_decomposition(gate::CCZGate)
+function get_gate_decomposition(gate::sCCZ)
     magic_decomp = decompose_CCZ_magic_state()
     qubits = collect(gate.qubits)
     return lifting_lemma_CCZ(magic_decomp, qubits)
@@ -636,7 +533,7 @@ Use `lrmeasurements(result)` to get measurement matrix, similar to `pfmeasuremen
 
 # Example
 ```jldoctest
-julia> circuit = [sHadamard(1), TGate(1), sCNOT(1,2)];
+julia> circuit = [sHadamard(1), sT(1), sCNOT(1,2)];
 
 julia> result = lrtrajectories(circuit, 2; trajectories=100, delta=0.1);
 
@@ -709,7 +606,7 @@ Analogous to `pfmeasurements` for Pauli frames.
 
 # Example
 ```jldoctest
-julia> circuit = [sHadamard(1), TGate(1)];
+julia> circuit = [sHadamard(1), sT(1)];
 
 julia> result = lrtrajectories(circuit; trajectories=100);
 
@@ -1242,14 +1139,14 @@ $(SIGNATURES)
 Validate that operation uses valid qubit indices.
 """
 function validate_operation_qubits(op::AbstractOperation, n_qubits::Int, idx::Int)
-    if op isa TGate
+    if op isa sT
         1 ≤ op.qubit ≤ n_qubits || throw(ArgumentError(
-            "Operation $idx: TGate qubit index $(op.qubit) out of range [1,$n_qubits]"))
+            "Operation $idx: sT qubit index $(op.qubit) out of range [1,$n_qubits]"))
         return nothing
-    elseif op isa CCZGate
+    elseif op isa sCCZ
         for q in op.qubits
             1 ≤ q ≤ n_qubits || throw(ArgumentError(
-                "Operation $idx: CCZGate qubit index $q out of range [1,$n_qubits]"))
+                "Operation $idx: sCCZ qubit index $q out of range [1,$n_qubits]"))
         end
         return nothing
     end
@@ -1283,9 +1180,9 @@ Infer number of qubits from circuit operations.
 function infer_circuit_nqubits(circuit)
     max_qubit = 1
     for op in circuit
-        if op isa TGate
+        if op isa sT
             max_qubit = max(max_qubit, op.qubit)
-        elseif op isa CCZGate
+        elseif op isa sCCZ
             max_qubit = max(max_qubit, maximum(op.qubits))
         elseif hasfield(typeof(op), :q)
             max_qubit = max(max_qubit, op.q)
@@ -1314,7 +1211,7 @@ quantum state. Use [`lrstate`](@ref) if you need access to the state representat
   general but slower for large numbers of non-Clifford gates.
 
 # Arguments
-- `circuit`: Vector of quantum operations (Clifford gates, TGate, CCZGate, etc.)
+- `circuit`: Vector of quantum operations (Clifford gates, sT, sCCZ, etc.)
 - `trajectories::Int=1000`: Number of measurement samples to generate
 - `delta::Float64=0.1`: Approximation error parameter (smaller = more accurate but slower)
 - `verbose::Bool=false`: Show detailed progress information
@@ -1340,7 +1237,7 @@ with incremental sparsification (Section 5.2) after each non-Clifford gate:
 
 # Example
 ```jldoctest
-julia> circuit = [sHadamard(1), TGate(1), sHadamard(1)];
+julia> circuit = [sHadamard(1), sT(1), sHadamard(1)];
 
 julia> result = lrtrajectories(circuit; trajectories=100, delta=0.1);
 
@@ -1449,7 +1346,7 @@ the `PureGeneralizedStabilizer` state directly. This is useful when you need
 the state for further analysis or custom sampling.
 
 # Arguments
-- `circuit`: Vector of quantum operations (Clifford gates, TGate, CCZGate, etc.)
+- `circuit`: Vector of quantum operations (Clifford gates, sT, sCCZ, etc.)
 - `n_qubits::Int`: Number of qubits (optional, inferred from circuit if not provided)
 - `delta::Float64=0.1`: Approximation error parameter
 - `verbose::Bool=false`: Show detailed progress information
@@ -1459,7 +1356,7 @@ the state for further analysis or custom sampling.
 
 # Example
 ```jldoctest
-julia> circuit = [sHadamard(1), TGate(1)];
+julia> circuit = [sHadamard(1), sT(1)];
 
 julia> state = lrstate(circuit; delta=0.1);
 
@@ -1516,7 +1413,7 @@ This is typically much smaller than the estimated final k.
 
 # Example
 ```jldoctest
-julia> circuit = [sHadamard(1), TGate(1), TGate(1), TGate(1), sHadamard(1)];
+julia> circuit = [sHadamard(1), sT(1), sT(1), sT(1), sHadamard(1)];
 
 julia> cost = lrcost(circuit; delta=0.1);
 
@@ -1526,7 +1423,7 @@ julia> cost.non_clifford_count
 julia> cost.estimated_k > 0
 true
 
-julia> cost.total_extent ≈ stabilizer_extent(TGate(1))^3
+julia> cost.total_extent ≈ stabilizer_extent(sT(1))^3
 true
 ```
 """

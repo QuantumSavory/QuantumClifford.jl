@@ -96,7 +96,7 @@ export
     GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase, pcRx,
     # Non-Clifford simulation - low-rank stabilizer decomposition
     # TODO: export PureGeneralizedStabilizer
-    TGate, CCZGate,
+    sT, sCCZ, TGate, CCZGate,
     lrtrajectories, lrstate, lrmeasurements, lrcost,
     LRTrajectoryResults,
     isclifford, stabilizer_extent,
@@ -1446,6 +1446,7 @@ include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
 include("isclifford.jl")
+include("symbolic_noncliffords.jl")
 include("lowrank/PauliChannelNonClifford.jl")
 include("lowrank/PureNonClifford.jl")
 using .PauliChannelNonClifford
