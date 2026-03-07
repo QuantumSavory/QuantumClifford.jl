@@ -14,9 +14,9 @@ $(TYPEDFIELDS)
 ```jldoctest
 julia> circuit = [sHadamard(1), sT(1), sHadamard(1)];
 
-julia> result = cbtrajectories(circuit, 1; trajectories=100);
+julia> result = emtrajectories(circuit, 1; trajectories=100);
 
-julia> size(cbmeasurements(result))
+julia> size(measurements(result))
 (100, 1)
 ```
 """
@@ -48,9 +48,9 @@ $(TYPEDFIELDS)
 ```jldoctest
 julia> circuit = [sHadamard(1), sHadamard(2), sHadamard(3), sCCZ(1, 2, 3)];
 
-julia> result = cbtrajectories(circuit, 3; trajectories=100);
+julia> result = emtrajectories(circuit, 3; trajectories=100);
 
-julia> size(cbmeasurements(result))
+julia> size(measurements(result))
 (100, 3)
 ```
 """

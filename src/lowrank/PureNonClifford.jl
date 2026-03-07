@@ -27,10 +27,10 @@ using DocStringExtensions
 export
     sT, sCCZ,
     PureGeneralizedStabilizer,
-    ComputationalBasisMeasurementTrajectoryResults,
+    EndMeasurementSampleResults,
 
-    cbtrajectories,
-    cbmeasurements,
+    emtrajectories,
+    measurements,
     lrcost,
 
     isclifford,
@@ -448,15 +448,15 @@ Results from computational basis measurement trajectory simulation, analogous to
 $(TYPEDFIELDS)
 
 # Accessing Results
-Use `cbmeasurements(result)` to get measurement matrix, similar to `pfmeasurements`.
+Use `measurements(result)` to get measurement matrix, similar to `pfmeasurements`.
 
 # Example
 ```jldoctest
 julia> circuit = [sHadamard(1), sT(1), sCNOT(1,2)];
 
-julia> result = cbtrajectories(circuit, 2; trajectories=100, delta=0.1);
+julia> result = emtrajectories(circuit, 2; trajectories=100, delta=0.1);
 
-julia> measurements = cbmeasurements(result);
+julia> measurements = measurements(result);
 
 julia> size(measurements)
 (100, 2)
@@ -465,7 +465,7 @@ julia> eltype(measurements)
 Bool
 ```
 """
-struct ComputationalBasisMeasurementTrajectoryResults
+struct EndMeasurementSampleResults
     "Measurement outcomes (trajectories × qubits)"
     measurements::Matrix{Bool}
     "Number of sparse stabilizer terms used (k)"
@@ -478,10 +478,10 @@ struct ComputationalBasisMeasurementTrajectoryResults
     n_qubits::Int
 end
 
-function Base.show(io::IO, r::ComputationalBasisMeasurementTrajectoryResults)
+function Base.show(io::IO, r::EndMeasurementSampleResults)
     n_trajectories = size(r.measurements, 1)
     
-    println(io, "=== Computational Basis Measurement Trajectory Results ===")
+    println(io, "=== End Measurement Sample Results ===")
     println(io, "Qubits: $(r.n_qubits)")
     println(io, "Trajectories: $n_trajectories")
     println(io, "Simulation cost: $(r.simulation_cost) stabilizer terms")
@@ -508,7 +508,7 @@ function Base.show(io::IO, r::ComputationalBasisMeasurementTrajectoryResults)
     end
 end
 
-function Base.show(io::IO, ::MIME"text/plain", r::ComputationalBasisMeasurementTrajectoryResults)
+function Base.show(io::IO, ::MIME"text/plain", r::EndMeasurementSampleResults)
     show(io, r)
 end
 
@@ -524,9 +524,9 @@ Analogous to `pfmeasurements` for Pauli frames.
 ```jldoctest
 julia> circuit = [sHadamard(1), sT(1)];
 
-julia> result = cbtrajectories(circuit; trajectories=100);
+julia> result = emtrajectories(circuit; trajectories=100);
 
-julia> m = cbmeasurements(result);
+julia> m = measurements(result);
 
 julia> size(m)
 (100, 1)
@@ -535,7 +535,7 @@ julia> 0.0 <= sum(m[:, 1] .== false) / size(m, 1) <= 1.0
 true
 ```
 """
-cbmeasurements(r::ComputationalBasisMeasurementTrajectoryResults) = r.measurements
+measurements(r::EndMeasurementSampleResults) = r.measurements
 
 """
 $(TYPEDEF)
@@ -573,7 +573,7 @@ Create a `PureGeneralizedStabilizer` initialized to the |0⟩ⁿ state.
 The `delta_per_gate` parameter controls the approximation error budget
 for each non-Clifford gate during sparsification.
 
-See also: [`cbtrajectories`](@ref)
+See also: [`emtrajectories`](@ref)
 """
 function PureGeneralizedStabilizer(n_qubits::Int, delta_per_gate::Float64=0.1)
     n_qubits > 0 || throw(ArgumentError("Number of qubits must be positive, got $n_qubits"))
@@ -981,7 +981,7 @@ quantum state. Use [`PureGeneralizedStabilizer`](@ref) directly with [`mctraject
 if you need access to the state representation.
 
 # Comparison to `mctrajectories` with `GeneralizedStabilizer`
-- `cbtrajectories`: Only supports unitary gates (no mid-circuit measurements). 
+- `emtrajectories`: Only supports unitary gates (no mid-circuit measurements). 
   Performs implicit Z-basis measurements on all qubits at the end. Faster for 
   circuits with many non-Clifford gates due to sparsification.
 - `mctrajectories` with `GeneralizedStabilizer`: Supports mid-circuit measurements 
@@ -995,8 +995,8 @@ if you need access to the state representation.
 - `verbose::Bool=false`: Show detailed progress information
 
 # Returns
-`ComputationalBasisMeasurementTrajectoryResults` containing measurement outcomes and simulation statistics.
-Use `cbmeasurements(result)` to extract the measurement matrix.
+`EndMeasurementSampleResults` containing measurement outcomes and simulation statistics.
+Use `measurements(result)` to extract the measurement matrix.
 
 # Algorithm
 Implements the Sum-over-Cliffords method from Section 2.3.2 of [bravyi2019simulation](@cite)
@@ -1017,12 +1017,12 @@ with incremental sparsification (Section 5.2) after each non-Clifford gate:
 ```jldoctest
 julia> circuit = [sHadamard(1), sT(1), sHadamard(1)];
 
-julia> result = cbtrajectories(circuit; trajectories=100, delta=0.1);
+julia> result = emtrajectories(circuit; trajectories=100, delta=0.1);
 
 julia> result.simulation_cost > 0
 true
 
-julia> measurements = cbmeasurements(result);
+julia> measurements = measurements(result);
 
 julia> size(measurements)
 (100, 1)
@@ -1033,18 +1033,18 @@ julia> 0.0 <= p0 <= 1.0
 true
 ```
 
-See also: [`PureGeneralizedStabilizer`](@ref), [`cbmeasurements`](@ref), [`lrcost`](@ref)
+See also: [`PureGeneralizedStabilizer`](@ref), [`measurements`](@ref), [`lrcost`](@ref)
 """
-function cbtrajectories(circuit;
+function emtrajectories(circuit;
                         trajectories::Int=1000,
                         delta::Float64=0.1,
                         verbose::Bool=false)
 
     n_qubits = infer_circuit_nqubits(circuit)
-    return cbtrajectories(circuit, n_qubits; trajectories, delta, verbose)
+    return emtrajectories(circuit, n_qubits; trajectories, delta, verbose)
 end
 
-function cbtrajectories(circuit,
+function emtrajectories(circuit,
                         n_qubits::Int;
                         trajectories::Int=1000,
                         delta::Float64=0.1,
@@ -1059,7 +1059,7 @@ function cbtrajectories(circuit,
 
     measurements = sample_measurement_outcomes(state, trajectories; verbose)
 
-    return ComputationalBasisMeasurementTrajectoryResults(
+    return EndMeasurementSampleResults(
         measurements,
         length(state.states),
         state.accumulated_approximation_error,

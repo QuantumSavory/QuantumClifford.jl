@@ -97,8 +97,8 @@ export
     # Non-Clifford simulation - low-rank stabilizer decomposition
     PureGeneralizedStabilizer,
     sT, sCCZ,
-    cbtrajectories, cbmeasurements, lrcost,
-    ComputationalBasisMeasurementTrajectoryResults,
+    emtrajectories, measurements, lrcost,
+    EndMeasurementSampleResults,
     isclifford, stabilizer_extent,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
