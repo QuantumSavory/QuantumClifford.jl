@@ -30,7 +30,6 @@ export
     LRTrajectoryResults,
 
     lrtrajectories,
-    lrstate,
     lrmeasurements,
     lrcost,
 
@@ -979,9 +978,10 @@ $(SIGNATURES)
 
 Simulate quantum circuit with non-Clifford gates using low-rank stabilizer decomposition.
 
-This is the main entry point for non-Clifford simulation, analogous to `pftrajectories` 
-for Pauli frame simulation. This method returns **measurement statistics only**, not the 
-quantum state. Use [`lrstate`](@ref) if you need access to the state representation.
+This is the main entry point for non-Clifford simulation, analogous to `pftrajectories`
+for Pauli frame simulation. This method returns **measurement statistics only**, not the
+quantum state. Use [`PureGeneralizedStabilizer`](@ref) directly with [`mctrajectory!`](@ref)
+if you need access to the state representation.
 
 # Comparison to `mctrajectories` with `GeneralizedStabilizer`
 - `lrtrajectories`: Only supports unitary gates (no mid-circuit measurements). 
@@ -1036,7 +1036,7 @@ julia> 0.0 <= p0 <= 1.0
 true
 ```
 
-See also: [`lrstate`](@ref), [`lrmeasurements`](@ref), [`lrcost`](@ref)
+See also: [`PureGeneralizedStabilizer`](@ref), [`lrmeasurements`](@ref), [`lrcost`](@ref)
 """
 function lrtrajectories(circuit::AbstractVector{<:AbstractOperation};
                         trajectories::Int=1000,
@@ -1057,7 +1057,11 @@ function lrtrajectories(circuit::AbstractVector{<:AbstractOperation},
 
     start_time = time()
 
-    state = _lrstate(circuit, n_qubits, delta)
+    non_clifford_count = count(op -> !isclifford(op), circuit)
+    delta_per_gate = non_clifford_count > 0 ? delta / non_clifford_count : delta
+    state = PureGeneralizedStabilizer(n_qubits, delta_per_gate)
+    mctrajectory!(state, circuit)
+
     measurements = sample_measurement_outcomes(state, trajectories; verbose)
     total_runtime = time() - start_time
 
@@ -1082,64 +1086,6 @@ function lrtrajectories(circuit::AbstractVector, n_qubits::Int; kwargs...)
 
     typed_circuit = AbstractOperation[op for op in circuit]
     return lrtrajectories(typed_circuit, n_qubits; kwargs...)
-end
-
-"""
-$(SIGNATURES)
-
-Run low-rank simulation and return the state representation.
-
-Unlike [`lrtrajectories`](@ref) which returns measurement samples, this function returns
-the `PureGeneralizedStabilizer` state directly. This is useful when you need
-the state for further analysis or custom sampling.
-
-# Arguments
-- `circuit`: Vector of quantum operations (Clifford gates, sT, sCCZ, etc.)
-- `n_qubits::Int`: Number of qubits (optional, inferred from circuit if not provided)
-- `delta::Float64=0.1`: Approximation error parameter
-- `verbose::Bool=false`: Show detailed progress information
-
-# Returns
-`PureGeneralizedStabilizer` containing the sparse stabilizer decomposition |ψ⟩ = Σₐ cₐ|φₐ⟩.
-
-# Example
-```jldoctest
-julia> circuit = [sHadamard(1), sT(1)];
-
-julia> state = lrstate(circuit; delta=0.1);
-
-julia> length(state.coefficients) > 0
-true
-```
-
-See also: [`lrtrajectories`](@ref), [`PureGeneralizedStabilizer`](@ref)
-"""
-function lrstate(circuit::AbstractVector{<:AbstractOperation};
-                 delta::Float64=0.1,
-                 verbose::Bool=false)
-    n_qubits = infer_circuit_nqubits(circuit)
-    return lrstate(circuit, n_qubits; delta, verbose)
-end
-
-function lrstate(circuit::AbstractVector{<:AbstractOperation},
-                 n_qubits::Int;
-                 delta::Float64=0.1,
-                 verbose::Bool=false)
-    return _lrstate(circuit, n_qubits, delta)
-end
-
-"""
-$(SIGNATURES)
-
-Internal helper: create PureGeneralizedStabilizer and run circuit via mctrajectory!.
-"""
-function _lrstate(circuit::AbstractVector{<:AbstractOperation}, n_qubits::Int, delta::Float64)
-    non_clifford_count = count(op -> !isclifford(op), circuit)
-    delta_per_gate = non_clifford_count > 0 ? delta / non_clifford_count : delta
-
-    state = PureGeneralizedStabilizer(n_qubits, delta_per_gate)
-    mctrajectory!(state, circuit)
-    state
 end
 
 """

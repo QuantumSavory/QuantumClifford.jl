@@ -672,7 +672,10 @@ end
     @testset "L1 Norm Consistency Check" begin
         circuit = AbstractOperation[sT(1) for _ in 1:10]
 
-        state = lrstate(circuit, 1; delta=0.5)
+        delta = 0.5
+        non_clifford_count = count(op -> !isclifford(op), circuit)
+        state = PureGeneralizedStabilizer(1, delta / non_clifford_count)
+        mctrajectory!(state, circuit)
         l1_final = sum(abs, state.coefficients)
 
         xi_T = (cos(π/8) + tan(π/8)*sin(π/8))^2
@@ -695,7 +698,8 @@ end
 
     @testset "Single qubit H-T-H circuit" begin
         circuit = [sHadamard(1), sT(1), sHadamard(1)]
-        state = lrstate(circuit; delta=0.01)
+        state = PureGeneralizedStabilizer(1, 0.01)
+        mctrajectory!(state, circuit)
         ket_qc = Ket(state)
 
         ket_qo = spinup(b)
@@ -709,7 +713,8 @@ end
 
     @testset "Multiple T gates" begin
         circuit = [sHadamard(1), sT(1), sT(1), sT(1), sHadamard(1)]
-        state = lrstate(circuit; delta=0.01)
+        state = PureGeneralizedStabilizer(1, 0.01/3)
+        mctrajectory!(state, circuit)
         ket_qc = Ket(state)
 
         ket_qo = spinup(b)
