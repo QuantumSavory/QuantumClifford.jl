@@ -118,7 +118,7 @@ All the AMC codes from Table I are subfamilies of MM codes. Notably, this family
 
 - ## Cyclic Hypergraph product codes ([aydin2025cyclichypergraphproductcode](@cite))
 
-Here is an example of `[[450, 32, 8]]` C2 code from Table I of [aydin2025cyclichypergraphproductcode](@cite).
+Here is an example of `[[450, 32, 8]]` **C2** code from Table I of [aydin2025cyclichypergraphproductcode](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
@@ -143,7 +143,7 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time
 (450, 32, 8)
 ```
 
-Here is an example of `[[240, 8, 8]]` CxR code from Table I of [aydin2025cyclichypergraphproductcode](@cite).
+Here is an example of `[[240, 8, 8]]` **CxR** code from Table I of [aydin2025cyclichypergraphproductcode](@cite).
 
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC;
@@ -308,6 +308,8 @@ julia> import HiGHS;
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (96, 6, 4)
 ```
+
+- ## Haah's Cubic codes ([haah2011local](@cite))
 
 Here is an example of a `[[1024, 30, 13 ≤ d ≤ 32]]` Haah's cubic code from Appendix B,
 code D of [panteleev2021degenerate](@cite) on the `8 × 8 × 8` Lattice.
