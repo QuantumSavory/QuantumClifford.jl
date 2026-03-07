@@ -238,7 +238,6 @@ end
 
         @test p0 ≈ 0.5 atol=0.05
         @test p1 ≈ 0.5 atol=0.05
-        @test result.total_runtime < 30.0
     end
 
     @testset "Computational Correctness - Entanglement" begin
@@ -258,7 +257,6 @@ end
         correlation = p00 + p11
 
         @test correlation > 0.85
-        @test result.total_runtime < 60.0
     end
 
     @testset "Scalability" begin
@@ -304,7 +302,6 @@ end
         @test result.simulation_cost <= expected_cost_bound
         @test result.approximation_error ≈ 0.1 atol=0.02
         @test size(lrmeasurements(result), 1) == 200
-        @test result.total_runtime < 120.0
     end
 end
 

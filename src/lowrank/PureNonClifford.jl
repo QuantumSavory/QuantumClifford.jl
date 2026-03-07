@@ -476,8 +476,6 @@ struct LRTrajectoryResults
     total_extent::Float64
     "Number of qubits"
     n_qubits::Int
-    "Simulation time in seconds"
-    total_runtime::Float64
 end
 
 function Base.show(io::IO, r::LRTrajectoryResults)
@@ -489,7 +487,6 @@ function Base.show(io::IO, r::LRTrajectoryResults)
     println(io, "Simulation cost: $(r.simulation_cost) stabilizer terms")
     println(io, "Total extent: $(round(r.total_extent, digits=4))")
     println(io, "Approximation δ: $(r.approximation_error)")
-    println(io, "Runtime: $(round(r.total_runtime, digits=2)) seconds")
     
     if n_trajectories > 0
         outcomes = Dict{BitVector, Int}()
@@ -1055,23 +1052,19 @@ function lrtrajectories(circuit::AbstractVector{<:AbstractOperation},
 
     validate_simulation_parameters(circuit, n_qubits, trajectories, delta)
 
-    start_time = time()
-
     non_clifford_count = count(op -> !isclifford(op), circuit)
     delta_per_gate = non_clifford_count > 0 ? delta / non_clifford_count : delta
     state = PureGeneralizedStabilizer(n_qubits, delta_per_gate)
     mctrajectory!(state, circuit)
 
     measurements = sample_measurement_outcomes(state, trajectories; verbose)
-    total_runtime = time() - start_time
 
     return LRTrajectoryResults(
         measurements,
         length(state.states),
         state.accumulated_approximation_error,
         state.total_extent,
-        n_qubits,
-        total_runtime
+        n_qubits
     )
 end
 
