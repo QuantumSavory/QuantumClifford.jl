@@ -27,10 +27,10 @@ using DocStringExtensions
 export
     sT, sCCZ,
     PureGeneralizedStabilizer,
-    LRTrajectoryResults,
+    ComputationalBasisMeasurementTrajectoryResults,
 
-    lrtrajectories,
-    lrmeasurements,
+    cbtrajectories,
+    cbmeasurements,
     lrcost,
 
     isclifford,
@@ -443,20 +443,20 @@ end
 """
 $(TYPEDEF)
 
-Results from low-rank stabilizer simulation, analogous to PauliFrame results.
+Results from computational basis measurement trajectory simulation, analogous to PauliFrame results.
 
 $(TYPEDFIELDS)
 
 # Accessing Results
-Use `lrmeasurements(result)` to get measurement matrix, similar to `pfmeasurements`.
+Use `cbmeasurements(result)` to get measurement matrix, similar to `pfmeasurements`.
 
 # Example
 ```jldoctest
 julia> circuit = [sHadamard(1), sT(1), sCNOT(1,2)];
 
-julia> result = lrtrajectories(circuit, 2; trajectories=100, delta=0.1);
+julia> result = cbtrajectories(circuit, 2; trajectories=100, delta=0.1);
 
-julia> measurements = lrmeasurements(result);
+julia> measurements = cbmeasurements(result);
 
 julia> size(measurements)
 (100, 2)
@@ -465,7 +465,7 @@ julia> eltype(measurements)
 Bool
 ```
 """
-struct LRTrajectoryResults
+struct ComputationalBasisMeasurementTrajectoryResults
     "Measurement outcomes (trajectories × qubits)"
     measurements::Matrix{Bool}
     "Number of sparse stabilizer terms used (k)"
@@ -478,10 +478,10 @@ struct LRTrajectoryResults
     n_qubits::Int
 end
 
-function Base.show(io::IO, r::LRTrajectoryResults)
+function Base.show(io::IO, r::ComputationalBasisMeasurementTrajectoryResults)
     n_trajectories = size(r.measurements, 1)
     
-    println(io, "=== Low-Rank Stabilizer Simulation Results ===")
+    println(io, "=== Computational Basis Measurement Trajectory Results ===")
     println(io, "Qubits: $(r.n_qubits)")
     println(io, "Trajectories: $n_trajectories")
     println(io, "Simulation cost: $(r.simulation_cost) stabilizer terms")
@@ -508,7 +508,7 @@ function Base.show(io::IO, r::LRTrajectoryResults)
     end
 end
 
-function Base.show(io::IO, ::MIME"text/plain", r::LRTrajectoryResults)
+function Base.show(io::IO, ::MIME"text/plain", r::ComputationalBasisMeasurementTrajectoryResults)
     show(io, r)
 end
 
@@ -524,9 +524,9 @@ Analogous to `pfmeasurements` for Pauli frames.
 ```jldoctest
 julia> circuit = [sHadamard(1), sT(1)];
 
-julia> result = lrtrajectories(circuit; trajectories=100);
+julia> result = cbtrajectories(circuit; trajectories=100);
 
-julia> m = lrmeasurements(result);
+julia> m = cbmeasurements(result);
 
 julia> size(m)
 (100, 1)
@@ -535,7 +535,7 @@ julia> 0.0 <= sum(m[:, 1] .== false) / size(m, 1) <= 1.0
 true
 ```
 """
-lrmeasurements(r::LRTrajectoryResults) = r.measurements
+cbmeasurements(r::ComputationalBasisMeasurementTrajectoryResults) = r.measurements
 
 """
 $(TYPEDEF)
@@ -573,7 +573,7 @@ Create a `PureGeneralizedStabilizer` initialized to the |0⟩ⁿ state.
 The `delta_per_gate` parameter controls the approximation error budget
 for each non-Clifford gate during sparsification.
 
-See also: [`lrtrajectories`](@ref)
+See also: [`cbtrajectories`](@ref)
 """
 function PureGeneralizedStabilizer(n_qubits::Int, delta_per_gate::Float64=0.1)
     n_qubits > 0 || throw(ArgumentError("Number of qubits must be positive, got $n_qubits"))
@@ -981,7 +981,7 @@ quantum state. Use [`PureGeneralizedStabilizer`](@ref) directly with [`mctraject
 if you need access to the state representation.
 
 # Comparison to `mctrajectories` with `GeneralizedStabilizer`
-- `lrtrajectories`: Only supports unitary gates (no mid-circuit measurements). 
+- `cbtrajectories`: Only supports unitary gates (no mid-circuit measurements). 
   Performs implicit Z-basis measurements on all qubits at the end. Faster for 
   circuits with many non-Clifford gates due to sparsification.
 - `mctrajectories` with `GeneralizedStabilizer`: Supports mid-circuit measurements 
@@ -995,8 +995,8 @@ if you need access to the state representation.
 - `verbose::Bool=false`: Show detailed progress information
 
 # Returns
-`LRTrajectoryResults` containing measurement outcomes and simulation statistics.
-Use `lrmeasurements(result)` to extract the measurement matrix.
+`ComputationalBasisMeasurementTrajectoryResults` containing measurement outcomes and simulation statistics.
+Use `cbmeasurements(result)` to extract the measurement matrix.
 
 # Algorithm
 Implements the Sum-over-Cliffords method from Section 2.3.2 of [bravyi2019simulation](@cite)
@@ -1017,12 +1017,12 @@ with incremental sparsification (Section 5.2) after each non-Clifford gate:
 ```jldoctest
 julia> circuit = [sHadamard(1), sT(1), sHadamard(1)];
 
-julia> result = lrtrajectories(circuit; trajectories=100, delta=0.1);
+julia> result = cbtrajectories(circuit; trajectories=100, delta=0.1);
 
 julia> result.simulation_cost > 0
 true
 
-julia> measurements = lrmeasurements(result);
+julia> measurements = cbmeasurements(result);
 
 julia> size(measurements)
 (100, 1)
@@ -1033,18 +1033,18 @@ julia> 0.0 <= p0 <= 1.0
 true
 ```
 
-See also: [`PureGeneralizedStabilizer`](@ref), [`lrmeasurements`](@ref), [`lrcost`](@ref)
+See also: [`PureGeneralizedStabilizer`](@ref), [`cbmeasurements`](@ref), [`lrcost`](@ref)
 """
-function lrtrajectories(circuit;
+function cbtrajectories(circuit;
                         trajectories::Int=1000,
                         delta::Float64=0.1,
                         verbose::Bool=false)
 
     n_qubits = infer_circuit_nqubits(circuit)
-    return lrtrajectories(circuit, n_qubits; trajectories, delta, verbose)
+    return cbtrajectories(circuit, n_qubits; trajectories, delta, verbose)
 end
 
-function lrtrajectories(circuit,
+function cbtrajectories(circuit,
                         n_qubits::Int;
                         trajectories::Int=1000,
                         delta::Float64=0.1,
@@ -1059,7 +1059,7 @@ function lrtrajectories(circuit,
 
     measurements = sample_measurement_outcomes(state, trajectories; verbose)
 
-    return LRTrajectoryResults(
+    return ComputationalBasisMeasurementTrajectoryResults(
         measurements,
         length(state.states),
         state.accumulated_approximation_error,

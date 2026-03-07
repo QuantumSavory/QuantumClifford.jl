@@ -8,23 +8,23 @@
     @testset "Pure Clifford Circuit" begin
         circuit_clifford = [sHadamard(1), sCNOT(1,2), sZ(1)]
 
-        result = lrtrajectories(circuit_clifford, 2; trajectories=50, delta=0.1, verbose=false)
+        result = cbtrajectories(circuit_clifford, 2; trajectories=50, delta=0.1, verbose=false)
         @test result.simulation_cost == 1
         @test result.approximation_error == 0.0
-        @test size(lrmeasurements(result), 1) == 50
+        @test size(cbmeasurements(result), 1) == 50
     end
 
     @testset "Mixed Circuit" begin
         circuit_mixed = [sHadamard(1), sPhase(1), sCNOT(1,2)]
 
-        result = lrtrajectories(circuit_mixed, 2; trajectories=30, delta=0.2, verbose=false)
+        result = cbtrajectories(circuit_mixed, 2; trajectories=30, delta=0.2, verbose=false)
         @test result.simulation_cost >= 1
-        @test size(lrmeasurements(result), 1) == 30
+        @test size(cbmeasurements(result), 1) == 30
     end
 
     @testset "T-Gate Simulation" begin
         circuit_T = [sHadamard(1), sT(1), sHadamard(1)]
-        result_T = lrtrajectories(circuit_T, 1; trajectories=100, delta=0.1, verbose=false)
+        result_T = cbtrajectories(circuit_T, 1; trajectories=100, delta=0.1, verbose=false)
 
         expected_xi_T = (cos(π/8) + tan(π/8)*sin(π/8))^2
         expected_cost_T = ceil(Int, 1 + expected_xi_T / 0.1^2)
@@ -36,7 +36,7 @@
 
     @testset "Multiple T-Gates" begin
         circuit_3T = [sT(1), sT(1), sT(1)]
-        result_3T = lrtrajectories(circuit_3T, 1; trajectories=50, delta=0.1, verbose=false)
+        result_3T = cbtrajectories(circuit_3T, 1; trajectories=50, delta=0.1, verbose=false)
 
         expected_xi_T = (cos(π/8) + tan(π/8)*sin(π/8))^2
         expected_xi_3T = expected_xi_T^3
@@ -51,7 +51,7 @@
             sCCZ(1, 2, 3),
             sHadamard(1), sHadamard(2), sHadamard(3)
         ]
-        result_CCZ = lrtrajectories(circuit_CCZ, 3; trajectories=50, delta=0.1, verbose=false)
+        result_CCZ = cbtrajectories(circuit_CCZ, 3; trajectories=50, delta=0.1, verbose=false)
 
         expected_xi_CCZ = 16.0/9.0
         expected_cost_CCZ = ceil(Int, 1 + expected_xi_CCZ / 0.1^2)
@@ -61,13 +61,13 @@
     end
 
     @testset "Error Handling" begin
-        @test_throws ArgumentError lrtrajectories([], 1)
-        @test_throws ArgumentError lrtrajectories([sHadamard(1)], 0)
-        @test_throws ArgumentError lrtrajectories([sHadamard(1)], 1; trajectories=-1)
-        @test_throws ArgumentError lrtrajectories([sHadamard(1)], 1; delta=1.5)
+        @test_throws ArgumentError cbtrajectories([], 1)
+        @test_throws ArgumentError cbtrajectories([sHadamard(1)], 0)
+        @test_throws ArgumentError cbtrajectories([sHadamard(1)], 1; trajectories=-1)
+        @test_throws ArgumentError cbtrajectories([sHadamard(1)], 1; delta=1.5)
 
         circuit_invalid = [sHadamard(5)]
-        @test_throws ArgumentError lrtrajectories(circuit_invalid, 2)
+        @test_throws ArgumentError cbtrajectories(circuit_invalid, 2)
     end
 
     @testset "Cost Estimation" begin
@@ -75,7 +75,7 @@
         deltas = [0.5, 0.2, 0.1, 0.05]
 
         for delta in deltas
-            result = lrtrajectories(circuit, 1; trajectories=30, delta=delta, verbose=false)
+            result = cbtrajectories(circuit, 1; trajectories=30, delta=delta, verbose=false)
             xi_T = (cos(π/8) + tan(π/8)*sin(π/8))^2
             bound = ceil(Int, 1 + xi_T / delta^2)
 
@@ -230,9 +230,9 @@ end
     @testset "Computational Correctness - Single Qubit" begin
         circuit = [sHadamard(1), sT(1)]
 
-        result = lrtrajectories(circuit, 1; trajectories=1000, delta=0.05, verbose=false)
+        result = cbtrajectories(circuit, 1; trajectories=1000, delta=0.05, verbose=false)
 
-        measurements = lrmeasurements(result)
+        measurements = cbmeasurements(result)
         p0 = sum(measurements[:, 1] .== false) / size(measurements, 1)
         p1 = sum(measurements[:, 1] .== true) / size(measurements, 1)
 
@@ -247,9 +247,9 @@ end
             sT(1)
         ]
 
-        result = lrtrajectories(circuit, 2; trajectories=1000, delta=0.1, verbose=false)
+        result = cbtrajectories(circuit, 2; trajectories=1000, delta=0.1, verbose=false)
 
-        measurements = lrmeasurements(result)
+        measurements = cbmeasurements(result)
         freq = compute_outcome_frequencies(measurements)
 
         p00 = get(freq, BitVector([false, false]), 0.0)
@@ -269,7 +269,7 @@ end
             append!(circuit, [sHadamard(i) for i in 1:n])
 
             start = time()
-            result = lrtrajectories(circuit, n; trajectories=30, delta=0.2, verbose=false)
+            result = cbtrajectories(circuit, n; trajectories=30, delta=0.2, verbose=false)
             elapsed = time() - start
 
             @test elapsed < 30.0
@@ -287,7 +287,7 @@ end
             sT(2), sT(4)
         ]
 
-        result = lrtrajectories(
+        result = cbtrajectories(
             circuit, n_qubits;
             trajectories=200,
             delta=0.1,
@@ -301,7 +301,7 @@ end
         @test result.simulation_cost > 1
         @test result.simulation_cost <= expected_cost_bound
         @test result.approximation_error ≈ 0.1 atol=0.02
-        @test size(lrmeasurements(result), 1) == 200
+        @test size(cbmeasurements(result), 1) == 200
     end
 end
 
@@ -400,8 +400,8 @@ end
     @testset "H-T-H Circuit Probability" begin
         circuit = [sHadamard(1), sT(1), sHadamard(1)]
 
-        result = lrtrajectories(circuit, 1; trajectories=10000, delta=0.05, verbose=false)
-        measurements = lrmeasurements(result)
+        result = cbtrajectories(circuit, 1; trajectories=10000, delta=0.05, verbose=false)
+        measurements = cbmeasurements(result)
 
         p0 = sum(measurements[:, 1] .== false) / size(measurements, 1)
         expected_p0 = cos(π/8)^2
@@ -415,8 +415,8 @@ end
     @testset "T|+⟩ State Distribution" begin
         circuit = [sHadamard(1), sT(1)]
 
-        result = lrtrajectories(circuit, 1; trajectories=5000, delta=0.05, verbose=false)
-        measurements = lrmeasurements(result)
+        result = cbtrajectories(circuit, 1; trajectories=5000, delta=0.05, verbose=false)
+        measurements = cbmeasurements(result)
 
         p0 = sum(measurements[:, 1] .== false) / size(measurements, 1)
         p1 = sum(measurements[:, 1] .== true) / size(measurements, 1)
@@ -430,8 +430,8 @@ end
     @testset "Multiple T Gates" begin
         circuit_2T = [sHadamard(1), sT(1), sT(1), sHadamard(1)]
 
-        result = lrtrajectories(circuit_2T, 1; trajectories=5000, delta=0.05, verbose=false)
-        measurements = lrmeasurements(result)
+        result = cbtrajectories(circuit_2T, 1; trajectories=5000, delta=0.05, verbose=false)
+        measurements = cbmeasurements(result)
 
         p0 = sum(measurements[:, 1] .== false) / size(measurements, 1)
         expected_p0 = 0.5
@@ -454,8 +454,8 @@ end
             sT(1)
         ]
 
-        result = lrtrajectories(circuit, 2; trajectories=5000, delta=0.1, verbose=false)
-        measurements = lrmeasurements(result)
+        result = cbtrajectories(circuit, 2; trajectories=5000, delta=0.1, verbose=false)
+        measurements = cbmeasurements(result)
         freq = compute_outcome_frequencies(measurements)
 
         p00 = get(freq, BitVector([false, false]), 0.0)
@@ -477,11 +477,11 @@ end
             sHadamard(1), sHadamard(2), sHadamard(3)
         ]
 
-        result = lrtrajectories(circuit, 3; trajectories=2000, delta=0.1, verbose=false)
+        result = cbtrajectories(circuit, 3; trajectories=2000, delta=0.1, verbose=false)
 
         @test result.simulation_cost > 1
         @test result.total_extent ≈ 16/9 atol=0.01
-        @test size(lrmeasurements(result)) == (2000, 3)
+        @test size(cbmeasurements(result)) == (2000, 3)
     end
 end
 
@@ -491,23 +491,23 @@ end
 
     @testset "Show Method" begin
         circuit = [sHadamard(1), sT(1)]
-        result = lrtrajectories(circuit, 1; trajectories=100, delta=0.1, verbose=false)
+        result = cbtrajectories(circuit, 1; trajectories=100, delta=0.1, verbose=false)
 
         io = IOBuffer()
         show(io, result)
         output = String(take!(io))
 
-        @test occursin("Low-Rank Stabilizer Simulation Results", output)
+        @test occursin("Computational Basis Measurement Trajectory Results", output)
         @test occursin("Qubits: 1", output)
         @test occursin("Trajectories: 100", output)
         @test occursin("stabilizer terms", output)
     end
 
-    @testset "lrmeasurements Accessor" begin
+    @testset "cbmeasurements Accessor" begin
         circuit = [sHadamard(1), sT(1)]
-        result = lrtrajectories(circuit, 1; trajectories=50, delta=0.1, verbose=false)
+        result = cbtrajectories(circuit, 1; trajectories=50, delta=0.1, verbose=false)
 
-        m = lrmeasurements(result)
+        m = cbmeasurements(result)
 
         @test m isa Matrix{Bool}
         @test size(m) == (50, 1)
@@ -519,16 +519,16 @@ end
     using QuantumClifford.PureNonClifford
 
     @testset "Single Gate Circuits" begin
-        result = lrtrajectories([sT(1)], 1; trajectories=50, delta=0.1, verbose=false)
+        result = cbtrajectories([sT(1)], 1; trajectories=50, delta=0.1, verbose=false)
         @test result.simulation_cost > 1
 
-        result = lrtrajectories([sHadamard(1)], 1; trajectories=50, delta=0.1, verbose=false)
+        result = cbtrajectories([sHadamard(1)], 1; trajectories=50, delta=0.1, verbose=false)
         @test result.simulation_cost == 1
     end
 
     @testset "Large Delta" begin
         circuit = [sHadamard(1), sT(1)]
-        result = lrtrajectories(circuit, 1; trajectories=50, delta=0.9, verbose=false)
+        result = cbtrajectories(circuit, 1; trajectories=50, delta=0.9, verbose=false)
 
         @test result.simulation_cost >= 1
         @test result.simulation_cost <= 10
@@ -548,14 +548,14 @@ end
 
     @testset "Auto Qubit Inference" begin
         circuit = [sHadamard(1), sT(3), sCNOT(2, 4)]
-        result = lrtrajectories(circuit; trajectories=20, delta=0.2, verbose=false)
+        result = cbtrajectories(circuit; trajectories=20, delta=0.2, verbose=false)
         @test result.n_qubits == 4
     end
 
     @testset "Tuple circuit (untyped iterator)" begin
         circuit = (sHadamard(1), sT(1), sHadamard(1))
-        result = lrtrajectories(circuit, 1; trajectories=20, delta=0.2)
-        @test size(lrmeasurements(result)) == (20, 1)
+        result = cbtrajectories(circuit, 1; trajectories=20, delta=0.2)
+        @test size(cbmeasurements(result)) == (20, 1)
     end
 end
 
@@ -603,7 +603,7 @@ end
         )
 
         delta = 0.7
-        result = lrtrajectories(circuit, 1; trajectories=100, delta=delta, verbose=false)
+        result = cbtrajectories(circuit, 1; trajectories=100, delta=delta, verbose=false)
 
         @test result.simulation_cost < 2^n_gates
         @test result.simulation_cost < 100000
@@ -617,7 +617,7 @@ end
         circuit = AbstractOperation[sT(1) for _ in 1:n_gates]
 
         start_time = time()
-        result = lrtrajectories(circuit, 1; trajectories=50, delta=0.8, verbose=false)
+        result = cbtrajectories(circuit, 1; trajectories=50, delta=0.8, verbose=false)
         elapsed = time() - start_time
 
         @test elapsed < 120.0
@@ -631,7 +631,7 @@ end
     @testset "Small Circuit No Sparsification" begin
         circuit = AbstractOperation[sT(1), sT(1), sT(1)]
 
-        result = lrtrajectories(circuit, 1; trajectories=50, delta=0.1, verbose=false)
+        result = cbtrajectories(circuit, 1; trajectories=50, delta=0.1, verbose=false)
 
         @test result.simulation_cost == 8
     end
@@ -646,8 +646,8 @@ end
         delta = 0.1
         n_runs = 5
         for _ in 1:n_runs
-            result = lrtrajectories(circuit, 1; trajectories=2000, delta=delta, verbose=false)
-            measurements = lrmeasurements(result)
+            result = cbtrajectories(circuit, 1; trajectories=2000, delta=delta, verbose=false)
+            measurements = cbmeasurements(result)
 
             p0 = sum(measurements[:, 1] .== false) / size(measurements, 1)
 
@@ -662,8 +662,8 @@ end
 
         delta = 0.2
 
-        result_1T = lrtrajectories(circuit_1T, 1; trajectories=50, delta=delta, verbose=false)
-        result_4T = lrtrajectories(circuit_4T, 1; trajectories=50, delta=delta, verbose=false)
+        result_1T = cbtrajectories(circuit_1T, 1; trajectories=50, delta=delta, verbose=false)
+        result_4T = cbtrajectories(circuit_4T, 1; trajectories=50, delta=delta, verbose=false)
 
         @test result_1T.simulation_cost >= 1
         @test result_4T.simulation_cost >= 1
@@ -739,8 +739,8 @@ end
     @testset "H-T^4-H Distribution" begin
         circuit = [sHadamard(1), sT(1), sT(1), sT(1), sT(1), sHadamard(1)]
 
-        result = lrtrajectories(circuit, 1; trajectories=5000, delta=0.05, verbose=false)
-        measurements = lrmeasurements(result)
+        result = cbtrajectories(circuit, 1; trajectories=5000, delta=0.05, verbose=false)
+        measurements = cbmeasurements(result)
 
         p1 = sum(measurements[:, 1] .== true) / size(measurements, 1)
 
@@ -754,8 +754,8 @@ end
             [sHadamard(1)]
         )
 
-        result = lrtrajectories(circuit, 1; trajectories=5000, delta=0.1, verbose=false)
-        measurements = lrmeasurements(result)
+        result = cbtrajectories(circuit, 1; trajectories=5000, delta=0.1, verbose=false)
+        measurements = cbmeasurements(result)
 
         p0 = sum(measurements[:, 1] .== false) / size(measurements, 1)
 
@@ -779,11 +779,11 @@ end
             sHadamard(1)
         ]
 
-        result = lrtrajectories(circuit, 1; trajectories=3000, delta=0.8, verbose=false)
+        result = cbtrajectories(circuit, 1; trajectories=3000, delta=0.8, verbose=false)
 
         @test result.simulation_cost < 65536
 
-        measurements = lrmeasurements(result)
+        measurements = cbmeasurements(result)
         p0 = sum(measurements[:, 1] .== false) / size(measurements, 1)
 
         @test p0 > 0.70
@@ -797,11 +797,11 @@ end
             [sT(1) for _ in 1:n_T_gates]...,
         ]
 
-        result = lrtrajectories(circuit, 2; trajectories=2000, delta=0.7, verbose=false)
+        result = cbtrajectories(circuit, 2; trajectories=2000, delta=0.7, verbose=false)
 
         @test result.simulation_cost < 2^n_T_gates
 
-        measurements = lrmeasurements(result)
+        measurements = cbmeasurements(result)
         freq = compute_outcome_frequencies(measurements)
 
         p00 = get(freq, BitVector([false, false]), 0.0)
@@ -825,13 +825,13 @@ end
             sHadamard(1), sHadamard(2), sHadamard(3)
         ]
 
-        result = lrtrajectories(circuit, 3; trajectories=500, delta=0.9, verbose=false)
+        result = cbtrajectories(circuit, 3; trajectories=500, delta=0.9, verbose=false)
 
         xi_CCZ = 16.0/9.0
         @test result.total_extent ≈ xi_CCZ^3 rtol=0.01
 
         @test result.simulation_cost >= 1
-        @test size(lrmeasurements(result)) == (500, 3)
+        @test size(cbmeasurements(result)) == (500, 3)
     end
 
     @testset "Mixed T and CCZ Gates" begin
@@ -844,7 +844,7 @@ end
             sHadamard(1), sHadamard(2), sHadamard(3)
         ]
 
-        result = lrtrajectories(circuit, 3; trajectories=200, delta=0.5, verbose=false)
+        result = cbtrajectories(circuit, 3; trajectories=200, delta=0.5, verbose=false)
 
         xi_T = (cos(π/8) + tan(π/8)*sin(π/8))^2
         xi_CCZ = 16.0/9.0
@@ -859,7 +859,7 @@ end
         circuit = AbstractOperation[sT(1) for _ in 1:n_gates]
 
         start_time = time()
-        result = lrtrajectories(circuit, 1; trajectories=20, delta=0.95, verbose=false)
+        result = cbtrajectories(circuit, 1; trajectories=20, delta=0.95, verbose=false)
         elapsed = time() - start_time
 
         @test elapsed < 180.0
