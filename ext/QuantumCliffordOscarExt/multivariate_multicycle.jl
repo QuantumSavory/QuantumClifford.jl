@@ -311,7 +311,6 @@ julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 
 - ## Haah's Cubic codes ([haah2011local](@cite))
 
-
 Here is an example of a `[[1024, 30, 13 ≤ d ≤ 32]]` Haah's cubic code from Appendix B,
 code D of [panteleev2021degenerate](@cite) on the `8 × 8 × 8` Lattice.
 
