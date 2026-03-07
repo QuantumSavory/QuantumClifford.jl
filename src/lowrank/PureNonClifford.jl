@@ -20,7 +20,9 @@ import ..QuantumClifford:
 
     mctrajectory!,
 
-    sT, sCCZ
+    sT, sCCZ,
+
+    measurements
 
 using DocStringExtensions
 
@@ -30,7 +32,6 @@ export
     EndMeasurementSampleResults,
 
     emtrajectories,
-    measurements,
     lrcost,
 
     isclifford,
