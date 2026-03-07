@@ -94,6 +94,12 @@ export
     petrajectories, applybranches,
     # nonclifford
     GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase, pcRx,
+    # Non-Clifford simulation - low-rank stabilizer decomposition
+    PureGeneralizedStabilizer,
+    sT, sCCZ,
+    emtrajectories, measurements, lrcost,
+    EndMeasurementSampleResults,
+    isclifford, stabilizer_extent,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
@@ -123,6 +129,7 @@ include("macrotools.jl")
 
 abstract type AbstractOperation end
 abstract type AbstractCliffordOperator <: AbstractOperation end
+abstract type AbstractNonCliffordOperator <: AbstractOperation end
 
 include("pauli_operator.jl")
 
@@ -1436,10 +1443,15 @@ using .GraphSim
 include("entanglement.jl")
 #
 include("tableau_show.jl")
+include("isclifford.jl")
+include("symbolic_noncliffords.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
-include("nonclifford.jl")
+include("lowrank/PauliChannelNonClifford.jl")
+include("lowrank/PureNonClifford.jl")
+using .PauliChannelNonClifford
+using .PureNonClifford
 include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #

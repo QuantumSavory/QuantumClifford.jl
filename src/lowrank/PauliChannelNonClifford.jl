@@ -1,3 +1,26 @@
+module PauliChannelNonClifford
+using LinearAlgebra
+using DataStructures: DefaultDict
+using DocStringExtensions
+import ..QuantumClifford
+import ..QuantumClifford:
+    AbstractQCState, AbstractOperation, AbstractCliffordOperator, AbstractStabilizer,
+    PauliOperator, Stabilizer, MixedDestabilizer, Destabilizer,
+    apply!, nqubits, stabilizerview, destabilizerview, rank,
+    zero, comm, mul_right!, embed, tensor, ⊗, project!, ghz,
+    I, X, Z, expect
+
+export
+    GeneralizedStabilizer,
+    PauliChannel,
+    UnitaryPauliChannel,
+    AbstractPauliChannel,
+    pcT,
+    pcPhase,
+    pcRx,
+    invsparsity,
+    rowdecompose
+
 """
 $(TYPEDEF)
 
@@ -148,7 +171,7 @@ julia> prob = (real(χ′)+1)/2
 ```
 
 """
-function expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
+function QuantumClifford.expect(p::PauliOperator, s::GeneralizedStabilizer) # TODO optimize
     χ′ = zero(valtype(s.destabweights))
     phase, b, c = rowdecompose(p, s.stab)
     for ((dᵢ,dⱼ), χ) in s.destabweights
@@ -318,7 +341,7 @@ julia> χ′ = expect(P"-X", sm)
 julia> prob₁ = (real(χ′)+1)/2
 0.8535533905932737
 
-julia> QuantumClifford._projectrand_notnorm(copy(sm), P"X", 0)[1]
+julia> QuantumClifford.PauliChannelNonClifford._projectrand_notnorm(copy(sm), P"X", 0)[1]
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
@@ -327,7 +350,7 @@ A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 with ϕᵢⱼ | Pᵢ | Pⱼ:
  0.146447+0.0im | + Z | + Z
 
-julia> QuantumClifford._projectrand_notnorm(copy(sm), P"X", 1)[1]
+julia> QuantumClifford.PauliChannelNonClifford._projectrand_notnorm(copy(sm), P"X", 1)[1]
 A mixture ∑ ϕᵢⱼ Pᵢ ρ Pⱼ† where ρ is
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z
@@ -339,7 +362,7 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
 
 See also: [`expect`](@ref)
 """
-function projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
+function QuantumClifford.projectrand!(sm::GeneralizedStabilizer, p::PauliOperator)
     # Compute expectation value
     exp_val = expect(p, sm)
     prob_plus = (real(exp_val) + 1) / 2
@@ -828,4 +851,5 @@ function pcRx(θ)
         (I, X),
         (cos(θ/2), -im*sin(θ/2))
     )
+end
 end
