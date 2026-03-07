@@ -449,7 +449,7 @@ Results from computational basis measurement trajectory simulation, analogous to
 $(TYPEDFIELDS)
 
 # Accessing Results
-Use `measurements(result)` to get measurement matrix, similar to `pfmeasurements`.
+Use `measurements(result)` to get the measurement matrix.
 
 # Example
 ```jldoctest
@@ -457,12 +457,12 @@ julia> circuit = [sHadamard(1), sT(1), sCNOT(1,2)];
 
 julia> result = emtrajectories(circuit, 2; trajectories=100, delta=0.1);
 
-julia> measurements = measurements(result);
+julia> meas = measurements(result);
 
-julia> size(measurements)
+julia> size(meas)
 (100, 2)
 
-julia> eltype(measurements)
+julia> eltype(meas)
 Bool
 ```
 """
@@ -519,7 +519,7 @@ $(SIGNATURES)
 Extract measurement outcomes from simulation results.
 Each row is one trajectory, each column is one measured qubit.
 
-Analogous to `pfmeasurements` for Pauli frames.
+Analogous to `measurements` for Pauli frames.
 
 # Example
 ```jldoctest
@@ -1023,12 +1023,12 @@ julia> result = emtrajectories(circuit; trajectories=100, delta=0.1);
 julia> result.simulation_cost > 0
 true
 
-julia> measurements = measurements(result);
+julia> meas = measurements(result);
 
-julia> size(measurements)
+julia> size(meas)
 (100, 1)
 
-julia> p0 = sum(measurements[:, 1] .== false) / size(measurements, 1);
+julia> p0 = sum(meas[:, 1] .== false) / size(meas, 1);
 
 julia> 0.0 <= p0 <= 1.0
 true

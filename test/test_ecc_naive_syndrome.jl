@@ -52,7 +52,7 @@
         frames = PauliFrame(nframes, dataqubits+ancqubits, regbits)
         circuit = vcat(ecirc, scirc)
         pftrajectories(frames, circuit)
-        @test sum(pfmeasurements(frames)) == 0
+        @test sum(measurements(frames)) == 0
     end
 
     @testset "naive syndrome circuits - zero syndrome for logical states" begin

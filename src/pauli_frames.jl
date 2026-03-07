@@ -245,7 +245,7 @@ For a given [`Register`](@ref) and circuit, simulates the reference circuit acti
 register and then also simulate numerous [`PauliFrame`](@ref) trajectories.
 Returns the register and the [`PauliFrame`](@ref) instance.
 
-Use [`pfmeasurements`](@ref) to get the measurement results.
+Use [`measurements`](@ref) to get the measurement results.
 """
 function pftrajectories(register::Register, circuit; trajectories=500)
     for op in circuit
