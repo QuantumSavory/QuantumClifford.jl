@@ -426,7 +426,7 @@ function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_
             c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ))
             dᵢ′ = dₗ .⊻ dᵢ
             dⱼ′ = dᵣ .⊻ dⱼ
-            χ′ = χ * w * (-tone)^c * (im)^(phaseₗ-phaseᵣ+4) # alpha_l*alphaᵣ† = phaseₗ-phaseᵣ
+            χ′ = χ * w * (-tone)^c * (im)^(phaseₗ-phaseᵣ+4) # alpha_l*alphaᵣ† = i^(phaseₗ-phaseᵣ)
             newdict[(dᵢ′,dⱼ′)] += χ′
         end
     end
