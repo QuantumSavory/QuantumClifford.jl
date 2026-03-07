@@ -423,10 +423,10 @@ function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_
             w = gate.weights[i]
             phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ,stab)
             phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ,stab)
-            c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ))*2
+            c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ))
             dᵢ′ = dₗ .⊻ dᵢ
             dⱼ′ = dᵣ .⊻ dⱼ
-            χ′ = χ * w * (-tone)^c * (im)^(-phaseₗ+phaseᵣ+4)
+            χ′ = χ * w * (-tone)^c * (im)^(phaseₗ-phaseᵣ+4) # alpha_l*alphaᵣ† = i^(phaseₗ-phaseᵣ)
             newdict[(dᵢ′,dⱼ′)] += χ′
         end
     end
