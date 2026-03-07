@@ -885,11 +885,11 @@ $(SIGNATURES)
 
 Validation of simulation parameters.
 """
-function validate_simulation_parameters(circuit::AbstractVector,
+function validate_simulation_parameters(circuit,
                                        n_qubits::Int,
                                        trajectories::Int,
                                        delta::Float64)
-    
+
     isempty(circuit) && throw(ArgumentError("Circuit cannot be empty"))
     n_qubits > 0 || throw(ArgumentError("Number of qubits must be positive, got $n_qubits"))
     trajectories > 0 || throw(ArgumentError("Number of trajectories must be positive, got $trajectories"))
@@ -1035,7 +1035,7 @@ true
 
 See also: [`PureGeneralizedStabilizer`](@ref), [`lrmeasurements`](@ref), [`lrcost`](@ref)
 """
-function lrtrajectories(circuit::AbstractVector{<:AbstractOperation};
+function lrtrajectories(circuit;
                         trajectories::Int=1000,
                         delta::Float64=0.1,
                         verbose::Bool=false)
@@ -1044,7 +1044,7 @@ function lrtrajectories(circuit::AbstractVector{<:AbstractOperation};
     return lrtrajectories(circuit, n_qubits; trajectories, delta, verbose)
 end
 
-function lrtrajectories(circuit::AbstractVector{<:AbstractOperation},
+function lrtrajectories(circuit,
                         n_qubits::Int;
                         trajectories::Int=1000,
                         delta::Float64=0.1,
@@ -1066,19 +1066,6 @@ function lrtrajectories(circuit::AbstractVector{<:AbstractOperation},
         state.total_extent,
         n_qubits
     )
-end
-
-function lrtrajectories(circuit::AbstractVector, n_qubits::Int; kwargs...)
-    isempty(circuit) && throw(ArgumentError("Circuit cannot be empty"))
-
-    for (i, op) in enumerate(circuit)
-        if !(op isa AbstractOperation)
-            throw(ArgumentError("Element $i is not an AbstractOperation: got $(typeof(op))"))
-        end
-    end
-
-    typed_circuit = AbstractOperation[op for op in circuit]
-    return lrtrajectories(typed_circuit, n_qubits; kwargs...)
 end
 
 """
@@ -1127,7 +1114,7 @@ julia> cost.total_extent ≈ stabilizer_extent(sT(1))^3
 true
 ```
 """
-function lrcost(circuit::AbstractVector{<:AbstractOperation}; delta::Float64=0.1)
+function lrcost(circuit; delta::Float64=0.1)
     total_extent = 1.0
     non_clifford_count = 0
     gate_extents = Float64[]

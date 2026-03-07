@@ -551,6 +551,12 @@ end
         result = lrtrajectories(circuit; trajectories=20, delta=0.2, verbose=false)
         @test result.n_qubits == 4
     end
+
+    @testset "Tuple circuit (untyped iterator)" begin
+        circuit = (sHadamard(1), sT(1), sHadamard(1))
+        result = lrtrajectories(circuit, 1; trajectories=20, delta=0.2)
+        @test size(lrmeasurements(result)) == (20, 1)
+    end
 end
 
 @testitem "PureNonClifford Incremental Sparsification" tags=[:non_clifford] begin
