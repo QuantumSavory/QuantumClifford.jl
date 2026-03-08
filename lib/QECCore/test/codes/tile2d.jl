@@ -1,9 +1,11 @@
 @testitem "Tile 2D" begin
     using Test
+    using HiGHS
+    using JuMP
     using Nemo: matrix, GF, rank
     using QECCore: Tile2D
     using QuantumClifford: stab_looks_good, stab_to_gf2
-    using QuantumClifford.ECC: parity_checks, code_n, code_k, parity_matrix_x, parity_matrix_z
+    using QuantumClifford.ECC: parity_checks, code_n, code_k, parity_matrix_x, parity_matrix_z, DistanceMIPAlgorithm
 
     @testset "Tile 2D" begin
         # from table 1 of https://arxiv.org/pdf/2504.09171
@@ -35,6 +37,7 @@
         c = Tile2D(B, horizX, vertX, Lx, Ly)
         @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 6)
         @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 6)
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900)) == 12
 
         # [[288, 8, 14]]
         B = 3
@@ -90,6 +93,7 @@
             @test computed_rank == n - k && computed_rank == nₛ - kₛ && n == nₛ && k == kₛ
             @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 6)
             @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 6)
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900)) == 12
         end
     end
 
