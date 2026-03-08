@@ -65,7 +65,13 @@ td > code {
 |` ├─ NoiseOp                            `|❌ |  ?| [`applynoise!`](@ref)  |
 |` ├─ NoiseOpAll                         `|❌ |  ?| [`applynoise!`](@ref)  |
 |` ├─ NoisyGate                          `|❌ |  ?| [`applynoise!`](@ref)  |
-|` └─ Reset                              `|✔️ |kn²| [`reset_qubits!`](@ref)|
+|` ├─ Reset                              `|✔️ |kn²| [`reset_qubits!`](@ref)|
+|` ├─ AbstractNonCliffordOperator        `|  |   |                        |
+|` │   ├─ sT                             `|✔️ |kn²|                        |
+|` │   └─ sCCZ                           `|✔️ |kn²|                        |
+|` └─ AbstractPauliChannel               `|  |   |                        |
+|`     ├─ PauliChannel                   `|❌ |kn²|                        |
+|`     └─ UnitaryPauliChannel            `|❌ |kn²|                        |
 
 ## Details of Operations Supported by [`apply!`](@ref)
 
@@ -150,3 +156,26 @@ Reset(new_state, qubit_indices)
 ```
 
 It can be done anywhere in a circuit, not just at the beginning.
+
+### Non-Clifford Gates
+
+The gates [`sT`](@ref) (T gate, π/8 phase rotation) and [`sCCZ`](@ref) (controlled-controlled-Z) are non-Clifford gates. They work with [`PureGeneralizedStabilizer`](@ref) states and are simulated via [`emtrajectories`](@ref), which performs end-of-circuit Z-basis measurements using the sum-over-Cliffords decomposition.
+
+```@example 1
+circuit = [sHadamard(1), sT(1), sHadamard(1)]
+result = emtrajectories(circuit; trajectories=100, delta=0.1)
+meas = measurements(result)
+size(meas) # 100 samples × 1 qubit
+```
+
+### Pauli Channels
+
+[`UnitaryPauliChannel`](@ref) and [`PauliChannel`](@ref) represent non-Clifford channels as weighted sums of Pauli operators. They work with [`GeneralizedStabilizer`](@ref) states via [`apply!`](@ref) and [`mctrajectories`](@ref).
+
+Predefined channels include [`pcT`](@ref) (the T gate as a Pauli channel), [`pcPhase`](@ref)`(ϕ)` (arbitrary phase rotation), and [`pcRx`](@ref)`(θ)` (X rotation).
+
+```@example 1
+using QuantumClifford.PauliChannelNonClifford: pcT # hide
+state = GeneralizedStabilizer(S"-X")
+apply!(state, pcT)
+```
