@@ -63,4 +63,33 @@
         @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 8)
         @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 8)
     end
+
+    @testset "Tile 2D: Appendix B: Stabilizers of weight-6 confined to 3 by 3 boxes yielding [[288, 12, 12]] codes" begin
+        # from table 1 of https://arxiv.org/pdf/2504.09171
+
+        appendix_B = [
+            (288, 8, 3, [(0,0),(0,1), (2,2)], [(0,2),(1,0),(2,0)], 10, 10),  # [[288, 8, 12]]
+            (288, 8, 3, [(0,0),(0,1), (2,2)], [(0,2),(1,2),(2,0)], 10, 10),  # [[288, 8, 12]]
+            (288, 8, 3, [(0,0),(1,0), (2,2)], [(0,1),(0,2),(2,0)], 10, 10),  # [[288, 8, 12]]
+            (288, 8, 3, [(0,0),(1,0), (2,2)], [(0,2),(2,0),(2,1)], 10, 10),  # [[288, 8, 12]]
+            (288, 8, 3, [(0,0),(1,2), (2,2)], [(0,1),(0,2),(2,0)], 10, 10),  # [[288, 8, 12]]
+            (288, 8, 3, [(0,0),(1,2), (2,2)], [(0,1),(0,2),(2,0)], 10, 10),  # [[288, 8, 12]]
+            (288, 8, 3, [(0,0),(1,2), (2,2)], [(0,2),(2,0),(2,1)], 10, 10),  # [[288, 8, 12]]
+            (288, 8, 3, [(0,0),(2,1), (2,2)], [(0,2),(1,0),(2,0)], 10, 10),  # [[288, 8, 12]]
+            (288, 8, 3, [(0,0),(2,1), (2,2)], [(0,2),(1,2),(2,0)], 10, 10),  # [[288, 8, 12]]
+        ]
+        for (n, k, B, horiz, vert, Lx, Ly) in appendix_B
+            c = Tile2D(B, horiz, vert, Lx, Ly)
+            stab = parity_checks(c)
+            nₛ, kₛ = code_n(stab), code_k(stab)
+            H = stab_to_gf2(stab)
+            mat = matrix(GF(2), H)
+            computed_rank = rank(mat)
+            @test computed_rank == nₛ - kₛ
+            @test stab_looks_good(stab, remove_redundant_rows=true)
+            @test computed_rank == n - k && computed_rank == nₛ - kₛ && n == nₛ && k == kₛ
+            @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 6)
+            @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 6)
+        end
+    end
 end
