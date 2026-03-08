@@ -71,9 +71,9 @@ Notice the results when the projection operator commutes with the state but is n
 
 For circuits containing non-Clifford gates, two state types are available:
 
-[`PureGeneralizedStabilizer`](@ref) represents a pure state as a weighted sum of stabilizer states. It supports the non-Clifford gates [`sT`](@ref) and [`sCCZ`](@ref). Use it with [`emtrajectories`](@ref) to sample Z-basis measurement outcomes at the end of a circuit. This is the right choice when you have a unitary circuit (no mid-circuit measurements) and only need measurement statistics at the end.
+[`PureGeneralizedStabilizer`](@ref) represents a pure state as a superposition (with arbitrary amplitudes) of stabilizer states. It supports the non-Clifford gates [`sT`](@ref) and [`sCCZ`](@ref). Use directly with [`apply!`](@ref) and [`mctrajectory!`](@ref) as usual, but be aware that it has limited support for measurements. Use it with [`emtrajectories`](@ref) to sample Z-basis measurement outcomes at the end of a circuit. This is the right choice when you have a unitary circuit (no mid-circuit measurements) and only need measurement statistics at the end.
 
-[`GeneralizedStabilizer`](@ref) represents a mixed state as a weighted sum ∑ ϕᵢⱼ Pᵢ ρ Pⱼ†. It supports arbitrary (non-unitary) Pauli channels such as [`PauliChannel`](@ref) and [`UnitaryPauliChannel`](@ref), applied via [`apply!`](@ref). Use it with [`mctrajectories`](@ref) when you need mid-circuit measurements or non-unitary noise channels. It is more general but slower for circuits with many non-Clifford gates.
+[`GeneralizedStabilizer`](@ref) represents a mixed state as a weighted sum ∑ ϕᵢⱼ Pᵢ ρ Pⱼ†, i.e. a weighted sum of "basis" density matrices, each of which is itself represented as a (projector on) stabilizer state. It supports arbitrary (non-unitary) Pauli channels such as [`PauliChannel`](@ref) and [`UnitaryPauliChannel`](@ref), applied via [`apply!`](@ref). Use it with [`mctrajectory!`](@ref). Can be used with [`expect`](@ref) as well.
 
 ## [Bit Packing in Integers and Array Order](@id Bit-Packing-in-Integers-and-Array-Order)
 
