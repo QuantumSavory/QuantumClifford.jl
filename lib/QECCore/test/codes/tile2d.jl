@@ -64,7 +64,7 @@
         @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 8)
     end
 
-    @testset "Tile 2D: Appendix B: Stabilizers of weight-6 confined to 3 by 3 boxes yielding [[288, 12, 12]] codes" begin
+    @testset "Tile 2D: Appendix B: Stabilizers of weight-6 confined to 3 by 3 boxes yielding [[288, 8, 12]] codes" begin
         # from table 1 of https://arxiv.org/pdf/2504.09171
 
         appendix_B = [
