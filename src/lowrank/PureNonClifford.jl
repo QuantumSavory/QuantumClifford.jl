@@ -32,10 +32,8 @@ export
     EndMeasurementSampleResults,
 
     emtrajectories,
-    lrcost,
 
-    isclifford,
-    stabilizer_extent
+    isclifford
 
 
 """
@@ -51,6 +49,8 @@ where F(ψ) = max_φ |⟨φ|ψ⟩|² is the stabilizer fidelity.
 
 # Examples
 ```jldoctest
+julia> using QuantumClifford.PureNonClifford: stabilizer_extent
+
 julia> stabilizer_extent(sHadamard(1))
 1.0
 
@@ -1034,7 +1034,7 @@ julia> 0.0 <= p0 <= 1.0
 true
 ```
 
-See also: [`PureGeneralizedStabilizer`](@ref), [`measurements`](@ref), [`lrcost`](@ref)
+See also: [`PureGeneralizedStabilizer`](@ref), [`measurements`](@ref)
 """
 function emtrajectories(circuit;
                         trajectories::Int=1000,
@@ -1101,6 +1101,8 @@ This is typically much smaller than the estimated final k.
 
 # Example
 ```jldoctest
+julia> using QuantumClifford.PureNonClifford: lrcost, stabilizer_extent
+
 julia> circuit = [sHadamard(1), sT(1), sT(1), sT(1), sHadamard(1)];
 
 julia> cost = lrcost(circuit; delta=0.1);
