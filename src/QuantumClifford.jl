@@ -77,6 +77,7 @@ export
     PauliNoise, PauliError,
     # Pauli frames
     PauliFrame, pftrajectories, pfmeasurements,
+    measurements,
     # Useful States
     bell, ghz, maximally_mixed,
     single_z, single_x, single_y,
@@ -92,14 +93,15 @@ export
     mctrajectory!, mctrajectories, applywstatus!,
     # petrajectories
     petrajectories, applybranches,
-    # nonclifford
-    GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase, pcRx,
-    # Non-Clifford simulation - low-rank stabilizer decomposition
-    PureGeneralizedStabilizer,
+    # nonclifford ops
+    pcT, pcPhase, pcRx,
     sT, sCCZ,
-    emtrajectories, measurements, lrcost,
-    EndMeasurementSampleResults,
-    isclifford, stabilizer_extent,
+    isclifford,
+    # nonclifford density matrix and Pauli Channels
+    GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel,
+    # nonclifford pure states
+    PureGeneralizedStabilizer,
+    emtrajectories,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
@@ -1437,21 +1439,23 @@ include("enumeration.jl")
 include("randoms.jl")
 include("useful_states.jl")
 #
-include("./graphs/graphs.jl")
+include("graphs/graphs.jl")
 using .GraphSim
 #
 include("entanglement.jl")
 #
 include("tableau_show.jl")
-include("isclifford.jl")
-include("symbolic_noncliffords.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
+#
+include("isclifford.jl")
+include("symbolic_noncliffords.jl")
 include("lowrank/PauliChannelNonClifford.jl")
 include("lowrank/PureNonClifford.jl")
 using .PauliChannelNonClifford
 using .PureNonClifford
+#
 include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
