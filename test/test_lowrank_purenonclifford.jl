@@ -3,7 +3,8 @@
     using QuantumClifford.PureNonClifford
     import QuantumClifford.PureNonClifford:
         get_gate_decomposition,
-        CliffordGateDecompositionCache
+        CliffordGateDecompositionCache,
+        lrcost, stabilizer_extent
 
     @testset "Pure Clifford Circuit" begin
         circuit_clifford = [sHadamard(1), sCNOT(1,2), sZ(1)]
@@ -209,7 +210,8 @@ end
     import QuantumClifford: AbstractOperation
     import QuantumClifford.PureNonClifford:
         sample_measurement_outcomes,
-        compute_outcome_frequencies
+        compute_outcome_frequencies,
+        lrcost, stabilizer_extent
 
     @testset "Measurement Sampling Tests" begin
         state = PureGeneralizedStabilizer(2, 0.2)
@@ -313,7 +315,8 @@ end
         get_gate_decomposition,
         decompose_rotation_magic_state,
         MagicStateDecompositionCache,
-        sparsify_mixed_destabilizer_decomposition
+        sparsify_mixed_destabilizer_decomposition,
+        lrcost, stabilizer_extent
 
     @testset "Sparsification (MixedDestabilizer)" begin
         state1 = MixedDestabilizer(S"Z")
@@ -396,6 +399,7 @@ end
 @testitem "PureNonClifford T-Gate Probability Distribution" tags=[:non_clifford] begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
+    using QuantumClifford.PureNonClifford: lrcost, stabilizer_extent
 
     @testset "H-T-H Circuit Probability" begin
         circuit = [sHadamard(1), sT(1), sHadamard(1)]
@@ -445,7 +449,7 @@ end
 @testitem "PureNonClifford Bell State with T" tags=[:non_clifford] begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
-    import QuantumClifford.PureNonClifford: compute_outcome_frequencies
+    import QuantumClifford.PureNonClifford: compute_outcome_frequencies, lrcost, stabilizer_extent
 
     @testset "Bell State Correlations" begin
         circuit = [
@@ -566,7 +570,8 @@ end
 
     import QuantumClifford: AbstractOperation
     import QuantumClifford.PureNonClifford:
-        sparsify_mixed_destabilizer_decomposition
+        sparsify_mixed_destabilizer_decomposition,
+        lrcost, stabilizer_extent
 
     @testset "sparsify_mixed_destabilizer_decomposition" begin
         state1 = MixedDestabilizer(S"Z")
