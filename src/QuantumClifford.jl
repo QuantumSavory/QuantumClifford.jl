@@ -1420,6 +1420,8 @@ include("fastmemlayout.jl")
 include("dense_cliffords.jl")
 # special one- and two- qubit operators
 include("symbolic_cliffords.jl")
+include("isclifford.jl")
+include("symbolic_noncliffords.jl")
 # apply right operations
 include("apply_right.jl")
 # linear algebra and array-like operations
@@ -1449,8 +1451,6 @@ include("sumtypes.jl")
 include("precompiles.jl")
 include("ecc/ECC.jl")
 #
-include("isclifford.jl")
-include("symbolic_noncliffords.jl")
 include("lowrank/PauliChannelNonClifford.jl")
 include("lowrank/PureNonClifford.jl")
 using .PauliChannelNonClifford
