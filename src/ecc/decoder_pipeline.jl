@@ -16,10 +16,10 @@ function decode! end
 function batchdecode! end
 
 """Alias for [`batchdecode`](@ref)."""
-decode_batch(d::AbstractSyndromeDecoder, syndrome_samples) = batchdecode(d, syndrome_samples)
+decode_batch(d::AbstractSyndromeDecoder, syndrome_samples; threaded::Bool=false) = batchdecode(d, syndrome_samples; threaded)
 
 """Alias for [`batchdecode!`](@ref)."""
-decode_batch!(results, d::AbstractSyndromeDecoder, syndrome_samples) = batchdecode!(results, d, syndrome_samples)
+decode_batch!(results, d::AbstractSyndromeDecoder, syndrome_samples; threaded::Bool=false) = batchdecode!(results, d, syndrome_samples; threaded)
 
 function decode!(result, d::AbstractSyndromeDecoder, syndrome_sample)
     guess = decode(d, syndrome_sample)
@@ -30,22 +30,23 @@ function decode!(result, d::AbstractSyndromeDecoder, syndrome_sample)
 end
 
 """Decode a batch of syndromes using a given decoding algorithm."""
-function batchdecode(d::AbstractSyndromeDecoder, syndrome_samples)
+function batchdecode(d::AbstractSyndromeDecoder, syndrome_samples; threaded::Bool=false)
     H = parity_checks(d)
     s, n = size(H)
     samples, _s = size(syndrome_samples)
     s == _s || throw(ArgumentError(lazy"The syndromes given to `batchdecode` have the wrong dimensions. The syndrome length is $(_s) while it should be $(s)"))
     results = falses(samples, 2n)
-    return batchdecode!(results, d, syndrome_samples)
+    return batchdecode!(results, d, syndrome_samples; threaded)
 end
 
-function batchdecode!(results, d::AbstractSyndromeDecoder, syndrome_samples)
+function batchdecode!(results, d::AbstractSyndromeDecoder, syndrome_samples; threaded::Bool=false)
     H = parity_checks(d)
     s, n = size(H)
     samples, _s = size(syndrome_samples)
     s == _s || throw(ArgumentError(lazy"The syndromes given to `batchdecode!` have the wrong dimensions. The syndrome length is $(_s) while it should be $(s)"))
     size(results, 1) == samples || throw(ArgumentError(lazy"The output buffer given to `batchdecode!` has the wrong number of rows. The number of rows is $(size(results, 1)) while it should be $(samples)"))
     size(results, 2) == 2n || throw(ArgumentError(lazy"The output buffer given to `batchdecode!` has the wrong number of columns. The number of columns is $(size(results, 2)) while it should be $(2n)"))
+    threaded && @warn "Threaded batch decoding is not implemented for $(typeof(d)); falling back to serial execution."
     for (i, syndrome_sample) in enumerate(eachrow(syndrome_samples))
         guess = @view results[i, :]
         guess .= false
@@ -448,6 +449,104 @@ function decode!(guess, d::CSSTableDecoder, syndrome_sample)
     isnothing(decode!(guess_z, d.tabledecoderx, row_x)) && return nothing
     isnothing(decode!(guess_x, d.tabledecoderz, row_z)) && return nothing
     return guess
+end
+
+function batchdecode!(results, d::TableDecoder, syndrome_samples; threaded::Bool=false)
+    s = d.s
+    samples, _s = size(syndrome_samples)
+    s == _s || throw(ArgumentError(lazy"The syndromes given to `batchdecode!` have the wrong dimensions. The syndrome length is $(_s) while it should be $(s)"))
+    size(results, 1) == samples || throw(ArgumentError(lazy"The output buffer given to `batchdecode!` has the wrong number of rows. The number of rows is $(size(results, 1)) while it should be $(samples)"))
+    size(results, 2) == 2d.n || throw(ArgumentError(lazy"The output buffer given to `batchdecode!` has the wrong number of columns. The number of columns is $(size(results, 2)) while it should be $(2d.n)"))
+
+    if threaded
+        nthreads = Threads.maxthreadid()
+        thread_buffers = [falses(s) for _ in 1:nthreads]
+        Threads.@threads for i in 1:samples
+            tid = Threads.threadid()
+            lookup_buffer = thread_buffers[tid]
+            lookup_buffer .= @view syndrome_samples[i, :]
+            guess = @view results[i, :]
+            guess .= false
+            decoded = get(d.lookup_table, lookup_buffer, nothing)
+            isnothing(decoded) || (guess .= decoded)
+        end
+    else
+        for i in 1:samples
+            guess = @view results[i, :]
+            guess .= false
+            decode!(guess, d, @view syndrome_samples[i, :])
+        end
+    end
+    return results
+end
+
+function batchdecode!(results, d::ClassicalTableDecoder, syndrome_samples; threaded::Bool=false)
+    s = d.s
+    samples, _s = size(syndrome_samples)
+    s == _s || throw(ArgumentError(lazy"The syndromes given to `batchdecode!` have the wrong dimensions. The syndrome length is $(_s) while it should be $(s)"))
+    size(results, 1) == samples || throw(ArgumentError(lazy"The output buffer given to `batchdecode!` has the wrong number of rows. The number of rows is $(size(results, 1)) while it should be $(samples)"))
+    size(results, 2) == d.n || throw(ArgumentError(lazy"The output buffer given to `batchdecode!` has the wrong number of columns. The number of columns is $(size(results, 2)) while it should be $(d.n)"))
+
+    if threaded
+        nthreads = Threads.maxthreadid()
+        thread_buffers = [falses(s) for _ in 1:nthreads]
+        Threads.@threads for i in 1:samples
+            tid = Threads.threadid()
+            lookup_buffer = thread_buffers[tid]
+            lookup_buffer .= @view syndrome_samples[i, :]
+            guess = @view results[i, :]
+            guess .= false
+            decoded = get(d.lookup_table, lookup_buffer, nothing)
+            isnothing(decoded) || (guess .= decoded)
+        end
+    else
+        for i in 1:samples
+            guess = @view results[i, :]
+            guess .= false
+            decode!(guess, d, @view syndrome_samples[i, :])
+        end
+    end
+    return results
+end
+
+function batchdecode!(results, d::CSSTableDecoder, syndrome_samples; threaded::Bool=false)
+    samples, _s = size(syndrome_samples)
+    d.s == _s || throw(ArgumentError(lazy"The syndromes given to `batchdecode!` have the wrong dimensions. The syndrome length is $(_s) while it should be $(d.s)"))
+    size(results, 1) == samples || throw(ArgumentError(lazy"The output buffer given to `batchdecode!` has the wrong number of rows. The number of rows is $(size(results, 1)) while it should be $(samples)"))
+    size(results, 2) == 2d.n || throw(ArgumentError(lazy"The output buffer given to `batchdecode!` has the wrong number of columns. The number of columns is $(size(results, 2)) while it should be $(2d.n)"))
+
+    if threaded
+        nthreads = Threads.maxthreadid()
+        thread_buffer_x = [falses(d.cx) for _ in 1:nthreads]
+        thread_buffer_z = [falses(d.cz) for _ in 1:nthreads]
+        Threads.@threads for i in 1:samples
+            tid = Threads.threadid()
+            row_x = @view syndrome_samples[i, 1:d.cx]
+            row_z = @view syndrome_samples[i, d.cx+1:d.cx+d.cz]
+
+            buffer_x = thread_buffer_x[tid]
+            buffer_z = thread_buffer_z[tid]
+            buffer_x .= row_x
+            buffer_z .= row_z
+
+            decoded_z = get(d.tabledecoderx.lookup_table, buffer_x, nothing)
+            decoded_x = get(d.tabledecoderz.lookup_table, buffer_z, nothing)
+
+            guess = @view results[i, :]
+            guess .= false
+            if !isnothing(decoded_x) && !isnothing(decoded_z)
+                (@view guess[1:d.n]) .= decoded_x
+                (@view guess[d.n+1:2d.n]) .= decoded_z
+            end
+        end
+    else
+        for i in 1:samples
+            guess = @view results[i, :]
+            guess .= false
+            decode!(guess, d, @view syndrome_samples[i, :])
+        end
+    end
+    return results
 end
 
 # From extensions:
