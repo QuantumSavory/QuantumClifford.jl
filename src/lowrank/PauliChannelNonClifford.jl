@@ -449,7 +449,7 @@ function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_
             c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ)) # no factor of two in algorithm 3 (or Eq. 29) while computing this, see https://scottaaronson.com/showcase2/report/ted-yoder.pdf
             dᵢ′ = dₗ .⊻ dᵢ
             dⱼ′ = dᵣ .⊻ dⱼ
-            χ′ = χ * w * (-tone)^c * (im)^(phaseₗ-phaseᵣ+4) # Since M Pauli operator can be decomposed as α*d_b*s_c -- here we have α_l*α† == i^(phase_l-phase_r+4) since (i^phase)† == i^(-phase)
+            χ′ = χ * w * (-tone)^c * (im)^(phaseₗ-phaseᵣ+4) # Pauli operator M can be decomposed as α*d_b*s_c -- here algorithm 3 utilizes α_l*α† == i^(phase_l-phase_r+4) because (i^phase)† == i^(-phase).
             newdict[(dᵢ′,dⱼ′)] += χ′
         end
     end
