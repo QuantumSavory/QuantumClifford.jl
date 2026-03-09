@@ -400,7 +400,7 @@
         @test composed.data ≈ expected.data rtol=1e-10
     end
 
-    @testset "Bug fix: see https://github.com/QuantumSavory/QuantumClifford.jl/issues/681" begin
+    @testset "issue 681" begin
         stab = one(Stabilizer, 1)
         genstab = GeneralizedStabilizer(stab)
         apply!(genstab, tPhase)
