@@ -32,7 +32,7 @@ jobs:
       - uses: julia-actions/install-juliaup@v3
         with:
           channel: ${{ matrix.version }}~${{ matrix.arch }}
-      - uses: julia-actions/cache@v2
+      - uses: julia-actions/cache@v3
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-buildpkg@v1
         with:

@@ -837,6 +837,10 @@ invsparsity(gate::AbstractPauliChannel) = count(!iszero, values(gate.paulichanne
 # Predefined Pauli Channels
 ##
 
+"""Phase rotation gate `Rz(ϕ) = diag(1, e^(iϕ))` as a [`UnitaryPauliChannel`](@ref), for use with [`GeneralizedStabilizer`](@ref).
+
+See also: [`pcT`](@ref), [`pcRx`](@ref)
+"""
 function pcPhase(ϕ)
     UnitaryPauliChannel(
         (I, Z),
@@ -844,8 +848,16 @@ function pcPhase(ϕ)
     )
 end
 
+"""The T gate (`Rz(π/4)`) as a [`UnitaryPauliChannel`](@ref), for use with [`GeneralizedStabilizer`](@ref). Equivalent to `pcPhase(π/4)`.
+
+See also: [`pcPhase`](@ref), [`pcRx`](@ref)
+"""
 const pcT = pcPhase(π/4)
 
+"""X rotation gate `Rx(θ)` as a [`UnitaryPauliChannel`](@ref), for use with [`GeneralizedStabilizer`](@ref).
+
+See also: [`pcPhase`](@ref), [`pcT`](@ref)
+"""
 function pcRx(θ)
     UnitaryPauliChannel(
         (I, X),
