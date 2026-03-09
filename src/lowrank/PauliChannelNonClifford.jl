@@ -446,7 +446,7 @@ function apply!(state::GeneralizedStabilizer, gate::AbstractPauliChannel; prune_
             w = gate.weights[i]
             phaseₗ, dₗ, dₗˢᵗᵃᵇ = rowdecompose(Pₗ,stab)
             phaseᵣ, dᵣ, dᵣˢᵗᵃᵇ = rowdecompose(Pᵣ,stab)
-            c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ)) # no factor of two in algorithm 3 (or Eq. 29) while computing this, see https://scottaaronson.com/showcase2/report/ted-yoder.pdf
+            c = (dot(dₗˢᵗᵃᵇ,dᵢ) + dot(dᵣˢᵗᵃᵇ,dⱼ)) # algorithm 3 (Eq. 29), see https://scottaaronson.com/showcase2/report/ted-yoder.pdf
             dᵢ′ = dₗ .⊻ dᵢ
             dⱼ′ = dᵣ .⊻ dⱼ
             χ′ = χ * w * (-tone)^c * (im)^(phaseₗ-phaseᵣ+4) # Pauli operator M can be decomposed as α*d_b*s_c -- here algorithm 3 utilizes α_l*α† == i^(phase_l-phase_r+4) because (i^phase)† == i^(-phase).
