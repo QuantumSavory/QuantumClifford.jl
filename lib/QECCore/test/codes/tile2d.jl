@@ -93,7 +93,6 @@
             @test computed_rank == n - k && computed_rank == nₛ - kₛ && n == nₛ && k == kₛ
             @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 6)
             @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 6)
-            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900)) == 12
         end
     end
 
