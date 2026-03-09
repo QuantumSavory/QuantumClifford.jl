@@ -5,6 +5,19 @@
 
 # News
 
+## v0.11.3 - 2026-03-07
+
+- Non-Clifford simulation via the Sum-over-Cliffords sparsification framework from [Bravyi et al. 2019]:
+    - New state type `PureGeneralizedStabilizer` representing a pure state as a weighted sum of stabilizer states |ψ⟩ = Σₐ cₐ|φₐ⟩, with incremental sparsification to keep the number of terms bounded. Supports `apply!` and `mctrajectory!` for gate-by-gate simulation.
+    - Non-Clifford gate types `sT` (T gate / π/8 phase rotation) and `sCCZ` (controlled-controlled-Z). These gates are currently supported only with `PureGeneralizedStabilizer` — they cannot be used with standard stabilizer tableaux or `PauliFrame`.
+    - `emtrajectories(circuit; trajectories, delta)` ("end measurement" trajectories) for simulating circuits with non-Clifford gates. Unlike `mctrajectories`, it performs no mid-circuit measurements and instead implicitly measures all qubits in the computational basis at the end, returning sampled measurement outcomes.
+    - (private) Result type `EndMeasurementSampleResults` returned by `emtrajectories`, containing measurement outcomes and simulation statistics.
+    - New generic accessor `measurements(result)` for extracting measurement outcome matrices, shared across `EndMeasurementSampleResults` and `PauliFrame`.
+    - Trait function `isclifford(op)` for characterizing gates.
+    - (private) `stabilizer_extent(op)` for characterizing gates.
+    - (private) Cost estimation function `lrcost(circuit; delta)` to predict simulation cost before running.
+- **(deprecation)** `pfmeasurements` is deprecated in favor of the generic `measurements` accessor.
+
 ## v0.11.2 - 2026-03-01
 
 - **(fix)** Deprecate legacy 3-argument `apply!` order (`state, operation, indices`) in favor of `state, indices, operation`.

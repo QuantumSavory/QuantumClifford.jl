@@ -245,7 +245,7 @@ For a given [`Register`](@ref) and circuit, simulates the reference circuit acti
 register and then also simulate numerous [`PauliFrame`](@ref) trajectories.
 Returns the register and the [`PauliFrame`](@ref) instance.
 
-Use [`pfmeasurements`](@ref) to get the measurement results.
+Use [`measurements`](@ref) to get the measurement results.
 """
 function pftrajectories(register::Register, circuit; trajectories=500)
     for op in circuit
@@ -266,7 +266,7 @@ $(TYPEDSIGNATURES)
 
 Returns the measurements stored in the bits of the given [`Register`](@ref).
 """
-pfmeasurements(register::Register) = bitview(register)
+measurements(register::Register) = bitview(register)
 
 """
 $(TYPEDSIGNATURES)
@@ -277,7 +277,7 @@ Returns the measurement results for each frame in the [`PauliFrame`](@ref) insta
     The return measurements are relative to the reference measurements, i.e. they only say
     whether the reference measurements have been flipped in the given frame.
 """
-pfmeasurements(frame::PauliFrame) = frame.measurements
+measurements(frame::PauliFrame) = frame.measurements
 
 """
 $(TYPEDSIGNATURES)
@@ -286,4 +286,8 @@ Takes the references measurements from the given [`Register`](@ref) and applies 
 as prescribed by the [`PauliFrame`](@ref) relative measurements. The result is the actual
 (non-relative) measurement results for each frame.
 """
-pfmeasurements(register::Register, frame::PauliFrame) = pfmeasurements(register) .⊻ pfmeasurements(frame)
+measurements(register::Register, frame::PauliFrame) = measurements(register) .⊻ measurements(frame)
+
+Base.@deprecate pfmeasurements(register::Register) measurements(register)
+Base.@deprecate pfmeasurements(frame::PauliFrame) measurements(frame)
+Base.@deprecate pfmeasurements(register::Register, frame::PauliFrame) measurements(register, frame)
