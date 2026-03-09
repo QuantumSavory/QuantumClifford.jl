@@ -399,3 +399,17 @@
         expected = Operator(pcRx(θ1 + θ2))
         @test composed.data ≈ expected.data rtol=1e-10
     end
+
+    @testset "Bug fix: see https://github.com/QuantumSavory/QuantumClifford.jl/issues/681" begin
+        stab = one(Stabilizer, 1)
+        genstab = GeneralizedStabilizer(stab)
+        apply!(genstab, tPhase)
+        apply!(genstab, tHadamard)
+        apply!(genstab, pcT)
+        apply!(genstab, pcT)
+        @test expect(P"X", genstab) ≈ 0.0 atol=1e-10
+        @test expect(P"Y", genstab) ≈ 1.0 atol=1e-10
+        @test expect(P"Z", genstab) ≈ 0.0 atol=1e-10
+        @test expect(P"I", genstab) ≈ 1.0 atol=1e-10
+    end
+end
