@@ -23,6 +23,8 @@ ENV["COLUMNS"] = 80
 doc_modules = [
     QuantumClifford,
     QuantumClifford.ECC,
+    QuantumClifford.PauliChannelNonClifford,
+    QuantumClifford.PureNonClifford,
     QuantumInterface,
     QuantumCliffordHeckeExt,
     QuantumCliffordOscarExt,
