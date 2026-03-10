@@ -399,3 +399,4 @@
         expected = Operator(pcRx(θ1 + θ2))
         @test composed.data ≈ expected.data rtol=1e-10
     end
+end
