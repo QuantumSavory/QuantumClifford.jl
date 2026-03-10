@@ -20,8 +20,8 @@ Lastly, for Pauli frame simulations there is the [`PauliFrame`](@ref) type, a ta
 There are [convenience constructors for common types of states and operators](@ref Useful-States-and-Operators).
 
 For non-Clifford simulations, two state types (for two related algorithms) are available:
-- [`GeneralizedStabilizer`](@ref): a weighted sum of projectors on stabilizer states that supports arbitrary (non-unitary) Pauli channels like [`PauliChannel`](@ref) and [`UnitaryPauliChannel`](@ref). Use with [`mctrajectory!`](@ref), `apply!`(@ref), `expect`(@ref).
-- [`PureGeneralizedStabilizer`](@ref): a pure-state variant that supports the non-Clifford gates [`sT`](@ref) and [`sCCZ`](@ref), but has limitations with respect to measurement operations. Use with [`mctrajectory!`](@ref), `apply!`(@ref), and in particular with [`emtrajectories`](@ref) for end-of-circuit Z-basis measurements (no mid-circuit measurements).
+- [`GeneralizedStabilizer`](@ref): a weighted sum of projectors on stabilizer states that supports arbitrary (non-unitary) Pauli channels like [`PauliChannel`](@ref) and [`UnitaryPauliChannel`](@ref). Use with [`mctrajectory!`](@ref), [`apply!`](@ref), [`expect`](@ref), [`projectrand!`](@ref).
+- [`PureGeneralizedStabilizer`](@ref): a pure-state variant that supports the non-Clifford gates [`sT`](@ref) and [`sCCZ`](@ref), but has limitations with respect to measurement operations. Use with [`mctrajectory!`](@ref), [`apply!`](@ref), and in particular with [`emtrajectories`](@ref) for end-of-circuit Z-basis measurements (no mid-circuit measurements).
 
 ## Operations
 
