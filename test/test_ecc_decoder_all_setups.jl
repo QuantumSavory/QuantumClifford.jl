@@ -130,6 +130,38 @@
         end
     end
 
+    @testset "in-place and batch decoder API" begin
+        c = Steane7()
+        d = CSSTableDecoder(c)
+        s = code_s(c)
+        n = code_n(c)
+
+        syndrome = falses(s)
+        expected = QuantumClifford.ECC.decode(d, syndrome)
+
+        out = trues(2n)
+        ret = QuantumClifford.ECC.decode!(out, d, syndrome)
+        @test ret === out
+        @test out == expected
+
+        syndromes = falses(3, s)
+        syndromes[2, 1] = true
+
+        expected_batch = QuantumClifford.ECC.batchdecode(d, syndromes)
+        out_batch = trues(3, 2n)
+        ret_batch = QuantumClifford.ECC.batchdecode!(out_batch, d, syndromes)
+        @test ret_batch === out_batch
+        @test out_batch == expected_batch
+
+        out_batch_threaded = fill(true, 3, 2n)
+        ret_batch_threaded = QuantumClifford.ECC.batchdecode!(out_batch_threaded, d, syndromes; threaded=true)
+        @test ret_batch_threaded === out_batch_threaded
+        @test out_batch_threaded == expected_batch
+
+        @test QuantumClifford.ECC.decode_batch(d, syndromes) == expected_batch
+        @test QuantumClifford.ECC.decode_batch!(fill(true, 3, 2n), d, syndromes; threaded=true) == expected_batch
+    end
+
 
     if !Sys.iswindows()
     @testset "tesseract decoder (tesseract-decoder via PyTesseractDecoder)" begin
@@ -169,7 +201,5 @@
             end
         end
     end
-    end
-
     end
 end
