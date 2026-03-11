@@ -35,7 +35,7 @@ function batchdecode(d::AbstractSyndromeDecoder, syndrome_samples; threaded::Boo
     s, n = size(H)
     samples, _s = size(syndrome_samples)
     s == _s || throw(ArgumentError(lazy"The syndromes given to `batchdecode` have the wrong dimensions. The syndrome length is $(_s) while it should be $(s)"))
-    results = falses(samples, 2n)
+    results = threaded ? Matrix{Bool}(undef, samples, 2n) : falses(samples, 2n)
     return batchdecode!(results, d, syndrome_samples; threaded)
 end
 
@@ -459,8 +459,17 @@ function batchdecode!(results, d::TableDecoder, syndrome_samples; threaded::Bool
     size(results, 2) == 2d.n || throw(ArgumentError(lazy"The output buffer given to `batchdecode!` has the wrong number of columns. The number of columns is $(size(results, 2)) while it should be $(2d.n)"))
 
     if threaded
+        if results isa BitMatrix
+            @warn "Threaded batch decoding for $(typeof(d)) with `BitMatrix` output is not thread-safe; falling back to serial execution. Use `Matrix{Bool}` output for threaded mode."
+            for i in 1:samples
+                guess = @view results[i, :]
+                guess .= false
+                decode!(guess, d, @view syndrome_samples[i, :])
+            end
+            return results
+        end
         nthreads = Threads.maxthreadid()
-        thread_buffers = [falses(s) for _ in 1:nthreads]
+        thread_buffers = [fill(false, s) for _ in 1:nthreads]
         Threads.@threads for i in 1:samples
             tid = Threads.threadid()
             lookup_buffer = thread_buffers[tid]
@@ -488,8 +497,17 @@ function batchdecode!(results, d::ClassicalTableDecoder, syndrome_samples; threa
     size(results, 2) == d.n || throw(ArgumentError(lazy"The output buffer given to `batchdecode!` has the wrong number of columns. The number of columns is $(size(results, 2)) while it should be $(d.n)"))
 
     if threaded
+        if results isa BitMatrix
+            @warn "Threaded batch decoding for $(typeof(d)) with `BitMatrix` output is not thread-safe; falling back to serial execution. Use `Matrix{Bool}` output for threaded mode."
+            for i in 1:samples
+                guess = @view results[i, :]
+                guess .= false
+                decode!(guess, d, @view syndrome_samples[i, :])
+            end
+            return results
+        end
         nthreads = Threads.maxthreadid()
-        thread_buffers = [falses(s) for _ in 1:nthreads]
+        thread_buffers = [fill(false, s) for _ in 1:nthreads]
         Threads.@threads for i in 1:samples
             tid = Threads.threadid()
             lookup_buffer = thread_buffers[tid]
@@ -516,9 +534,18 @@ function batchdecode!(results, d::CSSTableDecoder, syndrome_samples; threaded::B
     size(results, 2) == 2d.n || throw(ArgumentError(lazy"The output buffer given to `batchdecode!` has the wrong number of columns. The number of columns is $(size(results, 2)) while it should be $(2d.n)"))
 
     if threaded
+        if results isa BitMatrix
+            @warn "Threaded batch decoding for $(typeof(d)) with `BitMatrix` output is not thread-safe; falling back to serial execution. Use `Matrix{Bool}` output for threaded mode."
+            for i in 1:samples
+                guess = @view results[i, :]
+                guess .= false
+                decode!(guess, d, @view syndrome_samples[i, :])
+            end
+            return results
+        end
         nthreads = Threads.maxthreadid()
-        thread_buffer_x = [falses(d.cx) for _ in 1:nthreads]
-        thread_buffer_z = [falses(d.cz) for _ in 1:nthreads]
+        thread_buffer_x = [fill(false, d.cx) for _ in 1:nthreads]
+        thread_buffer_z = [fill(false, d.cz) for _ in 1:nthreads]
         Threads.@threads for i in 1:samples
             tid = Threads.threadid()
             row_x = @view syndrome_samples[i, 1:d.cx]

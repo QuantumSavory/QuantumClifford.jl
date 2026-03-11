@@ -153,13 +153,13 @@
         @test ret_batch === out_batch
         @test out_batch == expected_batch
 
-        out_batch_threaded = trues(3, 2n)
+        out_batch_threaded = fill(true, 3, 2n)
         ret_batch_threaded = QuantumClifford.ECC.batchdecode!(out_batch_threaded, d, syndromes; threaded=true)
         @test ret_batch_threaded === out_batch_threaded
         @test out_batch_threaded == expected_batch
 
         @test QuantumClifford.ECC.decode_batch(d, syndromes) == expected_batch
-        @test QuantumClifford.ECC.decode_batch!(trues(3, 2n), d, syndromes; threaded=true) == expected_batch
+        @test QuantumClifford.ECC.decode_batch!(fill(true, 3, 2n), d, syndromes; threaded=true) == expected_batch
     end
 
 
