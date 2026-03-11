@@ -67,6 +67,14 @@ Notice the results when the projection operator commutes with the state but is n
     `project!` works correctly or raises an explicit warning on all 4 data
     structures.
 
+## Non-Clifford State Representations
+
+For circuits containing non-Clifford gates, two state types are available:
+
+[`PureGeneralizedStabilizer`](@ref) represents a pure state as a superposition (with arbitrary amplitudes) of stabilizer states. It supports the non-Clifford gates [`sT`](@ref) and [`sCCZ`](@ref). Use directly with [`apply!`](@ref) and [`mctrajectory!`](@ref) as usual, but be aware that it has limited support for measurements. Use it with [`emtrajectories`](@ref) to sample Z-basis measurement outcomes at the end of a circuit. This is the right choice when you have a unitary circuit (no mid-circuit measurements) and only need measurement statistics at the end.
+
+[`GeneralizedStabilizer`](@ref) represents a mixed state as a weighted sum ∑ ϕᵢⱼ Pᵢ ρ Pⱼ†, i.e. a weighted sum of "basis" density matrices, each of which is itself represented as a (projector on) stabilizer state. It supports arbitrary (non-unitary) Pauli channels such as [`PauliChannel`](@ref) and [`UnitaryPauliChannel`](@ref), applied via [`apply!`](@ref). Use it with [`mctrajectory!`](@ref). Can be used with [`expect`](@ref) as well. Pauli measurements on arbitrary (non-unitary) Pauli channels are also supported via [`projectrand!`](@ref) which performs a randomized projection of the state represented by the [`GeneralizedStabilizer`](@ref), based on the measurement of a [PauliOperator](@ref).
+
 ## [Bit Packing in Integers and Array Order](@id Bit-Packing-in-Integers-and-Array-Order)
 
 We do not use boolean arrays to store information about the qubits as this would be wasteful (7 out of 8 bits in the boolean would be unused). Instead, we use all 8 qubits in a byte and perform bitwise logical operations as necessary. Implementation details of the object in RAM can matter for performance. The library permits any of the standard `UInt` types to be used for packing the bits, and larger `UInt` types (like `UInt64`) are usually faster as they permit working on 64 qubits at a time (instead of 1 if we used a boolean, or 8 if we used a byte).
