@@ -195,8 +195,8 @@ to the necessary noisy circuits.
 function evaluate_decoder(d::AbstractSyndromeDecoder, nsamples, circuit, syndrome_bits, logical_bits, faults_submatrix)
     frames = pftrajectories(circuit;trajectories=nsamples,threads=true)
 
-    syndromes = @view pfmeasurements(frames)[:, syndrome_bits]
-    measured_faults = @view pfmeasurements(frames)[:, logical_bits]
+    syndromes = @view measurements(frames)[:, syndrome_bits]
+    measured_faults = @view measurements(frames)[:, logical_bits]
     guesses = batchdecode(d, syndromes)
     evaluate_guesses(measured_faults, guesses, faults_submatrix)
 end
