@@ -6,7 +6,7 @@ logical qubits than surface code, and provides ``\\mathcal{O}(1)``-locality.
 Here is an example of weight-6 `[[288, 8, 12]]` 2D Tile code from Table I of [steffan2025tilecodeshighefficiencyquantum](@cite).
 
 !!! note
-    The `[[288, 8, 12]]` code was first discovered by Liang *et al.* [liang2025planar](@cite) in the context for constructing planar
+    The `[[288, 8, 12]]` code was first discovered by Liang *et al.* [liang2025planar](@cite) in the context of constructing planar
     quantum low-density parity-check codes with *open* boundary conditions.
 
 ```jldoctest
