@@ -1,7 +1,7 @@
 """
-2D Tile is a generalization of surface codes that offers flexibility in terms of locality and stabilizer check weight
-without compromising on the 2D locality of the 2D surface code. It encodes more logical qubits than surface code, and
-and provides O(1)-locality. 
+2D Tile code is a generalization of surface codes that offers flexibility in terms of *locality* and stabilizer *check weight*
+without compromising on the 2D locality of the 2D surface code [steffan2025tilecodeshighefficiencyquantum](@cite). It encodes more
+logical qubits than surface code, and and provides ``\\mathcal{O}(1)``-locality.
 
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC; # hide
