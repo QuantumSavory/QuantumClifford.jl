@@ -1,24 +1,50 @@
 """
 2D Tile code is a generalization of surface codes that offers flexibility in terms of *locality* and stabilizer *check weight*
 without compromising on the 2D locality of the 2D surface code [steffan2025tilecodeshighefficiencyquantum](@cite). It encodes more
-logical qubits than surface code, and and provides ``\\mathcal{O}(1)``-locality.
+logical qubits than surface code, and provides ``\\mathcal{O}(1)``-locality.
+
+Here is an example of weight-6 `[[288, 8, 12]]` 2D Tile code from Table I of [steffan2025tilecodeshighefficiencyquantum](@cite).
 
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC; # hide
 
 julia> B = 3;
 
-julia> horizX = [(0,0),(2,1),(2,2)];
+julia> horizX = [(0,0), (2,1), (2,2)];
 
-julia> vertX = [(0,2),(1,2),(2,0)];
+julia> vertX = [(0,2), (1,2), (2,0)];
 
 julia> Lx, Ly = 10, 10;
 
 julia> c = Tile2D(B, horizX, vertX, Lx, Ly);
 
-julia> code_n(c), code_k(c)
-(288, 8)
+julia> import HiGHS; import JuMP;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(288, 8, 12)
 ```
+
+Here is an example of weight-8 `[[288, 8, 14]]` 2D Tile code from Table I of [steffan2025tilecodeshighefficiencyquantum](@cite).
+
+```jldoctest
+julia> using QuantumClifford; using QuantumClifford.ECC; # hide
+
+julia> B = 3;
+
+julia> horizX = [(0,0), (2,1), (2,2)];
+
+julia> vertX = [(0,2), (1,2), (2,0)];
+
+julia> Lx, Ly = 10, 10;
+
+julia> c = Tile2D(B, horizX, vertX, Lx, Ly);
+
+julia> import HiGHS; import JuMP;
+
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
+(288, 8, 14)
+```
+
 """
 struct Tile2D <: AbstractCSSCode
     """Size of the tile box ``(B \\times B)`` determining the support of a stabilizer."""
