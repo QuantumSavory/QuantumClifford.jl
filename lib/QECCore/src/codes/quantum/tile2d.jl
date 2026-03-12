@@ -33,6 +33,8 @@ struct Tile2D <: AbstractCSSCode
     Ly::Int
 
     function Tile2D(B::Int, horiz::Vector{Tuple{Int,Int}}, vert::Vector{Tuple{Int,Int}}, Lx::Int, Ly::Int)
+        (B > 0 && Lx > 0 && Ly > 0) || throw(ArgumentError("B, Lx, Ly must be positive"))
+        length(horiz) == length(vert) || throw(ArgumentError("Number of horizontal and vertical edges must match"))
         new(B, horiz, vert, Lx, Ly)
     end
 end
