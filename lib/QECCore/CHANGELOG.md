@@ -2,7 +2,7 @@
 
 ## v0.1.4 - 2026-03-12
 
-- Add `2DTile` codes
+- `2DTile` codes, a slight generalization of 2D `Surface` codes, are now implemented in `QECCore`.
 
 ## v0.1.3 - 2026-03-03
 
