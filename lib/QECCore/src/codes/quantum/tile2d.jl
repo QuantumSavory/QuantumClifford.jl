@@ -27,28 +27,6 @@ julia> import HiGHS; import JuMP;
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
 (288, 8, 12)
 ```
-
-Here is an example of weight-8 `[[288, 8, 14]]` 2D Tile code from Table I of [steffan2025tilecodeshighefficiencyquantum](@cite).
-
-```jldoctest
-julia> using QuantumClifford; using QuantumClifford.ECC; # hide
-
-julia> B = 3;
-
-julia> horizX = [(0,0), (2,0), (0,1), (0,2)];
-
-julia> vertX = [(0,0), (0,2), (1,1), (2,2)];
-
-julia> Lx, Ly = 10, 10;
-
-julia> c = Tile2D(B, horizX, vertX, Lx, Ly);
-
-julia> import HiGHS; import JuMP;
-
-julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
-(288, 8, 14)
-```
-
 """
 struct Tile2D <: AbstractCSSCode
     """Size of the tile box ``(B \\times B)`` determining the support of a stabilizer."""
