@@ -3,21 +3,19 @@ struct Mirror <: AbstractQECC
     G::Union{<:Group, <:FinGenAbGroup}
     A::Vector{Tuple}
     B::Vector{Tuple}
-    A_elems::Vector{Union{<:GroupElem, <:FinGenAbGroupElem}}
-    B_elems::Vector{Union{<:GroupElem, <:FinGenAbGroupElem}}
     symmetric::Bool
 
     function Mirror(G::Union{<:Group, <:FinGenAbGroup}, A::Vector{T}, B::Vector{T}, symmetric::Bool=true) where T <: Tuple
         isempty(A) && error("A must not empty")
         isempty(B) && error("B must not empty")
-        A_elems = [G([Int(a_i) for a_i in a]) for a in A]
-        B_elems = [G([Int(b_i) for b_i in b]) for b in B]
-        new(G, A, B, A_elems, B_elems, symmetric)
+        new(G, A, B, symmetric)
     end
 end
 
 function parity_matrix(c::Mirror)
-    G, A, B, sym = c.G, c.A_elems, c.B_elems, c.symmetric
+    G, A_vec, B_vec, sym = c.G, c.A, c.B, c.symmetric
+    A = [G([Int(a_i) for a_i in a]) for a in A_vec]
+    B = [G([Int(b_i) for b_i in b]) for b in B_vec]
     elems = collect(G)
     n = length(elems)
     idx = Dict(elems[i] => i for i in 1:n)
