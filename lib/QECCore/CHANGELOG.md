@@ -2,7 +2,7 @@
 
 ## v0.1.3 - 2026-03-03
 
-- `hasmetachecs`method added (not public).
+- `hasmetachecks`method added (not public).
 
 ## v0.1.2 - 2025-12-31
 
