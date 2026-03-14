@@ -18,22 +18,25 @@ import Oscar: free_group, small_group_identification, describe, order, FPGroupEl
     kronecker_product, FqMatrix, identity_matrix, FqPolyRingElem, laurent_polynomial_ring,
     hnf_with_transform, ideal, is_coprime, quo, groebner_basis, length, FqMPolyRingElem,
     first, MPolyQuoRingElem, FqMPolyRingElem, modulus, ideal, monomials, terms, coeff, degree, mod,
-    monomial, exponent_vector, nvars, koszul_matrix, koszul_complex, IdealGens, LaurentMPolyWrap
+    monomial, exponent_vector, nvars, koszul_matrix, koszul_complex, IdealGens, LaurentMPolyWrap, Group,
+    FinGenAbGroup, FinGenAbGroupElem, GroupElem
 import Oscar.Generic: MatSpaceElem, DirectSumModule, exponent_vectors
 import Combinatorics: combinations
 
 import QuantumClifford.ECC: two_block_group_algebra_code, twobga_from_direct_product, twobga_from_fp_group,
     boundary_maps, max_xy_exponents
 
-import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
+import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode, AbstractQECC,
     hgp, code_k, code_n, code_s, distance, parity_matrix_x, parity_matrix_z, parity_matrix_xz, parity_matrix,
     metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hasmetachecks
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurface, DDimensionalToric, boundary_maps,
-    HomologicalProduct, DoubleHomologicalProduct, GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly, MultivariateMulticycle
+    HomologicalProduct, DoubleHomologicalProduct, GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly, MultivariateMulticycle,
+    Mirror
 
 include("types.jl")
+include("mirror.jl")
 include("direct_product.jl")
 include("bivariate_bicycle.jl")
 include("generalized_toric.jl")
