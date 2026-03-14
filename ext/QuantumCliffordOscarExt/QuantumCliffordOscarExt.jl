@@ -18,7 +18,8 @@ import Oscar: free_group, small_group_identification, describe, order, FPGroupEl
     kronecker_product, FqMatrix, identity_matrix, FqPolyRingElem, laurent_polynomial_ring,
     hnf_with_transform, ideal, is_coprime, quo, groebner_basis, length, FqMPolyRingElem,
     first, MPolyQuoRingElem, FqMPolyRingElem, modulus, ideal, monomials, terms, coeff, degree, mod,
-    monomial, exponent_vector, nvars, koszul_matrix, koszul_complex, IdealGens, LaurentMPolyWrap
+    monomial, exponent_vector, nvars, koszul_matrix, koszul_complex, IdealGens, LaurentMPolyWrap, Group,
+    FinGenAbGroup, FinGenAbGroupElem, GroupElem, Mirror
 import Oscar.Generic: MatSpaceElem, DirectSumModule, exponent_vectors
 import Combinatorics: combinations
 
@@ -34,6 +35,7 @@ export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurface, DD
     HomologicalProduct, DoubleHomologicalProduct, GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly, MultivariateMulticycle
 
 include("types.jl")
+include("mirror.jl")
 include("direct_product.jl")
 include("bivariate_bicycle.jl")
 include("generalized_toric.jl")
