@@ -19,7 +19,7 @@ import Oscar: free_group, small_group_identification, describe, order, FPGroupEl
     hnf_with_transform, ideal, is_coprime, quo, groebner_basis, length, FqMPolyRingElem,
     first, MPolyQuoRingElem, FqMPolyRingElem, modulus, ideal, monomials, terms, coeff, degree, mod,
     monomial, exponent_vector, nvars, koszul_matrix, koszul_complex, IdealGens, LaurentMPolyWrap, Group,
-    FinGenAbGroup, FinGenAbGroupElem, GroupElem, Mirror
+    FinGenAbGroup, FinGenAbGroupElem, GroupElem
 import Oscar.Generic: MatSpaceElem, DirectSumModule, exponent_vectors
 import Combinatorics: combinations
 
@@ -32,7 +32,8 @@ import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurface, DDimensionalToric, boundary_maps,
-    HomologicalProduct, DoubleHomologicalProduct, GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly, MultivariateMulticycle
+    HomologicalProduct, DoubleHomologicalProduct, GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly, MultivariateMulticycle,
+    Mirror
 
 include("types.jl")
 include("mirror.jl")
