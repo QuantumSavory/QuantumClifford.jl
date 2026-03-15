@@ -1,4 +1,4 @@
-"""Goppa codes [goppa1970new](@cite)."""
+"""BCH codes ([hocquenghem1959codes](@cite), [bose1960class](@cite))."""
 function BCH(args...; kwargs...)
     ext = Base.get_extension(QECCore, :QECCoreNemoExt)
     if isnothing(ext)
