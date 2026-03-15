@@ -26,23 +26,17 @@ function parity_matrix(c::Mirror)
         if sym
             for b in B
                 support_x = b+(-g)
-                if haskey(idx, support_x)
-                    H[i, idx[support_x]] = 1
-                end
+                haskey(idx, support_x) && (H[i, idx[support_x]] = 1)
             end
         else
             for b in B
                 support_x = (-g)+b
-                if haskey(idx, support_x)
-                    H[i, idx[support_x]] = 1
-                end
+                haskey(idx, support_x) && (H[i, idx[support_x]] = 1)
             end
         end
         for a in A
             support_z = a+g
-            if haskey(idx, support_z)
-                H[i, n+idx[support_z]] = 1
-            end
+            haskey(idx, support_z) && (H[i, n+idx[support_z]] = 1)
         end
     end
     return H
