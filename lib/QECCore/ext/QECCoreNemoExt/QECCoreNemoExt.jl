@@ -6,7 +6,7 @@ using DocStringExtensions
 import Nemo
 import Nemo: GF, gen, matrix, rank, transpose, polynomial_ring, evaluate, FqFieldElem,
     FqPolyRingElem, degree, is_irreducible, gcd, derivative, inv, coeff, is_monic, one,
-    minpoly, lcm, is_zero
+    minpoly, lcm, is_zero, finite_field
 import QECCore: code_k, parity_matrix_x, parity_matrix_z, parity_matrix, generator_polynomial
 
 import Random
