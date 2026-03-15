@@ -80,7 +80,13 @@
             (288, 12, 18, 3, 3, [2, 16, 3, 3], [(0, 0, 0, 0), (0, 2, 0, 1), (1, 0, 0, 2)], [(0, 1, 0, 0), (0, 7, 1, 0), (1, 3, 2, 0)]),
         ]
         
-        for (n, k, d, wx, wz, orders, A, B) in vcat(table_i_product_of_one_groups, table_i_product_of_two_groups, table_i_product_of_three_groups, table_i_product_of_four_groups)
+        table_i_product_of_five_groups = [
+            (48 , 8 , 6 , 3, 3, [2, 2, 2, 2, 3], [(0, 0, 0, 0, 0), (0, 0, 0, 1, 1), (0, 0, 1, 0, 2)], [(0, 0, 1, 1, 0), (0, 1, 0, 0, 1), (1, 0, 0, 0, 2)]),
+            (96 , 16, 6 , 3, 3, [2, 2, 2, 4, 3], [(0, 0, 0, 0, 0), (0, 0, 0, 2, 1), (0, 0, 1, 0, 2)], [(0, 0, 0, 1, 0), (0, 1, 0, 1, 1), (1, 0, 0, 1, 2)]),
+            (216 ,12, 14, 3, 3, [2, 4, 3, 3, 3], [(0, 0, 0, 0, 0), (0, 2, 0, 0, 1), (1, 0, 0, 1, 0)], [(0, 1, 0, 0, 0), (0, 3, 1, 0, 0), (1, 1, 2, 1, 1)]),
+        ]
+
+        for (n, k, d, wx, wz, orders, A, B) in vcat(table_i_product_of_one_groups, table_i_product_of_two_groups, table_i_product_of_three_groups, table_i_product_of_four_groups, table_i_product_of_five_groups)
             G = abelian_group(orders)
             c = Mirror(G, A, B, true)
             stab = parity_checks(c)
