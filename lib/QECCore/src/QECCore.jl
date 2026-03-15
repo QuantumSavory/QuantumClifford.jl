@@ -37,6 +37,7 @@ include("codes/classical/repetition.jl")
 include("codes/classical/golay.jl")
 include("codes/classical/gallager.jl")
 include("codes/classical/goppa.jl")
+include("codes/classical/bch.jl")
 
 # Quantum Codes
 include("codes/quantum/css.jl")
