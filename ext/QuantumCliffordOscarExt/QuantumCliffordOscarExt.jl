@@ -19,7 +19,7 @@ import Oscar: free_group, small_group_identification, describe, order, FPGroupEl
     hnf_with_transform, ideal, is_coprime, quo, groebner_basis, length, FqMPolyRingElem,
     first, MPolyQuoRingElem, FqMPolyRingElem, modulus, ideal, monomials, terms, coeff, degree, mod,
     monomial, exponent_vector, nvars, koszul_matrix, koszul_complex, IdealGens, LaurentMPolyWrap, Group,
-    FinGenAbGroup, FinGenAbGroupElem, GroupElem
+    FinGenAbGroup, FinGenAbGroupElem, GroupElem, is_abelian
 import Oscar.Generic: MatSpaceElem, DirectSumModule, exponent_vectors
 import Combinatorics: combinations
 

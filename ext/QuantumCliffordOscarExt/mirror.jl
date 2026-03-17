@@ -1,21 +1,22 @@
 # documentation in a bit
-struct Mirror <: AbstractQECC
+struct Mirror{T<:Union{Tuple, GroupElem}, S<:Union{Tuple, GroupElem}} <: AbstractQECC
     G::Union{<:Group, <:FinGenAbGroup}
-    A::Vector{Tuple}
-    B::Vector{Tuple}
+    A::Vector{T}
+    B::Vector{S}
     symmetric::Bool
 
-    function Mirror(G::Union{<:Group, <:FinGenAbGroup}, A::Vector{T}, B::Vector{T}, symmetric::Bool=true) where T <: Tuple
+    function Mirror(G::Union{<:Group, <:FinGenAbGroup}, A::Vector{T}, B::Vector{S}, symmetric::Bool=true) where {T<:Union{Tuple, GroupElem}, S<:Union{Tuple, GroupElem}}
         isempty(A) && error("A must not empty")
         isempty(B) && error("B must not empty")
-        new(G, A, B, symmetric)
+        new{T,S}(G, A, B, symmetric)
     end
 end
 
 function parity_matrix(c::Mirror)
     G, A_vec, B_vec, sym = c.G, c.A, c.B, c.symmetric
-    A = [G([Int(a_i) for a_i in a]) for a in A_vec]
-    B = [G([Int(b_i) for b_i in b]) for b in B_vec]
+    check_G = is_abelian(G)
+    A = [a isa Tuple ? G([Int(a_i) for a_i in a]) : a for a in A_vec]
+    B = [b isa Tuple ? G([Int(b_i) for b_i in b]) : b for b in B_vec]
     elems = collect(G)
     n = length(elems)
     idx = Dict(elems[i] => i for i in 1:n)
@@ -25,19 +26,19 @@ function parity_matrix(c::Mirror)
     for (i, g) in enumerate(elems)
         if sym
             for b in B
-                support_x = b+(-g)
+                support_x = check_G ? b+(-g) : b*inv(g)
                 haskey(idx, support_x) && (H[i, idx[support_x]] = 1)
             end
         else
             for b in B
-                support_x = (-g)+b
+                support_x = check_G ? (-g)+b : inv(g)*b
                 haskey(idx, support_x) && (H[i, idx[support_x]] = 1)
             end
         end
         for a in A
-            support_z = a+g
+            support_z = check_G ? a+g : a*g
             haskey(idx, support_z) && (H[i, n+idx[support_z]] = 1)
         end
     end
-    return H
+    H
 end

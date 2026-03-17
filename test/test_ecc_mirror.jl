@@ -96,6 +96,22 @@
             @test n == code_n(stab)
             @test k == code_k(stab)
             @test stab_looks_good(stab, remove_redundant_rows=true) == true
+            c = Mirror(G, A, B, false)
+            stab = parity_checks(c)
+            mat = matrix(GF(2), stab_to_gf2(stab))
+            computed_rank = rank(mat)
+            @test computed_rank == code_n(stab) - code_k(stab)
+            @test n == code_n(stab)
+            @test k == code_k(stab)
+            @test stab_looks_good(stab, remove_redundant_rows=true) == true
         end
+
+        # non-abelian group
+        G = dihedral_group(8)
+        G_elems = collect(G)
+        A, B = G_elems[[1,2,3]], G_elems[[4,5,6]]
+        c = Mirror(G, A, B, true)
+        stab = parity_checks(c)
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
     end
 end
