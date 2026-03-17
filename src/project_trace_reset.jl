@@ -38,21 +38,19 @@ function generate!(pauli::PauliOperator, stabilizer::Stabilizer; phases::Bool=tr
     @valbooldispatch _generate!(pauli, stabilizer; phases=Val(phases), saveindices=Val(saveindices)) phases saveindices
 end
 
-function _generate!(pauli::PauliOperator{Tₚ,Tᵥ}, stabilizer::Stabilizer{Tableau{Tₚᵥ,Tₘ}}; phases::Val{PHASES}=Val(true), saveindices::Val{SAVEIDX}=Val(true)) where {Tₚ<:AbstractArray{UInt8,0}, Tₚᵥ<:AbstractVector{UInt8}, Tₘₑ<:Unsigned, Tᵥ<:AbstractVector{Tₘₑ}, Tₘ<:AbstractMatrix{Tₘₑ}, PHASES, SAVEIDX} # TODO there is stuff that can be abstracted away here and in canonicalize!
+function _generate!(pauli::PauliOperator{Tₚ,Tᵥ}, stabilizer::Stabilizer{Tableau{Tₚᵥ,Tₘ}}; phases::Val{PHASES}=Val(true), saveindices::Val{SAVEIDX}=Val(true)) where {Tₚ, Tₚᵥ, Tₘₑ<:Unsigned, Tᵥ<:AbstractVector{Tₘₑ}, Tₘ<:AbstractMatrix{Tₘₑ}, PHASES, SAVEIDX} # TODO there is stuff that can be abstracted away here and in canonicalize!
     xzs = tab(stabilizer).xzs
     xs = @view xzs[1:end÷2,:]
     zs = @view xzs[end÷2+1:end,:]
-    lowbit = Tₘₑ(0x1)
     zerobit = Tₘₑ(0x0)
     px,pz = xview(pauli), zview(pauli)
     used_indices = Int[]
     used = 0
     # remove Xs
     while (i=unsafe_bitfindnext_(px,1); i !== nothing) # TODO awkward notation due to https://github.com/JuliaLang/julia/issues/45499
-        jbig = _div(Tₘₑ,i-1)+1
-        jsmall = lowbit<<_mod(Tₘₑ,i-1)
-        candidate = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
-                              xs[jbig,used+1:end])
+        _, ibig, _, ismallm = get_bitmask_idxs(xzs,i)
+        candidate = findfirst(e->e&ismallm!=zerobit, # TODO some form of reinterpret might be faster than equality check
+                              xs[ibig,used+1:end])
         if isnothing(candidate)
             return nothing
         else
@@ -63,10 +61,9 @@ function _generate!(pauli::PauliOperator{Tₚ,Tᵥ}, stabilizer::Stabilizer{Tabl
     end
     # remove Zs
     while (i=unsafe_bitfindnext_(pz,1); i !== nothing) # TODO awkward notation due to https://github.com/JuliaLang/julia/issues/45499
-        jbig = _div(Tₘₑ,i-1)+1
-        jsmall = lowbit<<_mod(Tₘₑ,i-1)
-        candidate = findfirst(e->e&jsmall!=zerobit, # TODO some form of reinterpret might be faster than equality check
-                              zs[jbig,used+1:end])
+        _, ibig, _, ismallm = get_bitmask_idxs(xzs,i)
+        candidate = findfirst(e->e&ismallm!=zerobit, # TODO some form of reinterpret might be faster than equality check
+                              zs[ibig,used+1:end])
         if isnothing(candidate)
             return nothing
         else
@@ -451,6 +448,10 @@ function projectX!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases
     @valbooldispatch project_cond!(d,qubit,Val(isZ),Val((true,false));keep_result,phases=Val(phases)) phases
 end
 
+function projectX!(s::AbstractStabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    project!(s, single_x(nqubits(s), qubit) ; keep_result, phases)
+end
+
 """
 Measure a given qubit in the Z basis.
 A faster special-case version of [`project!`](@ref).
@@ -461,6 +462,10 @@ function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases
     @valbooldispatch project_cond!(d,qubit,Val(isX),Val((false,true));keep_result,phases=Val(phases))
 end
 
+function projectZ!(s::AbstractStabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    project!(s, single_z(nqubits(s), qubit) ; keep_result, phases)
+end
+
 """
 Measure a given qubit in the Y basis.
 A faster special-case version of [`project!`](@ref).
@@ -469,6 +474,10 @@ See also: [`project!`](@ref), [`projectYrand!`](@ref), [`projectX!`](@ref), [`pr
 """
 function projectY!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
     @valbooldispatch project_cond!(d,qubit,Val(isXorZ),Val((true,true));keep_result,phases=Val(phases))
+end
+
+function projectY!(s::AbstractStabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
+    project!(s, single_y(nqubits(s), qubit) ; keep_result, phases)
 end
 
 @inline isX(tab,row,col) = tab[row,col][1]
@@ -885,5 +894,31 @@ julia> delete_columns(S"XYZ YZX ZXY", [1,3])
 See also: [`traceout!`](@ref)
 """
 function delete_columns(𝒮::Stabilizer, subset)
+    if length(𝒮) == 0 return 𝒮 end
     return 𝒮[:, setdiff(1:nqubits(𝒮), subset)]
+end
+
+function ptrace(s::Stabilizer, to_traceout::Base.AbstractVecOrTuple{Int})
+    n = nqubits(s)
+    to_keep = setdiff(1:n, to_traceout)
+    s = traceout!(copy(s), to_traceout)
+    s[:,to_keep]
+end
+
+function ptrace(s::MixedStabilizer, to_traceout::Base.AbstractVecOrTuple{Int})
+    n = nqubits(s)
+    to_keep = setdiff(1:n, to_traceout)
+    s = traceout!(copy(s), to_traceout)
+    MixedStabilizer(tab(s)[:,to_keep], rank(s))
+end
+
+function ptrace(s::MixedDestabilizer, to_traceout::Base.AbstractVecOrTuple{Int})
+    n = nqubits(s)
+    to_keep = setdiff(1:n, to_traceout)
+    s = traceout!(copy(s), to_traceout)
+    if rank(s) == 0
+        return one(typeof(s), 0, length(to_keep))
+    else
+        return MixedDestabilizer(stabilizerview(s)[:,to_keep]) # TODO this can be faster by avoiding the repeated canonicalization
+    end
 end

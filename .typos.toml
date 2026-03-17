@@ -1,6 +1,15 @@
 [default.extend-words]
 ket = "ket"
 anc = "anc"
+ba = "ba"
+hom = "hom"
+IY = "IY"
+IZ = "IZ"
+mor = "mor"
+ois = "ois"
+Childs = "Childs"
+mian = "mian"
+Tham = "Tham"
 
 [type.ipynb]
 # It detects false possitives in the base64 encoded images inside notebooks

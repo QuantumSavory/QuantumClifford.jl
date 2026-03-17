@@ -1,6 +1,6 @@
 @testitem "Pauli Operators" begin
-  using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
-  test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
+    using QuantumClifford: apply_single_x!, apply_single_y!, apply_single_z!
+    test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
     @testset "Parsing, constructors, and properties" begin
         @test P"-iXYZ" == PauliOperator(0x3, 3, vcat(BitArray([1,1,0]).chunks, BitArray([0,1,1]).chunks))

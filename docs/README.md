@@ -6,3 +6,10 @@ julia --project=docs -tauto -e '
             Pkg.instantiate()';
 julia --project=docs -tauto -i docs/make.jl
 ```
+
+You might want to modify these lines of `make.jl`
+```
+warnonly = [:missing_docs],
+linkcheck = true,
+```
+in order to make sure the build succeeds locally, if you are debugging any issues.

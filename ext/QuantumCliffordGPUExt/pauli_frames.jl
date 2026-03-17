@@ -1,3 +1,5 @@
+using QuantumClifford: get_bitmask_idxs
+
 ##############################
 # sMZ
 ##############################
@@ -21,10 +23,7 @@ function apply!(frame::PauliFrameGPU{T}, op::QuantumClifford.sMZ) where {T <: Un
     op.bit == 0 && return frame
     i = op.qubit
     xzs = frame.frame.tab.xzs
-    lowbit = T(1)
-    ibig = QuantumClifford._div(T,i-1)+1
-    ismall = QuantumClifford._mod(T,i-1)
-    ismallm = lowbit<<(ismall)
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
     (@run_cuda apply_sMZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame)) length(frame))
     return frame
 end
@@ -55,10 +54,7 @@ end
 function apply!(frame::PauliFrameGPU{T}, op::QuantumClifford.sMRZ) where {T <: Unsigned} # TODO sMRX, sMRY
     i = op.qubit
     xzs = frame.frame.tab.xzs
-    lowbit = T(1)
-    ibig = QuantumClifford._div(T,i-1)+1
-    ismall = QuantumClifford._mod(T,i-1)
-    ismallm = lowbit<<(ismall)
+    lowbit, ibig, ismall, ismallm = get_bitmask_idxs(xzs,i)
     (@run_cuda apply_sMRZ_kernel!(xzs, frame.measurements, op, ibig, ismallm, length(frame)) length(frame))
     return frame
 end

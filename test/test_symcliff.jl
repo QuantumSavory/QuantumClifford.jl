@@ -15,8 +15,8 @@
                 @test SingleQubitOperator(op)==SingleQubitOperator(op_cc, n)
                 op0_c = CliffordOperator(op0, n)
                 s = random_stabilizer(n)
-                @test apply!(copy(s),op)==apply!(copy(s),SingleQubitOperator(op))==apply!(copy(s),op_cc,[n])==apply!(copy(s),op_c)
-                @test ==(apply!(copy(s),op,phases=false),apply!(copy(s),op_cc,[n],phases=false), phases=false)
+                @test apply!(copy(s),op)==apply!(copy(s),SingleQubitOperator(op))==apply!(copy(s),[n],op_cc)==apply!(copy(s),op_c)
+                @test ==(apply!(copy(s),op,phases=false),apply!(copy(s),[n],op_cc,phases=false), phases=false)
                 @test apply!(copy(s),op0)==apply!(copy(s),op0_c)
             end
             i = n÷2+1
@@ -26,9 +26,9 @@
             n==1 && continue
             s = random_stabilizer(n)
             i1,i2 = randperm(n)[1:2]
-            @test apply!(copy(s),tCNOT,[i1,i2]) == apply!(copy(s),sCNOT(i1,i2))
-            @test apply!(copy(s),tSWAP,[i1,i2]) == apply!(copy(s),sSWAP(i1,i2))
-            @test apply!(copy(s),tCPHASE,[i1,i2]) == apply!(copy(s),sCPHASE(i1,i2))
+            @test apply!(copy(s),[i1,i2],tCNOT) == apply!(copy(s),sCNOT(i1,i2))
+            @test apply!(copy(s),[i1,i2],tSWAP) == apply!(copy(s),sSWAP(i1,i2))
+            @test apply!(copy(s),[i1,i2],tCPHASE) == apply!(copy(s),sCPHASE(i1,i2))
         end
         @test_throws DimensionMismatch SingleQubitOperator(tCNOT,1)
         @test_throws DimensionMismatch CliffordOperator(sHadamard(5),2)
@@ -76,6 +76,7 @@
             @test CliffordOperator(inv(random_op), i) == inv(CliffordOperator(random_op, i))
             @test CliffordOperator(inv(SingleQubitOperator(random_op)), i) == inv(CliffordOperator(random_op, i))
         end
+    end
 
     @testset "Consistency checks with Stim" begin
        # see https://github.com/quantumlib/Stim/blob/main/doc/gates.md
@@ -99,6 +100,23 @@
             @test CliffordOperator(inv(sXCZ(n₁, n₂)), n₁) == inv(CliffordOperator(sCNOT(n₂, n₁), n₁))
             @test CliffordOperator(inv(sZCrY(n₁, n₂)), n₁) == inv(CliffordOperator(sZCrY(n₁, n₂), n₁))
             @test CliffordOperator(inv(sInvZCrY(n₁, n₂)), n₁) == inv(CliffordOperator(sInvZCrY(n₁, n₂), n₁))
+            @test CliffordOperator(inv(sCXSWAP(n₁, n₂)), n₁) == inv(CliffordOperator(sInvSWAPCX(n₁, n₂), n₁))
         end
+    end
+
+    @testset "Consistency check with STIM conventions" begin
+        # see https://github.com/quantumlib/Stim/blob/main/doc/gates.md
+        @test CliffordOperator(sSWAPCX)    == C"IX XX ZZ ZI"
+        @test CliffordOperator(sInvSWAPCX) == C"XX XI IZ ZZ"
+        @test CliffordOperator(sCZSWAP)    == C"ZX XZ IZ ZI"
+        @test CliffordOperator(sCXSWAP)    == C"XX XI IZ ZZ"
+        @test CliffordOperator(sISWAP)     == C"ZY YZ IZ ZI"
+        @test CliffordOperator(sInvISWAP)  == C"-ZY -YZ IZ ZI"
+        @test CliffordOperator(sSQRTZZ)    == C"YZ ZY ZI IZ"
+        @test CliffordOperator(sInvSQRTZZ) == C"-YZ -ZY ZI IZ"
+        @test CliffordOperator(sSQRTXX)    == C"XI IX -YX -XY"
+        @test CliffordOperator(sInvSQRTXX) == C"XI IX YX XY"
+        @test CliffordOperator(sSQRTYY)    == C"-ZY -YZ XY YX"
+        @test CliffordOperator(sInvSQRTYY) == C"ZY YZ -XY -YX"
     end
 end

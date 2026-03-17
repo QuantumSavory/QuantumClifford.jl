@@ -125,4 +125,21 @@
             end
         end
     end
+
+    @testset "Ket-based definition for Y and rY" begin
+        for control in (:Z,)
+            target = :Y
+            for r in (true, false)
+                s = Stabilizer(QuantumClifford._T_str(string(control)))
+                k1 = Ket(s)
+                s.tab.phases[1] = 0x2
+                k2 = Ket(s)
+                i = Operator(tId1)
+                o = Operator(CliffordOperator(eval(Symbol(:s,target,))(1),1))
+                gate = projector(k1)⊗i + (r ? -1 : -im) * projector(k2)⊗o # XXX there is a -1 here because global phase is arbitrary and thus our Operator(tY) is NOT im*Operator(X)*Operator(Z)
+                implemented_gate = Operator(CliffordOperator(eval(Symbol(:s,control,:C,(r ? :rY : :Y)))(1,2),2))
+                @test gate≈implemented_gate
+            end
+        end
+    end
 end

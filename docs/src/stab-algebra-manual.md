@@ -362,7 +362,7 @@ They have versions that randomize the phase as necessary as well:  [`projectXran
 
 ## Gate-like interface
 
-If you do not need all this boilerplate, and especially if you want to perform the randomization automatically, you can use the gate-like "symbolic" objects [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref), that perform the measurement and the necessary randomization of phase. If the measurement result is to be stored, you can use the [`Register`](@ref) structure that stores both stabilizer tableaux and bit values.
+If you do not need all this boilerplate, and especially if you want to perform the randomization automatically, you can use the gate-like "symbolic/sparse/named" operations [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref), that perform the measurement and the necessary randomization of phase. If the measurement result is to be stored, you can use the [`Register`](@ref) structure that stores both stabilizer tableaux and bit values.
 
 ```
 julia> state = Register(ghz(3), [false,false])
@@ -476,7 +476,7 @@ julia> generate!(P"YYY", s)
 The [`CliffordOperator`](@ref) structure represents a linear mapping between
 stabilizers (which should also preserve commutation relationships, but that is
 not checked at instantiation).
-These are n-qubit dense tableaux, representing an operation on n-qubit states. For single- or two-qubit gates, it is much more efficient to use small sparse [symbolic clifford operators](@ref Symbolic-Clifford-Operators).
+These are n-qubit dense tableaux, representing an operation on n-qubit states. For single- or two-qubit gates, it is much more efficient to use small sparse/named/[symbolic Clifford operators](@ref Symbolic-Clifford-Operators).
 A number of predefined Clifford operators are available,
 their name prefixed with `t` to mark them as dense tableaux.
 
@@ -513,7 +513,7 @@ julia> tHadamard * tPhase
 X₁ ⟼ - Y
 Z₁ ⟼ + X
 
-julia> permute(tCNOT, [2,1])
+julia> permutesubsystem(tCNOT, [2,1])
 X₁ ⟼ + X_
 X₂ ⟼ + XX
 Z₁ ⟼ + ZZ
@@ -554,7 +554,7 @@ julia> apply!(s,tCNOT)
 + XX
 ```
 
-Sparse applications where a small Clifford operator is applied only on a particular subset of a larger stabilizer is also possible, but in such circumstances it is useful to consider using [symbolic operators](@ref Symbolic-Clifford-Operators) too.
+Sparse applications where a small Clifford operator is applied only on a particular subset of a larger stabilizer is also possible, but in such circumstances it is useful to consider using [symbolic/sparse/named operators](@ref Symbolic-Clifford-Operators) too.
 
 ```jldoctest
 julia> s = S"Z_YX";
@@ -576,10 +576,10 @@ Internally, the `CliffordOperator` structure simply stores the tableau represent
 The `apply!` function is efficiently multithreaded for `CliffordOperators`. To start multithreaded Julia, use `julia -t<N>`
 where `<N>` specifies the number of threads.
 
-# [Symbolic Clifford Operators](@id Symbolic-Clifford-Operators)
+# [Symbolic/Sparse/Named Clifford Operators](@id Symbolic-Clifford-Operators)
 
 Much faster implementations for a number of common Clifford operators are available. They are stored as special
-named structs, instead of as a full tableau. These are the subtypes of `AbstractSingleQubitOperator` and
+named small structs, instead of as a full tableau. These are the subtypes of `AbstractSingleQubitOperator` and
 `AbstractTwoQubitOperator`. Currently these are:
 
 ```@example subtypes
@@ -627,12 +627,12 @@ julia> s=S"-XXX
 julia> d = Destabilizer(s)
 𝒟ℯ𝓈𝓉𝒶𝒷
 + Z__
-+ _X_
++ _XX
 + __X
 𝒮𝓉𝒶𝒷━
 - XXX
 - ZZ_
-- Z_Z
++ _ZZ
 ```
 
 They have convenience methods to extract only the stabilizer and destabilizer
@@ -642,11 +642,11 @@ pieces:
 julia> stabilizerview(d)
 - XXX
 - ZZ_
-- Z_Z
++ _ZZ
 
 julia> destabilizerview(d)
 + Z__
-+ _X_
++ _XX
 + __X
 ```
 
@@ -672,12 +672,12 @@ Clifford operations can be applied the same way they are applied to stabilizers.
 julia> apply!(d,tCNOT⊗tHadamard)
 𝒟ℯ𝓈𝓉𝒶𝒷
 - X_Z
-+ XXZ
++ _XZ
 + X__
 𝒮𝓉𝒶𝒷━
 + _ZX
 - _Z_
-- Z_X
++ ZZX
 ```
 
 # Mixed States
