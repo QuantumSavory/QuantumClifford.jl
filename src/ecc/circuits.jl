@@ -227,3 +227,66 @@ function shor_syndrome_circuit(parity_check_tableau, ancillary_index=1, bit_inde
 
     return cat_circuit, shor_sc, ancillary_index-initial_ancillary_index, bit_index:bit_index+final_bits-1
 end
+"""
+Flag-based fault-tolerant Pauli measurement circuit.
+
+Uses one measurement ancilla and one flag ancilla to detect error propagation.
+Provides a low-overhead alternative to Shor-style cat-state extraction.
+
+NOTE:
+- Currently supports single-flag (n_flag=1)
+- Simplified flag placement strategy
+- Intended for extension to full t-flag schemes
+
+Returns:
+- circuit
+- number of ancillas (2)
+- bit range (syndrome, flag)
+"""
+function flag_ancillary_paulimeasurement(p::PauliOperator, ancillary_index=1, bit_index=1; n_flag=1)
+    circuit = AbstractOperation[]
+    n = nqubits(p)
+
+    # uses 2 ancillas: measurement + flag
+    meas_anc = n + ancillary_index
+    flag_anc = n + ancillary_index + 1
+
+    push!(circuit, sHadamard(meas_anc))
+    push!(circuit, sHadamard(flag_anc))
+
+    active = Int[]
+    for q in 1:n
+        p[q] != (0,0) && push!(active, q)
+    end
+
+    w = length(active)
+
+    for (i, qubit) in enumerate(active)
+
+        # simplified flag placement
+        if w >= 3 && i == 2
+            push!(circuit, sCNOT(meas_anc, flag_anc))
+        end
+
+        if p[qubit] == (1,0)
+            push!(circuit, sXCX(qubit, meas_anc))
+        elseif p[qubit] == (0,1)
+            push!(circuit, sCNOT(qubit, meas_anc))
+        elseif p[qubit] == (1,1)
+            push!(circuit, sYCX(qubit, meas_anc))
+        end
+
+        if w >= 3 && i == w - 1
+            push!(circuit, sCNOT(meas_anc, flag_anc))
+        end
+    end
+
+    # phase correction
+    p.phase[] == 0 || push!(circuit, sX(meas_anc))
+
+    push!(circuit, sHadamard(meas_anc))
+    push!(circuit, sMRZ(meas_anc, bit_index))       # syndrome
+    push!(circuit, sMRZ(flag_anc, bit_index + 1))   # flag
+
+    return circuit, 2, bit_index:(bit_index+1)
+end
