@@ -228,20 +228,39 @@ function shor_syndrome_circuit(parity_check_tableau, ancillary_index=1, bit_inde
     return cat_circuit, shor_sc, ancillary_index-initial_ancillary_index, bit_index:bit_index+final_bits-1
 end
 """
-Flag-based fault-tolerant Pauli measurement circuit.
+Flag-based Pauli measurement circuit.
 
-Uses one measurement ancilla and one flag ancilla to detect error propagation.
-Provides a low-overhead alternative to Shor-style cat-state extraction.
+This is a simpler alternative to the Shor-style measurement. Instead of building
+a big cat state with lots of ancillas, we just use two qubits:
+one to collect the measurement and one extra "flag" qubit.
 
-NOTE:
-- Currently supports single-flag (n_flag=1)
-- Simplified flag placement strategy
-- Intended for extension to full t-flag schemes
+The measurement ancilla works like usual — it gathers the stabilizer value.
+The flag qubit is there just to tell us if something weird happened while the
+circuit was running.
+
+While applying the controlled gates, we briefly connect the measurement ancilla
+to the flag qubit. If an error spreads in a bad way, it will usually also affect
+the flag. So instead of preventing all bad error propagation, we just detect it.
+
+At the end:
+- measuring the main ancilla gives the stabilizer result
+- measuring the flag tells us if we should be suspicious of that result
+
+A decoder can then use both bits together.
+
+This is a basic single-flag version. The placement of the flag interaction here
+is pretty simple and not meant to be optimal — just something that works and is
+easy to build on later.
+
+Some notes:
+- If the stabilizer is very small (weight < 3), we skip adding the flag
+- This uses exactly 2 ancillas per measurement
+- Follows the same return style as the other circuit functions
 
 Returns:
-- circuit
-- number of ancillas (2)
-- bit range (syndrome, flag)
+- circuit: list of operations
+- n_ancillas: always 2
+- bit_range: (syndrome bit, flag bit)
 """
 function flag_ancillary_paulimeasurement(p::PauliOperator, ancillary_index=1, bit_index=1; n_flag=1)
     circuit = AbstractOperation[]
