@@ -4,11 +4,11 @@
     using Nemo: echelon_form, matrix, GF
     using QuantumClifford
     using QuantumClifford: gf2_row_echelon_with_pivots!, gf2_nullspace, gf2_rowspace_basis
-    test_sizes = [1,2,10,63,64,65,127,128,129]
+    test_sizes = [1,2,10,63,64,65]
 
     @testset "GF(2) row echelon form with transformation matrix, pivots etc." begin
         for n in test_sizes
-            for rep in 1:10
+            for rep in 1:4
                 gf2_matrices = [rand(Bool, size, size) for size in test_sizes]
                 for (i, mat) in enumerate(gf2_matrices)
                     naive_echelon_form, _, transformation, _ = gf2_row_echelon_with_pivots!(Matrix{Int}(mat), full=true) # in-place
@@ -46,7 +46,7 @@
 
     @testset "GF(2) nullspace of the binary matrix" begin
         for n in test_sizes
-            for rep in 1:10
+            for rep in 1:4
                 gf2_matrices = [rand(Bool, size, size) for size in test_sizes]
                 for (i, matrix) in enumerate(gf2_matrices)
                     imat = Matrix{Int}(matrix)

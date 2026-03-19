@@ -9,7 +9,7 @@ function _precompile_()
     canonicalize_rref!(s,phases=false)
     c = random_clifford(3)
     apply!(s, c);
-    apply!(s, tCNOT, [1,2]);
+    apply!(s, [1,2], tCNOT);
     apply!(s, sCNOT(1,2));
     project!(s, P"XXX");
     s = S"XX

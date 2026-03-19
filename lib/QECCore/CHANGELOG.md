@@ -1,5 +1,9 @@
 # News
 
+## v0.1.3 - 2026-03-03
+
+- `hasmetachecs`method added (not public).
+
 ## v0.1.2 - 2025-12-31
 
 - Introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix`.

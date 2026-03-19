@@ -8,6 +8,14 @@ on:
     branches: [master, main]
     paths-ignore:
       - 'docs/**'
+
+concurrency:
+  # group by workflow and ref; the last slightly strange component ensures that for pull
+  # requests, we limit to 1 concurrent job, but for the master branch we don't
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main') || github.run_number }}
+  # Cancel intermediate builds, but only if it is a pull request build.
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -19,10 +27,32 @@ jobs:
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
+      - name: Disable workspace directives for downgrade run
+        run: |
+          julia --color=yes -e '
+            using TOML
+            project = TOML.parsefile("Project.toml")
+            if haskey(project, "workspace")
+              delete!(project, "workspace")
+              open("Project.toml", "w") do io
+                TOML.print(io, project)
+              end
+            end
+            if haskey(project, "sources")
+              delete!(project, "sources")
+              open("Project.toml", "w") do io
+                TOML.print(io, project)
+              end
+            end
+          '
       - uses: julia-actions/julia-downgrade-compat@v2
         with:
-          skip: Pkg,TOML,InteractiveUtils,Random,LinearAlgebra
+          skip: Combinatorics,InteractiveUtils,LinearAlgebra,PrecompileTools,Printf,Pkg,REPL,Random,SparseArrays,Statistics,TOML
+          mode: 'forcedeps'
           julia_version: ${{ matrix.version }}
-      - uses: julia-actions/cache@v2
+      - uses: julia-actions/cache@v3
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
+        with:
+          allow_reresolve: false
+          force_latest_compatible_version: false

@@ -23,6 +23,9 @@ ENV["COLUMNS"] = 80
 doc_modules = [
     QuantumClifford,
     QuantumClifford.ECC,
+    QuantumClifford.GraphSim,
+    QuantumClifford.PauliChannelNonClifford,
+    QuantumClifford.PureNonClifford,
     QuantumInterface,
     QuantumCliffordHeckeExt,
     QuantumCliffordOscarExt,
