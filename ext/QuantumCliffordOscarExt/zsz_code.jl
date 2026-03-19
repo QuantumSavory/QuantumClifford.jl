@@ -9,9 +9,8 @@ This code is defined by the group presentation:
 
 It is an instance of a 2BGA code with this specific presentation. While it lacks an extensive number of redundant parity checks (metachecks), the paper claims it exhibits single-shot properties (e.g., self-correction with passive greedy decoding) due to strong error confinement stemming from small-set expansion in its Tanner graph.
 
-This particular function is nothing more than a simple wrapper that takes care of argument conversions for [`twobga_from_fp_group`](@ref) which is itself a wrapper to [`two_block_group_algebra_code`](@ref).
+This particular function is nothing more than a simple wrapper that takes care of argument conversions for [`two_block_group_algebra_code`](@ref).
 Of note, the polynomials here are given as lists of `(i, j)` exponent tuples for ``x^i y^j``.
-Of course, if you are comfortable with Oscar, you can use [`twobga_from_fp_group`](@ref) or [`two_block_group_algebra_code`](@ref) directly.
 
 ### Fields
     $TYPEDFIELDS
@@ -21,7 +20,7 @@ struct ZSZ <: AbstractCSSCode
     l::Int
     """Order of the cyclic group ``\\mathbb{Z}_m``"""
     m::Int
-    """The action parameter `q` such that ``y x y^{-1} = x^q``"""
+    """The parameter `q` such that ``y x y^{-1} = x^q``"""
     q::Int
     """First polynomial A represented as a list of `(i, j)` exponent tuples for ``x^i y^j``"""
     A::Vector{Tuple{Int, Int}}
@@ -36,28 +35,35 @@ struct ZSZ <: AbstractCSSCode
     end
 end
 
-function _zsz_to_css(c::ZSZ)
+# builds an LPCode from the zsz parameters.
+# convert the finitely presented group to a permutation group before
+# constructing the group algebra, because group_algebra(GF(2), FPGroup)
+# hangs for larger group orders while PermGroup works fine.
+function _zsz_to_lpcode(c::ZSZ)
     G = free_group(2)
     x, y = gens(G)
     rels = [x^c.l, y^c.m, y*x*y^-1 * x^-c.q]
     Q, _ = quo(G, rels)
-    F2G = group_algebra(GF(2), Q)
+    # fp group -> perm group so that group_algebra doesnt hang
+    iso = Oscar.isomorphism(PermGroup, Q)
+    Qp = Oscar.codomain(iso)
+    F2G = group_algebra(GF(2), Qp)
     qx, qy = gens(Q)
-
-    A_elts = typeof(qx)[]
-    for (i, j) in c.A
-        push!(A_elts, qx^i * qy^j)
-    end
-    B_elts = typeof(qx)[]
-    for (i, j) in c.B
-        push!(B_elts, qx^i * qy^j)
-    end
-    
-    return twobga_from_fp_group(A_elts, B_elts, F2G)
+    a = sum(F2G(iso(qx^i * qy^j)) for (i, j) in c.A)
+    b = sum(F2G(iso(qx^i * qy^j)) for (i, j) in c.B)
+    return two_block_group_algebra_code(a, b)
 end
 
-parity_matrix_x(c::ZSZ) = parity_matrix_x(_zsz_to_css(c))
-
-parity_matrix_z(c::ZSZ) = parity_matrix_z(_zsz_to_css(c))
+parity_matrix_xz(c::ZSZ) = parity_matrix_xz(_zsz_to_lpcode(c))
+parity_matrix_x(c::ZSZ) = parity_matrix_xz(c)[1]
+parity_matrix_z(c::ZSZ) = parity_matrix_xz(c)[2]
+# need to override parity_matrix here because the generic method
+# calls parity_matrix_x and parity_matrix_z separately, and each of
+# those builds a new lpcode with a different isomorphism.
+# this way it is built once and both hx, hz are obtained from the same construction.
+function parity_matrix(c::ZSZ)
+    hx, hz = parity_matrix_xz(c)
+    return parity_matrix(CSS(hx, hz))
+end
 
 code_n(c::ZSZ) = 2 * c.l * c.m

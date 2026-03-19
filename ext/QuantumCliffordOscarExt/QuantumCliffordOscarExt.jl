@@ -11,7 +11,7 @@ import Nemo: FqFieldElem
 import Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra,
    GroupAlgebraElem, direct_product, sub, ZZ, lift, polynomial_ring
 import Oscar
-import Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup,
+import Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup, PermGroup,
     BasicGAPGroupElem, DirectProductGroup, cyclic_group, free_module, hom, tensor_product,
     chain_complex, total_complex, map, summands, MatElem, matrix, nrows, ncols, kernel, dim, image,
     base_ring, ComplexOfMorphisms, coefficients, zero_matrix, circshift,
