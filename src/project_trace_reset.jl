@@ -844,7 +844,30 @@ function _remove_rowcol!(s::MixedDestabilizer, r,c)
     end
     oldrank = rank(s)
     newrank = r<=oldrank ? oldrank-1 : oldrank
-    MixedDestabilizer(Tableau((@view t.phases[1:end-2]),cols-1,(@view t.xzs[:,1:end-2])), newrank)
+    new_nqubits = cols - 1
+    new_phases = @view t.phases[1:end-2]
+    old_xzs = @view t.xzs[:, 1:end-2]
+    ncols_new = size(old_xzs, 2)
+    # Compact xzs when the number of UInt64 words per half decreases after
+    # qubit removal (e.g. 65→64 qubits crosses a word boundary: 2→1 words).
+    # Without compaction, `comm` and other functions that rely on
+    # `length(xz) ÷ 2` to locate the Z half would read stale X words
+    # instead of Z words, producing silently wrong results.
+    old_nwords = size(old_xzs, 1) ÷ 2          # physical words currently in xzs
+    new_nwords = cld(new_nqubits, 8*sizeof(eltype(old_xzs)))  # words needed for new qubit count
+    if new_nwords < old_nwords
+        # Allocate a correctly-sized xzs and copy only the relevant word-rows.
+        compact_xzs = similar(old_xzs, 2*new_nwords, ncols_new)
+        for col_idx in 1:ncols_new
+            @inbounds for w in 1:new_nwords
+                compact_xzs[w, col_idx]             = old_xzs[w, col_idx]              # X words
+                compact_xzs[new_nwords+w, col_idx]  = old_xzs[old_nwords+w, col_idx]   # Z words
+            end
+        end
+        MixedDestabilizer(Tableau(collect(new_phases), new_nqubits, compact_xzs), newrank)
+    else
+        MixedDestabilizer(Tableau(new_phases, new_nqubits, old_xzs), newrank)
+    end
 end
 
 #=
