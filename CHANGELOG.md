@@ -30,7 +30,7 @@
 
 ## v0.11.0 - 2026-01-01
 
-- **(fix)** `DistanceMIPAlgorithm` returned ``d_X`` as default instead of computing the ``min(d_X, d_Z)``.
+- **(fix)** `DistanceMIPAlgorithm` returned ``d_Z`` as the default instead of computing the ``min(d_X, d_Z)``.
 - Drop support for Julia <1.12.
 - Implementation of the specialized simulation algorithms for graph states (faster for large sparse tableaux).
 - **(breaking)** moving all graph state functionality to a submodule `GraphSim`.
