@@ -5,6 +5,10 @@
 
 # News
 
+## [Unreleased]
+
+- Add `ZSZ` single-shot codes from non-abelian semidirect product groups, with FPGroup→PermGroup conversion for efficient group algebra construction.
+
 ## v0.11.3 - 2026-03-07
 
 - **(fix)** `GeneralizedStabilizer` non-clifford `apply!(::GeneralizedStabilizer, ::AbstractPauliChannel)` had low-level mistakes returning wrong results 
