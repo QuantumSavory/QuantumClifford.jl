@@ -1,8 +1,22 @@
 """
-    BravyiBaconShor(A::AbstractMatrix)
+    $TYPEDEF
 
-Constructs a Bravyi-Bacon-Shor subsystem quantum code using a binary matrix `A`.
-The code qubits are located at the non-zero entries of `A`.
+A Bravyi-Bacon-Shor (BBS) subsystem code defined by a binary matrix `A`.
+Physical qubits sit at the nonzero entries of `A`, giving `n = nnz(A)`.
+The number of logical qubits equals the GF(2)-rank of `A`.
+
+X-type gauge generators are weight-2 operators pairing consecutive nonzero
+entries in each column of `A`; Z-type gauge generators pair entries in each row.
+Stabilizers are obtained from the left and right GF(2)-kernels of `A`.
+
+Based on the construction from [bravyi2011subsystem](@cite).
+
+The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/bacon_shor).
+
+See also: [`SubsystemHypergraphProduct`](@ref)
+
+### Fields
+    $TYPEDFIELDS
 """
 struct BravyiBaconShor <: AbstractCSSCode
     A::Matrix{Int}
@@ -46,24 +60,24 @@ function BravyiBaconShor(A::AbstractMatrix)
         end
     end
     
-    gauge_generators = isempty(gauge_ops) ? Tableau(zeros(PauliOperator, 0, N)) : Tableau(gauge_ops)
+    gauge_generators = Tableau(gauge_ops)
 
     # Compute Stabilizers using Nemo.kernel
-    # C2 = row(A), parity check H2 is right kernel of A
-    # C1 = col(A), parity check H1 is right kernel of A^T (left kernel of A)
+    # Nemo.kernel returns left kernel (K*M=0), so transpose to get right kernel
+    # H2 = right kernel of A (vectors v with A*v=0)
+    # H1 = left kernel of A (vectors v with v*A=0)
     F = GF(2)
-    elem_type = typeof(F(1))
     A_F = matrix(F, A)
-    _, K2 = Nemo.kernel(A_F)
-    H2 = zeros(Int, Nemo.ncols(K2), nc)
-    for i in 1:Nemo.ncols(K2), j in 1:nc
-        H2[i,j] = K2[j,i] == F(1) ? 1 : 0
+    K2 = Nemo.kernel(transpose(A_F))
+    H2 = zeros(Int, Nemo.nrows(K2), nc)
+    for i in 1:Nemo.nrows(K2), j in 1:nc
+        H2[i,j] = K2[i,j] == F(1) ? 1 : 0
     end
 
-    _, K1 = Nemo.kernel(transpose(A_F))
-    H1 = zeros(Int, Nemo.ncols(K1), nr)
-    for i in 1:Nemo.ncols(K1), j in 1:nr
-        H1[i,j] = K1[j,i] == F(1) ? 1 : 0
+    K1 = Nemo.kernel(A_F)
+    H1 = zeros(Int, Nemo.nrows(K1), nr)
+    for i in 1:Nemo.nrows(K1), j in 1:nr
+        H1[i,j] = K1[i,j] == F(1) ? 1 : 0
     end
 
     stabs = PauliOperator[]
@@ -102,33 +116,23 @@ function BravyiBaconShor(A::AbstractMatrix)
         if !empty push!(stabs, p) end
     end
 
-    stabilizer = isempty(stabs) ? Stabilizer(zeros(PauliOperator, 0, N)) : Stabilizer(stabs)
+    stabilizer = Stabilizer(stabs)
 
     return BravyiBaconShor(A, gauge_generators, stabilizer)
 end
 
 parity_checks(c::BravyiBaconShor) = c.stabilizer
 
-function parity_matrix_x(c::BravyiBaconShor)
-    s = c.stabilizer
-    # Return binary matrix of X stabilizers
-    xs = falses(0, nqubits(s))
-    for p in s
-        if any(p.xzs[1:nqubits(s)]) && !any(p.xzs[nqubits(s)+1:end])
-            xs = vcat(xs, transpose(p.xzs[1:nqubits(s)]))
-        end
-    end
-    return xs
+gauge_generators(c::BravyiBaconShor) = c.gauge_generators
+
+function code_k(c::BravyiBaconShor)
+    F = GF(2)
+    return Nemo.rank(matrix(F, c.A))
 end
 
-function parity_matrix_z(c::BravyiBaconShor)
-    s = c.stabilizer
-    # Return binary matrix of Z stabilizers
-    zs = falses(0, nqubits(s))
-    for p in s
-        if !any(p.xzs[1:nqubits(s)]) && any(p.xzs[nqubits(s)+1:end])
-            zs = vcat(zs, transpose(p.xzs[nqubits(s)+1:end]))
-        end
-    end
-    return zs
+function code_g(c::BravyiBaconShor)
+    return code_n(c) - code_k(c) - _stabilizer_rank(c)
 end
+
+parity_matrix_x(c::BravyiBaconShor) = _stab_to_parity_x(c.stabilizer)
+parity_matrix_z(c::BravyiBaconShor) = _stab_to_parity_z(c.stabilizer)

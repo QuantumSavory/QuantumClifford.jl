@@ -23,7 +23,7 @@ DelfosseReichardt, DelfosseReichardtRep, DelfosseReichardt823, QuantumTannerGrap
 TillichZemor, random_TillichZemor_code, BivariateBicycleViaCirculantMat
 
 # Classical Codes
-export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, random_Gallager_ldpc, Goppa, random_Goppa_code
+export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, Simplex, random_Gallager_ldpc, Goppa, random_Goppa_code
 
 # utilities
 export search_self_orthogonal_rm_code, hgp
@@ -33,6 +33,7 @@ include("codes/util.jl")
 
 # Classical Codes
 include("codes/classical/hamming.jl")
+include("codes/classical/simplex.jl")
 include("codes/classical/repetition.jl")
 include("codes/classical/golay.jl")
 include("codes/classical/gallager.jl")
