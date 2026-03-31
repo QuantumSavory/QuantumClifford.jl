@@ -34,17 +34,14 @@
         for (name, l, m, q, A, B, expected_k) in all_table1_codes
             c = ZSZ(l, m, q, A, B)
             expected_n = 2 * l * m
-
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
             computed_rank = rank(mat)
             @test computed_rank == code_n(c) - code_k(c)
             @test code_n(c) == expected_n == code_n(stab)
             @test code_k(c) == expected_k == code_k(stab)
-
             Hx = parity_matrix_x(c)
             Hz = parity_matrix_z(c)
-
             @test all(sum(Hx, dims=1) .== 3)
             @test all(sum(Hx, dims=2) .== 6)
             @test all(sum(Hz, dims=1) .== 3)

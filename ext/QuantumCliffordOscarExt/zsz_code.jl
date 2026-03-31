@@ -1,7 +1,7 @@
 """
     $TYPEDEF
 
-A single-shot ZSZ code
+A single-shot ZSZ code from [guo2025zsz](@cite).
 Returns a CSS code constructed from the two-block group algebra (2BGA) over the semidirect product group ``\\mathbb{Z}_\\ell \\rtimes_q \\mathbb{Z}_m``.
 
 This code is defined by the group presentation:
@@ -35,35 +35,36 @@ struct ZSZ <: AbstractCSSCode
     end
 end
 
-# builds an LPCode from the zsz parameters.
-# convert the finitely presented group to a permutation group before
-# constructing the group algebra, because group_algebra(GF(2), FPGroup)
-# hangs for larger group orders while PermGroup works fine.
-function _zsz_to_lpcode(c::ZSZ)
+"""Constructs parity check matrices for the ZSZ code.
+
+Converts the finitely presented group to a permutation group before constructing
+the group algebra, because `group_algebra(GF(2), FPGroup)` hangs for larger group
+orders while `PermGroup` works efficiently."""
+function parity_matrix_xz(c::ZSZ)
     G = free_group(2)
     x, y = gens(G)
     rels = [x^c.l, y^c.m, y*x*y^-1 * x^-c.q]
     Q, _ = quo(G, rels)
-    # fp group -> perm group so that group_algebra doesnt hang
-    iso = Oscar.isomorphism(PermGroup, Q)
-    Qp = Oscar.codomain(iso)
+    iso = isomorphism(PermGroup, Q)
+    Qp = codomain(iso)
     F2G = group_algebra(GF(2), Qp)
     qx, qy = gens(Q)
     a = sum(F2G(iso(qx^i * qy^j)) for (i, j) in c.A)
     b = sum(F2G(iso(qx^i * qy^j)) for (i, j) in c.B)
-    return two_block_group_algebra_code(a, b)
+    c2 = two_block_group_algebra_code(a, b)
+    return parity_matrix_xz(c2)
 end
 
-parity_matrix_xz(c::ZSZ) = parity_matrix_xz(_zsz_to_lpcode(c))
 parity_matrix_x(c::ZSZ) = parity_matrix_xz(c)[1]
 parity_matrix_z(c::ZSZ) = parity_matrix_xz(c)[2]
-# need to override parity_matrix here because the generic method
-# calls parity_matrix_x and parity_matrix_z separately, and each of
-# those builds a new lpcode with a different isomorphism.
-# this way it is built once and both hx, hz are obtained from the same construction.
+
+"""Need to override `parity_matrix` because the generic method calls `parity_matrix_x`
+and `parity_matrix_z` separately, each of which would build a new group algebra with
+a different isomorphism. This way it is built once."""
 function parity_matrix(c::ZSZ)
     hx, hz = parity_matrix_xz(c)
     return parity_matrix(CSS(hx, hz))
 end
 
 code_n(c::ZSZ) = 2 * c.l * c.m
+
