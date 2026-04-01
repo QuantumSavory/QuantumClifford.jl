@@ -5,9 +5,10 @@
 
 # News
 
-## [Unreleased]
+## v0.11.4 - dev
 
-- Add `ZSZ` single-shot codes from non-abelian semidirect product groups, with FPGroup→PermGroup conversion for efficient group algebra construction.
+- `ZSZ` codes (`two_block_group_algebra_code`s built from non-abelian semidirect product of groups) are now implemented in ECC submodule.
+- `2DTile` codes, a slight generalization of 2D `Surface` codes, are now implemented in `QECCore`.
 
 ## v0.11.3 - 2026-03-07
 
@@ -34,6 +35,7 @@
 
 ## v0.11.0 - 2026-01-01
 
+- **(fix)** `DistanceMIPAlgorithm` returned ``d_Z`` as the default instead of computing the ``min(d_X, d_Z)``.
 - Drop support for Julia <1.12.
 - Implementation of the specialized simulation algorithms for graph states (faster for large sparse tableaux).
 - **(breaking)** moving all graph state functionality to a submodule `GraphSim`.
