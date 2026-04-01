@@ -7,7 +7,7 @@
 
 ## v0.11.4 dev
 
-- Add an extension to `QECCore`:  `2DTile` codes, slight generalization of `Surface` codes
+- Add a QECC to `QECCore`: `2DTile` codes, slight generalization of `Surface` codes
 
 ## v0.11.3 - 2026-03-07
 
