@@ -5,10 +5,6 @@
 
 # News
 
-## v0.11.4 - dev
-
-- `2DTile` codes, a slight generalization of 2D `Surface` codes, are now implemented in `QECCore`. 
-
 ## v0.11.3 - 2026-03-07
 
 - **(fix)** `GeneralizedStabilizer` non-clifford `apply!(::GeneralizedStabilizer, ::AbstractPauliChannel)` had low-level mistakes returning wrong results 
