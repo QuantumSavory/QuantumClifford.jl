@@ -22,11 +22,21 @@ function applynoise!(r::Register, n, indices::Base.AbstractVecOrTuple)
     return r
 end
 
-"""Depolarization noise model with total probability of error `p`."""
+"""
+Depolarization noise model with total probability of error `p`.
+
+For a one-qubit operation, an X/Y/Z Pauli is applied with equal probability p/3.
+For a two-qubit operation, one of the 15 non-identity two-qubit Pauli errors is applied uniformly with total probability p.
+"""
+
 struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
     p::T
 end
 UnbiasedUncorrelatedNoise(p::Integer) = UnbiasedUncorrelatedNoise(float(p))
+
+struct UnbiasedNoise{T} <: AbstractNoise
+    p::T
+end
 
 """Pauli noise model with probabilities `px`, `py`, and `pz` respectively for the three types of Pauli errors."""
 struct PauliNoise{T} <: AbstractNoise
@@ -70,6 +80,41 @@ function applynoise!(s::AbstractStabilizer,noise::PauliNoise,i::Int)
         apply_single_y!(s,i)
     end
     s
+end
+
+"""Depolarization noise for two qubit gate"""
+@inline function _apply_pauli_idx!(s::AbstractStabilizer, q::Int, pidx::Int)
+    if pidx == 1
+        apply_single_x!(s, q)
+    elseif pidx == 2
+        apply_single_z!(s, q)
+    elseif pidx == 3
+        apply_single_y!(s, q)
+    elseif pidx == 4
+        return s
+    else
+        throw(ArgumentError("invalid Pauli index $pidx"))
+    end
+    return s
+end
+
+const _TWO_QUBIT_NONII_PAULIS = (
+    (1,1), (1,2), (1,3), (1,4),
+    (2,1), (2,2), (2,3), (2,4),
+    (3,1), (3,2), (3,3), (3,4),
+    (4,1), (4,2), (4,3),
+)
+
+function applynoise!(s::AbstractStabilizer, noise::UnbiasedUncorrelatedNoise, i::Int, j::Int)
+    r = rand()
+    if r >= noise.p
+        return s
+    end
+
+    e1, e2 = rand(_TWO_QUBIT_NONII_PAULIS)
+    _apply_pauli_idx!(s, i, e1)
+    _apply_pauli_idx!(s, j, e2)
+    return s
 end
 
 """An operator that applies the given `noise` model to the qubits at the selected `indices`."""
@@ -123,11 +168,14 @@ struct NoisyGate <: AbstractNoiseOp
 end
 
 function apply!(s::AbstractQCState, g::NoisyGate)
-    s = applynoise!(
-            apply!(s,g.gate),
-            g.noise,
-            affectedqubits(g.gate)),
-    return s
+    s = apply!(s, g.gate)
+    qs = affectedqubits(g.gate)
+
+    if g.noise isa UnbiasedUncorrelatedNoise && length(qs) == 2 && s isa AbstractStabilizer
+        return applynoise!(s, g.noise, qs[1], qs[2])
+    else
+        return applynoise!(s, g.noise, qs)
+    end
 end
 
 function apply!(s::AbstractQCState, mr::NoiseOpAll)
@@ -178,6 +226,23 @@ function applynoise_branches(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNo
     results
 end
 
+function applynoise_branches(s::AbstractStabilizer, noise::UnbiasedUncorrelatedNoise, indices::NTuple{2,Int}; max_order=1)
+    i, j = indices
+
+    results = [(copy(s), 1 - noise.p, 0)]
+
+    if max_order >= 1
+        for (e1, e2) in _TWO_QUBIT_NONII_PAULIS
+            new_state = copy(s)
+            _apply_pauli_idx!(new_state, i, e1)
+            _apply_pauli_idx!(new_state, j, e2)
+            push!(results, (new_state, noise.p / 15, 1))
+        end
+    end
+
+    return results
+end
+
 @generated function _applynoise_branches_unbiased_uncorrelated(::Val{order},s,error_indices,results,error_prob) where {order}
     error_calls = Expr(:block)
     for i in 1:order
@@ -205,6 +270,14 @@ function applybranches(s::AbstractQCState, nop::NoiseOp; max_order=1)
 end
 
 function applybranches(s::AbstractQCState, g::NoisyGate; max_order=1)
-    news, _,_,_ = applybranches(s,g.gate,max_order=max_order)[1] # TODO this assumes only one always successful branch for the gate
-    return [(state, continue_stat, prob, order) for (state, prob, order) in applynoise_branches(news, g.noise, affectedqubits(g), max_order=max_order)]
+    news, _, _, _ = applybranches(s, g.gate, max_order=max_order)[1]
+    qs = affectedqubits(g)
+
+    if g.noise isa UnbiasedUncorrelatedNoise && length(qs) == 2 && news isa AbstractStabilizer
+        return [(state, continue_stat, prob, order)
+                for (state, prob, order) in applynoise_branches(news, g.noise, (qs[1], qs[2]), max_order=max_order)]
+    else
+        return [(state, continue_stat, prob, order)
+                for (state, prob, order) in applynoise_branches(news, g.noise, qs, max_order=max_order)]
+    end
 end
