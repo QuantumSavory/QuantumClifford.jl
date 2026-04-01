@@ -7,7 +7,7 @@
 
 ## v0.11.4 - dev
 
-- `ZSZ` codes (`two_block_group_algebra_code`s built from non-abelian semidirect product of groups) are now implemented in ECC submodule.
+- `ZSZ` codes (`two_block_group_algebra_code`s built from semidirect product of groups) are now implemented in ECC submodule.
 - `2DTile` codes, a slight generalization of 2D `Surface` codes, are now implemented in `QECCore`.
 
 ## v0.11.3 - 2026-03-07
