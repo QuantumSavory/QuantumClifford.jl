@@ -280,6 +280,44 @@ m5 = 7
 A5 = [(:x, 3), (:y, 5), (:y, 6)] # A = x³ + y⁵ + y⁶
 B5 = [(:y, 2), (:x, 3), (:x, 5)] # A = y² + x³ + x⁵
 
+# 2D Tile Codes from https://arxiv.org/pdf/2504.09171
+# From Appendix A 
+# [[288, 8, 12]] 
+B₁ = 3
+horizX₁ = [(0,0), (2,1), (2,2)]
+vertX₁ = [(0,2), (1,2), (2,0)]
+Lx₁, Ly₁ = 10, 10
+
+# [[288, 8, 14]]
+B₂ = 3
+horizX₂ = [(0,0), (2,0), (0,1), (0,2)]
+vertX₂ = [(0,0), (0,2), (1,1), (2,2)]
+Lx₂, Ly₂ = 10, 10
+
+# [[288, 18, 13]]
+B₃ = 4
+horizX₃ = [(0,0),(0,3),(2,2),(3,0)]
+vertX₃ = [(0,1),(1,0),(1,1),(3,3)]
+Lx₃, Ly₃ = 9, 9
+
+# [[512, 18, 19]]
+B₄ = 4
+horizX₄ = [(0,0),(0,3),(2,2),(3,0)]
+vertX₄ = [(0,1),(1,0),(1,1),(3,3)]
+Lx₄, Ly₄ = 13, 13
+
+# From Appendix B
+B₅ = 3
+horizX₅ = [(0,0), (2,1), (2,2)]
+vertX₅ = [(0,2), (1,0), (2,0)]
+Lx₅, Ly₅ = 10, 10
+
+# From Appendix C
+B₆ = 3
+horizX₆ = [(0,0), (0,1), (0,2), (2,0)]
+vertX₆ = [(0,1), (1,0), (1,1), (2,2)]
+Lx₆, Ly₆ = 10, 10
+
 const code_instance_args = Dict(
     :Toric => [(3,3), (4,4), (3,6), (4,3), (5,5)],
     :Surface => [(3,3), (4,4), (3,6), (4,3), (5,5)],
@@ -301,7 +339,8 @@ const code_instance_args = Dict(
     :BivariateBicycleViaCirculantMat => [(l1, m1, A1, B1), (l2, m2, A2,B2), (l3, m3, A3, B3), (l4, m4, A4, B4), (l5, m5, A5, B5)],
     :GeneralizedHyperGraphProduct => [(A_ghp1, b_ghp1, l_ghp1), (A_ghp2, b_ghp2, l_ghp2)],
     :GeneralizedBicycle => [(a_gb₁, b_gb₁, l_gb₁), (a_gb₂, b_gb₂, l_gb₂), (a_gb₃ ,b_gb₃, l_gb₃)],
-    :ExtendedGeneralizedBicycle => [(c_gb₁, 2, p_gb₁), (c_gb₂, 3, p_gb₂), (c_gb₃, 4, p_gb₃)]
+    :ExtendedGeneralizedBicycle => [(c_gb₁, 2, p_gb₁), (c_gb₂, 3, p_gb₂), (c_gb₃, 4, p_gb₃)],
+    :Tile2D => ([B₁, horizX₁, vertX₁, Lx₁, Ly₁], [B₂, horizX₂, vertX₂, Lx₂, Ly₂], [B₃, horizX₃, vertX₃, Lx₃, Ly₃], [B₄, horizX₄, vertX₄, Lx₄, Ly₄], [B₅, horizX₅, vertX₅, Lx₅, Ly₅], [B₆, horizX₆, vertX₆, Lx₆, Ly₆])
 )
 
 @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
