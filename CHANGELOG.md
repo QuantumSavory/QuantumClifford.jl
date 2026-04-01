@@ -5,6 +5,10 @@
 
 # News
 
+## v0.11.4 dev
+
+- Add an extension to `QECCore`:  `2DTile` codes, slight generalization of `Surface` codes
+
 ## v0.11.3 - 2026-03-07
 
 - **(fix)** `GeneralizedStabilizer` non-clifford `apply!(::GeneralizedStabilizer, ::AbstractPauliChannel)` had low-level mistakes returning wrong results 
