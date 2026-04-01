@@ -13,8 +13,8 @@ This code is defined by the group presentation:
 
 Notably, it is an instance of a [`two_block_group_algebra_code`](@ref) code with this specific presentation. While it lacks explicit *metachecks*, it exhibits single-shot properties (e.g., self-correction with passive greedy decoding) due to strong error confinement stemming from small-set expansion in its Tanner graph [guo2025zsz](@cite).
 
-This particular function is nothing more than a simple wrapper that takes care of argument conversions for [`two_block_group_algebra_code`](@ref).
-Of note, the polynomials here are given as lists of `(i, j)` exponent tuples for ``x^i y^j``.
+!!! note
+    This function is simply a convenience wrapper that handles argument conversions before calling [`two_block_group_algebra_code`](@ref). Notably, it uses Cayley's theorem to compute a group isomorphism of a finitely presented group as a permutation group, enabling the efficient construction of larger blocklength ZSZ codes from Table I [guo2025zsz](@cite).
 
 ### Fields
     $TYPEDFIELDS
