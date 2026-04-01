@@ -1,13 +1,17 @@
 """
     $TYPEDEF
 
-A single-shot ZSZ code from [guo2025zsz](@cite).
-Returns a CSS code constructed from the two-block group algebra (2BGA) over the semidirect product group ``\\mathbb{Z}_\\ell \\rtimes_q \\mathbb{Z}_m``.
+ZSZ codes are single-shot decodable [`two_block_group_algebra_code`](@ref)s built from the semidirect product of groups ``\\mathbb{Z}_\\ell \\rtimes_q \\mathbb{Z}_m`` [guo2025zsz](@cite).
 
 This code is defined by the group presentation:
-``\\langle x, y \\mid x^\\ell = 1, y^m = 1, y x y^{-1} = x^q \\rangle``
 
-It is an instance of a 2BGA code with this specific presentation. While it lacks an extensive number of redundant parity checks (metachecks), the paper claims it exhibits single-shot properties (e.g., self-correction with passive greedy decoding) due to strong error confinement stemming from small-set expansion in its Tanner graph.
+```math
+\\begin{aligned}
+\\langle x, y \\mid x^\\ell = 1, y^m = 1, y x y^{-1} = x^q \\rangle
+\\end{aligned}
+```
+
+Notably, it is an instance of a [`two_block_group_algebra_code`](@ref) code with this specific presentation. While it lacks explicit *metachecks*, it exhibits single-shot properties (e.g., self-correction with passive greedy decoding) due to strong error confinement stemming from small-set expansion in its Tanner graph [guo2025zsz](@cite).
 
 This particular function is nothing more than a simple wrapper that takes care of argument conversions for [`two_block_group_algebra_code`](@ref).
 Of note, the polynomials here are given as lists of `(i, j)` exponent tuples for ``x^i y^j``.
@@ -67,4 +71,3 @@ function parity_matrix(c::ZSZ)
 end
 
 code_n(c::ZSZ) = 2 * c.l * c.m
-
