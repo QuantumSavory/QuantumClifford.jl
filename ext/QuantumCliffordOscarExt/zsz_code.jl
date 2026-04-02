@@ -16,6 +16,17 @@ Notably, it is an instance of a [`two_block_group_algebra_code`](@ref) code with
 !!! note
     This function is simply a convenience wrapper that handles argument conversions before calling [`two_block_group_algebra_code`](@ref). Notably, it uses Cayley's theorem to compute a group isomorphism of a finitely presented group as a permutation group, enabling the efficient construction of larger blocklength ZSZ codes from Table I [guo2025zsz](@cite).
 
+Here is an example of the `[[80, 2]]` ZSZ code from Table I of [guo2025zsz](@cite):
+
+```jldoctest
+julia> using Oscar, QuantumClifford.ECC;
+
+julia> c = ZSZ(5, 8, 2, [(0,0),(4,4),(4,1)], [(0,0),(3,0),(2,7)]);
+
+julia> code_n(c), code_k(c)
+(80, 2)
+```
+
 ### Fields
     $TYPEDFIELDS
 """
@@ -39,12 +50,7 @@ struct ZSZ <: AbstractCSSCode
     end
 end
 
-"""Constructs parity check matrices for the ZSZ code.
-
-Converts the finitely presented group to a permutation group before constructing
-the group algebra, because `group_algebra(GF(2), FPGroup)` hangs for larger group
-orders while `PermGroup` works efficiently."""
-function parity_matrix_xz(c::ZSZ)
+function zsz_to_lpcode(c::ZSZ)
     G = free_group(2)
     x, y = gens(G)
     rels = [x^c.l, y^c.m, y*x*y^-1 * x^-c.q]
@@ -55,19 +61,19 @@ function parity_matrix_xz(c::ZSZ)
     qx, qy = gens(Q)
     a = sum(F2G(iso(qx^i * qy^j)) for (i, j) in c.A)
     b = sum(F2G(iso(qx^i * qy^j)) for (i, j) in c.B)
-    c2 = two_block_group_algebra_code(a, b)
-    return parity_matrix_xz(c2)
+    return two_block_group_algebra_code(a, b)
 end
 
-parity_matrix_x(c::ZSZ) = parity_matrix_xz(c)[1]
-parity_matrix_z(c::ZSZ) = parity_matrix_xz(c)[2]
+parity_matrix_x(c::ZSZ) = parity_matrix_x(zsz_to_lpcode(c))
+parity_matrix_z(c::ZSZ) = parity_matrix_z(zsz_to_lpcode(c))
 
-"""Need to override `parity_matrix` because the generic method calls `parity_matrix_x`
-and `parity_matrix_z` separately, each of which would build a new group algebra with
-a different isomorphism. This way it is built once."""
+# override because the generic method calls parity_matrix_x and parity_matrix_z
+# separately, each building a new lpcode with a different non-deterministic
+# isomorphism from Oscar.isomorphism(PermGroup, Q). building once ensures
+# Hx and Hz share the same group element ordering so CSS commutativity holds.
 function parity_matrix(c::ZSZ)
-    hx, hz = parity_matrix_xz(c)
-    return parity_matrix(CSS(hx, hz))
+    lp = zsz_to_lpcode(c)
+    return parity_matrix(CSS(parity_matrix_x(lp), parity_matrix_z(lp)))
 end
 
 code_n(c::ZSZ) = 2 * c.l * c.m
