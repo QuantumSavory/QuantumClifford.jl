@@ -1444,6 +1444,7 @@ using .GraphSim
 #
 include("entanglement.jl")
 #
+include ("reintrepet.jl")
 include("isclifford.jl")
 include("symbolic_noncliffords.jl")
 #
