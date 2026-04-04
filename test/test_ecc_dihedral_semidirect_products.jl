@@ -39,7 +39,7 @@
         @test describe(G) == "D$(m*2)"
         @test describe(normal_subgroup(G)) == "C$m"
         @test code_n(c) == 24 && code_k(c) == 8
-        # Oscar.describe(Oscar.small_group(2*m, 4)) is D₁₂, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 4)) is D₁₂, cross-check it with G
         @test small_group_identification(G) == (order(G), 4)
 
         # [[24, 12, 2]]
@@ -51,7 +51,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 24 && code_k(c) == 12
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 4)) is D₁₂, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 4)) is D₁₂, cross-check it with G
         @test small_group_identification(G) == (order(G), 4)
 
         # [[32, 8, 4]]
@@ -64,7 +64,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 32 && code_k(c) == 8
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 7)) is D₁₆, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 7)) is D₁₆, cross-check it with G
         @test small_group_identification(G) == (order(G), 7)
 
         # [[32, 16, 2]]
@@ -76,7 +76,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 32 && code_k(c) == 16
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 7)) is D₁₆, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 7)) is D₁₆, cross-check it with G
         @test small_group_identification(G) == (order(G), 7)
 
         # [[36, 12, 3]]
@@ -89,7 +89,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 36 && code_k(c) == 12
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 1)) is D₁₈, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 1)) is D₁₈, cross-check it with G
         @test small_group_identification(G) == (order(G), 1)
 
         # [[40, 8, 5]]
@@ -102,7 +102,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 40 && code_k(c) == 8
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 4)) is D₂₀, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 4)) is D₂₀, cross-check it with G
         @test small_group_identification(G) == (order(G), 4)
 
         # [[40, 20, 2]]
@@ -114,7 +114,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 40 && code_k(c) == 20
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 4)) is D₂₀, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 4)) is D₂₀, cross-check it with G
         @test small_group_identification(G) == (order(G), 4)
 
         # [[48, 8, 6]]
@@ -127,7 +127,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 48 && code_k(c) == 8
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 6)) is D₂₄, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 6)) is D₂₄, cross-check it with G
         @test small_group_identification(G) == (order(G), 6)
 
         # [[48, 12, 4]]
@@ -139,7 +139,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 48 && code_k(c) == 12
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 6)) is D₂₄, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 6)) is D₂₄, cross-check it with G
         @test small_group_identification(G) == (order(G), 6)
 
         # [[48, 16, 3]]
@@ -151,7 +151,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 48 && code_k(c) == 16
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 6)) is D₂₄, cross-check it with G
+        @test Oscar.describe(Oscar.small_group(2*m, 6)) is D₂₄, cross-check it with G
         @test small_group_identification(G) == (order(G), 6)
 
         # [[48, 24, 2]]
@@ -163,7 +163,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 48 && code_k(c) == 24
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 6)) is D₂₄, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 6)) is D₂₄, cross-check it with G
         @test small_group_identification(G) == (order(G), 6)
 
         # [[56, 8, 7]]
@@ -176,7 +176,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 56 && code_k(c) == 8
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 3)) is D₂₈, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 3)) is D₂₈, cross-check it with G
         @test small_group_identification(G) == (order(G), 3)
 
         # [[56, 28, 2]]
@@ -188,7 +188,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 56 && code_k(c) == 28
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 3)) is D₂₈, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 3)) is D₂₈, cross-check it with G
         @test small_group_identification(G) == (order(G), 3)
 
         # [[60, 12, 5]]
@@ -201,7 +201,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 60 && code_k(c) == 12
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 3)) is D₃₀, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 3)) is D₃₀, cross-check it with G
         @test small_group_identification(G) == (order(G), 3)
 
         # [[60, 20, 3]]
@@ -213,7 +213,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 60 && code_k(c) == 20
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 3)) is D₃₀, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 3)) is D₃₀, cross-check it with G
         @test small_group_identification(G) == (order(G), 3)
 
         # [[64, 8, 8]]
@@ -226,7 +226,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 64 && code_k(c) == 8
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 18)) is D₃₂, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 18)) is D₃₂, cross-check it with G
         @test small_group_identification(G) == (order(G), 18)
 
         # [[64, 16, 8]]
@@ -238,7 +238,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 64 && code_k(c) == 16
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 18)) is D₃₂, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 18)) is D₃₂, cross-check it with G
         @test small_group_identification(G) == (order(G), 18)
 
         # [[64, 32, 2]]
@@ -250,7 +250,7 @@
         @test describe(G) == "D$(m*2)"
         @test code_n(c) == 64 && code_k(c) == 32
         @test describe(normal_subgroup(G)) == "C$m"
-        # Oscar.describe(Oscar.small_group(2*m, 18)) is D₃₂, cross-check it with G
+        @test describe(Oscar.small_group(2*m, 18)) is D₃₂, cross-check it with G
         @test small_group_identification(G) == (order(G), 18)
     end
 end
