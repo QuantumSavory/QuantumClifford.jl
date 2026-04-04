@@ -1,4 +1,4 @@
-@testitem "ECC Dihedral group via semidirect_product" begin
+@testitem "ECC Dihedral group via semidirect_product" tags=[:ecc, :ecc_bespoke_checks] begin
     using Nemo: FqFieldElem
     using Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra, GroupAlgebraElem
     using QuantumClifford.ECC
