@@ -1,10 +1,10 @@
-@testitem "ECC BCH" tags=[:ecc, :ecc_bespoke_checks] begin
+@testitem "ECC BCH" begin
     using LinearAlgebra
+    using QECCore 
     using QuantumClifford.ECC
-    using QuantumClifford.ECC: AbstractECC, BCH, generator_polynomial
     using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible
 
-    using QuantumClifford.ECC.QECCore: code_k, code_n, distance, rate, parity_matrix
+    using QECCore: code_k, code_n, distance, rate, parity_matrix, BCH, generator_polynomial
 
     # To prove that t-bit error correcting BCH code indeed has minimum distance
     # of at least 2 * t + 1, it is shown that no 2 * t or fewer columns of its
