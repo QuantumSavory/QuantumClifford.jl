@@ -1,4 +1,4 @@
-@testitem "ECC 2BGA Table 2 via Presentation of Cyclic Groups" tags=[:ecc] begin
+@testitem "ECC 2BGA Table 2 via Presentation of Cyclic Groups" tags=[:ecc, :ecc_bespoke_checks] begin
     @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
         using JuMP
         using HiGHS
@@ -6,7 +6,7 @@
         using Nemo: FqFieldElem
         using Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra
         using QuantumClifford.ECC
-        using QuantumClifford.ECC: code_k, code_n, two_block_group_algebra_codes, twobga_from_fp_group
+        using QuantumClifford.ECC: code_k, code_n, two_block_group_algebra_code, twobga_from_fp_group
         using Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup, FPGroupElem, small_group
 
         @testset "Reproduce Table 2 lin2024quantum" begin
