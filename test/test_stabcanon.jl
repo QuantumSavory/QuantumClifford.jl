@@ -48,11 +48,14 @@
                 rs_m = MixedStabilizer(copy(rs))
                 rs_d = Destabilizer(copy(rs))
                 rs_md = MixedDestabilizer(copy(rs))
+                rs_mdb = MixedDestabilizer(copy(rs), backtrack=true)
+                @test mixed_destab_looks_good(rs_mdb)
                 c  = canonicalize!(copy(rs))
                 mc  = canonicalize!(copy(rs_m))
                 dc = canonicalize!(copy(rs_d))
                 mdc = canonicalize!(copy(rs_md))
-                @test stabilizerview(mdc) == stabilizerview(mc) == stabilizerview(dc) == c
+                mdbc = canonicalize!(copy(rs_mdb))
+                @test stabilizerview(mdbc) == stabilizerview(mdc) == stabilizerview(mc) == stabilizerview(dc) == c
                 @test stab_looks_good(c)
                 @test mixed_stab_looks_good(mc)
                 @test destab_looks_good(dc)

@@ -23,6 +23,13 @@
         @testset "Constructors" begin
             @test_throws DimensionMismatch CliffordOperator(T"X")
         end
+        @testset "Constructor from PauliOperator" begin
+            for n in test_sizes
+                l = random_clifford(n)
+                pauli = random_pauli(n)
+                @test apply!(copy(l), pauli; phases=true) == apply!(l, CliffordOperator(pauli); phases=true)
+            end
+        end
         @testset "Permutations of qubits" begin
             for c in [tCNOT, tId1⊗tHadamard, tCNOT⊗tCNOT, tensor_pow(tCNOT,6), tensor_pow(tCNOT,7), tensor_pow(tCNOT,6)⊗tPhase, tensor_pow(tCNOT,7)⊗tPhase]
                 for rep in 1:5
@@ -70,11 +77,11 @@
                 igates_perm = invperm(gates_perm)
                 s2 = copy(s)
                 canonicalize!(s2)
-                s2 = apply!(s2, tCNOT, [igates_perm[1],igates_perm[1]+1])
+                s2 = apply!(s2, [igates_perm[1],igates_perm[1]+1], tCNOT)
                 canonicalize!(s2)
-                s2 = apply!(s2, tHadamard, [igates_perm[2]+(igates_perm[1]<igates_perm[2])])
+                s2 = apply!(s2, [igates_perm[2]+(igates_perm[1]<igates_perm[2])], tHadamard)
                 canonicalize!(s2)
-                s2 = apply!(s2, tPhase, [igates_perm[3]+(igates_perm[1]<igates_perm[3])])
+                s2 = apply!(s2, [igates_perm[3]+(igates_perm[1]<igates_perm[3])], tPhase)
 
                 @test canonicalize!(s1) == canonicalize!(s2)
             end
@@ -90,7 +97,7 @@
                 newsize = min(size, 5)
                 indices = randperm(size)[1:newsize]
                 cn = random_clifford(newsize)
-                @test QuantumClifford._apply_nonthread!(s,cn,indices) == stabilizerview(apply!(md,cn,indices)) == stabilizerview(MixedDestabilizer(apply!(d,cn,indices),size÷2))
+                @test QuantumClifford._apply_nonthread!(s,cn,indices) == stabilizerview(apply!(md,indices,cn)) == stabilizerview(MixedDestabilizer(apply!(d,indices,cn),size÷2))
             end
         end
         @testset "Inversions" begin

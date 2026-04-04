@@ -1,4 +1,4 @@
-@testitem "Reed-Muller" tags=[:ecc] begin
+@testitem "Reed-Muller" begin
     using Test
     using Nemo: echelon_form, matrix, GF
     using QECCore.LinearAlgebra

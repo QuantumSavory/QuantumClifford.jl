@@ -63,6 +63,12 @@ end
 CliffordOperator(op::CliffordOperator) = op
 CliffordOperator(paulis::AbstractVector{<:PauliOperator}) = CliffordOperator(Tableau(paulis))
 CliffordOperator(destab::Destabilizer) = CliffordOperator(tab(destab))
+function CliffordOperator(pauli::PauliOperator)
+    res = one(CliffordOperator, nqubits(pauli))
+    comm!(phases(res), pauli, tab(res))
+    tab(res).phases .*= 0x02
+    return res
+end
 
 Base.:(==)(l::CliffordOperator, r::CliffordOperator) = tab(l) == tab(r)
 Base.hash(c::T, h::UInt) where {T<:CliffordOperator} = hash(T, hash(tab(c), h))
@@ -91,6 +97,7 @@ function Base.copy(c::CliffordOperator)
 end
 
 @inline nqubits(c::CliffordOperator) = nqubits(tab(c))
+@inline phases(c::CliffordOperator) = phases(tab(c))
 
 Base.zero(c::CliffordOperator) = CliffordOperator(zero(tab(c)))
 Base.zero(::Type{<:CliffordOperator}, n) = CliffordOperator(zero(Tableau, 2n, n))
@@ -103,6 +110,11 @@ end
 
 function apply!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
     @valbooldispatch _apply!(Stabilizer(tab(r)),l;phases=Val(phases)) phases # TODO maybe not the most elegant way to perform apply!(::Tableau, gate)
+    r
+end
+
+function apply_inv!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
+    @valbooldispatch _apply_inv!(Stabilizer(tab(r)),l,phases=Val(phases)) phases
     r
 end
 
@@ -130,6 +142,10 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=V
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, phases=phases)
     end
     stab
+end
+
+function _apply_inv!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=Val(true)) where B
+    _apply!(stab, inv(c); phases=phases)
 end
 
 # TODO Added a lot of type assertions to help Julia infer types, but they are much too strict for cases where bitpacking varies (check tests)
@@ -175,6 +191,10 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_appli
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, indices_of_application, phases=phases)
     end
     stab
+end
+
+function _apply_inv!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{Int,1}; phases::Val{B}=Val(true)) where B
+    _apply!(stab, inv(c), indices_of_application; phases=phases)
 end
 
 @inline function apply_row_kernel!(new_stabrow, row, s_tab, c_tab, indices_of_application; phases::Val{B}=Val(true)) where B

@@ -1,6 +1,6 @@
 @testitem "Allocation checks" begin
     using QuantumClifford: mul_left!, RandDestabMemory, Tableau
-    using Random
+    using Random, InteractiveUtils
     n = Threads.nthreads()
     allocated(f::F) where {F} = @allocations f()
     @testset "apply! mul_left! canonicalize!" begin
@@ -25,7 +25,7 @@
         allocated(f3)
         #@test allocated(f3) <= 1 # TODO lower it by making apply! more efficient
         @test_broken false # the test above does not always work on julia 1.11+, depending on whether it runs in CI or not
-        f4() = apply!(s,tCNOT,[5,20])
+        f4() = apply!(s,[5,20],tCNOT)
         f4()
         allocated(f4)
         #@test allocated(f4) <= 3 # TODO lower it by making apply! more efficient
@@ -98,5 +98,51 @@
         f1()
         allocated(f1)
         @test allocated(f1) <= 18
+    end
+
+    test_sizes = [2,63,64,65,127,128,129]
+    @testset "apply_right! symbolic" begin
+        for q in test_sizes
+            q1 = rand(1:q)
+            q2 = rand(setdiff(1:q, [q1]))
+            for _gate in subtypes(AbstractSingleQubitOperator)
+                _gate == SingleQubitOperator && continue
+
+                l = random_clifford(q)
+                gate = _gate(q1)
+                f1() = apply_right!(l, gate)
+                f1()
+                allocated(f1)
+                @test allocated(f1) == 0
+            end
+            for _gate in subtypes(AbstractTwoQubitOperator)
+                l = random_clifford(q)
+                gate = _gate(q1, q2)
+                f2() = apply_right!(l, gate)
+                f2()
+                allocated(f2)
+                @test allocated(f2) == 0
+            end
+        end
+    end
+    @testset "apply_right! pauli" begin
+        for q in test_sizes
+            l = random_clifford(q)
+            pauli = random_pauli(q)
+            f1() = apply_right!(l, pauli)
+            f1()
+            allocated(f1)
+            @test allocated(f1) == 0
+        end
+    end
+    @testset "apply_right! dense" begin
+        for q in test_sizes
+            l = random_clifford(q)
+            r = random_clifford(q)
+            f1() = apply_right!(l, r)
+            f1()
+            allocated(f1)
+            @test_broken allocated(f1) == 0
+        end
     end
 end

@@ -5,13 +5,86 @@
 
 # News
 
-## v0.10.1 - dev
+## v0.11.3 - 2026-03-07
 
-- `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller` are moved to `QECCore` from `QuantumClifford.ECC`.
+- **(fix)** `GeneralizedStabilizer` non-clifford `apply!(::GeneralizedStabilizer, ::AbstractPauliChannel)` had low-level mistakes returning wrong results 
+- Non-Clifford simulation via the Sum-over-Cliffords sparsification framework from [Bravyi et al. 2019]:
+    - New state type `PureGeneralizedStabilizer` representing a pure state as a weighted sum of stabilizer states |ψ⟩ = Σₐ cₐ|φₐ⟩, with incremental sparsification to keep the number of terms bounded. Supports `apply!` and `mctrajectory!` for gate-by-gate simulation.
+    - Non-Clifford gate types `sT` (T gate / π/8 phase rotation) and `sCCZ` (controlled-controlled-Z). These gates are currently supported only with `PureGeneralizedStabilizer` — they cannot be used with standard stabilizer tableaux or `PauliFrame`.
+    - `emtrajectories(circuit; trajectories, delta)` ("end measurement" trajectories) for simulating circuits with non-Clifford gates. Unlike `mctrajectories`, it performs no mid-circuit measurements and instead implicitly measures all qubits in the computational basis at the end, returning sampled measurement outcomes.
+    - (private) Result type `EndMeasurementSampleResults` returned by `emtrajectories`, containing measurement outcomes and simulation statistics.
+    - New generic accessor `measurements(result)` for extracting measurement outcome matrices, shared across `EndMeasurementSampleResults` and `PauliFrame`.
+    - Trait function `isclifford(op)` for characterizing gates.
+    - (private) `stabilizer_extent(op)` for characterizing gates.
+    - (private) Cost estimation function `lrcost(circuit; delta)` to predict simulation cost before running.
+- **(deprecation)** `pfmeasurements` is deprecated in favor of the generic `measurements` accessor.
 
+## v0.11.2 - 2026-03-01
+
+- **(fix)** Deprecate legacy 3-argument `apply!` order (`state, operation, indices`) in favor of `state, indices, operation`.
+
+## v0.11.1 - 2026-02-26
+
+- Add `MultivariateMulticycle`, a novel family of quantum LDPC code using Koszul complexes
+- **(fix)** `permutesystems` no longer mutates its argument in place; it now correctly returns a modified copy
+
+## v0.11.0 - 2026-01-01
+
+- **(fix)** `DistanceMIPAlgorithm` returned ``d_Z`` as the default instead of computing the ``min(d_X, d_Z)``.
+- Drop support for Julia <1.12.
+- Implementation of the specialized simulation algorithms for graph states (faster for large sparse tableaux).
+- **(breaking)** moving all graph state functionality to a submodule `GraphSim`.
+- **(fix)** `canonicalize_gott!` now properly supports non-UInt64 types.
+- `MixedDestabilizer` now has a `backtrack` keyword argument that makes it possible to undo the canonicalization step and recover destabilizers for specific stabilizer operators.
+- `ptrace` for partial traces. We already had `traceout!`, which returns tableaux with the same number of qubits. `ptrace` removes the traceout qubits besides setting their stabilizing operators to `I`.
+- Add `apply_right!` that applies a Clifford operator to the right of a dense clifford operator.
+- Implementing `apply_inv!` for direct application of the inverse of a given gate.
+- Add `mul_right!` methods for inplace operations between tableaus
+- Add a `CliffordOperator` constructor that builds a dense clifford from a `PauliOperator`
+- Add a `phases` getter for `CliffordOperator`
+- A new non-Clifford operation was added as a Pauli channel, the rotation gate `pcRx`.
+- Adapt.jl can now be used to convert various types to GPU-backed storage.
+- The phase storage type can now be parameterized, instead of hardcoded to UInt8.
+- Add an extension to `QECCore` -- `QECCoreNemoExt` for accurate matrix `rank` computation
+- Introduce `metacheck_matrix_x`, `metacheck_matrix_z`, and `metacheck_matrix` for CSS codes built using chain complexes and homology.
+- Quantum codes (including **(breaking)** changes to API):
+    _ Improvements to decoders:
+        - `TableDecoder` now supports arbitrary error weights and a new `CSSTableDecoder` is available that separate decodes the x and z syndromes of CSS codes.
+        - Google's tesseract decoder is available through `PyTesseractDecoder.jl`
+    - The lifted product code constructor `LPCode` now supports non-commutative group algebras by appropriate switching left/right representations — particularly useful now that there is also an `Oscar.jl` extension, which provides many non-abelian group constructors.
+    - Add `BivariateBicycleViaPoly`, implemented using multivariate quotient ring formalism
+    - In a Hecke extension for `QuantumClifford.ECC`:
+        - Add `GeneralizedBicycle` and `ExtendedGeneralizedBicycle`
+        - Add `GeneralizedHyperGraphProduct`
+        - Add `[[2n², 2k², d]]` and `[[(n - k)² + n², k², d]]` La-cross codes via univariate polynomial ring
+        - Add convenience wrappers for code families `honeycomb_color_codes_as_2bga` and `Haah_cubic_codes_as_2bga`
+    - In an Oscar extension for `QuantumClifford.ECC`:
+        - Add `TrivariateTricycle`
+        - Add `GeneralizedToric` on twisted tori in terms of Laurent polynomials
+        - Add `HomologicalProduct` and `DoubleHomologicalProduct`
+        - Add D-dimensional Surface and Toric codes through chain complexes and `GF2` homology
+    - In `QECCore`:
+        - Add cyclic quantum Tanner graph product codes
+        - Add `[[n² + m²,(n - rank([C ∣ M]))² + (m − rank([C ∣ M]ᵀ))², d]]` quantum Tillich-Zémor `random_TillichZemor_code`
+        - Add `Delfosse-Reichardt` codes from classical self-orthogonal `Reed-Muller` seed codes
+        - Add `[[4p, 2(p − 2), 4]]` Delfosse-Reichardt repetition `DelfosseReichardtRep`
+        - Add `[[8p, 4p − 2, 3]]` Delfosse-Reichardt Generalized `[[8,2,3]]` `DelfosseReichardt823`
+        - In an Oscar extension for `QECCore`
+            - Add `BivariateBicycleViaCirculantMat`
+- Classical codes (including **(breaking)** changes to API):
+    - In `QECCore`:
+        - Add classical `Goppa`
+        - Add classical Gallager's LDPC code
+- **(breaking)** Some codes are moved to `QECCore` from `QuantumClifford`, including `Hamming`, `Golay`, `Triangular488 `, `Triangular666 `, `Gottesman`, `ReedMuller`, `RecursiveReedMuller`, and `QuantumReedMuller`.
+- **(breaking)** Some codes (types or functions) are slightly renamed for consistency.
+
+### Private API
+
+These changes affect internal implementation details - external packages should not rely on these!
+- Add `check_repr_regular_linear` to verify `F`-linear regular representation for group algebra elements.
+- Add `[2ʳ-1, 2ʳ-1-r, 3]` Hamming code.
 
 ## v0.10.0 - 2025-07-02
-
 
 - **(fix)** The gates `SQRTY`, `CXYZ`, `CZYX` were computing phases incorrectly when acting on `I` stabilizers.
 - **(fix)** Paulis with imaginary phases had their phases incorrectly tracked.
