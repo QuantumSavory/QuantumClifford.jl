@@ -1,16 +1,13 @@
 """
     $TYPEDEF
 
-The family of `[2ʳ - 1, r, 2ʳ⁻¹]` simplex codes, dual to the binary Hamming codes.
+The `[2ʳ - 1, r, 2ʳ⁻¹]` simplex code family, dual to the binary Hamming codes.
 
-The simplex code `C(r)` is the dual of the Hamming code `Hamming(r)`. Its codewords
-are the rows of the Hamming parity check matrix, and every nonzero codeword has
-weight exactly `2ʳ⁻¹`. The code has parameters `[2ʳ − 1, r, 2ʳ⁻¹]`.
+`C(r)` is the dual of `Hamming(r)`. Its codewords are the rows of the Hamming
+parity check matrix, and every nonzero codeword has weight `2ʳ⁻¹`.
 
-The simplex code is used as the seed code for the Subsystem Hypergraph Product
-Simplex (SHYPS) quantum code construction [malcolm2025computing](@cite).
-
-The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/simplex).
+Used as the seed code in the SHYPS construction [malcolm2025computing](@cite).
+ECC Zoo: [Simplex code family](https://errorcorrectionzoo.org/c/simplex).
 
 ### Fields
     $TYPEDFIELDS
@@ -25,12 +22,6 @@ struct Simplex <: AbstractCECC
     end
 end
 
-"""
-    _gf2_nullspace(M::AbstractMatrix{<:Integer})
-
-Compute the null space of a binary matrix `M` over GF(2) using Gaussian elimination.
-Returns a matrix whose rows form a basis for the null space.
-"""
 function _gf2_nullspace(M::AbstractMatrix{<:Integer})
     m, n = size(M)
     A = mod.(Matrix(M), 2)
@@ -74,14 +65,15 @@ end
 function parity_matrix(c::Simplex)
     r = c.r
     n = 2^r - 1
-    # Build Hamming PCM H (r × n): columns are binary representations of 1..n
+    # build the Hamming parity check matrix -- column j is just the number j written in r-bit binary
     H = zeros(Int, r, n)
     for j in 1:n
         for i in 1:r
             H[i, j] = (j >> (r - i)) & 1
         end
     end
-    # Null space of Hamming PCM = generator matrix of Hamming code = PCM of Simplex code
+    # the null space of H gives us the simplex parity check matrix
+    # (because the simplex code is dual to Hamming, so its PCM = generator matrix of Hamming)
     result = _gf2_nullspace(H)
     rows_idx = Int[]
     cols_idx = Int[]
@@ -95,7 +87,5 @@ function parity_matrix(c::Simplex)
 end
 
 code_n(c::Simplex) = 2^c.r - 1
-
 code_k(c::Simplex) = c.r
-
 distance(c::Simplex) = 2^(c.r - 1)

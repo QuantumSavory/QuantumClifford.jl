@@ -4,13 +4,12 @@
 A Subsystem Hypergraph Product (SHP) code built from two classical parity
 check matrices `H1` (m₁ × n₁) and `H2` (m₂ × n₂).
 
-The code has `n = n₁ · n₂` physical qubits and `k = nullity(H1) · nullity(H2)`
-logical qubits. X-type gauge generators are `H1 ⊗ I`, Z-type are `I ⊗ H2`.
-Stabilizers are `S_X = H1 ⊗ ker(H2)` and `S_Z = ker(H1) ⊗ H2`.
+Physical qubits: `n = n₁ · n₂`. Logical qubits: `k = nullity(H1) · nullity(H2)`.
+X-type gauge generators are `H1 ⊗ I`; Z-type are `I ⊗ H2`. Stabilizers:
+`S_X = H1 ⊗ ker(H2)` and `S_Z = ker(H1) ⊗ H2`.
 
-Based on the construction from [quintavalle2021subsystem](@cite).
-
-The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/subsystem_product).
+Based on [li2020numerical](@cite).
+ECC Zoo: [Subsystem product code family](https://errorcorrectionzoo.org/c/subsystem_product).
 
 See also: [`BravyiBaconShor`](@ref), [`SubsystemHypergraphProductSimplex`](@ref)
 
@@ -31,7 +30,7 @@ function SubsystemHypergraphProduct(H1::AbstractMatrix, H2::AbstractMatrix)
 
     gauge_ops = PauliOperator[]
     
-    # G_X = H1 ⊗ I_{n2}
+    # X gauge generators = H1 ⊗ I -- each row of H1 gives one X-type generator acting on n2 qubits
     I_n2 = Matrix{Int}(I, n2, n2)
     GX = kron(H1, I_n2) .% 2
     for r in 1:size(GX, 1)
@@ -46,7 +45,7 @@ function SubsystemHypergraphProduct(H1::AbstractMatrix, H2::AbstractMatrix)
         if !empty push!(gauge_ops, p) end
     end
     
-    # G_Z = I_{n1} ⊗ H2
+    # Z gauge generators = I ⊗ H2 -- same idea, each row of H2 gives one Z-type generator
     I_n1 = Matrix{Int}(I, n1, n1)
     GZ = kron(I_n1, H2) .% 2
     for r in 1:size(GZ, 1)
@@ -65,15 +64,15 @@ function SubsystemHypergraphProduct(H1::AbstractMatrix, H2::AbstractMatrix)
 
     F = GF(2)
 
-    # G1 = right nullspace of H1 (vectors v with H1*v=0)
-    # Nemo.kernel returns left kernel (K*M=0), so transpose to get right kernel
+    # G1 = right nullspace of H1, i.e. vectors v where H1*v = 0
+    # Nemo.kernel gives left kernel by default (K*M=0), so we transpose H1 to get what we want
     K1 = Nemo.kernel(transpose(matrix(F, H1)))
     G1 = zeros(Int, Nemo.nrows(K1), n1)
     for i in 1:Nemo.nrows(K1), j in 1:n1
         G1[i,j] = K1[i,j] == F(1) ? 1 : 0
     end
 
-    # G2 = right nullspace of H2
+    # G2 = right nullspace of H2 -- same thing as above but for H2
     K2 = Nemo.kernel(transpose(matrix(F, H2)))
     G2 = zeros(Int, Nemo.nrows(K2), n2)
     for i in 1:Nemo.nrows(K2), j in 1:n2
@@ -82,7 +81,7 @@ function SubsystemHypergraphProduct(H1::AbstractMatrix, H2::AbstractMatrix)
 
     stabs = PauliOperator[]
 
-    # S_X = H1 ⊗ G2 (X-type stabilizers from rows of H1 tensored with rows of G2)
+    # X stabilizers = H1 ⊗ G2 -- tensor each row of H1 with each row of G2 (nullspace of H2)
     SX = kron(H1, G2) .% 2
     for r in 1:size(SX, 1)
         p = PauliOperator(0x0, falses(N), falses(N))
@@ -96,7 +95,7 @@ function SubsystemHypergraphProduct(H1::AbstractMatrix, H2::AbstractMatrix)
         if !empty push!(stabs, p) end
     end
 
-    # S_Z = G1 ⊗ H2 (Z-type stabilizers from rows of G1 tensored with rows of H2)
+    # Z stabilizers = G1 ⊗ H2 -- same idea, tensor nullspace of H1 with each row of H2
     SZ = kron(G1, H2) .% 2
     for r in 1:size(SZ, 1)
         p = PauliOperator(0x0, falses(N), falses(N))

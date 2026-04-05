@@ -45,7 +45,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     GeneralizedBicycle, ExtendedGeneralizedBicycle,
     HomologicalProduct, DoubleHomologicalProduct,
     GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly,
-    MultivariateMulticycle, BravyiBaconShor, SubsystemHypergraphProduct,
+    MultivariateMulticycle, SubsystemHypergraphProduct,
     SubsystemHypergraphProductSimplex,
     gauge_generators, code_g,
     evaluate_decoder,
@@ -455,7 +455,7 @@ function _stab_to_parity_z(stab::Stabilizer)
 end
 
 # Subsystem codes
-include("codes/subsystem_bacon_shor.jl")
+
 include("codes/subsystem_hypergraph_product.jl")
 include("codes/subsystem_shyps.jl")
 

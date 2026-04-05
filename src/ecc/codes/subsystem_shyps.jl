@@ -1,21 +1,22 @@
 """
-    SubsystemHypergraphProductSimplex(r::Int)
+SubsystemHypergraphProductSimplex(r::Int)
 
-Constructs the SHYPS(r) code — a Subsystem Hypergraph Product code instantiated
-with the parity check matrix of the classical simplex code `C(r)`.
+Constructs the SHYPS(r) code: a Subsystem Hypergraph Product code using the
+simplex code `C(r)` parity check matrix as both inputs.
 
-The SHYPS(r) code has parameters `[(2ʳ - 1)², r², 2ʳ⁻¹]`, where:
+Code parameters `[(2ʳ - 1)², r², 2ʳ⁻¹]`:
 - Physical qubits: `n = (2ʳ - 1)²`
 - Logical qubits: `k = r²`
 - Distance: `d = 2ʳ⁻¹`
 
-The gauge generators have weight at most 3 (inherited from the simplex code's
-constant row weight), making SHYPS codes quantum LDPC (QLDPC).
+Simplex PCM rows are codewords of the dual Hamming code, so they have weight
+at most `r+1`. Gauge generators are therefore sparse — gauge weight `O(log n)`,
+making this a QLDPC code.
 
-SHYPS codes support a universal set of transversal logical gates on individual
-logical qubits due to the large automorphism group `GL_r(2)` of the simplex code.
+The simplex code's automorphism group `GL_r(2)` admits a universal set of
+transversal logical gates on individual logical qubits.
 
-Based on the construction from [malcolm2025computing](@cite).
+Based on [malcolm2025computing](@cite).
 
 See also: [`SubsystemHypergraphProduct`](@ref), [`Simplex`](@ref)
 """
@@ -26,7 +27,7 @@ end
 
 function SubsystemHypergraphProductSimplex(r::Int)
     r >= 2 || throw(ArgumentError("`r` must be ≥ 2 to obtain a valid SHYPS code."))
-    H = Matrix{Int}(parity_matrix(Simplex(r)))
+    H = Matrix{Int}(QECCore.parity_matrix(QECCore.Simplex(r)))
     shp = SubsystemHypergraphProduct(H, H)
     return SubsystemHypergraphProductSimplex(r, shp)
 end
