@@ -1,8 +1,6 @@
 env:
   CODECOV_TOKEN: adb3f22a-231a-4f7b-8ed4-7c6c56453cbe
   JULIA_NUM_THREADS: auto
-  PYTHON: ""
-  PYCALL_DEBUG_BUILD: yes
 
 steps:
   - label: "QuantumClifford Tests (with local QECCore) - {{matrix.LABEL}}"
@@ -16,7 +14,6 @@ steps:
           dirs: './src,./ext,./lib/QECCore/src,./lib/QECCore/ext'
     commands:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - echo "TERM=$${TERM} | PYTHON=$${PYTHON} | PYCALL_DEBUG_BUILD=$${PYCALL_DEBUG_BUILD}"
     env:
       JET_TEST: "{{matrix.JET_TEST}}"
       QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
@@ -26,50 +23,50 @@ steps:
     matrix:
       setup:
         LABEL: ["base tests"]
-        QUEUE: ["default"]
+        QUEUE: ["default-queue"]
         JET_TEST: ["false"]
         QC_ECC_TEST: ["false"]
         QC_GPU_TEST: ["false"]
       adjustments:
         - with:
             LABEL: "JET"
-            QUEUE: default
+            QUEUE: "default-queue"
             JET_TEST: true
             QC_ECC_TEST: false
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Base"
-            QUEUE: default
+            QUEUE: "default-queue"
             JET_TEST: false
             QC_ECC_TEST: "base"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Encoding"
-            QUEUE: default
+            QUEUE: "default-queue"
             JET_TEST: false
             QC_ECC_TEST: "encoding"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Decoding"
-            QUEUE: default
+            QUEUE: "default-queue"
             JET_TEST: false
             QC_ECC_TEST: "decoding"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Syndrome Measurement"
-            QUEUE: default
+            QUEUE: "default-queue"
             JET_TEST: false
             QC_ECC_TEST: "syndromemeasurement"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Syndrome Circuit"
-            QUEUE: default
+            QUEUE: "default-queue"
             JET_TEST: false
             QC_ECC_TEST: "syndromecircuit"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Bespoke"
-            QUEUE: default
+            QUEUE: "default-queue"
             JET_TEST: false
             QC_ECC_TEST: "bespoke"
             QC_GPU_TEST: false
@@ -87,7 +84,7 @@ steps:
             QC_GPU_TEST: "rocm"
         - with:
             LABEL: "GPU - OpenCL"
-            QUEUE: default
+            QUEUE: "default-queue"
             JET_TEST: false
             QC_ECC_TEST: false
             QC_GPU_TEST: "opencl"
@@ -104,7 +101,6 @@ steps:
           dirs: './src,./ext,./lib/QECCore/src,./lib/QECCore/ext'
     commands:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - echo "TERM=$${TERM} | PYTHON=$${PYTHON} | PYCALL_DEBUG_BUILD=$${PYCALL_DEBUG_BUILD}"
     env:
       JET_TEST: "{{matrix.JET_TEST}}"
     agents:
@@ -112,12 +108,12 @@ steps:
     matrix:
       setup:
         LABEL: ["base tests"]
-        QUEUE: ["default"]
+        QUEUE: ["default-queue"]
         JET_TEST: ["false"]
       adjustments:
         - with:
             LABEL: "JET"
-            QUEUE: default
+            QUEUE: "default-queue"
             JET_TEST: true
 
   - label: "Downstream Tests - {{matrix.PACKAGE}}"
@@ -127,7 +123,6 @@ steps:
           compiled_size_limit: 10737418240 # 10GiB
     command:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - echo "TERM=$${TERM} | PYTHON=$${PYTHON} | PYCALL_DEBUG_BUILD=$${PYCALL_DEBUG_BUILD}"
       - julia --project=$(mktemp -d) -e '
         using Pkg;
         pkg"dev .";
@@ -145,7 +140,6 @@ steps:
           compiled_size_limit: 10737418240 # 10GiB
     command:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-      - echo "TERM=$${TERM} | PYTHON=$${PYTHON} | PYCALL_DEBUG_BUILD=$${PYCALL_DEBUG_BUILD}"
       - julia --project=$(mktemp -d) -e '
         using Pkg;
         pkg"dev .";
