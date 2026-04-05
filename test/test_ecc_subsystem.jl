@@ -2,12 +2,12 @@
     using QuantumClifford.ECC
     using QuantumClifford
     using Nemo: GF, matrix, Nemo
-    using QECCore: Simplex, parity_matrix, Hamming
+    using QECCore
 
     @testset "Simplex Classical Code" begin
         # Simplex(r) = dual of Hamming(r), parameters [2^r-1, r, 2^(r-1)]
         for r in 2:5
-            s = Simplex(r)
+            s = QECCore.Simplex(r)
             n = 2^r - 1
             k = r
             d = 2^(r-1)
@@ -15,10 +15,10 @@
             @test code_k(s) == k
             @test distance(s) == d
 
-            H = Matrix{Int}(parity_matrix(s))
+            H = Matrix{Int}(QECCore.parity_matrix(s))
             @test size(H) == (n - k, n)
 
-            # Every row of the PCM should have nonzero weight
+            # every PCM row is a nonzero codeword of the dual (Hamming) code
             for i in 1:size(H, 1)
                 @test sum(H[i, :]) > 0
             end
@@ -32,7 +32,7 @@
             @test Nemo.nrows(K) == k
         end
 
-        @test_throws ArgumentError Simplex(1)
+        @test_throws ArgumentError QECCore.Simplex(1)
     end
 
     @testset "BBS Code from Hamming [7,4,3]" begin
@@ -76,6 +76,18 @@
                 @test comm(stab[i], stab[j]) == 0x0
             end
         end
+
+        # Stabilizers must commute with all gauge generators (key subsystem code property)
+        for s in stab
+            for g in gg
+                @test comm(s, g) == 0x0
+            end
+        end
+
+        # BBS gauge generators are all weight 2 (each pairs exactly two qubits)
+        for g in gg
+            @test count(i -> g[i] != (false, false), 1:g.nqubits) == 2
+        end
     end
 
     @testset "SHP Code from Hamming [7,4,3]" begin
@@ -115,6 +127,13 @@
                 @test comm(stab[i], stab[j]) == 0x0
             end
         end
+
+        # Stabilizers must commute with all gauge generators (key subsystem code property)
+        for s in stab
+            for g in gg
+                @test comm(s, g) == 0x0
+            end
+        end
     end
 
     @testset "SHYPS Codes" begin
@@ -133,17 +152,29 @@
             gg = gauge_generators(shyps)
             @test length(gg) > 0
 
-            # n = k + g + s
-            g = code_g(shyps)
-            s_rank = code_n(shyps) - code_k(shyps) - g
-            @test code_n(shyps) == code_k(shyps) + g + s_rank
+            # gauge qubits and stabilizer count
+            @test code_g(shyps) == 1
+            @test length(parity_checks(shyps)) == 4
 
-            # Stabilizers commute
+            # Stabilizers commute with each other
             stab = parity_checks(shyps)
             for i in 1:length(stab)
                 for j in i+1:length(stab)
                     @test comm(stab[i], stab[j]) == 0x0
                 end
+            end
+
+            # Stabilizers commute with all gauge generators
+            for s in stab
+                for g in gg
+                    @test comm(s, g) == 0x0
+                end
+            end
+
+            # SHYPS is QLDPC: gauge weight is at most r+1 (= 3 for r=2)
+            # rows of the simplex PCM are Hamming codewords; the Gaussian basis gives weight <= r+1
+            for g in gg
+                @test count(i -> g[i] != (false, false), 1:g.nqubits) <= 3
             end
         end
 
@@ -158,15 +189,27 @@
             gg = gauge_generators(shyps)
             @test length(gg) > 0
 
-            g = code_g(shyps)
-            s_rank = code_n(shyps) - code_k(shyps) - g
-            @test code_n(shyps) == code_k(shyps) + g + s_rank
+            # gauge qubits and stabilizer count
+            @test code_g(shyps) == 16
+            @test length(parity_checks(shyps)) == 24
 
             stab = parity_checks(shyps)
             for i in 1:length(stab)
                 for j in i+1:length(stab)
                     @test comm(stab[i], stab[j]) == 0x0
                 end
+            end
+
+            # Stabilizers commute with all gauge generators
+            for s in stab
+                for g in gg
+                    @test comm(s, g) == 0x0
+                end
+            end
+
+            # SHYPS is QLDPC: gauge weight is at most r+1 (= 4 for r=3)
+            for g in gg
+                @test count(i -> g[i] != (false, false), 1:g.nqubits) <= 4
             end
         end
 
