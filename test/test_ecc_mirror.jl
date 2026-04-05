@@ -96,6 +96,7 @@
             @test n == code_n(stab)
             @test k == code_k(stab)
             @test stab_looks_good(stab, remove_redundant_rows=true) == true
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, timelimit=900) == d
             c = Mirror(G, A, B, false)
             stab = parity_checks(c)
             mat = matrix(GF(2), stab_to_gf2(stab))
@@ -104,6 +105,7 @@
             @test n == code_n(stab)
             @test k == code_k(stab)
             @test stab_looks_good(stab, remove_redundant_rows=true) == true
+            @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, timelimit=900) == d
         end
 
         # non-abelian group
