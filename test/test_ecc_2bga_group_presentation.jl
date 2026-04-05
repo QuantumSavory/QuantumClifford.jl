@@ -2,13 +2,13 @@
     using Nemo: FqFieldElem
     using Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra
     using QuantumClifford.ECC
-    using QuantumClifford.ECC: code_k, code_n, two_block_group_algebra_codes
+    using QuantumClifford.ECC: code_k, code_n, two_block_group_algebra_code
     using Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup, FPGroupElem
 
     function get_code(a_elts::Vector{FPGroupElem}, b_elts::Vector{FPGroupElem}, F2G::GroupAlgebra{FqFieldElem, FPGroup, FPGroupElem})
         a = sum(F2G(x) for x in a_elts)
         b = sum(F2G(x) for x in b_elts)
-        c = two_block_group_algebra_codes(a,b)
+        c = two_block_group_algebra_code(a,b)
         return c
     end
 
