@@ -15,6 +15,8 @@
     @test logicalzview(reg) == logicalzview(mdstab)
     @test bitview(reg) == bitview(regmd)
     @test quantumstate(reg) == mdstab
+    @test (reg ⊗ reg).stab == (reg ⊗ stab).stab
+    @test (regmd ⊗ regmd).stab == (regmd ⊗ mdstab).stab
     for state in [mdstab,reg,regmd]
         for op in [sMX(1,1),sMY(2,2),sMZ(3,3),PauliMeasurement(P"XYZZZ",4),sCNOT(1,2),sCPHASE(2,3),sCNOT(3,4),NoiseOpAll(UnbiasedUncorrelatedNoise(0.1))]
             apply!(state,op)

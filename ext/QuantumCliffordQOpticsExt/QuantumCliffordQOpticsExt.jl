@@ -1,6 +1,7 @@
 module QuantumCliffordQOpticsExt
 
 using QuantumClifford
+using QuantumClifford.PureNonClifford: PureGeneralizedStabilizer
 import QuantumClifford: mul_left!, mul_right!
 using QuantumOpticsBase
 using Graphs
@@ -69,10 +70,34 @@ Ket(dim=4)
                 0.0 + 0.0im
                 0.0 + 0.0im
  0.7071067811865474 + 0.0im
-```"""
+```
+"""
 Ket(s::QuantumClifford.AbstractStabilizer) = stab_to_ket(s)
 
-function stabmix_to_densityop(s::StabMixture)
+"""
+$TYPEDSIGNATURES
+
+Convert a PureGeneralizedStabilizer state to a ket representation.
+
+The state |ψ⟩ = Σₐ cₐ|φₐ⟩ is converted by summing the ket representations
+of each stabilizer state weighted by their coefficients.
+
+TODO: Each stabilizer state is converted independently with potentially different
+global phases, which can cause incorrect interference for multi-term superpositions.
+A proper implementation would need to track relative phases between stabilizer states.
+"""
+function Ket(state::PureGeneralizedStabilizer)
+    return sum(c * Ket(Stabilizer(stabilizerview(s))) for (c, s) in zip(state.coefficients, state.states))
+end
+
+"""
+$TYPEDSIGNATURES
+
+Convert a stabilizer tableau to a density matrix corresponding to the given state.
+"""
+Operator(s::QuantumClifford.AbstractStabilizer) = dm(Ket(s)) # TODO support mixed stabilizer states
+
+function genstab_to_densityop(s::GeneralizedStabilizer)
     ρ₀ = zero(dm(Ket(s.stab)))
     for ((Pₗᵇⁱᵗˢ,Pᵣᵇⁱᵗˢ), χ) in s.destabweights
         ρ̃ = dm(Ket(s.stab))
@@ -96,7 +121,7 @@ end
 $TYPEDSIGNATURES
 
 """
-Operator(s::StabMixture) = stabmix_to_densityop(s)
+Operator(s::GeneralizedStabilizer) = genstab_to_densityop(s)
 
 
 """
@@ -149,7 +174,7 @@ end
 function cliff_to_unitary(cliff)
     n = nqubits(cliff)
     b = bell(n, localorder=true)
-    apply!(b, cliff, 1:n)
+    apply!(b, 1:n, cliff)
     ψ = Ket(b)
     Operator(SpinBasis(1//2)^n,reshape(ψ.data * sqrt(2)^n, (2^n,2^n)))
 end

@@ -209,7 +209,7 @@ end
 
 
 ##
-# `concrete_typeparams` annotations for the parameteric types we care about
+# `concrete_typeparams` annotations for the parametric types we care about
 ##
 
 function concrete_typeparams(t::Type{ClassicalXOR})
@@ -220,6 +220,12 @@ function concrete_typeparams(t::Type{NoiseOp})
     return [
         [(UnbiasedUncorrelatedNoise{Float64}, i) for i in 1:8];
         [(PauliNoise{Float64}, i) for i in 1:8];
+    ]
+end
+
+function concrete_typeparams(::Type{PauliMeasurement})
+    return [
+        (Array{UInt8,0}, Vector{UInt64}),
     ]
 end
 
