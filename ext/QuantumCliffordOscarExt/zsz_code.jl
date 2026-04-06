@@ -16,15 +16,17 @@ Notably, it is an instance of a [`two_block_group_algebra_code`](@ref) code with
 !!! note
     This function is simply a convenience wrapper that handles argument conversions before calling [`two_block_group_algebra_code`](@ref). Notably, it uses Cayley's theorem to compute a group isomorphism of a finitely presented group as a permutation group, enabling the efficient construction of larger blocklength ZSZ codes from Table I [guo2025zsz](@cite).
 
-Here is an example of the `[[80, 2]]` ZSZ code from Table I of [guo2025zsz](@cite):
+Here is an example of the `[[80, 2, 8]]` ZSZ code from Table I of [guo2025zsz](@cite).
+The parameters `l=5`, `m=8`, and `q=2` correspond to the semidirect product presentation ``\\langle x, y \\mid x^5=1, y^8=1, y x y^{-1} = x^2 \\rangle``.
+Note that ZSZ codes are generally asymmetric, meaning the $X$-distance and $Z$-distance differ (``d_X \\neq d_Z``). For instance, the `[[80, 2, 8]]` code below has ``d_X = 10`` and ``d_Z = 8``.
 
 ```jldoctest
-julia> using Oscar, QuantumClifford.ECC;
+julia> using Oscar, QuantumClifford.ECC, HiGHS, JuMP
 
 julia> c = ZSZ(5, 8, 2, [(0,0),(4,4),(4,1)], [(0,0),(3,0),(2,7)]);
 
-julia> code_n(c), code_k(c)
-(80, 2)
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(80, 2, 8)
 ```
 
 ### Fields
