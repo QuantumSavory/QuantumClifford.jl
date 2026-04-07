@@ -5,6 +5,10 @@
 
 # News
 
+## v0.11.4 - dev
+
+- `ZSZ` codes (`two_block_group_algebra_code`s built from semidirect product of groups) are now implemented in ECC submodule.
+
 ## v0.11.3 - 2026-03-07
 
 - **(fix)** `GeneralizedStabilizer` non-clifford `apply!(::GeneralizedStabilizer, ::AbstractPauliChannel)` had low-level mistakes returning wrong results 
