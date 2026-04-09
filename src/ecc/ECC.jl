@@ -2,8 +2,7 @@ module ECC
 
 using QECCore
 import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
-metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp
-using LinearAlgebra: LinearAlgebra, I, rank, tr
+metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial, hasmetachecks
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
@@ -13,13 +12,16 @@ using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     sZCX, sZCY, sZCZ, sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZ, sX, sY, sMRZ, sMRX,
     single_x, single_y, single_z, random_pauli!, PauliError,
     apply!, comm, comm!, stab_to_gf2, embed, @S_str, affectedqubits, affectedbits,
-    pftrajectories, pfmeasurements, mctrajectories
+    pftrajectories, measurements, mctrajectories
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
-using DocStringExtensions
+
 using Combinatorics: combinations
+using LinearAlgebra: LinearAlgebra, I, rank, tr
+using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 using SparseArrays: sparse
 using Statistics: std
-using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
+
+using DocStringExtensions
 
 export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
@@ -30,20 +32,24 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface, Concat, CircuitCode,
-    LPCode, two_block_group_algebra_codes, generalized_bicycle_codes, bicycle_codes,
-    haah_cubic_codes, twobga_from_fp_group, twobga_from_direct_product,
+    LPCode, two_block_group_algebra_code, generalized_bicycle_code_as_2bga, bicycle_code_as_2bga,
+    Haah_cubic_code_as_2bga, twobga_from_fp_group, twobga_from_direct_product,
     TillichZemor, random_TillichZemor_code,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
-    Triangular488, Triangular666, honeycomb_color_codes, DelfosseReichardt,
-    DelfosseReichardtRepCode, DelfosseReichardt823, LaCross,
+    Triangular488, Triangular666, honeycomb_color_code_as_2bga, DelfosseReichardt,
+    DelfosseReichardtRep, DelfosseReichardt823, LaCross,
     QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
-    DDimensionalSurfaceCode, DDimensionalToricCode, boundary_maps,
-    GeneralizedCirculantBivariateBicycle, GeneralizedHyperGraphProductCode,
+    DDimensionalSurface, DDimensionalToric, boundary_maps,
+    BivariateBicycleViaCirculantMat, GeneralizedHyperGraphProduct,
+    GeneralizedBicycle, ExtendedGeneralizedBicycle,
+    HomologicalProduct, DoubleHomologicalProduct,
+    GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly,
+    MultivariateMulticycle,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
-    TableDecoder,
+    TableDecoder, CSSTableDecoder,
     BeliefPropDecoder, BitFlipDecoder,
-    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder
+    PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, TesseractDecoder, DecoderCorrectionGate
 
 """Parity check tableau of a code.
 
@@ -76,16 +82,13 @@ function iscss(::Type{T}) where T<:AbstractECC
     return false
 end
 
+function iscss(::Type{T}) where T <: AbstractCSSCode
+    return true
+end
+
 function iscss(c::AbstractECC)
     return iscss(typeof(c))
 end
-
-"""
-Generator Polynomial `g(x)`
-
-In a [polynomial code](https://en.wikipedia.org/wiki/Polynomial_code), the generator polynomial `g(x)` is a polynomial of the minimal degree over a finite field `F`. The set of valid codewords in the code consists of all polynomials that are divisible by `g(x)` without remainder.
-"""
-function generator_polynomial end
 
 """The generator matrix of a code."""
 function generator end
@@ -402,9 +405,7 @@ include("codes/classical/bch.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
-include("codes/lifted_product.jl")
+include("codes/qeccs_from_extensions.jl")
 
-# higher dimensional codes
-include("codes/d_dimensional_codes.jl")
-
+include("decoder_correction_gate.jl")
 end #module

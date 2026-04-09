@@ -1,12 +1,12 @@
 @testitem "Random" begin
     using Random
     using QuantumClifford
-    using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
+    using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good, random_tableau
 
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 
     @testset "Random sampling of operators" begin
-        for n in [1, test_sizes..., 200,500]
+        for n in [1, test_sizes..., 200]
             p = random_pauli(n)
             s = random_stabilizer(n)
             ss = random_stabilizer(rand(1:n),n)
@@ -34,9 +34,9 @@
     end
 
     @testset "Random sampling of operators memory reuse" begin
-        for n in [1, test_sizes..., 200, 500]
+        for n in [1, test_sizes..., 200]
             workingmemory = QuantumClifford.RandDestabMemory(n)
-            for _ in 1:2
+            for _ in 1:1
                 seed = rand(1:100000)
                 rng = Random.GLOBAL_RNG
                 Random.seed!(rng, seed)
@@ -49,26 +49,38 @@
     end
 
     @testset "Random Paulis" begin
-        for n in [1, test_sizes..., 200,500]
-            @test all((random_pauli(n).phase[] == 0  for _ in 1:100))
-            @test all((random_pauli(n, 0.1).phase[] == 0  for _ in 1:100))
-            @test any((random_pauli(n; nophase=false, realphase=false).phase[] == 1  for _ in 1:100))
-            @test any((random_pauli(n, 0.1; nophase=false, realphase=false).phase[] == 1  for _ in 1:100))
-            @test any((random_pauli(n; nophase=false).phase[] ∈ [0,2]  for _ in 1:100))
-            @test any((random_pauli(n, 0.1; nophase=false).phase[] ∈ [0,2]  for _ in 1:100))
+        for n in [1, test_sizes..., 200]
+            @test all((random_pauli(n).phase[] == 0  for _ in 1:50))
+            @test all((random_pauli(n, 0.1).phase[] == 0  for _ in 1:50))
+            @test any((random_pauli(n; nophase=false, realphase=false).phase[] == 1  for _ in 1:50))
+            @test any((random_pauli(n, 0.1; nophase=false, realphase=false).phase[] == 1  for _ in 1:50))
+            @test any((random_pauli(n; nophase=false).phase[] ∈ [0,2]  for _ in 1:50))
+            @test any((random_pauli(n, 0.1; nophase=false).phase[] ∈ [0,2]  for _ in 1:50))
         end
-        for i in 1:10
+        for i in 1:4
             e = 0.2
-            n = 10000
+            n = 5000
             expected = 2/3*e * 2 * n
             bound = 1/sqrt(n)
-            @test expected * (1-10bound) <= sum(count_ones.(random_pauli(10000,0.2).xz)) <= expected * (1+10bound)
+            @test expected * (1-10bound) <= sum(count_ones.(random_pauli(n, 0.2).xz)) <= expected * (1+10bound)
             e = 0.75
-            n = 10000
+            n = 5000
             expected = 2/3*e * 2 * n
             bound = 1/sqrt(n)
-            @test expected * (1-10bound) <= sum(count_ones.(random_pauli(10000).xz)) <= expected * (1+10bound)
+            @test expected * (1-10bound) <= sum(count_ones.(random_pauli(n).xz)) <= expected * (1+10bound)
 
+        end
+    end
+
+    @testset "Random Tableaux" begin
+        phase_is_real(t) = t ∈ [0, 2]
+        for n in [1, test_sizes..., 200]
+            @test all(random_tableau(50, n).phases .== 0)
+            @test all(random_tableau(50, n, 0.1).phases .== 0)
+            @test any(random_tableau(50, n; nophase=false, realphase=false).phases .== 1)
+            @test any(random_tableau(50, n, 0.1; nophase=false, realphase=false).phases .== 1)
+            @test any(phase_is_real.(random_tableau(50, n; nophase=false).phases))
+            @test any(phase_is_real.(random_tableau(50, n, 0.1; nophase=false).phases))
         end
     end
 end

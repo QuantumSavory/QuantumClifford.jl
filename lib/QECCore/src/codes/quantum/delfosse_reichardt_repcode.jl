@@ -28,7 +28,7 @@ julia> using QuantumClifford; using QuantumClifford.ECC # hide
 
 julia> p = 6;
 
-julia> c = parity_checks(DelfosseReichardtRepCode(p))
+julia> c = parity_checks(DelfosseReichardtRep(p))
 + XXXX____________________
 + ____XXXX________________
 + ________XXXX____________
@@ -52,11 +52,14 @@ julia> code_n(c), code_k(c)
 
 ### Fields
     $TYPEDFIELDS
+
+
+See also: [`DelfosseReichardt`](@ref), [`DelfosseReichardt823`](@ref)
 """
-struct DelfosseReichardtRepCode <: AbstractCSSCode
+struct DelfosseReichardtRep <: AbstractCSSCode
     """The number of blocks in the Delfosse-Reichardt Repetition code."""
     p::Int
-    function DelfosseReichardtRepCode(p)
+    function DelfosseReichardtRep(p)
         p < 2 && throw(ArgumentError("The number of blocks must be at least 2 to construct a valid code."))
         p % 2 != 0 && throw(ArgumentError("The number of blocks must be a multiple of 2."))
         new(p)
@@ -79,17 +82,17 @@ function _extend_414_repetition_code(p::Int)
     return H
 end
 
-function parity_matrix_xz(c::DelfosseReichardtRepCode)
+function parity_matrix_xz(c::DelfosseReichardtRep)
     extended_mat = _extend_414_repetition_code(c.p)
     return extended_mat, extended_mat
 end
 
-parity_matrix_x(c::DelfosseReichardtRepCode) = parity_matrix_xz(c)[1]
+parity_matrix_x(c::DelfosseReichardtRep) = parity_matrix_xz(c)[1]
 
-parity_matrix_z(c::DelfosseReichardtRepCode) = parity_matrix_xz(c)[2]
+parity_matrix_z(c::DelfosseReichardtRep) = parity_matrix_xz(c)[2]
 
-code_n(c::DelfosseReichardtRepCode) = 4*c.p
+code_n(c::DelfosseReichardtRep) = 4*c.p
 
-code_k(c::DelfosseReichardtRepCode) = 2*(c.p - 2)
+code_k(c::DelfosseReichardtRep) = 2*(c.p - 2)
 
-distance(c::DelfosseReichardtRepCode) = 4
+distance(c::DelfosseReichardtRep) = 4

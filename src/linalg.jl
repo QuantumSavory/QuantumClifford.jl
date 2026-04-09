@@ -21,7 +21,7 @@ import Base: permute!
 @deprecate permute!(s::AbstractStabilizer, perm::AbstractVector) permutesystems!(s, perm)
 
 # TODO upstream to QuantumInterface for (state::Any, perm)
-permutesystems(s::AbstractStabilizer, perm) = permutesystems!(s, perm)
+permutesystems(s::AbstractStabilizer, perm) = permutesystems!(copy(s), perm)
 
 """
 $TYPEDSIGNATURES

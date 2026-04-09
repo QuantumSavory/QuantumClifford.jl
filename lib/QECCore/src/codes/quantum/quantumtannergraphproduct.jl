@@ -156,6 +156,8 @@ julia>  code_n(c), code_k(c)
 
 ### Fields
     $TYPEDFIELDS
+
+See also: [`CyclicQuantumTannerGraphProduct`](@ref), [`hgp`](@ref)
 """
 struct QuantumTannerGraphProduct <: AbstractCSSCode
     """The first classical seed code for the the quantum tanner graph code."""

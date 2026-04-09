@@ -1,4 +1,4 @@
-@testitem "ECC Syndromes" tags=[:ecc] begin
+@testitem "ECC Syndromes" tags=[:ecc, :ecc_syndrome_circuit_equivalence] begin
     using QuantumClifford: mul_left!, embed
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
@@ -26,7 +26,7 @@
         shor_circuit = vcat(ecirc, shor_cat_scirc, shor_scirc)
         pftrajectories(naive_frames, naive_circuit)
         pftrajectories(shor_frames, shor_circuit)
-        @test pfmeasurements(naive_frames) == pfmeasurements(shor_frames)[:,shor_bits]
+        @test measurements(naive_frames) == measurements(shor_frames)[:,shor_bits]
         # with errors
         for _ in 1:10
             naive_frames = PauliFrame(nframes, naive_qubits, syndromebits)
@@ -42,7 +42,7 @@
             # run the syndrome circuits using the public API
             pftrajectories(naive_frames, naive_scirc)
             pftrajectories(shor_frames, shor_scirc)
-            @test pfmeasurements(naive_frames) == pfmeasurements(shor_frames)[:,shor_bits]
+            @test measurements(naive_frames) == measurements(shor_frames)[:,shor_bits]
 
             # just for completeness, let's also try bitpacking in UInt8 instead of the default UInt
             _naive_frames = PauliFrame(nframes, naive_qubits, syndromebits)
@@ -58,12 +58,12 @@
             mul_left!(shor_uint8.frame, pₛ_uint8)
             pftrajectories(naive_uint8, naive_scirc)
             pftrajectories(shor_uint8, shor_scirc)
-            @test pfmeasurements(shor_uint8)[:,shor_bits] == pfmeasurements(shor_frames)[:,shor_bits] == pfmeasurements(naive_frames) == pfmeasurements(naive_uint8)
+            @test measurements(shor_uint8)[:,shor_bits] == measurements(shor_frames)[:,shor_bits] == measurements(naive_frames) == measurements(naive_uint8)
         end
     end
 
     @testset "naive and shor measurement circuits" begin
-        for (i,c) in enumerate(all_testablable_code_instances())
+        for (i,c) in enumerate(all_testable_code_instances())
             pframe_naive_vs_shor_syndrome(c)
         end
     end

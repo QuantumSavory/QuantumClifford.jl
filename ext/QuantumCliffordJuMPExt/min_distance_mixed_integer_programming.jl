@@ -70,7 +70,7 @@ normalizer condition ``P \\in N(S)`` ensures the operator commutes with all stab
 
 ### Mixed Integer Programming
 
-We compute the minimum code distance for CSS (Calderbank-Shor-Steane) codes by solving MIPs. 
+We compute the minimum code distance for CSS (Calderbank-Shor-Steane) codes by solving MIPs.
 
 The distance is computed separately for X-type (``d_X``) and Z-type (``d_Z``) logical
 operators, then combined to give the true code distance: ``d = \\min(d_X, d_Z)``.
@@ -79,10 +79,10 @@ operators, then combined to give the true code distance: ``d = \\min(d_X, d_Z)``
 
 The X-type distance (``d_X``) and Z-type distance (``d_Z``) are defined as the minimum
 number of errors required to implement a non-trivial logical operator of the opposite type,
-subject to the following constraints: 
+subject to the following constraints:
 
 - For ``d_X`` (where ``U = X``), the errors are Z-type (phase flips), and the constraints involve the X-stabilizer matrix ``\\mathbf{H_X}`` and X-logical operators ``\\mathbf{L_X}``. The error vector is denoted as ``\\mathbf{e}_Z``.
-- For ``d_Z`` (where ``U = Z``), the errors are X-type (bit flips), with constraints given by the Z-stabilizer matrix ``\\mathbf{H_Z}`` and Z-logical operators ``\\mathbf{L_Z}``, and the error vector is ``\\mathbf{e}_X``.  
+- For ``d_Z`` (where ``U = Z``), the errors are X-type (bit flips), with constraints given by the Z-stabilizer matrix ``\\mathbf{H_Z}`` and Z-logical operators ``\\mathbf{L_Z}``, and the error vector is ``\\mathbf{e}_X``.
 
 ```math
 \\begin{aligned}
@@ -113,7 +113,7 @@ julia> A = 1 + x^6;
 
 julia> B = 1 + x^5 + s + x^6 + x + s*x^2;
 
-julia> c = two_block_group_algebra_codes(A,B);
+julia> c = two_block_group_algebra_code(A,B);
 
 julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
 (40, 8, 5)
@@ -125,7 +125,7 @@ in Appendix B of [panteleev2021degenerate](@cite).
 ```jldoctest jumpexamples
 julia> l = 24;
 
-julia> c1 = generalized_bicycle_codes([0, 2, 8, 15], [0, 2, 12, 17], l);
+julia> c1 = generalized_bicycle_code_as_2bga([0, 2, 8, 15], [0, 2, 12, 17], l);
 
 julia> code_n(c1), code_k(c1), distance(c1, DistanceMIPAlgorithm(solver=HiGHS))
 (48, 6, 8)

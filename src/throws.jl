@@ -1,3 +1,5 @@
+const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you are attempting to create a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
+
 const THROW_BOUNDS =
 "Unable to perform the requested operation due to encountering a mismatch \
 between the provided index(indices) and the pertinent size(s) of the other \

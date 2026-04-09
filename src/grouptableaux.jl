@@ -296,7 +296,7 @@ Based on [goodenough2024bipartiteentanglementnoisystabilizer](@cite)
 By deleting the qubits in the first output array from S', taking the [`normalizer`](@ref) of S', then
 deleting the qubits in the second returned array from the [`normalizer`](@ref) of S', S is reproduced.
 
-```jldoctest
+```jldoctest; filter = r"( [(]empty range[)])?\$"
 julia> matroid_parent(T"XX")[1]
 + X_X
 + XX_
@@ -364,8 +364,8 @@ function pauligroup(n::Int; phases=false)
         for i in 2*4^n+1:3*4^n
             s[i+4^n] = -1 * s[i]
         end
-    end
-    if !phases
+        return s
+    else
         s = zero(Tableau, 4^n, n)
         paulis = ((false, false), (true, false), (false, true), (true, true))
         for (i, P) in enumerate(Iterators.product(Iterators.repeated(paulis, n)...))
@@ -373,8 +373,8 @@ function pauligroup(n::Int; phases=false)
                 s[i, j] = p
             end
         end
+        return s
     end
-    return s
 end
 
 """

@@ -2,7 +2,7 @@
     $TYPEDEF
 
 A generalization of the circulant bivariate bicycle code introduced in [bravyi2024high](@cite),
-extending the original three-term polynomial representation up to `ℓ` terms (for `x`-powers) and
+extending the original three-term polynomial representation up to `l` terms (for `x`-powers) and
 `m` terms (for `y`-powers).
 
 ## Bivariate Bicycle Codes
@@ -13,7 +13,7 @@ group algebra ``\\mathbb{F}_2[G]`` admits an identification with the quotient ri
 ``R = \\mathbb{F}_2[x,y]/(x^\\ell - 1, y^m - 1)``, where the standard basis consists of monomials
 ``{x^iy^j}`` for ``0 \\leq i < \\ell`` and ``0 \\leq j < m`` [eberhardt2024logical](@cite).
 Within this framework, every pair of elements ``c,d \\in R`` determines a BB code ``(C(c,d)``
-through the group algebra construction. 
+through the group algebra construction.
 
 ### Circulant Matrix Representation
 
@@ -33,7 +33,7 @@ of tensor products of circulant blocks.
 
 ### Three-term Polynomials
 
-The original construction in [bravyi2024high](@cite) constrained the polynomials to specific forms:  
+The original construction in [bravyi2024high](@cite) constrained the polynomials to specific forms:
 
 ```math
 \\begin{aligned}
@@ -42,7 +42,7 @@ a(x, y) = x^a + y^b + y^c, \\quad b(x, y) = y^d + x^e + x^f
 ```
 
 Thus, ``A`` and ``B`` can be expressed as ``A = A_1 + A_2 + A_3`` and ``B = B_1 + B_2 + B_3``. Consequently,
-each stabilizer generator has weight at most 6 for any valid three-term polynomials [postema2025existencecharacterisationbivariatebicycle](@cite).  
+each stabilizer generator has weight at most 6 for any valid three-term polynomials [postema2025existencecharacterisationbivariatebicycle](@cite).
 
 ### Generalized Polynomials
 
@@ -117,7 +117,7 @@ The ECC Zoo has an [entry for this family](https://errorcorrectionzoo.org/c/qcga
 ### Example
 
 Here is `[[756, 16, ≤ 34]]` circulant bivariate bicycle code from Table 1 of [bravyi2024high](@cite)
-with polynomials ``A = x^3 + y^10 + y^17`` and ``B = y^5 + x^3 + x^19``. 
+with polynomials ``A = x^3 + y^10 + y^17`` and ``B = y^5 + x^3 + x^19``.
 
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC; # hide
@@ -128,7 +128,7 @@ julia> A = [(:x,3), (:y,10), (:y,17)];
 
 julia> B = [(:y,5), (:x,3), (:x,19)];
 
-julia> c = GeneralizedCirculantBivariateBicycle(l, m, A, B);
+julia> c = BivariateBicycleViaCirculantMat(l, m, A, B);
 
 julia> code_n(c), code_k(c)
 (756, 16)
@@ -149,7 +149,7 @@ julia> A = [(:x,2), (:y,1), (:y,3), (:y,4)];
 
 julia> B = [(:y,2), (:x,1), (:x,3), (:x,4)];
 
-julia> c = GeneralizedCirculantBivariateBicycle(l, m, A, B);
+julia> c = BivariateBicycleViaCirculantMat(l, m, A, B);
 
 julia> code_n(c), code_k(c)
 (128, 14)
@@ -157,11 +157,11 @@ julia> code_n(c), code_k(c)
 
 Here is `[[18, 4, 4]]` generalized circulant bivariate bicycle code
 that uses 3-term polynomials ``a = 1 + x + y`` and ``b = 1 + x^2 + y^2``
-with group orders ``l, m = 3, 3`` from Table III of [wang2024coprime](@cite). 
+with group orders ``l, m = 3, 3`` from Table III of [wang2024coprime](@cite).
 
 !!! note
     We can also employ 3-term polynomials of a different form than those proposed in [bravyi2024high](@cite).
-    
+
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC;
 
@@ -171,7 +171,7 @@ julia> A = [(:x, 0), (:x, 1), (:y, 1)];
 
 julia> B = [(:y, 0), (:x, 2), (:y, 2)];
 
-julia> c = GeneralizedCirculantBivariateBicycle(l, m, A, B);
+julia> c = BivariateBicycleViaCirculantMat(l, m, A, B);
 
 julia> code_n(c), code_k(c)
 (18, 4)
@@ -179,13 +179,13 @@ julia> code_n(c), code_k(c)
 
 !!! note
     The Bivariate Bicycle code ``\\mathrm{QC}(A,B)`` is a specific instance of the
-    *Lifted Product* construction, where the underlying group is the direct product 
+    *Lifted Product* construction, where the underlying group is the direct product
     ``\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m`` (with ``\\mathbb{Z}_j`` denoting the
     cyclic group of order ``j``).
 
 Here is `[[36, 4, 6]]` generalized circulant bivariate bicycle code
 that uses 3-term polynomials ``a = x + y^2 + y^3`` and ``b = 1 + y + x^2``
-with group orders ``l, m = 3, 6`` from Table III of [wang2024coprime](@cite). 
+with group orders ``l, m = 3, 6`` from Table III of [wang2024coprime](@cite).
 
 ```jldoctest
 julia> using QuantumClifford; using QuantumClifford.ECC;
@@ -202,7 +202,7 @@ julia> A = x + y^2 + y^3;
 
 julia> B = 1 + y + x^2;
 
-julia> c = two_block_group_algebra_codes(A,B);
+julia> c = two_block_group_algebra_code(A,B);
 
 julia> code_n(c), code_k(c)
 (36, 4)
@@ -211,7 +211,7 @@ julia> code_n(c), code_k(c)
 ### Fields
     $TYPEDFIELDS
 """
-struct GeneralizedCirculantBivariateBicycle <: AbstractCSSCode
+struct BivariateBicycleViaCirculantMat <: AbstractCSSCode
     """Dimension of cyclic shift matrix `Sₗ` where `x = Sₗ ⊗ Iₘ`"""
     l::Int
     """ Dimension of cyclic shift matrix `Sₘ` where `y = Iₗ ⊗ Sₘ`"""
@@ -220,8 +220,8 @@ struct GeneralizedCirculantBivariateBicycle <: AbstractCSSCode
     A::Vector{Tuple{Symbol,Int}}
     """Terms in matrix B, where each tuple is (:x or :y, power)"""
     B::Vector{Tuple{Symbol,Int}}
-    
-    function GeneralizedCirculantBivariateBicycle(l, m, A, B)
+
+    function BivariateBicycleViaCirculantMat(l, m, A, B)
         (l >= 0 && m >= 0) || throw(ArgumentError("l and m must be non-negative"))
         (length(A) >= 1 && length(B) >= 1) || throw(ArgumentError("A and B must each have at least one entry"))
         for (mat, terms) in [(:A, A), (:B, B)]
@@ -236,7 +236,7 @@ struct GeneralizedCirculantBivariateBicycle <: AbstractCSSCode
     end
 end
 
-function parity_matrix_xz(c::GeneralizedCirculantBivariateBicycle)
+function parity_matrix_xz(c::BivariateBicycleViaCirculantMat)
     Iₗ = Matrix{Bool}(I, c.l, c.l)
     Iₘ = Matrix{Bool}(I, c.m, c.m)
     xₚ = Dict(i => kron(circshift(Iₗ, (0,i)), Iₘ) for i in 0:c.l)
@@ -258,8 +258,8 @@ function parity_matrix_xz(c::GeneralizedCirculantBivariateBicycle)
     return Hx, Hz
 end
 
-code_n(c::GeneralizedCirculantBivariateBicycle) = 2*c.l*c.m
+code_n(c::BivariateBicycleViaCirculantMat) = 2*c.l*c.m
 
-parity_matrix_x(c::GeneralizedCirculantBivariateBicycle) = parity_matrix_xz(c)[1]
+parity_matrix_x(c::BivariateBicycleViaCirculantMat) = parity_matrix_xz(c)[1]
 
-parity_matrix_z(c::GeneralizedCirculantBivariateBicycle) = parity_matrix_xz(c)[2]
+parity_matrix_z(c::BivariateBicycleViaCirculantMat) = parity_matrix_xz(c)[2]

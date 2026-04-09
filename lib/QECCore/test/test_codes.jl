@@ -58,6 +58,10 @@
     @testset "gallager" begin
         include("codes/gallager.jl")
     end
+    
+    @testset "goppa" begin
+        include("codes/goppa.jl")
+    end
 
     @testset "hamming" begin
         include("codes/hamming.jl")

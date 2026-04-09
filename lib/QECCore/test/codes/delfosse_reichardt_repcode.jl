@@ -16,7 +16,7 @@
             p = 2*i
             n = 4*p
             k = 2*(p - 2)
-            c = DelfosseReichardtRepCode(p)
+            c = DelfosseReichardtRep(p)
             stab = parity_checks(c)
             nₛ, kₛ = code_n(stab), code_k(stab)
             H = stab_to_gf2(stab)
