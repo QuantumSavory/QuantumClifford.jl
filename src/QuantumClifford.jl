@@ -8,7 +8,7 @@ module QuantumClifford
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
 using LinearAlgebra: LinearAlgebra, inv, mul!, rank, Adjoint, dot, tr
-using DataStructures: DataStructures, DefaultDict, Accumulator
+using DataStructures: DataStructures, DefaultDict, Accumulator, counter
 using Combinatorics: combinations
 using Base.Cartesian
 
@@ -31,7 +31,7 @@ export
     fastcolumn, fastrow,
     bitview, quantumstate, tab, rank,
     BadDataStructure,
-    affectedqubits, #TODO move to QuantumInterface?
+    affectedqubits, affectedbits, #TODO move to QuantumInterface?
     # GF2
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     # Canonicalization
@@ -62,7 +62,7 @@ export
     sMX, sMY, sMZ, PauliMeasurement, Reset, sMRX, sMRY, sMRZ,
     BellMeasurement, NoisyBellMeasurement, ClassicalXOR,
     VerifyOp,
-    Register,
+    Register, BacktrackRegister,
     # Misc gates
     IndexedDecisionGate, ConditionalGate,
     # Enumeration and Randoms
@@ -1431,6 +1431,7 @@ include("petrajectory.jl")
 include("misc_ops.jl")
 include("classical_register.jl")
 include("misc_gates.jl")
+include("backtrajectory.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
