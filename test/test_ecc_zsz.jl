@@ -1,5 +1,7 @@
 @testitem "ECC ZSZ" tags=[:ecc, :ecc_bespoke_checks, :oscar_required] begin
     using Oscar
+    using HiGHS
+    using JuMP
     using QuantumClifford
     using QuantumClifford.ECC
     using QuantumClifford.ECC: DistanceMIPAlgorithm, code_n, code_k, distance, ZSZ, parity_matrix_x, parity_matrix_z, parity_checks
@@ -48,6 +50,22 @@
             @test all(sum(Hz, dims=2) .== 6)
         end
     end
+
+
+
+    @testset "Distance of small ZSZ code instances" begin
+        # ZSZ codes are generally asymmetric (d_X != d_Z); d = min(d_X, d_Z) as computed by HiGHS
+        @test distance(ZSZ(5, 8, 2, [(0,0),(4,4),(4,1)], [(0,0),(3,0),(2,7)]),
+                       DistanceMIPAlgorithm(solver=HiGHS)) == 8   # [[80, 2, 8]]
+        @test distance(ZSZ(3, 18, 2, [(0,0),(1,0),(0,3)], [(0,0),(1,1),(2,12)]),
+                       DistanceMIPAlgorithm(solver=HiGHS)) == 6   # [[108, 2, 6]]
+        @test distance(ZSZ(12, 6, 5, [(0,1),(2,2),(8,3)], [(4,0),(6,4),(1,5)]),
+                       DistanceMIPAlgorithm(solver=HiGHS)) == 8   # [[144, 12, 8]] d=min(d_X,d_Z)
+        @test distance(ZSZ(27, 3, 10, [(8,0),(18,1),(25,2)], [(21,0),(14,1),(16,2)]),
+                       DistanceMIPAlgorithm(solver=HiGHS, time_limit=300.0)) == 6  # [[162, 8, 6]]
+    end
+
+
 
     @testset "Invalid ZSZ Parameters" begin
         # q^m mod l = 2^3 mod 5 = 3 ≠ 1, so this should be rejected

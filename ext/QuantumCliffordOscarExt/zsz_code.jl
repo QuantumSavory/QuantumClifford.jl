@@ -23,10 +23,12 @@ Note that ZSZ codes are generally asymmetric, meaning the X-distance and Z-dista
 ```jldoctest
 julia> using Oscar, QuantumClifford.ECC;
 
+julia> import HiGHS;
+
 julia> c = ZSZ(5, 8, 2, [(0,0),(4,4),(4,1)], [(0,0),(3,0),(2,7)]);
 
-julia> code_n(c), code_k(c)
-(80, 2)
+julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS))
+(80, 2, 8)
 ```
 
 ### Fields
@@ -45,9 +47,7 @@ struct ZSZ <: AbstractCSSCode
     B::Vector{Tuple{Int, Int}}
 
     function ZSZ(l::Int, m::Int, q::Int, A::Vector{Tuple{Int,Int}}, B::Vector{Tuple{Int,Int}})
-        if powermod(q, m, l) != 1
-            throw(ArgumentError("Condition q^m = 1 (mod l) not satisfied for l=$l, m=$m, q=$q"))
-        end
+        powermod(q, m, l) == 1 || throw(ArgumentError("Condition q^m ≡ 1 (mod l) not satisfied for l=$l, m=$m, q=$q"))
         new(l, m, q, A, B)
     end
 end
