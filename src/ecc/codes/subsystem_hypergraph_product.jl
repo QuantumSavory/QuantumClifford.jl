@@ -11,7 +11,7 @@ X-type gauge generators are `H1 ⊗ I`; Z-type are `I ⊗ H2`. Stabilizers:
 Based on [li2020numerical](@cite).
 ECC Zoo: [Subsystem product code family](https://errorcorrectionzoo.org/c/subsystem_product).
 
-See also: [`BravyiBaconShor`](@ref), [`SubsystemHypergraphProductSimplex`](@ref)
+See also: [`SubsystemHypergraphProductSimplex`](@ref)
 
 ### Fields
     $TYPEDFIELDS
