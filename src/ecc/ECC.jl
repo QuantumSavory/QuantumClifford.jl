@@ -4,19 +4,20 @@ using QECCore
 import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
 metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial, hasmetachecks
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
-    AbstractTwoQubitOperator, Stabilizer, PauliOperator,
+    AbstractTwoQubitOperator, Stabilizer, Tableau, PauliOperator,
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
     canonicalize!, canonicalize_gott!,
     logicalxview, logicalzview, stabilizerview, destabilizerview, tab, phases,
     sCNOT, sSWAP, sHadamard, sPhase, sInvPhase,
     sZCX, sZCY, sZCZ, sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZ, sX, sY, sMRZ, sMRX,
-    single_x, single_y, single_z, random_pauli!, PauliError,
+    single_x, single_y, single_z, random_pauli!, PauliError, xbit, zbit,
     apply!, comm, comm!, stab_to_gf2, embed, @S_str, affectedqubits, affectedbits,
     pftrajectories, measurements, mctrajectories
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
 
 using Combinatorics: combinations
 using LinearAlgebra: LinearAlgebra, I, rank, tr
+import Nemo
 using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 using SparseArrays: sparse
 using Statistics: std
@@ -44,7 +45,8 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     GeneralizedBicycle, ExtendedGeneralizedBicycle,
     HomologicalProduct, DoubleHomologicalProduct,
     GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly,
-    MultivariateMulticycle,
+    MultivariateMulticycle, BravyiBaconShor,
+    gauge_generators, code_g,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder, CSSTableDecoder,
@@ -398,6 +400,57 @@ include("circuits.jl")
 include("decoder_pipeline.jl")
 
 include("codes/util.jl")
+
+"""Gauge group generators of a subsystem code, returned as a `Tableau`."""
+function gauge_generators end
+
+"""
+The number of gauge qubits in a subsystem code.
+
+For a subsystem code with `n` physical qubits, `k` logical qubits, and `s`
+independent stabilizer generators: `code_g(c) = n - k - s`.
+
+See also: [`code_n`](@ref), [`code_k`](@ref), [`gauge_generators`](@ref)
+"""
+function code_g end
+
+"""Compute the rank (number of independent generators) of a code's stabilizer group."""
+function _stabilizer_rank(c)
+    stab = parity_checks(c)
+    _, _, r = canonicalize!(Base.copy(stab), ranks=true)
+    return r
+end
+
+"""Extract X-only stabilizer rows from a mixed stabilizer tableau as a binary matrix."""
+function _stab_to_parity_x(stab::Stabilizer)
+    n = nqubits(stab)
+    rows = BitVector[]
+    for p in stab
+        xb, zb = xbit(p), zbit(p)
+        if any(xb) && !any(zb)
+            push!(rows, xb)
+        end
+    end
+    isempty(rows) && return falses(0, n)
+    return reduce(vcat, transpose.(rows))
+end
+
+"""Extract Z-only stabilizer rows from a mixed stabilizer tableau as a binary matrix."""
+function _stab_to_parity_z(stab::Stabilizer)
+    n = nqubits(stab)
+    rows = BitVector[]
+    for p in stab
+        xb, zb = xbit(p), zbit(p)
+        if !any(xb) && any(zb)
+            push!(rows, zb)
+        end
+    end
+    isempty(rows) && return falses(0, n)
+    return reduce(vcat, transpose.(rows))
+end
+
+# Subsystem codes
+include("codes/subsystem_bacon_shor.jl")
 
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
