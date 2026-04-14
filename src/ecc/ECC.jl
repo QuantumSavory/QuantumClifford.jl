@@ -4,19 +4,20 @@ using QECCore
 import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
 metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial, hasmetachecks
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
-    AbstractTwoQubitOperator, Stabilizer, PauliOperator,
+    AbstractTwoQubitOperator, Stabilizer, Tableau, PauliOperator,
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
     canonicalize!, canonicalize_gott!,
     logicalxview, logicalzview, stabilizerview, destabilizerview, tab, phases,
     sCNOT, sSWAP, sHadamard, sPhase, sInvPhase,
     sZCX, sZCY, sZCZ, sXCX, sXCY, sXCZ, sYCX, sYCY, sYCZ, sZ, sX, sY, sMRZ, sMRX,
-    single_x, single_y, single_z, random_pauli!, PauliError,
+    single_x, single_y, single_z, random_pauli!, PauliError, xbit, zbit,
     apply!, comm, comm!, stab_to_gf2, embed, @S_str, affectedqubits, affectedbits,
     pftrajectories, measurements, mctrajectories
 import QuantumClifford: Stabilizer, MixedDestabilizer, nqubits
 
 using Combinatorics: combinations
 using LinearAlgebra: LinearAlgebra, I, rank, tr
+import Nemo
 using Nemo: ZZ, residue_ring, matrix, finite_field, GF, minpoly, coeff, lcm, FqPolyRingElem, FqFieldElem, is_zero, degree, defining_polynomial, is_irreducible, echelon_form
 using SparseArrays: sparse
 using Statistics: std
