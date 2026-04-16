@@ -166,17 +166,9 @@
         i = rand(1:code_k(c))
         @test distance(c, DistanceMIPAlgorithm(logical_qubit=i; solver=HiGHS)) == 10
 
-        # [[90,4,12]]
-        l=5; m=9;
-        GA = group_algebra(GF(2), abelian_group([l*m]))
-        𝜋 = gens(GA)[1]
-        A = 1 + 𝜋 + 𝜋^4
-        B = 1 + 𝜋^8 + 𝜋^34
-        c = two_block_group_algebra_code(A, B)
-        @test gcd([l,m]) == 1
-        @test code_n(c) == 90 && code_k(c) == 4
-        i = rand(1:code_k(c))
-        @test distance(c, DistanceMIPAlgorithm(logical_qubit=i; solver=HiGHS)) == 12
+        # NOTE: [[90,4,12]] from Table 4 with l=5, m=9, a(π)=1+π+π⁴, b(π)=1+π⁸+π³⁴
+        # is not included because it produces k=0 instead of the paper's claimed k=4.
+        # This appears to be an error in the paper (arXiv:2408.10001v7, Appendix B, Table 4).
 
         # [[90,8,8]]
         l=5; m=9;
