@@ -168,7 +168,6 @@
 
         # NOTE: [[90,4,12]] from Table 4 with l=5, m=9, a(π)=1+π+π⁴, b(π)=1+π⁸+π³⁴
         # is not included because it produces k=0 instead of the paper's claimed k=4.
-        # This appears to be an error in the paper (arXiv:2408.10001v7, Appendix B, Table 4).
 
         # [[90,8,8]]
         l=5; m=9;
