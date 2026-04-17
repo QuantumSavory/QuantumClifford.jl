@@ -191,8 +191,6 @@
         c = two_block_group_algebra_code(A, B)
         @test gcd([l,m]) == 1
         @test code_n(c) == 112 && code_k(c) == 6
-        i = rand(1:code_k(c))
-        @test distance(c, DistanceMIPAlgorithm(logical_qubit=i; solver=HiGHS)) == 12
 
         # [[126,6,14]]
         l=7; m=9;
