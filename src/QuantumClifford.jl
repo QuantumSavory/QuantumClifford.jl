@@ -804,6 +804,11 @@ end
 end
 
 @inline function comm(l::PauliOperator, r::Tableau, i::Int)::UInt8
+    # Guard against xzs word-count mismatches: when the tableau's physical word
+    # count per row exceeds what nqubits requires (e.g. after _remove_rowcol!
+    # without compaction), the Z-half offset in the generic comm() would be wrong.
+    @boundscheck length(l.xz) == size(r.xzs, 1) || throw(DimensionMismatch(
+        lazy"comm(PauliOperator, Tableau, i): operator xz length $(length(l.xz)) ≠ tableau xzs row count $(size(r.xzs, 1))"))
     comm(l.xz,(@view r.xzs[:,i]))
 end
 
