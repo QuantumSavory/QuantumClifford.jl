@@ -120,6 +120,7 @@ function _polynomial_matrix_to_circulant_matrix(H_poly, l)
     return H
 end
 
+code_n(c::GeneralizedHyperGraphProduct) = 2 * size(c.A, 1) * c.l
 function parity_matrix_xz(c::GeneralizedHyperGraphProduct)
     n = size(c.A, 1)
     Aᵗʳ = matrix(parent(c.b), n, n, [_poly_transpose(c.A[j, i], c.l) for i in 1:n, j in 1:n])

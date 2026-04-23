@@ -27,6 +27,8 @@
 
     @testset "code tableau consistency" begin
         for code in all_testable_code_instances()
+            @test (@timed nqubits(code)).time < 10
+            @test (@timed code_n(code)).time < 10
             H = parity_checks(code)
             @test nqubits(code) == size(H, 2) == code_n(code)
             @test size(H, 1) == code_s(code)
