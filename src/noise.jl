@@ -28,6 +28,27 @@ struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
 end
 UnbiasedUncorrelatedNoise(p::Integer) = UnbiasedUncorrelatedNoise(float(p))
 
+"""
+Depolarization noise model with depolarization probability `p`.
+
+On `n` qubits this applies the channel
+`E(rho) = (1-p)rho + p/4^n * sum(P*rho*P)`, where the sum is over all
+`n`-qubit Pauli operators, including the identity. With this parameterization,
+the probability of a non-identity Pauli error is `p * (1 - 1/4^n)`, because the
+uniform Pauli part includes a `1/4^n` chance of sampling the identity.
+
+For the common two-qubit error-probability parameterization, use
+`DepolarizationNoise(; error_probability=e)`. This constructs the equivalent
+depolarization probability so that the identity occurs with probability `1-e`
+and each of the 15 non-identity two-qubit Pauli errors occurs with probability
+`e/15`.
+"""
+struct DepolarizationNoise{T} <: AbstractNoise
+    p::T
+end
+DepolarizationNoise(p::Integer) = DepolarizationNoise(float(p))
+DepolarizationNoise(; error_probability) = DepolarizationNoise(error_probability * 16 / 15)
+
 """Pauli noise model with probabilities `px`, `py`, and `pz` respectively for the three types of Pauli errors."""
 struct PauliNoise{T} <: AbstractNoise
     px::T
@@ -71,6 +92,51 @@ function applynoise!(s::AbstractStabilizer,noise::PauliNoise,i::Int)
     end
     s
 end
+
+@inline function _apply_pauli_digit!(s::AbstractStabilizer, q::Int, digit::Int)
+    if digit == 0
+        return s
+    elseif digit == 1
+        apply_single_x!(s, q)
+    elseif digit == 2
+        apply_single_z!(s, q)
+    elseif digit == 3
+        apply_single_y!(s, q)
+    else
+        throw(ArgumentError("invalid Pauli digit $digit"))
+    end
+    return s
+end
+
+@inline _depolarization_pauli_count(n::Int) = 4^n
+
+function _check_depolarization_qubit_count(indices::Base.AbstractVecOrTuple)
+    length(indices) in (1, 2) ||
+        throw(ArgumentError("DepolarizationNoise can only be applied to a single qubit or two qubits"))
+    return nothing
+end
+
+function _apply_depolarization_pauli!(s::AbstractStabilizer, indices::Base.AbstractVecOrTuple, pauli_idx::Int)
+    for i in indices
+        pauli_idx, digit = divrem(pauli_idx, 4)
+        _apply_pauli_digit!(s, i, digit)
+    end
+    return s
+end
+
+function applynoise!(s::AbstractStabilizer, noise::DepolarizationNoise, indices::Base.AbstractVecOrTuple)
+    _check_depolarization_qubit_count(indices)
+
+    if rand() >= noise.p
+        return s
+    end
+
+    pauli_idx = rand(0:_depolarization_pauli_count(length(indices))-1)
+    return _apply_depolarization_pauli!(s, indices, pauli_idx)
+end
+
+applynoise!(s::AbstractStabilizer, noise::DepolarizationNoise, i::Int) = applynoise!(s, noise, (i,))
+applynoise!(s::AbstractStabilizer, noise::DepolarizationNoise, i::Int, j::Int) = applynoise!(s, noise, (i, j))
 
 """An operator that applies the given `noise` model to the qubits at the selected `indices`."""
 struct NoiseOp{N, Q} <: AbstractNoiseOp where {N, Q}
@@ -176,6 +242,32 @@ function applynoise_branches(s::AbstractStabilizer,noise::UnbiasedUncorrelatedNo
         end
     end
     results
+end
+
+function applynoise_branches(s::AbstractStabilizer, noise::DepolarizationNoise, indices::Base.AbstractVecOrTuple; max_order=1)
+    n = length(indices)
+    _check_depolarization_qubit_count(indices)
+
+    if n == 1
+        return applynoise_branches(s, UnbiasedUncorrelatedNoise(3noise.p / 4), indices; max_order=max_order)
+    end
+
+    pauli_count = _depolarization_pauli_count(n)
+    pauli_prob = noise.p / pauli_count
+
+    results = [(copy(s), 1 - noise.p + pauli_prob, 0)]
+
+    if max_order >= 1
+        for pauli_idx in 1:pauli_count-1
+            order = count(!iszero, digits(pauli_idx, base=4, pad=n))
+            order <= max_order || continue
+            new_state = copy(s)
+            _apply_depolarization_pauli!(new_state, indices, pauli_idx)
+            push!(results, (new_state, pauli_prob, order))
+        end
+    end
+
+    return results
 end
 
 @generated function _applynoise_branches_unbiased_uncorrelated(::Val{order},s,error_indices,results,error_prob) where {order}
