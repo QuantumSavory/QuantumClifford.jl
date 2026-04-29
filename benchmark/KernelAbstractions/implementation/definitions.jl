@@ -16,6 +16,9 @@ const n_MiB = [2^i for i = 1:10]
 # TODO: Keep these or remove them now that a good default has been set?
 const batch_sizes = [1, 4, 8, 16, 32, 64]
 
+# Qubit counts for canonicalization benchmarks (O(n^3) scaling).
+const n_qubits = [2^i for i = 6:10]
+
 # These values are inaccessible since they originate from a package extension.
 const default_block_size = 256
 const default_batch_size = 32
