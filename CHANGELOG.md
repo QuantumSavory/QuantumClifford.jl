@@ -5,8 +5,9 @@
 
 # News
 
-## v0.11.4 - TBD
+## v0.11.4 - 2026-05-05
 
+- Add `DepolarizationNoise` for n-qubit depolarizing noise channels.
 - `one` now accepts the `basis` keyword for `Destabilizer`, `MixedStabilizer`, `MixedDestabilizer`, and `Register`.
 
 ## v0.11.3 - 2026-03-07
