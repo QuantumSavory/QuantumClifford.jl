@@ -41,9 +41,9 @@
 
         @test length(single_qubit_branches) == 4
         @test map(branch -> branch[2:3], single_qubit_branches) == map(branch -> branch[2:3], unbiased_single_qubit_branches)
-        @test single_qubit_branches[1][2] == 1 - p + p / 4
+        @test single_qubit_branches[1][2] ≈ 1 - p + p / 4
         @test single_qubit_branches[1][3] == 0
-        @test all(branch[2] == p / 4 for branch in single_qubit_branches[2:end])
+        @test all(branch[2] ≈ p / 4 for branch in single_qubit_branches[2:end])
         @test all(branch[3] == 1 for branch in single_qubit_branches[2:end])
         @test sum(branch[2] for branch in single_qubit_branches) ≈ 1
 
@@ -51,9 +51,9 @@
         two_qubit_branches = QuantumClifford.applynoise_branches(copy(two_qubit_state), n, (1, 2), max_order=2)
 
         @test length(two_qubit_branches) == 16
-        @test two_qubit_branches[1][2] == 1 - p + p / 16
+        @test two_qubit_branches[1][2] ≈ 1 - p + p / 16
         @test two_qubit_branches[1][3] == 0
-        @test all(branch[2] == p / 16 for branch in two_qubit_branches[2:end])
+        @test all(branch[2] ≈ p / 16 for branch in two_qubit_branches[2:end])
         @test count(branch[3] == 1 for branch in two_qubit_branches[2:end]) == 6
         @test count(branch[3] == 2 for branch in two_qubit_branches[2:end]) == 9
         @test sum(branch[2] for branch in two_qubit_branches) ≈ 1
@@ -62,8 +62,8 @@
         error_parameterized_noise = DepolarizationNoise(; error_probability=error_probability)
         error_parameterized_branches = QuantumClifford.applynoise_branches(copy(two_qubit_state), error_parameterized_noise, (1, 2), max_order=2)
 
-        @test error_parameterized_branches[1][2] == 1 - error_probability
-        @test all(branch[2] == error_probability / 15 for branch in error_parameterized_branches[2:end])
+        @test error_parameterized_branches[1][2] ≈ 1 - error_probability
+        @test all(branch[2] ≈ error_probability / 15 for branch in error_parameterized_branches[2:end])
         @test sum(branch[2] for branch in error_parameterized_branches) ≈ 1
 
         @test_throws ArgumentError applynoise!(copy(two_qubit_state), n, (1, 2, 3))

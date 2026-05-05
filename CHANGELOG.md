@@ -5,7 +5,7 @@
 
 # News
 
-## Unreleased
+## [Unreleased]
 
 - Add `DepolarizationNoise` for single- and two-qubit depolarizing noise channels.
 
