@@ -5,9 +5,9 @@
 
 # News
 
-## [Unreleased]
+## v0.11.4 - 2026-05-05
 
-- Add `DepolarizationNoise` for single- and two-qubit depolarizing noise channels.
+- Add `DepolarizationNoise` for n-qubit depolarizing noise channels.
 
 ## v0.11.3 - 2026-03-07
 

@@ -65,9 +65,6 @@
         @test error_parameterized_branches[1][2] ≈ 1 - error_probability
         @test all(branch[2] ≈ error_probability / 15 for branch in error_parameterized_branches[2:end])
         @test sum(branch[2] for branch in error_parameterized_branches) ≈ 1
-
-        @test_throws ArgumentError applynoise!(copy(two_qubit_state), n, (1, 2, 3))
-        @test_throws ArgumentError QuantumClifford.applynoise_branches(copy(two_qubit_state), n, (1, 2, 3))
     end
 
     @testset "Monte Carlo Purification examples" begin
