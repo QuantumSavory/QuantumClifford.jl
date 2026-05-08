@@ -33,9 +33,7 @@ This is a general-purpose utility: for any binary matrix `H`, the dual code's
 generator matrix `G` satisfies `H * Gᵀ = 0` over GF(2).
 """
 function _dual(H)
-    r, c = size(H)
-    R, _ = Nemo.residue_ring(Nemo.ZZ, 2)
-    H_nemo = Nemo.matrix_space(R, r, c)(R.(H))
+    H_nemo = matrix(GF(2), H)
     null = Nemo.nullspace(H_nemo)[2]
     @assert all(iszero, H_nemo * null)
     return Nemo.transpose(null)
@@ -46,29 +44,22 @@ function QECCore.parity_matrix(c::Simplex)
     n = 2^r - 1
     # Building the Hamming parity check matrix -- column j is the number j in r-bit binary
     H_hamming = zeros(Int, r, n)
-    for j in 1:n
-        for i in 1:r
-            H_hamming[i, j] = (j >> (r - i)) & 1
-        end
+    for j in 1:n, i in 1:r
+        H_hamming[i, j] = (j >> (r - i)) & 1
     end
     # The dual of the Hamming code is the Simplex code
     dual_mat = _dual(H_hamming)
-    # Converting Nemo matrix back to Int matrix
+    # Converting Nemo matrix back to sparse Int matrix
     nr, nc = size(dual_mat)
-    result = zeros(Int, nr, nc)
-    F1 = Nemo.residue_ring(Nemo.ZZ, 2)[1](1)
-    for i in 1:nr, j in 1:nc
-        result[i, j] = dual_mat[i, j] == F1 ? 1 : 0
-    end
     rows_idx = Int[]
     cols_idx = Int[]
-    for i in 1:size(result, 1), j in 1:size(result, 2)
-        if result[i, j] == 1
+    for i in 1:nr, j in 1:nc
+        if !iszero(dual_mat[i, j])
             push!(rows_idx, i)
             push!(cols_idx, j)
         end
     end
-    return sparse(rows_idx, cols_idx, ones(Int, length(rows_idx)), size(result, 1), n)
+    return sparse(rows_idx, cols_idx, ones(Int, length(rows_idx)), nr, n)
 end
 
 QECCore.code_n(c::Simplex) = 2^c.r - 1
