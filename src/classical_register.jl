@@ -10,6 +10,13 @@ Register(s,bits) = Register(MixedDestabilizer(s), bits)
 Register(s) = Register(s, Bool[])
 Register(s::MixedDestabilizer,nbits::Int) = Register(s, falses(nbits))
 
+Base.one(::Type{<:Register}, n::Integer; basis=:Z) =
+    Register(one(MixedDestabilizer, n; basis=basis))
+Base.one(::Type{<:Register}, n::Integer, nbits::Integer; basis=:Z) =
+    Register(one(MixedDestabilizer, n; basis=basis), nbits)
+Base.one(r::Register; basis=:Z) =
+    one(Register, nqubits(r), length(bitview(r)); basis=basis)
+
 Base.copy(r::Register) = Register(copy(r.stab),copy(r.bits))
 Base.:(==)(l::Register,r::Register) = l.stab==r.stab && l.bits==r.bits
 

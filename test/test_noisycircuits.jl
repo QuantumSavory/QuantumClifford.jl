@@ -32,6 +32,77 @@
         @test all(values(resp).==0)
     end
 
+    @testset "Depolarization noise" begin
+        p = 0.3
+        n = DepolarizationNoise(p)
+        single_qubit_state = S"Z"
+        single_qubit_branches = QuantumClifford.applynoise_branches(copy(single_qubit_state), n, (1,))
+        unbiased_single_qubit_branches = QuantumClifford.applynoise_branches(copy(single_qubit_state), UnbiasedUncorrelatedNoise(3p / 4), (1,))
+
+        @test length(single_qubit_branches) == 4
+        @test map(branch -> branch[2:3], single_qubit_branches) == map(branch -> branch[2:3], unbiased_single_qubit_branches)
+        @test single_qubit_branches[1][2] ≈ 1 - p + p / 4
+        @test single_qubit_branches[1][3] == 0
+        @test all(branch[2] ≈ p / 4 for branch in single_qubit_branches[2:end])
+        @test all(branch[3] == 1 for branch in single_qubit_branches[2:end])
+        @test sum(branch[2] for branch in single_qubit_branches) ≈ 1
+
+        two_qubit_state = ghz(2)
+        two_qubit_branches = QuantumClifford.applynoise_branches(copy(two_qubit_state), n, (1, 2), max_order=2)
+
+        @test length(two_qubit_branches) == 16
+        @test two_qubit_branches[1][2] ≈ 1 - p + p / 16
+        @test two_qubit_branches[1][3] == 0
+        @test all(branch[2] ≈ p / 16 for branch in two_qubit_branches[2:end])
+        @test count(branch[3] == 1 for branch in two_qubit_branches[2:end]) == 6
+        @test count(branch[3] == 2 for branch in two_qubit_branches[2:end]) == 9
+        @test sum(branch[2] for branch in two_qubit_branches) ≈ 1
+
+        error_probability = 0.3
+        error_parameterized_noise = DepolarizationNoise(; two_qubit_error_probability=error_probability)
+        error_parameterized_branches = QuantumClifford.applynoise_branches(copy(two_qubit_state), error_parameterized_noise, (1, 2), max_order=2)
+
+        @test error_parameterized_branches[1][2] ≈ 1 - error_probability
+        @test all(branch[2] ≈ error_probability / 15 for branch in error_parameterized_branches[2:end])
+        @test sum(branch[2] for branch in error_parameterized_branches) ≈ 1
+
+        state_key(state) = repr(canonicalize!(copy(state)))
+
+        function branch_probabilities(state, noise, indices)
+            probabilities = Dict{String, Float64}()
+            branches = QuantumClifford.applynoise_branches(
+                copy(state), noise, indices, max_order=length(indices))
+            for (new_state, probability, _) in branches
+                key = state_key(new_state)
+                probabilities[key] = get(probabilities, key, 0.0) + probability
+            end
+            return probabilities
+        end
+
+        function sampled_probabilities(state, noise, indices; samples=2000)
+            counts = Dict{String, Int}()
+            for _ in 1:samples
+                key = state_key(applynoise!(copy(state), noise, indices))
+                counts[key] = get(counts, key, 0) + 1
+            end
+            return Dict(key => count / samples for (key, count) in counts)
+        end
+
+        function test_applynoise_matches_branches(state, noise, indices)
+            Random.seed!(0)
+            expected = branch_probabilities(state, noise, indices)
+            sampled = sampled_probabilities(state, noise, indices)
+            @test keys(sampled) ⊆ keys(expected)
+            @test all(
+                isapprox(get(sampled, key, 0.0), probability; atol=0.04)
+                for (key, probability) in expected
+            )
+        end
+
+        test_applynoise_matches_branches(single_qubit_state, n, (1,))
+        test_applynoise_matches_branches(two_qubit_state, n, (1, 2))
+    end
+
     @testset "Monte Carlo Purification examples" begin
         g1 = SparseGate(tCNOT, [1,3])
         g2 = SparseGate(tCNOT, [2,4])
