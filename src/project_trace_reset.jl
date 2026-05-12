@@ -788,6 +788,18 @@ function puttableau!(target::Stabilizer{T1}, source::Tableau, row::Int, col::Int
     puttableau!(tab(target), source, row, col; phases)
 end
 
+"""
+    _compact_xzs_words(xzs, nqubits)
+
+Return `xzs` with only the packed word rows needed for `nqubits`.
+
+Packed tableau data stores all X words followed by all Z words. After removing a
+qubit across a word boundary, the old backing array can still contain too many
+word rows. Leaving that oversized layout in place breaks the split point used by
+low-level operations such as `comm`, which can then read stale X words as Z
+words. This helper preserves the no-allocation path when the word count is
+unchanged and allocates a compact matrix only when the word count shrinks.
+"""
 function _compact_xzs_words(xzs::AbstractMatrix{T}, nqubits::Int) where {T<:Unsigned}
     old_nwords = size(xzs, 1) ÷ 2
     new_nwords = cld(nqubits, 8 * sizeof(T))
