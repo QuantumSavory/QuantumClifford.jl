@@ -5,6 +5,10 @@
 
 # News
 
+## v0.11.5 - 2026-05-12
+
+- **(fix)** Broken edge case in `remove_column!`, a non-public function used by QuantumSavory.
+
 ## v0.11.3 - 2026-03-07
 
 - **(fix)** `GeneralizedStabilizer` non-clifford `apply!(::GeneralizedStabilizer, ::AbstractPauliChannel)` had low-level mistakes returning wrong results 
