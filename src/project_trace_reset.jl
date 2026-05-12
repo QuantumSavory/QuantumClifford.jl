@@ -788,9 +788,28 @@ function puttableau!(target::Stabilizer{T1}, source::Tableau, row::Int, col::Int
     puttableau!(tab(target), source, row, col; phases)
 end
 
-"""Unexported low-level function that removes a column (by shifting all columns to the right of the target by one step to the left)
+function _compact_xzs_words(xzs::AbstractMatrix{T}, nqubits::Int) where {T<:Unsigned}
+    old_nwords = size(xzs, 1) ÷ 2
+    new_nwords = cld(nqubits, 8 * sizeof(T))
+    new_nwords < old_nwords || return xzs
 
-Because Tableau is not mutable we return a new Tableau with the same (modified) xzs array."""
+    compact_xzs = similar(xzs, 2 * new_nwords, size(xzs, 2))
+    if new_nwords > 0
+        @views begin
+            compact_xzs[1:new_nwords, :] .= xzs[1:new_nwords, :]
+            compact_xzs[(new_nwords + 1):(2 * new_nwords), :] .=
+                xzs[(old_nwords + 1):(old_nwords + new_nwords), :]
+        end
+    end
+    compact_xzs
+end
+
+"""Unexported low-level function that removes a column.
+
+Columns to the right of the target are shifted one step left. Because Tableau is
+not mutable we return a new Tableau. The backing xzs array is reused unless the
+removal crosses a packed-word boundary.
+"""
 function remove_column!(s::Tableau{V,M}, col::Int) where {V,T<:Unsigned,M<:AbstractMatrix{T}}
     rows,cols=size(s)
     xzs = s.xzs
@@ -809,7 +828,8 @@ function remove_column!(s::Tableau{V,M}, col::Int) where {V,T<:Unsigned,M<:Abstr
             xzs[end÷2+j,i] = xzs[end÷2+j,i] >> 1
         end
     end
-    Tableau(s.phases, nqubits(s)-1, s.xzs)
+    new_nqubits = nqubits(s) - 1
+    Tableau(s.phases, new_nqubits, _compact_xzs_words(s.xzs, new_nqubits))
 end
 remove_column!(s::Stabilizer, col::Int) = Stabilizer(remove_column!(tab(s),col))
 
@@ -828,7 +848,7 @@ end
 
 """Unexported low-level function that removes a row (by shifting all rows up as necessary)
 
-Because MixedDestabilizer is not mutable we return a new MixedDestabilizer with the same (modified) xzs array.
+Because MixedDestabilizer is not mutable we return a new MixedDestabilizer.
 
 Used on its own, this function will break invariants. Meant to be used with `projectremove!`.
 """
@@ -844,30 +864,7 @@ function _remove_rowcol!(s::MixedDestabilizer, r,c)
     end
     oldrank = rank(s)
     newrank = r<=oldrank ? oldrank-1 : oldrank
-    new_nqubits = cols - 1
-    new_phases = @view t.phases[1:end-2]
-    old_xzs = @view t.xzs[:, 1:end-2]
-    ncols_new = size(old_xzs, 2)
-    # Compact xzs when the number of UInt64 words per half decreases after
-    # qubit removal (e.g. 65→64 qubits crosses a word boundary: 2→1 words).
-    # Without compaction, `comm` and other functions that rely on
-    # `length(xz) ÷ 2` to locate the Z half would read stale X words
-    # instead of Z words, producing silently wrong results.
-    old_nwords = size(old_xzs, 1) ÷ 2          # physical words currently in xzs
-    new_nwords = cld(new_nqubits, 8*sizeof(eltype(old_xzs)))  # words needed for new qubit count
-    if new_nwords < old_nwords
-        # Allocate a correctly-sized xzs and copy only the relevant word-rows.
-        compact_xzs = similar(old_xzs, 2*new_nwords, ncols_new)
-        for col_idx in 1:ncols_new
-            @inbounds for w in 1:new_nwords
-                compact_xzs[w, col_idx]             = old_xzs[w, col_idx]              # X words
-                compact_xzs[new_nwords+w, col_idx]  = old_xzs[old_nwords+w, col_idx]   # Z words
-            end
-        end
-        MixedDestabilizer(Tableau(collect(new_phases), new_nqubits, compact_xzs), newrank)
-    else
-        MixedDestabilizer(Tableau(new_phases, new_nqubits, old_xzs), newrank)
-    end
+    MixedDestabilizer(Tableau((@view t.phases[1:end-2]),cols-1,(@view t.xzs[:,1:end-2])), newrank)
 end
 
 #=
