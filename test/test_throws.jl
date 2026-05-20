@@ -45,6 +45,10 @@
     @test_throws DimensionMismatch P"X" * S"XX"
 
     @test_throws ArgumentError one(typeof(T"X"), 1, basis=:U)
+    @test_throws ArgumentError one(Destabilizer, 1; basis=:U)
+    @test_throws ArgumentError one(MixedStabilizer, 1, 1; basis=:U)
+    @test_throws ArgumentError one(MixedDestabilizer, 1; basis=:U)
+    @test_throws ArgumentError one(Register, 1; basis=:U)
 
     @test_throws ArgumentError SparseGate(random_clifford(2), [1, 2, 3])
     @test_throws ArgumentError apply!(random_stabilizer(2), SparseGate(random_clifford(3), [1, 2, 3]))

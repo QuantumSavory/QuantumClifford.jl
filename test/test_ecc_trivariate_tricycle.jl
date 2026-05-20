@@ -130,5 +130,25 @@
         @test Hx != Mx
         @test Hz != Mx
         @test Hx != Hz
+
+        # Haah's cubic code from Appendix B code D of https://arxiv.org/pdf/1904.02703
+        # [[1024, 30, 13 ≤ d ≤ 32]]
+        L = 8
+        R, (x,y,z) = polynomial_ring(GF(2), [:x,:y,:z])
+        I = ideal(R, [x^L-1, y^L-1, z^L-1])
+        S, _ = quo(R, I)
+        A = S(1 + x + y + z)
+        B = S(1 + x*y + x*z + y*z)
+        c = MultivariateMulticycle([L,L,L], [A,B])
+        stab = parity_checks(c)
+        mat = matrix(GF(2), stab_to_gf2(stab))
+        computed_rank = rank(mat)
+        @test computed_rank == code_n(c) - code_k(c)
+        @test code_n(c) == code_n(stab) == 1024
+        @test code_k(c) == code_k(stab) == 30
+        @test stab_looks_good(stab, remove_redundant_rows=true) == true
+        # This code is weight-8 limited.
+        @test all(sum(parity_matrix_z(c), dims=2) .== 8)
+        @test all(sum(parity_matrix_x(c), dims=2) .== 8)
     end
 end

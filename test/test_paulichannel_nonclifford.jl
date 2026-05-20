@@ -1,4 +1,4 @@
-@testitem "NonClifford" begin
+@testitem "PauliChannelNonClifford" begin
     using QuantumClifford
     using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, invsparsity, mul_left!, mul_right!, mixed_destab_looks_good, tr
     using Test
@@ -125,6 +125,19 @@
                 @test real(tr(newsm1)) ≈ 1
             end
         end
+    end
+
+    @testset "issue 681" begin
+        stab = one(Stabilizer, 1)
+        genstab = GeneralizedStabilizer(stab)
+        apply!(genstab, tPhase)
+        apply!(genstab, tHadamard)
+        apply!(genstab, pcT)
+        apply!(genstab, pcT)
+        @test expect(P"X", genstab) ≈ 0.0 atol=1e-10
+        @test expect(P"Y", genstab) ≈ 1.0 atol=1e-10
+        @test expect(P"Z", genstab) ≈ 0.0 atol=1e-10
+        @test expect(P"I", genstab) ≈ 1.0 atol=1e-10
     end
 
     @test_throws ArgumentError GeneralizedStabilizer(S"XX")
