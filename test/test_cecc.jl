@@ -26,3 +26,21 @@
         end
     end
 end
+
+@testitem "BellPair generation" tags=[:ecc, :ecc_base] begin
+    using QuantumClifford
+    using QuantumClifford.ECC
+    using InteractiveUtils: fieldnames
+
+    include("test_cecc_base.jl")
+
+    codes = [BellPairCode(c...) for c in bellpair_circuit_args]
+
+    @test code_n(codes[1]) == 4
+    @test code_k(codes[1]) == 2
+    @test code_n(codes[2]) == 6
+    @test code_k(codes[2]) == 4
+
+    roundtrip = [map(f -> getfield(BellPairCode(c...), f), fieldnames(BellPairCode)) for c in bellpair_circuit_args]
+    @test [BellPairCode(c...) for c in roundtrip] == codes
+end
