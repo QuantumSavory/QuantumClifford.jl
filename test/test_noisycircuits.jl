@@ -25,10 +25,11 @@
         ng4 = NoisyGate(g4, n)
         ng5 = NoiseOp(n,[7])
         state = ghz(7)
-        res1, _ = mctrajectory!(copy(state), [ng1,ng2,ng3,ng4,ng5])
+        noisy_circuit = [ng1,ng2,ng3,ng4,ng5]
         res2, _ = mctrajectory!(copy(state), [g1,g2,g3,g4])
-        @test res1 != res2 # has a very small chance of failing
-        resp = petrajectories(copy(state), [ng1,ng2,ng3,ng4,ng5])
+        res1s = [mctrajectory!(copy(state), noisy_circuit)[1] for _ in 1:10]
+        @test any(res1 -> res1 != res2, res1s) # this weird check is because there is a small chance that res1==res2 because of the randomness of the noise -- this makes the chance much smaller
+        resp = petrajectories(copy(state), noisy_circuit)
         @test all(values(resp).==0)
     end
 
