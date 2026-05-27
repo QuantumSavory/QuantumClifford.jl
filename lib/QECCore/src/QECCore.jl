@@ -26,7 +26,7 @@ TillichZemor, random_TillichZemor_code, BivariateBicycleViaCirculantMat
 export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, Simplex, random_Gallager_ldpc, Goppa, random_Goppa_code
 
 # utilities
-export search_self_orthogonal_rm_code, hgp
+export search_self_orthogonal_rm_code, hgp, dual
 
 include("interface.jl")
 include("codes/util.jl")

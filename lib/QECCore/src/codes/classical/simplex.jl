@@ -1,3 +1,13 @@
+"""
+    dual(H)
+
+Compute the dual code of a binary parity check matrix `H`.
+Returns the parity check matrix of the dual code.
+
+Requires `Nemo` to be loaded.
+"""
+function dual end
+
 """Simplex code, the dual of the Hamming code [malcolm2025computing](@cite)."""
 function Simplex(args...; kwargs...)
     ext = Base.get_extension(QECCore, :QECCoreNemoExt)
@@ -6,3 +16,4 @@ function Simplex(args...; kwargs...)
     end
     return ext.Simplex(args...; kwargs...)
 end
+

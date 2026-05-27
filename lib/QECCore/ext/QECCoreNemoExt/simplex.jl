@@ -24,7 +24,7 @@ struct Simplex <: AbstractCECC
 end
 
 """
-    _dual(H)
+    dual(H)
 
 Compute the dual code of a binary parity check matrix `H` using Nemo's nullspace.
 Returns the parity check matrix of the dual code as a transposed nullspace matrix.
@@ -32,7 +32,7 @@ Returns the parity check matrix of the dual code as a transposed nullspace matri
 This is a general-purpose utility: for any binary matrix `H`, the dual code's
 generator matrix `G` satisfies `H * Gᵀ = 0` over GF(2).
 """
-function _dual(H)
+function QECCore.dual(H)
     H_nemo = matrix(GF(2), H)
     null = Nemo.nullspace(H_nemo)[2]
     @assert all(iszero, H_nemo * null)
@@ -48,7 +48,7 @@ function QECCore.parity_matrix(c::Simplex)
         H_hamming[i, j] = (j >> (r - i)) & 1
     end
     # The dual of the Hamming code is the Simplex code
-    dual_mat = _dual(H_hamming)
+    dual_mat = QECCore.dual(H_hamming)
     # Converting Nemo matrix back to sparse Int matrix
     nr, nc = size(dual_mat)
     rows_idx = Int[]

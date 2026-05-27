@@ -9,7 +9,7 @@ import Nemo: GF, gen, matrix, rank, transpose, polynomial_ring, evaluate, FqFiel
     FqPolyRingElem, degree, is_irreducible, gcd, derivative, inv, coeff, is_monic, one,
     ZZ, residue_ring, matrix_space, nullspace
 
-import QECCore: code_k, code_n, parity_matrix_x, parity_matrix_z, parity_matrix, generator_polynomial, distance
+import QECCore: code_k, code_n, parity_matrix_x, parity_matrix_z, parity_matrix, generator_polynomial, distance, dual
 
 import Random
 import Random: MersenneTwister, GLOBAL_RNG, AbstractRNG, rand
