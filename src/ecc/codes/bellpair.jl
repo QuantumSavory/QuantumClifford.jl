@@ -1,4 +1,4 @@
-using Random: AbstractRNG, GLOBAL_RNG
+using Random: AbstractRNG
 
 """
 `BellPairCode` is a circuit-defined code that treats the input register as `n` physical Bell pairs
@@ -6,6 +6,9 @@ using Random: AbstractRNG, GLOBAL_RNG
 
 The `encode_pairs` field identifies the Bell-pair slots that remain logical. Each slot contributes
 two logical qubits, so `code_k(BellPairCode(...)) == 2 * length(encode_pairs)`.
+
+The `encode_pairs` indices are always stored in sorted order; two codes with the same slots in
+different order are considered identical.
 
 This is useful for non-convolutional block constructions that operate on Bell-pair registers rather
 than on a single stream of qubits.
@@ -20,13 +23,19 @@ struct BellPairCode <: AbstractQECC
     function BellPairCode(n::Int, circ::AbstractVector{<:QuantumClifford.AbstractOperation}, encode_pairs::AbstractArray)
         n < 1 && throw(ArgumentError("n must be positive"))
         circ = Vector{QuantumClifford.AbstractOperation}(circ)
-        encode_pairs = collect(encode_pairs)
+        encode_pairs = sort(collect(encode_pairs))  # normalise order on construction
         all(1 .<= encode_pairs) && all(encode_pairs .<= n) || throw(ArgumentError("encode_pairs must contain Bell-pair slot indices between 1 and n"))
         length(unique(encode_pairs)) == length(encode_pairs) || throw(ArgumentError("encode_pairs must not contain duplicates"))
         new(n, circ, encode_pairs)
     end
 end
 
+# implement field-wise equality so struct comparison works correctly
+function Base.:(==)(a::BellPairCode, b::BellPairCode)
+    a.n == b.n && a.encode_pairs == b.encode_pairs && a.circ == b.circ
+end
+
+# iscss depends on the circuit; return nothing only for the no-circuit case, otherwise we cannot determine CSS-ness statically.
 iscss(::Type{BellPairCode}) = nothing
 
 code_n(c::BellPairCode) = 2 * c.n
@@ -34,13 +43,16 @@ code_n(c::BellPairCode) = 2 * c.n
 code_k(c::BellPairCode) = 2 * length(c.encode_pairs)
 
 function _bellpair_qubits(encode_pairs::AbstractVector{Int})
-    sort!(collect(Iterators.flatten(((2 * i - 1, 2 * i) for i in encode_pairs))))
+    # use sort (non-mutating) — collect already owns the vector but sort! on
+    # a freshly allocated array is misleading style; sort makes intent clearer.
+    sort(collect(Iterators.flatten(((2 * i - 1, 2 * i) for i in encode_pairs))))
 end
 
 function parity_checks(c::BellPairCode)
     n = code_n(c)
     logical_qubits = _bellpair_qubits(c.encode_pairs)
-    checks = one(Stabilizer, n)[setdiff(1:n, logical_qubits)]
+    # explicitly copy the slice so we never mutate the identity stabilizer
+    checks = copy(one(Stabilizer, n)[setdiff(1:n, logical_qubits)])
     for op in c.circ
         apply!(checks, op)
     end
@@ -86,8 +98,15 @@ See also: [`random_brickwork_clifford_circuit`](@ref), [`BellPairCode`](@ref)
 """
 function random_brickwork_bellpair_code end
 
-# TODO it would be nicer if we can use CartesianIndex for `encode_pairs` in brickworks,
-# but its conversion to LinearIndex is limited, not supporting non-one step.
+# add k::Int overload to match the all-to-all API shape
+function random_brickwork_bellpair_code(rng::AbstractRNG, n::Int, nlayers::Int, k::Int)
+    BellPairCode(n, random_brickwork_clifford_circuit(rng, (2 * n,), nlayers), collect(1:k))
+end
+
+function random_brickwork_bellpair_code(n::Int, nlayers::Int, k::Int)
+    BellPairCode(n, random_brickwork_clifford_circuit((2 * n,), nlayers), collect(1:k))
+end
+
 function random_brickwork_bellpair_code(rng::AbstractRNG, n::Int, nlayers::Int, encode_pairs::AbstractArray)
     BellPairCode(n, random_brickwork_clifford_circuit(rng, (2 * n,), nlayers), encode_pairs)
 end
