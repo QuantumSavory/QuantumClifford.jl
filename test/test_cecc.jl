@@ -11,7 +11,7 @@
     @testset "correctness checks for classical ECCs" begin
         for code in codes
             H = parity_matrix(code)
-            n, k, s = code_n(code), code_k(code), size(H, 1)
+            n, k, s  = code_n(code), code_k(code), size(H, 1)
             @test all(col -> any(H[:, col] .!= 0), 1:n)
             @test size(H, 2) == n
             @test size(H, 1) <= size(H, 2)
