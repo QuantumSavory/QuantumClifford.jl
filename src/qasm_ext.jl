@@ -1,4 +1,6 @@
-"""$TYPEDSIGNATURES
+"""```
+parse_qasm3(qasm::String) -> Vector{QuantumClifford.AbstractOperation}
+```
 Parse an OpenQASM 3 program and convert it to a `Vector` of QuantumClifford 
 symbolic operations.
 
@@ -47,11 +49,13 @@ julia> parse_qasm3(qasm)
 | `swap`     | `sSWAP` |
 | `measure`  | `sMZ` |
 | `reset`    | `sMRZ` |
+See also: [`read_qasm3`](@ref)
 """
 function parse_qasm3 end
 
-"""$TYPEDSIGNATURES
+"""
 Read an OpenQASM 3 program from `path` and convert it to a `Vector` of 
 QuantumClifford symbolic operations.
+See also: [`parse_qasm3`](@ref)
 """
 function read_qasm3 end
