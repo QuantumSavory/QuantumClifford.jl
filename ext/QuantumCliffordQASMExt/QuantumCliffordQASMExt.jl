@@ -1,9 +1,10 @@
 module QuantumCliffordQASMExt
 
-using QuantumClifford
 using Quasar
+using QuantumClifford
+include("CliffordQasmVisitor.jl")
 
-function read_qasm3(filename::String)
-end
+parse_qasm3(qasm::String) = Qasm2CliffordVisitor()(parse_qasm(qasm)).instructions
+read_qasm3(filename::String) = parse_qasm3(read(filename, String))
 
 end
