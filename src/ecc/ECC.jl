@@ -408,4 +408,14 @@ include("codes/classical/lifted.jl")
 include("codes/qeccs_from_extensions.jl")
 
 include("decoder_correction_gate.jl")
+
+include("adapters/Adapters.jl")
+
+using .Adapters: build_adapter, build_adapter_intercode, build_adapter_intracode,
+                 deform_code, skiptree,
+                 CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter, AdapterMergedCode
+export build_adapter, build_adapter_intercode, build_adapter_intracode,
+       deform_code, skiptree,
+       CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter, AdapterMergedCode
+
 end #module
