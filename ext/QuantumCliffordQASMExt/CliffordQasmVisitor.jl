@@ -1,5 +1,7 @@
+using QuantumClifford
 using QuantumClifford: AbstractOperation
-using Quasar: AbstractVisitor, Qubit, QasmExpression, head, name, ClassicalVariable, declaration_init, AbstractGateDefinition, process_gate_targets, qubit_defs, gate_defs, qubit_mapping, qubit_count, instructions, hasgate, splat_gate_targets, evaluate_qubits
+using Quasar
+using Quasar: AbstractVisitor, Qubit, QasmExpression, head, name, ClassicalVariable, declaration_init, AbstractGateDefinition, process_gate_targets, qubit_defs, gate_defs, qubit_mapping, qubit_count, instructions, hasgate, splat_gate_targets, evaluate_qubits, QasmVisitorError, SizedBitVector
 
 struct CliffordGateDefinition <: AbstractGateDefinition
     qubit_targets::Vector{String}
@@ -93,6 +95,8 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
             head(expr) == :end && return
             v(expr)
         end
+    elseif head(program_expr) == :version
+        v(program_expr.args[1]) == 3.0 || throw(QasmVisitorError("only OpenQASM 3.0 is supported."))
     elseif head(program_expr) == :qubit_declaration
         qubit_name::String = name(program_expr)
         qubit_size::Int = v(program_expr.args[2])::Int
@@ -104,6 +108,7 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
         v.qubit_count += qubit_size
     elseif head(program_expr) == :classical_declaration
         init, var_type = declaration_init(v, program_expr)
+        var_type isa SizedBitVector || throw(QasmVisitorError("unsupported classical variable type: $var_type."))
         if head(program_expr.args[2]) == :identifier
             var_name = name(program_expr.args[2])
             classical_defs(v)[var_name] = ClassicalVariable(var_name, var_type, init, false)
@@ -113,7 +118,7 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
             classical_defs(v)[var_name] = ClassicalVariable(var_name, var_type, init, false)
             v(program_expr.args[2])
         end
-        bit_size::Int = v(var_type.size)::Int
+        bit_size::Int = max(v(var_type.size)::Int, 1)
         bit_mapping(v)[var_name] = collect(bit_count(v) : bit_count(v) + bit_size - 1)
         for bit_i in 0:bit_size-1
             bit_mapping(v)["$var_name[$bit_i]"] = [bit_count(v) + bit_i]
@@ -132,18 +137,12 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
     elseif head(program_expr) == :classical_assignment
         left_hand_side  = program_expr.args[1].args[2]
         right_hand_side = program_expr.args[1].args[3]
+        head(right_hand_side) == :measure || throw(QasmVisitorError("unsupported assignment operation: $program_expr."))
         bits = evaluate_bits(v, left_hand_side)
         qubits = evaluate_qubits(v, right_hand_side.args[1])
-        length(qubits) == length(bits) || throw(QasmVisitorError("Measurement source and destination sizes must match."))
-        op = if head(right_hand_side) == :measure
-            sMZ
-        elseif head(right_hand_side) == :reset
-            sMRZ
-        else
-            throw(QasmVisitorError("unsupported assignment operation: $program_expr."))
-        end
+        length(qubits) == length(bits) || throw(QasmVisitorError("measurement source and destination sizes must match."))
         for (q, c) in zip(qubits, bits)
-            push!(v, op(q+1, c+1))
+            push!(v, sMZ(q+1, c+1))
         end
     elseif head(program_expr) == :measure
         qubits_to_measure = evaluate_qubits(v, program_expr.args[1])
