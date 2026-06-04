@@ -14,7 +14,9 @@ Unsupported OpenQASM features will throw a `QasmVisitorError` when encountered.
 
 # Example
 ```jldoctest
-julia> qasm = \"\"\"
+using Quasar
+
+parse_qasm3(\"\"\"
     OPENQASM 3.0;
 
     qubit[2] q;
@@ -24,9 +26,9 @@ julia> qasm = \"\"\"
     cx q[0], q[1];
     c[0] = measure q[0];
     c[1] = measure q[1];
-\"\"\";
+\"\"\")
 
-julia> parse_qasm3(qasm)
+# output
 4-element Vector{QuantumClifford.AbstractOperation}:
  sHadamard(1)
  sCNOT(1,2)
