@@ -13,6 +13,23 @@ CurrentModule = QuantumClifford.ECC
 
 This is a quick and durty example on how to use some of the decoders.
 
+## Exporting Stim detector error models
+
+For code-capacity studies, an ECC code can be exported to Stim's detector error
+model (`.dem`) format. Detector indices follow the row order of
+`parity_checks(code)`, and logical-observable indices follow the row order of
+`faults_matrix(code)`.
+
+```@example decoderexample
+using QuantumClifford.ECC
+
+dem = detector_error_model(Steane7(); px=1e-3, py=0.0, pz=1e-3)
+io = IOBuffer()
+write_detector_error_model(io, dem)
+String(take!(io))
+nothing # hide
+```
+
 A function to plot the results of 
 
 ```@example decoderexample
