@@ -74,3 +74,49 @@ stim.DetectorErrorModel(open(sys.argv[1], encoding='utf-8').read())
         end
     end
 end
+
+@testitem "Detector error model coverage smoke" begin
+    using Test
+    using QuantumClifford
+    using QuantumClifford.ECC
+
+    # Keep this small smoke test in the default CI set so coverage exercises the
+    # public DEM API while the heavier ECC assertions stay under ECC_TEST=base.
+    code = Bitflip3()
+    empty_dem = detector_error_model(code)
+    @test isempty(empty_dem)
+    @test length(empty_dem) == 0
+    @test empty_dem.num_detectors == code_s(code)
+    @test empty_dem.num_observables == 2code_k(code)
+
+    dem = detector_error_model(code; px=0.125, py=0.25, pz=0.5)
+    @test !isempty(dem)
+    @test length(dem) == 3code_n(code)
+    @test all(term.probability in (0.125, 0.25, 0.5) for term in dem.errors)
+    @test any(!isempty(term.detectors) for term in dem.errors)
+    @test any(!isempty(term.observables) for term in dem.errors)
+    @test_throws DomainError detector_error_model(code; pz=1.01)
+
+    io = IOBuffer()
+    @test write_detector_error_model(io, dem) === nothing
+    text = String(take!(io))
+    @test occursin("detector D0", text)
+    @test occursin("logical_observable L0", text)
+    @test occursin("error(0.125)", text)
+    @test occursin("error(0.25)", text)
+    @test occursin("error(0.5)", text)
+
+    code_io = IOBuffer()
+    @test write_detector_error_model(code_io, code; px=0.125) === nothing
+    @test occursin("error(0.125)", String(take!(code_io)))
+
+    mktempdir() do dir
+        dem_path = joinpath(dir, "bitflip.dem")
+        @test write_detector_error_model(dem_path, dem) === nothing
+        @test read(dem_path, String) == text
+
+        code_path = joinpath(dir, "bitflip-from-code.dem")
+        @test write_detector_error_model(code_path, code; pz=0.5) === nothing
+        @test occursin("error(0.5)", read(code_path, String))
+    end
+end
