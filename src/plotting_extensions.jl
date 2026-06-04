@@ -26,3 +26,6 @@ Alternatively, you can use the Plots.jl plotting ecosystem, e.g.
 
 Consult the documentation for more details on visualization options."""
 function stabilizerplot_axis end
+
+function parse_qasm3 end
+function read_qasm3 end
