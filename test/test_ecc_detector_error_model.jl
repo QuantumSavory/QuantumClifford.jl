@@ -97,6 +97,24 @@ end
     @test any(!isempty(term.observables) for term in dem.errors)
     @test_throws DomainError detector_error_model(code; pz=1.01)
 
+    struct MismatchedFaultCode end
+    struct MismatchedFaultChecks end
+    Base.size(::MismatchedFaultChecks) = (1, 1)
+    QuantumClifford.ECC.parity_checks(::MismatchedFaultCode) = MismatchedFaultChecks()
+    QuantumClifford.ECC.faults_matrix(::MismatchedFaultChecks) = falses(1, 3)
+    @test_throws DimensionMismatch detector_error_model(MismatchedFaultCode(); px=0.125)
+
+    struct NoTargetCode end
+    struct NoTargetChecks end
+    Base.size(::NoTargetChecks) = (1, 1)
+    QuantumClifford.ECC.parity_checks(::NoTargetCode) = NoTargetChecks()
+    QuantumClifford.ECC.faults_matrix(::NoTargetChecks) = falses(0, 2)
+    QuantumClifford.comm(::Any, ::NoTargetChecks) = falses(1)
+    no_target_dem = detector_error_model(NoTargetCode(); px=0.125, py=0.25, pz=0.5)
+    @test no_target_dem.num_detectors == 1
+    @test no_target_dem.num_observables == 0
+    @test isempty(no_target_dem)
+
     io = IOBuffer()
     @test write_detector_error_model(io, dem) === nothing
     text = String(take!(io))
