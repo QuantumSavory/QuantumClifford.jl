@@ -33,6 +33,78 @@
         @test all(values(resp).==0)
     end
 
+    @testset "noisify" begin
+        gate_noise = PauliNoise(0.01, 0.02, 0.03)
+        circuit = [sHadamard(1), sCNOT(1, 2)]
+        noisy = noisify(circuit, gate_noise)
+
+        @test circuit == [sHadamard(1), sCNOT(1, 2)]
+        @test length(noisy) == 4
+        @test noisy[1] isa NoiseOp
+        @test affectedqubits(noisy[1]) == (1,)
+        @test noisy[2] == circuit[1]
+        @test noisy[3] isa NoiseOp
+        @test affectedqubits(noisy[3]) == (1, 2)
+        @test noisy[4] == circuit[2]
+
+        single_noise = PauliNoise(0.1, 0.0, 0.0)
+        two_noise = PauliNoise(0.0, 0.1, 0.0)
+        idle_noise = PauliNoise(0.0, 0.0, 0.1)
+        measurement_noise = PauliNoise(0.02, 0.02, 0.02)
+        model = CircuitNoise(;
+            single_qubit=single_noise,
+            two_qubit=two_noise,
+            idle=idle_noise,
+            measurement=measurement_noise,
+        )
+        explicit_noise = NoiseOp(two_noise, (1, 2))
+        structured_circuit = [
+            sHadamard(1),
+            sCNOT(1, 2),
+            sMZ(2, 1),
+            ClassicalXOR([1], 2),
+            explicit_noise,
+        ]
+        structured_noisy = noisify(structured_circuit, model; nqubits=3)
+
+        @test length(structured_noisy) == 11
+        @test structured_noisy[1].noise == idle_noise
+        @test affectedqubits(structured_noisy[1]) == (2, 3)
+        @test structured_noisy[2].noise == single_noise
+        @test affectedqubits(structured_noisy[2]) == (1,)
+        @test structured_noisy[3] == structured_circuit[1]
+        @test structured_noisy[4].noise == idle_noise
+        @test affectedqubits(structured_noisy[4]) == (3,)
+        @test structured_noisy[5].noise == two_noise
+        @test affectedqubits(structured_noisy[5]) == (1, 2)
+        @test structured_noisy[6] == structured_circuit[2]
+        @test structured_noisy[7].noise == idle_noise
+        @test affectedqubits(structured_noisy[7]) == (1, 3)
+        @test structured_noisy[8].noise == measurement_noise
+        @test affectedqubits(structured_noisy[8]) == (2,)
+        @test structured_noisy[9] == structured_circuit[3]
+        @test structured_noisy[10] == structured_circuit[4]
+        @test structured_noisy[11] == explicit_noise
+
+        @test_throws ArgumentError noisify(
+            [sHadamard(1)],
+            CircuitNoise(; idle=idle_noise),
+        )
+
+        zero_noise = PauliNoise(0.0, 0.0, 0.0)
+        sim_circuit = noisify(
+            [sHadamard(1), sCNOT(1, 2), sMZ(1, 1), sMZ(2, 2)],
+            CircuitNoise(;
+                single_qubit=zero_noise,
+                two_qubit=zero_noise,
+                measurement=zero_noise,
+            );
+            nqubits=2,
+        )
+        trajectories = mctrajectories(Register(ghz(2), 2), sim_circuit; trajectories=3)
+        @test sum(values(trajectories)) == 3
+    end
+
     @testset "Depolarization noise" begin
         p = 0.3
         n = DepolarizationNoise(p)

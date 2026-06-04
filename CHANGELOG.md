@@ -2,6 +2,7 @@
 
 - `permute` will be a wrapper around to `QuantumInterface.permutesystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
+- Add `NoNoise`, `CircuitNoise`, and `noisify` for building noisy copies of operation vectors.
 
 # News
 

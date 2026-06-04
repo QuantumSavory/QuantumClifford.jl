@@ -74,7 +74,7 @@ export
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
     # Noise
     applynoise!, UnbiasedUncorrelatedNoise, DepolarizationNoise, NoiseOp, NoiseOpAll, NoisyGate,
-    PauliNoise, PauliError,
+    PauliNoise, PauliError, NoNoise, CircuitNoise, noisify,
     # Pauli frames
     PauliFrame, pftrajectories, pfmeasurements,
     measurements,

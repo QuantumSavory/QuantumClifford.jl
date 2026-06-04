@@ -28,6 +28,9 @@ struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
 end
 UnbiasedUncorrelatedNoise(p::Integer) = UnbiasedUncorrelatedNoise(float(p))
 
+"""A sentinel noise model used by [`CircuitNoise`](@ref) to leave a location noiseless."""
+struct NoNoise <: AbstractNoise end
+
 """
 Depolarization noise model with depolarization probability `p`.
 
@@ -138,6 +141,7 @@ struct NoiseOp{N, Q} <: AbstractNoiseOp where {N, Q}
 end
 
 NoiseOp(noise, indices::AbstractVector{Int}) = NoiseOp(noise, tuple(indices...))
+NoiseOp(noise, indices::Base.AbstractVecOrTuple{Int}) = NoiseOp{typeof(noise), length(indices)}(noise, tuple(indices...))
 
 """A convenient constructor for various types of Pauli errors,
 that can be used as circuit gates in simulations.
@@ -179,6 +183,114 @@ end
 struct NoisyGate <: AbstractNoiseOp
     gate::AbstractOperation
     noise::AbstractNoise
+end
+
+"""A structured noise model for turning noiseless operation vectors into noisy circuits.
+
+`CircuitNoise` stores separate noise models for one-qubit gates, two-qubit gates,
+idle qubits, measurements, and resets. Omitted locations default to [`NoNoise`](@ref).
+`reset` defaults to the same value as `measurement`.
+"""
+struct CircuitNoise{S,T,I,M,R}
+    single_qubit::S
+    two_qubit::T
+    idle::I
+    measurement::M
+    reset::R
+end
+
+function CircuitNoise(; single_qubit=NoNoise(), two_qubit=NoNoise(), idle=NoNoise(),
+        measurement=NoNoise(), reset=measurement)
+    return CircuitNoise(single_qubit, two_qubit, idle, measurement, reset)
+end
+
+"""Return a noisy copy of `circuit` by inserting noise operations before supported operations.
+
+For a plain noise model such as [`PauliNoise`](@ref), `noisify` inserts a [`NoiseOp`](@ref)
+on the affected qubits before supported quantum gates and measurements. With
+[`CircuitNoise`](@ref), different noise models can be configured for one-qubit
+gates, two-qubit gates, idle qubits, measurements, and resets. Existing explicit
+noise operations are passed through unchanged.
+"""
+function noisify end
+
+function noisify(circuit::AbstractVector, noise; nqubits=nothing)
+    noisy = AbstractOperation[]
+    for op in circuit
+        append!(noisy, noisify(op, noise; nqubits=nqubits))
+    end
+    return noisy
+end
+
+noisify(op::AbstractOperation, noise; nqubits=nothing) = AbstractOperation[op]
+
+_as_qubit_tuple(qubits) = Tuple(qubits)
+_hasnoise(::NoNoise) = false
+_hasnoise(_) = true
+
+function _push_noiseop!(ops::Vector{AbstractOperation}, noise, qubits)
+    if _hasnoise(noise) && !isempty(qubits)
+        push!(ops, NoiseOp(noise, _as_qubit_tuple(qubits)))
+    end
+    return ops
+end
+
+function _push_idle_noiseop!(ops::Vector{AbstractOperation}, op, noise::NoNoise, nqubits)
+    return ops
+end
+
+function _push_idle_noiseop!(ops::Vector{AbstractOperation}, op, noise, nqubits)
+    if nqubits === nothing
+        throw(ArgumentError("nqubits must be provided when CircuitNoise.idle is not NoNoise()"))
+    end
+    nqubits isa Integer || throw(ArgumentError("nqubits must be an integer"))
+
+    touched = _as_qubit_tuple(affectedqubits(op))
+    max_touched = isempty(touched) ? 0 : maximum(touched)
+    max_touched <= nqubits || throw(ArgumentError("operation touches qubit $max_touched, but nqubits=$nqubits"))
+    return _push_noiseop!(ops, noise, setdiff(1:nqubits, touched))
+end
+
+function _prepend_noise(op::AbstractOperation, noise)
+    ops = AbstractOperation[]
+    _push_noiseop!(ops, noise, affectedqubits(op))
+    push!(ops, op)
+    return ops
+end
+
+function _prepend_circuit_noise(op::AbstractOperation, local_noise, model::CircuitNoise; nqubits=nothing)
+    ops = AbstractOperation[]
+    _push_idle_noiseop!(ops, op, model.idle, nqubits)
+    _push_noiseop!(ops, local_noise, affectedqubits(op))
+    push!(ops, op)
+    return ops
+end
+
+function _gate_noise(model::CircuitNoise, op)
+    qubits = affectedqubits(op)
+    length(qubits) == 1 && return model.single_qubit
+    length(qubits) == 2 && return model.two_qubit
+    return NoNoise()
+end
+
+noisify(op::Union{AbstractNoiseOp,NoisyBellMeasurement}, noise; nqubits=nothing) = AbstractOperation[op]
+noisify(op::Union{AbstractSingleQubitOperator,AbstractTwoQubitOperator,SparseGate,CliffordOperator}, noise::NoNoise; nqubits=nothing) = AbstractOperation[op]
+noisify(op::Union{AbstractMeasurement,BellMeasurement}, noise::NoNoise; nqubits=nothing) = AbstractOperation[op]
+noisify(op::Union{AbstractResetMeasurement,Reset}, noise::NoNoise; nqubits=nothing) = AbstractOperation[op]
+noisify(op::Union{AbstractSingleQubitOperator,AbstractTwoQubitOperator,SparseGate,CliffordOperator}, noise; nqubits=nothing) = _prepend_noise(op, noise)
+noisify(op::Union{AbstractMeasurement,PauliMeasurement,BellMeasurement}, noise; nqubits=nothing) = _prepend_noise(op, noise)
+noisify(op::Union{AbstractResetMeasurement,Reset}, noise; nqubits=nothing) = _prepend_noise(op, noise)
+
+noisify(op::Union{AbstractNoiseOp,NoisyBellMeasurement}, model::CircuitNoise; nqubits=nothing) = AbstractOperation[op]
+noisify(op::ClassicalXOR, model::CircuitNoise; nqubits=nothing) = AbstractOperation[op]
+function noisify(op::Union{AbstractSingleQubitOperator,AbstractTwoQubitOperator,SparseGate,CliffordOperator}, model::CircuitNoise; nqubits=nothing)
+    return _prepend_circuit_noise(op, _gate_noise(model, op), model; nqubits=nqubits)
+end
+function noisify(op::Union{AbstractMeasurement,PauliMeasurement,BellMeasurement}, model::CircuitNoise; nqubits=nothing)
+    return _prepend_circuit_noise(op, model.measurement, model; nqubits=nqubits)
+end
+function noisify(op::Union{AbstractResetMeasurement,Reset}, model::CircuitNoise; nqubits=nothing)
+    return _prepend_circuit_noise(op, model.reset, model; nqubits=nqubits)
 end
 
 function apply!(s::AbstractQCState, g::NoisyGate)

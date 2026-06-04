@@ -22,3 +22,5 @@ The implemented types of noise include:
 The low-level functionality to work with noise is `applynoise!`,
 but most of the time you would probably just want to use
 [`PauliError`](@ref),  [`NoisyGate`](@ref), [`NoiseOp`](@ref) and [`NoiseOpAll`](@ref).
+To add noise to a noiseless vector of circuit operations, use [`noisify`](@ref)
+with either a single noise model or a structured [`CircuitNoise`](@ref).

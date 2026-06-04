@@ -61,6 +61,36 @@ One can also apply only the noise operator by using [`NoiseOp`](@ref) which acts
 [NoiseOp(noise, [4,5]), NoiseOpAll(noise)]
 ```
 
+## Adding Noise to a Circuit
+
+Use [`noisify`](@ref) to build a noisy copy of a vector of operations without
+mutating the original circuit. A plain noise model is inserted before supported
+gates and measurements on their affected qubits:
+
+```@example 1
+circuit = [sHadamard(1), sCNOT(1, 2), sMZ(1, 1)]
+noise = PauliNoise(1e-3, 1e-3, 1e-3)
+noisy = noisify(circuit, noise)
+```
+
+For different noise rates at different circuit locations, use
+[`CircuitNoise`](@ref). Idle noise is inserted on qubits not touched by the
+current operation, so `nqubits` is required when idle noise is configured.
+Measurements are modeled as pre-measurement Pauli noise on the measured qubits.
+Existing explicit noise operations such as [`NoiseOp`](@ref), [`NoiseOpAll`](@ref),
+and [`NoisyGate`](@ref) are passed through unchanged.
+
+```@example 1
+noise_model = CircuitNoise(
+    single_qubit=PauliNoise(1e-4, 1e-4, 1e-4),
+    two_qubit=PauliNoise(1e-3, 1e-3, 1e-3),
+    idle=PauliNoise(1e-5, 1e-5, 1e-5),
+    measurement=PauliNoise(2e-3, 2e-3, 2e-3),
+)
+
+noisy = noisify(circuit, noise_model; nqubits=2)
+```
+
 ## Coincidence Measurements
 
 Global parity measurements involving single-qubit projections and classical communication are implemented with [`BellMeasurement`](@ref). One needs to specify the axes of measurement and the qubits being measured. If the parity is trivial, the circuit continues, if the parity is non-trivial, the circuit ends and reports a detected failure.
