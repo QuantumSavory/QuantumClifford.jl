@@ -104,6 +104,7 @@ export
     emtrajectories,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
+    parse_qasm3, read_qasm3,
     # sum types
     compactify_circuit
     # gpu support
