@@ -78,6 +78,8 @@ export
     # Pauli frames
     PauliFrame, pftrajectories, pfmeasurements,
     measurements,
+    # Detector error models (Stim .dem import)
+    read_detector_error_model, DetectorError, DetectorErrorModelCircuit,
     # Useful States
     bell, ghz, maximally_mixed,
     single_z, single_x, single_y,
@@ -1434,6 +1436,7 @@ include("misc_gates.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
+include("dem.jl")
 # common states and operators
 include("enumeration.jl")
 include("randoms.jl")

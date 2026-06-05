@@ -5,6 +5,10 @@
 
 # News
 
+## unreleased
+
+- Import Stim detector error model (`.dem`) files with `read_detector_error_model`, returning a circuit-like `DetectorErrorModelCircuit` that can be sampled directly with the existing `pftrajectories` Pauli-frame backend. The new `DetectorError` operation represents an independent error mechanism (flipping detector and logical-observable bits with a given probability). The parser supports `error`, `detector`, `logical_observable`, `shift_detectors`, nested `repeat` blocks, decomposition separators, tags, comments, and blank lines.
+
 ## v0.11.4 - 2026-05-05
 
 - Add `DepolarizationNoise` for n-qubit depolarizing noise channels.

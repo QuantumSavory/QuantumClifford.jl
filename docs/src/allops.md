@@ -66,6 +66,7 @@ td > code {
 |` ├─ NoiseOpAll                         `|❌ |  ?| [`applynoise!`](@ref)  |
 |` ├─ NoisyGate                          `|❌ |  ?| [`applynoise!`](@ref)  |
 |` ├─ Reset                              `|✔️ |kn²| [`reset_qubits!`](@ref)|
+|` ├─ DetectorError                      `|❌ | k |                        |
 |` │                                     `|  |   |                        |
 |` ├─ AbstractNonCliffordOperator        `|  |   |                        |
 |` │   ├─ sT                             `|✔️ |exp|                        |
