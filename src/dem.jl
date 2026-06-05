@@ -91,7 +91,7 @@ A circuit-like container holding the operations of an imported Stim detector
 error model together with the number of detectors and logical observables it
 declares.
 
-It behaves like a vector of [`AbstractOperation`](@ref) (so it can be passed
+It behaves like a vector of operations (so it can be passed
 directly to [`pftrajectories`](@ref)) while also recording `num_detectors` and
 `num_logicals`, which describe the column layout of the resulting measurement
 matrix:
@@ -101,20 +101,32 @@ matrix:
 
 See also: [`read_detector_error_model`](@ref).
 """
-struct DetectorErrorModelCircuit <: AbstractVector{AbstractOperation}
+struct DetectorErrorModelCircuit
     ops::Vector{AbstractOperation}
     num_detectors::Int
     num_logicals::Int
 end
 
-Base.size(c::DetectorErrorModelCircuit) = size(c.ops)
-Base.getindex(c::DetectorErrorModelCircuit, i::Int) = c.ops[i]
-Base.IndexStyle(::Type{DetectorErrorModelCircuit}) = IndexLinear()
+# A `DetectorErrorModelCircuit` is "circuit-like": an ordered, indexable, iterable
+# collection of operations accepted by `pftrajectories`. It is deliberately *not*
+# an `AbstractVector{<:AbstractOperation}`, because a detector error model has no
+# qubits and is not a drawable quantum circuit -- subtyping `AbstractVector` would
+# (incorrectly) opt it into circuit-diagram rendering (e.g. via the Quantikz
+# extension). `broadcastable` returns the underlying operation vector so that
+# `compactify_circuit` (which broadcasts `CompactifiedGate` over the circuit) works.
+Base.length(c::DetectorErrorModelCircuit) = length(c.ops)
+Base.iterate(c::DetectorErrorModelCircuit) = iterate(c.ops)
+Base.iterate(c::DetectorErrorModelCircuit, state) = iterate(c.ops, state)
+Base.getindex(c::DetectorErrorModelCircuit, i) = c.ops[i]
+Base.firstindex(c::DetectorErrorModelCircuit) = firstindex(c.ops)
+Base.lastindex(c::DetectorErrorModelCircuit) = lastindex(c.ops)
+Base.eltype(::Type{DetectorErrorModelCircuit}) = AbstractOperation
+Base.broadcastable(c::DetectorErrorModelCircuit) = c.ops
 
-function Base.show(io::IO, ::MIME"text/plain", c::DetectorErrorModelCircuit)
+function Base.show(io::IO, c::DetectorErrorModelCircuit)
     nmech = count(o->isa(o, DetectorError), c.ops)
-    print(io, "DetectorErrorModelCircuit with $(c.num_detectors) detector(s), ",
-              "$(c.num_logicals) logical observable(s), and $(nmech) error mechanism(s)")
+    print(io, "DetectorErrorModelCircuit($(c.num_detectors) detector(s), ",
+              "$(c.num_logicals) logical observable(s), $(nmech) error mechanism(s))")
 end
 
 ##############################
@@ -348,9 +360,9 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Import a Stim detector error model (`.dem`) file and return a circuit-like
+Import a Stim detector error model (`.dem`) and return a circuit-like
 object (a [`DetectorErrorModelCircuit`](@ref)) that can be sampled directly with
-[`pftrajectories`](@ref).
+[`pftrajectories`](@ref). The argument can be a path to a file or an `IO` stream.
 
 A detector error model is a list of independent error mechanisms. Each
 `error(p) D... L...` instruction becomes one [`DetectorError`](@ref) operation
@@ -392,12 +404,7 @@ function read_detector_error_model(path::AbstractString)
     return _parse_detector_error_model(lines)
 end
 
-"""
-$(TYPEDSIGNATURES)
-
-Import a Stim detector error model directly from an `IO` stream. See
-[`read_detector_error_model(::AbstractString)`](@ref) for details.
-"""
+# Method accepting an `IO` stream; documented together with the path-based method above.
 function read_detector_error_model(io::IO)
     lines = readlines(io)
     return _parse_detector_error_model(lines)
