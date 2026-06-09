@@ -32,10 +32,12 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface, Concat, CircuitCode,
+    BellPairCode,
     LPCode, two_block_group_algebra_code, generalized_bicycle_code_as_2bga, bicycle_code_as_2bga,
     Haah_cubic_code_as_2bga, twobga_from_fp_group, twobga_from_direct_product,
     TillichZemor, random_TillichZemor_code,
     random_brickwork_circuit_code, random_all_to_all_circuit_code,
+    random_brickwork_bellpair_code, random_all_to_all_bellpair_code,
     Triangular488, Triangular666, honeycomb_color_code_as_2bga, DelfosseReichardt,
     DelfosseReichardtRep, DelfosseReichardt823, LaCross,
     QuantumTannerGraphProduct, CyclicQuantumTannerGraphProduct,
@@ -401,6 +403,7 @@ include("codes/util.jl")
 
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
+include("codes/bellpair.jl")
 include("codes/classical/bch.jl")
 
 # qLDPC

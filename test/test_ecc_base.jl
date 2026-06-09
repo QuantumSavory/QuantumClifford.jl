@@ -20,6 +20,11 @@ const H2 = sparse(Bool[1 1 0;0 1 1]);
 const random_brickwork_circuit_args = repeat([((20,), 50, [1]), ((20,), 50, 1:2:20), ((5, 5), 50, [1]), ((3, 3, 3), 50, [1])], 10)
 const random_all_to_all_circuit_args = repeat([(20, 200, 1), (40, 200, [1, 20])], 10)
 
+const bellpair_circuit_args = [
+    (2, QuantumClifford.AbstractOperation[], [1]),
+    (3, QuantumClifford.AbstractOperation[], [1, 3]),
+]
+
 random_circuit_code_args = vcat(
     [map(f -> getfield(random_brickwork_circuit_code(c...), f), fieldnames(CircuitCode)) for c in random_brickwork_circuit_args],
     [map(f -> getfield(random_all_to_all_circuit_code(c...), f), fieldnames(CircuitCode)) for c in random_all_to_all_circuit_args]
@@ -287,6 +292,7 @@ const code_instance_args = Dict(
     :CSS => (c -> (parity_matrix_x(c), parity_matrix_z(c))).([Shor9(), Steane7(), Toric(4, 4)]),
     :Concat => [(Perfect5(), Perfect5()), (Perfect5(), Steane7()), (Steane7(), Cleve8()), (Toric(2, 2), Shor9())],
     :CircuitCode => random_circuit_code_args,
+    :BellPairCode => [map(f -> getfield(BellPairCode(c...), f), fieldnames(BellPairCode)) for c in bellpair_circuit_args],
     :LPCode => (c -> (c.A, c.B)).(vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, test_twobga_codes, test_honeycomb_color_codes, test_nonabelian_codes, other_lifted_product_codes)),
     :QuantumReedMuller => [(3,), (4,), (5,)],
     :Triangular488 => [(3,), (5,), (7,), (9,), (11,)],
