@@ -5,9 +5,14 @@
 
 # News
 
+## v0.11.4 - 2026-05-05
+
+- Add `DepolarizationNoise` for n-qubit depolarizing noise channels.
+- `one` now accepts the `basis` keyword for `Destabilizer`, `MixedStabilizer`, `MixedDestabilizer`, and `Register`.
+
 ## v0.11.3 - 2026-03-07
 
-- **(fix)** `GeneralizedStabilizer` non-clifford `apply!(::GeneralizedStabilizer, ::AbstractPauliChannel)` had low-level mistakes returning wrong results 
+- **(fix)** `GeneralizedStabilizer` non-clifford `apply!(::GeneralizedStabilizer, ::AbstractPauliChannel)` had low-level mistakes returning wrong results
 - Non-Clifford simulation via the Sum-over-Cliffords sparsification framework from [Bravyi et al. 2019]:
     - New state type `PureGeneralizedStabilizer` representing a pure state as a weighted sum of stabilizer states |ψ⟩ = Σₐ cₐ|φₐ⟩, with incremental sparsification to keep the number of terms bounded. Supports `apply!` and `mctrajectory!` for gate-by-gate simulation.
     - Non-Clifford gate types `sT` (T gate / π/8 phase rotation) and `sCCZ` (controlled-controlled-Z). These gates are currently supported only with `PureGeneralizedStabilizer` — they cannot be used with standard stabilizer tableaux or `PauliFrame`.
@@ -30,6 +35,7 @@
 
 ## v0.11.0 - 2026-01-01
 
+- **(fix)** `DistanceMIPAlgorithm` returned ``d_Z`` as the default instead of computing the ``min(d_X, d_Z)``.
 - Drop support for Julia <1.12.
 - Implementation of the specialized simulation algorithms for graph states (faster for large sparse tableaux).
 - **(breaking)** moving all graph state functionality to a submodule `GraphSim`.

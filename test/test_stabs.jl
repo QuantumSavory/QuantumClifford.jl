@@ -42,6 +42,34 @@
                 @test MixedDestabilizer(s) == md
             end
         end
+        @testset "one basis keyword" begin
+            for basis in (:X, :Y, :Z)
+                expected = one(Stabilizer, 3; basis=basis)
+
+                destab = one(Destabilizer, 3; basis=basis)
+                @test stabilizerview(destab) == expected
+                @test stabilizerview(one(destab; basis=basis)) == expected
+                @test destab_looks_good(destab)
+
+                mixed_stab = one(MixedStabilizer, 2, 3; basis=basis)
+                @test stabilizerview(mixed_stab) == expected[1:2]
+                @test mixed_stab_looks_good(mixed_stab)
+                @test one(MixedStabilizer, 2, 3, basis) == mixed_stab
+                @test one(mixed_stab; basis=basis) == mixed_stab
+
+                mixed_destab = one(MixedDestabilizer, 2, 3; basis=basis)
+                @test stabilizerview(mixed_destab) == expected[1:2]
+                @test mixed_destab_looks_good(mixed_destab)
+                @test stabilizerview(one(MixedDestabilizer, 3; basis=basis)) == expected
+                @test one(mixed_destab; basis=basis) == mixed_destab
+
+                register = one(Register, 3, 2; basis=basis)
+                @test quantumstate(register) == one(MixedDestabilizer, 3; basis=basis)
+                @test bitview(register) == falses(2)
+                @test bitview(one(Register, 3; basis=basis)) == Bool[]
+                @test one(register; basis=basis) == register
+            end
+        end
     end
 
     @testset "Tensor products over stabilizers" begin
