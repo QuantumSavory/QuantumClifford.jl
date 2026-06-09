@@ -125,7 +125,7 @@ These functions work on all stabilizer data structures: [`Stabilizer`](@ref), [`
 - The **X component** of qubit `i` in stabilizer `j` is at `xzs[i_big, j]`  
 - The **Z component** is at `xzs[i_big + end÷2, j]`
 
-where `i_big` accounts for bit packing (multiple qubits packed into each `UInt64`).
+where `i_big` accounts for bit packing (multiple qubits packed into each packed integer).
 
 What changes between `fastrow` and `fastcolumn` is the underlying storage order of the matrix:
 - **fastrow**: column-major Julia array → bits of a stabilizer row are contiguous in memory
@@ -133,7 +133,7 @@ What changes between `fastrow` and `fastcolumn` is the underlying storage order 
 
 The performance difference becomes apparent when examining different operation types:
 
-```jldoctest
+```julia
 julia> s_row = fastrow(random_stabilizer(1000));
 
 julia> s_col = fastcolumn(random_stabilizer(1000));
