@@ -1,3 +1,5 @@
+using Random: AbstractRNG
+
 """
 `BellPairCode` is a circuit-defined code that treats the input register as `n` physical Bell pairs
 (`2n` qubits total) and encodes a chosen set of Bell-pair slots into logical Bell pairs.
@@ -18,12 +20,15 @@ struct BellPairCode <: AbstractQECC
     n::Int
     circ::Vector{QuantumClifford.AbstractOperation}
     encode_pairs::Vector{Int}
+
     function BellPairCode(n::Int, circ::AbstractVector{<:QuantumClifford.AbstractOperation}, encode_pairs::AbstractArray)
         n < 1 && throw(ArgumentError("n must be positive"))
         circ = Vector{QuantumClifford.AbstractOperation}(circ)
+
         encode_pairs = sort(collect(encode_pairs))  # normalise order on construction
-        all(1 .<= encode_pairs) && all(encode_pairs .<= n) || throw(ArgumentError("encode_pairs must contain Bell-pair slot indices between 1 and n"))
+        all(1 .<= encode_pairs .<= n) || throw(ArgumentError("encode_pairs must contain Bell-pair slot indices between 1 and n"))
         length(unique(encode_pairs)) == length(encode_pairs) || throw(ArgumentError("encode_pairs must not contain duplicates"))
+
         new(n, circ, encode_pairs)
     end
 end
@@ -48,35 +53,37 @@ function BellPairCode(code::AbstractQECC)
     # The naive_encoding_circuit operates on n physical qubits.
     # In BellPairCode, we remap it to act on the "left" qubits (2j-1) of n Bell pairs.
     circ = naive_encoding_circuit(code)
-    new_circ = [_remap_qubits(op, j -> 2*j-1) for op in circ]
+    new_circ = [_remap_qubits(op, j -> 2*j - 1) for op in circ]
     # The logical qubits in naive_encoding_circuit are n-k+1:n.
     # So the logical Bell-pair slots are n-k+1:n.
-    BellPairCode(n, new_circ, collect(n-k+1:n))
+    BellPairCode(n, new_circ, collect(n - k + 1 : n))
 end
 
-# Helper to remap qubits in an operation
+# Helper to remap qubit indices in an operation (more robust version)
 function _remap_qubits(op::QuantumClifford.AbstractOperation, f::Function)
     T = typeof(op)
+
+    # Fast paths for common operations
     if T <: QuantumClifford.AbstractSingleQubitOperator
         return T(f(op.q))
     elseif T <: QuantumClifford.AbstractTwoQubitOperator
         return T(f(op.q1), f(op.q2))
-    elseif T <: QuantumClifford.sMRZ || T <: QuantumClifford.sMRX || T <: QuantumClifford.sMRY ||
-           T <: QuantumClifford.sMZ || T <: QuantumClifford.sMX || T <: QuantumClifford.sMY
+    elseif T <: Union{QuantumClifford.sMRZ, QuantumClifford.sMRX, QuantumClifford.sMRY,
+                      QuantumClifford.sMZ, QuantumClifford.sMX, QuantumClifford.sMY}
         return T(f(op.qubit), op.bit)
-    elseif T <: QuantumClifford.sZ || T <: QuantumClifford.sX || T <: QuantumClifford.sY
+    elseif T <: Union{QuantumClifford.sZ, QuantumClifford.sX, QuantumClifford.sY}
         return T(f(op.q))
     elseif T <: QuantumClifford.sSWAP
         return T(f(op.q1), f(op.q2))
     else
-        # Fallback for other operations that might be used
+        # Generic fallback using reflection (handles future ops safely)
         fields = fieldnames(T)
         args = Any[]
         for fn in fields
             val = getfield(op, fn)
             if fn in (:q, :q1, :q2, :qubit)
                 push!(args, f(val))
-            elseif fn == :indices
+            elseif fn == :indices && val isa AbstractVector
                 push!(args, f.(val))
             else
                 push!(args, val)
@@ -86,59 +93,42 @@ function _remap_qubits(op::QuantumClifford.AbstractOperation, f::Function)
     end
 end
 
-# iscss depends on the circuit; return nothing only for the no-circuit case, otherwise we cannot determine CSS-ness statically.
+# iscss depends on the circuit
 iscss(::Type{BellPairCode}) = nothing
 
 code_n(c::BellPairCode) = 2 * c.n
-
 code_k(c::BellPairCode) = 2 * length(c.encode_pairs)
-
-function _bellpair_qubits(encode_pairs::AbstractVector{Int})
-    # use sort (non-mutating) — collect already owns the vector but sort! on
-    # a freshly allocated array is misleading style; sort makes intent clearer.
-    sort(collect(Iterators.flatten(((2 * i - 1, 2 * i) for i in encode_pairs))))
-end
 
 function parity_checks(c::BellPairCode)
     n = c.n
-    n2 = 2 * n
-    # The initial state is n Bell pairs.
-    # Each pair i has stabilizers X_{2i-1}X_{2i} and Z_{2i-1}Z_{2i}.
-    full_stabs = zero(Stabilizer, 2*n, 2*n)
+    # Initial Bell-pair stabilizers: XX and ZZ for each of the n pairs
+    full_stabs = zero(Stabilizer, 2n, 2n)
     for i in 1:n
-        # X_{2i-1}X_{2i} (Row 2i-1)
-        full_stabs[2*i-1, 2*i-1] = (true, false)
-        full_stabs[2*i-1, 2*i]   = (true, false)
-        # Z_{2i-1}Z_{2i} (Row 2i)
-        full_stabs[2*i, 2*i-1]   = (false, true)
-        full_stabs[2*i, 2*i]     = (false, true)
+        q1, q2 = 2i-1, 2i
+        # XX stabilizer (row 2i-1)
+        full_stabs[2i-1, q1] = (true, false)
+        full_stabs[2i-1, q2] = (true, false)
+        # ZZ stabilizer (row 2i)
+        full_stabs[2i,   q1] = (false, true)
+        full_stabs[2i,   q2] = (false, true)
     end
 
-    # Identify which slots are NOT logical. These provide the parity checks.
     ancilla_slots = setdiff(1:n, c.encode_pairs)
-    ancilla_row_indices = Int[]
-    for i in ancilla_slots
-        push!(ancilla_row_indices, 2*i-1)
-        push!(ancilla_row_indices, 2*i)
+    if isempty(ancilla_slots)
+        return Stabilizer(zeros(Bool, 0, 2n))  # trivial code
     end
 
-    # The parity checks are the transformed stabilizers of the ancilla pairs.
-    checks = full_stabs[ancilla_row_indices]
+    ancilla_rows = vcat([2i-1:2i for i in ancilla_slots]...)
+    checks = full_stabs[ancilla_rows, :]
 
     for op in c.circ
-        apply!(checks, op)
+        apply!(checks, op)  # circuit already remapped in constructor
     end
     checks
 end
 
 """
 Random all-to-all Clifford Bell-pair code.
-
-The code of `n` Bell pairs is generated by an all-to-all random Clifford circuit of `ngates` gates
-that encodes a subset of Bell-pair slots into logical Bell pairs.
-
-Because of the random picking, the size of `encode_pairs` is the only thing that matters for the
-code, referred to as `k` Bell pairs.
 
 See also: [`random_all_to_all_clifford_circuit`](@ref), [`BellPairCode`](@ref)
 """
@@ -163,14 +153,10 @@ end
 """
 Random brickwork Clifford Bell-pair code.
 
-The code is generated by a brickwork random Clifford circuit of `nlayers` layers that encodes a
-subset of Bell-pair slots into logical Bell pairs.
-
 See also: [`random_brickwork_clifford_circuit`](@ref), [`BellPairCode`](@ref)
 """
 function random_brickwork_bellpair_code end
 
-# add k::Int overload to match the all-to-all API shape
 function random_brickwork_bellpair_code(rng::AbstractRNG, n::Int, nlayers::Int, k::Int)
     BellPairCode(n, random_brickwork_clifford_circuit(rng, (2 * n,), nlayers), collect(1:k))
 end
