@@ -19,8 +19,10 @@ function single_y(n,i)
     p
 end
 
+_destabilizing_basis(basis) = basis == :X ? :Z : :X
+
 # TODO make faster by using fewer initializations, like in Base.zero
-function Base.one(::Type{T}, n::Integer; basis=:Z) where {T<:Tableau}# TODO support `basis` in all other `one(::[Mixed][De]Stabilizer)` functions
+function Base.one(::Type{T}, n::Integer; basis=:Z) where {T<:Tableau}
     if basis==:X
         T(LinearAlgebra.I(n),falses(n,n))
     elseif basis==:Y
@@ -33,17 +35,27 @@ function Base.one(::Type{T}, n::Integer; basis=:Z) where {T<:Tableau}# TODO supp
 end
 Base.one(::Type{<:Stabilizer}, n; basis=:Z) = Stabilizer(one(Tableau,n; basis)) # TODO make it type preserving
 Base.one(s::Stabilizer; basis=:Z) = one(Stabilizer, nqubits(s); basis)
-Base.one(::Type{<:Destabilizer}, n) = Destabilizer(vcat(one(Tableau, n, basis=:X),one(Tableau, n, basis=:Z)))
-function Base.one(::Type{<:MixedStabilizer}, r, n, basis=:Z)
+function Base.one(::Type{<:Destabilizer}, n; basis=:Z)
+    s = one(Tableau, n; basis=basis)
+    d = one(Tableau, n; basis=_destabilizing_basis(basis))
+    Destabilizer(vcat(d, s))
+end
+Base.one(d::Destabilizer; basis=:Z) = one(Destabilizer, nqubits(d); basis=basis)
+function Base.one(::Type{<:MixedStabilizer}, r, n; basis=:Z)
     s = one(Stabilizer, n; basis=basis)
     MixedStabilizer(s,r)
 end
-function Base.one(::Type{<:MixedDestabilizer}, r, n)
-    d = one(Tableau, n; basis=:X)
-    s = one(Tableau, n; basis=:Z)
+Base.one(T::Type{<:MixedStabilizer}, r, n, basis) = one(T, r, n; basis=basis)
+Base.one(s::MixedStabilizer; basis=:Z) =
+    one(MixedStabilizer, rank(s), nqubits(s); basis=basis)
+function Base.one(::Type{<:MixedDestabilizer}, r, n; basis=:Z)
+    s = one(Tableau, n; basis=basis)
+    d = one(Tableau, n; basis=_destabilizing_basis(basis))
     MixedDestabilizer(vcat(d,s),r)
 end
-Base.one(T::Type{<:MixedDestabilizer}, n) = one(T, n, n)
+Base.one(T::Type{<:MixedDestabilizer}, n; basis=:Z) = one(T, n, n; basis=basis)
+Base.one(d::MixedDestabilizer; basis=:Z) =
+    one(MixedDestabilizer, rank(d), nqubits(d); basis=basis)
 function Base.one(c::CliffordOperator)
     n = nqubits(c)
     one(typeof(c),n)
