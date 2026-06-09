@@ -87,8 +87,8 @@
         s_col = fastcolumn(copy(s_row))
         
         # Canonicalization should produce equivalent results
-        result_row = canonicalize!(copy(s_row); phases=true)
-        result_col = canonicalize!(copy(s_col); phases=true)
+        result_row = canonicalize!(s_row; phases=true)
+        result_col = canonicalize!(s_col; phases=true)
         @test stab_to_gf2(result_row) == stab_to_gf2(result_col)
         
         # Sparse gate application should be equivalent
@@ -96,8 +96,8 @@
         s_col_gates = fastcolumn(copy(s_row_gates))
         gate = sCNOT(1, 2)
         
-        s_row_after = apply!(copy(s_row_gates), gate)
-        s_col_after = apply!(copy(s_col_gates), gate)
+        s_row_after = apply!(s_row_gates, gate)
+        s_col_after = apply!(s_col_gates, gate)
         @test stab_to_gf2(s_row_after) == stab_to_gf2(s_col_after)
         
         # Dense clifford operator application should be equivalent
@@ -105,8 +105,8 @@
         s_col_clif = fastcolumn(copy(s_row_clif))
         c = CliffordOperator(random_destabilizer(64; phases=false))
         
-        s_row_clif_after = apply!(copy(s_row_clif), c)
-        s_col_clif_after = apply!(copy(s_col_clif), c)
+        s_row_clif_after = apply!(s_row_clif, c)
+        s_col_clif_after = apply!(s_col_clif, c)
         @test stab_to_gf2(s_row_clif_after) == stab_to_gf2(s_col_clif_after)
     end
 end
