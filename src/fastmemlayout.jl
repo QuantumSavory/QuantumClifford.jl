@@ -3,8 +3,7 @@
 In this layout a Pauli string (a row of the tableau) is stored contiguously in memory.
 This corresponds to column-major storage of the underlying `xzs` matrix.
 
-**This is the default layout** for [`Stabilizer`](@ref), [`Destabilizer`](@ref), 
-[`MixedStabilizer`](@ref), and [`MixedDestabilizer`](@ref).
+**This is the default layout** for stabilizer-like tableau structures (unless otherwise specified).
 
 Optimal for:
 - Row operations (e.g., `mul_left!`)
