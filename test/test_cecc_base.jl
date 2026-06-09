@@ -42,9 +42,9 @@ g₄ = z^2 + α^7*z + 1
 L₄ = [α^i for i in 2:13]
 
 # Lifted Codes
-l₁ = 12; GA₁ = group_algebra(GF(2), abelian_group(l)); x = gens(GA)[]
+l₁ = 12; GA₁ = group_algebra(GF(2), abelian_group(l₁)); x = gens(GA₁)[1]
 B₁ = reshape([1 + x + x^3 + x^6], (1, 1))
-c = LiftedCode(B, repr = representation_matrix)
+c = LiftedCode(B₁; GA = GA₁, repr = representation_matrix)
 
 base_matrix₂ = [0 0 0 0; 0 1 2 5; 0 6 3 1]; l₂ = 3;
 
