@@ -23,6 +23,8 @@ const random_all_to_all_circuit_args = repeat([(20, 200, 1), (40, 200, [1, 20])]
 const bellpair_circuit_args = [
     (2, QuantumClifford.AbstractOperation[], [1]),
     (3, QuantumClifford.AbstractOperation[], [1, 3]),
+    (2, [sCNOT(1, 3), sHadamard(2)], [1]),
+    (Perfect5(),),
 ]
 
 random_circuit_code_args = vcat(
