@@ -21,8 +21,21 @@
 
     @testset "unknown operations pass through unchanged" begin
         op = ClassicalXOR((1, 2), 3)
-        result = noisify([op], PauliNoise(1e-3, 1e-3, 1e-3))
+        result = noisify([op], PauliNoise(1e-3, 1e-3, 1e-3); nqubits=3)
         @test length(result) == 1
         @test result[1] === op
+    end
+    @testset "structured noise model with all op types and idle" begin
+        nm = NoiseModel(
+            single_qubit = PauliNoise(1e-4, 1e-4, 1e-4),
+            two_qubit    = PauliNoise(1e-3, 1e-3, 1e-3),
+            measurement  = PauliNoise(2e-3, 2e-3, 2e-3),
+            reset        = PauliNoise(5e-3, 5e-3, 5e-3),
+            idle         = PauliNoise(1e-5, 1e-5, 1e-5),
+        )
+        circuit = [sHadamard(1), sCNOT(1, 2), sMZ(2, 1), sMRZ(1, 2)]
+        result = noisify(circuit, nm; nqubits=3)
+        @test length(result) > length(circuit)
+        @test result[end] == sMRZ(1, 2)
     end
 end
