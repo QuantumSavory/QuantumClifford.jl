@@ -5,6 +5,10 @@
 
 # News
 
+## v0.11.5 - dev
+
+- Add `noisify` API with structured `NoiseModel` for inserting noise operations into circuits.
+
 ## v0.11.4 - 2026-05-05
 
 - Add `DepolarizationNoise` for n-qubit depolarizing noise channels.
