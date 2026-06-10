@@ -8,8 +8,7 @@ This corresponds to column-major storage of the underlying `xzs` matrix.
 Optimal for:
 - Row operations (e.g., `mul_left!`)
 - Canonicalization (`canonicalize!`)
-- Projective measurements (`project!`)
-- Measuring large Pauli operators
+- Projective measurements of arbitrary multi-qubit Paulis (`project!`)
 - Applying large dense n-qubit Clifford operations
 
 # Indexing Convention
@@ -33,9 +32,7 @@ but it is still optimal given that some bitwrangling is required to extract a gi
 **This is the default layout** for [`PauliFrame`](@ref).
 
 Optimal for:
-- Column operations (applying single-qubit and two-qubit gates)
-- Sparse gate applications like `apply!(s, sCNOT(i, j))`
-- Operations that only touch a few qubits
+- Column operations (applying single-qubit and two-qubit gates, single-qubit measurements)
 
 # Indexing Convention
 Regardless of memory layout, indexing is always `xzs[tableau_column_index, tableau_row_index]`.
