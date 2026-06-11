@@ -178,11 +178,13 @@ function _dem_parse_nodes(lines, i, depth)
         elseif line == "{"
             throw(ArgumentError("unexpected '{' in detector error model"))
         elseif _dem_head(line) == "repeat"
-            m = match(r"^repeat\s+(\d+)$"i, line)
-            m === nothing && throw(ArgumentError("malformed repeat instruction: \"$line\""))
+            parts = split(line)
+            length(parts) == 2 || throw(ArgumentError("malformed repeat instruction: \"$line\""))
+            reps = _dem_parse_int(parts[2], line)
+            reps >= 0 || throw(ArgumentError("repeat count must be non-negative in line: \"$line\""))
             (i < length(lines) && lines[i+1] == "{") || throw(ArgumentError("expected '{' after \"$line\""))
             body, i = _dem_parse_nodes(lines, i + 2, depth + 1)
-            push!(nodes, (parse(Int, m.captures[1]), body))
+            push!(nodes, (reps, body))
         else
             push!(nodes, line)
             i += 1
