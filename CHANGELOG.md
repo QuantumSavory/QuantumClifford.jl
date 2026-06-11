@@ -5,6 +5,10 @@
 
 # News
 
+## v0.11.5 - dev
+
+- New `read_detector_error_model` and `parse_detector_error_model` for importing Stim detector error model (`.dem`) files as circuits that are sampled with the existing `pftrajectories` machinery, together with the new circuit operations `DetectorError` and `DemDeclaration` and the `detectorview`/`observableview` accessors.
+
 ## v0.11.4 - 2026-05-05
 
 - Add `DepolarizationNoise` for n-qubit depolarizing noise channels.

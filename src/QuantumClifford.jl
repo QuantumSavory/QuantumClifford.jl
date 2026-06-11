@@ -78,6 +78,10 @@ export
     # Pauli frames
     PauliFrame, pftrajectories, pfmeasurements,
     measurements,
+    # Stim detector error models
+    read_detector_error_model, parse_detector_error_model,
+    DetectorErrorModelCircuit, DetectorError, DemDeclaration,
+    detectorview, observableview,
     # Useful States
     bell, ghz, maximally_mixed,
     single_z, single_x, single_y,
@@ -1434,6 +1438,7 @@ include("misc_gates.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
+include("stim_dem_import.jl")
 # common states and operators
 include("enumeration.jl")
 include("randoms.jl")
