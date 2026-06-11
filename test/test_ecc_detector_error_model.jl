@@ -174,3 +174,14 @@ end
         @info "Skipping the optional Stim parser smoke test -- set ENV QC_TEST_STIM=true (with python3 + stim available) to enable it."
     end
 end
+
+@testitem "ECC detector error model -- show, equality, hash" tags=[:ecc, :ecc_base] begin
+    using Test
+    using QuantumClifford.ECC
+    dem  = detector_error_model(Steane7(); px=1e-3, py=0.0, pz=1e-3)
+    dem2 = detector_error_model(Steane7(); px=1e-3, py=0.0, pz=1e-3)
+    @test sprint(show, MIME"text/plain"(), dem) ==
+          "DetectorErrorModel with 6 detectors, 2 logical observables, and 14 error mechanisms"
+    @test dem == dem2 && dem !== dem2
+    @test hash(dem) == hash(dem2)
+end
