@@ -79,7 +79,7 @@ export
     PauliFrame, pftrajectories, pfmeasurements,
     measurements,
     #noisify
-    noisify, CircuitNoise, NoNoise
+    noisify, CircuitNoise, NoNoise,
     # Useful States
     bell, ghz, maximally_mixed,
     single_z, single_x, single_y,
