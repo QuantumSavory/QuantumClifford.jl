@@ -75,6 +75,8 @@ export
     # Noise
     applynoise!, UnbiasedUncorrelatedNoise, DepolarizationNoise, NoiseOp, NoiseOpAll, NoisyGate,
     PauliNoise, PauliError,
+    # noisify
+    noisify, NoiseModel, NoNoise, DefaultNoiseModel,
     # Pauli frames
     PauliFrame, pftrajectories, pfmeasurements,
     measurements,

@@ -2,6 +2,89 @@ abstract type AbstractNoise end
 
 abstract type AbstractNoiseOp <: AbstractOperation end
 
+"""NoNoise is a noise model that represents the absence of noise."""
+struct NoNoise <: AbstractNoise end
+
+"""NoiseModel is a struct that holds the noise models for different types of operations in a circuit"""
+Base.@kwdef struct NoiseModel
+    single_qubit::AbstractNoise = NoNoise()
+    two_qubit::AbstractNoise = NoNoise()
+    idle::AbstractNoise = NoNoise()
+    measurement::AbstractNoise = NoNoise()
+    reset::AbstractNoise = NoNoise()
+end
+
+NoiseModel(noise::AbstractNoise) = NoiseModel(
+    single_qubit = noise,
+    two_qubit = noise,
+    idle = NoNoise(),
+    measurement = noise,
+    reset = noise,
+)
+
+"""A NoiseModel with non-trivial defaults for every operation type"""
+DefaultNoiseModel() = NoiseModel(
+    single_qubit = PauliNoise(1e-4, 1e-4, 1e-4),
+    two_qubit = PauliNoise(1e-3, 1e-3, 1e-3),
+    idle = PauliNoise(1e-5, 1e-5, 1e-5),
+    measurement = PauliNoise(2e-3, 2e-3, 2e-3),
+    reset = PauliNoise(2e-3, 2e-3, 2e-3),
+)
+
+"""_noise_ops is a helper function that generates the noise operations to be inserted before a given operation."""
+_noise_ops(::NoNoise, qubits) = Any[]
+
+function _noise_ops(noise::AbstractNoise, qubits)
+    isempty(qubits) && return Any[]
+    return [NoiseOp(noise, qubits)]
+end
+
+
+"""
+    noisify(circuit, noise; nqubits=nothing)
+
+Return a new circuit with noise operations inserted before each operation according to `noise`.
+
+`noise` can be either a bare `AbstractNoise` (applied uniformly to all gate / measurement / reset
+operations) or a `NoiseModel` (which lets different operation types receive different noise).
+When `nqubits` is provided, idle noise from `noise_model.idle` is also inserted on the qubits
+not touched by each operation. An error is thrown when idle noise is requested without `nqubits`.
+
+# Examples
+    noisify([sHadamard(1), sCNOT(1,2)], PauliNoise(1e-3, 1e-3, 1e-3))
+    noisify([sHadamard(1)], DefaultNoiseModel(); nqubits=3)
+"""
+function noisify(circuit::AbstractVector, noise::AbstractNoise; nqubits=nothing)
+    return noisify(circuit, NoiseModel(noise); nqubits=nqubits)
+end
+
+function noisify(circuit::AbstractVector, noise_model::NoiseModel; nqubits=nothing)
+    if nqubits === nothing
+        if !(noise_model.idle isa NoNoise)
+            error("nqubits must be provided to noisify when noise_model.idle is not NoNoise")
+        end
+        return mapreduce(g -> noisify(g, noise_model), vcat, circuit; init = Any[],)
+    else
+        return mapreduce(g -> noisify(g, noise_model, nqubits), vcat, circuit; init = Any[],)
+    end
+end
+
+# Fallback: leave unknown operations unchanged.
+noisify(g, noise_model::NoiseModel) = [g]
+
+noisify(g::AbstractSingleQubitOperator, noise_model::NoiseModel) = vcat(_noise_ops(noise_model.single_qubit, affectedqubits(g)), [g],)
+noisify(g::AbstractTwoQubitOperator, noise_model::NoiseModel) = vcat(_noise_ops(noise_model.two_qubit, affectedqubits(g)), [g],)
+noisify(g::AbstractMeasurement, noise_model::NoiseModel) = vcat(_noise_ops(noise_model.measurement, affectedqubits(g)),[g],)
+noisify(g::AbstractResetMeasurement, noise_model::NoiseModel) = vcat(_noise_ops(noise_model.reset, affectedqubits(g)), [g],)
+
+# Fallback for operations that do not have affectedqubits.
+noisify(g, noise_model::NoiseModel, nqubits) = noisify(g, noise_model)
+
+function noisify(g::AbstractOperation, noise_model::NoiseModel, nqubits)
+    idle_qubits = setdiff(1:nqubits, affectedqubits(g))
+    return vcat(_noise_ops(noise_model.idle, idle_qubits), noisify(g, noise_model),)
+end
+
 """A method modifying a given state by applying the corresponding noise model. It is non-deterministic, part of the Noise interface."""
 function applynoise! end
 
