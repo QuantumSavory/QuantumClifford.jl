@@ -5,6 +5,10 @@
 
 # News
 
+## [Unreleased]
+
+- Add importing and Pauli-frame sampling support for Stim detector error model (`.dem`) files.
+
 ## v0.11.4 - 2026-05-05
 
 - Add `DepolarizationNoise` for n-qubit depolarizing noise channels.

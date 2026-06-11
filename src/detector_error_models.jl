@@ -11,6 +11,18 @@ struct DetectorError{T,D,L} <: AbstractOperation
     logical_bits::NTuple{L,Int}
 end
 
+function DetectorError(
+    probability::T,
+    detector_bits::NTuple{D,Int},
+    logical_bits::NTuple{L,Int},
+) where {T<:Real,D,L}
+    0 <= probability <= 1 || throw(ArgumentError("Detector error probability must be in [0, 1]."))
+    detectors = tuple(sort!(collect(detector_bits))...)
+    logicals = tuple(sort!(collect(logical_bits))...)
+    typed_probability = float(probability)
+    return DetectorError{typeof(typed_probability),D,L}(typed_probability, detectors, logicals)
+end
+
 function DetectorError(probability::Real, detector_bits, logical_bits)
     0 <= probability <= 1 || throw(ArgumentError("Detector error probability must be in [0, 1]."))
     detectors = tuple(sort!(collect(Int, detector_bits))...)
@@ -237,9 +249,13 @@ function _parse_detector_error_model_instruction(line::AbstractString, source, l
         line,
     )
     isnothing(parsed) && _dem_parse_error(source, line_number, "could not parse instruction")
-    name = lowercase(parsed.captures[1])
+    name_capture = something(parsed.captures[1], "")
+    isempty(name_capture) && _dem_parse_error(source, line_number, "missing instruction name")
+    target_capture = parsed.captures[3]
+
+    name = lowercase(String(name_capture))
     arguments = _parse_detector_error_model_arguments(parsed.captures[2], source, line_number)
-    targets = isnothing(parsed.captures[3]) ? String[] : String.(split(parsed.captures[3]))
+    targets = target_capture === nothing ? String[] : String.(split(String(target_capture)))
     return _DetectorErrorModelInstruction(name, arguments, targets)
 end
 
