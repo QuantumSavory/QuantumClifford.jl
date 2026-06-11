@@ -8,7 +8,9 @@
     end
 
     @testset "errors when idle requested without nqubits" begin
-        @test_throws ErrorException noisify([sHadamard(1)], DefaultNoiseModel())
+        @test_throws "nqubits must be provided" noisify(
+            [sHadamard(1)], DefaultNoiseModel()
+        )
     end
 
     @testset "noise inserted before op with correct qubits" begin
@@ -25,17 +27,69 @@
         @test length(result) == 1
         @test result[1] === op
     end
-    @testset "structured noise model with all op types and idle" begin
-        nm = NoiseModel(
-            single_qubit = PauliNoise(1e-4, 1e-4, 1e-4),
-            two_qubit    = PauliNoise(1e-3, 1e-3, 1e-3),
-            measurement  = PauliNoise(2e-3, 2e-3, 2e-3),
-            reset        = PauliNoise(5e-3, 5e-3, 5e-3),
-            idle         = PauliNoise(1e-5, 1e-5, 1e-5),
+    @testset "noisify dispatches NoiseModel fields correctly" begin
+        model = NoiseModel(
+            single_qubit = PauliNoise(0.01, 0.0,  0.0),
+            two_qubit    = PauliNoise(0.0,  0.02, 0.0),
+            measurement  = PauliNoise(0.0,  0.0,  0.03),
+            reset        = PauliNoise(0.04, 0.04, 0.04),
+            idle         = PauliNoise(0.05, 0.0,  0.0),
         )
-        circuit = [sHadamard(1), sCNOT(1, 2), sMZ(2, 1), sMRZ(1, 2)]
-        result = noisify(circuit, nm; nqubits=3)
-        @test length(result) > length(circuit)
-        @test result[end] == sMRZ(1, 2)
+
+        circuit = [
+            sHadamard(1),
+            sCNOT(1, 2),
+            sX(2),
+            sMZ(1),
+            sMRZ(3),
+        ]
+
+        noisified = noisify(circuit, model; nqubits=3)
+        @test length(noisified) == 15
+
+        # sHadamard(1): idle on q2,q3; single-qubit noise on q1
+        @testset "sHadamard(1)" begin
+            @test noisified[1].noise == model.idle
+            @test noisified[1].indices == (2, 3)
+            @test noisified[2].noise == model.single_qubit
+            @test noisified[2].indices == (1,)
+            @test noisified[3] == circuit[1]
+        end
+
+        # sCNOT(1,2): idle on q3; two-qubit noise on q1,q2
+        @testset "sCNOT(1,2)" begin
+            @test noisified[4].noise == model.idle
+            @test noisified[4].indices == (3,)
+            @test noisified[5].noise == model.two_qubit
+            @test noisified[5].indices == (1, 2)
+            @test noisified[6] == circuit[2]
+        end
+
+        # sX(2): idle on q1,q3; single-qubit noise on q2
+        @testset "sX(2)" begin
+            @test noisified[7].noise == model.idle
+            @test noisified[7].indices == (1, 3)
+            @test noisified[8].noise == model.single_qubit
+            @test noisified[8].indices == (2,)
+            @test noisified[9] == circuit[3]
+        end
+
+        # sMZ(1): idle on q2,q3; measurement noise on q1
+        @testset "sMZ(1)" begin
+            @test noisified[10].noise == model.idle
+            @test noisified[10].indices == (2, 3)
+            @test noisified[11].noise == model.measurement
+            @test noisified[11].indices == (1,)
+            @test noisified[12] == circuit[4]
+        end
+
+        # sMRZ(3): idle on q1,q2; reset noise on q3
+        @testset "sMRZ(3)" begin
+            @test noisified[13].noise == model.idle
+            @test noisified[13].indices == (1, 2)
+            @test noisified[14].noise == model.reset
+            @test noisified[14].indices == (3,)
+            @test noisified[15] == circuit[5]
+        end
     end
 end
