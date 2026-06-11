@@ -62,3 +62,24 @@ And running this noisy simulation:
 frames = pftrajectories(fullcircuit; trajectories=nframes)
 pfmeasurements(frames)
 ```
+
+## Exporting a code-capacity detector error model
+
+For decoder workflows that consume Stim detector error models, you can export a
+code-capacity model directly from a code's parity checks and logical fault
+matrix:
+
+```@example 1
+using QuantumClifford.ECC: detector_error_model, write_detector_error_model
+
+dem = detector_error_model(code; px=1e-3, py=0.0, pz=1e-3)
+io = IOBuffer()
+write_detector_error_model(io, dem)
+String(take!(io))
+```
+
+The detector targets `D0`, `D1`, ... follow `parity_checks(code)` row order.
+The logical observable targets `L0`, `L1`, ... follow the row order of
+[`faults_matrix`](@ref): logical-X observables first, then logical-Z
+observables. The model is code-capacity only; it does not extract noisy
+syndrome-circuit faults, coordinates, or repeated rounds.
