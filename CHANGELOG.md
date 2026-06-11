@@ -5,6 +5,10 @@
 
 # News
 
+## v0.11.5 - dev
+
+- New in `ECC`: `detector_error_model` and `write_detector_error_model` for exporting code-capacity Stim detector error model (`.dem`) files from any code providing `parity_checks` and `faults_matrix`, together with the small `DetectorErrorModel` representation it produces.
+
 ## v0.11.4 - 2026-05-05
 
 - Add `DepolarizationNoise` for n-qubit depolarizing noise channels.

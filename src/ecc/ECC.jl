@@ -27,6 +27,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
     metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix,
     isdegenerate, faults_matrix,
+    DetectorErrorModel, detector_error_model, write_detector_error_model,
     naive_syndrome_circuit, shor_syndrome_circuit, naive_encoding_circuit,
     RepCode, LiftedCode,
     CSS,
@@ -396,6 +397,7 @@ end
 
 include("circuits.jl")
 include("decoder_pipeline.jl")
+include("detector_error_model.jl")
 
 include("codes/util.jl")
 

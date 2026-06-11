@@ -62,3 +62,33 @@ And running this noisy simulation:
 frames = pftrajectories(fullcircuit; trajectories=nframes)
 pfmeasurements(frames)
 ```
+## Exporting a Stim detector error model
+
+For interoperability with [Stim](https://github.com/quantumlib/Stim)-based workflows and
+external decoders, a code-capacity detector error model can be generated from any code
+that provides [`parity_checks`](@ref) and [`faults_matrix`](@ref), and written out in
+Stim's `.dem` text format. Each enabled single-qubit Pauli fault (with probabilities
+given independently by `px`, `py`, `pz`) becomes one `error(p)` instruction, whose `D`
+targets are the parity checks flipped by that fault and whose `L` targets are the logical
+observables flipped by it. Detector `Dᵢ` corresponds to row `i+1` of `parity_checks(code)`
+and observable `Lⱼ` to row `j+1` of `faults_matrix(code)`. The output is deterministic,
+so the files are easy to test and diff.
+
+```@example 1
+using QuantumClifford.ECC # hide
+dem = detector_error_model(Steane7(); px=1e-3, py=0.0, pz=1e-3)
+```
+
+```@example 1
+write_detector_error_model(stdout, dem)
+```
+
+The same model can be written directly to a file with
+`write_detector_error_model("steane7.dem", dem)`, which Stim can then parse:
+
+```python
+>>> import stim
+>>> dem = stim.DetectorErrorModel.from_file("steane7.dem")
+>>> dem.num_detectors, dem.num_observables
+(6, 2)
+```
