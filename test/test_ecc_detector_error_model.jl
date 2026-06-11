@@ -80,3 +80,40 @@
         isfile(path) && rm(path)
     end
 end
+
+@testitem "ECC detector error model export coverage smoke" begin
+    using Test
+    using QuantumClifford.ECC
+    using QuantumClifford.ECC: CodeCapacityDetectorErrorModel
+
+    code = Steane7()
+    dem = detector_error_model(code; px=0.01, py=0.02, pz=0.03)
+
+    @test dem isa CodeCapacityDetectorErrorModel
+    @test dem.num_detectors == code_s(code)
+    @test dem.num_observables == 2 * code_k(code)
+    @test length(dem.errors) == 3 * code_n(code)
+    @test any(err -> !isempty(err.detectors), dem.errors)
+    @test any(err -> !isempty(err.observables), dem.errors)
+
+    io = IOBuffer()
+    write_detector_error_model(io, dem)
+    text = String(take!(io))
+    @test occursin("detector D0", text)
+    @test occursin("logical_observable L0", text)
+    @test occursin("error(0.01)", text)
+    @test occursin("error(0.02)", text)
+    @test occursin("error(0.03)", text)
+
+    path = tempname() * ".dem"
+    try
+        @test write_detector_error_model(path, dem) == path
+        @test read(path, String) == text
+    finally
+        isfile(path) && rm(path)
+    end
+
+    @test_throws DomainError detector_error_model(code; px=-0.1)
+    @test_throws DomainError detector_error_model(code; py=1.1)
+    @test_throws DomainError detector_error_model(code; pz=Inf)
+end

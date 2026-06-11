@@ -5,6 +5,10 @@
 
 # News
 
+## Next
+
+- Add code-capacity Stim detector error model export helpers for ECC codes.
+
 ## v0.11.4 - 2026-05-05
 
 - Add `DepolarizationNoise` for n-qubit depolarizing noise channels.
