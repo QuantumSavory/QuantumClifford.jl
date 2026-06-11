@@ -7,11 +7,12 @@ module QuantumClifford
 
 # TODO Significant performance improvements: many operations do not need phase=true if the Pauli operations commute
 
-using LinearAlgebra: LinearAlgebra, inv, mul!, rank, Adjoint, dot, tr
-using DataStructures: DataStructures, DefaultDict, Accumulator
+import LinearAlgebra
+using LinearAlgebra: inv, mul!, rank, Adjoint, dot, tr
+import DataStructures
+using DataStructures: DefaultDict, Accumulator
 using Combinatorics: combinations
 using Base.Cartesian
-
 using DocStringExtensions
 
 import QuantumInterface: tensor, ⊗, tensor_pow,
@@ -19,7 +20,6 @@ import QuantumInterface: tensor, ⊗, tensor_pow,
     apply!, projectX!, projectY!, projectZ!,
     embed, permutesystems,
     entanglement_entropy
-
 export
     @P_str, PauliOperator, ⊗, I, X, Y, Z,
     @T_str, xbit, zbit, xview, zview,
@@ -42,7 +42,7 @@ export
     apply!, apply_inv!, apply_right!,
     permutesystems, permutesystems!,
     # Low Level Function Interface
-    generate!, project!, reset_qubits!, traceout!, ptrace,
+    generate!, project!, reset_qubits!, traceout!,
     projectX!, projectY!, projectZ!,
     projectrand!, projectXrand!, projectYrand!, projectZrand!,
     puttableau!, embed,
@@ -73,11 +73,12 @@ export
     random_stabilizer, random_destabilizer, random_clifford,
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
     # Noise
-    applynoise!, UnbiasedUncorrelatedNoise, DepolarizationNoise, NoiseOp, NoiseOpAll, NoisyGate,
+    applynoise!, UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, NoisyGate,
     PauliNoise, PauliError,
     # Pauli frames
     PauliFrame, pftrajectories, pfmeasurements,
-    measurements,
+    #noisify
+    NoNoise, CircuitNoise, noisify,
     # Useful States
     bell, ghz, maximally_mixed,
     single_z, single_x, single_y,
@@ -93,15 +94,9 @@ export
     mctrajectory!, mctrajectories, applywstatus!,
     # petrajectories
     petrajectories, applybranches,
-    # nonclifford ops
-    pcT, pcPhase, pcRx,
-    sT, sCCZ,
-    isclifford,
-    # nonclifford density matrix and Pauli Channels
-    GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel,
-    # nonclifford pure states
-    PureGeneralizedStabilizer,
-    emtrajectories,
+
+    # nonclifford
+    GeneralizedStabilizer, UnitaryPauliChannel, PauliChannel, pcT, pcPhase,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
     # sum types
@@ -110,8 +105,41 @@ export
     # to_cpu, to_gpu
 
 
-include("init.jl")
+const BIG_INT_MINUS_ONE = Ref{BigInt}()
+const BIG_INT_TWO = Ref{BigInt}()
+const BIG_INT_FOUR = Ref{BigInt}()
+
+function __init__()
+    BIG_INT_MINUS_ONE[] = BigInt(-1)
+    BIG_INT_TWO[] = BigInt(2)
+    BIG_INT_FOUR[] = BigInt(4)
+
+    # Register error hint for the `project!` method for GeneralizedStabilizer
+    if isdefined(Base.Experimental, :register_error_hint)
+        Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
+            if exc.f === project! && argtypes[1] <: GeneralizedStabilizer
+                print(io, """
+                \nThe method `project!` is not appropriate for use with`GeneralizedStabilizer`.
+                You probably are looking for `projectrand!`.
+                `project!` in this library is a low-level "linear algebra" method to verify
+                whether a measurement operator commutes with a set of stabilizers, and to
+                potentially simplify the tableau and provide the index of the anticommuting
+                term in that tableau. This linear algebra operation is not defined for
+                `GeneralStabilizer` as there is no single tableau to provide an index into.""")
+            elseif exc.f === ECC.distance && length(argtypes)==1
+                print(io,"""
+                \nThe distance for this code is not in our database. Consider using the MIP-based method:
+                `import JuMP, HiGHS; distance(code, DistanceMIPAlgorithm(solver=HiGHS))` or another MIP solver""")
+            elseif exc.f === ECC.distance && length(argtypes)==2 && argtypes[2]===ECC.DistanceMIPAlgorithm
+                print(io,"""\nPlease first import `JuMP` to make MIP-based distance calculation available.""")
+            end
+        end
+    end
+end
+
 include("throws.jl")
+
+const NoZeroQubit = ArgumentError("Qubit indices have to be larger than zero, but you are attempting to create a gate acting on a qubit with a non-positive index. Ensure indexing always starts from 1.")
 
 # Predefined constants representing the permitted phases encoded
 # in the low bits of UInt8.
@@ -131,7 +159,6 @@ include("macrotools.jl")
 
 abstract type AbstractOperation end
 abstract type AbstractCliffordOperator <: AbstractOperation end
-abstract type AbstractNonCliffordOperator <: AbstractOperation end
 
 include("pauli_operator.jl")
 
@@ -152,9 +179,6 @@ end
 
 function Tableau(paulis::Base.AbstractVecOrTuple{PauliOperator})
     r = length(paulis)
-    if r == 0
-        return Tableau(zeros(UInt8, 0), 0, zeros(UInt8, 0, 0))
-    end
     n = nqubits(paulis[1])
     P = eltype(paulis[1].phase)
     XZ = eltype(paulis[1].xz)
@@ -577,13 +601,6 @@ column permutation in the preparation of a `MixedDestabilizer` so that qubits ar
 The boolean keyword arguments `undoperm` and `reportperm` can be used to control this behavior
 and to report the permutations explicitly.
 
-Occasionally one might want specific destabilizer operators for a given tableau, **without** canonicalizing the tableau.
-E.g. if a Pauli frame correction is to be applied after purification or teleportation,
-the correction has to be done by applying the destabilizer corresponding to a specific stabilizer operator of a given tableau.
-Directly using `MixedDestabilizer` will first canonicalize the tableau, which would change the rows of the tableau,
-leading to a consistent set of destabilizer operators, but not the specific ones corresponding to the original pre-canonicalization tableau.
-The `backtrack=true` keyword argument can be undo canonicalization and restore the original rows, but this time also with the corresponding destabilizers.
-
 See also: [`stabilizerview`](@ref), [`destabilizerview`](@ref), [`logicalxview`](@ref), [`logicalzview`](@ref)
 """
 mutable struct MixedDestabilizer{T<:Tableau} <: AbstractStabilizer
@@ -592,14 +609,9 @@ mutable struct MixedDestabilizer{T<:Tableau} <: AbstractStabilizer
 end
 
 # Added a lot of type assertions to help Julia infer types
-function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false, backtrack=false) where {T}
+function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false) where {T}
     rows,n = size(stab)
-    canonops = CanonOp[]
-    if backtrack
-        stab, r, s, permx, permz, canonops = canonicalize_gott!(copy(stab), backtrack=true)
-    else
-        stab, r, s, permx, permz = canonicalize_gott!(copy(stab))
-    end
+    stab, r, s, permx, permz = canonicalize_gott!(copy(stab))
     t = zero(T, n*2, n)
     vstab = @view tab(stab)[1:r+s] # this view is necessary for cases of tableaux with redundant rows
     t[n+1:n+r+s] = vstab # The Stabilizer part of the tableau
@@ -634,17 +646,12 @@ function MixedDestabilizer(stab::Stabilizer{T}; undoperm=true, reportperm=false,
     end
     if undoperm
         t = t[:,invperm(permx[permz])]
-    end
-    returnstate = MixedDestabilizer(t, r+s)
-    if backtrack
-        for canonop in reverse(canonops)
-            canonop(returnstate)
-        end
+        return MixedDestabilizer(t, r+s)
     end
     if reportperm
-        return returnstate, r, permx, permz
+        return (MixedDestabilizer(t, r+s)::MixedDestabilizer{T}, r, permx, permz)
     else
-        return returnstate
+        return MixedDestabilizer(t, r+s)::MixedDestabilizer{T}
     end
 end
 
@@ -1086,10 +1093,9 @@ end
 function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator; phases::Bool=true)
     @valbooldispatch _apply!(stab,op; phases=Val(phases)) phases
 end
-function apply!(stab::AbstractStabilizer, indices::Base.AbstractVecOrTuple{Int}, op::AbstractCliffordOperator; phases::Bool=true)
+function apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices; phases::Bool=true)
     @valbooldispatch _apply!(stab,op,indices; phases=Val(phases)) phases
 end
-@deprecate apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices::Base.AbstractVecOrTuple{Int}; phases::Bool=true) apply!(stab, indices, op; phases=phases)
 
 # TODO no need to track phases outside of stabview
 function _apply!(stab::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
@@ -1439,30 +1445,21 @@ include("misc_gates.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
+include("noisify.jl")
 # common states and operators
 include("enumeration.jl")
 include("randoms.jl")
 include("useful_states.jl")
 #
-include("graphs/graphs.jl")
-using .GraphSim
+include("./graphs/graphs.jl")
 #
 include("entanglement.jl")
-#
-include("isclifford.jl")
-include("symbolic_noncliffords.jl")
 #
 include("tableau_show.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
-#
 include("ecc/ECC.jl")
-#
-include("lowrank/PauliChannelNonClifford.jl")
-include("lowrank/PureNonClifford.jl")
-using .PauliChannelNonClifford
-using .PureNonClifford
-#
+include("nonclifford.jl")
 include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
