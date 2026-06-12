@@ -50,7 +50,7 @@ noise_model = CircuitNoise(
     reset        = PauliNoise(2e-3, 2e-3, 2e-3),
 )
 
-noisy_circuit = noisify(circuit, noise_model; nqubits=2)
+noisy_circuit = noisify(circuit, noise_model)
 ```
 
 To avoid double-noisification, `noisify` leaves existing `NoiseOp`s unchanged. It also does not modify `VerifyOp`s or classical operations such as `ClassicalXOR`.
@@ -62,10 +62,8 @@ When the `idle_noise` option is configured in `CircuitNoise`, noise is inserted 
 Idle noise requires the total number of qubits in the circuit to be specified.
 
 ```@example noisify
-noisy_circuit = noisify(circuit, noise_model; nqubits=2)
+noisy_circuit = noisify(circuit, noise_model)
 ```
-
-If idle noise is requested and `nqubits` is not provided, an error is thrown.
 
 ### Simulation
 
@@ -88,7 +86,7 @@ noise_model = CircuitNoise(
     measurement  = PauliNoise(2e-3, 2e-3, 2e-3),
 )
 
-noisy_circuit = noisify(circuit, noise_model; nqubits=2)
+noisy_circuit = noisify(circuit, noise_model)
 
 register = Register(one(Stabilizer, 2), falses(2))
 

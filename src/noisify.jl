@@ -80,7 +80,7 @@ end
 
 
 noisify(circuit::AbstractVector, noise::AbstractNoise) = reduce(vcat, noisify.(circuit, (noise,)))
-noisify(op, noise) = Any[op]
+noisify(op, noise::AbstractNoise) = Any[op]
 noisify(op::AbstractNoiseOp, noise::AbstractNoise) = Any[op]
 noisify(op::ClassicalXOR, noise::AbstractNoise) = Any[op]
 noisify(op::VerifyOp, noise::AbstractNoise) = Any[op]
@@ -89,7 +89,11 @@ noisify(op::AbstractSingleQubitOperator, noise::AbstractNoise) = Any[NoiseOp(noi
 noisify(op::AbstractTwoQubitOperator, noise::AbstractNoise) = Any[NoiseOp(noise, affectedqubits(op)), op]
 noisify(op::AbstractMeasurement, noise::AbstractNoise) = Any[NoiseOp(noise, affectedqubits(op)), op]
 noisify(op::Reset, noise::AbstractNoise) = Any[op, NoiseOp(noise, affectedqubits(op))]
-noisify(op, ::NoNoise) = Any[op]
+
+noisify(op::AbstractSingleQubitOperator, ::NoNoise) = Any[op]
+noisify(op::AbstractTwoQubitOperator, ::NoNoise) = Any[op]
+noisify(op::AbstractMeasurement, ::NoNoise) = Any[op]
+noisify(op::Reset, ::NoNoise) = Any[op]
 
 
 function noisify(circuit::AbstractVector, noise_model::CircuitNoise)
