@@ -5,49 +5,38 @@ A circuit operation representing an independent Stim detector error model mechan
 With probability `probability`, this operation XORs all `detector_bits` and `logical_bits`
 in a [`PauliFrame`](@ref).
 """
-struct DetectorError{T,D,L} <: AbstractOperation
+struct DetectorError{T<:Real,D,L} <: AbstractOperation
     probability::T
     detector_bits::NTuple{D,Int}
     logical_bits::NTuple{L,Int}
-end
 
-function DetectorError(
-    probability::T,
-    detector_bits::NTuple{D,Int},
-    logical_bits::NTuple{L,Int},
-) where {T<:Real,D,L}
-    0 <= probability <= 1 || throw(ArgumentError("Detector error probability must be in [0, 1]."))
-    detectors = tuple(sort!(collect(detector_bits))...)
-    logicals = tuple(sort!(collect(logical_bits))...)
-    typed_probability = float(probability)
-    return DetectorError{typeof(typed_probability),D,L}(typed_probability, detectors, logicals)
+    function DetectorError{T,D,L}(
+        probability::Real,
+        detector_bits::NTuple{D,Int},
+        logical_bits::NTuple{L,Int},
+    ) where {T<:Real,D,L}
+        0 <= probability <= 1 || throw(ArgumentError("Detector error probability must be in [0, 1]."))
+        detectors = tuple(sort!(collect(detector_bits))...)
+        logicals = tuple(sort!(collect(logical_bits))...)
+        return new{T,D,L}(T(probability), detectors, logicals)
+    end
 end
 
 function DetectorError(probability::Real, detector_bits, logical_bits)
-    0 <= probability <= 1 || throw(ArgumentError("Detector error probability must be in [0, 1]."))
-    detectors = tuple(sort!(collect(Int, detector_bits))...)
-    logicals = tuple(sort!(collect(Int, logical_bits))...)
+    detectors = _canonical_detector_error_bits(detector_bits)
+    logicals = _canonical_detector_error_bits(logical_bits)
     typed_probability = float(probability)
     return DetectorError{typeof(typed_probability),length(detectors),length(logicals)}(
         typed_probability, detectors, logicals
     )
 end
 
-"""
-$(TYPEDEF)
+_canonical_detector_error_bits(bits) = tuple(sort!(collect(Int, bits))...)
 
-No-op operation that reserves detector and logical measurement columns for an imported
-detector error model.
-"""
-struct DetectorErrorModelDeclare <: AbstractOperation
-    detector_count::Int
-    logical_count::Int
-end
-
-function DetectorErrorModelDeclare(detector_count::Integer, logical_count::Integer)
-    detector_count >= 0 || throw(ArgumentError("detector_count must be non-negative."))
-    logical_count >= 0 || throw(ArgumentError("logical_count must be non-negative."))
-    return DetectorErrorModelDeclare(Int(detector_count), Int(logical_count))
+function concrete_typeparams(::Type{DetectorError})
+    return [(Float64, detector_count, logical_count)
+            for detector_count in 0:8
+            for logical_count in 0:8]
 end
 
 """
@@ -58,10 +47,20 @@ Vector-like circuit returned by [`read_detector_error_model`](@ref).
 The measurement columns produced by `pftrajectories(circuit)` are ordered as all detector
 bits first, followed by all logical observable bits.
 """
-struct DetectorErrorModelCircuit <: AbstractVector{AbstractOperation}
-    operations::Vector{AbstractOperation}
+struct DetectorErrorModelCircuit{T,O<:AbstractVector{T}} <: AbstractVector{T}
+    operations::O
     detector_count::Int
     logical_count::Int
+
+    function DetectorErrorModelCircuit(
+        operations::O,
+        detector_count::Integer,
+        logical_count::Integer,
+    ) where {T,O<:AbstractVector{T}}
+        detector_count >= 0 || throw(ArgumentError("detector_count must be non-negative."))
+        logical_count >= 0 || throw(ArgumentError("logical_count must be non-negative."))
+        return new{T,O}(operations, Int(detector_count), Int(logical_count))
+    end
 end
 
 Base.IndexStyle(::Type{<:DetectorErrorModelCircuit}) = IndexLinear()
@@ -77,16 +76,8 @@ detector_count(circuit::DetectorErrorModelCircuit) = circuit.detector_count
 """Return the number of logical observable bits in an imported detector error model circuit."""
 logical_observable_count(circuit::DetectorErrorModelCircuit) = circuit.logical_count
 
-affectedqubits(::Union{DetectorError,DetectorErrorModelDeclare}) = ()
+affectedqubits(::DetectorError) = ()
 affectedbits(op::DetectorError) = (op.detector_bits..., op.logical_bits...)
-affectedbits(op::DetectorErrorModelDeclare) = begin
-    bit_count = op.detector_count + op.logical_count
-    return bit_count == 0 ? () : (bit_count,)
-end
-
-function apply!(frame::PauliFrame, ::DetectorErrorModelDeclare)
-    return frame
-end
 
 function apply!(frame::PauliFrame, op::DetectorError)
     bits = affectedbits(op)
@@ -101,7 +92,17 @@ function apply!(frame::PauliFrame, op::DetectorError)
     return frame
 end
 
-compactify_circuit(circuit::DetectorErrorModelCircuit) = circuit
+function _create_pauliframe(circuit::DetectorErrorModelCircuit; trajectories=5000)
+    return PauliFrame(trajectories, 1, circuit.detector_count + circuit.logical_count)
+end
+
+function compactify_circuit(circuit::DetectorErrorModelCircuit)
+    return DetectorErrorModelCircuit(
+        compactify_circuit(circuit.operations),
+        circuit.detector_count,
+        circuit.logical_count,
+    )
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -178,7 +179,7 @@ end
 function _build_detector_error_model_circuit(state::_DetectorErrorModelParseState)
     detector_count = state.max_detector + 1
     logical_count = state.max_logical + 1
-    operations = AbstractOperation[DetectorErrorModelDeclare(detector_count, logical_count)]
+    operations = AbstractOperation[]
     for error in state.errors
         detector_bits = (detector + 1 for detector in error.detectors)
         logical_bits = (detector_count + logical + 1 for logical in error.logicals)

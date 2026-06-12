@@ -20,6 +20,16 @@
     end
 
     @testset "declarations allocate columns without errors" begin
+        declarations_only = detector_error_model_circuit(IOBuffer("""
+        detector D3
+        logical_observable L1
+        """))
+
+        @test detector_count(declarations_only) == 4
+        @test logical_observable_count(declarations_only) == 2
+        @test isempty(declarations_only)
+        @test measurements(pftrajectories(declarations_only; trajectories=3, threads=false)) == falses(3, 6)
+
         model = detector_error_model_circuit(IOBuffer("""
         detector D3
         logical_observable L1
@@ -29,6 +39,21 @@
         @test detector_count(model) == 4
         @test logical_observable_count(model) == 2
         @test measurements(pftrajectories(model; trajectories=3, threads=false)) == falses(3, 6)
+    end
+
+    @testset "compactification preserves detector model metadata" begin
+        model = detector_error_model_circuit(IOBuffer("""
+        detector D0
+        logical_observable L0
+        error(1.0) D0 L0
+        """))
+        compact_model = compactify_circuit(model)
+
+        @test compact_model isa DetectorErrorModelCircuit
+        @test eltype(compact_model) <: QuantumClifford.CompactifiedGate
+        @test detector_count(compact_model) == 1
+        @test logical_observable_count(compact_model) == 1
+        @test measurements(pftrajectories(compact_model; trajectories=3, threads=false)) == trues(3, 2)
     end
 
     @testset "repeat blocks and detector shifts" begin
