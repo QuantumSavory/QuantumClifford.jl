@@ -5,6 +5,10 @@
 
 # News
 
+## v0.11.5 dev
+
+- Add a QECC to `QECCore`: `2DTile` codes, slight generalization of `Surface` codes.
+
 ## v0.11.4 - 2026-05-05
 
 - Add `DepolarizationNoise` for n-qubit depolarizing noise channels.
