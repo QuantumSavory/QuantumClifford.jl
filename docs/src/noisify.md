@@ -16,16 +16,14 @@ Using this functionality, you can apply:
 ### Simple Noise Model
 
 ```@example noisify
-using QuantumClifford
-state = one(Stabilizer, 1)
-
+reset_state = one(Stabilizer, 1)
 circuit = [
     sHadamard(1),
     sCNOT(1,2),
     sMZ(1,1),
-    Reset(state, [2])
+    Reset(reset_state, [2]),
+    VerifyOp(one(Stabilizer, 1), [2]),
 ]
-
 noisy = noisify(circuit, PauliNoise(1e-3, 1e-3, 1e-3))
 ```
 
@@ -34,13 +32,14 @@ This inserts noise before single-qubit gates, two-qubit gates, measurements, and
 ### Structured Noise Model
 
 ```@example noisify
-state = one(Stabilizer, 1)
+reset_state = one(Stabilizer, 1)
 
 circuit = [
     sHadamard(1),
     sCNOT(1,2),
     sMZ(1,1),
-    Reset(state, [2])
+    Reset(reset_state, [2]),
+    VerifyOp(one(Stabilizer, 1), [2]),
 ]
 
 noise_model = CircuitNoise(
@@ -70,10 +69,36 @@ If idle noise is requested and `nqubits` is not provided, an error is thrown.
 
 ### Simulation
 
-The resulting noisy circuits can be simulated directly using the existing trajectory simulators.
+The resulting noisy circuits can be simulated directly using the existing trajectory simulators such as `mctrajectories` and `pftrajectories`.
 
 ```@example noisify
-register = Register(one(Stabilizer, 2), falses(1))
+circuit = [
+    sHadamard(1),
+    sCNOT(1, 2),
+    sHadamard(2),
+    sCNOT(2, 1),
+    sMZ(1, 1),
+    sMZ(2, 2),
+]
+
+noise_model = CircuitNoise(
+    single_qubit = PauliNoise(1e-4, 1e-4, 1e-4),
+    two_qubit    = PauliNoise(1e-3, 1e-3, 1e-3),
+    idle_noise   = PauliNoise(1e-5, 1e-5, 1e-5),
+    measurement  = PauliNoise(2e-3, 2e-3, 2e-3),
+)
+
+noisy_circuit = noisify(circuit, noise_model; nqubits=2)
+
+register = Register(one(Stabilizer, 2), falses(2))
 
 mctrajectories(register, noisy_circuit; trajectories=100)
+```
+
+The same noisy circuit can also be simulated using pauli-frame trajectories.
+
+```@example noisify
+register = Register(one(Stabilizer, 2), falses(2))
+
+pftrajectories(register, noisy_circuit; trajectories=100)
 ```
