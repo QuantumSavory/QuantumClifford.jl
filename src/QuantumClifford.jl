@@ -78,6 +78,11 @@ export
     # Pauli frames
     PauliFrame, pftrajectories, pfmeasurements,
     measurements,
+    # Stim detector error models
+    DetectorError, DetectorErrorModelCircuit,
+    detector_count, logical_observable_count,
+    read_detector_error_model, detector_error_model_circuit,
+    detector_measurements, logical_observable_measurements,
     # Useful States
     bell, ghz, maximally_mixed,
     single_z, single_x, single_y,
@@ -1448,6 +1453,7 @@ include("isclifford.jl")
 include("symbolic_noncliffords.jl")
 #
 include("tableau_show.jl")
+include("detector_error_models.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
 #

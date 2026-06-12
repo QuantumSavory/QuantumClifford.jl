@@ -61,6 +61,25 @@ One can also apply only the noise operator by using [`NoiseOp`](@ref) which acts
 [NoiseOp(noise, [4,5]), NoiseOpAll(noise)]
 ```
 
+## Stim Detector Error Models
+
+Stim detector error model (`.dem`) files can be imported as circuit-like objects and sampled with [`pftrajectories`](@ref).
+The imported circuit stores detector bits first, followed by logical observable bits.
+
+```@example 1
+dem = """
+detector D0
+detector D1
+logical_observable L0
+error(1.0) D0 D1 L0
+"""
+
+circuit = detector_error_model_circuit(IOBuffer(dem))
+frames = pftrajectories(circuit; trajectories=4, threads=false)
+
+detector_measurements(frames, circuit), logical_observable_measurements(frames, circuit)
+```
+
 ## Coincidence Measurements
 
 Global parity measurements involving single-qubit projections and classical communication are implemented with [`BellMeasurement`](@ref). One needs to specify the axes of measurement and the qubits being measured. If the parity is trivial, the circuit continues, if the parity is non-trivial, the circuit ends and reports a detected failure.
