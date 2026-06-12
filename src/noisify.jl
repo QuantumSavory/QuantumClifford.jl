@@ -26,14 +26,14 @@ CircuitNoise(noise::AbstractNoise) = CircuitNoise(
     reset = noise
 )
 
-apply_idle_noise(circuit::AbstractVector, ::NoNoise, nqubits::Integer) = circuit
+insert_idle_noise(circuit::AbstractVector, ::NoNoise) = circuit
 
-function apply_idle_noise(circuit::AbstractVector, idle_noise::AbstractNoise, nqubits::Integer)
+function insert_idle_noise(circuit::AbstractVector, idle_noise::AbstractNoise)
     isempty(circuit) && return Any[]
+    nqubits = maximum(q for op in circuit for q in affectedqubits(op))
     filled_up_to = fill(1, nqubits)
     layers = Dict{Int, Vector{Any}}()
     active_qubits = Dict{Int, Set{Int}}()
-
     for op in circuit
         if op isa AbstractNoiseOp || op isa VerifyOp || op isa ClassicalXOR
             step = maximum(filled_up_to)
@@ -77,7 +77,7 @@ function apply_idle_noise(circuit::AbstractVector, idle_noise::AbstractNoise, nq
     return output
 end
 
-# code for noisify, two 'versions' essentially, one which just takes in simple noise as input and the other which takes in a CircuitNoise object
+
 
 noisify(circuit::AbstractVector, noise::AbstractNoise) = reduce(vcat, noisify.(circuit, (noise,)))
 noisify(op, noise) = Any[op]
@@ -85,37 +85,19 @@ noisify(op::AbstractNoiseOp, noise::AbstractNoise) = Any[op]
 noisify(op::ClassicalXOR, noise::AbstractNoise) = Any[op]
 noisify(op::VerifyOp, noise::AbstractNoise) = Any[op]
 
-# regular noise
-
 noisify(op::AbstractSingleQubitOperator, noise::AbstractNoise) = Any[NoiseOp(noise, affectedqubits(op)), op]
 noisify(op::AbstractTwoQubitOperator, noise::AbstractNoise) = Any[NoiseOp(noise, affectedqubits(op)), op]
 noisify(op::AbstractMeasurement, noise::AbstractNoise) = Any[NoiseOp(noise, affectedqubits(op)), op]
 noisify(op::Reset, noise::AbstractNoise) = Any[op, NoiseOp(noise, affectedqubits(op))]
-noisify(op::AbstractSingleQubitOperator, ::NoNoise) = Any[op]
-noisify(op::AbstractTwoQubitOperator, ::NoNoise) = Any[op]
-noisify(op::AbstractMeasurement, ::NoNoise) = Any[op]
-noisify(op::Reset, ::NoNoise) = Any[op]
-# circuit noise
+noisify(op, ::NoNoise) = Any[op]
 
 
-add_noise_op!(out, ::NoNoise, qubits) = out
-
-
-function add_noise_op!(out, noise::AbstractNoise, qubits)
-    push!(out, NoiseOp(noise, qubits))
-    return out
-end
-
-
-function noisify(circuit::AbstractVector, noise_model::CircuitNoise; nqubits=nothing)
+function noisify(circuit::AbstractVector, noise_model::CircuitNoise)
     if noise_model.idle_noise isa NoNoise
         return reduce(vcat, noisify.(circuit, (noise_model,)))
     end
 
-    nqubits === nothing &&
-        error("nqubits must be provided when idle noise is configured")
-
-    idle_noisy_circuit = apply_idle_noise(circuit, noise_model.idle_noise, nqubits)
+    idle_noisy_circuit = insert_idle_noise(circuit, noise_model.idle_noise)
 
     return reduce(vcat, noisify.(idle_noisy_circuit, (noise_model,)))
 end
@@ -125,30 +107,7 @@ noisify(op::AbstractNoiseOp, ::CircuitNoise) = Any[op]
 noisify(op::ClassicalXOR, ::CircuitNoise) = Any[op]
 noisify(op::VerifyOp, ::CircuitNoise) = Any[op]
 
-function noisify(op::AbstractSingleQubitOperator, noise_model::CircuitNoise)
-    out = Any[]
-    add_noise_op!(out, noise_model.single_qubit, affectedqubits(op))
-    push!(out, op)
-    return out
-end
-
-function noisify(op::AbstractTwoQubitOperator, noise_model::CircuitNoise)
-    out = Any[]
-    add_noise_op!(out, noise_model.two_qubit, affectedqubits(op))
-    push!(out, op)
-    return out
-end
-
-function noisify(op::AbstractMeasurement, noise_model::CircuitNoise)
-    out = Any[]
-    add_noise_op!(out, noise_model.measurement, affectedqubits(op))
-    push!(out, op)
-    return out
-end
-
-function noisify(op::Reset, noise_model::CircuitNoise)
-    out = Any[]
-    push!(out, op)
-    add_noise_op!(out, noise_model.reset, affectedqubits(op))
-    return out
-end
+noisify(op::AbstractSingleQubitOperator, noise_model::CircuitNoise) = noisify(op, noise_model.single_qubit)
+noisify(op::AbstractTwoQubitOperator, noise_model::CircuitNoise) = noisify(op, noise_model.two_qubit)
+noisify(op::AbstractMeasurement, noise_model::CircuitNoise) = noisify(op, noise_model.measurement)
+noisify(op::Reset, noise_model::CircuitNoise) = noisify(op, noise_model.reset)
