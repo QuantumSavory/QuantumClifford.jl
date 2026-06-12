@@ -13,8 +13,6 @@ using Graphs: Graphs, SimpleGraph, AbstractGraph, add_edge!, has_edge, neighbors
               kruskal_mst, nv, ne, edges, is_connected, connected_components,
               cycle_basis, src, dst, vertices
 
-using DocStringExtensions: TYPEDEF, TYPEDFIELDS
-
 using QECCore: CSS, AbstractCSSCode
 import QECCore: code_n, code_s, parity_matrix_x, parity_matrix_z
 
@@ -26,6 +24,6 @@ include("merge.jl")
 export
     build_adapter, build_adapter_intercode, build_adapter_intracode, deform_code,
     skiptree,
-    CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter, AdapterMergedCode
+    CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter
 
 end # module Adapters

@@ -1,27 +1,13 @@
 """
-    build_initial_aux_graph(logical_support::Vector{Int}, code::CSS) :: AuxiliaryGraph
+Initial auxiliary graph G_0 from paper §II.C [swaroop2026universal](@cite).
+One vertex per qubit in `logical_support`, one edge per pair of consecutive
+vertices in `sort(supp(s) ∩ logical_support)` for each X-stabilizer that
+overlaps the logical. Warns and adds repair edges if the result is disconnected.
 
-Construct the initial auxiliary graph G_0 (§II.C of [swaroop2026universal](@cite))
-for measuring Z̄ with the given `logical_support` on `code`. One vertex per
-support qubit (identity port function), one edge per pair of consecutive
-vertices in `sort(supp(s) ∩ logical_support)` for each X-stabilizer row `s`
-that overlaps the logical. If the resulting graph is disconnected, emits a
-`@warn` and greedily adds repair edges between components.
-
-Satisfies desiderata 0–2 of Theorem 5 (connectivity, bounded degree, short
-matchings). Desideratum 3 (sparse cycle basis) needs
-[`cellulate_long_cycles!`](@ref); desideratum 4 (relative expansion ≥ 1)
-must be checked separately and only requires a fixup if it fails — the
-worked examples in paper §VII already meet it without modification.
-
-`edge_to_qubit` is filled with `1:ne(graph)` as a placeholder; the real
-global-qubit assignment happens at merge time. `cycle_basis_matrix` is
-empty until cellulation runs.
-
-The sorted-adjacent-pair matching is deterministic and reproduces Zenodo
-on the small worked examples, but is not optimal in general; a smarter
-matching that minimises edge reuse across stabilizers may give better
-expansion downstream.
+Satisfies Theorem 5 desiderata 0–2 (connectivity, bounded degree, short
+matchings). Desideratum 3 (sparse cycle basis) requires a follow-up call
+to [`cellulate_long_cycles!`](@ref). Desideratum 4 (relative expansion)
+is verified separately via [`verify_desideratum_4`](@ref).
 """
 function build_initial_aux_graph(
     logical_support::Vector{Int},
@@ -92,11 +78,9 @@ function build_initial_aux_graph(
 end
 
 """
-    port_function_as_matrix(aux::AuxiliaryGraph, n_qubits::Int) :: SparseMatrixCSC{Bool, Int}
-
-Return matrix `F` of Figure 7 of [swaroop2026universal](@cite):
-`F[v, q] = 1` iff `v ∈ port_function[q_idx]` where `q_idx` is `q`'s position
-in `aux.logical_support`. Shape `(nv(aux.graph), n_qubits)`.
+The `F` matrix from Figure 7 [swaroop2026universal](@cite): `F[v, q] = 1`
+iff vertex `v` is in the port function of qubit `q`. Shape
+`(nv(aux.graph), n_qubits)`.
 """
 function port_function_as_matrix(aux::AuxiliaryGraph,
                                   n_qubits::Int)::SparseMatrixCSC{Bool, Int}
@@ -115,16 +99,11 @@ function port_function_as_matrix(aux::AuxiliaryGraph,
 end
 
 """
-    edge_pair_to_index(graph::SimpleGraph{Int}, pair::Tuple{Int,Int}) :: Int
+Position of the sorted vertex pair `(u, v)` in `edges(graph)` iteration order,
+or `0` if it isn't an edge. This iteration order is the column convention
+for the merged H_X / H_Z edge blocks.
 
-Return the position of the edge `pair = (u, v)` (with `u ≤ v`) in
-`edges(graph)` iteration order; returns `0` if the pair is not an edge.
-This iteration order is the canonical column convention for the merged
-H_X / H_Z edge blocks.
-
-Linear scan, O(`ne(graph)`). Callers in hot loops should precompute a
-`Dict{Tuple{Int,Int}, Int}` once and reuse it (see
-[`stabilizer_modification_matrix`](@ref)).
+O(`ne(graph)`). Hot loops should precompute `Dict{Tuple{Int,Int}, Int}`.
 """
 function edge_pair_to_index(graph::SimpleGraph{Int},
                               pair::Tuple{Int,Int})::Int
@@ -141,42 +120,23 @@ function edge_pair_to_index(graph::SimpleGraph{Int},
 end
 
 """
-    cellulate_long_cycles!(aux::AuxiliaryGraph; max_cycle_len=6,
-                            max_iterations=100, chords=nothing) :: AuxiliaryGraph
-
 Cellulate `aux.graph` so every basis cycle has length ≤ `max_cycle_len`
-(desideratum 3a of [swaroop2026universal](@cite)). Default algorithm:
-repeatedly take the longest cycle in `Graphs.cycle_basis` and add the
-chord `(cycle[1], cycle[n÷2 + 1])` (paper §VII.A midpoint split). If
-`chords` is supplied, those are applied in order first, then the
-midpoint algorithm runs on whatever remains.
+(paper desideratum 3a). Repeatedly takes the longest basis cycle and adds
+the chord `(cycle[1], cycle[n÷2 + 1])`. If `chords` is supplied, those are
+added in order first, then the midpoint algorithm runs.
 
-Mutates `aux.graph`, extends `aux.edge_to_qubit` with placeholders for
-each new edge, and rebuilds `aux.cycle_basis_matrix` from the final
-basis. Returns a new `AuxiliaryGraph` sharing the mutated graph (the
-struct is immutable except for `graph` and `edge_to_qubit`, which is
-why we can't rebind `cycle_basis_matrix` in place).
+Mutates `aux.graph` and `aux.edge_to_qubit`, rebuilds the cycle basis
+matrix, and returns a new `AuxiliaryGraph` sharing the mutated graph.
 
-# Errors
+# The `chords` kwarg — basis choice affects distance
 
-`ArgumentError` for out-of-range chord endpoints, self-loops, or chord
-already present. `error` if `max_iterations` is exhausted (likely a
-degenerate input).
-
-# Why the `chords` kwarg exists — distance sensitivity to basis choice
-
-`Graphs.cycle_basis` and NetworkX choose different DFS bases for the
-same graph, so the "longest cycle" we split differs from Zenodo's.
-Only the final edge count, the basis length bound, `N · G ≡ 0 (mod 2)`,
-and the rank `m − n + 1` are guaranteed.
-
-This matters: paper Table II's `BB / Z_3` deformed code is `[[115, 5, 12]]`
-with Zenodo's chord `(1, 11)` but `[[115, 5, ≤11]]` with our default
-midpoint chord `(4, 9)`. For byte-identical paper reproduction of the
-single-logical case, pass `chords=[(1, 11)]`. For joint measurements via
-[`build_adapter`](@ref), the bridge X-checks absorb the extra weight-
-`(d-1)` logical empirically, so the merged code's distance comes out
-right regardless.
+`Graphs.cycle_basis` and NetworkX make different DFS choices, so the
+midpoint cellulation differs from Zenodo's. For paper Table II's BB / Z_3
+deformed code, the paper's chord `(1, 11)` gives `[[115, 5, 12]]` while
+our default `(4, 9)` gives `[[115, 5, ≤11]]`. Pass `chords=[(1, 11)]` for
+byte-identical paper reproduction. Joint measurements via
+[`build_adapter`](@ref) are unaffected — the bridge X-checks absorb the
+extra weight-`(d-1)` logical that the chord choice introduces.
 """
 function cellulate_long_cycles!(
     aux::AuxiliaryGraph;
@@ -263,13 +223,9 @@ function cellulate_long_cycles!(
 end
 
 """
-    relative_expansion(graph::SimpleGraph{Int}, port_vertices::Vector{Int}, t::Int) :: Rational{Int}
-
-Exact relative expansion `β_t(G, U)` (Definition 2 of
-[swaroop2026universal](@cite)) by brute-force over `2^n` vertex subsets.
-Returns `typemax(Int) // 1` as +∞ when no subset gives a positive
-denominator. Errors for `n > 24` — use an LP relaxation or sampling
-bound for larger graphs.
+Exact relative expansion `β_t(G, U)` (paper Definition 2) by brute-force
+enumeration of `2^n` vertex subsets. Returns `typemax(Int) // 1` as +∞ when
+the constraint is vacuous. Errors for `n > 24`.
 """
 function relative_expansion(graph::SimpleGraph{Int},
                              port_vertices::Vector{Int},
@@ -320,13 +276,10 @@ function relative_expansion(graph::SimpleGraph{Int},
 end
 
 """
-    verify_desideratum_4(aux::AuxiliaryGraph, d::Int) :: Bool
-
-Check `β_d(G, im f) ≥ 1` (desideratum 4 of Theorem 5,
-[swaroop2026universal](@cite)). `im f` is the union of port-function
-vertices. The paper's §VII.A worked examples all satisfy this without
-modification. Graphs that don't need expansion-boosting edges per §II.C
-(not implemented yet).
+Check `β_d(G, im f) ≥ 1` (paper Theorem 5, desideratum 4). `im f` is the
+union of port-function vertices. If the graph fails the bound, the paper
+prescribes adding expansion-boosting edges; that fixup is not implemented
+since the worked examples satisfy the bound without modification.
 """
 function verify_desideratum_4(aux::AuxiliaryGraph, d::Int)::Bool
     pv_set = Set{Int}()

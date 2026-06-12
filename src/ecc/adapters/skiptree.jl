@@ -1,25 +1,15 @@
 """
-    skiptree(graph::SimpleGraph{Int}; root::Int = 1) :: SkipTreeOutput
+SkipTree algorithm (paper Algorithm 2, Appendix E [swaroop2026universal](@cite)).
+Returns `(T, P, :H_R)` with `T · G · P ≡ H_R(n) (mod 2)`, where `G` is the
+`m × n` edge-vertex incidence of `graph`. `T` is `(n-1) × m` and `(3, 2)`-sparse;
+`P` is the `n × n` vertex permutation.
 
-SkipTree algorithm (Algorithm 2, Appendix E of [swaroop2026universal](@cite))
-targeting the full-rank repetition check matrix `H_R(n)`. Returns
-`(T, P, :H_R)` with `T · G · P ≡ H_R(n) (mod 2)`, where `G` is the
-`m × n` edge-vertex incidence of `graph`. `T` is `(n-1) × m` and
-`(3, 2)`-sparse; `P` is the `n × n` vertex permutation.
+Builds a spanning tree (Kruskal MST) and runs the `LabelFirst`/`LabelLast`
+recursion so consecutive labels are within tree-distance 3 (Theorem 7);
+row `l` of `T` is the edges of the tree-path between `label[l]` and `label[l+1]`.
 
-Builds an internal spanning tree via Kruskal MST and runs the alternating
-`LabelFirst`/`LabelLast` recursion so that consecutive labels are within
-tree-distance 3 (Theorem 7); row `l` of `T` marks the edges of the
-tree-path between `label[l]` and `label[l+1]`.
-
-# Reproducibility
-
-The Python reference (`external/adapters_ldpc_surgery/skip_tree_algorithm.py`)
-takes a pre-built spanning tree. We accept any connected graph and
-compute the MST internally, and sort neighbour lists for deterministic
-iteration in Julia. Different MST and child orders produce different but
-equally valid `T` matrices — we don't aim for byte-identical Zenodo
-output, only the algebraic guarantee above.
+The choice of MST and child iteration order affects which valid `T` matrix
+comes out, so this does not match the paper's Zenodo `T_X` byte-for-byte.
 """
 function skiptree(graph::SimpleGraph{Int}; root::Int = 1)::SkipTreeOutput
     n = nv(graph)

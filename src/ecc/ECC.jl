@@ -413,9 +413,9 @@ include("adapters/Adapters.jl")
 
 using .Adapters: build_adapter, build_adapter_intercode, build_adapter_intracode,
                  deform_code, skiptree,
-                 CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter, AdapterMergedCode
+                 CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter
 export build_adapter, build_adapter_intercode, build_adapter_intracode,
        deform_code, skiptree,
-       CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter, AdapterMergedCode
+       CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter
 
 end #module

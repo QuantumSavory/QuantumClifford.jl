@@ -1,10 +1,6 @@
 """
-    incidence_matrix_transpose(aux::AuxiliaryGraph) :: SparseMatrixCSC{Bool, Int}
-
-`(nv, ne)` incidence-matrix transpose of `aux.graph`: row `v`, column `e`
-is `true` iff `v` is an endpoint of edge `e`. Edge ordering matches
-`edges(aux.graph)`. This is the `G^⊤` block of Figure 7
-[swaroop2026universal](@cite), used in the V_l / V_r vertex-Z rows.
+The `G^⊤` block from Figure 7 [swaroop2026universal](@cite). Row `v`, column
+`e` is true iff `v` is an endpoint of edge `e`, in `edges(aux.graph)` order.
 """
 function incidence_matrix_transpose(aux::AuxiliaryGraph)::SparseMatrixCSC{Bool, Int}
     n = nv(aux.graph)
@@ -20,13 +16,10 @@ function incidence_matrix_transpose(aux::AuxiliaryGraph)::SparseMatrixCSC{Bool, 
 end
 
 """
-    stabilizer_modification_matrix(aux::AuxiliaryGraph, n_stabilizers::Int) :: SparseMatrixCSC{Bool, Int}
-
-Stabilizer-modification matrix `M` of Figure 7: `M[s, e] = 1` iff edge `e`
-is in μ(L_s). Shape `(n_stabilizers, ne(aux.graph))`. Resolves vertex pairs
-in `aux.stabilizer_matchings` to current edge indices via a precomputed
-lookup, so it works both pre- and post-cellulation. Errors if a stored
-pair is not currently an edge (indicates external mutation of the graph).
+The `M` block from Figure 7 [swaroop2026universal](@cite). `M[s, e] = 1` iff
+edge `e` is in the matching μ(L_s) of X-stabilizer `s`. Stored vertex pairs
+are resolved to current edge indices at call time, so it stays valid across
+cellulation chord additions.
 """
 function stabilizer_modification_matrix(aux::AuxiliaryGraph,
                                           n_stabilizers::Int)::SparseMatrixCSC{Bool, Int}
@@ -55,12 +48,9 @@ function stabilizer_modification_matrix(aux::AuxiliaryGraph,
 end
 
 """
-    canonical_H_R(n::Int) :: SparseMatrixCSC{Bool, Int}
-
-The `(n-1, n)` banded full-rank repetition parity-check matrix with
-`H_R[i, i] = H_R[i, i+1] = 1`. This is the bridge × adapter block of the
-merged H_X (Eq. 37 of [swaroop2026universal](@cite)) and the algorithm-2
-target of [`skiptree`](@ref).
+The `(n-1, n)` banded full-rank repetition parity-check matrix:
+`H_R[i, i] = H_R[i, i+1] = 1`. Bridge × adapter block of the merged H_X
+(paper Eq. 37) and the target of [`skiptree`](@ref).
 """
 function canonical_H_R(n::Int)::SparseMatrixCSC{Bool, Int}
     n ≥ 2 || throw(ArgumentError("canonical_H_R: n must be ≥ 2 (got $n)"))
@@ -75,15 +65,8 @@ function canonical_H_R(n::Int)::SparseMatrixCSC{Bool, Int}
 end
 
 """
-    adapter_bridge_x_check_matrix(
-        skiptree_l::SkipTreeOutput,
-        skiptree_r::SkipTreeOutput,
-        adapter_width::Int,
-    ) :: SparseMatrixCSC{Bool, Int}
-
-Bridge X-check matrix ``[T_l \\mid H_R(w) \\mid T_r]`` (Eq. 37 of
-[swaroop2026universal](@cite)). Shape `(w - 1, m_l + w + m_r)`. Errors with
-`DimensionMismatch` if `T_l` or `T_r` does not have `w - 1` rows.
+The bridge X-check block ``[T_l \\mid H_R(w) \\mid T_r]`` from paper Eq. 37.
+Shape `(w - 1, m_l + w + m_r)`.
 """
 function adapter_bridge_x_check_matrix(
     skiptree_l::SkipTreeOutput,
@@ -103,16 +86,9 @@ function adapter_bridge_x_check_matrix(
 end
 
 """
-    assemble_merged_code_intercode(
-        code1::CSS, code2::CSS,
-        aux1::AuxiliaryGraph, aux2::AuxiliaryGraph,
-        skiptree1::SkipTreeOutput, skiptree2::SkipTreeOutput,
-    ) :: CSS
-
-Inter-code merged CSS code (Figure 7 / Eq. 37 of [swaroop2026universal](@cite));
-`code1` and `code2` must be distinct objects. The two `aux.logical_support`
-must have equal length (Lemma 9). Auxiliary graphs must have been cellulated
-(so `cycle_basis_matrix` is populated, though zero rows is fine for trees).
+Inter-code merged CSS code (paper Figure 7 / Eq. 37). `code1` and `code2` must
+be distinct objects with equal-length logical supports (Lemma 9). Auxiliary
+graphs must have been cellulated.
 
 # Column layout (n = n1 + m1 + w + m2 + n2)
 
@@ -139,8 +115,8 @@ must have equal length (Lemma 9). Auxiliary graphs must have been cellulated
 | V_l vertex (w) | F_l   | G_l^T | P_l | 0     | 0     |
 | V_r vertex (w) | 0     | 0     | P_r | G_r^T | F_r   |
 
-The `P_l`/`P_r` A-blocks are the SkipTree permutations and are required
-for CSS commutation between bridge X-checks and V-vertex Z-checks.
+The `P_l`/`P_r` A-blocks are the SkipTree permutations, required for CSS
+commutation between bridge X-checks and V-vertex Z-checks.
 """
 function assemble_merged_code_intercode(
     code1::CSS, code2::CSS,
@@ -208,27 +184,13 @@ function assemble_merged_code_intercode(
 end
 
 """
-    build_adapter_intercode(
-        pair::CodePair;
-        max_cycle_len_1::Union{Int,Nothing} = nothing,
-        max_cycle_len_2::Union{Int,Nothing} = nothing,
-        chords_1::Union{Nothing, Vector{Tuple{Int,Int}}} = nothing,
-        chords_2::Union{Nothing, Vector{Tuple{Int,Int}}} = nothing,
-    ) :: Adapter
+Inter-code joint Z̄_1 Z̄_2 measurement. Builds both aux graphs, cellulates,
+runs SkipTree, and assembles via [`assemble_merged_code_intercode`](@ref).
 
-Inter-code joint Z̄_1 Z̄_2 measurement. Builds both aux graphs,
-cellulates, runs SkipTree, and assembles per
-[`assemble_merged_code_intercode`](@ref).
-
-When `max_cycle_len_i = nothing`, defaults to the max X-stabilizer weight
-of the corresponding code — matches paper §VII.A's heuristic ("LP_2 has
-weight-7 stabilizers, so we choose not to cellulate") and reproduces
-Example B (BB[[98,6,12]] × LP[[200,20,10]]) with no kwargs (`n=355`).
-`chords_{1,2}` forward to [`cellulate_long_cycles!`](@ref) when you need
-byte-identical reproduction.
-
-Errors `ArgumentError` if `code1 === code2` (use the intra-code path),
-`DimensionMismatch` if the two logical supports differ in length.
+`max_cycle_len_i = nothing` defaults to the max X-stabilizer weight of
+the corresponding code (paper §VII.A heuristic). With no kwargs this
+reproduces Example B (BB[[98,6,12]] × LP[[200,20,10]] → n=355).
+`chords_{1,2}` forwards to [`cellulate_long_cycles!`](@ref).
 """
 function build_adapter_intercode(
     pair::CodePair;
@@ -261,14 +223,8 @@ function build_adapter_intercode(
 end
 
 """
-    assemble_merged_code_intracode(
-        code::CSS,
-        aux1::AuxiliaryGraph, aux2::AuxiliaryGraph,
-        skiptree1::SkipTreeOutput, skiptree2::SkipTreeOutput,
-    ) :: CSS
-
-Intra-code merged CSS code (both logicals on the same block) per
-Figure 7 / Eq. 37 of [swaroop2026universal](@cite).
+Intra-code merged CSS code (both logicals on the same block; paper Figure 7 /
+Eq. 37).
 
 # Column layout (n = n_code + m_l + w + m_r)
 
@@ -297,14 +253,14 @@ where `w = min(|aux1.logical_support|, |aux2.logical_support|)`.
 
 # Differences vs. inter-code
 
-1. A single code X-stab can touch both logicals, so M_l and M_r share
-   the same code-X-stab row block (not two separate blocks).
-2. When `w_l ≠ w_r`, the adapter width is `w = min(w_l, w_r)`. We trim
-   `T_{l,r}` to `w − 1` rows and `P_{l,r}` to `w` columns; the `w_l − w`
+1. A single code X-stab can touch both logicals, so M_l and M_r share the
+   code-X-stab row block.
+2. When `w_l ≠ w_r`, the adapter width is `w = min(w_l, w_r)`. `T_{l,r}` is
+   trimmed to `w − 1` rows and `P_{l,r}` to `w` columns. The `w_l − w`
    "extra" aux1 vertices keep their F/G^T entries (needed for vertex-Z
-   commutation) but get a zero A-block, and the bridge only touches the
-   first `w` label positions so commutation still holds.
-3. Both F_l and F_r target the code column block — no separate code2 block.
+   commutation) but get a zero A-block; the bridge only touches the first
+   `w` label positions so commutation still holds.
+3. Both F_l and F_r target the code column block (no separate code2).
 """
 function assemble_merged_code_intracode(
     code::CSS,
@@ -364,18 +320,9 @@ function assemble_merged_code_intracode(
 end
 
 """
-    build_adapter_intracode(
-        pair::CodePair;
-        max_cycle_len_1::Union{Int,Nothing} = nothing,
-        max_cycle_len_2::Union{Int,Nothing} = nothing,
-        chords_1::Union{Nothing, Vector{Tuple{Int,Int}}} = nothing,
-        chords_2::Union{Nothing, Vector{Tuple{Int,Int}}} = nothing,
-    ) :: Adapter
-
 Intra-code (same codeblock) version of [`build_adapter_intercode`](@ref).
 Reproduces paper Example C ([[150, 5, 12]], BB intra with Z_1/Z_3, adapter
-width 12) with default kwargs. Errors `ArgumentError` if
-`code1 !== code2` or if either support has < 2 qubits.
+width 12) with default kwargs.
 """
 function build_adapter_intracode(
     pair::CodePair;
@@ -407,12 +354,11 @@ function build_adapter_intracode(
 end
 
 """
-    build_adapter(pair::CodePair; kwargs...) :: Adapter
-
-Dispatches to [`build_adapter_intracode`](@ref) if `code1 === code2`,
-else [`build_adapter_intercode`](@ref). Reproduces paper Examples B and
-C with no extra kwargs. Use [`AdapterMergedCode`](@ref) to wrap the
-result for the standard `AbstractECC` dispatch.
+Top-level dispatcher: routes to [`build_adapter_intracode`](@ref) if
+`code1 === code2`, else [`build_adapter_intercode`](@ref). Reproduces paper
+Examples B and C with no extra kwargs. The returned [`Adapter`](@ref) is an
+`AbstractCSSCode`, usable directly with `code_n`, `parity_matrix_x`, distance,
+and decoder harnesses.
 
 ```jldoctest adapter_examples
 julia> using QuantumClifford, QECCore
@@ -431,7 +377,7 @@ julia> z = sort(findall(!iszero, stab_to_gf2(logz_ops(Surface(3,3)))[1, 14:26]))
 
 julia> adapter = build_adapter(CodePair(c1, c2, z, z));
 
-julia> (code_n(adapter.merged_code), code_k(adapter.merged_code), adapter.adapter_width)
+julia> (code_n(adapter), code_k(adapter), adapter.adapter_width)
 (33, 1, 3)
 ```
 """
@@ -443,24 +389,16 @@ function build_adapter(pair::CodePair; kwargs...)::Adapter
     end
 end
 
-# AbstractCSSCode interface for AdapterMergedCode — delegates to the inner CSS.
-parity_matrix_x(c::AdapterMergedCode) = c.adapter.merged_code.Hx
-parity_matrix_z(c::AdapterMergedCode) = c.adapter.merged_code.Hz
-code_n(c::AdapterMergedCode) = code_n(c.adapter.merged_code)
-code_s(c::AdapterMergedCode) = code_s(c.adapter.merged_code)
+# `Adapter <: AbstractCSSCode` — delegate the CSS interface to the merged code.
+parity_matrix_x(a::Adapter) = a.merged_code.Hx
+parity_matrix_z(a::Adapter) = a.merged_code.Hz
+code_n(a::Adapter) = code_n(a.merged_code)
+code_s(a::Adapter) = code_s(a.merged_code)
 
 """
-    deform_code(
-        code::CSS,
-        logical_support::Vector{Int};
-        max_cycle_len::Union{Int,Nothing} = nothing,
-        chords::Union{Nothing, Vector{Tuple{Int,Int}}} = nothing,
-    ) :: CSS
-
-Single-logical deformed code (Figure 3 / Eq. 9 of [swaroop2026universal](@cite)):
-attach one auxiliary graph + cycle checks to `code` so the Z operator on
-`logical_support` becomes a stabilizer product. No bridge, no SkipTree —
-use [`build_adapter`](@ref) for the joint-measurement case.
+Single-logical deformed code (paper Figure 3 / Eq. 9): attach one auxiliary
+graph and cycle checks so the Z operator on `logical_support` becomes a
+stabilizer product. Use [`build_adapter`](@ref) for joint measurements.
 
 ```
 H_X_deform = [ H_X | M  ]      original X-stabs deformed by matchings
@@ -470,11 +408,10 @@ H_Z_deform = [ H_Z | 0   ]     original Z-stabs unchanged
              [ F   | G^T ]     vertex Z-checks (one per port vertex)
 ```
 
-`max_cycle_len = nothing` defaults to the original code's max X-stab weight
-(matching paper §VII.A's heuristic). `chords` forwards to
-[`cellulate_long_cycles!`](@ref) for byte-identical paper reproduction.
+`max_cycle_len = nothing` defaults to the code's max X-stab weight (paper
+§VII.A heuristic). `chords` forwards to [`cellulate_long_cycles!`](@ref).
 
-# Reproducibility — paper Table II
+# Paper Table II reproduction
 
 | Original code | Logical | Deformed params | Default cellulation? |
 |---|---|---|:---:|
@@ -482,13 +419,10 @@ H_Z_deform = [ H_Z | 0   ]     original Z-stabs unchanged
 | LP[[200,20,10]] | Z_2 | [[220,19,10]] | ✓ |
 | BB[[98,6,12]] (full-rank basis) | Z_3 | [[115,5,12]] | needs `chords=[(1,11)]` |
 
-For BB / Z_3, our default midpoint picks chord `(4, 9)`; Zenodo's
-NetworkX pipeline picks `(1, 11)`. Both give valid 17-edge cellulations,
-but our default produces `d ≤ 11` and Zenodo's gives `d = 12`.
-Single-logical reproduction therefore needs the explicit `chords` kwarg.
-The joint-measurement case via [`build_adapter`](@ref) is unaffected —
-the bridge X-checks absorb the extra weight-`(d-1)` logical that the
-chord choice introduces.
+For BB / Z_3, our default midpoint chord `(4, 9)` and the paper's `(1, 11)`
+are both valid 17-edge cellulations but give different single-logical
+distance (≤ 11 vs 12). The joint case via [`build_adapter`](@ref) is
+unaffected; the bridge X-checks absorb the extra weight-`(d-1)` logical.
 
 ```jldoctest
 julia> using QuantumClifford, QECCore
