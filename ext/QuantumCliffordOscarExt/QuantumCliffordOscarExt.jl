@@ -11,7 +11,7 @@ import Nemo: FqFieldElem
 import Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra,
    GroupAlgebraElem, direct_product, sub, ZZ, lift, polynomial_ring
 import Oscar
-import Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup,
+import Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup, PermGroup, isomorphism, codomain,
     BasicGAPGroupElem, DirectProductGroup, cyclic_group, free_module, hom, tensor_product,
     chain_complex, total_complex, map, summands, MatElem, matrix, nrows, ncols, kernel, dim, image,
     base_ring, ComplexOfMorphisms, coefficients, zero_matrix, circshift,
@@ -31,7 +31,7 @@ import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurface, DDimensionalToric, boundary_maps,
-    HomologicalProduct, DoubleHomologicalProduct, GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly, MultivariateMulticycle
+    HomologicalProduct, DoubleHomologicalProduct, GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly, MultivariateMulticycle, ZSZ
 
 include("types.jl")
 include("direct_product.jl")
@@ -42,5 +42,6 @@ include("d_dimensional_codes.jl")
 include("trivariate_tricycle.jl")
 include("multivariate_multicycle.jl")
 include("homological_product_codes.jl")
+include("zsz_code.jl")
 
 end # module

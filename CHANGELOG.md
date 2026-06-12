@@ -5,6 +5,10 @@
 
 # News
 
+## v0.11.5 - dev
+
+- `ZSZ` codes (`two_block_group_algebra_code`s built from semidirect product of groups) are now implemented in ECC submodule.
+
 ## v0.11.4 - 2026-05-05
 
 - Add `DepolarizationNoise` for n-qubit depolarizing noise channels.
