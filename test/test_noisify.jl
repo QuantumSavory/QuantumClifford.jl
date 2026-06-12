@@ -68,7 +68,7 @@
             measurement  = PauliNoise(2e-3, 2e-3, 2e-3),
         )
 
-        noisy = noisify(circuit, noise_model; nqubits=3)
+        noisy = noisify(circuit, noise_model)
 
         @test noisy[1] isa AbstractNoiseOp
         @test Tuple(affectedqubits(noisy[1])) == (3,)
