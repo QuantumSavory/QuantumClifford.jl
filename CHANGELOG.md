@@ -5,9 +5,13 @@
 
 # News
 
-## v0.11.5 - dev
+## v0.11.6 - dev
 
 - Import Stim detector error model (`.dem`) files as Pauli-frame circuits with `read_detector_error_model` and `parse_detector_error_model`. The result is a `DetectorErrorModelCircuit` that can be sampled directly with `pftrajectories`. New circuit operations `DetectorError` and `DeclareMeasurementBits` express the detector-error-model semantics.
+
+## v0.11.5 - 2026-06-12
+
+- **(fix)** Broken edge case in `remove_column!`, a non-public function used by QuantumSavory.
 
 ## v0.11.4 - 2026-05-05
 
