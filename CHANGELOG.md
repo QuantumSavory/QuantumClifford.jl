@@ -5,6 +5,10 @@
 
 # News
 
+## v0.11.5 - 2026-06-12
+
+- **(fix)** Broken edge case in `remove_column!`, a non-public function used by QuantumSavory.
+
 ## v0.11.4 - 2026-05-05
 
 - Add `DepolarizationNoise` for n-qubit depolarizing noise channels.
