@@ -2,6 +2,7 @@
 
 - `permute` will be a wrapper around to `QuantumInterface.permutesystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
+- Add an optional Quasar.jl extension for importing Clifford-subset OpenQASM 3 programs with `parse_qasm3` and `read_qasm3`.
 
 # News
 

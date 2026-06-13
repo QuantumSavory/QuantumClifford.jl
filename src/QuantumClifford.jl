@@ -104,6 +104,8 @@ export
     emtrajectories,
     # makie plotting -- defined only when extension is loaded
     stabilizerplot, stabilizerplot_axis,
+    # OpenQASM 3 import -- defined only when the Quasar extension is loaded
+    parse_qasm3, read_qasm3,
     # sum types
     compactify_circuit
     # gpu support
@@ -1465,6 +1467,7 @@ using .PureNonClifford
 #
 include("grouptableaux.jl")
 include("plotting_extensions.jl")
+include("qasm_ext.jl")
 #
 include("gpu_adapters.jl")
 end #module

@@ -24,6 +24,37 @@ using Quantikz # hide
 [sCNOT(2,4),sHadamard(2),sCPHASE(1,3),sSWAP(2,4)]
 ```
 
+OpenQASM 3 circuits in the Clifford subset can be imported with [`parse_qasm3`](@ref)
+or [`read_qasm3`](@ref) after loading Quasar.jl:
+
+```julia
+using QuantumClifford
+import Quasar
+
+circuit = parse_qasm3("""
+OPENQASM 3.0;
+qubit[2] q;
+bit[2] c;
+
+h q[0];
+cx q[0], q[1];
+c[0] = measure q[0];
+c[1] = measure q[1];
+""")
+
+# [
+#     sHadamard(1),
+#     sCNOT(1, 2),
+#     sMZ(1, 1),
+#     sMZ(2, 2),
+# ]
+```
+
+The importer converts OpenQASM's zero-based qubit and bit indices to
+QuantumClifford's one-based indices. It currently supports `id`, `x`, `y`, `z`,
+`h`, `s`, `sdg`, `cx`, `cz`, `swap`, computational-basis `measure`, and
+`reset`.
+
 Any arbitrary tableaux can be used as a gate too.
 
 They can be specified by giving a Clifford operator tableaux and the indices on which it acts
