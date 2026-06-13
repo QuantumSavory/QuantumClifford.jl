@@ -19,8 +19,7 @@ frames  = pftrajectories(circuit; trajectories=10_000)
 measurements(frames)
 ```
 
-`detector_error_model_circuit` is the same function under a second name, and if
-you already have the model as a string (rather than a file) use
+If you already have the model as a string (rather than a file) use
 [`parse_detector_error_model`](@ref).
 
 ## What you get back
@@ -104,6 +103,6 @@ probability, unbalanced braces — raises an `ArgumentError` pointing at the lin
 ## API
 
 See the [full API](@ref Full-API) for the docstrings of
-[`read_detector_error_model`](@ref), [`detector_error_model_circuit`](@ref),
+[`read_detector_error_model`](@ref),
 [`parse_detector_error_model`](@ref), [`DetectorErrorModelCircuit`](@ref),
 [`DetectorError`](@ref), and [`DeclareMeasurementBits`](@ref).

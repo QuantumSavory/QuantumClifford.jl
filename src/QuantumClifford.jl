@@ -79,7 +79,7 @@ export
     PauliFrame, pftrajectories, pfmeasurements,
     measurements,
     # Detector error model import
-    read_detector_error_model, detector_error_model_circuit, parse_detector_error_model,
+    read_detector_error_model, parse_detector_error_model,
     DetectorError, DeclareMeasurementBits, DetectorErrorModelCircuit,
     # Useful States
     bell, ghz, maximally_mixed,

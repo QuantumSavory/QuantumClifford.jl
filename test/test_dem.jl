@@ -84,7 +84,6 @@
         path = tempname() * ".dem"
         write(path, "detector D0\nerror(0.5) D0\n")
         @test read_detector_error_model(path) isa DetectorErrorModelCircuit
-        @test detector_error_model_circuit(path) isa DetectorErrorModelCircuit
     end
 
     @testset "clear errors for unsupported syntax" begin

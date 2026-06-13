@@ -38,9 +38,6 @@ function apply!(frame::PauliFrame, op::DetectorError)
     return frame
 end
 
-# The reference trajectory of a Register is noiseless, so the mechanism never fires there.
-apply!(r::Register, ::DetectorError) = r
-
 affectedqubits(::DetectorError) = ()
 affectedbits(op::DetectorError) = op.bits
 
@@ -56,7 +53,6 @@ struct DeclareMeasurementBits <: AbstractOperation
 end
 
 apply!(frame::PauliFrame, ::DeclareMeasurementBits) = frame
-apply!(r::Register, ::DeclareMeasurementBits) = r
 
 affectedqubits(::DeclareMeasurementBits) = ()
 affectedbits(op::DeclareMeasurementBits) = (op.nbits,)
@@ -76,8 +72,8 @@ reference run.
 
 See also: [`read_detector_error_model`](@ref).
 """
-struct DetectorErrorModelCircuit <: AbstractVector{AbstractOperation}
-    circuit::Vector{AbstractOperation}
+struct DetectorErrorModelCircuit <: AbstractVector{Union{DetectorError,DeclareMeasurementBits}}
+    circuit::Vector{Union{DetectorError,DeclareMeasurementBits}}
     num_detectors::Int
     num_observables::Int
 end
@@ -113,16 +109,9 @@ for sampling (the mechanism flips every listed target) and coordinates on
 `detector`/`shift_detectors` lines are ignored too. Unsupported instructions
 raise an `ArgumentError`.
 
-See also: [`detector_error_model_circuit`](@ref), [`parse_detector_error_model`](@ref).
+See also: [`parse_detector_error_model`](@ref).
 """
 read_detector_error_model(path::AbstractString) = parse_detector_error_model(read(path, String))
-
-"""
-$(TYPEDSIGNATURES)
-
-Alias for [`read_detector_error_model`](@ref).
-"""
-detector_error_model_circuit(path::AbstractString) = read_detector_error_model(path)
 
 """
 $(TYPEDSIGNATURES)
@@ -305,7 +294,7 @@ function _dem_build_circuit(state)
     D = state.max_detector + 1
     L = state.max_observable + 1
     D + L == 0 && throw(ArgumentError("the detector error model declares no detectors or logical observables"))
-    circuit = AbstractOperation[]
+    circuit = Union{DetectorError,DeclareMeasurementBits}[]
     for (p, dets, obs) in state.mechanisms
         push!(circuit, DetectorError(p, [d + 1 for d in dets], [D + o + 1 for o in obs]))
     end
