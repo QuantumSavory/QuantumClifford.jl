@@ -13,8 +13,8 @@ CurrentModule = QuantumClifford.ECC
 
 ## Code-capacity detector error models
 
-QuantumClifford can export a code-capacity detector error model for the checks
-of an ECC code. The detector targets follow the row order of
+QuantumClifford can export code-capacity Stim detector error model text for the
+checks of an ECC code. The detector targets follow the row order of
 [`parity_checks`](@ref), using Stim's zero-based `D` numbering. Logical
 observable targets follow the row order of [`faults_matrix`](@ref), using
 zero-based `L` numbering: first logical-X observables, then logical-Z
@@ -24,8 +24,8 @@ observables.
 using QuantumClifford
 using QuantumClifford.ECC
 
-dem = detector_error_model(Steane7(); px=1e-3, py=0.0, pz=1e-3)
-write_detector_error_model("steane7.dem", dem)
+dem_text = detector_error_model(Steane7(); px=1e-3, py=0.0, pz=1e-3)
+write_detector_error_model("steane7.dem", dem_text)
 ```
 
 The resulting `.dem` file can be read by Stim:
