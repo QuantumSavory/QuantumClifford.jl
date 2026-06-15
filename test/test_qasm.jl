@@ -18,6 +18,7 @@
             sHadamard(5), sHadamard(6), sHadamard(7), sHadamard(8), # h q2;
             sHadamard(4), sHadamard(3),                             # h q1[{3,2}]
             sHadamard(1), sHadamard(2), sHadamard(3),               # h q1[0:2]
+            sHadamard(4),                                           # h q1[-1]
 
             # Two qubit tests
             sCNOT(1,2),                                         # cx q1[0], q1[1]
@@ -26,6 +27,7 @@
             sCNOT(1,5), sCNOT(2,5), sCNOT(3,5), sCNOT(4,5),     # cx q1, q2[0];
             sCNOT(1,2), sCNOT(3,4),                             # cx q1[{0,2}], q1[{1,3}]
             sCNOT(1,2), sCNOT(2,3), sCNOT(3,4),                 # cx q1[0:2], q1[1:3]
+            sCNOT(4, 7),                                        # cx q1[-1], q2[-2]
             
             # Test all gates
             sId1(1),        # id q1[0]
@@ -44,6 +46,7 @@
             sMZ(1, 1), sMZ(2, 2), sMZ(3, 3), sMZ(4, 4),     # c1 = measure q1
             sMZ(2, 2), sMZ(3, 3), sMZ(4, 4),                # c1[1:3] = measure q1[1:3]
             sMZ(8, 1), sMZ(7, 3),                           # c1[{0,2}] = measure q2[{3,2}]
+            sMZ(2, 3),                                      # c1[-2] = measure q1[-3];
             
             sMRZ(1, 0),                                     # reset q1[0]
             sMRZ(1, 0), sMRZ(2, 0), sMRZ(3, 0), sMRZ(4, 0), # reset q1

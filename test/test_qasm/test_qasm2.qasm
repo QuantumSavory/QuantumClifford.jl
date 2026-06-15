@@ -11,6 +11,7 @@ h q1[0];
 h q2;
 h q1[{3,2}];
 h q1[0:2];
+h q1[-1];
 
 // Two qubit tests
 cx q1[0], q1[1];
@@ -19,6 +20,7 @@ cx q2[0], q1;
 cx q1, q2[0];
 cx q1[{0,2}], q1[{1,3}];
 cx q1[0:2], q1[1:3];
+cx q1[-1], q2[-2];
 
 // Test all gates
 id q1[0];
@@ -37,6 +39,7 @@ c2 = measure q1[0];
 c1 = measure q1;
 c1[1:3] = measure q1[1:3];
 c1[{0,2}] = measure q2[{3,2}];
+c1[-2] = measure q1[-3];
 
 reset q1[0];
 reset q1;

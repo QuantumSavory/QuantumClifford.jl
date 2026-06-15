@@ -1,7 +1,7 @@
 using QuantumClifford
 using QuantumClifford: AbstractOperation
 using Quasar
-using Quasar: AbstractVisitor, Qubit, QasmExpression, head, name, ClassicalVariable, declaration_init, AbstractGateDefinition, process_gate_targets, qubit_defs, gate_defs, qubit_mapping, qubit_count, instructions, hasgate, splat_gate_targets, evaluate_qubits, QasmVisitorError, SizedBitVector
+using Quasar: AbstractVisitor, Qubit, QasmExpression, head, name, ClassicalVariable, declaration_init, AbstractGateDefinition, process_gate_targets, qubit_defs, gate_defs, qubit_mapping, qubit_count, instructions, hasgate, splat_gate_targets, evaluate_qubits, QasmVisitorError, SizedBitVector, evaluate_unary_op
 
 struct CliffordGateDefinition <: AbstractGateDefinition
     qubit_targets::Vector{String}
@@ -80,7 +80,6 @@ function _evaluate_bits(::Val{:indexed_identifier}, v, bit_expr::QasmExpression)
     return collect(bits)
 end
 _evaluate_bits(::Val{:array_literal}, v, bit_expr::QasmExpression)::Vector{Int} = collect(Iterators.flatmap(expr->_evaluate_bits(Val(head(expr)), v, expr), bit_expr.args))
-_evaluate_bits(::Val{:hw_bit}, v, bit_expr::QasmExpression)::Vector{Int} = Int[v(bit_expr)::Int]
 _evaluate_bits(val, v, bit_expr) = throw(QasmVisitorError("unable to evaluate bits for expression $bit_expr."))
 function evaluate_bits(v::AbstractVisitor, bit_targets::Vector)::Vector{Int}
     final_bits = Iterators.map(bit_expr->_evaluate_bits(Val(head(bit_expr)), v, bit_expr), bit_targets)
@@ -154,6 +153,10 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
         for q in qubits_to_reset
             push!(v, sMRZ(q+1))
         end
+    elseif head(program_expr) == :unary_op
+        op  = program_expr.args[1]::Symbol
+        arg = v(program_expr.args[2])
+        return evaluate_unary_op(op, arg)
     elseif head(program_expr) ∈ (:integer_literal, :float_literal, :string_literal, :complex_literal, :irrational_literal, :boolean_literal, :duration_literal)
         return program_expr.args[1]
     elseif head(program_expr) == :array_literal
