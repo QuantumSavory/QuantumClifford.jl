@@ -67,3 +67,7 @@ QuantumClifford symbolic operations.
 See also: [`parse_qasm3`](@ref)
 """
 function read_qasm3 end
+
+using WeakDepHelpers: @declare_method_is_in_extension, @declare_struct_is_in_extension
+@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS parse_qasm3 (:Quasar,)
+@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS read_qasm3 (:Quasar,)
