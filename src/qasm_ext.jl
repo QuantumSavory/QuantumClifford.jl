@@ -10,7 +10,13 @@ Currently supported OpenQASM features include:
 - Two-qubit Clifford gates: `cx`, `cz`, `swap`
 - Computational-basis measurement into classical bits
 - `reset` operation
-Unsupported OpenQASM features will throw a `QasmVisitorError` when encountered.
+
+The following unsupported OpenQASM features will throw a `QasmVisitorError` when encountered.
+- Non-Clifford (e.g. `t`, `tdg`), parametrized, and user-defined gates
+- Classical variable initialization (e.g. `bit[2] c = "00";`)
+- Classical expressions, arithmetic, and control flow
+- Timing, calibration, and hardware-specific constructs
+- External file dependencies (e.g. `include "stdgates.inc";`)
 
 # Example
 ```jldoctest
