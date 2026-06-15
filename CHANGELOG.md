@@ -2,6 +2,9 @@
 
 - `permute` will be a wrapper around to `QuantumInterface.permutesystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
+- Added `detector_error_model` and `write_detector_error_model` to the ECC module,
+  enabling export of code-capacity Stim `.dem` files from any code supporting
+  `parity_checks` and `faults_matrix`. [#755]
 
 # News
 
