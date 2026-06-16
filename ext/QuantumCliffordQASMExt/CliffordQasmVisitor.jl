@@ -1,10 +1,10 @@
 using QuantumClifford
 using QuantumClifford: AbstractOperation
-using Quasar: Quasar, AbstractVisitor, Qubit, QasmExpression, head, name, 
-    ClassicalVariable, declaration_init, AbstractGateDefinition, 
-    process_gate_targets, qubit_defs, gate_defs, qubit_mapping, 
-    qubit_count, instructions, hasgate, splat_gate_targets, 
-    evaluate_qubits, QasmVisitorError, SizedBitVector, evaluate_unary_op
+using Quasar: Quasar, parse_qasm, AbstractVisitor, Qubit, QasmExpression, 
+    head, name, ClassicalVariable, declaration_init, AbstractGateDefinition, 
+    process_gate_targets, qubit_defs, gate_defs, qubit_mapping, qubit_count, 
+    instructions, hasgate, splat_gate_targets, evaluate_qubits, 
+    QasmVisitorError, SizedBitVector, evaluate_unary_op
 
 struct CliffordGateDefinition <: AbstractGateDefinition
     qubit_targets::Vector{String}
@@ -25,7 +25,6 @@ builtin_gates() = Dict(
 )
 
 mutable struct Qasm2CliffordVisitor <: AbstractVisitor
-    classical_defs::Dict{String, ClassicalVariable}
     bit_mapping::Dict{String, Vector{Int}}
     bit_count::Int
     gate_defs::Dict{String, CliffordGateDefinition}
@@ -35,7 +34,6 @@ mutable struct Qasm2CliffordVisitor <: AbstractVisitor
     instructions::Vector{AbstractOperation}
     function Qasm2CliffordVisitor()
         new(
-            Dict{String, ClassicalVariable}(),
             Dict{String, Vector{Int}}(),
             0,
             builtin_gates(),
@@ -47,7 +45,6 @@ mutable struct Qasm2CliffordVisitor <: AbstractVisitor
     end
 end
 
-classical_defs(v::Qasm2CliffordVisitor) = v.classical_defs
 bit_mapping(v::Qasm2CliffordVisitor)  = v.bit_mapping
 bit_count(v::Qasm2CliffordVisitor)  = v.bit_count
 Quasar.gate_defs(v::Qasm2CliffordVisitor)  = v.gate_defs
@@ -113,11 +110,9 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
         var_type isa SizedBitVector || throw(QasmVisitorError("unsupported classical variable type: $var_type."))
         if head(program_expr.args[2]) == :identifier
             var_name = name(program_expr.args[2])
-            classical_defs(v)[var_name] = ClassicalVariable(var_name, var_type, init, false)
         elseif head(program_expr.args[2]) == :classical_assignment
             op, left_hand_side, right_hand_side = program_expr.args[2].args[1].args
             var_name = name(left_hand_side)
-            classical_defs(v)[var_name] = ClassicalVariable(var_name, var_type, init, false)
             v(program_expr.args[2])
         end
         bit_size = max(v(var_type.size), 1)
