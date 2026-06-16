@@ -20,6 +20,7 @@ The following unsupported OpenQASM features will throw a `QasmVisitorError` when
 
 # Example
 ```jldoctest
+using QuantumClifford
 using Quasar
 
 parse_qasm3(\"\"\"
@@ -45,7 +46,7 @@ parse_qasm3(\"\"\"
 # Supported operation mappings
 | OpenQASM 3 | QuantumClifford |
 |------------|-----------------|
-| `id`       | `sId` |
+| `id`       | `sId1` |
 | `x`        | `sX` |
 | `y`        | `sY` |
 | `z`        | `sZ` |
@@ -53,7 +54,7 @@ parse_qasm3(\"\"\"
 | `s`        | `sPhase` |
 | `sdg`      | `sInvPhase` |
 | `cx`       | `sCNOT` |
-| `cz`       | `sCZ` |
+| `cz`       | `sCPHASE` |
 | `swap`     | `sSWAP` |
 | `measure`  | `sMZ` |
 | `reset`    | `sMRZ` |
