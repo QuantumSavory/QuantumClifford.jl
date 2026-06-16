@@ -1,7 +1,10 @@
 using QuantumClifford
 using QuantumClifford: AbstractOperation
-using Quasar
-using Quasar: AbstractVisitor, Qubit, QasmExpression, head, name, ClassicalVariable, declaration_init, AbstractGateDefinition, process_gate_targets, qubit_defs, gate_defs, qubit_mapping, qubit_count, instructions, hasgate, splat_gate_targets, evaluate_qubits, QasmVisitorError, SizedBitVector, evaluate_unary_op
+using Quasar: Quasar, AbstractVisitor, Qubit, QasmExpression, head, name, 
+    ClassicalVariable, declaration_init, AbstractGateDefinition, 
+    process_gate_targets, qubit_defs, gate_defs, qubit_mapping, 
+    qubit_count, instructions, hasgate, splat_gate_targets, 
+    evaluate_qubits, QasmVisitorError, SizedBitVector, evaluate_unary_op
 
 struct CliffordGateDefinition <: AbstractGateDefinition
     qubit_targets::Vector{String}
@@ -56,17 +59,17 @@ Quasar.instructions(v::Qasm2CliffordVisitor)  = v.instructions
 Base.push!(v::Qasm2CliffordVisitor, instr::AbstractOperation) = push!(instructions(v), instr)
 
 
-function _evaluate_bits(::Val{:identifier}, v, bit_expr::QasmExpression)::Vector{Int}
+function _evaluate_bits(::Val{:identifier}, v, bit_expr::QasmExpression)
     bit_name = name(bit_expr)
-    mapping    = bit_mapping(v)::Dict{String, Vector{Int}}
+    mapping    = bit_mapping(v)
     haskey(mapping, bit_name) || throw(QasmVisitorError("Missing input variable '$bit_name'.", "NameError"))
     return mapping[bit_name]
 end
-function _evaluate_bits(::Val{:indexed_identifier}, v, bit_expr::QasmExpression)::Vector{Int}
+function _evaluate_bits(::Val{:indexed_identifier}, v, bit_expr::QasmExpression)
     bit_name = name(bit_expr)
-    mapping    = bit_mapping(v)::Dict{String, Vector{Int}}
+    mapping    = bit_mapping(v)
     haskey(mapping, bit_name) || throw(QasmVisitorError("Missing input variable '$bit_name'.", "NameError"))
-    bit_ix   = v(bit_expr.args[2]::QasmExpression)
+    bit_ix   = v(bit_expr.args[2])
     bits     = Iterators.flatmap(bit_ix) do rq
         if rq >= 0
             haskey(mapping, bit_name * "[$rq]") || throw(QasmVisitorError("Invalid bit index '$rq' in '$bit_name'.", "IndexError"))
@@ -79,13 +82,13 @@ function _evaluate_bits(::Val{:indexed_identifier}, v, bit_expr::QasmExpression)
     end
     return collect(bits)
 end
-_evaluate_bits(::Val{:array_literal}, v, bit_expr::QasmExpression)::Vector{Int} = collect(Iterators.flatmap(expr->_evaluate_bits(Val(head(expr)), v, expr), bit_expr.args))
+_evaluate_bits(::Val{:array_literal}, v, bit_expr::QasmExpression) = collect(Iterators.flatmap(expr->_evaluate_bits(Val(head(expr)), v, expr), bit_expr.args))
 _evaluate_bits(val, v, bit_expr) = throw(QasmVisitorError("unable to evaluate bits for expression $bit_expr."))
-function evaluate_bits(v::AbstractVisitor, bit_targets::Vector)::Vector{Int}
+function evaluate_bits(v::AbstractVisitor, bit_targets::Vector)
     final_bits = Iterators.map(bit_expr->_evaluate_bits(Val(head(bit_expr)), v, bit_expr), bit_targets)
     return vcat(final_bits...)
 end
-evaluate_bits(v::AbstractVisitor, bit_targets::QasmExpression) = evaluate_bits(v::AbstractVisitor, [bit_targets])
+evaluate_bits(v::AbstractVisitor, bit_targets::QasmExpression) = evaluate_bits(v, [bit_targets])
 
 
 function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
@@ -97,8 +100,8 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
     elseif head(program_expr) == :version
         v(program_expr.args[1]) == 3.0 || throw(QasmVisitorError("only OpenQASM 3.0 is supported."))
     elseif head(program_expr) == :qubit_declaration
-        qubit_name::String = name(program_expr)
-        qubit_size::Int = v(program_expr.args[2])::Int
+        qubit_name = name(program_expr)
+        qubit_size = v(program_expr.args[2])
         qubit_defs(v)[qubit_name] = Qubit(qubit_name, qubit_size)
         qubit_mapping(v)[qubit_name] = collect(qubit_count(v) : qubit_count(v) + qubit_size - 1)
         for qubit_i in 0:qubit_size-1
@@ -117,14 +120,14 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
             classical_defs(v)[var_name] = ClassicalVariable(var_name, var_type, init, false)
             v(program_expr.args[2])
         end
-        bit_size::Int = max(v(var_type.size)::Int, 1)
+        bit_size = max(v(var_type.size), 1)
         bit_mapping(v)[var_name] = collect(bit_count(v) : bit_count(v) + bit_size - 1)
         for bit_i in 0:bit_size-1
             bit_mapping(v)["$var_name[$bit_i]"] = [bit_count(v) + bit_i]
         end
         v.bit_count += bit_size
     elseif head(program_expr) == :gate_call
-        gate_name = name(program_expr)::String
+        gate_name = name(program_expr)
         hasgate(v, gate_name) || throw(QasmVisitorError("gate $gate_name not defined!"))
         gate_def = gate_defs(v)[gate_name]
         gate_targets, _, _, _ = process_gate_targets(v, program_expr, gate_def)
@@ -154,7 +157,7 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
             push!(v, sMRZ(q+1))
         end
     elseif head(program_expr) == :unary_op
-        op  = program_expr.args[1]::Symbol
+        op  = program_expr.args[1]
         arg = v(program_expr.args[2])
         return evaluate_unary_op(op, arg)
     elseif head(program_expr) ∈ (:integer_literal, :float_literal, :string_literal, :complex_literal, :irrational_literal, :boolean_literal, :duration_literal)
@@ -162,7 +165,7 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
     elseif head(program_expr) == :array_literal
         return map(v, program_expr.args)
     elseif head(program_expr) == :range
-        start::Int, step::Int, stop::Int = v(program_expr.args)
+        start, step, stop = v(program_expr.args)
         return StepRange(start, step, stop)
     elseif head(program_expr) == :empty
         return ()
