@@ -104,18 +104,3 @@ noisify(op::AbstractSingleQubitOperator, noise_model::CircuitNoise) = noisify(op
 noisify(op::AbstractTwoQubitOperator, noise_model::CircuitNoise) = noisify(op, noise_model.two_qubit)
 noisify(op::AbstractMeasurement, noise_model::CircuitNoise) = noisify(op, noise_model.measurement)
 noisify(op::Reset, noise_model::CircuitNoise) = noisify(op, noise_model.reset)
-
-
-circuit = [
-    sHadamard(1),
-    sHadamard(2),
-    sCNOT(1, 3),
-    sHadamard(1),
-    sMZ(1, 1),
-]
-
-noisy = noisify(circuit, CircuitNoise(idle_noise=PauliNoise(1e-3, 1e-3, 1e-3)))
-
-for op in noisy
-    println(op)
-end
