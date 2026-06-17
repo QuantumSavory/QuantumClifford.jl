@@ -47,12 +47,49 @@
             sMZ(2, 2), sMZ(3, 3), sMZ(4, 4),                # c1[1:3] = measure q1[1:3]
             sMZ(8, 1), sMZ(7, 3),                           # c1[{0,2}] = measure q2[{3,2}]
             sMZ(2, 3),                                      # c1[-2] = measure q1[-3];
+            sMZ(7, 6),                                      # bit c = measure q2[2];
             
             sMRZ(1, 0),                                     # reset q1[0]
             sMRZ(1, 0), sMRZ(2, 0), sMRZ(3, 0), sMRZ(4, 0), # reset q1
             sMRZ(2, 0), sMRZ(3, 0), sMRZ(4, 0),             # reset q1[1:3]
             sMRZ(8, 0), sMRZ(7, 0)                          # reset q2[{3,2}]
         ]                         
+    end
+
+    @testset "invalid operations" begin
+        # Indexing errors
+        @test_throws QasmVisitorError parse_qasm3("""
+            bit[2] c;
+            qubit[2] q;
+            c[2] = measure q[0];
+        """)
+        @test_throws QasmVisitorError parse_qasm3("""
+            bit[2] c;
+            qubit[2] q;
+            c[-5] = measure q[0];
+        """)
+        @test_throws QasmVisitorError parse_qasm3("""
+            bit[2] c;
+            qubit[2] q;
+            c[0] = measure q[4];
+        """)
+        @test_throws QasmVisitorError parse_qasm3("""
+            bit[2] c;
+            qubit[2] q;
+            c[1] = measure q[-5];
+        """)
+
+        # Measurement source/destination size mismatch
+        @test_throws QasmVisitorError parse_qasm3("""
+            qubit[2] q;
+            bit[1] c;
+            c = measure q;
+        """)
+        @test_throws QasmVisitorError parse_qasm3("""
+            bit[2] c;
+            qubit[2] q;
+            c[0] = measure q[0:5];
+        """)
     end
 
     @testset "unsupported operations" begin
@@ -71,13 +108,6 @@
             rx(pi/2) q[0];
         """)
 
-        # Measurement source/destination size mismatch
-        @test_throws QasmVisitorError parse_qasm3("""
-            qubit[2] q;
-            bit[1] c;
-            c = measure q;
-        """)
-
         # Unsupported classical datatype
         @test_throws QasmVisitorError parse_qasm3("bool x;")
         @test_throws QasmVisitorError parse_qasm3("int x;")
@@ -93,5 +123,44 @@
             bit[1] c;
             c[0] = true;
         """)
+        @test_throws QasmVisitorError parse_qasm3("""bit[2] c = "00";""")
+
+        # Unsupported classical expressions, arithmetic, and control flow
+        @test_throws QasmVisitorError parse_qasm3("""
+            bit[1] c;
+            c[0] = !c[0];
+        """)
+        @test_throws QasmVisitorError parse_qasm3("""
+            bit[2] c;
+            c[0] = c[0] ^ c[1];
+        """)
+        @test_throws QasmVisitorError parse_qasm3("""
+            bit[2] c;
+            c[0] = c[0] + c[1];
+        """)
+        @test_throws QasmVisitorError parse_qasm3("""
+            qubit[1] q;
+            bit[1] c;
+            if (c[0]) {
+                h q[0];
+            }
+        """)
+        @test_throws QasmVisitorError parse_qasm3("""
+            qubit[1] q;
+            bit[1] c;
+            while (c[0]) {
+                c[0] = measure q[0];
+            }
+        """)
+
+        # Unsupported timing, calibration, and hardware-specific constructs
+        @test_throws QasmVisitorError parse_qasm3("""
+            qubit[1] q;
+            delay[10ns] q;
+        """)
+        @test_throws QasmVisitorError parse_qasm3("defcal x \$0 {}")
+
+        # Unsupported external file dependencies
+        @test_throws SystemError parse_qasm3("""include "stdgates.inc";""")
     end
 end

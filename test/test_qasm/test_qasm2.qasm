@@ -40,6 +40,7 @@ c1 = measure q1;
 c1[1:3] = measure q1[1:3];
 c1[{0,2}] = measure q2[{3,2}];
 c1[-2] = measure q1[-3];
+bit c = measure q2[2];
 
 reset q1[0];
 reset q1;

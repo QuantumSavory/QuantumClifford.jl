@@ -79,7 +79,6 @@ function _evaluate_bits(::Val{:indexed_identifier}, v, bit_expr::QasmExpression)
     end
     return collect(bits)
 end
-_evaluate_bits(::Val{:array_literal}, v, bit_expr::QasmExpression) = collect(Iterators.flatmap(expr->_evaluate_bits(Val(head(expr)), v, expr), bit_expr.args))
 _evaluate_bits(val, v, bit_expr) = throw(QasmVisitorError("unable to evaluate bits for expression $bit_expr."))
 function evaluate_bits(v::AbstractVisitor, bit_targets::Vector)
     final_bits = Iterators.map(bit_expr->_evaluate_bits(Val(head(bit_expr)), v, bit_expr), bit_targets)
@@ -108,12 +107,12 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
     elseif head(program_expr) == :classical_declaration
         init, var_type = declaration_init(v, program_expr)
         var_type isa SizedBitVector || throw(QasmVisitorError("unsupported classical variable type: $var_type."))
-        if head(program_expr.args[2]) == :identifier
-            var_name = name(program_expr.args[2])
+        var_name = if head(program_expr.args[2]) == :identifier
+            name(program_expr.args[2])
         elseif head(program_expr.args[2]) == :classical_assignment
-            op, left_hand_side, right_hand_side = program_expr.args[2].args[1].args
-            var_name = name(left_hand_side)
-            v(program_expr.args[2])
+            name(program_expr.args[2].args[1].args[2])
+        else
+            throw(QasmVisitorError("invalid classical variable declaration: $program_expr."))
         end
         bit_size = max(v(var_type.size), 1)
         bit_mapping(v)[var_name] = collect(bit_count(v) : bit_count(v) + bit_size - 1)
@@ -121,6 +120,7 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
             bit_mapping(v)["$var_name[$bit_i]"] = [bit_count(v) + bit_i]
         end
         v.bit_count += bit_size
+        head(program_expr.args[2]) == :classical_assignment && v(program_expr.args[2])
     elseif head(program_expr) == :gate_call
         gate_name = name(program_expr)
         hasgate(v, gate_name) || throw(QasmVisitorError("gate $gate_name not defined!"))
@@ -160,10 +160,7 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
     elseif head(program_expr) == :array_literal
         return map(v, program_expr.args)
     elseif head(program_expr) == :range
-        start, step, stop = v(program_expr.args)
-        return StepRange(start, step, stop)
-    elseif head(program_expr) == :empty
-        return ()
+        return StepRange(v(program_expr.args)...)
     else
         throw(QasmVisitorError("cannot visit expression $program_expr."))
     end
