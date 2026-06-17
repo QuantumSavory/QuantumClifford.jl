@@ -23,6 +23,7 @@ include("merge.jl")
 
 export
     build_adapter, build_adapter_intercode, build_adapter_intracode, deform_code,
+    joint_logical_recipe,
     skiptree,
     CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter
 

@@ -396,6 +396,40 @@ code_n(a::Adapter) = code_n(a.merged_code)
 code_s(a::Adapter) = code_s(a.merged_code)
 
 """
+Row indices of `adapter.merged_code.Hz` whose XOR-sum over GF(2) equals the
+joint logical Pauli being measured. After standard syndrome extraction on the
+merged code, XOR the measurement outcomes at these indices to recover the
+joint measurement result.
+
+Inter-code (`code1 !== code2`): the result equals `Z̄_l ⊗ Z̄_r` embedded in
+the merged qubit space (`Z̄_l` on the code1 columns, `Z̄_r` on the code2
+columns). Returns `(sz_1 + sz_2 + 1):(sz_1 + sz_2 + 2w)` — the `V_l` and
+`V_r` vertex-Z row blocks.
+
+Intra-code (`code1 === code2`): the result equals `Z̄_l · Z̄_r` (the product
+of the two Z-logicals on the shared code block). Returns
+`(sz + 1):(sz + w_l + w_r)`.
+
+The construction: the `V_l` rows sum to `Z̄_l` on the code data qubits
+tensored with `Z` on every A-block adapter qubit (the SkipTree permutation
+`P_l` puts exactly one `1` per A column); similarly the `V_r` rows sum to
+`Z̄_r` tensored with the same A-block `Z`. The A-block contributions cancel
+(`Z² = I` over GF(2)), leaving the joint logical on the data qubits.
+"""
+function joint_logical_recipe(a::Adapter)::Vector{Int}
+    sz_1 = size(a.code_pair.code1.Hz, 1)
+    if a.code_pair.code1 === a.code_pair.code2
+        w_l = length(a.code_pair.logical1_support)
+        w_r = length(a.code_pair.logical2_support)
+        return collect((sz_1 + 1):(sz_1 + w_l + w_r))
+    else
+        sz_2 = size(a.code_pair.code2.Hz, 1)
+        w = a.adapter_width
+        return collect((sz_1 + sz_2 + 1):(sz_1 + sz_2 + 2 * w))
+    end
+end
+
+"""
 Single-logical deformed code (paper Figure 3 / Eq. 9): attach one auxiliary
 graph and cycle checks so the Z operator on `logical_support` becomes a
 stabilizer product. Use [`build_adapter`](@ref) for joint measurements.

@@ -4,7 +4,8 @@
                                 BivariateBicycleViaCirculantMat,
                                 two_block_group_algebra_code,
                                 CodePair, build_adapter, build_adapter_intercode,
-                                build_adapter_intracode, deform_code, skiptree,
+                                build_adapter_intracode, deform_code,
+                                joint_logical_recipe, skiptree,
                                 AuxiliaryGraph, SkipTreeOutput, Adapter,
                                 code_n, code_k, code_s, parity_matrix_x,
                                 parity_matrix_z, logz_ops, logx_ops,
@@ -402,6 +403,77 @@
         @test code_s(adapter) == 32
         @test parity_matrix_x(adapter) === adapter.merged_code.Hx
         @test parity_matrix_z(adapter) === adapter.merged_code.Hz
+    end
+
+    @testset "joint_logical_recipe" begin
+        # Inter-code: Z̄_l on code1 columns ⊗ Z̄_r on code2 columns.
+        c1 = as_css(Surface(3, 3))
+        c2 = as_css(Surface(3, 3))
+        z = sort(findall(!iszero,
+                         stab_to_gf2(logz_ops(Surface(3, 3)))[1, 14:26]))
+        adapter = build_adapter(CodePair(c1, c2, z, z))
+        recipe = joint_logical_recipe(adapter)
+
+        Hz = adapter.merged_code.Hz
+        @test recipe isa Vector{Int}
+        @test !isempty(recipe)
+        @test all(1 ≤ i ≤ size(Hz, 1) for i in recipe)
+        # Exactly the V_l + V_r row range: 2 * adapter_width rows.
+        @test length(recipe) == 2 * adapter.adapter_width
+
+        product_row = vec(mod.(sum(Int.(Hz[recipe, :]); dims = 1), 2))
+
+        n1 = size(c1.Hx, 2)
+        n2 = size(c2.Hx, 2)
+        m_l = ne(adapter.aux_l.graph)
+        m_r = ne(adapter.aux_r.graph)
+        w   = adapter.adapter_width
+        @test code_n(adapter) == n1 + m_l + w + m_r + n2
+        code2_offset = n1 + m_l + w + m_r
+
+        # Z̄_l support lives on code1 columns 1..n1
+        for q in z
+            @test product_row[q] == 1
+        end
+        # Z̄_r support lives on code2 columns code2_offset .+ (1..n2)
+        for q in z
+            @test product_row[code2_offset + q] == 1
+        end
+        # Every other column must be 0 (no Pauli weight on edge / A / non-support qubits).
+        for col in 1:code_n(adapter)
+            on_z1 = (col ≤ n1) && (col in z)
+            on_z2 = (col > code2_offset) && ((col - code2_offset) in z)
+            (on_z1 || on_z2) && continue
+            @test product_row[col] == 0
+        end
+
+        # Intra-code: Z̄_l · Z̄_r on the shared code block.
+        c_bb = bb_2bga(6, 6, [(:x, 3), (:y, 1), (:y, 2)],
+                              [(:y, 3), (:x, 1), (:x, 2)])
+        n_bb = code_n(c_bb)
+        c_bb_css = as_css(c_bb)
+        lz = stab_to_gf2(logz_ops(c_bb))
+        z1 = sort(findall(!iszero, lz[1, n_bb + 1:2n_bb]))
+        z2 = sort(findall(!iszero, lz[2, n_bb + 1:2n_bb]))
+        adapter_intra = build_adapter(CodePair(c_bb_css, c_bb_css, z1, z2))
+        recipe_intra = joint_logical_recipe(adapter_intra)
+
+        Hz_intra = adapter_intra.merged_code.Hz
+        @test recipe_intra isa Vector{Int}
+        @test !isempty(recipe_intra)
+        @test all(1 ≤ i ≤ size(Hz_intra, 1) for i in recipe_intra)
+        @test length(recipe_intra) == length(z1) + length(z2)
+
+        product_intra = vec(mod.(sum(Int.(Hz_intra[recipe_intra, :]); dims = 1), 2))
+
+        # Expected: indicator of (Z̄_l support) XOR (Z̄_r support) on code columns,
+        # zero on every G_l edge / A / G_r edge column.
+        joint_support = falses(code_n(adapter_intra))
+        for q in z1; joint_support[q] = !joint_support[q]; end
+        for q in z2; joint_support[q] = !joint_support[q]; end
+        for col in 1:code_n(adapter_intra)
+            @test product_intra[col] == Int(joint_support[col])
+        end
     end
 
     @testset "Distance MIP plumbing (sanity)" begin

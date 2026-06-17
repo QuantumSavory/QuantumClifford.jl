@@ -412,10 +412,10 @@ include("decoder_correction_gate.jl")
 include("adapters/Adapters.jl")
 
 using .Adapters: build_adapter, build_adapter_intercode, build_adapter_intracode,
-                 deform_code, skiptree,
+                 deform_code, joint_logical_recipe, skiptree,
                  CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter
 export build_adapter, build_adapter_intercode, build_adapter_intracode,
-       deform_code, skiptree,
+       deform_code, joint_logical_recipe, skiptree,
        CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter
 
 end #module
