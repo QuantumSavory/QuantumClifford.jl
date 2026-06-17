@@ -1,19 +1,18 @@
-struct NoNoise <: AbstractNoise end
-
+"""A noise model that allows different noise channels to be assigned to single-qubit gates, two-qubit gates, idle qubits, measurements, and reset operations."""
 struct CircuitNoise
-    single_qubit::AbstractNoise
-    two_qubit::AbstractNoise
-    idle_noise::AbstractNoise
-    measurement::AbstractNoise
-    reset::AbstractNoise
+    single_qubit::Union{AbstractNoise,Nothing}
+    two_qubit::Union{AbstractNoise,Nothing}
+    idle_noise::Union{AbstractNoise,Nothing}
+    measurement::Union{AbstractNoise,Nothing}
+    reset::Union{AbstractNoise,Nothing}
 end
 
 function CircuitNoise(;
-    single_qubit::AbstractNoise = NoNoise(),
-    two_qubit::AbstractNoise    = NoNoise(),
-    idle_noise::AbstractNoise   = NoNoise(),
-    measurement::AbstractNoise  = NoNoise(),
-    reset::AbstractNoise = NoNoise()
+    single_qubit::Union{AbstractNoise,Nothing} = nothing,
+    two_qubit::Union{AbstractNoise,Nothing} = nothing,
+    idle_noise::Union{AbstractNoise,Nothing} = nothing,
+    measurement::Union{AbstractNoise,Nothing} = nothing,
+    reset::Union{AbstractNoise,Nothing} = nothing,
 )
     return CircuitNoise(single_qubit, two_qubit, idle_noise, measurement, reset)
 end
@@ -26,85 +25,75 @@ CircuitNoise(noise::AbstractNoise) = CircuitNoise(
     reset = noise
 )
 
-insert_idle_noise(circuit::AbstractVector, ::NoNoise) = circuit
+skip_idling_noise(op) = false
+skip_idling_noise(op::VerifyOp) = true
+skip_idling_noise(op::ClassicalXOR) = true
+skip_idling_noise(op::AbstractNoiseOp) = true
+
+insert_idle_noise(circuit::AbstractVector, ::Nothing) = circuit
+
 
 function insert_idle_noise(circuit::AbstractVector, idle_noise::AbstractNoise)
-    isempty(circuit) && return Any[]
-    nqubits = maximum(q for op in circuit for q in affectedqubits(op))
+    all_qubits = [q for op in circuit for q in affectedqubits(op)]
+    isempty(all_qubits) && return copy(circuit)
+    nqubits = maximum(all_qubits)
     filled_up_to = fill(1, nqubits)
-    layers = Dict{Int, Vector{Any}}()
+    op_steps = Int[]
     active_qubits = Dict{Int, Set{Int}}()
+
     for op in circuit
-        if op isa AbstractNoiseOp || op isa VerifyOp || op isa ClassicalXOR
-            step = maximum(filled_up_to)
-            push!(get!(layers, step, Any[]), op)
-            active_qubits[step] = Set(1:nqubits)
+        qs = collect(affectedqubits(op))
+
+        if skip_idling_noise(op) || isempty(qs)
+            push!(op_steps, maximum(filled_up_to))
             continue
         end
 
-        qs = collect(affectedqubits(op))
+        step = maximum(filled_up_to[qs])
 
-        if isempty(qs)
-            step = maximum(filled_up_to)
-        else
-            step = maximum(filled_up_to[qs])
-        end
+        push!(op_steps, step)
+        union!(get!(active_qubits, step, Set{Int}()), qs)
 
-        push!(get!(layers, step, Any[]), op)
-
-        if !isempty(qs)
-            union!(get!(active_qubits, step, Set{Int}()), qs)
-            filled_up_to[qs] .= step + 1
-        end
+        filled_up_to[qs] .= step + 1
     end
 
     output = Any[]
-    max_step = maximum(keys(layers))
+    emitted = Set{Int}()
 
-    for step in 1:max_step
-        ops = get(layers, step, Any[])
-        active = get(active_qubits, step, Set{Int}())
+    for (op, step) in zip(circuit, op_steps)
+        if !(step in emitted)
+            active = get(active_qubits, step, Set{Int}())
+            idle = [q for q in 1:nqubits if !(q in active)]
 
-        idle_qs = setdiff(1:nqubits, collect(active))
+            if !isempty(idle)
+                push!(output, NoiseOp(idle_noise, idle))
+            end
 
-        if !isempty(idle_qs)
-            push!(output, NoiseOp(idle_noise, idle_qs))
+            push!(emitted, step)
         end
 
-        append!(output, ops)
+        push!(output, op)
     end
 
-    return output
+    output
 end
 
-
+"""Construct a noisy version of `circuit` by inserting noise operations according to the specified noise model."""
+function noisify(circuit::AbstractVector, noise_model::CircuitNoise)
+    idle_noisy_circuit = insert_idle_noise(circuit, noise_model.idle_noise)
+    return reduce(vcat, noisify.(idle_noisy_circuit, (noise_model,)))
+end
 
 noisify(circuit::AbstractVector, noise::AbstractNoise) = reduce(vcat, noisify.(circuit, (noise,)))
-noisify(op, noise::AbstractNoise) = Any[op]
-noisify(op::AbstractNoiseOp, noise::AbstractNoise) = Any[op]
-noisify(op::ClassicalXOR, noise::AbstractNoise) = Any[op]
-noisify(op::VerifyOp, noise::AbstractNoise) = Any[op]
+
+noisify(op, ::Nothing) = Any[op]
+noisify(op, ::AbstractNoise) = Any[op]
 
 noisify(op::AbstractSingleQubitOperator, noise::AbstractNoise) = Any[NoiseOp(noise, affectedqubits(op)), op]
 noisify(op::AbstractTwoQubitOperator, noise::AbstractNoise) = Any[NoiseOp(noise, affectedqubits(op)), op]
 noisify(op::AbstractMeasurement, noise::AbstractNoise) = Any[NoiseOp(noise, affectedqubits(op)), op]
 noisify(op::Reset, noise::AbstractNoise) = Any[op, NoiseOp(noise, affectedqubits(op))]
 
-noisify(op::AbstractSingleQubitOperator, ::NoNoise) = Any[op]
-noisify(op::AbstractTwoQubitOperator, ::NoNoise) = Any[op]
-noisify(op::AbstractMeasurement, ::NoNoise) = Any[op]
-noisify(op::Reset, ::NoNoise) = Any[op]
-
-
-function noisify(circuit::AbstractVector, noise_model::CircuitNoise)
-    if noise_model.idle_noise isa NoNoise
-        return reduce(vcat, noisify.(circuit, (noise_model,)))
-    end
-
-    idle_noisy_circuit = insert_idle_noise(circuit, noise_model.idle_noise)
-
-    return reduce(vcat, noisify.(idle_noisy_circuit, (noise_model,)))
-end
 
 noisify(op, ::CircuitNoise) = Any[op]
 noisify(op::AbstractNoiseOp, ::CircuitNoise) = Any[op]
@@ -115,3 +104,18 @@ noisify(op::AbstractSingleQubitOperator, noise_model::CircuitNoise) = noisify(op
 noisify(op::AbstractTwoQubitOperator, noise_model::CircuitNoise) = noisify(op, noise_model.two_qubit)
 noisify(op::AbstractMeasurement, noise_model::CircuitNoise) = noisify(op, noise_model.measurement)
 noisify(op::Reset, noise_model::CircuitNoise) = noisify(op, noise_model.reset)
+
+
+circuit = [
+    sHadamard(1),
+    sHadamard(2),
+    sCNOT(1, 3),
+    sHadamard(1),
+    sMZ(1, 1),
+]
+
+noisy = noisify(circuit, CircuitNoise(idle_noise=PauliNoise(1e-3, 1e-3, 1e-3)))
+
+for op in noisy
+    println(op)
+end

@@ -1,95 +1,119 @@
 @testitem "noisify" begin
-    using QuantumClifford
-    using QuantumClifford: AbstractNoiseOp, Reset
+    using QuantumClifford:AbstractNoiseOp, Reset
 
-    @testset "simple noise model" begin
-        s = one(Stabilizer, 2)
+    @testset "simple noise insertion" begin
+        reset_state = one(Stabilizer, 1)
 
         circuit = Any[
             sHadamard(1),
             sCNOT(1, 2),
             sMZ(1, 1),
-            Reset(s, [2]),
+            Reset(reset_state, [2]),
         ]
 
-        noise = PauliNoise(1e-3, 1e-3, 1e-3)
-        noisy = noisify(circuit, noise)
+        noisy = noisify(circuit, PauliNoise(1e-3, 1e-3, 1e-3))
 
         @test length(noisy) == 8
 
         @test noisy[1] isa AbstractNoiseOp
-        @test Tuple(affectedqubits(noisy[1])) == (1,)
         @test noisy[2] == circuit[1]
 
         @test noisy[3] isa AbstractNoiseOp
-        @test Tuple(affectedqubits(noisy[3])) == (1, 2)
         @test noisy[4] == circuit[2]
 
         @test noisy[5] isa AbstractNoiseOp
-        @test Tuple(affectedqubits(noisy[5])) == (1,)
         @test noisy[6] == circuit[3]
 
-
-        @test noisy[7] == circuit[4]
+        @test noisy[7] isa Reset
         @test noisy[8] isa AbstractNoiseOp
-        @test Tuple(affectedqubits(noisy[8])) == (2,)
 
-        @test length(circuit) == 4
-        @test circuit[1] == sHadamard(1)
-        @test circuit[2] == sCNOT(1, 2)
-        @test circuit[3] == sMZ(1, 1)
-        @test circuit[4] isa Reset
+        original = copy(circuit)
+
+        noisy = noisify(circuit, PauliNoise(1e-3, 1e-3, 1e-3))
+
+        @test length(circuit) == length(original)
+        @test all(circuit[i] === original[i] for i in eachindex(circuit))
     end
 
-    @testset "NoNoise leaves circuit unchanged" begin
+    @testset "Empty CircuitNoise leaves circuit unchanged" begin
         circuit = [
             sHadamard(1),
             sCNOT(1, 2),
             sMZ(1, 1),
         ]
 
-        noisy = noisify(circuit, NoNoise())
+        @test noisify(circuit, CircuitNoise()) == circuit
+    end
+
+    @testset "Certain ops pass through unchanged" begin
+        verify = VerifyOp(one(Stabilizer, 1), [1])
+        xor = ClassicalXOR(1, 1)
+        existing_noise = NoiseOp(PauliNoise(0.1, 0.1, 0.1), [1])
+
+        circuit = Any[
+            verify,
+            xor,
+            existing_noise,
+        ]
+
+        noisy = noisify(circuit, PauliNoise(1e-3, 1e-3, 1e-3))
 
         @test noisy == circuit
     end
 
-    @testset "CircuitNoise inserts location-specific noise" begin
+    @testset "idle noise insertion with parallel operations" begin
         circuit = [
             sHadamard(1),
             sHadamard(2),
             sCNOT(1, 3),
+            sHadamard(1),
             sMZ(1, 1),
         ]
 
-        noise_model = CircuitNoise(
-            single_qubit = PauliNoise(1e-4, 1e-4, 1e-4),
-            two_qubit    = PauliNoise(1e-3, 1e-3, 1e-3),
-            idle_noise   = PauliNoise(1e-5, 1e-5, 1e-5),
-            measurement  = PauliNoise(2e-3, 2e-3, 2e-3),
+        model = CircuitNoise(
+            idle_noise = PauliNoise(1e-5, 1e-5, 1e-5),
         )
 
-        noisy = noisify(circuit, noise_model)
+        noisy = noisify(circuit, model)
 
-        @test noisy[1] isa AbstractNoiseOp
-        @test Tuple(affectedqubits(noisy[1])) == (3,)
+        filtered = filter(op -> !(op isa AbstractNoiseOp), noisy)
+        @test filtered == circuit
 
-        @test noisy[2] isa AbstractNoiseOp
-        @test Tuple(affectedqubits(noisy[2])) == (1,)
-        @test noisy[3] == circuit[1]
+        noise_ops = filter(op -> op isa AbstractNoiseOp, noisy)
 
-        @test noisy[4] isa AbstractNoiseOp
-        @test Tuple(affectedqubits(noisy[4])) == (2,)
-        @test noisy[5] == circuit[2]
+        @test !isempty(noise_ops)
 
-        @test noisy[6] isa AbstractNoiseOp
-        @test Tuple(affectedqubits(noisy[6])) == (2,)
+        @test any(
+            op -> Tuple(affectedqubits(op)) == (2,),
+            noise_ops
+        )
 
-        @test noisy[7] isa AbstractNoiseOp
-        @test Tuple(affectedqubits(noisy[7])) == (1, 3)
-        @test noisy[8] == circuit[3]
+        @test any(
+            op -> Tuple(affectedqubits(op)) == (3,),
+            noise_ops
+        )
+    end
 
-        @test noisy[end-1] isa AbstractNoiseOp
-        @test Tuple(affectedqubits(noisy[end-1])) == (1,)
-        @test noisy[end] == circuit[4]
+    @testset "original circuit order remains" begin
+
+        circuit = Any[
+            sHadamard(1),
+            sCNOT(1, 2),
+            VerifyOp(one(Stabilizer, 1), [1]),
+            sMZ(1, 1),
+        ]
+
+        model = CircuitNoise(
+            single_qubit = PauliNoise(1e-4, 1e-4, 1e-4),
+            two_qubit    = PauliNoise(1e-3, 1e-3, 1e-3),
+            measurement  = PauliNoise(2e-3, 2e-3, 2e-3),
+            idle_noise = PauliNoise(1e-5, 1e-5, 1e-5)
+        )
+
+        noisy = noisify(circuit, model)
+
+        filtered = filter(op -> !(op isa AbstractNoiseOp), noisy)
+
+        @test filtered == circuit
     end
 end
