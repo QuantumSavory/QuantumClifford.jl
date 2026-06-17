@@ -74,7 +74,7 @@ pages = [
     "Perturbative Expansions" => "noisycircuits_perturb.md",
     "ECC example" => "ecc_example_sim.md",
     "Circuit Operations" => "noisycircuits_ops.md",
-    "Noisify" => "noisify.md"
+    "Constructing Noisy Circuits" => "noisify.md"
 ],
 "ECC compendium" => [
     "Evaluating codes and decoders" => "ECC_evaluating.md",
