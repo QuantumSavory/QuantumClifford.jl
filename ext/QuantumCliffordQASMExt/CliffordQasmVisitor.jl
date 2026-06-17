@@ -79,7 +79,7 @@ function _evaluate_bits(::Val{:indexed_identifier}, v, bit_expr::QasmExpression)
     end
     return collect(bits)
 end
-_evaluate_bits(val, v, bit_expr) = throw(QasmVisitorError("unable to evaluate bits for expression $bit_expr."))
+_evaluate_bits(val, v, bit_expr) = throw(QasmVisitorError("unable to evaluate bits for expression $(head(bit_expr))."))
 function evaluate_bits(v::AbstractVisitor, bit_targets::Vector)
     final_bits = Iterators.map(bit_expr->_evaluate_bits(Val(head(bit_expr)), v, bit_expr), bit_targets)
     return vcat(final_bits...)
@@ -112,7 +112,7 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
         elseif head(program_expr.args[2]) == :classical_assignment
             name(program_expr.args[2].args[1].args[2])
         else
-            throw(QasmVisitorError("invalid classical variable declaration: $program_expr."))
+            throw(QasmVisitorError("invalid classical variable declaration: $(head(program_expr))."))
         end
         bit_size = max(v(var_type.size), 1)
         bit_mapping(v)[var_name] = collect(bit_count(v) : bit_count(v) + bit_size - 1)
@@ -134,10 +134,10 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
     elseif head(program_expr) == :classical_assignment
         left_hand_side  = program_expr.args[1].args[2]
         right_hand_side = program_expr.args[1].args[3]
-        head(right_hand_side) == :measure || throw(QasmVisitorError("unsupported assignment operation: $program_expr."))
+        head(right_hand_side) == :measure || throw(QasmVisitorError("unsupported assignment operation: $(head(program_expr))."))
         bits = evaluate_bits(v, left_hand_side)
         qubits = evaluate_qubits(v, right_hand_side.args[1])
-        length(qubits) == length(bits) || throw(QasmVisitorError("measurement source and destination sizes must match."))
+        length(qubits) == length(bits) || throw(QasmVisitorError("measurement size mismatch: cannot measure $(length(qubits)) qubit(s) from $(name(right_hand_side.args[1])) into $(length(bits)) bit(s) from $(name(left_hand_side))."))
         for (q, c) in zip(qubits, bits)
             push!(v, sMZ(q+1, c+1))
         end
@@ -162,7 +162,7 @@ function (v::Qasm2CliffordVisitor)(program_expr::QasmExpression)
     elseif head(program_expr) == :range
         return StepRange(v(program_expr.args)...)
     else
-        throw(QasmVisitorError("cannot visit expression $program_expr."))
+        throw(QasmVisitorError("unsupported OpenQASM construct '$(head(program_expr))'."))
     end
     return v
 end
