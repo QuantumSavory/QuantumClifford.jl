@@ -16,13 +16,15 @@ using Graphs: Graphs, SimpleGraph, AbstractGraph, add_edge!, has_edge, neighbors
 using QECCore: CSS, AbstractCSSCode
 import QECCore: code_n, code_s, parity_matrix_x, parity_matrix_z
 
+using ..QuantumClifford: PauliOperator, xbit, nqubits, supportz
+
 include("types.jl")
 include("skiptree.jl")
 include("aux_graph.jl")
 include("merge.jl")
 
 export
-    build_adapter, build_adapter_intercode, build_adapter_intracode, deform_code,
+    build_adapter, deform_code,
     joint_logical_recipe,
     skiptree,
     CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter

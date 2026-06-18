@@ -11,7 +11,7 @@ is verified separately via [`verify_desideratum_4`](@ref).
 """
 function build_initial_aux_graph(
     logical_support::Vector{Int},
-    code::CSS,
+    code,
 )::AuxiliaryGraph
     n_support = length(logical_support)
     n_support ≥ 2 || throw(ArgumentError(
@@ -21,7 +21,8 @@ function build_initial_aux_graph(
         throw(ArgumentError("logical_support must be sorted"))
     allunique(logical_support) ||
         throw(ArgumentError("logical_support must have distinct qubit indices"))
-    n_qubits = size(code.Hx, 2)
+    Hx = Matrix{Bool}(parity_matrix_x(code))
+    n_qubits = size(Hx, 2)
     for q in logical_support
         1 ≤ q ≤ n_qubits || throw(ArgumentError(
             "logical_support qubit $q is out of range 1..$n_qubits"))
@@ -33,13 +34,13 @@ function build_initial_aux_graph(
     # Store stabilizer matchings as vertex pairs, not edge indices:
     # cellulation later adds chords and that shifts the edges() iteration order.
     g = SimpleGraph(n_support)
-    n_stabs = size(code.Hx, 1)
+    n_stabs = size(Hx, 1)
     stabilizer_matchings = [Tuple{Int,Int}[] for _ in 1:n_stabs]
 
     @inbounds for s in 1:n_stabs
         supp_s = Int[]
         for q in 1:n_qubits
-            if code.Hx[s, q] && q in support_set
+            if Hx[s, q] && q in support_set
                 push!(supp_s, q)
             end
         end

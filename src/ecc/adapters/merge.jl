@@ -119,7 +119,7 @@ The `P_l`/`P_r` A-blocks are the SkipTree permutations, required for CSS
 commutation between bridge X-checks and V-vertex Z-checks.
 """
 function assemble_merged_code_intercode(
-    code1::CSS, code2::CSS,
+    code1, code2,
     aux1::AuxiliaryGraph, aux2::AuxiliaryGraph,
     skiptree1::SkipTreeOutput, skiptree2::SkipTreeOutput,
 )::CSS
@@ -137,12 +137,17 @@ function assemble_merged_code_intercode(
     nv(aux2.graph) == w || throw(DimensionMismatch(
         "aux2 has $(nv(aux2.graph)) vertices; expected $w = |logical_support|"))
 
-    n1 = size(code1.Hx, 2)
-    n2 = size(code2.Hx, 2)
+    Hx_1 = Matrix{Bool}(parity_matrix_x(code1))
+    Hz_1 = Matrix{Bool}(parity_matrix_z(code1))
+    Hx_2 = Matrix{Bool}(parity_matrix_x(code2))
+    Hz_2 = Matrix{Bool}(parity_matrix_z(code2))
+
+    n1 = size(Hx_1, 2)
+    n2 = size(Hx_2, 2)
     m1 = ne(aux1.graph)
     m2 = ne(aux2.graph)
-    sx1 = size(code1.Hx, 1); sz1 = size(code1.Hz, 1)
-    sx2 = size(code2.Hx, 1); sz2 = size(code2.Hz, 1)
+    sx1 = size(Hx_1, 1); sz1 = size(Hz_1, 1)
+    sx2 = size(Hx_2, 1); sz2 = size(Hz_2, 1)
 
     M_l  = stabilizer_modification_matrix(aux1, sx1)
     M_r  = stabilizer_modification_matrix(aux2, sx2)
@@ -158,10 +163,10 @@ function assemble_merged_code_intercode(
     P_l  = skiptree1.P
     P_r  = skiptree2.P
 
-    Hx_BB = sparse(code1.Hx)
-    Hz_BB = sparse(code1.Hz)
-    Hx_LP = sparse(code2.Hx)
-    Hz_LP = sparse(code2.Hz)
+    Hx_BB = sparse(Hx_1)
+    Hz_BB = sparse(Hz_1)
+    Hx_LP = sparse(Hx_2)
+    Hz_LP = sparse(Hz_2)
 
     Z = (r::Int, c::Int) -> spzeros(Bool, r, c)
     nc_l = size(N_l, 1)
@@ -192,23 +197,23 @@ the corresponding code (paper §VII.A heuristic). With no kwargs this
 reproduces Example B (BB[[98,6,12]] × LP[[200,20,10]] → n=355).
 `chords_{1,2}` forwards to [`cellulate_long_cycles!`](@ref).
 """
-function build_adapter_intercode(
+function _build_adapter_intercode(
     pair::CodePair;
     max_cycle_len_1::Union{Int,Nothing} = nothing,
     max_cycle_len_2::Union{Int,Nothing} = nothing,
     chords_1::Union{Nothing, Vector{Tuple{Int,Int}}} = nothing,
     chords_2::Union{Nothing, Vector{Tuple{Int,Int}}} = nothing,
 )::Adapter
-    pair.code1 !== pair.code2 ||
-        throw(ArgumentError("build_adapter_intercode: code1 and code2 must be distinct objects; use intra-code path for measurements on the same codeblock"))
     w = length(pair.logical1_support)
     length(pair.logical2_support) == w || throw(DimensionMismatch(
-        "build_adapter_intercode: logical supports have unequal lengths " *
+        "build_adapter: logical supports have unequal lengths " *
         "($w vs $(length(pair.logical2_support)))"))
+    Hx_1 = parity_matrix_x(pair.code1)
+    Hx_2 = parity_matrix_x(pair.code2)
     mcl1 = max_cycle_len_1 === nothing ?
-           Int(maximum(sum(pair.code1.Hx; dims = 2))) : max_cycle_len_1
+           Int(maximum(sum(Hx_1; dims = 2))) : max_cycle_len_1
     mcl2 = max_cycle_len_2 === nothing ?
-           Int(maximum(sum(pair.code2.Hx; dims = 2))) : max_cycle_len_2
+           Int(maximum(sum(Hx_2; dims = 2))) : max_cycle_len_2
     aux1 = cellulate_long_cycles!(
         build_initial_aux_graph(pair.logical1_support, pair.code1);
         max_cycle_len = mcl1, chords = chords_1)
@@ -263,7 +268,7 @@ where `w = min(|aux1.logical_support|, |aux2.logical_support|)`.
 3. Both F_l and F_r target the code column block (no separate code2).
 """
 function assemble_merged_code_intracode(
-    code::CSS,
+    code,
     aux1::AuxiliaryGraph, aux2::AuxiliaryGraph,
     skiptree1::SkipTreeOutput, skiptree2::SkipTreeOutput,
 )::CSS
@@ -277,9 +282,11 @@ function assemble_merged_code_intracode(
     w ≥ 2 || throw(ArgumentError(
         "assemble_merged_code_intracode: adapter width = $w < 2"))
 
-    n_code = size(code.Hx, 2)
-    sx = size(code.Hx, 1)
-    sz = size(code.Hz, 1)
+    Hx_code = Matrix{Bool}(parity_matrix_x(code))
+    Hz_code = Matrix{Bool}(parity_matrix_z(code))
+    n_code = size(Hx_code, 2)
+    sx = size(Hx_code, 1)
+    sz = size(Hz_code, 1)
     m1 = ne(aux1.graph)
     m2 = ne(aux2.graph)
 
@@ -298,8 +305,8 @@ function assemble_merged_code_intracode(
     P_l = skiptree1.P[:, 1:w]
     P_r = skiptree2.P[:, 1:w]
 
-    Hx_c = sparse(code.Hx)
-    Hz_c = sparse(code.Hz)
+    Hx_c = sparse(Hx_code)
+    Hz_c = sparse(Hz_code)
 
     Z = (r::Int, c::Int) -> spzeros(Bool, r, c)
     nc_l = size(N_l, 1)
@@ -320,27 +327,26 @@ function assemble_merged_code_intracode(
 end
 
 """
-Intra-code (same codeblock) version of [`build_adapter_intercode`](@ref).
-Reproduces paper Example C ([[150, 5, 12]], BB intra with Z_1/Z_3, adapter
-width 12) with default kwargs.
+Intra-code joint Z̄_1 Z̄_2 measurement on a single codeblock. Reproduces
+paper Example C ([[150, 5, 12]], BB intra with Z_1/Z_3, adapter width 12)
+with default kwargs.
 """
-function build_adapter_intracode(
+function _build_adapter_intracode(
     pair::CodePair;
     max_cycle_len_1::Union{Int,Nothing} = nothing,
     max_cycle_len_2::Union{Int,Nothing} = nothing,
     chords_1::Union{Nothing, Vector{Tuple{Int,Int}}} = nothing,
     chords_2::Union{Nothing, Vector{Tuple{Int,Int}}} = nothing,
 )::Adapter
-    pair.code1 === pair.code2 ||
-        throw(ArgumentError("build_adapter_intracode: code1 and code2 must be the same object; use build_adapter_intercode for distinct codeblocks"))
     code = pair.code1
     w = min(length(pair.logical1_support), length(pair.logical2_support))
     w ≥ 2 || throw(ArgumentError(
-        "build_adapter_intracode: adapter width = $w < 2"))
+        "build_adapter: adapter width = $w < 2"))
+    Hx_code = parity_matrix_x(code)
     mcl1 = max_cycle_len_1 === nothing ?
-           Int(maximum(sum(code.Hx; dims = 2))) : max_cycle_len_1
+           Int(maximum(sum(Hx_code; dims = 2))) : max_cycle_len_1
     mcl2 = max_cycle_len_2 === nothing ?
-           Int(maximum(sum(code.Hx; dims = 2))) : max_cycle_len_2
+           Int(maximum(sum(Hx_code; dims = 2))) : max_cycle_len_2
     aux1 = cellulate_long_cycles!(
         build_initial_aux_graph(pair.logical1_support, code);
         max_cycle_len = mcl1, chords = chords_1)
@@ -354,39 +360,75 @@ function build_adapter_intracode(
 end
 
 """
-Top-level dispatcher: routes to [`build_adapter_intracode`](@ref) if
-`code1 === code2`, else [`build_adapter_intercode`](@ref). Reproduces paper
-Examples B and C with no extra kwargs. The returned [`Adapter`](@ref) is an
-`AbstractCSSCode`, usable directly with `code_n`, `parity_matrix_x`, distance,
-and decoder harnesses.
+Build a universal qLDPC adapter between two CSS codeblocks for joint
+``\\bar Z_1 \\bar Z_2`` measurement, following [swaroop2026universal](@cite).
+The returned [`Adapter`](@ref) is an `AbstractCSSCode`, usable directly
+with `code_n`, `parity_matrix_x`, `distance`, and the decoder harnesses.
+
+Two call signatures:
+
+- `build_adapter(code1, code2, logical1, logical2; kwargs...)` — inter-code,
+  fuses one logical from each codeblock. `code1 !== code2` is required.
+- `build_adapter(code, logical1, logical2; kwargs...)` — intra-code, fuses
+  two logicals on the same codeblock.
+
+`logical1` and `logical2` may be passed either as a `Vector{Int}` of qubit
+indices, or as a `Z`-only `PauliOperator` (the qubit support is extracted
+internally; non-`Z` Paulis are rejected).
+
+`code`, `code1`, `code2` only need to implement `parity_matrix_x` and
+`parity_matrix_z`.
+
+Optional kwargs:
+
+- `max_cycle_len_1`, `max_cycle_len_2`: per-side cellulation cycle-length
+  budget (paper §VII.A heuristic, default = max X-stabilizer weight).
+- `chords_1`, `chords_2`: per-side cellulation chord choices (paper
+  Example C `Z_3` reproducibility — see [`cellulate_long_cycles!`](@ref)).
 
 ```jldoctest adapter_examples
 julia> using QuantumClifford, QECCore
 
-julia> using QuantumClifford.ECC: Surface, logz_ops, code_n, code_k
+julia> using QuantumClifford.ECC
 
-julia> using QuantumClifford.ECC: parity_matrix_x, parity_matrix_z
+julia> c1 = Surface(3, 3);
 
-julia> using QuantumClifford: stab_to_gf2
+julia> c2 = Surface(3, 3);
 
-julia> c1 = CSS(Matrix{Bool}(parity_matrix_x(Surface(3,3))), Matrix{Bool}(parity_matrix_z(Surface(3,3))));
+julia> z = logz_ops(Surface(3, 3))[1];
 
-julia> c2 = CSS(Matrix{Bool}(parity_matrix_x(Surface(3,3))), Matrix{Bool}(parity_matrix_z(Surface(3,3))));
-
-julia> z = sort(findall(!iszero, stab_to_gf2(logz_ops(Surface(3,3)))[1, 14:26]));
-
-julia> adapter = build_adapter(CodePair(c1, c2, z, z));
+julia> adapter = build_adapter(c1, c2, z, z);
 
 julia> (code_n(adapter), code_k(adapter), adapter.adapter_width)
 (33, 1, 3)
 ```
 """
-function build_adapter(pair::CodePair; kwargs...)::Adapter
-    if pair.code1 === pair.code2
-        build_adapter_intracode(pair; kwargs...)
-    else
-        build_adapter_intercode(pair; kwargs...)
-    end
+function build_adapter end
+
+# Inter-code: two independent codeblocks.
+function build_adapter(code1, code2, logical1, logical2; kwargs...)::Adapter
+    s1 = _as_support(logical1, code1, "logical1")
+    s2 = _as_support(logical2, code2, "logical2")
+    _build_adapter_intercode(CodePair(code1, code2, s1, s2; intracode=false); kwargs...)
+end
+
+# Intra-code: single codeblock with two logicals.
+function build_adapter(code, logical1, logical2; kwargs...)::Adapter
+    s1 = _as_support(logical1, code, "logical1")
+    s2 = _as_support(logical2, code, "logical2")
+    _build_adapter_intracode(CodePair(code, code, s1, s2; intracode=true); kwargs...)
+end
+
+# Convert a logical-operator argument to a sorted qubit-support vector.
+_as_support(supp::AbstractVector{<:Integer}, code, label) = collect(Int, supp)
+
+function _as_support(p::PauliOperator, code, label)
+    n = size(parity_matrix_x(code), 2)
+    nqubits(p) == n || throw(DimensionMismatch(
+        "build_adapter: $label has $(nqubits(p)) qubits, code has $n"))
+    any(xbit(p)) && throw(ArgumentError(
+        "build_adapter: $label must be a Z-only Pauli operator (got non-trivial X support)"))
+    sort!(supportz(p))
 end
 
 # `Adapter <: AbstractCSSCode` — delegate the CSS interface to the merged code.
@@ -396,19 +438,19 @@ code_n(a::Adapter) = code_n(a.merged_code)
 code_s(a::Adapter) = code_s(a.merged_code)
 
 """
-Row indices of `adapter.merged_code.Hz` whose XOR-sum over GF(2) equals the
-joint logical Pauli being measured. After standard syndrome extraction on the
-merged code, XOR the measurement outcomes at these indices to recover the
-joint measurement result.
+Row indices into `parity_checks(adapter)` whose product is the joint logical
+Pauli being adapted. After standard syndrome extraction on the merged code,
+XOR the measurement outcomes at these indices to recover the joint
+measurement result.
 
-Inter-code (`code1 !== code2`): the result equals `Z̄_l ⊗ Z̄_r` embedded in
-the merged qubit space (`Z̄_l` on the code1 columns, `Z̄_r` on the code2
-columns). Returns `(sz_1 + sz_2 + 1):(sz_1 + sz_2 + 2w)` — the `V_l` and
-`V_r` vertex-Z row blocks.
+Inter-code adapter (built via `build_adapter(code1, code2, logical1, logical2)`):
+the product equals `Z̄_l ⊗ Z̄_r` embedded in the merged qubit space (`Z̄_l` on
+the code1 columns, `Z̄_r` on the code2 columns). Returns the `V_l` and `V_r`
+vertex-Z row blocks.
 
-Intra-code (`code1 === code2`): the result equals `Z̄_l · Z̄_r` (the product
-of the two Z-logicals on the shared code block). Returns
-`(sz + 1):(sz + w_l + w_r)`.
+Intra-code adapter (built via `build_adapter(code, logical1, logical2)`): the
+product equals `Z̄_l · Z̄_r` (the product of the two Z-logicals on the shared
+code block).
 
 The construction: the `V_l` rows sum to `Z̄_l` on the code data qubits
 tensored with `Z` on every A-block adapter qubit (the SkipTree permutation
@@ -417,15 +459,16 @@ tensored with `Z` on every A-block adapter qubit (the SkipTree permutation
 (`Z² = I` over GF(2)), leaving the joint logical on the data qubits.
 """
 function joint_logical_recipe(a::Adapter)::Vector{Int}
-    sz_1 = size(a.code_pair.code1.Hz, 1)
-    if a.code_pair.code1 === a.code_pair.code2
+    n_xstabs = size(parity_matrix_x(a), 1)
+    sz_1 = size(parity_matrix_z(a.code_pair.code1), 1)
+    if a.code_pair.intracode
         w_l = length(a.code_pair.logical1_support)
         w_r = length(a.code_pair.logical2_support)
-        return collect((sz_1 + 1):(sz_1 + w_l + w_r))
+        return collect((n_xstabs + sz_1 + 1):(n_xstabs + sz_1 + w_l + w_r))
     else
-        sz_2 = size(a.code_pair.code2.Hz, 1)
+        sz_2 = size(parity_matrix_z(a.code_pair.code2), 1)
         w = a.adapter_width
-        return collect((sz_1 + sz_2 + 1):(sz_1 + sz_2 + 2 * w))
+        return collect((n_xstabs + sz_1 + sz_2 + 1):(n_xstabs + sz_1 + sz_2 + 2 * w))
     end
 end
 
@@ -461,37 +504,34 @@ unaffected; the bridge X-checks absorb the extra weight-`(d-1)` logical.
 ```jldoctest
 julia> using QuantumClifford, QECCore
 
-julia> using QuantumClifford.ECC: Surface, logz_ops, code_n, code_k
+julia> using QuantumClifford.ECC
 
-julia> using QuantumClifford.ECC: parity_matrix_x, parity_matrix_z
+julia> z = logz_ops(Surface(3, 3))[1];
 
-julia> using QuantumClifford: stab_to_gf2
-
-julia> c = CSS(Matrix{Bool}(parity_matrix_x(Surface(3,3))), Matrix{Bool}(parity_matrix_z(Surface(3,3))));
-
-julia> z = sort(findall(!iszero, stab_to_gf2(logz_ops(Surface(3,3)))[1, 14:26]));
-
-julia> dc = deform_code(c, z);
+julia> dc = deform_code(Surface(3, 3), z);
 
 julia> (code_n(dc), code_k(dc))
 (15, 0)
 ```
 """
 function deform_code(
-    code::CSS,
-    logical_support::Vector{Int};
+    code,
+    logical;
     max_cycle_len::Union{Int,Nothing} = nothing,
     chords::Union{Nothing, Vector{Tuple{Int,Int}}} = nothing,
 )::CSS
+    Hx_dense = Matrix{Bool}(parity_matrix_x(code))
+    Hz_dense = Matrix{Bool}(parity_matrix_z(code))
+    support = _as_support(logical, code, "logical")
     mcl = max_cycle_len === nothing ?
-          Int(maximum(sum(code.Hx; dims = 2))) : max_cycle_len
+          Int(maximum(sum(Hx_dense; dims = 2))) : max_cycle_len
     aux = cellulate_long_cycles!(
-        build_initial_aux_graph(logical_support, code);
+        build_initial_aux_graph(support, code);
         max_cycle_len = mcl, chords = chords)
 
-    n_code = size(code.Hx, 2)
-    sx = size(code.Hx, 1)
-    sz = size(code.Hz, 1)
+    n_code = size(Hx_dense, 2)
+    sx = size(Hx_dense, 1)
+    sz = size(Hz_dense, 1)
     m  = ne(aux.graph)
 
     M  = stabilizer_modification_matrix(aux, sx)
@@ -500,8 +540,8 @@ function deform_code(
     GT = incidence_matrix_transpose(aux)
     n_c = size(N, 1)
 
-    Hx_code = sparse(code.Hx)
-    Hz_code = sparse(code.Hz)
+    Hx_code = sparse(Hx_dense)
+    Hz_code = sparse(Hz_dense)
     Z = (r::Int, c::Int) -> spzeros(Bool, r, c)
 
     Hx_row1 = hcat(Hx_code,        M)

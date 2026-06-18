@@ -9,7 +9,7 @@ end
 ```
 
 This page walks through the `Adapters` submodule on a concrete example: given
-two CSS codeblocks and a specific logical operator between them, build the
+two CSS codeblocks and a specific logical operator on each, build the
 universal adapter of [swaroop2026universal](@cite), read off the list of
 stabilizer measurements that implements the joint logical operator, and
 compare against the naive direct-measurement protocol in simulation.
@@ -29,36 +29,26 @@ We use two independent copies of the ``3 \times 3`` planar surface code
 
 ```@example adapter
 using QuantumClifford
-using QuantumClifford: stab_to_gf2
-using QuantumClifford.ECC: CSS, Surface, parity_matrix_x, parity_matrix_z,
-                            logz_ops, logx_ops, code_n, code_k, parity_checks,
-                            naive_encoding_circuit
-using QuantumClifford.ECC.Adapters: CodePair, build_adapter, joint_logical_recipe
-
-as_css(c) = CSS(Matrix{Bool}(parity_matrix_x(c)),
-                Matrix{Bool}(parity_matrix_z(c)))
+using QuantumClifford.ECC
 
 codeA = Surface(3, 3)
 codeB = Surface(3, 3)
 nA = code_n(codeA); kA = code_k(codeA)
 nB = code_n(codeB); kB = code_k(codeB)
 
-# Z-logical support on a single Surface(3,3) block
-lz = stab_to_gf2(logz_ops(codeA))
-z = sort(findall(!iszero, lz[1, nA+1:2nA]))
+# Z-logical operator to adapt
+z = logz_ops(codeA)[1]
 ```
-
-`z` is the list of data qubits that ``\bar Z`` acts on within one block. We
-use the same support on both blocks since they are copies of the same code.
 
 ## Step 2: build the adapter and read the measurement recipe
 
 `build_adapter` builds the two auxiliary graphs, cellulates them, runs the
 SkipTree algorithm on each, and assembles the merged CSS code that joins
-the two blocks.
+the two blocks. The two codes and the two logical operators are passed
+directly — no manual conversion required.
 
 ```@example adapter
-adapter = build_adapter(CodePair(as_css(codeA), as_css(codeB), z, z))
+adapter = build_adapter(codeA, codeB, z, z)
 
 (code_n(adapter), code_k(adapter))
 ```
@@ -67,40 +57,32 @@ The merged code has `code_n(adapter)` data qubits and `code_k(adapter) = 1`
 surviving logical qubit (the two original logicals have fused, as one expects
 from a surgery merge).
 
-`joint_logical_recipe` returns the row indices of the merged ``Z`` parity-check
-matrix whose XOR over GF(2) equals ``\bar Z_l \otimes \bar Z_r`` in the
-merged-qubit layout:
+`joint_logical_recipe` returns the row indices of the merged code's
+parity-check tableau whose product is the joint logical
+``\bar Z_l \otimes \bar Z_r``:
 
 ```@example adapter
 recipe = joint_logical_recipe(adapter)
 ```
 
-This is the *list of measurements* that implements the joint logical operator:
-after standard syndrome extraction on the merged code, XOR the measurement
-outcomes at these indices to recover the joint
-``\bar Z_l \otimes \bar Z_r`` measurement result.
+The indices correspond to rows in `parity_checks(adapter)`. After standard
+syndrome extraction on the merged code, XOR the measurement outcomes at
+these indices to recover the joint ``\bar Z_l \otimes \bar Z_r``
+measurement result.
 
 ## Step 3: algebraic verification of the recipe
 
-Each recipe row is a single ``Z``-type stabilizer of the merged code. We can
-form the Pauli product directly and check that it equals the joint logical
-``\bar Z_l \otimes \bar Z_r`` embedded in the merged qubit layout (the merged
+This step is simply a verification for correctness — not necessary in actual
+use. Each recipe row is a single ``Z``-type stabilizer of the merged code;
+their Pauli product equals the joint logical
+``\bar Z_l \otimes \bar Z_r`` embedded in the merged qubit layout (the
 column order is ``[\text{code}_1 \mid G_1 \mid A \mid G_2 \mid \text{code}_2]``,
 with ``A`` the adapter block and ``G_1, G_2`` the auxiliary-graph edge
 qubits).
 
 ```@example adapter
-function row_to_zpauli(row, n)
-    p = zero(PauliOperator, n)
-    for i in 1:n
-        row[i] != 0 && (p[i] = (false, true))
-    end
-    p
-end
-
-n_total = code_n(adapter)
-Hz = parity_matrix_z(adapter)
-recipe_paulis = [row_to_zpauli(Hz[r, :], n_total) for r in recipe]
+H = parity_checks(adapter)
+recipe_paulis = H[recipe]
 
 prod(recipe_paulis)
 ```
@@ -119,6 +101,12 @@ joint logical survives on the data qubits.
 
 ## Step 4: prepare encoded logical states in simulation
 
+The next two steps are also a verification of correctness — this time by
+simulating either the measurement of the adapter we have built, or the much
+more naive (and not fault tolerant or easy to implement on real hardware)
+direct measurement of the large cross-code logical operator without the use
+of an adapter.
+
 We follow the standard `QuantumClifford` pattern (also used in the ECC
 syndrome tests): a random ``k``-qubit logical input is buffered with
 ``n-k`` ``|0\rangle`` ancilla qubits and passed through
@@ -126,7 +114,7 @@ syndrome tests): a random ``k``-qubit logical input is buffered with
 state of the surface code.
 
 ```@example adapter
-using Random; Random.seed!(2026)
+using Random; Random.seed!(2026) # hide
 
 physical_state_A = one(Stabilizer, nA - kA) ⊗ random_stabilizer(kA)
 physical_state_B = one(Stabilizer, nB - kB) ⊗ random_stabilizer(kB)
@@ -142,11 +130,8 @@ nqubits(full_state)
 ```
 
 `full_state` is the joint encoded state on the ``n_A + n_B = 26`` data qubits
-of the two surface code blocks.
-
-The logical Pauli we want to measure on this joint state is the tensor
-product of the two ``\bar Z`` operators. The single-block ``\bar Z`` is the
-first row of `logz_ops(codeA)` (and the same for `codeB`):
+of the two surface code blocks. The logical Pauli we want to measure on this
+joint state is the tensor product of the two ``\bar Z`` operators:
 
 ```@example adapter
 logicalA = logz_ops(codeA)[1]
@@ -174,67 +159,52 @@ end
 (count(naive_bits), nshots)
 ```
 
-The pair `(count(naive_bits), nshots)` reports how many shots returned
-``-1`` (i.e. measured `true`). For the seed-pinned random logical input above,
-the empirical distribution should be near ``50/50``.
+The pair `(count(naive_bits), nshots)` reports how many shots measured
+`true`. The fraction will be 0 or 1 for a deterministic measurement, or
+near 0.5 for a logical operator that does not stabilize the current
+logical state.
 
 ## Step 6: adapter-mediated measurement of the same logical
+
+Here we get back to actually using the adapter, the proper way to do
+fault-tolerant logical measurements, and see that it gives the same result
+as the naive method from above. This adapter approach is what you would
+actually want when doing real QEC modelling work.
 
 The adapter implements the same joint measurement using only ``X``- and
 ``Z``-type stabilizers of the merged code. The protocol on each shot is:
 
 1. Insert ``n_\text{anc}`` ancilla qubits in ``|+\rangle`` between the two
    encoded blocks, matching the merged-code column layout.
-2. Measure every ``X``-type merged stabilizer (these are deterministic on the
-   chosen ancilla state and provide the standard CSS syndrome bits).
-3. Measure every ``Z``-type merged stabilizer.
-4. XOR the outcomes at the indices in `joint_logical_recipe(adapter)` to
+2. Measure every merged stabilizer (the ``X``-stabilizers are deterministic
+   on the chosen ancilla state and provide the standard CSS syndrome bits;
+   the ``Z``-stabilizers include the joint-logical recipe).
+3. XOR the outcomes at the indices in `joint_logical_recipe(adapter)` to
    recover the joint logical bit.
 
 Each *individual* merged stabilizer has weight at most ``4`` for this
-adapter (the original Surface(3,3) checks are weight 3 or 4, and the
-new ``V`` rows and bridge ``X``-rows the adapter introduces are weight
-bounded by the auxiliary-graph degree); the joint logical itself has
-weight 6, so even at distance 3 the adapter trades one weight-6
-measurement for a sequence of low-weight ones. The gap widens with
-code distance — joint logicals scale as ``O(d)`` while adapter
-stabilizers stay ``O(1)`` — and that is the whole point of the
-construction: a hardware that can execute only weight-bounded
-measurements (as on a qLDPC architecture) can still perform an
-arbitrary joint logical Pauli measurement.
+adapter; the joint logical itself has weight ``6``, so even at distance
+``3`` the adapter trades one weight-``6`` measurement for a sequence of
+low-weight ones. The gap widens with code distance — joint logicals scale
+as ``O(d)`` while adapter stabilizers stay ``O(1)`` — and that is the whole
+point of the construction: hardware that can execute only weight-bounded
+measurements (as on a qLDPC architecture) can still perform an arbitrary
+joint logical Pauli measurement.
 
 ```@example adapter
-function row_to_xpauli(row, n)
-    p = zero(PauliOperator, n)
-    for i in 1:n
-        row[i] != 0 && (p[i] = (true, false))
-    end
-    p
-end
-
-Hx = parity_matrix_x(adapter)
-n_xstabs = size(Hx, 1)
-n_zstabs = size(Hz, 1)
-
-adapter_stabilizers = vcat(
-    [PauliMeasurement(row_to_xpauli(Hx[r, :], n_total), r)
-        for r in 1:n_xstabs],
-    [PauliMeasurement(row_to_zpauli(Hz[r, :], n_total), n_xstabs + r)
-        for r in 1:n_zstabs],
-)
-
-# Ancilla qubits live BETWEEN block A and block B in the merged column layout.
+n_total = code_n(adapter)
 n_anc = n_total - nA - nB
 plus_anc = MixedDestabilizer(Stabilizer([single_x(n_anc, i) for i in 1:n_anc]))
 merged_state = encoded_A ⊗ plus_anc ⊗ encoded_B
 
+adapter_stabilizers = [PauliMeasurement(H[r], r) for r in eachindex(H)]
+
 adapter_bits = falses(nshots)
 for shot in 1:nshots
-    reg = Register(copy(merged_state), n_xstabs + n_zstabs)
+    reg = Register(copy(merged_state), length(H))
     mctrajectory!(reg, adapter_stabilizers)
     bits = bitview(reg)
-    recipe_outcomes = [bits[n_xstabs + r] for r in recipe]
-    adapter_bits[shot] = reduce(xor, recipe_outcomes)
+    adapter_bits[shot] = reduce(xor, bits[r] for r in recipe)
 end
 
 (count(adapter_bits), nshots)
@@ -284,7 +254,7 @@ What this PR provides:
   ECC infrastructure, so existing decoders (e.g. the BP-OSD harness via
   `PyQDecoders`) operate on it without an adapter shim.
 - The joint-logical recipe: `joint_logical_recipe(adapter)` identifies
-  which merged-code ``Z``-stabilizer outcomes to XOR to read out
+  which merged-code stabilizer outcomes to XOR to read out
   ``\bar Z_l \otimes \bar Z_r``.
 - The simulation example above, which is a single-round noiseless
   realisation of steps 1 and 2.

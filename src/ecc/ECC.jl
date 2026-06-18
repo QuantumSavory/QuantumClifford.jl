@@ -24,6 +24,7 @@ using Statistics: std
 using DocStringExtensions
 
 export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
+    logz_ops, logx_ops,
     code_n, code_s, code_k, rate, distance, DistanceMIPAlgorithm,
     metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix,
     isdegenerate, faults_matrix,
@@ -411,11 +412,9 @@ include("decoder_correction_gate.jl")
 
 include("adapters/Adapters.jl")
 
-using .Adapters: build_adapter, build_adapter_intercode, build_adapter_intracode,
-                 deform_code, joint_logical_recipe, skiptree,
+using .Adapters: build_adapter, deform_code, joint_logical_recipe, skiptree,
                  CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter
-export build_adapter, build_adapter_intercode, build_adapter_intracode,
-       deform_code, joint_logical_recipe, skiptree,
+export build_adapter, deform_code, joint_logical_recipe, skiptree,
        CodePair, AuxiliaryGraph, SkipTreeOutput, Adapter
 
 end #module

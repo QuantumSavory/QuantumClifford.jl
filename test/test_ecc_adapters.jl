@@ -3,12 +3,11 @@
     using QuantumClifford.ECC: CSS, Surface, Steane7,
                                 BivariateBicycleViaCirculantMat,
                                 two_block_group_algebra_code,
-                                CodePair, build_adapter, build_adapter_intercode,
-                                build_adapter_intracode, deform_code,
+                                CodePair, build_adapter, deform_code,
                                 joint_logical_recipe, skiptree,
                                 AuxiliaryGraph, SkipTreeOutput, Adapter,
                                 code_n, code_k, code_s, parity_matrix_x,
-                                parity_matrix_z, logz_ops, logx_ops,
+                                parity_matrix_z, parity_checks, logz_ops, logx_ops,
                                 distance, DistanceMIPAlgorithm
     using QuantumClifford.ECC.Adapters: build_initial_aux_graph,
                                          cellulate_long_cycles!,
@@ -20,7 +19,7 @@
                                          assemble_merged_code_intercode,
                                          assemble_merged_code_intracode,
                                          edge_pair_to_index
-    using QuantumClifford: stab_to_gf2, nqubits
+    using QuantumClifford: stab_to_gf2, nqubits, supportz
     using Hecke: group_algebra, GF, abelian_group, gens
     using Graphs: SimpleGraph, add_edge!, edges, ne, nv, src, dst, has_edge,
                   path_graph, cycle_graph, complete_graph, is_connected,
@@ -280,11 +279,10 @@
     end
 
     @testset "Surface(3,3) × Surface(3,3) inter-code → [[33, 1, 3]]" begin
-        c1 = as_css(Surface(3, 3))
-        c2 = as_css(Surface(3, 3))
-        z = sort(findall(!iszero,
-                         stab_to_gf2(logz_ops(Surface(3, 3)))[1, 14:26]))
-        adapter = build_adapter(CodePair(c1, c2, z, z))
+        c1 = Surface(3, 3)
+        c2 = Surface(3, 3)
+        z = logz_ops(Surface(3, 3))[1]
+        adapter = build_adapter(c1, c2, z, z)
         @test code_n(adapter) == 33                            # 13 + 2 + 3 + 2 + 13
         @test code_k(adapter) == 1
         @test css_commutes(adapter.merged_code)
@@ -296,12 +294,9 @@
         c_orig = bb_2bga(6, 6, [(:x, 3), (:y, 1), (:y, 2)],
                               [(:y, 3), (:x, 1), (:x, 2)])
         @test (code_n(c_orig), code_k(c_orig)) == (72, 12)
-        c = as_css(c_orig)
-        lz = stab_to_gf2(logz_ops(c_orig))
-        n0 = code_n(c_orig)
-        z1 = sort(findall(!iszero, lz[1, n0 + 1:2n0]))
-        z2 = sort(findall(!iszero, lz[2, n0 + 1:2n0]))
-        adapter = build_adapter(CodePair(c, c, z1, z2))
+        z1 = logz_ops(c_orig)[1]
+        z2 = logz_ops(c_orig)[2]
+        adapter = build_adapter(c_orig, z1, z2)
         @test css_commutes(adapter.merged_code)
         @test code_k(adapter) == code_k(c_orig) - 1
         # paper Theorem 5 / Table III weight bounds
@@ -321,12 +316,13 @@
         @assert length(distinct) ≥ 2
         i_short = findfirst(==(distinct[1]),    weights)
         i_long  = findfirst(==(distinct[end]),  weights)
-        z_short = sort(findall(!iszero, lz[i_short, n0 + 1:2n0]))
-        z_long  = sort(findall(!iszero, lz[i_long,  n0 + 1:2n0]))
+        z_short_pauli = logz_ops(bb)[i_short]
+        z_long_pauli  = logz_ops(bb)[i_long]
+        z_short = supportz(z_short_pauli)
+        z_long  = supportz(z_long_pauli)
         @test length(z_short) < length(z_long)
 
-        c = as_css(bb)
-        adapter = build_adapter(CodePair(c, c, z_short, z_long))
+        adapter = build_adapter(bb, z_short_pauli, z_long_pauli)
 
         @test adapter.adapter_width == length(z_short)
         @test nv(adapter.aux_l.graph) == length(z_short)
@@ -346,18 +342,17 @@
         g_orig = BivariateBicycleViaCirculantMat(l, m_param, A, B)
         @test (code_n(g_orig), code_k(g_orig)) == (144, 12)
 
-        g = as_css(g_orig)
-        lz = stab_to_gf2(logz_ops(g_orig))
         n0 = code_n(g_orig)
-        z1 = sort(findall(!iszero, lz[5,  n0 + 1:2n0]))
-        z2 = sort(findall(!iszero, lz[10, n0 + 1:2n0]))
-        adapter = build_adapter(CodePair(g, g, z1, z2))
+        z1_pauli = logz_ops(g_orig)[5]
+        z2_pauli = logz_ops(g_orig)[10]
+        adapter = build_adapter(g_orig, z1_pauli, z2_pauli)
 
         expected_n = n0 + ne(adapter.aux_l.graph) +
                           adapter.adapter_width +
                           ne(adapter.aux_r.graph)
         @test code_n(adapter) == expected_n
-        @test adapter.adapter_width == min(length(z1), length(z2))
+        @test adapter.adapter_width == min(length(supportz(z1_pauli)),
+                                            length(supportz(z2_pauli)))
         @test css_commutes(adapter.merged_code)
         @test code_k(adapter) == code_k(g_orig) - 1
         Hx = parity_matrix_x(adapter)
@@ -368,35 +363,34 @@
     end
 
     @testset "deform_code (single-logical) on Surface(3,3)" begin
-        c = as_css(Surface(3, 3))
-        z = sort(findall(!iszero,
-                         stab_to_gf2(logz_ops(Surface(3, 3)))[1, 14:26]))
+        c = Surface(3, 3)
+        z = logz_ops(c)[1]
         dc = deform_code(c, z)
-        aux = cellulate_long_cycles!(build_initial_aux_graph(z, c);
-                                      max_cycle_len = Int(maximum(sum(c.Hx; dims = 2))))
+        aux = cellulate_long_cycles!(build_initial_aux_graph(supportz(z), c);
+                                      max_cycle_len = Int(maximum(sum(parity_matrix_x(c); dims = 2))))
         @test code_n(dc) == code_n(c) + ne(aux.graph)
         @test code_k(dc) == 0
         @test css_commutes(dc)
     end
 
     @testset "build_adapter dispatcher" begin
-        c  = as_css(Surface(3, 3))
-        c1 = as_css(Surface(3, 3))
-        c2 = as_css(Surface(3, 3))
-        z = sort(findall(!iszero,
-                         stab_to_gf2(logz_ops(Surface(3, 3)))[1, 14:26]))
-        @test code_n(build_adapter(CodePair(c1, c2, z, z))) == 33
-        @test build_adapter(CodePair(c, c, z, z)).adapter_width == 3
-        @test_throws ArgumentError build_adapter_intercode(CodePair(c, c, z, z))
-        @test_throws ArgumentError build_adapter_intracode(CodePair(c1, c2, z, z))
+        c  = Surface(3, 3)
+        c1 = Surface(3, 3)
+        c2 = Surface(3, 3)
+        z = logz_ops(Surface(3, 3))[1]
+        @test code_n(build_adapter(c1, c2, z, z)) == 33               # inter-code, 4 args
+        @test build_adapter(c, z, z).adapter_width == 3               # intra-code, 3 args
+        # Pauli-input validation: reject non-Z Pauli and wrong nqubits.
+        x = logx_ops(Surface(3, 3))[1]
+        @test_throws ArgumentError build_adapter(c1, c2, x, z)
+        @test_throws DimensionMismatch build_adapter(c1, c2, P"Z", z)
     end
 
     @testset "Adapter plugs directly into AbstractCSSCode dispatch" begin
-        c1 = as_css(Surface(3, 3))
-        c2 = as_css(Surface(3, 3))
-        z = sort(findall(!iszero,
-                         stab_to_gf2(logz_ops(Surface(3, 3)))[1, 14:26]))
-        adapter = build_adapter(CodePair(c1, c2, z, z))
+        c1 = Surface(3, 3)
+        c2 = Surface(3, 3)
+        z = logz_ops(Surface(3, 3))[1]
+        adapter = build_adapter(c1, c2, z, z)
         @test adapter isa QuantumClifford.ECC.AbstractCSSCode
         @test code_n(adapter) == 33
         @test code_k(adapter) == 1
@@ -407,77 +401,65 @@
 
     @testset "joint_logical_recipe" begin
         # Inter-code: Z̄_l on code1 columns ⊗ Z̄_r on code2 columns.
-        c1 = as_css(Surface(3, 3))
-        c2 = as_css(Surface(3, 3))
-        z = sort(findall(!iszero,
-                         stab_to_gf2(logz_ops(Surface(3, 3)))[1, 14:26]))
-        adapter = build_adapter(CodePair(c1, c2, z, z))
+        c1 = Surface(3, 3)
+        c2 = Surface(3, 3)
+        z_pauli = logz_ops(Surface(3, 3))[1]
+        z = supportz(z_pauli)
+        adapter = build_adapter(c1, c2, z_pauli, z_pauli)
         recipe = joint_logical_recipe(adapter)
 
-        Hz = adapter.merged_code.Hz
+        H = parity_checks(adapter)
         @test recipe isa Vector{Int}
         @test !isempty(recipe)
-        @test all(1 ≤ i ≤ size(Hz, 1) for i in recipe)
+        @test all(1 ≤ i ≤ length(H) for i in recipe)
         # Exactly the V_l + V_r row range: 2 * adapter_width rows.
         @test length(recipe) == 2 * adapter.adapter_width
 
-        product_row = vec(mod.(sum(Int.(Hz[recipe, :]); dims = 1), 2))
+        # XOR-product (over GF(2)) of the indicated stabilizer rows.
+        product = prod(H[r] for r in recipe)
 
-        n1 = size(c1.Hx, 2)
-        n2 = size(c2.Hx, 2)
+        n1 = size(parity_matrix_x(c1), 2)
+        n2 = size(parity_matrix_x(c2), 2)
         m_l = ne(adapter.aux_l.graph)
         m_r = ne(adapter.aux_r.graph)
         w   = adapter.adapter_width
         @test code_n(adapter) == n1 + m_l + w + m_r + n2
         code2_offset = n1 + m_l + w + m_r
 
-        # Z̄_l support lives on code1 columns 1..n1
-        for q in z
-            @test product_row[q] == 1
-        end
-        # Z̄_r support lives on code2 columns code2_offset .+ (1..n2)
-        for q in z
-            @test product_row[code2_offset + q] == 1
-        end
-        # Every other column must be 0 (no Pauli weight on edge / A / non-support qubits).
-        for col in 1:code_n(adapter)
-            on_z1 = (col ≤ n1) && (col in z)
-            on_z2 = (col > code2_offset) && ((col - code2_offset) in z)
-            (on_z1 || on_z2) && continue
-            @test product_row[col] == 0
-        end
+        # Z̄_l ⊗ Z̄_r in the merged-qubit layout: Z on each code1-qubit in z, Z on each
+        # code2-qubit in z (offset), identity elsewhere.
+        @test sort(supportz(product)) ==
+            sort(vcat(z, [code2_offset + q for q in z]))
+        @test isempty(supportx(product))
 
         # Intra-code: Z̄_l · Z̄_r on the shared code block.
         c_bb = bb_2bga(6, 6, [(:x, 3), (:y, 1), (:y, 2)],
                               [(:y, 3), (:x, 1), (:x, 2)])
-        n_bb = code_n(c_bb)
-        c_bb_css = as_css(c_bb)
-        lz = stab_to_gf2(logz_ops(c_bb))
-        z1 = sort(findall(!iszero, lz[1, n_bb + 1:2n_bb]))
-        z2 = sort(findall(!iszero, lz[2, n_bb + 1:2n_bb]))
-        adapter_intra = build_adapter(CodePair(c_bb_css, c_bb_css, z1, z2))
+        z1_pauli = logz_ops(c_bb)[1]
+        z2_pauli = logz_ops(c_bb)[2]
+        z1 = supportz(z1_pauli); z2 = supportz(z2_pauli)
+        adapter_intra = build_adapter(c_bb, z1_pauli, z2_pauli)
         recipe_intra = joint_logical_recipe(adapter_intra)
 
-        Hz_intra = adapter_intra.merged_code.Hz
+        H_intra = parity_checks(adapter_intra)
         @test recipe_intra isa Vector{Int}
         @test !isempty(recipe_intra)
-        @test all(1 ≤ i ≤ size(Hz_intra, 1) for i in recipe_intra)
+        @test all(1 ≤ i ≤ length(H_intra) for i in recipe_intra)
         @test length(recipe_intra) == length(z1) + length(z2)
 
-        product_intra = vec(mod.(sum(Int.(Hz_intra[recipe_intra, :]); dims = 1), 2))
+        product_intra = prod(H_intra[r] for r in recipe_intra)
 
-        # Expected: indicator of (Z̄_l support) XOR (Z̄_r support) on code columns,
-        # zero on every G_l edge / A / G_r edge column.
+        # Z̄_1 · Z̄_2 on the shared code block: XOR of supports.
         joint_support = falses(code_n(adapter_intra))
         for q in z1; joint_support[q] = !joint_support[q]; end
         for q in z2; joint_support[q] = !joint_support[q]; end
-        for col in 1:code_n(adapter_intra)
-            @test product_intra[col] == Int(joint_support[col])
-        end
+        @test sort(supportz(product_intra)) == findall(joint_support)
+        @test isempty(supportx(product_intra))
     end
 
     @testset "Distance MIP plumbing (sanity)" begin
         @test distance(Steane7(), DistanceMIPAlgorithm(solver = HiGHS)) == 3
         @test distance(Surface(3, 3), DistanceMIPAlgorithm(solver = HiGHS)) == 3
     end
+
 end

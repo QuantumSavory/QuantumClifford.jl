@@ -4,24 +4,16 @@
     # Carlo evaluation, assert the logical error rate is finite, in [0, 1],
     # and roughly consistent with a distance-3 code at code-capacity noise.
     using QuantumClifford
-    using QuantumClifford.ECC: CSS, Surface, parity_matrix_x, parity_matrix_z,
-                               logz_ops, code_n, code_k,
+    using QuantumClifford.ECC: Surface, logz_ops, code_n, code_k,
+                               build_adapter,
                                PyBeliefPropOSDecoder, evaluate_decoder,
                                CommutationCheckECCSetup
-    using QuantumClifford.ECC.Adapters: CodePair, build_adapter
-    using QuantumClifford: stab_to_gf2
     using Random
 
     import PyQDecoders   # load the extension
 
-    as_css(c) = CSS(Matrix{Bool}(parity_matrix_x(c)),
-                    Matrix{Bool}(parity_matrix_z(c)))
-
-    c1 = as_css(Surface(3, 3)); c2 = as_css(Surface(3, 3))
-    lz = stab_to_gf2(logz_ops(Surface(3, 3)))
-    n0 = code_n(c1)
-    z = sort(findall(!iszero, lz[1, n0+1:2n0]))
-    adapter = build_adapter(CodePair(c1, c2, z, z))
+    z = logz_ops(Surface(3, 3))[1]
+    adapter = build_adapter(Surface(3, 3), Surface(3, 3), z, z)
 
     @test code_n(adapter) == 33
     @test code_k(adapter) == 1

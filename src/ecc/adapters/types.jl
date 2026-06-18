@@ -1,17 +1,41 @@
 """
-Input to [`build_adapter`](@ref): two CSS code blocks plus the qubit supports
-of the two logical Z operators to be jointly measured. `code1 === code2`
-selects the intra-code path. X- and Y-type joint measurements reduce to the
-Z-type case via local Cliffords (paper §IV).
+Input bundle for [`build_adapter`](@ref): two CSS codeblocks plus the qubit
+supports of the two ``Z`` logicals being jointly measured. The `intracode`
+flag indicates whether the two logicals live on the same codeblock (and the
+merged code has only one copy of the data qubits) or on two independent
+codeblocks. ``X``- and ``Y``-type joint measurements reduce to the ``Z`` case
+via local Cliffords (paper §IV).
 
-- `code1`, `code2`: the input codes
-- `logical1_support`, `logical2_support`: qubit indices supporting Z̄_l and Z̄_r
+`code1` and `code2` only need to support `parity_matrix_x` and `parity_matrix_z`
+— the constructor verifies both at build time, so any `AbstractECC` (or
+duck-typed code) that implements those methods works.
 """
-struct CodePair
-    code1::CSS
-    code2::CSS
+struct CodePair{C1, C2}
+    code1::C1
+    code2::C2
     logical1_support::Vector{Int}
     logical2_support::Vector{Int}
+    intracode::Bool
+
+    function CodePair(code1::C1, code2::C2,
+                       logical1_support::AbstractVector{<:Integer},
+                       logical2_support::AbstractVector{<:Integer};
+                       intracode::Bool = false) where {C1, C2}
+        _verify_css_methods(code1, "code1")
+        _verify_css_methods(code2, "code2")
+        new{C1, C2}(code1, code2,
+                    collect(Int, logical1_support),
+                    collect(Int, logical2_support),
+                    intracode)
+    end
+end
+
+function _verify_css_methods(code, label::String)
+    applicable(parity_matrix_x, code) || throw(ArgumentError(
+        "CodePair: $label of type $(typeof(code)) does not implement parity_matrix_x"))
+    applicable(parity_matrix_z, code) || throw(ArgumentError(
+        "CodePair: $label of type $(typeof(code)) does not implement parity_matrix_z"))
+    return nothing
 end
 
 """
@@ -53,35 +77,30 @@ end
 
 """
 A universal adapter between two CSS codes — the result of [`build_adapter`](@ref).
-Subtypes `AbstractCSSCode`, so it plugs directly into the standard `QECCore`
-dispatch (`code_n`, `parity_matrix_x`, distance, decoder harnesses) without an
-intermediate wrapper.
+Subtypes `AbstractCSSCode`, so it behaves like and can be used as any other
+stabilizer code in this library.
 
 # Example
 
 ```jldoctest
 julia> using QuantumClifford, QECCore
 
-julia> using QuantumClifford.ECC: Surface, logz_ops, code_n, code_k, code_s
+julia> using QuantumClifford.ECC
 
-julia> using QuantumClifford.ECC: parity_matrix_x, parity_matrix_z
+julia> c1 = Surface(3, 3);
 
-julia> using QuantumClifford: stab_to_gf2
+julia> c2 = Surface(3, 3);
 
-julia> c1 = CSS(Matrix{Bool}(parity_matrix_x(Surface(3,3))), Matrix{Bool}(parity_matrix_z(Surface(3,3))));
+julia> z = logz_ops(Surface(3, 3))[1];
 
-julia> c2 = CSS(Matrix{Bool}(parity_matrix_x(Surface(3,3))), Matrix{Bool}(parity_matrix_z(Surface(3,3))));
-
-julia> z = sort(findall(!iszero, stab_to_gf2(logz_ops(Surface(3,3)))[1, 14:26]));
-
-julia> adapter = build_adapter(CodePair(c1, c2, z, z));
+julia> adapter = build_adapter(c1, c2, z, z);
 
 julia> (code_n(adapter), code_k(adapter), code_s(adapter))
 (33, 1, 32)
 ```
 """
-struct Adapter <: AbstractCSSCode
-    code_pair::CodePair
+struct Adapter{C1, C2} <: AbstractCSSCode
+    code_pair::CodePair{C1, C2}
     aux_l::AuxiliaryGraph
     aux_r::AuxiliaryGraph
     skiptree_l::SkipTreeOutput
