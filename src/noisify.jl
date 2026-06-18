@@ -57,11 +57,11 @@ function insert_idle_noise(circuit::AbstractVector, idle_noise::AbstractNoise)
         filled_up_to[qs] .= step + 1
     end
 
-    output = Any[]
+    output = []
     emitted = Set{Int}()
 
     for (op, step) in zip(circuit, op_steps)
-        if !(step in emitted)
+        if !skip_idling_noise(op) && !(step in emitted)
             active = get(active_qubits, step, Set{Int}())
             idle = [q for q in 1:nqubits if !(q in active)]
 
@@ -86,19 +86,19 @@ end
 
 noisify(circuit::AbstractVector, noise::AbstractNoise) = reduce(vcat, noisify.(circuit, (noise,)))
 
-noisify(op, ::Nothing) = Any[op]
-noisify(op, ::AbstractNoise) = Any[op]
+noisify(op, ::Nothing) = [op]
+noisify(op, ::AbstractNoise) = [op]
 
-noisify(op::AbstractSingleQubitOperator, noise::AbstractNoise) = Any[NoiseOp(noise, affectedqubits(op)), op]
-noisify(op::AbstractTwoQubitOperator, noise::AbstractNoise) = Any[NoiseOp(noise, affectedqubits(op)), op]
-noisify(op::AbstractMeasurement, noise::AbstractNoise) = Any[NoiseOp(noise, affectedqubits(op)), op]
-noisify(op::Reset, noise::AbstractNoise) = Any[op, NoiseOp(noise, affectedqubits(op))]
+noisify(op::AbstractSingleQubitOperator, noise::AbstractNoise) = [NoiseOp(noise, affectedqubits(op)), op]
+noisify(op::AbstractTwoQubitOperator, noise::AbstractNoise) = [NoiseOp(noise, affectedqubits(op)), op]
+noisify(op::AbstractMeasurement, noise::AbstractNoise) = [NoiseOp(noise, affectedqubits(op)), op]
+noisify(op::Reset, noise::AbstractNoise) = [op, NoiseOp(noise, affectedqubits(op))]
 
 
-noisify(op, ::CircuitNoise) = Any[op]
-noisify(op::AbstractNoiseOp, ::CircuitNoise) = Any[op]
-noisify(op::ClassicalXOR, ::CircuitNoise) = Any[op]
-noisify(op::VerifyOp, ::CircuitNoise) = Any[op]
+noisify(op, ::CircuitNoise) = [op]
+noisify(op::AbstractNoiseOp, ::CircuitNoise) = [op]
+noisify(op::ClassicalXOR, ::CircuitNoise) = [op]
+noisify(op::VerifyOp, ::CircuitNoise) = [op]
 
 noisify(op::AbstractSingleQubitOperator, noise_model::CircuitNoise) = noisify(op, noise_model.single_qubit)
 noisify(op::AbstractTwoQubitOperator, noise_model::CircuitNoise) = noisify(op, noise_model.two_qubit)

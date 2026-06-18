@@ -60,7 +60,22 @@
 
         @test noisy == circuit
     end
+    @testset "skipped ops do not trigger idle noise" begin
+        verify = VerifyOp(one(Stabilizer, 1), [1])
 
+        circuit = [
+            sHadamard(1),
+            verify,
+        ]
+
+        model = CircuitNoise(
+            idle_noise = PauliNoise(1e-5, 1e-5, 1e-5),
+        )
+
+        noisy = noisify(circuit, model)
+
+        @test noisy == circuit
+    end
     @testset "idle noise insertion with parallel operations" begin
         circuit = [
             sHadamard(1),
