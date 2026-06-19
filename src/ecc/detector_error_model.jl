@@ -40,6 +40,7 @@ function detector_error_model(code; px=0.0, py=0.0, pz=0.0)
         throw(ArgumentError("`px`, `py`, and `pz` must be between 0 and 1."))
 
     checks = parity_checks(code)
+    check_tableau = tab(checks)
     faults = faults_matrix(checks)
     n = code_n(checks)
     io = IOBuffer()
@@ -55,19 +56,19 @@ function detector_error_model(code; px=0.0, py=0.0, pz=0.0)
         _write_dem_error(
             io,
             px,
-            _zero_based_true_indices(comm(checks, single_x(n, qubit))),
+            _zero_based_true_indices(comm(check_tableau, single_x(n, qubit))),
             _zero_based_true_indices(@view faults[:, qubit]),
         )
         _write_dem_error(
             io,
             py,
-            _zero_based_true_indices(comm(checks, single_y(n, qubit))),
+            _zero_based_true_indices(comm(check_tableau, single_y(n, qubit))),
             _y_logical_targets(faults, n, qubit),
         )
         _write_dem_error(
             io,
             pz,
-            _zero_based_true_indices(comm(checks, single_z(n, qubit))),
+            _zero_based_true_indices(comm(check_tableau, single_z(n, qubit))),
             _zero_based_true_indices(@view faults[:, n + qubit]),
         )
     end
