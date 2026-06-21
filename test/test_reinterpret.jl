@@ -3,7 +3,6 @@
     using Test
     using InteractiveUtils
 
-    # Local aliases for brevity
     const Tableau = QuantumClifford.Tableau
     const random_tableau! = QuantumClifford.random_tableau!
     const random_pauli! = QuantumClifford.random_pauli!
@@ -15,21 +14,16 @@
     end
 
     @testset "basic pauli/tableau roundtrips" begin
-        # PauliOperator with explicit UInt64 storage (8 bytes per element)
-        # For 3 qubits: xbits = [true, true, false], zbits = [false, true, true]
-        # Encoded as: X bits in first chunk (0b011 = 3), Z bits in second chunk (0b110 = 6)
         p = PauliOperator(0x0, 3, UInt64[3, 6])
         @test xbit(p) == [true, true, false]
         @test zbit(p) == [false, true, true]
 
-        # Tableau with explicit UInt64 storage
-        # For 2 qubits: row1 = X₁X₂ (xbits=0b11=3, zbits=0b00=0), row2 = Z₁Z₂ (xbits=0b00=0, zbits=0b11=3)
         nch = QuantumClifford._nchunks(2, UInt64)
         xzs = reshape(UInt64[3, 0, 0, 3], nch, 2)
         phases = UInt8[0x0, 0x0]
         t = QuantumClifford.Tableau(phases, 2, xzs)
-        @test QuantumClifford.stab_to_gf2(t)[1, :] == [true, true, false, false]  # X₁X₂
-        @test QuantumClifford.stab_to_gf2(t)[2, :] == [false, false, true, true]  # Z₁Z₂
+        @test QuantumClifford.stab_to_gf2(t)[1, :] == [true, true, false, false]
+        @test QuantumClifford.stab_to_gf2(t)[2, :] == [false, false, true, true]
     end
 
     @testset "reinterpret edge cases" begin
@@ -56,7 +50,7 @@
     end
 
     @testset "pauli combinations" begin
-        unsigned_types = [UInt8, UInt64, UInt128]
+        unsigned_types = subtypes(Unsigned)
         ns = [64]
 
         for n in ns
@@ -110,7 +104,7 @@
     end
 
     @testset "tableau combinations" begin
-        unsigned_types = [UInt8, UInt64, UInt128]
+        unsigned_types = subtypes(Unsigned)
         ns = [64]
         rows_choices = (3,)
 
@@ -132,7 +126,6 @@
     end
 
     @testset "tableau layout variations" begin
-        # Test that layout functions work with reinterpret
         Ti, Tf = UInt8, UInt64
         n, r = 7, 2
         for layout_fn in (identity, fastrow, fastcolumn)
@@ -149,7 +142,7 @@
     end
 
     @testset "stabilizer combinations" begin
-        unsigned_types = [UInt8, UInt64, UInt128]
+        unsigned_types = subtypes(Unsigned)
         ns = [64]
         rows_choices = (3,)
 
@@ -172,7 +165,7 @@
     end
 
     @testset "destabilizer combinations" begin
-        unsigned_types = [UInt8, UInt64, UInt128]
+        unsigned_types = subtypes(Unsigned)
         ns = [64]
 
         for n in ns
@@ -193,12 +186,12 @@
     end
 
     @testset "mixedstabilizer combinations" begin
-        unsigned_types = [UInt8, UInt64, UInt128]
+        unsigned_types = subtypes(Unsigned)
         ns = [64]
 
         for n in ns
             for Ti in unsigned_types, Tf in unsigned_types
-                r = min(n-1, max(1, n÷2))
+                r = min(n - 1, max(1, n ÷ 2))
                 t = zero(Tableau, r, n)
                 random_tableau!(t)
                 s = QuantumClifford.Stabilizer(t)
@@ -216,12 +209,12 @@
     end
 
     @testset "mixeddestabilizer combinations" begin
-        unsigned_types = [UInt8, UInt64, UInt128]
+        unsigned_types = subtypes(Unsigned)
         ns = [64]
 
         for n in ns
             for Ti in unsigned_types, Tf in unsigned_types
-                r = min(n-1, max(1, n÷2))
+                r = min(n - 1, max(1, n ÷ 2))
                 t = zero(Tableau, r, n)
                 random_tableau!(t)
                 s = QuantumClifford.Stabilizer(t)
@@ -239,7 +232,7 @@
     end
 
     @testset "pauliframe combinations" begin
-        unsigned_types = [UInt8, UInt64, UInt128]
+        unsigned_types = subtypes(Unsigned)
         ns = [64]
         rows_choices = (3,)
 
