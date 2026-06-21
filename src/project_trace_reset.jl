@@ -788,9 +788,40 @@ function puttableau!(target::Stabilizer{T1}, source::Tableau, row::Int, col::Int
     puttableau!(tab(target), source, row, col; phases)
 end
 
-"""Unexported low-level function that removes a column (by shifting all columns to the right of the target by one step to the left)
+"""
+    _compact_xzs_words(xzs, nqubits)
 
-Because Tableau is not mutable we return a new Tableau with the same (modified) xzs array."""
+Return `xzs` with only the packed word rows needed for `nqubits`.
+
+Packed tableau data stores all X words followed by all Z words. After removing a
+qubit across a word boundary, the old backing array can still contain too many
+word rows. Leaving that oversized layout in place breaks the split point used by
+low-level operations such as `comm`, which can then read stale X words as Z
+words. This helper preserves the no-allocation path when the word count is
+unchanged and allocates a compact matrix only when the word count shrinks.
+"""
+function _compact_xzs_words(xzs::AbstractMatrix{T}, nqubits::Int) where {T<:Unsigned}
+    old_nwords = size(xzs, 1) ÷ 2
+    new_nwords = cld(nqubits, 8 * sizeof(T))
+    new_nwords < old_nwords || return xzs
+
+    compact_xzs = similar(xzs, 2 * new_nwords, size(xzs, 2))
+    if new_nwords > 0
+        @views begin
+            compact_xzs[1:new_nwords, :] .= xzs[1:new_nwords, :]
+            compact_xzs[(new_nwords + 1):(2 * new_nwords), :] .=
+                xzs[(old_nwords + 1):(old_nwords + new_nwords), :]
+        end
+    end
+    compact_xzs
+end
+
+"""Unexported low-level function that removes a column.
+
+Columns to the right of the target are shifted one step left. Because Tableau is
+not mutable we return a new Tableau. The backing xzs array is reused unless the
+removal crosses a packed-word boundary.
+"""
 function remove_column!(s::Tableau{V,M}, col::Int) where {V,T<:Unsigned,M<:AbstractMatrix{T}}
     rows,cols=size(s)
     xzs = s.xzs
@@ -809,7 +840,8 @@ function remove_column!(s::Tableau{V,M}, col::Int) where {V,T<:Unsigned,M<:Abstr
             xzs[end÷2+j,i] = xzs[end÷2+j,i] >> 1
         end
     end
-    Tableau(s.phases, nqubits(s)-1, s.xzs)
+    new_nqubits = nqubits(s) - 1
+    Tableau(s.phases, new_nqubits, _compact_xzs_words(s.xzs, new_nqubits))
 end
 remove_column!(s::Stabilizer, col::Int) = Stabilizer(remove_column!(tab(s),col))
 
@@ -828,7 +860,7 @@ end
 
 """Unexported low-level function that removes a row (by shifting all rows up as necessary)
 
-Because MixedDestabilizer is not mutable we return a new MixedDestabilizer with the same (modified) xzs array.
+Because MixedDestabilizer is not mutable we return a new MixedDestabilizer.
 
 Used on its own, this function will break invariants. Meant to be used with `projectremove!`.
 """
