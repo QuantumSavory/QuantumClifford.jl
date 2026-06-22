@@ -1452,6 +1452,8 @@ include("entanglement.jl")
 include("isclifford.jl")
 include("symbolic_noncliffords.jl")
 #
+include("reinterpret.jl")
+#
 include("tableau_show.jl")
 include("sumtypes.jl")
 include("precompiles.jl")
