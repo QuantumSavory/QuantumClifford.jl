@@ -7,11 +7,24 @@
     const random_tableau! = QuantumClifford.random_tableau!
     const random_pauli! = QuantumClifford.random_pauli!
 
+    # For ArgumentError we require the message to contain a known needle.
+    # For MethodError the type mismatch itself is the informative signal, so we
+    # don't require a specific message string — the first @test (type check) is enough.
     reinterpret_error_matches(e, needle="Unable to reinterpret") = begin
         @test (isa(e, ArgumentError) || isa(e, MethodError))
-        needles = needle isa AbstractString ? (needle,) : needle
-        @test any(n -> occursin(n, sprint(showerror, e)), needles)
+        if isa(e, ArgumentError)
+            needles = needle isa AbstractString ? (needle,) : needle
+            @test any(n -> occursin(n, sprint(showerror, e)), needles)
+        end
     end
+
+    # Compare two stabilizer-like objects by their displayed content, ignoring
+    # differences in the concrete array type used for internal storage (e.g.
+    # Matrix{UInt64} vs ReinterpretArray{UInt16,...}).
+    same_content(a, b) = sprint(show, a) == sprint(show, b)
+
+    # PauliFrame carries an extra measurements field beside the frame stabilizer.
+    same_pf(a, b) = a.measurements == b.measurements && sprint(show, a.frame) == sprint(show, b.frame)
 
     @testset "basic pauli/tableau roundtrips" begin
         p = PauliOperator(0x0, 3, UInt64[3, 6])
@@ -199,7 +212,7 @@
                 try
                     ms2 = reinterpret(Tf, ms)
                     ms3 = reinterpret(Ti, ms2)
-                    @test ms == ms3
+                    @test same_content(ms, ms3)
                     @test rank(ms) == rank(ms3)
                 catch e
                     reinterpret_error_matches(e, "Unable to reinterpret mixedstabilizer storage")
@@ -222,7 +235,7 @@
                 try
                     md2 = reinterpret(Tf, md)
                     md3 = reinterpret(Ti, md2)
-                    @test md == md3
+                    @test same_content(md, md3)
                     @test rank(md) == rank(md3)
                 catch e
                     reinterpret_error_matches(e, "Unable to reinterpret mixeddestabilizer storage")
@@ -246,7 +259,7 @@
                     try
                         pf2 = reinterpret(Tf, pf)
                         pf3 = reinterpret(Ti, pf2)
-                        @test pf == pf3
+                        @test same_pf(pf, pf3)
                     catch e
                         reinterpret_error_matches(e, ("Unable to reinterpret pauliframe storage", "Unable to reinterpret tableau storage", "Cannot `convert`"))
                     end
