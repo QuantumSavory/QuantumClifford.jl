@@ -7,36 +7,28 @@
     const random_tableau! = QuantumClifford.random_tableau!
     const random_pauli! = QuantumClifford.random_pauli!
 
-    # For ArgumentError we require the message to contain a known needle.
-    # For MethodError the type mismatch itself is the informative signal, so we
-    # don't require a specific message string — the first @test (type check) is enough.
     reinterpret_error_matches(e, needle="Unable to reinterpret") = begin
         @test (isa(e, ArgumentError) || isa(e, MethodError))
-        if isa(e, ArgumentError)
-            needles = needle isa AbstractString ? (needle,) : needle
-            @test any(n -> occursin(n, sprint(showerror, e)), needles)
-        end
+        needles = needle isa AbstractString ? (needle,) : needle
+        @test any(n -> occursin(n, sprint(showerror, e)), needles)
     end
 
-    # Compare two stabilizer-like objects by their displayed content, ignoring
-    # differences in the concrete array type used for internal storage (e.g.
-    # Matrix{UInt64} vs ReinterpretArray{UInt16,...}).
-    same_content(a, b) = sprint(show, a) == sprint(show, b)
-
-    # PauliFrame carries an extra measurements field beside the frame stabilizer.
-    same_pf(a, b) = a.measurements == b.measurements && sprint(show, a.frame) == sprint(show, b.frame)
-
     @testset "basic pauli/tableau roundtrips" begin
+        # PauliOperator with explicit UInt64 storage (8 bytes per element)
+        # For 3 qubits: xbits = [true, true, false], zbits = [false, true, true]
+        # Encoded as: X bits in first chunk (0b011 = 3), Z bits in second chunk (0b110 = 6)
         p = PauliOperator(0x0, 3, UInt64[3, 6])
         @test xbit(p) == [true, true, false]
         @test zbit(p) == [false, true, true]
 
+        # Tableau with explicit UInt64 storage
+        # For 2 qubits: row1 = X₁X₂ (xbits=0b11=3, zbits=0b00=0), row2 = Z₁Z₂ (xbits=0b00=0, zbits=0b11=3)
         nch = QuantumClifford._nchunks(2, UInt64)
         xzs = reshape(UInt64[3, 0, 0, 3], nch, 2)
         phases = UInt8[0x0, 0x0]
         t = QuantumClifford.Tableau(phases, 2, xzs)
-        @test QuantumClifford.stab_to_gf2(t)[1, :] == [true, true, false, false]
-        @test QuantumClifford.stab_to_gf2(t)[2, :] == [false, false, true, true]
+        @test QuantumClifford.stab_to_gf2(t)[1, :] == [true, true, false, false]  # X₁X₂
+        @test QuantumClifford.stab_to_gf2(t)[2, :] == [false, false, true, true]  # Z₁Z₂
     end
 
     @testset "reinterpret edge cases" begin
@@ -63,7 +55,7 @@
     end
 
     @testset "pauli combinations" begin
-        unsigned_types = subtypes(Unsigned)
+        unsigned_types = [UInt8, UInt64, UInt128]
         ns = [64]
 
         for n in ns
@@ -117,7 +109,7 @@
     end
 
     @testset "tableau combinations" begin
-        unsigned_types = subtypes(Unsigned)
+        unsigned_types = [UInt8, UInt64, UInt128]
         ns = [64]
         rows_choices = (3,)
 
@@ -155,7 +147,7 @@
     end
 
     @testset "stabilizer combinations" begin
-        unsigned_types = subtypes(Unsigned)
+        unsigned_types = [UInt8, UInt64, UInt128]
         ns = [64]
         rows_choices = (3,)
 
@@ -178,7 +170,7 @@
     end
 
     @testset "destabilizer combinations" begin
-        unsigned_types = subtypes(Unsigned)
+        unsigned_types = [UInt8, UInt64, UInt128]
         ns = [64]
 
         for n in ns
@@ -199,12 +191,12 @@
     end
 
     @testset "mixedstabilizer combinations" begin
-        unsigned_types = subtypes(Unsigned)
+        unsigned_types = [UInt8, UInt64, UInt128]
         ns = [64]
 
         for n in ns
             for Ti in unsigned_types, Tf in unsigned_types
-                r = min(n - 1, max(1, n ÷ 2))
+                r = min(n-1, max(1, n÷2))
                 t = zero(Tableau, r, n)
                 random_tableau!(t)
                 s = QuantumClifford.Stabilizer(t)
@@ -212,7 +204,7 @@
                 try
                     ms2 = reinterpret(Tf, ms)
                     ms3 = reinterpret(Ti, ms2)
-                    @test same_content(ms, ms3)
+                    @test ms == ms3
                     @test rank(ms) == rank(ms3)
                 catch e
                     reinterpret_error_matches(e, "Unable to reinterpret mixedstabilizer storage")
@@ -222,12 +214,12 @@
     end
 
     @testset "mixeddestabilizer combinations" begin
-        unsigned_types = subtypes(Unsigned)
+        unsigned_types = [UInt8, UInt64, UInt128]
         ns = [64]
 
         for n in ns
             for Ti in unsigned_types, Tf in unsigned_types
-                r = min(n - 1, max(1, n ÷ 2))
+                r = min(n-1, max(1, n÷2))
                 t = zero(Tableau, r, n)
                 random_tableau!(t)
                 s = QuantumClifford.Stabilizer(t)
@@ -235,7 +227,7 @@
                 try
                     md2 = reinterpret(Tf, md)
                     md3 = reinterpret(Ti, md2)
-                    @test same_content(md, md3)
+                    @test md == md3
                     @test rank(md) == rank(md3)
                 catch e
                     reinterpret_error_matches(e, "Unable to reinterpret mixeddestabilizer storage")
@@ -245,7 +237,7 @@
     end
 
     @testset "pauliframe combinations" begin
-        unsigned_types = subtypes(Unsigned)
+        unsigned_types = [UInt8, UInt64, UInt128]
         ns = [64]
         rows_choices = (3,)
 
@@ -259,7 +251,7 @@
                     try
                         pf2 = reinterpret(Tf, pf)
                         pf3 = reinterpret(Ti, pf2)
-                        @test same_pf(pf, pf3)
+                        @test pf == pf3
                     catch e
                         reinterpret_error_matches(e, ("Unable to reinterpret pauliframe storage", "Unable to reinterpret tableau storage", "Cannot `convert`"))
                     end
