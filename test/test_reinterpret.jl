@@ -16,7 +16,8 @@
     end
 
     # Compare two objects by their displayed content, ignoring differences in
-    # the concrete array type used for internal storage
+    # the concrete array type used for internal storage (e.g. Matrix{UInt64}
+    # vs ReinterpretArray{UInt16,...}).
     same_content(a, b) = sprint(show, a) == sprint(show, b)
 
     # PauliFrame carries an extra measurements field beside the frame stabilizer.
@@ -90,14 +91,29 @@
         end
 
         p_min = QuantumClifford.PauliOperator(0x0, 1, UInt8[0x0])
-        @test_throws "Unable to reinterpret pauli storage" reinterpret(UInt8, p_min)
+        try
+            reinterpret(UInt8, p_min)
+            @test false  # should have thrown
+        catch e
+            reinterpret_error_matches(e, "Unable to reinterpret pauli storage")
+        end
 
         p_small2 = QuantumClifford.PauliOperator(0x0, 2, UInt8[0x0, 0x0])
-        @test_throws "Unable to reinterpret pauli storage" reinterpret(UInt128, p_small2)
+        try
+            reinterpret(UInt128, p_small2)
+            @test false  # should have thrown
+        catch e
+            reinterpret_error_matches(e, "Unable to reinterpret pauli storage")
+        end
 
         phases = UInt8[0x0]
         t_odd = QuantumClifford.Tableau(phases, 1, zeros(UInt8, 3, 1))
-        @test_throws "Unable to reinterpret tableau storage" reinterpret(UInt16, t_odd)
+        try
+            reinterpret(UInt16, t_odd)
+            @test false  # should have thrown
+        catch e
+            reinterpret_error_matches(e, "Unable to reinterpret tableau storage")
+        end
 
         nch = QuantumClifford._nchunks(5, UInt8)
         xt = rand(UInt8, nch, 2)
