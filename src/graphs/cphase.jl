@@ -45,6 +45,7 @@ Perform local complementation on pure graph
 """
 function local_comp!(g, id::Int)
     # inneighbors or outneighbors shouldn't really matter because the graph is undirected
+    # NOTE: Here we don't need to copy nghbr even though it returns a reference because local complementation guarantees not changing it
     nghbr = inneighbors(g, id)
     for i1 in eachindex(nghbr)
         for i2 in i1+1:length(nghbr)
