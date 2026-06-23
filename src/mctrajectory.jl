@@ -63,8 +63,7 @@ mctrajectories(initialstate,circuit;trajectories=500,keepstates::Bool=false) = _
 
 function _mctrajectories(initialstate,circuit;trajectories=500,keepstates::Val{B}=Val(false)) where {B}
     if B
-        counter = DefaultDict{Tuple{typeof(initialstate),CircuitStatus},Int}
-        counts = counter((mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories)) # TODO use threads or at least a generator
+        counts = counter((mctrajectory!(copy(initialstate),circuit) for i in 1:trajectories)) # TODO use threads or at least a generator
         return counts
     else
         counts = countmap((mctrajectory!(copy(initialstate),circuit)[2] for i in 1:trajectories)) # TODO use threads or at least a generator

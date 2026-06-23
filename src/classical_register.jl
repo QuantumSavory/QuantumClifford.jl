@@ -19,6 +19,7 @@ Base.one(r::Register; basis=:Z) =
 
 Base.copy(r::Register) = Register(copy(r.stab),copy(r.bits))
 Base.:(==)(l::Register,r::Register) = l.stab==r.stab && l.bits==r.bits
+Base.hash(r::Register, h::UInt) = hash(r.stab, hash(r.bits, h))
 
 stabilizerview(r::Register) = stabilizerview(quantumstate(r))
 destabilizerview(r::Register) = destabilizerview(quantumstate(r))
@@ -44,6 +45,10 @@ tensor(args::Union{Register, AbstractStabilizer}...) = tensor(Register.(args)...
 
 function apply!(r::Register, operation; kwargs...)
     apply!(quantumstate(r), operation; kwargs...)
+    r
+end
+function apply_inv!(r::Register, op, args...; kwargs...)
+    apply_inv!(quantumstate(r), op, args...; kwargs...)
     r
 end
 
