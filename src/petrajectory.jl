@@ -12,6 +12,29 @@ function applybranches(::DeterministicOperatorTrait, state, op; max_order=1)
     [(applywstatus!(copy(state),op)...,1,0)]
 end
 
+function applybranches(::NondeterministicOperatorTrait, state, op::T; max_order=1) where {T<:Union{sMZ,sMX,sMY}}
+    s = copy(state)
+
+    if T===sMZ
+        d, anticom, res = projectZ!(s, op.qubit)
+    elseif T===sMX
+        d, anticom, res = projectX!(s, op.qubit)
+    elseif T===sMY
+        d, anticom, res = projectY!(s, op.qubit)
+    else
+        error("not reachable")
+    end
+
+    if isnothing(res)
+        tab(stabilizerview(s)).phases[anticom] = 0x0
+        s1 = copy(s)
+        tab(stabilizerview(s)).phases[anticom] = 0x2
+        s2 = s
+        return [(s1, continue_stat, .5, 0), (s2, continue_stat, .5, 0)]
+    else 
+        return [(s, continue_stat, 1, 0)] end
+end
+
 function applybranches(::NondeterministicOperatorTrait, state, op; max_order=1)
     throw(ArgumentError(lazy"""
         You are trying to apply a non-deterministic operator $(typeof(op)) in a perturbative expansion, but this particular operator does not have a `applybranches` method defined for it.
@@ -45,9 +68,12 @@ end
 
 function petrajectory_keep(state, circuit; branch_weight=1.0, current_order=0, max_order=1) # TODO a lot of repetition with petrajectory - dry out
     A = Accumulator{Tuple{typeof(state),CircuitStatus},typeof(branch_weight)}
+    dict = A() 
     if size(circuit)[1] == 0
-        return A()
+        DataStructures.inc!(dict, (state,continue_stat), branch_weight)
+        return dict
     end
+
     next_op = circuit[1]
     rest_of_circuit = circuit[2:end]
 
@@ -67,7 +93,8 @@ function petrajectory_keep(state, circuit; branch_weight=1.0, current_order=0, m
 end
 
 """Run a perturbative expansion to a given order. This is the main public function for the perturbative expansion approach.
-
+Currently only has defined behavior for Clifford operators(AbstractCliffordOperator) and single-qubit X, Y and Z measurements(sMX, sMY, sMZ)
+If using the measurements, set keepstates to true. When keepstates is false, will return 0 for true success probability.
 See also: [`pftrajectories`](@ref), [`mctrajectories`](@ref)"""
 function petrajectories(initialstate, circuit; branch_weight=1.0, max_order=1, keepstates::Bool=false)
     for circuit_op in circuit
