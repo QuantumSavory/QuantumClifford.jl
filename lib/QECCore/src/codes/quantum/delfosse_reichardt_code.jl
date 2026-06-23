@@ -201,6 +201,7 @@ function _generalize_delfosse_reichardt_code(p::Int, r::Int, m::Int)
     return extended_H
 end
 
+code_n(c::DelfosseReichardt) = c.p * (2^c.m)
 function parity_matrix_xz(c::DelfosseReichardt)
     extended_mat = _generalize_delfosse_reichardt_code(c.p, c.r, c.m)
     return extended_mat, extended_mat
