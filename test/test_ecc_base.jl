@@ -119,7 +119,24 @@ A = 1   + 𝜋    + 𝜋^58
 B = 𝜋^3 + 𝜋^16 + 𝜋^44
 coprimeBB2 = two_block_group_algebra_code(A, B)
 
-test_coprimeBB_codes = [coprimeBB1, coprimeBB2]
+# coprime Bivariate Bicycle codes from Appendix B of [wang2024coprime](@cite)
+# [[48,4,8]] from Table 4 (weight-6)
+l=3; m=8
+GA = group_algebra(GF(2), abelian_group([l*m]))
+𝜋 = gens(GA)[1]
+A = 1 + 𝜋 + 𝜋^2
+B = 1 + 𝜋^2 + 𝜋^10
+coprimeBB3 = two_block_group_algebra_code(A, B)
+
+# [[24,8,4]] from Table 5 (weight-8)
+l=3; m=4
+GA = group_algebra(GF(2), abelian_group([l*m]))
+𝜋 = gens(GA)[1]
+A = 1 + 𝜋 + 𝜋^3 + 𝜋^4
+B = 1 + 𝜋^2 + 𝜋^5 + 𝜋^9
+coprimeBB4 = two_block_group_algebra_code(A, B)
+
+test_coprimeBB_codes = [coprimeBB1, coprimeBB2, coprimeBB3, coprimeBB4]
 
 # Multivariate Bicycle codes taken from Table 1 of [voss2024multivariatebicyclecodes](@cite)
 # Weight-4 [[144, 2, 12]] MBB code
