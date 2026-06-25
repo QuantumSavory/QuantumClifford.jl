@@ -9,3 +9,12 @@ test/.CondaPkg/
 docs/.CondaPkg/
 .DS_Store
 .syncthing*
+
+external/
+
+.claude/
+notes/
+scripts/
+data/
+papers/
+tmp_*

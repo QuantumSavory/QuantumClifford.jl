@@ -22,7 +22,7 @@ import QuantumInterface: tensor, ⊗, tensor_pow,
 
 export
     @P_str, PauliOperator, ⊗, I, X, Y, Z,
-    @T_str, xbit, zbit, xview, zview,
+    @T_str, xbit, zbit, xview, zview, supportx, supportz,
     @S_str, Stabilizer,
     Destabilizer, MixedStabilizer, MixedDestabilizer,
     prodphase, comm, comm!,

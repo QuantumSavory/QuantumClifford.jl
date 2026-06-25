@@ -77,6 +77,7 @@ pages = [
 ],
 "ECC compendium" => [
     "Evaluating codes and decoders" => "ECC_evaluating.md",
+    "Universal qLDPC adapters" => "adapter_tutorial.md",
     "API" => "ECC_API.md"
 ],
 "All Gates" => "allops.md",
