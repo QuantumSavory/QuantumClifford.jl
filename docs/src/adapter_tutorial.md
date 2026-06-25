@@ -103,6 +103,8 @@ joint logical survives on the data qubits.
 
 ## Step 4: prepare encoded logical states in simulation
 
+The next two steps are also simply a verification of correctness, this type by simulating either the measurement of the adapter we have built, or the much more naive (and not fault tolerant or easy to implement on real hardware) direct measurement of the large cross-code logical operator without the use of an adapter.
+
 The next two steps are also a verification of correctness — this time by
 simulating either the measurement of the adapter we have built, or the much
 more naive (and not fault tolerant or easy to implement on real hardware)
