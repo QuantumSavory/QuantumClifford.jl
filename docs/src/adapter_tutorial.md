@@ -72,6 +72,8 @@ measurement result.
 
 ## Step 3: algebraic verification of the recipe
 
+This step is simply a verification for correctness, not necessary in actual use.
+
 This step is simply a verification for correctness — not necessary in actual
 use. Each recipe row is a single ``Z``-type stabilizer of the merged code;
 their Pauli product equals the joint logical
