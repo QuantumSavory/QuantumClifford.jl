@@ -800,6 +800,9 @@ function comm end
 end
 
 @inline function comm(l::PauliOperator, r::PauliOperator)::UInt8
+    nqubits(l) == nqubits(r) || throw(DimensionMismatch(
+        lazy"comm requires equal qubit counts, got $(nqubits(l)) and $(nqubits(r))."
+    ))
     comm(l.xz,r.xz)
 end
 
