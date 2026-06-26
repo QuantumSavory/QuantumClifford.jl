@@ -5,6 +5,11 @@
 
 # News
 
+## Unreleased
+
+- **(fix)** `comm(::PauliOperator, ::PauliOperator)` now throws
+`DimensionMismatch` for Pauli operators with different qubit counts.
+
 ## v0.11.5 - 2026-06-12
 
 - **(fix)** Broken edge case in `remove_column!`, a non-public function used by QuantumSavory.
