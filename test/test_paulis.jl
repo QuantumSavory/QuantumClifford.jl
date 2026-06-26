@@ -33,6 +33,8 @@
         @test im*P"X" == P"iX"
         @test -im*P"X" == P"-iX"
         @test_throws DomainError 0.5*P"X"
+        @test_throws DimensionMismatch comm(P"XI", P"XIZZ")
+        @test comm(P"XI", P"IX") == 0x0
         @test comm(P"XX",P"YY") == 0x0
         @test comm(P"XZ",P"YZ") == comm(S"II XZ",P"YZ", 2) == comm(P"XZ",S"II YZ", 2) == comm(S"II XZ",P"YZ")[2] == comm(P"XZ",S"II YZ")[2] == 0x1
         @test prodphase(P"XX",P"YY") == 0x2
