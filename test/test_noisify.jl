@@ -95,18 +95,19 @@
         @test filtered == circuit
 
         noise_ops = filter(op -> op isa AbstractNoiseOp, noisy)
-
         @test !isempty(noise_ops)
 
-        @test any(
-            op -> Tuple(affectedqubits(op)) == (2,),
-            noise_ops
-        )
+        q1_ops = filter(op -> Tuple(affectedqubits(op)) == (1,), noise_ops)
+        @test isempty(q1_ops)
 
-        @test any(
-            op -> Tuple(affectedqubits(op)) == (3,),
-            noise_ops
-        )
+        q2_ops = filter(op -> Tuple(affectedqubits(op)) == (2,), noise_ops)
+        @test length(q2_ops) == 3
+
+        q3_ops = filter(op -> Tuple(affectedqubits(op)) == (3,), noise_ops)
+        @test length(q3_ops) == 3
+
+        @test length(noise_ops) == 6
+        @test length(noisy) == length(circuit) + length(noise_ops)
     end
 
     @testset "original circuit order remains" begin
