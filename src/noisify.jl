@@ -1,9 +1,20 @@
-"""A noise model that allows different noise channels to be assigned to single-qubit gates, two-qubit gates, idle qubits, measurements, and reset operations."""
+"""
+$TYPEDEF
+A noise model that allows different noise channels to be assigned to
+single-qubit gates, two-qubit gates, idle qubits, measurements, and reset
+operations.
+$TYPEDFIELDS
+"""
 struct CircuitNoise
+    """Noise channel applied to single-qubit gate operations."""
     single_qubit::Union{AbstractNoise,Nothing}
+    """Noise channel applied to two-qubit gate operations."""
     two_qubit::Union{AbstractNoise,Nothing}
+    """Noise channel applied to qubits that are idle during a circuit layer."""
     idle_noise::Union{AbstractNoise,Nothing}
+    """Noise channel applied to measurement operations."""
     measurement::Union{AbstractNoise,Nothing}
+    """Noise channel applied to reset operations."""
     reset::Union{AbstractNoise,Nothing}
 end
 
@@ -12,7 +23,7 @@ function CircuitNoise(;
     two_qubit::Union{AbstractNoise,Nothing} = nothing,
     idle_noise::Union{AbstractNoise,Nothing} = nothing,
     measurement::Union{AbstractNoise,Nothing} = nothing,
-    reset::Union{AbstractNoise,Nothing} = nothing,
+    reset::Union{AbstractNoise,Nothing} = nothing
 )
     return CircuitNoise(single_qubit, two_qubit, idle_noise, measurement, reset)
 end
@@ -65,7 +76,7 @@ function insert_idle_noise(circuit::AbstractVector, idle_noise::AbstractNoise)
         gap = final_step - filled_up_to[q]
         for _ in 1:gap
                 push!(output, NoiseOp(idle_noise, [q]))
-        end
+            end
     end
 
     output
