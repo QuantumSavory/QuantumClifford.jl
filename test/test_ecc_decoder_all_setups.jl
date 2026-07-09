@@ -130,6 +130,7 @@
         end
     end
 
+
     if !Sys.iswindows()
     @testset "tesseract decoder (tesseract-decoder via PyTesseractDecoder)" begin
         codes = [
@@ -169,4 +170,6 @@
         end
     end
     end
+
+end
 end
