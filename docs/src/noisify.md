@@ -104,3 +104,5 @@ register = Register(state, falses(1))
 
 pftrajectories(register, pf_noisy_circuit; trajectories=100)
 ```
+
+All other simulator routines are also supported by this API
