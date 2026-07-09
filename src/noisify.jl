@@ -29,50 +29,43 @@ skip_idling_noise(op) = false
 skip_idling_noise(op::VerifyOp) = true
 skip_idling_noise(op::ClassicalXOR) = true
 skip_idling_noise(op::AbstractNoiseOp) = true
-
 insert_idle_noise(circuit::AbstractVector, ::Nothing) = circuit
-
 
 function insert_idle_noise(circuit::AbstractVector, idle_noise::AbstractNoise)
     all_qubits = [q for op in circuit for q in affectedqubits(op)]
     isempty(all_qubits) && return copy(circuit)
     nqubits = maximum(all_qubits)
     filled_up_to = fill(1, nqubits)
-    op_steps = Int[]
-    active_qubits = Dict{Int, Set{Int}}()
+
+    output = []
 
     for op in circuit
         qs = collect(affectedqubits(op))
 
         if skip_idling_noise(op) || isempty(qs)
-            push!(op_steps, maximum(filled_up_to))
+            push!(output, op)
             continue
         end
 
         step = maximum(filled_up_to[qs])
 
-        push!(op_steps, step)
-        union!(get!(active_qubits, step, Set{Int}()), qs)
-
-        filled_up_to[qs] .= step + 1
-    end
-
-    output = []
-    emitted = Set{Int}()
-
-    for (op, step) in zip(circuit, op_steps)
-        if !skip_idling_noise(op) && !(step in emitted)
-            active = get(active_qubits, step, Set{Int}())
-            idle = [q for q in 1:nqubits if !(q in active)]
-
-            if !isempty(idle)
-                push!(output, NoiseOp(idle_noise, idle))
+        for q in qs
+            gap = step - filled_up_to[q]
+            for _ in 1:gap
+                push!(output, NoiseOp(idle_noise, [q]))
             end
-
-            push!(emitted, step)
         end
 
+        filled_up_to[qs] .= step + 1
         push!(output, op)
+    end
+
+    final_step = maximum(filled_up_to)
+    for q in 1:nqubits
+        gap = final_step - filled_up_to[q]
+        for _ in 1:gap
+                push!(output, NoiseOp(idle_noise, [q]))
+        end
     end
 
     output
