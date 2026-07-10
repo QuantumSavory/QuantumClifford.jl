@@ -40,6 +40,10 @@ skip_idling_noise(op) = false
 skip_idling_noise(op::VerifyOp) = true
 skip_idling_noise(op::ClassicalXOR) = true
 skip_idling_noise(op::AbstractNoiseOp) = true
+
+function append_idle_noise!(output, q::Int, idle_noise::AbstractNoise)
+    push!(output, NoiseOp(idle_noise, [q]))
+end
 insert_idle_noise(circuit::AbstractVector, ::Nothing) = circuit
 
 function insert_idle_noise(circuit::AbstractVector, idle_noise::AbstractNoise)
@@ -63,7 +67,7 @@ function insert_idle_noise(circuit::AbstractVector, idle_noise::AbstractNoise)
         for q in qs
             gap = step - filled_up_to[q]
             for _ in 1:gap
-                push!(output, NoiseOp(idle_noise, [q]))
+                append_idle_noise!(output, q , idle_noise)
             end
         end
 
@@ -75,8 +79,8 @@ function insert_idle_noise(circuit::AbstractVector, idle_noise::AbstractNoise)
     for q in 1:nqubits
         gap = final_step - filled_up_to[q]
         for _ in 1:gap
-                push!(output, NoiseOp(idle_noise, [q]))
-            end
+                append_idle_noise!(output, q , idle_noise)
+        end
     end
 
     output
