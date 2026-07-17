@@ -5,6 +5,11 @@
 
 # News
 
+## v0.11.6 - 2026-07-17
+
+- Add the `noisify` API for attaching gate, measurement, reset, and idle noise to circuits.
+- Add the `CircuitNoise` configuration object, replacing the previous noise dispatch interface.
+
 ## v0.11.5 - 2026-06-12
 
 - **(fix)** Broken edge case in `remove_column!`, a non-public function used by QuantumSavory.
