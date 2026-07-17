@@ -7,7 +7,7 @@
 
 ## v0.11.6 - 2026-07-17
 
-- Add the `noisify` API for attaching gate, measurement, reset, and idle noise to circuits.
+- Add the `noisify` API, providing a unified interface for applying gate, measurement, reset, and idle noise to quantum circuits.
 - Add the `CircuitNoise` configuration object, replacing the previous noise dispatch interface.
 
 ## v0.11.5 - 2026-06-12
