@@ -103,7 +103,6 @@ noisify(op::AbstractMeasurement, noise::AbstractNoise) = [NoiseOp(noise, affecte
 noisify(op::Reset, noise::AbstractNoise) = [op, NoiseOp(noise, affectedqubits(op))]
 
 
-noisify(op, ::CircuitNoise) = [op]
 noisify(op::AbstractNoiseOp, ::CircuitNoise) = [op]
 noisify(op::ClassicalXOR, ::CircuitNoise) = [op]
 noisify(op::VerifyOp, ::CircuitNoise) = [op]
