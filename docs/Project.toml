@@ -29,3 +29,6 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 [sources]
 QECCore = {path = "../lib/QECCore"}
 QuantumClifford = {path = ".."}
+
+[compat]
+GraphMakie = "0.6.5"
