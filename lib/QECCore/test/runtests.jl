@@ -1,9 +1,18 @@
-using QECCore
-using TestItemRunner
-
 Oscar_flag = false
 Tesseract_flag = false
-JET_flag = false
+const JET_PROJECT = normpath(joinpath(@__DIR__, "projects", "jet"))
+const test_args = isempty(ARGS) ? ["general"] : ARGS
+const JET_flag = length(test_args) == 1 && startswith(only(test_args), "jet")
+
+if JET_flag
+    @info "Activating the dedicated JET test environment." project=JET_PROJECT
+    using Pkg
+    Pkg.activate(JET_PROJECT)
+    Pkg.instantiate()
+end
+
+using QECCore
+using TestItemRunner
 
 if Sys.iswindows() || Sys.ARCH != :x86_64
     @info "Skipping Oscar tests -- only supported x86_64 *NIX platforms."
@@ -19,16 +28,9 @@ else
     Tesseract_flag = true
 end
 
-if get(ENV, "JET_TEST", "") == "true"
-    JET_flag = true
-else
-    @info "Skipping JET tests -- must be explicitly enabled."
-end
-
 using Pkg
-Oscar_flag && Pkg.add("Oscar")
-Tesseract_flag && Pkg.add("PyTesseractDecoder")
-JET_flag && Pkg.add("JET")
+!JET_flag && Oscar_flag && Pkg.add("Oscar")
+!JET_flag && Tesseract_flag && Pkg.add("PyTesseractDecoder")
 
 # filter for the test
 testfilter = ti -> begin

@@ -1,12 +1,22 @@
 using InteractiveUtils
 versioninfo(;verbose=true)
 
+const JET_PROJECT = normpath(joinpath(@__DIR__, "projects", "jet"))
+const test_args = isempty(ARGS) ? ["general"] : ARGS
+const JET_flag = length(test_args) == 1 && startswith(only(test_args), "jet")
+
+if JET_flag
+    @info "Activating the dedicated JET test environment." project=JET_PROJECT
+    using Pkg
+    Pkg.activate(JET_PROJECT)
+    Pkg.instantiate()
+end
+
 CUDA_flag = false
 ROCm_flag = false
 OpenCL_flag = false
 Oscar_flag = false
 Tesseract_flag = false
-JET_flag = false
 
 if Sys.iswindows() || Sys.ARCH != :x86_64
     @info "Skipping Oscar tests -- only supported x86_64 *NIX platforms."
@@ -37,12 +47,6 @@ else
     end
 end
 
-if get(ENV, "JET_TEST", "") == "true"
-    JET_flag = true
-else
-    @info "Skipping JET tests -- must be explicitly enabled."
-end
-
 using Pkg
 CUDA_flag && Pkg.add("CUDA")
 ROCm_flag && Pkg.add("AMDGPU")
@@ -52,9 +56,8 @@ if any((CUDA_flag, ROCm_flag, OpenCL_flag))
         ["Adapt", "Atomix", "GPUArraysCore", "GPUArrays", "KernelAbstractions"]
     )
 end
-Oscar_flag && Pkg.add("Oscar")
-Tesseract_flag && Pkg.add("PyTesseractDecoder")
-JET_flag && Pkg.add("JET")
+!JET_flag && Oscar_flag && Pkg.add("Oscar")
+!JET_flag && Tesseract_flag && Pkg.add("PyTesseractDecoder")
 
 
 using TestItemRunner

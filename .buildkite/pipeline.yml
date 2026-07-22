@@ -9,13 +9,13 @@ steps:
           version: "1"
           compiled_size_limit: 10737418240 # 10GiB
       - JuliaCI/julia-test#v1:
+          test_args: "{{matrix.TEST_ARGS}}"
       - JuliaCI/julia-coverage#v1:
           codecov: true
           dirs: './src,./ext,./lib/QECCore/src,./lib/QECCore/ext'
     commands:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
     env:
-      JET_TEST: "{{matrix.JET_TEST}}"
       QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
       QC_GPU_TEST: "{{matrix.QC_GPU_TEST}}"
     agents:
@@ -24,68 +24,68 @@ steps:
       setup:
         LABEL: ["base tests"]
         QUEUE: ["default-queue"]
-        JET_TEST: ["false"]
+        TEST_ARGS: ["general"]
         QC_ECC_TEST: ["false"]
         QC_GPU_TEST: ["false"]
       adjustments:
         - with:
             LABEL: "JET"
             QUEUE: "default-queue"
-            JET_TEST: true
+            TEST_ARGS: "jet"
             QC_ECC_TEST: false
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Base"
             QUEUE: "default-queue"
-            JET_TEST: false
+            TEST_ARGS: "general"
             QC_ECC_TEST: "base"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Encoding"
             QUEUE: "default-queue"
-            JET_TEST: false
+            TEST_ARGS: "general"
             QC_ECC_TEST: "encoding"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Decoding"
             QUEUE: "default-queue"
-            JET_TEST: false
+            TEST_ARGS: "general"
             QC_ECC_TEST: "decoding"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Syndrome Measurement"
             QUEUE: "default-queue"
-            JET_TEST: false
+            TEST_ARGS: "general"
             QC_ECC_TEST: "syndromemeasurement"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Syndrome Circuit"
             QUEUE: "default-queue"
-            JET_TEST: false
+            TEST_ARGS: "general"
             QC_ECC_TEST: "syndromecircuit"
             QC_GPU_TEST: false
         - with:
             LABEL: "ECC Bespoke"
             QUEUE: "default-queue"
-            JET_TEST: false
+            TEST_ARGS: "general"
             QC_ECC_TEST: "bespoke"
             QC_GPU_TEST: false
         - with:
             LABEL: "GPU - CUDA"
             QUEUE: cuda
-            JET_TEST: false
+            TEST_ARGS: "general"
             QC_ECC_TEST: false
             QC_GPU_TEST: "cuda"
         - with:
             LABEL: "GPU - ROCm"
             QUEUE: rocm
-            JET_TEST: false
+            TEST_ARGS: "general"
             QC_ECC_TEST: false
             QC_GPU_TEST: "rocm"
         - with:
             LABEL: "GPU - OpenCL"
             QUEUE: "default-queue"
-            JET_TEST: false
+            TEST_ARGS: "general"
             QC_ECC_TEST: false
             QC_GPU_TEST: "opencl"
 
@@ -96,25 +96,24 @@ steps:
           compiled_size_limit: 10737418240 # 10GiB
       - JuliaCI/julia-test#v1:
           package: "QECCore"
+          test_args: "{{matrix.TEST_ARGS}}"
       - JuliaCI/julia-coverage#v1:
           codecov: true
           dirs: './src,./ext,./lib/QECCore/src,./lib/QECCore/ext'
     commands:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-    env:
-      JET_TEST: "{{matrix.JET_TEST}}"
     agents:
       queue: "{{matrix.QUEUE}}"
     matrix:
       setup:
         LABEL: ["base tests"]
         QUEUE: ["default-queue"]
-        JET_TEST: ["false"]
+        TEST_ARGS: ["general"]
       adjustments:
         - with:
             LABEL: "JET"
             QUEUE: "default-queue"
-            JET_TEST: true
+            TEST_ARGS: "jet"
 
   - label: "Downstream Tests - {{matrix.PACKAGE}}"
     plugins:
