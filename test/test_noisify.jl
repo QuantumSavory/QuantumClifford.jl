@@ -45,36 +45,43 @@
         @test noisify(circuit, CircuitNoise()) == circuit
     end
 
-    @testset "Certain ops pass through unchanged" begin
+   @testset "Certain ops pass through unchanged" begin
         verify = VerifyOp(one(Stabilizer, 1), [1])
         xor = ClassicalXOR(1, 1)
         existing_noise = NoiseOp(PauliNoise(0.1, 0.1, 0.1), [1])
-
         circuit = Any[
             verify,
             xor,
             existing_noise,
         ]
-
-        noisy = noisify(circuit, PauliNoise(1e-3, 1e-3, 1e-3))
-
+        model = CircuitNoise(single_qubit = PauliNoise(1e-3, 1e-3, 1e-3))
+        noisy = noisify(circuit, model)
         @test noisy == circuit
     end
+
     @testset "skipped ops do not trigger idle noise" begin
         verify = VerifyOp(one(Stabilizer, 1), [1])
-
         circuit = [
             sHadamard(1),
+            sHadamard(2),
             verify,
+            sMZ(1, 1),
         ]
-
         model = CircuitNoise(
             idle_noise = PauliNoise(1e-5, 1e-5, 1e-5),
         )
-
         noisy = noisify(circuit, model)
 
-        @test noisy == circuit
+        filtered = filter(op -> !(op isa AbstractNoiseOp), noisy)
+        @test filtered == circuit
+
+        noise_ops = filter(op -> op isa AbstractNoiseOp, noisy)
+        q1_ops = filter(op -> Tuple(affectedqubits(op)) == (1,), noise_ops)
+        q2_ops = filter(op -> Tuple(affectedqubits(op)) == (2,), noise_ops)
+
+        @test isempty(q1_ops)
+        @test length(q2_ops) == 1
+        @test length(noise_ops) == 1
     end
     @testset "idle noise insertion with parallel operations" begin
         circuit = [
