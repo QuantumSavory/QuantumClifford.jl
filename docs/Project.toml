@@ -31,4 +31,5 @@ QECCore = {path = "../lib/QECCore"}
 QuantumClifford = {path = ".."}
 
 [compat]
+DocumenterCitations = "1.4.1"
 HiGHS = "1.24.1"
