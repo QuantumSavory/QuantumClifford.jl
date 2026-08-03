@@ -784,6 +784,12 @@ function _validate_stabilizer_expect_indices(
     nothing
 end
 
+@inline _normalize_stabilizer_expect_indices(indices::Tuple) = indices
+@inline function _normalize_stabilizer_expect_indices(
+    indices::AbstractVector{Int},
+)
+    axes(indices, 1) == Base.OneTo(length(indices)) ? indices : collect(indices)
+end
 
 @inline _embed_stabilizer_generator(
     generator::PauliOperator,
@@ -820,7 +826,8 @@ end
     state2::AbstractStabilizer,
     state2_rank::Int,
 )
-    state1_rank == nqubits(state1) &&
+    !iszero(nqubits(state1)) &&
+        state1_rank == nqubits(state1) &&
         state2_rank == nqubits(state2) &&
         length(stabilizerview(state1)) == nqubits(state1) &&
         length(stabilizerview(state2)) == nqubits(state2) &&
@@ -954,8 +961,13 @@ function expect(
     operator_state::AbstractStabilizer,
     state::AbstractStabilizer,
 )::Float64
-    _validate_stabilizer_expect_indices(indices, operator_state, state)
-    exponent = _stabilizer_expect_log2(operator_state, state, indices)
+    normalized_indices = _normalize_stabilizer_expect_indices(indices)
+    _validate_stabilizer_expect_indices(normalized_indices, operator_state, state)
+    exponent = _stabilizer_expect_log2(
+        operator_state,
+        state,
+        normalized_indices,
+    )
     isnothing(exponent) ? 0.0 : exp2(exponent)
 end
 

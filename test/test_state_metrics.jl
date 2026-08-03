@@ -43,6 +43,13 @@
         MixedDestabilizer(target, rank(source_state))
     end
 
+    struct ZeroBasedIndices <: AbstractVector{Int}
+        data::Vector{Int}
+    end
+    Base.size(indices::ZeroBasedIndices) = size(indices.data)
+    Base.axes(indices::ZeroBasedIndices) = (0:(length(indices.data) - 1),)
+    Base.getindex(indices::ZeroBasedIndices, index::Int) = indices.data[index + 1]
+
     @testset "pure states and signed generators" begin
         axes = (S"X", S"Y", S"Z")
         negative_axes = (S"-X", S"-Y", S"-Z")
@@ -115,6 +122,9 @@
         asymmetric_operator = S"Z_ -_Z"
         @test expect([1, 3], asymmetric_operator, asymmetric_state) == 1.0
         @test expect([3, 1], asymmetric_operator, asymmetric_state) == 0.0
+        zero_based_indices = ZeroBasedIndices([1, 3])
+        @test expect(zero_based_indices, asymmetric_operator, asymmetric_state) == 1.0
+        @test zero_based_indices.data == [1, 3]
 
         @test_throws DimensionMismatch expect([1], bell(), ghz_state)
         @test_throws ArgumentError expect([1, 1], bell(), ghz_state)
@@ -131,6 +141,13 @@
 
     @testset "dimensions, representations, and immutability" begin
         @test_throws DimensionMismatch expect(S"Z", S"ZZ")
+
+        zero_qubit_state = zero(Stabilizer, 0, 0)
+        zero_qubit_before = copy(zero_qubit_state)
+        @test expect(zero_qubit_state, zero_qubit_state) == 1.0
+        @test expect(Int[], zero_qubit_state, zero_qubit_state) == 1.0
+        @test fidelity(zero_qubit_state, zero_qubit_state) == 1.0
+        @test zero_qubit_state == zero_qubit_before
 
         pure = S"XX ZZ"
         pure_representations = (
