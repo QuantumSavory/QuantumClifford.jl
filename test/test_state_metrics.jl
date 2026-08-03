@@ -4,6 +4,7 @@
     using StableRNGs
     using Test
     using QuantumClifford
+    using QuantumInterface
 
     function signed_stabilizer_group(state)
         group = [zero(PauliOperator, nqubits(state))]
@@ -149,5 +150,46 @@
             @test expect(indices, operator_state, state) ==
                 expansion_expect(operator_state, state; indices)
         end
+    end
+
+    @testset "root fidelity" begin
+        @test QuantumClifford.fidelity === QuantumInterface.fidelity
+
+        pure_pairs = (
+            (S"Z", S"Z"),
+            (S"Z", S"-Z"),
+            (S"Z", S"X"),
+            (bell(), S"Z_ _Z"),
+            (bell(), S"-YY ZZ"),
+        )
+        for (state1, state2) in pure_pairs
+            @test fidelity(state1, state2) == dot(state1, state2)
+        end
+
+        mixed = maximally_mixed(1)
+        @test fidelity(S"Z", mixed) == fidelity(mixed, S"Z")
+        @test fidelity(S"Z", mixed) ≈ inv(sqrt(2))
+        @test abs2(fidelity(S"Z", mixed)) ≈ expect(S"Z", mixed)
+
+        rank_one = MixedDestabilizer(S"Z_")
+        @test fidelity(S"Z_ _Z", rank_one) ≈ inv(sqrt(2))
+        @test abs2(fidelity(S"X_ _X", rank_one)) ==
+            expect(S"X_ _X", rank_one) == 0.25
+        @test fidelity(S"-Z_ _Z", rank_one) == 0.0
+
+        @test_throws DomainError fidelity(maximally_mixed(1), maximally_mixed(1))
+        @test_throws DomainError fidelity(
+            MixedDestabilizer(S"Z_"),
+            MixedDestabilizer(S"X_"),
+        )
+        @test_throws DimensionMismatch fidelity(S"Z", S"ZZ")
+
+        pure_state = MixedDestabilizer(bell())
+        mixed_state_value = MixedDestabilizer(S"ZZ")
+        pure_before = copy(pure_state)
+        mixed_before = copy(mixed_state_value)
+        @test fidelity(pure_state, mixed_state_value) ≈ inv(sqrt(2))
+        @test pure_state == pure_before
+        @test mixed_state_value == mixed_before
     end
 end
