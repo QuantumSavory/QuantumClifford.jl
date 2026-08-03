@@ -98,9 +98,10 @@ julia> expect([1, 3], bell(), ghz(3))
 0.5
 ```
 
-[`fidelity`](@ref) uses the root-fidelity convention. It agrees with
-`LinearAlgebra.dot` for two pure states. If exactly one state is pure, its
-square is the corresponding pure-state projector expectation.
+[`fidelity`](@ref) uses the root-fidelity convention. For two pure states it
+returns their overlap and delegates to `LinearAlgebra.dot` when their tableau
+presentations satisfy that function's input contract. If exactly one state is
+pure, its square is the corresponding pure-state projector expectation.
 
 ```jldoctest mix
 julia> fidelity(S"Z", mixed)
