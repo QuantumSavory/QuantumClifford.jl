@@ -122,7 +122,40 @@ function logdot(s1::Stabilizer, s2::Stabilizer)
     return k
 end
 
-function fidelity(
+@doc raw"""
+    fidelity(state1::AbstractStabilizer,
+             state2::AbstractStabilizer) -> Float64
+
+Compute the root fidelity between stabilizer states, following the
+`QuantumInterface.fidelity` convention,
+
+```math
+F(\rho, \sigma) =
+\operatorname{Tr}\sqrt{\sqrt{\rho}\,\sigma\sqrt{\rho}}.
+```
+
+For two pure states this delegates to `LinearAlgebra.dot`. If exactly one state
+is pure, the result is the square root of that pure state's projector
+expectation in the mixed state. The order of the arguments does not matter.
+
+General mixed/mixed Uhlmann fidelity is not currently implemented and raises a
+`DomainError`. In particular, it is not equal in general to the square root of
+the Hilbert--Schmidt expectation returned by [`expect`](@ref).
+
+Neither input is modified.
+
+# Examples
+
+```jldoctest
+julia> fidelity(S"Z", maximally_mixed(1))
+0.7071067811865476
+
+julia> fidelity(S"Z", S"-Z")
+0.0
+```
+
+See also: [`expect`](@ref), [`logdot`](@ref).
+""" function fidelity(
     state1::AbstractStabilizer,
     state2::AbstractStabilizer,
 )::Float64

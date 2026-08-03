@@ -822,7 +822,53 @@ function _stabilizer_expect_log2(
     exponent
 end
 
-function expect(
+@doc raw"""
+    expect(operator_state::AbstractStabilizer,
+           state::AbstractStabilizer) -> Float64
+    expect(indices::Base.AbstractVecOrTuple{Int},
+           operator_state::AbstractStabilizer,
+           state::AbstractStabilizer) -> Float64
+    expect(index::Integer,
+           operator_state::AbstractStabilizer,
+           state::AbstractStabilizer) -> Float64
+
+Compute an expectation involving two stabilizer-state density operators.
+
+An $n$-qubit stabilizer state with rank $r$ and stabilizer group $S$ is
+interpreted as the normalized density operator
+
+```math
+\rho_S = 2^{-n}\sum_{g\in S} g = \frac{P_S}{2^{n-r}},
+```
+
+where $P_S$ projects onto the common stabilized subspace. The two-state form
+returns the Hilbert--Schmidt expectation
+$\operatorname{Tr}(\rho_{\mathrm{operator}}\rho_{\mathrm{state}})$. In
+particular, if `operator_state` is pure, this is its projector probability in
+`state`.
+
+The indexed forms embed `operator_state` at the ordered subsystem `indices`
+and return
+$\operatorname{Tr}[(\rho_{\mathrm{operator}}\otimes I)\rho_{\mathrm{state}}]$.
+The first operator qubit maps to the first index, the second to the second, and
+so on. Indices must be unique, in bounds, and equal in count to the number of
+operator qubits.
+
+Neither input is modified.
+
+# Examples
+
+```jldoctest
+julia> expect(S"Z", maximally_mixed(1))
+0.5
+
+julia> expect([1, 3], bell(), ghz(3))
+0.5
+```
+
+See also: [`expect(::PauliOperator, ::AbstractStabilizer)`](@ref),
+[`fidelity`](@ref), [`project!`](@ref).
+""" function expect(
     operator_state::AbstractStabilizer,
     state::AbstractStabilizer,
 )::Float64

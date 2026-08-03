@@ -5,6 +5,11 @@
 
 # News
 
+## Unreleased
+
+- Add normalized Hilbert--Schmidt `expect` methods for full-system and ordered-subsystem stabilizer-state operators, including mixed tableaux.
+- Add root `fidelity` for pure/pure and pure/mixed stabilizer states. General mixed/mixed Uhlmann fidelity is explicitly unsupported.
+
 ## v0.11.5 - 2026-06-12
 
 - **(fix)** Broken edge case in `remove_column!`, a non-public function used by QuantumSavory.
