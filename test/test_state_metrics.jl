@@ -105,6 +105,13 @@
         @test_throws ArgumentError expect([1, 1], bell(), ghz_state)
         @test_throws ArgumentError expect([0], S"Z", ghz_state)
         @test_throws ArgumentError expect([4], S"Z", ghz_state)
+        @test expect(Int32(1), S"Z", bell()) == 0.5
+        @test expect(UInt(1), S"Z", bell()) == 0.5
+        @test expect(big(1), S"Z", bell()) == 0.5
+        @test_throws DimensionMismatch expect(1, bell(), ghz_state)
+        @test_throws ArgumentError expect(big(typemax(Int)) + 1, S"Z", ghz_state)
+        @test_throws ArgumentError expect(big(typemin(Int)) - 1, S"Z", ghz_state)
+        @test_throws ArgumentError expect(typemax(UInt), S"Z", ghz_state)
     end
 
     @testset "dimensions, representations, and immutability" begin

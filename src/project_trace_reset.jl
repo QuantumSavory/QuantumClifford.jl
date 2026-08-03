@@ -925,6 +925,15 @@ function expect(
     operator_state::AbstractStabilizer,
     state::AbstractStabilizer,
 )::Float64
+    operator_qubits = nqubits(operator_state)
+    operator_qubits == 1 || throw(DimensionMismatch(
+        "The operator state acts on $operator_qubits qubits, but 1 " *
+        "subsystem index was provided.",
+    ))
+    state_qubits = nqubits(state)
+    1 <= index <= state_qubits || throw(ArgumentError(
+        "The subsystem index must lie between 1 and $state_qubits; got $index.",
+    ))
     expect((Int(index),), operator_state, state)
 end
 
