@@ -28,6 +28,21 @@
     mixed_state(rng, rank, qubits) = rank == 0 ? maximally_mixed(qubits) :
         MixedDestabilizer(random_stabilizer(rng, rank, qubits))
 
+    function repack_state(state, ::Type{T}) where {T<:Unsigned}
+        source_state = MixedDestabilizer(state)
+        source = QuantumClifford.tab(source_state)
+        target = zero(
+            QuantumClifford.Tableau{Vector{UInt8},Matrix{T}},
+            length(source),
+            nqubits(source),
+        )
+        phases(target) .= UInt8.(phases(source))
+        for row in eachindex(source), qubit in 1:nqubits(source)
+            target[row, qubit] = source[row, qubit]
+        end
+        MixedDestabilizer(target, rank(source_state))
+    end
+
     @testset "pure states and signed generators" begin
         axes = (S"X", S"Y", S"Z")
         negative_axes = (S"-X", S"-Y", S"-Z")
@@ -162,6 +177,37 @@
         indexed_before = copy(indexed_state)
         @test expect([3, 1], S"X_ _Z", indexed_state) == 0.25
         @test indexed_state == indexed_before
+    end
+
+    @testset "packed word representations" begin
+        default_mixed = MixedDestabilizer(S"Z_")
+        default_pure = bell()
+        for word_type in (UInt8, UInt16, UInt32, UInt64)
+            packed_maximally_mixed = repack_state(maximally_mixed(1), word_type)
+            @test expect(S"Z", packed_maximally_mixed) == 0.5
+            @test expect(1, S"Z", packed_maximally_mixed) == 0.5
+            @test fidelity(S"Z", packed_maximally_mixed) ≈ inv(sqrt(2))
+
+            packed_mixed = repack_state(default_mixed, word_type)
+            @test expect(default_mixed, packed_mixed) == 0.5
+            @test expect(packed_mixed, default_mixed) == 0.5
+            @test expect(1, S"Z", packed_mixed) == 1.0
+            @test fidelity(S"Z_ _Z", packed_mixed) ≈ inv(sqrt(2))
+
+            packed_pure = repack_state(default_pure, word_type)
+            @test expect(default_pure, packed_pure) == 1.0
+            @test expect(packed_pure, default_pure) == 1.0
+            @test fidelity(default_pure, packed_pure) == 1.0
+        end
+
+        long_mixed = MixedDestabilizer([embed(65, 65, P"Z")])
+        for word_type in (UInt8, UInt16, UInt32, UInt64)
+            packed_long_mixed = repack_state(long_mixed, word_type)
+            @test expect(long_mixed, packed_long_mixed) == exp2(-64)
+            @test expect(packed_long_mixed, long_mixed) == exp2(-64)
+            @test expect(65, S"Z", packed_long_mixed) == 1.0
+            @test expect(1, S"Z", packed_long_mixed) == 0.5
+        end
     end
 
     @testset "independent signed-group expansion" begin

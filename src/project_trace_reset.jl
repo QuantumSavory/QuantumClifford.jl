@@ -814,8 +814,42 @@ end
 @inline _mixed_destabilizer_copy(state::AbstractStabilizer) =
     MixedDestabilizer(stabilizerview(state))
 
-@inline _supports_stabilizer_dot(state::AbstractStabilizer, state_rank::Int) =
-    state_rank == nqubits(state) && length(stabilizerview(state)) == nqubits(state)
+@inline function _supports_stabilizer_dot(
+    state1::AbstractStabilizer,
+    state1_rank::Int,
+    state2::AbstractStabilizer,
+    state2_rank::Int,
+)
+    state1_rank == nqubits(state1) &&
+        state2_rank == nqubits(state2) &&
+        length(stabilizerview(state1)) == nqubits(state1) &&
+        length(stabilizerview(state2)) == nqubits(state2) &&
+        eltype(tab(state1).xzs) === eltype(tab(state2).xzs)
+end
+
+function _repack_stabilizer_generator(
+    generator::PauliOperator,
+    ::Type{T},
+) where {T<:Unsigned}
+    packed_generator = zero(
+        PauliOperator{Array{UInt8,0},Vector{T}},
+        nqubits(generator),
+    )
+    for qubit in eachindex(generator)
+        packed_generator[qubit] = generator[qubit]
+    end
+    packed_generator.phase[] = UInt8(generator.phase[])
+    packed_generator
+end
+
+@inline function _match_stabilizer_word_type(
+    generator::PauliOperator,
+    state::MixedDestabilizer,
+)
+    state_word_type = eltype(tab(state).xzs)
+    eltype(generator.xz) === state_word_type ? generator :
+        _repack_stabilizer_generator(generator, state_word_type)
+end
 
 function _stabilizer_expect_log2(
     operator_state::AbstractStabilizer,
@@ -828,8 +862,9 @@ function _stabilizer_expect_log2(
     state_qubits = nqubits(state)
 
     for generator in stabilizerview(operator_state)
+        packed_generator = _match_stabilizer_word_type(generator, projected_state)
         embedded_generator = _embed_stabilizer_generator(
-            generator,
+            packed_generator,
             indices,
             state_qubits,
         )
@@ -896,8 +931,12 @@ See also: [`expect(::PauliOperator, ::AbstractStabilizer)`](@ref),
     _validate_stabilizer_expect_dimensions(operator_state, state)
     operator_rank = _stabilizer_density_rank(operator_state)
     state_rank = _stabilizer_density_rank(state)
-    if _supports_stabilizer_dot(operator_state, operator_rank) &&
-       _supports_stabilizer_dot(state, state_rank)
+    if _supports_stabilizer_dot(
+        operator_state,
+        operator_rank,
+        state,
+        state_rank,
+    )
         return abs2(dot(operator_state, state))
     end
 

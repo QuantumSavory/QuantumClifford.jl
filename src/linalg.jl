@@ -166,8 +166,12 @@ See also: [`expect`](@ref), [`logdot`](@ref).
     state2_is_pure = state2_rank == nqubits(state2)
 
     if state1_is_pure && state2_is_pure
-        if _supports_stabilizer_dot(state1, state1_rank) &&
-           _supports_stabilizer_dot(state2, state2_rank)
+        if _supports_stabilizer_dot(
+            state1,
+            state1_rank,
+            state2,
+            state2_rank,
+        )
             return dot(state1, state2)
         end
         exponent = _stabilizer_expect_log2(state1, state2, nothing, state1_rank)
