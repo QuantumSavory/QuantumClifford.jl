@@ -751,6 +751,109 @@ function expect(p::PauliOperator, s::AbstractStabilizer)
     result === 0x03 && return -im
 end
 
+function _validate_stabilizer_expect_dimensions(
+    operator_state::AbstractStabilizer,
+    state::AbstractStabilizer,
+)
+    operator_qubits = nqubits(operator_state)
+    state_qubits = nqubits(state)
+    operator_qubits == state_qubits || throw(DimensionMismatch(
+        "Stabilizer-state expectation requires states with the same number of qubits; " *
+        "got $operator_qubits and $state_qubits.",
+    ))
+    nothing
+end
+
+function _validate_stabilizer_expect_indices(
+    indices::Base.AbstractVecOrTuple{Int},
+    operator_state::AbstractStabilizer,
+    state::AbstractStabilizer,
+)
+    operator_qubits = nqubits(operator_state)
+    length(indices) == operator_qubits || throw(DimensionMismatch(
+        "The operator state acts on $operator_qubits qubits, but $(length(indices)) " *
+        "subsystem indices were provided.",
+    ))
+    allunique(indices) || throw(ArgumentError(
+        "Subsystem indices must be unique; got $indices.",
+    ))
+    state_qubits = nqubits(state)
+    all(index -> 1 <= index <= state_qubits, indices) || throw(ArgumentError(
+        "Subsystem indices must lie between 1 and $state_qubits; got $indices.",
+    ))
+    nothing
+end
+
+
+@inline _embed_stabilizer_generator(
+    generator::PauliOperator,
+    ::Nothing,
+    ::Int,
+) = generator
+
+@inline _embed_stabilizer_generator(
+    generator::PauliOperator,
+    indices::Base.AbstractVecOrTuple{Int},
+    state_qubits::Int,
+) = embed(state_qubits, indices, generator)
+
+function _stabilizer_expect_log2(
+    operator_state::AbstractStabilizer,
+    state::AbstractStabilizer,
+    indices::Union{Nothing,Base.AbstractVecOrTuple{Int}},
+)
+    projected_state = copy(MixedDestabilizer(state))
+    exponent = trusted_rank(operator_state) - nqubits(operator_state)
+    state_qubits = nqubits(state)
+
+    for generator in stabilizerview(operator_state)
+        embedded_generator = _embed_stabilizer_generator(
+            generator,
+            indices,
+            state_qubits,
+        )
+        _, _, result = project!(projected_state, embedded_generator)
+        if result === nothing
+            exponent -= 1
+        elseif result != 0x00
+            return nothing
+        end
+    end
+    exponent
+end
+
+function expect(
+    operator_state::AbstractStabilizer,
+    state::AbstractStabilizer,
+)::Float64
+    _validate_stabilizer_expect_dimensions(operator_state, state)
+    if trusted_rank(operator_state) == nqubits(operator_state) &&
+       trusted_rank(state) == nqubits(state)
+        return abs2(dot(operator_state, state))
+    end
+
+    exponent = _stabilizer_expect_log2(operator_state, state, nothing)
+    isnothing(exponent) ? 0.0 : exp2(exponent)
+end
+
+function expect(
+    indices::Base.AbstractVecOrTuple{Int},
+    operator_state::AbstractStabilizer,
+    state::AbstractStabilizer,
+)::Float64
+    _validate_stabilizer_expect_indices(indices, operator_state, state)
+    exponent = _stabilizer_expect_log2(operator_state, state, indices)
+    isnothing(exponent) ? 0.0 : exp2(exponent)
+end
+
+function expect(
+    index::Integer,
+    operator_state::AbstractStabilizer,
+    state::AbstractStabilizer,
+)::Float64
+    expect((Int(index),), operator_state, state)
+end
+
 """Put source tableau in target tableau at given row and column. Assumes target location is zeroed out.""" # TODO implement a getindex setindex interface to this
 @inline function puttableau!(target::Tableau{V1,M1}, source::Tableau{V2,M2}, row::Int, col::Int; phases::Val{B}=Val(true)) where {B,V1,V2,T<:Unsigned,M1<:AbstractMatrix{T},M2<:AbstractMatrix{T}}
     xzs = target.xzs
