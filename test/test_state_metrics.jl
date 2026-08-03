@@ -66,6 +66,30 @@
         @test expect(MixedDestabilizer(S"Z_"), MixedDestabilizer(S"X_")) == 0.25
     end
 
+    @testset "redundant generators" begin
+        redundant_pure = S"Z Z"
+        pure = MixedDestabilizer(S"Z")
+        @test expect(redundant_pure, pure) == 1.0
+        @test expect(pure, redundant_pure) == 1.0
+        @test expect(redundant_pure, redundant_pure) == 1.0
+        @test fidelity(redundant_pure, pure) == 1.0
+
+        redundant_mixed = S"Z_ Z_"
+        mixed = MixedDestabilizer(S"Z_")
+        pure_extension = S"Z_ _Z"
+        @test expect(redundant_mixed, mixed) == 0.5
+        @test expect(mixed, redundant_mixed) == 0.5
+        @test expect(redundant_mixed, redundant_mixed) == 0.5
+        @test fidelity(redundant_mixed, pure_extension) ≈ inv(sqrt(2))
+        @test fidelity(pure_extension, redundant_mixed) ≈ inv(sqrt(2))
+        @test_throws DomainError fidelity(redundant_mixed, mixed)
+
+        redundant_bell = S"XX ZZ -YY"
+        @test expect(redundant_bell, bell()) == 1.0
+        @test expect(bell(), redundant_bell) == 1.0
+        @test fidelity(redundant_bell, bell()) == 1.0
+    end
+
     @testset "ordered subsystem embedding" begin
         ghz_state = ghz(3)
         @test expect(1, S"Z", bell()) == 0.5
@@ -111,6 +135,13 @@
         for operator_state in mixed_representations, state in mixed_representations
             @test expect(operator_state, state) == 0.5
         end
+
+        subsystem_state = canonicalize_noncomm(T"Z")
+        subsystem_before = copy(subsystem_state)
+        @test expect(subsystem_state, S"Z") == 1.0
+        @test expect(S"Z", subsystem_state) == 1.0
+        @test fidelity(subsystem_state, S"Z") == 1.0
+        @test subsystem_state == subsystem_before
 
         operator_state = MixedDestabilizer(S"-YY ZZ")
         state = MixedDestabilizer(bell())

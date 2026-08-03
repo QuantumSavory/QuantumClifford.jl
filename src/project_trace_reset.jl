@@ -797,13 +797,34 @@ end
     state_qubits::Int,
 ) = embed(state_qubits, indices, generator)
 
+@inline _stabilizer_density_rank(
+    state::Union{MixedStabilizer,MixedDestabilizer},
+) = rank(state)
+
+function _stabilizer_density_rank(state::AbstractStabilizer)
+    _, _, state_rank = canonicalize!(
+        copy(stabilizerview(state));
+        phases=false,
+        ranks=true,
+    )
+    state_rank
+end
+
+@inline _mixed_destabilizer_copy(state::MixedDestabilizer) = copy(state)
+@inline _mixed_destabilizer_copy(state::AbstractStabilizer) =
+    MixedDestabilizer(stabilizerview(state))
+
+@inline _supports_stabilizer_dot(state::AbstractStabilizer, state_rank::Int) =
+    state_rank == nqubits(state) && length(stabilizerview(state)) == nqubits(state)
+
 function _stabilizer_expect_log2(
     operator_state::AbstractStabilizer,
     state::AbstractStabilizer,
     indices::Union{Nothing,Base.AbstractVecOrTuple{Int}},
+    operator_rank::Int=_stabilizer_density_rank(operator_state),
 )
-    projected_state = copy(MixedDestabilizer(state))
-    exponent = trusted_rank(operator_state) - nqubits(operator_state)
+    projected_state = _mixed_destabilizer_copy(state)
+    exponent = operator_rank - nqubits(operator_state)
     state_qubits = nqubits(state)
 
     for generator in stabilizerview(operator_state)
@@ -873,12 +894,19 @@ See also: [`expect(::PauliOperator, ::AbstractStabilizer)`](@ref),
     state::AbstractStabilizer,
 )::Float64
     _validate_stabilizer_expect_dimensions(operator_state, state)
-    if trusted_rank(operator_state) == nqubits(operator_state) &&
-       trusted_rank(state) == nqubits(state)
+    operator_rank = _stabilizer_density_rank(operator_state)
+    state_rank = _stabilizer_density_rank(state)
+    if _supports_stabilizer_dot(operator_state, operator_rank) &&
+       _supports_stabilizer_dot(state, state_rank)
         return abs2(dot(operator_state, state))
     end
 
-    exponent = _stabilizer_expect_log2(operator_state, state, nothing)
+    exponent = _stabilizer_expect_log2(
+        operator_state,
+        state,
+        nothing,
+        operator_rank,
+    )
     isnothing(exponent) ? 0.0 : exp2(exponent)
 end
 

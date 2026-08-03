@@ -160,20 +160,33 @@ See also: [`expect`](@ref), [`logdot`](@ref).
     state2::AbstractStabilizer,
 )::Float64
     _validate_stabilizer_expect_dimensions(state1, state2)
-    state1_is_pure = trusted_rank(state1) == nqubits(state1)
-    state2_is_pure = trusted_rank(state2) == nqubits(state2)
+    state1_rank = _stabilizer_density_rank(state1)
+    state2_rank = _stabilizer_density_rank(state2)
+    state1_is_pure = state1_rank == nqubits(state1)
+    state2_is_pure = state2_rank == nqubits(state2)
 
     if state1_is_pure && state2_is_pure
-        return dot(state1, state2)
+        if _supports_stabilizer_dot(state1, state1_rank) &&
+           _supports_stabilizer_dot(state2, state2_rank)
+            return dot(state1, state2)
+        end
+        exponent = _stabilizer_expect_log2(state1, state2, nothing, state1_rank)
+        return isnothing(exponent) ? 0.0 : exp2(exponent / 2)
     elseif !state1_is_pure && !state2_is_pure
         throw(DomainError(
-            (trusted_rank(state1), trusted_rank(state2)),
+            (state1_rank, state2_rank),
             "Fidelity between two rank-deficient stabilizer states is not supported.",
         ))
     end
 
-    pure_state, mixed_state = state1_is_pure ? (state1, state2) : (state2, state1)
-    exponent = _stabilizer_expect_log2(pure_state, mixed_state, nothing)
+    pure_state, pure_rank, mixed_state = state1_is_pure ?
+        (state1, state1_rank, state2) : (state2, state2_rank, state1)
+    exponent = _stabilizer_expect_log2(
+        pure_state,
+        mixed_state,
+        nothing,
+        pure_rank,
+    )
     isnothing(exponent) ? 0.0 : exp2(exponent / 2)
 end
 
