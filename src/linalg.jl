@@ -122,16 +122,15 @@ function logdot(s1::Stabilizer, s2::Stabilizer)
     return k
 end
 
-@doc raw"""
-    fidelity(state1::AbstractStabilizer,
-             state2::AbstractStabilizer) -> Float64
+"""
+    fidelity(state1::AbstractStabilizer, state2::AbstractStabilizer)
 
 Compute the root fidelity between stabilizer states, following the
 `QuantumInterface.fidelity` convention,
 
 ```math
-F(\rho, \sigma) =
-\operatorname{Tr}\sqrt{\sqrt{\rho}\,\sigma\sqrt{\rho}}.
+F(\\rho, \\sigma) =
+\\operatorname{Tr}\\sqrt{\\sqrt{\\rho}\\,\\sigma\\sqrt{\\rho}}.
 ```
 
 For two pure states this returns their overlap, delegating to
@@ -157,10 +156,11 @@ julia> fidelity(S"Z", S"-Z")
 ```
 
 See also: [`expect`](@ref), [`logdot`](@ref).
-""" function fidelity(
+"""
+function fidelity(
     state1::AbstractStabilizer,
     state2::AbstractStabilizer,
-)::Float64
+)
     _validate_stabilizer_expect_dimensions(state1, state2)
     state1_rank = _stabilizer_density_rank(state1)
     state2_rank = _stabilizer_density_rank(state2)
@@ -181,7 +181,7 @@ See also: [`expect`](@ref), [`logdot`](@ref).
     elseif !state1_is_pure && !state2_is_pure
         throw(DomainError(
             (state1_rank, state2_rank),
-            "Fidelity between two rank-deficient stabilizer states is not supported.",
+            lazy"Fidelity between two rank-deficient stabilizer states is not supported.",
         ))
     end
 

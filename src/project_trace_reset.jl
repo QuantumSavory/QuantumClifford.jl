@@ -751,6 +751,9 @@ function expect(p::PauliOperator, s::AbstractStabilizer)
     result === 0x03 && return -im
 end
 
+"Check that two full-system stabilizer states have matching qubit counts."
+function _validate_stabilizer_expect_dimensions end
+
 function _validate_stabilizer_expect_dimensions(
     operator_state::AbstractStabilizer,
     state::AbstractStabilizer,
@@ -758,11 +761,13 @@ function _validate_stabilizer_expect_dimensions(
     operator_qubits = nqubits(operator_state)
     state_qubits = nqubits(state)
     operator_qubits == state_qubits || throw(DimensionMismatch(
-        "Stabilizer-state expectation requires states with the same number of qubits; " *
-        "got $operator_qubits and $state_qubits.",
+        lazy"Expected equal qubit counts; got $operator_qubits and $state_qubits.",
     ))
     nothing
 end
+
+"Check that ordered subsystem indices fit the operator and measured state."
+function _validate_stabilizer_expect_indices end
 
 function _validate_stabilizer_expect_indices(
     indices::Base.AbstractVecOrTuple{Int},
@@ -770,19 +775,22 @@ function _validate_stabilizer_expect_indices(
     state::AbstractStabilizer,
 )
     operator_qubits = nqubits(operator_state)
-    length(indices) == operator_qubits || throw(DimensionMismatch(
-        "The operator state acts on $operator_qubits qubits, but $(length(indices)) " *
-        "subsystem indices were provided.",
+    provided_indices = length(indices)
+    provided_indices == operator_qubits || throw(DimensionMismatch(
+        lazy"Expected $operator_qubits subsystem indices; got $provided_indices.",
     ))
     allunique(indices) || throw(ArgumentError(
-        "Subsystem indices must be unique; got $indices.",
+        lazy"Subsystem indices must be unique; got $indices.",
     ))
     state_qubits = nqubits(state)
     all(index -> 1 <= index <= state_qubits, indices) || throw(ArgumentError(
-        "Subsystem indices must lie between 1 and $state_qubits; got $indices.",
+        lazy"Subsystem indices must lie between 1 and $state_qubits; got $indices.",
     ))
     nothing
 end
+
+"Normalize index vectors to one-based axes when embedding requires it."
+function _normalize_stabilizer_expect_indices end
 
 @inline _normalize_stabilizer_expect_indices(indices::Tuple) = indices
 @inline function _normalize_stabilizer_expect_indices(
@@ -790,6 +798,9 @@ end
 )
     axes(indices, 1) == Base.OneTo(length(indices)) ? indices : collect(indices)
 end
+
+"Embed a generator only when an indexed expectation requires it."
+function _embed_stabilizer_generator end
 
 @inline _embed_stabilizer_generator(
     generator::PauliOperator,
@@ -802,6 +813,9 @@ end
     indices::Base.AbstractVecOrTuple{Int},
     state_qubits::Int,
 ) = embed(state_qubits, indices, generator)
+
+"Return the number of independent stabilizers represented by a state."
+function _stabilizer_density_rank end
 
 @inline _stabilizer_density_rank(
     state::Union{MixedStabilizer,MixedDestabilizer},
@@ -816,9 +830,33 @@ function _stabilizer_density_rank(state::AbstractStabilizer)
     state_rank
 end
 
+"Convert a stabilizer view to the mutable representation used by projection."
+function _mixed_destabilizer_from_stabilizer end
+
+function _mixed_destabilizer_from_stabilizer(
+    state::Stabilizer{Tableau{PV,M}},
+) where {
+    P<:Unsigned,
+    PV<:AbstractVector{P},
+    W<:Unsigned,
+    M<:AbstractMatrix{W},
+}
+    output_type = Tableau{Vector{P},Matrix{UInt}}
+    if iszero(nqubits(state))
+        return MixedDestabilizer(zero(output_type, 0, 0), 0)
+    end
+    MixedDestabilizer(state)::MixedDestabilizer{output_type}
+end
+
+"Copy or convert a measured state for destructive expectation projections."
+function _mixed_destabilizer_copy end
+
 @inline _mixed_destabilizer_copy(state::MixedDestabilizer) = copy(state)
 @inline _mixed_destabilizer_copy(state::AbstractStabilizer) =
-    MixedDestabilizer(stabilizerview(state))
+    _mixed_destabilizer_from_stabilizer(stabilizerview(state))
+
+"Report whether the pure-state `dot` implementation accepts two tableaux."
+function _supports_stabilizer_dot end
 
 @inline function _supports_stabilizer_dot(
     state1::AbstractStabilizer,
@@ -833,6 +871,9 @@ end
         length(stabilizerview(state2)) == nqubits(state2) &&
         eltype(tab(state1).xzs) === eltype(tab(state2).xzs)
 end
+
+"Copy a Pauli generator into a requested packed-word representation."
+function _repack_stabilizer_generator end
 
 function _repack_stabilizer_generator(
     generator::PauliOperator,
@@ -849,6 +890,9 @@ function _repack_stabilizer_generator(
     packed_generator
 end
 
+"Match a generator's packed-word representation to the measured state."
+function _match_stabilizer_word_type end
+
 @inline function _match_stabilizer_word_type(
     generator::PauliOperator,
     state::MixedDestabilizer,
@@ -857,6 +901,9 @@ end
     eltype(generator.xz) === state_word_type ? generator :
         _repack_stabilizer_generator(generator, state_word_type)
 end
+
+"Return the base-two log expectation, or `nothing` for incompatible states."
+function _stabilizer_expect_log2 end
 
 function _stabilizer_expect_log2(
     operator_state::AbstractStabilizer,
@@ -885,34 +932,33 @@ function _stabilizer_expect_log2(
     exponent
 end
 
-@doc raw"""
-    expect(operator_state::AbstractStabilizer,
-           state::AbstractStabilizer) -> Float64
+"""
+    expect(operator_state::AbstractStabilizer, state::AbstractStabilizer)
     expect(indices::Base.AbstractVecOrTuple{Int},
            operator_state::AbstractStabilizer,
-           state::AbstractStabilizer) -> Float64
+           state::AbstractStabilizer)
     expect(index::Integer,
            operator_state::AbstractStabilizer,
-           state::AbstractStabilizer) -> Float64
+           state::AbstractStabilizer)
 
 Compute an expectation involving two stabilizer-state density operators.
 
-An $n$-qubit stabilizer state with rank $r$ and stabilizer group $S$ is
+An ``n``-qubit stabilizer state with rank ``r`` and stabilizer group ``S`` is
 interpreted as the normalized density operator
 
 ```math
-\rho_S = 2^{-n}\sum_{g\in S} g = \frac{P_S}{2^{n-r}},
+\\rho_S = 2^{-n}\\sum_{g\\in S} g = \\frac{P_S}{2^{n-r}},
 ```
 
-where $P_S$ projects onto the common stabilized subspace. The two-state form
+where ``P_S`` projects onto the common stabilized subspace. The two-state form
 returns the Hilbert--Schmidt expectation
-$\operatorname{Tr}(\rho_{\mathrm{operator}}\rho_{\mathrm{state}})$. In
+``\\operatorname{Tr}(\\rho_{\\mathrm{operator}}\\rho_{\\mathrm{state}})``. In
 particular, if `operator_state` is pure, this is its projector probability in
 `state`.
 
 The indexed forms embed `operator_state` at the ordered subsystem `indices`
 and return
-$\operatorname{Tr}[(\rho_{\mathrm{operator}}\otimes I)\rho_{\mathrm{state}}]$.
+``\\operatorname{Tr}[(\\rho_{\\mathrm{operator}}\\otimes I)\\rho_{\\mathrm{state}}]``.
 The first operator qubit maps to the first index, the second to the second, and
 so on. Indices must be unique, in bounds, and equal in count to the number of
 operator qubits.
@@ -931,22 +977,13 @@ julia> expect([1, 3], bell(), ghz(3))
 
 See also: [`expect(::PauliOperator, ::AbstractStabilizer)`](@ref),
 [`fidelity`](@ref), [`project!`](@ref).
-""" function expect(
+"""
+function expect(
     operator_state::AbstractStabilizer,
     state::AbstractStabilizer,
-)::Float64
+)
     _validate_stabilizer_expect_dimensions(operator_state, state)
     operator_rank = _stabilizer_density_rank(operator_state)
-    state_rank = _stabilizer_density_rank(state)
-    if _supports_stabilizer_dot(
-        operator_state,
-        operator_rank,
-        state,
-        state_rank,
-    )
-        return abs2(dot(operator_state, state))
-    end
-
     exponent = _stabilizer_expect_log2(
         operator_state,
         state,
@@ -960,7 +997,7 @@ function expect(
     indices::Base.AbstractVecOrTuple{Int},
     operator_state::AbstractStabilizer,
     state::AbstractStabilizer,
-)::Float64
+)
     normalized_indices = _normalize_stabilizer_expect_indices(indices)
     _validate_stabilizer_expect_indices(normalized_indices, operator_state, state)
     exponent = _stabilizer_expect_log2(
@@ -975,15 +1012,14 @@ function expect(
     index::Integer,
     operator_state::AbstractStabilizer,
     state::AbstractStabilizer,
-)::Float64
+)
     operator_qubits = nqubits(operator_state)
     operator_qubits == 1 || throw(DimensionMismatch(
-        "The operator state acts on $operator_qubits qubits, but 1 " *
-        "subsystem index was provided.",
+        lazy"Expected a one-qubit operator state; got $operator_qubits qubits.",
     ))
     state_qubits = nqubits(state)
     1 <= index <= state_qubits || throw(ArgumentError(
-        "The subsystem index must lie between 1 and $state_qubits; got $index.",
+        lazy"The subsystem index must lie between 1 and $state_qubits; got $index.",
     ))
     expect((Int(index),), operator_state, state)
 end
