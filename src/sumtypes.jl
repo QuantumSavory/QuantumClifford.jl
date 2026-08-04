@@ -216,6 +216,10 @@ function concrete_typeparams(t::Type{ClassicalXOR})
     return 2:16
 end
 
+function concrete_typeparams(t::Type{DetectorError})
+    return 1:16
+end
+
 function concrete_typeparams(t::Type{NoiseOp})
     return [
         [(UnbiasedUncorrelatedNoise{Float64}, i) for i in 1:8];
