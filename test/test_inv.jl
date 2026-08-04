@@ -41,6 +41,11 @@
         @test_deprecated apply_inv!(legacy_state, operation, indices)
         @test legacy_state == expected
 
+        @test hasmethod(apply_inv!, Tuple{typeof(state), typeof(operation), Int})
+        @test_deprecated begin
+            @test_throws MethodError apply_inv!(copy(state), operation, 1)
+        end
+
         @test_throws MethodError apply!(copy(state), operation, indices)
         @test_throws MethodError apply!(Register(copy(state)), operation, indices)
     end

@@ -114,7 +114,7 @@ function apply!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
 end
 
 function apply_inv!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
-    @valbooldispatch _apply_inv!(Stabilizer(tab(r)),l; phases=Val(phases)) phases
+    @valbooldispatch _apply_inv!(Stabilizer(tab(r)),l,phases=Val(phases)) phases
     r
 end
 

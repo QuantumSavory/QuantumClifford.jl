@@ -1139,7 +1139,7 @@ end
 function apply_inv!(stab::AbstractStabilizer, indices::Base.AbstractVecOrTuple{Int}, op::AbstractCliffordOperator; phases::Bool=true)
     @valbooldispatch _apply_inv!(stab,op,indices; phases=Val(phases)) phases
 end
-@deprecate apply_inv!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices::Base.AbstractVecOrTuple{Int}; phases::Bool=true) apply_inv!(stab, indices, op; phases=phases)
+@deprecate apply_inv!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices; phases::Bool=true) apply_inv!(stab, indices, op; phases=phases)
 
 function _apply_inv!(stab::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
     _apply!(stab,p; phases=phases)
