@@ -139,7 +139,7 @@ input contract. If exactly one state is pure, the result is the square root of
 that pure state's projector expectation in the mixed state. The order of the
 arguments does not matter.
 
-General mixed/mixed Uhlmann fidelity is not currently implemented and raises a
+General mixed/mixed fidelity is not currently implemented and raises a
 `DomainError`. In particular, it is not equal in general to the square root of
 the Hilbert--Schmidt expectation returned by [`expect`](@ref).
 

@@ -689,7 +689,7 @@ described in [Mixed States](@ref Mixed-Stabilizer-States).
 More information that can be seen in the [data structures page](@ref Choosing-Appropriate-Data-Structure),
 which expands upon the algorithms available for each structure.
 
-## Density Operators, Expectations, and Fidelity
+## Expectations and Fidelity
 
 An `n`-qubit stabilizer tableau with `r` independent generators represents the
 normalized density operator
@@ -737,11 +737,6 @@ pure, its square is the corresponding pure-state projector expectation.
 julia> fidelity(S"Z", mixed)
 0.7071067811865476
 ```
-
-General mixed/mixed Uhlmann fidelity needs more information than the
-Hilbert--Schmidt expectation and is not yet implemented. Calling `fidelity`
-with two rank-deficient tableaux raises a `DomainError` rather than returning a
-different quantity under the fidelity name.
 
 # Random States and Circuits
 

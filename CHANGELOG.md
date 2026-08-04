@@ -7,8 +7,8 @@
 
 ## Unreleased
 
-- Add normalized Hilbert--Schmidt `expect` methods for full-system and ordered-subsystem stabilizer-state operators, including mixed tableaux.
-- Add root `fidelity` for pure/pure and pure/mixed stabilizer states. General mixed/mixed Uhlmann fidelity is explicitly unsupported.
+- Add `expect` methods for pure and mixed tableaux.
+- Add `fidelity` for pure/pure and pure/mixed stabilizer states. General mixed/mixed fidelity is unsupported.
 
 ## v0.11.5 - 2026-06-12
 
