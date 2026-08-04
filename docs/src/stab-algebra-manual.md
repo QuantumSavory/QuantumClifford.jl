@@ -559,7 +559,7 @@ Sparse applications where a small Clifford operator is applied only on a particu
 ```jldoctest
 julia> s = S"Z_YX";
 
-julia> apply!(s, tCNOT, [4,2]) # Apply the CNOT on qubits 4 and 2
+julia> apply!(s, [4,2], tCNOT) # Apply the CNOT on qubits 4 and 2
 + ZXYX
 ```
 

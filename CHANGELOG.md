@@ -5,8 +5,10 @@
 
 # News
 
-## Unreleased
+## v0.11.6 - unreleased
 
+- **(breaking)** Remove the deprecated `apply!(state, operation, indices)` order. Subsystem indices must be passed before the operation as `apply!(state, indices, operation)`.
+- Add `apply_inv!(state, indices, operation)`, deprecate the former `apply_inv!(state, operation, indices)` order, and fix inverse Pauli application with the `phases` keyword.
 - Add `expect` methods for pure and mixed tableaux.
 - Add `fidelity` for pure/pure and pure/mixed stabilizer states. General mixed/mixed fidelity is unsupported.
 
