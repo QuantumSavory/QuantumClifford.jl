@@ -151,6 +151,8 @@
         @test_throws ArgumentError expect([0], z_state, ghz_state)
         @test_throws ArgumentError expect([4], z_state, ghz_state)
         @test_throws DimensionMismatch expect(1, bell_state, ghz_state)
+        @test_throws ArgumentError expect(0, z_state, ghz_state)
+        @test_throws ArgumentError expect(4, z_state, ghz_state)
     end
 
     @testset "dimensions, representations, and immutability" begin
@@ -196,13 +198,16 @@
         @test operator_state == operator_before
         @test state == state_before
 
+        indexed_operator = MixedDestabilizer(S"X_ _Z")
         indexed_state = MixedDestabilizer(ghz(3))
+        indexed_operator_before = copy(indexed_operator)
         indexed_before = copy(indexed_state)
         @test expect(
             [3, 1],
-            MixedDestabilizer(S"X_ _Z"),
+            indexed_operator,
             indexed_state,
         ) == 0.25
+        @test indexed_operator == indexed_operator_before
         @test indexed_state == indexed_before
     end
 

@@ -733,7 +733,8 @@ julia> expect([1, 3], MixedDestabilizer(bell()), MixedDestabilizer(ghz(3)))
 [`fidelity`](@ref) uses the root-fidelity convention. For two pure states it
 returns their overlap and delegates to `LinearAlgebra.dot`. If exactly one
 state is pure, its square is the corresponding pure-state projector
-expectation. Both inputs must be `MixedDestabilizer`s.
+expectation. Fidelity between two rank-deficient states is not implemented and
+raises a `DomainError`. Both inputs must be `MixedDestabilizer`s.
 
 ```jldoctest metrics
 julia> fidelity(MixedDestabilizer(S"Z"), mixed)
