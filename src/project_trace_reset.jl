@@ -751,178 +751,21 @@ function expect(p::PauliOperator, s::AbstractStabilizer)
     result === 0x03 && return -im
 end
 
-"Check that two full-system stabilizer states have matching qubit counts."
-function _validate_stabilizer_expect_dimensions end
-
-function _validate_stabilizer_expect_dimensions(
-    operator_state::AbstractStabilizer,
-    state::AbstractStabilizer,
-)
-    operator_qubits = nqubits(operator_state)
-    state_qubits = nqubits(state)
-    operator_qubits == state_qubits || throw(DimensionMismatch(
-        lazy"Expected equal qubit counts; got $operator_qubits and $state_qubits.",
-    ))
-    nothing
-end
-
-"Check that ordered subsystem indices fit the operator and measured state."
-function _validate_stabilizer_expect_indices end
-
-function _validate_stabilizer_expect_indices(
-    indices::Base.AbstractVecOrTuple{Int},
-    operator_state::AbstractStabilizer,
-    state::AbstractStabilizer,
-)
-    operator_qubits = nqubits(operator_state)
-    provided_indices = length(indices)
-    provided_indices == operator_qubits || throw(DimensionMismatch(
-        lazy"Expected $operator_qubits subsystem indices; got $provided_indices.",
-    ))
-    allunique(indices) || throw(ArgumentError(
-        lazy"Subsystem indices must be unique; got $indices.",
-    ))
-    state_qubits = nqubits(state)
-    all(index -> 1 <= index <= state_qubits, indices) || throw(ArgumentError(
-        lazy"Subsystem indices must lie between 1 and $state_qubits; got $indices.",
-    ))
-    nothing
-end
-
-"Normalize index vectors to one-based axes when embedding requires it."
-function _normalize_stabilizer_expect_indices end
-
-@inline _normalize_stabilizer_expect_indices(indices::Tuple) = indices
-@inline function _normalize_stabilizer_expect_indices(
-    indices::AbstractVector{Int},
-)
-    axes(indices, 1) == Base.OneTo(length(indices)) ? indices : collect(indices)
-end
-
-"Embed a generator only when an indexed expectation requires it."
-function _embed_stabilizer_generator end
-
-@inline _embed_stabilizer_generator(
-    generator::PauliOperator,
-    ::Nothing,
-    ::Int,
-) = generator
-
-@inline _embed_stabilizer_generator(
-    generator::PauliOperator,
-    indices::Base.AbstractVecOrTuple{Int},
-    state_qubits::Int,
-) = embed(state_qubits, indices, generator)
-
-"Return the number of independent stabilizers represented by a state."
-function _stabilizer_density_rank end
-
-@inline _stabilizer_density_rank(
-    state::Union{MixedStabilizer,MixedDestabilizer},
-) = rank(state)
-
-function _stabilizer_density_rank(state::AbstractStabilizer)
-    _, _, state_rank = canonicalize!(
-        copy(stabilizerview(state));
-        phases=false,
-        ranks=true,
-    )
-    state_rank
-end
-
-"Convert a stabilizer view to the mutable representation used by projection."
-function _mixed_destabilizer_from_stabilizer end
-
-function _mixed_destabilizer_from_stabilizer(
-    state::Stabilizer{Tableau{PV,M}},
-) where {
-    P<:Unsigned,
-    PV<:AbstractVector{P},
-    W<:Unsigned,
-    M<:AbstractMatrix{W},
-}
-    output_type = Tableau{Vector{P},Matrix{UInt}}
-    if iszero(nqubits(state))
-        return MixedDestabilizer(zero(output_type, 0, 0), 0)
-    end
-    MixedDestabilizer(state)::MixedDestabilizer{output_type}
-end
-
-"Copy or convert a measured state for destructive expectation projections."
-function _mixed_destabilizer_copy end
-
-@inline _mixed_destabilizer_copy(state::MixedDestabilizer) = copy(state)
-@inline _mixed_destabilizer_copy(state::AbstractStabilizer) =
-    _mixed_destabilizer_from_stabilizer(stabilizerview(state))
-
-"Report whether the pure-state `dot` implementation accepts two tableaux."
-function _supports_stabilizer_dot end
-
-@inline function _supports_stabilizer_dot(
-    state1::AbstractStabilizer,
-    state1_rank::Int,
-    state2::AbstractStabilizer,
-    state2_rank::Int,
-)
-    !iszero(nqubits(state1)) &&
-        state1_rank == nqubits(state1) &&
-        state2_rank == nqubits(state2) &&
-        length(stabilizerview(state1)) == nqubits(state1) &&
-        length(stabilizerview(state2)) == nqubits(state2) &&
-        eltype(tab(state1).xzs) === eltype(tab(state2).xzs)
-end
-
-"Copy a Pauli generator into a requested packed-word representation."
-function _repack_stabilizer_generator end
-
-function _repack_stabilizer_generator(
-    generator::PauliOperator,
-    ::Type{T},
-) where {T<:Unsigned}
-    packed_generator = zero(
-        PauliOperator{Array{UInt8,0},Vector{T}},
-        nqubits(generator),
-    )
-    for qubit in eachindex(generator)
-        packed_generator[qubit] = generator[qubit]
-    end
-    packed_generator.phase[] = UInt8(generator.phase[])
-    packed_generator
-end
-
-"Match a generator's packed-word representation to the measured state."
-function _match_stabilizer_word_type end
-
-@inline function _match_stabilizer_word_type(
-    generator::PauliOperator,
-    state::MixedDestabilizer,
-)
-    state_word_type = eltype(tab(state).xzs)
-    eltype(generator.xz) === state_word_type ? generator :
-        _repack_stabilizer_generator(generator, state_word_type)
-end
-
-"Return the base-two log expectation, or `nothing` for incompatible states."
+"Return the base-two log expectation, or `nothing` when it is zero."
 function _stabilizer_expect_log2 end
 
 function _stabilizer_expect_log2(
-    operator_state::AbstractStabilizer,
-    state::AbstractStabilizer,
-    indices::Union{Nothing,Base.AbstractVecOrTuple{Int}},
-    operator_rank::Int=_stabilizer_density_rank(operator_state),
+    indices::Union{Nothing,Int,Base.AbstractVecOrTuple{Int}},
+    operator_state::MixedDestabilizer,
+    state::MixedDestabilizer,
 )
-    projected_state = _mixed_destabilizer_copy(state)
-    exponent = operator_rank - nqubits(operator_state)
+    projected_state = copy(state)
+    exponent = rank(operator_state) - nqubits(operator_state)
     state_qubits = nqubits(state)
-
     for generator in stabilizerview(operator_state)
-        packed_generator = _match_stabilizer_word_type(generator, projected_state)
-        embedded_generator = _embed_stabilizer_generator(
-            packed_generator,
-            indices,
-            state_qubits,
-        )
-        _, _, result = project!(projected_state, embedded_generator)
+        projected_generator = isnothing(indices) ? generator :
+            embed(state_qubits, indices, generator)
+        _, _, result = project!(projected_state, projected_generator)
         if result === nothing
             exponent -= 1
         elseif result != 0x00
@@ -933,13 +776,13 @@ function _stabilizer_expect_log2(
 end
 
 """
-    expect(operator_state::AbstractStabilizer, state::AbstractStabilizer)
+    expect(operator_state::MixedDestabilizer, state::MixedDestabilizer)
     expect(indices::Base.AbstractVecOrTuple{Int},
-           operator_state::AbstractStabilizer,
-           state::AbstractStabilizer)
-    expect(index::Integer,
-           operator_state::AbstractStabilizer,
-           state::AbstractStabilizer)
+           operator_state::MixedDestabilizer,
+           state::MixedDestabilizer)
+    expect(index::Int,
+           operator_state::MixedDestabilizer,
+           state::MixedDestabilizer)
 
 Compute an expectation involving two stabilizer-state density operators.
 
@@ -961,17 +804,23 @@ and return
 ``\\operatorname{Tr}[(\\rho_{\\mathrm{operator}}\\otimes I)\\rho_{\\mathrm{state}}]``.
 The first operator qubit maps to the first index, the second to the second, and
 so on. Indices must be unique, in bounds, and equal in count to the number of
-operator qubits.
+operator qubits. Index collections must use one-based axes and contain `Int`
+elements; callers should convert other index representations before calling.
+
+Both arguments must be `MixedDestabilizer`s. Callers are responsible for
+converting other tableau representations before calling. The operator and
+state must also use compatible packed-word representations accepted by
+[`project!`](@ref).
 
 Neither input is modified.
 
 # Examples
 
 ```jldoctest
-julia> expect(S"Z", maximally_mixed(1))
+julia> expect(MixedDestabilizer(S"Z"), maximally_mixed(1))
 0.5
 
-julia> expect([1, 3], bell(), ghz(3))
+julia> expect([1, 3], MixedDestabilizer(bell()), MixedDestabilizer(ghz(3)))
 0.5
 ```
 
@@ -979,39 +828,45 @@ See also: [`expect(::PauliOperator, ::AbstractStabilizer)`](@ref),
 [`fidelity`](@ref), [`project!`](@ref).
 """
 function expect(
-    operator_state::AbstractStabilizer,
-    state::AbstractStabilizer,
+    operator_state::MixedDestabilizer,
+    state::MixedDestabilizer,
 )
-    _validate_stabilizer_expect_dimensions(operator_state, state)
-    operator_rank = _stabilizer_density_rank(operator_state)
-    exponent = _stabilizer_expect_log2(
-        operator_state,
-        state,
-        nothing,
-        operator_rank,
-    )
+    operator_qubits = nqubits(operator_state)
+    state_qubits = nqubits(state)
+    operator_qubits == state_qubits || throw(DimensionMismatch(
+        lazy"Expected equal qubit counts; got $operator_qubits and $state_qubits.",
+    ))
+    exponent = _stabilizer_expect_log2(nothing, operator_state, state)
     isnothing(exponent) ? 0.0 : exp2(exponent)
 end
 
 function expect(
     indices::Base.AbstractVecOrTuple{Int},
-    operator_state::AbstractStabilizer,
-    state::AbstractStabilizer,
+    operator_state::MixedDestabilizer,
+    state::MixedDestabilizer,
 )
-    normalized_indices = _normalize_stabilizer_expect_indices(indices)
-    _validate_stabilizer_expect_indices(normalized_indices, operator_state, state)
-    exponent = _stabilizer_expect_log2(
-        operator_state,
-        state,
-        normalized_indices,
-    )
+    operator_qubits = nqubits(operator_state)
+    provided_indices = length(indices)
+    provided_indices == operator_qubits || throw(DimensionMismatch(
+        lazy"Expected $operator_qubits subsystem indices; got $provided_indices.",
+    ))
+    Base.require_one_based_indexing(indices)
+    allunique(indices) || throw(ArgumentError(
+        lazy"Subsystem indices must be unique; got $indices.",
+    ))
+    state_qubits = nqubits(state)
+    all(index -> 1 <= index <= state_qubits, indices) || throw(ArgumentError(
+        lazy"Subsystem indices must lie between 1 and $state_qubits; got $indices.",
+    ))
+
+    exponent = _stabilizer_expect_log2(indices, operator_state, state)
     isnothing(exponent) ? 0.0 : exp2(exponent)
 end
 
 function expect(
-    index::Integer,
-    operator_state::AbstractStabilizer,
-    state::AbstractStabilizer,
+    index::Int,
+    operator_state::MixedDestabilizer,
+    state::MixedDestabilizer,
 )
     operator_qubits = nqubits(operator_state)
     operator_qubits == 1 || throw(DimensionMismatch(
@@ -1021,7 +876,9 @@ function expect(
     1 <= index <= state_qubits || throw(ArgumentError(
         lazy"The subsystem index must lie between 1 and $state_qubits; got $index.",
     ))
-    expect((Int(index),), operator_state, state)
+
+    exponent = _stabilizer_expect_log2(index, operator_state, state)
+    isnothing(exponent) ? 0.0 : exp2(exponent)
 end
 
 """Put source tableau in target tableau at given row and column. Assumes target location is zeroed out.""" # TODO implement a getindex setindex interface to this

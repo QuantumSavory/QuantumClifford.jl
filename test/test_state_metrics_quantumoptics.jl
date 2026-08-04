@@ -45,11 +45,11 @@
 
     @testset "full-system expectation" begin
         pairs = (
-            (S"Z", S"Z"),
-            (S"Z", S"-Z"),
-            (S"X", S"-Y"),
-            (bell(), S"Z_ _Z"),
-            (S"-YY ZZ", bell()),
+            (MixedDestabilizer(S"Z"), MixedDestabilizer(S"Z")),
+            (MixedDestabilizer(S"Z"), MixedDestabilizer(S"-Z")),
+            (MixedDestabilizer(S"X"), MixedDestabilizer(S"-Y")),
+            (MixedDestabilizer(bell()), MixedDestabilizer(S"Z_ _Z")),
+            (MixedDestabilizer(S"-YY ZZ"), MixedDestabilizer(bell())),
             (maximally_mixed(1), maximally_mixed(1)),
             (maximally_mixed(2), maximally_mixed(2)),
             (MixedDestabilizer(S"Z_"), MixedDestabilizer(S"-Z_")),
@@ -63,14 +63,14 @@
     end
 
     @testset "ordered subsystem expectation" begin
-        asymmetric_operator = S"Z_ -_Z"
-        asymmetric_state = S"Z__ _Z_ -__Z"
+        asymmetric_operator = MixedDestabilizer(S"Z_ -_Z")
+        asymmetric_state = MixedDestabilizer(S"Z__ _Z_ -__Z")
         cases = (
-            (1, S"Z", bell()),
-            ([1, 3], bell(), ghz(3)),
+            (1, MixedDestabilizer(S"Z"), MixedDestabilizer(bell())),
+            ([1, 3], MixedDestabilizer(bell()), MixedDestabilizer(ghz(3))),
             ([1, 3], asymmetric_operator, asymmetric_state),
             ([3, 1], asymmetric_operator, asymmetric_state),
-            ([2], S"Z", MixedDestabilizer(S"_Z_")),
+            ([2], MixedDestabilizer(S"Z"), MixedDestabilizer(S"_Z_")),
         )
 
         for (indices, operator_state, state) in cases
@@ -83,16 +83,16 @@
         maximally_mixed_one = maximally_mixed(1)
         rank_one = MixedDestabilizer(S"Z_")
         pairs = (
-            (S"Z", S"Z"),
-            (S"Z", S"-Z"),
-            (S"Z", S"X"),
-            (bell(), S"Z_ _Z"),
-            (S"-YY ZZ", bell()),
-            (S"YY ZZ", bell()),
-            (S"Z", maximally_mixed_one),
-            (S"Z_ _Z", rank_one),
-            (S"X_ _X", rank_one),
-            (S"-Z_ _Z", rank_one),
+            (MixedDestabilizer(S"Z"), MixedDestabilizer(S"Z")),
+            (MixedDestabilizer(S"Z"), MixedDestabilizer(S"-Z")),
+            (MixedDestabilizer(S"Z"), MixedDestabilizer(S"X")),
+            (MixedDestabilizer(bell()), MixedDestabilizer(S"Z_ _Z")),
+            (MixedDestabilizer(S"-YY ZZ"), MixedDestabilizer(bell())),
+            (MixedDestabilizer(S"YY ZZ"), MixedDestabilizer(bell())),
+            (MixedDestabilizer(S"Z"), maximally_mixed_one),
+            (MixedDestabilizer(S"Z_ _Z"), rank_one),
+            (MixedDestabilizer(S"X_ _X"), rank_one),
+            (MixedDestabilizer(S"-Z_ _Z"), rank_one),
         )
 
         for (state1, state2) in pairs

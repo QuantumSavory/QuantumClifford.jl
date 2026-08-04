@@ -51,8 +51,16 @@
     Base.getindex(indices::ZeroBasedIndices, index::Int) = indices.data[index + 1]
 
     @testset "pure states and signed generators" begin
-        axes = (S"X", S"Y", S"Z")
-        negative_axes = (S"-X", S"-Y", S"-Z")
+        axes = (
+            MixedDestabilizer(S"X"),
+            MixedDestabilizer(S"Y"),
+            MixedDestabilizer(S"Z"),
+        )
+        negative_axes = (
+            MixedDestabilizer(S"-X"),
+            MixedDestabilizer(S"-Y"),
+            MixedDestabilizer(S"-Z"),
+        )
         for (positive, negative) in zip(axes, negative_axes)
             @test expect(positive, positive) == 1.0
             @test expect(negative, negative) == 1.0
@@ -63,15 +71,15 @@
             first_axis == second_axis && continue
             @test expect(first_axis, second_axis) ≈ 0.5
         end
-        @test expect(S"-X", S"-Y") ≈ 0.5
-        @test expect(S"X", S"-Y") ≈ 0.5
+        @test expect(MixedDestabilizer(S"-X"), MixedDestabilizer(S"-Y")) ≈ 0.5
+        @test expect(MixedDestabilizer(S"X"), MixedDestabilizer(S"-Y")) ≈ 0.5
 
-        bell_state = bell()
-        product_state = S"Z_ _Z"
+        bell_state = MixedDestabilizer(bell())
+        product_state = MixedDestabilizer(S"Z_ _Z")
         @test expect(bell_state, product_state) ≈ 0.5
         @test expect(product_state, bell_state) ≈ 0.5
-        @test expect(S"-YY ZZ", bell_state) == 1.0
-        @test expect(S"YY ZZ", bell_state) == 0.0
+        @test expect(MixedDestabilizer(S"-YY ZZ"), bell_state) == 1.0
+        @test expect(MixedDestabilizer(S"YY ZZ"), bell_state) == 0.0
     end
 
     @testset "rank-deficient states" begin
@@ -79,8 +87,9 @@
         maximally_mixed_two = maximally_mixed(2)
         rank_one = MixedDestabilizer(S"Z_")
 
-        @test expect(S"Z", maximally_mixed_one) == 0.5
-        @test expect(maximally_mixed_one, S"Z") == 0.5
+        pure_z = MixedDestabilizer(S"Z")
+        @test expect(pure_z, maximally_mixed_one) == 0.5
+        @test expect(maximally_mixed_one, pure_z) == 0.5
         @test expect(maximally_mixed_one, maximally_mixed_one) == 0.5
         @test expect(maximally_mixed_two, maximally_mixed_two) == 0.25
         @test expect(rank_one, rank_one) == 0.5
@@ -89,16 +98,16 @@
     end
 
     @testset "redundant generators" begin
-        redundant_pure = S"Z Z"
+        redundant_pure = MixedDestabilizer(S"Z Z")
         pure = MixedDestabilizer(S"Z")
         @test expect(redundant_pure, pure) == 1.0
         @test expect(pure, redundant_pure) == 1.0
         @test expect(redundant_pure, redundant_pure) == 1.0
         @test fidelity(redundant_pure, pure) == 1.0
 
-        redundant_mixed = S"Z_ Z_"
+        redundant_mixed = MixedDestabilizer(S"Z_ Z_")
         mixed = MixedDestabilizer(S"Z_")
-        pure_extension = S"Z_ _Z"
+        pure_extension = MixedDestabilizer(S"Z_ _Z")
         @test expect(redundant_mixed, mixed) == 0.5
         @test expect(mixed, redundant_mixed) == 0.5
         @test expect(redundant_mixed, redundant_mixed) == 0.5
@@ -106,54 +115,52 @@
         @test fidelity(pure_extension, redundant_mixed) ≈ inv(sqrt(2))
         @test_throws DomainError fidelity(redundant_mixed, mixed)
 
-        redundant_bell = S"XX ZZ -YY"
-        @test expect(redundant_bell, bell()) == 1.0
-        @test expect(bell(), redundant_bell) == 1.0
-        @test fidelity(redundant_bell, bell()) == 1.0
+        redundant_bell = MixedDestabilizer(S"XX ZZ -YY")
+        bell_state = MixedDestabilizer(bell())
+        @test expect(redundant_bell, bell_state) == 1.0
+        @test expect(bell_state, redundant_bell) == 1.0
+        @test fidelity(redundant_bell, bell_state) == 1.0
     end
 
     @testset "ordered subsystem embedding" begin
-        ghz_state = ghz(3)
-        @test expect(1, S"Z", bell()) == 0.5
-        @test expect([1, 2], bell(), ghz_state) == 0.5
-        @test expect((1, 3), bell(), ghz_state) == 0.5
+        ghz_state = MixedDestabilizer(ghz(3))
+        @test expect(
+            1,
+            MixedDestabilizer(S"Z"),
+            MixedDestabilizer(bell()),
+        ) == 0.5
+        @test expect([1, 2], MixedDestabilizer(bell()), ghz_state) == 0.5
+        @test expect((1, 3), MixedDestabilizer(bell()), ghz_state) == 0.5
 
-        asymmetric_state = S"Z__ _Z_ -__Z"
-        asymmetric_operator = S"Z_ -_Z"
+        asymmetric_state = MixedDestabilizer(S"Z__ _Z_ -__Z")
+        asymmetric_operator = MixedDestabilizer(S"Z_ -_Z")
         @test expect([1, 3], asymmetric_operator, asymmetric_state) == 1.0
         @test expect([3, 1], asymmetric_operator, asymmetric_state) == 0.0
         zero_based_indices = ZeroBasedIndices([1, 3])
-        @test expect(zero_based_indices, asymmetric_operator, asymmetric_state) == 1.0
+        @test_throws ArgumentError expect(
+            zero_based_indices,
+            asymmetric_operator,
+            asymmetric_state,
+        )
         @test zero_based_indices.data == [1, 3]
 
-        @test_throws DimensionMismatch expect([1], bell(), ghz_state)
-        @test_throws ArgumentError expect([1, 1], bell(), ghz_state)
-        @test_throws ArgumentError expect([0], S"Z", ghz_state)
-        @test_throws ArgumentError expect([4], S"Z", ghz_state)
-        @test expect(Int32(1), S"Z", bell()) == 0.5
-        @test expect(UInt(1), S"Z", bell()) == 0.5
-        @test expect(big(1), S"Z", bell()) == 0.5
-        @test_throws DimensionMismatch expect(1, bell(), ghz_state)
-        @test_throws ArgumentError expect(big(typemax(Int)) + 1, S"Z", ghz_state)
-        @test_throws ArgumentError expect(big(typemin(Int)) - 1, S"Z", ghz_state)
-        @test_throws ArgumentError expect(typemax(UInt), S"Z", ghz_state)
+        bell_state = MixedDestabilizer(bell())
+        z_state = MixedDestabilizer(S"Z")
+        @test_throws DimensionMismatch expect([1], bell_state, ghz_state)
+        @test_throws ArgumentError expect([1, 1], bell_state, ghz_state)
+        @test_throws ArgumentError expect([0], z_state, ghz_state)
+        @test_throws ArgumentError expect([4], z_state, ghz_state)
+        @test_throws DimensionMismatch expect(1, bell_state, ghz_state)
     end
 
     @testset "dimensions, representations, and immutability" begin
-        @test_throws DimensionMismatch expect(S"Z", S"ZZ")
-
-        zero_qubit_state = zero(Stabilizer, 0, 0)
-        zero_qubit_before = copy(zero_qubit_state)
-        @test expect(zero_qubit_state, zero_qubit_state) == 1.0
-        @test expect(Int[], zero_qubit_state, zero_qubit_state) == 1.0
-        @test fidelity(zero_qubit_state, zero_qubit_state) == 1.0
-        @test zero_qubit_state == zero_qubit_before
+        @test_throws DimensionMismatch expect(
+            MixedDestabilizer(S"Z"),
+            MixedDestabilizer(S"ZZ"),
+        )
 
         pure = S"XX ZZ"
         pure_representations = (
-            pure,
-            Destabilizer(copy(pure)),
-            MixedStabilizer(copy(pure)),
             MixedDestabilizer(copy(pure)),
             fastrow(MixedDestabilizer(copy(pure))),
             fastcolumn(MixedDestabilizer(copy(pure))),
@@ -164,9 +171,6 @@
 
         mixed = S"Z_"
         mixed_representations = (
-            mixed,
-            Destabilizer(copy(mixed)),
-            MixedStabilizer(copy(mixed)),
             MixedDestabilizer(copy(mixed)),
             fastrow(MixedDestabilizer(copy(mixed))),
             fastcolumn(MixedDestabilizer(copy(mixed))),
@@ -177,9 +181,11 @@
 
         subsystem_state = canonicalize_noncomm(T"Z")
         subsystem_before = copy(subsystem_state)
-        @test expect(subsystem_state, S"Z") == 1.0
-        @test expect(S"Z", subsystem_state) == 1.0
-        @test fidelity(subsystem_state, S"Z") == 1.0
+        converted_subsystem_state = MixedDestabilizer(stabilizerview(subsystem_state))
+        pure_z = MixedDestabilizer(S"Z")
+        @test expect(converted_subsystem_state, pure_z) == 1.0
+        @test expect(pure_z, converted_subsystem_state) == 1.0
+        @test fidelity(converted_subsystem_state, pure_z) == 1.0
         @test subsystem_state == subsystem_before
 
         operator_state = MixedDestabilizer(S"-YY ZZ")
@@ -192,38 +198,37 @@
 
         indexed_state = MixedDestabilizer(ghz(3))
         indexed_before = copy(indexed_state)
-        @test expect([3, 1], S"X_ _Z", indexed_state) == 0.25
+        @test expect(
+            [3, 1],
+            MixedDestabilizer(S"X_ _Z"),
+            indexed_state,
+        ) == 0.25
         @test indexed_state == indexed_before
     end
 
     @testset "packed word representations" begin
-        default_mixed = MixedDestabilizer(S"Z_")
-        default_pure = bell()
         for word_type in (UInt8, UInt16, UInt32, UInt64)
+            packed_z = repack_state(MixedDestabilizer(S"Z"), word_type)
             packed_maximally_mixed = repack_state(maximally_mixed(1), word_type)
-            @test expect(S"Z", packed_maximally_mixed) == 0.5
-            @test expect(1, S"Z", packed_maximally_mixed) == 0.5
-            @test fidelity(S"Z", packed_maximally_mixed) ≈ inv(sqrt(2))
+            @test expect(packed_z, packed_maximally_mixed) == 0.5
+            @test expect((1,), packed_z, packed_maximally_mixed) == 0.5
+            @test fidelity(packed_z, packed_maximally_mixed) ≈ inv(sqrt(2))
 
-            packed_mixed = repack_state(default_mixed, word_type)
-            @test expect(default_mixed, packed_mixed) == 0.5
-            @test expect(packed_mixed, default_mixed) == 0.5
-            @test expect(1, S"Z", packed_mixed) == 1.0
-            @test fidelity(S"Z_ _Z", packed_mixed) ≈ inv(sqrt(2))
+            packed_mixed = repack_state(MixedDestabilizer(S"Z_"), word_type)
+            @test expect(packed_mixed, packed_mixed) == 0.5
 
-            packed_pure = repack_state(default_pure, word_type)
-            @test expect(default_pure, packed_pure) == 1.0
-            @test expect(packed_pure, default_pure) == 1.0
-            @test fidelity(default_pure, packed_pure) == 1.0
+            packed_pure = repack_state(MixedDestabilizer(bell()), word_type)
+            @test expect(packed_pure, packed_pure) == 1.0
+            @test fidelity(packed_pure, packed_pure) == 1.0
         end
 
         long_mixed = MixedDestabilizer([embed(65, 65, P"Z")])
         for word_type in (UInt8, UInt16, UInt32, UInt64)
             packed_long_mixed = repack_state(long_mixed, word_type)
-            @test expect(long_mixed, packed_long_mixed) == exp2(-64)
-            @test expect(packed_long_mixed, long_mixed) == exp2(-64)
-            @test expect(65, S"Z", packed_long_mixed) == 1.0
-            @test expect(1, S"Z", packed_long_mixed) == 0.5
+            packed_z = repack_state(MixedDestabilizer(S"Z"), word_type)
+            @test expect(packed_long_mixed, packed_long_mixed) == exp2(-64)
+            @test expect((65,), packed_z, packed_long_mixed) == 1.0
+            @test expect((1,), packed_z, packed_long_mixed) == 0.5
         end
     end
 
@@ -257,33 +262,39 @@
         @test QuantumClifford.fidelity === QuantumInterface.fidelity
 
         pure_pairs = (
-            (S"Z", S"Z"),
-            (S"Z", S"-Z"),
-            (S"Z", S"X"),
-            (bell(), S"Z_ _Z"),
-            (bell(), S"-YY ZZ"),
+            (MixedDestabilizer(S"Z"), MixedDestabilizer(S"Z")),
+            (MixedDestabilizer(S"Z"), MixedDestabilizer(S"-Z")),
+            (MixedDestabilizer(S"Z"), MixedDestabilizer(S"X")),
+            (MixedDestabilizer(bell()), MixedDestabilizer(S"Z_ _Z")),
+            (MixedDestabilizer(bell()), MixedDestabilizer(S"-YY ZZ")),
         )
         for (state1, state2) in pure_pairs
             @test fidelity(state1, state2) == dot(state1, state2)
         end
 
         mixed = maximally_mixed(1)
-        @test fidelity(S"Z", mixed) == fidelity(mixed, S"Z")
-        @test fidelity(S"Z", mixed) ≈ inv(sqrt(2))
-        @test abs2(fidelity(S"Z", mixed)) ≈ expect(S"Z", mixed)
+        pure_z = MixedDestabilizer(S"Z")
+        @test fidelity(pure_z, mixed) == fidelity(mixed, pure_z)
+        @test fidelity(pure_z, mixed) ≈ inv(sqrt(2))
+        @test abs2(fidelity(pure_z, mixed)) ≈ expect(pure_z, mixed)
 
         rank_one = MixedDestabilizer(S"Z_")
-        @test fidelity(S"Z_ _Z", rank_one) ≈ inv(sqrt(2))
-        @test abs2(fidelity(S"X_ _X", rank_one)) ==
-            expect(S"X_ _X", rank_one) == 0.25
-        @test fidelity(S"-Z_ _Z", rank_one) == 0.0
+        pure_extension = MixedDestabilizer(S"Z_ _Z")
+        mutually_unbiased = MixedDestabilizer(S"X_ _X")
+        @test fidelity(pure_extension, rank_one) ≈ inv(sqrt(2))
+        @test abs2(fidelity(mutually_unbiased, rank_one)) ==
+            expect(mutually_unbiased, rank_one) == 0.25
+        @test fidelity(MixedDestabilizer(S"-Z_ _Z"), rank_one) == 0.0
 
         @test_throws DomainError fidelity(maximally_mixed(1), maximally_mixed(1))
         @test_throws DomainError fidelity(
             MixedDestabilizer(S"Z_"),
             MixedDestabilizer(S"X_"),
         )
-        @test_throws DimensionMismatch fidelity(S"Z", S"ZZ")
+        @test_throws DimensionMismatch fidelity(
+            MixedDestabilizer(S"Z"),
+            MixedDestabilizer(S"ZZ"),
+        )
 
         pure_state = MixedDestabilizer(bell())
         mixed_state_value = MixedDestabilizer(S"ZZ")
