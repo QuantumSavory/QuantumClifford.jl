@@ -2,6 +2,8 @@
 
 - `permute` will be a wrapper around to `QuantumInterface.permutesystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
+- **(breaking)** Remove the deprecated `apply!(state, operation, indices)` order. Subsystem indices must be passed before the operation as `apply!(state, indices, operation)`.
+- Add `apply_inv!(state, indices, operation)`, deprecate the former `apply_inv!(state, operation, indices)` order, and fix inverse Pauli application with the `phases` keyword.
 
 # News
 
@@ -420,7 +422,7 @@ These changes affect internal implementation details - external packages should 
 
 ## v0.5.7 - 2022-07-24
 
-- **(fix)** `apply!(S"XXX", P"X", [1])` and similar sparse Pauli applies were giving wrong results.
+- **(fix)** `apply!(S"XXX", [1], P"X")` and similar sparse Pauli applies were giving wrong results.
 - Significant speedup of `petrajectories` thanks to an order of magnitude speedup in `applynoise_branches(...,::UnbiasedUncorrelatedNoise)`.
 - Expanding test suite, including base functions, `Experimental.NoisyCircuits`, and others. Re-establishing tests of alternative bit-packing.
 

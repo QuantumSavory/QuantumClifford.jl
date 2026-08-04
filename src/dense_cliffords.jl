@@ -114,13 +114,13 @@ function apply!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
 end
 
 function apply_inv!(r::CliffordOperator, l::AbstractCliffordOperator; phases=false)
-    @valbooldispatch _apply_inv!(Stabilizer(tab(r)),l,phases=Val(phases)) phases
+    @valbooldispatch _apply_inv!(Stabilizer(tab(r)),l; phases=Val(phases)) phases
     r
 end
 
 """Nonvectorized version of `apply!` used for unit tests."""
 function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true)
-    nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
+    nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider calling `apply!(state, indices, operation)` to apply the operation to selected subsystems."))
     s_tab = tab(stab)
     c_tab = tab(c)
     new_stabrow = c.buffer
@@ -133,7 +133,7 @@ end
 
 # TODO no need to track phases outside of stabview
 function _apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=Val(true)) where B
-    nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
+    nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider calling `apply!(state, indices, operation)` to apply the operation to selected subsystems."))
     s_tab = tab(stab)
     c_tab = tab(c)
     threadlocal = c.buffer
@@ -169,7 +169,7 @@ end
 end
 
 """Nonvectorized version of `apply!` used for unit tests."""
-function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{Int,1}; phases::Bool=true)
+function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::Base.AbstractVecOrTuple{Int}; phases::Bool=true)
     s_tab = tab(stab)
     c_tab = tab(c)
     new_stabrow = c.buffer
@@ -181,7 +181,7 @@ function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator, indice
 end
 
 #TODO a lot of code repetition with apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Bool=true) and apply_row_kernel!
-function _apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{Int,1}; phases::Val{B}=Val(true)) where B
+function _apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::Base.AbstractVecOrTuple{Int}; phases::Val{B}=Val(true)) where B
     #max(indices_of_application)<=nqubits(s) || throw(DimensionMismatch("")) # Too expensive to check every time
     s_tab = tab(stab)
     c_tab = tab(c)
@@ -193,7 +193,7 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_appli
     stab
 end
 
-function _apply_inv!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::AbstractArray{Int,1}; phases::Val{B}=Val(true)) where B
+function _apply_inv!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::Base.AbstractVecOrTuple{Int}; phases::Val{B}=Val(true)) where B
     _apply!(stab, inv(c), indices_of_application; phases=phases)
 end
 
