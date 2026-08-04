@@ -40,7 +40,7 @@ skip_idling_noise(op) = false
 skip_idling_noise(op::VerifyOp) = true
 skip_idling_noise(op::ClassicalXOR) = true
 skip_idling_noise(op::AbstractNoiseOp) = true
-
+skip_idling_noise(op::NoisyGate) = false # since a gate is still applied idle noise needs it to be false to track the timestep occupied by it
 function append_idle_noise!(output, q::Int, idle_noise::AbstractNoise)
     push!(output, NoiseOp(idle_noise, [q]))
 end
