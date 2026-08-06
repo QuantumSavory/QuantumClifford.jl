@@ -752,8 +752,6 @@ function expect(p::PauliOperator, s::AbstractStabilizer)
 end
 
 "Return the base-two log expectation, or `nothing` when it is zero."
-function _stabilizer_expect_log2 end
-
 function _stabilizer_expect_log2(
     indices::Union{Nothing,Int,Base.AbstractVecOrTuple{Int}},
     operator_state::MixedDestabilizer,
@@ -793,26 +791,18 @@ interpreted as the normalized density operator
 \\rho_S = 2^{-n}\\sum_{g\\in S} g = \\frac{P_S}{2^{n-r}},
 ```
 
-where ``P_S`` projects onto the common stabilized subspace. The two-state form
-returns the Hilbert--Schmidt expectation
+where ``P_S`` projects onto the common stabilized subspace.
+Returns the Hilbert--Schmidt expectation
 ``\\operatorname{Tr}(\\rho_{\\mathrm{operator}}\\rho_{\\mathrm{state}})``. In
 particular, if `operator_state` is pure, this is its projector probability in
 `state`.
 
-The indexed forms embed `operator_state` at the ordered subsystem `indices`
+The indexed forms embed `operator_state` in a larger system of qubits at `indices`
 and return
 ``\\operatorname{Tr}[(\\rho_{\\mathrm{operator}}\\otimes I)\\rho_{\\mathrm{state}}]``.
 The first operator qubit maps to the first index, the second to the second, and
 so on. Indices must be unique, in bounds, and equal in count to the number of
-operator qubits. Index collections must use one-based axes and contain `Int`
-elements; callers should convert other index representations before calling.
-
-Both arguments must be `MixedDestabilizer`s. Callers are responsible for
-converting other tableau representations before calling. The operator and
-state must also use compatible packed-word representations accepted by
-[`project!`](@ref).
-
-Neither input is modified.
+operator qubits.
 
 # Examples
 

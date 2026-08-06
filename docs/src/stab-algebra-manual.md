@@ -705,9 +705,7 @@ maximally mixed state on a stabilized subspace of dimension ``2^{n-r}``.
 [`expect`](@ref) accepts a stabilizer state as the operator as well as a
 [`PauliOperator`](@ref). For two state arguments it returns their
 Hilbert--Schmidt expectation ``\operatorname{Tr}(\rho_A\rho_B)``. When the
-operator state is pure, this is the probability of its projector. Both state
-arguments must be `MixedDestabilizer`s; callers convert other tableau
-representations before calling.
+operator state is pure, this is the probability of its projector.
 
 ```jldoctest metrics
 julia> mixed = maximally_mixed(1);
@@ -719,11 +717,7 @@ julia> expect(mixed, mixed) # purity of I/2
 0.5
 ```
 
-The indexed form embeds the operator at an ordered list of subsystems, leaving
-the identity on all other qubits. The order is significant: operator qubit 1
-maps to `indices[1]`, operator qubit 2 maps to `indices[2]`, and so on. This
-computes local projector probabilities without first permuting or tracing out
-the state.
+The indexed form embeds the operator in a larger system at the given indices, leaving the identity on all other qubits.
 
 ```jldoctest metrics
 julia> expect([1, 3], MixedDestabilizer(bell()), MixedDestabilizer(ghz(3)))
@@ -733,8 +727,7 @@ julia> expect([1, 3], MixedDestabilizer(bell()), MixedDestabilizer(ghz(3)))
 [`fidelity`](@ref) uses the root-fidelity convention. For two pure states it
 returns their overlap and delegates to `LinearAlgebra.dot`. If exactly one
 state is pure, its square is the corresponding pure-state projector
-expectation. Fidelity between two rank-deficient states is not implemented and
-raises a `DomainError`. Both inputs must be `MixedDestabilizer`s.
+expectation.
 
 ```jldoctest metrics
 julia> fidelity(MixedDestabilizer(S"Z"), mixed)

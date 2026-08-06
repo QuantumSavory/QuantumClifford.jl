@@ -125,7 +125,7 @@ end
 """
     fidelity(state1::MixedDestabilizer, state2::MixedDestabilizer)
 
-Compute the root fidelity between stabilizer states, following the
+Compute the fidelity between stabilizer states, following the
 `QuantumInterface.fidelity` convention,
 
 ```math
@@ -142,8 +142,6 @@ requirements as [`expect`](@ref).
 General mixed/mixed fidelity is not currently implemented and raises a
 `DomainError`. In particular, it is not equal in general to the square root of
 the Hilbert--Schmidt expectation returned by [`expect`](@ref).
-
-Neither input is modified.
 
 # Examples
 

@@ -5,7 +5,7 @@
 
 # News
 
-## v0.11.6 - unreleased
+## v0.11.6 - 2026-08-05
 
 - **(breaking)** Remove the deprecated `apply!(state, operation, indices)` order. Subsystem indices must be passed before the operation as `apply!(state, indices, operation)`.
 - Add `apply_inv!(state, indices, operation)`, deprecate the former `apply_inv!(state, operation, indices)` order, and fix inverse Pauli application with the `phases` keyword.
