@@ -248,6 +248,8 @@ julia> tensor(s, s)
 See also [`tensor_pow`](@ref)."""
 function tensor end
 
+tensor(p::PauliOperator, ps::PauliOperator...) = foldl(⊗, ps; init=p)
+
 function tensor(ops::AbstractStabilizer...) # TODO optimize by pre-allocating one large tableau instead of the current quadratic fold
     ct = promote_type(map(typeof, ops)...)
     conv_ops = map(x -> convert(ct, x), ops)

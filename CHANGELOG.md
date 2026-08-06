@@ -5,6 +5,10 @@
 
 # News
 
+## v0.11.7 - 2026-08-06
+
+- **(fix)** Prevent stack overflows when tensoring one or at least three `PauliOperator`s.
+
 ## v0.11.6 - 2026-08-05
 
 - **(breaking)** Remove the deprecated `apply!(state, operation, indices)` order. Subsystem indices must be passed before the operation as `apply!(state, indices, operation)`.
