@@ -18,7 +18,7 @@ import QuantumInterface: tensor, ⊗, tensor_pow,
     nqubits, expect, project!, reset_qubits!, traceout!, ptrace,
     apply!, projectX!, projectY!, projectZ!,
     embed, permutesystems,
-    entanglement_entropy
+    entanglement_entropy, fidelity
 
 export
     @P_str, PauliOperator, ⊗, I, X, Y, Z,
@@ -38,7 +38,7 @@ export
     canonicalize!, canonicalize_rref!, canonicalize_gott!,
     # Linear Algebra
     tensor, tensor_pow,
-    logdot, expect,
+    logdot, expect, fidelity,
     apply!, apply_inv!, apply_right!,
     permutesystems, permutesystems!,
     # Low Level Function Interface

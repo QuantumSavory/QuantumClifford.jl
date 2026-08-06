@@ -751,6 +751,126 @@ function expect(p::PauliOperator, s::AbstractStabilizer)
     result === 0x03 && return -im
 end
 
+"Return the base-two log expectation, or `nothing` when it is zero."
+function _stabilizer_expect_log2(
+    indices::Union{Nothing,Int,Base.AbstractVecOrTuple{Int}},
+    operator_state::MixedDestabilizer,
+    state::MixedDestabilizer,
+)
+    projected_state = copy(state)
+    exponent = rank(operator_state) - nqubits(operator_state)
+    state_qubits = nqubits(state)
+    for generator in stabilizerview(operator_state)
+        projected_generator = isnothing(indices) ? generator :
+            embed(state_qubits, indices, generator)
+        _, _, result = project!(projected_state, projected_generator)
+        if result === nothing
+            exponent -= 1
+        elseif result != 0x00
+            return nothing
+        end
+    end
+    exponent
+end
+
+"""
+    expect(operator_state::MixedDestabilizer, state::MixedDestabilizer)
+    expect(indices::Base.AbstractVecOrTuple{Int},
+           operator_state::MixedDestabilizer,
+           state::MixedDestabilizer)
+    expect(index::Int,
+           operator_state::MixedDestabilizer,
+           state::MixedDestabilizer)
+
+Compute an expectation involving two stabilizer-state density operators.
+
+An ``n``-qubit stabilizer state with rank ``r`` and stabilizer group ``S`` is
+interpreted as the normalized density operator
+
+```math
+\\rho_S = 2^{-n}\\sum_{g\\in S} g = \\frac{P_S}{2^{n-r}},
+```
+
+where ``P_S`` projects onto the common stabilized subspace.
+Returns the Hilbert--Schmidt expectation
+``\\operatorname{Tr}(\\rho_{\\mathrm{operator}}\\rho_{\\mathrm{state}})``. In
+particular, if `operator_state` is pure, this is its projector probability in
+`state`.
+
+The indexed forms embed `operator_state` in a larger system of qubits at `indices`
+and return
+``\\operatorname{Tr}[(\\rho_{\\mathrm{operator}}\\otimes I)\\rho_{\\mathrm{state}}]``.
+The first operator qubit maps to the first index, the second to the second, and
+so on. Indices must be unique, in bounds, and equal in count to the number of
+operator qubits.
+
+# Examples
+
+```jldoctest
+julia> expect(MixedDestabilizer(S"Z"), maximally_mixed(1))
+0.5
+
+julia> expect([1, 3], MixedDestabilizer(bell()), MixedDestabilizer(ghz(3)))
+0.5
+```
+
+See also: [`expect(::PauliOperator, ::AbstractStabilizer)`](@ref),
+[`fidelity`](@ref), [`project!`](@ref).
+"""
+function expect(
+    operator_state::MixedDestabilizer,
+    state::MixedDestabilizer,
+)
+    operator_qubits = nqubits(operator_state)
+    state_qubits = nqubits(state)
+    operator_qubits == state_qubits || throw(DimensionMismatch(
+        lazy"Expected equal qubit counts; got $operator_qubits and $state_qubits.",
+    ))
+    exponent = _stabilizer_expect_log2(nothing, operator_state, state)
+    isnothing(exponent) ? 0.0 : exp2(exponent)
+end
+
+function expect(
+    indices::Base.AbstractVecOrTuple{Int},
+    operator_state::MixedDestabilizer,
+    state::MixedDestabilizer,
+)
+    operator_qubits = nqubits(operator_state)
+    provided_indices = length(indices)
+    provided_indices == operator_qubits || throw(DimensionMismatch(
+        lazy"Expected $operator_qubits subsystem indices; got $provided_indices.",
+    ))
+    Base.require_one_based_indexing(indices)
+    allunique(indices) || throw(ArgumentError(
+        lazy"Subsystem indices must be unique; got $indices.",
+    ))
+    state_qubits = nqubits(state)
+    all(index -> 1 <= index <= state_qubits, indices) || throw(ArgumentError(
+        lazy"Subsystem indices must lie between 1 and $state_qubits; got $indices.",
+    ))
+
+    exponent = _stabilizer_expect_log2(indices, operator_state, state)
+    isnothing(exponent) ? 0.0 : exp2(exponent)
+end
+
+function expect(
+    index::Int,
+    operator_state::MixedDestabilizer,
+    state::MixedDestabilizer,
+)
+    operator_qubits = nqubits(operator_state)
+    operator_qubits == 1 || throw(DimensionMismatch(
+        lazy"Expected a one-qubit operator state; got $operator_qubits qubits.",
+    ))
+    state_qubits = nqubits(state)
+    1 <= index <= state_qubits || throw(ArgumentError(
+        lazy"The subsystem index must lie between 1 and $state_qubits; got $index.",
+    ))
+
+    exponent = _stabilizer_expect_log2(index, operator_state, state)
+    isnothing(exponent) ? 0.0 : exp2(exponent)
+end
+
 """Put source tableau in target tableau at given row and column. Assumes target location is zeroed out.""" # TODO implement a getindex setindex interface to this
 @inline function puttableau!(target::Tableau{V1,M1}, source::Tableau{V2,M2}, row::Int, col::Int; phases::Val{B}=Val(true)) where {B,V1,V2,T<:Unsigned,M1<:AbstractMatrix{T},M2<:AbstractMatrix{T}}
     xzs = target.xzs

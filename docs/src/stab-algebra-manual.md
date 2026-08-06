@@ -689,6 +689,51 @@ described in [Mixed States](@ref Mixed-Stabilizer-States).
 More information that can be seen in the [data structures page](@ref Choosing-Appropriate-Data-Structure),
 which expands upon the algorithms available for each structure.
 
+## Expectations and Fidelity
+
+An `n`-qubit stabilizer tableau with `r` independent generators represents the
+normalized density operator
+
+```math
+\rho_S = 2^{-n}\sum_{g\in S}g = \frac{P_S}{2^{n-r}},
+```
+
+where ``S`` is the signed stabilizer group and ``P_S`` projects onto its common
+``+1`` eigenspace. A rank-`n` tableau is pure. A rank-deficient tableau is the
+maximally mixed state on a stabilized subspace of dimension ``2^{n-r}``.
+
+[`expect`](@ref) accepts a stabilizer state as the operator as well as a
+[`PauliOperator`](@ref). For two state arguments it returns their
+Hilbert--Schmidt expectation ``\operatorname{Tr}(\rho_A\rho_B)``. When the
+operator state is pure, this is the probability of its projector.
+
+```jldoctest metrics
+julia> mixed = maximally_mixed(1);
+
+julia> expect(MixedDestabilizer(S"Z"), mixed)
+0.5
+
+julia> expect(mixed, mixed) # purity of I/2
+0.5
+```
+
+The indexed form embeds the operator in a larger system at the given indices, leaving the identity on all other qubits.
+
+```jldoctest metrics
+julia> expect([1, 3], MixedDestabilizer(bell()), MixedDestabilizer(ghz(3)))
+0.5
+```
+
+[`fidelity`](@ref) uses the root-fidelity convention. For two pure states it
+returns their overlap and delegates to `LinearAlgebra.dot`. If exactly one
+state is pure, its square is the corresponding pure-state projector
+expectation.
+
+```jldoctest metrics
+julia> fidelity(MixedDestabilizer(S"Z"), mixed)
+0.7071067811865476
+```
+
 # Random States and Circuits
 
 [`random_clifford`](@ref), [`random_stabilizer`](@ref), and [`enumerate_cliffords`](@ref) can be used for the generation of random states.
