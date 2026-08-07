@@ -25,6 +25,8 @@
     @testset "Elementary operations" begin
         @test P"X"*P"Z" == P"-iY"
         @test P"X"⊗P"Z" == P"XZ"
+        @test tensor(P"X") == P"X"
+        @test tensor(P"X", P"Y", P"Z") == P"XYZ"
         @test -P"X" == P"-X"
         @test +P"X" == P"X"
         @test 1*P"X" == P"X"
