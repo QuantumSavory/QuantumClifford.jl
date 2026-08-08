@@ -9,38 +9,49 @@ on:
     paths-ignore:
       - 'docs/**'
 
+permissions:
+  contents: read
+
 concurrency:
-  # group by workflow and ref; the last slightly strange component ensures that for pull
-  # requests, we limit to 1 concurrent job, but for the master branch we don't
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main') || github.run_number }}
-  # Cancel intermediate builds, but only if it is a pull request build.
-  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  QUANTUMSAVORY_DOWNGRADE_TEST: "true"
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        version: ['1.12']
-        project:
-          - 'lib/QECCore'
     steps:
       - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
         with:
-          version: ${{ matrix.version }}
-      - uses: julia-actions/julia-downgrade-compat@v2
+          version: '1.12'
+      - name: Limit workspace to the test project
+        run: |
+          julia --color=yes -e '
+            using TOML
+            project_file = "lib/QECCore/Project.toml"
+            project = TOML.parsefile(project_file)
+            project["workspace"]["projects"] = ["test"]
+            open(project_file, "w") do io
+              TOML.print(io, project)
+            end
+          '
+      - uses: julia-actions/cache@v3
         with:
-          projects: ${{ matrix.project }}
-          skip: Combinatorics,InteractiveUtils,LinearAlgebra,PrecompileTools,Printf,Pkg,REPL,Random,SparseArrays,Statistics,TOML
+          delete-old-caches: false
+      - uses: julia-actions/julia-downgrade-compat@v2.7.0
+        with:
+          projects: 'lib/QECCore,lib/QECCore/test'
+          skip: LinearAlgebra,Random,SparseArrays
           mode: 'forcedeps'
-          julia_version: ${{ matrix.version }}
+          julia_version: '1.12'
       - uses: julia-actions/julia-buildpkg@v1
         with:
-          project: ${{ matrix.project }}
+          project: 'lib/QECCore'
       - uses: julia-actions/julia-runtest@v1
         with:
-          project: ${{ matrix.project }}
+          project: 'lib/QECCore'
           allow_reresolve: false
           force_latest_compatible_version: false

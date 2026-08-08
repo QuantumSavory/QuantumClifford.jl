@@ -9,48 +9,43 @@ on:
     paths-ignore:
       - 'docs/**'
 
+permissions:
+  contents: read
+
 concurrency:
-  # group by workflow and ref; the last slightly strange component ensures that for pull
-  # requests, we limit to 1 concurrent job, but for the master branch we don't
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main') || github.run_number }}
-  # Cancel intermediate builds, but only if it is a pull request build.
-  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  QUANTUMSAVORY_DOWNGRADE_TEST: "true"
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        version: ['1.12']
     steps:
       - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
         with:
-          version: ${{ matrix.version }}
-      - name: Disable workspace directives for downgrade run
+          version: '1.12'
+      - name: Limit workspace to the test project
         run: |
           julia --color=yes -e '
             using TOML
             project = TOML.parsefile("Project.toml")
-            if haskey(project, "workspace")
-              delete!(project, "workspace")
-              open("Project.toml", "w") do io
-                TOML.print(io, project)
-              end
-            end
-            if haskey(project, "sources")
-              delete!(project, "sources")
-              open("Project.toml", "w") do io
-                TOML.print(io, project)
-              end
+            project["workspace"]["projects"] = ["test"]
+            open("Project.toml", "w") do io
+              TOML.print(io, project)
             end
           '
-      - uses: julia-actions/julia-downgrade-compat@v2
-        with:
-          skip: Combinatorics,InteractiveUtils,LinearAlgebra,PrecompileTools,Printf,Pkg,REPL,Random,SparseArrays,Statistics,TOML
-          mode: 'forcedeps'
-          julia_version: ${{ matrix.version }}
       - uses: julia-actions/cache@v3
+        with:
+          delete-old-caches: false
+      - uses: julia-actions/julia-downgrade-compat@v2.7.0
+        with:
+          projects: '.,test'
+          skip: InteractiveUtils,LinearAlgebra,Random,SparseArrays,Statistics
+          mode: 'forcedeps'
+          julia_version: '1.12'
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
         with:
