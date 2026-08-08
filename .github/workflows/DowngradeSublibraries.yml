@@ -51,6 +51,8 @@ jobs:
       - uses: julia-actions/julia-buildpkg@v1
         with:
           project: 'lib/QECCore'
+      - name: Instantiate the locked test environment
+        run: julia --color=yes --project=lib/QECCore/test -e 'import Pkg; Pkg.instantiate()'
       - name: Run tests without re-resolving
         env:
           JULIA_LOAD_PATH: "${{ github.workspace }}/lib/QECCore/test:${{ github.workspace }}/lib/QECCore:@stdlib"
