@@ -27,6 +27,9 @@ jobs:
       - uses: julia-actions/setup-julia@v3
         with:
           version: '1.12'
+      - uses: julia-actions/cache@v3
+        with:
+          delete-old-caches: false
       - name: Limit workspace to the test project
         run: |
           julia --color=yes -e '
@@ -37,9 +40,6 @@ jobs:
               TOML.print(io, project)
             end
           '
-      - uses: julia-actions/cache@v3
-        with:
-          delete-old-caches: false
       - uses: julia-actions/julia-downgrade-compat@v2.7.0
         with:
           projects: '.,test'
