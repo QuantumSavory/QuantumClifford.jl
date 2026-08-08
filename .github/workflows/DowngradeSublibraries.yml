@@ -26,34 +26,20 @@ jobs:
       - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
         with:
-          version: 'min'
-          project: 'lib/QECCore'
+          version: '1.12'
       - uses: julia-actions/cache@v3
         with:
           delete-old-caches: false
-      - name: Limit workspace to the test project
-        run: |
-          julia --color=yes -e '
-            using TOML
-            project_file = "lib/QECCore/Project.toml"
-            project = TOML.parsefile(project_file)
-            project["workspace"]["projects"] = ["test"]
-            open(project_file, "w") do io
-              TOML.print(io, project)
-            end
-          '
       - uses: julia-actions/julia-downgrade-compat@v2.7.0
         with:
           projects: 'lib/QECCore,lib/QECCore/test'
           skip: LinearAlgebra,Random,SparseArrays
           mode: 'forcedeps'
-          julia_version: 'min'
       - uses: julia-actions/julia-buildpkg@v1
         with:
           project: 'lib/QECCore'
-      - name: Instantiate the locked test environment
-        run: julia --color=yes --project=lib/QECCore/test -e 'import Pkg; Pkg.instantiate()'
-      - name: Run tests without re-resolving
-        env:
-          JULIA_LOAD_PATH: "${{ github.workspace }}/lib/QECCore/test:${{ github.workspace }}/lib/QECCore:@stdlib"
-        run: julia --color=yes --check-bounds=yes --project=lib/QECCore/test lib/QECCore/test/runtests.jl
+      - uses: julia-actions/julia-runtest@v1
+        with:
+          project: 'lib/QECCore'
+          allow_reresolve: false
+          force_latest_compatible_version: false

@@ -36,9 +36,7 @@ else
     Tesseract_flag = true
 end
 
-if DOWNGRADE_TEST
-    @info "Skipping GPU/OpenCL tests during the downgrade run."
-elseif Sys.iswindows()
+if Sys.iswindows()
     @info "Skipping GPU/OpenCL tests -- only executed on *NIX platforms."
 else
     CUDA_flag = get(ENV, "GPU_TEST", "") == "cuda"
@@ -55,16 +53,16 @@ else
 end
 
 using Pkg
-!DOWNGRADE_TEST && CUDA_flag && Pkg.add("CUDA")
-!DOWNGRADE_TEST && ROCm_flag && Pkg.add("AMDGPU")
-!DOWNGRADE_TEST && OpenCL_flag && Pkg.add(["pocl_jll", "OpenCL"])
-if !DOWNGRADE_TEST && any((CUDA_flag, ROCm_flag, OpenCL_flag))
+CUDA_flag && Pkg.add("CUDA")
+ROCm_flag && Pkg.add("AMDGPU")
+OpenCL_flag && Pkg.add(["pocl_jll", "OpenCL"])
+if any((CUDA_flag, ROCm_flag, OpenCL_flag))
     Pkg.add(
         ["Adapt", "Atomix", "GPUArraysCore", "GPUArrays", "KernelAbstractions"]
     )
 end
-!DOWNGRADE_TEST && !JET_flag && Oscar_flag && Pkg.add("Oscar")
-!DOWNGRADE_TEST && !JET_flag && Tesseract_flag && Pkg.add("PyTesseractDecoder")
+!JET_flag && Oscar_flag && Pkg.add("Oscar")
+!JET_flag && Tesseract_flag && Pkg.add("PyTesseractDecoder")
 
 
 using TestItemRunner

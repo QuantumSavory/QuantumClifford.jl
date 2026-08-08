@@ -26,26 +26,15 @@ jobs:
       - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
         with:
-          version: 'min'
+          version: '1.12'
       - uses: julia-actions/cache@v3
         with:
           delete-old-caches: false
-      - name: Limit workspace to the test project
-        run: |
-          julia --color=yes -e '
-            using TOML
-            project = TOML.parsefile("Project.toml")
-            project["workspace"]["projects"] = ["test"]
-            open("Project.toml", "w") do io
-              TOML.print(io, project)
-            end
-          '
       - uses: julia-actions/julia-downgrade-compat@v2.7.0
         with:
           projects: '.,test'
-          skip: InteractiveUtils,LinearAlgebra,Random,SparseArrays,Statistics
+          skip: LinearAlgebra,Random,SparseArrays,Statistics
           mode: 'forcedeps'
-          julia_version: 'min'
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
         with:

@@ -1,4 +1,4 @@
-@testitem "ECC Generalized Toric Code" tags=[:ecc, :ecc_bespoke_checks, :oscar_required] begin
+@testitem "ECC Generalized Toric Code" tags=[:ecc, :ecc_bespoke_checks] begin
     @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
         using Oscar
         using QECCore
