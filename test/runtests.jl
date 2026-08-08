@@ -4,6 +4,7 @@ versioninfo(;verbose=true)
 const JET_PROJECT = normpath(joinpath(@__DIR__, "projects", "jet"))
 const test_args = isempty(ARGS) ? ["general"] : ARGS
 const JET_flag = length(test_args) == 1 && startswith(only(test_args), "jet")
+const DOWNGRADE_TEST = get(ENV, "QUANTUMSAVORY_DOWNGRADE_TEST", "") == "true"
 
 if JET_flag
     @info "Activating the dedicated JET test environment." project=JET_PROJECT
@@ -18,20 +19,26 @@ OpenCL_flag = false
 Oscar_flag = false
 Tesseract_flag = false
 
-if Sys.iswindows() || Sys.ARCH != :x86_64
+if DOWNGRADE_TEST
+    @info "Skipping Oscar tests during the downgrade run."
+elseif Sys.iswindows() || Sys.ARCH != :x86_64
     @info "Skipping Oscar tests -- only supported x86_64 *NIX platforms."
 else
     Oscar_flag = VERSION >= v"1.11"
     !Oscar_flag && @info "Skipping Oscar tests -- not tested on Julia < 1.11"
 end
 
-if Sys.iswindows()
+if DOWNGRADE_TEST
+    @info "Skipping Tesseract tests during the downgrade run."
+elseif Sys.iswindows()
     @info "Skipping Tesseract tests -- only supported *NIX platforms."
 else
     Tesseract_flag = true
 end
 
-if Sys.iswindows()
+if DOWNGRADE_TEST
+    @info "Skipping GPU/OpenCL tests during the downgrade run."
+elseif Sys.iswindows()
     @info "Skipping GPU/OpenCL tests -- only executed on *NIX platforms."
 else
     CUDA_flag = get(ENV, "GPU_TEST", "") == "cuda"
@@ -48,16 +55,16 @@ else
 end
 
 using Pkg
-CUDA_flag && Pkg.add("CUDA")
-ROCm_flag && Pkg.add("AMDGPU")
-OpenCL_flag && Pkg.add(["pocl_jll", "OpenCL"])
-if any((CUDA_flag, ROCm_flag, OpenCL_flag))
+!DOWNGRADE_TEST && CUDA_flag && Pkg.add("CUDA")
+!DOWNGRADE_TEST && ROCm_flag && Pkg.add("AMDGPU")
+!DOWNGRADE_TEST && OpenCL_flag && Pkg.add(["pocl_jll", "OpenCL"])
+if !DOWNGRADE_TEST && any((CUDA_flag, ROCm_flag, OpenCL_flag))
     Pkg.add(
         ["Adapt", "Atomix", "GPUArraysCore", "GPUArrays", "KernelAbstractions"]
     )
 end
-!JET_flag && Oscar_flag && Pkg.add("Oscar")
-!JET_flag && Tesseract_flag && Pkg.add("PyTesseractDecoder")
+!DOWNGRADE_TEST && !JET_flag && Oscar_flag && Pkg.add("Oscar")
+!DOWNGRADE_TEST && !JET_flag && Tesseract_flag && Pkg.add("PyTesseractDecoder")
 
 
 using TestItemRunner

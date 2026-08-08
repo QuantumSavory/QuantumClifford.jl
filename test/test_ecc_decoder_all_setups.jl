@@ -6,10 +6,11 @@
     import PyQDecoders
     import LDPCDecoders
     import Sys
+    const DOWNGRADE_TEST = get(ENV, "QUANTUMSAVORY_DOWNGRADE_TEST", "") == "true"
 
-    if !Sys.iswindows()
+    if !DOWNGRADE_TEST && !Sys.iswindows()
         import PyTesseractDecoder
-    else
+    elseif Sys.iswindows()
         @test_broken false # TODO tesseract-decoder is not available on Windows
     end
 
@@ -131,7 +132,7 @@
     end
 
 
-    if !Sys.iswindows()
+    if !DOWNGRADE_TEST && !Sys.iswindows()
     @testset "tesseract decoder (tesseract-decoder via PyTesseractDecoder)" begin
         codes = [
             Surface(8, 8),

@@ -304,7 +304,8 @@ const code_instance_args = Dict(
     :ExtendedGeneralizedBicycle => [(c_gb₁, 2, p_gb₁), (c_gb₂, 3, p_gb₂), (c_gb₃, 4, p_gb₃)]
 )
 
-@static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
+@static if get(ENV, "QUANTUMSAVORY_DOWNGRADE_TEST", "") != "true" &&
+           !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
   import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order, gens, quo,
   polynomial_ring, matrix, GF, transpose, laurent_polynomial_ring, ideal
   function load_oscar_codes()
