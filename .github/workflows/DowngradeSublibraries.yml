@@ -26,7 +26,8 @@ jobs:
       - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
         with:
-          version: '1.12'
+          version: 'min'
+          project: 'lib/QECCore'
       - uses: julia-actions/cache@v3
         with:
           delete-old-caches: false
@@ -46,12 +47,11 @@ jobs:
           projects: 'lib/QECCore,lib/QECCore/test'
           skip: LinearAlgebra,Random,SparseArrays
           mode: 'forcedeps'
-          julia_version: '1.12'
+          julia_version: 'min'
       - uses: julia-actions/julia-buildpkg@v1
         with:
           project: 'lib/QECCore'
-      - uses: julia-actions/julia-runtest@v1
-        with:
-          project: 'lib/QECCore'
-          allow_reresolve: false
-          force_latest_compatible_version: false
+      - name: Run tests on the locked dependency graph
+        env:
+          JULIA_LOAD_PATH: "${{ github.workspace }}/lib/QECCore/test:${{ github.workspace }}/lib/QECCore:@stdlib"
+        run: julia --project=lib/QECCore/test --startup-file=no --color=yes -e 'include("lib/QECCore/test/runtests.jl")'
