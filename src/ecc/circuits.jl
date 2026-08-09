@@ -227,3 +227,85 @@ function shor_syndrome_circuit(parity_check_tableau, ancillary_index=1, bit_inde
 
     return cat_circuit, shor_sc, ancillary_index-initial_ancillary_index, bit_index:bit_index+final_bits-1
 end
+"""
+Flag-based Pauli measurement circuit.
+
+This is a simpler alternative to the Shor-style measurement. Instead of building
+a big cat state with lots of ancillas, we just use two qubits:
+one to collect the measurement and one extra "flag" qubit.
+
+The measurement ancilla works like usual — it gathers the stabilizer value.
+The flag qubit is there just to tell us if something weird happened while the
+circuit was running.
+
+While applying the controlled gates, we briefly connect the measurement ancilla
+to the flag qubit. If an error spreads in a bad way, it will usually also affect
+the flag. So instead of preventing all bad error propagation, we just detect it.
+
+At the end:
+- measuring the main ancilla gives the stabilizer result
+- measuring the flag tells us if we should be suspicious of that result
+
+A decoder can then use both bits together.
+
+This is a basic single-flag version. The placement of the flag interaction here
+is pretty simple and not meant to be optimal — just something that works and is
+easy to build on later.
+
+Some notes:
+- If the stabilizer is very small (weight < 3), we skip adding the flag
+- This uses exactly 2 ancillas per measurement
+- Follows the same return style as the other circuit functions
+
+Returns:
+- circuit: list of operations
+- n_ancillas: always 2
+- bit_range: (syndrome bit, flag bit)
+"""
+function flag_ancillary_paulimeasurement(p::PauliOperator, ancillary_index=1, bit_index=1; n_flag=1)
+    circuit = AbstractOperation[]
+    n = nqubits(p)
+
+    # uses 2 ancillas: measurement + flag
+    meas_anc = n + ancillary_index
+    flag_anc = n + ancillary_index + 1
+
+    push!(circuit, sHadamard(meas_anc))
+    push!(circuit, sHadamard(flag_anc))
+
+    active = Int[]
+    for q in 1:n
+        p[q] != (0,0) && push!(active, q)
+    end
+
+    w = length(active)
+
+    for (i, qubit) in enumerate(active)
+
+        # simplified flag placement
+        if w >= 3 && i == 2
+            push!(circuit, sCNOT(meas_anc, flag_anc))
+        end
+
+        if p[qubit] == (1,0)
+            push!(circuit, sXCX(qubit, meas_anc))
+        elseif p[qubit] == (0,1)
+            push!(circuit, sCNOT(qubit, meas_anc))
+        elseif p[qubit] == (1,1)
+            push!(circuit, sYCX(qubit, meas_anc))
+        end
+
+        if w >= 3 && i == w - 1
+            push!(circuit, sCNOT(meas_anc, flag_anc))
+        end
+    end
+
+    # phase correction
+    p.phase[] == 0 || push!(circuit, sX(meas_anc))
+
+    push!(circuit, sHadamard(meas_anc))
+    push!(circuit, sMRZ(meas_anc, bit_index))       # syndrome
+    push!(circuit, sMRZ(flag_anc, bit_index + 1))   # flag
+
+    return circuit, 2, bit_index:(bit_index+1)
+end
