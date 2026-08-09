@@ -47,7 +47,7 @@ testfilter = ti -> begin
         push!(exclude, :jet)
     end
 
-    if !(VERSION >= v"1.10")
+    if DOWNGRADE_TEST || !(VERSION >= v"1.10")
         push!(exclude, :doctests)
         push!(exclude, :aqua)
     end
