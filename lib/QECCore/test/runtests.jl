@@ -3,6 +3,7 @@ Tesseract_flag = false
 const JET_PROJECT = normpath(joinpath(@__DIR__, "projects", "jet"))
 const test_args = isempty(ARGS) ? ["general"] : ARGS
 const JET_flag = length(test_args) == 1 && startswith(only(test_args), "jet")
+const DOWNGRADE_TEST = get(ENV, "QUANTUMSAVORY_DOWNGRADE_TEST", "") == "true"
 
 if JET_flag
     @info "Activating the dedicated JET test environment." project=JET_PROJECT
@@ -14,7 +15,9 @@ end
 using QECCore
 using TestItemRunner
 
-if Sys.iswindows() || Sys.ARCH != :x86_64
+if DOWNGRADE_TEST
+    @info "Skipping Oscar tests during the downgrade run."
+elseif Sys.iswindows() || Sys.ARCH != :x86_64
     @info "Skipping Oscar tests -- only supported x86_64 *NIX platforms."
 else
     Oscar_flag = VERSION >= v"1.11"
@@ -22,7 +25,9 @@ else
     Tesseract_flag = true
 end
 
-if Sys.iswindows()
+if DOWNGRADE_TEST
+    @info "Skipping Tesseract tests during the downgrade run."
+elseif Sys.iswindows()
     @info "Skipping Tesseract tests -- only supported *NIX platforms."
 else
     Tesseract_flag = true
