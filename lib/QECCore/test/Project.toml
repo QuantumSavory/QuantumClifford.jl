@@ -18,6 +18,6 @@ TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 
 [compat]
 HiGHS = "=1.23.0"
-Ncurses_jll = "< 6.6.0"
+Ncurses_jll = "< 6.6.0, 6.6"
 QuantumClifford = "0.11"
 TestItemRunner = "1.1.5"
