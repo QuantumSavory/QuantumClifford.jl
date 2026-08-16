@@ -5,6 +5,10 @@
 
 # News
 
+## Unreleased
+
+- Add CI measurements for package-cache build, import, and representative first-use latency.
+
 ## v0.11.7 - 2026-08-06
 
 - **(fix)** Prevent stack overflows when tensoring one or at least three `PauliOperator`s.
