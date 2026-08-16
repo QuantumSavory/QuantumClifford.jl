@@ -352,7 +352,7 @@ _gf2_to_int(M) = [iszero(M[i,j]) ? 0 : 1 for i in 1:size(M,1), j in 1:size(M,2)]
 function _polynomial_to_circulant_matrix(f::MPolyQuoRingElem, orders::Vector{Int})
     t = length(orders)
     N = prod(orders)
-    M = zero_matrix(GF(2), N, N)
+    M = zero_matrix(base_ring(base_ring(parent(f))), N, N)
     f_lift = lift(f)
     for col_idx in 0:(N-1)
         tmp = col_idx
