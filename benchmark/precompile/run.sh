@@ -8,39 +8,55 @@ usage() {
     exit 2
 }
 
-rewrite_quantumclifford_manifest_path() {
+rewrite_checkout_manifest_paths() {
     local input_path=$1
     local output_path=$2
-    local old_path=$3
-    local new_path=$4
-    if ! awk -v old_path="$old_path" -v new_path="$new_path" '
+    local old_quantumclifford_path=$3
+    local new_quantumclifford_path=$4
+    local old_qeccore_path=$5
+    local new_qeccore_path=$6
+    if ! awk \
+        -v old_quantumclifford_path="$old_quantumclifford_path" \
+        -v new_quantumclifford_path="$new_quantumclifford_path" \
+        -v old_qeccore_path="$old_qeccore_path" \
+        -v new_qeccore_path="$new_qeccore_path" '
         BEGIN {
-            package_header = "[[deps.QuantumClifford]]"
-            old_line = "path = \"" old_path "\""
-            new_line = "path = \"" new_path "\""
+            quantumclifford_header = "[[deps.QuantumClifford]]"
+            qeccore_header = "[[deps.QECCore]]"
+            old_quantumclifford_line = "path = \"" old_quantumclifford_path "\""
+            new_quantumclifford_line = "path = \"" new_quantumclifford_path "\""
+            old_qeccore_line = "path = \"" old_qeccore_path "\""
+            new_qeccore_line = "path = \"" new_qeccore_path "\""
         }
         {
-            remainder = $0
-            while ((position = index(remainder, old_path)) != 0) {
-                occurrences += 1
-                remainder = substr(remainder, position + length(old_path))
-            }
-            if ($0 == package_header) {
-                package_stanzas += 1
-                in_package = 1
+            if ($0 == quantumclifford_header) {
+                quantumclifford_stanzas += 1
+                in_quantumclifford = 1
+                in_qeccore = 0
+            } else if ($0 == qeccore_header) {
+                qeccore_stanzas += 1
+                in_quantumclifford = 0
+                in_qeccore = 1
             } else if ($0 ~ /^\[\[deps\./) {
-                in_package = 0
+                in_quantumclifford = 0
+                in_qeccore = 0
             }
-            if ($0 == old_line) {
-                path_lines += 1
-                in_package || misplaced_path = 1
-                print new_line
+            if ($0 == old_quantumclifford_line) {
+                quantumclifford_path_lines += 1
+                in_quantumclifford || misplaced_quantumclifford_path = 1
+                print new_quantumclifford_line
+            } else if ($0 == old_qeccore_line) {
+                qeccore_path_lines += 1
+                in_qeccore || misplaced_qeccore_path = 1
+                print new_qeccore_line
             } else {
                 print
             }
         }
         END {
-            if (package_stanzas != 1 || occurrences != 1 || path_lines != 1 || misplaced_path)
+            if (quantumclifford_stanzas != 1 || qeccore_stanzas != 1 ||
+                quantumclifford_path_lines != 1 || qeccore_path_lines != 1 ||
+                misplaced_quantumclifford_path || misplaced_qeccore_path)
                 exit 42
         }
     ' "$input_path" > "$output_path"; then
@@ -258,7 +274,7 @@ for specification in "$@"; do
         echo "variant checkouts must be nonempty and must not contain tabs or newlines" >&2
         exit 2
     }
-    [[ -f "$checkout/Project.toml" && -d "$checkout/src" ]] || {
+    [[ -f "$checkout/Project.toml" && -d "$checkout/src" && -f "$checkout/lib/QECCore/Project.toml" ]] || {
         echo "not a QuantumClifford checkout: $checkout" >&2
         exit 2
     }
@@ -313,6 +329,40 @@ checkout_state_sha256() {
     ) | sha256sum | awk '{print $1}'
 }
 
+qeccore_state_sha256() {
+    local checkout=$1
+    local file_path file_sha256 file_state link_target relative_path
+    (
+        printf 'head-tree\0'
+        git -C "$checkout" rev-parse HEAD:lib/QECCore
+        printf 'status\0'
+        git -C "$checkout" status --porcelain=v1 -z --untracked-files=all -- lib/QECCore
+        printf 'tracked-diff\0'
+        git -C "$checkout" diff --no-ext-diff --no-textconv --binary HEAD -- lib/QECCore
+        printf '\0untracked\0'
+        while IFS= read -r -d '' relative_path; do
+            file_path="$checkout/$relative_path"
+            printf 'path\0%s\0' "$relative_path"
+            if [[ -L $file_path ]]; then
+                link_target=$(readlink -- "$file_path")
+                printf 'symlink\0%s\0' "$link_target"
+            elif [[ -f $file_path ]]; then
+                file_state=$(stat -c '%a:%s' -- "$file_path")
+                file_sha256=$(sha256sum < "$file_path" | awk '{print $1}')
+                printf 'file\0%s\0%s\0' "$file_state" "$file_sha256"
+            elif [[ -d $file_path ]]; then
+                file_state=$(stat -c '%a' -- "$file_path")
+                printf 'directory\0%s\0' "$file_state"
+            elif [[ -e $file_path ]]; then
+                file_state=$(stat -c '%F:%a:%s' -- "$file_path")
+                printf 'other\0%s\0' "$file_state"
+            else
+                printf 'missing\0'
+            fi
+        done < <(git -C "$checkout" ls-files -z --others --exclude-standard -- lib/QECCore)
+    ) | sha256sum | awk '{print $1}'
+}
+
 copy_checkout_snapshot() {
     local checkout=$1
     local destination=$2
@@ -329,9 +379,12 @@ copy_checkout_snapshot() {
 commits=()
 checkout_initial_dirty=()
 checkout_state_sha256s=()
+qeccore_head_trees=()
+qeccore_state_sha256s=()
 for index in "${!labels[@]}"; do
     checkout=${checkouts[$index]}
     commits+=("$(git -C "$checkout" rev-parse HEAD)")
+    qeccore_head_trees+=("$(git -C "$checkout" rev-parse HEAD:lib/QECCore)")
     if [[ -n $(git -C "$checkout" status --porcelain=v1 --untracked-files=all) ]]; then
         checkout_initial_dirty+=(true)
     else
@@ -342,6 +395,7 @@ for index in "${!labels[@]}"; do
         exit 1
     fi
     checkout_state_sha256s+=("$(checkout_state_sha256 "$checkout")")
+    qeccore_state_sha256s+=("$(qeccore_state_sha256 "$checkout")")
 done
 
 verify_checkout() {
@@ -356,6 +410,11 @@ verify_checkout() {
         echo "variant checkout contents changed during measurement: ${labels[$index]}" >&2
         exit 1
     }
+    [[ $(git -C "$checkout" rev-parse HEAD:lib/QECCore) == "${qeccore_head_trees[$index]}" &&
+       $(qeccore_state_sha256 "$checkout") == "${qeccore_state_sha256s[$index]}" ]] || {
+        echo "variant bundled QECCore contents changed during measurement: ${labels[$index]}" >&2
+        exit 1
+    }
 }
 
 for checkout in "${checkouts[@]:1}"; do
@@ -363,6 +422,12 @@ for checkout in "${checkouts[@]:1}"; do
         <(sed '1,/^\[/ { /^version = /d; }' "${checkouts[0]}/Project.toml") \
         <(sed '1,/^\[/ { /^version = /d; }' "$checkout/Project.toml") || {
         echo "all variants must use identical Project.toml dependency metadata" >&2
+        exit 1
+    }
+    cmp -s -- \
+        <(sed '1,/^\[/ { /^version = /d; }' "${checkouts[0]}/lib/QECCore/Project.toml") \
+        <(sed '1,/^\[/ { /^version = /d; }' "$checkout/lib/QECCore/Project.toml") || {
+        echo "all variants must use identical lib/QECCore/Project.toml dependency metadata" >&2
         exit 1
     }
 done
@@ -529,6 +594,10 @@ consumer_environment_source_project=
 consumer_environment_source_manifest=
 consumer_environment_source_project_sha256=
 consumer_environment_source_manifest_sha256=
+manifest_path="$environment_dir/Manifest.toml"
+quantumclifford_manifest_placeholder=__QUANTUMCLIFFORD_CHECKOUT__
+qeccore_manifest_placeholder=__QECCORE_CHECKOUT__
+qeccore_checkout_path="$checkout_link/lib/QECCore"
 if [[ -n $reuse_consumer_project ]]; then
     consumer_environment_mode=reused
     consumer_environment_source_project=$reuse_consumer_project
@@ -538,10 +607,11 @@ if [[ -n $reuse_consumer_project ]]; then
         exit 2
     }
     cp -- "$reuse_consumer_project" "$environment_dir/Project.toml"
-    rewrite_quantumclifford_manifest_path \
+    rewrite_checkout_manifest_paths \
         "$reuse_consumer_manifest" "$environment_dir/Manifest.toml" \
-        '__QUANTUMCLIFFORD_CHECKOUT__' "$checkout_link" || {
-        echo "reused consumer Manifest must contain exactly one QuantumClifford checkout placeholder in its QuantumClifford path entry" >&2
+        "$quantumclifford_manifest_placeholder" "$checkout_link" \
+        "$qeccore_manifest_placeholder" "$qeccore_checkout_path" || {
+        echo "reused consumer Manifest must contain the QuantumClifford and QECCore checkout placeholders in their respective path entries" >&2
         exit 2
     }
     consumer_environment_source_project_sha256=$(sha256sum "$reuse_consumer_project" | awk '{print $1}')
@@ -557,8 +627,14 @@ if [[ -n $reuse_consumer_project ]]; then
         entry = only(entries)
         entry isa AbstractDict && get(entry, "path", nothing) == ARGS[2] ||
             error("consumer Manifest QuantumClifford path does not match the temporary checkout link")
+        entries = get(dependencies, "QECCore", nothing)
+        entries isa AbstractVector && length(entries) == 1 ||
+            error("consumer Manifest must contain exactly one QECCore entry")
+        entry = only(entries)
+        entry isa AbstractDict && get(entry, "path", nothing) == ARGS[3] ||
+            error("consumer Manifest QECCore path does not match the bundled checkout path")
         Pkg.is_manifest_current(ARGS[1]) === true || error("consumer Manifest was not resolved from the consumer Project")
-    ' "$environment_dir" "$checkout_link"; then
+    ' "$environment_dir" "$checkout_link" "$qeccore_checkout_path"; then
         echo "reused consumer Project and Manifest failed semantic validation" >&2
         exit 2
     fi
@@ -572,10 +648,11 @@ if [[ -n $reuse_consumer_project ]]; then
         exit 1
     }
     reused_normalized_manifest="$temporary_root/reused-normalized-Manifest.toml"
-    rewrite_quantumclifford_manifest_path \
+    rewrite_checkout_manifest_paths \
         "$environment_dir/Manifest.toml" "$reused_normalized_manifest" \
-        "$checkout_link" '__QUANTUMCLIFFORD_CHECKOUT__' || {
-        echo "Pkg.instantiate did not preserve the reused QuantumClifford Manifest path" >&2
+        "$checkout_link" "$quantumclifford_manifest_placeholder" \
+        "$qeccore_checkout_path" "$qeccore_manifest_placeholder" || {
+        echo "Pkg.instantiate did not preserve the reused QuantumClifford and QECCore Manifest paths" >&2
         exit 1
     }
     cmp -s -- "$reuse_consumer_manifest" "$reused_normalized_manifest" || {
@@ -589,25 +666,50 @@ else
         Pkg.develop(path=ARGS[2])
         Pkg.instantiate()
     ' "$environment_dir" "$checkout_link"
+
+    resolved_qeccore_manifest_path=$("$julia" "${julia_flags[@]}" -e '
+        using TOML
+        manifest = TOML.parsefile(ARGS[1])
+        print(only(manifest["deps"]["QECCore"])["path"])
+    ' "$manifest_path")
+    if [[ $resolved_qeccore_manifest_path = /* ]]; then
+        resolved_qeccore_source=$(realpath -e -- "$resolved_qeccore_manifest_path")
+    else
+        resolved_qeccore_source=$(realpath -e -- "$environment_dir/$resolved_qeccore_manifest_path")
+    fi
+    expected_qeccore_source=$(realpath -e -- "$seed_checkout/lib/QECCore")
+    [[ $resolved_qeccore_source == "$expected_qeccore_source" ]] || {
+        echo "consumer Manifest QECCore path does not resolve to the bundled seed source: $resolved_qeccore_manifest_path" >&2
+        exit 1
+    }
+    materialized_manifest="$temporary_root/materialized-Manifest.toml"
+    rewrite_checkout_manifest_paths \
+        "$manifest_path" "$materialized_manifest" \
+        "$checkout_link" "$checkout_link" \
+        "$resolved_qeccore_manifest_path" "$qeccore_checkout_path" || {
+        echo "failed to point the consumer Manifest at the bundled QECCore checkout path" >&2
+        exit 1
+    }
+    mv -- "$materialized_manifest" "$manifest_path"
 fi
 
-manifest_path="$environment_dir/Manifest.toml"
 [[ -f $manifest_path ]] || { echo "consumer manifest was not created" >&2; exit 1; }
 resolved_manifest_sha256=$(sha256sum "$manifest_path" | awk '{print $1}')
-manifest_checkout=$(awk '
-    $0 == "[[deps.QuantumClifford]]" { in_package = 1; next }
-    in_package && /^\[\[deps\./ { in_package = 0 }
-    in_package && /^path = / {
-        sub(/^path = "/, "")
-        sub(/"$/, "")
-        print
-        exit
-    }
-' "$manifest_path")
-[[ $manifest_checkout == "$checkout_link" ]] || {
-    echo "consumer Manifest did not preserve the stable checkout link: $manifest_checkout" >&2
+if ! "$julia" "${julia_flags[@]}" -e '
+    using TOML
+    manifest = TOML.parsefile(ARGS[1])
+    dependencies = manifest["deps"]
+    for (package, expected_path) in (("QuantumClifford", ARGS[2]), ("QECCore", ARGS[3]))
+        entries = get(dependencies, package, nothing)
+        entries isa AbstractVector && length(entries) == 1 ||
+            error("consumer Manifest must contain exactly one $package entry")
+        get(only(entries), "path", nothing) == expected_path ||
+            error("consumer Manifest $package path does not match $expected_path")
+    end
+' "$manifest_path" "$checkout_link" "$qeccore_checkout_path"; then
+    echo "consumer Manifest did not preserve the stable QuantumClifford and QECCore checkout paths" >&2
     exit 1
-}
+fi
 
 JULIA_DEPOT_PATH="$seed_depot" "$julia" "${julia_flags[@]}" --project="$environment_dir" -e 'using QuantumClifford'
 find "$seed_depot/compiled" -type f -path '*/QuantumClifford/*' -delete 2>/dev/null || true
@@ -650,10 +752,11 @@ validate_consumer_project "$environment_dir/Project.toml" || {
     exit 1
 }
 cp -- "$environment_dir/Project.toml" "$consumer_project_path"
-rewrite_quantumclifford_manifest_path \
+rewrite_checkout_manifest_paths \
     "$manifest_path" "$consumer_manifest_path" \
-    "$checkout_link" '__QUANTUMCLIFFORD_CHECKOUT__' || {
-    echo "failed to normalize exactly one QuantumClifford path in the copied Manifest" >&2
+    "$checkout_link" "$quantumclifford_manifest_placeholder" \
+    "$qeccore_checkout_path" "$qeccore_manifest_placeholder" || {
+    echo "failed to normalize the QuantumClifford and QECCore paths in the copied Manifest" >&2
     exit 1
 }
 if [[ $consumer_environment_mode == reused ]]; then
@@ -764,6 +867,8 @@ fi
         printf '%s\n' "variant.${labels[$index]}.commit=${commits[$index]}"
         printf '%s\n' "variant.${labels[$index]}.initial_dirty=${checkout_initial_dirty[$index]}"
         printf '%s\n' "variant.${labels[$index]}.state_sha256=${checkout_state_sha256s[$index]}"
+        printf '%s\n' "variant.${labels[$index]}.qeccore_head_tree=${qeccore_head_trees[$index]}"
+        printf '%s\n' "variant.${labels[$index]}.qeccore_state_sha256=${qeccore_state_sha256s[$index]}"
     done
 } > "$metadata_path"
 

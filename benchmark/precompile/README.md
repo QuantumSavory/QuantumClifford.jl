@@ -15,10 +15,12 @@ benchmark/precompile/run.sh /tmp/quantumclifford-precompile-results \
 
 The first variant is the default baseline. Each variant must be a clean,
 committed checkout, and all variants must have identical `Project.toml` files
-apart from the top-level package version.
+apart from the top-level package version. The same rule applies to the bundled
+`lib/QECCore/Project.toml`.
 The output directory must be outside every measured checkout. The harness
 refuses to overwrite existing result files. By default, it resolves one
-consumer Manifest and points it at each checkout in turn. It creates one seed
+consumer Manifest and points both QuantumClifford and its bundled QECCore at
+each checkout in turn. It creates one seed
 depot with dependency caches and a new writable depot for every QuantumClifford
 package-cache build. Dependency setup may access package servers. After setup,
 cache builds and samples run with package offline mode enabled. For reportable
@@ -93,8 +95,9 @@ benchmark/precompile/run.sh /tmp/quantumclifford-precompile-later-results \
 Set both variables together and use a new output directory. The inputs must be
 distinct regular files. The Project must match the harness-generated
 QuantumClifford consumer Project. The normalized
-Manifest must contain exactly one `__QUANTUMCLIFFORD_CHECKOUT__` path in its
-QuantumClifford entry. Setup materializes that placeholder as the stable
+Manifest must contain `__QUANTUMCLIFFORD_CHECKOUT__` and
+`__QECCORE_CHECKOUT__` in the QuantumClifford and QECCore path entries,
+respectively. Setup materializes both placeholders through the stable
 temporary checkout link. It first uses `Pkg.is_manifest_current` in offline
 mode to require a Manifest resolved from that Project, then runs only
 `Pkg.instantiate()` against the saved dependency graph. It does not resolve or
@@ -130,6 +133,8 @@ also snapshots a Git worktree-state hash for every measured checkout, including
 tracked differences and nonignored untracked contents. It rechecks the hash
 before each cache build and after all measurements. This rejects source mutation
 during an allow-dirty run; the override permits a fixed initial dirty state only.
+The metadata also records the bundled QECCore Git tree and a QECCore-specific
+state hash.
 
 Each candidate gets a separate comparison, with nearby independent cache
 builds for the candidate and its mapped baseline. To counterbalance systematic
@@ -153,14 +158,19 @@ material total-latency change. A material change is at least 50 ms and 5% is
 used when it is larger. Performance differences are descriptive; scenario
 assertion, package-cache, dependency-control, or harness failures return a
 nonzero status.
+`cache_bytes` counts only the QuantumClifford cache, matching the package-level
+metric in the source harness. The seed retains dependency caches, including
+QECCore. If a variant changes bundled QECCore source, Julia invalidates that
+seed cache and its rebuild remains part of the measured cache-build time.
 
 The total-latency timer starts immediately before `using QuantumClifford` and
 stops after the first scenario call. It therefore includes the small amount of
 harness setup between the separately reported import and first-call timers.
 The `total_metric` metadata field records this definition.
 
-The copied Manifest uses `__QUANTUMCLIFFORD_CHECKOUT__` as a path placeholder;
-replace it with the checkout used for reproduction. The `manifest_sha256`
+The copied Manifest uses `__QUANTUMCLIFFORD_CHECKOUT__` and
+`__QECCORE_CHECKOUT__` as path placeholders; replace them with the checkout and
+its `lib/QECCore` directory for reproduction. The `manifest_sha256`
 metadata field hashes this normalized copy. The metadata also records the
 consumer-environment mode, consumer Project hash, pre-normalization Manifest
 hash, harness commit, harness file hashes, reportability state, checkout state

@@ -5,6 +5,7 @@ on:
     paths:
       - src/precompiles.jl
       - src/precompile_statements.jl
+      - lib/QECCore/**
       - benchmark/precompile/**
       - .github/workflows/precompile.yml
       - Project.toml
