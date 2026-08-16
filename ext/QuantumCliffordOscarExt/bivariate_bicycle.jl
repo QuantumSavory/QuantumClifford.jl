@@ -326,7 +326,7 @@ struct BivariateBicycleViaPoly <: AbstractCSSCode
         parent(c) == parent(d) || throw(ArgumentError("Polynomials must be in the same quotient ring"))
         Q = parent(c)
         R = base_ring(Q)
-        base_ring(R) == GF(2) || throw(ArgumentError("Base ring must be GF(2)"))
+        order(base_ring(R)) == 2 || throw(ArgumentError("Base ring must be GF(2)"))
         nvars(R) == 2 || throw(ArgumentError("Must be bivariate polynomials"))
         new(l, m, c, d)
     end
