@@ -246,7 +246,7 @@ end
 """Construct a 3D circulant matrix from a trivariate polynomial."""
 function _circulant_matrix_3d(poly, l, m, p)
     n = l*m*p
-    M = zero_matrix(GF(2), n, n)
+    M = zero_matrix(base_ring(parent(poly)), n, n)
     for i in 0:l-1, j in 0:m-1, k in 0:p-1
         col_idx = i*(m*p)+j*p+k+1
         for term in terms(poly)
@@ -305,7 +305,7 @@ function boundary_maps(c::TrivariateTricycle)
     M_Bₜᵣₐₙₛ = _polynomial_to_circulant_matrix(Bₜᵣₐₙₛ, l, m, p)
     M_Cₜᵣₐₙₛ = _polynomial_to_circulant_matrix(Cₜᵣₐₙₛ, l, m, p)
     n_block = l*m*p
-    zero_block = zero_matrix(GF(2), n_block, n_block)
+    zero_block = zero_matrix(base_ring(M_A), n_block, n_block)
     H_X = hcat(M_A, M_B, M_C) # Eq. 14
     H_Z = vcat(
         hcat(zero_block, M_Cₜᵣₐₙₛ, M_Bₜᵣₐₙₛ),
