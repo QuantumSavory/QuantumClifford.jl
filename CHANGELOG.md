@@ -1,6 +1,5 @@
 # Planned changes for v1.0.0:
 
-- **(fix)** Require PythonCall 0.9.22 or later for Python decoder extensions.
 - `permute` will be a wrapper around to `QuantumInterface.permutesystems`. Documentation for `permute!` would be similarly updated
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
 
