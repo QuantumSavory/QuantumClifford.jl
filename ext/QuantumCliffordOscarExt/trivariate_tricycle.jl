@@ -219,7 +219,7 @@ struct TrivariateTricycle <: AbstractCSSCode
         m > 0 || throw(ArgumentError("m must be positive"))
         p > 0 || throw(ArgumentError("p must be positive"))
         Rₒ = parent(A)
-        R, (x,y,z) = polynomial_ring(Native.GF(2), [:x, :y, :z])
+        R, (x,y,z) = polynomial_ring(Oscar.Native.GF(2), [:x, :y, :z])
         I = ideal(R, [x^l-1, y^m-1, z^p-1])
         Rₑₓₚ, _ = quo(R, I)
         base_ring(Rₒ) != base_ring(Rₑₓₚ) && throw(ArgumentError("A must be in R/⟨x^$l-1, y^$m-1, z^$p-1⟩"))

@@ -395,7 +395,7 @@ function boundary_maps(code::MultivariateMulticycle)
         end
     end
     maps = Vector{Matrix{Int}}(undef, t)
-    R, x = polynomial_ring(Native.GF(2), ["x$i" for i in 1:t])
+    R, x = polynomial_ring(Oscar.Native.GF(2), ["x$i" for i in 1:t])
     K = koszul_complex(x)
     @debug "Koszul complex: $K"
     for k in 1:t
