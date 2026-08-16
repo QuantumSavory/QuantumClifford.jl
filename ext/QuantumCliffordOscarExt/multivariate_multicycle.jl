@@ -337,13 +337,13 @@ julia> code_n(c), code_k(c)
 
 See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
 """
-struct MultivariateMulticycle <: AbstractCSSCode
+struct MultivariateMulticycle{T<:MPolyQuoRingElem} <: AbstractCSSCode
     orders::Vector{Int}
-    polynomials::Vector{MPolyQuoRingElem{FqMPolyRingElem}}
-    function MultivariateMulticycle(orders::Vector{Int}, polys::Vector{<:MPolyQuoRingElem})
+    polynomials::Vector{T}
+    function MultivariateMulticycle(orders::Vector{Int}, polys::Vector{T}) where {T<:MPolyQuoRingElem}
         all(x->x>0, orders) || throw(ArgumentError("All orders must be positive"))
         length(polys) ≥ 2 || throw(ArgumentError("Need at least 2 variables to define a CSS code"))
-        new(orders, collect(polys))
+        new{T}(orders, collect(polys))
     end
 end
 
