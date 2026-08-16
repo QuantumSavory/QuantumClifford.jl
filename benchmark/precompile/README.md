@@ -101,7 +101,9 @@ mode to require a Manifest resolved from that Project, then runs only
 update dependencies. The copied consumer files in the new result directory
 must remain byte-identical to the inputs or the harness fails.
 
-The default scenarios are `tableau` and `ecc`. Each scenario also gets one
+The default scenarios are `tableau` and `ecc`. The first covers core tableau
+algebra and projection; the second covers Steane-code circuits, Pauli-frame
+simulation, and Shor-code table decoding. Each scenario also gets one
 discarded filesystem warm-up per build. The harness fixes Julia,
 package-precompile, BLAS, and OpenMP thread counts to one; disables startup and
 history files; uses `JULIA_LOAD_PATH=@:@stdlib`; and clears inherited Julia CPU

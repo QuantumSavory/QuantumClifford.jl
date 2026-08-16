@@ -4,7 +4,8 @@ using QuantumClifford
 const import_seconds = (time_ns() - import_started_ns) / 1.0e9
 
 using Random
-using QuantumClifford.ECC: Steane7, code_s, naive_encoding_circuit, naive_syndrome_circuit
+using QuantumClifford.ECC: CommutationCheckECCSetup, Shor9, Steane7, TableDecoder,
+    code_s, evaluate_decoder, naive_encoding_circuit, naive_syndrome_circuit
 
 check(condition, message) = condition || error(message)
 
@@ -53,7 +54,15 @@ function ecc()
     check(syndrome_bits == 1:6, "Steane circuit returned the wrong syndrome-bit range")
     check(size(syndromes) == (4, 6), "Steane syndrome simulation returned an unexpected shape")
     check(!any(syndromes), "noiseless Steane simulation returned a nonzero syndrome")
-    return syndromes
+
+    logical_error_rates = evaluate_decoder(
+        TableDecoder(Shor9()), CommutationCheckECCSetup(0.001), 32
+    )
+    check(
+        all(rate -> 0.0 <= rate <= 1.0, logical_error_rates),
+        "Shor decoder returned an invalid logical error rate",
+    )
+    return syndromes, logical_error_rates
 end
 
 const SCENARIOS = Dict(
