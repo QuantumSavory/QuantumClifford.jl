@@ -5,10 +5,6 @@
 
 # News
 
-## Unreleased
-
-- Add precompile statements selected from executable documentation examples with compilation timings above 50 ms.
-
 ## v0.11.7 - 2026-08-06
 
 - **(fix)** Prevent stack overflows when tensoring one or at least three `PauliOperator`s.

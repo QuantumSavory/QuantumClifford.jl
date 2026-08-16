@@ -1476,6 +1476,7 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
+#
 include("precompiles.jl")
 include("precompile_statements.jl")
 end #module
