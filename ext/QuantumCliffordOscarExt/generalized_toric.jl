@@ -93,7 +93,7 @@ TO condition is proved using ``Oscar.jl`` as follows:
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
-julia> R, (x, y, x⁻¹, y⁻¹) = polynomial_ring(GF(2), [:x, :y, :x⁻¹, :y⁻¹]);
+julia> R, (x, y, x⁻¹, y⁻¹) = polynomial_ring(Native.GF(2), [:x, :y, :x⁻¹, :y⁻¹]);
 
 julia> rels = [x*x⁻¹ - 1, y*y⁻¹ - 1];
 
@@ -134,7 +134,7 @@ Here is an example of computing the maximum logical dimension of Example 5
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC: max_xy_exponents;
 
-julia> R, (x, y) = polynomial_ring(GF(2), ["x", "y"]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), ["x", "y"]);
 
 julia> f = x*y^4 + x^2*y^4 + 1;
 
@@ -216,7 +216,7 @@ where ``a_1 \\in \\mathbb{Z}_2`` and ``p(x, y), q(x, y) \\in R``. For instance: 
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
-julia> R, (x,y) = laurent_polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x,y) = laurent_polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> f = 1 + x;
 
@@ -254,7 +254,7 @@ The code has ``k_{\\text{max}} = 4``, reflecting its structure as a direct sum o
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
-julia> R, (x, y) = laurent_polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = laurent_polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> f = 1 + x + x*y;
 
@@ -286,7 +286,7 @@ and ``(3, 3)``-BB code. The Laurent polynomials are:
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
-julia> R, (x, y) = laurent_polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = laurent_polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> f = 1 + x + x^-1*y^3;
 
@@ -318,7 +318,7 @@ Laurent polynomials are:
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
-julia> R, (x, y) = laurent_polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = laurent_polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> f = 1 + x + x^-1*y^-3;
 
@@ -341,7 +341,7 @@ Here is an example of `[[396, 8, ≤ 26]]` Generalized Toric Code from Table IV 
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
-julia> R, (x,y) = laurent_polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x,y) = laurent_polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> f = 1 + x + x^-1*y^-3;
 
@@ -362,7 +362,7 @@ Here is an example of `[[292, 18, 8]]` Generalized Toric Code from Appendix B of
 ```jldoctest
 julia> using Oscar; using QuantumClifford; using QuantumClifford.ECC;
 
-julia> R, (x,y) = laurent_polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x,y) = laurent_polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> f = 1 + x + y^2;
 
@@ -517,7 +517,7 @@ including `x` and `y`. It computes the maximum exponents of `x` and `y` appearin
 ```jldoctest
 julia> using Oscar; using QuantumClifford.ECC: max_xy_exponents;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> f = x + x^2 + y^3;
 

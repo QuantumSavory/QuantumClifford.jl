@@ -135,7 +135,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=3; m=9;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^l-1, y^m-1]);
 
@@ -158,7 +158,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=6; m=6;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^l-1, y^m-1]);
 
@@ -181,7 +181,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=21; m=18;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^l-1, y^m-1]);
 
@@ -204,7 +204,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=8; m=8;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^l-1, y^m-1]);
 
