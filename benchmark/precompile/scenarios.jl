@@ -3,7 +3,8 @@ const import_started_ns = total_started_ns
 using QuantumClifford
 const import_seconds = (time_ns() - import_started_ns) / 1.0e9
 
-using QuantumClifford.ECC: Steane7, naive_encoding_circuit, naive_syndrome_circuit
+using Random
+using QuantumClifford.ECC: Steane7, code_s, naive_encoding_circuit, naive_syndrome_circuit
 
 check(condition, message) = condition || error(message)
 
@@ -17,27 +18,39 @@ end
 
 function tableau()
     pauli()
-    state = MixedDestabilizer(bell())
-    initial = copy(state)
-    apply!(state, sHadamard(1))
-    apply!(state, sHadamard(1))
-    check(state == initial, "two Hadamard gates did not restore the Bell state")
+    bell_state = S"-XX
+                   +ZZ"
+    expected = S"-X_
+                 +_Z"
+    check(tCNOT * bell_state == expected, "dense Clifford multiplication failed")
+    check(apply!(copy(bell_state), tCNOT) == expected, "in-place Clifford application failed")
 
-    projected, anticommuting_index, outcome = project!(copy(state), P"Z_")
-    check(!isnothing(anticommuting_index), "Bell-state projection found no anticommuting generator")
-    check(isnothing(outcome), "Bell-state projection unexpectedly had a deterministic outcome")
-    check(nqubits(projected) == 2, "Bell-state projection changed the qubit count")
+    state = S"-XXX
+              +ZZI
+              -IZZ"
+    canonicalize!(state)
+    mixed = MixedDestabilizer(state)
+    projected, anticommuting_index, outcome = project!(mixed, P"ZII")
+    check(anticommuting_index != 0, "projection found no anticommuting generator")
+    check(isnothing(outcome), "noncommuting projection had a deterministic outcome")
+    check(nqubits(projected) == 3, "projection changed the qubit count")
+    _, repeated_index, repeated_outcome = project!(copy(projected), P"ZII")
+    check(repeated_index == 0, "repeated projection found an anticommuting generator")
+    check(repeated_outcome == 0x00, "repeated projection returned the wrong outcome")
     return projected
 end
 
 function ecc()
+    Random.seed!(0x5143)
     code = Steane7()
     encoding_circuit = naive_encoding_circuit(code)
-    syndrome_circuit, _ = naive_syndrome_circuit(code)
+    syndrome_circuit, ancillaries, syndrome_bits = naive_syndrome_circuit(code)
     frames = pftrajectories(
         [encoding_circuit..., syndrome_circuit...]; trajectories=4, threads=false
     )
     syndromes = measurements(frames)
+    check(ancillaries == code_s(code) == 6, "Steane circuit returned the wrong ancillas")
+    check(syndrome_bits == 1:6, "Steane circuit returned the wrong syndrome-bit range")
     check(size(syndromes) == (4, 6), "Steane syndrome simulation returned an unexpected shape")
     check(!any(syndromes), "noiseless Steane simulation returned a nonzero syndrome")
     return syndromes
