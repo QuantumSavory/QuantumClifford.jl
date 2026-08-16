@@ -537,7 +537,7 @@ julia> a, b = max_xy_exponents(W)
 (2, 7)
 ```
 """
-function max_xy_exponents(G::IdealGens{FqMPolyRingElem})
+function max_xy_exponents(G::IdealGens)
     vs = gens(parent(first(G)))
     xpos = findfirst(==(vs[1]), vs)
     ypos = findfirst(==(vs[2]), vs)

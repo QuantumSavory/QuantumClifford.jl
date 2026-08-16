@@ -200,7 +200,7 @@ julia> code_n(c), code_k(c)
 ### Fields
     $TYPEDFIELDS
 """
-struct TrivariateTricycle <: AbstractCSSCode
+struct TrivariateTricycle{T<:MPolyQuoRingElem} <: AbstractCSSCode
     """Order of the first abelian group in ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m \\times \\mathbb{Z}_p]``"""
     l::Int
     """Order of the second abelian group in ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m \\times \\mathbb{Z}_p]``"""
@@ -208,25 +208,27 @@ struct TrivariateTricycle <: AbstractCSSCode
     """Order of the third abelian group in ``\\mathbb{F}_2[\\mathbb{Z}_\\ell \\times \\mathbb{Z}_m \\times \\mathbb{Z}_p]``"""
     p::Int
     """First trivariate polynomial in quotient ring ``\\frac{\\mathbb{F}_2[x, y, z]}{\\langle x^\\ell-1, y^m-1, z^p-1 \\rangle}``"""
-    A::MPolyQuoRingElem{FqMPolyRingElem}
+    A::T
     """Second trivariate polynomial in quotient ring ``\\frac{\\mathbb{F}_2[x, y, z]}{\\langle x^\\ell-1, y^m-1, z^p-1 \\rangle}``"""
-    B::MPolyQuoRingElem{FqMPolyRingElem}
+    B::T
     """Third trivariate polynomial in quotient ring ``\\frac{\\mathbb{F}_2[x, y, z]}{\\langle x^\\ell-1, y^m-1, z^p-1 \\rangle}``"""
-    C::MPolyQuoRingElem{FqMPolyRingElem}
+    C::T
 
-    function TrivariateTricycle(l::Int, m::Int, p::Int, A::MPolyQuoRingElem{FqMPolyRingElem}, B::MPolyQuoRingElem{FqMPolyRingElem}, C::MPolyQuoRingElem{FqMPolyRingElem})
+    function TrivariateTricycle(l::Int, m::Int, p::Int, A::T, B::T, C::T) where {T<:MPolyQuoRingElem}
         l > 0 || throw(ArgumentError("l must be positive"))
         m > 0 || throw(ArgumentError("m must be positive"))
         p > 0 || throw(ArgumentError("p must be positive"))
         Rₒ = parent(A)
-        R, (x,y,z) = polynomial_ring(Oscar.Native.GF(2), [:x, :y, :z])
+        F = base_ring(base_ring(Rₒ))
+        order(F) == 2 || throw(ArgumentError("Base ring must be GF(2)"))
+        R, (x,y,z) = polynomial_ring(F, [:x, :y, :z])
         I = ideal(R, [x^l-1, y^m-1, z^p-1])
         Rₑₓₚ, _ = quo(R, I)
         base_ring(Rₒ) != base_ring(Rₑₓₚ) && throw(ArgumentError("A must be in R/⟨x^$l-1, y^$m-1, z^$p-1⟩"))
         modulus(Rₒ) != modulus(Rₑₓₚ) && throw(ArgumentError("A must be in R/⟨x^$l-1, y^$m-1, z^$p-1⟩"))
         parent(B) != Rₒ && throw(ArgumentError("B must be in same ring as A"))
         parent(C) != Rₒ && throw(ArgumentError("C must be in same ring as A"))
-        new(l, m, p, A, B, C)
+        new{T}(l, m, p, A, B, C)
     end
 end
 
