@@ -159,7 +159,7 @@ with respect to the ordering
 julia> a, b = max_xy_exponents(G);
 
 julia> all_monomials = [x^i * y^j for i in 0:a-1 for j in 0:b-1] # Eq. 52
-20-element Vector{FqMPolyRingElem}:
+20-element Vector{fpMPolyRingElem}:
  1
  y
  y^2
