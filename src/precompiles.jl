@@ -1,8 +1,12 @@
-function _precompile_()
-    rng = Random.default_rng()
-    saved_rng = copy(rng)
-    try
-        Random.seed!(rng, 0x5143)
+import Random
+using PrecompileTools
+
+@setup_workload begin
+    # Putting some things in `setup` can reduce the size of the
+    # precompile file and potentially make loading faster.
+    @compile_workload begin
+        # all calls in this block will be precompiled, regardless of whether
+        # they belong to your package or not (on Julia 1.8 and higher)
         ds = random_destabilizer(3)
         s = random_stabilizer(3)
         canonicalize!(s)
@@ -38,21 +42,6 @@ function _precompile_()
         end
         project!(s, p)
         project!(md, p)
-    finally
-        copy!(rng, saved_rng)
-    end
-end
-
-import Random
-using PrecompileTools
-
-@setup_workload begin
-    # Putting some things in `setup` can reduce the size of the
-    # precompile file and potentially make loading faster.
-    @compile_workload begin
-        # all calls in this block will be precompiled, regardless of whether
-        # they belong to your package or not (on Julia 1.8 and higher)
-        _precompile_()
     end
 end
 
@@ -83,23 +72,16 @@ end
 end
 
 @setup_workload let
-    rng = Random.default_rng()
-    saved_rng = copy(rng)
-    try
-        Random.seed!(rng, 0x5143)
-        @compile_workload begin
-            code = ECC.Steane7()
-            encoding_circuit = ECC.naive_encoding_circuit(code)
-            syndrome_circuit, ancillaries, syndrome_bits = ECC.naive_syndrome_circuit(code)
-            circuit = [encoding_circuit...; syndrome_circuit...]
-            frames = pftrajectories(circuit; trajectories=4, threads=false)
-            syndromes = measurements(frames)
-            @assert ancillaries == ECC.code_s(code) == 6
-            @assert syndrome_bits == 1:6
-            @assert size(syndromes) == (4, 6)
-            @assert all(iszero, syndromes)
-        end
-    finally
-        copy!(rng, saved_rng)
+    @compile_workload begin
+        code = ECC.Steane7()
+        encoding_circuit = ECC.naive_encoding_circuit(code)
+        syndrome_circuit, ancillaries, syndrome_bits = ECC.naive_syndrome_circuit(code)
+        circuit = [encoding_circuit...; syndrome_circuit...]
+        frames = pftrajectories(circuit; trajectories=4, threads=false)
+        syndromes = measurements(frames)
+        @assert ancillaries == ECC.code_s(code) == 6
+        @assert syndrome_bits == 1:6
+        @assert size(syndromes) == (4, 6)
+        @assert all(iszero, syndromes)
     end
 end
