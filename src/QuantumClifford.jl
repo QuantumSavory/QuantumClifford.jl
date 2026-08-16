@@ -1464,7 +1464,6 @@ include("symbolic_noncliffords.jl")
 #
 include("tableau_show.jl")
 include("sumtypes.jl")
-include("precompiles.jl")
 #
 include("ecc/ECC.jl")
 #
@@ -1477,4 +1476,7 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
+#
+include("precompiles.jl")
+include("precompile_statements.jl")
 end #module
