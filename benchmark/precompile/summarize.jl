@@ -72,7 +72,7 @@ function read_design(raw_path)
     scenarios = comma_list(get(metadata, "scenarios", ""))
     isempty(scenarios) && error("metadata scenarios must not be empty")
     all(scenario -> occursin(TOKEN_PATTERN, scenario), scenarios) || error("metadata contains an invalid scenario token")
-    allunique(scenarios) || error("metadata contains duplicate common scenarios")
+    allunique(scenarios) || error("metadata contains duplicate scenarios")
     length(variants) >= 2 || error("metadata must describe at least two variants")
     allunique(variants) || error("metadata contains duplicate variants")
 
@@ -85,15 +85,6 @@ function read_design(raw_path)
         isempty(commits[label]) && error("metadata has no commit for variant $label")
     end
 
-    extra_scenarios = Dict{String,Vector{String}}()
-    for (label, scenario) in mapping_list(get(metadata, "extra_scenarios", ""), "extra scenario")
-        label in variants[2:end] || error("extra scenario has unknown candidate: $label")
-        occursin(TOKEN_PATTERN, scenario) || error("invalid extra scenario token: $scenario")
-        selected = get!(Vector{String}, extra_scenarios, label)
-        scenario in selected && error("duplicate extra scenario: $label=$scenario")
-        push!(selected, scenario)
-    end
-
     baselines = Dict{String,String}()
     for (candidate, baseline) in mapping_list(get(metadata, "candidate_baselines", ""), "candidate baseline")
         candidate in variants[2:end] || error("baseline map has unknown candidate: $candidate")
@@ -103,20 +94,16 @@ function read_design(raw_path)
         baselines[candidate] = baseline
     end
 
-    return (; builds, samples, scenarios, variants, checkouts, commits, extra_scenarios, baselines)
+    return (; builds, samples, scenarios, variants, checkouts, commits, baselines)
 end
 
 function validate_rows(rows, design)
     expected_keys = Set{NTuple{5,String}}()
     default_baseline = first(design.variants)
     for comparison in design.variants[2:end]
-        scenarios = copy(design.scenarios)
-        for scenario in get(design.extra_scenarios, comparison, String[])
-            scenario in scenarios || push!(scenarios, scenario)
-        end
         baseline = get(design.baselines, comparison, default_baseline)
         for label in (baseline, comparison), build in 1:design.builds,
-            sample in 1:design.samples, scenario in scenarios
+            sample in 1:design.samples, scenario in design.scenarios
             push!(expected_keys, (comparison, label, string(build), string(sample), scenario))
         end
     end

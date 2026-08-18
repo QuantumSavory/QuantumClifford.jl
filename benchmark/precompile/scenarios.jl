@@ -65,18 +65,23 @@ function ecc()
     return syndromes, logical_error_rates
 end
 
-const SCENARIOS = Dict(
-    "pauli" => pauli,
-    "tableau" => tableau,
-    "ecc" => ecc,
+const PRECOMPILE_BENCHMARKS = (
+    pauli=pauli,
+    tableau=tableau,
+    ecc=ecc,
 )
 
-length(ARGS) == 1 || error("usage: scenarios.jl SCENARIO")
+if isempty(ARGS)
+    foreach(name -> println(String(name)), keys(PRECOMPILE_BENCHMARKS))
+    exit()
+end
+length(ARGS) == 1 || error("usage: scenarios.jl [SCENARIO]")
 scenario_name = only(ARGS)
-scenario = get(SCENARIOS, scenario_name, nothing)
-isnothing(scenario) && error("unknown precompile scenario: $(scenario_name)")
+scenario_key = Symbol(scenario_name)
+haskey(PRECOMPILE_BENCHMARKS, scenario_key) || error("unknown precompile scenario: $(scenario_name)")
+scenario = PRECOMPILE_BENCHMARKS[scenario_key]
 
-trace_mode = get(ENV, "QC_PRECOMPILE_TRACE", "")
+trace_mode = get(ENV, "PRECOMPILE_BENCHMARK_TRACE", "")
 first_result = if trace_mode == "compile"
     @timed Base.@trace_compile scenario()
 elseif trace_mode == "dispatch"
@@ -84,7 +89,7 @@ elseif trace_mode == "dispatch"
 elseif isempty(trace_mode)
     @timed scenario()
 else
-    error("QC_PRECOMPILE_TRACE must be empty, compile, or dispatch")
+    error("PRECOMPILE_BENCHMARK_TRACE must be empty, compile, or dispatch")
 end
 total_seconds = (time_ns() - total_started_ns) / 1.0e9
 warm_result = @timed scenario()

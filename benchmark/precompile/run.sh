@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
     echo "usage: $0 OUTPUT_DIR LABEL=CHECKOUT [LABEL=CHECKOUT ...]" >&2
-    echo "environment: QC_PRECOMPILE_BUILDS, QC_PRECOMPILE_SAMPLES, QC_PRECOMPILE_SCENARIOS, QC_PRECOMPILE_EXTRA_SCENARIOS, QC_PRECOMPILE_BASELINES, QC_PRECOMPILE_CONSUMER_PROJECT, QC_PRECOMPILE_CONSUMER_MANIFEST, QC_PRECOMPILE_ALLOW_DIRTY, QC_PRECOMPILE_ALLOW_JULIA_MISMATCH" >&2
+    echo "environment: PRECOMPILE_BENCHMARK_BUILDS, PRECOMPILE_BENCHMARK_SAMPLES, PRECOMPILE_BENCHMARK_BASELINES, PRECOMPILE_BENCHMARK_CONSUMER_PROJECT, PRECOMPILE_BENCHMARK_CONSUMER_MANIFEST, PRECOMPILE_BENCHMARK_ALLOW_DIRTY, PRECOMPILE_BENCHMARK_ALLOW_JULIA_MISMATCH" >&2
     exit 2
 }
 
@@ -127,40 +127,29 @@ for path in "$raw_path" "$summary_path" "$build_summary_path" "$markdown_path" "
     }
 done
 
-builds=${QC_PRECOMPILE_BUILDS:-1}
-samples=${QC_PRECOMPILE_SAMPLES:-2}
-scenario_list=${QC_PRECOMPILE_SCENARIOS:-tableau,ecc}
-extra_scenario_list=${QC_PRECOMPILE_EXTRA_SCENARIOS:-}
-baseline_map_list=${QC_PRECOMPILE_BASELINES:-}
-reuse_consumer_project=${QC_PRECOMPILE_CONSUMER_PROJECT:-}
-reuse_consumer_manifest=${QC_PRECOMPILE_CONSUMER_MANIFEST:-}
-allow_dirty=${QC_PRECOMPILE_ALLOW_DIRTY:-0}
-allow_julia_mismatch=${QC_PRECOMPILE_ALLOW_JULIA_MISMATCH:-0}
+builds=${PRECOMPILE_BENCHMARK_BUILDS:-1}
+samples=${PRECOMPILE_BENCHMARK_SAMPLES:-2}
+baseline_map_list=${PRECOMPILE_BENCHMARK_BASELINES:-}
+reuse_consumer_project=${PRECOMPILE_BENCHMARK_CONSUMER_PROJECT:-}
+reuse_consumer_manifest=${PRECOMPILE_BENCHMARK_CONSUMER_MANIFEST:-}
+allow_dirty=${PRECOMPILE_BENCHMARK_ALLOW_DIRTY:-0}
+allow_julia_mismatch=${PRECOMPILE_BENCHMARK_ALLOW_JULIA_MISMATCH:-0}
 julia=${JULIA:-julia}
 expected_julia='julia version 1.12.6'
 token_pattern='^[A-Za-z0-9][A-Za-z0-9_.-]*$'
-token_list_pattern='^[A-Za-z0-9][A-Za-z0-9_.-]*(,[A-Za-z0-9][A-Za-z0-9_.-]*)*$'
 mapping_list_pattern='^[A-Za-z0-9][A-Za-z0-9_.-]*=[A-Za-z0-9][A-Za-z0-9_.-]*(,[A-Za-z0-9][A-Za-z0-9_.-]*=[A-Za-z0-9][A-Za-z0-9_.-]*)*$'
 
-[[ $builds =~ ^[1-9][0-9]*$ ]] || { echo "QC_PRECOMPILE_BUILDS must be a positive integer" >&2; exit 2; }
-[[ $samples =~ ^[1-9][0-9]*$ ]] || { echo "QC_PRECOMPILE_SAMPLES must be a positive integer" >&2; exit 2; }
-[[ $allow_dirty == 0 || $allow_dirty == 1 ]] || { echo "QC_PRECOMPILE_ALLOW_DIRTY must be 0 or 1" >&2; exit 2; }
-[[ $allow_julia_mismatch == 0 || $allow_julia_mismatch == 1 ]] || { echo "QC_PRECOMPILE_ALLOW_JULIA_MISMATCH must be 0 or 1" >&2; exit 2; }
-[[ $scenario_list =~ $token_list_pattern ]] || {
-    echo "QC_PRECOMPILE_SCENARIOS must be a comma-separated list of scenario tokens" >&2
-    exit 2
-}
-[[ -z $extra_scenario_list || $extra_scenario_list =~ $mapping_list_pattern ]] || {
-    echo "QC_PRECOMPILE_EXTRA_SCENARIOS must be a comma-separated LABEL=SCENARIO list" >&2
-    exit 2
-}
+[[ $builds =~ ^[1-9][0-9]*$ ]] || { echo "PRECOMPILE_BENCHMARK_BUILDS must be a positive integer" >&2; exit 2; }
+[[ $samples =~ ^[1-9][0-9]*$ ]] || { echo "PRECOMPILE_BENCHMARK_SAMPLES must be a positive integer" >&2; exit 2; }
+[[ $allow_dirty == 0 || $allow_dirty == 1 ]] || { echo "PRECOMPILE_BENCHMARK_ALLOW_DIRTY must be 0 or 1" >&2; exit 2; }
+[[ $allow_julia_mismatch == 0 || $allow_julia_mismatch == 1 ]] || { echo "PRECOMPILE_BENCHMARK_ALLOW_JULIA_MISMATCH must be 0 or 1" >&2; exit 2; }
 [[ -z $baseline_map_list || $baseline_map_list =~ $mapping_list_pattern ]] || {
-    echo "QC_PRECOMPILE_BASELINES must be a comma-separated CANDIDATE=BASELINE list" >&2
+    echo "PRECOMPILE_BENCHMARK_BASELINES must be a comma-separated CANDIDATE=BASELINE list" >&2
     exit 2
 }
 if [[ -n $reuse_consumer_project || -n $reuse_consumer_manifest ]]; then
     [[ -n $reuse_consumer_project && -n $reuse_consumer_manifest ]] || {
-        echo "QC_PRECOMPILE_CONSUMER_PROJECT and QC_PRECOMPILE_CONSUMER_MANIFEST must be set together" >&2
+        echo "PRECOMPILE_BENCHMARK_CONSUMER_PROJECT and PRECOMPILE_BENCHMARK_CONSUMER_MANIFEST must be set together" >&2
         exit 2
     }
     for source_path in "$reuse_consumer_project" "$reuse_consumer_manifest"; do
@@ -196,7 +185,7 @@ command -v "$julia" >/dev/null 2>&1 || { echo "Julia executable not found: $juli
 julia_version=$("$julia" --version)
 if [[ $julia_version != "$expected_julia" && $allow_julia_mismatch != 1 ]]; then
     echo "cold-start comparisons require $expected_julia (found $julia_version)" >&2
-    echo "set QC_PRECOMPILE_ALLOW_JULIA_MISMATCH=1 only for a non-reportable smoke run" >&2
+    echo "set PRECOMPILE_BENCHMARK_ALLOW_JULIA_MISMATCH=1 only for a non-reportable smoke run" >&2
     exit 2
 fi
 
@@ -206,7 +195,7 @@ if [[ -n $baseline_map_list ]]; then
     IFS=',' read -r -a baseline_specifications <<< "$baseline_map_list"
     for specification in "${baseline_specifications[@]}"; do
         [[ $specification == *=* ]] || {
-            echo "QC_PRECOMPILE_BASELINES entries must have CANDIDATE=BASELINE form" >&2
+            echo "PRECOMPILE_BENCHMARK_BASELINES entries must have CANDIDATE=BASELINE form" >&2
             exit 2
         }
         baseline_candidate=${specification%%=*}
@@ -223,43 +212,6 @@ fi
     echo "the cold-start harness currently requires GNU/Linux" >&2
     exit 2
 }
-IFS=',' read -r -a scenarios <<< "$scenario_list"
-[[ ${#scenarios[@]} -gt 0 ]] || { echo "QC_PRECOMPILE_SCENARIOS must not be empty" >&2; exit 2; }
-for scenario_index in "${!scenarios[@]}"; do
-    for previous_index in "${!scenarios[@]}"; do
-        [[ $previous_index -ge $scenario_index ]] && break
-        [[ ${scenarios[$previous_index]} != "${scenarios[$scenario_index]}" ]] || {
-            echo "duplicate scenario: ${scenarios[$scenario_index]}" >&2
-            exit 2
-        }
-    done
-done
-extra_scenario_labels=()
-extra_scenarios=()
-if [[ -n $extra_scenario_list ]]; then
-    IFS=',' read -r -a extra_specifications <<< "$extra_scenario_list"
-    for specification in "${extra_specifications[@]}"; do
-        [[ $specification == *=* ]] || {
-            echo "QC_PRECOMPILE_EXTRA_SCENARIOS entries must have LABEL=SCENARIO form" >&2
-            exit 2
-        }
-        extra_label=${specification%%=*}
-        extra_scenario=${specification#*=}
-        [[ -n $extra_label && -n $extra_scenario && $extra_scenario != *[[:space:]]* ]] || {
-            echo "invalid extra scenario entry: $specification" >&2
-            exit 2
-        }
-        for extra_index in "${!extra_scenarios[@]}"; do
-            [[ ${extra_scenario_labels[$extra_index]} != "$extra_label" || ${extra_scenarios[$extra_index]} != "$extra_scenario" ]] || {
-                echo "duplicate extra scenario: $specification" >&2
-                exit 2
-            }
-        done
-        extra_scenario_labels+=("$extra_label")
-        extra_scenarios+=("$extra_scenario")
-    done
-fi
-
 labels=()
 checkouts=()
 for specification in "$@"; do
@@ -391,7 +343,7 @@ for index in "${!labels[@]}"; do
         checkout_initial_dirty+=(false)
     fi
     if [[ ${checkout_initial_dirty[$index]} == true && $allow_dirty != 1 ]]; then
-        echo "variant checkout is dirty; commit it or set QC_PRECOMPILE_ALLOW_DIRTY=1 for a non-reportable smoke run: ${labels[$index]}" >&2
+        echo "variant checkout is dirty; commit it or set PRECOMPILE_BENCHMARK_ALLOW_DIRTY=1 for a non-reportable smoke run: ${labels[$index]}" >&2
         exit 1
     fi
     checkout_state_sha256s+=("$(checkout_state_sha256 "$checkout")")
@@ -429,20 +381,6 @@ for checkout in "${checkouts[@]:1}"; do
         <(sed '1,/^\[/ { /^version = /d; }' "$checkout/lib/QECCore/Project.toml") || {
         echo "all variants must use identical lib/QECCore/Project.toml dependency metadata" >&2
         exit 1
-    }
-done
-for extra_label in "${extra_scenario_labels[@]}"; do
-    known_label=false
-    for label in "${labels[@]}"; do
-        [[ $label == "$extra_label" ]] && known_label=true
-    done
-    $known_label || {
-        echo "extra scenario refers to an unknown variant label: $extra_label" >&2
-        exit 2
-    }
-    [[ $extra_label != "${labels[0]}" ]] || {
-        echo "extra scenarios must name a candidate, not the baseline" >&2
-        exit 2
     }
 done
 for mapping_index in "${!baseline_candidates[@]}"; do
@@ -523,7 +461,7 @@ set_pair_order() {
 
 temporary_root=$(mktemp -d "${TMPDIR:-/tmp}/quantumclifford-precompile.XXXXXX")
 cleanup() {
-    if [[ ${QC_PRECOMPILE_KEEP_TMP:-0} == 1 ]]; then
+    if [[ ${PRECOMPILE_BENCHMARK_KEEP_TMP:-0} == 1 ]]; then
         echo "kept temporary benchmark data at $temporary_root" >&2
     else
         rm -rf -- "$temporary_root"
@@ -584,7 +522,7 @@ export MKL_NUM_THREADS=1
 export VECLIB_MAXIMUM_THREADS=1
 export LC_ALL=C
 unset JULIA_CPU_TARGET JULIA_PROJECT JULIA_DEPOT_PATH
-unset QC_PRECOMPILE_TRACE
+unset PRECOMPILE_BENCHMARK_TRACE
 unset JULIA_PKG_OFFLINE
 julia_flags=(--startup-file=no --history-file=no --threads=1)
 
@@ -711,7 +649,30 @@ if ! "$julia" "${julia_flags[@]}" -e '
     exit 1
 fi
 
-JULIA_DEPOT_PATH="$seed_depot" "$julia" "${julia_flags[@]}" --project="$environment_dir" -e 'using QuantumClifford'
+if ! scenario_output=$(JULIA_DEPOT_PATH="$seed_depot" "$julia" "${julia_flags[@]}" --project="$environment_dir" "$scenario_script"); then
+    echo "failed to discover PRECOMPILE_BENCHMARKS" >&2
+    exit 1
+fi
+[[ -n $scenario_output ]] || {
+    echo "PRECOMPILE_BENCHMARKS must not be empty" >&2
+    exit 2
+}
+mapfile -t scenarios <<< "$scenario_output"
+for scenario_index in "${!scenarios[@]}"; do
+    scenario=${scenarios[$scenario_index]}
+    [[ $scenario =~ $token_pattern ]] || {
+        echo "invalid PRECOMPILE_BENCHMARKS key: $scenario" >&2
+        exit 2
+    }
+    for previous_index in "${!scenarios[@]}"; do
+        [[ $previous_index -ge $scenario_index ]] && break
+        [[ ${scenarios[$previous_index]} != "$scenario" ]] || {
+            echo "duplicate PRECOMPILE_BENCHMARKS key: $scenario" >&2
+            exit 2
+        }
+    done
+done
+scenario_list=$(IFS=,; printf '%s' "${scenarios[*]}")
 find "$seed_depot/compiled" -type f -path '*/QuantumClifford/*' -delete 2>/dev/null || true
 find "$seed_depot/compiled" -type d -path '*/QuantumClifford' -empty -delete 2>/dev/null || true
 
@@ -777,8 +738,6 @@ non_reportable_reasons=()
 [[ $allow_julia_mismatch == 0 ]] || non_reportable_reasons+=(julia_mismatch_override_enabled)
 [[ $builds -ge 5 ]] || non_reportable_reasons+=(fewer_than_five_builds)
 [[ $samples -ge 4 ]] || non_reportable_reasons+=(fewer_than_four_samples_per_build)
-[[ ",${scenario_list}," == *,tableau,* ]] || non_reportable_reasons+=(missing_tableau_headline)
-[[ ",${scenario_list}," == *,ecc,* ]] || non_reportable_reasons+=(missing_ecc_headline)
 if [[ ${#non_reportable_reasons[@]} -eq 0 ]]; then
     reportable=true
     non_reportable_reason_list=
@@ -817,7 +776,6 @@ fi
     printf '%s\n' "allow_julia_mismatch=$allow_julia_mismatch"
     printf '%s\n' "total_metric=wall_import_start_to_first_task_end"
     printf '%s\n' "scenarios=$scenario_list"
-    printf '%s\n' "extra_scenarios=$extra_scenario_list"
     printf '%s\n' "candidate_baselines=$baseline_map_list"
     printf '%s\n' "schedule_policy=counterbalanced-v1"
     printf '%s\n' "schedule_candidate_index=one_based_candidate_argument_position"
@@ -880,18 +838,6 @@ for build in $(seq 1 "$builds"); do
     for candidate_index in "${comparison_indices[@]}"; do
         comparison=${labels[$candidate_index]}
         baseline_index=${candidate_baseline_indices[$candidate_index]}
-        variant_scenarios=("${scenarios[@]}")
-        for extra_index in "${!extra_scenarios[@]}"; do
-            if [[ ${extra_scenario_labels[$extra_index]} == "$comparison" ]]; then
-                extra_scenario=${extra_scenarios[$extra_index]}
-                already_selected=false
-                for selected_scenario in "${variant_scenarios[@]}"; do
-                    [[ $selected_scenario == "$extra_scenario" ]] && already_selected=true
-                done
-                $already_selected || variant_scenarios+=("$extra_scenario")
-            fi
-        done
-
         set_pair_order "$build" "$candidate_index"
         for index in "${pair_indices[@]}"; do
             verify_checkout "$index"
@@ -915,7 +861,7 @@ for build in $(seq 1 "$builds"); do
             cache_bytes=$(find "$run_depot/compiled" -type f -path '*/QuantumClifford/*' -printf '%s\n' | awk '{ total += $1 } END { print total + 0 }')
             [[ $cache_bytes -gt 0 ]] || { echo "QuantumClifford cache was not written to the run depot" >&2; exit 1; }
 
-            for scenario in "${variant_scenarios[@]}"; do
+            for scenario in "${scenarios[@]}"; do
                 [[ -n $scenario && $scenario != *[[:space:]]* ]] || {
                     echo "scenario names must be nonempty and contain no whitespace: $scenario" >&2
                     exit 2
