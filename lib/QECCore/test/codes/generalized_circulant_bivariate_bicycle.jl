@@ -1,5 +1,6 @@
 @testitem "CirculantBivariateBicycle" begin
-    @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
+    @static if get(ENV, "QUANTUMSAVORY_DOWNGRADE_TEST", "") != "true" &&
+               !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
         using QECCore
         using QECCore.LinearAlgebra
         using QuantumClifford
