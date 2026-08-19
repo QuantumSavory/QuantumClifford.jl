@@ -3,8 +3,8 @@ name: Cold-start latency
 on:
   pull_request:
     paths:
-      - src/precompiles.jl
-      - src/precompile_statements.jl
+      - ext/**
+      - src/**
       - lib/QECCore/**
       - benchmark/precompile/**
       - .github/workflows/precompile.yml
@@ -23,44 +23,4 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - name: Check out the PR base
-        uses: actions/checkout@v7
-        with:
-          repository: ${{ github.event.pull_request.base.repo.full_name }}
-          ref: ${{ github.event.pull_request.base.sha }}
-          path: base
-          persist-credentials: false
-
-      - name: Check out the PR head
-        uses: actions/checkout@v7
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.sha }}
-          path: head
-          persist-credentials: false
-
-      - uses: julia-actions/setup-julia@v3
-        with:
-          version: '1.12.6'
-
-      - name: Measure cold-start latency
-        env:
-          QC_PRECOMPILE_BUILDS: '2'
-          QC_PRECOMPILE_SAMPLES: '5'
-          QC_PRECOMPILE_SCENARIOS: tableau,ecc
-        run: |
-          head/benchmark/precompile/run.sh \
-            cold-start-results \
-            "base=$GITHUB_WORKSPACE/base" \
-            "head=$GITHUB_WORKSPACE/head"
-
-      - name: Add comparison to the job summary
-        if: always() && hashFiles('cold-start-results/summary.md') != ''
-        run: cat cold-start-results/summary.md >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload raw results
-        if: always() && hashFiles('cold-start-results/**') != ''
-        uses: actions/upload-artifact@v7
-        with:
-          name: cold-start-results
-          path: cold-start-results
+      - uses: QuantumSavory/julia-precompile-benchmark@v3
