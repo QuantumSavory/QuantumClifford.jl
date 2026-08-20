@@ -5,6 +5,10 @@
 
 # News
 
+## unreleased
+
+- Allow Nemo 0.56 in QuantumClifford and QECCore, and update Oscar quotient-ring examples for Nemo's new finite-field representation.
+
 ## v0.11.7 - 2026-08-06
 
 - **(fix)** Prevent stack overflows when tensoring one or at least three `PauliOperator`s.
