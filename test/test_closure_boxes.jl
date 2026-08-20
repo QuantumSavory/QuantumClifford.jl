@@ -1,5 +1,5 @@
-@testitem "Closure boxes" tags=[:aqua] begin
-    @static if VERSION >= v"1.14-"
+@testitem "Closure boxes" begin
+    @static if VERSION >= v"1.14"
         using Hecke
         hecke_ext = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
         @test !isnothing(hecke_ext)
@@ -7,8 +7,8 @@
     end
 end
 
-@testitem "Oscar extension closure boxes" tags=[:aqua, :oscar_required] begin
-    @static if VERSION >= v"1.14-"
+@testitem "Oscar extension closure boxes" tags=[:oscar_required] begin
+    @static if VERSION >= v"1.14"
         using Oscar
         oscar_ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
         @test !isnothing(oscar_ext)
