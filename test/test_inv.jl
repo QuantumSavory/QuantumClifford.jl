@@ -27,5 +27,42 @@
             end
         end
     end
-    
+
+    @testset "Apply Inv subsystem order" begin
+        state = S"X_Z"
+        operation = tCNOT
+        indices = [3, 1]
+
+        expected = apply!(copy(state), indices, inv(operation))
+        @test apply_inv!(copy(state), indices, operation) == expected
+        @test apply_inv!(copy(state), Tuple(indices), operation) == expected
+
+        legacy_state = copy(state)
+        @test_deprecated apply_inv!(legacy_state, operation, indices)
+        @test legacy_state == expected
+
+        @test hasmethod(apply_inv!, Tuple{typeof(state), typeof(operation), Int})
+        @test_deprecated begin
+            @test_throws MethodError apply_inv!(copy(state), operation, 1)
+        end
+
+        @test_throws MethodError apply!(copy(state), operation, indices)
+        @test_throws MethodError apply!(Register(copy(state)), operation, indices)
+    end
+
+    @testset "Apply Inv Pauli phases" begin
+        for phases in (true, false)
+            operation = P"Z"
+
+            state = S"X"
+            @test apply_inv!(copy(state), operation; phases) ==
+                  apply!(copy(state), operation; phases)
+
+            subsystem_state = S"X_"
+            indices = [1]
+            @test apply_inv!(copy(subsystem_state), indices, operation; phases) ==
+                  apply!(copy(subsystem_state), indices, operation; phases)
+        end
+    end
+
 end
