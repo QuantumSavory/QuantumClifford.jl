@@ -140,7 +140,9 @@ function make_all_sumtype_infrastructure_expr(t::DataType, callsigs)
     sumtype = make_sumtype(concrete_types)
     @debug "compiling a total of $(length(concrete_types)) concrete types"
     constructors = make_sumtype_variant_constructor.(concrete_types)
-    methods = [make_sumtype_method(concrete_types, call, preargs, postargs) for (call, preargs, postargs) in callsigs]
+    methods = let concrete_types=concrete_types
+        [make_sumtype_method(concrete_types, call, preargs, postargs) for (call, preargs, postargs) in callsigs]
+    end
     modulename = gensym(:CompactifiedGate)
     return quote
         #module $(modulename)
