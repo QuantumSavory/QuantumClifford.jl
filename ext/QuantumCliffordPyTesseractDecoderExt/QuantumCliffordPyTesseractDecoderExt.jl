@@ -1,6 +1,7 @@
 module QuantumCliffordPyTesseractDecoderExt
 
-using PyTesseractDecoder: tesseract, stim, np, PythonCall
+using PyTesseractDecoder: tesseract, stim, np
+using PythonCall
 using SparseArrays
 using QuantumClifford
 using QECCore
