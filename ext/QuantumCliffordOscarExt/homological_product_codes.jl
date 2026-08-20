@@ -208,6 +208,21 @@ function metacheck_matrix_x(c::HomologicalProduct)
     return boundary_maps(c)[3] # Mx = δ₂
 end
 
+function code_n(c::HomologicalProduct)
+    n = 0
+    k = length(c.boundary_maps)
+    for i in 1:k
+        term = size(c.boundary_maps[i], 1)
+        for j in 1:k
+            if i != j
+                term *= size(c.boundary_maps[j], 2)
+            end
+        end
+        n += term
+    end
+    return Int(n)
+end
+
 parity_matrix_x(hp::HomologicalProduct) = boundary_maps(hp)[2]
 
 parity_matrix_z(hp::HomologicalProduct) = boundary_maps(hp)[1]'
@@ -368,6 +383,12 @@ function boundary_maps(c::DoubleHomologicalProduct)
     )
     @assert iszero(δ̌₁*δ̌₀)
     return fq_to_int(δ̌₋₂), fq_to_int(δ̌₋₁), fq_to_int(δ̌₀), fq_to_int(δ̌₁)
+end
+
+function code_n(c::DoubleHomologicalProduct)
+    n = Int(size(c.H, 2))
+    m = Int(size(c.H, 1))
+    return n^4 + 4*n^2*m^2 + m^4
 end
 
 parity_matrix_x(c::DoubleHomologicalProduct) = boundary_maps(c)[3] # δ̌₀

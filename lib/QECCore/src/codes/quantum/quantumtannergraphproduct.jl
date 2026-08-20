@@ -210,6 +210,7 @@ struct CyclicQuantumTannerGraphProduct <: AbstractCSSCode
     end
 end
 
+code_n(Q::CyclicQuantumTannerGraphProduct) = 8 * Q.m^2
 function parity_matrix_xz(Q::CyclicQuantumTannerGraphProduct)
     n = 2*Q.m
     G1 = cycle_tanner_graph(n)
@@ -219,6 +220,7 @@ function parity_matrix_xz(Q::CyclicQuantumTannerGraphProduct)
     return hgp(H1, H2)
 end
 
+code_n(c::QuantumTannerGraphProduct) = size(c.H1, 2)*size(c.H2, 2) + size(c.H1, 1)*size(c.H2, 1)
 parity_matrix_x(c::Union{QuantumTannerGraphProduct,CyclicQuantumTannerGraphProduct}) = parity_matrix_xz(c)[1]
 
 parity_matrix_z(c::Union{QuantumTannerGraphProduct,CyclicQuantumTannerGraphProduct}) = parity_matrix_xz(c)[2]
