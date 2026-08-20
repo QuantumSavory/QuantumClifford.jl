@@ -1,11 +1,23 @@
+Oscar_flag = false
+Tesseract_flag = false
+const JET_PROJECT = normpath(joinpath(@__DIR__, "projects", "jet"))
+const test_args = isempty(ARGS) ? ["general"] : ARGS
+const JET_flag = length(test_args) == 1 && startswith(only(test_args), "jet")
+const DOWNGRADE_TEST = get(ENV, "QUANTUMSAVORY_DOWNGRADE_TEST", "") == "true"
+
+if JET_flag
+    @info "Activating the dedicated JET test environment." project=JET_PROJECT
+    using Pkg
+    Pkg.activate(JET_PROJECT)
+    Pkg.instantiate()
+end
+
 using QECCore
 using TestItemRunner
 
-Oscar_flag = false
-Tesseract_flag = false
-JET_flag = false
-
-if Sys.iswindows() || Sys.ARCH != :x86_64
+if DOWNGRADE_TEST
+    @info "Skipping Oscar tests during the downgrade run."
+elseif Sys.iswindows() || Sys.ARCH != :x86_64
     @info "Skipping Oscar tests -- only supported x86_64 *NIX platforms."
 else
     Oscar_flag = VERSION >= v"1.11"
@@ -13,22 +25,17 @@ else
     Tesseract_flag = true
 end
 
-if Sys.iswindows()
+if DOWNGRADE_TEST
+    @info "Skipping Tesseract tests during the downgrade run."
+elseif Sys.iswindows()
     @info "Skipping Tesseract tests -- only supported *NIX platforms."
 else
     Tesseract_flag = true
 end
 
-if get(ENV, "JET_TEST", "") == "true"
-    JET_flag = true
-else
-    @info "Skipping JET tests -- must be explicitly enabled."
-end
-
 using Pkg
-Oscar_flag && Pkg.add("Oscar")
-Tesseract_flag && Pkg.add("PyTesseractDecoder")
-JET_flag && Pkg.add("JET")
+!JET_flag && Oscar_flag && Pkg.add("Oscar")
+!JET_flag && Tesseract_flag && Pkg.add("PyTesseractDecoder")
 
 # filter for the test
 testfilter = ti -> begin
@@ -40,7 +47,7 @@ testfilter = ti -> begin
         push!(exclude, :jet)
     end
 
-    if !(VERSION >= v"1.10")
+    if DOWNGRADE_TEST || !(VERSION >= v"1.10")
         push!(exclude, :doctests)
         push!(exclude, :aqua)
     end
