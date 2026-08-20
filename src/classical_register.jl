@@ -10,6 +10,13 @@ Register(s,bits) = Register(MixedDestabilizer(s), bits)
 Register(s) = Register(s, Bool[])
 Register(s::MixedDestabilizer,nbits::Int) = Register(s, falses(nbits))
 
+Base.one(::Type{<:Register}, n::Integer; basis=:Z) =
+    Register(one(MixedDestabilizer, n; basis=basis))
+Base.one(::Type{<:Register}, n::Integer, nbits::Integer; basis=:Z) =
+    Register(one(MixedDestabilizer, n; basis=basis), nbits)
+Base.one(r::Register; basis=:Z) =
+    one(Register, nqubits(r), length(bitview(r)); basis=basis)
+
 Base.copy(r::Register) = Register(copy(r.stab),copy(r.bits))
 Base.:(==)(l::Register,r::Register) = l.stab==r.stab && l.bits==r.bits
 
@@ -43,12 +50,6 @@ end
 function apply!(r::Register, indices::Base.AbstractVecOrTuple{Int}, operation; kwargs...)
     apply!(quantumstate(r), indices, operation; kwargs...)
     r
-end
-
-@deprecate apply!(r::Register, operation, indices::Base.AbstractVecOrTuple{Int}; kwargs...) apply!(r, indices, operation; kwargs...)
-
-function apply!(r::Register, indices::Base.AbstractVecOrTuple{Int}, operation::Base.AbstractVecOrTuple{Int}; kwargs...)
-    error("`apply!(::Register, ...)` requires two more arguments in specific order -- `indices` (a vector or tuple of qubit indices) and `operation` (the quantum operation acting on the qubits)")
 end
 
 function apply!(r::Register, m::sMX)
