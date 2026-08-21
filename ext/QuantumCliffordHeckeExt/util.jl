@@ -55,7 +55,9 @@ function circulant_matrix_from_polynomial_ring(l::Int, h::FqPolyRingElem)
             H[i, j] = coeffs[mod1(j-i+1, l)]
         end
     end
-    H = [Int(lift(ZZ, H[i,j])) for i in 1:nrows(H), j in 1:ncols(H)]
+    H = let H=H
+        [Int(lift(ZZ, H[i,j])) for i in 1:nrows(H), j in 1:ncols(H)]
+    end
     return H
 end
 
