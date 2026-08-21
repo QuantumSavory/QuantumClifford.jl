@@ -84,6 +84,20 @@ end
     )
 end
 
+@testitem "JET optimization: Monte Carlo trajectories" tags=[:jet] begin
+    using JET
+    using QuantumClifford
+    using Test
+
+    initial_state = MixedDestabilizer(bell())
+    circuit = [sHadamard(1), sCNOT(1, 2), sMZ(1)]
+
+    # The heterogeneous circuit dispatches through abstract `applywstatus!` calls.
+    JET.@test_opt target_modules=(QuantumClifford,) broken=true mctrajectories(
+        initial_state, circuit; trajectories=2
+    )
+end
+
 @testitem "JET optimization: naive encoding circuit" tags=[:jet] begin
     using JET
     using QuantumClifford
