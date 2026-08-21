@@ -8,6 +8,7 @@
 ## unreleased
 
 - Allow Nemo 0.56 in QuantumClifford and QECCore, and update Oscar quotient-ring examples for Nemo's new finite-field representation.
+- Avoid runtime dispatch when resetting qubits in `MixedDestabilizer` states.
 - - `ZSZ` codes (`two_block_group_algebra_code`s built from semidirect product of groups) are now implemented in ECC submodule.
 
 ## v0.11.7 - 2026-08-06
