@@ -199,7 +199,9 @@ function boundary_maps(hp::HomologicalProduct)
         C = tensor_product(C, C_next)
         C = total_complex(C)
     end
-    δs = [matrix(map(C, d)) for d in 1:length(hp.boundary_maps)]
+    δs = let C=C
+        [matrix(map(C, d)) for d in 1:length(hp.boundary_maps)]
+    end
     return matrix_to_int.(δs)
 end
 

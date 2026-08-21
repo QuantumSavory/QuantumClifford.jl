@@ -221,7 +221,7 @@ A_ghp2 = matrix(S_ghp2, n_ghp2, n_ghp2,
 b_ghp2 = S_ghp2(1 + x + x^6)
 
 # Generalized Bicycle and Extended GB codes from [koukoulekidis2024smallquantumcodesalgebraic](@cite)
-R, x = polynomial_ring(GF(2), :x)
+R, x = polynomial_ring(Native.GF(2), :x)
 l_gb₁ = 6
 a_gb₁ = 1 + x^4
 b_gb₁ = 1 + x + x^2 + x^4
@@ -458,13 +458,13 @@ const code_instance_args = Dict(
 
     # Homological Product Codes
     # [[117, 9, 4]] from [xu2024fastparallelizablelogicalcomputation](@cite)
-    R, x = polynomial_ring(GF(2), "x")
+    R, x = polynomial_ring(Native.GF(2), "x")
     l₁ = 3
     H₁ = matrix(R, 2, 3, [x^2 x^2 x^2;
                           x   x^2  0])
 
     # [[225, 9, 6]] from [xu2024fastparallelizablelogicalcomputation](@cite)
-    R, x = polynomial_ring(GF(2), "x")
+    R, x = polynomial_ring(Native.GF(2), "x")
     l₂ = 3
     H₂ = matrix(R, 3, 4, [x^2 x^2 x^2   0;
                           x^2   0 x^2  x^2;
@@ -526,7 +526,7 @@ const code_instance_args = Dict(
 
     # Generalized Toric Codes from [liang2025generalizedtoriccodestwisted](@cite)
     # [[12, 4, 2]] from Table I of [liang2025generalizedtoriccodestwisted](@cite)
-    R, (x,y) = laurent_polynomial_ring(GF(2), [:x, :y])
+    R, (x,y) = laurent_polynomial_ring(Native.GF(2), [:x, :y])
     f₁ = 1 + x + x*y
     g₁ = 1 + y + x*y
     α1₁ = (0, 3)
@@ -565,7 +565,7 @@ const code_instance_args = Dict(
     # Bivariate Bicycle codes using polynomial quotient ring
     # [[72, 12, 6]]
     l_bb₁=6; m_bb₁=6
-    R_bb₁, (x, y) = polynomial_ring(GF(2), [:x, :y])
+    R_bb₁, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
     I_bb₁ = ideal(R_bb₁, [x^l-1, y^m-1])
     S_bb₁, _ = quo(R_bb₁, I_bb₁)
     A_bb₁ = S_bb₁(x^3 + y + y^2)
@@ -573,7 +573,7 @@ const code_instance_args = Dict(
 
     # [[90, 8, 10]]
     l_bb₂=15; m_bb₂=3
-    R_bb₂, (x, y) = polynomial_ring(GF(2), [:x, :y])
+    R_bb₂, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
     I_bb₂ = ideal(R_bb₂, [x^l-1, y^m-1])
     S_bb₂, _ = quo(R_bb₂, I_bb₂)
     A_bb₂ = S_bb₂(x^9 + y   + y^2)
@@ -581,7 +581,7 @@ const code_instance_args = Dict(
 
     # [[108, 8, 10]]
     l_bb₃=9; m_bb₃=6
-    R_bb₃, (x, y) = polynomial_ring(GF(2), [:x, :y])
+    R_bb₃, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
     I_bb₃ = ideal(R_bb₃, [x^l-1, y^m-1])
     S_bb₃, _ = quo(R_bb₃, I_bb₃)
     A_bb₃ = S_bb₃(x^3 + y + y^2)
@@ -589,7 +589,7 @@ const code_instance_args = Dict(
 
     # [[54, 8, 6]]
     l_bb₄=3; m_bb₄=9
-    R_bb₄, (x, y) = polynomial_ring(GF(2), [:x, :y])
+    R_bb₄, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
     I_bb₄ = ideal(R_bb₄, [x^l-1, y^m-1])
     S_bb₄, _ = quo(R_bb₄, I_bb₄)
     A_bb₄ = S_bb₄(1   + y^2 + y^4)
@@ -597,7 +597,7 @@ const code_instance_args = Dict(
 
     # [[98, 6, 12]]
     l_bb₅=7; m_bb₅=7
-    R_bb₅, (x, y) = polynomial_ring(GF(2), [:x, :y])
+    R_bb₅, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
     I_bb₅ = ideal(R_bb₅, [x^l-1, y^m-1])
     S_bb₅, _ = quo(R_bb₅, I_bb₅)
     A_bb₅ = S_bb₅(x^3 + y^5 + y^6)
@@ -607,7 +607,7 @@ const code_instance_args = Dict(
     # t = 2; Bivariate Bicycle codes
     # [[72, 12, 6]]
     l_mm₁ =6; m_mm₁ = 6
-    R_mm₁, (x, y) = polynomial_ring(GF(2), [:x, :y])
+    R_mm₁, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
     I_mm₁ = ideal(R_mm₁, [x^l_mm₁-1, y^m_mm₁-1])
     S_mm₁, _ = quo(R_mm₁, I_mm₁)
     A_mm₁ = S_mm₁(x^3 + y + y^2)
@@ -615,7 +615,7 @@ const code_instance_args = Dict(
 
     # [[90, 8, 10]]
     l_mm₂ =15; m_mm₂ = 3
-    R_mm₂, (x, y) = polynomial_ring(GF(2), [:x, :y])
+    R_mm₂, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
     I_mm₂ = ideal(R_mm₂, [x^l_mm₂-1, y^m_mm₂-1])
     S_mm₂, _ = quo(R_mm₂, I_mm₂)
     A_mm₂ = S_mm₂(x^9 + y   + y^2)

@@ -5,9 +5,25 @@
 
 # News
 
-## v0.11.5 dev
+## unreleased
 
+- Allow Nemo 0.56 in QuantumClifford and QECCore, and update Oscar quotient-ring examples for Nemo's new finite-field representation.
 - Add a QECC to `QECCore`: `2DTile` codes, slight generalization of `Surface` codes.
+
+## v0.11.7 - 2026-08-06
+
+- **(fix)** Prevent stack overflows when tensoring one or at least three `PauliOperator`s.
+
+## v0.11.6 - 2026-08-05
+
+- **(breaking)** Remove the deprecated `apply!(state, operation, indices)` order. Subsystem indices must be passed before the operation as `apply!(state, indices, operation)`.
+- Add `apply_inv!(state, indices, operation)`, deprecate the former `apply_inv!(state, operation, indices)` order, and fix inverse Pauli application with the `phases` keyword.
+- Add `expect` methods for pure and mixed states stored as `MixedDestabilizer`s.
+- Add `fidelity` for pure/pure and pure/mixed `MixedDestabilizer` states. General mixed/mixed fidelity is unsupported.
+
+## v0.11.5 - 2026-06-12
+
+- **(fix)** Broken edge case in `remove_column!`, a non-public function used by QuantumSavory.
 
 ## v0.11.4 - 2026-05-05
 

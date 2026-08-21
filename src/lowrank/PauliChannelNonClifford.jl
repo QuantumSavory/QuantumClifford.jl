@@ -766,6 +766,8 @@ with ϕᵢ | Pᵢ
 ```
 """
 tensor(pcs::Union{UnitaryPauliChannel,PauliOperator}...) = tensor(UnitaryPauliChannel.(pcs)...)
+# This also matches calls containing only PauliOperators and no channels, so the
+# more-specific PauliOperator vararg method must take priority to avoid recursion.
 
 """
 Apply a [`UnitaryPauliChannel`](@ref) to a [`GeneralizedStabilizer`](@ref) state.
