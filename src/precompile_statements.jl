@@ -12,7 +12,7 @@
 using PrecompileTools: @setup_workload
 
 @setup_workload begin
-    #= 1610.4 ms =# precompile(Tuple{typeof(QuantumClifford.ECC.evaluate_decoder), QuantumClifford.ECC.TableDecoder, QuantumClifford.ECC.CommutationCheckECCSetup, Int64})
+    #= 1610.4 ms =# precompile(Tuple{typeof(QuantumClifford.ECC.evaluate_decoder), typeof(QuantumClifford.ECC.TableDecoder(QuantumClifford.ECC.QECCore.Shor9())), QuantumClifford.ECC.CommutationCheckECCSetup, Int64})
     #= 1034.5 ms =# precompile(Tuple{Type{QuantumClifford.ECC.TableDecoder}, QuantumClifford.ECC.QECCore.Shor9})
     #=  463.3 ms =# precompile(Tuple{typeof(QuantumClifford.pftrajectories), QuantumClifford.PauliFrame{QuantumClifford.Stabilizer{QuantumClifford.Tableau{Array{UInt8, 1}, LinearAlgebra.Adjoint{UInt64, Array{UInt64, 2}}}}, Array{Bool, 2}}, Array{QuantumClifford.CompactifiedGate, 1}})
     #=  322.1 ms =# precompile(Tuple{typeof(QuantumClifford.canonicalize_clip!), QuantumClifford.Stabilizer{QuantumClifford.Tableau{Array{UInt8, 1}, Array{UInt64, 2}}}})
@@ -34,7 +34,7 @@ using PrecompileTools: @setup_workload
     #=   72.8 ms =# precompile(Tuple{typeof(Core.kwcall), NamedTuple{(:trajectories,), Tuple{Int64}}, typeof(QuantumClifford.mctrajectories), QuantumClifford.MixedDestabilizer{QuantumClifford.Tableau{Array{UInt8, 1}, Array{UInt64, 2}}}, Array{QuantumClifford.AbstractOperation, 1}})
     #=   67.3 ms =# precompile(Tuple{typeof(Base.alignment), Base.IOContext{Base.GenericIOBuffer{Memory{UInt8}}}, QuantumClifford.sCPHASE})
     #=   66.4 ms =# precompile(Tuple{typeof(Base.alignment), Base.IOContext{Base.GenericIOBuffer{Memory{UInt8}}}, QuantumClifford.sZCX})
-    #=   63.9 ms =# precompile(Tuple{typeof(QuantumClifford.ECC.batchdecode), QuantumClifford.ECC.TableDecoder, Array{Bool, 2}})
+    #=   63.9 ms =# precompile(Tuple{typeof(QuantumClifford.ECC.batchdecode), typeof(QuantumClifford.ECC.TableDecoder(QuantumClifford.ECC.QECCore.Shor9())), Array{Bool, 2}})
     #=   63.7 ms =# precompile(Tuple{typeof(Core.kwcall), NamedTuple{(:max_order,), Tuple{Int64}}, typeof(QuantumClifford.applybranches), QuantumClifford.Register{QuantumClifford.Tableau{Array{UInt8, 1}, Array{UInt64, 2}}}, QuantumClifford.NoiseOp{QuantumClifford.UnbiasedUncorrelatedNoise{Float64}, 7}})
     #=   61.8 ms =# precompile(Tuple{typeof(QuantumClifford.canonicalize_rref!), QuantumClifford.Stabilizer{QuantumClifford.Tableau{Base.SubArray{UInt8, 1, Array{UInt8, 1}, Tuple{Base.UnitRange{Int64}}, true}, Base.SubArray{UInt64, 2, Array{UInt64, 2}, Tuple{Base.Slice{Base.OneTo{Int64}}, Base.UnitRange{Int64}}, true}}}, Array{Int64, 1}})
     #=   61.2 ms =# precompile(Tuple{typeof(Core.kwcall), NamedTuple{(:max_order,), Tuple{Int64}}, typeof(QuantumClifford.petrajectories), QuantumClifford.Register{QuantumClifford.Tableau{Array{UInt8, 1}, Array{UInt64, 2}}}, Array{QuantumClifford.AbstractOperation, 1}})
