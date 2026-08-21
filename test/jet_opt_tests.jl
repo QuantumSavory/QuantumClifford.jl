@@ -76,9 +76,11 @@ end
 
     state = MixedDestabilizer(bell())
 
-    # Known keyword dispatch through `mul_left!` on tableau views.
-    JET.@test_opt target_modules=(QuantumClifford,) broken=true reset_qubits!(
-        copy(state), S"Z", [1]
+    JET.@test_opt target_modules=(QuantumClifford,) reset_qubits!(
+        copy(state), S"Z", [1]; phases=true
+    )
+    JET.@test_opt target_modules=(QuantumClifford,) reset_qubits!(
+        copy(state), S"Z", [1]; phases=false
     )
 end
 
