@@ -60,6 +60,12 @@ struct Mirror{TG, TE} <: AbstractQECC
     B::Vector{TE}
     """Whether to use the symmetric rather than asymmetric construction."""
     symmetric::Bool
+
+    function Mirror{TG, TE}(
+        G::TG, A::Vector{TE}, B::Vector{TE}, symmetric::Bool, ::Val{:validated}
+    ) where {TG, TE}
+        new{TG, TE}(G, A, B, symmetric)
+    end
 end
 
 function _mirror_element(G::FinGenAbGroup, coordinates::Tuple{Vararg{Integer}})
@@ -89,7 +95,9 @@ function Mirror(G::Union{Group, FinGenAbGroup}, A::AbstractVector, B::AbstractVe
     is_finite(G) || throw(ArgumentError("G must be finite"))
     elements_A = _mirror_elements(G, A)
     elements_B = _mirror_elements(G, B)
-    code = Mirror{typeof(G), typeof(_mirror_identity(G))}(G, elements_A, elements_B, symmetric)
+    code = Mirror{typeof(G), typeof(_mirror_identity(G))}(
+        G, elements_A, elements_B, symmetric, Val(:validated)
+    )
 
     if !is_abelian(G) && !QuantumClifford.check_allrowscommute(Stabilizer(parity_matrix(code)))
         throw(ArgumentError("A and B do not define commuting mirror checks for G"))

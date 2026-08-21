@@ -64,6 +64,7 @@
         @test stab_looks_good(parity_checks(asymmetric); remove_redundant_rows=true)
 
         @test_throws ArgumentError Mirror(G, [one(G)], [s])
+        @test_throws ArgumentError Mirror(G, [one(G)], [s], true)
     end
 
     @testset "Input forms and validation" begin
