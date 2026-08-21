@@ -38,14 +38,13 @@ function naive_encoding_circuit(code; undoperm=true)
         for t in 1:n
             if i!=t
                 xz = S[i,t]
-                g = if xz == (true, true)  # Y
-                    sZCY
+                if xz == (true, true)  # Y
+                    push!(circ, sZCY(i,t))
                 elseif xz == (true, false) # X
-                    sZCX
+                    push!(circ, sZCX(i,t))
                 elseif xz == (false, true) && !(i<t<n-k+1) # Z
-                    sZCZ
+                    push!(circ, sZCZ(i,t))
                 end
-                isnothing(g) || push!(circ, g(i,t))
             end
         end
     end
