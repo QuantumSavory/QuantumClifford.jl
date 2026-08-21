@@ -81,16 +81,16 @@ end
     )
 end
 
-@testitem "JET optimization: Monte Carlo trajectories" tags=[:jet] begin
+@testitem "JET optimization: Monte Carlo trajectories with finite-union circuit" tags=[:jet] begin
     using JET
     using QuantumClifford
     using Test
 
     initial_state = MixedDestabilizer(bell())
-    circuit = [sHadamard(1), sCNOT(1, 2), sMZ(1)]
+    circuit = Union{sHadamard,sCNOT,sMZ}[sHadamard(1), sCNOT(1, 2), sMZ(1)]
 
-    # The heterogeneous circuit dispatches through abstract `applywstatus!` calls.
-    JET.@test_opt target_modules=(QuantumClifford,) broken=true mctrajectories(
+    # Preserve the concrete operation alternatives so Julia can union-split the loop.
+    JET.@test_opt target_modules=(QuantumClifford,) mctrajectories(
         initial_state, circuit; trajectories=2
     )
 end
