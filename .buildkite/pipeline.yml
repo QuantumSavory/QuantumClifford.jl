@@ -21,8 +21,8 @@ steps:
     commands:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
     env:
-      QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
-      QC_GPU_TEST: "{{matrix.QC_GPU_TEST}}"
+      ECC_TEST: "{{matrix.QC_ECC_TEST}}"
+      GPU_TEST: "{{matrix.QC_GPU_TEST}}"
     agents:
       queue: "{{matrix.QUEUE}}"
     matrix:
