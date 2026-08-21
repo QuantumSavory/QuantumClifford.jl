@@ -1,6 +1,6 @@
 # News
 
-## v0.1.4 - 2026-03-12
+## v0.1.4 - unreleased
 
 - `2DTile` codes, a slight generalization of 2D `Surface` codes, are now implemented in `QECCore`.
 
