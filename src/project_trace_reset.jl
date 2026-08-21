@@ -706,7 +706,7 @@ end
 """
 $TYPEDSIGNATURES
 """
-function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubits; phases=true) # TODO this is really inefficient
+function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubits; phases::Bool=true) # TODO this is really inefficient
     nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
     length(qubits) <= nqubits(s) || throw(DimensionMismatch("the stabilizer is not big enough to contain the new state"))
     newstatestab = stabilizerview(newstate)
@@ -724,7 +724,7 @@ function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubit
                 loc = findfirst(i->comm(pauli,destab,i)!=0, 1:r)::Int # `nothing` should not be a possible answer
                 for i in loc+1:r
                     if comm(pauli, destab, i)!=0
-                        mul_left!(s, i, loc; phases=Val(true))
+                        @valbooldispatch mul_left!(s, i, loc; phases=Val(phases)) phases
                     end
                 end
                 sv[loc] = pauli
