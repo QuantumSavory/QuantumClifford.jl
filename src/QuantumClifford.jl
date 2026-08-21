@@ -18,7 +18,7 @@ import QuantumInterface: tensor, ⊗, tensor_pow,
     nqubits, expect, project!, reset_qubits!, traceout!, ptrace,
     apply!, projectX!, projectY!, projectZ!,
     embed, permutesystems,
-    entanglement_entropy
+    entanglement_entropy, fidelity
 
 export
     @P_str, PauliOperator, ⊗, I, X, Y, Z,
@@ -38,7 +38,7 @@ export
     canonicalize!, canonicalize_rref!, canonicalize_gott!,
     # Linear Algebra
     tensor, tensor_pow,
-    logdot, expect,
+    logdot, expect, fidelity,
     apply!, apply_inv!, apply_right!,
     permutesystems, permutesystems!,
     # Low Level Function Interface
@@ -73,7 +73,7 @@ export
     random_stabilizer, random_destabilizer, random_clifford,
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
     # Noise
-    applynoise!, UnbiasedUncorrelatedNoise, NoiseOp, NoiseOpAll, NoisyGate,
+    applynoise!, UnbiasedUncorrelatedNoise, DepolarizationNoise, NoiseOp, NoiseOpAll, NoisyGate,
     PauliNoise, PauliError,
     # Pauli frames
     PauliFrame, pftrajectories, pfmeasurements,
@@ -804,6 +804,11 @@ end
 end
 
 @inline function comm(l::PauliOperator, r::Tableau, i::Int)::UInt8
+    # Guard against xzs word-count mismatches: when the tableau's physical word
+    # count per row exceeds what nqubits requires (e.g. after _remove_rowcol!
+    # without compaction), the Z-half offset in the generic comm() would be wrong.
+    @boundscheck length(l.xz) == size(r.xzs, 1) || throw(DimensionMismatch(
+        lazy"comm(PauliOperator, Tableau, i): operator xz length $(length(l.xz)) ≠ tableau xzs row count $(size(r.xzs, 1))"))
     comm(l.xz,(@view r.xzs[:,i]))
 end
 
@@ -1067,11 +1072,16 @@ Base.hcat(stabs::Stabilizer{T}...) where {T} = Stabilizer(hcat((tab(s) for s in 
 ##############################
 
 """
-    apply!
+    apply!(state, operation; phases=true)
+    apply!(state, indices, operation; phases=true)
 
 Apply any quantum operation to a stabilizer state, including unitary Clifford
 operations, Pauli measurements, and noise.
-May result in a random/stochastic result (e.g. with measurements or noise)."""
+May result in a random/stochastic result (e.g. with measurements or noise).
+
+When applying an operation to selected subsystems, pass the subsystem `indices`
+before the `operation`.
+"""
 function apply! end
 
 function Base.:(*)(p::AbstractCliffordOperator, s::AbstractStabilizer; phases::Bool=true)
@@ -1084,11 +1094,10 @@ end
 function apply!(stab::AbstractStabilizer, indices::Base.AbstractVecOrTuple{Int}, op::AbstractCliffordOperator; phases::Bool=true)
     @valbooldispatch _apply!(stab,op,indices; phases=Val(phases)) phases
 end
-@deprecate apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices::Base.AbstractVecOrTuple{Int}; phases::Bool=true) apply!(stab, indices, op; phases=phases)
 
 # TODO no need to track phases outside of stabview
 function _apply!(stab::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
-    nqubits(stab)==nqubits(p) || throw(DimensionMismatch("The tableau and the Pauli operator need to act on the same number of qubits. Consider specifying an array of indices as a third argument to the `apply!` function to avoid this error."))
+    nqubits(stab)==nqubits(p) || throw(DimensionMismatch("The tableau and the Pauli operator need to act on the same number of qubits. Consider calling `apply!(state, indices, operation)` to apply the operation to selected subsystems."))
     s = tab(stab)
     B || return stab
     for i in eachindex(s)
@@ -1113,24 +1122,30 @@ end
 
 
 """
-    apply_inv!
+    apply_inv!(state, operation; phases=true)
+    apply_inv!(state, indices, operation; phases=true)
 
 Apply the inverse of any quantum operation to a stabilizer state.
+
+When applying an inverse operation to selected subsystems, pass the subsystem
+`indices` before the `operation`. The legacy order
+`apply_inv!(state, operation, indices)` is deprecated.
 """
 function apply_inv! end
 
 function apply_inv!(stab::AbstractStabilizer, op::AbstractCliffordOperator; phases::Bool=true)
     @valbooldispatch _apply_inv!(stab,op; phases=Val(phases)) phases
 end
-function apply_inv!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices; phases::Bool=true)
+function apply_inv!(stab::AbstractStabilizer, indices::Base.AbstractVecOrTuple{Int}, op::AbstractCliffordOperator; phases::Bool=true)
     @valbooldispatch _apply_inv!(stab,op,indices; phases=Val(phases)) phases
 end
+@deprecate apply_inv!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices; phases::Bool=true) apply_inv!(stab, indices, op; phases=phases)
 
 function _apply_inv!(stab::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
-    apply!(stab,p; phases=phases)
+    _apply!(stab,p; phases=phases)
 end
 function _apply_inv!(stab::AbstractStabilizer, p::PauliOperator, indices; phases::Val{B}=Val(true)) where B
-    apply!(stab,p,indices; phases=phases)
+    _apply!(stab,p,indices; phases=phases)
 end
 
 ##############################
@@ -1449,7 +1464,6 @@ include("symbolic_noncliffords.jl")
 #
 include("tableau_show.jl")
 include("sumtypes.jl")
-include("precompiles.jl")
 #
 include("ecc/ECC.jl")
 #
@@ -1462,4 +1476,7 @@ include("grouptableaux.jl")
 include("plotting_extensions.jl")
 #
 include("gpu_adapters.jl")
+#
+include("precompiles.jl")
+include("precompile_statements.jl")
 end #module
