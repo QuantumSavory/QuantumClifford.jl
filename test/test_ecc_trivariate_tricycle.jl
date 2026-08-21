@@ -102,7 +102,7 @@
 
     @testset "Test novel MM code" begin
         l, m, p, r = 4, 3, 3, 3
-        R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z])
+        R, (w, x, y, z) = polynomial_ring(Native.GF(2), [:w, :x, :y, :z])
         I = ideal(R, [w^l - 1, x^m - 1, y^p - 1, z^r - 1])
         S, _ = quo(R, I)
         A = S((1 + x^2 )*(1 + w*x*y*z^2))
@@ -134,7 +134,7 @@
         # Haah's cubic code from Appendix B code D of https://arxiv.org/pdf/1904.02703
         # [[1024, 30, 13 ≤ d ≤ 32]]
         L = 8
-        R, (x,y,z) = polynomial_ring(GF(2), [:x,:y,:z])
+        R, (x,y,z) = polynomial_ring(Native.GF(2), [:x,:y,:z])
         I = ideal(R, [x^L-1, y^L-1, z^L-1])
         S, _ = quo(R, I)
         A = S(1 + x + y + z)

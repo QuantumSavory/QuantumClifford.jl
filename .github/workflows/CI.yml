@@ -41,7 +41,7 @@ jobs:
             version: '1'
             threads: '1'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
         with:
           version: ${{ matrix.version }}
@@ -64,15 +64,16 @@ jobs:
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: './src,./ext,./lib/QECCore/src,./lib/QECCore/ext'
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
         with:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
   docs:
     name: Documentation
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
         with:
           version: '1'

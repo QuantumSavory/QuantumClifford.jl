@@ -215,11 +215,11 @@ but at best it provides only for distance=3 decoding.
 The size of the lookup table would grow exponentially quickly for higher distances.
 
 See also: [`CSSTableDecoder`](@ref)"""
-struct TableDecoder <: AbstractSyndromeDecoder
+struct TableDecoder{H,F} <: AbstractSyndromeDecoder
     """Stabilizer tableau defining the code"""
-    H
+    H::H
     """Faults matrix corresponding to the code"""
-    faults_matrix
+    faults_matrix::F
     """The number of qubits in the code"""
     n::Int
     """The depth of the code"""
@@ -231,7 +231,7 @@ struct TableDecoder <: AbstractSyndromeDecoder
     """The lookup table corresponding to the code, slow to create"""
     lookup_table::Dict{Vector{Bool},Vector{Bool}}
     lookup_buffer::Vector{Bool}
-    TableDecoder(H, faults_matrix, n, s, k, error_weight, lookup_table) = new(H, faults_matrix, n, s, k, error_weight, lookup_table, fill(false, s))
+    TableDecoder(H::HT, faults_matrix::FT, n, s, k, error_weight, lookup_table) where {HT,FT} = new{HT,FT}(H, faults_matrix, n, s, k, error_weight, lookup_table, fill(false, s))
 end
 
 function TableDecoder(c; error_weight=1)
@@ -340,11 +340,11 @@ For a given distance, this decoder will do better on CSS codes than the [`TableD
 
 Uses two `ClassicalTableDecoder` instances internally to decode
 the X and Z errors separately."""
-struct CSSTableDecoder <: AbstractSyndromeDecoder
+struct CSSTableDecoder{H,F} <: AbstractSyndromeDecoder
     """Stabilizer tableau defining the code"""
-    H
+    H::H
     """Faults matrix corresponding to the code"""
-    faults_matrix
+    faults_matrix::F
     """The number of qubits in the code"""
     n::Int
     """The number of parity checks"""
@@ -362,6 +362,8 @@ struct CSSTableDecoder <: AbstractSyndromeDecoder
     """Classical decoder for Z errors (decodes X syndrome)"""
     tabledecoderz::ClassicalTableDecoder
 end
+
+CSSTableDecoder(H, faults_matrix, n, s, k, cx, cz, error_weight, tabledecoderx, tabledecoderz) = CSSTableDecoder{typeof(H),typeof(faults_matrix)}(H, faults_matrix, n, s, k, cx, cz, error_weight, tabledecoderx, tabledecoderz)
 
 function CSSTableDecoder(c; error_weight=1)
     Hx = parity_matrix_x(c)
