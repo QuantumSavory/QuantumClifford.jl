@@ -1,7 +1,6 @@
 
 #=============================================================================#
 import Adapt: adapt_structure
-
 using Adapt: adapt
 
 using GPUArraysCore: AbstractGPUArray
