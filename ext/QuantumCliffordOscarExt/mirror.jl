@@ -1,43 +1,72 @@
-# documentation in a bit
-struct Mirror{T<:Union{Tuple, GroupElem}, S<:Union{Tuple, GroupElem}} <: AbstractQECC
-    G::Union{<:Group, <:FinGenAbGroup}
-    A::Vector{T}
-    B::Vector{S}
+struct Mirror{TG, TE} <: AbstractQECC
+    G::TG
+    A::Vector{TE}
+    B::Vector{TE}
     symmetric::Bool
 
-    function Mirror(G::Union{<:Group, <:FinGenAbGroup}, A::Vector{T}, B::Vector{S}, symmetric::Bool=true) where {T<:Union{Tuple, GroupElem}, S<:Union{Tuple, GroupElem}}
-        isempty(A) && error("A must not empty")
-        isempty(B) && error("B must not empty")
-        new{T,S}(G, A, B, symmetric)
+    function Mirror{TG, TE}(
+        G::TG, A::Vector{TE}, B::Vector{TE}, symmetric::Bool, ::Val{:validated}
+    ) where {TG, TE}
+        new{TG, TE}(G, A, B, symmetric)
     end
 end
 
+function _mirror_element(G::FinGenAbGroup, coordinates::Tuple{Vararg{Integer}})
+    valid = length(coordinates) == length(gens(G)) &&
+        all(typemin(Int) <= coordinate <= typemax(Int) for coordinate in coordinates)
+    valid || throw(ArgumentError("the coordinates $coordinates do not define an element of G"))
+    G(Int[coordinates...])
+end
+
+function _mirror_element(G, element)
+    element isa typeof(_mirror_identity(G)) && parent(element) === G && return element
+    throw(ArgumentError("each member of A and B must be an element of G"))
+end
+
+_mirror_identity(G::FinGenAbGroup) = zero(G)
+_mirror_identity(G) = one(G)
+
+function _mirror_elements(G, subset)
+    elements = typeof(_mirror_identity(G))[]
+    for element in subset
+        push!(elements, _mirror_element(G, element))
+    end
+    unique!(elements)
+end
+
+function Mirror(G::Union{Group, FinGenAbGroup}, A::AbstractVector, B::AbstractVector; symmetric::Bool=true)
+    is_finite(G) || throw(ArgumentError("G must be finite"))
+    elements_A = _mirror_elements(G, A)
+    elements_B = _mirror_elements(G, B)
+    Mirror{typeof(G), typeof(_mirror_identity(G))}(
+        G, elements_A, elements_B, symmetric, Val(:validated)
+    )
+end
+
+Mirror(G, A::AbstractVector, B::AbstractVector, symmetric::Bool) = Mirror(G, A, B; symmetric)
+
+_mirror_product(a::FinGenAbGroupElem, b::FinGenAbGroupElem) = a + b
+_mirror_product(a, b) = a * b
+
+_mirror_inverse(a::FinGenAbGroupElem) = -a
+_mirror_inverse(a) = inv(a)
+
 function parity_matrix(c::Mirror)
-    G, A_vec, B_vec, sym = c.G, c.A, c.B, c.symmetric
-    check_G = is_abelian(G)
-    A = [a isa Tuple ? G([Int(a_i) for a_i in a]) : a for a in A_vec]
-    B = [b isa Tuple ? G([Int(b_i) for b_i in b]) : b for b in B_vec]
+    G, A, B, symmetric = c.G, c.A, c.B, c.symmetric
     elems = collect(G)
     n = length(elems)
     idx = Dict(elems[i] => i for i in 1:n)
-    H = zeros(Int, n, 2n)
-    # Symmetric mirror code: S(g) = Z(Ag)X(Bg⁻¹) where Ag = {ag | a ∈ A} and Bg⁻¹ = {bg⁻¹ ∈ B}
-    # Asymmetric mirror code: S(g) = Z(Ag)X(g⁻¹B) where Ag = {ag | a ∈ A} and g⁻¹B = {g⁻¹b ∈ B}
+    H = falses(n, 2n)
+
     for (i, g) in enumerate(elems)
-        if sym
-            for b in B
-                support_x = check_G ? b+(-g) : b*inv(g)
-                haskey(idx, support_x) && (H[i, idx[support_x]] = 1)
-            end
-        else
-            for b in B
-                support_x = check_G ? (-g)+b : inv(g)*b
-                haskey(idx, support_x) && (H[i, idx[support_x]] = 1)
-            end
+        g_inv = _mirror_inverse(g)
+        for b in B
+            support_x = symmetric ? _mirror_product(b, g_inv) : _mirror_product(g_inv, b)
+            H[i, idx[support_x]] = true
         end
         for a in A
-            support_z = check_G ? a+g : a*g
-            haskey(idx, support_z) && (H[i, n+idx[support_z]] = 1)
+            support_z = _mirror_product(a, g)
+            H[i, n + idx[support_z]] = true
         end
     end
     H
