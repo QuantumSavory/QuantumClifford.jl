@@ -55,6 +55,23 @@ See also: [`parity_matrix`](@ref) and [`parity_matrix_x`](@ref)
 """
 function parity_matrix_z end
 
+"""
+    parity_matrix_xz(c::AbstractCSSCode)
+
+Return the X- and Z-check matrices of a CSS code as one coordinated pair.
+
+Code implementations that derive both matrices from shared state or a shared ordering
+should specialize this method and construct both matrices in one invocation. The default
+implementation calls [`parity_matrix_x`](@ref) and [`parity_matrix_z`](@ref) once each.
+Mutating either returned matrix must not change later results for `c`.
+
+See also: [`parity_matrix`](@ref), [`parity_matrix_x`](@ref), and
+[`parity_matrix_z`](@ref)
+"""
+function parity_matrix_xz(c::AbstractCSSCode)
+    return parity_matrix_x(c), parity_matrix_z(c)
+end
+
 
 """
     code_n(c::AbstractECC)

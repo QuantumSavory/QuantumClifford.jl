@@ -1,5 +1,10 @@
 # News
 
+## Unreleased
+
+- Make core CSS code inputs and parity accessors mutation-safe, provide a coordinated
+  `parity_matrix_xz` interface, and prevent mutation of the Delfosse-Reichardt seed.
+
 ## v0.1.4 - 2026-08-23
 
 - Add `BCH`, moved from `QuantumClifford.ECC`, with generator-polynomial and parity-matrix methods provided by the Nemo extension.

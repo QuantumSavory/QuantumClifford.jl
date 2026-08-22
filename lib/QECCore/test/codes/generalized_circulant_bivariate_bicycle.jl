@@ -1,3 +1,31 @@
+@testitem "CirculantBivariateBicycle ownership" tags=[:qec_determinism] begin
+    using Test
+    using QECCore
+
+    A = [(:x, 0), (:x, 1), (:y, 1)]
+    B = [(:y, 0), (:x, 2), (:y, 2)]
+    c = BivariateBicycleViaCirculantMat(3, 3, A, B)
+    expected_Hx, expected_Hz = parity_matrix_xz(c)
+
+    A[1] = (:x, 2)
+    B[1] = (:y, 1)
+    @test parity_matrix_xz(c) == (expected_Hx, expected_Hz)
+    @test c.A isa Vector{Tuple{Symbol,Int}}
+    @test c.B isa Vector{Tuple{Symbol,Int}}
+
+    returned_Hx = parity_matrix_x(c)
+    returned_Hz = parity_matrix_z(c)
+    returned_Hx .= 0
+    returned_Hz .= 0
+    @test parity_matrix_xz(c) == (expected_Hx, expected_Hz)
+    @test expected_Hx isa Matrix{Int}
+    @test expected_Hz isa Matrix{Int}
+    @test all(iszero, mod.(expected_Hx * transpose(expected_Hz), 2))
+
+    reconstructed = BivariateBicycleViaCirculantMat(3, 3, copy(c.A), copy(c.B))
+    @test parity_matrix_xz(reconstructed) == (expected_Hx, expected_Hz)
+end
+
 @testitem "CirculantBivariateBicycle" begin
     @static if get(ENV, "QUANTUMSAVORY_DOWNGRADE_TEST", "") != "true" &&
                !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"

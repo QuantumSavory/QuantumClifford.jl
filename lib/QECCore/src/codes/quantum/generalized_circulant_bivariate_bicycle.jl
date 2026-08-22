@@ -223,8 +223,10 @@ struct BivariateBicycleViaCirculantMat <: AbstractCSSCode
 
     function BivariateBicycleViaCirculantMat(l, m, A, B)
         (l >= 0 && m >= 0) || throw(ArgumentError("l and m must be non-negative"))
-        (length(A) >= 1 && length(B) >= 1) || throw(ArgumentError("A and B must each have at least one entry"))
-        for (mat, terms) in [(:A, A), (:B, B)]
+        owned_A = Vector{Tuple{Symbol,Int}}(A)
+        owned_B = Vector{Tuple{Symbol,Int}}(B)
+        (length(owned_A) >= 1 && length(owned_B) >= 1) || throw(ArgumentError("A and B must each have at least one entry"))
+        for (mat, terms) in ((:A, owned_A), (:B, owned_B))
             for (var, pow) in terms
                 var ∈ [:x, :y] || throw(ArgumentError("Matrix $mat contains invalid variable $var (must be :x or :y)"))
                 pow >= 0 || throw(ArgumentError("Matrix $mat contains negative power $pow"))
@@ -232,7 +234,7 @@ struct BivariateBicycleViaCirculantMat <: AbstractCSSCode
                 pow <= max_pow || throw(ArgumentError("Power $pow in matrix $mat exceeds maximum $max_pow for $var"))
             end
         end
-        new(l, m, A, B)
+        new(l, m, owned_A, owned_B)
     end
 end
 

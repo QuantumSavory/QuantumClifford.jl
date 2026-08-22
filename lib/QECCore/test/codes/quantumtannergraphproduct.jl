@@ -1,3 +1,49 @@
+@testitem "Quantum Tanner graph ownership" tags=[:qec_determinism] begin
+    using Test
+    using Graphs
+    using SparseArrays
+    using QECCore
+    using QECCore: BipartiteGraph, parity_matrix_from_tanner_graph
+
+    function verify_orthogonality(Hx::AbstractMatrix, Hz::AbstractMatrix)
+        return all(iszero, mod.(Int.(Hx) * transpose(Int.(Hz)), 2))
+    end
+
+    H = Bool[1 1 0; 0 1 1]
+    dense_code = QuantumTannerGraphProduct(H, H)
+    expected_dense = parity_matrix_xz(dense_code)
+    H .= false
+    @test parity_matrix_xz(dense_code) == expected_dense
+    @test dense_code.H1 isa Matrix{Bool}
+    @test dense_code.H2 isa Matrix{Bool}
+    @test verify_orthogonality(parity_matrix_xz(dense_code)...)
+
+    sparse_H = sparse(Bool[1 1 0; 0 1 1])
+    sparse_code = QuantumTannerGraphProduct(sparse_H, sparse_H)
+    expected_sparse = parity_matrix_xz(sparse_code)
+    sparse_H .= false
+    @test parity_matrix_xz(sparse_code) == expected_sparse
+    @test sparse_code.H1 isa SparseMatrixCSC{Bool}
+    @test sparse_code.H2 isa SparseMatrixCSC{Bool}
+
+    graph = SimpleGraph(4)
+    add_edge!(graph, 1, 3)
+    add_edge!(graph, 2, 4)
+    var_nodes = [1, 2]
+    check_nodes = [3, 4]
+    bipartite_graph = BipartiteGraph(graph, var_nodes, check_nodes)
+    expected_graph_matrix = parity_matrix_from_tanner_graph(bipartite_graph)
+
+    add_edge!(graph, 2, 3)
+    var_nodes[1] = 2
+    check_nodes[1] = 4
+    @test parity_matrix_from_tanner_graph(bipartite_graph) == expected_graph_matrix
+
+    converted_graph = BipartiteGraph(SimpleGraph{Int32}(4), Int32[1, 2], 3:4)
+    @test converted_graph.var_nodes isa Vector{Int}
+    @test converted_graph.check_nodes isa Vector{Int}
+end
+
 @testitem "Quantum Tanner Graph Codes" begin
 
     using Random
@@ -16,12 +62,12 @@
         return all(product_mod2 .== 0)
     end
 
-    function generate_random_bipartite_graph(n_vars::Int, n_checks::Int, edge_prob::Float64)
+    function generate_random_bipartite_graph(rng::AbstractRNG, n_vars::Int, n_checks::Int, edge_prob::Float64)
         g = SimpleGraph(n_vars + n_checks)
         var_nodes = collect(1:n_vars)
         check_nodes = collect(n_vars+1:n_vars+n_checks)
         for v in var_nodes, c in check_nodes
-            rand() < edge_prob && add_edge!(g, v, c)
+            rand(rng) < edge_prob && add_edge!(g, v, c)
         end
         return BipartiteGraph(g, var_nodes, check_nodes)
     end
@@ -89,18 +135,19 @@
     end
 
     @testset "Fully connected bipartite graph" begin
-        bg = generate_random_bipartite_graph(3, 2, 1.0)
+        bg = generate_random_bipartite_graph(MersenneTwister(1), 3, 2, 1.0)
         H = parity_matrix_from_tanner_graph(bg)
         @test Graphs.is_bipartite(bg.g)
         @test all(H .== true)
     end
 
     @testset "Random bipartite graphs" begin
+        rng = MersenneTwister(2)
         for _ in 1:1000
-            n_v = rand(1:10)
-            n_c = rand(1:10)
-            p = rand() * 0.5
-            bg = generate_random_bipartite_graph(n_v, n_c, p)
+            n_v = rand(rng, 1:10)
+            n_c = rand(rng, 1:10)
+            p = rand(rng) * 0.5
+            bg = generate_random_bipartite_graph(rng, n_v, n_c, p)
             @test is_bipartite(bg.g)
             H = parity_matrix_from_tanner_graph(bg)
             @test size(H) == (n_c, n_v)
@@ -108,10 +155,11 @@
     end
 
     @testset "Large bipartite graph" begin
-        bg = generate_random_bipartite_graph(1000, 50, 0.1)
+        bg = generate_random_bipartite_graph(MersenneTwister(3), 1000, 50, 0.1)
         H = parity_matrix_from_tanner_graph(bg)
         @test is_bipartite(bg.g)
         @test size(H) == (50, 1000)
         @test nnz(H) > 0
     end
+
 end

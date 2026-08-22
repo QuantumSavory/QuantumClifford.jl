@@ -1,3 +1,37 @@
+@testitem "Quantum Tillich-Zemor materialized ownership" tags=[:qec_determinism] begin
+    using Test
+    using SparseArrays
+    using QECCore
+
+    deterministic = TillichZemor(4, 3, 3)
+    source_Hx, source_Hz = parity_matrix_xz(deterministic)
+    expected_Hx, expected_Hz = copy(source_Hx), copy(source_Hz)
+    materialized = TillichZemor(4, 3, 3, (source_Hx, source_Hz))
+
+    source_Hx .= 0
+    source_Hz .= 0
+    @test parity_matrix_xz(materialized) == (expected_Hx, expected_Hz)
+    @test parity_matrix_x(materialized) isa Matrix{Int}
+    @test parity_matrix_z(materialized) isa Matrix{Int}
+
+    returned_Hx, returned_Hz = parity_matrix_xz(materialized)
+    returned_Hx .= 0
+    returned_Hz .= 0
+    @test parity_matrix_xz(materialized) == (expected_Hx, expected_Hz)
+    @test all(iszero, mod.(expected_Hx * transpose(expected_Hz), 2))
+
+    sparse_Hx, sparse_Hz = sparse(expected_Hx), sparse(expected_Hz)
+    sparse_code = TillichZemor(4, 3, 3, (sparse_Hx, sparse_Hz))
+    sparse_Hx .= 0
+    sparse_Hz .= 0
+    @test parity_matrix_x(sparse_code) isa SparseMatrixCSC{Int}
+    @test parity_matrix_z(sparse_code) isa SparseMatrixCSC{Int}
+    @test parity_matrix_xz(sparse_code) == (sparse(expected_Hx), sparse(expected_Hz))
+
+    reconstructed = TillichZemor(4, 3, 3, (copy(expected_Hx), copy(expected_Hz)))
+    @test parity_matrix(reconstructed) == parity_matrix(materialized)
+end
+
 @testitem "Quantum Tillich-Zemor" begin
 
     using QuantumClifford
@@ -43,7 +77,7 @@
         end
     end
 
-    rng = MersenneTwister()
+    rng = MersenneTwister(1234)
     @testset "Testing random Quantum Tillich-Zemor properties" begin
         for n in 4:2:20
             for m in 3:10

@@ -1,3 +1,31 @@
+@testitem "Delfosse-Reichardt 823 seed ownership" tags=[:qec_determinism] begin
+    using Random
+    using Test
+    using QECCore
+
+    seed = QECCore._seed₈₂₃()
+    fresh_seed = QECCore._seed₈₂₃()
+    @test seed == fresh_seed
+    @test seed !== fresh_seed
+
+    c = DelfosseReichardt823(2)
+    expected = parity_matrix(c)
+    seed .= false
+    rand(Random.default_rng(), UInt, 100)
+    @test parity_matrix(c) == expected
+    @test expected isa Matrix{Bool}
+
+    returned = parity_matrix(c)
+    returned .= false
+    @test parity_matrix(c) == expected
+
+    n = code_n(c)
+    Hx = expected[:, 1:n]
+    Hz = expected[:, n+1:end]
+    @test all(iszero, mod.(Int.(Hx) * transpose(Int.(Hz)) +
+                           Int.(Hz) * transpose(Int.(Hx)), 2))
+end
+
 @testitem "[[8p, 4p − 2, 3]] Delfosse-Reichardt Generalized [[8,2,3]] codes" begin
 
     using JuMP

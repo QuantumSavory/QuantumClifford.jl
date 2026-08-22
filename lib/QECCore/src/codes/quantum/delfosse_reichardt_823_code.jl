@@ -65,7 +65,7 @@ struct DelfosseReichardt823 <: AbstractQECC
 end
 
 # The `[[8, 2, 3]]` non-CSS code serves as the seed code for constructing Delfosse-Reichardt generalized `[[8p, 4p − 2, 3]]`codes.
-_seed₈₂₃ = Bool[0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0;
+_seed₈₂₃() = Bool[0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0;
                 1  1  1  1  0  0  0  0  0  0  0  0  0  0  0  0;
                 0  0  0  0  0  0  0  0  0  0  0  0  1  1  1  1;
                 0  0  0  0  1  1  1  1  0  0  0  0  0  0  0  0;
@@ -73,7 +73,7 @@ _seed₈₂₃ = Bool[0  0  0  0  0  0  0  0  1  1  1  1  0  0  0  0;
                 0  0  1  1  0  0  1  1  0  1  0  1  0  1  0  1]
 
 function parity_matrix(c::DelfosseReichardt823)
-    H = _seed₈₂₃
+    H = _seed₈₂₃()
     n = size(H,2)÷2
     Hx = H[:, 1:n]
     Hz = H[:, n+1:2n]

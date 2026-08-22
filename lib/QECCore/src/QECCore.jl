@@ -9,7 +9,7 @@ using Random: GLOBAL_RNG, AbstractRNG, randperm, rand, MersenneTwister, randperm
 using DocStringExtensions
 
 # interfaces
-export distance, parity_matrix, code_n, code_s, code_k, parity_matrix_x, parity_matrix_z,
+export distance, parity_matrix, code_n, code_s, code_k, parity_matrix_x, parity_matrix_z, parity_matrix_xz,
 rate, metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, bivariate_bicycle_code_k,
 generator_polynomial
 export AbstractECC, AbstractQECC, AbstractCECC, AbstractCSSCode, AbstractDistanceAlg

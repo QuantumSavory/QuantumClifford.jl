@@ -10,7 +10,17 @@ struct BipartiteGraph
     var_nodes::Vector{Int}
     """Indices of check nodes."""
     check_nodes::Vector{Int}
+
+    function BipartiteGraph(g::Graph, var_nodes::Vector{Int}, check_nodes::Vector{Int})
+        new(copy(g), copy(var_nodes), copy(check_nodes))
+    end
 end
+
+BipartiteGraph(g, var_nodes, check_nodes) = BipartiteGraph(
+    convert(Graph, g),
+    convert(Vector{Int}, var_nodes),
+    convert(Vector{Int}, check_nodes),
+)
 
 """
 Constructs a *Tanner graph* from a given parity-check matrix `H`, where rows correspond to *check nodes*
@@ -164,6 +174,10 @@ struct QuantumTannerGraphProduct <: AbstractCSSCode
     H1::AbstractMatrix
     """The second classical seed code for the the quantum tanner graph code."""
     H2::AbstractMatrix
+
+    function QuantumTannerGraphProduct(H1::AbstractMatrix, H2::AbstractMatrix)
+        new(copy(H1), copy(H2))
+    end
 end
 
 parity_matrix_xz(c::QuantumTannerGraphProduct) = hgp(c.H1, c.H2)

@@ -138,7 +138,8 @@ struct TillichZemor{M} <: AbstractCSSCode where {M <: Union{Nothing,Tuple{Abstra
 
     function TillichZemor(n::Int, m::Int, r::Int, matrices::M=nothing) where {M <: Union{Nothing,Tuple{AbstractMatrix,AbstractMatrix}}}
         (m ≥ r && (n - m)*r ≥ m) || throw(ArgumentError(("Conditions for the existence of `M` in `H = [C | M]` are not satisfied.")))
-        new{M}(n, m, r, matrices)
+        owned_matrices = isnothing(matrices) ? nothing : map(copy, matrices)
+        new{typeof(owned_matrices)}(n, m, r, owned_matrices)
     end
 end
 
@@ -231,11 +232,13 @@ end
 random_TillichZemor_code(n::Int, m::Int, r::Int) = random_TillichZemor_code(GLOBAL_RNG, n, m, r)
 
 function parity_matrix_xz(c::TillichZemor{<:Tuple})::Tuple{AbstractMatrix,AbstractMatrix}
-    return c.matrices
+    return copy(c.matrices[1]), copy(c.matrices[2])
 end
 
-parity_matrix_x(c::TillichZemor) = parity_matrix_xz(c)[1]
+parity_matrix_x(c::TillichZemor{Nothing}) = parity_matrix_xz(c)[1]
+parity_matrix_x(c::TillichZemor{<:Tuple}) = copy(c.matrices[1])
 
-parity_matrix_z(c::TillichZemor) = parity_matrix_xz(c)[2]
+parity_matrix_z(c::TillichZemor{Nothing}) = parity_matrix_xz(c)[2]
+parity_matrix_z(c::TillichZemor{<:Tuple}) = copy(c.matrices[2])
 
 code_n(c::TillichZemor) = c.n^2 + c.m^2
