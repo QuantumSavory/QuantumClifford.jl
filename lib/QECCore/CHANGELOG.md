@@ -1,6 +1,6 @@
 # News
 
-## unreleased
+## v0.1.4 - 2026-08-22
 
 - Add `BCH`, moved from `QuantumClifford.ECC`, with generator-polynomial and parity-matrix methods provided by the Nemo extension.
 
