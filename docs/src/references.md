@@ -64,6 +64,7 @@ For quantum code construction routines:
 - [pecorari2025high](@cite)
 - [berthusen2025adaptivesyndromeextraction](@cite)
 - [arnault2025upperboundsminimumdistance](@cite)
+- [guo2025zsz](@cite)
 - [tillich2006minimum](@cite)
 - [bravyi2024high](@cite)
 - [Quintavalle_2021](@cite)
