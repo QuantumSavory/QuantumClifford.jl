@@ -7,6 +7,7 @@
 
 ## unreleased
 
+- **(fix)** Correct `LiftedCode` construction and dimensions for concrete GF(2) group-algebra matrices.
 - Allow Nemo 0.56 in QuantumClifford and QECCore, and update Oscar quotient-ring examples for Nemo's new finite-field representation.
 - Add a QECC to `QECCore`: `Tile2D` codes, a slight generalization of `Surface` codes.
 - Avoid runtime dispatch when resetting qubits in `MixedDestabilizer` states.
