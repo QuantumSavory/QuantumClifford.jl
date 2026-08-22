@@ -23,4 +23,41 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: QuantumSavory/julia-precompile-benchmark@v3
+      - name: Check out the pull request base metadata
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.event.pull_request.base.repo.full_name }}
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: benchmark-metadata/base
+          persist-credentials: false
+
+      - name: Check out the pull request head metadata
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: benchmark-metadata/head
+          persist-credentials: false
+
+      - name: Check whether cold-start results are comparable
+        id: metadata
+        shell: bash
+        run: |
+          comparable=true
+          for project in Project.toml lib/QECCore/Project.toml; do
+            if ! cmp -s -- \
+              <(sed '1,/^\[/ { /^version = /d; }' "benchmark-metadata/base/$project") \
+              <(sed '1,/^\[/ { /^version = /d; }' "benchmark-metadata/head/$project"); then
+              comparable=false
+            fi
+          done
+          echo "comparable=$comparable" >> "$GITHUB_OUTPUT"
+
+      - if: steps.metadata.outputs.comparable == 'true'
+        uses: QuantumSavory/julia-precompile-benchmark@v3
+
+      - name: Explain skipped comparison
+        if: steps.metadata.outputs.comparable != 'true'
+        run: >-
+          echo '::notice::Cold-start comparison skipped because Project.toml dependency metadata
+          differs between the base and head revisions.'
