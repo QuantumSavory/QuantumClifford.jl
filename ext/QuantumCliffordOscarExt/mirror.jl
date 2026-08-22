@@ -38,9 +38,15 @@ function Mirror(G::Union{Group, FinGenAbGroup}, A::AbstractVector, B::AbstractVe
     is_finite(G) || throw(ArgumentError("G must be finite"))
     elements_A = _mirror_elements(G, A)
     elements_B = _mirror_elements(G, B)
-    Mirror{typeof(G), typeof(_mirror_identity(G))}(
+    code = Mirror{typeof(G), typeof(_mirror_identity(G))}(
         G, elements_A, elements_B, symmetric, Val(:validated)
     )
+
+    if !is_abelian(G) && !QuantumClifford.check_allrowscommute(Stabilizer(parity_matrix(code)))
+        throw(ArgumentError("A and B do not define commuting mirror checks for G"))
+    end
+
+    code
 end
 
 Mirror(G, A::AbstractVector, B::AbstractVector, symmetric::Bool) = Mirror(G, A, B; symmetric)
@@ -70,4 +76,20 @@ function parity_matrix(c::Mirror)
         end
     end
     H
+end
+
+function parity_checks(c::Mirror)
+    checks = Stabilizer(parity_matrix(c))
+    # Independent canonical rows cannot generate -I. Match the sign of every
+    # original support to the product of canonical rows that generates it.
+    canonical, _, rank = canonicalize!(copy(checks), ranks=true)
+    basis = canonical[1:rank]
+
+    for i in eachindex(checks)
+        remainder = generate!(copy(checks[i]), basis; saveindices=false)
+        @assert !isnothing(remainder)
+        phases(checks)[i] = remainder.phase[]
+    end
+
+    checks
 end

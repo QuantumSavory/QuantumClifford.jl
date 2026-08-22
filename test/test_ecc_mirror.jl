@@ -1,8 +1,13 @@
 @testitem "ECC Mirror Code" tags=[:ecc, :ecc_bespoke_checks, :oscar_required] begin
     using Oscar
     using QECCore
-    using QuantumClifford: stab_looks_good
+    using QuantumClifford: Stabilizer, canonicalize!, phases, stab_looks_good
     using QuantumClifford.ECC
+
+    function contains_negative_identity(checks)
+        canonical, _, rank = canonicalize!(copy(checks), ranks=true)
+        any(==(0x02), @view phases(canonical)[rank+1:end])
+    end
 
     @testset "Published Abelian mirror codes" begin
         cases = [
@@ -31,20 +36,38 @@
             @test code_k(code) == k
             @test maximum(count, eachrow(H)) <= length(code.A) + length(code.B)
             @test stab_looks_good(parity_checks(code); remove_redundant_rows=true)
+            @test !contains_negative_identity(parity_checks(code))
 
             asymmetric = Mirror(G, A, B; symmetric=false)
             @test parity_matrix(asymmetric) == H
         end
     end
 
-    @testset "Group actions and input validation" begin
-        nonabelian_G = dihedral_group(8)
-        r = only(filter(g -> order(g) == 4, gens(nonabelian_G)))
-        symmetric = Mirror(nonabelian_G, [r], [r])
-        asymmetric = Mirror(nonabelian_G, [r], [r]; symmetric=false)
+    @testset "Non-Abelian checks and phases" begin
+        G = dihedral_group(8)
+        r = only(filter(g -> order(g) == 4, gens(G)))
+        s = first(filter(g -> order(g) == 2, gens(G)))
+
+        # This valid code has negative-identity dependencies if every row is
+        # assigned a positive sign.
+        code = Mirror(G, [one(G), s], [one(G), r^3, s, r*s])
+        all_positive = Stabilizer(parity_matrix(code))
+        corrected = parity_checks(code)
+        @test contains_negative_identity(all_positive)
+        @test any(==(0x02), phases(corrected))
+        @test !contains_negative_identity(corrected)
+        @test stab_looks_good(corrected; remove_redundant_rows=true)
+
+        symmetric = Mirror(G, [r], [r])
+        asymmetric = Mirror(G, [r], [r]; symmetric=false)
         @test parity_matrix(symmetric) != parity_matrix(asymmetric)
         @test stab_looks_good(parity_checks(asymmetric); remove_redundant_rows=true)
 
+        @test_throws ArgumentError Mirror(G, [one(G)], [s])
+        @test_throws ArgumentError Mirror(G, [one(G)], [s], true)
+    end
+
+    @testset "Input forms and validation" begin
         G = abelian_group([4])
         elements = collect(G)
         from_elements = Mirror(G, elements[1:2], elements[2:3])
