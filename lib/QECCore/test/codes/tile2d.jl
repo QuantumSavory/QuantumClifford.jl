@@ -7,6 +7,20 @@
     using QuantumClifford: stab_looks_good, stab_to_gf2
     using QuantumClifford.ECC: parity_checks, code_n, code_k, parity_matrix_x, parity_matrix_z, DistanceMIPAlgorithm, distance
 
+    @testset "Constructor" begin
+        @test_throws ArgumentError Tile2D(0, [(0,0)], [(0,0)], 1, 1)
+        @test_throws ArgumentError Tile2D(2, [(-1,0)], [(0,0)], 1, 1)
+        @test_throws ArgumentError Tile2D(2, [(0,0)], [(0,2)], 1, 1)
+
+        horiz = [(0,2), (2,2)]
+        vert = [(2,0), (2,1), (2,2)]
+        tile = Tile2D(3, horiz, vert, 3, 3)
+        empty!(horiz)
+        empty!(vert)
+        @test length(tile.horiz) == 2
+        @test length(tile.vert) == 3
+    end
+
     @testset "Tile 2D" begin
         # from table 1 of https://arxiv.org/pdf/2504.09171
         table_I = [
