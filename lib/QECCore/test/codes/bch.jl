@@ -27,6 +27,8 @@
     @testset "Testing properties of BCH codes" begin
         @test BCH isa DataType
         @test BCH(3, 1) isa BCH
+        @test_throws ArgumentError BCH(3, -3)
+        @test_throws ArgumentError BCH(3, 0)
 
         m_cases = [3, 4, 5, 6, 7, 8, 9, 10]
         for m in m_cases

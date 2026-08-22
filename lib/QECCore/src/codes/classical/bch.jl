@@ -39,6 +39,7 @@ struct BCH <: AbstractPolynomialCode
     t::Int
     function BCH(m, t)
         m < 3 && throw(ArgumentError("m must be greater than or equal to 3"))
+        t < 1 && throw(ArgumentError("t must be greater than or equal to 1"))
         t >= 2^(m - 1) && throw(ArgumentError("t must be less than 2ᵐ ⁻ ¹"))
         m * t > 2^m - 1 && throw(ArgumentError("m*t must be less than or equal to 2ᵐ - 1"))
         new(m, t)
