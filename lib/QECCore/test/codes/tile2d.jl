@@ -1,4 +1,4 @@
-@testitem "Tile 2D" begin
+@testitem "Tile2D" begin
     using Test
     using Nemo: matrix, GF, rank
     using QECCore: Tile2D
@@ -7,6 +7,8 @@
 
     @testset "Constructor" begin
         @test_throws ArgumentError Tile2D(0, [(0,0)], [(0,0)], 1, 1)
+        @test_throws ArgumentError Tile2D(2, [(0,0)], [(0,0)], 0, 1)
+        @test_throws ArgumentError Tile2D(2, [(0,0)], [(0,0)], 1, 0)
         @test_throws ArgumentError Tile2D(2, [(-1,0)], [(0,0)], 1, 1)
         @test_throws ArgumentError Tile2D(2, [(0,0)], [(0,2)], 1, 1)
 
@@ -27,16 +29,25 @@
 
     @testset "Boundary pruning and layout" begin
         tile = Tile2D(3, [(0,2), (1,2), (2,2)], [(2,0), (2,1), (2,2)], 3, 3)
-        Hx = parity_matrix_x(tile)
-        Hz = parity_matrix_z(tile)
-        @test size(Hx) == size(Hz) == (15, 34)
-        @test all(>(0), vec(sum(Hx; dims=1)))
-        @test all(>(0), vec(sum(Hz; dims=1)))
+        hx = parity_matrix_x(tile)
+        hz = parity_matrix_z(tile)
+        @test size(hx) == size(hz) == (15, 34)
+        @test all(>(0), vec(sum(hx; dims=1)))
+        @test all(>(0), vec(sum(hz; dims=1)))
+        @test all(>(0), vec(sum(hx; dims=2)))
+        @test all(>(0), vec(sum(hz; dims=2)))
+        @test all(iseven, hx * transpose(hz))
         @test code_k(tile) == 4
 
         asymmetric_tile = Tile2D(3, [(0,2), (2,2)], [(2,0), (2,1), (2,2)], 3, 3)
-        @test size(parity_matrix_x(asymmetric_tile)) == (15, 34)
-        @test size(parity_matrix_z(asymmetric_tile)) == (15, 34)
+        asymmetric_hx = parity_matrix_x(asymmetric_tile)
+        asymmetric_hz = parity_matrix_z(asymmetric_tile)
+        @test size(asymmetric_hx) == size(asymmetric_hz) == (15, 34)
+        @test all(>(0), vec(sum(asymmetric_hx; dims=1)))
+        @test all(>(0), vec(sum(asymmetric_hz; dims=1)))
+        @test all(>(0), vec(sum(asymmetric_hx; dims=2)))
+        @test all(>(0), vec(sum(asymmetric_hz; dims=2)))
+        @test all(iseven, asymmetric_hx * transpose(asymmetric_hz))
         @test code_k(asymmetric_tile) == 4
 
         nonsquare_tile = Tile2D(2, [(0,0), (1,1)], [(0,1), (1,0)], 1, 2)
@@ -54,74 +65,51 @@
             0 1 0 0 0 0 0 0 1 0 0 0
             0 0 0 0 0 1 0 0 0 0 1 0
         ]
-        @test parity_matrix_x(nonsquare_tile) == expected_x
-        @test parity_matrix_z(nonsquare_tile) == expected_z
+        nonsquare_hx = parity_matrix_x(nonsquare_tile)
+        nonsquare_hz = parity_matrix_z(nonsquare_tile)
+        @test nonsquare_hx == expected_x
+        @test nonsquare_hz == expected_z
+        @test all(iseven, nonsquare_hx * transpose(nonsquare_hz))
         @test code_k(nonsquare_tile) == 2
     end
 
-    @testset "Tile 2D" begin
-        # from table 1 of https://arxiv.org/pdf/2504.09171
-        table_I = [
+    @testset "Table I" begin
+        # From Table I of https://arxiv.org/pdf/2504.09171
+        table_i = [
             (288, 8 , 3, [(0,0), (2,1), (2,2)       ], [(0,2), (1,2), (2,0)       ], 10, 10), # [[288, 8, 12]]
-            (288, 8 , 3, [(0,0), (2,0), (0,1), (0,2)], [(0,0), (0,2), (1,1), (2,2)], 10, 10), # [[288, 8, 14]] 
-            (288, 18, 4, [(0,0), (0,3), (2,2), (3,0)], [(0,1), (1,0), (1,1), (3,3)], 9 ,  9), # [[288, 18, 13]]
+            (288, 8 , 3, [(0,0), (2,0), (0,1), (0,2)], [(0,0), (0,2), (1,1), (2,2)], 10, 10), # [[288, 8, 14]]
+            (288, 18, 4, [(0,0), (0,3), (2,2), (3,0)], [(0,1), (1,0), (1,1), (3,3)], 9, 9), # [[288, 18, 13]]
             (512, 18, 4, [(0,0), (0,3), (2,2), (3,0)], [(0,1), (1,0), (1,1), (3,3)], 13, 13)] # [[512, 18, 19]]
 
-        for (n, k, B, horiz, vert, Lx, Ly) in table_I
-            c = Tile2D(B, horiz, vert, Lx, Ly)
+        for (n, k, b, horiz, vert, lx, ly) in table_i
+            c = Tile2D(b, horiz, vert, lx, ly)
             stab = parity_checks(c)
             nₛ, kₛ = code_n(stab), code_k(stab)
-            H = stab_to_gf2(stab)
-            mat = matrix(GF(2), H)
+            h = stab_to_gf2(stab)
+            mat = matrix(GF(2), h)
             computed_rank = rank(mat)
             @test computed_rank == nₛ - kₛ
             @test stab_looks_good(stab, remove_redundant_rows=true)
             @test computed_rank == n - k && computed_rank == nₛ - kₛ && n == nₛ && k == kₛ
         end
 
-        # check-weight tests
-        # From Table I of https://arxiv.org/pdf/2504.09171v1
-        # [[288, 8, 12]] 
-        B = 3
-        horizX = [(0,0),(2,1),(2,2)]
-        vertX = [(0,2),(1,2),(2,0)]
-        Lx, Ly = 10, 10
-        c = Tile2D(B, horizX, vertX, Lx, Ly)
-        @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 6)
-        @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 6)
-
-        # [[288, 8, 14]]
-        B = 3
-        horizX = [(0,0),(2,0),(0,1),(0,2)]
-        vertX = [(0,0),(0,2),(1,1),(2,2)]
-        Lx, Ly = 10, 10
-        c = Tile2D(B, horizX, vertX, Lx, Ly)
-        @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 8)
-        @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 8)
-
-        # [[288, 18, 13]]
-        B = 4
-        horizX = [(0,0),(0,3),(2,2),(3,0)]
-        vertX = [(0,1),(1,0),(1,1),(3,3)]
-        Lx, Ly = 9, 9
-        c = Tile2D(B, horizX, vertX, Lx, Ly)
-        @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 8)
-        @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 8)
-
-        # [[512, 18, 19]]
-        B = 4
-        horizX = [(0,0),(0,3),(2,2),(3,0)]
-        vertX = [(0,1),(1,0),(1,1),(3,3)]
-        Lx, Ly = 13, 13
-        c = Tile2D(B, horizX, vertX, Lx, Ly)
-        @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 8)
-        @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 8)
+        weight_cases = [
+            (6, 3, [(0,0), (2,1), (2,2)], [(0,2), (1,2), (2,0)], 10, 10),
+            (8, 3, [(0,0), (2,0), (0,1), (0,2)], [(0,0), (0,2), (1,1), (2,2)], 10, 10),
+            (8, 4, [(0,0), (0,3), (2,2), (3,0)], [(0,1), (1,0), (1,1), (3,3)], 9, 9),
+            (8, 4, [(0,0), (0,3), (2,2), (3,0)], [(0,1), (1,0), (1,1), (3,3)], 13, 13),
+        ]
+        for (weight, b, horiz_x, vert_x, lx, ly) in weight_cases
+            c = Tile2D(b, horiz_x, vert_x, lx, ly)
+            @test maximum(sum(parity_matrix_z(c); dims=2)) == weight
+            @test maximum(sum(parity_matrix_x(c); dims=2)) == weight
+        end
     end
 
     @testset "Appendix B: Stabilizers of weight-6 confined to 3 by 3 boxes yielding [[288, 8, 12]] codes" begin
         # See https://arxiv.org/pdf/2504.09171
 
-        appendix_B = [
+        appendix_b = [
             (288, 8, 3, [(0,0), (0,1), (2,2)], [(0,2), (1,0), (2,0)], 10, 10),  # [[288, 8, 12]]
             (288, 8, 3, [(0,0), (0,1), (2,2)], [(0,2), (1,2), (2,0)], 10, 10),  # [[288, 8, 12]]
             (288, 8, 3, [(0,0), (1,0), (2,2)], [(0,1), (0,2), (2,0)], 10, 10),  # [[288, 8, 12]]
@@ -131,42 +119,42 @@
             (288, 8, 3, [(0,0), (2,1), (2,2)], [(0,2), (1,0), (2,0)], 10, 10),  # [[288, 8, 12]]
             (288, 8, 3, [(0,0), (2,1), (2,2)], [(0,2), (1,2), (2,0)], 10, 10),  # [[288, 8, 12]]
         ]
-        for (n, k, B, horiz, vert, Lx, Ly) in appendix_B
-            c = Tile2D(B, horiz, vert, Lx, Ly)
+        for (n, k, b, horiz, vert, lx, ly) in appendix_b
+            c = Tile2D(b, horiz, vert, lx, ly)
             stab = parity_checks(c)
             nₛ, kₛ = code_n(stab), code_k(stab)
-            H = stab_to_gf2(stab)
-            mat = matrix(GF(2), H)
+            h = stab_to_gf2(stab)
+            mat = matrix(GF(2), h)
             computed_rank = rank(mat)
             @test computed_rank == nₛ - kₛ
             @test stab_looks_good(stab, remove_redundant_rows=true)
             @test computed_rank == n - k && computed_rank == nₛ - kₛ && n == nₛ && k == kₛ
-            @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 6)
-            @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 6)
+            @test maximum(sum(parity_matrix_z(c); dims=2)) == 6
+            @test maximum(sum(parity_matrix_x(c); dims=2)) == 6
         end
     end
 
     @testset "Appendix C: Stabilizers of weight-8 confined to 3 by 3 boxes yielding [[288, 8, 14]] codes" begin
         # See https://arxiv.org/pdf/2504.09171
 
-        appendix_C = [
+        appendix_c = [
             (288, 8, 3, [(0,0), (0,1), (0,2), (2,0)], [(0,0), (0,1), (1,1), (2,2)], 10, 10), # [[288, 8, 14]]
             (288, 8, 3, [(0,0), (0,1), (0,2), (2,0)], [(0,0), (0,2), (1,1), (2,2)], 10, 10), # [[288, 8, 14]]
             (288, 8, 3, [(0,0), (0,1), (0,2), (2,0)], [(0,0), (2,1), (1,2), (2,2)], 10, 10), # [[288, 8, 14]]
             (288, 8, 3, [(0,0), (0,1), (0,2), (2,0)], [(0,1), (1,0), (1,1), (2,2)], 10, 10)  # [[288, 8, 14]]
         ]
-        for (n, k, B, horiz, vert, Lx, Ly) in appendix_C
-            c = Tile2D(B, horiz, vert, Lx, Ly)
+        for (n, k, b, horiz, vert, lx, ly) in appendix_c
+            c = Tile2D(b, horiz, vert, lx, ly)
             stab = parity_checks(c)
             nₛ, kₛ = code_n(stab), code_k(stab)
-            H = stab_to_gf2(stab)
-            mat = matrix(GF(2), H)
+            h = stab_to_gf2(stab)
+            mat = matrix(GF(2), h)
             computed_rank = rank(mat)
             @test computed_rank == nₛ - kₛ
             @test stab_looks_good(stab, remove_redundant_rows=true)
             @test computed_rank == n - k && computed_rank == nₛ - kₛ && n == nₛ && k == kₛ
-            @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 8)
-            @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 8)
+            @test maximum(sum(parity_matrix_z(c); dims=2)) == 8
+            @test maximum(sum(parity_matrix_x(c); dims=2)) == 8
         end
     end
 end
