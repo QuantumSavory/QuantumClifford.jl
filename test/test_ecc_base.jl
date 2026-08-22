@@ -603,6 +603,11 @@ const code_instance_args = Dict(
     B_mm₄ = S_mm₄(1 + x*y)
     C_mm₄ = S_mm₄(1 + x^2*y^2*z)
 
+    # [[16, 4, 4]] mirror code from Table I of [khesin2026mirror](@cite)
+    G_mirror = abelian_group([16])
+    A_mirror = [(0,), (4,)]
+    B_mirror = [(1,), (3,), (5,), (11,)]
+
     oscar_code_instance_args = Dict(
         :DDimensionalSurface => [(2, 3), (3, 2), (3, 3), (4, 2)],
         :DDimensionalToric => [(2, 3), (3, 2), (3, 3), (4, 2)],
@@ -611,7 +616,8 @@ const code_instance_args = Dict(
         :DoubleHomologicalProduct => [(δ₁,), (δ₂,)],
         :TrivariateTricycle => [(l₁, m₁, p₁, A₁, B₁, C₁), (l₂, m₂, p₂, A₂, B₂, C₂), (l₃, m₃, p₃, A₃, B₃, C₃), (l₄, m₄, p₄, A₄, B₄, C₄)],
         :BivariateBicycleViaPoly => [(l_bb₁, m_bb₁, A_bb₁, B_bb₁), (l_bb₂, m_bb₂, A_bb₂, B_bb₂), (l_bb₃, m_bb₃, A_bb₃, B_bb₃), (l_bb₄, m_bb₄, A_bb₄, B_bb₄), (l_bb₅, m_bb₅, A_bb₅, B_bb₅)],
-        :MultivariateMulticycle =>[([l_mm₁,m_mm₁], [A_mm₁, B_mm₁]), ([l_mm₂,m_mm₂], [A_mm₂, B_mm₂]), ([ℓ_mm₃, m_mm₃, p_mm₃], [A_mm₃, B_mm₃, C_mm₃]), ([ℓ_mm₄, m_mm₄, p_mm₄], [A_mm₄, B_mm₄, C_mm₄])]
+        :MultivariateMulticycle =>[([l_mm₁,m_mm₁], [A_mm₁, B_mm₁]), ([l_mm₂,m_mm₂], [A_mm₂, B_mm₂]), ([ℓ_mm₃, m_mm₃, p_mm₃], [A_mm₃, B_mm₃, C_mm₃]), ([ℓ_mm₄, m_mm₄, p_mm₄], [A_mm₄, B_mm₄, C_mm₄])],
+        :Mirror => [(G_mirror, A_mirror, B_mirror)]
     )
     merge!(code_instance_args, oscar_code_instance_args)
   end
