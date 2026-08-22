@@ -6,12 +6,6 @@
     import PyQDecoders
     import LDPCDecoders
 
-    if !Sys.iswindows()
-        import PyTesseractDecoder
-    else
-        @test_broken false # TODO tesseract-decoder is not available on Windows
-    end
-
     include("test_ecc_base.jl")
 
     @testset "table decoder, good for small codes" begin
@@ -130,7 +124,15 @@
     end
 
 
-    if !Sys.iswindows()
+end
+
+@testitem "Tesseract decoder" tags=[:ecc, :ecc_decoding, :tesseract_required] begin
+    using Test
+    using QuantumClifford
+    using QuantumClifford.ECC
+
+    import PyTesseractDecoder
+
     @testset "tesseract decoder (tesseract-decoder via PyTesseractDecoder)" begin
         codes = [
             Surface(8, 8),
@@ -167,8 +169,5 @@
                 @test max(e...) <= 0.2/20
             end
         end
-    end
-    end
-
     end
 end

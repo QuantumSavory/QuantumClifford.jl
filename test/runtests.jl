@@ -30,9 +30,9 @@ end
 
 if DOWNGRADE_TEST
     @info "Skipping Tesseract tests during the downgrade run."
-elseif Sys.iswindows()
-    @info "Skipping Tesseract tests -- only supported *NIX platforms."
-else
+elseif !(Sys.isapple() || (Sys.islinux() && Sys.ARCH == :x86_64))
+    @info "Skipping Tesseract tests -- only supported on macOS and x86_64 Linux."
+elseif get(ENV, "QC_ECC_TEST", "") == "decoding"
     Tesseract_flag = true
 end
 
@@ -53,6 +53,7 @@ else
 end
 
 using Pkg
+using CondaPkg
 CUDA_flag && Pkg.add("CUDA")
 ROCm_flag && Pkg.add("AMDGPU")
 OpenCL_flag && Pkg.add(["pocl_jll", "OpenCL"])
@@ -62,7 +63,10 @@ if any((CUDA_flag, ROCm_flag, OpenCL_flag))
     )
 end
 !JET_flag && Oscar_flag && Pkg.add("Oscar")
-!JET_flag && Tesseract_flag && Pkg.add("PyTesseractDecoder")
+if !JET_flag && Tesseract_flag
+    Pkg.add("PyTesseractDecoder"; allow_autoprecomp=false)
+    CondaPkg.resolve(; force=true)
+end
 
 
 using TestItemRunner
