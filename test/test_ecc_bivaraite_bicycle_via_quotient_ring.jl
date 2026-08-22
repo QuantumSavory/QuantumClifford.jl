@@ -1,8 +1,10 @@
-@testitem "ECC Bivaraite Bicycle" tags=[:ecc, :ecc_bespoke_checks] begin
+@testitem "ECC Bivaraite Bicycle" tags=[:ecc, :ecc_bespoke_checks, :oscar_required] begin
+    using Oscar
     using Hecke
     using HiGHS
     using JuMP
     using Hecke: group_algebra, GF, abelian_group, gens, one
+    using QuantumClifford.ECC
     using QuantumClifford.ECC: two_block_group_algebra_code, code_k, code_n, distance, DistanceMIPAlgorithm
 
     @testset "Reproduce Table 3 bravyi2024high" begin

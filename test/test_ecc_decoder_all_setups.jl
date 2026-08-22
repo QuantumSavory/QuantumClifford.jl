@@ -5,7 +5,6 @@
 
     import PyQDecoders
     import LDPCDecoders
-    import Sys
 
     if !Sys.iswindows()
         import PyTesseractDecoder
