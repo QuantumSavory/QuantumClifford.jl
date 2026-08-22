@@ -37,7 +37,8 @@
 
         # [[16, 8, 2]]
         a_elts = [one(G), s]
-        b_elts = [one(G), x, s, x^2, s*x, x^2]
+        b_elts = [one(G), x, s, x^2, s*x, s*x^2]
+        @test allunique(b_elts)
         c = twobga_from_fp_group(a_elts, b_elts, F2G)
         @test order(G) == 2*m
         @test describe(G) == "C$m x C2"

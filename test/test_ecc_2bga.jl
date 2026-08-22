@@ -24,7 +24,8 @@
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
         @test code_n(c) == 16 && code_k(c) == 4
         A = 1 + s
-        B = 1 + x + s + x^2 + s*x + x^2
+        B = 1 + x + s + x^2 + s*x + s*x^2
+        @test count(!iszero, coefficients(B)) == 6
         c = two_block_group_algebra_code(A,B)
         # [[16, 8, 2]] 2BGA code
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
