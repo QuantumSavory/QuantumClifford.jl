@@ -1,6 +1,7 @@
 @testitem "ECC BCH" begin
     using LinearAlgebra
     using Nemo: matrix, finite_field, GF, minpoly, degree, defining_polynomial, is_irreducible
+    using QECCore.Combinatorics: combinations
     using QECCore: BCH, code_k, generator_polynomial, parity_matrix
 
     # To prove that t-bit error correcting BCH code indeed has minimum distance
@@ -11,17 +12,12 @@
     # distance of the t-bit error correcting BCH code.
 
     function check_designed_distance(matrix, t)
-        n_cols = size(matrix, 2)
         for num_cols in 1:2 * t
-            for i in 1:n_cols - num_cols + 1
-                combo = matrix[:, i:(i + num_cols - 1)]
-                sum_cols = sum(combo, dims = 2)
-                if all(sum_cols .== 0)
-                    return false  # Minimum distance is not greater than `2 * t`.
-                end
+            for cols in combinations(axes(matrix, 2), num_cols)
+                any(isodd, sum(matrix[:, cols]; dims = 2)) || return false
             end
         end
-        return true  # Minimum distance is at least `2 * t + 1`.
+        return true
     end
 
     @testset "Testing properties of BCH codes" begin
@@ -29,6 +25,9 @@
         @test BCH(3, 1) isa BCH
         @test_throws ArgumentError BCH(3, -3)
         @test_throws ArgumentError BCH(3, 0)
+        @test !check_designed_distance(Bool[1 1; 0 0], 1)
+        @test check_designed_distance(parity_matrix(BCH(3, 1)), 1)
+        @test check_designed_distance(parity_matrix(BCH(3, 2)), 2)
 
         m_cases = [3, 4, 5, 6, 7, 8, 9, 10]
         for m in m_cases
@@ -37,9 +36,8 @@
             @test lower_bound < n
             for t in [1,2]
                 H = parity_matrix(BCH(m, t))
-                @test check_designed_distance(H, t) == true
                 # n - k == degree of generator polynomial, `g(x)` == rank of binary parity check matrix, `H`.
-                mat = matrix(GF(2), parity_matrix(BCH(m, t)))
+                mat = matrix(GF(2), H)
                 computed_rank = rank(mat)
                 @test computed_rank == degree(generator_polynomial(BCH(m, t)))
                 @test code_k(BCH(m, t)) == n - degree(generator_polynomial(BCH(m, t)))
@@ -74,7 +72,7 @@
         # where p is a prime number. The GF(2⁶)'s Conway polynomial is p(z) = z⁶ + z⁴ + z³ + z + 1. In contrast,
         # the polynomial given in https://web.ntpu.edu.tw/~yshan/BCH_code.pdf is p(z) = z⁶ + z + 1. Because both
         # polynomials are irreducible, they are also primitive polynomials for `GF(2⁶)`.
-    
+
         test_cases = [(6, 1), (6, 2), (6, 3), (6, 4), (6, 5), (6, 6), (6, 7)]
         @test defining_polynomial(GF2x, GF2⁶) == x ^ 6 + x ^ 4 + x ^ 3 + x + 1
         @test is_irreducible(defining_polynomial(GF2x, GF2⁶)) == true
@@ -91,7 +89,6 @@
         results = [57 51 45 39 36 30 24]
         for (result, (m, t)) in zip(results, test_cases)
             @test code_k(BCH(m, t)) == result
-            @test check_designed_distance(parity_matrix(BCH(m, t)), t) == true
         end
 
         # Reproduce some results from Table, page 8-9 of https://web.ntpu.edu.tw/~yshan/BCH_code.pdf.
