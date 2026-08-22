@@ -27,6 +27,39 @@
         @test eltype(parity_matrix_z(tile)) === Bool
     end
 
+    @testset "Boundary pruning and layout" begin
+        tile = Tile2D(3, [(0,2), (1,2), (2,2)], [(2,0), (2,1), (2,2)], 3, 3)
+        Hx = parity_matrix_x(tile)
+        Hz = parity_matrix_z(tile)
+        @test size(Hx) == size(Hz) == (15, 34)
+        @test all(>(0), vec(sum(Hx; dims=1)))
+        @test all(>(0), vec(sum(Hz; dims=1)))
+        @test code_k(tile) == 4
+
+        asymmetric_tile = Tile2D(3, [(0,2), (2,2)], [(2,0), (2,1), (2,2)], 3, 3)
+        @test size(parity_matrix_x(asymmetric_tile)) == (15, 34)
+        @test size(parity_matrix_z(asymmetric_tile)) == (15, 34)
+        @test code_k(asymmetric_tile) == 4
+
+        nonsquare_tile = Tile2D(2, [(0,0), (1,1)], [(0,1), (1,0)], 1, 2)
+        expected_x = Bool[
+            1 0 0 0 1 0 0 1 0 1 0 0
+            0 1 0 0 0 1 0 0 1 0 1 0
+            0 0 0 1 0 0 1 0 0 0 0 0
+            0 0 1 0 0 0 0 0 0 0 0 1
+        ]
+        expected_z = Bool[
+            0 1 0 1 0 0 1 0 0 0 1 0
+            0 0 1 0 1 0 0 1 0 0 0 1
+            1 0 0 0 0 0 0 1 0 0 0 0
+            0 0 0 0 1 0 0 0 0 1 0 0
+            0 1 0 0 0 0 0 0 1 0 0 0
+            0 0 0 0 0 1 0 0 0 0 1 0
+        ]
+        @test parity_matrix_x(nonsquare_tile) == expected_x
+        @test parity_matrix_z(nonsquare_tile) == expected_z
+    end
+
     @testset "Tile 2D" begin
         # from table 1 of https://arxiv.org/pdf/2504.09171
         table_I = [

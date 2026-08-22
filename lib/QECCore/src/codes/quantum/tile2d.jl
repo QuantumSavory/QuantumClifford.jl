@@ -50,9 +50,9 @@ struct Tile2D <: AbstractCSSCode
 end
 
 function _rectangular_layout(tile::Tile2D)
-    black = Set{Tuple{Int,Int}}()
-    red = Set{Tuple{Int,Int}}()
-    blue = Set{Tuple{Int,Int}}()
+    black = Tuple{Int,Int}[]
+    red = Tuple{Int,Int}[]
+    blue = Tuple{Int,Int}[]
     B, Lx, Ly = tile.B, tile.Lx, tile.Ly
     for x in 0:Lx-1, y in 0:Ly-1
         push!(black, (x,y))
@@ -119,10 +119,17 @@ function parity_matrix_xz(tile::Tile2D)
     for v in blue
         push!(Zrows, filter(in(physical), _edges(v, tileZ)))
     end
-    # "Finally, we remove all stabilizers whose support has become empty because of aforementioned procedure" [steffan2025tilecodeshighefficiencyquantum](@cite).
-    filter!(!isempty, Xrows)
-    filter!(!isempty, Zrows)
-    qubits = unique(vcat(Xrows..., Zrows...))
+    xqubits = Set(q for row in Xrows for q in row)
+    zqubits = Set(q for row in Zrows for q in row)
+    qubits = intersect(xqubits, zqubits)
+    for rows in (Xrows, Zrows)
+        for row in rows
+            filter!(in(qubits), row)
+        end
+        # "Finally, we remove all stabilizers whose support has become empty because of aforementioned procedure" [steffan2025tilecodeshighefficiencyquantum](@cite).
+        filter!(!isempty, rows)
+    end
+    qubits = sort!(collect(qubits); by=q -> (q[1] == :v, q[2], q[3]))
     qindex = Dict(q => i for (i,q) in enumerate(qubits))
     Hx = spzeros(Bool, length(Xrows), length(qubits))
     Hz = spzeros(Bool, length(Zrows), length(qubits))
