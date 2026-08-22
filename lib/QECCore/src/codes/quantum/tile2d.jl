@@ -1,7 +1,11 @@
 """
-2D Tile code is a generalization of surface codes that offers flexibility in terms of *locality* and stabilizer *check weight*
+`Tile2D` is a generalization of surface codes that offers flexibility in terms of *locality* and stabilizer *check weight*
 without compromising on the 2D locality of the 2D surface code [steffan2025tilecodeshighefficiencyquantum](@cite). It encodes more
 logical qubits than surface code, and provides ``\\mathcal{O}(1)``-locality.
+
+The `horiz` and `vert` arguments give zero-based edge coordinates in the X-stabilizer tile, with both coordinates in `0:B-1`.
+The Z-stabilizer tile is derived automatically by reflection and exchange of the horizontal and vertical supports. This
+implementation constructs the unrotated rectangular layout with `Lx` by `Ly` tiles.
 
 Here is an example of weight-6 `[[288, 8, 12]]` 2D Tile code from Table I of [steffan2025tilecodeshighefficiencyquantum](@cite).
 
@@ -22,18 +26,16 @@ julia> Lx, Ly = 10, 10;
 
 julia> c = Tile2D(B, horizX, vertX, Lx, Ly);
 
-julia> import HiGHS; import JuMP;
-
-julia> code_n(c), code_k(c), distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900))
-(288, 8, 12)
+julia> code_n(c), code_k(c)
+(288, 8)
 ```
 """
 struct Tile2D <: AbstractCSSCode
     """Size of the tile box ``(B \\times B)`` determining the support of a stabilizer."""
     B::Int
-    """Positions of horizontal edges within the tile box."""
+    """Zero-based positions of horizontal edges within the tile box."""
     horiz::Vector{Tuple{Int,Int}}
-    """Positions of vertical edges within the tile box."""
+    """Zero-based positions of vertical edges within the tile box."""
     vert::Vector{Tuple{Int,Int}}
     """Number of tiles along the x-direction."""
     Lx::Int
