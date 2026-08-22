@@ -32,7 +32,7 @@ if DOWNGRADE_TEST
     @info "Skipping Tesseract tests during the downgrade run."
 elseif Sys.iswindows()
     @info "Skipping Tesseract tests -- only supported *NIX platforms."
-else
+elseif get(ENV, "QC_ECC_TEST", "") == "decoding"
     Tesseract_flag = true
 end
 
