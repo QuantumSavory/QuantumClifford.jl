@@ -24,7 +24,8 @@
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 4
         @test code_n(c) == 16 && code_k(c) == 4
         A = 1 + s
-        B = 1 + x + s + x^2 + s*x + x^2
+        B = 1 + x + s + x^2 + s*x + s*x^2
+        @test count(!iszero, coefficients(B)) == 6
         c = two_block_group_algebra_code(A,B)
         # [[16, 8, 2]] 2BGA code
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
@@ -115,6 +116,12 @@
         # m = 14
         GA = group_algebra(GF(2), abelian_group([14,2]))
         x, s = gens(GA)
+        A = 1 + x
+        B = 1 + x^7 + s*x^8 + x^2 + x^3 + s*x^11
+        c = two_block_group_algebra_code(A,B)
+        # [[56, 4, 10]] 2BGA code
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 10
+        @test code_n(c) == 56 && code_k(c) == 4
         A = 1 + x^8
         B = 1 + x^7 + s + x^8 + x^9 + s*x^4
         c = two_block_group_algebra_code(A,B)
