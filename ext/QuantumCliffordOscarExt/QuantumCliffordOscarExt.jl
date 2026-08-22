@@ -5,11 +5,12 @@ using DocStringExtensions
 import LinearAlgebra
 import LinearAlgebra: rank
 import QuantumClifford
-import QuantumClifford: Stabilizer
+import QuantumClifford: Stabilizer, canonicalize!, generate!, phases
 import Nemo
 import Nemo: FqFieldElem
 import Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra,
-   GroupAlgebraElem, direct_product, sub, ZZ, lift, polynomial_ring
+   GroupAlgebraElem, direct_product, sub, ZZ, lift, polynomial_ring, Group,
+   FinGenAbGroup, FinGenAbGroupElem, is_abelian, is_finite
 import Oscar
 import Oscar: free_group, small_group_identification, describe, order, FPGroupElem, FPGroup,
     BasicGAPGroupElem, DirectProductGroup, cyclic_group, free_module, hom, tensor_product,
@@ -23,17 +24,19 @@ import Oscar.Generic: MatSpaceElem, DirectSumModule, exponent_vectors
 import Combinatorics: combinations
 
 import QuantumClifford.ECC: two_block_group_algebra_code, twobga_from_direct_product, twobga_from_fp_group,
-    boundary_maps, max_xy_exponents
+    boundary_maps, max_xy_exponents, parity_checks
 
-import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode,
+import QECCore: AbstractECC, CSS, RepCode, AbstractCSSCode, AbstractQECC,
     hgp, code_k, code_n, code_s, distance, parity_matrix_x, parity_matrix_z, parity_matrix_xz, parity_matrix,
     metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hasmetachecks
 
 # exported from extension so that Documenter.jl sees them when autogenerating API lists
 export twobga_from_direct_product, twobga_from_fp_group, DDimensionalSurface, DDimensionalToric, boundary_maps,
-    HomologicalProduct, DoubleHomologicalProduct, GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly, MultivariateMulticycle
+    HomologicalProduct, DoubleHomologicalProduct, GeneralizedToric, TrivariateTricycle, BivariateBicycleViaPoly, MultivariateMulticycle,
+    Mirror
 
 include("types.jl")
+include("mirror.jl")
 include("direct_product.jl")
 include("bivariate_bicycle.jl")
 include("generalized_toric.jl")
