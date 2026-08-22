@@ -7,6 +7,7 @@
 
 ## unreleased
 
+- Add symmetric and asymmetric mirror quantum LDPC codes through the Oscar extension.
 - Allow Nemo 0.56 in QuantumClifford and QECCore, and update Oscar quotient-ring examples for Nemo's new finite-field representation.
 - Avoid runtime dispatch when resetting qubits in `MixedDestabilizer` states.
 
