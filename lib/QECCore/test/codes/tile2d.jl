@@ -21,6 +21,12 @@
         @test length(tile.vert) == 3
     end
 
+    @testset "Parity matrix storage" begin
+        tile = Tile2D(2, [(0,0)], [(0,0)], 2, 2)
+        @test eltype(parity_matrix_x(tile)) === Bool
+        @test eltype(parity_matrix_z(tile)) === Bool
+    end
+
     @testset "Tile 2D" begin
         # from table 1 of https://arxiv.org/pdf/2504.09171
         table_I = [

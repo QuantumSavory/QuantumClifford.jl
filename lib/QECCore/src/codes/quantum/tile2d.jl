@@ -124,13 +124,13 @@ function parity_matrix_xz(tile::Tile2D)
     filter!(!isempty, Zrows)
     qubits = unique(vcat(Xrows..., Zrows...))
     qindex = Dict(q => i for (i,q) in enumerate(qubits))
-    Hx = spzeros(Int, length(Xrows), length(qubits))
-    Hz = spzeros(Int, length(Zrows), length(qubits))
+    Hx = spzeros(Bool, length(Xrows), length(qubits))
+    Hz = spzeros(Bool, length(Zrows), length(qubits))
     for (i,row) in enumerate(Xrows), q in row
-        Hx[i, qindex[q]] = 1
+        Hx[i, qindex[q]] = true
     end
     for (i,row) in enumerate(Zrows), q in row
-        Hz[i, qindex[q]] = 1
+        Hz[i, qindex[q]] = true
     end
     return Hx, Hz
 end
