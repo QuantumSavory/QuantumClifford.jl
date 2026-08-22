@@ -1,6 +1,9 @@
 @testitem "ECC 2BGA Table III via semidirect products" tags=[:ecc, :ecc_bespoke_checks, :oscar_required] begin
     using Hecke: GF, group_algebra
-    using QuantumClifford.ECC: code_k, code_n, two_block_group_algebra_code
+    using HiGHS
+    using JuMP
+    using QuantumClifford.ECC: DistanceMIPAlgorithm, code_k, code_n, distance,
+        two_block_group_algebra_code
     using Oscar: automorphism_group, canonical_injection, cyclic_group, describe, hom,
         normal_subgroup, order, semidirect_product, small_group_identification
 
@@ -27,24 +30,27 @@
         return r, s
     end
 
-    function check_table_entry(a_elements, b_elements, expected)
+    function check_table_entry(a_elements, b_elements, expected_parameters)
         @test length(a_elements) == 2
         @test allunique(a_elements)
         @test length(b_elements) == 6
         @test allunique(b_elements)
 
         code = two_block_group_algebra_code(sum(a_elements), sum(b_elements))
-        @test (code_n(code), code_k(code)) == expected
+        @test (code_n(code), code_k(code)) == expected_parameters
+        return code
     end
 
     @testset "Construct Table III of arXiv:2306.16400" begin
         r, s = dihedral_group_algebra(6, 4)
         # [[24, 8, 3]]
-        check_table_entry(
+        code = check_table_entry(
             [one(r), r^4],
             [one(r), s * r^4, r^3, r^4, s * r^2, r],
             (24, 8),
         )
+        # The presentation-based Table III suite checks the distances of all 18 entries.
+        @test distance(code, DistanceMIPAlgorithm(solver=HiGHS)) == 3
         # [[24, 12, 2]]
         check_table_entry(
             [one(r), r^3],
@@ -149,7 +155,7 @@
             [one(r), s * r^12, s * r^9, r^6, s, s * r],
             (64, 8),
         )
-        # [[64, 16, 8]]
+        # [[64, 16, 4]]
         check_table_entry(
             [one(r), r^4],
             [one(r), s * r^10, s * r^3, r^4, s * r^14, s * r^7],
