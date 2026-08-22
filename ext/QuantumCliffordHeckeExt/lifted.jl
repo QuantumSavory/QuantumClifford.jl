@@ -65,9 +65,9 @@ end
 #`LiftedCode` constructor using the default `GF(2)` representation (coefficients converted to a permutation matrix by `representation_matrix` provided by Hecke).
 #"""
 # TODO doctest example and document the other constructors below
-function LiftedCode(A::Matrix{GroupAlgebraElem{FqFieldElem, <: GroupAlgebra}}; GA::GroupAlgebra=parent(A[1,1]))
-    !(characteristic(base_ring(A[1, 1])) == 2) && error("The default permutation representation applies only to GF(2) group algebra; otherwise, a custom representation function should be provided")
-    LiftedCode(A; GA=GA, repr=representation_matrix)
+function LiftedCode(A::Matrix{<:GroupAlgebraElem{FqFieldElem, <: GroupAlgebra}}; GA::GroupAlgebra=parent(A[1,1]), repr::Function=representation_matrix)
+    repr === representation_matrix && !(characteristic(base_ring(A[1, 1])) == 2) && error("The default permutation representation applies only to GF(2) group algebra; otherwise, a custom representation function should be provided")
+    invoke(LiftedCode, Tuple{GroupAlgebraElemMatrix}, A; GA, repr)
 end
 
 """
@@ -174,6 +174,6 @@ function parity_matrix(c::LiftedCode)
     return concat_lift_repr(c.repr, c.A)
 end
 
-code_n(c::LiftedCode) = size(c.A, 2) * order(group(c.GA))
+code_n(c::LiftedCode) = size(c.A, 2) * Int(order(group(c.GA)))
 
-code_s(c::LiftedCode) = size(c.A, 1) * order(group(c.GA))
+code_s(c::LiftedCode) = size(c.A, 1) * Int(order(group(c.GA)))
