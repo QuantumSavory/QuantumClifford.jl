@@ -59,7 +59,7 @@ struct Tile2D <: AbstractCSSCode
     end
 end
 
-function _rectangular_layout(tile::Tile2D)
+function _tile2d_rectangular_layout(tile::Tile2D)
     black = Tuple{Int,Int}[]
     red = Tuple{Int,Int}[]
     blue = Tuple{Int,Int}[]
@@ -78,16 +78,16 @@ function _rectangular_layout(tile::Tile2D)
     return black, red, blue
 end
 
-function _complement_tile(tile::Tile2D)
+function _tile2d_complement(tile::Tile2D)
     B = tile.B
     horiz_z = [(B-1-x, B-1-y) for (x,y) in tile.vert]
     vert_z  = [(B-1-x, B-1-y) for (x,y) in tile.horiz]
     Tile2D(B, horiz_z, vert_z, tile.Lx, tile.Ly)
 end
 
-function _physical_qubits(tile::Tile2D)
+function _tile2d_physical_qubits(tile::Tile2D)
     qubits = Set{Tuple{Symbol,Int,Int}}()
-    black, _, _ = _rectangular_layout(tile)
+    black, _, _ = _tile2d_rectangular_layout(tile)
     for (vx,vy) in black
         for x in 0:tile.B-1, y in 0:tile.B-1
             push!(qubits, (:h, vx+x, vy+y))
@@ -98,7 +98,7 @@ function _physical_qubits(tile::Tile2D)
 end
 
 
-function _edges((vx,vy)::Tuple{Int,Int}, tile::Tile2D)
+function _tile2d_edges((vx,vy)::Tuple{Int,Int}, tile::Tile2D)
     edges = Tuple{Symbol,Int,Int}[]
     for (x,y) in tile.horiz
         push!(edges, (:h, vx+x, vy+y))
@@ -110,29 +110,29 @@ function _edges((vx,vy)::Tuple{Int,Int}, tile::Tile2D)
 end
 
 function parity_matrix_xz(tile::Tile2D)
-    tileZ   = _complement_tile(tile)
+    tile_z = _tile2d_complement(tile)
     # "We will always restrict ourselves to (rotated) rectangular shapes" [steffan2025tilecodeshighefficiencyquantum](@cite).
-    black, red, blue = _rectangular_layout(tile)
-    physical = _physical_qubits(tile)
-    Xrows = Vector{Vector{Tuple{Symbol,Int,Int}}}()
-    Zrows = Vector{Vector{Tuple{Symbol,Int,Int}}}()
+    black, red, blue = _tile2d_rectangular_layout(tile)
+    physical = _tile2d_physical_qubits(tile)
+    x_rows = Vector{Vector{Tuple{Symbol,Int,Int}}}()
+    z_rows = Vector{Vector{Tuple{Symbol,Int,Int}}}()
     # "We fine-tune the layout to the specific support of the stabilizers. First remove
     # all qubits that are not supported in any X-type stabilizer or are not supported
     # in any Z-type stabilizer" [steffan2025tilecodeshighefficiencyquantum](@cite).
     for v in black
-        push!(Xrows, filter(in(physical), _edges(v, tile)))
-        push!(Zrows, filter(in(physical), _edges(v, tileZ)))
+        push!(x_rows, filter(in(physical), _tile2d_edges(v, tile)))
+        push!(z_rows, filter(in(physical), _tile2d_edges(v, tile_z)))
     end
     for v in red
-        push!(Xrows, filter(in(physical), _edges(v, tile)))
+        push!(x_rows, filter(in(physical), _tile2d_edges(v, tile)))
     end
     for v in blue
-        push!(Zrows, filter(in(physical), _edges(v, tileZ)))
+        push!(z_rows, filter(in(physical), _tile2d_edges(v, tile_z)))
     end
-    xqubits = Set(q for row in Xrows for q in row)
-    zqubits = Set(q for row in Zrows for q in row)
-    qubits = intersect(xqubits, zqubits)
-    for rows in (Xrows, Zrows)
+    x_qubits = Set(q for row in x_rows for q in row)
+    z_qubits = Set(q for row in z_rows for q in row)
+    qubits = intersect(x_qubits, z_qubits)
+    for rows in (x_rows, z_rows)
         for row in rows
             filter!(in(qubits), row)
         end
@@ -140,16 +140,16 @@ function parity_matrix_xz(tile::Tile2D)
         filter!(!isempty, rows)
     end
     qubits = sort!(collect(qubits); by=q -> (q[1] == :v, q[2], q[3]))
-    qindex = Dict(q => i for (i,q) in enumerate(qubits))
-    Hx = spzeros(Bool, length(Xrows), length(qubits))
-    Hz = spzeros(Bool, length(Zrows), length(qubits))
-    for (i,row) in enumerate(Xrows), q in row
-        Hx[i, qindex[q]] = true
+    qubit_index = Dict(q => i for (i,q) in enumerate(qubits))
+    hx = spzeros(Bool, length(x_rows), length(qubits))
+    hz = spzeros(Bool, length(z_rows), length(qubits))
+    for (i,row) in enumerate(x_rows), q in row
+        hx[i, qubit_index[q]] = true
     end
-    for (i,row) in enumerate(Zrows), q in row
-        Hz[i, qindex[q]] = true
+    for (i,row) in enumerate(z_rows), q in row
+        hz[i, qubit_index[q]] = true
     end
-    return Hx, Hz
+    return hx, hz
 end
 
 parity_matrix_x(tile::Tile2D) = parity_matrix_xz(tile)[1]
