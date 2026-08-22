@@ -1,11 +1,14 @@
 """
-`Tile2D` is a generalization of surface codes that offers flexibility in terms of *locality* and stabilizer *check weight*
-without compromising on the 2D locality of the 2D surface code [steffan2025tilecodeshighefficiencyquantum](@cite). It encodes more
-logical qubits than surface code, and provides ``\\mathcal{O}(1)``-locality.
+    $TYPEDEF
+
+`Tile2D` generalizes surface codes while offering flexibility in stabilizer *check weight*
+[steffan2025tilecodeshighefficiencyquantum](@cite). It retains two-dimensional geometry and ``\\mathcal{O}(1)``-local checks,
+and the family includes examples with more logical qubits than comparably sized surface codes.
 
 The `horiz` and `vert` arguments give zero-based edge coordinates in the X-stabilizer tile, with both coordinates in `0:B-1`.
-The Z-stabilizer tile is derived automatically by reflection and exchange of the horizontal and vertical supports. This
-implementation constructs the unrotated rectangular layout with `Lx` by `Ly` tiles.
+A horizontal coordinate `(x, y)` denotes the edge from `(x, y)` to `(x+1, y)`, while a vertical coordinate denotes the edge
+from `(x, y)` to `(x, y+1)`. The Z-stabilizer tile is derived automatically by reflection and exchange of the horizontal and
+vertical supports. This implementation constructs open, unrotated rectangular layouts with `Lx` by `Ly` bulk-check positions.
 
 Here is an example of weight-6 `[[288, 8, 12]]` 2D Tile code from Table I of [steffan2025tilecodeshighefficiencyquantum](@cite).
 
@@ -14,7 +17,7 @@ Here is an example of weight-6 `[[288, 8, 12]]` 2D Tile code from Table I of [st
     quantum low-density parity-check codes with *open* boundary conditions.
 
 ```jldoctest
-julia> using QuantumClifford; using QuantumClifford.ECC; # hide
+julia> using QuantumClifford; using QuantumClifford.ECC;
 
 julia> B = 3;
 
@@ -29,17 +32,22 @@ julia> c = Tile2D(B, horizX, vertX, Lx, Ly);
 julia> code_n(c), code_k(c)
 (288, 8)
 ```
+
+See also: [`Surface`](@ref).
+
+### Fields
+    $TYPEDFIELDS
 """
 struct Tile2D <: AbstractCSSCode
     """Size of the tile box ``(B \\times B)`` determining the support of a stabilizer."""
     B::Int
-    """Zero-based positions of horizontal edges within the tile box."""
+    """Zero-based positions of horizontal edges in the X-stabilizer tile."""
     horiz::Vector{Tuple{Int,Int}}
-    """Zero-based positions of vertical edges within the tile box."""
+    """Zero-based positions of vertical edges in the X-stabilizer tile."""
     vert::Vector{Tuple{Int,Int}}
-    """Number of tiles along the x-direction."""
+    """Number of bulk-check positions along the x-direction."""
     Lx::Int
-    """Number of tiles along the y-direction."""
+    """Number of bulk-check positions along the y-direction."""
     Ly::Int
 
     function Tile2D(B::Int, horiz::Vector{Tuple{Int,Int}}, vert::Vector{Tuple{Int,Int}}, Lx::Int, Ly::Int)
