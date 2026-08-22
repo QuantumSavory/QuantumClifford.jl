@@ -1,6 +1,6 @@
 # KernelAbstractions Extension Tests
 
-This directory contains the test suite for the range of KernelAbstractions-supported hardware accelerators. These tests are disabled by default since compatible hardware may not necessarily exist on all systems. Only a single platform may be tested in an individual run. Set `GPU_TEST` to `cuda`, `rocm`, or `opencl` to enable that platform.
+This directory contains the test suite for the range of KernelAbstractions-supported hardware accelerators. These tests are disabled by default since compatible hardware may not necessarily exist on all systems. Only a single platform may be tested in an individual run. Set `QC_GPU_TEST` to `cuda`, `rocm`, or `opencl` to enable that platform.
 
 # Noteworthy Details
 
