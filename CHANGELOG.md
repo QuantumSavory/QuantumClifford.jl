@@ -7,6 +7,7 @@
 
 ## unreleased
 
+- **(fix)** Correct `LiftedCode` construction and dimensions for concrete GF(2) group-algebra matrices.
 - Allow Nemo 0.56 in QuantumClifford and QECCore, and update Oscar quotient-ring examples for Nemo's new finite-field representation.
 - Move the classical `BCH` code type to `QECCore` while keeping `QuantumClifford.ECC.BCH` as the same type for compatibility, and reject nonpositive error-correction parameters.
 - Avoid runtime dispatch when resetting qubits in `MixedDestabilizer` states.

@@ -5,7 +5,7 @@ secrets:
   - CODECOV_TOKEN
 
 steps:
-  - label: "QuantumClifford Tests (with local QECCore) - {{matrix.LABEL}}"
+  - label: "QuantumClifford - {{matrix.LABEL}} (local QECCore)"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -27,7 +27,7 @@ steps:
       queue: "{{matrix.QUEUE}}"
     matrix:
       setup:
-        LABEL: ["base tests"]
+        LABEL: ["General"]
         QUEUE: ["default-queue"]
         TEST_ARGS: ["general"]
         QC_ECC_TEST: ["false"]
@@ -76,25 +76,25 @@ steps:
             QC_ECC_TEST: "bespoke"
             QC_GPU_TEST: "false"
         - with:
-            LABEL: "GPU - CUDA"
+            LABEL: "GPU CUDA"
             QUEUE: cuda
             TEST_ARGS: "general"
             QC_ECC_TEST: "false"
             QC_GPU_TEST: "cuda"
         - with:
-            LABEL: "GPU - ROCm"
+            LABEL: "GPU ROCm"
             QUEUE: rocm
             TEST_ARGS: "general"
             QC_ECC_TEST: "false"
             QC_GPU_TEST: "rocm"
         - with:
-            LABEL: "GPU - OpenCL"
+            LABEL: "GPU OpenCL"
             QUEUE: "default-queue"
             TEST_ARGS: "general"
             QC_ECC_TEST: "false"
             QC_GPU_TEST: "opencl"
 
-  - label: "QECCore Tests (with local QuantumClifford) - {{matrix.LABEL}}"
+  - label: "QECCore - {{matrix.LABEL}} (local QuantumClifford)"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -114,7 +114,7 @@ steps:
       queue: "{{matrix.QUEUE}}"
     matrix:
       setup:
-        LABEL: ["base tests"]
+        LABEL: ["General"]
         QUEUE: ["default-queue"]
         TEST_ARGS: ["general"]
       adjustments:
@@ -123,7 +123,7 @@ steps:
             QUEUE: "default-queue"
             TEST_ARGS: "jet"
 
-  - label: "Downstream Tests - {{matrix.PACKAGE}}"
+  - label: "Downstream {{matrix.PACKAGE}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -140,7 +140,7 @@ steps:
       setup:
         PACKAGE: ["QuantumSavory", "BPGates", "QuantumSymbolics"]
 
-  - label: "Downstream Dev Tests - {{matrix.PACKAGE}}"
+  - label: "Downstream (dev) {{matrix.PACKAGE}}"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
