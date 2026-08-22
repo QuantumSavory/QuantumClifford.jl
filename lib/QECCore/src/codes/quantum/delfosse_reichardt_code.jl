@@ -203,7 +203,7 @@ end
 
 function parity_matrix_xz(c::DelfosseReichardt)
     extended_mat = _generalize_delfosse_reichardt_code(c.p, c.r, c.m)
-    return extended_mat, extended_mat
+    return extended_mat, copy(extended_mat)
 end
 
 parity_matrix_x(c::DelfosseReichardt) = parity_matrix_xz(c)[1]

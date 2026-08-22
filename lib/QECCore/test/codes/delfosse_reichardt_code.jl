@@ -1,3 +1,17 @@
+@testitem "Delfosse-Reichardt CSS accessor ownership" tags=[:qec_determinism] begin
+    using QECCore
+
+    code = DelfosseReichardt(2, 1, 3)
+    hx, hz = parity_matrix_xz(code)
+    expected = copy(hz)
+
+    @test hx == hz
+    @test hx !== hz
+    hx .= false
+    @test hz == expected
+    @test parity_matrix_xz(code) == (expected, expected)
+end
+
 @testitem "Generalized Delfosse-Reichardt code" begin
 
     using JuMP
