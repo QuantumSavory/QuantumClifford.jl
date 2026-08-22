@@ -111,7 +111,7 @@ end
 
 function parity_matrix_xz(tile::Tile2D)
     tile_z = _tile2d_complement(tile)
-    # "We will always restrict ourselves to (rotated) rectangular shapes" [steffan2025tilecodeshighefficiencyquantum](@cite).
+    # Construct the supported unrotated rectangular layout.
     black, red, blue = _tile2d_rectangular_layout(tile)
     physical = _tile2d_physical_qubits(tile)
     x_rows = Vector{Vector{Tuple{Symbol,Int,Int}}}()

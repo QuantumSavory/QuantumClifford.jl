@@ -4,6 +4,6 @@
     using QuantumClifford.ECC
 
     tile = Tile2D(2, [(0,0)], [(0,0)], 1, 2)
-    @test tile isa QuantumClifford.ECC.QECCore.Tile2D
+    @test :Tile2D in names(QuantumClifford.ECC)
     @test code_n(tile) == 4
 end

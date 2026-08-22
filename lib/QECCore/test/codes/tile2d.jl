@@ -88,9 +88,9 @@
             h = stab_to_gf2(stab)
             mat = matrix(GF(2), h)
             computed_rank = rank(mat)
-            @test computed_rank == nₛ - kₛ
             @test stab_looks_good(stab, remove_redundant_rows=true)
-            @test computed_rank == n - k && computed_rank == nₛ - kₛ && n == nₛ && k == kₛ
+            @test (nₛ, kₛ) == (n, k)
+            @test computed_rank == n - k
         end
 
         weight_cases = [
@@ -126,9 +126,9 @@
             h = stab_to_gf2(stab)
             mat = matrix(GF(2), h)
             computed_rank = rank(mat)
-            @test computed_rank == nₛ - kₛ
             @test stab_looks_good(stab, remove_redundant_rows=true)
-            @test computed_rank == n - k && computed_rank == nₛ - kₛ && n == nₛ && k == kₛ
+            @test (nₛ, kₛ) == (n, k)
+            @test computed_rank == n - k
             @test maximum(sum(parity_matrix_z(c); dims=2)) == 6
             @test maximum(sum(parity_matrix_x(c); dims=2)) == 6
         end
@@ -150,9 +150,9 @@
             h = stab_to_gf2(stab)
             mat = matrix(GF(2), h)
             computed_rank = rank(mat)
-            @test computed_rank == nₛ - kₛ
             @test stab_looks_good(stab, remove_redundant_rows=true)
-            @test computed_rank == n - k && computed_rank == nₛ - kₛ && n == nₛ && k == kₛ
+            @test (nₛ, kₛ) == (n, k)
+            @test computed_rank == n - k
             @test maximum(sum(parity_matrix_z(c); dims=2)) == 8
             @test maximum(sum(parity_matrix_x(c); dims=2)) == 8
         end
