@@ -180,13 +180,23 @@
         @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 2
         @test small_group_identification(G) == (order(G), 9)
 
-        # [[56, 8, 7]]
+        # [[56, 4, 10]]
         m = 14
         F = free_group(["x", "s"])
         x, s = gens(F)
         G, = quo(F, [x^m, s^2, x * s * x^-1 * s^-1])
         F2G = group_algebra(GF(2), G)
         x, s = gens(G)
+        a_elts = [one(G), x]
+        b_elts = [one(G), x^7, s*x^8, x^2, x^3, s*x^11]
+        c = twobga_from_fp_group(a_elts, b_elts, F2G)
+        @test order(G) == 2*m
+        @test describe(G) == "C$m x C2"
+        @test code_n(c) == 56 && code_k(c) == 4
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 10
+        @test small_group_identification(G) == (order(G), 4)
+
+        # [[56, 8, 7]]
         a_elts = [one(G), x^8]
         b_elts = [one(G), x^7, s, x^8, x^9, s * x^4]
         c = twobga_from_fp_group(a_elts, b_elts, F2G)
