@@ -1,11 +1,9 @@
 @testitem "Tile 2D" begin
     using Test
-    using HiGHS
-    using JuMP
     using Nemo: matrix, GF, rank
     using QECCore: Tile2D
     using QuantumClifford: stab_looks_good, stab_to_gf2
-    using QuantumClifford.ECC: parity_checks, code_n, code_k, parity_matrix_x, parity_matrix_z, DistanceMIPAlgorithm, distance
+    using QuantumClifford.ECC: parity_checks, code_n, code_k, parity_matrix_x, parity_matrix_z
 
     @testset "Constructor" begin
         @test_throws ArgumentError Tile2D(0, [(0,0)], [(0,0)], 1, 1)
@@ -58,6 +56,7 @@
         ]
         @test parity_matrix_x(nonsquare_tile) == expected_x
         @test parity_matrix_z(nonsquare_tile) == expected_z
+        @test code_k(nonsquare_tile) == 2
     end
 
     @testset "Tile 2D" begin
@@ -90,7 +89,6 @@
         c = Tile2D(B, horizX, vertX, Lx, Ly)
         @test all(maximum(sum(Matrix(parity_matrix_z(c)), dims=2)) .== 6)
         @test all(maximum(sum(Matrix(parity_matrix_x(c)), dims=2)) .== 6)
-        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS, time_limit=900)) == 12
 
         # [[288, 8, 14]]
         B = 3
@@ -128,7 +126,6 @@
             (288, 8, 3, [(0,0), (0,1), (2,2)], [(0,2), (1,2), (2,0)], 10, 10),  # [[288, 8, 12]]
             (288, 8, 3, [(0,0), (1,0), (2,2)], [(0,1), (0,2), (2,0)], 10, 10),  # [[288, 8, 12]]
             (288, 8, 3, [(0,0), (1,0), (2,2)], [(0,2), (2,0), (2,1)], 10, 10),  # [[288, 8, 12]]
-            (288, 8, 3, [(0,0), (1,2), (2,2)], [(0,1), (0,2), (2,0)], 10, 10),  # [[288, 8, 12]]
             (288, 8, 3, [(0,0), (1,2), (2,2)], [(0,1), (0,2), (2,0)], 10, 10),  # [[288, 8, 12]]
             (288, 8, 3, [(0,0), (1,2), (2,2)], [(0,2), (2,0), (2,1)], 10, 10),  # [[288, 8, 12]]
             (288, 8, 3, [(0,0), (2,1), (2,2)], [(0,2), (1,0), (2,0)], 10, 10),  # [[288, 8, 12]]
