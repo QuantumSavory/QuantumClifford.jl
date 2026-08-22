@@ -1,5 +1,3 @@
-abstract type AbstractPolynomialCode <: AbstractCECC end
-
 """
 The family of Bose–Chaudhuri–Hocquenghem (BCH) codes, as discovered in 1959 by
 Alexis Hocquenghem [hocquenghem1959codes](@cite), and independently in 1960 by
