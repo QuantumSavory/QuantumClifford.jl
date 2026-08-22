@@ -3,6 +3,7 @@
 ## v0.1.4 - 2026-08-22
 
 - Add `BCH`, moved from `QuantumClifford.ECC`, with generator-polynomial and parity-matrix methods provided by the Nemo extension.
+- Allow QECCore to resolve on Julia 1.9 by matching the `Random` standard-library compatibility bound to the declared Julia compatibility.
 
 ## v0.1.3 - 2026-03-03
 
