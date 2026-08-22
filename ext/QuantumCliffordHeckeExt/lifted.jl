@@ -55,19 +55,11 @@ struct LiftedCode <: AbstractCECC
     default to be the permutation representation for GF(2)-algebra."""
     repr::Function
 
-    function LiftedCode(A::GroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1, 1]), repr::Function)
+    function LiftedCode(A::GroupAlgebraElemMatrix; GA::GroupAlgebra=parent(A[1, 1]), repr::Function=representation_matrix)
         all(elem.parent == GA for elem in A) || error("The base ring of all elements in the code must be the same as the group algebra")
+        repr === representation_matrix && !(characteristic(base_ring(GA)) == 2) && error("The default permutation representation applies only to GF(2) group algebra; otherwise, a custom representation function should be provided")
         new(A, GA, repr)
     end
-end
-
-#"""
-#`LiftedCode` constructor using the default `GF(2)` representation (coefficients converted to a permutation matrix by `representation_matrix` provided by Hecke).
-#"""
-# TODO doctest example and document the other constructors below
-function LiftedCode(A::Matrix{<:GroupAlgebraElem{FqFieldElem, <: GroupAlgebra}}; GA::GroupAlgebra=parent(A[1,1]), repr::Function=representation_matrix)
-    repr === representation_matrix && !(characteristic(base_ring(A[1, 1])) == 2) && error("The default permutation representation applies only to GF(2) group algebra; otherwise, a custom representation function should be provided")
-    invoke(LiftedCode, Tuple{GroupAlgebraElemMatrix}, A; GA, repr)
 end
 
 """
