@@ -6,7 +6,7 @@ using QuantumClifford.ECC: check_repr_commutation_relation, check_repr_regular_l
 using InteractiveUtils
 using SparseArrays
 
-import Nemo: GF
+import Nemo: GF, Native
 import LinearAlgebra
 import Hecke: group_algebra, abelian_group, gens, quo, one, small_group, polynomial_ring, GF, matrix, quo
 
@@ -221,7 +221,7 @@ A_ghp2 = matrix(S_ghp2, n_ghp2, n_ghp2,
 b_ghp2 = S_ghp2(1 + x + x^6)
 
 # Generalized Bicycle and Extended GB codes from [koukoulekidis2024smallquantumcodesalgebraic](@cite)
-R, x = polynomial_ring(Native.GF(2), :x)
+R, x = polynomial_ring(GF(2), :x)
 l_gb₁ = 6
 a_gb₁ = 1 + x^4
 b_gb₁ = 1 + x + x^2 + x^4
@@ -458,13 +458,13 @@ const code_instance_args = Dict(
 
     # Homological Product Codes
     # [[117, 9, 4]] from [xu2024fastparallelizablelogicalcomputation](@cite)
-    R, x = polynomial_ring(Native.GF(2), "x")
+    R, x = polynomial_ring(GF(2), "x")
     l₁ = 3
     H₁ = matrix(R, 2, 3, [x^2 x^2 x^2;
                           x   x^2  0])
 
     # [[225, 9, 6]] from [xu2024fastparallelizablelogicalcomputation](@cite)
-    R, x = polynomial_ring(Native.GF(2), "x")
+    R, x = polynomial_ring(GF(2), "x")
     l₂ = 3
     H₂ = matrix(R, 3, 4, [x^2 x^2 x^2   0;
                           x^2   0 x^2  x^2;

@@ -39,16 +39,16 @@ end
 if Sys.iswindows()
     @info "Skipping GPU/OpenCL tests -- only executed on *NIX platforms."
 else
-    CUDA_flag = get(ENV, "GPU_TEST", "") == "cuda"
-    ROCm_flag = get(ENV, "GPU_TEST", "") == "rocm"
-    OpenCL_flag = get(ENV, "GPU_TEST", "") == "opencl"
+    CUDA_flag = get(ENV, "QC_GPU_TEST", "") == "cuda"
+    ROCm_flag = get(ENV, "QC_GPU_TEST", "") == "rocm"
+    OpenCL_flag = get(ENV, "QC_GPU_TEST", "") == "opencl"
 
     CUDA_flag && @info "Running with CUDA tests."
     ROCm_flag && @info "Running with ROCm tests."
     OpenCL_flag && @info "Running with OpenCL tests."
     if !any((CUDA_flag, ROCm_flag, OpenCL_flag))
         @info "Skipping GPU/OpenCL tests -- must be explicitly enabled."
-        @info "Environment must uniquely set GPU_TEST=cuda/rocm/opencl."
+        @info "Environment must uniquely set QC_GPU_TEST=cuda/rocm/opencl."
     end
 end
 
@@ -86,22 +86,22 @@ testfilter = ti -> begin
         push!(exclude, :tesseract_required)
     end
 
-    if get(ENV, "ECC_TEST", "") == "base"
+    if get(ENV, "QC_ECC_TEST", "") == "base"
         return (:ecc in ti.tags) && (:ecc_base in ti.tags) && all(!in(exclude), ti.tags)
 
-    elseif get(ENV, "ECC_TEST", "") == "encoding"
+    elseif get(ENV, "QC_ECC_TEST", "") == "encoding"
         return (:ecc in ti.tags) && (:ecc_encoding in ti.tags) && all(!in(exclude), ti.tags)
 
-    elseif get(ENV, "ECC_TEST", "") == "decoding"
+    elseif get(ENV, "QC_ECC_TEST", "") == "decoding"
         return (:ecc in ti.tags) && (:ecc_decoding in ti.tags) && all(!in(exclude), ti.tags)
 
-    elseif get(ENV, "ECC_TEST", "") == "syndromecircuit"
+    elseif get(ENV, "QC_ECC_TEST", "") == "syndromecircuit"
         return (:ecc in ti.tags) && (:ecc_syndrome_circuit_equivalence in ti.tags) && all(!in(exclude), ti.tags)
 
-    elseif get(ENV, "ECC_TEST", "") == "syndromemeasurement"
+    elseif get(ENV, "QC_ECC_TEST", "") == "syndromemeasurement"
         return (:ecc in ti.tags) && (:ecc_syndrome_measurement_correctness in ti.tags) && all(!in(exclude), ti.tags)
 
-    elseif get(ENV, "ECC_TEST", "") == "bespoke"
+    elseif get(ENV, "QC_ECC_TEST", "") == "bespoke"
         return (:ecc in ti.tags) && (:ecc_bespoke_checks in ti.tags) && all(!in(exclude), ti.tags)
     else
         push!(exclude, :ecc)
