@@ -1,5 +1,3 @@
-abstract type AbstractPolynomialCode <: AbstractCECC end
-
 """
     $TYPEDEF
 
