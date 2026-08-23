@@ -36,6 +36,7 @@ include("codes/classical/hamming.jl")
 include("codes/classical/repetition.jl")
 include("codes/classical/golay.jl")
 include("codes/classical/gallager.jl")
+
 abstract type AbstractPolynomialCode <: AbstractCECC end
 
 include("codes/classical/goppa.jl")
