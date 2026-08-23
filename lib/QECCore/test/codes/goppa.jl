@@ -147,3 +147,14 @@
     @test  length(ga.L) - rank(matrix(GF(2), parity_matrix(ga))) >= n - m*t
     @test echelon_form(matrix(GF(2), H)) == echelon_form(matrix(GF(2), ref_H))
 end
+
+@testitem "Goppa default support uses the polynomial field" begin
+    using QECCore
+    using Nemo: finite_field, polynomial_ring
+
+    F, α = finite_field(2, 4, :α)
+    R, x = polynomial_ring(F, :x)
+    code = Goppa(4, 2, x^2 + x + α^3)
+
+    @test all(a -> parent(a) === F, code.L)
+end
