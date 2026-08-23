@@ -123,7 +123,7 @@ function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator; phases
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider calling `apply!(state, indices, operation)` to apply the operation to selected subsystems."))
     s_tab = tab(stab)
     c_tab = tab(c)
-    new_stabrow = c.buffer
+    new_stabrow = zero(c.buffer)
     for row_stab in eachindex(s_tab)
         zero!(new_stabrow)
         apply_row_kernel!(new_stabrow, row_stab, s_tab, c_tab, phases=Val(phases))
@@ -136,7 +136,7 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator; phases::Val{B}=V
     nqubits(stab)==nqubits(c) || throw(DimensionMismatch("The tableau and the Clifford operator need to act on the same number of qubits. Consider calling `apply!(state, indices, operation)` to apply the operation to selected subsystems."))
     s_tab = tab(stab)
     c_tab = tab(c)
-    threadlocal = c.buffer
+    threadlocal = zero(c.buffer)
     @inbounds for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, phases=phases)
@@ -172,7 +172,7 @@ end
 function _apply_nonthread!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_application::Base.AbstractVecOrTuple{Int}; phases::Bool=true)
     s_tab = tab(stab)
     c_tab = tab(c)
-    new_stabrow = c.buffer
+    new_stabrow = zero(c.buffer)
     for row in eachindex(s_tab)
         zero!(new_stabrow)
         apply_row_kernel!(new_stabrow, row, s_tab, c_tab, indices_of_application; phases=Val(phases))
@@ -185,7 +185,7 @@ function _apply!(stab::AbstractStabilizer, c::CliffordOperator, indices_of_appli
     #max(indices_of_application)<=nqubits(s) || throw(DimensionMismatch("")) # Too expensive to check every time
     s_tab = tab(stab)
     c_tab = tab(c)
-    threadlocal= c.buffer
+    threadlocal = zero(c.buffer)
     @inbounds for row_stab in eachindex(s_tab)
         zero!(threadlocal) # a new stabrow for temporary storage
         apply_row_kernel!(threadlocal, row_stab, s_tab, c_tab, indices_of_application, phases=phases)
