@@ -1,5 +1,9 @@
 # News
 
+## Unreleased
+
+- Preserve exact column weights when repairing empty rows in random Tillich-Zémor codes.
+
 ## v0.1.4 - 2026-08-23
 
 - Add `BCH`, moved from `QuantumClifford.ECC`, with generator-polynomial and parity-matrix methods provided by the Nemo extension.
