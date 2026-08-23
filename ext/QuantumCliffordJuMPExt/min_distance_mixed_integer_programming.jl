@@ -153,7 +153,7 @@ function distance(code::AbstractECC, alg::DistanceMIPAlgorithm)
     if alg.logical_operator_type == :minXZ
         dX = _compute_distance(code, logical_qubits, :X, alg)
         dZ = _compute_distance(code, logical_qubits, :Z, alg)
-        return min(dX, dZ)
+        return alg.opt_summary ? (first(dX) <= first(dZ) ? dX : dZ) : min(dX, dZ)
     else
         return _compute_distance(code, logical_qubits, alg.logical_operator_type, alg)
     end
@@ -191,7 +191,8 @@ function _compute_distance(code, logical_qubits, logical_operator_type, alg)
     end
     # Return appropriate result based on configuration
     if alg.opt_summary
-        min_entry = argmin(x -> x.weight, values(weights))
+        logical_qubit = argmin(i -> (weights[i].weight, i), collect(keys(weights)))
+        min_entry = weights[logical_qubit]
         return (min_entry.weight, min_entry.summary)
     else
         return minimum(values(weights))

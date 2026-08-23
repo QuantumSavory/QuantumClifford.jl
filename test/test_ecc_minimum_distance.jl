@@ -18,6 +18,12 @@
         dz = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:Z))
         mindxdz = distance(c, DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:minXZ))
         @test min(dx, dz) == mindxdz
+        summary_distance, summary = distance(
+            c,
+            DistanceMIPAlgorithm(solver=HiGHS, logical_operator_type=:minXZ, opt_summary=true),
+        )
+        @test summary_distance == 8
+        @test !isnothing(summary)
     end
 
     @testset "minimum distance properties: Weight-7 MB" begin
