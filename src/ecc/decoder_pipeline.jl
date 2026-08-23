@@ -6,6 +6,8 @@ All `AbstractSyndromeDecoder` types are expected to:
 - have an `evaluate_decoder` method which runs a full simulation but it supports only a small number of ECC protocols"""
 abstract type AbstractSyndromeDecoder end
 
+const _python_decoder_lock = ReentrantLock()
+
 """Decode a syndrome using a given decoding algorithm."""
 function decode end
 
