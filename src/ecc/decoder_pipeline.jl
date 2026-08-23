@@ -275,8 +275,7 @@ function create_lookup_table(code::Stabilizer; error_weight=1)
 end;
 
 function decode(d::TableDecoder, syndrome_sample)
-    d.lookup_buffer .= syndrome_sample # TODO have this work without data copying, by supporting the correct types, especially in the batch decode case
-    return get(d.lookup_table, d.lookup_buffer, nothing)
+    return get(d.lookup_table, Vector{Bool}(syndrome_sample), nothing)
 end
 
 """A simple look-up table decoder for classical codes.
@@ -329,8 +328,7 @@ function create_lookup_table(H::Matrix{Bool}; error_weight=1) # TODO there is in
 end
 
 function decode(d::ClassicalTableDecoder, syndrome_sample)
-    d.lookup_buffer .= syndrome_sample
-    return get(d.lookup_table, d.lookup_buffer, nothing)
+    return get(d.lookup_table, Vector{Bool}(syndrome_sample), nothing)
 end
 
 """A look-up table decoder for CSS codes.
