@@ -17,6 +17,7 @@ struct BeliefPropDecoder <: AbstractSyndromeDecoder # TODO all these decoders ha
     cz
     bpdecoderx
     bpdecoderz
+    decode_lock::ReentrantLock
 end
 
 struct BitFlipDecoder <: AbstractSyndromeDecoder # TODO all these decoders have the same fields, maybe we can factor out a common type
@@ -29,6 +30,7 @@ struct BitFlipDecoder <: AbstractSyndromeDecoder # TODO all these decoders have 
     cz
     bfdecoderx
     bfdecoderz
+    decode_lock::ReentrantLock
 end
 
 function BeliefPropDecoder(c; errorrate=nothing, maxiter=nothing)
@@ -48,7 +50,7 @@ function BeliefPropDecoder(c; errorrate=nothing, maxiter=nothing)
     bpx = LDPCDecoders.BeliefPropagationDecoder(Hx, errorrate, maxiter)
     bpz = LDPCDecoders.BeliefPropagationDecoder(Hz, errorrate, maxiter)
 
-    return BeliefPropDecoder(H, fm, n, s, k, cx, cz, bpx, bpz)
+    return BeliefPropDecoder(H, fm, n, s, k, cx, cz, bpx, bpz, ReentrantLock())
 end
 
 function BitFlipDecoder(c; errorrate=nothing, maxiter=nothing)
@@ -68,26 +70,30 @@ function BitFlipDecoder(c; errorrate=nothing, maxiter=nothing)
     bfx = LDPCDecoders.BitFlipDecoder(Hx, errorrate, maxiter)
     bfz = LDPCDecoders.BitFlipDecoder(Hz, errorrate, maxiter)
 
-    return BitFlipDecoder(H, fm, n, s, k, cx, cz, bfx, bfz)
+    return BitFlipDecoder(H, fm, n, s, k, cx, cz, bfx, bfz, ReentrantLock())
 end
 
 parity_checks(d::BeliefPropDecoder) = d.H
 parity_checks(d::BitFlipDecoder) = d.H
 
 function decode(d::BeliefPropDecoder, syndrome_sample)
-    row_x = @view syndrome_sample[1:d.cx]
-    row_z = @view syndrome_sample[d.cx+1:d.cx+d.cz]
-    guess_z, success = LDPCDecoders.decode!(d.bpdecoderx, row_x)
-    guess_x, success = LDPCDecoders.decode!(d.bpdecoderz, row_z)
-    return vcat(guess_x, guess_z)
+    lock(d.decode_lock) do
+        row_x = @view syndrome_sample[1:d.cx]
+        row_z = @view syndrome_sample[d.cx+1:d.cx+d.cz]
+        guess_z, _ = LDPCDecoders.decode!(d.bpdecoderx, row_x)
+        guess_x, _ = LDPCDecoders.decode!(d.bpdecoderz, row_z)
+        return vcat(guess_x, guess_z)
+    end
 end
 
 function decode(d::BitFlipDecoder, syndrome_sample)
-    row_x = @view syndrome_sample[1:d.cx]
-    row_z = @view syndrome_sample[d.cx+1:d.cx+d.cz]
-    guess_z, success = LDPCDecoders.decode!(d.bfdecoderx, row_x)
-    guess_x, success = LDPCDecoders.decode!(d.bfdecoderz, row_z)
-    return vcat(guess_x, guess_z)
+    lock(d.decode_lock) do
+        row_x = @view syndrome_sample[1:d.cx]
+        row_z = @view syndrome_sample[d.cx+1:d.cx+d.cz]
+        guess_z, _ = LDPCDecoders.decode!(d.bfdecoderx, row_x)
+        guess_x, _ = LDPCDecoders.decode!(d.bfdecoderz, row_z)
+        return vcat(guess_x, guess_z)
+    end
 end
 
 end
