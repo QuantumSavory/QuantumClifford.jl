@@ -103,7 +103,7 @@ julia> code_n(c), code_k(c), code_s(c)
 function LiftedCode(group_elem_array::Matrix{<: GroupOrAdditiveGroupElem}; GA::GroupAlgebra=group_algebra(GF(2), parent(group_elem_array[1,1])), repr::Union{Function, Nothing}=nothing)
     A = fill(zero(GA), size(group_elem_array)...)
     for i in axes(group_elem_array, 1), j in axes(group_elem_array, 2)
-        A[i, j] = GA[A[i, j]]
+        A[i, j] = GA(group_elem_array[i, j])
     end
     if repr === nothing
         return LiftedCode(A; GA=GA, repr=representation_matrix)

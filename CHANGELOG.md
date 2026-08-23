@@ -7,6 +7,7 @@
 
 ## unreleased
 
+- **(fix)** Embed the supplied group elements when constructing a `LiftedCode`.
 - **(fix)** Correct `LiftedCode` construction and dimensions for concrete GF(2) group-algebra matrices.
 - Avoid runtime dispatch when resetting qubits in `MixedDestabilizer` states.
 
