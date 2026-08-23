@@ -41,7 +41,7 @@ code_k(c::Concat) = code_k(c.c₁) * code_k(c.c₂)
 
 function iscss(c::Concat)
     if iscss(c.c₁)==true && iscss(c.c₂)==true # to distinguish from potentially being nothing
-        true
+        return true
     end
     return nothing # if c.c₁ or c.c₂ are non-CSS; in this case, `Concat(c₁, c₂)` can still be CSS
 end
