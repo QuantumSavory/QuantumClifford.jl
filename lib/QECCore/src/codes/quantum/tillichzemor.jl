@@ -184,18 +184,24 @@ end
 
 function _create_matrix_M_random(rng::AbstractRNG, m::Int, n::Int, r::Int)
     M = zeros(Int, m, n - m)
-    for col in 1:(n - m)
-        # Randomly select r distinct rows to place ones
+    for col in axes(M, 2)
         rows = randperm(rng, m)[1:r]
         M[rows, col] .= 1
     end
-    # Ensure no row is all zeros
-    for row in 1:m
-        if all(M[row, :] .== 0)
-            # Randomly select a column and set this row to 1
-            col = rand(rng, 1:(n - m))
-            M[row, col] = 1
-        end
+
+    row_weights = vec(sum(M; dims=2))
+    for empty_row in eachindex(row_weights)
+        iszero(row_weights[empty_row]) || continue
+
+        donor_row = findfirst(>(1), row_weights)
+        isnothing(donor_row) && error("Internal error: no row can donate a nonzero entry")
+        donor_col = findfirst(x -> !iszero(x), @view M[donor_row, :])
+        isnothing(donor_col) && error("Internal error: the donor row is empty")
+
+        M[donor_row, donor_col] = 0
+        M[empty_row, donor_col] = 1
+        row_weights[donor_row] -= 1
+        row_weights[empty_row] = 1
     end
     return M
 end

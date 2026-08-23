@@ -7,6 +7,7 @@
 
 ## unreleased
 
+- **(fix)** Preserve exact column weights in random Tillich-Zémor codes.
 - **(fix)** Correct `LiftedCode` construction and dimensions for concrete GF(2) group-algebra matrices.
 - Avoid runtime dispatch when resetting qubits in `MixedDestabilizer` states.
 

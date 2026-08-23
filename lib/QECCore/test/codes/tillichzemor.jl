@@ -1,3 +1,12 @@
+@testitem "Random Tillich-Zemor column weights" begin
+    using Random: MersenneTwister
+    using QECCore: _create_matrix_M_random
+
+    M = _create_matrix_M_random(MersenneTwister(17), 39, 52, 3)
+    @test vec(sum(M; dims=1)) == fill(3, 13)
+    @test all(>(0), vec(sum(M; dims=2)))
+end
+
 @testitem "Quantum Tillich-Zemor" begin
 
     using QuantumClifford
