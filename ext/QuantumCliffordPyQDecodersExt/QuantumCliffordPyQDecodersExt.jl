@@ -43,9 +43,15 @@ function PyBeliefPropDecoder(c; maxiter=nothing, bpmethod=nothing, errorrate=not
     bpmethod ∈ (nothing, :productsum, :minsum) || error(lazy"PyBeliefPropDecoder got an unknown belief propagation method argument. `bpmethod` must be one of :productsum, :minsum.")
     bp_method = get(Dict(:productsum => "product_sum", :minsum => "minimum_sum"), bpmethod, "minimum_sum")
     isnothing(errorrate) || 0≤errorrate≤1 || error(lazy"PyBeliefPropDecoder got an invalid error rate argument. `errorrate` must be in the range [0, 1].")
-    error_rate = isnothing(errorrate) ? PythonCall.Py(0.0001) : errorrate
-    pyx = ldpc.BpDecoder(np.array(Hx); max_iter, bp_method, error_rate) # TODO should be sparse
-    pyz = ldpc.BpDecoder(np.array(Hz); max_iter, bp_method, error_rate) # TODO should be sparse
+    pyx, pyz = lock(QuantumClifford.ECC._python_decoder_lock) do
+        PythonCall.GIL.@lock begin
+            error_rate = isnothing(errorrate) ? PythonCall.Py(0.0001) : errorrate
+            (
+                ldpc.BpDecoder(np.array(Hx); max_iter, bp_method, error_rate),
+                ldpc.BpDecoder(np.array(Hz); max_iter, bp_method, error_rate),
+            )
+        end
+    end
     return PyBeliefPropDecoder(c, H, Hx, Hz, size(Hx, 1), size(Hz, 1), fm, pyx, pyz)
 end
 
@@ -58,13 +64,19 @@ function PyBeliefPropOSDecoder(c; maxiter=nothing, bpmethod=nothing, errorrate=n
     bpmethod ∈ (nothing, :productsum, :minsum) || error(lazy"PyBeliefPropOSDecoder got an unknown belief propagation method argument. `bpmethod` must be one of :productsum, :minsum.")
     bp_method = get(Dict(:productsum => "product_sum", :minsum => "minimum_sum"), bpmethod, "minimum_sum")
     isnothing(errorrate) || 0≤errorrate≤1 || error(lazy"PyBeliefPropOSDecoder got an invalid error rate argument. `errorrate` must be in the range [0, 1].")
-    error_rate = isnothing(errorrate) ? PythonCall.Py(0.0001) : errorrate
     isnothing(osdmethod) || osdmethod ∈ (:zeroorder, :exhaustive, :combinationsweep) || error(lazy"PyBeliefPropOSDecoder got an unknown OSD method argument. `osdmethod` must be one of :zeroorder, :exhaustive, :combinationsweep.")
     osd_method = get(Dict(:zeroorder => "OSD_0", :exhaustive => "OSD_E", :combinationsweep => "OSD_CS"), osdmethod, 0)
     osdorder≥0 || error(lazy"PyBeliefPropOSDecoder got an invalid OSD order argument. `osdorder` must be ≥0.")
     osd_order = osdorder
-    pyx = ldpc.BpOsdDecoder(np.array(Hx); max_iter, bp_method, error_rate, osd_method, osd_order) # TODO should be sparse
-    pyz = ldpc.BpOsdDecoder(np.array(Hz); max_iter, bp_method, error_rate, osd_method, osd_order) # TODO should be sparse
+    pyx, pyz = lock(QuantumClifford.ECC._python_decoder_lock) do
+        PythonCall.GIL.@lock begin
+            error_rate = isnothing(errorrate) ? PythonCall.Py(0.0001) : errorrate
+            (
+                ldpc.BpOsdDecoder(np.array(Hx); max_iter, bp_method, error_rate, osd_method, osd_order),
+                ldpc.BpOsdDecoder(np.array(Hz); max_iter, bp_method, error_rate, osd_method, osd_order),
+            )
+        end
+    end
     return PyBeliefPropOSDecoder(c, H, Hx, Hz, size(Hx, 1), size(Hz, 1), fm, pyx, pyz)
 end
 
@@ -73,10 +85,12 @@ parity_checks(d::PyBP) = d.H
 function decode(d::PyBP, syndrome_sample)
     row_x = @view syndrome_sample[1:d.nx] # TODO figure out a lower-overhead way to move data to python (and make sure the ecc wiki still works after that change -- a lot of the cruft here is because of rare crashes when running the wiki evaluator)
     row_z = @view syndrome_sample[d.nx+1:end]
-    PythonCall.GIL.@lock begin
-        guess_z_errors = PythonCall.PyArray(d.pyx.decode(PythonCall.Py(row_x).to_numpy()))
-        guess_x_errors = PythonCall.PyArray(d.pyz.decode(PythonCall.Py(row_z).to_numpy()))
-        vcat(guess_x_errors, guess_z_errors)
+    return lock(QuantumClifford.ECC._python_decoder_lock) do
+        PythonCall.GIL.@lock begin
+            guess_z_errors = PythonCall.PyArray(d.pyx.decode(PythonCall.Py(row_x).to_numpy()))
+            guess_x_errors = PythonCall.PyArray(d.pyz.decode(PythonCall.Py(row_z).to_numpy()))
+            vcat(guess_x_errors, guess_z_errors)
+        end
     end
 end
 
@@ -97,12 +111,17 @@ function PyMatchingDecoder(c; weights=nothing)
     Hz = parity_matrix_z(c) |> collect
     H = parity_checks(c)
     fm = faults_matrix(c)
-    if isnothing(weights)
-        pyx = pm.Matching.from_check_matrix(Hx)
-        pyz = pm.Matching.from_check_matrix(Hz)
-    else
-        pyx = pm.Matching.from_check_matrix(Hx, weights=weights)
-        pyz = pm.Matching.from_check_matrix(Hz, weights=weights)
+    pyx, pyz = lock(QuantumClifford.ECC._python_decoder_lock) do
+        PythonCall.GIL.@lock begin
+            if isnothing(weights)
+                (pm.Matching.from_check_matrix(Hx), pm.Matching.from_check_matrix(Hz))
+            else
+                (
+                    pm.Matching.from_check_matrix(Hx, weights=weights),
+                    pm.Matching.from_check_matrix(Hz, weights=weights),
+                )
+            end
+        end
     end
     return PyMatchingDecoder(c, H, Hx, Hz, size(Hx, 1), size(Hz, 1), fm, pyx, pyz)
 end
@@ -112,20 +131,25 @@ parity_checks(d::PyMatchingDecoder) = d.H
 function decode(d::PyMatchingDecoder, syndrome_sample)
     row_x = @view syndrome_sample[1:d.nx]
     row_z = @view syndrome_sample[d.nx+1:end]
-    PythonCall.GIL.@lock begin
-        guess_z_errors = PythonCall.PyArray(d.pyx.decode(PythonCall.Py(row_x).to_numpy()))
-        guess_x_errors = PythonCall.PyArray(d.pyz.decode(PythonCall.Py(row_z).to_numpy()))
-        vcat(guess_x_errors, guess_z_errors)
+    return lock(QuantumClifford.ECC._python_decoder_lock) do
+        PythonCall.GIL.@lock begin
+            guess_z_errors = PythonCall.PyArray(d.pyx.decode(PythonCall.Py(row_x).to_numpy()))
+            guess_x_errors = PythonCall.PyArray(d.pyz.decode(PythonCall.Py(row_z).to_numpy()))
+            vcat(guess_x_errors, guess_z_errors)
+        end
     end
 end
 
 function batchdecode(d::PyMatchingDecoder, syndrome_samples)
     row_x = @view syndrome_samples[:,1:d.nx]
     row_z = @view syndrome_samples[:,d.nx+1:end]
-    guess_z_errors = PythonCall.PyArray(d.pyx.decode_batch(row_x))
-    guess_x_errors = PythonCall.PyArray(d.pyz.decode_batch(row_z))
-    n_cols_x = size(guess_x_errors, 2)
-    hcat(guess_x_errors, guess_z_errors)
+    return lock(QuantumClifford.ECC._python_decoder_lock) do
+        PythonCall.GIL.@lock begin
+            guess_z_errors = PythonCall.PyArray(d.pyx.decode_batch(row_x))
+            guess_x_errors = PythonCall.PyArray(d.pyz.decode_batch(row_z))
+            hcat(guess_x_errors, guess_z_errors)
+        end
+    end
 end
 
 end
