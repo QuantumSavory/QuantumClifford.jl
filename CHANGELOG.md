@@ -7,6 +7,7 @@
 
 ## unreleased
 
+- **(fix)** Construct default Goppa support sets in the polynomial's base field.
 - **(fix)** Correct `LiftedCode` construction and dimensions for concrete GF(2) group-algebra matrices.
 - Avoid runtime dispatch when resetting qubits in `MixedDestabilizer` states.
 

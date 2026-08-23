@@ -168,7 +168,7 @@ struct Goppa <: AbstractPolynomialCode
 end
 
 function Goppa(m::Int, t::Int, g::FqPolyRingElem)
-    F = GF(2, m, :α)
+    F = base_ring(parent(g))
     L = [a for a in F if evaluate(g, a) != 0]
     return Goppa(m, t, g, L)
 end
