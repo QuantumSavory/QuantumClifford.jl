@@ -42,8 +42,9 @@
             @test canonical_H == canonicalize!(matrix_H)
 
             if iscss(code) === true
-                Hx = parity_matrix_x(code)
-                Hz = parity_matrix_z(code)
+                Hx, Hz = parity_matrix_xz(code)
+                @test Hx == parity_matrix_x(code)
+                @test Hz == parity_matrix_z(code)
                 @test size(Hx, 2) == size(Hz, 2) == code_n(code)
                 @test size(Hx, 1) + size(Hz, 1) == code_s(code)
                 @test iszero(mod.(Hx * LinearAlgebra.transpose(Hz), 2))
