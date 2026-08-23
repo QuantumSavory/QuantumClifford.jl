@@ -23,7 +23,7 @@ DelfosseReichardt, DelfosseReichardtRep, DelfosseReichardt823, QuantumTannerGrap
 TillichZemor, random_TillichZemor_code, BivariateBicycleViaCirculantMat
 
 # Classical Codes
-export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, random_Gallager_ldpc, Goppa, random_Goppa_code
+export RepCode, ReedMuller, RecursiveReedMuller, Golay, Hamming, random_Gallager_ldpc, Goppa, random_Goppa_code, BCH
 
 # utilities
 export search_self_orthogonal_rm_code, hgp
@@ -36,7 +36,10 @@ include("codes/classical/hamming.jl")
 include("codes/classical/repetition.jl")
 include("codes/classical/golay.jl")
 include("codes/classical/gallager.jl")
+abstract type AbstractPolynomialCode <: AbstractCECC end
+
 include("codes/classical/goppa.jl")
+include("codes/classical/bch.jl")
 
 # Quantum Codes
 include("codes/quantum/css.jl")

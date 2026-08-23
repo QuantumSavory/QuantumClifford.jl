@@ -2,7 +2,8 @@ module ECC
 
 using QECCore
 import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
-metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial, hasmetachecks
+metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial, hasmetachecks,
+AbstractPolynomialCode
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
@@ -401,7 +402,6 @@ include("codes/util.jl")
 
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
-include("codes/classical/bch.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
