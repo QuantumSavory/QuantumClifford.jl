@@ -578,8 +578,8 @@ The circuit contains `nqubits` qubits and `ngates` gates. The connectivity is al
 function random_all_to_all_clifford_circuit(rng::AbstractRNG, nqubits::Int, ngates::Int)
     circ = QuantumClifford.SparseGate[]
     for i in 1:ngates
-        j = rand(1:nqubits)
-        k = rand(1:nqubits-1)
+        j = rand(rng, 1:nqubits)
+        k = rand(rng, 1:nqubits-1)
         push!(circ, SparseGate(random_clifford(rng, 2), [j, (j + k - 1) % nqubits + 1]))
     end
     circ

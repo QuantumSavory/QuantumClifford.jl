@@ -8,6 +8,7 @@
 ## unreleased
 
 - **(fix)** Report concatenations of two CSS codes as CSS.
+- **(fix)** Use the supplied RNG for all-to-all circuit qubit selection.
 - **(fix)** Correct `LiftedCode` construction and dimensions for concrete GF(2) group-algebra matrices.
 - Avoid runtime dispatch when resetting qubits in `MixedDestabilizer` states.
 
