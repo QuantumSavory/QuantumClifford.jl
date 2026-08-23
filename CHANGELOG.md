@@ -7,6 +7,7 @@
 
 ## unreleased
 
+- Make CSS parity access mutation-safe and add the coordinated `parity_matrix_xz` interface.
 - **(fix)** Correct `LiftedCode` construction and dimensions for concrete GF(2) group-algebra matrices.
 - Avoid runtime dispatch when resetting qubits in `MixedDestabilizer` states.
 
