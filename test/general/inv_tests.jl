@@ -1,4 +1,4 @@
-@testitem "Apply Inv" begin
+@testset "Apply Inv" begin
     using InteractiveUtils
 
     @testset "Apply Inv" begin

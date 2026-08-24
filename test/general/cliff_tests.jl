@@ -1,4 +1,4 @@
-@testitem "Clifford" begin
+@testset "Clifford" begin
     using Random
     using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
     using QuantumClifford: mul_left!

@@ -1,4 +1,4 @@
-@testitem "Graph states single qubit gates" begin
+@testset "Graph states single qubit gates" begin
     using Random
     import QuantumClifford.GraphSim: GraphState
 

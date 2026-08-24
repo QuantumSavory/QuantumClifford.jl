@@ -1,11 +1,10 @@
-@testitem "ROCm" tags = [:rocm] begin
+include("../implementation/test_platform.jl")
 
-    include("implementation/test_platform.jl")
+using AMDGPU: ROCArray, devices, synchronize
+const AT = ROCArray
+const can_run = length(devices()) > 0
 
-    using AMDGPU: ROCArray, devices, synchronize
-    const AT = ROCArray
-
-    const can_run = length(devices()) > 0
+@testset "ROCm" begin
 
     @testset "Device availability" begin
         @test can_run

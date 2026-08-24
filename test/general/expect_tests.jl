@@ -1,4 +1,4 @@
-@testitem "Expectation of Pauli strings on stabilizer states" begin
+@testset "Expectation of Pauli strings on stabilizer states" begin
     using QuantumClifford
     using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
     using QuantumClifford: projectremoverand!

@@ -1,4 +1,6 @@
-@testitem "throws" begin
+struct A <: QuantumClifford.AbstractOperation end
+
+@testset "throws" begin
     using QuantumClifford: rank, mul_left!, mul_right!
     using InteractiveUtils: subtypes
 
@@ -26,7 +28,6 @@
     @test_throws ArgumentError embed(10,2,P"XX")
     @test_throws ArgumentError embed(10,[2,3],P"X")
 
-    struct A <: QuantumClifford.AbstractOperation end
     @test_throws ArgumentError applybranches(S"X",A())
 
     @test_throws BadDataStructure project!(Destabilizer(S"XX"), P"ZZ")

@@ -1,14 +1,13 @@
-@testitem "OpenCL" tags = [:opencl] begin
+include("../implementation/test_platform.jl")
 
-    include("implementation/test_platform.jl")
+import pocl_jll
+using OpenCL: CLArray, cl.devices, cl.platforms, cl.finish, cl.queue
+const AT = CLArray
+const can_run = any(
+    length(devices(platform)) > 0 for platform in platforms()
+)
 
-    import pocl_jll
-    using OpenCL: CLArray, cl.devices, cl.platforms, cl.finish, cl.queue
-    const AT = CLArray
-
-    const can_run = any(
-        length(devices(platform)) > 0 for platform in platforms()
-            )
+@testset "OpenCL" begin
 
     @testset "Device availability" begin
         @test can_run

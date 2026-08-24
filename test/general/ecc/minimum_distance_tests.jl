@@ -1,4 +1,4 @@
-@testitem "ECC QLDPC minimum distance" tags=[:ecc, :ecc_bespoke_checks] begin
+@testset "ECC QLDPC minimum distance" begin
     using Hecke
     using JuMP
     using HiGHS

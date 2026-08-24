@@ -1,4 +1,4 @@
-@testitem "Stabilizer-state metrics match QuantumOpticsBase" begin
+@testset "Stabilizer-state metrics match QuantumOpticsBase" begin
     using QuantumClifford
     import QuantumOpticsBase
     using Test

@@ -1,4 +1,4 @@
-@testitem "isclifford" begin
+@testset "isclifford" begin
     using QuantumClifford
 
     @testset "Single-qubit symbolic Cliffords" begin

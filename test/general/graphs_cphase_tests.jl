@@ -1,4 +1,4 @@
-@testitem "Graph state CPHASE simulation" begin
+@testset "Graph state CPHASE simulation" begin
     using Random
     import QuantumClifford.GraphSim: GraphState, local_comp!
 

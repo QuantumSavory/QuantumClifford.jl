@@ -1,4 +1,4 @@
-@testitem "Allocation checks" begin
+@testset "Allocation checks" begin
     using QuantumClifford: mul_left!, RandDestabMemory, Tableau
     using Random, InteractiveUtils
     n = Threads.nthreads()

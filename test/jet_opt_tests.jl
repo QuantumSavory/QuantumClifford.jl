@@ -1,4 +1,8 @@
-@testitem "JET optimization: projective measurements" tags=[:jet] begin
+using JET
+using QuantumClifford
+using Test
+
+@testset "JET optimization: projective measurements" begin
     using JET
     using QuantumClifford
     using Test
@@ -13,7 +17,7 @@
     JET.@test_opt target_modules=(QuantumClifford,) projectZ!(copy(state), 1; phases=false)
 end
 
-@testitem "JET optimization: Pauli primitives and constructors" tags=[:jet] begin
+@testset "JET optimization: Pauli primitives and constructors" begin
     using JET
     using QuantumClifford
     using Test
@@ -31,7 +35,7 @@ end
     JET.@test_opt target_modules=(QuantumClifford,) random_clifford(4)
 end
 
-@testitem "JET optimization: Clifford and state application" tags=[:jet] begin
+@testset "JET optimization: Clifford and state application" begin
     using JET
     using QuantumClifford
     using Test
@@ -50,7 +54,7 @@ end
     JET.@test_opt target_modules=(QuantumClifford,) apply!(copy(mixed_bell), sCNOT(1, 2))
 end
 
-@testitem "JET optimization: tableau lifecycle" tags=[:jet] begin
+@testset "JET optimization: tableau lifecycle" begin
     using JET
     using QuantumClifford
     using Test
@@ -69,7 +73,7 @@ end
     JET.@test_opt target_modules=(QuantumClifford,) ptrace(mixed_state, [1])
 end
 
-@testitem "JET optimization: qubit reset" tags=[:jet] begin
+@testset "JET optimization: qubit reset" begin
     using JET
     using QuantumClifford
     using Test
@@ -84,7 +88,7 @@ end
     )
 end
 
-@testitem "JET optimization: Monte Carlo trajectories" tags=[:jet] begin
+@testset "JET optimization: Monte Carlo trajectories" begin
     using JET
     using QuantumClifford
     using Test
@@ -98,7 +102,7 @@ end
     )
 end
 
-@testitem "JET optimization: naive encoding circuit" tags=[:jet] begin
+@testset "JET optimization: naive encoding circuit" begin
     using JET
     using QuantumClifford
     using QuantumClifford.ECC: Steane7, naive_encoding_circuit
@@ -107,7 +111,7 @@ end
     JET.@test_opt target_modules=(QuantumClifford, QuantumClifford.ECC) naive_encoding_circuit(Steane7())
 end
 
-@testitem "JET optimization: table decoders" tags=[:jet] begin
+@testset "JET optimization: table decoders" begin
     using JET
     using QuantumClifford
     using QuantumClifford.ECC: CSSTableDecoder, CommutationCheckECCSetup, Shor9, Steane7, TableDecoder, evaluate_decoder

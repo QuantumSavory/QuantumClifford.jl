@@ -1,4 +1,4 @@
-@testitem "Inner product between stabilizer states" begin
+@testset "Inner product between stabilizer states" begin
     using LinearAlgebra
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
 

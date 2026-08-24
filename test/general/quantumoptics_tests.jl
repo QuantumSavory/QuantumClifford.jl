@@ -1,15 +1,16 @@
-@testitem "Quantum optics" begin
-    using QuantumOpticsBase
-    using QuantumClifford: @S_str, random_stabilizer
-    using LinearAlgebra
-    #using QuantumCliffordQOpticsExt: _l0, _l1, _s₊, _s₋, _i₊, _i₋
-    const qo = Base.get_extension(QuantumClifford, :QuantumCliffordQOpticsExt)
-    const _l0 = qo._l0
-    const _l1 = qo._l1
-    const _s₊ = qo._s₊
-    const _s₋ = qo._s₋
-    const _i₊ = qo._i₊
-    const _i₋ = qo._i₋
+using QuantumOpticsBase
+using QuantumClifford: @S_str, random_stabilizer
+using LinearAlgebra
+
+const qo = Base.get_extension(QuantumClifford, :QuantumCliffordQOpticsExt)
+const _l0 = qo._l0
+const _l1 = qo._l1
+const _s₊ = qo._s₊
+const _s₋ = qo._s₋
+const _i₊ = qo._i₊
+const _i₋ = qo._i₋
+
+@testset "Quantum optics" begin
 
     @testset "conversion from Stabilizer to Ket" begin
         for n in 1:5

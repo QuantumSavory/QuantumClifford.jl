@@ -1,4 +1,11 @@
-@testitem "Stabilizer-state expectations" begin
+struct ZeroBasedIndices <: AbstractVector{Int}
+    data::Vector{Int}
+end
+Base.size(indices::ZeroBasedIndices) = size(indices.data)
+Base.axes(indices::ZeroBasedIndices) = (0:(length(indices.data) - 1),)
+Base.getindex(indices::ZeroBasedIndices, index::Int) = indices.data[index + 1]
+
+@testset "Stabilizer-state expectations" begin
     using LinearAlgebra
     using Random
     using StableRNGs
@@ -42,13 +49,6 @@
         end
         MixedDestabilizer(target, rank(source_state))
     end
-
-    struct ZeroBasedIndices <: AbstractVector{Int}
-        data::Vector{Int}
-    end
-    Base.size(indices::ZeroBasedIndices) = size(indices.data)
-    Base.axes(indices::ZeroBasedIndices) = (0:(length(indices.data) - 1),)
-    Base.getindex(indices::ZeroBasedIndices, index::Int) = indices.data[index + 1]
 
     @testset "pure states and signed generators" begin
         axes = (

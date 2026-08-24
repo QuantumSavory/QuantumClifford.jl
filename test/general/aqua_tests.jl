@@ -1,4 +1,5 @@
-@testitem "Aqua" tags=[:aqua] begin
+@testset "Aqua" begin
     using Aqua
-    Aqua.test_all(QuantumClifford)
+    # Persistent-task testing cannot develop packages with local source dependencies.
+    Aqua.test_all(QuantumClifford; persistent_tasks=false)
 end

@@ -1,4 +1,4 @@
-@testitem "Controlled" begin
+@testset "Controlled" begin
     using QuantumOpticsBase
 
     function transform_Zbasis(qubit)

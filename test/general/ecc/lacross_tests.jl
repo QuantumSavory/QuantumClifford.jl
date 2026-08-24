@@ -1,4 +1,4 @@
-@testitem "ECC La-cross" tags=[:ecc, :ecc_bespoke_checks] begin
+@testset "ECC La-cross" begin
     using JuMP
     using HiGHS
     using Hecke

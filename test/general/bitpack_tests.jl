@@ -1,4 +1,4 @@
-@testitem "Alternative bit packing" tags=[:bitpack] begin
+@testset "Alternative bit packing" begin
     using Random
     using QuantumClifford: Tableau, mul_left!
 

@@ -1,4 +1,4 @@
-@testitem "Non-Clifford Quantum Optics" begin
+@testset "Non-Clifford Quantum Optics" begin
     using QuantumClifford
     using QuantumClifford: GeneralizedStabilizer, rowdecompose, PauliChannel, mul_left!, mul_right!, invsparsity, mixed_destab_looks_good
     using QuantumClifford.PauliChannelNonClifford: _projectrand_notnorm
@@ -227,7 +227,6 @@
                 end
             end
         end
-    end
 
     @testset "projectrand! gives random results" begin
         s1 = projectrand!(GeneralizedStabilizer(S"X"), P"Z")[1].stab

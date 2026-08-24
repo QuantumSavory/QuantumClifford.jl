@@ -1,11 +1,11 @@
-@testitem "ECC code metachecks" tags=[:ecc, :ecc_base] begin
+@testset "ECC code metachecks" begin
     using QECCore
     using QECCore: hasmetachecks
     using QuantumClifford
     using QuantumClifford
     using QuantumClifford.ECC
 
-    include("test_ecc_base.jl")
+    include("../test_ecc_base.jl")
 
     all_codes = all_testable_code_instances()
 

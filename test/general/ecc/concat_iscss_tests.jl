@@ -1,4 +1,4 @@
-@testitem "Concatenated CSS codes are identified as CSS" tags=[:ecc, :ecc_base] begin
+@testset "Concatenated CSS codes are identified as CSS" begin
     using QuantumClifford.ECC: Concat, Steane7, iscss
 
     @test iscss(Concat(Steane7(), Steane7())) === true

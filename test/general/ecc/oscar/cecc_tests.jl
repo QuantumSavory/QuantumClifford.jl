@@ -1,10 +1,10 @@
-@testitem "ECC" tags=[:ecc, :ecc_base] begin
+@testset "ECC" begin
     using Nemo
     using Hecke
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractCECC, QECCore
 
-    include("test_cecc_base.jl")
+    include("../test_cecc_base.jl")
 
     codes = all_testable_classical_code_instances()
 

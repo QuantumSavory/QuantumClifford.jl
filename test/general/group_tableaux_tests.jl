@@ -1,4 +1,4 @@
-@testitem "group theory tools" begin
+@testset "group theory tools" begin
     using Test
     using Random
     using QuantumClifford

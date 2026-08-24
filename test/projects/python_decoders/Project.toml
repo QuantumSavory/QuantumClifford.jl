@@ -1,0 +1,22 @@
+[deps]
+CondaPkg = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
+Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
+InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Nemo = "2edaba10-b0f1-5616-af89-8c11ac63239a"
+ParallelTestRunner = "d3525ed8-44d0-4b2c-a655-542cee43accc"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+PyQDecoders = "17f5de1a-9b79-4409-a58d-4d45812840f7"
+PyTesseractDecoder = "cb7393ab-d93b-4096-98de-53f8be4e08d3"
+PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+QECCore = "b50d4dc9-2544-401f-bae9-a24ba40d0c7a"
+QuantumClifford = "0525e862-1e90-11e9-3e4d-1b39d7109de1"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[sources]
+QuantumClifford = {path = "../../.."}
+QECCore = {path = "../../../lib/QECCore"}
+
+[compat]
+ParallelTestRunner = "2.8.1"

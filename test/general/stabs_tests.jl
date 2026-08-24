@@ -1,4 +1,4 @@
-@testitem "Stabilizers" begin
+@testset "Stabilizers" begin
     using QuantumClifford
     using LinearAlgebra
     using Random: randperm

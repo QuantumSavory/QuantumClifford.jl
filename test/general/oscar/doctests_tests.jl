@@ -1,4 +1,4 @@
-@testitem "Doctests" tags=[:doctests] begin
+@testset "Doctests" begin
     using Documenter
     using QuantumClifford
     using QuantumInterface
@@ -6,28 +6,23 @@
     extensions = []
 
     import Hecke
-    const QuantumCliffordHeckeExt = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
-    push!(extensions, QuantumCliffordHeckeExt)
+    push!(extensions, Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt))
 
-    @static if get(ENV, "QUANTUMSAVORY_DOWNGRADE_TEST", "") != "true" &&
-               !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
-        import Oscar
-        const QuantumCliffordOscarExt = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
-        push!(extensions, QuantumCliffordOscarExt)
+    oscar_ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
+    if !isnothing(oscar_ext)
+        push!(extensions, oscar_ext)
     end
 
     import JuMP
-    const QuantumCliffordJuMPExt = Base.get_extension(QuantumClifford, :QuantumCliffordJuMPExt)
-    push!(extensions, QuantumCliffordJuMPExt)
+    push!(extensions, Base.get_extension(QuantumClifford, :QuantumCliffordJuMPExt))
 
-    ENV["LINES"] = 80    # for forcing `displaysize(io)` to be big enough
-    ENV["COLUMNS"] = 80
-    DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford; using QuantumClifford.ECC); recursive=true)
-    modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, extensions...]
-    doctestfilters = [r"(QuantumClifford\.|)"]
-    doctest(nothing, modules;
-            doctestfilters
-            #fix=true
-           )
-    # TODO failures in VSCode related to https://github.com/julia-vscode/TestItemRunner.jl/issues/49
+    withenv("LINES" => "80", "COLUMNS" => "80") do
+        DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford; using QuantumClifford.ECC); recursive=true)
+        modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, extensions...]
+        doctestfilters = [r"(QuantumClifford\.|)"]
+        doctest(nothing, modules;
+                doctestfilters
+                #fix=true
+               )
+    end
 end

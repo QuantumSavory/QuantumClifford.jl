@@ -1,4 +1,4 @@
-@testitem "ECC 2BGA Reproduce Table 3 of arXiv:2306.16400" tags=[:ecc, :ecc_bespoke_checks, :oscar_required] begin
+@testset "ECC 2BGA Reproduce Table 3 of arXiv:2306.16400" begin
     using Nemo
     using Nemo: FqFieldElem
     using Hecke: group_algebra, GF, abelian_group, gens, quo, one, GroupAlgebra

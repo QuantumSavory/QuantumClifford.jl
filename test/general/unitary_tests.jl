@@ -1,4 +1,4 @@
-@testitem "Consistency checks -- Cliffords are unitary" begin
+@testset "Consistency checks -- Cliffords are unitary" begin
     using Random
     using InteractiveUtils
     @testset "Apply small symbolics/sparse/named gates" begin

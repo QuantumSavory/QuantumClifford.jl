@@ -1,11 +1,10 @@
-@testitem "CUDA" tags = [:cuda] begin
+include("../implementation/test_platform.jl")
 
-    include("implementation/test_platform.jl")
+using CUDA: CuArray, devices, synchronize
+const AT = CuArray
+const can_run = length(devices()) > 0
 
-    using CUDA: CuArray, devices, synchronize
-    const AT = CuArray
-
-    const can_run = length(devices()) > 0
+@testset "CUDA" begin
 
     @testset "Device availability" begin
         @test can_run

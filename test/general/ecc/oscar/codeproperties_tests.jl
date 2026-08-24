@@ -1,8 +1,8 @@
-@testitem "ECC code properties" tags=[:ecc, :ecc_base] begin
+@testset "ECC code properties" begin
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
 
-    include("test_ecc_base.jl")
+    include("../test_ecc_base.jl")
 
     function is_css_matrix(H)
         nrows, ncols = size(H)
@@ -41,7 +41,10 @@
             @test QuantumClifford.stab_looks_good(matrix_H, remove_redundant_rows=true)
             @test canonical_H == canonicalize!(matrix_H)
 
-            if iscss(code) === true
+            has_separate_checks =
+                which(parity_matrix_x, (typeof(code),)) !==
+                which(parity_matrix_x, (AbstractECC,))
+            if iscss(code) === true && has_separate_checks
                 Hx = parity_matrix_x(code)
                 Hz = parity_matrix_z(code)
                 @test size(Hx, 2) == size(Hz, 2) == code_n(code)

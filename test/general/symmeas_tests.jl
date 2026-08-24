@@ -1,4 +1,4 @@
-@testitem "Symbolic Measurements" begin
+@testset "Symbolic Measurements" begin
     using Random
     using QuantumClifford
     using Test

@@ -1,4 +1,4 @@
-@testitem "Pauli frame" begin
+@testset "Pauli frame" begin
     @testset "syndrome measurement of 3 qubit repetition code" begin
         circuit = [
                    sX(1),

@@ -1,4 +1,4 @@
-@testitem "Column-fast vs row-fast operations" begin
+@testset "Column-fast vs row-fast operations" begin
     using Random
     for n in [3, 300]
         for T in (Stabilizer, Destabilizer, MixedStabilizer, MixedDestabilizer)

@@ -1,5 +1,5 @@
 # TODO split in separate files
-@testitem "Noisy" begin
+@testset "Noisy" begin
     using Random
 
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
@@ -90,14 +90,19 @@
         end
 
         function test_applynoise_matches_branches(state, noise, indices)
-            Random.seed!(0)
-            expected = branch_probabilities(state, noise, indices)
-            sampled = sampled_probabilities(state, noise, indices)
-            @test keys(sampled) ⊆ keys(expected)
-            @test all(
-                isapprox(get(sampled, key, 0.0), probability; atol=0.04)
-                for (key, probability) in expected
-            )
+            rng_state = copy(Random.default_rng())
+            try
+                Random.seed!(0)
+                expected = branch_probabilities(state, noise, indices)
+                sampled = sampled_probabilities(state, noise, indices)
+                @test keys(sampled) ⊆ keys(expected)
+                @test all(
+                    isapprox(get(sampled, key, 0.0), probability; atol=0.04)
+                    for (key, probability) in expected
+                )
+            finally
+                copy!(Random.default_rng(), rng_state)
+            end
         end
 
         test_applynoise_matches_branches(single_qubit_state, n, (1,))

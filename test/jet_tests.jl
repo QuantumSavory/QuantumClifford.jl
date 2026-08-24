@@ -1,4 +1,9 @@
-@testitem "JET checks" tags=[:jet] begin
+using JET
+using QuantumClifford
+using QuantumInterface
+using Test
+
+@testset "JET checks" begin
     using JET
     using Test
     using QuantumClifford

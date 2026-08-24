@@ -1,4 +1,4 @@
-@testitem "ECC Bivaraite Bicycle" tags=[:ecc, :ecc_bespoke_checks, :oscar_required] begin
+@testset "ECC Bivaraite Bicycle" begin
     using Oscar
     using Hecke
     using HiGHS

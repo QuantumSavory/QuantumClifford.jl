@@ -1,13 +1,13 @@
-@testitem "ECC LPCode representations of commutative algebras" tags=[:ecc, :ecc_bespoke_checks] begin
-    using Test
-    using QuantumClifford
-    using QuantumClifford.ECC
-    using QECCore
+using Test
+using QuantumClifford
+using QuantumClifford.ECC
+using QECCore
 
-    import Hecke
-    const QuantumCliffordHeckeExt = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
+import Hecke
+const QuantumCliffordHeckeExt = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
 
-    include("test_ecc_base.jl")
+@testset "ECC LPCode representations of commutative algebras" begin
+    include("../test_ecc_base.jl")
 
     codes = vcat(LP04, LP118, test_gb_codes, test_bb_codes, test_mbb_codes, test_coprimeBB_codes, test_hcubic_codes, test_honeycomb_color_codes);
 

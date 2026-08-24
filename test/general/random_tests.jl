@@ -1,4 +1,4 @@
-@testitem "Random" begin
+@testset "Random" begin
     using Random
     using QuantumClifford
     using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good, random_tableau

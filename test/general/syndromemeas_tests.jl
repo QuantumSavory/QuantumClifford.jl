@@ -1,4 +1,4 @@
-@testitem "Syndrome Measurements with mctrajectory!" begin # TODO this is a rather old test that is now done in a few other places, e.g. the ECC module -- double check and consider deleting
+@testset "Syndrome Measurements with mctrajectory!" begin # TODO this is a rather old test that is now done in a few other places, e.g. the ECC module -- double check and consider deleting
     using QuantumClifford: AbstractOperation
     codeˢᵗᵉᵃⁿᵉ = S"Z__Z_ZZ
                    _Z_ZZ_Z

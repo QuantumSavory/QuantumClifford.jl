@@ -1,4 +1,4 @@
-@testitem "Word-boundary compaction after qubit removal" begin
+@testset "Word-boundary compaction after qubit removal" begin
     using QuantumClifford
     using QuantumClifford: MixedDestabilizer, projectremoverand!, remove_column!,
         tab, expect, comm, tensor, nqubits, stabilizerview

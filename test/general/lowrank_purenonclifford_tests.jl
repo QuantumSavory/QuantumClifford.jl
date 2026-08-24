@@ -1,4 +1,4 @@
-@testitem "PureNonClifford Circuit Simulation" tags=[:non_clifford] begin
+@testset "PureNonClifford Circuit Simulation" begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
     import QuantumClifford.PureNonClifford:
@@ -204,7 +204,7 @@
     end
 end
 
-@testitem "PureNonClifford Sampling" tags=[:non_clifford] begin
+@testset "PureNonClifford Sampling" begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
     import QuantumClifford: AbstractOperation
@@ -307,7 +307,7 @@ end
     end
 end
 
-@testitem "PureNonClifford Magic States" tags=[:non_clifford] begin
+@testset "PureNonClifford Magic States" begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
     using Random
@@ -396,7 +396,7 @@ end
     end
 end
 
-@testitem "PureNonClifford T-Gate Probability Distribution" tags=[:non_clifford] begin
+@testset "PureNonClifford T-Gate Probability Distribution" begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
     using QuantumClifford.PureNonClifford: lrcost, stabilizer_extent
@@ -446,7 +446,7 @@ end
     end
 end
 
-@testitem "PureNonClifford Bell State with T" tags=[:non_clifford] begin
+@testset "PureNonClifford Bell State with T" begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
     import QuantumClifford.PureNonClifford: compute_outcome_frequencies, lrcost, stabilizer_extent
@@ -489,7 +489,7 @@ end
     end
 end
 
-@testitem "PureNonClifford Result Display" tags=[:non_clifford] begin
+@testset "PureNonClifford Result Display" begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
 
@@ -518,7 +518,7 @@ end
     end
 end
 
-@testitem "PureNonClifford Edge Cases" tags=[:non_clifford] begin
+@testset "PureNonClifford Edge Cases" begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
 
@@ -563,7 +563,7 @@ end
     end
 end
 
-@testitem "PureNonClifford Incremental Sparsification" tags=[:non_clifford] begin
+@testset "PureNonClifford Incremental Sparsification" begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
     using Random
@@ -694,7 +694,7 @@ end
     end
 end
 
-@testitem "PureNonClifford QuantumOptics Comparison" tags=[:non_clifford] begin
+@testset "PureNonClifford QuantumOptics Comparison" begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
     using QuantumOpticsBase
@@ -737,7 +737,7 @@ end
     end
 end
 
-@testitem "PureNonClifford Probability Accuracy with Incremental Sparsification" tags=[:non_clifford] begin
+@testset "PureNonClifford Probability Accuracy with Incremental Sparsification" begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
 
@@ -768,7 +768,7 @@ end
     end
 end
 
-@testitem "PureNonClifford Incremental Sparsification Correctness" tags=[:non_clifford] begin
+@testset "PureNonClifford Incremental Sparsification Correctness" begin
     using QuantumClifford
     using QuantumClifford.PureNonClifford
     using Random
@@ -876,7 +876,7 @@ end
     end
 end
 
-@testitem "PureGeneralizedStabilizer public constructor" tags=[:non_clifford] begin
+@testset "PureGeneralizedStabilizer public constructor" begin
     using QuantumClifford
 
     @testset "Single-argument constructor" begin

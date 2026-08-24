@@ -1,8 +1,8 @@
-@testitem "encoding circuits - compare to algebraic construction of encoded state" tags=[:ecc, :ecc_encoding] begin
+@testset "encoding circuits - compare to algebraic construction of encoded state" begin
     using QuantumClifford
     using QuantumClifford.ECC
 
-    include("test_ecc_base.jl")
+    include("../test_ecc_base.jl")
 
 
     # This test verifies that logical measurements on an encoded state match the physical pre-encoded state.

@@ -1,4 +1,4 @@
-@testitem "Mul leftright" begin
+@testset "Mul leftright" begin
   @testset "Pauli string multiplication" begin
     using QuantumClifford: mul_left!, mul_right!
     test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.

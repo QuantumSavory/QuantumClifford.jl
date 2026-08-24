@@ -1,4 +1,4 @@
-@testitem "Apply Right" begin
+@testset "Apply Right" begin
     using InteractiveUtils
     using QuantumClifford: AbstractCliffordOperator, CliffordOperator
     

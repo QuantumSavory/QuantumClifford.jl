@@ -1,4 +1,4 @@
-@testitem "ECC D-dimensional Surface Code" tags=[:ecc, :ecc_bespoke_checks, :oscar_required] begin
+@testset "ECC D-dimensional Surface Code" begin
     using Oscar
     using QECCore
     import HiGHS

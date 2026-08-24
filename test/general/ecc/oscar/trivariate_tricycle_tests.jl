@@ -1,4 +1,4 @@
-@testitem "ECC Trivariate Tricycle Code" tags=[:ecc, :ecc_bespoke_checks, :oscar_required] begin
+@testset "ECC Trivariate Tricycle Code" begin
     using Oscar
     using QECCore
     import HiGHS

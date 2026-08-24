@@ -1,4 +1,4 @@
-@testitem "Row echelon with pivots" begin
+@testset "Row echelon with pivots" begin
     using Random
     using Nemo
     using Nemo: echelon_form, matrix, GF

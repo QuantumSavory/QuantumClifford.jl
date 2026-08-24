@@ -1,9 +1,9 @@
-@testitem "ECC Syndromes" tags=[:ecc, :ecc_syndrome_circuit_equivalence] begin
+@testset "ECC Syndromes" begin
     using QuantumClifford: mul_left!, embed
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
 
-    include("test_ecc_base.jl")
+    include("../test_ecc_base.jl")
 
     using QuantumClifford: Tableau
     reinterpret_frame(frame) = PauliFrame(reinterpret_stab(frame.frame), copy(frame.measurements))

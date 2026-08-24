@@ -1,4 +1,4 @@
-@testitem "Stabilizer canonicalization" begin
+@testset "Stabilizer canonicalization" begin
   using QuantumClifford: stab_looks_good, destab_looks_good, mixed_stab_looks_good, mixed_destab_looks_good
   test_sizes = [1,2,10,63,64,65,127,128,129] # Including sizes that would test off-by-one errors in the bit encoding.
     @testset "Default canonicalization" begin
@@ -74,7 +74,7 @@
     end
 end
 
-@testitem "canonicalization invariants" begin
+@testset "canonicalization invariants" begin
     s = random_stabilizer(40,100)
     ss = tensor_pow(s,20)
     sa1 = canonicalize!(canonicalize_rref!(copy(ss))[1])
@@ -87,7 +87,7 @@ end
     @test stabilizerview(msa1) == stabilizerview(msa2) == sa1
 end
 
-@testitem "canonicalization of vectors of Paulis" begin
+@testset "canonicalization of vectors of Paulis" begin
     using QuantumClifford
     p1 = [P"+XXX", P"-ZZI"]
     p2 = (P"+XXX", P"-ZZI")
