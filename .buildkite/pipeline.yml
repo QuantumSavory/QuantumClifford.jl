@@ -14,8 +14,7 @@ steps:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --startup-file=no --color=yes -e 'import Pkg; Pkg.Apps.add("TestItemApp")'
       - |
-        juliati="$$(julia --startup-file=no -e
-          'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')"
+        juliati="$$(julia --startup-file=no -e 'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')"
         common_args=(
           .
           --progress log
@@ -59,8 +58,7 @@ steps:
         # Resolve current compatible versions; the generated manifest is CI-local.
         JULIA_PKG_PRECOMPILE_AUTO=0 julia --startup-file=no --color=yes \
           --project="$${project}" -e 'import Pkg; Pkg.instantiate()'
-        juliati="$$(julia --startup-file=no -e
-          'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')"
+        juliati="$$(julia --startup-file=no -e 'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')"
         "$${juliati}" . \
           --progress log \
           --no-fail-on-detection-error \
