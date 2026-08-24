@@ -15,7 +15,7 @@ steps:
       - julia --startup-file=no --color=yes -e 'import Pkg; Pkg.Apps.add("TestItemApp")'
       - >
         "$$(julia --startup-file=no -e
-        'print(joinpath(first(DEPOT_PATH), "bin", "juliati")))" .
+        'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')" .
         --progress log
         --no-fail-on-detection-error
         --timeout none
@@ -37,7 +37,7 @@ steps:
       - julia --startup-file=no --color=yes -e 'import Pkg; Pkg.Apps.add("TestItemApp")'
       - >
         "$$(julia --startup-file=no -e
-        'print(joinpath(first(DEPOT_PATH), "bin", "juliati")))" .
+        'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')" .
         --progress log
         --no-fail-on-detection-error
         --timeout none
