@@ -26,22 +26,26 @@ steps:
         # Resolve every suite from its Project.toml, then expose only that suite's
         # dependencies to its test processes. The generated manifest is CI-local.
         run_project() {
-          project="$$1"
-          JULIA_PKG_PRECOMPILE_AUTO=0 julia --startup-file=no --color=yes \
-            --project="$${project}" -e 'import Pkg; Pkg.instantiate()'
+          local project="$$1"
+          if ! JULIA_PKG_PRECOMPILE_AUTO=0 julia --startup-file=no --color=yes \
+            --project="$${project}" -e 'import Pkg; Pkg.instantiate()'; then
+            return 1
+          fi
           "$${juliati}" "$${common_args[@]}" \
             --filter "package_name == \"QuantumClifford\" && startswith(filename, string(realpath(\"$${project}\"), Base.Filesystem.path_separator))" \
             --env "JULIA_LOAD_PATH=@:$${PWD}/$${project}:@stdlib"
         }
-        "$${juliati}" "$${common_args[@]}" \
-          --filter 'package_name == "QuantumClifford" && dirname(filename) == realpath("test")'
-        run_project test/aqua
-        run_project test/doctests
-        run_project test/ecc
-        run_project test/jet
-        run_project test/oscar
-        run_project test/python_decoders
-        run_project test/slow
+        status=0
+        if ! "$${juliati}" "$${common_args[@]}" \
+          --filter 'package_name == "QuantumClifford" && dirname(filename) == realpath("test")'; then
+          status=1
+        fi
+        for project in test/aqua test/doctests test/ecc test/jet test/oscar test/python_decoders test/slow; do
+          if ! run_project "$${project}"; then
+            status=1
+          fi
+        done
+        exit "$${status}"
     agents:
       queue: "default-queue"
 
