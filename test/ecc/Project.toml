@@ -1,7 +1,3 @@
-name = "QuantumCliffordECCTests"
-uuid = "57164a98-ec1b-4afb-b828-b6870da1b56c"
-version = "0.1.0"
-
 [deps]
 Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
 HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"

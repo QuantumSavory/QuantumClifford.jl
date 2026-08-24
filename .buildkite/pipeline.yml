@@ -22,7 +22,7 @@ steps:
         --check-bounds auto
         --threads 1
         --filter
-        'startswith(package_name, "QuantumClifford") &&
+        'package_name == "QuantumClifford" &&
         !(:cuda in tags) && !(:rocm in tags) && !(:opencl in tags)'
     agents:
       queue: "default-queue"
@@ -44,7 +44,7 @@ steps:
         --check-bounds auto
         --max-workers 1
         --filter
-        'startswith(package_name, "QuantumClifford") && :{{matrix.TAG}} in tags'
+        'package_name == "QuantumClifford" && :{{matrix.TAG}} in tags'
     agents:
       queue: "{{matrix.QUEUE}}"
     matrix:

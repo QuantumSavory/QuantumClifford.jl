@@ -1,7 +1,3 @@
-name = "QuantumCliffordSlowTests"
-uuid = "1a68cbab-c45f-49ea-9511-7035e9de315e"
-version = "0.1.0"
-
 [deps]
 Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
 HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"

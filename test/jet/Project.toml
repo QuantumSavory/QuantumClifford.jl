@@ -1,7 +1,3 @@
-name = "QuantumCliffordJETTests"
-uuid = "34734e29-28a2-43f1-9385-001117637161"
-version = "0.1.0"
-
 [deps]
 JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 QECCore = "b50d4dc9-2544-401f-bae9-a24ba40d0c7a"

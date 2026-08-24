@@ -4,11 +4,12 @@
 standard GitHub test job. It runs only the test items stored directly in this
 directory.
 
-The specialized test suites are separate packages below this directory. Each
-package has its own `Project.toml` and depends on the repository checkout of
-QuantumClifford and QECCore. Dependencies resolve on each run so that these
-suites test current compatible package versions. The suites cover Aqua,
-doctests, ECC, JET, Oscar, Python decoders, slow tests, and each GPU backend.
+The specialized test suites use separate environments below this directory.
+Each environment has its own `Project.toml` and depends on the repository
+checkout of QuantumClifford and QECCore. Dependencies resolve on each run so
+that these suites test current compatible package versions. The suites cover
+Aqua, doctests, ECC, JET, Oscar, Python decoders, slow tests, and each GPU
+backend.
 
 Install and run the TestItem application from the repository root:
 
@@ -21,10 +22,10 @@ Pkg.Apps.add("TestItemApp")
 juliati .
 ```
 
-Use `--filter` to select a package, test name, or tag. For example:
+Use `--filter` to select a test name, file, or tag. For example:
 
 ```sh
-juliati . --filter 'package_name == "QuantumCliffordECCTests"'
+juliati . --filter ':ecc in tags'
 juliati . --filter ':cuda in tags'
 ```
 

@@ -1,7 +1,3 @@
-name = "QuantumCliffordDoctests"
-uuid = "31177d68-3f39-4acc-bffc-ded68e51ff09"
-version = "0.1.0"
-
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
