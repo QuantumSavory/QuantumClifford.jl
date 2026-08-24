@@ -1,3 +1,7 @@
+    using QuantumClifford: mul_left!, embed
+    using QuantumClifford.ECC
+    using QuantumClifford.ECC: AbstractECC
+
     using QuantumClifford: Tableau
     reinterpret_frame(frame) = PauliFrame(reinterpret_stab(frame.frame), copy(frame.measurements))
     reinterpret_stab(s) = Stabilizer(Tableau(copy(phases(s)), nqubits(s), collect(reinterpret(UInt8, collect(s.tab.xzs)))[[1:1+(nqubits(s)-1)÷8;end÷2+1:end÷2+1+(nqubits(s)-1)÷8],:]))

@@ -304,8 +304,7 @@ const code_instance_args = Dict(
     :ExtendedGeneralizedBicycle => [(c_gb₁, 2, p_gb₁), (c_gb₂, 3, p_gb₂), (c_gb₃, 4, p_gb₃)]
 )
 
-@static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11" &&
-        Base.find_package("Oscar") !== nothing
+@static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11" && Base.find_package("Oscar") !== nothing
   import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order, gens, quo,
   polynomial_ring, matrix, GF, transpose, laurent_polynomial_ring, ideal
   function load_oscar_codes()
@@ -628,7 +627,7 @@ function concretesubtypes(T::DataType)
     return concrete
 end
 
-function testable_code_instances(instance_args; maxn=nothing)
+function all_testable_code_instances(; maxn=nothing, instance_args=code_instance_args)
     codeinstances = []
     i = 1
     _code_instance_args = copy(instance_args)
@@ -643,8 +642,4 @@ function testable_code_instances(instance_args; maxn=nothing)
     end
     @test isempty(_code_instance_args) # if this fails, then some code instances were not tested
     return codeinstances
-end
-
-function all_testable_code_instances(; maxn=nothing)
-    return testable_code_instances(code_instance_args; maxn)
 end

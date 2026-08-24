@@ -1,4 +1,4 @@
-@testitem "Oscar extension closure boxes" tags = [:oscar_required] begin
+@testitem "Oscar extension closure boxes" tags=[:oscar_required] begin
     @static if VERSION >= v"1.14"
         using Oscar
         oscar_ext = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)

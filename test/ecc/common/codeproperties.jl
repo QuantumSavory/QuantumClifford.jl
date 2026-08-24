@@ -1,3 +1,6 @@
+    using QuantumClifford.ECC
+    using QuantumClifford.ECC: AbstractECC
+
     function is_css_matrix(H)
         nrows, ncols = size(H)
         for i in 1:nrows
@@ -35,10 +38,7 @@
             @test QuantumClifford.stab_looks_good(matrix_H, remove_redundant_rows=true)
             @test canonical_H == canonicalize!(matrix_H)
 
-            has_css_parity_matrices =
-                which(parity_matrix_x, Tuple{typeof(code)}) !== which(parity_matrix_x, Tuple{AbstractECC}) &&
-                which(parity_matrix_z, Tuple{typeof(code)}) !== which(parity_matrix_z, Tuple{AbstractECC})
-            if iscss(code) === true && has_css_parity_matrices
+            if iscss(code) === true
                 Hx = parity_matrix_x(code)
                 Hz = parity_matrix_z(code)
                 @test size(Hx, 2) == size(Hz, 2) == code_n(code)

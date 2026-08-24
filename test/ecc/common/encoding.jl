@@ -1,7 +1,11 @@
+    using QuantumClifford
+    using QuantumClifford.ECC
+
     # This test verifies that logical measurements on an encoded state match the physical pre-encoded state.
     # This test skips verifying the permutations of qubits during canonicalization are properly undone,
     # i.e. we modify the code we are testing so that the canonicalization does not need any permutations.
-    for undoperm in [true, false], code in codes
+    for undoperm in [true, false],
+        code in codes
 
         if undoperm==false
             # Pre-process the tableau to remove permutations and negative phases.

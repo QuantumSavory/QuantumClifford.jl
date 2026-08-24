@@ -1,3 +1,6 @@
+    using QuantumClifford.ECC
+    using QuantumClifford.ECC: AbstractECC
+
     function test_naive_syndrome(c::AbstractECC, e::Bool)
         # create a random logical state
         unencoded_qubits = random_stabilizer(code_k(c))

@@ -1,8 +1,5 @@
 @testitem "Oscar ECC code properties" tags=[:ecc, :ecc_base, :oscar_required] begin
-    using QuantumClifford.ECC
-    using QuantumClifford.ECC: AbstractECC
-
     include("../ecc/test_ecc_base.jl")
-    codes = testable_code_instances(oscar_code_instance_args)
+    codes = all_testable_code_instances(; instance_args=oscar_code_instance_args)
     include("../ecc/common/codeproperties.jl")
 end
