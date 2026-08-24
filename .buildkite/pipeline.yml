@@ -13,17 +13,36 @@ steps:
     commands:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --startup-file=no --color=yes -e 'import Pkg; Pkg.Apps.add("TestItemApp")'
-      - >
-        "$$(julia --startup-file=no -e
-        'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')" .
-        --progress log
-        --no-fail-on-detection-error
-        --timeout none
-        --check-bounds auto
-        --threads 1
-        --filter
-        'package_name == "QuantumClifford" &&
-        !(:cuda in tags) && !(:rocm in tags) && !(:opencl in tags)'
+      - |
+        juliati="$$(julia --startup-file=no -e
+          'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')"
+        common_args=(
+          .
+          --progress log
+          --no-fail-on-detection-error
+          --timeout none
+          --check-bounds auto
+          --threads 1
+        )
+        # Resolve every suite from its Project.toml, then expose only that suite's
+        # dependencies to its test processes. The generated manifest is CI-local.
+        run_project() {
+          project="$$1"
+          JULIA_PKG_PRECOMPILE_AUTO=0 julia --startup-file=no --color=yes \
+            --project="$${project}" -e 'import Pkg; Pkg.instantiate()'
+          "$${juliati}" "$${common_args[@]}" \
+            --filter "package_name == \"QuantumClifford\" && startswith(filename, string(realpath(\"$${project}\"), Base.Filesystem.path_separator))" \
+            --env "JULIA_LOAD_PATH=@:$${PWD}/$${project}:@stdlib"
+        }
+        "$${juliati}" "$${common_args[@]}" \
+          --filter 'package_name == "QuantumClifford" && dirname(filename) == realpath("test")'
+        run_project test/aqua
+        run_project test/doctests
+        run_project test/ecc
+        run_project test/jet
+        run_project test/oscar
+        run_project test/python_decoders
+        run_project test/slow
     agents:
       queue: "default-queue"
 
@@ -35,16 +54,21 @@ steps:
     commands:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --startup-file=no --color=yes -e 'import Pkg; Pkg.Apps.add("TestItemApp")'
-      - >
-        "$$(julia --startup-file=no -e
-        'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')" .
-        --progress log
-        --no-fail-on-detection-error
-        --timeout none
-        --check-bounds auto
-        --max-workers 1
-        --filter
-        'package_name == "QuantumClifford" && :{{matrix.TAG}} in tags'
+      - |
+        project="test/gpu/{{matrix.TAG}}"
+        # Resolve current compatible versions; the generated manifest is CI-local.
+        JULIA_PKG_PRECOMPILE_AUTO=0 julia --startup-file=no --color=yes \
+          --project="$${project}" -e 'import Pkg; Pkg.instantiate()'
+        juliati="$$(julia --startup-file=no -e
+          'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')"
+        "$${juliati}" . \
+          --progress log \
+          --no-fail-on-detection-error \
+          --timeout none \
+          --check-bounds auto \
+          --max-workers 1 \
+          --filter "package_name == \"QuantumClifford\" && startswith(filename, string(realpath(\"$${project}\"), Base.Filesystem.path_separator))" \
+          --env "JULIA_LOAD_PATH=@:$${PWD}/$${project}:@stdlib"
     agents:
       queue: "{{matrix.QUEUE}}"
     matrix:

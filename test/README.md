@@ -18,16 +18,25 @@ import Pkg
 Pkg.Apps.add("TestItemApp")
 ```
 
-```sh
-juliati .
-```
-
-Use `--filter` to select a test name, file, or tag. For example:
+Run the base items directly:
 
 ```sh
-juliati . --filter ':ecc in tags'
-juliati . --filter ':cuda in tags'
+juliati . --filter 'dirname(filename) == realpath("test")'
 ```
 
-Declare dependency and compatibility changes in the specialized project's
+Resolve a specialized environment and expose it only to that suite's test
+processes. For example:
+
+```sh
+project=test/ecc
+julia --project="$project" -e 'import Pkg; Pkg.instantiate()'
+juliati . \
+  --filter 'startswith(filename, string(realpath("test/ecc"), Base.Filesystem.path_separator))' \
+  --env "JULIA_LOAD_PATH=@:$PWD/$project:@stdlib"
+```
+
+Buildkite applies this pattern to every non-hardware environment in one step
+and to each GPU environment on its hardware runner. Runtime manifests remain
+uncommitted, so every job resolves current compatible dependency versions.
+Declare dependency and compatibility changes in the corresponding
 `Project.toml`.

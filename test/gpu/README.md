@@ -1,10 +1,17 @@
 # GPU Extension Tests
 
 This directory contains the tests for KernelAbstractions-supported hardware
-accelerators. CUDA, ROCm, and OpenCL have separate test environments. Run one
-backend at a time with `juliati` from the repository root, for example
-`juliati . --filter ':cuda in tags'`. Buildkite assigns each tag to a compatible
-runner.
+accelerators. CUDA, ROCm, and OpenCL have separate test environments. Resolve
+and run one backend at a time from the repository root, for example:
+
+```sh
+project=test/gpu/cuda
+julia --project="$project" -e 'import Pkg; Pkg.instantiate()'
+juliati . --filter ':cuda in tags' \
+  --env "JULIA_LOAD_PATH=@:$PWD/$project:@stdlib"
+```
+
+Buildkite assigns each backend to a compatible runner.
 
 # Noteworthy Details
 
