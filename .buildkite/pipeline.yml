@@ -5,94 +5,62 @@ secrets:
   - CODECOV_TOKEN
 
 steps:
-  - label: "QuantumClifford - {{matrix.LABEL}} (local QECCore)"
+  - label: "QuantumClifford - all non-hardware tests (local QECCore)"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
           compiled_size_limit: 10737418240 # 10GiB
-      - JuliaCI/julia-test#v1:
-          test_args: "{{matrix.TEST_ARGS}}"
-      - JuliaCI/julia-coverage#v1:
-          dirs:
-            - ./src
-            - ./ext
-            - ./lib/QECCore/src
-            - ./lib/QECCore/ext
     commands:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-    env:
-      QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
-      QC_GPU_TEST: "{{matrix.QC_GPU_TEST}}"
+      - julia --startup-file=no --color=yes -e 'import Pkg; Pkg.Apps.add("TestItemApp")'
+      - >
+        "$$(julia --startup-file=no -e
+        'print(joinpath(first(DEPOT_PATH), "bin", "juliati")))" .
+        --progress log
+        --no-fail-on-detection-error
+        --timeout none
+        --check-bounds auto
+        --threads 1
+        --filter
+        'startswith(package_name, "QuantumClifford") &&
+        !(:cuda in tags) && !(:rocm in tags) && !(:opencl in tags)'
+    agents:
+      queue: "default-queue"
+
+  - label: "QuantumClifford - GPU {{matrix.LABEL}} (local QECCore)"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+          compiled_size_limit: 10737418240 # 10GiB
+    commands:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --startup-file=no --color=yes -e 'import Pkg; Pkg.Apps.add("TestItemApp")'
+      - >
+        "$$(julia --startup-file=no -e
+        'print(joinpath(first(DEPOT_PATH), "bin", "juliati")))" .
+        --progress log
+        --no-fail-on-detection-error
+        --timeout none
+        --check-bounds auto
+        --max-workers 1
+        --filter
+        'startswith(package_name, "QuantumClifford") && :{{matrix.TAG}} in tags'
     agents:
       queue: "{{matrix.QUEUE}}"
     matrix:
       setup:
-        LABEL: ["General"]
-        QUEUE: ["default-queue"]
-        TEST_ARGS: ["general"]
-        QC_ECC_TEST: ["false"]
-        QC_GPU_TEST: ["false"]
+        LABEL: ["CUDA"]
+        TAG: ["cuda"]
+        QUEUE: ["cuda"]
       adjustments:
         - with:
-            LABEL: "JET"
+            LABEL: "ROCm"
+            TAG: "rocm"
+            QUEUE: "rocm"
+        - with:
+            LABEL: "OpenCL"
+            TAG: "opencl"
             QUEUE: "default-queue"
-            TEST_ARGS: "jet"
-            QC_ECC_TEST: "false"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Base"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "base"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Encoding"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "encoding"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Decoding"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "decoding"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Syndrome Measurement"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "syndromemeasurement"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Syndrome Circuit"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "syndromecircuit"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Bespoke"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "bespoke"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "GPU CUDA"
-            QUEUE: cuda
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "false"
-            QC_GPU_TEST: "cuda"
-        - with:
-            LABEL: "GPU ROCm"
-            QUEUE: rocm
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "false"
-            QC_GPU_TEST: "rocm"
-        - with:
-            LABEL: "GPU OpenCL"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "false"
-            QC_GPU_TEST: "opencl"
 
   - label: "QECCore - {{matrix.LABEL}} (local QuantumClifford)"
     plugins:
