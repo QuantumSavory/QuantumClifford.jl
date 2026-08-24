@@ -1,5 +1,7 @@
 *.ipynb_checkpoints
 Manifest.toml
+!test/*/Manifest.toml
+!test/gpu/*/Manifest.toml
 LocalPreferences.toml
 */.*swp
 scratch/

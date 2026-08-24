@@ -1,0 +1,17 @@
+name = "QuantumCliffordDoctests"
+uuid = "31177d68-3f39-4acc-bffc-ded68e51ff09"
+version = "0.1.0"
+
+[deps]
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+Oscar = "f1435218-dba5-11e9-1e4d-f1a5fab5fc13"
+QECCore = "b50d4dc9-2544-401f-bae9-a24ba40d0c7a"
+QuantumClifford = "0525e862-1e90-11e9-3e4d-1b39d7109de1"
+QuantumInterface = "5717a53b-5d69-4fa3-b976-0bf2f97ca1e5"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[sources]
+QECCore = {path = "../../lib/QECCore"}
+QuantumClifford = {path = "../.."}

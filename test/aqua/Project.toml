@@ -1,0 +1,13 @@
+name = "QuantumCliffordAquaTests"
+uuid = "1a50e3a8-80a6-48fc-9ee1-a8ba0937c0c9"
+version = "0.1.0"
+
+[deps]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+QECCore = "b50d4dc9-2544-401f-bae9-a24ba40d0c7a"
+QuantumClifford = "0525e862-1e90-11e9-3e4d-1b39d7109de1"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[sources]
+QECCore = {path = "../../lib/QECCore"}
+QuantumClifford = {path = "../.."}

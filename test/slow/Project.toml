@@ -1,0 +1,18 @@
+name = "QuantumCliffordSlowTests"
+uuid = "1a68cbab-c45f-49ea-9511-7035e9de315e"
+version = "0.1.0"
+
+[deps]
+Hecke = "3e1990a7-5d81-5526-99ce-9ba3ff248f21"
+HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+QECCore = "b50d4dc9-2544-401f-bae9-a24ba40d0c7a"
+QuantumClifford = "0525e862-1e90-11e9-3e4d-1b39d7109de1"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[sources]
+QECCore = {path = "../../lib/QECCore"}
+QuantumClifford = {path = "../.."}
+
+[compat]
+HiGHS = "1.24.1"

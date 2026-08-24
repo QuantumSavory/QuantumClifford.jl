@@ -1,0 +1,18 @@
+name = "QuantumCliffordROCmTests"
+uuid = "338d984b-30fe-4fa3-a889-598fd67af7e5"
+version = "0.1.0"
+
+[deps]
+AMDGPU = "21141c5a-9bdb-4563-92ae-f87d6854732e"
+Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
+Atomix = "a9b6321e-bd34-4604-b9c9-b65b8de01458"
+GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
+GPUArraysCore = "46192b85-c4d5-4398-a991-12ede77f4527"
+KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
+QECCore = "b50d4dc9-2544-401f-bae9-a24ba40d0c7a"
+QuantumClifford = "0525e862-1e90-11e9-3e4d-1b39d7109de1"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[sources]
+QECCore = {path = "../../../lib/QECCore"}
+QuantumClifford = {path = "../../.."}
