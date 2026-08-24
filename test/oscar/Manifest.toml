@@ -2,7 +2,7 @@
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "3cfe82fdf73a6779c7f230220879bcc1180b88b2"
+project_hash = "48c48afa961fd7bcf050a9d4bd5d6c9b556b951e"
 
 [[deps.ASL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -869,7 +869,7 @@ version = "0.11.7"
     QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
 
 [[deps.QuantumCliffordOscarTests]]
-deps = ["Hecke", "HiGHS", "JuMP", "Nemo", "Oscar", "QECCore", "QuantumClifford", "Test"]
+deps = ["Hecke", "HiGHS", "InteractiveUtils", "JuMP", "LinearAlgebra", "Nemo", "Oscar", "QECCore", "QuantumClifford", "SparseArrays", "Test"]
 path = "."
 uuid = "0ea582c0-a6cb-4749-b6e5-9e2f3200ae8d"
 version = "0.1.0"

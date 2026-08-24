@@ -615,8 +615,9 @@ const code_instance_args = Dict(
         :MultivariateMulticycle =>[([l_mm₁,m_mm₁], [A_mm₁, B_mm₁]), ([l_mm₂,m_mm₂], [A_mm₂, B_mm₂]), ([ℓ_mm₃, m_mm₃, p_mm₃], [A_mm₃, B_mm₃, C_mm₃]), ([ℓ_mm₄, m_mm₄, p_mm₄], [A_mm₄, B_mm₄, C_mm₄])]
     )
     merge!(code_instance_args, oscar_code_instance_args)
+    return oscar_code_instance_args
   end
-  load_oscar_codes()
+  const oscar_code_instance_args = load_oscar_codes()
 end
 
 function concretesubtypes(T::DataType)
@@ -627,10 +628,10 @@ function concretesubtypes(T::DataType)
     return concrete
 end
 
-function all_testable_code_instances(; maxn=nothing)
+function testable_code_instances(instance_args; maxn=nothing)
     codeinstances = []
     i = 1
-    _code_instance_args = copy(code_instance_args)
+    _code_instance_args = copy(instance_args)
     for t in concretesubtypes(QuantumClifford.ECC.AbstractQECC)
         for c in pop!(_code_instance_args, nameof(t), [])
             codeinstance = t(c...)
@@ -642,4 +643,8 @@ function all_testable_code_instances(; maxn=nothing)
     end
     @test isempty(_code_instance_args) # if this fails, then some code instances were not tested
     return codeinstances
+end
+
+function all_testable_code_instances(; maxn=nothing)
+    return testable_code_instances(code_instance_args; maxn)
 end
