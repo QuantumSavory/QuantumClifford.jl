@@ -1,6 +1,6 @@
 @testitem "OpenCL" tags = [:opencl] begin
 
-    include(joinpath(@__DIR__, "..", "common", "test_platform.jl"))
+    include("../common/test_platform.jl")
 
     import pocl_jll
     using OpenCL: CLArray, cl.devices, cl.platforms, cl.finish, cl.queue

@@ -10,7 +10,7 @@ import Nemo: GF, matrix, rank, finite_field, polynomial_ring
 import Hecke: group_algebra, abelian_group, gens, representation_matrix
 import LinearAlgebra
 
-include(joinpath(@__DIR__, "test_ecc_base.jl"))
+include("test_ecc_base.jl")
 
 # generate instances of all implemented codes to make sure nothing skips being checked
 

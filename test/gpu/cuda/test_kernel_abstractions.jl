@@ -1,6 +1,6 @@
 @testitem "CUDA" tags = [:cuda] begin
 
-    include(joinpath(@__DIR__, "..", "common", "test_platform.jl"))
+    include("../common/test_platform.jl")
 
     using CUDA: CuArray, devices, synchronize
     const AT = CuArray

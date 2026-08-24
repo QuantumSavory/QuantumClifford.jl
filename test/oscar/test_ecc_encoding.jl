@@ -2,7 +2,7 @@
     using QuantumClifford
     using QuantumClifford.ECC
 
-    include(joinpath(@__DIR__, "..", "ecc", "test_ecc_base.jl"))
+    include("../ecc/test_ecc_base.jl")
     codes = testable_code_instances(oscar_code_instance_args)
-    include(joinpath(@__DIR__, "..", "ecc", "common", "encoding.jl"))
+    include("../ecc/common/encoding.jl")
 end

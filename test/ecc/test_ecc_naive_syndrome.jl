@@ -4,5 +4,5 @@
 
     include("test_ecc_base.jl")
     codes = all_testable_code_instances(; maxn=100)
-    include(joinpath(@__DIR__, "common", "naive_syndrome.jl"))
+    include("common/naive_syndrome.jl")
 end

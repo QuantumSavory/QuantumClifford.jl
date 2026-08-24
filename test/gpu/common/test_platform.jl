@@ -1,4 +1,4 @@
-include(joinpath(@__DIR__, "imports.jl"))
+include("imports.jl")
 include("definitions.jl")
 include("utilities.jl")
 include("test_KA_mul_leftright.jl")

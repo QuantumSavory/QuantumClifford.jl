@@ -12,7 +12,7 @@
         @test_broken false # TODO tesseract-decoder is not available on Windows
     end
 
-    include(joinpath(@__DIR__, "..", "ecc", "test_ecc_base.jl"))
+    include("../ecc/test_ecc_base.jl")
 
     @testset "table decoder, good for small codes" begin
         codes = [

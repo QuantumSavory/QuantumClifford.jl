@@ -10,5 +10,5 @@
         S"X_",
         [random_stabilizer(5, 7) for _ in 1:100]...,
     ]
-    include(joinpath(@__DIR__, "common", "encoding.jl"))
+    include("common/encoding.jl")
 end
