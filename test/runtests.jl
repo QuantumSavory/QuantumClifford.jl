@@ -1,142 +1,119 @@
 using InteractiveUtils
-versioninfo(;verbose=true)
+versioninfo(; verbose=true)
 
-const JET_PROJECT = normpath(joinpath(@__DIR__, "projects", "jet"))
-const test_args = isempty(ARGS) ? ["general"] : ARGS
-const JET_flag = length(test_args) == 1 && startswith(only(test_args), "jet")
+using ParallelTestRunner
+
+const TEST_PROJECTS = Dict(
+    "oscar" => normpath(joinpath(@__DIR__, "projects", "oscar")),
+    "python_decoders" => normpath(joinpath(@__DIR__, "projects", "python_decoders")),
+    "cuda" => normpath(joinpath(@__DIR__, "projects", "cuda")),
+    "rocm" => normpath(joinpath(@__DIR__, "projects", "rocm")),
+    "opencl" => normpath(joinpath(@__DIR__, "projects", "opencl")),
+    "jet" => normpath(joinpath(@__DIR__, "projects", "jet")),
+)
+
+const BACKEND_PREFIXES = (
+    "KernelAbstractions/CUDA/",
+    "KernelAbstractions/ROCm/",
+    "KernelAbstractions/OpenCL/",
+)
+const PYTHON_PREFIX = "general/ecc/python_decoders/"
+const OSCAR_PREFIXES = ("general/oscar/", "general/ecc/oscar/")
+const OSCAR_ONLY_TESTS = (
+    "general/oscar/closure_boxes_tests",
+    "general/ecc/oscar/bivaraite_bicycle_via_quotient_ring_tests",
+    "general/ecc/oscar/d_dimensional_codes_tests",
+    "general/ecc/oscar/dihedral2bga_tests",
+    "general/ecc/oscar/generalized_toric_codes_tests",
+    "general/ecc/oscar/trivariate_tricycle_tests",
+)
+
 const DOWNGRADE_TEST = get(ENV, "QUANTUMSAVORY_DOWNGRADE_TEST", "") == "true"
+const OSCAR_SUPPORTED =
+    !DOWNGRADE_TEST &&
+    !Sys.iswindows() &&
+    Sys.ARCH == :x86_64 &&
+    VERSION >= v"1.11"
+const PYTHON_SUPPORTED = !DOWNGRADE_TEST && !Sys.iswindows()
 
-if JET_flag
-    @info "Activating the dedicated JET test environment." project=JET_PROJECT
+args = parse_args(isempty(ARGS) ? ["general"] : ARGS)
+isempty(args.positionals) && push!(args.positionals, "general")
+jet_only =
+    isnothing(args.list) &&
+    length(args.positionals) == 1 &&
+    startswith(only(args.positionals), "jet")
+
+if jet_only
     using Pkg
-    Pkg.activate(JET_PROJECT)
-    Pkg.instantiate()
-end
-
-CUDA_flag = false
-ROCm_flag = false
-OpenCL_flag = false
-Oscar_flag = false
-Tesseract_flag = false
-
-if DOWNGRADE_TEST
-    @info "Skipping Oscar tests during the downgrade run."
-elseif Sys.iswindows() || Sys.ARCH != :x86_64
-    @info "Skipping Oscar tests -- only supported x86_64 *NIX platforms."
+    Pkg.activate(TEST_PROJECTS["jet"])
+    include(joinpath(@__DIR__, "jet_tests.jl"))
+    include(joinpath(@__DIR__, "jet_opt_tests.jl"))
 else
-    Oscar_flag = VERSION >= v"1.11"
-    !Oscar_flag && @info "Skipping Oscar tests -- not tested on Julia < 1.11"
-end
-
-if DOWNGRADE_TEST
-    @info "Skipping Tesseract tests during the downgrade run."
-elseif Sys.iswindows()
-    @info "Skipping Tesseract tests -- only supported *NIX platforms."
-else
-    Tesseract_flag = true
-end
-
-if Sys.iswindows()
-    @info "Skipping GPU/OpenCL tests -- only executed on *NIX platforms."
-else
-    CUDA_flag = get(ENV, "QC_GPU_TEST", "") == "cuda"
-    ROCm_flag = get(ENV, "QC_GPU_TEST", "") == "rocm"
-    OpenCL_flag = get(ENV, "QC_GPU_TEST", "") == "opencl"
-
-    CUDA_flag && @info "Running with CUDA tests."
-    ROCm_flag && @info "Running with ROCm tests."
-    OpenCL_flag && @info "Running with OpenCL tests."
-    if !any((CUDA_flag, ROCm_flag, OpenCL_flag))
-        @info "Skipping GPU/OpenCL tests -- must be explicitly enabled."
-        @info "Environment must uniquely set QC_GPU_TEST=cuda/rocm/opencl."
+    testsuite = find_tests(@__DIR__)
+    filter!(testsuite) do (name, _)
+        endswith(name, "_tests") ||
+            any(prefix -> startswith(name, prefix), BACKEND_PREFIXES)
     end
-end
 
-using Pkg
-CUDA_flag && Pkg.add("CUDA")
-ROCm_flag && Pkg.add("AMDGPU")
-OpenCL_flag && Pkg.add(["pocl_jll", "OpenCL"])
-if any((CUDA_flag, ROCm_flag, OpenCL_flag))
-    Pkg.add(
-        ["Adapt", "Atomix", "GPUArraysCore", "GPUArrays", "KernelAbstractions"]
+    if !OSCAR_SUPPORTED
+        foreach(name -> delete!(testsuite, name), OSCAR_ONLY_TESTS)
+    end
+    if !PYTHON_SUPPORTED
+        filter!(testsuite) do (name, _)
+            !startswith(name, PYTHON_PREFIX)
+        end
+    end
+    if DOWNGRADE_TEST
+        delete!(testsuite, "general/aqua_tests")
+        delete!(testsuite, "general/oscar/doctests_tests")
+    end
+    if !(Sys.islinux() && Int === Int64)
+        delete!(testsuite, "general/bitpack_tests")
+    end
+
+    function test_project(name)
+        if PYTHON_SUPPORTED && startswith(name, PYTHON_PREFIX)
+            return TEST_PROJECTS["python_decoders"]
+        elseif OSCAR_SUPPORTED &&
+               any(prefix -> startswith(name, prefix), OSCAR_PREFIXES)
+            return TEST_PROJECTS["oscar"]
+        elseif startswith(name, "KernelAbstractions/CUDA/")
+            return TEST_PROJECTS["cuda"]
+        elseif startswith(name, "KernelAbstractions/ROCm/")
+            return TEST_PROJECTS["rocm"]
+        elseif startswith(name, "KernelAbstractions/OpenCL/")
+            return TEST_PROJECTS["opencl"]
+        end
+        return nothing
+    end
+
+    function test_worker(name)
+        project = test_project(name)
+        project === nothing && return nothing
+
+        init_worker_code = if project == TEST_PROJECTS["oscar"]
+            quote
+                using Pkg
+                Pkg.activate($project)
+                using QuantumClifford
+                import Oscar
+            end
+        else
+            quote
+                using Pkg
+                Pkg.activate($project)
+            end
+        end
+
+        return addworker(; init_worker_code)
+    end
+
+    using QuantumClifford
+    runtests(
+        QuantumClifford,
+        args;
+        testsuite,
+        test_worker,
+        init_code = :(using QuantumClifford),
     )
 end
-!JET_flag && Oscar_flag && Pkg.add("Oscar")
-!JET_flag && Tesseract_flag && Pkg.add("PyTesseractDecoder")
-
-
-using TestItemRunner
-using QuantumClifford
-
-# filter for the test
-testfilter = ti -> begin
-    exclude = Symbol[]
-
-    if JET_flag
-        return :jet in ti.tags
-    else
-        push!(exclude, :jet)
-    end
-
-    if !Oscar_flag
-        push!(exclude, :oscar_required)
-    end
-
-    if !Tesseract_flag
-        push!(exclude, :tesseract_required)
-    end
-
-    if get(ENV, "QC_ECC_TEST", "") == "base"
-        return (:ecc in ti.tags) && (:ecc_base in ti.tags) && all(!in(exclude), ti.tags)
-
-    elseif get(ENV, "QC_ECC_TEST", "") == "encoding"
-        return (:ecc in ti.tags) && (:ecc_encoding in ti.tags) && all(!in(exclude), ti.tags)
-
-    elseif get(ENV, "QC_ECC_TEST", "") == "decoding"
-        return (:ecc in ti.tags) && (:ecc_decoding in ti.tags) && all(!in(exclude), ti.tags)
-
-    elseif get(ENV, "QC_ECC_TEST", "") == "syndromecircuit"
-        return (:ecc in ti.tags) && (:ecc_syndrome_circuit_equivalence in ti.tags) && all(!in(exclude), ti.tags)
-
-    elseif get(ENV, "QC_ECC_TEST", "") == "syndromemeasurement"
-        return (:ecc in ti.tags) && (:ecc_syndrome_measurement_correctness in ti.tags) && all(!in(exclude), ti.tags)
-
-    elseif get(ENV, "QC_ECC_TEST", "") == "bespoke"
-        return (:ecc in ti.tags) && (:ecc_bespoke_checks in ti.tags) && all(!in(exclude), ti.tags)
-    else
-        push!(exclude, :ecc)
-    end
-
-    if CUDA_flag
-        return (:cuda in ti.tags) && all(!in(exclude), ti.tags)
-    else
-        push!(exclude, :cuda)
-    end
-
-    if ROCm_flag
-        return (:rocm in ti.tags) && all(!in(exclude), ti.tags)
-    else
-        push!(exclude, :rocm)
-    end
-
-    if OpenCL_flag
-        return (:opencl in ti.tags) && all(!in(exclude), ti.tags)
-    else
-        push!(exclude, :opencl)
-    end
-
-    if DOWNGRADE_TEST || !(VERSION >= v"1.10")
-        push!(exclude, :doctests)
-        push!(exclude, :aqua)
-    end
-
-    if !(Base.Sys.islinux() & (Int===Int64))
-        push!(exclude, :bitpack)
-    end
-
-    return all(!in(exclude), ti.tags)
-end
-
-println("Starting tests with $(Threads.nthreads()) threads out of `Sys.CPU_THREADS = $(Sys.CPU_THREADS)`...")
-
-@run_package_tests filter=testfilter
