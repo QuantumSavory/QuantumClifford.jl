@@ -6,6 +6,7 @@ scratch/
 *.cov
 .vscode
 test/.CondaPkg/
+test/projects/python_decoders/.CondaPkg/
 docs/.CondaPkg/
 .DS_Store
 .syncthing*

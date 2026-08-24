@@ -20,9 +20,14 @@ steps:
             - ./lib/QECCore/ext
     commands:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-    env:
-      QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
-      QC_GPU_TEST: "{{matrix.QC_GPU_TEST}}"
+      - |
+        for project in {{matrix.PROJECTS}}; do
+          julia --project="$${project}" -e 'using Pkg; Pkg.instantiate()'
+        done
+      - |
+        if [ -n "{{matrix.CONDA_PROJECT}}" ]; then
+          julia --project="{{matrix.CONDA_PROJECT}}" -e 'using CondaPkg; CondaPkg.resolve()'
+        fi
     agents:
       queue: "{{matrix.QUEUE}}"
     matrix:
@@ -30,69 +35,39 @@ steps:
         LABEL: ["General"]
         QUEUE: ["default-queue"]
         TEST_ARGS: ["general"]
-        QC_ECC_TEST: ["false"]
-        QC_GPU_TEST: ["false"]
+        PROJECTS: ["test/projects/oscar test/projects/python_decoders"]
+        CONDA_PROJECT: ["test/projects/python_decoders"]
       adjustments:
+        - with:
+            LABEL: "Slow"
+            QUEUE: "default-queue"
+            TEST_ARGS: "slow"
+            PROJECTS: ""
+            CONDA_PROJECT: ""
         - with:
             LABEL: "JET"
             QUEUE: "default-queue"
             TEST_ARGS: "jet"
-            QC_ECC_TEST: "false"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Base"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "base"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Encoding"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "encoding"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Decoding"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "decoding"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Syndrome Measurement"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "syndromemeasurement"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Syndrome Circuit"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "syndromecircuit"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Bespoke"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "bespoke"
-            QC_GPU_TEST: "false"
+            PROJECTS: "test/projects/jet"
+            CONDA_PROJECT: ""
         - with:
             LABEL: "GPU CUDA"
             QUEUE: cuda
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "false"
-            QC_GPU_TEST: "cuda"
+            TEST_ARGS: "--jobs=1 KernelAbstractions/CUDA"
+            PROJECTS: "test/projects/cuda"
+            CONDA_PROJECT: ""
         - with:
             LABEL: "GPU ROCm"
             QUEUE: rocm
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "false"
-            QC_GPU_TEST: "rocm"
+            TEST_ARGS: "--jobs=1 KernelAbstractions/ROCm"
+            PROJECTS: "test/projects/rocm"
+            CONDA_PROJECT: ""
         - with:
             LABEL: "GPU OpenCL"
             QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "false"
-            QC_GPU_TEST: "opencl"
+            TEST_ARGS: "--jobs=1 KernelAbstractions/OpenCL"
+            PROJECTS: "test/projects/opencl"
+            CONDA_PROJECT: ""
 
   - label: "QECCore - {{matrix.LABEL}} (local QuantumClifford)"
     plugins:
