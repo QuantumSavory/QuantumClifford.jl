@@ -14,6 +14,7 @@ steps:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --startup-file=no --color=yes -e 'import Pkg; Pkg.Apps.add("TestItemApp")'
       - |
+        mkdir -p coverage
         juliati="$$(julia --startup-file=no -e 'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')"
         common_args=(
           .
@@ -27,16 +28,19 @@ steps:
         # dependencies to its test processes. The generated manifest is CI-local.
         run_project() {
           local project="$$1"
+          local suite="$${project##*/}"
           if ! JULIA_PKG_PRECOMPILE_AUTO=0 julia --startup-file=no --color=yes \
             --project="$${project}" -e 'import Pkg; Pkg.instantiate()'; then
             return 1
           fi
           "$${juliati}" "$${common_args[@]}" \
+            --coverage-lcov "coverage/$${suite}.info" \
             --filter "package_name == \"QuantumClifford\" && startswith(filename, string(realpath(\"$${project}\"), Base.Filesystem.path_separator))" \
             --env "JULIA_LOAD_PATH=@:$${PWD}/$${project}:@stdlib"
         }
         status=0
         if ! "$${juliati}" "$${common_args[@]}" \
+          --coverage-lcov coverage/base.info \
           --filter 'package_name == "QuantumClifford" && dirname(filename) == realpath("test")'; then
           status=1
         fi
@@ -45,6 +49,9 @@ steps:
             status=1
           fi
         done
+        if ! .buildkite/upload-juliati-coverage.sh coverage/*.info; then
+          echo "Codecov upload failed."
+        fi
         exit "$${status}"
     agents:
       queue: "default-queue"
@@ -59,18 +66,27 @@ steps:
       - julia --startup-file=no --color=yes -e 'import Pkg; Pkg.Apps.add("TestItemApp")'
       - |
         project="test/gpu/{{matrix.TAG}}"
+        mkdir -p coverage
         # Resolve current compatible versions; the generated manifest is CI-local.
         JULIA_PKG_PRECOMPILE_AUTO=0 julia --startup-file=no --color=yes \
           --project="$${project}" -e 'import Pkg; Pkg.instantiate()'
         juliati="$$(julia --startup-file=no -e 'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')"
-        "$${juliati}" . \
+        status=0
+        if ! "$${juliati}" . \
           --progress log \
           --no-fail-on-detection-error \
           --timeout none \
           --check-bounds auto \
           --max-workers 1 \
+          --coverage-lcov "coverage/{{matrix.TAG}}.info" \
           --filter "package_name == \"QuantumClifford\" && startswith(filename, string(realpath(\"$${project}\"), Base.Filesystem.path_separator))" \
-          --env "JULIA_LOAD_PATH=@:$${PWD}/$${project}:@stdlib"
+          --env "JULIA_LOAD_PATH=@:$${PWD}/$${project}:@stdlib"; then
+          status=1
+        fi
+        if ! .buildkite/upload-juliati-coverage.sh coverage/*.info; then
+          echo "Codecov upload failed."
+        fi
+        exit "$${status}"
     agents:
       queue: "{{matrix.QUEUE}}"
     matrix:
