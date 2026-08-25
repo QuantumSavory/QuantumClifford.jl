@@ -1,4 +1,4 @@
-@testitem "ECC Decoder" tags=[:ecc, :ecc_decoding] begin
+@testitem "ECC Decoder" tags=[:ecc, :ecc_decoding, :tesseract_required] begin
     using Test
     using QuantumClifford
     using QuantumClifford.ECC
@@ -6,11 +6,7 @@
     import PyQDecoders
     import LDPCDecoders
 
-    if !Sys.iswindows()
-        import PyTesseractDecoder
-    else
-        @test_broken false # TODO tesseract-decoder is not available on Windows
-    end
+    import PyTesseractDecoder
 
     include("../ecc/test_ecc_base.jl")
 
@@ -42,36 +38,6 @@
     end
 
     ##
-
-    @testset "belief prop decoders, good for sparse codes" begin
-        codes = vcat(LP04, LP118, test_gb_codes, other_lifted_product_codes)
-
-        noise = 0.001
-
-        setups = [
-            CommutationCheckECCSetup(noise),
-            NaiveSyndromeECCSetup(noise, 0),
-            ShorSyndromeECCSetup(noise, 0),
-        ]
-
-        for c in codes
-            for s in setups
-                for d in [c -> PyBeliefPropOSDecoder(c, maxiter=2)]
-                    nsamples = 10000
-                    if true
-                        @test_broken false # TODO these are too slow to test in CI
-                        continue
-                    end
-                    e = evaluate_decoder(d(c), s, nsamples)
-                    # @show c
-                    # @show s
-                    # @show e
-                    @test max(e...) <= noise
-                end
-            end
-        end
-    end
-
 
     @testset "BitFlipDecoder decoder, good for sparse codes" begin
         codes = [
@@ -130,7 +96,6 @@
     end
 
 
-    if !Sys.iswindows()
     @testset "tesseract decoder (tesseract-decoder via PyTesseractDecoder)" begin
         codes = [
             Surface(8, 8),
@@ -167,8 +132,5 @@
                 @test max(e...) <= 0.2/20
             end
         end
-    end
-    end
-
     end
 end

@@ -2,17 +2,9 @@
 
     include("../common/test_platform.jl")
 
-    using AMDGPU: ROCArray, devices, synchronize
+    using AMDGPU: ROCArray, synchronize
     const AT = ROCArray
 
-    const can_run = length(devices()) > 0
-
-    @testset "Device availability" begin
-        @test can_run
-    end
-
-    if can_run
-        test_platform(AT, synchronize)
-    end
+    test_platform(AT, synchronize)
 
 end

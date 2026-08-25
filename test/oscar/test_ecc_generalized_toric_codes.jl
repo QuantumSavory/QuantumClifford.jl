@@ -1,5 +1,4 @@
-@testitem "ECC Generalized Toric Code" tags=[:ecc, :ecc_bespoke_checks] begin
-    @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
+@testitem "ECC Generalized Toric Code" tags=[:ecc, :ecc_bespoke_checks, :oscar_required] begin
         using Oscar
         using QECCore
         import HiGHS
@@ -314,5 +313,4 @@
             c = GeneralizedToric(f, g, α1, α2)
             @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 10
         end
-    end
 end

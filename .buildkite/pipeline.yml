@@ -13,12 +13,14 @@ steps:
       - |
         project="{{matrix.PROJECT}}"
         suite="$${project##*/}"
+        tag_filter="$$(julia --startup-file=no -e 'include("test/TestItemConfiguration.jl"); print(TestItemConfiguration.JULIATI_CI_FILTER)')"
         if [[ "$${project}" == "test" ]]; then
           suite="base"
           filter='package_name == "QuantumClifford" && dirname(filename) == realpath("test")'
         else
           filter="package_name == \"QuantumClifford\" && startswith(filename, string(realpath(\"$${project}\"), Base.Filesystem.path_separator))"
         fi
+        filter="($${filter}) && ($${tag_filter})"
 
         mkdir -p coverage
         # Resolve current compatible versions; the generated manifest is CI-local.
@@ -28,7 +30,6 @@ steps:
         status=0
         if ! "$${juliati}" . \
           --progress log \
-          --no-fail-on-detection-error \
           --timeout none \
           --check-bounds auto \
           --threads auto \
@@ -63,20 +64,23 @@ steps:
       - julia --startup-file=no --color=yes -e 'import Pkg; Pkg.Apps.add("TestItemApp")'
       - |
         project="test/gpu/{{matrix.TAG}}"
+        tag_filter="$$(julia --startup-file=no -e 'include("test/TestItemConfiguration.jl"); print(TestItemConfiguration.JULIATI_CI_FILTER)')"
+        filter="package_name == \"QuantumClifford\" && startswith(filename, string(realpath(\"$${project}\"), Base.Filesystem.path_separator)) && ($${tag_filter})"
         mkdir -p coverage
         # Resolve current compatible versions; the generated manifest is CI-local.
         JULIA_PKG_PRECOMPILE_AUTO=0 julia --startup-file=no --color=yes \
           --project="$${project}" -e 'import Pkg; Pkg.instantiate()'
+        julia --startup-file=no --color=yes --project="$${project}" \
+          .buildkite/check-gpu.jl "{{matrix.TAG}}"
         juliati="$$(julia --startup-file=no -e 'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')"
         status=0
         if ! "$${juliati}" . \
           --progress log \
-          --no-fail-on-detection-error \
           --timeout none \
           --check-bounds auto \
           --threads auto \
           --coverage-lcov "coverage/{{matrix.TAG}}.info" \
-          --filter "package_name == \"QuantumClifford\" && startswith(filename, string(realpath(\"$${project}\"), Base.Filesystem.path_separator))" \
+          --filter "$${filter}" \
           --env "JULIA_LOAD_PATH=@:$${PWD}/$${project}:@stdlib"; then
           status=1
         fi
