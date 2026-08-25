@@ -35,8 +35,7 @@ juliati . \
   --env "JULIA_LOAD_PATH=@:$PWD/$project:@stdlib"
 ```
 
-Buildkite applies this pattern to every non-hardware environment in one step
-and to each GPU environment on its hardware runner. Runtime manifests remain
-uncommitted, so every job resolves current compatible dependency versions.
-Declare dependency and compatibility changes in the corresponding
-`Project.toml`.
+Buildkite runs each non-hardware environment as a separate matrix job and each
+GPU environment on its hardware runner. Runtime manifests remain uncommitted,
+so every job resolves current compatible dependency versions. Declare
+dependency and compatibility changes in the corresponding `Project.toml`.

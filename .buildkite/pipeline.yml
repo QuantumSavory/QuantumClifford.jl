@@ -2,7 +2,7 @@ secrets:
   - CODECOV_TOKEN
 
 steps:
-  - label: "QuantumClifford - all non-hardware tests (local QECCore)"
+  - label: "QuantumClifford - {{matrix.PROJECT}} (local QECCore)"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
@@ -11,47 +11,47 @@ steps:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
       - julia --startup-file=no --color=yes -e 'import Pkg; Pkg.Apps.add("TestItemApp")'
       - |
+        project="{{matrix.PROJECT}}"
+        suite="$${project##*/}"
+        if [[ "$${project}" == "test" ]]; then
+          suite="base"
+          filter='package_name == "QuantumClifford" && dirname(filename) == realpath("test")'
+        else
+          filter="package_name == \"QuantumClifford\" && startswith(filename, string(realpath(\"$${project}\"), Base.Filesystem.path_separator))"
+        fi
+
         mkdir -p coverage
+        # Resolve current compatible versions; the generated manifest is CI-local.
+        JULIA_PKG_PRECOMPILE_AUTO=0 julia --startup-file=no --color=yes \
+          --project="$${project}" -e 'import Pkg; Pkg.instantiate()'
         juliati="$$(julia --startup-file=no -e 'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')"
-        common_args=(
-          .
-          --progress log
-          --no-fail-on-detection-error
-          --timeout none
-          --check-bounds auto
-          --threads auto
-        )
-        # Resolve every suite from its Project.toml, then expose only that suite's
-        # dependencies to its test processes. The generated manifest is CI-local.
-        run_project() {
-          local project="$$1"
-          local suite="$${project##*/}"
-          if ! JULIA_PKG_PRECOMPILE_AUTO=0 julia --startup-file=no --color=yes \
-            --project="$${project}" -e 'import Pkg; Pkg.instantiate()'; then
-            return 1
-          fi
-          "$${juliati}" "$${common_args[@]}" \
-            --coverage-lcov "coverage/$${suite}.info" \
-            --filter "package_name == \"QuantumClifford\" && startswith(filename, string(realpath(\"$${project}\"), Base.Filesystem.path_separator))" \
-            --env "JULIA_LOAD_PATH=@:$${PWD}/$${project}:@stdlib"
-        }
         status=0
-        if ! "$${juliati}" "$${common_args[@]}" \
-          --coverage-lcov coverage/base.info \
-          --filter 'package_name == "QuantumClifford" && dirname(filename) == realpath("test")'; then
+        if ! "$${juliati}" . \
+          --progress log \
+          --no-fail-on-detection-error \
+          --timeout none \
+          --check-bounds auto \
+          --threads auto \
+          --coverage-lcov "coverage/$${suite}.info" \
+          --filter "$${filter}" \
+          --env "JULIA_LOAD_PATH=@:$${PWD}/$${project}:@stdlib"; then
           status=1
         fi
-        for project in test/aqua test/doctests test/ecc test/jet test/oscar test/python_decoders test/slow; do
-          if ! run_project "$${project}"; then
-            status=1
-          fi
-        done
-        if ! .buildkite/upload-juliati-coverage.sh coverage/*.info; then
+        if ! .buildkite/upload-juliati-coverage.sh "coverage/$${suite}.info"; then
           echo "Codecov upload failed."
         fi
         exit "$${status}"
     agents:
       queue: "default-queue"
+    matrix:
+      setup:
+        PROJECT:
+          - "test"
+          - "test/static_analysis_and_doctests"
+          - "test/ecc"
+          - "test/oscar"
+          - "test/python_decoders"
+          - "test/slow"
 
   - label: "QuantumClifford - GPU {{matrix.LABEL}} (local QECCore)"
     plugins:
