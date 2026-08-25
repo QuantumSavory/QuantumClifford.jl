@@ -224,7 +224,6 @@
                             !iszero(trace) && @assert trace ≈ 1
                         end
                     end
-                end
             end
         end
     end

@@ -1,6 +1,6 @@
 @testitem "ROCm" tags = [:rocm] begin
 
-    include("implementation/test_platform.jl")
+    include("../common/test_platform.jl")
 
     using AMDGPU: ROCArray, devices, synchronize
     const AT = ROCArray

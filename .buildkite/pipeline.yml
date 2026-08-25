@@ -1,98 +1,105 @@
-env:
-  JULIA_NUM_THREADS: auto
-
 secrets:
   - CODECOV_TOKEN
 
 steps:
-  - label: "QuantumClifford - {{matrix.LABEL}} (local QECCore)"
+  - label: "QuantumClifford - {{matrix.PROJECT}} (local QECCore)"
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
           compiled_size_limit: 10737418240 # 10GiB
-      - JuliaCI/julia-test#v1:
-          test_args: "{{matrix.TEST_ARGS}}"
-      - JuliaCI/julia-coverage#v1:
-          dirs:
-            - ./src
-            - ./ext
-            - ./lib/QECCore/src
-            - ./lib/QECCore/ext
     commands:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
-    env:
-      QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
-      QC_GPU_TEST: "{{matrix.QC_GPU_TEST}}"
+      - julia --startup-file=no --color=yes -e 'import Pkg; Pkg.Apps.add("TestItemApp")'
+      - |
+        project="{{matrix.PROJECT}}"
+        suite="$${project##*/}"
+        if [[ "$${project}" == "test" ]]; then
+          suite="base"
+          filter='package_name == "QuantumClifford" && dirname(filename) == realpath("test")'
+        else
+          filter="package_name == \"QuantumClifford\" && startswith(filename, string(realpath(\"$${project}\"), Base.Filesystem.path_separator))"
+        fi
+
+        mkdir -p coverage
+        # Resolve current compatible versions; the generated manifest is CI-local.
+        JULIA_PKG_PRECOMPILE_AUTO=0 julia --startup-file=no --color=yes \
+          --project="$${project}" -e 'import Pkg; Pkg.instantiate()'
+        juliati="$$(julia --startup-file=no -e 'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')"
+        status=0
+        if ! "$${juliati}" . \
+          --progress log \
+          --no-fail-on-detection-error \
+          --timeout none \
+          --check-bounds auto \
+          --threads auto \
+          --coverage-lcov "coverage/$${suite}.info" \
+          --filter "$${filter}" \
+          --env "JULIA_LOAD_PATH=@:$${PWD}/$${project}:@stdlib"; then
+          status=1
+        fi
+        if ! .buildkite/upload-juliati-coverage.sh "coverage/$${suite}.info"; then
+          echo "Codecov upload failed."
+        fi
+        exit "$${status}"
+    agents:
+      queue: "default-queue"
+    matrix:
+      setup:
+        PROJECT:
+          - "test"
+          - "test/static_analysis_and_doctests"
+          - "test/ecc"
+          - "test/oscar"
+          - "test/python_decoders"
+          - "test/slow"
+
+  - label: "QuantumClifford - GPU {{matrix.LABEL}} (local QECCore)"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+          compiled_size_limit: 10737418240 # 10GiB
+    commands:
+      - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+      - julia --startup-file=no --color=yes -e 'import Pkg; Pkg.Apps.add("TestItemApp")'
+      - |
+        project="test/gpu/{{matrix.TAG}}"
+        mkdir -p coverage
+        # Resolve current compatible versions; the generated manifest is CI-local.
+        JULIA_PKG_PRECOMPILE_AUTO=0 julia --startup-file=no --color=yes \
+          --project="$${project}" -e 'import Pkg; Pkg.instantiate()'
+        juliati="$$(julia --startup-file=no -e 'print(joinpath(first(DEPOT_PATH), "bin", "juliati"))')"
+        status=0
+        if ! "$${juliati}" . \
+          --progress log \
+          --no-fail-on-detection-error \
+          --timeout none \
+          --check-bounds auto \
+          --threads auto \
+          --coverage-lcov "coverage/{{matrix.TAG}}.info" \
+          --filter "package_name == \"QuantumClifford\" && startswith(filename, string(realpath(\"$${project}\"), Base.Filesystem.path_separator))" \
+          --env "JULIA_LOAD_PATH=@:$${PWD}/$${project}:@stdlib"; then
+          status=1
+        fi
+        if ! .buildkite/upload-juliati-coverage.sh coverage/*.info; then
+          echo "Codecov upload failed."
+        fi
+        exit "$${status}"
     agents:
       queue: "{{matrix.QUEUE}}"
     matrix:
       setup:
-        LABEL: ["General"]
-        QUEUE: ["default-queue"]
-        TEST_ARGS: ["general"]
-        QC_ECC_TEST: ["false"]
-        QC_GPU_TEST: ["false"]
+        LABEL: ["CUDA"]
+        TAG: ["cuda"]
+        QUEUE: ["cuda"]
       adjustments:
         - with:
-            LABEL: "JET"
+            LABEL: "ROCm"
+            TAG: "rocm"
+            QUEUE: "rocm"
+        - with:
+            LABEL: "OpenCL"
+            TAG: "opencl"
             QUEUE: "default-queue"
-            TEST_ARGS: "jet"
-            QC_ECC_TEST: "false"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Base"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "base"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Encoding"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "encoding"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Decoding"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "decoding"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Syndrome Measurement"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "syndromemeasurement"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Syndrome Circuit"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "syndromecircuit"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "ECC Bespoke"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "bespoke"
-            QC_GPU_TEST: "false"
-        - with:
-            LABEL: "GPU CUDA"
-            QUEUE: cuda
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "false"
-            QC_GPU_TEST: "cuda"
-        - with:
-            LABEL: "GPU ROCm"
-            QUEUE: rocm
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "false"
-            QC_GPU_TEST: "rocm"
-        - with:
-            LABEL: "GPU OpenCL"
-            QUEUE: "default-queue"
-            TEST_ARGS: "general"
-            QC_ECC_TEST: "false"
-            QC_GPU_TEST: "opencl"
 
   - label: "QECCore - {{matrix.LABEL}} (local QuantumClifford)"
     plugins:

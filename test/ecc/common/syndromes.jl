@@ -1,9 +1,6 @@
-@testitem "ECC Syndromes" tags=[:ecc, :ecc_syndrome_circuit_equivalence] begin
     using QuantumClifford: mul_left!, embed
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
-
-    include("test_ecc_base.jl")
 
     using QuantumClifford: Tableau
     reinterpret_frame(frame) = PauliFrame(reinterpret_stab(frame.frame), copy(frame.measurements))
@@ -63,8 +60,7 @@
     end
 
     @testset "naive and shor measurement circuits" begin
-        for (i,c) in enumerate(all_testable_code_instances())
+        for (i,c) in enumerate(codes)
             pframe_naive_vs_shor_syndrome(c)
         end
     end
-end

@@ -1,8 +1,5 @@
-@testitem "ECC code properties" tags=[:ecc, :ecc_base] begin
     using QuantumClifford.ECC
     using QuantumClifford.ECC: AbstractECC
-
-    include("test_ecc_base.jl")
 
     function is_css_matrix(H)
         nrows, ncols = size(H)
@@ -19,14 +16,14 @@
     end
 
     @testset "is CSS" begin
-        for code in all_testable_code_instances()
+        for code in codes
             H = parity_checks(code)
             @test iscss(code) in (is_css_matrix(H), nothing)
         end
     end
 
     @testset "code tableau consistency" begin
-        for code in all_testable_code_instances()
+        for code in codes
             H = parity_checks(code)
             _, _, rank = canonicalize!(copy(H), ranks=true)
             # Parity matrices do not encode stabilizer phases.
@@ -60,5 +57,4 @@
         @test isdegenerate(Steane7()) == false
         @test isdegenerate(Steane7(), 2) == true
         @test isdegenerate(Bitflip3()) == true
-    end
 end

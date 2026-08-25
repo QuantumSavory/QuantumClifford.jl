@@ -304,7 +304,7 @@ const code_instance_args = Dict(
     :ExtendedGeneralizedBicycle => [(c_gb₁, 2, p_gb₁), (c_gb₂, 3, p_gb₂), (c_gb₃, 4, p_gb₃)]
 )
 
-@static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
+@static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11" && Base.find_package("Oscar") !== nothing
   import Oscar: free_group, cyclic_group, direct_product, small_group_identification, describe, order, gens, quo,
   polynomial_ring, matrix, GF, transpose, laurent_polynomial_ring, ideal
   function load_oscar_codes()
@@ -614,8 +614,9 @@ const code_instance_args = Dict(
         :MultivariateMulticycle =>[([l_mm₁,m_mm₁], [A_mm₁, B_mm₁]), ([l_mm₂,m_mm₂], [A_mm₂, B_mm₂]), ([ℓ_mm₃, m_mm₃, p_mm₃], [A_mm₃, B_mm₃, C_mm₃]), ([ℓ_mm₄, m_mm₄, p_mm₄], [A_mm₄, B_mm₄, C_mm₄])]
     )
     merge!(code_instance_args, oscar_code_instance_args)
+    return oscar_code_instance_args
   end
-  load_oscar_codes()
+  const oscar_code_instance_args = load_oscar_codes()
 end
 
 function concretesubtypes(T::DataType)
@@ -626,10 +627,10 @@ function concretesubtypes(T::DataType)
     return concrete
 end
 
-function all_testable_code_instances(; maxn=nothing)
+function all_testable_code_instances(; maxn=nothing, instance_args=code_instance_args)
     codeinstances = []
     i = 1
-    _code_instance_args = copy(code_instance_args)
+    _code_instance_args = copy(instance_args)
     for t in concretesubtypes(QuantumClifford.ECC.AbstractQECC)
         for c in pop!(_code_instance_args, nameof(t), [])
             codeinstance = t(c...)

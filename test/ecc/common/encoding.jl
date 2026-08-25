@@ -1,21 +1,11 @@
-@testitem "encoding circuits - compare to algebraic construction of encoded state" tags=[:ecc, :ecc_encoding] begin
     using QuantumClifford
     using QuantumClifford.ECC
-
-    include("test_ecc_base.jl")
-
 
     # This test verifies that logical measurements on an encoded state match the physical pre-encoded state.
     # This test skips verifying the permutations of qubits during canonicalization are properly undone,
     # i.e. we modify the code we are testing so that the canonicalization does not need any permutations.
     for undoperm in [true, false],
-        code in [
-            all_testable_code_instances()...,
-            S"Y_",
-            S"Z_",
-            S"X_",
-            [random_stabilizer(5,7) for _ in 1:100]...
-        ]
+        code in codes
 
         if undoperm==false
             # Pre-process the tableau to remove permutations and negative phases.
@@ -42,5 +32,4 @@
         algebraicₙ = stabilizerview(algebraicₙ) |> canonicalize!
 
         @test (encodedₙ == algebraicₙ)
-    end
 end
