@@ -18,19 +18,10 @@ import Pkg
 Pkg.Apps.add("TestItemApp")
 ```
 
-Platform, version, and CI exclusions are defined in
-`test/TestItemConfiguration.jl`. Test items declare requirements with tags;
-they do not suppress execution inside test bodies. Load the central filter for
-the commands below:
-
-```sh
-test_filter="$(julia --startup-file=no -e 'include("test/TestItemConfiguration.jl"); print(TestItemConfiguration.JULIATI_CI_FILTER)')"
-```
-
 Run the base items directly:
 
 ```sh
-juliati . --filter "dirname(filename) == realpath(\"test\") && ($test_filter)"
+juliati . --filter 'dirname(filename) == realpath("test")'
 ```
 
 Resolve a specialized environment and expose it only to that suite's test
@@ -40,15 +31,11 @@ processes. For example:
 project=test/ecc
 julia --project="$project" -e 'import Pkg; Pkg.instantiate()'
 juliati . \
-  --filter "startswith(filename, string(realpath(\"test/ecc\"), Base.Filesystem.path_separator)) && ($test_filter)" \
+  --filter 'startswith(filename, string(realpath("test/ecc"), Base.Filesystem.path_separator))' \
   --env "JULIA_LOAD_PATH=@:$PWD/$project:@stdlib"
 ```
 
-Items tagged `:too_slow_for_ci` are available for explicit local runs but are
-excluded from Buildkite.
-
 Buildkite runs each non-hardware environment as a separate matrix job and each
-GPU environment on its hardware runner. GPU availability is checked before
-test discovery. Runtime manifests remain uncommitted,
+GPU environment on its hardware runner. Runtime manifests remain uncommitted,
 so every job resolves current compatible dependency versions. Declare
 dependency and compatibility changes in the corresponding `Project.toml`.

@@ -1,4 +1,4 @@
-@testitem "Doctests" tags=[:doctests, :oscar_required] begin
+@testitem "Doctests" tags=[:doctests] begin
     using Documenter
     using QuantumClifford
     using QuantumInterface
@@ -9,9 +9,12 @@
     const QuantumCliffordHeckeExt = Base.get_extension(QuantumClifford, :QuantumCliffordHeckeExt)
     push!(extensions, QuantumCliffordHeckeExt)
 
-    import Oscar
-    const QuantumCliffordOscarExt = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
-    push!(extensions, QuantumCliffordOscarExt)
+    @static if get(ENV, "QUANTUMSAVORY_DOWNGRADE_TEST", "") != "true" &&
+               !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
+        import Oscar
+        const QuantumCliffordOscarExt = Base.get_extension(QuantumClifford, :QuantumCliffordOscarExt)
+        push!(extensions, QuantumCliffordOscarExt)
+    end
 
     import JuMP
     const QuantumCliffordJuMPExt = Base.get_extension(QuantumClifford, :QuantumCliffordJuMPExt)
