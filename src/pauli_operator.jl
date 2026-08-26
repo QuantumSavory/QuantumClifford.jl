@@ -94,6 +94,36 @@ function zbit(p::PauliOperator)
     [(word>>s)&one==one for word in zview(p) for s in 0:size-1][begin:p.nqubits]
 end
 
+"""
+Qubit indices on which the X part of the Pauli operator is nontrivial — i.e.
+where the single-qubit Pauli is `X` or `Y`. Sorted, 1-indexed.
+
+```jldoctest
+julia> supportx(P"X_ZY")
+2-element Vector{Int64}:
+ 1
+ 4
+```
+
+See also: [`supportz`](@ref), [`xbit`](@ref).
+"""
+supportx(p::PauliOperator) = findall(xbit(p))
+
+"""
+Qubit indices on which the Z part of the Pauli operator is nontrivial — i.e.
+where the single-qubit Pauli is `Z` or `Y`. Sorted, 1-indexed.
+
+```jldoctest
+julia> supportz(P"X_ZY")
+2-element Vector{Int64}:
+ 3
+ 4
+```
+
+See also: [`supportx`](@ref), [`zbit`](@ref).
+"""
+supportz(p::PauliOperator) = findall(zbit(p))
+
 function _P_str(a::Union{String,SubString{String}})
     letters = filter(x->occursin(x,"_IZXY"),a)
     phase = phasedict[strip(filter(x->!occursin(x,"_IZXY"),a))]
