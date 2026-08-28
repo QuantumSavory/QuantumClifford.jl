@@ -4,6 +4,10 @@
 - reworking the rest of `NoisyCircuits` and moving it out of `Experimental`
 
 # News
+## v0.11.8 - 2026-08-08
+
+- Add the `noisify` API, providing a unified interface for applying gate, measurement, reset, and idle noise to quantum circuits.
+- Add the `CircuitNoise` configuration object, replacing the previous noise dispatch interface.
 
 ## unreleased
 

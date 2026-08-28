@@ -18,7 +18,7 @@ import QuantumInterface: tensor, ⊗, tensor_pow,
     nqubits, expect, project!, reset_qubits!, traceout!, ptrace,
     apply!, projectX!, projectY!, projectZ!,
     embed, permutesystems,
-    entanglement_entropy, fidelity
+    entanglement_entropy
 
 export
     @P_str, PauliOperator, ⊗, I, X, Y, Z,
@@ -78,6 +78,8 @@ export
     # Pauli frames
     PauliFrame, pftrajectories, pfmeasurements,
     measurements,
+    #noisify
+    noisify, CircuitNoise,
     # Useful States
     bell, ghz, maximally_mixed,
     single_z, single_x, single_y,
@@ -1094,6 +1096,7 @@ end
 function apply!(stab::AbstractStabilizer, indices::Base.AbstractVecOrTuple{Int}, op::AbstractCliffordOperator; phases::Bool=true)
     @valbooldispatch _apply!(stab,op,indices; phases=Val(phases)) phases
 end
+@deprecate apply!(stab::AbstractStabilizer, op::AbstractCliffordOperator, indices::Base.AbstractVecOrTuple{Int}; phases::Bool=true) apply!(stab, indices, op; phases=phases)
 
 # TODO no need to track phases outside of stabview
 function _apply!(stab::AbstractStabilizer, p::PauliOperator; phases::Val{B}=Val(true)) where B
@@ -1449,6 +1452,7 @@ include("misc_gates.jl")
 include("noise.jl")
 include("affectedqubits.jl")
 include("pauli_frames.jl")
+include("noisify.jl")
 # common states and operators
 include("enumeration.jl")
 include("randoms.jl")
