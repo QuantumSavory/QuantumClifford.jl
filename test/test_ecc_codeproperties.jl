@@ -27,6 +27,8 @@
 
     @testset "code tableau consistency" begin
         for code in all_testable_code_instances()
+            @test (@timed nqubits(code)).time < 10
+            @test (@timed code_n(code)).time < 10
             H = parity_checks(code)
             _, _, rank = canonicalize!(copy(H), ranks=true)
             # Parity matrices do not encode stabilizer phases.

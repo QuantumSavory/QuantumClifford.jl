@@ -448,6 +448,7 @@ function parity_matrix_xz(code::MultivariateMulticycle)
     return hx, hz
 end
 
+code_n(c::MultivariateMulticycle) = binomial(length(c.polynomials), length(c.polynomials) ÷ 2) * prod(c.orders)
 parity_matrix_x(c::MultivariateMulticycle) = parity_matrix_xz(c)[1]
 
 parity_matrix_z(c::MultivariateMulticycle) = parity_matrix_xz(c)[2]
