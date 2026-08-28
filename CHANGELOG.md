@@ -11,6 +11,7 @@
 - **(fix)** Use the supplied RNG for all-to-all circuit qubit selection.
 - **(fix)** Correct `LiftedCode` construction and dimensions for concrete GF(2) group-algebra matrices.
 - Avoid runtime dispatch when resetting qubits in `MixedDestabilizer` states.
+- - `ZSZ` codes (`two_block_group_algebra_code`s built from semidirect product of groups) are now implemented in ECC submodule.
 
 ## v0.11.7 - 2026-08-06
 

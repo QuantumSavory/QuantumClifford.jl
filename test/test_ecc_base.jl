@@ -611,7 +611,8 @@ const code_instance_args = Dict(
         :DoubleHomologicalProduct => [(δ₁,), (δ₂,)],
         :TrivariateTricycle => [(l₁, m₁, p₁, A₁, B₁, C₁), (l₂, m₂, p₂, A₂, B₂, C₂), (l₃, m₃, p₃, A₃, B₃, C₃), (l₄, m₄, p₄, A₄, B₄, C₄)],
         :BivariateBicycleViaPoly => [(l_bb₁, m_bb₁, A_bb₁, B_bb₁), (l_bb₂, m_bb₂, A_bb₂, B_bb₂), (l_bb₃, m_bb₃, A_bb₃, B_bb₃), (l_bb₄, m_bb₄, A_bb₄, B_bb₄), (l_bb₅, m_bb₅, A_bb₅, B_bb₅)],
-        :MultivariateMulticycle =>[([l_mm₁,m_mm₁], [A_mm₁, B_mm₁]), ([l_mm₂,m_mm₂], [A_mm₂, B_mm₂]), ([ℓ_mm₃, m_mm₃, p_mm₃], [A_mm₃, B_mm₃, C_mm₃]), ([ℓ_mm₄, m_mm₄, p_mm₄], [A_mm₄, B_mm₄, C_mm₄])]
+        :MultivariateMulticycle =>[([l_mm₁,m_mm₁], [A_mm₁, B_mm₁]), ([l_mm₂,m_mm₂], [A_mm₂, B_mm₂]), ([ℓ_mm₃, m_mm₃, p_mm₃], [A_mm₃, B_mm₃, C_mm₃]), ([ℓ_mm₄, m_mm₄, p_mm₄], [A_mm₄, B_mm₄, C_mm₄])],
+        :ZSZ => [(5, 8, 2, [(0,0), (4,4), (4,1)], [(0,0), (3,0), (2,7)]), (12, 6, 5, [(0,1), (2,2), (8,3)], [(4,0), (6,4), (1,5)])]
     )
     merge!(code_instance_args, oscar_code_instance_args)
   end
