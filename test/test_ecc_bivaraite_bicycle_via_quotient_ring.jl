@@ -17,6 +17,7 @@
         B = S(y^3 + x + x^2)
         c = BivariateBicycleViaPoly(l, m, A, B)
         @test code_n(c) == 72 && code_k(c) == 12
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
@@ -51,6 +52,7 @@
         B = S(1   + x^2 + x^7)
         c = BivariateBicycleViaPoly(l, m, A, B)
         @test code_n(c) == 90 && code_k(c) == 8
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 10
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
@@ -429,6 +431,7 @@
         B = S(y^3 + x   + x^2)
         c = BivariateBicycleViaPoly(l, m, A, B)
         @test code_n(c) == 54 && code_k(c) == 8
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 6
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
@@ -463,6 +466,7 @@
         B = S(y^2 + x^3 + x^5)
         c = BivariateBicycleViaPoly(l, m, A, B)
         @test code_n(c) == 98 && code_k(c) == 6
+        @test distance(c, DistanceMIPAlgorithm(solver=HiGHS)) == 12
         Hx = parity_matrix_x(c)
         n = size(Hx,2)÷2
         A = Hx[:,1:n]
