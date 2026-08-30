@@ -5,6 +5,13 @@
 
 # News
 
+## unreleased
+
+- **(fix)** Report concatenations of two CSS codes as CSS and provide their X and Z parity matrices.
+- **(fix)** Use the supplied RNG for all-to-all circuit qubit selection.
+- **(fix)** Correct `LiftedCode` construction and dimensions for concrete GF(2) group-algebra matrices.
+- Avoid runtime dispatch when resetting qubits in `MixedDestabilizer` states.
+
 ## v0.11.7 - 2026-08-06
 
 - **(fix)** Prevent stack overflows when tensoring one or at least three `PauliOperator`s.

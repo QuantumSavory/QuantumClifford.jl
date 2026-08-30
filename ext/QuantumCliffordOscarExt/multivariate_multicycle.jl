@@ -11,7 +11,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l, m, p, r = 2, 2, 2, 2;
 
-julia> R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z]);
+julia> R, (w, x, y, z) = polynomial_ring(Native.GF(2), [:w, :x, :y, :z]);
 
 julia> I = ideal(R, [w^l - 1, x^m - 1, y^p - 1, z^r - 1]);
 
@@ -42,7 +42,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=21; m=18;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^l-1, y^m-1]);
 
@@ -65,7 +65,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l, m, p = 6, 6, 4;
 
-julia> R, (x, y, z) = polynomial_ring(GF(2), [:x, :y, :z]);
+julia> R, (x, y, z) = polynomial_ring(Native.GF(2), [:x, :y, :z]);
 
 julia> I = ideal(R, [x^l - 1, y^m - 1, z^p - 1]);
 
@@ -92,7 +92,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l, m, p, r = 14, 1, 1, 1;
 
-julia> R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z]);
+julia> R, (w, x, y, z) = polynomial_ring(Native.GF(2), [:w, :x, :y, :z]);
 
 julia> I = ideal(R, [w^l - 1, x^m - 1, y^p - 1, z^r - 1]);
 
@@ -125,7 +125,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=15; m=15;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^l-1, y^m-1]);
 
@@ -150,7 +150,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=15; m=8;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^l-1, y^m-1]);
 
@@ -177,7 +177,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=2; m=4;
 
-julia> R, (s, x) = polynomial_ring(GF(2), [:s, :x]);
+julia> R, (s, x) = polynomial_ring(Native.GF(2), [:s, :x]);
 
 julia> I = ideal(R, [s^l-1, x^m-1]);
 
@@ -204,7 +204,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=15; m=1;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^l-1, y^m-1]);
 
@@ -231,7 +231,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=4; m=6;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^l-1, y^m-1]);
 
@@ -260,7 +260,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> n = 7;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^n-1, y^n-1]);
 
@@ -287,7 +287,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l, m, p, r = 2, 2, 2, 2;
 
-julia> R, (w, x, y, z) = polynomial_ring(GF(2), [:w, :x, :y, :z]);
+julia> R, (w, x, y, z) = polynomial_ring(Native.GF(2), [:w, :x, :y, :z]);
 
 julia> I = ideal(R, [w^l - 1, x^m - 1, y^p - 1, z^r - 1]);
 
@@ -319,7 +319,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> L = 8;
 
-julia> R, (x,y,z) = polynomial_ring(GF(2), [:x,:y,:z]);
+julia> R, (x,y,z) = polynomial_ring(Native.GF(2), [:x,:y,:z]);
 
 julia> I = ideal(R, [x^L-1, y^L-1, z^L-1]);
 
@@ -337,13 +337,13 @@ julia> code_n(c), code_k(c)
 
 See also: [`TrivariateTricycle`](@ref), [`BivariateBicycleViaPoly`](@ref)
 """
-struct MultivariateMulticycle <: AbstractCSSCode
+struct MultivariateMulticycle{T<:MPolyQuoRingElem} <: AbstractCSSCode
     orders::Vector{Int}
-    polynomials::Vector{MPolyQuoRingElem{FqMPolyRingElem}}
-    function MultivariateMulticycle(orders::Vector{Int}, polys::Vector{<:MPolyQuoRingElem})
+    polynomials::Vector{T}
+    function MultivariateMulticycle(orders::Vector{Int}, polys::Vector{T}) where {T<:MPolyQuoRingElem}
         all(x->x>0, orders) || throw(ArgumentError("All orders must be positive"))
         length(polys) ≥ 2 || throw(ArgumentError("Need at least 2 variables to define a CSS code"))
-        new(orders, collect(polys))
+        new{T}(orders, collect(polys))
     end
 end
 
@@ -352,7 +352,7 @@ _gf2_to_int(M) = [iszero(M[i,j]) ? 0 : 1 for i in 1:size(M,1), j in 1:size(M,2)]
 function _polynomial_to_circulant_matrix(f::MPolyQuoRingElem, orders::Vector{Int})
     t = length(orders)
     N = prod(orders)
-    M = zero_matrix(GF(2), N, N)
+    M = zero_matrix(base_ring(base_ring(parent(f))), N, N)
     f_lift = lift(f)
     for col_idx in 0:(N-1)
         tmp = col_idx
@@ -395,7 +395,7 @@ function boundary_maps(code::MultivariateMulticycle)
         end
     end
     maps = Vector{Matrix{Int}}(undef, t)
-    R, x = polynomial_ring(GF(2), ["x$i" for i in 1:t])
+    R, x = polynomial_ring(Oscar.Native.GF(2), ["x$i" for i in 1:t])
     K = koszul_complex(x)
     @debug "Koszul complex: $K"
     for k in 1:t

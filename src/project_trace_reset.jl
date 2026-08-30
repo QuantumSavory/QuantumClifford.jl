@@ -459,7 +459,7 @@ A faster special-case version of [`project!`](@ref).
 See also: [`project!`](@ref), [`projectZrand!`](@ref), [`projectY!`](@ref), [`projectX!`](@ref).
 """
 function projectZ!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
-    @valbooldispatch project_cond!(d,qubit,Val(isX),Val((false,true));keep_result,phases=Val(phases))
+    @valbooldispatch project_cond!(d,qubit,Val(isX),Val((false,true));keep_result,phases=Val(phases)) phases
 end
 
 function projectZ!(s::AbstractStabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
@@ -473,7 +473,7 @@ A faster special-case version of [`project!`](@ref).
 See also: [`project!`](@ref), [`projectYrand!`](@ref), [`projectX!`](@ref), [`projectZ!`](@ref).
 """
 function projectY!(d::MixedDestabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
-    @valbooldispatch project_cond!(d,qubit,Val(isXorZ),Val((true,true));keep_result,phases=Val(phases))
+    @valbooldispatch project_cond!(d,qubit,Val(isXorZ),Val((true,true));keep_result,phases=Val(phases)) phases
 end
 
 function projectY!(s::AbstractStabilizer,qubit::Int;keep_result::Bool=true,phases::Bool=true)
@@ -706,8 +706,7 @@ end
 """
 $TYPEDSIGNATURES
 """
-function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubits; phases=true) # TODO this is really inefficient
-    _phases = Val(phases)
+function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubits; phases::Bool=true) # TODO this is really inefficient
     nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
     length(qubits) <= nqubits(s) || throw(DimensionMismatch("the stabilizer is not big enough to contain the new state"))
     newstatestab = stabilizerview(newstate)
@@ -725,7 +724,7 @@ function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubit
                 loc = findfirst(i->comm(pauli,destab,i)!=0, 1:r)::Int # `nothing` should not be a possible answer
                 for i in loc+1:r
                     if comm(pauli, destab, i)!=0
-                        mul_left!(s, i, loc; phases=_phases)
+                        @valbooldispatch mul_left!(s, i, loc; phases=Val(phases)) phases
                     end
                 end
                 sv[loc] = pauli

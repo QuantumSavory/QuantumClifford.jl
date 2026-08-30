@@ -1,14 +1,16 @@
-@testitem "ECC Bivaraite Bicycle" tags=[:ecc, :ecc_bespoke_checks] begin
+@testitem "ECC Bivaraite Bicycle" tags=[:ecc, :ecc_bespoke_checks, :oscar_required] begin
+    using Oscar
     using Hecke
     using HiGHS
     using JuMP
     using Hecke: group_algebra, GF, abelian_group, gens, one
+    using QuantumClifford.ECC
     using QuantumClifford.ECC: two_block_group_algebra_code, code_k, code_n, distance, DistanceMIPAlgorithm
 
     @testset "Reproduce Table 3 bravyi2024high" begin
         # [[72, 12, 6]]
         l=6; m=6
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^3 + y + y^2)
@@ -42,7 +44,7 @@
 
         # [[90, 8, 10]]
         l=15; m=3
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^9 + y   + y^2)
@@ -76,7 +78,7 @@
 
         # [[108, 8, 10]]
         l=9; m=6
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^3 + y + y^2)
@@ -110,7 +112,7 @@
 
         # [[144, 12, 12]]
         l=12; m=6
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^3 + y + y^2)
@@ -144,7 +146,7 @@
 
         # [[288, 12, 12]]
         l=12; m=12
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^3 + y^2 + y^7)
@@ -178,7 +180,7 @@
 
         # [[360, 12, ≤ 24]]
         l=30; m=6
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^9 + y    + y^2)
@@ -212,7 +214,7 @@
 
         # [[756, 16, ≤ 34]]
         l=21; m=18
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^3 + y^10 + y^17)
@@ -248,7 +250,7 @@
     @testset "Reproduce Table 1 berthusen2024toward" begin
         # [[72, 8, 6]]
         l=12; m=3
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^9 + y + y^2)
@@ -282,7 +284,7 @@
 
         # [[90, 8, 6]]
         l=9; m=5
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^8 + y^4 + y)
@@ -316,7 +318,7 @@
 
         # [[120, 8, 8]]
         l=12; m=5
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^10 + y^4 + y)
@@ -350,7 +352,7 @@
 
         # [[150, 8, 8]]
         l=15; m=5
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^5 + y^2 + y^3)
@@ -384,7 +386,7 @@
 
         # [[196, 12, 8]]
         l=14; m=7
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^6 + y^5 + y^6)
@@ -420,7 +422,7 @@
     @testset "Reproduce Table 1 wang2024coprime" begin
         # [[54, 8, 6]]
         l=3; m=9
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(1   + y^2 + y^4)
@@ -454,7 +456,7 @@
 
         # [[98, 6, 12]]
         l=7; m=7
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^3 + y^5 + y^6)
@@ -488,7 +490,7 @@
 
         # [[126, 8, 10]]
         l=3; m=21
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(1   + y^2 + y^10)
@@ -522,7 +524,7 @@
 
         # [[150, 16, 8]]
         l=5; m=15
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(1   + y^6 + y^8)
@@ -556,7 +558,7 @@
 
         # [[162, 8, 14]]
         l=3; m=27
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(1    + y^10 + y^14)
@@ -590,7 +592,7 @@
 
         # [[180, 8, 16]]
         l=6; m=15
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^3 + y   + y^2)
@@ -626,7 +628,7 @@
     @testset "Reproduce Table 1 eberhardt2024logical" begin
         # [[108, 16, 6]]
         l=6; m=9
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(1 +   y   + y^2)
@@ -660,7 +662,7 @@
 
         # [[128, 14, 12]]
         l=8; m=8
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^2 + y + y^3 + y^4)
@@ -694,7 +696,7 @@
 
         # [[162, 4, 16]]
         l=9; m=9
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(1   + x + y)
@@ -728,7 +730,7 @@
 
         # [[162, 12, 8]]
         l=9; m=9
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(1   + x   + y^6)
@@ -762,7 +764,7 @@
 
         # [[162, 24, 6]]
         l=9; m=9
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(1   + y   + y^2)
@@ -796,7 +798,7 @@
 
         # [[270, 8, 18]]
         l=9; m=15
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^3 + y + y^2)
@@ -830,7 +832,7 @@
 
         # [[98, 6, 12]]
         l=7; m=7
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x + y^3 + y^4)
@@ -864,7 +866,7 @@
 
         # [[162, 8, 12]]
         l=9; m=9
-        R, (x, y) = polynomial_ring(GF(2), [:x, :y])
+        R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y])
         I = ideal(R, [x^l-1, y^m-1])
         S, _ = quo(R, I)
         A = S(x^3 + y + y^2)
