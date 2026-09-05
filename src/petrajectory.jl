@@ -66,9 +66,13 @@ function petrajectory_keep(state, circuit; branch_weight=1.0, current_order=0, m
     return dict
 end
 
-"""Run a perturbative expansion to a given order. This is the main public function for the perturbative expansion approach.
+"""
+$TYPEDSIGNATURES
 
-See also: [`pftrajectories`](@ref), [`mctrajectories`](@ref)"""
+Run a perturbative expansion to a given order. This is the main public function for the perturbative expansion approach.
+
+See also: [`pftrajectories`](@ref), [`mctrajectories`](@ref)
+"""
 function petrajectories(initialstate, circuit; branch_weight=1.0, max_order=1, keepstates::Bool=false)
     for circuit_op in circuit
         if(_sentinel_maximum(_sentinel_affectedqubits(circuit_op)) > nqubits(initialstate))

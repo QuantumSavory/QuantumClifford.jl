@@ -1,9 +1,10 @@
 """
     $TYPEDEF
 
-A generalization of the circulant bivariate bicycle code introduced in [bravyi2024high](@cite),
-extending the original three-term polynomial representation up to `l` terms (for `x`-powers) and
-`m` terms (for `y`-powers).
+A generalization of the circulant bivariate bicycle code.
+
+This construction extends the original three-term polynomial representation up to `l` terms
+(for `x`-powers) and `m` terms (for `y`-powers) [bravyi2024high](@cite).
 
 ## Bivariate Bicycle Codes
 

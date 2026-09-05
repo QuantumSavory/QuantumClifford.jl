@@ -1,11 +1,19 @@
-"""A conditional gate that either performs `truegate` or `falsegate`, depending on the value of `controlbit`."""
+"""
+$TYPEDEF
+
+A conditional gate that either performs `truegate` or `falsegate`, depending on the value of `controlbit`.
+"""
 struct ConditionalGate <: AbstractOperation
     truegate::AbstractOperation
     falsegate::AbstractOperation
     controlbit::Int
 end
 
-"""A conditional gate that performs one of the `gates`, depending on the output of `decisionfunction` applied to the entire classical bit register."""
+"""
+$TYPEDEF
+
+A conditional gate that performs one of the `gates`, depending on the output of `decisionfunction` applied to the entire classical bit register.
+"""
 struct IndexedDecisionGate <: AbstractOperation
     gates::AbstractVector{AbstractOperation}
     decisionfunction

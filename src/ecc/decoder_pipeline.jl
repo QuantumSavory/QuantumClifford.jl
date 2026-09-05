@@ -30,7 +30,10 @@ abstract type AbstractECCSetup end
 """A helper function that takes a parity check tableau and an `AbstractECCSetup` type and provides the circuit that needs to be simulated."""
 function physical_ECC_circuit end # XXX Do not export! This might need to be refactored as we add more interesting setups!
 
-"""Configuration for ECC evaluator that does not simulate any ECC circuits, rather it simply checks the commutation of the parity check and the Pauli error.
+"""
+$TYPEDEF
+
+Configuration for ECC evaluator that does not simulate any ECC circuits, rather it simply checks the commutation of the parity check and the Pauli error.
 
 This is much faster than any other simulation method, but it is incapable of noisy-circuit simulations and thus useless for fault-tolerance studies.
 
@@ -59,7 +62,10 @@ struct NaiveSyndromeECCSetup <: AbstractECCSetup
     end
 end
 
-"""Configuration for ECC evaluators that simulate the Shor-style syndrome measurement (without a flag qubit).
+"""
+$TYPEDEF
+
+Configuration for ECC evaluators that simulate the Shor-style syndrome measurement (without a flag qubit).
 
 The simulated circuit includes:
 - perfect noiseless encoding (encoding and its fault tolerance are not being studied here)
@@ -123,7 +129,11 @@ function physical_ECC_circuit(H, setup::ShorSyndromeECCSetup)
     circ, syndrome_bits, n_anc
 end
 
-"""Evaluate the performance of a given decoder (e.g. [`TableDecoder`](@ref)) and a given style of running an ECC code (e.g. [`ShorSyndromeECCSetup`](@ref))"""
+"""
+    evaluate_decoder(::AbstractSyndromeDecoder, ::AbstractECCSetup, ::Int)
+
+Evaluate the performance of a given decoder (e.g. [`TableDecoder`](@ref)) and a given style of running an ECC code (e.g. [`ShorSyndromeECCSetup`](@ref)).
+"""
 function evaluate_decoder(d::AbstractSyndromeDecoder, setup::AbstractECCSetup, nsamples::Int)
     H = parity_checks(d)
     n = code_n(H)
@@ -207,7 +217,10 @@ function evaluate_decoder(d::AbstractSyndromeDecoder, setup::CommutationCheckECC
     evaluate_guesses(measured_faults, guesses, fm)
 end
 
-"""A simple look-up table decoder for error correcting codes.
+"""
+$TYPEDEF
+
+A simple look-up table decoder for error correcting codes.
 
 The lookup table contains only weight=1 errors, thus it is small,
 but at best it provides only for distance=3 decoding.
@@ -398,5 +411,5 @@ using WeakDepHelpers: @declare_struct_is_in_extension
 @declare_struct_is_in_extension QuantumClifford BitFlipDecoder :QuantumCliffordLDPCDecodersExt (:LDPCDecoders,) "An Iterative Bitflip decoder built around tools from `LDPCDecoders.jl`."
 @declare_struct_is_in_extension QuantumClifford PyBeliefPropDecoder :QuantumCliffordPyQDecodersExt (:PyQDecoders,) "A Belief Propagation decoder built around tools from the python package `ldpc` available from the julia package `PyQDecoders.jl`."
 @declare_struct_is_in_extension QuantumClifford PyBeliefPropOSDecoder :QuantumCliffordPyQDecodersExt (:PyQDecoders,) "A Belief Propagation decoder with ordered statistics decoding, built around tools from the python package `ldpc` available from the julia package `PyQDecoders.jl`."
-@declare_struct_is_in_extension QuantumClifford PyMatchingDecoder :QuantumCliffordPyQDecodersExt (:PyQDecoders,) "A perfect matching decoder built around tools from the python package `pymatching` available from the julia package `PyQDecoders.jl`."
+@declare_struct_is_in_extension QuantumClifford PyMatchingDecoder :QuantumCliffordPyQDecodersExt (:PyQDecoders,) "    PyMatchingDecoder\n\nA perfect matching decoder built around tools from the python package `pymatching` available from the julia package `PyQDecoders.jl`."
 @declare_struct_is_in_extension QuantumClifford TesseractDecoder :QuantumCliffordPyTesseractDecoderExt (:PyTesseractDecoder,) "A syndrome decoder using Google's `tesseract-decoder` available via `PyTesseractDecoder.jl`."

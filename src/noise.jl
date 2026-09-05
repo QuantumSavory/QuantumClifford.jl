@@ -22,7 +22,11 @@ function applynoise!(r::Register, n, indices::Base.AbstractVecOrTuple)
     return r
 end
 
-"""Depolarization noise model with total probability of error `p`."""
+"""
+$TYPEDEF
+
+Depolarization noise model with total probability of error `p`.
+"""
 struct UnbiasedUncorrelatedNoise{T} <: AbstractNoise
     p::T
 end
@@ -131,7 +135,11 @@ end
 applynoise!(s::AbstractStabilizer, noise::DepolarizationNoise, i::Int) = applynoise!(s, noise, (i,))
 applynoise!(s::AbstractStabilizer, noise::DepolarizationNoise, i::Int, j::Int) = applynoise!(s, noise, (i, j))
 
-"""An operator that applies the given `noise` model to the qubits at the selected `indices`."""
+"""
+$TYPEDEF
+
+An operator that applies the given `noise` model to the qubits at the selected `indices`.
+"""
 struct NoiseOp{N, Q} <: AbstractNoiseOp where {N, Q}
     noise::N #<:AbstractNoise
     indices::NTuple{Q, Int}
@@ -139,9 +147,13 @@ end
 
 NoiseOp(noise, indices::AbstractVector{Int}) = NoiseOp(noise, tuple(indices...))
 
-"""A convenient constructor for various types of Pauli errors,
+"""
+    PauliError(qubits, p)
+
+A convenient constructor for various types of Pauli errors,
 that can be used as circuit gates in simulations.
-Returns more specific types when necessary."""
+Returns more specific types when necessary.
+"""
 function PauliError end
 
 """"Construct a gate operation that applies an unbiased Pauli error on qubit `q` with probability `p`."""
@@ -170,12 +182,20 @@ function PauliError(qubits, px, py, pz)
     NoiseOp(PauliNoise(px,py,pz), qubits)
 end
 
-"""An operator that applies the given `noise` model to all qubits."""
+"""
+$TYPEDEF
+
+An operator that applies the given `noise` model to all qubits.
+"""
 struct NoiseOpAll <: AbstractNoiseOp
     noise::AbstractNoise
 end
 
-"""A gate consisting of the given `noise` applied after the given perfect Clifford `gate`."""
+"""
+$TYPEDEF
+
+A gate consisting of the given `noise` applied after the given perfect Clifford `gate`.
+"""
 struct NoisyGate <: AbstractNoiseOp
     gate::AbstractOperation
     noise::AbstractNoise

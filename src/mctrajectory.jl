@@ -37,7 +37,11 @@ function applywstatus!(state, op)
     apply!(state,op), continue_stat
 end
 
-"""Run a single Monte Carlo sample, starting with (and modifying) `state` by applying the given `circuit`. Uses `apply!` under the hood."""
+"""
+$TYPEDSIGNATURES
+
+Run a single Monte Carlo sample, starting with (and modifying) `state` by applying the given `circuit`. Uses `apply!` under the hood.
+"""
 function mctrajectory!(state,circuit)
     for op in circuit
         state, cont = applywstatus!(state, op)
@@ -56,9 +60,13 @@ function countmap(samples) # A simpler faster version of StatsBase.countmap that
     Dict(CircuitStatus(i-1)=>counts[i] for i in eachindex(counts))
 end
 
-"""Run multiple Monte Carlo trajectories and report the aggregate final statuses of each.
+"""
+$TYPEDSIGNATURES
 
-See also: [`pftrajectories`](@ref), [`petrajectories`](@ref)"""
+Run multiple Monte Carlo trajectories and report the aggregate final statuses of each.
+
+See also: [`pftrajectories`](@ref), [`petrajectories`](@ref)
+"""
 mctrajectories(initialstate,circuit;trajectories=500,keepstates::Bool=false) = _mctrajectories(initialstate,circuit;trajectories,keepstates=Val(keepstates))
 
 function _mctrajectories(initialstate,circuit;trajectories=500,keepstates::Val{B}=Val(false)) where {B}

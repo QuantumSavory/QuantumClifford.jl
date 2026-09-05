@@ -190,10 +190,11 @@ function metacheck_matrix_z end
 """
     metacheck_matrix(c::AbstractCSSCode)
 
-Return the X- and Z-metacheck matrices for CSS codes enabling **single-shot
-quantum error correction** — a fault-tolerant scheme that corrects both data and
-measurement errors using **one** round of syndrome measurements ([Higgott_2023](@cite),
-[quintavalle2021single](@cite)).
+Return the X- and Z-metacheck matrices for a CSS code.
+
+These matrices enable **single-shot quantum error correction**, a fault-tolerant scheme
+that corrects both data and measurement errors using **one** round of syndrome measurements
+([Higgott_2023](@cite), [quintavalle2021single](@cite)).
 
 ### Single-Shot QEC
 

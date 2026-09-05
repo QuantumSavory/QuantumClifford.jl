@@ -181,6 +181,8 @@ end
 
 """
 $TYPEDSIGNATURES
+
+Convert a stabilizer tableau to reduced row echelon form in place.
 """
 canonicalize_rref!(state::AbstractStabilizer; phases::Bool=true) = canonicalize_rref!(state, 1:nqubits(state); phases=phases)
 
@@ -204,6 +206,8 @@ function gott_standard_form_indices(chunks2D, rows, cols; skip=0)::Tuple{Vector{
 end
 
 """
+    canonicalize_gott!(::Stabilizer)
+
 Inplace Gottesman canonicalization of a tableau.
 
 This uses different canonical form from [`canonicalize!`](@ref).

@@ -1,4 +1,7 @@
-"""We introduce a novel class of quantum CSS codes — *Multivariate Multicycle* codes — constructed
+"""
+$TYPEDEF
+
+We introduce a novel class of quantum CSS codes — *Multivariate Multicycle* codes — constructed
 using new framework of Koszul complex over the multivariate polynomial quotient ring. For details on the construction,
 please refer to our paper ([mian2026multivariatemulticyclecodescomplete](@cite))
  

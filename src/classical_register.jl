@@ -1,4 +1,8 @@
-"""A register, representing the state of a computer including both a tableaux and an array of classical bits (e.g. for storing measurement results)"""
+"""
+$TYPEDEF
+
+A register, representing the state of a computer including both a tableaux and an array of classical bits (e.g. for storing measurement results)
+"""
 struct Register{T<:Tableau} <: AbstractQCState # TODO simplify type parameters (remove nesting)
     stab::MixedDestabilizer{T}
     bits::Vector{Bool}
@@ -32,7 +36,11 @@ function bitview end
 bitview(s::AbstractStabilizer) = ()
 bitview(r::Register) = r.bits
 
-"""Only the quantum part of the state (excluding classical bits)"""
+"""
+    quantumstate
+
+Only the quantum part of the state (excluding classical bits).
+"""
 function quantumstate end
 quantumstate(s::AbstractStabilizer) = s
 quantumstate(r::Register) = r.stab
