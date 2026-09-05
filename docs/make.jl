@@ -3,6 +3,7 @@ push!(LOAD_PATH,"../src/")
 using Revise # for interactive doc updates
 using Documenter
 using DocumenterCitations
+using DocumenterCodeBlocks
 using AnythingLLMDocs
 using QuantumClifford
 using QuantumInterface
@@ -46,7 +47,7 @@ anythingllm_assets = integrate_anythingllm(
 bib = CitationBibliography(joinpath(@__DIR__,"src/references.bib"),style=:authoryear)
 
 makedocs(
-plugins = [bib],
+plugins = [bib, CodeBlocks()],
 doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
