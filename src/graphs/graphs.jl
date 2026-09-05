@@ -47,7 +47,11 @@ end
 
 nqubits(g::GraphState) = nv(g.graph)
 
-"""Return the underlying graph of the graph state"""
+"""
+    graph(::GraphState)
+
+Return the underlying graph of the graph state.
+"""
 graph(g::GraphState) = g.graph
 
 """Return the VOPs (Vertex Operators) of the graph state"""
@@ -111,7 +115,10 @@ function graphstate!(stab::Stabilizer)
     graph, h_idx, ip_idx, phase_flips
 end
 
-""" Convert any stabilizer state to a graph state
+"""
+    graphstate(::AbstractStabilizer)
+
+Convert any stabilizer state to a graph state.
 
 [Graph states](https://en.wikipedia.org/wiki/Graph_state) are a special type
 of entangled stabilizer states that can be represented by a graph.
@@ -185,7 +192,10 @@ graphstate(s::AbstractStabilizer) = graphstate!(copy(stabilizerview(s)))
 
 Graphs.Graph(s::AbstractStabilizer) = graphstate(s)[1]
 
-"""Convert a graph representing a stabilizer state to an explicit Stabilizer.
+"""
+    Stabilizer(::Graphs.Graph)
+
+Convert a graph representing a stabilizer state to an explicit Stabilizer.
 
 See also: [`graphstate`](@ref)"""
 function Stabilizer(g::Graphs.Graph)
@@ -199,7 +209,10 @@ function Stabilizer(g::Graphs.Graph)
     return s
 end
 
-"""A helper function converting the gate indices from [`graphstate`](@ref) into a sequence of gates.
+"""
+    graph_gatesequence(::Vector{Int}, ::Vector{Int}, ::Vector{Int})
+
+A helper function converting the gate indices from [`graphstate`](@ref) into a sequence of gates.
 
 ```jldoctest
 julia> s = S" XXX
@@ -231,7 +244,10 @@ function graph_gatesequence(h_idx::Vector{Int}, ip_idx::Vector{Int}, z_idx::Vect
     ([sHadamard(i) for i in h_idx], [sInvPhase(i) for i in ip_idx], [sZ(i) for i in z_idx])
 end
 
-"""A helper function converting the gate indices from [`graphstate`](@ref) into a Clifford operator.
+"""
+    graph_gate(h_idx, ip_idx, z_idx, n)
+
+A helper function converting the gate indices from [`graphstate`](@ref) into a Clifford operator.
 
 ```jldoctest
 julia> s = S" XXX

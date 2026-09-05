@@ -63,7 +63,10 @@ function LinearAlgebra.inv(c::CliffordOperator; phases=true)
     end
 end
 
-"""The inner product of two Stabilizers.
+"""
+$(TYPEDSIGNATURES)
+
+The inner product of two Stabilizers.
 
 Based on [garcia2012efficient](@cite).
 
@@ -198,7 +201,11 @@ trusted_rank(s::Destabilizer) = length(s)
 trusted_rank(s::MixedStabilizer) = LinearAlgebra.rank(s)
 trusted_rank(s::MixedDestabilizer) = LinearAlgebra.rank(s)
 
-"""Tensor product between operators or tableaux.
+"""
+    tensor(p::PauliOperator, ps::PauliOperator...)
+    tensor(op::AbstractStabilizer, ops::AbstractStabilizer...)
+
+Tensor product between operators or tableaux.
 
 Tensor product between CiffordOperators:
 
@@ -257,7 +264,10 @@ function tensor(op::AbstractStabilizer, ops::AbstractStabilizer...) # TODO optim
     return foldl(⊗, conv_ops)
 end
 
-"""Repeated tensor product of an operators or a tableau.
+"""
+$(TYPEDSIGNATURES)
+
+Repeated tensor product of an operators or a tableau.
 
 For `CliffordOperator`:
 

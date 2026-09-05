@@ -1,4 +1,6 @@
 """
+    generate!(::PauliOperator, ::Stabilizer)
+
 Generate a Pauli operator by using operators from a given the Stabilizer.
 
 **It assumes the stabilizer is already canonicalized.** It modifies
@@ -453,6 +455,8 @@ function projectX!(s::AbstractStabilizer,qubit::Int;keep_result::Bool=true,phase
 end
 
 """
+    projectZ!(::MixedDestabilizer, ::Int)
+
 Measure a given qubit in the Z basis.
 A faster special-case version of [`project!`](@ref).
 
@@ -649,6 +653,8 @@ end
 
 """
 $TYPEDSIGNATURES
+
+Trace out qubits from a mixed stabilizer state.
 """
 function traceout!(s::Union{MixedStabilizer, MixedDestabilizer}, qubits; phases=true, rank=false)
     _,i = canonicalize_rref!(s,qubits;phases=phases)
@@ -689,6 +695,8 @@ end
 
 """
 $TYPEDSIGNATURES
+
+Reset qubits in a mixed stabilizer state.
 """
 function reset_qubits!(s::MixedStabilizer, newstate, qubits; phases=true) # TODO create the necessary interfaces so that Stabilizer and MixedStabilizer share this code
     nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
@@ -705,6 +713,8 @@ end
 
 """
 $TYPEDSIGNATURES
+
+Reset qubits in a mixed destabilizer state.
 """
 function reset_qubits!(s::MixedDestabilizer, newstate::AbstractStabilizer, qubits; phases::Bool=true) # TODO this is really inefficient
     nqubits(newstate)==length(qubits) || throw(DimensionMismatch("`qubits` and `newstate` have to be of consistent size"))
@@ -829,7 +839,7 @@ function expect(
     isnothing(exponent) ? 0.0 : exp2(exponent)
 end
 
-function expect(
+@doc (@doc expect) function expect(
     indices::Base.AbstractVecOrTuple{Int},
     operator_state::MixedDestabilizer,
     state::MixedDestabilizer,
@@ -852,7 +862,7 @@ function expect(
     isnothing(exponent) ? 0.0 : exp2(exponent)
 end
 
-function expect(
+@doc (@doc expect) function expect(
     index::Int,
     operator_state::MixedDestabilizer,
     state::MixedDestabilizer,
@@ -1031,6 +1041,8 @@ end
 
 
 """
+    delete_columns(::Stabilizer, subset)
+
 Return the given stabilizer without all the qubits in the given iterable.
 
 The resulting tableaux is not guaranteed to be valid (to retain its commutation relationships).

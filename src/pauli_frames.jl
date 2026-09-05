@@ -174,6 +174,8 @@ function applynoise!(frame::PauliFrame,noise::PauliNoise,i::Int)
 end
 
 """
+    pftrajectories
+
 Perform a "Pauli frame" style simulation of a quantum circuit.
 """
 function pftrajectories end

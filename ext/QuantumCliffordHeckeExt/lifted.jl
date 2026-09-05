@@ -63,6 +63,8 @@ struct LiftedCode <: AbstractCECC
 end
 
 """
+    LiftedCode(::Matrix{<:GroupOrAdditiveGroupElem})
+
 Constructs a group algebra code by embedding a matrix of group elements into the
 specified group algebra `GA`, with optional custom representation  `repr`.
 
@@ -113,6 +115,8 @@ function LiftedCode(group_elem_array::Matrix{<: GroupOrAdditiveGroupElem}; GA::G
 end
 
 """
+    LiftedCode(::Matrix{Int}, ::Int)
+
 Constructs a group algebra code over `GF(2)` by lifting a matrix of cyclic shifts
 (entries modulo `l`)  to the group algebra of the abelian group `ℤ/lℤ` of order `l`.
 

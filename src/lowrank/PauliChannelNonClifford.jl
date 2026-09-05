@@ -108,6 +108,8 @@ function _stabmixdestab(mixeddestab, d)
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Apply a Clifford gate to a generalized stabilizer state, i.e. a weighted sum of stabilizer states.
 
 ```jldoctest
@@ -193,7 +195,10 @@ function _allthreesumtozero(a,b,c)
     true
 end
 
-"""Compute the trace of a [`GeneralizedStabilizer`](@ref) state.
+"""
+$(TYPEDSIGNATURES)
+
+Compute the trace of a [`GeneralizedStabilizer`](@ref) state.
 
 ```jldoctest trace
 julia> using QuantumClifford; using LinearAlgebra;
@@ -221,9 +226,13 @@ function LinearAlgebra.tr(sm::GeneralizedStabilizer)
     return trace_χ′
 end
 
-"""Returns the updated `GeneralizedStabilizer` state sm′ = (χ′, B(S′, D′)),
-where (S′, D′) is derived from (S, D) through the traditional stabilizer update,
-and χ′ is the updated density matrix after measurement. Note: Λ(χ′) ≤ Λ(χ).
+"""
+$(TYPEDSIGNATURES)
+
+Update a `GeneralizedStabilizer` after measurement without normalization.
+
+The result is sm′ = (χ′, B(S′, D′)), where (S′, D′) is derived from (S, D)
+through the traditional stabilizer update. Note: Λ(χ′) ≤ Λ(χ).
 """
 function _projectrand_notnorm(sm::GeneralizedStabilizer, p::PauliOperator, res::Int)
     dict = sm.destabweights
@@ -387,7 +396,10 @@ nqubits(sm::GeneralizedStabilizer) = nqubits(sm.stab)
 
 abstract type AbstractPauliChannel <: AbstractOperation end
 
-"""A Pauli channel datastructure, mainly for use with [`GeneralizedStabilizer`](@ref)
+"""
+$(TYPEDEF)
+
+A Pauli channel datastructure, mainly for use with [`GeneralizedStabilizer`](@ref)
 
 See also: [`UnitaryPauliChannel`](@ref)"""
 struct PauliChannel{T,S} <: AbstractPauliChannel
@@ -429,7 +441,10 @@ end
 
 nqubits(pc::PauliChannel) = nqubits(pc.paulis[1][1])
 
-"""Applies a (potentially non-unitary) Pauli channel to a generalized stabilizer.
+"""
+$(TYPEDSIGNATURES)
+
+Applies a (potentially non-unitary) Pauli channel to a generalized stabilizer.
 
 See also: [`GeneralizedStabilizer`](@ref), [`PauliChannel`](@ref), [`UnitaryPauliChannel`](@ref)
 """
@@ -573,7 +588,10 @@ function (⊗)(state₁::GeneralizedStabilizer, state₂::GeneralizedStabilizer)
     return GeneralizedStabilizer(newstab, newdict)
 end
 
-"""Tensor product between [`GeneralizedStabilizer`](@ref) and [`Stabilizer`](@ref).
+"""
+$(TYPEDSIGNATURES)
+
+Tensor product between [`GeneralizedStabilizer`](@ref) and [`Stabilizer`](@ref).
 
 ```jldoctest
 julia> using LinearAlgebra; # hide
@@ -631,7 +649,10 @@ julia> real(tr(newsm))
 """
 tensor(op::Union{AbstractStabilizer,GeneralizedStabilizer}, ops::Union{AbstractStabilizer,GeneralizedStabilizer}...) = tensor(GeneralizedStabilizer.((op, ops...))...)
 
-"""Decompose a Pauli ``P`` in terms of stabilizer and destabilizer rows from a given tableaux.
+"""
+$(TYPEDSIGNATURES)
+
+Decompose a Pauli ``P`` in terms of stabilizer and destabilizer rows from a given tableaux.
 
 For given tableaux of rows destabilizer rows ``\\{d_i\\}`` and stabilizer rows ``\\{s_i\\}``,
 there are boolean vectors ``b`` and ``c`` such that
@@ -678,7 +699,10 @@ function rowdecompose(pauli,state::Union{MixedDestabilizer, Destabilizer})
     return p+pauli.phase[], b, c
 end
 
-"""A Pauli channel datastructure, mainly for use with [`GeneralizedStabilizer`](@ref).
+"""
+$(TYPEDEF)
+
+A Pauli channel datastructure, mainly for use with [`GeneralizedStabilizer`](@ref).
 
 More convenient to use than [`PauliChannel`](@ref) when you know your Pauli channel is unitary.
 
@@ -748,6 +772,8 @@ function tensor(pc::UnitaryPauliChannel, pcs::UnitaryPauliChannel...)
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Tensor product between [`UnitaryPauliChannel`](@ref) and [`PauliOperator`](@ref).
 
 ```jldoctest
@@ -799,6 +825,8 @@ with ϕᵢⱼ | Pᵢ | Pⱼ:
 Base.:(*)(pc::UnitaryPauliChannel, sm::GeneralizedStabilizer) = apply!(sm, pc.paulichannel)
 
 """
+    invsparsity(state_or_channel)
+
 Calculates the number of non-zero elements in the density matrix `χ`
 of a [`GeneralizedStabilizer`](@ref), representing the inverse sparsity
 of `χ`. It provides a measure of the state's complexity, with bounds
@@ -851,7 +879,10 @@ function pcPhase(ϕ)
     )
 end
 
-"""The T gate (`Rz(π/4)`) as a [`UnitaryPauliChannel`](@ref), for use with [`GeneralizedStabilizer`](@ref). Equivalent to `pcPhase(π/4)`.
+"""
+    pcT
+
+The T gate (`Rz(π/4)`) as a [`UnitaryPauliChannel`](@ref), for use with [`GeneralizedStabilizer`](@ref). Equivalent to `pcPhase(π/4)`.
 
 See also: [`pcPhase`](@ref), [`pcRx`](@ref)
 """
