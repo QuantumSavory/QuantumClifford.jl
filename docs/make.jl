@@ -45,9 +45,10 @@ anythingllm_assets = integrate_anythingllm(
 )
 
 bib = CitationBibliography(joinpath(@__DIR__,"src/references.bib"),style=:authoryear)
+codeblocks = CodeBlocks()
 
 makedocs(
-plugins = [bib, CodeBlocks()],
+plugins = [bib, codeblocks],
 doctest = false,
 clean = true,
 sitename = "QuantumClifford.jl",
@@ -87,6 +88,8 @@ pages = [
 "Suggested Readings & References" => "references.md",
 ],
 )
+
+isempty(codeblocks.warned) || error("DocumenterCodeBlocks quality checks failed")
 
 deploydocs(
     repo = "github.com/QuantumSavory/QuantumClifford.jl.git"
