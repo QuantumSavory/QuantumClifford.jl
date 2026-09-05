@@ -7,7 +7,6 @@
 
 ## unreleased
 
-- **(fix)** Require at least one argument for tensor products, preserving unary and multi-argument behavior.
 - **(fix)** Report concatenations of two CSS codes as CSS and provide their X and Z parity matrices.
 - **(fix)** Use the supplied RNG for all-to-all circuit qubit selection.
 - **(fix)** Correct `LiftedCode` construction and dimensions for concrete GF(2) group-algebra matrices.
