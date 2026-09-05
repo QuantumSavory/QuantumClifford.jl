@@ -629,7 +629,7 @@ julia> real(tr(newsm))
 1.0
 ```
 """
-tensor(ops::Union{AbstractStabilizer,GeneralizedStabilizer}...) = tensor(GeneralizedStabilizer.(ops)...)
+tensor(op::Union{AbstractStabilizer,GeneralizedStabilizer}, ops::Union{AbstractStabilizer,GeneralizedStabilizer}...) = tensor(GeneralizedStabilizer.((op, ops...))...)
 
 """Decompose a Pauli ``P`` in terms of stabilizer and destabilizer rows from a given tableaux.
 
@@ -740,7 +740,8 @@ nqubits(pc::UnitaryPauliChannel) = nqubits(pc.paulis[1])
 
 apply!(state::GeneralizedStabilizer, gate::UnitaryPauliChannel; prune_threshold=1e-10) = apply!(state, gate.paulichannel; prune_threshold)
 
-function tensor(pcs::UnitaryPauliChannel...)
+function tensor(pc::UnitaryPauliChannel, pcs::UnitaryPauliChannel...)
+    pcs = (pc, pcs...)
     newpaulis = [tensor(ps...) for ps in Iterators.product([pc.paulis for pc in pcs]...)]
     newweights = [prod(ws) for ws in Iterators.product([pc.weights for pc in pcs]...)]
     return UnitaryPauliChannel(newpaulis, newweights)
@@ -765,7 +766,7 @@ with ϕᵢ | Pᵢ
  -0.103553-0.103553im | + ZZX
 ```
 """
-tensor(pcs::Union{UnitaryPauliChannel,PauliOperator}...) = tensor(UnitaryPauliChannel.(pcs)...)
+tensor(pc::Union{UnitaryPauliChannel,PauliOperator}, pcs::Union{UnitaryPauliChannel,PauliOperator}...) = tensor(UnitaryPauliChannel.((pc, pcs...))...)
 # This also matches calls containing only PauliOperators and no channels, so the
 # more-specific PauliOperator vararg method must take priority to avoid recursion.
 
