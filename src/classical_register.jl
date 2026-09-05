@@ -39,8 +39,8 @@ quantumstate(r::Register) = r.stab
 
 tab(r::Register) = tab(quantumstate(r))
 
-tensor(regs::Register...) = Register(tensor(quantumstate.(regs)...), [bit for r in regs for bit in r.bits])
-tensor(args::Union{Register, AbstractStabilizer}...) = tensor(Register.(args)...)
+tensor(reg::Register, regs::Register...) = Register(tensor(quantumstate.((reg, regs...))...), [bit for r in (reg, regs...) for bit in r.bits])
+tensor(arg::Union{Register, AbstractStabilizer}, args::Union{Register, AbstractStabilizer}...) = tensor(Register.((arg, args...))...)
 
 function apply!(r::Register, operation; kwargs...)
     apply!(quantumstate(r), operation; kwargs...)

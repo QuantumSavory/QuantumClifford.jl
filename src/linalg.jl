@@ -250,7 +250,8 @@ function tensor end
 
 tensor(p::PauliOperator, ps::PauliOperator...) = foldl(⊗, ps; init=p)
 
-function tensor(ops::AbstractStabilizer...) # TODO optimize by pre-allocating one large tableau instead of the current quadratic fold
+function tensor(op::AbstractStabilizer, ops::AbstractStabilizer...) # TODO optimize by pre-allocating one large tableau instead of the current quadratic fold
+    ops = (op, ops...)
     ct = promote_type(map(typeof, ops)...)
     conv_ops = map(x -> convert(ct, x), ops)
     return foldl(⊗, conv_ops)
@@ -308,20 +309,20 @@ function tensor_pow(op::Union{<:AbstractStabilizer,<:AbstractCliffordOperator},p
     end
 end
 
-function tensor(ops::Stabilizer...)
-    length(ops)==1 && return ops[1]
-    ntot = sum(nqubits, ops) # TODO why is this allocating (at least in 1.11)
-    rtot = sum(length, ops)  # TODO why is this allocating (at least in 1.11)
+function tensor(op::Stabilizer, ops::Stabilizer...)
+    isempty(ops) && return op
+    ntot = nqubits(op) + sum(nqubits, ops) # TODO why is this allocating (at least in 1.11)
+    rtot = length(op) + sum(length, ops)  # TODO why is this allocating (at least in 1.11)
     tab = zero(Stabilizer, rtot, ntot)
-    last_row = 0
-    last_col = 0
+    _, last_row, last_col = puttableau!(tab, op, 0, 0)
     for op in ops
         _, last_row, last_col = puttableau!(tab, op, last_row, last_col)
     end
     tab
 end
 
-function tensor(ops::MixedDestabilizer...)
+function tensor(op::MixedDestabilizer, ops::MixedDestabilizer...)
+    ops = (op, ops...)
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)
     rtot = sum(LinearAlgebra.rank, ops)
@@ -340,9 +341,10 @@ function tensor(ops::MixedDestabilizer...)
     MixedDestabilizer(tab, rtot)
 end
 
-tensor(ops::AbstractCliffordOperator...) = ⊗(CliffordOperator.(ops)...)
+tensor(op::AbstractCliffordOperator, ops::AbstractCliffordOperator...) = ⊗(CliffordOperator.((op, ops...))...)
 
-function tensor(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here
+function tensor(op::CliffordOperator, ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here
+    ops = (op, ops...)
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)
     tab = zero(Tableau, 2*ntot, ntot)
