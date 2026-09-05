@@ -1,4 +1,6 @@
 """
+    SubsystemCodeTableau
+
 A tableau representation of the non-commutative canonical form of a set of Paulis,
 which is used in [`commutify`](@ref).
 

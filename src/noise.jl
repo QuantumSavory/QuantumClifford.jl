@@ -156,12 +156,20 @@ Returns more specific types when necessary.
 """
 function PauliError end
 
-""""Construct a gate operation that applies an unbiased Pauli error on qubit `q` with probability `p`."""
+"""
+    PauliError(q::Int, p)
+
+Construct a gate operation that applies an unbiased Pauli error on qubit `q` with probability `p`.
+"""
 function PauliError(q::Int,p)
     NoiseOp(PauliNoise(p), [q])
 end
 
-""""Construct a gate operation that applies an unbiased Pauli error on all `qubits`, each with independent probability `p`."""
+"""
+    PauliError(qubits, p)
+
+Construct a gate operation that applies an unbiased Pauli error on all `qubits`, each with independent probability `p`.
+"""
 function PauliError(qubits,p)
     NoiseOp(PauliNoise(p), qubits)
 end

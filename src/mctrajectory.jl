@@ -1,4 +1,8 @@
-"""A convenience struct to represent the status of a circuit simulated by [`mctrajectories`](@ref)"""
+"""
+    CircuitStatus
+
+A convenience struct to represent the status of a circuit simulated by [`mctrajectories`](@ref)
+"""
 struct CircuitStatus
     status::Int
 end

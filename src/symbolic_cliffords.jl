@@ -125,7 +125,10 @@ end
 @qubitop1 CXYZ         (x⊻z ,x   , false)        (z   ,x⊻z , false)
 @qubitop1 CZYX         (z   ,x⊻z , false)        (x⊻z ,x   , false)
 
-"""A "symbolic" single-qubit Identity operation.
+"""
+    sId1
+
+A "symbolic" single-qubit Identity operation.
 
 See also: [`SingleQubitOperator`](@ref)
 """
