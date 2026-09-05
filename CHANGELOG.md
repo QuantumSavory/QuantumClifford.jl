@@ -8,6 +8,7 @@
 ## unreleased
 
 - Improve API docstring summaries and signatures.
+- Correct `PauliOperator` cross-references that prevented the documentation from building.
 - **(fix)** Report concatenations of two CSS codes as CSS and provide their X and Z parity matrices.
 - **(fix)** Use the supplied RNG for all-to-all circuit qubit selection.
 - **(fix)** Correct `LiftedCode` construction and dimensions for concrete GF(2) group-algebra matrices.
