@@ -5,6 +5,10 @@
 
 # News
 
+## unreleased
+
+- **(new)** Add `ZSZ` codes with deterministic check and qubit labels to the ECC submodule.
+
 ## v0.11.8 - 2026-09-05
 
 - **(fix)** Report concatenations of two CSS codes as CSS and provide their X and Z parity matrices.
