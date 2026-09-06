@@ -72,3 +72,26 @@
         @test_throws ArgumentError ZSZ(5, 3, 2, [(0,0)], [(0,0)])
     end
 end
+
+@testitem "ECC ZSZ canonical coordinates" tags=[:ecc, :ecc_bespoke_checks, :oscar_required] begin
+    using Oscar
+    using QuantumClifford.ECC: ZSZ, parity_matrix_x, parity_matrix_z
+
+    # The group basis is (1, x, x^2, y, xy, x^2y), with the x exponent
+    # changing fastest. This small example pins that public coordinate order.
+    args = (3, 2, 2, [(1,0)], [(1,0)])
+    canonical_code = ZSZ(args...)
+    Hx, Hz = parity_matrix_x(canonical_code), parity_matrix_z(canonical_code)
+    @test [findall(row) for row in eachrow(Hx)] == [[3,9], [1,7], [2,8], [5,12], [6,10], [4,11]]
+    @test [findall(row) for row in eachrow(Hz)] == [[2,8], [3,9], [1,7], [5,12], [6,10], [4,11]]
+
+    @test parity_matrix_x(canonical_code) == Hx
+    @test parity_matrix_z(canonical_code) == Hz
+    @test parity_matrix_x(ZSZ(args...)) == Hx
+    @test parity_matrix_z(ZSZ(args...)) == Hz
+
+    # Equal monomials cancel over GF(2), including after exponent reduction.
+    canceled = ZSZ(3, 2, 2, [(-1,0), (2,0)], [(0,-1), (0,1)])
+    @test iszero(parity_matrix_x(canceled))
+    @test iszero(parity_matrix_z(canceled))
+end
