@@ -141,7 +141,7 @@ end
 
 """$(TYPEDSIGNATURES)
 
-Expectation value for the [PauliOperator](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`.
+Expectation value for the [`PauliOperator`](@ref) observable given the [`GeneralizedStabilizer`](@ref) state `s`.
 
 ```jldoctest genstab
 julia> sm = GeneralizedStabilizer(S"-X")
@@ -308,7 +308,7 @@ end
 """$(TYPEDSIGNATURES)
 
 Performs a randomized projection of the state represented by the [`GeneralizedStabilizer`](@ref) `sm`,
-based on the measurement of a [PauliOperator](@ref) `p`.
+based on the measurement of a [`PauliOperator`](@ref) `p`.
 
 Unlike in the case of stabilizer states, the expectation value χ′ of a Pauli operator
 with respect to these more general states can be any real number between -1 and 1.
