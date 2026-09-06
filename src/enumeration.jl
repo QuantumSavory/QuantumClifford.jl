@@ -7,7 +7,10 @@ const all_single_qubit_patterns = (
     (true, true, false, true)   # X, Z ↦ Y, Z - Phase
 )
 
-"""Generate a symbolic single-qubit gate given its index. Optionally, set non-trivial phases.
+"""
+$(TYPEDSIGNATURES)
+
+Generate a symbolic single-qubit gate given its index. Optionally, set non-trivial phases.
 
 ```jldoctest
 julia> enumerate_single_qubit_gates(6)
@@ -49,7 +52,10 @@ function enumerate_single_qubit_gates(index; qubit=1, phases::Tuple{Bool,Bool}=(
     end
 end
 
-"""The size of the Clifford group `𝒞` over a given number of qubits, possibly modulo the phases.
+"""
+$(TYPEDSIGNATURES)
+
+The size of the Clifford group `𝒞` over a given number of qubits, possibly modulo the phases.
 
 For n qubits, not accounting for phases is `2ⁿⁿΠⱼ₌₁ⁿ(4ʲ-1)`. There are `4ⁿ` different phase configurations.
 
@@ -103,7 +109,10 @@ end
     end
 end
 
-"""Perform the Symplectic Gram-Schmidt procedure that gives a Clifford operator canonically related to a given Pauli operator.
+"""
+$(TYPEDSIGNATURES)
+
+Perform the Symplectic Gram-Schmidt procedure that gives a Clifford operator canonically related to a given Pauli operator.
 
 The algorithm is detailed in [koenig2014efficiently](@cite).
 
@@ -192,7 +201,10 @@ function enumerate_cliffords_slow(n,i;padded_n=n,onlycoset=false) # TODO impleme
     end
 end
 
-"""Give all n-qubit Clifford operations.
+"""
+$(TYPEDSIGNATURES)
+
+Give all n-qubit Clifford operations.
 
 The algorithm is detailed in [koenig2014efficiently](@cite).
 
@@ -211,7 +223,10 @@ end
     op
 end
 
-"""Given an operator, return all operators that have the same tableau but different phases.
+"""
+$(TYPEDSIGNATURES)
+
+Given an operator, return all operators that have the same tableau but different phases.
 
 ```jldoctest
 julia> length(collect(enumerate_phases(tCNOT)))
@@ -224,7 +239,10 @@ function enumerate_phases(op::CliffordOperator)
     (_change_phases!(copy(op), int_to_bits(2n,i)) for i in 0:2^(2n)-1)
 end
 
-"""Given a set of operators, return all operators that have the same tableaux but different phases.
+"""
+$(TYPEDSIGNATURES)
+
+Given a set of operators, return all operators that have the same tableaux but different phases.
 
 ```jldoctest
 julia> length(collect(enumerate_phases(enumerate_cliffords(2))))

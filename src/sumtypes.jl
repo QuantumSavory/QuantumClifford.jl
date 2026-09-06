@@ -28,6 +28,8 @@ _originaltype_parameterized(s::SymbolicDataType) = s.originaltype_parameterized
 julia> make_variant(sCNOT)
 :(sCNOT(::Int64, ::Int64))
 ```
+
+Create the sum-type variant expression for `type`.
 """
 function make_variant(type::Union{DataType,SymbolicDataType})
     Expr(:call, _symbol(type), [:(::$t) for t in _types(type)]...)
@@ -38,6 +40,8 @@ end
 julia> make_variant_deconstruct(sCNOT, :apply!, (:s,))
 :(sCNOT(q1, q2) => apply!(s, sCNOT(q1, q2)))
 ```
+
+Create an expression that deconstructs a sum-type variant into a call.
 """
 function make_variant_deconstruct(type::Union{DataType,SymbolicDataType}, call, preargs=(), postargs=())
     variant = Expr(:call, _symbol(type), _fieldnames(type)...)
@@ -55,6 +59,8 @@ quote
     end
 end
 ```
+
+Create a sum type from the given concrete types.
 """
 function make_sumtype(concrete_types)
     return quote
@@ -93,6 +99,8 @@ julia> make_sumtype_variant_constructor(sCNOT)
     (CompactifiedGate').sCNOT(g.q1, g.q2)
 end)
 ```
+
+Create a constructor that converts `type` to its sum-type variant.
 """
 function make_sumtype_variant_constructor(type)
     if isa(type, DataType) || isa(type, SymbolicDataType)

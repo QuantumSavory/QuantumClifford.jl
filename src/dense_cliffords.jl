@@ -1,4 +1,6 @@
 """
+$TYPEDEF
+
 Clifford Operator specified by the mapping of the basis generators.
 
 ```jldoctest

@@ -1,4 +1,7 @@
-"""Encoding physical qubits into a larger logical code.
+"""
+    naive_encoding_circuit(code)
+
+Encoding physical qubits into a larger logical code.
 
 The initial physical qubits to be encoded have to be at indices `n-k+1:n`.
 
@@ -81,7 +84,10 @@ function perm_to_transpositions(perm)
     return transpositions
 end
 
-"""Generate the non-fault-tolerant stabilizer measurement cicuit for a given code instance or parity check tableau.
+"""
+    naive_syndrome_circuit
+
+Generate the non-fault-tolerant stabilizer measurement cicuit for a given code instance or parity check tableau.
 
 Use the `ancillary_index` and `bit_index` arguments to offset where the corresponding part the circuit starts.
 

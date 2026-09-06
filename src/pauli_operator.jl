@@ -1,4 +1,6 @@
 """
+$TYPEDEF
+
 A multi-qubit Pauli operator (``±\\{1,i\\}\\{I,Z,X,Y\\}^{\\otimes n}``).
 
 A Pauli can be constructed with the `P` custom string macro or by building
@@ -73,7 +75,11 @@ end
 PauliOperator(x::AbstractVector{Bool}, z::AbstractVector{Bool}) = PauliOperator(0x0, x, z)
 PauliOperator(xz::AbstractVector{Bool}) = PauliOperator(0x0, (@view xz[1:end÷2]), (@view xz[end÷2+1:end]))
 
-"""Get a view of the X part of the `UInt` array of packed qubits of a given Pauli operator."""
+"""
+$TYPEDSIGNATURES
+
+Get a view of the X part of the `UInt` array of packed qubits of a given Pauli operator.
+"""
 function xview(p::PauliOperator)
     @view p.xz[1:end÷2]
 end
@@ -81,7 +87,11 @@ end
 function zview(p::PauliOperator)
     @view p.xz[end÷2+1:end]
 end
-"""Extract as a new bit array the X part of the `UInt` array of packed qubits of a given Pauli operator."""
+"""
+$TYPEDSIGNATURES
+
+Extract as a new bit array the X part of the `UInt` array of packed qubits of a given Pauli operator.
+"""
 function xbit(p::PauliOperator)
     one = eltype(p.xz)(1)
     size = sizeof(eltype(p.xz))*8
@@ -182,6 +192,8 @@ Base.zero(p::P) where {P<:PauliOperator} = zero(P, nqubits(p))
 end
 
 """
+$TYPEDSIGNATURES
+
 Embed a Pauli operator in a larger Pauli operator.
 
 ```jldoctest
