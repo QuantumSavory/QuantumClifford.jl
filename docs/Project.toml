@@ -33,5 +33,5 @@ QuantumClifford = {path = ".."}
 
 [compat]
 DocumenterCitations = "1.4.1"
-DocumenterCodeBlocks = "~1.5.0"
+DocumenterCodeBlocks = "1.5.0"
 HiGHS = "1.24.1"
