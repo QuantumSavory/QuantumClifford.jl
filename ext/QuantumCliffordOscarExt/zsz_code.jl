@@ -14,7 +14,9 @@ This code is defined by the group presentation:
 Notably, it is an instance of a [`two_block_group_algebra_code`](@ref) code with this specific presentation. While it lacks explicit *metachecks*, it exhibits single-shot properties (e.g., self-correction with passive greedy decoding) due to strong error confinement stemming from small-set expansion in its Tanner graph [guo2025zsz](@cite).
 
 !!! note
-    This function is simply a convenience wrapper that handles argument conversions before calling [`two_block_group_algebra_code`](@ref). Notably, it uses Cayley's theorem to compute a group isomorphism of a finitely presented group as a permutation group, enabling the efficient construction of larger blocklength ZSZ codes from Table I [guo2025zsz](@cite).
+    The concrete parity matrices label ``x^i y^j`` by the canonical index
+    ``i + \\ell j + 1``, for ``0 \\leq i < \\ell`` and ``0 \\leq j < m``.
+    Thus, equal constructor arguments always give the same check and qubit labels.
 
 Here is an example of the `[[80, 2, 8]]` ZSZ code from Table I of [guo2025zsz](@cite).
 The parameters `l=5`, `m=8`, and `q=2` correspond to the semidirect product presentation ``\\langle x, y \\mid x^5=1, y^8=1, y x y^{-1} = x^2 \\rangle``.
@@ -52,30 +54,42 @@ struct ZSZ <: AbstractCSSCode
     end
 end
 
-function zsz_to_lpcode(c::ZSZ)
-    G = free_group(2)
-    x, y = gens(G)
-    rels = [x^c.l, y^c.m, y*x*y^-1 * x^-c.q]
-    Q, _ = quo(G, rels)
-    iso = isomorphism(PermGroup, Q)
-    Qp = codomain(iso)
-    F2G = group_algebra(GF(2), Qp)
-    qx, qy = gens(Q)
-    a = sum(F2G(iso(qx^i * qy^j)) for (i, j) in c.A)
-    b = sum(F2G(iso(qx^i * qy^j)) for (i, j) in c.B)
-    return two_block_group_algebra_code(a, b)
+function parity_matrix_xz(c::ZSZ)
+    l, m = c.l, c.m
+    group_order = l * m
+    Hx = zeros(Bool, group_order, 2 * group_order)
+    Hz = zeros(Bool, group_order, 2 * group_order)
+    A = [(mod(i, l), mod(j, m)) for (i, j) in c.A]
+    B = [(mod(i, l), mod(j, m)) for (i, j) in c.B]
+    q_powers = [powermod(c.q, j, l) for j in 0:m-1]
+
+    # Elements use the normal form x^i*y^j and index 1 + i + l*j.
+    # Their product is (i, j)*(k, r) = (i + q^j*k mod l, j + r mod m).
+    # The LPCode convention is Hx = [R(A)' L(B)'] and Hz = [L(B) R(A)].
+    for j in 0:m-1
+        qj = q_powers[j + 1]
+        for i in 0:l-1
+            row = 1 + i + l * j
+            for (ai, aj) in A
+                col = 1 + mod(i + qj * ai, l) + l * mod(j + aj, m)
+                Hx[col, row] ⊻= true
+                Hz[row, group_order + col] ⊻= true
+            end
+            for (bi, bj) in B
+                col = 1 + mod(bi + q_powers[bj + 1] * i, l) + l * mod(bj + j, m)
+                Hx[col, group_order + row] ⊻= true
+                Hz[row, col] ⊻= true
+            end
+        end
+    end
+    return Hx, Hz
 end
 
-parity_matrix_x(c::ZSZ) = parity_matrix_x(zsz_to_lpcode(c))
-parity_matrix_z(c::ZSZ) = parity_matrix_z(zsz_to_lpcode(c))
+parity_matrix_x(c::ZSZ) = first(parity_matrix_xz(c))
+parity_matrix_z(c::ZSZ) = last(parity_matrix_xz(c))
 
-# override because the generic method calls parity_matrix_x and parity_matrix_z
-# separately, each building a new lpcode with a different non-deterministic
-# isomorphism from Oscar.isomorphism(PermGroup, Q). building once ensures
-# Hx and Hz share the same group element ordering so CSS commutativity holds.
 function parity_matrix(c::ZSZ)
-    lp = zsz_to_lpcode(c)
-    return parity_matrix(CSS(parity_matrix_x(lp), parity_matrix_z(lp)))
+    return parity_matrix(CSS(parity_matrix_xz(c)...))
 end
 
 code_n(c::ZSZ) = 2 * c.l * c.m
