@@ -5,6 +5,10 @@
 
 # News
 
+## Unreleased
+
+- Raise minimum dependency versions to fix tensor product arity and dependency warnings on Julia 1.12.
+
 ## v0.11.8 - 2026-09-05
 
 - **(fix)** Report concatenations of two CSS codes as CSS and provide their X and Z parity matrices.
