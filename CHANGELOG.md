@@ -8,6 +8,7 @@
 ## Unreleased
 
 - Raise minimum dependency versions to fix tensor product arity and dependency warnings on Julia 1.12.
+- **(new)** Add `ZSZ` codes with deterministic check and qubit labels to the ECC submodule.
 
 ## v0.11.8 - 2026-09-05
 
