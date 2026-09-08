@@ -65,7 +65,7 @@ function parity_matrix_xz(c::ZSZ)
 
     # Elements use the normal form x^i*y^j and index 1 + i + l*j.
     # Their product is (i, j)*(k, r) = (i + q^j*k mod l, j + r mod m).
-    # The LPCode convention is Hx = [R(A)' L(B)'] and Hz = [L(B) R(A)].
+    # The LPCode convention is Hx = [R(A) L(B)] and Hz = [L(B)' R(A)'].
     for j in 0:m-1
         qj = q_powers[j + 1]
         for i in 0:l-1
