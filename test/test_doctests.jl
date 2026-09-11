@@ -25,7 +25,7 @@
     DocMeta.setdocmeta!(QuantumClifford, :DocTestSetup, :(using QuantumClifford; using QuantumClifford.ECC); recursive=true)
     modules = [QuantumClifford, QuantumClifford.ECC, QuantumInterface, extensions...]
     doctestfilters = [r"(QuantumClifford\.|)"]
-    doctest(nothing, modules;
+    doctest(joinpath(@__DIR__, "..", "docs", "src"), modules;
             doctestfilters
             #fix=true
            )
