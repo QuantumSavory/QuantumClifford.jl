@@ -1,10 +1,22 @@
+
+#=============================================================================#
 include("imports.jl")
 include("definitions.jl")
 include("utilities.jl")
-include("test_KA_mul_leftright.jl")
 
-@inline function test_platform(AT, synchronize)
-    @testset "mul_leftright" begin
-        test_KA_mul_leftright(AT, synchronize)
+include("suites/test_KA_mul.jl")
+include("suites/test_KA_canonicalization.jl")
+
+@inline function test_platform(synchronize, AT)::Nothing
+    cache = AllocCache()
+
+    @testset "mul" begin
+        test_KA_mul(synchronize, AT, cache)
     end
+    @testset "canonicalization" begin
+        test_KA_canonicalization(synchronize, AT, cache)
+    end
+
+    return nothing
 end
+#=============================================================================#
