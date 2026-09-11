@@ -7,7 +7,7 @@ secrets:
 steps:
   - label: "QuantumClifford - {{matrix.LABEL}} (local QECCore)"
     plugins:
-      - JuliaCI/julia#v1:
+      - QuantumSavory/julia#v1:
           version: "1"
           compiled_size_limit: 10737418240 # 10GiB
       - JuliaCI/julia-test#v1:
@@ -96,7 +96,7 @@ steps:
 
   - label: "QECCore - {{matrix.LABEL}} (local QuantumClifford)"
     plugins:
-      - JuliaCI/julia#v1:
+      - QuantumSavory/julia#v1:
           version: "1"
           compiled_size_limit: 10737418240 # 10GiB
       - JuliaCI/julia-test#v1:
@@ -125,7 +125,7 @@ steps:
 
   - label: "Downstream {{matrix.PACKAGE}}"
     plugins:
-      - JuliaCI/julia#v1:
+      - QuantumSavory/julia#v1:
           version: "1"
           compiled_size_limit: 10737418240 # 10GiB
     command:
@@ -142,7 +142,7 @@ steps:
 
   - label: "Downstream (dev) {{matrix.PACKAGE}}"
     plugins:
-      - JuliaCI/julia#v1:
+      - QuantumSavory/julia#v1:
           version: "1"
           compiled_size_limit: 10737418240 # 10GiB
     command:
