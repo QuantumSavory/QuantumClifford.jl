@@ -23,6 +23,7 @@ steps:
     env:
       QC_ECC_TEST: "{{matrix.QC_ECC_TEST}}"
       QC_GPU_TEST: "{{matrix.QC_GPU_TEST}}"
+      JULIA_NUM_THREADS: "{{matrix.THREADS}}"
     agents:
       queue: "{{matrix.QUEUE}}"
     matrix:
@@ -32,6 +33,7 @@ steps:
         TEST_ARGS: ["general"]
         QC_ECC_TEST: ["false"]
         QC_GPU_TEST: ["false"]
+        THREADS: ["auto"]
       adjustments:
         - with:
             LABEL: "JET"
@@ -39,60 +41,70 @@ steps:
             TEST_ARGS: "jet"
             QC_ECC_TEST: "false"
             QC_GPU_TEST: "false"
+            THREADS: "1" # Avoid concurrent JET compiler inference crashes.
         - with:
             LABEL: "ECC Base"
             QUEUE: "default-queue"
             TEST_ARGS: "general"
             QC_ECC_TEST: "base"
             QC_GPU_TEST: "false"
+            THREADS: "auto"
         - with:
             LABEL: "ECC Encoding"
             QUEUE: "default-queue"
             TEST_ARGS: "general"
             QC_ECC_TEST: "encoding"
             QC_GPU_TEST: "false"
+            THREADS: "auto"
         - with:
             LABEL: "ECC Decoding"
             QUEUE: "default-queue"
             TEST_ARGS: "general"
             QC_ECC_TEST: "decoding"
             QC_GPU_TEST: "false"
+            THREADS: "auto"
         - with:
             LABEL: "ECC Syndrome Measurement"
             QUEUE: "default-queue"
             TEST_ARGS: "general"
             QC_ECC_TEST: "syndromemeasurement"
             QC_GPU_TEST: "false"
+            THREADS: "auto"
         - with:
             LABEL: "ECC Syndrome Circuit"
             QUEUE: "default-queue"
             TEST_ARGS: "general"
             QC_ECC_TEST: "syndromecircuit"
             QC_GPU_TEST: "false"
+            THREADS: "auto"
         - with:
             LABEL: "ECC Bespoke"
             QUEUE: "default-queue"
             TEST_ARGS: "general"
             QC_ECC_TEST: "bespoke"
             QC_GPU_TEST: "false"
+            THREADS: "auto"
         - with:
             LABEL: "GPU CUDA"
             QUEUE: cuda
             TEST_ARGS: "general"
             QC_ECC_TEST: "false"
             QC_GPU_TEST: "cuda"
+            THREADS: "auto"
         - with:
             LABEL: "GPU ROCm"
             QUEUE: rocm
             TEST_ARGS: "general"
             QC_ECC_TEST: "false"
             QC_GPU_TEST: "rocm"
+            THREADS: "auto"
         - with:
             LABEL: "GPU OpenCL"
             QUEUE: "default-queue"
             TEST_ARGS: "general"
             QC_ECC_TEST: "false"
             QC_GPU_TEST: "opencl"
+            THREADS: "auto"
 
   - label: "QECCore - {{matrix.LABEL}} (local QuantumClifford)"
     plugins:
@@ -110,6 +122,8 @@ steps:
             - ./lib/QECCore/ext
     commands:
       - echo "Julia depot path $${JULIA_DEPOT_PATH}"
+    env:
+      JULIA_NUM_THREADS: "{{matrix.THREADS}}"
     agents:
       queue: "{{matrix.QUEUE}}"
     matrix:
@@ -117,11 +131,13 @@ steps:
         LABEL: ["General"]
         QUEUE: ["default-queue"]
         TEST_ARGS: ["general"]
+        THREADS: ["auto"]
       adjustments:
         - with:
             LABEL: "JET"
             QUEUE: "default-queue"
             TEST_ARGS: "jet"
+            THREADS: "1" # Avoid concurrent JET compiler inference crashes.
 
   - label: "Downstream {{matrix.PACKAGE}}"
     plugins:
