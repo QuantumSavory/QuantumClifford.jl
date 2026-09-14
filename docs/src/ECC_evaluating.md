@@ -11,6 +11,32 @@ CurrentModule = QuantumClifford.ECC
 !!! warning "The documentation is incomplete"
     While waiting for a better documentation than the small example below, consider looking into [`evaluate_decoder`](@ref), [`TableDecoder`](@ref), [`BeliefPropDecoder`](@ref), [`PyBeliefPropDecoder`](@ref), [`PyMatchingDecoder`](@ref), [`CommutationCheckECCSetup`](@ref), [`NaiveSyndromeECCSetup`](@ref), [`ShorSyndromeECCSetup`](@ref)
 
+## Code-capacity detector error models
+
+QuantumClifford can export code-capacity Stim detector error model text for the
+checks of an ECC code. The detector targets follow the row order of
+[`parity_checks`](@ref), using Stim's zero-based `D` numbering. Logical
+observable targets follow the row order of [`faults_matrix`](@ref), using
+zero-based `L` numbering: first logical-X observables, then logical-Z
+observables.
+
+```julia
+using QuantumClifford
+using QuantumClifford.ECC
+
+dem_text = detector_error_model(Steane7(); px=1e-3, py=0.0, pz=1e-3)
+write_detector_error_model("steane7.dem", dem_text)
+```
+
+The resulting `.dem` file can be read by Stim:
+
+```python
+import pathlib
+import stim
+
+model = stim.DetectorErrorModel(pathlib.Path("steane7.dem").read_text())
+```
+
 This is a quick and durty example on how to use some of the decoders.
 
 A function to plot the results of 
