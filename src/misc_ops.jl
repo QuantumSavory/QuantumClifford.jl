@@ -1,11 +1,15 @@
 import QuantumInterface: nsubsystems
 
-"""A Stabilizer measurement on the entirety of the quantum register.
+"""
+$TYPEDEF
+
+A Stabilizer measurement on the entirety of the quantum register.
 
 `projectrand!(state, pauli)` and `apply!(state, PauliMeasurement(pauli))` give the same (possibly non-deterministic) result.
 Particularly useful when acting on [`Register`](@ref).
 
-See also: [`apply!`](@ref), [`projectrand!`](@ref)."""
+See also: [`apply!`](@ref), [`projectrand!`](@ref).
+"""
 struct PauliMeasurement{
     P <: AbstractArray{<: Unsigned, 0}, XZ <: AbstractVector{<: Unsigned}
 } <: AbstractMeasurement
@@ -25,9 +29,13 @@ function apply!(state::MixedDestabilizer, indices::Base.AbstractVecOrTuple, oper
     apply!(state, operation(indices...))
 end
 
-"""A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`.
+"""
+$TYPEDEF
 
-`apply!(state, indices, cliff)` and `apply!(state, SparseGate(cliff, indices))` give the same result."""
+A Clifford gate, applying the given `cliff` operator to the qubits at the selected `indices`.
+
+`apply!(state, indices, cliff)` and `apply!(state, SparseGate(cliff, indices))` give the same result.
+"""
 struct SparseGate{T<:Tableau} <: AbstractCliffordOperator # TODO simplify type parameters (remove nesting)
     cliff::CliffordOperator{T}
     indices::Vector{Int}
@@ -53,12 +61,16 @@ function LinearAlgebra.inv(g::SparseGate; phases=true)
   return SparseGate(inv(g.cliff;phases=phases), g.indices)
 end
 
-"""Reset the specified qubits to the given state.
+"""
+$TYPEDEF
+
+Reset the specified qubits to the given state.
 
 Be careful, this operation implies first tracing out the qubits, which can lead to mixed states
 if these qubits were entangled with the rest of the system.
 
-See also: [`sMRZ`](@ref)"""
+See also: [`sMRZ`](@ref)
+"""
 struct Reset{T<:Tableau} <: AbstractOperation # TODO simplify type parameters (remove nesting)
     resetto::Stabilizer{T}
     indices::Vector{Int}
@@ -69,7 +81,11 @@ function apply!(state::AbstractStabilizer, reset::Reset)
     return state
 end
 
-"""A Bell measurement performing the correlation measurement corresponding to the given `pauli` projections on the qubits at the selected indices."""
+"""
+$TYPEDEF
+
+A Bell measurement performing the correlation measurement corresponding to the given `pauli` projections on the qubits at the selected indices.
+"""
 struct BellMeasurement <: AbstractOperation
     measurements::Vector{Union{sMX,sMY,sMZ}}
     parity::Bool
@@ -90,7 +106,11 @@ function applywstatus!(s::AbstractQCState, m::BellMeasurement)
     end
 end
 
-"""A Bell measurement in which each of the measured qubits has a chance to have flipped."""
+"""
+$TYPEDEF
+
+A Bell measurement in which each of the measured qubits has a chance to have flipped.
+"""
 struct NoisyBellMeasurement{T} <: AbstractOperation
     meas::AbstractOperation
     flipprob::T
@@ -160,7 +180,11 @@ function _applybranches_measurement(branches, measurements, n)
 end
 
 
-"""A "probe" to verify that the state of the qubits corresponds to a desired `good_state`, e.g. at the end of the execution of a circuit."""
+"""
+$TYPEDEF
+
+A "probe" to verify that the state of the qubits corresponds to a desired `good_state`, e.g. at the end of the execution of a circuit.
+"""
 struct VerifyOp <: AbstractOperation
     good_state::Stabilizer
     indices::AbstractVector{Int}

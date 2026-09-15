@@ -1,5 +1,7 @@
 """
-copies the memory content of the object to CPU
+    to_cpu
+
+Copy the memory content of the object to the CPU.
 
 You can only use this function if CUDA.jl is imported
 
@@ -46,7 +48,9 @@ function to_cpu end
 
 
 """
-copies the memory content of the object to GPU
+    to_gpu
+
+Copy the memory content of the object to the GPU.
 
 You can only use this function if CUDA.jl is imported
 

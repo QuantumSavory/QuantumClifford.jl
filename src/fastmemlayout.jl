@@ -1,4 +1,7 @@
-"""Convert a tableau to a memory layout that is fast for row operations.
+"""
+    fastrow
+
+Convert a tableau to a memory layout that is fast for row operations.
 
 In this layout a Pauli string (a row of the tableau) is stored contiguously in memory.
 This corresponds to column-major storage of the underlying `xzs` matrix.
@@ -19,7 +22,10 @@ the Z component at `xzs[i_big + end÷2, j]`, where `i_big` accounts for bit pack
 See also: [`fastcolumn`](@ref)"""
 function fastrow end
 
-"""Convert a tableau to a memory layout that is fast for column operations.
+"""
+    fastcolumn
+
+Convert a tableau to a memory layout that is fast for column operations.
 
 In this layout a column of the tableau (the bits of a given qubit) is stored 
 (mostly) contiguously in memory. This corresponds to row-major storage of the 

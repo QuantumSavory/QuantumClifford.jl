@@ -217,6 +217,8 @@ parity_matrix_z(hp::HomologicalProduct) = boundary_maps(hp)[1]'
 hasmetachecks(c::HomologicalProduct) = length(c.boundary_maps) >= 4 ? (true, true) : length(c.boundary_maps) == 3 ? (true, false) : (false, false)
 
 """
+$TYPEDEF
+
 Constructs the *Double Homological Product code* from [Campbell_2019](@cite).
 
 # 4-term Chain Complex

@@ -103,6 +103,8 @@ struct DelfosseReichardt <: AbstractCSSCode
 end
 
 """
+    search_self_orthogonal_rm_code(::Int)
+
 Search for parameters `(r,m)` of *self-orthogonal* `Reed-Muller` codes where the code `RM(r,m)`
 satisfies ``H \\times H^\\top \\equiv 0 \\pmod{2}``. Skips the trivial case `RM(0,1)` which produces
 a code with `k=0` logical qubits.

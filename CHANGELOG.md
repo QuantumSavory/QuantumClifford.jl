@@ -5,12 +5,18 @@
 
 # News
 
-## unreleased
+## Unreleased
+
+- Raise minimum dependency versions to fix tensor product arity and dependency warnings on Julia 1.12.
+- Correct manual examples for random Pauli operators and subsystem permutation.
+
+## v0.11.8 - 2026-09-05
 
 - **(fix)** Report concatenations of two CSS codes as CSS and provide their X and Z parity matrices.
 - **(fix)** Use the supplied RNG for all-to-all circuit qubit selection.
 - **(fix)** Correct `LiftedCode` construction and dimensions for concrete GF(2) group-algebra matrices.
 - Avoid runtime dispatch when resetting qubits in `MixedDestabilizer` states.
+- Improve API docstring summaries and signatures. Enhance rendered documentation code blocks with line numbers, permalinks, and API links.
 
 ## v0.11.7 - 2026-08-06
 

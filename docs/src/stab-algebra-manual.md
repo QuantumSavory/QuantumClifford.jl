@@ -513,7 +513,7 @@ julia> tHadamard * tPhase
 X₁ ⟼ - Y
 Z₁ ⟼ + X
 
-julia> permutesubsystem(tCNOT, [2,1])
+julia> permutesystems(tCNOT, [2,1])
 X₁ ⟼ + X_
 X₂ ⟼ + XX
 Z₁ ⟼ + ZZ

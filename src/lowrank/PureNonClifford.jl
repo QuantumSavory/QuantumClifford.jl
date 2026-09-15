@@ -37,7 +37,7 @@ export
 
 
 """
-$(SIGNATURES)
+    stabilizer_extent(op::AbstractOperation)
 
 Return the stabilizer extent ξ(op) for a gate.
 For Clifford gates, ξ = 1. Users can extend for custom non-Clifford gates.

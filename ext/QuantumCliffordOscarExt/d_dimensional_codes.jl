@@ -641,7 +641,7 @@ end
 
 hasmetachecks(c::DDimensionalCode) = c.D >= 4 ? (true, true) : c.D == 3 ? (false, true) : (false, false)
 """
-$TYPEDEF
+    boundary_maps(::DDimensionalSurface)
 
 Returns all boundary maps of the chain complex, including both *parity check*
 and *metacheck* matrices.

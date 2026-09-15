@@ -8,7 +8,10 @@
 
 # Makie in QuantumCliffordMakieExt
 
-"""A Makie.jl recipe for pictorial representation of a tableau.
+"""
+    stabilizerplot
+
+A Makie.jl recipe for pictorial representation of a tableau.
 
 Requires a Makie.jl backend to be loaded, e.g. `using CairoMakie`.
 
@@ -17,7 +20,10 @@ Alternatively, you can use the Plots.jl plotting ecosystem, e.g.
 
 Consult the documentation for more details on visualization options."""
 function stabilizerplot end
-"""A Makie.jl recipe for pictorial representation of a tableau.
+"""
+    stabilizerplot_axis
+
+A Makie.jl recipe for pictorial representation of a tableau.
 
 Requires a Makie.jl backend to be loaded, e.g. `using CairoMakie`.
 

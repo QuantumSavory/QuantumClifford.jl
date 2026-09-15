@@ -1,4 +1,6 @@
 """
+    apply_right!
+
 the `apply_right!` function is used to right multiply any quantum operation to unitary 
 Clifford operation or Pauli product
 

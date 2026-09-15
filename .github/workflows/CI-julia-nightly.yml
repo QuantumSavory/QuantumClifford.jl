@@ -31,7 +31,7 @@ jobs:
           - os: ubuntu-latest
             arch: x64
             version: '1'
-            threads: 2
+            threads: 1 # Avoid concurrent JET compiler inference crashes.
             test_args: jet
     steps:
       - uses: actions/checkout@v7

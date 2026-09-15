@@ -39,8 +39,8 @@
                     stab = random_stabilizer(n)
                     ψ₁ = Ket(stab)
                     ψ₂ = Ket(apply!(stab,cliff))
-                    # test they are equal up to a phase
-                    @test all(x->isnan(x)||abs(x)≈1 , (U*ψ₁).data ./ ψ₂.data)
+                    # Compare density matrices to ignore a single global phase.
+                    @test dm(U*ψ₁) ≈ dm(ψ₂)
                     @test abs(det(U.data))≈1
                 end
             end
