@@ -450,6 +450,7 @@ function _move_index(i::Int, dx::Int, dy::Int, β::Int, γ::Int, n::Int, α::Int
     return i
 end
 
+code_n(c::GeneralizedToric) = 2 * c.a1[2] * c.a2[1]
 function parity_matrix_xz(c::GeneralizedToric)
     α = c.a1[2]
     β = c.a2[1]

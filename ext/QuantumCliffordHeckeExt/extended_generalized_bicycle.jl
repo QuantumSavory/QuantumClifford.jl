@@ -123,3 +123,5 @@ end
 parity_matrix_x(c::ExtendedGeneralizedBicycle) = parity_matrix_xz(c)[1]
 
 parity_matrix_z(c::ExtendedGeneralizedBicycle) = parity_matrix_xz(c)[2]
+
+code_n(c::ExtendedGeneralizedBicycle) = 2 * c.m * c.base_code.l
