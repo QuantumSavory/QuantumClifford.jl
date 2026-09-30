@@ -1,7 +1,7 @@
 
 #=============================================================================#
 # PauliOperator
-function adapt_structure(
+@inline function adapt_structure(
     AT::Type{T}, pauli::PauliOperator
     ) where {T <: AbstractArray}
 
@@ -13,7 +13,7 @@ function adapt_structure(
 
 end
 
-function adapt_structure(
+@inline function adapt_structure(
     AT::Type{T}, pauli::PauliOperator
     ) where {T <: AbstractGPUArray}
 
@@ -26,7 +26,7 @@ function adapt_structure(
 end
 
 # Tableau
-function adapt_structure(
+@inline function adapt_structure(
     AT::Type{T}, tab::Tableau
     ) where {T <: AbstractArray}
 
@@ -38,7 +38,7 @@ function adapt_structure(
 
 end
 
-function adapt_structure(
+@inline function adapt_structure(
     AT::Type{T}, tab::Tableau
     ) where {T <: AbstractGPUArray}
 
@@ -51,7 +51,7 @@ function adapt_structure(
 end
 
 # Stabilizer
-function adapt_structure(
+@inline function adapt_structure(
     AT::Type{T}, state::Stabilizer
     ) where {T <: AbstractArray}
 
@@ -60,7 +60,7 @@ function adapt_structure(
 end
 
 # Destabilizer
-function adapt_structure(
+@inline function adapt_structure(
     AT::Type{T}, state::Destabilizer
     ) where {T <: AbstractArray}
 
@@ -69,7 +69,7 @@ function adapt_structure(
 end
 
 # MixedStabilizer
-function adapt_structure(
+@inline function adapt_structure(
     AT::Type{T}, state::MixedStabilizer
     ) where {T <: AbstractArray}
 
@@ -78,7 +78,7 @@ function adapt_structure(
 end
 
 # MixedDestabilizer
-function adapt_structure(
+@inline function adapt_structure(
     AT::Type{T}, state::MixedDestabilizer
     ) where {T <: AbstractArray}
 

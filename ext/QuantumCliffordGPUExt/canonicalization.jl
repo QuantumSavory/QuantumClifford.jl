@@ -159,7 +159,7 @@ function gpu_canonicalize!(tableau::QuantumClifford.Tableau{<:CuArray{P}, <:CuAr
     return tableau
 end
 
-function canonicalize!(stab::Stabilizer{<:QuantumClifford.Tableau{<:CuArray{P}, <:CuArray{T}}}; phases::Bool=true) where {T, P}
+function cuda_canonicalize!(stab::Stabilizer{<:QuantumClifford.Tableau{<:CuArray{P}, <:CuArray{T}}}; phases::Bool=true) where {T, P}
     gpu_canonicalize!(tab(stab), phases)
     CUDA.synchronize()
     return stab
