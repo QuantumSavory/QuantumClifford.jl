@@ -7,6 +7,7 @@
 
 ## Unreleased
 
+- Fix `show` for symbolic single- and two-qubit operators to label rows with the actual qubit indices instead of always `1`/`2` (#760).
 - Raise minimum dependency versions to fix tensor product arity and dependency warnings on Julia 1.12.
 - Correct manual examples for random Pauli operators and subsystem permutation.
 

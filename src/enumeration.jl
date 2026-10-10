@@ -20,8 +20,8 @@ Z₁ ⟼ + Z
 
 julia> enumerate_single_qubit_gates(6, qubit=2, phases=(true, true))
 SingleQubitOperator on qubit 2
-X₁ ⟼ - Y
-Z₁ ⟼ - Z
+X₂ ⟼ - Y
+Z₂ ⟼ - Z
 ```
 
 See also: [`enumerate_cliffords`](@ref)."""
