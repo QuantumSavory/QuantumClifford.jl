@@ -35,6 +35,16 @@
         @test_throws ArgumentError CliffordOperator(sHadamard(5),6,compact=true)
     end
 
+    @testset "Show symbolic operators correctly (Issue #760)" begin
+        @test sprint(show, sHadamard(2)) == "sHadamard on qubit 2\nX₂ ⟼ + Z\nZ₂ ⟼ + X"
+        @test occursin("X₂", sprint(show, sCNOT(2,3)))
+        @test occursin("X₃", sprint(show, sCNOT(2,3)))
+        @test occursin("X₃", sprint(show, sCNOT(3,1)))
+        @test occursin("X₁", sprint(show, sCNOT(3,1)))
+        # plain CliffordOperator printing is unchanged
+        @test sprint(show, CliffordOperator(sHadamard(2), 1, compact=true)) == "X₁ ⟼ + Z\nZ₁ ⟼ + X"
+    end
+
     @testset "Convert between small ops" begin
         for op in subtypes(QuantumClifford.AbstractSingleQubitOperator)
             op == SingleQubitOperator && continue
