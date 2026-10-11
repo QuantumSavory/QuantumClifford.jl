@@ -131,7 +131,7 @@ might be necessary to convert the stabilizer into a state representable as a gra
 
 For a tableau `stab` you can convert it with:
 ```julia
-graph, hadamard_idx, iphase_idx, flips_idx = graphstate()
+graph, hadamard_idx, iphase_idx, flips_idx = graphstate(stab)
 ```
 where `graph` is the graph representation of `stab`,
 and the rest specifies the single-qubit gates converting `stab` to `graph`:
@@ -139,6 +139,12 @@ and the rest specifies the single-qubit gates converting `stab` to `graph`:
 `iphase_idx` are (different) qubits that require an inverse Phase gate (Y → X),
 and `flips_idx` are the qubits that require a phase flip (Pauli Z gate),
 after the previous two sets of gates.
+
+These gates map the input stabilizer **to** the graph state. To reconstruct the
+input from `Stabilizer(graph)`, apply their inverses in reverse order: Pauli Z
+on `flips_idx`, Phase on `iphase_idx`, then Hadamard on `hadamard_idx`.
+Alternatively, construct `to_graph = graph_gate(hadamard_idx, iphase_idx, flips_idx, nqubits(stab))`
+and apply `inv(to_graph)` to `Stabilizer(graph)`.
 
 ```jldoctest graph
 julia> using Graphs
@@ -212,7 +218,10 @@ end
 """
     graph_gatesequence(::Vector{Int}, ::Vector{Int}, ::Vector{Int})
 
-A helper function converting the gate indices from [`graphstate`](@ref) into a sequence of gates.
+A helper function converting the gate indices from [`graphstate`](@ref) into
+three vectors of gates, in application order, mapping the input stabilizer to
+the graph state. To reconstruct the input, invert each gate and reverse the
+order of the flattened sequence: `inv.(reverse(vcat(gates...)))`.
 
 ```jldoctest
 julia> s = S" XXX
@@ -238,7 +247,7 @@ julia> canonicalize!(s) == canonicalize!(Stabilizer(graph))
 true
 ```
 
-See also: [`graph_gatesequence`](@ref)
+See also: [`graph_gate`](@ref)
 """
 function graph_gatesequence(h_idx::Vector{Int}, ip_idx::Vector{Int}, z_idx::Vector{Int})
     ([sHadamard(i) for i in h_idx], [sInvPhase(i) for i in ip_idx], [sZ(i) for i in z_idx])
@@ -247,7 +256,9 @@ end
 """
     graph_gate(h_idx, ip_idx, z_idx, n)
 
-A helper function converting the gate indices from [`graphstate`](@ref) into a Clifford operator.
+A helper function converting the gate indices from [`graphstate`](@ref) into
+a Clifford operator mapping the input stabilizer to the graph state.
+Apply `inv(gate)` to `Stabilizer(graph)` to reconstruct the input.
 
 ```jldoctest
 julia> s = S" XXX
