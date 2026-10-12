@@ -73,7 +73,34 @@ julia> canonicalize!(apply!(s,gate)) == canonicalize!(Stabilizer(g))
 true
 ```
 
-These converters also provides for a convenient way to create graph and cluster states, by using the helper constructors provided in `Graphs.jl`.
+The returned gates map the **input stabilizer to the graph state**. To recover
+the input from `Stabilizer(g)`, apply the inverse transformation. In particular,
+the inverse of an Inverse Phase gate is a Phase gate, and the order of the gates
+must also be reversed: Pauli Z, Phase, then Hadamard.
+
+Using [`graph_gate`](@ref) and `inv` handles both the gate inverses and their order:
+
+```jldoctest graph_inverse
+julia> using QuantumClifford
+
+julia> original = S" Y_
+                   -_Z";
+
+julia> g, h_idx, ip_idx, z_idx = graphstate(original);
+
+julia> to_graph = graph_gate(h_idx, ip_idx, z_idx, nqubits(original));
+
+julia> recovered = apply!(Stabilizer(g), inv(to_graph));
+
+julia> canonicalize!(recovered) == canonicalize!(copy(original))
+true
+```
+
+For a sequence of individual gates, use
+`gates = vcat(graph_gatesequence(h_idx, ip_idx, z_idx)...)` and apply
+`inv.(reverse(gates))` to `Stabilizer(g)`.
+
+These converters also provide a convenient way to create graph and cluster states, by using the helper constructors provided in `Graphs.jl`.
 
 ```jldoctest graph
 julia> Stabilizer(grid([4,1])) # Linear cluster state
