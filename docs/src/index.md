@@ -6,7 +6,7 @@ DocTestSetup = quote
 end
 ```
 
-QuantumClifford.jl is a comprehensive library for the study, simulation, and manipulation of Clifford circuits and slightly non-Clifford circuits. For it, we run weekly online "office hours" [for modeling problems in quantum information science](@ref Office-Hours).
+QuantumClifford.jl is a comprehensive library for the study, simulation, and manipulation of Clifford circuits and slightly non-Clifford circuits. For it, we offer on-demand online "office hours" [for modeling problems in quantum information science](@ref Office-Hours).
 
 This library uses the **tableaux formalism[^1]** with the **destabilizer improvements[^2]**. Moreover, **Pauli frames** are supported for faster repeated simulation of noisy circuits. Various **symbolic and algebraic tools for manipulating, converting, and visualizing states and circuits** are also available. Finite-Clifford-rank tools for modeling circuits with **few non-Clifford gates** are provided. 
 
@@ -82,7 +82,7 @@ The `QuantumClifford.ECC` submodule can be used to generate the parity checks of
 
 ## [Office Hours](@id Office-Hours)
 
-Office hours are held every Friday from 12:30 – 1:30 PM Eastern Time via [Zoom](https://umass-amherst.zoom.us/j/95986275946?pwd=6h7Wbai1bXIai0XQsatNRWaVbQlTDr.1). Before joining, make sure to check the [Julia community events calendar](https://julialang.org/community/#events) to confirm whether office hours are happening, rescheduled, or canceled for the week. Feel free to bring any questions or suggestions!
+Office hours can be scheduled on-demand at [cal.com/krastanov/quantum-savory-office-hours](https://cal.com/krastanov/quantum-savory-office-hours). Feel free to bring any questions or suggestions!
 
 ## Support
 
