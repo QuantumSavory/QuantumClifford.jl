@@ -28,12 +28,30 @@
     @testset "code tableau consistency" begin
         for code in all_testable_code_instances()
             H = parity_checks(code)
+            _, _, rank = canonicalize!(copy(H), ranks=true)
+            # Parity matrices do not encode stabilizer phases.
+            canonical_H = canonicalize!(Stabilizer(stab_to_gf2(H)))
+            matrix_H = Stabilizer(parity_matrix(code))
             @test nqubits(code) == size(H, 2) == code_n(code)
             @test size(H, 1) == code_s(code)
+            @test size(matrix_H) == size(H)
             @test code_s(code) + code_k(code) >= code_n(code) # possibly exist redundant checks
-            _, _, rank = canonicalize!(copy(H), ranks=true)
             @test rank <= size(H, 1)
             @test QuantumClifford.stab_looks_good(copy(H), remove_redundant_rows=true)
+            @test QuantumClifford.stab_looks_good(matrix_H, remove_redundant_rows=true)
+            @test canonical_H == canonicalize!(matrix_H)
+
+            if iscss(code) === true
+                Hx = parity_matrix_x(code)
+                Hz = parity_matrix_z(code)
+                @test size(Hx, 2) == size(Hz, 2) == code_n(code)
+                @test size(Hx, 1) + size(Hz, 1) == code_s(code)
+                @test iszero(mod.(Hx * LinearAlgebra.transpose(Hz), 2))
+
+                split_H = parity_checks(CSS(Hx, Hz))
+                @test QuantumClifford.stab_looks_good(split_H, remove_redundant_rows=true)
+                @test canonical_H == canonicalize!(split_H)
+            end
         end
     end
 

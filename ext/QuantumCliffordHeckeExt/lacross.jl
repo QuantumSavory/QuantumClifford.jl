@@ -166,7 +166,9 @@ function parity_matrix_xz(c::LaCross)
             H[i, j] = coeffs[mod1(j-i+1, c.n)]
         end
     end
-    H = [Int(lift(ZZ, H[i,j])) for i in 1:nrows(H), j in 1:ncols(H)]
+    H = let H=H
+        [Int(lift(ZZ, H[i,j])) for i in 1:nrows(H), j in 1:ncols(H)]
+    end
     if c.full_rank == true
         k = degree(c.h)
         H = H[1:c.n-k, :]

@@ -1,5 +1,9 @@
 # News
 
+## v0.1.4 - 2026-08-23
+
+- Add `BCH`, moved from `QuantumClifford.ECC`, with generator-polynomial and parity-matrix methods provided by the Nemo extension.
+
 ## v0.1.3 - 2026-03-03
 
 - `hasmetachecs`method added (not public).

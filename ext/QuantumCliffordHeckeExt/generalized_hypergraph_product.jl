@@ -116,7 +116,9 @@ function _polynomial_matrix_to_circulant_matrix(H_poly, l)
         H_block = _circulant_matrix(poly, l)
         H[(i-1)*l+1:i*l, (j-1)*l+1:j*l] = H_block
     end
-    H = [Int(lift(ZZ, H[i,j])) for i in 1:nrows(H), j in 1:ncols(H)]
+    H = let H=H
+        [Int(lift(ZZ, H[i,j])) for i in 1:nrows(H), j in 1:ncols(H)]
+    end
     return H
 end
 

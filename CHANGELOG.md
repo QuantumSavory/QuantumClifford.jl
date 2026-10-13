@@ -5,6 +5,30 @@
 
 # News
 
+## Unreleased
+
+- Raise minimum dependency versions to fix tensor product arity and dependency warnings on Julia 1.12.
+- Correct manual examples for random Pauli operators and subsystem permutation.
+
+## v0.11.8 - 2026-09-05
+
+- **(fix)** Report concatenations of two CSS codes as CSS and provide their X and Z parity matrices.
+- **(fix)** Use the supplied RNG for all-to-all circuit qubit selection.
+- **(fix)** Correct `LiftedCode` construction and dimensions for concrete GF(2) group-algebra matrices.
+- Avoid runtime dispatch when resetting qubits in `MixedDestabilizer` states.
+- Improve API docstring summaries and signatures. Enhance rendered documentation code blocks with line numbers, permalinks, and API links.
+
+## v0.11.7 - 2026-08-06
+
+- **(fix)** Prevent stack overflows when tensoring one or at least three `PauliOperator`s.
+
+## v0.11.6 - 2026-08-05
+
+- **(breaking)** Remove the deprecated `apply!(state, operation, indices)` order. Subsystem indices must be passed before the operation as `apply!(state, indices, operation)`.
+- Add `apply_inv!(state, indices, operation)`, deprecate the former `apply_inv!(state, operation, indices)` order, and fix inverse Pauli application with the `phases` keyword.
+- Add `expect` methods for pure and mixed states stored as `MixedDestabilizer`s.
+- Add `fidelity` for pure/pure and pure/mixed `MixedDestabilizer` states. General mixed/mixed fidelity is unsupported.
+
 ## v0.11.5 - 2026-06-12
 
 - **(fix)** Broken edge case in `remove_column!`, a non-public function used by QuantumSavory.

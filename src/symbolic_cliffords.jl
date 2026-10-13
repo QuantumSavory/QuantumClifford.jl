@@ -3,9 +3,17 @@ using AutoHashEquals
 
 """Supertype of all symbolic operators. Subtype of `AbstractCliffordOperator`"""
 abstract type AbstractSymbolicOperator <: AbstractCliffordOperator end
-"""Supertype of all single-qubit symbolic operators."""
+"""
+$TYPEDEF
+
+Supertype of all single-qubit symbolic operators.
+"""
 abstract type AbstractSingleQubitOperator <: AbstractSymbolicOperator end
-"""Supertype of all two-qubit symbolic operators."""
+"""
+$TYPEDEF
+
+Supertype of all two-qubit symbolic operators.
+"""
 abstract type AbstractTwoQubitOperator <: AbstractSymbolicOperator end
 """Supertype of all symbolic single-qubit measurements."""
 abstract type AbstractMeasurement <: AbstractOperation end
@@ -90,7 +98,7 @@ end
 """Macro used to define single qubit symbolic gates and their `qubit_kernel` methods."""
 macro qubitop1(name, kernel, inv_kernel)
     prefixname = Symbol(:s,name)
-    docstring = "A \"symbolic\" single-qubit $name. See also: [`SingleQubitOperator`](@ref), [`AbstractSymbolicOperator`](@ref)"
+    docstring = "    s$name(q)\n\nA \"symbolic\" single-qubit $name. See also: [`SingleQubitOperator`](@ref), [`AbstractSymbolicOperator`](@ref)"
     quote
         struct $(esc(prefixname)) <: AbstractSingleQubitOperator
             q::Int
@@ -117,7 +125,10 @@ end
 @qubitop1 CXYZ         (x⊻z ,x   , false)        (z   ,x⊻z , false)
 @qubitop1 CZYX         (z   ,x⊻z , false)        (x⊻z ,x   , false)
 
-"""A "symbolic" single-qubit Identity operation.
+"""
+    sId1
+
+A "symbolic" single-qubit Identity operation.
 
 See also: [`SingleQubitOperator`](@ref)
 """
@@ -132,7 +143,10 @@ function _apply_inv!(stab::AbstractStabilizer, ::sId1; phases::Val{B}=Val(true))
     stab
 end
 
-"""A "symbolic" general single-qubit operator which permits faster multiplication than an operator expressed as an explicit tableau.
+"""
+$TYPEDEF
+
+A "symbolic" general single-qubit operator which permits faster multiplication than an operator expressed as an explicit tableau.
 
 ```jldoctest
 julia> op = SingleQubitOperator(2, true, true, true, false, true, true) # Tableau components and phases
@@ -343,7 +357,7 @@ end
 """Macro used to define 2-qubit symbolic gates and their `qubit_kernel` methods."""
 macro qubitop2(name, kernel, inv_kernel)
     prefixname = Symbol(:s,name)
-    docstring = "A \"symbolic\" $name. See also: [`AbstractSymbolicOperator`](@ref)"
+    docstring = "    s$name(q1, q2)\n\nA \"symbolic\" $name. See also: [`AbstractSymbolicOperator`](@ref)"
     quote
         struct $(esc(prefixname)) <: AbstractTwoQubitOperator
             q1::Int
@@ -511,21 +525,33 @@ end
 # Measurements
 ##############################
 
-"""Symbolic single qubit X measurement. See also [`Register`](@ref), [`projectXrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref)"""
+"""
+$TYPEDEF
+
+Symbolic single qubit X measurement. See also [`Register`](@ref), [`projectXrand!`](@ref), [`sMY`](@ref), [`sMZ`](@ref)
+"""
 struct sMX <: AbstractMeasurement
     qubit::Int
     bit::Int
     sMX(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
-"""Symbolic single qubit Y measurement. See also [`Register`](@ref), [`projectYrand!`](@ref), [`sMX`](@ref), [`sMZ`](@ref)"""
+"""
+$TYPEDEF
+
+Symbolic single qubit Y measurement. See also [`Register`](@ref), [`projectYrand!`](@ref), [`sMX`](@ref), [`sMZ`](@ref)
+"""
 struct sMY <: AbstractMeasurement
     qubit::Int
     bit::Int
     sMY(q, args...) = if q<=0 throw(NoZeroQubit) else new(q,args...) end
 end
 
-"""Symbolic single qubit Z measurement. See also [`Register`](@ref), [`projectZrand!`](@ref), [`sMX`](@ref), [`sMY`](@ref)"""
+"""
+$TYPEDEF
+
+Symbolic single qubit Z measurement. See also [`Register`](@ref), [`projectZrand!`](@ref), [`sMX`](@ref), [`sMY`](@ref)
+"""
 struct sMZ <: AbstractMeasurement
     qubit::Int
     bit::Int
@@ -558,7 +584,10 @@ projectrand!(state::AbstractStabilizer, m::sMX) = projectXrand!(state, m.qubit)
 projectrand!(state::AbstractStabilizer, m::sMY) = projectYrand!(state, m.qubit)
 projectrand!(state::AbstractStabilizer, m::sMZ) = projectZrand!(state, m.qubit)
 
-"""Measure a qubit in the Z basis and reset to the |0⟩ state.
+"""
+$TYPEDEF
+
+Measure a qubit in the Z basis and reset to the |0⟩ state.
 
 !!! warning "It does not trace out the qubit!"
     As described below there is a difference between measuring the qubit (followed by setting it to a given known state)

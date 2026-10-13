@@ -127,6 +127,8 @@
         end
     end
 
+    @test nqubits(tensor(pcT, P"X", P"Y")) == 3
+
     @testset "issue 681" begin
         stab = one(Stabilizer, 1)
         genstab = GeneralizedStabilizer(stab)

@@ -1,4 +1,7 @@
-"""Encoding physical qubits into a larger logical code.
+"""
+    naive_encoding_circuit(code)
+
+Encoding physical qubits into a larger logical code.
 
 The initial physical qubits to be encoded have to be at indices `n-k+1:n`.
 
@@ -38,14 +41,13 @@ function naive_encoding_circuit(code; undoperm=true)
         for t in 1:n
             if i!=t
                 xz = S[i,t]
-                g = if xz == (true, true)  # Y
-                    sZCY
+                if xz == (true, true)  # Y
+                    push!(circ, sZCY(i,t))
                 elseif xz == (true, false) # X
-                    sZCX
+                    push!(circ, sZCX(i,t))
                 elseif xz == (false, true) && !(i<t<n-k+1) # Z
-                    sZCZ
+                    push!(circ, sZCZ(i,t))
                 end
-                isnothing(g) || push!(circ, g(i,t))
             end
         end
     end
@@ -82,7 +84,10 @@ function perm_to_transpositions(perm)
     return transpositions
 end
 
-"""Generate the non-fault-tolerant stabilizer measurement cicuit for a given code instance or parity check tableau.
+"""
+    naive_syndrome_circuit
+
+Generate the non-fault-tolerant stabilizer measurement cicuit for a given code instance or parity check tableau.
 
 Use the `ancillary_index` and `bit_index` arguments to offset where the corresponding part the circuit starts.
 

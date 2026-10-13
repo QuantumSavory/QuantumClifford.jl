@@ -63,7 +63,10 @@ function LinearAlgebra.inv(c::CliffordOperator; phases=true)
     end
 end
 
-"""The inner product of two Stabilizers.
+"""
+$(TYPEDSIGNATURES)
+
+The inner product of two Stabilizers.
 
 Based on [garcia2012efficient](@cite).
 
@@ -122,6 +125,68 @@ function logdot(s1::Stabilizer, s2::Stabilizer)
     return k
 end
 
+"""
+    fidelity(state1::MixedDestabilizer, state2::MixedDestabilizer)
+
+Compute the fidelity between stabilizer states, following the
+`QuantumInterface.fidelity` convention,
+
+```math
+F(\\rho, \\sigma) =
+\\operatorname{Tr}\\sqrt{\\sqrt{\\rho}\\,\\sigma\\sqrt{\\rho}}.
+```
+
+For two pure states this returns their overlap by delegating to
+`LinearAlgebra.dot`. If exactly one state is pure, the result is the square root
+of that pure state's projector expectation in the mixed state. The order of
+the arguments does not matter. Inputs have the same rank and representation
+requirements as [`expect`](@ref).
+
+General mixed/mixed fidelity is not currently implemented and raises a
+`DomainError`. In particular, it is not equal in general to the square root of
+the Hilbert--Schmidt expectation returned by [`expect`](@ref).
+
+# Examples
+
+```jldoctest
+julia> fidelity(MixedDestabilizer(S"Z"), maximally_mixed(1))
+0.7071067811865476
+
+julia> fidelity(MixedDestabilizer(S"Z"), MixedDestabilizer(S"-Z"))
+0.0
+```
+
+See also: [`expect`](@ref), [`logdot`](@ref).
+"""
+function fidelity(
+    state1::MixedDestabilizer,
+    state2::MixedDestabilizer,
+)
+    state1_qubits = nqubits(state1)
+    state2_qubits = nqubits(state2)
+    state1_qubits == state2_qubits || throw(DimensionMismatch(
+        lazy"Expected equal qubit counts; got $state1_qubits and $state2_qubits.",
+    ))
+    state1_rank = rank(state1)
+    state2_rank = rank(state2)
+    state1_is_pure = state1_rank == state1_qubits
+    state2_is_pure = state2_rank == state2_qubits
+
+    if state1_is_pure && state2_is_pure
+        return dot(state1, state2)
+    elseif !state1_is_pure && !state2_is_pure
+        throw(DomainError(
+            (state1_rank, state2_rank),
+            lazy"Fidelity between two rank-deficient stabilizer states is not supported.",
+        ))
+    end
+
+    pure_state, mixed_state = state1_is_pure ?
+        (state1, state2) : (state2, state1)
+    exponent = _stabilizer_expect_log2(nothing, pure_state, mixed_state)
+    isnothing(exponent) ? 0.0 : exp2(exponent / 2)
+end
+
 LinearAlgebra.rank(s::Stabilizer)   = throw(BadDataStructure("Using a `Stabilizer` type does not permit automatic tracking of the rank. Use `length`, `trusted_rank`, the `MixedDestabilizer` type, or track the rank manually.",
                                             :rank, :Stabilizer))
 LinearAlgebra.rank(s::Destabilizer) = throw(BadDataStructure("Using a `Destabilizer` type does not permit automatic tracking of the rank. Use `length`, `trusted_rank`, the `MixedDestabilizer` type, or track the rank manually.",
@@ -136,7 +201,11 @@ trusted_rank(s::Destabilizer) = length(s)
 trusted_rank(s::MixedStabilizer) = LinearAlgebra.rank(s)
 trusted_rank(s::MixedDestabilizer) = LinearAlgebra.rank(s)
 
-"""Tensor product between operators or tableaux.
+"""
+    tensor(p::PauliOperator, ps::PauliOperator...)
+    tensor(op::AbstractStabilizer, ops::AbstractStabilizer...)
+
+Tensor product between operators or tableaux.
 
 Tensor product between CiffordOperators:
 
@@ -186,13 +255,19 @@ julia> tensor(s, s)
 See also [`tensor_pow`](@ref)."""
 function tensor end
 
-function tensor(ops::AbstractStabilizer...) # TODO optimize by pre-allocating one large tableau instead of the current quadratic fold
+tensor(p::PauliOperator, ps::PauliOperator...) = foldl(⊗, ps; init=p)
+
+function tensor(op::AbstractStabilizer, ops::AbstractStabilizer...) # TODO optimize by pre-allocating one large tableau instead of the current quadratic fold
+    ops = (op, ops...)
     ct = promote_type(map(typeof, ops)...)
     conv_ops = map(x -> convert(ct, x), ops)
     return foldl(⊗, conv_ops)
 end
 
-"""Repeated tensor product of an operators or a tableau.
+"""
+$(TYPEDSIGNATURES)
+
+Repeated tensor product of an operators or a tableau.
 
 For `CliffordOperator`:
 
@@ -244,20 +319,20 @@ function tensor_pow(op::Union{<:AbstractStabilizer,<:AbstractCliffordOperator},p
     end
 end
 
-function tensor(ops::Stabilizer...)
-    length(ops)==1 && return ops[1]
-    ntot = sum(nqubits, ops) # TODO why is this allocating (at least in 1.11)
-    rtot = sum(length, ops)  # TODO why is this allocating (at least in 1.11)
+function tensor(op::Stabilizer, ops::Stabilizer...)
+    isempty(ops) && return op
+    ntot = nqubits(op) + sum(nqubits, ops) # TODO why is this allocating (at least in 1.11)
+    rtot = length(op) + sum(length, ops)  # TODO why is this allocating (at least in 1.11)
     tab = zero(Stabilizer, rtot, ntot)
-    last_row = 0
-    last_col = 0
+    _, last_row, last_col = puttableau!(tab, op, 0, 0)
     for op in ops
         _, last_row, last_col = puttableau!(tab, op, last_row, last_col)
     end
     tab
 end
 
-function tensor(ops::MixedDestabilizer...)
+function tensor(op::MixedDestabilizer, ops::MixedDestabilizer...)
+    ops = (op, ops...)
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)
     rtot = sum(LinearAlgebra.rank, ops)
@@ -276,9 +351,10 @@ function tensor(ops::MixedDestabilizer...)
     MixedDestabilizer(tab, rtot)
 end
 
-tensor(ops::AbstractCliffordOperator...) = ⊗(CliffordOperator.(ops)...)
+tensor(op::AbstractCliffordOperator, ops::AbstractCliffordOperator...) = ⊗(CliffordOperator.((op, ops...))...)
 
-function tensor(ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here
+function tensor(op::CliffordOperator, ops::CliffordOperator...) # TODO implement \otimes for Destabilizer and use it here
+    ops = (op, ops...)
     length(ops)==1 && return ops[1]
     ntot = sum(nqubits, ops)
     tab = zero(Tableau, 2*ntot, ntot)

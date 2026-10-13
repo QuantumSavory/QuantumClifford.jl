@@ -24,6 +24,7 @@
             s1 = copy(s)
             for gate in vcat(gates...) apply!(s1, gate) end
             @test canonicalize!(apply!(copy(s),c0)) == canonicalize!(s1) == canonicalize!(Stabilizer(g))
+            @test canonicalize!(apply!(Stabilizer(g), inv(gate))) == canonicalize!(copy(s))
         end
         # one more check, done manually, to ensure we are testing for cases
         # where canonicalize_gott! is causing index permutation
@@ -40,5 +41,29 @@
         s1 = copy(s)
         for gate in vcat(gates...) apply!(s1, gate) end
         @test canonicalize!(apply!(copy(s),c0)) == canonicalize!(s1) == canonicalize!(Stabilizer(g))
+    end
+
+    @testset "Graph state reconstruction direction and order" begin
+        # Y needs Phase on reconstruction. For -Z, Pauli Z must precede Hadamard.
+        states = (S"Y", S"-Y", S"-Z", S" Y_
+                                      -_Z",
+                  # The [[4,2,2]] code with logical Y and X fixed to +1.
+                  S"XXXX
+                    ZZZZ
+                    ZXY_
+                    _X_X")
+        for s in states
+            g, h_idx, ip_idx, z_idx = graphstate(s)
+            to_graph = graph_gate(h_idx, ip_idx, z_idx, nqubits(s))
+            @test canonicalize!(apply!(copy(s), to_graph)) == canonicalize!(Stabilizer(g))
+            @test canonicalize!(apply!(Stabilizer(g), inv(to_graph))) == canonicalize!(copy(s))
+
+            recovered = Stabilizer(g)
+            gates = vcat(graph_gatesequence(h_idx, ip_idx, z_idx)...)
+            for gate in reverse(gates)
+                apply!(recovered, inv(gate))
+            end
+            @test canonicalize!(recovered) == canonicalize!(copy(s))
+        end
     end
 end

@@ -492,6 +492,8 @@ function Haah_cubic_code_as_2bga(a_shifts::Array{Int}, b_shifts::Array{Int}, l::
 end
 
 """
+    Haah_cubic_code_as_2bga(::Int)
+
 Haah’s cubic code is defined as ``\\text{LP}(1 + x + y + z, 1 + xy + xz + yz)``
 where ``\\text{LP}`` is the lifted product code, and `x`, `y`, `z` are elements
 of the ring ``R = \\mathbb{F}_2[x, y, z] / (x^L - 1, y^L - 1, z^L - 1)``. Here
@@ -526,6 +528,10 @@ function Haah_cubic_code_as_2bga(l::Int)
 end
 
 """
+    honeycomb_color_code_as_2bga(::Int, ::Int)
+
+Construct a honeycomb color code as a bivariate bicycle code.
+
 The honeycomb color codes [eberhardt2024logical](@cite) are exactly the Bivariate
 Bicycle (BB) codes defined by the polynomials `c = 1 + x + xy` and `d = 1 + y + xy`,
 provided that both `l` and `m` are divisible by three. This `6.6.6` code is an example of BB

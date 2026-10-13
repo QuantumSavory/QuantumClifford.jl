@@ -1,6 +1,7 @@
 module QuantumCliffordPyQDecodersExt
 
-using PyQDecoders: np, sps, ldpc, pm, PythonCall
+using PyQDecoders: np, sps, ldpc, pm
+using PythonCall
 using SparseArrays
 using QuantumClifford
 using QuantumClifford.ECC

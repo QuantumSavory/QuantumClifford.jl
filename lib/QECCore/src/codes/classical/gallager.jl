@@ -1,5 +1,6 @@
 """
-    $TYPEDEF
+    random_Gallager_ldpc(rng::AbstractRNG, block_rows::Int, col_weight::Int, row_weight::Int)
+    random_Gallager_ldpc(block_rows::Int, col_weight::Int, row_weight::Int)
 
 Construct a regular LDPC code parity-check matrix `H` using Gallager's
 original construction method [gallager1962ldpc](@cite).

@@ -1,11 +1,19 @@
-"""A multiqubit operator corresponding to all identities except for Pauli Z at `i`. See also: [`sY`](@ref), [`sMY`](@ref)"""
+"""
+$TYPEDSIGNATURES
+
+A multiqubit operator corresponding to all identities except for Pauli Z at `i`. See also: [`sY`](@ref), [`sMY`](@ref)
+"""
 function single_z(n,i)
     p = zero(PauliOperator, n)
     p[i] = (false, true)
     p
 end
 
-"""A multiqubit operator corresponding to all identities except for Pauli X at `i`. See also: [`sX`](@ref), [`sMX`](@ref)"""
+"""
+$TYPEDSIGNATURES
+
+A multiqubit operator corresponding to all identities except for Pauli X at `i`. See also: [`sX`](@ref), [`sMX`](@ref)
+"""
 function single_x(n,i)
     p = zero(PauliOperator, n)
     p[i] = (true, false)
@@ -62,7 +70,10 @@ function Base.one(c::CliffordOperator)
 end
 Base.one(::Type{<:CliffordOperator}, n) = CliffordOperator(one(Destabilizer,n))
 
-"""Prepare one or more Bell pairs (with optional phases).
+"""
+    bell
+
+Prepare one or more Bell pairs (with optional phases).
 
 ```jldoctest
 julia> bell()
@@ -130,6 +141,8 @@ function bell(bellphases::AbstractVector{Bool})
 end
 
 """
+    ghz
+
 Prepare a GHZ state of n qubits.
 
 ```jldoctest
@@ -170,6 +183,8 @@ function ghz(n::Int)
 end
 
 """
+$TYPEDSIGNATURES
+
 Prepare a maximally mixed state of n qubits.
 """
 function maximally_mixed(n)

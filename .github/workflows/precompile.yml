@@ -1,0 +1,26 @@
+name: Cold-start latency
+
+on:
+  pull_request:
+    paths:
+      - ext/**
+      - src/**
+      - lib/QECCore/**
+      - benchmark/precompile/**
+      - .github/workflows/precompile.yml
+      - Project.toml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    name: Compare base and head
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: QuantumSavory/julia-precompile-benchmark@v3

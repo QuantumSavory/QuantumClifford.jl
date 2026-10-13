@@ -1,8 +1,9 @@
 """
     $TYPEDEF
 
-The `[[n² + m²,(n - rank([C ∣ M]))² + (m − rank([C ∣ M]ᵀ))², d]]` **quantum
-Tillich Zémor code** is a novel quantum LDPC code is constructed using the
+Construct a quantum Tillich-Zémor LDPC code.
+
+The `[[n² + m²,(n - rank([C ∣ M]))² + (m − rank([C ∣ M]ᵀ))², d]]` code uses the
 hypergraph product of two classical seed **(n, m, r)-Structured LDPC** codes.
 
 # Structured LDPC

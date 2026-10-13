@@ -25,6 +25,8 @@
     @testset "Elementary operations" begin
         @test P"X"*P"Z" == P"-iY"
         @test P"X"⊗P"Z" == P"XZ"
+        @test tensor(P"X") == P"X"
+        @test tensor(P"X", P"Y", P"Z") == P"XYZ"
         @test -P"X" == P"-X"
         @test +P"X" == P"X"
         @test 1*P"X" == P"X"
@@ -77,15 +79,15 @@
                     s3 = copy(s1)
                     apply!(s1,px)
                     apply_single_x!(s2,x)
-                    apply!(s3,P"X",[x])
+                    apply!(s3,[x],P"X")
                     @test s1==s2==s3
                     apply!(s1,py)
                     apply_single_y!(s2,y)
-                    apply!(s3,P"Y",[y])
+                    apply!(s3,[y],P"Y")
                     @test s1==s2==s3
                     apply!(s1,pz)
                     apply_single_z!(s2,z)
-                    apply!(s3,P"Z",[z])
+                    apply!(s3,[z],P"Z")
                     @test s1==s2==s3
                 end
             end

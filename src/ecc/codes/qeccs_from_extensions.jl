@@ -19,12 +19,12 @@ const oscarext_function_docstring = oscarext_struct_docstring
 @declare_struct_is_in_extension QuantumClifford BivariateBicycleViaPoly :QuantumCliffordOscarExt (:Oscar,) oscarext_struct_docstring
 @declare_struct_is_in_extension QuantumClifford MultivariateMulticycle :QuantumCliffordOscarExt (:Oscar,) oscarext_struct_docstring
 
-@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS two_block_group_algebra_code (:Hecke,) heckeext_function_docstring
-@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS generalized_bicycle_code_as_2bga (:Hecke,) heckeext_function_docstring
-@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS bicycle_code_as_2bga (:Hecke,) heckeext_function_docstring
-@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS Haah_cubic_code_as_2bga (:Hecke,) heckeext_function_docstring
-@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS honeycomb_color_code_as_2bga (:Hecke,) heckeext_function_docstring
-@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS boundary_maps (:Oscar,) oscarext_function_docstring
+@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS two_block_group_algebra_code (:Hecke,) "    two_block_group_algebra_code\n\n$heckeext_function_docstring"
+@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS generalized_bicycle_code_as_2bga (:Hecke,) "    generalized_bicycle_code_as_2bga\n\n$heckeext_function_docstring"
+@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS bicycle_code_as_2bga (:Hecke,) "    bicycle_code_as_2bga\n\n$heckeext_function_docstring"
+@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS Haah_cubic_code_as_2bga (:Hecke,) "    Haah_cubic_code_as_2bga\n\n$heckeext_function_docstring"
+@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS honeycomb_color_code_as_2bga (:Hecke,) "    honeycomb_color_code_as_2bga\n\n$heckeext_function_docstring"
+@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS boundary_maps (:Oscar,) "    boundary_maps\n\n$oscarext_function_docstring"
 @declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS max_xy_exponents (:Oscar,) oscarext_function_docstring
-@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS twobga_from_direct_product (:Oscar,) oscarext_function_docstring
-@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS twobga_from_fp_group (:Oscar,) oscarext_function_docstring
+@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS twobga_from_direct_product (:Oscar,) "    twobga_from_direct_product\n\n$oscarext_function_docstring"
+@declare_method_is_in_extension QuantumClifford.WEAKDEP_METHOD_ERROR_HINTS twobga_from_fp_group (:Oscar,) "    twobga_from_fp_group\n\n$oscarext_function_docstring"

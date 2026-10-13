@@ -2,7 +2,8 @@ module ECC
 
 using QECCore
 import QECCore: code_n, code_s, code_k, rate, distance, parity_matrix_x, parity_matrix_z, parity_matrix,
-metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial, hasmetachecks
+    metacheck_matrix_x, metacheck_matrix_z, metacheck_matrix, hgp, generator_polynomial, hasmetachecks,
+    AbstractPolynomialCode
 using QuantumClifford: QuantumClifford, AbstractOperation, AbstractStabilizer,
     AbstractTwoQubitOperator, Stabilizer, PauliOperator,
     random_brickwork_clifford_circuit, random_all_to_all_clifford_circuit,
@@ -52,12 +53,18 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     BeliefPropDecoder, BitFlipDecoder,
     PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, TesseractDecoder, DecoderCorrectionGate
 
-"""Parity check tableau of a code.
+"""
+    parity_checks
+
+Parity check tableau of a code.
 
 See also: [`parity_matrix_x`](@ref) and [`parity_matrix_z`](@ref)"""
 function parity_checks end
 
-"""Parity check boolean matrix of a code (only the X entries in the tableau, i.e. the checks for Z errors).
+"""
+    parity_matrix_x(::AbstractECC)
+
+Parity check boolean matrix of a code (only the X entries in the tableau, i.e. the checks for Z errors).
 
 Only CSS codes have this method.
 
@@ -66,7 +73,10 @@ function parity_matrix_x(code::AbstractECC)
     throw(lazy"Codes of type $(typeof(code)) do not have separate X and Z parity checks, either because they are not a CSS code and thus inherently do not have separate checks, or because its separate checks are not yet implemented in this library.")
 end
 
-"""Parity check boolean matrix of a code (only the Z entries in the tableau, i.e. the checks for X errors).
+"""
+    parity_matrix_z(::AbstractECC)
+
+Parity check boolean matrix of a code (only the Z entries in the tableau, i.e. the checks for X errors).
 
 Only CSS codes have this method.
 
@@ -109,6 +119,8 @@ code_s(s::Stabilizer) = length(s)
 code_s(c::AbstractECC) = code_s(parity_checks(c))
 
 """
+    code_k(::Stabilizer)
+
 The number of logical qubits in a code.
 
 Note that when redundant rows exist in the parity check matrix, the number of logical qubits `code_k(c)` will be greater than `code_n(c) - code_s(c)`, where the difference equals the redundancy.
@@ -169,7 +181,10 @@ function logz_ops(c)
     logicalzview(md)
 end
 
-"""Error-to-logical-observable map (a.k.a. fault matrix) of a code.
+"""
+    faults_matrix(::Stabilizer)
+
+Error-to-logical-observable map (a.k.a. fault matrix) of a code.
 
 For a code with n physical qubits and k logical qubits this function returns
 a 2k × 2n binary matrix O such that
@@ -357,7 +372,10 @@ function faults_matrix(c::AbstractECC)
 end
 
 """
-$TYPEDSIGNATURES
+    isdegenerate(::AbstractECC, errors)
+    isdegenerate(::AbstractStabilizer, errors)
+    isdegenerate(::Stabilizer, errors)
+    isdegenerate(::Stabilizer, d::Int=1)
 
 Check if the code is degenerate with respect to a given set of error or with respect to all
 "up to d physical-qubit" errors (defaulting to d=1).
@@ -402,7 +420,6 @@ include("codes/util.jl")
 
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
-include("codes/classical/bch.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")

@@ -199,7 +199,9 @@ function boundary_maps(hp::HomologicalProduct)
         C = tensor_product(C, C_next)
         C = total_complex(C)
     end
-    δs = [matrix(map(C, d)) for d in 1:length(hp.boundary_maps)]
+    δs = let C=C
+        [matrix(map(C, d)) for d in 1:length(hp.boundary_maps)]
+    end
     return matrix_to_int.(δs)
 end
 
@@ -215,6 +217,8 @@ parity_matrix_z(hp::HomologicalProduct) = boundary_maps(hp)[1]'
 hasmetachecks(c::HomologicalProduct) = length(c.boundary_maps) >= 4 ? (true, true) : length(c.boundary_maps) == 3 ? (true, false) : (false, false)
 
 """
+$TYPEDEF
+
 Constructs the *Double Homological Product code* from [Campbell_2019](@cite).
 
 # 4-term Chain Complex

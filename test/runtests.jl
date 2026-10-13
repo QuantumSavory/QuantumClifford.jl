@@ -1,21 +1,36 @@
 using InteractiveUtils
 versioninfo(;verbose=true)
 
+const JET_PROJECT = normpath(joinpath(@__DIR__, "projects", "jet"))
+const test_args = isempty(ARGS) ? ["general"] : ARGS
+const JET_flag = length(test_args) == 1 && startswith(only(test_args), "jet")
+const DOWNGRADE_TEST = get(ENV, "QUANTUMSAVORY_DOWNGRADE_TEST", "") == "true"
+
+if JET_flag
+    @info "Activating the dedicated JET test environment." project=JET_PROJECT
+    using Pkg
+    Pkg.activate(JET_PROJECT)
+    Pkg.instantiate()
+end
+
 CUDA_flag = false
 ROCm_flag = false
 OpenCL_flag = false
 Oscar_flag = false
 Tesseract_flag = false
-JET_flag = false
 
-if Sys.iswindows() || Sys.ARCH != :x86_64
+if DOWNGRADE_TEST
+    @info "Skipping Oscar tests during the downgrade run."
+elseif Sys.iswindows() || Sys.ARCH != :x86_64
     @info "Skipping Oscar tests -- only supported x86_64 *NIX platforms."
 else
     Oscar_flag = VERSION >= v"1.11"
     !Oscar_flag && @info "Skipping Oscar tests -- not tested on Julia < 1.11"
 end
 
-if Sys.iswindows()
+if DOWNGRADE_TEST
+    @info "Skipping Tesseract tests during the downgrade run."
+elseif Sys.iswindows()
     @info "Skipping Tesseract tests -- only supported *NIX platforms."
 else
     Tesseract_flag = true
@@ -24,23 +39,17 @@ end
 if Sys.iswindows()
     @info "Skipping GPU/OpenCL tests -- only executed on *NIX platforms."
 else
-    CUDA_flag = get(ENV, "GPU_TEST", "") == "cuda"
-    ROCm_flag = get(ENV, "GPU_TEST", "") == "rocm"
-    OpenCL_flag = get(ENV, "GPU_TEST", "") == "opencl"
+    CUDA_flag = get(ENV, "QC_GPU_TEST", "") == "cuda"
+    ROCm_flag = get(ENV, "QC_GPU_TEST", "") == "rocm"
+    OpenCL_flag = get(ENV, "QC_GPU_TEST", "") == "opencl"
 
     CUDA_flag && @info "Running with CUDA tests."
     ROCm_flag && @info "Running with ROCm tests."
     OpenCL_flag && @info "Running with OpenCL tests."
     if !any((CUDA_flag, ROCm_flag, OpenCL_flag))
         @info "Skipping GPU/OpenCL tests -- must be explicitly enabled."
-        @info "Environment must uniquely set GPU_TEST=cuda/rocm/opencl."
+        @info "Environment must uniquely set QC_GPU_TEST=cuda/rocm/opencl."
     end
-end
-
-if get(ENV, "JET_TEST", "") == "true"
-    JET_flag = true
-else
-    @info "Skipping JET tests -- must be explicitly enabled."
 end
 
 using Pkg
@@ -52,9 +61,8 @@ if any((CUDA_flag, ROCm_flag, OpenCL_flag))
         ["Adapt", "Atomix", "GPUArraysCore", "GPUArrays", "KernelAbstractions"]
     )
 end
-Oscar_flag && Pkg.add("Oscar")
-Tesseract_flag && Pkg.add("PyTesseractDecoder")
-JET_flag && Pkg.add("JET")
+!JET_flag && Oscar_flag && Pkg.add("Oscar")
+!JET_flag && Tesseract_flag && Pkg.add("PyTesseractDecoder")
 
 
 using TestItemRunner
@@ -78,22 +86,22 @@ testfilter = ti -> begin
         push!(exclude, :tesseract_required)
     end
 
-    if get(ENV, "ECC_TEST", "") == "base"
+    if get(ENV, "QC_ECC_TEST", "") == "base"
         return (:ecc in ti.tags) && (:ecc_base in ti.tags) && all(!in(exclude), ti.tags)
 
-    elseif get(ENV, "ECC_TEST", "") == "encoding"
+    elseif get(ENV, "QC_ECC_TEST", "") == "encoding"
         return (:ecc in ti.tags) && (:ecc_encoding in ti.tags) && all(!in(exclude), ti.tags)
 
-    elseif get(ENV, "ECC_TEST", "") == "decoding"
+    elseif get(ENV, "QC_ECC_TEST", "") == "decoding"
         return (:ecc in ti.tags) && (:ecc_decoding in ti.tags) && all(!in(exclude), ti.tags)
 
-    elseif get(ENV, "ECC_TEST", "") == "syndromecircuit"
+    elseif get(ENV, "QC_ECC_TEST", "") == "syndromecircuit"
         return (:ecc in ti.tags) && (:ecc_syndrome_circuit_equivalence in ti.tags) && all(!in(exclude), ti.tags)
 
-    elseif get(ENV, "ECC_TEST", "") == "syndromemeasurement"
+    elseif get(ENV, "QC_ECC_TEST", "") == "syndromemeasurement"
         return (:ecc in ti.tags) && (:ecc_syndrome_measurement_correctness in ti.tags) && all(!in(exclude), ti.tags)
 
-    elseif get(ENV, "ECC_TEST", "") == "bespoke"
+    elseif get(ENV, "QC_ECC_TEST", "") == "bespoke"
         return (:ecc in ti.tags) && (:ecc_bespoke_checks in ti.tags) && all(!in(exclude), ti.tags)
     else
         push!(exclude, :ecc)
@@ -117,7 +125,7 @@ testfilter = ti -> begin
         push!(exclude, :opencl)
     end
 
-    if !(VERSION >= v"1.10")
+    if DOWNGRADE_TEST || !(VERSION >= v"1.10")
         push!(exclude, :doctests)
         push!(exclude, :aqua)
     end

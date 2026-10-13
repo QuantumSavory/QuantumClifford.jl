@@ -9,7 +9,8 @@
     const QECCoreNemoExt = Base.get_extension(QECCore, :QECCoreNemoExt)
     push!(extensions, QECCoreNemoExt)
 
-    @static if !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
+    @static if get(ENV, "QUANTUMSAVORY_DOWNGRADE_TEST", "") != "true" &&
+               !Sys.iswindows() && Sys.ARCH == :x86_64 && VERSION >= v"1.11"
         import Oscar
         const QECCoreOscarExt = Base.get_extension(QECCore, :QECCoreOscarExt)
         push!(extensions, QECCoreOscarExt)

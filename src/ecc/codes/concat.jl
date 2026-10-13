@@ -35,13 +35,36 @@ function parity_checks(c::Concat)
     vcat(inner_checks, outer_checks)
 end
 
+function _concat_parity_matrix_xz(c::Concat)
+    c₁ = c.c₁
+    c₂ = c.c₂
+    n₁ = code_n(c₁)
+    n₂ = code_n(c₂)
+    logicals₁ = MixedDestabilizer(parity_checks(c₁))
+    h_logx₁ = stab_to_gf2(logicalxview(logicals₁))[:, 1:n₁]
+    h_logz₁ = stab_to_gf2(logicalzview(logicals₁))[:, n₁+1:2n₁]
+    hx = vcat(
+        kron(I(n₂), parity_matrix_x(c₁)),
+        kron(parity_matrix_x(c₂), h_logx₁),
+    )
+    hz = vcat(
+        kron(I(n₂), parity_matrix_z(c₁)),
+        kron(parity_matrix_z(c₂), h_logz₁),
+    )
+    return hx, hz
+end
+
+parity_matrix_x(c::Concat) = _concat_parity_matrix_xz(c)[1]
+
+parity_matrix_z(c::Concat) = _concat_parity_matrix_xz(c)[2]
+
 code_n(c::Concat) = code_n(c.c₁) * code_n(c.c₂)
 
 code_k(c::Concat) = code_k(c.c₁) * code_k(c.c₂)
 
 function iscss(c::Concat)
     if iscss(c.c₁)==true && iscss(c.c₂)==true # to distinguish from potentially being nothing
-        true
+        return true
     end
     return nothing # if c.c₁ or c.c₂ are non-CSS; in this case, `Concat(c₁, c₂)` can still be CSS
 end

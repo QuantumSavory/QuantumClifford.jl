@@ -1,5 +1,5 @@
 """
-$(SIGNATURES)
+    isclifford(op::AbstractOperation)
 
 Trait function to determine if an operation is a Clifford gate.
 Users can extend this for custom gate types by defining new methods.

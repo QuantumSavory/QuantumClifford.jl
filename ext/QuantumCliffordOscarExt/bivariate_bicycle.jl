@@ -135,7 +135,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=3; m=9;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^l-1, y^m-1]);
 
@@ -158,7 +158,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=6; m=6;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^l-1, y^m-1]);
 
@@ -181,7 +181,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=21; m=18;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^l-1, y^m-1]);
 
@@ -204,7 +204,7 @@ julia> using Oscar; using QuantumClifford.ECC;
 
 julia> l=8; m=8;
 
-julia> R, (x, y) = polynomial_ring(GF(2), [:x, :y]);
+julia> R, (x, y) = polynomial_ring(Native.GF(2), [:x, :y]);
 
 julia> I = ideal(R, [x^l-1, y^m-1]);
 
@@ -326,7 +326,7 @@ struct BivariateBicycleViaPoly <: AbstractCSSCode
         parent(c) == parent(d) || throw(ArgumentError("Polynomials must be in the same quotient ring"))
         Q = parent(c)
         R = base_ring(Q)
-        base_ring(R) == GF(2) || throw(ArgumentError("Base ring must be GF(2)"))
+        order(base_ring(R)) == 2 || throw(ArgumentError("Base ring must be GF(2)"))
         nvars(R) == 2 || throw(ArgumentError("Must be bivariate polynomials"))
         new(l, m, c, d)
     end

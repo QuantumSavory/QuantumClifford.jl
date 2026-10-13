@@ -42,9 +42,8 @@ g₄ = z^2 + α^7*z + 1
 L₄ = [α^i for i in 2:13]
 
 # Lifted Codes
-l₁ = 12; GA₁ = group_algebra(GF(2), abelian_group(l)); x = gens(GA)[]
+l₁ = 12; GA₁ = group_algebra(GF(2), abelian_group(l₁)); x = only(gens(GA₁))
 B₁ = reshape([1 + x + x^3 + x^6], (1, 1))
-c = LiftedCode(B, repr = representation_matrix)
 
 base_matrix₂ = [0 0 0 0; 0 1 2 5; 0 6 3 1]; l₂ = 3;
 
@@ -55,9 +54,8 @@ const classical_code_instance_args = Dict(
     :RecursiveReedMuller => [(1, 3), (1, 4), (2, 3), (1, 5), (2, 4), (2, 5), (3, 5)],
     :Golay => [(23), (24)],
     :Hamming => [2, 3, 4, 5, 6, 7, 8],
-    :GallagerLDPC => [(3, 3, 4), (3, 4, 5), (4, 5, 7), (4, 6, 7)],
     :Goppa => [(m₁, t₁, g₁, L₁), (m₂, t₂, g₂), (m₃, t₃, g₃), (m₄, t₄, g₄, L₄)],
-    :LiftedCode => [(B₁, repr = representation_matrix), (base_matrix₂, l₂), (base_matrix₂, 5), (base_matrix₂, 7)]
+    :LiftedCode => [(B₁,), (base_matrix₂, l₂), (base_matrix₂, 5), (base_matrix₂, 7)]
 )
 
 function all_testable_classical_code_instances(; maxn=nothing)

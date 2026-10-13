@@ -14,8 +14,8 @@
         mctrajectory!(logicalqubits, naive_encoding_circuit(c))
         if e
             #add some noise to logicalqubits
-            apply!(logicalqubits, P"X", rand(1:code_n(c)))
-            apply!(logicalqubits, P"Z", rand(1:code_n(c)))
+            apply!(logicalqubits, [rand(1:code_n(c))], P"X")
+            apply!(logicalqubits, [rand(1:code_n(c))], P"Z")
         end
         # measure using `project!`
         s1 = copy(logicalqubits)

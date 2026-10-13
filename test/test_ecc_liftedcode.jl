@@ -1,4 +1,4 @@
-@testitem "ECC LiftedCode" tags=[:ecc, :ecc_bespoke] begin
+@testitem "ECC LiftedCode" tags=[:ecc, :ecc_bespoke_checks] begin
     using Hecke
     using Hecke: group_algebra, GF, abelian_group, gens, one, representation_matrix
     using QuantumClifford.ECC: LiftedCode, code_k, code_n, code_s, parity_matrix
