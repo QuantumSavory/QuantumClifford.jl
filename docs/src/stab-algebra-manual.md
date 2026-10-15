@@ -598,8 +598,8 @@ They are used slightly differently, as one needs to specify the qubits on which 
 ```jldoctest
 julia> sHadamard(2)
 sHadamard on qubit 2
-X₁ ⟼ + Z
-Z₁ ⟼ + X
+X₂ ⟼ + Z
+Z₂ ⟼ + X
 
 julia> sHadamard(2)*S"XXX"
 + XZX

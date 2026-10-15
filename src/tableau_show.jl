@@ -131,7 +131,9 @@ end
 
 function _show(io::IO, c::CliffordOperator, limit=50, limit_vertical=20)
     n = nqubits(c)
-    nwidth = Int(ceil(log10(n+1)))
+    labels = get(io, :qubit_labels, nothing)
+    max_label = isnothing(labels) ? n : maximum(labels)
+    nwidth = Int(ceil(log10(max_label+1)))
     _limit = limit-nwidth-10
     range = 1:n
     if (!ismissing(limit_vertical) && limit_vertical < n)
@@ -143,7 +145,8 @@ function _show(io::IO, c::CliffordOperator, limit=50, limit_vertical=20)
             print(" ⋮\n")
             continue
         end
-        print(io, "X"*digits_substr(i,nwidth)*" ⟼ ")
+        q_idx = isnothing(labels) ? i : labels[i]
+        print(io, "X"*digits_substr(q_idx,nwidth)*" ⟼ ")
         _show(io, tab(c)[i], _limit)
         println(io)
     end
@@ -152,7 +155,8 @@ function _show(io::IO, c::CliffordOperator, limit=50, limit_vertical=20)
             print(" ⋮\n")
             continue
         end
-        print(io, "Z"*digits_substr(i,nwidth)*" ⟼ ")
+        q_idx = isnothing(labels) ? i : labels[i]
+        print(io, "Z"*digits_substr(q_idx,nwidth)*" ⟼ ")
         _show(io, tab(c)[i+n], _limit)
         i!=n && println(io)
     end
