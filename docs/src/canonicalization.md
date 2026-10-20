@@ -1,6 +1,55 @@
 # Canonicalization operations
 
-Different types of canonicalization operations are implemented. All of them are types of Gaussian elimination.
+The tableau canonicalizations below use Gaussian elimination. [`lc_to_css`](@ref)
+also finds single-qubit Clifford gates that expose CSS structure.
+
+## Conversion to CSS form
+
+[`lc_to_css`](@ref) decides whether a stabilizer code is locally Clifford-equivalent
+to a Calderbank–Shor–Steane (CSS) code. It returns an independent, signed CSS
+`Stabilizer` and a vector of [`SingleQubitOperator`](@ref)s, or `nothing` if no
+such local transformation exists. The input is not modified. Each returned check
+contains only X and I or only Z and I.
+
+Generator changes can hide CSS structure even without a change of local basis.
+For example, `+YY` and `+ZZ` generate the pure checks `-XX` and `+ZZ`. Row reduction
+recovers those signs, and the conversion circuit is empty. More generally, the
+routine solves at most two affine binary systems per independent qubit component
+to find suitable local bases, then performs signed row reduction.
+
+```jldoctest
+julia> original = S"XZ
+                    ZX";
+
+julia> css, circuit = lc_to_css(original);
+
+julia> css
++ XX
++ ZZ
+
+julia> converted = copy(original);
+
+julia> for gate in circuit
+           apply!(converted, gate)
+       end
+
+julia> canonicalize!(converted) == css
+true
+
+julia> lc_to_css(S"XZZXI
+                  IXZZX
+                  XIXZZ
+                  ZXIXZ") === nothing # the five-qubit code has no CSS representative
+true
+```
+
+The returned circuit maps the input code space to the output code space;
+row operations only change its generating set. The CSS representative is not
+unique and need not match the CSS basis used to construct a scrambled input.
+Generator signs are retained rather than normalized to positive signs.
+Redundant checks, codes with logical qubits, disconnected code blocks, and unused
+qubits are supported. This implementation returns a reduced basis; it does not
+guarantee that the output checks preserve the sparsity of the supplied generators.
 
 ## [`canonicalize!`](@ref)
 

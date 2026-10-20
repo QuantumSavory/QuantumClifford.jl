@@ -7,6 +7,7 @@
 
 ## Unreleased
 
+- Add `lc_to_css` to recognize local Clifford equivalence to CSS codes and return signed CSS checks with a single-qubit conversion circuit.
 - Raise minimum dependency versions to fix tensor product arity and dependency warnings on Julia 1.12.
 - Correct manual examples for random Pauli operators and subsystem permutation.
 
