@@ -37,7 +37,7 @@ export
     # GF2
     stab_to_gf2, gf2_gausselim!, gf2_isinvertible, gf2_invert, gf2_H_to_G,
     # Canonicalization
-    canonicalize!, canonicalize_rref!, canonicalize_gott!,
+    canonicalize!, canonicalize_rref!, canonicalize_gott!, lc_to_css,
     # Linear Algebra
     tensor, tensor_pow,
     logdot, expect, fidelity,
@@ -1487,6 +1487,7 @@ include("fastmemlayout.jl")
 include("dense_cliffords.jl")
 # special one- and two- qubit operators
 include("symbolic_cliffords.jl")
+include("canonicalization_css.jl")
 # apply right operations
 include("apply_right.jl")
 # linear algebra and array-like operations
