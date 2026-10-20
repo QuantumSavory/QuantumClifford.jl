@@ -84,7 +84,36 @@ end
 """
 $TYPEDEF
 
-A Bell measurement performing the correlation measurement corresponding to the given `pauli` projections on the qubits at the selected indices.
+Measure each selected qubit in its specified Pauli basis and check the parity of the outcomes.
+
+Pass a vector of [`sMX`](@ref), [`sMY`](@ref), and [`sMZ`](@ref) measurements.
+`BellMeasurement(measurements)` expects an even number of `-1` outcomes (a `+1`
+product of outcomes). Pass `true` as the second argument to expect an odd number
+of `-1` outcomes (a `-1` product). The default is `false`.
+
+Each entry is measured separately, in vector order. The operation uses the
+combined parity to report `continue_stat` when it matches the expectation and
+`failure_stat` when it does not. It does not expose the individual outcomes as
+classical register bits.
+
+Use `BellMeasurement` in a circuit when you want a parity check built from
+single-qubit measurements. For example, this operation measures qubit 1 in the
+X basis and qubit 2 in the Z basis, and expects even parity:
+
+```jldoctest
+julia> measurement = BellMeasurement([sMX(1), sMZ(2)]);
+
+julia> odd_parity_measurement = BellMeasurement([sMX(1), sMZ(2)], true);
+```
+
+This operation measures each qubit separately. To project once onto a Pauli
+operator and sample an outcome outside a circuit, use [`projectrand!`](@ref).
+[`project!`](@ref) is the lower-level alternative when you need to inspect the
+projection result and handle an undetermined outcome yourself. For a single
+qubit, [`projectXrand!`](@ref), [`projectYrand!`](@ref), and [`projectZrand!`](@ref)
+provide specialized measurement methods.
+
+See also: [`NoisyBellMeasurement`](@ref), [`PauliMeasurement`](@ref), [`Register`](@ref).
 """
 struct BellMeasurement <: AbstractOperation
     measurements::Vector{Union{sMX,sMY,sMZ}}
