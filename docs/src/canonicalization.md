@@ -18,6 +18,8 @@ routine solves at most two affine binary systems per independent qubit component
 to find suitable local bases, then performs signed row reduction.
 
 ```jldoctest
+julia> using QuantumClifford
+
 julia> original = S"XZ
                     ZX";
 
