@@ -1,6 +1,6 @@
 # Canonicalization operations
 
-The tableau canonicalizations below use Gaussian elimination. [`lc_to_css`](@ref)
+The tableau canonicalization routines below use Gaussian elimination. [`lc_to_css`](@ref)
 also finds single-qubit Clifford gates that expose CSS structure.
 
 ## Conversion to CSS form
