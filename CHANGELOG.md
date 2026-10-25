@@ -9,6 +9,7 @@
 
 - Raise minimum dependency versions to fix tensor product arity and dependency warnings on Julia 1.12.
 - Correct manual examples for random Pauli operators and subsystem permutation.
+- Document `tensor_pow` as the tensor-power operation for `PauliOperator`.
 
 ## v0.11.8 - 2026-09-05
 

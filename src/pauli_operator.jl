@@ -6,6 +6,16 @@ A multi-qubit Pauli operator (``±\\{1,i\\}\\{I,Z,X,Y\\}^{\\otimes n}``).
 A Pauli can be constructed with the `P` custom string macro or by building
 up one through products and tensor products of smaller operators.
 
+Use [`tensor_pow`](@ref) to repeat a Pauli operator as a tensor product. The
+`^` operator is not the tensor-power operation for Pauli operators. For example,
+you can place a `Z` after eight identity operators and before three more identity
+operators without writing the full string manually:
+
+```jldoctest
+julia> tensor_pow(P"_", 8) ⊗ P"Z" ⊗ tensor_pow(P"_", 3)
++ ________Z___
+```
+
 ```jldoctest
 julia> pauli3 = P"-iXYZ"
 -iXYZ
