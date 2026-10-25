@@ -113,13 +113,6 @@ julia> parity_checks(tb)
 + ZYX______ZZZ
 ```
 
-Whether a tail-biting code is CSS depends on its generators, so it is not known from the type:
-
-```jldoctest convolutional
-julia> iscss(tb) === nothing
-true
-```
-
 ### Fields
     $TYPEDFIELDS
 
