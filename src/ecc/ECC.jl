@@ -33,6 +33,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     CSS,
     Shor9, Steane7, Cleve8, Perfect5, Bitflip3,
     Toric, Gottesman, Surface, Concat, CircuitCode,
+    QuantumConvolutionalCode, TailBiting,
     LPCode, two_block_group_algebra_code, generalized_bicycle_code_as_2bga, bicycle_code_as_2bga,
     Haah_cubic_code_as_2bga, twobga_from_fp_group, twobga_from_direct_product,
     TillichZemor, random_TillichZemor_code,
@@ -48,7 +49,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     MultivariateMulticycle,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
-    TableDecoder, CSSTableDecoder,
+    TableDecoder, CSSTableDecoder, ConvolutionalViterbiDecoder,
     BeliefPropDecoder, BitFlipDecoder,
     PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, TesseractDecoder, DecoderCorrectionGate
 
@@ -419,6 +420,8 @@ include("codes/util.jl")
 
 include("codes/concat.jl")
 include("codes/random_circuit.jl")
+include("codes/convolutional.jl")
+include("decoder_viterbi.jl")
 
 # qLDPC
 include("codes/classical/lifted.jl")
