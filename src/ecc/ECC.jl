@@ -49,7 +49,7 @@ export parity_checks, parity_matrix_x, parity_matrix_z, iscss,
     evaluate_decoder,
     CommutationCheckECCSetup, NaiveSyndromeECCSetup, ShorSyndromeECCSetup,
     TableDecoder, CSSTableDecoder,
-    BeliefPropDecoder, BitFlipDecoder,
+    BeliefPropDecoder, BitFlipDecoder, BPOTSDecoder,
     PyBeliefPropDecoder, PyBeliefPropOSDecoder, PyMatchingDecoder, TesseractDecoder, DecoderCorrectionGate
 
 """

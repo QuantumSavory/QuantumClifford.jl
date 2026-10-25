@@ -31,6 +31,88 @@ struct BitFlipDecoder <: AbstractSyndromeDecoder # TODO all these decoders have 
     bfdecoderz
 end
 
+"""
+    BPOTSDecoder(code; errorrate=nothing, maxiter=nothing, T=9, C=2.0)
+
+BP-OTS (Belief Propagation with Oscillating Trapping Sets) decoder for quantum LDPC codes.
+This decoder uses oscillation tracking and biasing to escape trapping sets.
+
+# Arguments
+- `code`: A quantum code (e.g., Toric, Surface)
+- `errorrate`: Physical error rate (depolarizing probability)
+- `maxiter`: Maximum number of iterations (default: 200)
+- `T`: Biasing period (default: 9)
+- `C`: Bias constant (default: 2.0)
+
+# Reference
+Chytas et al., "Enhanced Message-Passing Decoding of Degenerate Quantum Codes 
+Utilizing Trapping Set Dynamics", IEEE Communications Letters, 2024
+"""
+struct BPOTSDecoder <: AbstractSyndromeDecoder
+    original_code       
+    H::SparseMatrixCSC{Bool,Int}
+    faults_matrix::Matrix{Bool}
+    n::Int
+    s::Int
+    k::Int
+    cx::Int
+    cz::Int
+    bpots_x::LDPCDecoders.BPOTSDecoder
+    bpots_z::LDPCDecoders.BPOTSDecoder
+end
+
+function BPOTSDecoder(c; errorrate=nothing, maxiter=nothing, T=9, C=2.0)
+    
+    Hx_raw = parity_checks_x(c)
+    Hz_raw = parity_checks_z(c)
+    H_raw = parity_checks(c)
+
+    if H_raw isa Stabilizer
+        H_gf2 = stab_to_gf2(H_raw)
+        H = sparse(Bool.(H_gf2))
+    else
+        H = sparse(Bool.(H_raw))
+    end
+    
+    if Hx_raw isa Stabilizer
+        Hx_gf2 = stab_to_gf2(Hx_raw)
+        Hz_gf2 = stab_to_gf2(Hz_raw)
+        Hx = sparse(Bool.(Hx_gf2))
+        Hz = sparse(Bool.(Hz_gf2))
+    else
+        Hx = sparse(Bool.(Hx_raw))
+        Hz = sparse(Bool.(Hz_raw))
+    end
+    
+    s, n = size(H)
+    k = code_k(c)
+    
+    cx = size(Hx, 1)
+    cz = size(Hz, 1)
+    
+    fm = BitMatrix(ones(Bool, s, 2*n))
+    
+    errorrate = something(errorrate, 0.0)
+    maxiter = something(maxiter, 200)
+    bpots_x = LDPCDecoders.BPOTSDecoder(Hx, errorrate, maxiter; T=T, C=C)
+    bpots_z = LDPCDecoders.BPOTSDecoder(Hz, errorrate, maxiter; T=T, C=C)
+
+    return BPOTSDecoder(c, H, fm, n, s, k, cx, cz, bpots_x, bpots_z)
+end
+
+function decode(d::BPOTSDecoder, syndrome_sample::AbstractVector{Bool})
+    length(syndrome_sample) == d.cx + d.cz || 
+        throw(DimensionMismatch("Syndrome length ($(length(syndrome_sample))) does not match expected size ($(d.cx + d.cz))"))
+
+    row_x = @view syndrome_sample[1:d.cx]
+    row_z = @view syndrome_sample[d.cx+1:d.cx+d.cz]
+
+    guess_z, conv_z = LDPCDecoders.decode!(d.bpots_x, Vector(row_x))
+    guess_x, conv_x = LDPCDecoders.decode!(d.bpots_z, Vector(row_z))
+
+    return vcat(guess_x, guess_z)
+end
+
 function BeliefPropDecoder(c; errorrate=nothing, maxiter=nothing)
     Hx = parity_matrix_x(c)
     Hz = parity_matrix_z(c)
@@ -73,6 +155,7 @@ end
 
 parity_checks(d::BeliefPropDecoder) = d.H
 parity_checks(d::BitFlipDecoder) = d.H
+parity_checks(d::BPOTSDecoder) = d.H
 
 function decode(d::BeliefPropDecoder, syndrome_sample)
     row_x = @view syndrome_sample[1:d.cx]

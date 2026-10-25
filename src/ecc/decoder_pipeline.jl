@@ -317,6 +317,15 @@ function ClassicalTableDecoder(H::Matrix{Bool}; error_weight=1)
     return ClassicalTableDecoder(H, n, s, error_weight, lookup_table)
 end
 
+"""A BP-OTS (Belief Propagation with Oscillating Trapping Sets) decoder built around tools from `LDPCDecoders.jl`. 
+"""
+function BPOTSDecoder(args...; kwargs...)
+    ext = Base.get_extension(QuantumClifford, :QuantumCliffordLDPCDecodersExt)
+    if isnothing(ext)
+        throw("The `BPOTSDecoder` depends on the package `LDPCDecoders` but you have not installed or imported `LDPCDecoders` yet. Immediately after you import `LDPCDecoders`, the `BPOTSDecoder` will be available.")
+    end
+    return ext.BPOTSDecoder(args...; kwargs...)
+end
 parity_checks(d::ClassicalTableDecoder) = d.H
 
 function create_lookup_table(H::Matrix{Bool}; error_weight=1) # TODO there is inefficient casting between Bool vectors and bitvectors here
