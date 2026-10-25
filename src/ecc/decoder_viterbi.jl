@@ -16,6 +16,9 @@ julia> tb = TailBiting(QuantumConvolutionalCode([[P"XXX", P"XZY"], [P"ZZZ", P"ZY
 
 julia> d = ConvolutionalViterbiDecoder(tb);
 
+julia> parity_checks(d) == parity_checks(tb)
+true
+
 julia> E = P"______X_______Z___"; s = comm(E, parity_checks(tb));
 
 julia> g = QuantumClifford.ECC.decode(d, s); PauliOperator(0x0, g[1:18], g[19:end])

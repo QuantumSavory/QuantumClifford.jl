@@ -15,6 +15,17 @@ QuantumConvolutionalCode(n=3, m=2, ν=1: XXX + D·XZY, ZZZ + D·ZYX)
 
 julia> rate(c)
 1//3
+
+julia> QuantumClifford.ECC.frame_size(c), QuantumClifford.ECC.memory(c)
+(3, 1)
+
+julia> QuantumClifford.ECC.polynomial_form(c)
+2-element Vector{String}:
+ "XXX + D·XZY"
+ "ZZZ + D·ZYX"
+
+julia> QuantumClifford.ECC.shifted_commutes(c)
+true
 ```
 
 ### Fields
@@ -67,15 +78,8 @@ a valid stabilizer code at every length.
 """
 function shifted_commutes(c::QuantumConvolutionalCode)
     ν = memory(c)
-    for g in c.generators, h in c.generators, s in -ν:ν
-        acc = 0
-        for ℓ in 0:ν
-            0 <= ℓ + s <= ν || continue
-            acc += comm(g[ℓ+1], h[ℓ+s+1])
-        end
-        isodd(acc) && return false
-    end
-    true
+    all(iseven(count(ℓ -> isone(comm(g[ℓ+1], h[ℓ+s+1])), max(0, -s):min(ν, ν - s)))
+        for g in c.generators, h in c.generators, s in -ν:ν)
 end
 
 function Base.show(io::IO, c::QuantumConvolutionalCode)
@@ -107,6 +111,13 @@ julia> parity_checks(tb)
 + ___ZZZZYX___
 + ______ZZZZYX
 + ZYX______ZZZ
+```
+
+Whether a tail-biting code is CSS depends on its generators, so it is not known from the type:
+
+```jldoctest convolutional
+julia> iscss(tb) === nothing
+true
 ```
 
 ### Fields

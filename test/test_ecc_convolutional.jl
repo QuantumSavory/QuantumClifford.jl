@@ -1,4 +1,4 @@
-@testitem "ECC - quantum convolutional codes" tags=[:ecc] begin
+@testitem "ECC - quantum convolutional codes" tags=[:ecc, :ecc_bespoke_checks] begin
     using QuantumClifford.ECC
     using QuantumClifford.ECC: decode, memory, frame_size, polynomial_form, shifted_commutes
     using Random
@@ -17,6 +17,16 @@
         @test_throws ArgumentError TailBiting(bad, 4)
         @test_throws ArgumentError TailBiting(c, 1)
         @test_throws ArgumentError QuantumConvolutionalCode([[P"XX", P"X"]])
+        @test_throws ArgumentError QuantumConvolutionalCode(Vector{PauliOperator}[])
+        @test repr(c) == "QuantumConvolutionalCode(n=3, m=2, ν=1: XXX + D·XZY, ZZZ + D·ZYX)"
+        gap = QuantumConvolutionalCode([[P"Z", P"I", P"Z"]])  # identity frames are skipped, D^k beyond the first
+        @test polynomial_form(gap) == ["Z + D^2·Z"] && memory(gap) == 2 && shifted_commutes(gap)
+        tb = TailBiting(c, 4)
+        @test iscss(tb) === nothing
+        @test parity_checks(ConvolutionalViterbiDecoder(tb)) == parity_checks(tb)
+        # one bit per generator in the decoder's masks
+        many = TailBiting(QuantumConvolutionalCode(fill([P"Z"], 65)), 2)
+        @test_throws ArgumentError ConvolutionalViterbiDecoder(many)
     end
 
     @testset "tail-biting code, N = $N" for N in (3, 4, 6, 8)
